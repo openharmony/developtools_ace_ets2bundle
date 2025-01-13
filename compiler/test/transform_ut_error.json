@@ -2,41 +2,45 @@
     "@linkInitialize": {
         "message": "The @Link property 'link' cannot be specified a default value.",
         "type": "ERROR",
+        "code": "10905304",
         "solutions": ["Please initialize the rules according to the decorator."]
     },
     "@objectLinkInitialize": {
         "message": "The @ObjectLink property 'objectLink' cannot be specified a default value.",
         "type": "ERROR",
+        "code": "10905304",
         "solutions": ["Please initialize the rules according to the decorator."]
     },
     "rootContainerCheck": {
         "message": "There should have a root container component.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905210"
     },
     "arkUIComponent": {
         "message": "Only UI component syntax can be written in build method.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905209"
     },
     "@BuilderParam": {
         "message": "In the trailing lambda case, 'CustomContainer' must have one and only one property decorated with @BuilderParam, and its @BuilderParam expects no parameter.",
-        "type": "ERROR"
-    },
-    "forEachParamCheck": {
-        "message": "There should be wrapped in curly braces in ForEach.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905102"
     },
     "ifComponent": [
         {
             "message": "Condition expression cannot be null in if statement.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905208"
         },
         {
             "message": "Then statement cannot be null in if statement.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905207"
         },
         {
             "message": "'' does not meet UI component syntax.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905204"
         }
     ],
     "idCheck": {
@@ -45,73 +49,90 @@
     },
     "arkUIStandard": {
         "message": "'Text('Hello').onClick' does not meet UI component syntax.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905206"
     },
     "stateStyles": {
         "message": ".stateStyles doesn't conform standard.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905203"
     },
     "buttonCheck": {
         "message": "The Button component with a label parameter can not have any child.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905202"
     },
     "attributeCheck": {
         "message": "'ForEach(this.arr, () =>{}, (item: string) => item).h' does not meet UI component syntax.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905204"
     },
     "validateDecorators": {
         "message": "The static variable of struct cannot be used together with built-in decorators.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905313"
     },
     "processComponentMethod": {
         "message": "The 'build' method can not have arguments.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905106"
     },
     "@StylesParamChack": {
         "message": "@Styles can't have parameters.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905105"
     },
     "updateHeritageClauses": {
         "message": "The struct component is not allowed to extends other class or implements other interface.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905212"
     },
     "validateBuildMethodCount": {
         "message": "struct 'ValidateBuildMethodCountIndex' must be at least or at most one 'build' method.",
         "type": "ERROR",
+        "code": "10905103",
         "solutions": ["A structurally modified page must have at least one and no more than one 'build' method."]
     },
     "validateHasController": {
         "message": "@CustomDialog component should have a property of the CustomDialogController type.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905211"
     },
     "processWatch": {
         "message": "Cannot find name 'onWatch' in struct 'ProcessWatchIndex'.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905301"
     },
     "updateBuilderParamProperty": {
         "message": "BuilderParam property can only initialized by Builder function or LocalBuilder method in struct.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905101"
     },
     "validateMultiDecorators": {
         "message": "The property 'lang' cannot have mutilate state management decorators.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905302"
     },
     "validatePropertyNonDefaultValue": {
         "message": "The @State property 'message' must be specified a default value.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905303"
     },
     "validatePropertyDefaultValue": {
         "message": "The @Link property 'message' cannot be specified a default value.",
         "type": "ERROR",
+        "code": "10905304",
         "solutions": ["Please initialize the rules according to the decorator."]
     },
     "validatePropertyNonType": {
         "message": "The property 'message' must specify a type.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905305"
     },
     "validateNonObservedClassType": {
         "message": "The type of the @ObjectLink property 'message' can only be objects of classes decorated with @Observed class decorator in ets (not ts).",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905307"
     },
     "validateHasIllegalDecoratorInEntry": {
         "message": "The @Entry component 'ValidateHasIllegalDecoratorInEntryIndex' cannot have the @Prop property 'message'.",
@@ -123,23 +144,28 @@
     },
     "validateForbiddenUseStateType": {
         "message": "The @State property 'message' cannot be a 'CustomDialogController' object.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905308"
     },
     "validateDuplicateDecorator": {
         "message": "The inner decorator @State cannot be used together with custom decorator.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905312"
     },
     "validateWatchDecorator": {
         "message": "Regular variable 'message' can not be decorated with @Watch.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905310"
     },
     "validateWatchParam": {
         "message": "The parameter should be a string.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905311"
     },
     "validateCustomDecorator": {
         "message": "The inner decorator @State cannot be used together with custom decorator.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905312"
     },
     "checkBuilder$$": {
         "message": "Unrecognized property 'paramA1', make sure it can be assigned to @Link property 'message' by yourself.",
@@ -147,54 +173,67 @@
     },
     "validateForbiddenToInitViaParam": {
         "message": "Property 'message' in the custom component 'ValidateForbiddenToInitViaParamChild' cannot be initialized here (forbidden to specify).",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905317"
     },
     "validateMandatoryToInitViaParam": {
         "message": "Property 'message' in the custom component 'ValidateMandatoryToInitViaParamChild' is missing (mandatory to specify).",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905316"
     },
     "validateInitDecorator": [
         {
             "message": "Property 'build_value' must be initialized through the component constructor.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905359"
         },
         {
             "message": "Property 'prop_value' must be initialized through the component constructor.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905359"
         },
         {
             "message": "Property 'regular_value' must be initialized through the component constructor.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905359"
         },
         {
             "message": "Property 'state_value' must be initialized through the component constructor.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905359"
         },
         {
             "message": "Property 'provide_value' must be initialized through the component constructor.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905359"
         }
     ],
     "validateIllegalInitFromParent": {
         "message": "The regular property 'message' cannot be assigned to the @Link property 'message'.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905315"
     },
     "validateNonLinkWithDollar": {
         "message": "Property 'message' cannot initialize using '$' to create a reference to a variable.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905314"
     },
     "validateModuleName": {
         "message": "The module name 'Button' can not be the same as the inner component name.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905235"
     },
     "notComponent": [
         {
             "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'EntryComponent'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905233"
         },
         {
-            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.Solutions:>Please make sure that the splash page has one and only one '@Entry' decorator.",
-            "type": "ERROR"
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402",
+            "solutions": ["Please make sure that the splash page has one and only one '@Entry' decorator."]
         }
     ],
     "notConcurrent": {
@@ -203,7 +242,8 @@
     },
     "notConcurrentFun": {
         "message": "@Concurrent can not be used on method. please use it on function declaration.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905123"
     },
     "notDecorator": {
         "message": "The struct 'IndexDecorator' use invalid decorator.",
@@ -219,63 +259,78 @@
     },
     "state": {
         "message": "The struct 'Button' cannot have the same name as the built-in component 'Button'.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905227"
     },
     "StructNameInvalid": {
         "message": "The struct 'gesture' cannot have the same name as the built-in attribute 'gesture'.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905228"
     },
     "notConcurrentFunAster": {
         "message": "@Concurrent can not be used on Generator function declaration.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905122"
     },
     "NoStructDeco": {
         "message": "The '@Component' decorator can only be used with 'struct'.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905337"
     },
     "MethodNoExtend": {
         "message": "The '@Extend' decorator can not be a member property method of a 'class' or 'struct'.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905113"
     },
     "OnlyStructDeco": {
         "message": "The '@Builder' decorator can only be used in 'struct'.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905114"
     },
     "NoChild": {
         "message": "The component 'Image' can't have any child.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905222"
     },
     "OneChild": {
         "message": "The component 'Button' can only have a single child component.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905220"
     },
     "NotSupportResrcParam": {
         "message": "The input parameter is not supported.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905332"
     },
     "ExtendOneChild": {
         "message": "@Extend should have one and only one parameter",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905108"
     },
     "UnknownSrc": {
         "message": "Unknown resource source 'hap'.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10903331"
     },
     "UnknownSrcType": {
         "message": "Unknown resource type 'iroha'.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10903330"
     },
     "UnknownSrcName": {
         "message": "Unknown resource name 'tari'.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10903329"
     },
     "NotSupportResrcType": {
         "message": "The resource type font is not supported.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10906334"
     },
     "NoSrc": {
         "message": "No such 'test.png' resource in current module.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10904333"
     },
     "EntryDecoParam": {
         "message": "@Entry should have a parameter, like '@Entry (storage)'.",
@@ -283,64 +338,80 @@
     },
     "StylesNoParam": {
         "message": "@Styles can't have parameters.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905105"
     },
     "ExceededPreview": {
         "message": "A page can contain at most 10 '@Preview' decorators.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905404"
     },
     "ExceededEntry": [
         {
             "message": "A page can't contain more than one '@Entry' decorator",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905231"
         },
         {
-            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.Solutions:>Please make sure that the splash page has one and only one '@Entry' decorator.",
-            "type": "ERROR"
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402",
+            "solutions": ["Please make sure that the splash page has one and only one '@Entry' decorator."]
         }
     ],
     "OneEntry": {
-        "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.Solutions:>Please make sure that the splash page has one and only one '@Entry' decorator.",
-        "type": "ERROR"
+        "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+        "type": "ERROR",
+        "code": "10905402",
+        "solutions": ["Please make sure that the splash page has one and only one '@Entry' decorator."]
     },
     "notMethodDeco": {
         "message": "'@State' can not decorate the method.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905112"
     },
     "checkNonspecificParents": {
         "message": "The 'Blank' component can only be nested in the 'Row,Column,Flex' parent component.",
-        "type": "ERROR"
+        "type": "ERROR",
+        "code": "10905201"
     },
     "@Trace": [
         {
             "message": "The '@Trace' decorator can only be used in 'class'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905345"
         },
         {
             "message": "The '@Trace' can decorate only member variables within a 'class' decorated with ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905343"
         }
     ],
     "@Type": [
         {
             "message": "The '@Type' decorator can only be used in 'class'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905345"
         },
         {
             "message": "The '@Type' decorator can not be used in a 'class' decorated with Sendable.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905342"
         },
         {
             "message": "The '@Type' can decorate only member variables in a 'class'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905340"
         },
         {
             "message": "The '@Type' decorator can not be used in a 'class' decorated with Observed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905341"
         },
         {
             "message": "The '@Type' can decorate only member variables in a 'class'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905340"
         }
     ],
     "validate_track_observed": [
@@ -350,15 +421,18 @@
         },
         {
             "message": "The '@Trace' decorator can only be used in 'class'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905345"
         },
         {
             "message": "The '@ObservedV2' decorator can only be used in 'class'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905345"
         },
         {
             "message": "The '@Trace' can decorate only member variables within a 'class' decorated with ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905343"
         }
     ],
     "validateAccessQualifier": [
@@ -406,245 +480,301 @@
     "@Monitor": [
         {
             "message": "The '@Monitor' can decorate only member method within a 'class' decorated with ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905343"
         }
     ],
     "v2DecoratorInComponent": [
         {
             "message": "The '@Local' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905338"
         },
         {
             "message": "The '@Param' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905338"
         },
         {
             "message": "The '@Param' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905338"
         },
         {
             "message": "The '@Once' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905338"
         },
         {
             "message": "The '@Once' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905338"
         },
         {
             "message": "The '@Event' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905338"
         },
         {
             "message": "The '@Provider' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905338"
         },
         {
             "message": "The '@Consumer' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905338"
         },
         {
             "message": "The '@Computed' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905338"
         },
         {
             "message": "The '@Monitor' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905338"
         }
     ],
     "v1DecoratorInComponentV2": [
         {
             "message": "The '@State' decorator can only be used in a 'struct' decorated with '@Component'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905339"
         },
         {
             "message": "The '@Prop' decorator can only be used in a 'struct' decorated with '@Component'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905339"
         },
         {
             "message": "The '@Link' decorator can only be used in a 'struct' decorated with '@Component'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905339"
         },
         {
             "message": "The '@Provide' decorator can only be used in a 'struct' decorated with '@Component'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905339"
         },
         {
             "message": "The '@Consume' decorator can only be used in a 'struct' decorated with '@Component'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905339"
         },
         {
             "message": "The '@Watch' decorator can only be used in a 'struct' decorated with '@Component'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905339"
         },
         {
             "message": "The '@State' decorator can only be used in a 'struct' decorated with '@Component'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905339"
         },
         {
             "message": "The '@Watch' decorator can only be used in a 'struct' decorated with '@Component'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905339"
         },
         {
             "message": "The '@StorageLink' decorator can only be used in a 'struct' decorated with '@Component'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905339"
         },
         {
             "message": "The '@StorageProp' decorator can only be used in a 'struct' decorated with '@Component'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905339"
         },
         {
             "message": "The '@LocalStorageLink' decorator can only be used in a 'struct' decorated with '@Component'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905339"
         },
         {
             "message": "The '@LocalStorageProp' decorator can only be used in a 'struct' decorated with '@Component'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905339"
         },
         {
             "message": "The '@ObjectLink' decorator can only be used in a 'struct' decorated with '@Component'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905339"
         }
     ],
     "componentV2BothWithComponent": [
         {
             "message": "The struct 'componentV2BothWithComponent' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905229"
         },
         {
             "message": "The struct 'componentV2BothWithComponent1' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905229"
         },
         {
             "message": "The struct 'componentV2BothWithComponent2' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905229"
         }
     ],
     "mutiDecoratorInComponentV2": [
         {
             "message": "The member property or method can not be decorated by multiple built-in decorators.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905121"
         },
         {
             "message": "The member property or method can not be decorated by multiple built-in decorators.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905121"
         }
     ],
     "v2DecoratorInClass": [
         {
             "message": "The '@Local' decorator can only be used with 'struct'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905337"
         },
         {
             "message": "The '@Param' decorator can only be used with 'struct'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905337"
         },
         {
             "message": "The '@Param' decorator can only be used with 'struct'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905337"
         },
         {
             "message": "The '@Once' decorator can only be used with 'struct'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905337"
         },
         {
             "message": "The '@Once' decorator can only be used with 'struct'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905337"
         },
         {
             "message": "The '@Event' decorator can only be used with 'struct'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905337"
         },
         {
             "message": "The '@Provider' decorator can only be used with 'struct'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905337"
         },
         {
             "message": "The '@Consumer' decorator can only be used with 'struct'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905337"
         }
     ],
     "v2MemberDecorator": [
         {
             "message": "@Computed can only decorate 'GetAccessor'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905116"
         },
         {
             "message": "'@Local' can only decorate member property.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905346"
         },
         {
             "message": "@Computed can only decorate 'GetAccessor'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905116"
         },
         {
             "message": "'@Monitor' can only decorate method.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905115"
         }
     ],
     "param_require_once_check": [
         {
             "message": "When a variable decorated with @Param is not assigned a default value, it must also be decorated with @Require.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905327"
         },
         {
             "message": "In a struct decorated with @ComponentV2, @Require can only be used with @Param.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905325"
         },
         {
             "message": "In a struct decorated with @ComponentV2, @Require can only be used with @Param.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905325"
         },
         {
             "message": "When a variable decorated with @Once, it must also be decorated with @Param.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905326"
         },
         {
             "message": "When a variable decorated with @Once, it must also be decorated with @Param.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905326"
         }
     ],
     "v2DecoratorInitFromParent": [
         {
             "message": "Property 'param_value' must be initialized through the component constructor.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905321"
         },
         {
             "message": "Property 'regular_value' in the custom component 'testChild' cannot be initialized here (forbidden to specify).",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905324"
         },
         {
             "message": "Property 'local_value' in the custom component 'testChild' cannot be initialized here (forbidden to specify).",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905324"
         },
         {
             "message": "Property 'provider_value' in the custom component 'testChild' cannot be initialized here (forbidden to specify).",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905324"
         },
         {
             "message": "Property 'consumer_value' in the custom component 'testChild' cannot be initialized here (forbidden to specify).",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905324"
         }
     ],
     "validateParamTwoWayBind": [
         {
             "message": "When the two-way binding syntax is used, the variable 'value' must be decorated with @Param, and the @Event variable '$value' must be defined in the testParamChild1.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905319"
         },
         {
             "message": "The optional character can not be used in the initial value of property 'paramValue'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905320"
         },
         {
             "message": "The optional character can not be used in the initial value of property 'paramValue'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905320"
         },
         {
             "message": "When the two-way binding syntax is used, the initial value of property 'paramValue' must be a variable.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905318"
         },
         {
             "message": "When the two-way binding syntax is used, the initial value of property 'paramValue' must be a variable.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905318"
         }
     ],
     "validateStaticVariables": [
@@ -674,41 +804,50 @@
         },
         {
             "message": "Property 'b1' in the custom component 'StaticChildTwo' cannot be initialized here (forbidden to specify).",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905324"
         },
         {
             "message": "Property 'd1' in the custom component 'StaticChildFour' cannot be initialized here (forbidden to specify).",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905324"
         }
     ],
     "validateDifferentMethod": [
         {
             "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905117"
         },
         {
             "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905117"
         },
         {
             "message": "The member property or method can not be decorated by multiple built-in decorators.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905121"
         },
         {
             "message": "The member property or method can not be decorated by multiple built-in decorators.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905121"
         },
         {
             "message": "The member property or method can not be decorated by multiple built-in decorators.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905121"
         },
         {
             "message": "@Computed can only decorate 'GetAccessor'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905116"
         },
         {
             "message": "The member property or method can not be decorated by multiple built-in decorators.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905121"
         }
     ],
     "validateDuplicateMethod": [
@@ -738,309 +877,382 @@
         },
         {
             "message": "Duplicate decorators for method are not allowed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905119"
         },
         {
             "message": "Duplicate decorators for method are not allowed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905119"
         }
     ],
     "v2ToV1Link": [
         {
             "message": "Property 'link_value' in the custom component 'V1' is missing (mandatory to specify).",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905316"
         },
         {
             "message": "Property 'link_value' in the custom component 'V1' is missing (mandatory to specify).",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905316"
         },
         {
             "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905213"
         },
         {
             "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905213"
         },
         {
             "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905213"
         },
         {
             "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905213"
         }
     ],
     "@localBuilder": [
         {
             "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905117"
         },
         {
             "message": "'@LocalBuilder' can only decorate method.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905115"
         },
         {
             "message": "The member property or method can not be decorated by multiple decorators.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905125"
         },
         {
             "message": "The '@LocalBuilder' decorator can only be used in 'struct'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905114"
         },
         {
             "message": "Static methods in custom components cannot be decorated by @LocalBuilder.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905104"
         }
     ],
     "v2Component_member_type_check": [
         {
             "message": "The property 'local_value' must specify a type.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905328"
         },
         {
             "message": "The property 'builder_value' must specify a type.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905328"
         },
         {
             "message": "The property 'param_value' must specify a type.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905328"
         },
         {
             "message": "The property 'param_value1' must specify a type.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905328"
         },
         {
             "message": "The property 'param_value2' must specify a type.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905328"
         },
         {
             "message": "The property 'param_value3' must specify a type.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905328"
         },
         {
             "message": "The property 'event_value' must specify a type.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905328"
         },
         {
             "message": "The property 'provide_value' must specify a type.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905328"
         },
         {
             "message": "The property 'consumer_value' must specify a type.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905328"
         }
     ],
     "v1ToV2Component": [
         {
             "message": "Property 'func_value1' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905323"
         },
         {
             "message": "Property 'func_value2' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905323"
         }
     ],
     "v1ToV2ComponentValidate": [
         {
             "message": "The type of the @Param property can not be a class decorated with @Observed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905347"
         },
         {
             "message": "Property 'param_value' in the @ComponentV2 component 'TestV2Child2' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905323"
         },
         {
             "message": "Property 'param_value_alias_type' in the @ComponentV2 component 'TestV2Child2' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905323"
         },
         {
             "message": "Property 'state_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905323"
         },
         {
             "message": "Property 'prop_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905323"
         },
         {
             "message": "Property 'link_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905323"
         },
         {
             "message": "Property 'provide_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905323"
         },
         {
             "message": "Property 'consume_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905323"
         },
         {
             "message": "Property 'objectLink_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905323"
         },
         {
             "message": "Property 'storage_link_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905323"
         },
         {
             "message": "Property 'storage_prop_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905323"
         },
         {
             "message": "Property 'local_storage_link_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905323"
         },
         {
             "message": "Property 'local_storage_prop_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905323"
         }
     ],
     "v2ToV1ComponentValidate": [
         {
             "message": "The type of the @Provider property can not be a class decorated with @Observed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905347"
         },
         {
             "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905213"
         },
         {
             "message": "Property 'set_value' in the @Component component 'TestV1Child1' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905322"
         },
         {
             "message": "Property 'set_value_alias' in the @Component component 'TestV1Child1' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905322"
         },
         {
             "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905213"
         },
         {
             "message": "Property 'set_value' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905322"
         },
         {
             "message": "Property 'map_value' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905322"
         },
         {
             "message": "Property 'arr_value' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905322"
         },
         {
             "message": "Property 'arr_value1' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905322"
         },
         {
             "message": "Property 'arr_value2' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905322"
         },
         {
             "message": "Property 'arr_value3' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905322"
         }
     ],
     "property_observe_validate": [
         {
             "message": "The type of the @State property can not be a class decorated with @ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905348"
         },
         {
             "message": "The type of the @State property can not be a class decorated with @ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905348"
         },
         {
             "message": "The type of the @State property can not be a class decorated with @ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905348"
         },
         {
             "message": "The type of the @State property can not be a class decorated with @ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905348"
         },
         {
             "message": "The type of the @State property can not be a class decorated with @ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905348"
         },
         {
             "message": "The type of the @Prop property can not be a class decorated with @ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905348"
         },
         {
             "message": "The type of the @Link property can not be a class decorated with @ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905348"
         },
         {
             "message": "The type of the @Provide property can not be a class decorated with @ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905348"
         },
         {
             "message": "The type of the @Consume property can not be a class decorated with @ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905348"
         },
         {
             "message": "The type of the @StorageLink property can not be a class decorated with @ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905348"
         },
         {
             "message": "The type of the @StorageProp property can not be a class decorated with @ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905348"
         },
         {
             "message": "The type of the @LocalStorageLink property can not be a class decorated with @ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905348"
         },
         {
             "message": "The type of the @LocalStorageProp property can not be a class decorated with @ObservedV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905348"
         },
         {
             "message": "The type of the @Local property can not be a class decorated with @Observed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905347"
         },
         {
             "message": "The type of the @Local property can not be a class decorated with @Observed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905347"
         },
         {
             "message": "The type of the @Local property can not be a class decorated with @Observed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905347"
         },
         {
             "message": "The type of the @Local property can not be a class decorated with @Observed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905347"
         },
         {
             "message": "The type of the @Local property can not be a class decorated with @Observed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905347"
         },
         {
             "message": "The type of the @Local property can not be a class decorated with @Observed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905347"
         },
         {
             "message": "The type of the @Param property can not be a class decorated with @Observed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905347"
         },
         {
             "message": "The type of the @Param property can not be a class decorated with @Observed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905347"
         },
         {
             "message": "The type of the @Param property can not be a class decorated with @Observed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905347"
         },
         {
             "message": "The type of the @Event property can not be a class decorated with @Observed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905347"
         },
         {
             "message": "The type of the @Provider property can not be a class decorated with @Observed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905347"
         },
         {
             "message": "The type of the @Consumer property can not be a class decorated with @Observed.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905347"
         }
     ],
     "validateControllerCount": [
@@ -1052,63 +1264,78 @@
     "@ReusableV2": [
         {
             "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905242"
         },
         {
-            "message": "The @Reusable and @ReusableV2 decorators cannot be applied simultaneously.",
-            "type": "ERROR"
+            "message": "The @Reusable and @ReusableV2 decoraotrs cannot be applied simultaneously.",
+            "type": "ERROR",
+            "code": "10905241"
         },
         {
             "message": "The struct 'v21' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905229"
         },
         {
-            "message": "The @Reusable and @ReusableV2 decorators cannot be applied simultaneously.",
-            "type": "ERROR"
-        },
-        {
-            "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
-            "type": "ERROR"
-        },
-        {
-            "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
-            "type": "ERROR"
+            "message": "The @Reusable and @ReusableV2 decoraotrs cannot be applied simultaneously.",
+            "type": "ERROR",
+            "code": "10905241"
         },
         {
             "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905242"
         },
         {
             "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905242"
+        },
+        {
+            "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
+            "type": "ERROR",
+            "code": "10905242"
+        },
+        {
+            "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
+            "type": "ERROR",
+            "code": "10905242"
         },
         {
             "message": "The '@ReusableV2' decorator can only be used with 'struct'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905337"
         },
         {
             "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905117"
         },
         {
             "message": "The '@ReusableV2' decorator can only be used with 'struct'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905337"
         },
         {
             "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905117"
         },
         {
             "message": "The '@ReusableV2' decorator can only be used with 'struct'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905337"
         },
         {
             "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905117"
         },
         {
             "message": "The '@ReusableV2' decorator can only be used with 'struct'.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905337"
         }
     ],
     "validateNestedReusableComponents": [
@@ -1122,61 +1349,75 @@
         },
         {
             "message": "A custom component decorated with @Component cannot contain child components decorated with @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905244"
         },
         {
             "message": "A custom component decorated with @Component cannot contain child components decorated with @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905244"
         },
         {
             "message": "A custom component decorated with @ReusableV2 cannot contain child components decorated with @Reusable.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905246"
         },
         {
             "message": "A custom component decorated with @ReusableV2 cannot contain child components decorated with @Reusable.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905246"
         },
         {
             "message": "A custom component decorated with @Reusable cannot contain child components decorated with @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905245"
         },
         {
             "message": "A custom component decorated with @Reusable cannot contain child components decorated with @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905245"
         }
     ],
     "validateReusableV2InRepeat": [
         {
             "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905247"
         },
         {
             "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905247"
         },
         {
             "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905247"
         },
         {
             "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905247"
         },
         {
             "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905247"
         },
         {
             "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905247"
         },
         {
             "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905247"
         },
         {
             "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905247"
         }
     ],
     "validateReuseAndReuseId": [
@@ -1186,19 +1427,23 @@
         },
         {
             "message": "The reuse attribute is only applicable to custom components decorated with both @ComponentV2 and @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905248"
         },
         {
             "message": "The reuse attribute is only applicable to custom components decorated with both @ComponentV2 and @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905248"
         },
         {
             "message": "The reuse attribute is only applicable to custom components decorated with both @ComponentV2 and @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905248"
         },
         {
             "message": "The reuseId attribute is not applicable to custom components decorated with both @ComponentV2 and @ReusableV2.",
-            "type": "ERROR"
+            "type": "ERROR",
+            "code": "10905249"
         }
     ]
 }

@@ -107,6 +107,7 @@ import { shouldETSOrTSFileTransformToJSWithoutRemove } from '../ark_compiler/uti
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../meomry_monitor/memory_define';
 import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
+import { ARKUI_SUBSYSTEM_CODE } from '../../../lib/hvigor_error_code/hvigor_error_info';
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -357,13 +358,14 @@ async function transform(code: string, id: string) {
   storedFileInfo.collectTransformedFiles(path.resolve(id));
   MemoryMonitor.stopRecordStage(recordInfo);
   const logger = this.share.getLogger('etsTransform');
+  const hvigorLogger = this.share.getHvigorConsoleLogger?.(ARKUI_SUBSYSTEM_CODE);
 
   if (projectConfig.compileMode !== 'esmodule') {
     const compilerOptions = ts.readConfigFile(
       path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
     compilerOptions.moduleResolution = 'nodenext';
     compilerOptions.module = 'es2020';
-    const newContent: string = jsBundlePreProcess(code, id, this.getModuleInfo(id).isEntry, logger);
+    const newContent: string = jsBundlePreProcess(code, id, this.getModuleInfo(id).isEntry, logger, hvigorLogger);
     const result: ts.TranspileOutput = ts.transpileModule(newContent, {
       compilerOptions: compilerOptions,
       fileName: id,
@@ -372,7 +374,7 @@ async function transform(code: string, id: string) {
 
     resetCollection();
     if (transformLog && transformLog.errors.length && !projectConfig.ignoreWarning) {
-      emitLogInfo(logger, getTransformLog(transformLog), true, id);
+      emitLogInfo(logger, getTransformLog(transformLog), true, id, hvigorLogger);
       resetLog();
     }
 
@@ -440,7 +442,7 @@ async function transform(code: string, id: string) {
   }
   setPkgNameForFile(this.getModuleInfo(id));
   startTimeStatisticsLocation(compilationTime ? compilationTime.validateEtsTime : undefined);
-  validateEts(code, id, this.getModuleInfo(id).isEntry, logger, targetSourceFile);
+  validateEts(code, id, this.getModuleInfo(id).isEntry, logger, targetSourceFile, hvigorLogger);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.validateEtsTime : undefined);
   const emitResult: EmitResult = { outputText: '', sourceMapText: '' };
   const writeFile: ts.WriteFileCallback = (fileName: string, data: string) => {
@@ -511,7 +513,8 @@ async function transform(code: string, id: string) {
   processStructComponentV2.resetStructMapInEts();
   if (((transformLog && transformLog.errors.length) || (kitTransformLog && kitTransformLog.errors.length)) &&
     !projectConfig.ignoreWarning) {
-    emitLogInfo(logger, [...getTransformLog(kitTransformLog), ...getTransformLog(transformLog)], true, id);
+    emitLogInfo(logger, getTransformLog(kitTransformLog), true, id);
+    emitLogInfo(logger, getTransformLog(transformLog), true, id, hvigorLogger);
     resetLog();
     resetKitImportLog();
   }
@@ -570,18 +573,20 @@ function setPkgNameForFile(moduleInfo: Object): void {
   }
 }
 
-function validateEts(code: string, id: string, isEntry: boolean, logger: any, sourceFile: ts.SourceFile) {
+function validateEts(code: string, id: string, isEntry: boolean, logger: any, sourceFile: ts.SourceFile, 
+  hvigorLogger: any = undefined): void {
   if (/\.ets$/.test(id)) {
     clearCollection();
     const fileQuery: string = isEntry && !abilityPagesFullPath.has(path.resolve(id).toLowerCase()) ? '?entry' : '';
     const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery, sourceFile);
     if (log.length && !projectConfig.ignoreWarning) {
-      emitLogInfo(logger, log, true, id);
+      emitLogInfo(logger, log, true, id, hvigorLogger);
     }
   }
 }
 
-function jsBundlePreProcess(code: string, id: string, isEntry: boolean, logger: any): string {
+function jsBundlePreProcess(code: string, id: string, isEntry: boolean, logger: any, 
+  hvigorLogger: any = undefined): string {
   if (/\.ets$/.test(id)) {
     clearCollection();
     let content = preprocessExtend(code);
@@ -589,7 +594,7 @@ function jsBundlePreProcess(code: string, id: string, isEntry: boolean, logger: 
     const fileQuery: string = isEntry && !abilityPagesFullPath.has(path.resolve(id).toLowerCase()) ? '?entry' : '';
     const log: LogInfo[] = validateUISyntax(code, content, id, fileQuery);
     if (log.length && !projectConfig.ignoreWarning) {
-      emitLogInfo(logger, log, true, id);
+      emitLogInfo(logger, log, true, id, hvigorLogger);
     }
     return content;
   }

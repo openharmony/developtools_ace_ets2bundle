@@ -72,6 +72,14 @@ import {
 import { 
 	scanFileNames
 } from './helpers/utils';
+import { 
+	Logger,
+	LogInfo 
+} from './helpers/logger';
+import { 
+	ARKUI_SUBSYSTEM_CODE, 
+	TSC_SYSTEM_CODE 
+} from './helpers/common';
 
 const PROJECT_ROOT: string = path.resolve(__dirname, '../../test/transform_ut');
 const DEFAULT_PROJECT: string = 'application';
@@ -100,7 +108,7 @@ mocha.describe('test UT for validate testcases [non-preview mode]', function () 
 		// enable logger for etsTransform roll-up plugin
 		this.rollup.share.flushLogger();
 		this.rollup.share.setEnableLogger(true);
-		this.rollup.share.setAllowedLoggerPrefix(['etsTransform']);
+		this.rollup.share.setAllowedLoggerPrefix(['etsTransform', TSC_SYSTEM_CODE, ARKUI_SUBSYSTEM_CODE]);
 
 		this.globalProjectConfig = new ProjectConfig();
 		this.globalProjectConfig.setPreview(false);
@@ -196,35 +204,61 @@ mocha.describe('test UT for validate testcases [non-preview mode]', function () 
 			const errorKey: string = parseFileNameFromPath(sourceFilePath);
 			const errorVals: object = errorCollection[errorKey] ?? {};
 
-			const expectResults: {
-				message: string,
-				type: "ERROR" | "WARN"
-			}[] = Array.isArray(errorVals) ? errorVals : [errorVals];
+			const expectResults: LogInfo[] = Array.isArray(errorVals) ? errorVals : [errorVals];
 
-			const expectErrorMsgs: string[] = expectResults
-				.filter((e) => e.type === "ERROR").map((e) => processExecInStr(e.message.trim()));
-			const expectWarnMsgs: string[] = expectResults
-				.filter((e) => e.type === "WARN").map((e) => processExecInStr(e.message.trim()));
+			let expectErrorInfos: LogInfo[] = [];
+			let expectWarnInfos: LogInfo[] = [];
+			expectResults.filter(e => e.type).forEach((e) => {
+				if (e.type === "ERROR") {
+					expectErrorInfos.push({ ...e, message: processExecInStr(e.message.trim()) });
+				} else {
+					expectWarnInfos.push({ ...e, message: processExecInStr(e.message.trim()) });
+				}
+			});
 
 			transform(sourceReplace(sourceCode), sourceFilePath)
 				.then(_ => {
-					const logger = this.rollup.share.getLogger('etsTransform');
-					const errorMsgs: string[] = logger.getErrorMsgs();
-					const warnMsgs: string[] = logger.getWarnMsgs();
-					const infoMsgs: string[] = logger.getInfoMsgs();
+					const logger: Logger = Logger.mergeLoggers(
+						'etsTransform', 
+						TSC_SYSTEM_CODE, 
+						ARKUI_SUBSYSTEM_CODE
+					);
 
-					expect(errorMsgs.length === expectErrorMsgs.length).to.be.true;
-					expect(warnMsgs.length === expectWarnMsgs.length).to.be.true;
+					const errorInfos: LogInfo[] = logger.getErrorInfos();
+					const warnInfos: LogInfo[] = logger.getWarnInfos();
 
-					errorMsgs.forEach((err) => {
-						const logInfo: string = parseLog(err);
-						expect(expectErrorMsgs.includes(logInfo)).to.be.true;
+					expect(errorInfos.length === expectErrorInfos.length).to.be.true;
+					expect(warnInfos.length === expectWarnInfos.length).to.be.true;
+
+					let _findIndex: number = 0;
+					let _sumCount: number = expectErrorInfos.length;
+					errorInfos.forEach((err) => {
+						const message: string = parseLog(err.cause ?? err.message);
+						const findIndex: number = expectErrorInfos
+							.slice(_findIndex)
+							.findIndex((value) => value.message === message);
+						expect(findIndex !== -1).to.be.true;
+						if (err.code) {
+							expect(expectErrorInfos[_findIndex + findIndex].code === err.code).to.be.true;
+							expect(expectErrorInfos[_findIndex + findIndex].solutions ?? []).to.deep.equal(err.solutions ?? []);
+						}
+						_sumCount -= 1;
+						_findIndex = findIndex + 1;
 					});
-
-					warnMsgs.forEach((err) => {
-						const logInfo: string = parseLog(err);
-						expect(expectWarnMsgs.includes(logInfo)).to.be.true;
+					expect(_sumCount === 0).to.be.true;
+					
+					_findIndex = 0;
+					_sumCount = expectWarnInfos.length;
+					warnInfos.forEach((err) => {
+						const message: string = parseLog(err.cause ?? err.message);
+						const findIndex: number = expectWarnInfos
+							.slice(_findIndex)
+							.findIndex((value) => value.message === message);
+						expect(findIndex !== -1).to.be.true;
+						_sumCount -= 1;
+						_findIndex = findIndex + 1;
 					});
+					expect(_sumCount === 0).to.be.true;
 
 					done();
 				})

@@ -95,7 +95,7 @@ export function buildErrorInfoFromLogInfo(info: LogInfo, fileName: string): Hvig
 }
 
 export function isHvigorLogInfo(logInfo: LogInfo): boolean {
-  return !!logInfo.code;
+  return logInfo.code !== undefined;
 }
 
 export function emitLogInfo(loader: any, infos: LogInfo[], fastBuild: boolean = false,
