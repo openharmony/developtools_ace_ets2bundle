@@ -67,7 +67,8 @@ export function processKitImport(id: string, metaInfo: Object, compilationTime: 
           const kitDefs = getKitDefs(moduleRequest);
           if (kitDefs && kitDefs.symbols) {
             KitInfo.processKitInfo(moduleRequest, kitDefs.symbols as KitSymbols, node);
-            return [...KitInfo.getCurrentKitInfo().getOhosImportNodes()];
+            const currentKitInfo: KitInfo | undefined = KitInfo.getCurrentKitInfo();
+            return currentKitInfo ? [...currentKitInfo.getOhosImportNodes()] : [];
           } else {
             kitTransformLog.errors.push({
               type: LogType.ERROR,
@@ -377,6 +378,9 @@ export class KitInfo {
   }
 
   static processKitInfo(kitName: string, symbols: Record<string, KitSymbol>, kitNode: TSModuleDeclaration): void {
+    // clean up the currentKitInfo to prevent the following process getting
+    // the incorrect symbolTable with the KitInfo from last kit import.
+    this.currentKitInfo = undefined;
     this.currentKitName = kitName;
 
     // do not handle an empty import
