@@ -121,10 +121,10 @@ function emitLogInfoFromHvigorLogger(hvigorLogger: any, info: LogInfo, loader: a
       hvigorLogger.printError(errorInfo);
       break;
     case LogType.WARN:
-      hvigorLogger.printWarn(errorInfo);
+      hvigorLogger.printWarn(errorInfo.cause);
       break;
     case LogType.NOTE:
-      hvigorLogger.printInfo(errorInfo);
+      hvigorLogger.printInfo(errorInfo.cause);
       break;
   }
 }
