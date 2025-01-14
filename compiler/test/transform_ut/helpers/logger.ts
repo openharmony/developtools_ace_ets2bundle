@@ -90,15 +90,15 @@ class Logger {
 		}
 	}
 
-	public printWarn(info: LogInfo) {
+	public printWarn(msg: string) {
 		if (this.prefix === ARKUI_SUBSYSTEM_CODE) {
-			this.warnInfos.push(info);
+			this.warnInfos.push({ message: msg });
 		}
 	}
 
-	public printInfo(info: LogInfo) {
+	public printInfo(msg: string) {
 		if (this.prefix === ARKUI_SUBSYSTEM_CODE) {
-			this.noteInfos.push(info);
+			this.noteInfos.push({ message: msg });
 		}
 	}
 
