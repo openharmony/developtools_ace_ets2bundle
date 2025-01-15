@@ -1,0 +1,6 @@
+{
+    "name": "HdsNavigation",
+    "attrs": ["titleBar", "titleMode", "toolbarConfiguration", "hideToolBar", "hideTitleBar", "hideBackButton", "navBarWidth",
+      "navBarPosition", "mode", "hideNavBar", "navDestination", "navBarWidthRange", "minContentWidth", "ignoreLayoutSafeArea",
+      "systemBarStyle", "recoverable", "onNavBarStateChange", "onNavigationModeChange"]
+}
