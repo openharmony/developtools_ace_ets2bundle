@@ -105,8 +105,8 @@ class Child extends ViewV2 {
         this.finalizeConstruction();
     }
     resetStateVarsOnReuse(params) {
-        this.updateParam("title", (params && "title" in params) ? params.title : "");
-        this.updateParam("fontColor", (params && "fontColor" in params) ? params.fontColor : Color.Black);
+        this.resetParam("title", (params && "title" in params) ? params.title : "");
+        this.resetParam("fontColor", (params && "fontColor" in params) ? params.fontColor : Color.Black);
         this.changeFactory = "changeFactory" in params ? params.changeFactory : (x) => { };
     }
     initialRender() {
