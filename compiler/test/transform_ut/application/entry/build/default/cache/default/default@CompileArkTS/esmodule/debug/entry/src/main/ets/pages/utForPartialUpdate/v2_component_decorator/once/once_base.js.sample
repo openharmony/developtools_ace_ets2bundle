@@ -29,7 +29,7 @@ class ChildComponent extends ViewV2 {
         this.finalizeConstruction();
     }
     resetStateVarsOnReuse(params) {
-        this.updateParam("onceParam", (params && "onceParam" in params) ? params.onceParam : "");
+        this.resetParam("onceParam", (params && "onceParam" in params) ? params.onceParam : "");
     }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
