@@ -200,6 +200,9 @@ export function etsTransform() {
       return shouldDisable;
     },
     buildEnd(): void {
+      const fileToDelete: string[] = Array.from(CreateProgramMoment.deleteFileCollect);
+      globalProgram.program.deleteProgramSourceFiles(fileToDelete);
+      CreateProgramMoment.resetDeleteFiles();
       if (process.env.watchMode !== 'true' && !projectConfig.hotReload && !projectConfig.isPreview) {
         resetEtsCheckTypeScript();
       }
@@ -388,25 +391,36 @@ async function transform(code: string, id: string) {
   // 2. .ets/.ts imported by .js file with same name '.d.ts' file which is prior to .js by tsc default resolving
   if (!targetSourceFile) {
     startTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
-    if (storedFileInfo.isFirstBuild && storedFileInfo.changeFiles) {
+    if (storedFileInfo.isFirstBuild && storedFileInfo.changeFiles.length) {
       storedFileInfo.newTsProgram = ts.createProgram(storedFileInfo.changeFiles, etsCheckerCompilerOptions, compilerHost);
       storedFileInfo.isFirstBuild = false;
     }
-    stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
-    if (storedFileInfo.newTsProgram && storedFileInfo.newTsProgram.getSourceFile(id)) {
-      tsProgram = storedFileInfo.newTsProgram;
-    } else {
-      await CreateProgramMoment.block(id);
-      CreateProgramMoment.release(id);
-      if (storedFileInfo.newTsProgram && storedFileInfo.newTsProgram.getSourceFile(id)) {
-        tsProgram = storedFileInfo.newTsProgram;
-      } else {
-        startTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
-        tsProgram = ts.createProgram(CreateProgramMoment.getRoots(id), etsCheckerCompilerOptions, compilerHost);
-        storedFileInfo.newTsProgram = tsProgram;
-        stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
+    await CreateProgramMoment.block(id, code);
+    CreateProgramMoment.release(id);
+    globalProgram.program.initProcessingFiles();
+    for (const root of CreateProgramMoment.getRoots(id, code)) {
+      if (!globalProgram.program.getSourceFile(root.id)) {
+        const newSourceFile: ts.SourceFile = ts.createSourceFile(root.id, root.code, etsCheckerCompilerOptions.target,
+          true, undefined, etsCheckerCompilerOptions);
+        newSourceFile.originalFileName = newSourceFile.fileName;
+        newSourceFile.resolvePath = root.id;
+        newSourceFile.path = root.id;
+        globalProgram.program.processImportedModules(newSourceFile, true);
+        globalProgram.program.setProgramSourceFiles(newSourceFile);
+        CreateProgramMoment.deleteFileCollect.add(newSourceFile.fileName);
       }
     }
+    const processingFiles: ts.SourceFile[] = globalProgram.program.getProcessingFiles();
+    if (processingFiles) {
+      processingFiles.forEach(file => {
+        if (!globalProgram.program.getSourceFiles().includes(file.fileName)) {
+          CreateProgramMoment.deleteFileCollect.add(file.fileName);
+        }
+        globalProgram.program.setProgramSourceFiles(file);
+      })
+    }
+    globalProgram.program.refreshTypeChecker();
+    stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
 	const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_GET_CHECKER);
     // init TypeChecker to run binding
     globalProgram.checker = tsProgram.getTypeChecker();
@@ -668,22 +682,31 @@ function checkRelateToConstEnum(id: string): boolean {
 interface moduleInfoType {
   id: string;
 };
+
 interface optionsType {
   id: string;
 };
+
+interface newSourceFileType {
+  id: string;
+  code: string;
+};
+
 class CreateProgramMoment {
   static transFileCollect: Set<string> = new Set();
   static awaitFileCollect: Set<string> = new Set();
+  static deleteFileCollect: Set<string> = new Set();
   static moduleParsedFileCollect: Set<string> = new Set();
   static promise: Promise<void> = undefined;
   static emitter = undefined;
-  static roots: Set<string> = new Set();
+  static roots: Map<string, string> = new Map();
 
   static init(): void {
     if (CreateProgramMoment.promise) {
       return;
     }
-    CreateProgramMoment.roots.add(path.resolve(__dirname, '../../../declarations/common.d.ts'));
+    const commonDtsPath: string = path.resolve(__dirname, '../../../declarations/common.d.ts')
+    CreateProgramMoment.roots.set(commonDtsPath, fs.readFileSync(commonDtsPath, 'utf-8'));
     CreateProgramMoment.emitter = new nodeEvents.EventEmitter();
     CreateProgramMoment.promise = new Promise<void>(resolve => {
       CreateProgramMoment.emitter.on('checkPrefCreateProgramId', () => {
@@ -716,10 +739,10 @@ class CreateProgramMoment {
     };
   }
 
-  static async block(id: string): Promise<void> {
+  static async block(id: string, code: string): Promise<void> {
     CreateProgramMoment.init();
     CreateProgramMoment.awaitFileCollect.add(id);
-    CreateProgramMoment.roots.add(id);
+    CreateProgramMoment.roots.set(id, code);
     CreateProgramMoment.emitter.emit('checkPrefCreateProgramId');
     return CreateProgramMoment.promise;
   }
@@ -737,14 +760,20 @@ class CreateProgramMoment {
     CreateProgramMoment.roots.clear();
   }
 
-  static getRoots(id: string): string[] {
-    const res: string[] = [];
-    CreateProgramMoment.roots.forEach(id => res.push(id));
+  static resetDeleteFiles(): void {
+    CreateProgramMoment.deleteFileCollect.clear();
+  }
+
+  static getRoots(id: string, code: string): newSourceFileType[] {
+    const res: newSourceFileType[] = [];
+    for (const [id, code] of CreateProgramMoment.roots) {
+      res.push({id, code});
+    }
     CreateProgramMoment.promise = undefined;
     CreateProgramMoment.emitter = undefined;
     CreateProgramMoment.roots.clear();
     if (res.length === 0) {
-      return [id];
+      return [{id, code}];
     }
     return res;
   }
