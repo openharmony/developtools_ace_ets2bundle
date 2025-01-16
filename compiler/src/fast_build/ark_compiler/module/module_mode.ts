@@ -615,11 +615,18 @@ export class ModuleMode extends CommonMode {
     abcCacheFilesInfo += `${this.npmEntriesInfoPath};${npmEntriesCacheFilePath}\n`;
     if (this.projectConfig.cacheBytecodeHar) {
       this.abcPaths.forEach((abcPath) => {
-        let abcCacheFilePath: string = changeFileExtension(abcPath, EXTNAME_PROTO_BIN);
+        let abcCacheFilePath: string = this.genAbcCacheFilePath(abcPath);
+        mkdirsSync(path.dirname(abcCacheFilePath));
         abcCacheFilesInfo += `${abcPath};${abcCacheFilePath}\n`;
       });
     }
     fs.writeFileSync(this.cacheFilePath, abcCacheFilesInfo, 'utf-8');
+  }
+
+  private genAbcCacheFilePath(abcPath: string): string {
+    let relativeAbcPath: string = abcPath.replace(toUnixPath(this.projectConfig.projectRootPath), '');
+    let tempPath: string = path.join(this.projectConfig.cachePath, relativeAbcPath);
+    return changeFileExtension(tempPath, EXTNAME_PROTO_BIN);
   }
 
   genDescriptionsForMergedEs2abc(includeByteCodeHarInfo: boolean): void {
