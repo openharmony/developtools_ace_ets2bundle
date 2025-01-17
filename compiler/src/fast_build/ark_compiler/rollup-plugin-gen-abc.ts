@@ -23,7 +23,7 @@ import { cleanSharedModuleSet } from './check_shared_module';
 import { compilerOptions } from '../../ets_checker';
 import { ModuleSourceFile } from './module/module_source_file';
 import { SourceMapGenerator } from './generate_sourcemap';
-import { cleanUpUtilsObjects } from '../../ark_utils';
+import { cleanUpUtilsObjects, writeDeclarationFiles } from '../../ark_utils';
 import { cleanUpKitImportObjects } from '../../process_kit_import';
 import { cleanUpFilesList } from './utils';
 import { CommonLogger } from './logger';
@@ -51,6 +51,7 @@ export function genAbc() {
       order: 'pre',
       handler() {
         if (this.share.projectConfig.singleFileEmit) {
+          writeDeclarationFiles(this.share.arkProjectConfig.compileMode);
           return;
         }
         if (compilerOptions.needDoArkTsLinter) {

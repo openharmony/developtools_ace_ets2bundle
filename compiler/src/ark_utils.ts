@@ -753,6 +753,18 @@ export async function writeMinimizedSourceCode(content: string, filePath: string
   fs.writeFileSync(filePath, result.code);
 }
 
+//Writes declaration files in debug mode
+export function writeDeclarationFiles(compileMode: string): void {
+  if (compileToolIsRollUp() && compileMode === ESMODULE) {
+    for (const genFilesInHar of harFilesRecord.values()) {
+      if (genFilesInHar.originalDeclarationCachePath && genFilesInHar.originalDeclarationContent) {
+        mkdirsSync(path.dirname(genFilesInHar.originalDeclarationCachePath));
+        fs.writeFileSync(genFilesInHar.originalDeclarationCachePath, genFilesInHar.originalDeclarationContent);
+      }
+    }
+  }
+}
+
 export function genBuildPath(filePath: string, projectPath: string, buildPath: string, projectConfig: Object): string {
   filePath = toUnixPath(filePath);
   if (filePath.endsWith(EXTNAME_MJS)) {
