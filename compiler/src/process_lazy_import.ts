@@ -66,28 +66,43 @@ export function transformLazyImport(sourceNode: ts.SourceFile, resolver?: Object
 
 function updateImportDecl(node: ts.ImportDeclaration, resolver: Object): ts.ImportDeclaration {
   const importClause: ts.ImportClause | undefined = node.importClause;
-  // import { x } from './y'. Especially, it is not a lazy import and it is not a type-only import
-  if (importClause && importClause.namedBindings && !importClause.name &&
-    ts.isNamedImports(importClause.namedBindings) && !importClause.isLazy && !importClause.isTypeOnly) {
-    let newImportClause: ts.ImportClause;
-    const namedBindings: ts.NamedImportBindings = importClause.namedBindings;
+  // The following cases do not support lazy-import.
+  // case1: import '...'
+  // case2: import type { t } from '...' or import type t from '...'
+  // case3: import lazy { x } from '...'
+  if (!importClause || importClause.isTypeOnly || importClause.isLazy) {
+    return node;
+  }
+  // case4: import * as ns from '...'
+  // case5: import y, * as ns from '...'
+  if (importClause.namedBindings && ts.isNamespaceImport(importClause.namedBindings)) {
+    return node;
+  }
+  const namedBindings: ts.NamedImportBindings = importClause.namedBindings;
+  let newImportClause: ts.ImportClause;
+  // The following cases support lazy-import.
+  // case1: import { x } from '...' --> import lazy { x } from '...'
+  // case2: import y, { x } from '...' --> import lazy y, { x } from '...'
+  if (namedBindings && ts.isNamedImports(namedBindings)) {
     // The resolver is used to determine whether type symbols need to be processed.
     // Only TS/ETS files have type symbols.
     if (resolver) {
       // eliminate the type symbol
-      // eg: import { typeSymbol, xxx } from 'xxxx' -> import { xxx } from 'xxxx'
+      // eg: import { type t, x } from '...' --> import { x } from '...'
       const newNameBindings: ts.ImportSpecifier[] = eliminateTypeSymbol(namedBindings, resolver);
       newImportClause = ts.factory.createImportClause(false, importClause.name,
         ts.factory.createNamedImports(newNameBindings));
     } else {
-      newImportClause = ts.factory.createImportClause(false, importClause.name, namedBindings);
+      newImportClause = importClause;
     }
-    // @ts-ignore
-    newImportClause.isLazy = true;
-    const modifiers: readonly ts.Modifier[] | undefined = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
-    return ts.factory.updateImportDeclaration(node, modifiers, newImportClause, node.moduleSpecifier, node.assertClause);
+  } else if (!namedBindings && importClause.name) {
+    // case3: import y from '...' --> import lazy y from '...'
+    newImportClause = importClause;
   }
-  return node;
+  // @ts-ignore
+  newImportClause.isLazy = true;
+  const modifiers: readonly ts.Modifier[] | undefined = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
+  return ts.factory.updateImportDeclaration(node, modifiers, newImportClause, node.moduleSpecifier, node.assertClause);
 }
 
 function eliminateTypeSymbol(namedBindings: ts.NamedImportBindings, resolver: Object): ts.ImportSpecifier[] {

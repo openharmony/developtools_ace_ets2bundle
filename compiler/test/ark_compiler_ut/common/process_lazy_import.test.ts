@@ -14,7 +14,6 @@
  */
 
 import mocha from 'mocha';
-import fs from 'fs';
 import path from 'path';
 import * as ts from 'typescript';
 import { expect } from 'chai';
@@ -33,6 +32,45 @@ import { ModuleSourceFile } from '../../../lib/fast_build/ark_compiler/module/mo
 import { projectConfig } from '../../../main';
 import { createErrInfo } from '../utils/utils';
 import RollUpPluginMock from './../mock/rollup_mock/rollup_plugin_mock';
+
+const TRANSFORM_LAZY_IMPORT_CODE: string =
+`
+  import { test } from "./test";
+  import { test1 as t } from "./test1";
+  import { Ability } from "@kit.AbilityKit";
+  import { featureAbility as k } from "@kit.AbilityKit";
+  import { AbilityConstant, abilityAccessCtrl } from "@kit.AbilityKit";
+  import test2 from "./test2";
+  import type { testType } from "./testType";
+  import * as ns3 from "./test3";
+  import test4, { test5 } from "./test4";
+  import test6, * as ns6 from "./test6";
+  import type dt from "./test7";
+  let a: testType = test + t + test2 + testType + ns3.b + test4 + test5 + test6 + ns6.b + dt;
+  let localAbility = new Ability();
+  let localFeatureAbility = new k();
+  let localAbilityConstant = new AbilityConstant();
+  let localAbilityAccessCtrl = new abilityAccessCtrl();
+`
+
+const TRANSFORM_LAZY_IMPORT_CODE_EXPECT: string =
+'import lazy { test } from "./test";\n' +
+'import lazy { test1 as t } from "./test1";\n' +
+'import lazy Ability from "@ohos.app.ability.Ability";\n' +
+'import lazy k from "@ohos.ability.featureAbility";\n' +
+'import lazy AbilityConstant from "@ohos.app.ability.AbilityConstant";\n' +
+'import lazy abilityAccessCtrl from "@ohos.abilityAccessCtrl";\n' +
+'import lazy test2 from "./test2";\n' +
+'import type { testType } from "./testType";\n' +
+'import * as ns3 from "./test3";\n' +
+'import lazy test4, { test5 } from "./test4";\n' +
+'import test6, * as ns6 from "./test6";\n' +
+'import type dt from "./test7";\n' +
+'let a: testType = test + t + test2 + testType + ns3.b + test4 + test5 + test6 + ns6.b + dt;\n' +
+'let localAbility = new Ability();\n' +
+'let localFeatureAbility = new k();\n' +
+'let localAbilityConstant = new AbilityConstant();\n' +
+'let localAbilityAccessCtrl = new abilityAccessCtrl();\n';
 
 const LAZY_IMPORT_RE_EXPORT_ERROR_TS: string =
 'import lazy { e1 } from "./test1";\n' +
@@ -60,23 +98,6 @@ const LAZY_IMPORT_RE_EXPORT_ERROR_JS: string =
 'export { e2, a3 };\n' +
 'export { d1, d2, a4, e5, componentUtils, k1, uiObserver, lazy };';
 
-const ARK_TEST_KIT: Object = {
-  symbols: {
-    "default": {
-      "source": "@ohos.buffer.d.ts",
-      "bindings": "default"
-    },
-    "convertxml": {
-      "source": "@ohos.convertxml.d.ts",
-      "bindings": "default"
-    },
-    "process": {
-      "source": "@ohos.process.d.ts",
-      "bindings": "default"
-    }
-  }
-}
-
 const compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 compilerOptions['moduleResolution'] = 'nodenext';
@@ -92,18 +113,8 @@ mocha.describe('process Lazy Imports tests', function () {
   });
 
   mocha.it('1-1: test transformLazyImport (ts.sourceFile): perform lazy conversion', function () {
-    const code: string = `
-    import { test } from "./test";
-    import { test1 as t } from "./test1";
-    import test2 from "./test2";
-    import * as test3 from "./test3";
-    import test4, { test5 } from "./test4";
-    import type { testType } from "./testType";
-    import "test6";
-    let a: testType = test + t + test2 + test3.b + test4 + test5 + testType;
-    `;
     projectConfig.processTs = true;
-    ts.transpileModule(code, {
+    ts.transpileModule(TRANSFORM_LAZY_IMPORT_CODE, {
       compilerOptions: compilerOptions,
       fileName: 'test.ets',
       transformers: {
@@ -119,47 +130,11 @@ mocha.describe('process Lazy Imports tests', function () {
       // @ts-ignore
       ts.getNewLineCharacter({ newLine: ts.NewLineKind.LineFeed, removeComments: false }));
     printer.writeFile(sourceFile.source, writer, undefined);
-    const expectCode: string = 'import lazy { test } from "./test";\n' +
-    'import lazy { test1 as t } from "./test1";\n' +
-    'import test2 from "./test2";\n' +
-    'import * as test3 from "./test3";\n' +
-    'import test4, { test5 } from "./test4";\n' +
-    'import type { testType } from "./testType";\n' +
-    'import "test6";\n' +
-    'let a: testType = test + t + test2 + test3.b + test4 + test5 + testType;\n';
-    expect(writer.getText() === expectCode).to.be.true;
+    expect(writer.getText() === TRANSFORM_LAZY_IMPORT_CODE_EXPECT).to.be.true;
+    projectConfig.processTs = false;
   });
 
-  mocha.it('1-2 test kit transformLazyImport (ts.sourceFile): perform lazy conversion', function () {
-    const code: string = `
-    import { Ability } from "@kit.AbilityKit";
-    let localAbility = new Ability();
-     `
-    const expectCode: string =
-    'import { Ability } from "@kit.AbilityKit";\n' +
-    'let localAbility = new Ability();\n' +
-    '//# sourceMappingURL=kitTest.js.map';
-
-    const ARK_TEST_KIT_JSON = '@kit.ArkTest.json';
-    const KIT_CONFIGS = 'kit_configs';
-
-    const arkTestKitConfig: string = path.resolve(__dirname, `../../../${KIT_CONFIGS}/${ARK_TEST_KIT_JSON}`);
-    fs.writeFileSync(arkTestKitConfig, JSON.stringify(ARK_TEST_KIT));
-
-    const result: ts.TranspileOutput = ts.transpileModule(code, {
-      compilerOptions: compilerOptions,
-      fileName: "kitTest.ts",
-      transformers: {
-        before: [
-          processKitImport('test.ets', undefined, undefined, true, { autoLazyImport: true, reExportCheckMode: reExportNoCheckMode })
-        ]
-      }
-    });
-    expect(result.outputText == expectCode).to.be.true;
-    fs.unlinkSync(arkTestKitConfig);
-  });
-
-  mocha.it('1-3: test transformLazyImport (ts.sourceFile): no lazy conversion', function () {
+  mocha.it('1-2: test transformLazyImport (ts.sourceFile): no lazy conversion', function () {
     const code: string = `
     import lazy { test } from "./test";
     import lazy { test1 as t } from "./test1";
@@ -198,7 +173,7 @@ mocha.describe('process Lazy Imports tests', function () {
     expect(writer.getText() === expectCode).to.be.true;
   });
 
-  mocha.it('1-4: test transformLazyImport (js code): perform lazy conversion', function () {
+  mocha.it('1-3: test transformLazyImport (js code): perform lazy conversion', function () {
     const code: string = `
     import { test } from "./test";
     import { test1 as t } from "./test1";
@@ -210,16 +185,16 @@ mocha.describe('process Lazy Imports tests', function () {
     `;
     const expectCode: string = 'import lazy { test } from "./test";\n' +
     'import lazy { test1 as t } from "./test1";\n' +
-    'import test2 from "./test2";\n' +
+    'import lazy test2 from "./test2";\n' +
     'import * as test3 from "./test3";\n' +
-    'import test4, { test5 } from "./test4";\n' +
+    'import lazy test4, { test5 } from "./test4";\n' +
     'import "test6";\n' +
     'const a = "a" + test + t + test2 + test3.b + test4 + test5;\n';
     const result: string = processJsCodeLazyImport('index.js', code, true, reExportNoCheckMode);
     expect(result === expectCode).to.be.true;
   });
 
-  mocha.it('1-5: test transformLazyImport (js code): no lazy conversion', function () {
+  mocha.it('1-4: test transformLazyImport (js code): no lazy conversion', function () {
     const code: string = 'import lazy { test } from "./test";\n' +
     'import lazy { test1 as t } from "./test1";\n' +
     'import { t } from "./t";\n' +
