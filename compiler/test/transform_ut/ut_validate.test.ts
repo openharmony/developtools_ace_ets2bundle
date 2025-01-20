@@ -209,7 +209,7 @@ mocha.describe('test UT for validate testcases [non-preview mode]', function () 
 			let expectErrorInfos: LogInfo[] = [];
 			let expectWarnInfos: LogInfo[] = [];
 			expectResults.filter(e => e.type).forEach((e) => {
-				if (e.type === "ERROR") {
+				if (e.type === 'ERROR') {
 					expectErrorInfos.push({ ...e, message: processExecInStr(e.message.trim()) });
 				} else {
 					expectWarnInfos.push({ ...e, message: processExecInStr(e.message.trim()) });
