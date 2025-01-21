@@ -901,7 +901,7 @@ function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
     return;
   }
 
-  // If the error is not a TSC or Linter error, log using etsCheckerLogger
+  // If the error is not a TSC/Linter/ArkUI error, log using etsCheckerLogger
   etsCheckerLogger.error('\u001b[31m' + logMessage);
 }
 
