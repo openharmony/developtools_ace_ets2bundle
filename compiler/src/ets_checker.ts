@@ -851,12 +851,8 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
     }
 
     if (errorCodeLogger) {
-      let messageCollection: MessageCollection = {
-        positionMessage,
-        message,
-        logMessage
-      };
-      printErrorCode(diagnostic, etsCheckerLogger, messageCollection, errorCodeLogger, flag);
+      const msgCollection: MessageCollection = { positionMessage, message, logMessage };
+      printErrorCode(diagnostic, etsCheckerLogger, msgCollection, errorCodeLogger, flag);
     } else {
       if (diagnostic.category === ts.DiagnosticCategory.Error) {
         etsCheckerLogger.error('\u001b[31m' + logMessage);
