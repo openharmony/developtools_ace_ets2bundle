@@ -561,7 +561,8 @@ function processWatch(node: ts.PropertyDeclaration, decorator: ts.Decorator,
           log.push({
             type: LogType.ERROR,
             message: `Cannot find name ${argument.getText()} in struct '${node.parent.name.getText()}'.`,
-            pos: argument.getStart()
+            pos: argument.getStart(),
+            code: '10905301'
           });
         }
       } else if (ts.isIdentifier(decorator.expression.arguments[0])) {
@@ -879,7 +880,8 @@ function updateBuilderParamProperty(node: ts.PropertyDeclaration,
     log.push({
       type: LogType.ERROR,
       message: 'BuilderParam property can only initialized by Builder function or LocalBuilder method in struct.',
-      pos: node.getStart()
+      pos: node.getStart(),
+      code: '10905101'
     });
   }
   return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
@@ -1180,7 +1182,8 @@ function validateMultiDecorators(name: ts.Identifier, log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
     message: `The property '${name.escapedText.toString()}' cannot have mutilate state management decorators.`,
-    pos: name.getStart()
+    pos: name.getStart(),
+    code: '10905302'
   });
 }
 
@@ -1189,7 +1192,8 @@ function validatePropertyNonDefaultValue(propertyName: ts.Identifier, decorator:
   log.push({
     type: LogType.ERROR,
     message: `The ${decorator} property '${propertyName.getText()}' must be specified a default value.`,
-    pos: propertyName.getStart()
+    pos: propertyName.getStart(),
+    code: '10905303'
   });
 }
 
@@ -1197,9 +1201,10 @@ function validatePropertyDefaultValue(propertyName: ts.Identifier, decorator: st
   log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
-    message: `The ${decorator} property '${propertyName.getText()}' cannot be specified a default value.` +
-      'Solutions:>Please initialize the rules according to the decorator.',
-    pos: propertyName.getStart()
+    message: `The ${decorator} property '${propertyName.getText()}' cannot be specified a default value.`,
+    pos: propertyName.getStart(),
+    code: '10905304',
+    solutions: ['Please initialize the rules according to the decorator.']
   });
 }
 
@@ -1207,7 +1212,8 @@ function validatePropertyNonType(propertyName: ts.Identifier, log: LogInfo[]): v
   log.push({
     type: LogType.ERROR,
     message: `The property '${propertyName.getText()}' must specify a type.`,
-    pos: propertyName.getStart()
+    pos: propertyName.getStart(),
+    code: '10905305'
   });
 }
 
@@ -1217,7 +1223,8 @@ function validateNonSimpleType(propertyName: ts.Identifier, decorator: string,
     type: projectConfig.optLazyForEach ? LogType.WARN : LogType.ERROR,
     message: `The type of the ${decorator} property '${propertyName.getText()}' ` +
       `can only be string, number or boolean.`,
-    pos: propertyName.getStart()
+    pos: propertyName.getStart(),
+    code: '10905306'
   });
 }
 
@@ -1227,7 +1234,8 @@ function validateNonObservedClassType(propertyName: ts.Identifier, decorator: st
     type: projectConfig.optLazyForEach ? LogType.WARN : LogType.ERROR,
     message: `The type of the ${decorator} property '${propertyName.getText()}' can only be ` +
       `objects of classes decorated with ${COMPONENT_OBSERVED_DECORATOR} class decorator in ets (not ts).`,
-    pos: propertyName.getStart()
+    pos: propertyName.getStart(),
+    code: '10905307'
   });
 }
 
@@ -1255,7 +1263,8 @@ function validateForbiddenUseStateType(propertyName: ts.Identifier, decorator: s
   log.push({
     type: LogType.ERROR,
     message: `The ${decorator} property '${propertyName.getText()}' cannot be a '${type}' object.`,
-    pos: propertyName.getStart()
+    pos: propertyName.getStart(),
+    code: '10905308'
   });
 }
 
@@ -1264,7 +1273,8 @@ function validateDuplicateDecorator(decorator: ts.Decorator, log: LogInfo[]): vo
     type: LogType.ERROR,
     message: `The decorator '${decorator.getText()}' cannot have the same name as the built-in ` +
       `style attribute '${decorator.getText().replace('@', '')}'.`,
-    pos: decorator.getStart()
+    pos: decorator.getStart(),
+    code: '10905309'
   });
 }
 
@@ -1280,7 +1290,8 @@ function validateWatchDecorator(propertyName: ts.Identifier, decorators: readonl
     log.push({
       type: LogType.ERROR,
       message: `Regular variable '${propertyName.escapedText.toString()}' can not be decorated with @Watch.`,
-      pos: propertyName.getStart()
+      pos: propertyName.getStart(),
+      code: '10905310'
     });
     return false;
   }
@@ -1291,7 +1302,8 @@ function validateWatchParam(type: LogType, pos: number, log: LogInfo[]): void {
   log.push({
     type: type,
     message: 'The parameter should be a string.',
-    pos: pos
+    pos,
+    code: '10905311'
   });
 }
 
@@ -1364,7 +1376,8 @@ function validateCustomDecorator(decorators: readonly ts.Decorator[], log: LogIn
     log.push({
       type: LogType.ERROR,
       message: `The inner decorator ${innerDecorator.getText()} cannot be used together with custom decorator.`,
-      pos: innerDecorator.getStart()
+      pos: innerDecorator.getStart(),
+      code: '10905312'
     });
   } else if (!hasInnerDecorator) {
     return true;

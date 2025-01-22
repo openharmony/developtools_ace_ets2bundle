@@ -292,7 +292,8 @@ function checkV2ComponentMemberType(node: ts.Node, propName: string, log: LogInf
   log.push({
     type: LogType.ERROR,
     message: `The property '${propName}' must specify a type.`,
-    pos: node.getStart()
+    pos: node.getStart(),
+    code: '10905328'
   });
 }
 
@@ -310,7 +311,8 @@ function processBuilderParamProperty(member: ts.PropertyDeclaration, log: LogInf
     log.push({
       type: LogType.ERROR,
       message: 'BuilderParam property can only initialized by Builder function.',
-      pos: member.getStart()
+      pos: member.getStart(),
+      code: '10905107'
     });
   }
   const newDecorators: readonly ts.Decorator[] = removeDecorator(decorators, constantDefine.BUILDER_PARAM);
@@ -505,15 +507,15 @@ function checkParamDecorator(propertyDecorator: PropertyDecorator, member: ts.Pr
   if (propertyDecorator.hasParam && !member.initializer && !propertyDecorator.hasRequire) {
     const message: string = 'When a variable decorated with @Param is not assigned a default value, ' +
       'it must also be decorated with @Require.';
-    addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode);
+    addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode, { code: '10905327' });
   }
   if (propertyDecorator.hasOnce && !propertyDecorator.hasParam) {
     const message: string = 'When a variable decorated with @Once, it must also be decorated with @Param.';
-    addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode);
+    addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode, { code: '10905326' });
   }
   if (propertyDecorator.hasRequire && !propertyDecorator.hasParam) {
     const message: string = 'In a struct decorated with @ComponentV2, @Require can only be used with @Param.';
-    addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode);
+    addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode, { code: '10905325' });
   }
 }
 

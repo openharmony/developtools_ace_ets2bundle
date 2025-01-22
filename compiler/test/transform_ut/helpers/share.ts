@@ -26,6 +26,10 @@ import {
   OH_MODULES_OHOS_HYPIUM, 
   OH_MODULES_OHPM_HYPIUM 
 } from './pathConfig';
+import { 
+  ARKUI_SUBSYSTEM_CODE, 
+  TSC_SYSTEM_CODE 
+} from './common';
 
 class Share {
 	projectConfig: ProjectConfig;
@@ -60,6 +64,10 @@ class Share {
 
   public setAllowedLoggerPrefix(newVal: string[]) {
     this._allowedLoggerPrefix = newVal;
+  }
+
+  public getHvigorConsoleLogger(key: string): object {
+    return this.getLogger(key);
   }
 
 	public getLogger(prefix: string): object {
