@@ -50,3 +50,8 @@ export const DEVICE_TYPES_DEFAULT = [
 ]
 export const PKG_JSON_FILE_HASH_DEFAULT: string = '14b2b93515e45a4ff785bb14c7b2aa25';
 export const BUILD_ID_DEFAULT: string = '202410091727251800';
+export const ARKUI_SUBSYSTEM_CODE: string = '109';
+export const TSC_SYSTEM_CODE: string = '105';
+export const ARKUI_ERROR_CODE_IN_TS_DIAGNOSTIC: string[] = [
+	'10905128', '10905239', '10905238', '10905127', '10905353', '10905237', '10905236'
+];

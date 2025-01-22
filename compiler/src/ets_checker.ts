@@ -102,6 +102,7 @@ import {
   HvigorErrorInfo
 } from './hvigor_error_code/hvigor_error_info';
 import { ErrorCodeModule } from './hvigor_error_code/const/error_code_module';
+import { buildErrorInfoFromDiagnostic } from './hvigor_error_code/utils';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -805,7 +806,7 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
   MemoryMonitor.stopRecordStage(ignoreDiagnosticsRecordInfo);
 }
 
-interface messageCollection {
+interface MessageCollection {
   positionMessage: string,
   message: string,
   logMessage: string
@@ -850,12 +851,8 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
     }
 
     if (errorCodeLogger) {
-      let messageCollection: messageCollection = {
-        positionMessage,
-        message,
-        logMessage
-      }
-      printErrorCode(diagnostic, etsCheckerLogger, messageCollection, errorCodeLogger, flag);
+      const msgCollection: MessageCollection = { positionMessage, message, logMessage };
+      printErrorCode(diagnostic, etsCheckerLogger, msgCollection, errorCodeLogger, flag);
     } else {
       if (diagnostic.category === ts.DiagnosticCategory.Error) {
         etsCheckerLogger.error('\u001b[31m' + logMessage);
@@ -867,30 +864,59 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
 }
 
 function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
-  messageCollection: messageCollection, errorCodeLogger: Object, flag: ErrorCodeModule | undefined): void {
-  const isTSCErrorCodeModule: boolean = ts.getErrorCodeArea && ts.getErrorCode && flag === ErrorCodeModule.TSC;
+  msgCollection: MessageCollection, errorCodeLogger: Object, flag: ErrorCodeModule | undefined): void {
+  const { positionMessage, message, logMessage } = msgCollection;
   // If the diagnostic is not an error, log a warning and return early.
   if (diagnostic.category !== ts.DiagnosticCategory.Error) {
-    etsCheckerLogger.warn('\u001b[33m' + messageCollection.logMessage);
+    etsCheckerLogger.warn('\u001b[33m' + logMessage);
     return;
   }
 
   // Check for TSC error codes
-  if (isTSCErrorCodeModule && ts.getErrorCodeArea(diagnostic.code) === ts.ErrorCodeArea.TSC) {
+  if (flag === ErrorCodeModule.TSC && 
+    validateUseErrorCodeLogger(ErrorCodeModule.TSC, diagnostic.code)) {
     const errorCode = ts.getErrorCode(diagnostic);
     errorCodeLogger.printError(errorCode);
     return;
   }
 
   // Check for LINTER error codes
-  if (flag === ErrorCodeModule.LINTER || (isTSCErrorCodeModule && ts.getErrorCodeArea(diagnostic.code) === ts.ErrorCodeArea.LINTER)) {
-    const linterErrorInfo: HvigorErrorInfo = transfromErrorCode(diagnostic.code, messageCollection.positionMessage, messageCollection.message);
+  if (flag === ErrorCodeModule.LINTER || (flag === ErrorCodeModule.TSC && 
+    validateUseErrorCodeLogger(ErrorCodeModule.LINTER, diagnostic.code))) {
+    const linterErrorInfo: HvigorErrorInfo = transfromErrorCode(diagnostic.code, positionMessage, message);
     errorCodeLogger.printError(linterErrorInfo);
     return;
   }
 
-  // If the error is not a TSC or Linter error, log using etsCheckerLogger
-  etsCheckerLogger.error('\u001b[31m' + messageCollection.logMessage);
+  // Check for ArkUI error codes
+  if (flag === ErrorCodeModule.UI || (flag === ErrorCodeModule.TSC && 
+    validateUseErrorCodeLogger(ErrorCodeModule.UI, diagnostic.code))) {
+    const uiErrorInfo: HvigorErrorInfo | undefined = buildErrorInfoFromDiagnostic(
+      diagnostic.code, positionMessage, message);
+    if (!uiErrorInfo) {
+      etsCheckerLogger.error('\u001b[31m' + logMessage);
+    } else {
+      errorCodeLogger.printError(uiErrorInfo);
+    }
+    return;
+  }
+
+  // If the error is not a TSC/Linter/ArkUI error, log using etsCheckerLogger
+  etsCheckerLogger.error('\u001b[31m' + logMessage);
+}
+
+function validateUseErrorCodeLogger(flag: ErrorCodeModule, code: number): boolean {
+  if (!ts.getErrorCodeArea || !ts.getErrorCode) {
+    return false;
+  }
+  if (flag === ErrorCodeModule.TSC) {
+    return ts.getErrorCodeArea(code) === ts.ErrorCodeArea.TSC;
+  } else if (flag === ErrorCodeModule.LINTER) {
+    return ts.getErrorCodeArea(code) === ts.ErrorCodeArea.LINTER;
+  } else if (flag === ErrorCodeModule.UI) {
+    return ts.getErrorCodeArea(code) === ts.ErrorCodeArea.UI;
+  }
+  return false;
 }
 
 function validateError(message: string): boolean {

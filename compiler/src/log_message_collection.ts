@@ -26,7 +26,7 @@ import constantDefine from './constant_define';
 function checkLocalBuilderDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, checkDecoratorCount: number, log: LogInfo[]): void {
   if (checkDecoratorCount > 0) {
     const message: string = 'The member property or method can not be decorated by multiple decorators.';
-    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode, { code: '10905125' });
   }
 }
 
@@ -38,7 +38,8 @@ function checkTwoWayComputed(node: ts.PropertyAccessExpression, symbol: ts.Symbo
         log.push({
           type: LogType.ERROR,
           message: `A property decorated by '${constantDefine.COMPUTED_DECORATOR}' cannot be used with two-bind syntax.`,
-          pos: node.getStart()
+          pos: node.getStart(),
+          code: '10905129'
         });
       }
     });
@@ -51,7 +52,8 @@ function checkComputedGetter(symbol: ts.Symbol, declaration: ts.Declaration, log
     log.push({
       type: LogType.ERROR,
       message: `A property decorated by '${constantDefine.COMPUTED_DECORATOR}' cannot define a set method.`,
-      pos: declaration.getStart()
+      pos: declaration.getStart(),
+      code: '10905130'
     });
   }
 }
@@ -64,7 +66,8 @@ function checkIfNeedDollarEvent(doubleExclamationCollection: string[], dollarPro
         type: LogType.ERROR,
         message: `When the two-way binding syntax is used, do not assign a value to '${constantDefine.EVENT_DECORATOR}'` +
           ` variable '${'$' + item}' because the framework generates the default assignment.`,
-        pos: node.getStart()
+        pos: node.getStart(),
+        code: '10905358'
       });
     }
   }
@@ -87,21 +90,24 @@ function checkNestedComponents(parentComponentType: ParentType, isRecycleChild: 
     log.push({
       type: LogType.ERROR,
       message: `A custom component decorated with @Component cannot contain child components decorated with @ReusableV2.`,
-      pos: node.getStart()
+      pos: node.getStart(),
+      code: '10905244'
     });
   }
   if (parentComponentType === ParentType.ReuseComponentV1 && isReuseV2Child) {
     log.push({
       type: LogType.ERROR,
       message: `A custom component decorated with @Reusable cannot contain child components decorated with @ReusableV2.`,
-      pos: node.getStart()
+      pos: node.getStart(),
+      code: '10905245'
     });
   }
   if (parentComponentType === ParentType.ReuseComponentV2 && isRecycleChild) {
     log.push({
       type: LogType.ERROR,
       message: `A custom component decorated with @ReusableV2 cannot contain child components decorated with @Reusable.`,
-      pos: node.getStart()
+      pos: node.getStart(),
+      code: '10905246'
     });
   }
   if (parentComponentType === ParentType.NormalComponentV2 && isRecycleChild) {
@@ -120,7 +126,8 @@ function checkIfReuseV2InRepeatTemplate(isInRepeatTemplate: boolean, isReuseV2Ch
     log.push({
       type: LogType.ERROR,
       message: `The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.`,
-      pos: node.getStart()
+      pos: node.getStart(),
+      code: '10905247'
     });
   }
 }
@@ -130,7 +137,8 @@ function checkUsageOfReuseAttribute(node: ts.CallExpression, isReusableV2NodeAtt
     log.push({
       type: LogType.ERROR,
       message: `The reuse attribute is only applicable to custom components decorated with both @ComponentV2 and @ReusableV2.`,
-      pos: node.getStart()
+      pos: node.getStart(),
+      code: '10905248'
     });
   }
 }
@@ -140,7 +148,8 @@ function checkUsageOfReuseIdAttribute(node: ts.CallExpression, isReusableV2NodeA
     log.push({
       type: LogType.ERROR,
       message: `The reuseId attribute is not applicable to custom components decorated with both @ComponentV2 and @ReusableV2.`,
-      pos: node.getStart()
+      pos: node.getStart(),
+      code: '10905249'
     });
   }
 }
