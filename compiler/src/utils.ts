@@ -100,8 +100,8 @@ export function isHvigorLogInfo(logInfo: LogInfo): boolean {
   return logInfo.code !== undefined;
 }
 
-export function emitLogInfo(loader: any, infos: LogInfo[], fastBuild: boolean = false,
-  resourcePath: string | null = null, hvigorLogger: any = undefined): void {
+export function emitLogInfo(loader: Object, infos: LogInfo[], fastBuild: boolean = false,
+  resourcePath: string | null = null, hvigorLogger: Object | undefined = undefined): void {
   if (infos && infos.length) {
     infos.forEach((item) => {
       hvigorLogger ? emitLogInfoFromHvigorLogger(hvigorLogger, item, loader, fastBuild, resourcePath) 
@@ -110,7 +110,7 @@ export function emitLogInfo(loader: any, infos: LogInfo[], fastBuild: boolean = 
   }
 }
 
-function emitLogInfoFromHvigorLogger(hvigorLogger: any, info: LogInfo, loader: any, 
+function emitLogInfoFromHvigorLogger(hvigorLogger: Object, info: LogInfo, loader: Object, 
   fastBuild: boolean, resourcePath: string | null): void {
   if (!isHvigorLogInfo(info)) {
     return emitLogInfoFromLoader(loader, info, fastBuild, resourcePath);
@@ -129,7 +129,7 @@ function emitLogInfoFromHvigorLogger(hvigorLogger: any, info: LogInfo, loader: a
   }
 }
 
-function emitLogInfoFromLoader(loader: any, info: LogInfo, fastBuild: boolean = false,
+function emitLogInfoFromLoader(loader: Object, info: LogInfo, fastBuild: boolean = false,
   resourcePath: string | null = null): void {
   const message: string = fastBuild ? '\u001b[31m' + getMessage(info.fileName || resourcePath, info, true)
     : getMessage(info.fileName || loader.resourcePath, info);

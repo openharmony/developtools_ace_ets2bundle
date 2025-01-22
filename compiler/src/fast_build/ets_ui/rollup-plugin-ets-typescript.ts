@@ -573,8 +573,8 @@ function setPkgNameForFile(moduleInfo: Object): void {
   }
 }
 
-function validateEts(code: string, id: string, isEntry: boolean, logger: any, sourceFile: ts.SourceFile, 
-  hvigorLogger: any = undefined): void {
+function validateEts(code: string, id: string, isEntry: boolean, logger: Object, sourceFile: ts.SourceFile, 
+  hvigorLogger: Object | undefined = undefined): void {
   if (/\.ets$/.test(id)) {
     clearCollection();
     const fileQuery: string = isEntry && !abilityPagesFullPath.has(path.resolve(id).toLowerCase()) ? '?entry' : '';
@@ -585,8 +585,8 @@ function validateEts(code: string, id: string, isEntry: boolean, logger: any, so
   }
 }
 
-function jsBundlePreProcess(code: string, id: string, isEntry: boolean, logger: any, 
-  hvigorLogger: any = undefined): string {
+function jsBundlePreProcess(code: string, id: string, isEntry: boolean, logger: Object, 
+  hvigorLogger: Object | undefined = undefined): string {
   if (/\.ets$/.test(id)) {
     clearCollection();
     let content = preprocessExtend(code);

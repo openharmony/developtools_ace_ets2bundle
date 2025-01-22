@@ -17,7 +17,7 @@ import {
   ERROR_DESCRIPTION, 
   HvigorErrorInfo, 
   HvigorLogInfo 
-} from "./hvigor_error_info";
+} from './hvigor_error_info';
 
 const DIAGNOSTIC_CODE_MAP: Map<string, Omit<HvigorLogInfo, 'cause' | 'position'>> = new Map([
   ['28000', { code: '10905128' }],
