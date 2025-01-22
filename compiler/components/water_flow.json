@@ -29,6 +29,7 @@
         "flingSpeedLimit",
         "onWillScroll",
         "onDidScroll",
-        "clipContent"
+        "clipContent",
+        "backToTop"
     ]
 }
