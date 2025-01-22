@@ -13,6 +13,7 @@
         "rowsGap",
         "layoutDirection",
         "enableScrollInteraction",
-        "fadingEdge"
+        "fadingEdge",
+        "backToTop"
     ]
 }
