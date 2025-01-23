@@ -113,7 +113,8 @@ export function emitLogInfo(loader: Object, infos: LogInfo[], fastBuild: boolean
 function emitLogInfoFromHvigorLogger(hvigorLogger: Object, info: LogInfo, loader: Object, 
   fastBuild: boolean, resourcePath: string | null): void {
   if (!isHvigorLogInfo(info)) {
-    return emitLogInfoFromLoader(loader, info, fastBuild, resourcePath);
+    emitLogInfoFromLoader(loader, info, fastBuild, resourcePath);
+    return;
   }
   const errorInfo: HvigorErrorInfo = buildErrorInfoFromLogInfo(info, info.fileName || resourcePath);
   switch (info.type) {
