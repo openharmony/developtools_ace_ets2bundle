@@ -41,7 +41,7 @@ action("build_ets_loader_library") {
   deps = [
     ":components",
     ":form_components",
-    ":install_arkguard_tsc",
+    ":install_arkguard_tsc_declgen",
     ":server",
     "//interface/sdk-js:bundle_arkts",
     "//interface/sdk-js:bundle_kits",
@@ -173,7 +173,7 @@ ets_loader_sources = [
 ohos_copy("ets_loader") {
   deps = [
     ":build_ets_loader_library",
-    ":install_arkguard_tsc",
+    ":install_arkguard_tsc_declgen",
   ]
   sources = ets_loader_sources
   deps += [ ":build_ets_sysResource" ]
@@ -260,7 +260,7 @@ ohos_copy("ets_loader_declaration") {
 ohos_copy("ets_loader_ark") {
   deps = [
     ":build_ets_loader_library",
-    ":install_arkguard_tsc",
+    ":install_arkguard_tsc_declgen",
   ]
   sources = ets_loader_sources
   deps += [ ":build_ets_sysResource" ]
@@ -347,18 +347,22 @@ group("ets_loader_ark_hap") {
 typescript_dir = get_label_info("//third_party/typescript:build_typescript",
                                 "target_out_dir")
 
-action("install_arkguard_tsc") {
+action("install_arkguard_tsc_declgen") {
+  static_core = "//arkcompiler/runtime_core/static_core"
   deps = [
+    "${static_core}/plugins/ets/tools/declgen_ts2sts:build_declgen",
     "//arkcompiler/ets_frontend/arkguard:build_arkguard",
     "//third_party/typescript:build_typescript",
   ]
-  script = "install_arkguard_tsc.py"
+  script = "install_arkguard_tsc_declgen.py"
   args = [
     rebase_path("${typescript_dir}/ohos-typescript-4.9.5-r4.tgz"),
     rebase_path(
         "${root_out_dir}/obj/arkcompiler/ets_frontend/arkguard/arkguard-1.1.3.tgz"),
     rebase_path("//developtools/ace_ets2bundle/compiler"),
     current_os,
+    rebase_path(
+        "${root_out_dir}/obj/arkcompiler/runtime_core/static_core/plugins/ets/tools/declgen_ts2sts/panda-declgen-1.0.0.tgz"),
   ]
   outputs = [ "${target_out_dir}/${target_name}.stamp" ]
 }
