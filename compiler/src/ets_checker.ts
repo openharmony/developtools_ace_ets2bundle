@@ -103,6 +103,10 @@ import {
 } from './hvigor_error_code/hvigor_error_info';
 import { ErrorCodeModule } from './hvigor_error_code/const/error_code_module';
 import { buildErrorInfoFromDiagnostic } from './hvigor_error_code/utils';
+import {
+  RunnerParms,
+  generateInteropDecls
+} from '../node_modules/declgen/build/src/generateInteropDecls'
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -556,7 +560,9 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     processBuildHap(cacheFile, rootFileNames, compilationTime, rollupShareObject);
     MemoryMonitor.stopRecordStage(processBuildHaprrecordInfo);
   }
-
+  if (rollupShareObject?.projectConfig.mixCompile) {
+    generateDeclarationFileForSTS(rootFileNames, allResolvedModules);
+  }
   if (globalProgram.program &&
     (process.env.watchMode !== 'true' && !projectConfig.isPreview &&
       !projectConfig.hotReload && !projectConfig.coldReload)) {
@@ -1811,4 +1817,30 @@ export function resetEtsCheck(): void {
   dirExistsCache.clear();
   targetESVersionChanged = false;
   fileToIgnoreDiagnostics = undefined;
+}
+
+export function generateDeclarationFileForSTS(rootFileNames: string[], allResolvedModules: Set<string>) {
+  if (!(projectConfig.compileHar || projectConfig.compileShared)) {
+    return;
+  }
+  const unixRootFileNames = rootFileNames.map(path => {
+    return toUnixPath(path);
+  });
+
+  const uniqueFiles = Array.from(new Set([
+    ...unixRootFileNames,
+    ...allResolvedModules
+  ]));
+
+  const config: RunnerParms = {
+    inputDirs: [],
+    inputFiles: uniqueFiles,
+    outDir: path.resolve(projectConfig.aceModuleBuild, '../etsFortgz/ets'),
+    rootDir: projectConfig.projectRootPath,
+    customResolveModuleNames: resolveModuleNames
+  };
+  if (fs.existsSync(config.outDir)) {
+    fs.rmSync(config.outDir, { recursive: true, force: true });
+  }
+  generateInteropDecls(config);
 }
