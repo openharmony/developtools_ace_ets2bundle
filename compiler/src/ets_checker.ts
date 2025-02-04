@@ -94,6 +94,10 @@ import {
   getJsDocNodeConditionCheckResult
 } from './fast_build/system_api/api_check_utils';
 import { sourceFileDependencies } from './fast_build/ark_compiler/common/ob_config_resolver';
+import {
+  RunnerParms,
+  generateInteropDecls
+} from '../node_modules/declgen/build/src/generateInteropDecls'
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -518,7 +522,9 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   if (process.env.watchMode !== 'true') {
     processBuildHap(cacheFile, rootFileNames, compilationTime, rollupShareObject);
   }
-
+  if (rollupShareObject?.projectConfig.mixCompile) {
+    generateDeclarationFileForSTS(rootFileNames, allResolvedModules);
+  }
   if (globalProgram.program &&
     (process.env.watchMode !== 'true' && !projectConfig.isPreview &&
       !projectConfig.hotReload && !projectConfig.coldReload)) {
@@ -1671,4 +1677,30 @@ export function resetEtsCheck(): void {
   dirExistsCache.clear();
   targetESVersionChanged = false;
   fileToIgnoreDiagnostics = undefined;
+}
+
+export function generateDeclarationFileForSTS(rootFileNames: string[], allResolvedModules: Set<string>) {
+  if (!(projectConfig.compileHar || projectConfig.compileShared)) {
+    return;
+  }
+  const unixRootFileNames = rootFileNames.map(path => {
+    return toUnixPath(path);
+  });
+
+  const uniqueFiles = Array.from(new Set([
+    ...unixRootFileNames,
+    ...allResolvedModules
+  ]));
+
+  const config: RunnerParms = {
+    inputDirs: [],
+    inputFiles: uniqueFiles,
+    outDir: path.resolve(projectConfig.aceModuleBuild, '../etsFortgz/ets'),
+    rootDir: projectConfig.projectRootPath,
+    customResolveModuleNames: resolveModuleNames
+  };
+  if (fs.existsSync(config.outDir)) {
+    fs.rmSync(config.outDir, { recursive: true, force: true });
+  }
+  generateInteropDecls(config);
 }
