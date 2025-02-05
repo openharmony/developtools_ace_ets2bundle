@@ -289,7 +289,7 @@ let RecycleChild = class RecycleChild extends ViewPU {
         {
             const itemCreation = (elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                itemCreation2(elmtId, isInitialRender);
+                ListItem.create(deepRenderFunction, true, 'true');
                 if (!isInitialRender) {
                     ListItem.pop();
                 }
@@ -320,7 +320,7 @@ let RecycleChild = class RecycleChild extends ViewPU {
         {
             const itemCreation = (elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                itemCreation2(elmtId, isInitialRender);
+                ListItem.create(deepRenderFunction, true, 'true');
                 if (!isInitialRender) {
                     ListItem.pop();
                 }
