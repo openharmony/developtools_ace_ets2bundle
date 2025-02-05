@@ -1,0 +1,14 @@
+{
+  "hspPkgNames": [],
+  "compileEntries": [
+    "&entry/src/main/ets/entryability/EntryAbility&",
+    "&entry/src/main/ets/entrybackupability/EntryBackupAbility&",
+    "&entry/src/main/ets/pages/Index&",
+    "&har/src/main/ets/components/a&1.0.0",
+    "&har/src/main/ets/components/aaa&1.0.0",
+    "&har/src/main/ets/components/MainPage&1.0.0",
+    "&har/build/default/generated/profile/default/ModuleInfo&1.0.0",
+    "&har/Index&1.0.0"
+  ],
+  "updateVersionInfo": {}
+}
