@@ -54,7 +54,8 @@ import {
   ETS,
   TS,
   JS,
-  PERFREPORT_JSON
+  PERFREPORT_JSON,
+  GEN_ABC_CMD
 } from '../common/ark_define';
 import {
   needAotCompiler,
@@ -175,6 +176,7 @@ export class ModuleMode extends CommonMode {
   abcPaths: string[] = [];
   byteCodeHar: boolean;
   perfReportPath: string;
+  rollupCache: Object;
 
   constructor(rollupObject: Object) {
     super(rollupObject);
@@ -208,6 +210,7 @@ export class ModuleMode extends CommonMode {
     if (this.useNormalizedOHMUrl) {
       this.compileContextInfoPath = this.generateCompileContextInfo(rollupObject);
     }
+    this.rollupCache = rollupObject.cache;
   }
 
   private generateCompileContextInfo(rollupObject: Object): string {
@@ -674,6 +677,14 @@ export class ModuleMode extends CommonMode {
     // collect data error from subprocess
     let logDataList: Object[] = [];
     let errMsg: string = '';
+    const eventGenDescriptionsForMergedEs2abc = createAndStartEvent(parentEvent, 'generate descriptions for merged es2abc');
+    stopEvent(eventGenDescriptionsForMergedEs2abc);
+
+    if (this.projectConfig.invokeEs2abcByHvigor) {
+      this.rollupCache.set(GEN_ABC_CMD, this.cmdArgs);
+      return;
+    }
+    
     const genAbcCmd: string = this.cmdArgs.join(' ');
     let eventGenAbc: CompileEvent;
     try {
