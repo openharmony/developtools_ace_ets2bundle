@@ -1237,7 +1237,7 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFuncti
       });
     }
   }
-  node.getChildren().forEach((item: ts.Node) => parseAllNode(item, sourceFileNode, extendFunctionInfo));
+  ts.forEachChild(node, (child: ts.Node) => parseAllNode(child, sourceFileNode, extendFunctionInfo));
 }
 
 function isForeachAndLzayForEach(node: ts.Node): boolean {
