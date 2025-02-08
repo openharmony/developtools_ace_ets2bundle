@@ -71,11 +71,12 @@ export function routerBundleOrModule(context: ts.TransformationContext, isByteCo
   if (isByteCodeHar) {
     return context.factory.createPropertyAssignment(
       context.factory.createIdentifier(typeKey),
-      context.factory.createIdentifier(type === RESOURCE_NAME_BUNDLE ? '__BUNDLE_NAME__' : '__MODULE_NAME__')
+      context.factory.createIdentifier(type === RESOURCE_NAME_BUNDLE ? (projectConfig.allowEmptyBundleName ? '' : '__BUNDLE_NAME__') : '__MODULE_NAME__')
     );
   }
   return context.factory.createPropertyAssignment(
     context.factory.createIdentifier(typeKey),
-    context.factory.createStringLiteral(type === RESOURCE_NAME_BUNDLE ? (projectConfig.bundleName || '') : (projectConfig.moduleName || ''))
+    context.factory.createStringLiteral(type === RESOURCE_NAME_BUNDLE ? (projectConfig.allowEmptyBundleName ? '' : (projectConfig.bundleName || '')) :
+      (projectConfig.moduleName || ''))
   );
 }
