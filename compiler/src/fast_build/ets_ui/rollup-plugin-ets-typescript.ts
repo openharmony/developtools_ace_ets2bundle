@@ -392,37 +392,7 @@ async function transform(code: string, id: string) {
   // 1. .ets/.ts imported by .js file with tsc's `allowJS` option is false.
   // 2. .ets/.ts imported by .js file with same name '.d.ts' file which is prior to .js by tsc default resolving
   if (!targetSourceFile) {
-    startTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
-    if (storedFileInfo.isFirstBuild && storedFileInfo.changeFiles.length) {
-      storedFileInfo.newTsProgram = ts.createProgram(storedFileInfo.changeFiles, etsCheckerCompilerOptions, compilerHost);
-      storedFileInfo.isFirstBuild = false;
-    }
-    await CreateProgramMoment.block(id, code);
-    CreateProgramMoment.release(id);
-    globalProgram.program.initProcessingFiles();
-    for (const root of CreateProgramMoment.getRoots(id, code)) {
-      if (!globalProgram.program.getSourceFile(root.id)) {
-        const newSourceFile: ts.SourceFile = ts.createSourceFile(root.id, root.code, etsCheckerCompilerOptions.target,
-          true, undefined, etsCheckerCompilerOptions);
-        newSourceFile.originalFileName = newSourceFile.fileName;
-        newSourceFile.resolvePath = root.id;
-        newSourceFile.path = root.id;
-        globalProgram.program.processImportedModules(newSourceFile, true);
-        globalProgram.program.setProgramSourceFiles(newSourceFile);
-        CreateProgramMoment.deleteFileCollect.add(newSourceFile.fileName);
-      }
-    }
-    const processingFiles: ts.SourceFile[] = globalProgram.program.getProcessingFiles();
-    if (processingFiles) {
-      processingFiles.forEach(file => {
-        if (!globalProgram.program.getSourceFiles().includes(file.fileName)) {
-          CreateProgramMoment.deleteFileCollect.add(file.fileName);
-        }
-        globalProgram.program.setProgramSourceFiles(file);
-      })
-    }
-    globalProgram.program.refreshTypeChecker();
-    stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
+    await processNoTargetSourceFile(id, code, compilationTime);
 	const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_GET_CHECKER);
     // init TypeChecker to run binding
     globalProgram.checker = tsProgram.getTypeChecker();
@@ -527,6 +497,40 @@ async function transform(code: string, id: string) {
       shouldEmitJs: true
     }
   } : printSourceFile(transformResult.transformed[0], compilationTime);
+}
+
+async function processNoTargetSourceFile(id: string, code: string, compilationTime?: CompilationTimeStatistics): Promise<void> {
+  startTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
+  if (storedFileInfo.isFirstBuild && storedFileInfo.changeFiles.length) {
+    storedFileInfo.newTsProgram = ts.createProgram(storedFileInfo.changeFiles, etsCheckerCompilerOptions, compilerHost);
+    storedFileInfo.isFirstBuild = false;
+  }
+  await CreateProgramMoment.block(id, code);
+  CreateProgramMoment.release(id);
+  globalProgram.program.initProcessingFiles();
+  for (const root of CreateProgramMoment.getRoots(id, code)) {
+    if (!globalProgram.program.getSourceFile(root.id)) {
+      const newSourceFile: ts.SourceFile = ts.createSourceFile(root.id, root.code, etsCheckerCompilerOptions.target,
+        true, undefined, etsCheckerCompilerOptions);
+      newSourceFile.originalFileName = newSourceFile.fileName;
+      newSourceFile.resolvePath = root.id;
+      newSourceFile.path = root.id;
+      globalProgram.program.processImportedModules(newSourceFile, true);
+      globalProgram.program.setProgramSourceFiles(newSourceFile);
+      CreateProgramMoment.deleteFileCollect.add(newSourceFile.fileName);
+    }
+  }
+  const processingFiles: ts.SourceFile[] = globalProgram.program.getProcessingFiles();
+  if (processingFiles) {
+    processingFiles.forEach(file => {
+      if (!globalProgram.program.getSourceFiles().includes(file.fileName)) {
+        CreateProgramMoment.deleteFileCollect.add(file.fileName);
+      }
+      globalProgram.program.setProgramSourceFiles(file);
+    });
+  }
+  globalProgram.program.refreshTypeChecker();
+  stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
 }
 
 function printSourceFile(sourceFile: ts.SourceFile, compilationTime: CompilationTimeStatistics): string | null {
@@ -710,7 +714,7 @@ class CreateProgramMoment {
     if (CreateProgramMoment.promise) {
       return;
     }
-    const commonDtsPath: string = path.resolve(__dirname, '../../../declarations/common.d.ts')
+    const commonDtsPath: string = path.resolve(__dirname, '../../../declarations/common.d.ts');
     CreateProgramMoment.roots.set(commonDtsPath, fs.readFileSync(commonDtsPath, 'utf-8'));
     CreateProgramMoment.emitter = new nodeEvents.EventEmitter();
     CreateProgramMoment.promise = new Promise<void>(resolve => {
