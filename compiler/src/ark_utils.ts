@@ -675,7 +675,7 @@ export async function writeMinimizedSourceCode(content: string, filePath: string
       }
     };
     if (!isHar) {
-      minifyOptions['format'] = {
+      minifyOptions.format = {
         semicolons: false,
         beautify: true,
         indent_level: 2
