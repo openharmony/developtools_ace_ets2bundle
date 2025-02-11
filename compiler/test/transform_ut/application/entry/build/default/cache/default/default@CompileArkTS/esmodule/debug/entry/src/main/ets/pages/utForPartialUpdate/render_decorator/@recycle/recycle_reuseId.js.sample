@@ -13,12 +13,6 @@
  * limitations under the License.
  */
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
@@ -276,7 +270,7 @@ class RecycleReuseIdHomeComponent extends ViewPU {
         return "RecycleReuseIdHomeComponent";
     }
 }
-let RecycleReuseIdChild = class RecycleReuseIdChild extends ViewPU {
+class RecycleReuseIdChild extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
@@ -327,9 +321,6 @@ let RecycleReuseIdChild = class RecycleReuseIdChild extends ViewPU {
     rerender() {
         this.updateDirtyElements();
     }
-};
-RecycleReuseIdChild = __decorate([
-    Reusable
-], RecycleReuseIdChild);
+}
 registerNamedRoute(() => new RecycleReuseIdHomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=recycle_reuseId.js.map
