@@ -95,6 +95,7 @@ import { mangleFilePath, resetObfuscation } from '../ark_compiler/common/ob_conf
 import arkoalaProgramTransform, { ArkoalaPluginOptions } from './arkoala-plugin';
 import processStructComponentV2 from '../../process_struct_componentV2';
 import { resetlogMessageCollection } from '../../log_message_collection';
+import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -122,6 +123,12 @@ export function etsTransform() {
   return {
     name: 'etsTransform',
     transform: transform,
+    moduleParsed(moduleInfo: moduleInfoType): void {
+      if (this.share.projectConfig.singleFileEmit && this.share.projectConfig.needCoverageInsert) {
+        //ts coverage instrumentation
+        this.share.sourceFile = ModuleSourceFile.getSourceFileById(moduleInfo.id);
+      }
+    },
     buildStart() {
       const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsTransform', 'buildStart');
       startTimeStatisticsLocation(compilationTime ? compilationTime.etsTransformBuildStartTime : undefined);

@@ -23,7 +23,7 @@ import { cleanSharedModuleSet } from './check_shared_module';
 import { compilerOptions } from '../../ets_checker';
 import { ModuleSourceFile } from './module/module_source_file';
 import { SourceMapGenerator } from './generate_sourcemap';
-import { cleanUpUtilsObjects } from '../../ark_utils';
+import { cleanUpUtilsObjects, writeDeclarationFiles } from '../../ark_utils';
 import { cleanUpKitImportObjects } from '../../process_kit_import';
 import { cleanUpFilesList } from './utils';
 
@@ -39,10 +39,20 @@ export function genAbc() {
     },
     shouldInvalidCache: shouldInvalidCache,
     transform: transformForModule,
+    moduleParsed(moduleInfo: moduleInfoType): void {
+      // process single ModuleSourceFile
+      if (this.share.projectConfig.singleFileEmit) {
+        ModuleSourceFile.processSingleModuleSourceFile(this, moduleInfo.id);
+      }
+    },
     beforeBuildEnd: {
       // [pre] means this handler running in first at the stage of beforeBuildEnd.
       order: 'pre',
       handler() {
+        if (this.share.projectConfig.singleFileEmit) {
+          writeDeclarationFiles(this.share.arkProjectConfig.compileMode);
+          return;
+        }
         if (compilerOptions.needDoArkTsLinter) {
           checkIfJsImportingArkts(this);
         }
@@ -64,3 +74,7 @@ export function genAbc() {
     }
   };
 }
+
+interface moduleInfoType {
+  id: string;
+};
