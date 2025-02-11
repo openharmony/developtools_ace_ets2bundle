@@ -826,7 +826,7 @@ function traverseExpressionNode(node: ts.Node, result: Record<string, boolean>):
     result.hasQuestionToken = true;
   }
   if (!result.hasQuestionToken) {
-    node.getChildren().forEach((item: ts.Node) => traverseExpressionNode(item, result));
+    ts.forEachChild(node, (child: ts.Node) => traverseExpressionNode(child, result));
   }
 }
 
