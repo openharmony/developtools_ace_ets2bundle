@@ -38,7 +38,13 @@ export async function generateModuleAbc(error) {
     return;
   }
   if (this.share.projectConfig.compileMode === ESMODULE) {
-    await ModuleSourceFile.processModuleSourceFiles(this, hookEventFactory);
+    if (this.share.projectConfig.singleFileEmit) {
+      if (ModuleSourceFile.needProcessMock) {
+        ModuleSourceFile.generateMockConfigFile(this);
+      }
+    } else {
+      await ModuleSourceFile.processModuleSourceFiles(this, hookEventFactory);
+    }
     if (this.share.projectConfig.compileHar) {
       SourceMapGenerator.getInstance().buildModuleSourceMapInfo(hookEventFactory);
       // compileHar: compile har of project, which convert .ets to .d.ts and js
