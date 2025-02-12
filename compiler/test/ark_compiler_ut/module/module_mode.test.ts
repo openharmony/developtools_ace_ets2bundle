@@ -1127,7 +1127,7 @@ mocha.describe('test module_mode file api', function () {
     SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.projectConfig.cacheBytecodeHar = true;
-    moduleMode.projectConfig.projectRootPath = "D:/project";
+    moduleMode.projectConfig.projectTopDir = "D:/project";
     moduleMode.projectConfig.cachePath = "D:/project/cache"
     moduleMode.abcPaths = [
       "D:/project/oh_modules/bchar1/modules.abc",

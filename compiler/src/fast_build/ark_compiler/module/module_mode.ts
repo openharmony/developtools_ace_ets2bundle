@@ -623,8 +623,14 @@ export class ModuleMode extends CommonMode {
     fs.writeFileSync(this.cacheFilePath, abcCacheFilesInfo, 'utf-8');
   }
 
+  // Generate cache file path for bytecode har
   private genAbcCacheFilePath(abcPath: string): string {
-    let relativeAbcPath: string = abcPath.replace(toUnixPath(this.projectConfig.projectRootPath), '');
+    /**
+     * The projectTopDir is the path of the main project, the projectRootPath is the project path to which it belongs, 
+     * and the path of bytecode har is within the main project. Therefore, the projectTopDir is used to intercept the
+     * relative path of bytecodehar.
+     */
+    let relativeAbcPath: string = abcPath.replace(toUnixPath(this.projectConfig.projectTopDir), '');
     let tempPath: string = path.join(this.projectConfig.cachePath, relativeAbcPath);
     return changeFileExtension(tempPath, EXTNAME_PROTO_BIN);
   }
