@@ -375,4 +375,18 @@ mocha.describe('process Lazy Imports tests', function () {
     expect(hasError).to.be.true;
     resetReExportCheckLog();
   });
+
+  mocha.it('2-9: test processJsCodeLazyImport(autoLazyImport is false and reExportCheckMode is strict): no re-export', function () {
+    const code: string = 'import lazy { y1 } from "./test";';
+    const expectCode: string = 'import lazy { y1 } from "./test";';
+    const result: string = processJsCodeLazyImport('index.js', code, false, 'strict');
+    expect(result === expectCode).to.be.true;
+  });
+
+  mocha.it('2-10: test processJsCodeLazyImport(autoLazyImport is true and reExportCheckMode is strict): no re-export', function () {
+    const code: string = 'import { y1 } from "./test";';
+    const expectCode: string = 'import lazy { y1 } from "./test";\n';
+    const result: string = processJsCodeLazyImport('index.js', code, true, 'strict');
+    expect(result === expectCode).to.be.true;
+  });
 });
