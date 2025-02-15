@@ -154,7 +154,7 @@ function collectLazyImportSymbols(stmt: ts.Statement, lazyImportSymbols: Set<str
     const importClauseName = stmt.importClause.name;
     if (importClauseName) {
       lazyImportSymbols.add(importClauseName.text);
-      result.set(importClauseName.text, exportSymbols.get(importClauseName.text) ?? undefined);
+      result.set(importClauseName.text, exportSymbols.get(importClauseName.text) ?? []);
     }
     // For import lazy { x } from './y', collect 'x'
     const importNamedBindings: ts.NamedImportBindings = stmt.importClause.namedBindings;
@@ -162,7 +162,7 @@ function collectLazyImportSymbols(stmt: ts.Statement, lazyImportSymbols: Set<str
       importNamedBindings.elements.forEach((element: ts.ImportSpecifier) => {
         const nameText = element.name.text;
         lazyImportSymbols.add(nameText);
-        result.set(nameText, exportSymbols.get(nameText) ?? undefined);
+        result.set(nameText, exportSymbols.get(nameText) ?? []);
       });
     }
   }
