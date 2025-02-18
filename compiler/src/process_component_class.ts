@@ -163,12 +163,7 @@ export function processComponentClass(node: ts.StructDeclaration, context: ts.Tr
   const decoratorNode: readonly ts.Decorator[] = ts.getAllDecorators(node);
   const memberNode: ts.ClassElement[] =
     processMembers(node.members, node.name, context, decoratorNode, log, program, checkPreview(node));
-  const addReusable: boolean = node.name && ts.isIdentifier(node.name) && isRecycle(node.name.getText());
-  return ts.factory.createClassDeclaration(addReusable ? 
-    ts.concatenateDecoratorsAndModifiers(
-      [ts.factory.createDecorator(ts.factory.createIdentifier(DECORATOR_REUSEABLE))], 
-      ts.getModifiers(node)
-    ) : 
+  return ts.factory.createClassDeclaration(
     ts.getModifiers(node), 
     node.name,
     node.typeParameters, 
