@@ -205,13 +205,13 @@ class ComponentInfo {
   public set id(id: number) {
     this._id = id;
   }
-  public get id() {
+  public get id(): number {
     return this._id;
   }
   public set componentNames(componentNames: Set<string>) {
     this._componentNames = componentNames;
   }
-  public get componentNames() {
+  public get componentNames(): Set<string> {
     return this._componentNames;
   }
 }
