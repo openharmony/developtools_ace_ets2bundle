@@ -1,0 +1,22 @@
+import { memo } from "@koalaui/runtime"
+
+export declare class StructBase<T, OptionsT> {
+    @memo
+    static instantiateImpl<S extends StructBase<S, OptionsS>, OptionsS> (
+        @memo
+        builder: ((instance: S) => S) | undefined,
+        factory: () => S,
+        options?: OptionsS,
+        @memo
+        content?: () => void
+    ): void
+
+    @memo
+    _build(
+        @memo
+        style: ((instance: T)=>T)|undefined, 
+        @memo
+        content: (() => void)|undefined, 
+        options: OptionsT|undefined
+    ): void
+}

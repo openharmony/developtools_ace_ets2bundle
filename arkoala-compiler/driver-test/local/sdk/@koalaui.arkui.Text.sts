@@ -1,0 +1,27 @@
+import { BuilderLambda } from "@koalaui.arkui.Common"
+
+export class Text {
+    @BuilderLambda("instantiateImpl")
+    static $_instantiate(
+        factory: () => Text,
+        options?: TextOptions|string,
+        //content?: () => void
+    ): Text {
+        throw new Error("This method should only be called through a @BuilderLambda redirect")
+    }
+
+    // TODO: the second argument will be gone after hte plugin is improved
+    static instantiateImpl(
+        style: (instance: Text) => Text,
+        factory: () => Text,
+        options?: TextOptions|string,
+        //content?: () => void
+    ): void {
+        console.log("Text(", options,  ")")
+        const instance = factory()
+        style(instance)
+        //content()
+    }
+}
+
+export interface TextOptions {}

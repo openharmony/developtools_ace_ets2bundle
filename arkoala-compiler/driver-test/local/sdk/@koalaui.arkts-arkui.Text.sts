@@ -1,0 +1,15 @@
+import { memo } from "@koalaui/runtime"
+
+export declare class Text {
+    @memo
+    static instantiateImpl(
+        @memo
+        style: ((instance: Text) => Text) | undefined,
+        factory: () => Text,
+        options?: string,
+        @memo
+        content?: () => void
+    ): void
+}
+
+export interface TextOptions {}
