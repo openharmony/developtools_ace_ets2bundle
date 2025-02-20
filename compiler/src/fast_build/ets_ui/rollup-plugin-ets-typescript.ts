@@ -97,13 +97,17 @@ import {
   mangleFilePath,
   resetObfuscation
 } from '../ark_compiler/common/ob_config_resolver';
+import {
+  LazyImportOptions,
+  reExportNoCheckMode
+} from '../../process_lazy_import';
 import arkoalaProgramTransform, { ArkoalaPluginOptions } from './arkoala-plugin';
 import processStructComponentV2 from '../../process_struct_componentV2';
 import { shouldETSOrTSFileTransformToJSWithoutRemove } from '../ark_compiler/utils';
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../meomry_monitor/memory_define';
 import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
-import { LazyImportOptions } from '../../ark_utils';
+import { ARKUI_SUBSYSTEM_CODE } from '../../../lib/hvigor_error_code/hvigor_error_info';
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -197,6 +201,9 @@ export function etsTransform() {
       return shouldDisable;
     },
     buildEnd(): void {
+      const fileToDelete: string[] = Array.from(CreateProgramMoment.deleteFileCollect);
+      globalProgram.program.deleteProgramSourceFiles(fileToDelete);
+      CreateProgramMoment.resetDeleteFiles();
       if (process.env.watchMode !== 'true' && !projectConfig.hotReload && !projectConfig.isPreview) {
         resetEtsCheckTypeScript();
       }
@@ -351,13 +358,14 @@ async function transform(code: string, id: string) {
   storedFileInfo.collectTransformedFiles(path.resolve(id));
   MemoryMonitor.stopRecordStage(recordInfo);
   const logger = this.share.getLogger('etsTransform');
+  const hvigorLogger = this.share.getHvigorConsoleLogger?.(ARKUI_SUBSYSTEM_CODE);
 
   if (projectConfig.compileMode !== 'esmodule') {
     const compilerOptions = ts.readConfigFile(
       path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
     compilerOptions.moduleResolution = 'nodenext';
     compilerOptions.module = 'es2020';
-    const newContent: string = jsBundlePreProcess(code, id, this.getModuleInfo(id).isEntry, logger);
+    const newContent: string = jsBundlePreProcess(code, id, this.getModuleInfo(id).isEntry, logger, hvigorLogger);
     const result: ts.TranspileOutput = ts.transpileModule(newContent, {
       compilerOptions: compilerOptions,
       fileName: id,
@@ -366,7 +374,7 @@ async function transform(code: string, id: string) {
 
     resetCollection();
     if (transformLog && transformLog.errors.length && !projectConfig.ignoreWarning) {
-      emitLogInfo(logger, getTransformLog(transformLog), true, id);
+      emitLogInfo(logger, getTransformLog(transformLog), true, id, hvigorLogger);
       resetLog();
     }
 
@@ -384,26 +392,7 @@ async function transform(code: string, id: string) {
   // 1. .ets/.ts imported by .js file with tsc's `allowJS` option is false.
   // 2. .ets/.ts imported by .js file with same name '.d.ts' file which is prior to .js by tsc default resolving
   if (!targetSourceFile) {
-    startTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
-    if (storedFileInfo.isFirstBuild && storedFileInfo.changeFiles) {
-      storedFileInfo.newTsProgram = ts.createProgram(storedFileInfo.changeFiles, etsCheckerCompilerOptions, compilerHost);
-      storedFileInfo.isFirstBuild = false;
-    }
-    stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
-    if (storedFileInfo.newTsProgram && storedFileInfo.newTsProgram.getSourceFile(id)) {
-      tsProgram = storedFileInfo.newTsProgram;
-    } else {
-      await CreateProgramMoment.block(id);
-      CreateProgramMoment.release(id);
-      if (storedFileInfo.newTsProgram && storedFileInfo.newTsProgram.getSourceFile(id)) {
-        tsProgram = storedFileInfo.newTsProgram;
-      } else {
-        startTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
-        tsProgram = ts.createProgram(CreateProgramMoment.getRoots(id), etsCheckerCompilerOptions, compilerHost);
-        storedFileInfo.newTsProgram = tsProgram;
-        stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
-      }
-    }
+    await processNoTargetSourceFile(id, code, compilationTime);
 	const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_GET_CHECKER);
     // init TypeChecker to run binding
     globalProgram.checker = tsProgram.getTypeChecker();
@@ -423,7 +412,7 @@ async function transform(code: string, id: string) {
   }
   setPkgNameForFile(this.getModuleInfo(id));
   startTimeStatisticsLocation(compilationTime ? compilationTime.validateEtsTime : undefined);
-  validateEts(code, id, this.getModuleInfo(id).isEntry, logger, targetSourceFile);
+  validateEts(code, id, this.getModuleInfo(id).isEntry, logger, targetSourceFile, hvigorLogger);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.validateEtsTime : undefined);
   const emitResult: EmitResult = { outputText: '', sourceMapText: '' };
   const writeFile: ts.WriteFileCallback = (fileName: string, data: string) => {
@@ -439,7 +428,7 @@ async function transform(code: string, id: string) {
   const metaInfo: Object = this.getModuleInfo(id).meta;
   const lazyImportOptions: LazyImportOptions = {
     autoLazyImport: this.share.projectConfig?.autoLazyImport ?? false,
-    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? 'noCheck'
+    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? reExportNoCheckMode
   };
   // use `try finally` to restore `noEmit` when error thrown by `processUISyntax` in preview mode
   startTimeStatisticsLocation(compilationTime ? compilationTime.shouldEmitJsTime : undefined);
@@ -494,7 +483,8 @@ async function transform(code: string, id: string) {
   processStructComponentV2.resetStructMapInEts();
   if (((transformLog && transformLog.errors.length) || (kitTransformLog && kitTransformLog.errors.length)) &&
     !projectConfig.ignoreWarning) {
-    emitLogInfo(logger, [...getTransformLog(kitTransformLog), ...getTransformLog(transformLog)], true, id);
+    emitLogInfo(logger, getTransformLog(kitTransformLog), true, id);
+    emitLogInfo(logger, getTransformLog(transformLog), true, id, hvigorLogger);
     resetLog();
     resetKitImportLog();
   }
@@ -507,6 +497,40 @@ async function transform(code: string, id: string) {
       shouldEmitJs: true
     }
   } : printSourceFile(transformResult.transformed[0], compilationTime);
+}
+
+async function processNoTargetSourceFile(id: string, code: string, compilationTime?: CompilationTimeStatistics): Promise<void> {
+  startTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
+  if (storedFileInfo.isFirstBuild && storedFileInfo.changeFiles.length) {
+    storedFileInfo.newTsProgram = ts.createProgram(storedFileInfo.changeFiles, etsCheckerCompilerOptions, compilerHost);
+    storedFileInfo.isFirstBuild = false;
+  }
+  await CreateProgramMoment.block(id, code);
+  CreateProgramMoment.release(id);
+  globalProgram.program.initProcessingFiles();
+  for (const root of CreateProgramMoment.getRoots(id, code)) {
+    if (!globalProgram.program.getSourceFile(root.id)) {
+      const newSourceFile: ts.SourceFile = ts.createSourceFile(root.id, root.code, etsCheckerCompilerOptions.target,
+        true, undefined, etsCheckerCompilerOptions);
+      newSourceFile.originalFileName = newSourceFile.fileName;
+      newSourceFile.resolvePath = root.id;
+      newSourceFile.path = root.id;
+      globalProgram.program.processImportedModules(newSourceFile, true);
+      globalProgram.program.setProgramSourceFiles(newSourceFile);
+      CreateProgramMoment.deleteFileCollect.add(newSourceFile.fileName);
+    }
+  }
+  const processingFiles: ts.SourceFile[] = globalProgram.program.getProcessingFiles();
+  if (processingFiles) {
+    processingFiles.forEach(file => {
+      if (!globalProgram.program.getSourceFiles().includes(file.fileName)) {
+        CreateProgramMoment.deleteFileCollect.add(file.fileName);
+      }
+      globalProgram.program.setProgramSourceFiles(file);
+    });
+  }
+  globalProgram.program.refreshTypeChecker();
+  stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
 }
 
 function printSourceFile(sourceFile: ts.SourceFile, compilationTime: CompilationTimeStatistics): string | null {
@@ -553,18 +577,20 @@ function setPkgNameForFile(moduleInfo: Object): void {
   }
 }
 
-function validateEts(code: string, id: string, isEntry: boolean, logger: any, sourceFile: ts.SourceFile) {
+function validateEts(code: string, id: string, isEntry: boolean, logger: any, sourceFile: ts.SourceFile, 
+  hvigorLogger: any = undefined): void {
   if (/\.ets$/.test(id)) {
     clearCollection();
     const fileQuery: string = isEntry && !abilityPagesFullPath.has(path.resolve(id).toLowerCase()) ? '?entry' : '';
     const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery, sourceFile);
     if (log.length && !projectConfig.ignoreWarning) {
-      emitLogInfo(logger, log, true, id);
+      emitLogInfo(logger, log, true, id, hvigorLogger);
     }
   }
 }
 
-function jsBundlePreProcess(code: string, id: string, isEntry: boolean, logger: any): string {
+function jsBundlePreProcess(code: string, id: string, isEntry: boolean, logger: any, 
+  hvigorLogger: any = undefined): string {
   if (/\.ets$/.test(id)) {
     clearCollection();
     let content = preprocessExtend(code);
@@ -572,7 +598,7 @@ function jsBundlePreProcess(code: string, id: string, isEntry: boolean, logger: 
     const fileQuery: string = isEntry && !abilityPagesFullPath.has(path.resolve(id).toLowerCase()) ? '?entry' : '';
     const log: LogInfo[] = validateUISyntax(code, content, id, fileQuery);
     if (log.length && !projectConfig.ignoreWarning) {
-      emitLogInfo(logger, log, true, id);
+      emitLogInfo(logger, log, true, id, hvigorLogger);
     }
     return content;
   }
@@ -665,22 +691,31 @@ function checkRelateToConstEnum(id: string): boolean {
 interface moduleInfoType {
   id: string;
 };
+
 interface optionsType {
   id: string;
 };
+
+interface newSourceFileType {
+  id: string;
+  code: string;
+};
+
 class CreateProgramMoment {
   static transFileCollect: Set<string> = new Set();
   static awaitFileCollect: Set<string> = new Set();
+  static deleteFileCollect: Set<string> = new Set();
   static moduleParsedFileCollect: Set<string> = new Set();
   static promise: Promise<void> = undefined;
   static emitter = undefined;
-  static roots: Set<string> = new Set();
+  static roots: Map<string, string> = new Map();
 
   static init(): void {
     if (CreateProgramMoment.promise) {
       return;
     }
-    CreateProgramMoment.roots.add(path.resolve(__dirname, '../../../declarations/common.d.ts'));
+    const commonDtsPath: string = path.resolve(__dirname, '../../../declarations/common.d.ts');
+    CreateProgramMoment.roots.set(commonDtsPath, fs.readFileSync(commonDtsPath, 'utf-8'));
     CreateProgramMoment.emitter = new nodeEvents.EventEmitter();
     CreateProgramMoment.promise = new Promise<void>(resolve => {
       CreateProgramMoment.emitter.on('checkPrefCreateProgramId', () => {
@@ -713,10 +748,10 @@ class CreateProgramMoment {
     };
   }
 
-  static async block(id: string): Promise<void> {
+  static async block(id: string, code: string): Promise<void> {
     CreateProgramMoment.init();
     CreateProgramMoment.awaitFileCollect.add(id);
-    CreateProgramMoment.roots.add(id);
+    CreateProgramMoment.roots.set(id, code);
     CreateProgramMoment.emitter.emit('checkPrefCreateProgramId');
     return CreateProgramMoment.promise;
   }
@@ -734,14 +769,20 @@ class CreateProgramMoment {
     CreateProgramMoment.roots.clear();
   }
 
-  static getRoots(id: string): string[] {
-    const res: string[] = [];
-    CreateProgramMoment.roots.forEach(id => res.push(id));
+  static resetDeleteFiles(): void {
+    CreateProgramMoment.deleteFileCollect.clear();
+  }
+
+  static getRoots(id: string, code: string): newSourceFileType[] {
+    const res: newSourceFileType[] = [];
+    for (const [id, code] of CreateProgramMoment.roots) {
+      res.push({id, code});
+    }
     CreateProgramMoment.promise = undefined;
     CreateProgramMoment.emitter = undefined;
     CreateProgramMoment.roots.clear();
     if (res.length === 0) {
-      return [id];
+      return [{id, code}];
     }
     return res;
   }

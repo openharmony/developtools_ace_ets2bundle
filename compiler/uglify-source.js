@@ -20,22 +20,23 @@ const uglifyJS = require('uglify-js');
 readCode(process.argv[2]);
 
 function readCode(inputPath) {
-  if (fs.existsSync(inputPath)) {
-    const files = fs.readdirSync(inputPath);
-    files.forEach(function(file) {
-      const filePath = path.join(inputPath, file);
-      if (fs.existsSync(filePath)) {
-        const fileStat = fs.statSync(filePath);
-        if (fileStat.isFile()) {
-          const code = fs.readFileSync(filePath, 'utf-8');
-          uglifyCode(code, filePath);
-        }
-        if (fileStat.isDirectory()) {
-          readCode(filePath);
-        }
-      }
-    });
+  if (!fs.existsSync(inputPath)) {
+    return;
   }
+  const files = fs.readdirSync(inputPath);
+  files.forEach(function (file) {
+    const filePath = path.join(inputPath, file);
+    if (fs.existsSync(filePath)) {
+      const fileStat = fs.statSync(filePath);
+      if (fileStat.isFile() && filePath.endsWith('.js')) {
+        const code = fs.readFileSync(filePath, 'utf-8');
+        uglifyCode(code, filePath);
+      }
+      if (fileStat.isDirectory()) {
+        readCode(filePath);
+      }
+    }
+  });
 }
 
 function uglifyCode(code, outPath) {

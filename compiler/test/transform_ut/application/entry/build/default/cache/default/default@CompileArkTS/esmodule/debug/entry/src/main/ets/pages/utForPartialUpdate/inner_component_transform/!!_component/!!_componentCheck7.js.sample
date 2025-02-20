@@ -36,6 +36,13 @@ class SideBarContainerExample extends ViewV2 {
         this.isOn2 = true;
         this.finalizeConstruction();
     }
+    resetStateVarsOnReuse(params) {
+        this.arr = [1, 2, 3];
+        this.current = 1;
+        this.showSideBar = true;
+        this.isOn1 = true;
+        this.isOn2 = true;
+    }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             SideBarContainer.create(SideBarContainerType.Embed);

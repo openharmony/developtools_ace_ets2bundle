@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-// @Local base case
+// This test case is used to verify @Local base case.
 @Entry
 @ComponentV2
 struct Index {

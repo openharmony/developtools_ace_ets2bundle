@@ -23,7 +23,7 @@ import {
   preprocessExtend,
 } from '../../../lib/validate_ui_syntax';
 
-function normalizeFileContent(content: string) {
+function normalizeFileContent(content: string): string {
   // Replace all types of line endings with a single newline character
   const normalizedLineEndings = content.replace(/\r\n|\r/g, '\n');
 
@@ -36,7 +36,7 @@ function normalizeFileContent(content: string) {
   return normalizedEmptyLines;
 }
 
-function processSystemApi(content) {
+function processSystemApi(content: string): string {
   const REG_SYSTEM = 
     /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)/g;
   const REG_LIB_SO =
@@ -65,37 +65,40 @@ function processSystemApi(content) {
   return newContent;
 }
 
-export function cleanCopyRight(str: string) {
+export function cleanCopyRight(str: string): string {
   const copyrightBlockRegex = /(?:\/\*.*Copyright \(c\) [\d\- ]+ Huawei Device Co\., Ltd\..*\*\/)/gs;
 
   return str.replace(copyrightBlockRegex, '');
 }
 
-export function processExecInStr(str: string) {
+export function processExecInStr(str: string): string {
   const regex = /\${(.*?)}/g;
   return str.replace(regex, (match, p1) => {
     return eval(p1);
   });
 }
 
-export function parseFileNameFromPath(filePath: string) {
+export function parseFileNameFromPath(filePath: string): string {
   return path.basename(filePath, path.extname(filePath));
 }
 
-export function parseLog(log: string) {
-  const regexPattern = /(:\d+:\d+)?\n(.*)/gm;
-  const matchResult = regexPattern.exec(log);
-
-  const logInfo: string = matchResult[2].trim();
-
-  return logInfo;
+export function parseLog(log: string): string {
+  try {
+    const regexPattern = /(:\d+:\d+)?\n(.*)/gm;
+    const matchResult = regexPattern.exec(log);
+  
+    const logInfo: string = matchResult[2].trim();
+    return logInfo;
+  } catch {
+    return log;
+  }
 }
 
-export function parseCode(code: string) {
+export function parseCode(code: string): string {
   return normalizeFileContent(cleanCopyRight(code));
 }
 
-export function sourceReplace(source: string) {
+export function sourceReplace(source: string): string {
   let content: string = source;
   content = preprocessExtend(content);
   content = processSystemApi(content);

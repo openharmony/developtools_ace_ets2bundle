@@ -125,7 +125,8 @@ let decoractorMap: Map<string, Map<string, Set<string>>>;
 
 export function processCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   log: LogInfo[], name: string, isBuilder: boolean = false, isGlobalBuilder: boolean = false,
-  idName: ts.Expression = undefined, builderParamsResult: BuilderParamsResult = null): void {
+  idName: ts.Expression = undefined, builderParamsResult: BuilderParamsResult = null,
+  isInRepeatTemplate: boolean = false): void {
   decoractorMap = new Map(
     [[COMPONENT_STATE_DECORATOR, stateCollection],
       [COMPONENT_LINK_DECORATOR, linkCollection],
@@ -135,14 +136,19 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
       [COMPONENT_OBJECT_LINK_DECORATOR, objectLinkCollection]]);
   const componentNode: ts.CallExpression = getCustomComponentNode(node);
   if (componentNode) {
+    const parentComponentType: ParentType = componentCollection.currentClassName ? 
+    getParentComponentType(componentCollection.currentClassName) : getParentComponentType('');
     const isRecycleComponent: boolean = isRecycle(name);
+    const isReuseComponentInV2: boolean = isReuseInV2(name);
+    logMessageCollection.checkNestedComponents(parentComponentType, isRecycleComponent, isReuseComponentInV2, node, log);
+    logMessageCollection.checkIfReuseV2InRepeatTemplate(isInRepeatTemplate, isReuseComponentInV2, node, log);
     const hasChainCall: boolean = componentNode.parent &&
       ts.isPropertyAccessExpression(componentNode.parent);
     let ischangeNode: boolean = false;
     let customComponentNewExpression: ts.NewExpression = createCustomComponentNewExpression(
       componentNode, name, isBuilder, isGlobalBuilder);
     let argumentsArray: ts.PropertyAssignment[];
-    const componentAttrInfo: ComponentAttrInfo = { reuseId: null, hasIdAttr: false, attrCount: 0 };
+    const componentAttrInfo: ComponentAttrInfo = { reuseId: null, hasIdAttr: false, attrCount: 0, reuse: '' };
     if (isHasChild(componentNode)) {
       // @ts-ignore
       argumentsArray = componentNode.arguments[0].properties.slice();
@@ -174,7 +180,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
             ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))];
         const immutableStatements: ts.Statement[] = [];
         bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), commomComponentNode,
-          log, true, false, immutableStatements, false, componentAttrInfo);
+          log, true, false, immutableStatements, false, componentAttrInfo, isReuseComponentInV2);
         needCommon = commomComponentNode.length > 1 || immutableStatements.length > 0;
         if (componentAttrInfo.hasIdAttr && componentAttrInfo.attrCount === 1) {
           commomComponentNode[0] = createCommonIdAttrNode();
@@ -195,7 +201,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
       newStatements.push(createRecycleComponent(isGlobalBuilder));
     }
     addCustomComponent(node, newStatements, customComponentNewExpression, log, name, componentNode,
-      isBuilder, isGlobalBuilder, isRecycleComponent, componentAttrInfo, builderParamsResult);
+      isBuilder, isGlobalBuilder, isRecycleComponent, componentAttrInfo, builderParamsResult, isReuseComponentInV2);
     if (hasChainCall && (!partialUpdateConfig.partialUpdateMode || needCommon)) {
       newStatements.push(ts.factory.createExpressionStatement(
         createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
@@ -221,6 +227,10 @@ function createCommonIdAttrNode(): ts.ExpressionStatement {
 
 export function isRecycle(componentName: string): boolean {
   return storedFileInfo.getCurrentArkTsFile().recycleComponents.has(componentName);
+}
+
+export function isReuseInV2(componentName: string): boolean {
+  return storedFileInfo.getCurrentArkTsFile().reuseComponentsV2.has(componentName);
 }
 
 function createRecycleComponent(isGlobalBuilder: boolean): ts.Statement {
@@ -295,12 +305,13 @@ function changeNodeFromCallToArrowDetermine(node: ts.CallExpression, builderBind
 function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   newNode: ts.NewExpression, log: LogInfo[], name: string, componentNode: ts.CallExpression,
   isBuilder: boolean, isGlobalBuilder: boolean, isRecycleComponent: boolean,
-  componentAttrInfo: ComponentAttrInfo, builderParamsResult: BuilderParamsResult): void {
+  componentAttrInfo: ComponentAttrInfo, builderParamsResult: BuilderParamsResult,
+  isReuseComponentInV2: boolean): void {
   if (ts.isNewExpression(newNode)) {
     const propertyArray: ts.ObjectLiteralElementLike[] = [];
     validateCustomComponentPrams(componentNode, name, propertyArray, log, isBuilder);
     addCustomComponentStatements(node, newStatements, newNode, name, propertyArray, componentNode,
-      isBuilder, isGlobalBuilder, isRecycleComponent, componentAttrInfo, builderParamsResult, log);
+      isBuilder, isGlobalBuilder, isRecycleComponent, componentAttrInfo, builderParamsResult, log, isReuseComponentInV2);
   }
 }
 
@@ -308,7 +319,7 @@ function addCustomComponentStatements(node: ts.ExpressionStatement, newStatement
   newNode: ts.NewExpression, name: string, props: ts.ObjectLiteralElementLike[],
   componentNode: ts.CallExpression, isBuilder: boolean, isGlobalBuilder: boolean,
   isRecycleComponent: boolean, componentAttrInfo: ComponentAttrInfo,
-  builderParamsResult: BuilderParamsResult, log: LogInfo[]): void {
+  builderParamsResult: BuilderParamsResult, log: LogInfo[], isReuseComponentInV2: boolean): void {
   if (!partialUpdateConfig.partialUpdateMode) {
     const id: string = componentInfo.id.toString();
     newStatements.push(createFindChildById(id, name, isBuilder), createCustomComponentIfStatement(id,
@@ -316,7 +327,7 @@ function addCustomComponentStatements(node: ts.ExpressionStatement, newStatement
       ts.factory.createObjectLiteralExpression(props, true), name));
   } else {
     newStatements.push(createCustomComponent(newNode, name, componentNode, isGlobalBuilder, isBuilder,
-      isRecycleComponent, componentAttrInfo, builderParamsResult, log));
+      isRecycleComponent, componentAttrInfo, builderParamsResult, log, isReuseComponentInV2));
   }
 }
 
@@ -352,7 +363,7 @@ class ChildAndParentComponentInfo {
     this.childStructInfo = processStructComponentV2.getAliasStructInfo(childNode) ||
       processStructComponentV2.getOrCreateStructInfo(childName);
     this.paramDecoratorMap = this.childStructInfo.paramDecoratorMap;
-    this.updatePropsDecoratorsV2 = [...this.childStructInfo.eventDecoratorSet, ...this.paramDecoratorMap.keys()];
+    this.updatePropsDecoratorsV2 = [...this.childStructInfo.eventDecoratorMap.keys(), ...this.paramDecoratorMap.keys()];
     this.parentStructInfo = componentCollection.currentClassName ?
       processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName) :
       new StructInfo();
@@ -409,7 +420,8 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
         type: LogType.ERROR,
         message: `Property '${itemName}' in the custom component '${info.childName}'` +
           ` cannot be initialized here (forbidden to specify).`,
-        pos: item.getStart()
+        pos: item.getStart(),
+        code: '10905324'
       });
       return;
     }
@@ -420,7 +432,8 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
       log.push({
         type: LogType.ERROR,
         message: `Property '${itemName}' in the @ComponentV2 component '${info.childName}' are not allowed to be assigned values here.`,
-        pos: item.getStart()
+        pos: item.getStart(),
+        code: '10905323'
       });
     }
   } else {
@@ -431,7 +444,8 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
       log.push({
         type: LogType.ERROR,
         message: `Property '${itemName}' in the @Component component '${info.childName}' are not allowed to be assigned values here.`,
-        pos: item.getStart()
+        pos: item.getStart(),
+        code: '10905322'
       });
     }
   }
@@ -526,7 +540,8 @@ function validateInitParam(childName: string, curChildProps: Set<string>,
         log.push({
           type: LogType.ERROR,
           message: `Property '${paramName}' must be initialized through the component constructor.`,
-          pos: node.getStart()
+          pos: node.getStart(),
+          code: '10905321'
         });
       }
     });
@@ -534,14 +549,16 @@ function validateInitParam(childName: string, curChildProps: Set<string>,
     log.push({
       type: LogType.ERROR,
       message: 'The @ComponentV2 struct must not contain any @Component with an @Link decorated variable',
-      pos: node.getStart()
+      pos: node.getStart(),
+      code: '10905213'
     });
   }
 }
 
 function createCustomComponent(newNode: ts.NewExpression, name: string, componentNode: ts.CallExpression,
   isGlobalBuilder: boolean, isBuilder: boolean, isRecycleComponent: boolean,
-  componentAttrInfo: ComponentAttrInfo, builderParamsResult: BuilderParamsResult, log: LogInfo[]): ts.Block {
+  componentAttrInfo: ComponentAttrInfo, builderParamsResult: BuilderParamsResult, log: LogInfo[], 
+  isReuseComponentInV2:boolean): ts.Block {
   let componentParameter: ts.ObjectLiteralExpression;
   if (componentNode.arguments && componentNode.arguments.length) {
     componentParameter = ts.factory.createObjectLiteralExpression(createChildElmtId(componentNode, name, log), true);
@@ -588,6 +605,8 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
   } else if (partialUpdateConfig.optimizeComponent) {
     observeArgArr.push(componentPop(name));
   }
+  const reuseOrCreateArgArr: ts.ObjectLiteralExpression[] = [ts.factory.createObjectLiteralExpression(
+    generateReuseOrCreateArgArr(componentNode, componentAttrInfo, name, newNode), true)];
   return ts.factory.createBlock(
     [
       ts.factory.createExpressionStatement(ts.factory.createCallExpression(
@@ -595,11 +614,72 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
           ts.factory.createParenthesizedExpression(parentConditionalExpression()) : ts.factory.createThis(),
         isRecycleComponent ?
           ts.factory.createIdentifier(OBSERVE_RECYCLE_COMPONENT_CREATION) :
-          ts.factory.createIdentifier(partialUpdateConfig.optimizeComponent ?
-            OBSERVECOMPONENTCREATION2 : OBSERVECOMPONENTCREATION)
+          isReuseComponentInV2 ? ts.factory.createIdentifier(constantDefine.REUSE_OR_CREATE_METHOD) : 
+            ts.factory.createIdentifier(partialUpdateConfig.optimizeComponent ?
+              OBSERVECOMPONENTCREATION2 : OBSERVECOMPONENTCREATION)
         ),
-        undefined, observeArgArr as ts.Expression[]))
-    ], true);
+        undefined, isReuseComponentInV2 ? reuseOrCreateArgArr as ts.Expression[] : observeArgArr as ts.Expression[]))
+    ], 
+    true
+  );
+}
+
+function generateReuseOrCreateArgArr(componentNode: ts.CallExpression, componentAttrInfo: ComponentAttrInfo, 
+  name: string, newNode: ts.NewExpression): ts.ObjectLiteralElementLike[] {
+  const reuseParamsArr: ts.ObjectLiteralElementLike[] = [];
+  if (componentNode.expression && ts.isIdentifier(componentNode.expression)) {
+    reuseParamsArr.push(ts.factory.createPropertyAssignment(
+      ts.factory.createIdentifier(constantDefine.COMPONENT_CLASS),
+      componentNode.expression
+    ));
+  }
+  reuseParamsArr.push(createReuseParameterArrowFunction(getArgumentsToPass(componentNode), constantDefine.GET_PARAMS, name));
+  reuseParamsArr.push(createReuseParameterArrowFunction(
+    [], constantDefine.GET_REUSE_ID, componentAttrInfo.reuse ? componentAttrInfo.reuse : name));
+  if (newNode.arguments.length >= 6 && ts.isObjectLiteralExpression(newNode.arguments[5])) {
+    reuseParamsArr.push(generateExtraInfo(true, newNode.arguments[5]));
+  } else {
+    reuseParamsArr.push(generateExtraInfo(false));
+  }
+  return reuseParamsArr;
+}
+
+function getArgumentsToPass(componentNode: ts.CallExpression): ts.NodeArray<ts.ObjectLiteralElementLike> | undefined[] {
+  if (componentNode.arguments && componentNode.arguments.length === 1 && 
+    ts.isObjectLiteralExpression(componentNode.arguments[0]) && componentNode.arguments[0].properties &&
+    componentNode.arguments[0].properties.length) {
+    return componentNode.arguments[0].properties;
+  }
+  return [];
+}
+
+function createReuseParameterArrowFunction(propertyArray: ts.NodeArray<ts.ObjectLiteralElementLike> | undefined[],
+  identifierName: string, name: string): ts.PropertyAssignment {
+  return ts.factory.createPropertyAssignment(
+    ts.factory.createIdentifier(identifierName),
+    ts.factory.createArrowFunction(
+      undefined,
+      undefined,
+      [],
+      undefined,
+      ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+      identifierName === constantDefine.GET_REUSE_ID ? 
+        ts.factory.createStringLiteral(name) :
+        ts.factory.createParenthesizedExpression(ts.factory.createObjectLiteralExpression(
+        propertyArray.length ? propertyArray : [],
+        true
+      ))
+    )
+  );
+}
+
+function generateExtraInfo(hasPositionInfo: boolean, positionInfo?: ts.ObjectLiteralExpression): ts.PropertyAssignment {
+  return ts.factory.createPropertyAssignment(
+    ts.factory.createIdentifier(constantDefine.EXTRA_INFO),
+    hasPositionInfo ? 
+    positionInfo : 
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
+  );
 }
 
 function componentPop(name: string): ts.ObjectLiteralExpression {
@@ -772,12 +852,13 @@ function updatePropertyAssignment(newProperties: ts.PropertyAssignment[],
         log.push({
           type: LogType.ERROR,
           message: `The optional character can not be used in the initial value of property '${itemName}'.`,
-          pos: item.getStart()
+          pos: item.getStart(),
+          code: '10905320'
         });
         return;
       }
       if (childStructInfo.paramDecoratorMap.has(itemName) &&
-        childStructInfo.eventDecoratorSet.has('$' + itemName)) {
+        childStructInfo.eventDecoratorMap.has('$' + itemName)) {
         newProperties.push(createUpdateTwoWayNode(itemName, item.initializer.expression.expression));
         return;
       }
@@ -786,7 +867,8 @@ function updatePropertyAssignment(newProperties: ts.PropertyAssignment[],
         message: 'When the two-way binding syntax is used, ' +
           `the variable '${itemName}' must be decorated with @Param, ` +
           `and the @Event variable '$` + `${itemName}' ` + `must be defined in the ${childStructInfo.structName}.`,
-        pos: item.getStart()
+        pos: item.getStart(),
+        code: '10905319'
       });
       return;
     }
@@ -794,7 +876,8 @@ function updatePropertyAssignment(newProperties: ts.PropertyAssignment[],
       type: LogType.ERROR,
       message: 'When the two-way binding syntax is used, ' +
         `the initial value of property '${itemName}' must be a variable.`,
-      pos: item.getStart()
+      pos: item.getStart(),
+      code: '10905318'
     });
     return;
   }
@@ -1014,6 +1097,34 @@ function getCustomComponentNode(node: ts.ExpressionStatement): ts.CallExpression
     }
   }
   return componentNode;
+}
+
+export enum ParentType {
+  NormalComponentV1,
+  NormalComponentV2,
+  ReuseComponentV1,
+  ReuseComponentV2,
+  InvalidComponentType
+}
+
+function getParentComponentType(parentName: string): ParentType {
+  const parentCustomComponentInfo: StructInfo = parentName ? 
+    processStructComponentV2.getOrCreateStructInfo(parentName) : new StructInfo();
+  let type: ParentType = ParentType.InvalidComponentType;
+  if (parentCustomComponentInfo.isComponentV1 &&
+    parentCustomComponentInfo.isReusable) {
+    type = ParentType.ReuseComponentV1;
+  } else if (parentCustomComponentInfo.isComponentV1 &&
+    !parentCustomComponentInfo.isReusable) {
+    type = ParentType.NormalComponentV1;
+  } else if (parentCustomComponentInfo.isComponentV2 &&
+    parentCustomComponentInfo.isReusableV2) {
+    type = ParentType.ReuseComponentV2;
+  } else if (parentCustomComponentInfo.isComponentV2 &&
+    !parentCustomComponentInfo.isReusableV2) {
+    type = ParentType.NormalComponentV2;
+  }
+  return type;
 }
 
 function getCollectionSet(name: string, collection: Map<string, Set<string>>): Set<string> {
@@ -1302,7 +1413,8 @@ function validateForbiddenToInitViaParam(node: ts.ObjectLiteralElementLike,
       type: LogType.ERROR,
       message: `Property '${node.name.getText()}' in the custom component '${customComponentName}'` +
         ` cannot be initialized here (forbidden to specify).`,
-      pos: node.name.getStart()
+      pos: node.name.getStart(),
+      code: '10905317'
     });
   }
 }
@@ -1331,7 +1443,8 @@ function validateMandatoryToInitViaParam(node: ts.CallExpression, customComponen
         type: LogType.ERROR,
         message: `Property '${item}' in the custom component '${customComponentName}'` +
           ` is missing (mandatory to specify).`,
-        pos: node.getStart()
+        pos: node.getStart(),
+        code: '10905316'
       });
     }
   });
@@ -1358,7 +1471,8 @@ function validateInitDecorator(node: ts.CallExpression, customComponentName: str
       log.push({
         type: LogType.ERROR,
         message: `Property '${item}' must be initialized through the component constructor.`,
-        pos: node.getStart()
+        pos: node.getStart(),
+        code: '10905359'
       });
     }
   });
@@ -1389,7 +1503,8 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
     message: `The ${parentPropertyKind} property '${parentPropertyName}' cannot be assigned to ` +
       `the ${curPropertyKind} property '${propertyName}'.`,
     // @ts-ignore
-    pos: node.initializer ? node.initializer.getStart() : node.getStart()
+    pos: node.initializer ? node.initializer.getStart() : node.getStart(),
+    code: type === LogType.ERROR ? '10905315' : undefined
   });
 }
 
@@ -1398,6 +1513,7 @@ function validateNonLinkWithDollar(node: ts.PropertyAssignment, log: LogInfo[]):
     type: LogType.ERROR,
     message: `Property '${node.name.getText()}' cannot initialize` +
       ` using '$' to create a reference to a variable.`,
-    pos: node.initializer.getStart()
+    pos: node.initializer.getStart(),
+    code: '10905314'
   });
 }

@@ -27,7 +27,8 @@ import {
   CUSTOM_DECORATOR_NAME,
   COMPONENT_DECORATOR_ENTRY,
   COMPONENT_BUILDER_DECORATOR,
-  DECORATOR_REUSEABLE
+  DECORATOR_REUSEABLE,
+  DECORATOR_REUSABLE_V2
 } from './pre_define';
 import {
   propertyCollection,
@@ -731,7 +732,8 @@ function validateModuleName(moduleNode: ts.Identifier, log: LogInfo[], sourceFil
     const error: LogInfo = {
       type: LogType.ERROR,
       message: `The module name '${moduleName}' can not be the same as the inner component name.`,
-      pos: moduleNode.getStart()
+      pos: moduleNode.getStart(),
+      code: '10905235'
     };
     if (sourceFile && fileResolvePath) {
       const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(moduleNode.getStart());
@@ -962,6 +964,9 @@ function parseComponentV2InImportNode(node: ts.StructDeclaration, name: string, 
   if (isDETS) {
     storedFileInfo.getCurrentArkTsFile().compFromDETS.add(name);
   }
+  if (isReusableV2(node)) {
+    storedFileInfo.getCurrentArkTsFile().reuseComponentsV2.add(name);
+  }
   processStructComponentV2.parseComponentProperty(node, structInfo, null, null);
 }
 
@@ -970,5 +975,13 @@ function isComponentV2(node: ts.StructDeclaration): boolean {
   return decorators.some((item: ts.Decorator) => {
     const name: string = item.getText().replace(/\([^\(\)]*\)/, '').replace('@', '').trim();
     return name === 'ComponentV2';
+  });
+}
+
+function isReusableV2(node: ts.StructDeclaration): boolean {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  return decorators.some((item: ts.Decorator) => {
+    const name: string = item.getText().replace(/\([^\(\)]*\)/, '').replace('@', '').trim();
+    return name === DECORATOR_REUSABLE_V2;
   });
 }

@@ -6,6 +6,6 @@
     "onChange", "onAnimationStart", "onAnimationEnd", "onGestureSwipe",
     "barPosition", "barOverlap", "barBackgroundColor", "customContentTransition", "barBackgroundBlurStyle",
     "onContentWillChange", "animationMode", "edgeEffect", "onTabBarClick", "fadingEdge", "divider",
-    "barGridAlign", "barBackgroundEffect", "pageFlipMode", "cachedMaxCount"
+    "barGridAlign", "barBackgroundEffect", "pageFlipMode", "onSelected", "onUnselected", "cachedMaxCount"
   ]
 }

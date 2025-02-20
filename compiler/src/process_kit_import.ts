@@ -32,8 +32,9 @@ import { compilerOptions } from './ets_checker';
 import {
   transformLazyImport,
   lazyImportReExportCheck,
+  reExportNoCheckMode,
   LazyImportOptions
-} from './ark_utils';
+} from './process_lazy_import';
 import createAstNodeUtils from './create_ast_node_utils';
 import { MemoryMonitor } from './fast_build/meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from './fast_build/meomry_monitor/memory_define';
@@ -45,6 +46,7 @@ import {
   LogData,
   LogDataFactory
 } from './fast_build/ark_compiler/logger';
+import { etsLoaderErrorReferences } from './fast_build/ark_compiler/url_config.json';
 
 /*
 * basic implementation logic:
@@ -73,7 +75,7 @@ const KEEPTS = '// @keepTs';
 */
 export function processKitImport(id: string, metaInfo: Object, compilationTime: CompilationTimeStatistics,
   shouldReturnOriginalNode: boolean = true,
-  lazyImportOptions: LazyImportOptions = { autoLazyImport: false, reExportCheckMode: 'noCheck' }): Function {
+  lazyImportOptions: LazyImportOptions = { autoLazyImport: false, reExportCheckMode: reExportNoCheckMode }): Function {
   const { autoLazyImport, reExportCheckMode } = lazyImportOptions;
   return (context: ts.TransformationContext) => {
     const visitor: ts.Visitor = node => {
@@ -92,7 +94,10 @@ export function processKitImport(id: string, metaInfo: Object, compilationTime: 
               ArkTSErrorDescription,
               `Kit '${moduleRequest}' has no corresponding config file in ArkTS SDK.`,
               '',
-              ["Please make sure the Kit apis are consistent with SDK and there's no local modification on Kit apis."]
+              [
+                "Please make sure the Kit apis are consistent with SDK and there's no local modification on Kit apis.",
+                `For more details on Kit apis, please refer to ${etsLoaderErrorReferences.harmonyOSReferencesAPI}.`
+              ]
             );
             kitTransformLog.errors.push({
               type: LogType.ERROR,
@@ -137,9 +142,7 @@ export function processKitImport(id: string, metaInfo: Object, compilationTime: 
         let processedNode: ts.SourceFile =
           ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
         processedNode = <ts.SourceFile> (autoLazyImport ? transformLazyImport(processedNode, resolver) : processedNode);
-        if (reExportCheckMode !== 'noCheck') {
-          lazyImportReExportCheck(processedNode, reExportCheckMode);
-        }
+        lazyImportReExportCheck(processedNode, reExportCheckMode);
         ModuleSourceFile.newSourceFile(id, processedNode, metaInfo, projectConfig.singleFileEmit);
         MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);
         stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
@@ -456,7 +459,10 @@ export class KitInfo {
         ArkTSErrorDescription,
         `'${importName}' is not exported from Kit '${KitInfo.getCurrentKitName()}'.`,
         '',
-        [`Please add the exported symbol of '${importName}' in the Kit '${KitInfo.getCurrentKitName()}'.`]
+        [
+          "Please make sure the Kit apis are consistent with SDK and there's no local modification on Kit apis.",
+          `For more details on Kit apis, please refer to ${etsLoaderErrorReferences.harmonyOSReferencesAPI}.`
+        ]
       );
       kitTransformLog.errors.push({
         type: LogType.ERROR,

@@ -27,6 +27,8 @@ class HomeComponent extends ViewV2 {
         super(parent, elmtId, extraInfo);
         this.finalizeConstruction();
     }
+    resetStateVarsOnReuse(params) {
+    }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
@@ -50,6 +52,10 @@ class ChildComponent extends ViewV2 {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda, extraInfo) {
         super(parent, elmtId, extraInfo);
         this.finalizeConstruction();
+    }
+    resetStateVarsOnReuse(params) {
+      this.resetComputed("fullName");
+      this.resetMonitorsOnReuse();
     }
     static testMonitor() { }
     static get fullName() {

@@ -52,13 +52,16 @@ export const COMPONENT_REQUIRE_DECORATOR: string = '@Require';
 export const CLASS_TRACK_DECORATOR: string = 'Track';
 export const CLASS_MIN_TRACK_DECORATOR: string = 'Trace';
 export const COMPONENT_DECORATOR_COMPONENT_V2: string = '@ComponentV2';
+export const COMPONENT_DECORATOR_REUSABLE_V2: string = '@ReusableV2';
+export const DECORATOR_REUSABLE_V2: string = 'ReusableV2';
+export const REUSE_ATTRIBUTE: string = 'reuse';
 
 export const COMPONENT_DECORATORS_PARAMS: Set<string> = new Set([COMPONENT_CONSUME_DECORATOR,
   COMPONENT_STORAGE_PROP_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR, COMPONENT_PROVIDE_DECORATOR,
   COMPONENT_WATCH_DECORATOR]);
 export const INNER_COMPONENT_DECORATORS: Set<string> = new Set([COMPONENT_DECORATOR_ENTRY,
   COMPONENT_DECORATOR_PREVIEW, COMPONENT_DECORATOR_COMPONENT, COMPONENT_DECORATOR_CUSTOM_DIALOG,
-  COMPONENT_DECORATOR_REUSEABLE, COMPONENT_DECORATOR_COMPONENT_V2]);
+  COMPONENT_DECORATOR_REUSEABLE, COMPONENT_DECORATOR_COMPONENT_V2, COMPONENT_DECORATOR_REUSABLE_V2]);
 export const INNER_COMPONENT_MEMBER_DECORATORS: Set<string> = new Set([COMPONENT_STATE_DECORATOR,
   COMPONENT_PROP_DECORATOR, COMPONENT_LINK_DECORATOR, COMPONENT_STORAGE_PROP_DECORATOR,
   COMPONENT_STORAGE_LINK_DECORATOR, COMPONENT_PROVIDE_DECORATOR, COMPONENT_CONSUME_DECORATOR,
@@ -338,6 +341,7 @@ export const SEAECH: string = 'Search';
 export const CALENDAR: string = 'Calendar';
 export const MODE: string = 'mode';
 export const SHOW_SIDE_BAR: string = 'showSideBar';
+export const SIDE_BAR_WIDTH: string = 'sideBarWidth';
 export const CHECK_BOX: string = 'Checkbox';
 export const SELECT_LOW: string = 'select';
 export const CHECKBOX_GROUP: string = 'CheckboxGroup';
@@ -360,6 +364,7 @@ export const TEXT_INPUT: string = 'TextInput';
 export const TEXT_PICKER: string = 'TextPicker';
 export const TOGGLE: string = 'Toggle';
 export const ALPHABET_INDEXER: string = 'AlphabetIndexer';
+export const ARC_ALPHABET_INDEXER: string = 'ArcAlphabetIndexer';
 export const IS_ON: string = 'isOn';
 export const DATE: string = 'date';
 export const GRID_ITEM: string = 'GridItem';
@@ -367,10 +372,12 @@ export const LIST_ITEM: string = 'ListItem';
 export const UPDATE_FUNC_BY_ELMT_ID: string = 'updateFuncByElmtId';
 export const BIND_MENU: string = 'bindMenu';
 export const BIND_CONTEXT_MENU: string = 'bindContextMenu';
+export const NAV_BAR_WIDTH: string = 'navBarWidth';
+export const ARC_LIST_ITEM: string = 'ArcListItem';
 
 export const DOLLAR_BLOCK_INTERFACE: Set<string> = new Set([
   CHECK_BOX, CHECKBOX_GROUP, DATE_PICKER, TIME_PICKER, MENU_ITEM, PANEL, RATING, SIDE_BAR_CONTAINER, STEPPER, SWIPER, TABS, TEXT_PICKER, TOGGLE, SELECT,
-  REFRESH, CALENDAR, GRID_ITEM, LIST_ITEM, TEXT_TIMER, SEAECH, TEXT_INPUT, SLIDER, TEXT_AREA, ALPHABET_INDEXER]);
+  REFRESH, CALENDAR, GRID_ITEM, LIST_ITEM, TEXT_TIMER, SEAECH, TEXT_INPUT, SLIDER, TEXT_AREA, ALPHABET_INDEXER, ARC_ALPHABET_INDEXER]);
 export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([
   BIND_POPUP, $$_VISIBILITY, BIND_CONTENT_COVER, BIND_SHEET]);
 export const STYLE_ADD_DOUBLE_EXCLAMATION: Set<string> = new Set([
@@ -397,6 +404,7 @@ export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
   [TEXT_PICKER, new Set([VALUE, SELECTED])],
   [TOGGLE, new Set([IS_ON])],
   [ALPHABET_INDEXER, new Set([SELECTED])],
+  [ARC_ALPHABET_INDEXER, new Set([SELECTED])],
   [SELECT, new Set([SELECTED, VALUE])],
   [CALENDAR, new Set([DATE])],
   [GRID_ITEM, new Set([SELECTED])],
@@ -411,10 +419,11 @@ export const PROPERTIES_ADD_DOUBLE_EXCLAMATION: Map<string, Set<string>> = new M
   [DATE_PICKER, new Set([SELECTED])],
   [TIME_PICKER, new Set([SELECTED])],
   [MENU_ITEM, new Set([SELECTED])],
+  [NAVIGATION, new Set([NAV_BAR_WIDTH])],
   [PANEL, new Set([MODE])],
   [RATING, new Set([RATING_LOW])],
   [SEAECH, new Set([VALUE])],
-  [SIDE_BAR_CONTAINER, new Set([SHOW_SIDE_BAR])],
+  [SIDE_BAR_CONTAINER, new Set([SHOW_SIDE_BAR, SIDE_BAR_WIDTH])],
   [SLIDER, new Set([VALUE])],
   [STEPPER, new Set([INDEX])],
   [SWIPER, new Set([INDEX])],
@@ -424,6 +433,7 @@ export const PROPERTIES_ADD_DOUBLE_EXCLAMATION: Map<string, Set<string>> = new M
   [TEXT_PICKER, new Set([VALUE, SELECTED])],
   [TOGGLE, new Set([IS_ON])],
   [ALPHABET_INDEXER, new Set([SELECTED])],
+  [ARC_ALPHABET_INDEXER, new Set([SELECTED])],
   [SELECT, new Set([SELECTED, VALUE])],
   [CALENDAR, new Set([DATE])],
   [GRID_ITEM, new Set([SELECTED])],
@@ -526,7 +536,7 @@ export const ITEMCREATION: string = 'itemCreation';
 export const ITEMCREATION2: string = 'itemCreation2';
 export const OBSERVEDSHALLOWRENDER: string = 'observedShallowRender';
 export const OBSERVEDDEEPRENDER: string = 'observedDeepRender';
-export const ItemComponents: string[] = ['ListItem', 'GridItem'];
+export const ItemComponents: string[] = ['ListItem', 'GridItem', 'ArcListItem'];
 export const FOREACHITEMGENFUNCTION: string = 'forEachItemGenFunction';
 export const __LAZYFOREACHITEMGENFUNCTION: string = '__lazyForEachItemGenFunction';
 export const _ITEM: string = '_item';
@@ -630,4 +640,3 @@ export const ARKTS_MODULE_PREFIX: string = '@arkts';
 export const ARKTS_MODULE_NAME: string = 'arkts';
 export const COLD_RELOAD_MODE: string = 'coldReload';
 export const INTEGRATED_HSP: string = 'integratedHsp';
-export const SpanComponents: string[] = ['Span'];

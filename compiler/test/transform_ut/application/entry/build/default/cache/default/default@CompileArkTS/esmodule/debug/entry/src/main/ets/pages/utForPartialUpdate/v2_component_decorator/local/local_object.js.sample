@@ -24,7 +24,8 @@ if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
 
-// @Local object
+// This test case is used to verify @Local object.
+
 let Info = class Info {
     constructor(name, age) {
         this.name = name;
@@ -46,6 +47,9 @@ class Index extends ViewV2 {
         this.info = new Info("Tom", 25);
         this.localInfo = new Info("Tom", 25);
         this.finalizeConstruction();
+    }
+    resetStateVarsOnReuse(params) {
+        this.localInfo = new Info("Tom", 25);
     }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {

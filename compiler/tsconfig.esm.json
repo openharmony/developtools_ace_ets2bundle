@@ -163,6 +163,8 @@
         "AlphabetIndexer",
         "AnalogClock",
         "Animator",
+        "ArcList",
+        "ArcListItem",
         "Badge",
         "Blank",
         "Button",
@@ -181,6 +183,7 @@
         "DataPanel",
         "DatePicker",
         "Divider",
+        "DotMatrix",
         "EffectComponent",
         "Ellipse",
         "EmbeddedComponent",
@@ -194,6 +197,7 @@
         "Hyperlink",
         "Image",
         "ImageAnimator",
+        "IndicatorComponent",
         "Line",
         "LinearIndicator",
         "List",
@@ -276,7 +280,11 @@
         "RichEditor",
         "Component3D",
         "ContainerSpan",
-        "ArcSwiper"
+        "ArcSwiper",
+        "ArcScrollBar",
+        "ArcAlphabetIndexer",
+        "HdsNavigation",
+        "HdsNavDestination"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -300,6 +308,16 @@
             "name": "Animator",
             "type": "AnimatorAttribute",
             "instance": "AnimatorInstance"
+          },
+          {
+            "name": "ArcList",
+            "type": "ArcListAttribute",
+            "instance": "ArcListInstance"
+          },
+          {
+            "name": "ArcListItem",
+            "type": "ArcListItemAttribute",
+            "instance": "ArcListItemInstance"
           },
           {
             "name": "Badge",
@@ -392,6 +410,11 @@
             "instance": "DividerInstance"
           },
           {
+            "name": "DotMatrix",
+            "type": "DotMatrixAttribute",
+            "instance": "DotMatrixInstance"
+          },
+          {
             "name": "EffectComponent",
             "type": "EffectComponentAttribute",
             "instance": "EffectComponentInstance"
@@ -455,6 +478,11 @@
             "name": "ImageAnimator",
             "type": "ImageAnimatorAttribute",
             "instance": "ImageAnimatorInstance"
+          },
+          {
+            "name": "IndicatorComponent",
+            "type": "IndicatorComponentAttribute",
+            "instance": "IndicatorComponentInstance"
           },
           {
             "name": "Line",
@@ -522,6 +550,11 @@
             "instance": "NavDestinationInstance"
           },
           {
+            "name": "HdsNavDestination",
+            "type": "HdsNavDestinationAttribute",
+            "instance": "HdsNavDestinationInstance"
+          },
+          {
             "name": "NavRouter",
             "type": "NavRouterAttribute",
             "instance": "NavRouterInstance"
@@ -530,6 +563,11 @@
             "name": "Navigation",
             "type": "NavigationAttribute",
             "instance": "NavigationInstance"
+          },
+          {
+            "name": "HdsNavigation",
+            "type": "HdsNavigationAttribute",
+            "instance": "HdsNavigationInstance"
           },
           {
             "name": "Navigator",
@@ -865,6 +903,16 @@
             "name": "ArcSwiper",
             "type": "ArcSwiperAttribute",
             "instance": "ArcSwiperInstance"
+          },
+          {
+            "name": "ArcScrollBar",
+            "type": "ArcScrollBarAttribute",
+            "instance": "ArcScrollBarInstance"
+          },
+          {
+            "name": "ArcAlphabetIndexer",
+            "type": "ArcAlphabetIndexerAttribute",
+            "instance": "ArcAlphabetIndexerInstance"
           }
         ]
       },

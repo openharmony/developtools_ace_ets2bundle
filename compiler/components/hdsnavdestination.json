@@ -1,0 +1,6 @@
+{
+    "name": "HdsNavDestination",
+    "attrs": ["titleBar", "hideTitleBar", "hideBackButton", "mode", "toolbarConfiguration", "hideToolBar", "onShown",
+      "onHidden", "onReady", "onWillAppear", "onWillDisappear", "onWillShow", "onWillHide", "ignoreLayoutSafeArea",
+      "systemBarStyle", "recoverable"]
+}
