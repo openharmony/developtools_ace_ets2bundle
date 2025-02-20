@@ -79,3 +79,6 @@ export const UPDATESOURCEMAP: string = 'updateSourceMap.json';
 export const ENTRYABILITY_JS: string = 'entry/src/main/entryability/EntryAbility.js';
 export const TEST: string = 'test';
 export const NEWFILE: string = 'newFile';
+
+export const DECLFILESPATH: string = '/entry/build/default/intermediates/loader_out/default/etsFortgz/decl-fileInfo.json';
+export const DECLGENV2OUTPATH: string = '/entry/build/default/intermediates/declgen/default/declgenV2';

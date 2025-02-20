@@ -88,13 +88,16 @@ import {
   createAndStartEvent,
   stopEvent,
   transformOhmurlToPkgName,
-  transformOhmurlToRecordName
+  transformOhmurlToRecordName,
+  ArkTsEvolutionModule,
+  pkgDeclFilesConfig
 } from '../../../ark_utils';
 import {
   generateAot,
   FaultHandler
 } from '../../../gen_aot';
 import {
+  ARK_TS_1_2,
   NATIVE_MODULE
 } from '../../../pre_define';
 import {
@@ -211,8 +214,10 @@ export class ModuleMode extends CommonMode {
       let metaInfo: Object = moduleInfo.meta;
       const pkgParams = {
         pkgName: metaInfo.pkgName,
+        moduleName: metaInfo.moduleName,
         pkgPath: metaInfo.pkgPath,
-        isRecordName: true
+        isRecordName: true,
+        isArkTsEvolution: metaInfo.language === ARK_TS_1_2
       };
       let recordName: string = getNormalizedOhmUrlByFilepath(moduleId, this.projectConfig, this.logger, pkgParams,
         undefined);
@@ -263,8 +268,22 @@ export class ModuleMode extends CommonMode {
   prepareForCompilation(rollupObject: Object, parentEvent: Object): void {
     const eventPrepareForCompilation = createAndStartEvent(parentEvent, 'preparation for compilation');
     this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
+    this.writeDeclFilesConfigJson(rollupObject.share.projectConfig.dependentModuleMap);
     this.removeCacheInfo(rollupObject);
     stopEvent(eventPrepareForCompilation);
+  }
+
+  // Write the declaration file information of the 1.1 module file to the disk of the corresponding module
+  writeDeclFilesConfigJson(dependentModuleMap: Map<string, ArkTsEvolutionModule>): void {
+    for (const pkgName in pkgDeclFilesConfig) {
+      const arkTsEvolutionModuleInfo = dependentModuleMap.get(pkgName);
+      if (!arkTsEvolutionModuleInfo?.declFilesPath) {
+        return;
+      }
+      const declFilesConfigFile: string = toUnixPath(arkTsEvolutionModuleInfo.declFilesPath);
+      mkdirsSync(path.dirname(declFilesConfigFile));
+      fs.writeFileSync(declFilesConfigFile, JSON.stringify(pkgDeclFilesConfig[pkgName], null, 2), 'utf-8');
+    }
   }
 
   collectModuleFileList(module: Object, fileList: IterableIterator<string>): void {
@@ -450,7 +469,7 @@ export class ModuleMode extends CommonMode {
 
     let moduleName: string = metaInfo.moduleName;
     let recordName: string = '';
-    let cacheFilePath: string =
+    let cacheFilePath: string =  metaInfo.language === ARK_TS_1_2 ? originalFilePath :
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath, metaInfo);
     let packageName: string = '';
 
@@ -458,8 +477,10 @@ export class ModuleMode extends CommonMode {
       packageName = metaInfo.pkgName;
       const pkgParams = {
         pkgName: packageName,
+        moduleName: metaInfo.moduleName,
         pkgPath: metaInfo.pkgPath,
-        isRecordName: true
+        isRecordName: true,
+        isArkTsEvolution: metaInfo.language === ARK_TS_1_2
       };
       recordName = getNormalizedOhmUrlByFilepath(filePath, this.projectConfig, this.logger, pkgParams, undefined);
     } else {
