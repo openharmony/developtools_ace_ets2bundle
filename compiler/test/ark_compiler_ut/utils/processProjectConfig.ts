@@ -46,5 +46,6 @@ projectConfig.pkgContextInfo = {
 projectConfig.dependencyAliasMap = new Map([
   ['library', '@bundle:UtTestApplication/sharedLibrary/ets/index']
 ]);
+projectConfig.dependentModuleMap = new Map();
 
 export default projectConfig;
