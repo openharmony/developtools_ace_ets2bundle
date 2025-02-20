@@ -47,6 +47,8 @@ import {
 } from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
 import {
+  ARK_TS_1_2,
+  ESMODULE,
   TRANSFORMED_MOCK_CONFIG,
   USER_DEFINE_MOCK_CONFIG
 } from '../../../pre_define';
@@ -503,8 +505,10 @@ export class ModuleSourceFile {
   private static spliceNormalizedOhmurl(moduleInfo: Object, filePath: string, importerFile?: string): string {
     const pkgParams = {
       pkgName: moduleInfo.meta.pkgName,
+      moduleName: moduleInfo.meta.moduleName,
       pkgPath: moduleInfo.meta.pkgPath,
-      isRecordName: false
+      isRecordName: false,
+      isArkTsEvolution: moduleInfo.meta.language === ARK_TS_1_2
     };
     const ohmUrl: string =
       getNormalizedOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, pkgParams,

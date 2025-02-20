@@ -17,10 +17,16 @@ import mocha from 'mocha';
 import fs from 'fs';
 import path from 'path';
 import { expect } from 'chai';
-import * as sinon from 'sinon';
 import * as ts from 'typescript';
+import sinon from 'sinon';
+import proxyquire from 'proxyquire';
 
-import { EXPECT_INDEX_ETS } from './mock/rollup_mock/path_config';
+import {
+  DEFAULT_ENTRY,
+  DEFAULT_PROJECT,
+  EXPECT_INDEX_ETS,
+  PROJECT_ROOT
+} from './mock/rollup_mock/path_config';
 import RollUpPluginMock from './mock/rollup_mock/rollup_plugin_mock';
 import {
   addLocalPackageSet,
@@ -29,6 +35,9 @@ import {
   needReCheckForChangedDepUsers,
   resetEtsCheck,
   serviceChecker,
+  resolveModuleNames as resolveModuleNamesMain,
+  arkTsEvolutionModuleMap,
+  cleanUpArkTsEvolutionModuleMap,
   getMaxFlowDepth,
   MAX_FLOW_DEPTH_DEFAULT_VALUE,
   fileCache,
@@ -39,6 +48,7 @@ import {
   globalProgram,
   projectConfig
 } from '../../main';
+import { mkdirsSync } from '../../lib/utils';
 
 mocha.describe('test ets_checker file api', function () {
     mocha.before(function () {
@@ -189,6 +199,116 @@ mocha.describe('test ets_checker file api', function () {
         const fileNames: string[] = ['../testdata/testfiles/testGetEmitHost.ts'];
         let program: ts.Program = ts.createProgram(fileNames, compilerOptions);
         expect(program.getEmitHost()).to.not.be.undefined;
+    });
+
+    mocha.it('2-1: test resolveModuleNames parse 1.2 module declaration files', function () {
+        const code: string = 'import { a } from "har";\nconsole.log(a);\n';
+        const moduleNames: string[] = [
+            'har',
+            'har/test'
+        ];
+        arkTsEvolutionModuleMap.set('har', {
+            language: '1.2',
+            packageName: 'har',
+            moduleName: 'har',
+            modulePath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har`,
+            declgenV1OutPath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har/build/default/intermediates/declgen/default/declgenV1`,
+            declgenBridgeCodePath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har/build/default/intermediates/declgen/default/bridgecode`
+        })
+        const filePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/${DEFAULT_ENTRY}/src/main/entryability/test.ets`;
+        const arktsEvoIndexDeclFilePath: string = `${arkTsEvolutionModuleMap.get('har').declgenV1OutPath}/har/Index.d.ets`;
+        const arktsEvoTestDeclFilePath: string = `${arkTsEvolutionModuleMap.get('har').declgenV1OutPath}/har/src/main/ets/test.d.ets`;
+        fs.writeFileSync(filePath, code);
+        mkdirsSync(path.dirname(arktsEvoIndexDeclFilePath));
+        mkdirsSync(path.dirname(arktsEvoTestDeclFilePath));
+        fs.writeFileSync(arktsEvoIndexDeclFilePath, '');
+        fs.writeFileSync(arktsEvoTestDeclFilePath, '');
+        const resolvedModules = resolveModuleNamesMain(moduleNames, filePath);
+        expect(resolvedModules[0].resolvedFileName === arktsEvoIndexDeclFilePath).to.be.true;
+        expect(resolvedModules[1].resolvedFileName === arktsEvoTestDeclFilePath).to.be.true;
+        fs.unlinkSync(filePath);
+        fs.unlinkSync(arktsEvoIndexDeclFilePath);
+        fs.unlinkSync(arktsEvoTestDeclFilePath);
+        cleanUpArkTsEvolutionModuleMap();
+    });
+
+    mocha.it('2-2: test resolveModuleNames parse the 1.2 module declaration file that the 1.1 module depends on (packageName)', function () {
+        const moduleNames: string[] = ['testhar'];
+        arkTsEvolutionModuleMap.set('har', {
+            language: '1.2',
+            packageName: 'testhar',
+            moduleName: 'testhar',
+            modulePath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/testhar`,
+            declgenV1OutPath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/testhar/build/default/intermediates/declgen/default/declgenV1`,
+            declgenBridgeCodePath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/testhar/build/default/intermediates/declgen/default/bridgecode`
+        })
+        const filePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/${DEFAULT_ENTRY}/src/main/entryability/test.ets`;
+        const arktsEvoIndexFilePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/testhar/Index.ets`;
+        const arktsEvoIndexDeclFilePath: string = `${arkTsEvolutionModuleMap.get('har').declgenV1OutPath}/testhar/Index.d.ets`;
+        const resolveModuleNameStub = sinon.stub(ts, 'resolveModuleName').returns({
+          resolvedModule: {
+              resolvedFileName: arktsEvoIndexFilePath,
+              extension: '.ets',
+              isExternalLibraryImport: false,
+          }
+        });
+        const mockedTs = {
+          ...require('typescript'),
+          resolveModuleName: resolveModuleNameStub
+        };
+        let resolveModuleNames;
+        ({ resolveModuleNames } = proxyquire('../../lib/ets_checker', {
+          'typescript': mockedTs
+        }));
+        fs.writeFileSync(filePath, '');
+        mkdirsSync(path.dirname(arktsEvoIndexFilePath));
+        mkdirsSync(path.dirname(arktsEvoIndexDeclFilePath));
+        fs.writeFileSync(arktsEvoIndexFilePath, '');
+        fs.writeFileSync(arktsEvoIndexDeclFilePath, '');
+        const resolvedModules = resolveModuleNames(moduleNames, filePath);
+        expect(resolvedModules[0].resolvedFileName === arktsEvoIndexDeclFilePath);
+        fs.unlinkSync(filePath);
+        fs.unlinkSync(arktsEvoIndexDeclFilePath);
+        resolveModuleNameStub.restore();
+    });
+
+    mocha.it('2-3: test resolveModuleNames parse the 1.2 module declaration file that the 1.1 module depends on', function () {
+        const moduleNames: string[] = ['testhar/src/main/ets/test'];
+        arkTsEvolutionModuleMap.set('har', {
+            language: '1.2',
+            packageName: 'testhar',
+            moduleName: 'testhar',
+            modulePath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/testhar`,
+            declgenV1OutPath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/testhar/build/default/intermediates/declgen/default/declgenV1`,
+            declgenBridgeCodePath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/testhar/build/default/intermediates/declgen/default/bridgecode`
+        })
+        const filePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/${DEFAULT_ENTRY}/src/main/entryability/test.ets`;
+        const arktsEvoTestFilePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/testhar/src/main/ets/test.ets`;
+        const arktsEvoTestDeclFilePath: string = `${arkTsEvolutionModuleMap.get('har').declgenV1OutPath}/testhar/src/main/ets/test.d.ets`;
+        const resolveModuleNameStub = sinon.stub(ts, 'resolveModuleName').returns({
+            resolvedModule: {
+                resolvedFileName: arktsEvoTestFilePath,
+                extension: '.ets',
+                isExternalLibraryImport: false,
+            }
+        });
+        const mockedTs = {
+            ...require('typescript'),
+            resolveModuleName: resolveModuleNameStub
+        };
+        let resolveModuleNames;
+        ({ resolveModuleNames } = proxyquire('../../lib/ets_checker', { 'typescript': mockedTs }));
+        
+        fs.writeFileSync(filePath, '');
+        mkdirsSync(path.dirname(arktsEvoTestFilePath));
+        mkdirsSync(path.dirname(arktsEvoTestDeclFilePath));
+        fs.writeFileSync(arktsEvoTestFilePath, '');
+        fs.writeFileSync(arktsEvoTestDeclFilePath, '');
+        const resolvedModules = resolveModuleNames(moduleNames, filePath);
+        expect(resolvedModules[0].resolvedFileName === arktsEvoTestDeclFilePath);
+        fs.unlinkSync(filePath);
+        fs.unlinkSync(arktsEvoTestDeclFilePath);
+        resolveModuleNameStub.restore();
     });
 });
 
