@@ -29,7 +29,13 @@ import {
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
   CUSTOM_COMPONENT_EXTRAINFO,
   COMPONENT_CONSTRUCTOR_UNDEFINED,
-  DECORATOR_REUSABLE_V2
+  REUSABLE_V2_INNER_DECORATOR,
+  REFLECT,
+  DEFINE_PROPERTY,
+  BASE_CLASS,
+  PROTOTYPE,
+  IS_REUSABLE_,
+  GET_ATTRIBUTE,
 } from './pre_define';
 import constantDefine from './constant_define';
 import createAstNodeUtils from './create_ast_node_utils';
@@ -104,11 +110,14 @@ function getAliasStructInfo(node: ts.CallExpression): StructInfo {
 }
 
 function processStructComponentV2(node: ts.StructDeclaration, log: LogInfo[],
-  context: ts.TransformationContext): ts.ClassDeclaration {
-  const addReusableV2: boolean = node.name && ts.isIdentifier(node.name) && isReuseInV2(node.name.getText());
-  return ts.factory.createClassDeclaration(addReusableV2 ? 
+  context: ts.TransformationContext, StateManagementV2: { hasReusableV2: boolean }): ts.ClassDeclaration {
+  const isReusableV2: boolean = node.name && ts.isIdentifier(node.name) && isReuseInV2(node.name.getText());
+  if (isReusableV2) {
+    StateManagementV2.hasReusableV2 = true;
+  }
+  return ts.factory.createClassDeclaration(isReusableV2 ? 
     ts.concatenateDecoratorsAndModifiers(
-      [ts.factory.createDecorator(ts.factory.createIdentifier(DECORATOR_REUSABLE_V2))], 
+      [ts.factory.createDecorator(ts.factory.createIdentifier(REUSABLE_V2_INNER_DECORATOR))], 
       ts.getModifiers(node)
     ) : 
     ts.getModifiers(node), 
@@ -116,6 +125,53 @@ function processStructComponentV2(node: ts.StructDeclaration, log: LogInfo[],
     node.typeParameters, 
     updateHeritageClauses(node, log, true),
     processStructMembersV2(node, context, log)
+  );
+}
+
+function createReusableV2ReflectFunction(): ts.FunctionDeclaration {
+  const reflectStatement: ts.ExpressionStatement = ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createIdentifier(REFLECT), ts.factory.createIdentifier(DEFINE_PROPERTY)
+      ), undefined,
+      [
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createIdentifier(BASE_CLASS), ts.factory.createIdentifier(PROTOTYPE)
+        ),
+        ts.factory.createStringLiteral(IS_REUSABLE_),
+        ts.factory.createObjectLiteralExpression([
+          ts.factory.createPropertyAssignment(
+            ts.factory.createIdentifier(GET_ATTRIBUTE),
+            ts.factory.createArrowFunction(
+              undefined,
+              undefined,
+              [],
+              undefined,
+              ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+              ts.factory.createTrue()
+            )
+          )], 
+          false
+        )
+      ]
+    )
+  );
+  const parameter: ts.ParameterDeclaration = ts.factory.createParameterDeclaration(
+    undefined,
+    undefined,
+    ts.factory.createIdentifier(BASE_CLASS),
+    undefined,
+    undefined,
+    undefined
+  );
+  return ts.factory.createFunctionDeclaration(
+    undefined,
+    undefined,
+    ts.factory.createIdentifier(REUSABLE_V2_INNER_DECORATOR),
+    undefined,
+    [parameter],
+    undefined,
+    ts.factory.createBlock([reflectStatement])
   );
 }
 
@@ -673,5 +729,6 @@ export default {
   processStructComponentV2: processStructComponentV2,
   parseComponentProperty: parseComponentProperty,
   resetStructMapInEts: resetStructMapInEts,
-  getAliasStructInfo: getAliasStructInfo
+  getAliasStructInfo: getAliasStructInfo,
+  createReusableV2ReflectFunction: createReusableV2ReflectFunction
 };

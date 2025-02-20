@@ -22,6 +22,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
+function __ReusableV2_Inner_Decorator__(BaseClass) { Reflect.defineProperty(BaseClass.prototype, "isReusable_", { get: () => true }); }
 let A = class A {
     constructor(n) {
         this.n = n;
@@ -159,7 +160,7 @@ __decorate([
     Monitor('num')
 ], V2ReusableMember.prototype, "watchNum2", null);
 V2ReusableMember = __decorate([
-    ReusableV2
+    __ReusableV2_Inner_Decorator__
 ], V2ReusableMember);
 registerNamedRoute(() => new V2ReusableMember(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/v2_component_decorator/reusableV2/reusableV2_members", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/v2_component_decorator/reusableV2/reusableV2_members", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=reusableV2_members.js.map
