@@ -21,6 +21,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
+function __ReusableV2_Inner_Decorator__(BaseClass) { Reflect.defineProperty(BaseClass.prototype, "isReusable_", { get: () => true }); }
 import { V1Child2, V2Child2, ReuseV2Child3 } from './reusableV2_exportComponent';
 class ParentOne extends ViewV2 {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda, extraInfo) {
@@ -173,7 +174,7 @@ __decorate([
     Event
 ], ReuseV2Child1.prototype, "e1", void 0);
 ReuseV2Child1 = __decorate([
-    ReusableV2
+    __ReusableV2_Inner_Decorator__
 ], ReuseV2Child1);
 let ReuseV2Child2 = class ReuseV2Child2 extends ViewV2 {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda, extraInfo) {
@@ -188,7 +189,7 @@ let ReuseV2Child2 = class ReuseV2Child2 extends ViewV2 {
     }
 };
 ReuseV2Child2 = __decorate([
-    ReusableV2
+    __ReusableV2_Inner_Decorator__
 ], ReuseV2Child2);
 class V2Child extends ViewV2 {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda, extraInfo) {
