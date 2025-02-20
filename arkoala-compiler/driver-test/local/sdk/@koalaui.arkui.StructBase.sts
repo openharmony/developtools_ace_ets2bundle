@@ -1,0 +1,31 @@
+import { BuilderLambda } from "@koalaui.arkui.Common"
+
+export abstract class StructBase<T, OptionsT> {
+    @BuilderLambda("instantiateImpl")
+    static $_instantiate<S extends StructBase<S, OptionsS>, OptionsS> (
+        factory: () => S,
+        options?: OptionsS,
+        content?: () => void
+    ): S {
+        throw new Error("This method should only be called through a @BuilderLambda redirect")
+    }
+
+    static instantiateImpl<S extends StructBase<S, OptionsS>, OptionsS>(
+        builder: ((instance: S)=>S)|undefined,
+        factory: () => S,
+        options?: OptionsS,
+        content?: () => void
+    ) {
+        console.log("Struct instantiate redirected")
+        const instance = factory()
+        if (builder !== undefined) builder(instance)
+        instance._build(builder, content, options)
+    }
+    build() {
+        throw new Error("The struct build() should never be executed directly")
+    }
+
+    protected _build(style: ((instance: T)=>T)|undefined, content: (() => void)|undefined, options: OptionsT|undefined) {
+        throw new Error("The struct _build() must have a valid override")
+    }
+}

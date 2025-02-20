@@ -1,0 +1,29 @@
+import { BuilderLambda } from "@koalaui.arkui.Common"
+
+export class Column {
+    @BuilderLambda("instantiateImpl")
+    static $_instantiate(
+        factory: () => Column,
+        content?: () => void,
+        options?: ColumnOptions
+    ): Column {
+        throw new Error("This method should only be called through a @BuilderLambda redirect")
+    }
+
+    static instantiateImpl(
+        style: (instance: Column) => Column,
+        factory: () => Column,
+        content?: () => void,
+        options?: ColumnOptions
+
+    ): void {
+        console.log("Column({space:", options.space, "})")
+        const instance = factory()
+        style(instance)
+        content()
+    }
+}
+
+export interface ColumnOptions {
+    space?: number
+}

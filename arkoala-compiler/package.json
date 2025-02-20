@@ -1,0 +1,20 @@
+{
+    "name": "arkoala-compiler",
+    "version": "1.0.0",
+    "description": "",
+    "private": true,
+    "scripts": {
+        "compile:plugins": "npx ets-tsc -p plugins/tsconfig.json"
+    },
+    "devDependencies": {
+        "@koalaui/ets-tsc": "4.9.5-r4"
+    },
+    "dependencies": {
+      "@koalaui/libarkts": "file:${absolute_path_to_etsfrontend_sig}/arkoala-arkts/libarkts",
+      "@koalaui/interop": "file:${absolute_path_to_etsfrontend_sig}/interop",
+      "@koalaui/build-common": "1.5.5+devel",
+      "@koalaui/common": "1.5.5+devel",
+      "@koalaui/compat": "1.5.5+devel",
+      "panda": "file:${absolute_path_to_etsfrontend_sig}/incremental/tools/panda"
+    }
+  }

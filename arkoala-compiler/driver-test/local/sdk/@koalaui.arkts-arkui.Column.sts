@@ -1,0 +1,17 @@
+import { memo } from "@koalaui/runtime"
+
+export declare class Column {
+    @memo
+    static instantiateImpl(
+        @memo
+        style: (instance: Column) => Column|undefined,
+        factory: () => Column,
+        @memo
+        content?: () => void,
+        options?: undefined
+    ): void
+}
+
+export interface ColumnOptions {
+    space: number
+}
