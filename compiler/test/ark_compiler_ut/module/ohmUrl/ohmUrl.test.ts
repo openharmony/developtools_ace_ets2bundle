@@ -23,7 +23,8 @@ import {
   getOhmUrlBySystemApiOrLibRequest,
   getNormalizedOhmUrlByFilepath,
   getNormalizedOhmUrlByAliasName,
-  getNormalizedOhmUrlByModuleRequest
+  getNormalizedOhmUrlByModuleRequest,
+  pkgDeclFilesConfig
 } from '../../../../lib/ark_utils';
 import { PACKAGES } from '../../../../lib/pre_define';
 import projectConfig from '../../utils/processProjectConfig';
@@ -31,6 +32,7 @@ import { projectConfig as mainProjectConfig } from '../../../../main';
 import RollUpPluginMock from '../../mock/rollup_mock/rollup_plugin_mock';
 import { GEN_ABC_PLUGIN_NAME } from '../../../../lib/fast_build/ark_compiler/common/ark_define';
 import { ModuleSourceFile } from '../../../../lib/fast_build/ark_compiler/module/module_source_file';
+import { DECLGENV2OUTPATH, INDEX_SOURCE_PATH } from '../../mock/rollup_mock/common';
 import {
   ArkTSErrorDescription,
   ArkTSInternalErrorDescription,
@@ -974,7 +976,6 @@ mocha.describe('generate ohmUrl', function () {
       'json5': undefined
     };
     const filePath: string = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
-    const moduleName: string = 'entry';
     const importerFile: string = 'importTest.ts';
     const errInfo: LogData = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_EXTERNAL_FAILED_TO_RESOLVE_OHM_URL,
@@ -1473,5 +1474,39 @@ mocha.describe('generate ohmUrl', function () {
     CommonLogger.destroyInstance();
     this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
     loggerStub.restore();
+  });
+
+  mocha.it('generate declFilesInfo in mixed compilation', function () {
+    this.rollup.build();
+    pkgDeclFilesConfig['entry'] = {
+      packageName: 'entry',
+      files: {}
+    };
+    const pkgParams = {
+      pkgName: 'entry',
+      moduleName: 'entry',
+      pkgPath: `${projectConfig.projectRootPath}/entry`,
+      isRecordName: true,
+      isArkTsEvolution: false
+    };
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'entry': {
+        'packageName': 'entry',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    };
+    const filePath: string = `${projectConfig.projectRootPath}/${INDEX_SOURCE_PATH}`;
+    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
+    const expectDeclPath: string = `${DECLGENV2OUTPATH}/src/main/pages/Index.d.ets`;
+    const expectOhmUrl: string = `@normalized:N&entry&com.example.app&entry/src/main/pages/Index&`;
+    getNormalizedOhmUrlByFilepath(filePath, this.rollup.share.projectConfig, logger, pkgParams);
+    expect(pkgDeclFilesConfig['entry'].files.length !== 0).to.be.true;
+    expect(pkgDeclFilesConfig['entry'].files['src/main/pages/Index'].length !== 0).to.be.true;
+    expect(pkgDeclFilesConfig['entry'].files['src/main/pages/Index'].declPath === expectDeclPath).to.be.true;
+    expect(pkgDeclFilesConfig['entry'].files['src/main/pages/Index'].ohmUrl === expectOhmUrl).to.be.true;
   });
 });

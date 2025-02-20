@@ -31,11 +31,16 @@ import {
   targetESVersionChanged,
   collectFileToIgnoreDiagnostics,
   TSC_SYSTEM_CODE,
-  traverseProgramSourceFiles
+  traverseProgramSourceFiles,
+  arkTsEvolutionModuleMap,
+  cleanUpArkTsEvolutionModuleMap,
 } from '../../ets_checker';
-import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
-  setChecker
+  ARK_TS_1_2,
+  TS_WATCH_END_MSG
+} from '../../pre_define';
+import {
+  setChecker,
 } from '../../utils';
 import {
   configureSyscapInfo,
@@ -53,6 +58,7 @@ import {
 } from '../../performance';
 import { LINTER_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info';
 import { ErrorCodeModule } from '../../hvigor_error_code/const/error_code_module';
+import { ArkTsEvolutionModule } from '../../ark_utils';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -62,6 +68,9 @@ export function etsChecker() {
   return {
     name: 'etsChecker',
     buildStart() {
+      if (this.share.projectConfig.dependentModuleMap) {
+        collectArkTSEvolutionModuleInfo(this.share.projectConfig.dependentModuleMap);
+      }
       const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ROLLUP_PLUGIN_BUILD_START);
       const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsChecker', 'buildStart');
       const eventServiceChecker = createAndStartEvent(hookEventFactory, 'serviceChecker');
@@ -165,4 +174,12 @@ function rootFileNamesCollect(rootFileNames: string[]): void {
   entryFiles.forEach((fileName: string) => {
     rootFileNames.push(path.resolve(fileName));
   });
+}
+
+function collectArkTSEvolutionModuleInfo(dependentModuleMap: Map<string, ArkTsEvolutionModule>): void {
+  for (const [moduleName, arkTsEvolutionModuleInfo] of dependentModuleMap) {
+    if (arkTsEvolutionModuleInfo?.declgenV1OutPath && arkTsEvolutionModuleInfo.language === ARK_TS_1_2) {
+      arkTsEvolutionModuleMap.set(moduleName, arkTsEvolutionModuleInfo);
+    }
+  }
 }
