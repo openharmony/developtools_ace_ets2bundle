@@ -21,7 +21,6 @@ import fs, { unwatchFile } from "fs";
 import path from "path";
 import MagicString from 'magic-string';
 import sinon from 'sinon';
-import * as ts from 'typescript'
 
 import {
   getBuildModeInLowerCase,
@@ -31,10 +30,7 @@ import {
   isEs2Abc,
   writeArkguardObfuscatedSourceCode,
   writeMinimizedSourceCode,
-  tryMangleFileName,
-  transformLazyImport,
-  jsLazyImportReExportCheck,
-  reExportCheckLog
+  tryMangleFileName
 } from '../../lib/ark_utils';
 import {
   DEBUG,
@@ -88,18 +84,6 @@ import {
 import { initObfLogger, printObfLogger } from '../../lib/fast_build/ark_compiler/common/ob_config_resolver';
 import { getLogger } from 'log4js';
 import { createErrInfo } from './utils/utils';
-
-const LAZY_IMPORT_RE_EXPORT_ERROR: string =
-'import lazy { e1 } from "./test1";\n' +
-'import lazy { e2, e3 as a3 } from "./test1";\n' +
-'import lazy d1 from "./test1";\n' +
-'import lazy d2, { e4 as a4, e5 } from "./test3";\n' +
-'import lazy { componentUtils } from "@kit.ArkUI";\n' +
-'import lazy { dragController as k1, uiObserver } from "@kit.ArkUI";\n' +
-'import lazy { lazy } from "./test3"\n' +
-'export { e1 };\n' +
-'export { e2, a3 };\n' +
-'export { d1, d2, a4, e5, componentUtils, k1, uiObserver, lazy };'
 
 mocha.describe('test ark_utils file api', function () {
   mocha.before(function () {
@@ -620,127 +604,5 @@ export declare function findElement<a>(b: a[], c: (item: a) => boolean): a | und
 `;
     const declResult = fs.readFileSync(declModuleInfo.buildFilePath, 'utf-8');
     expect(declResult === expectedDeclResult).to.be.true;
-  });
-
-  mocha.it('10-1: test transformLazyImport (js code): perform lazy conversion', function () {
-    const code: string = `
-    import { test } from "./test";
-    import { test1 as t } from "./test1";
-    const a = "a" + test() + t();
-    `;
-    const expectCode: string = 'import lazy { test } from "./test";\n' +
-    'import lazy { test1 as t } from "./test1";\n' +
-    'const a = "a" + test() + t();\n';
-    const result: string = transformLazyImport(code, undefined, "index.js");
-    expect(result === expectCode).to.be.true;
-  });
-
-  mocha.it('10-2: test transformLazyImport (js code): no lazy conversion', function () {
-    const code: string = `
-    import lazy { test } from "./test";
-    import lazy { test1 as t } from "./test1";
-    import test2 from "./test2";
-    import * as test3 from "./test3";
-    import test4, { test5 } from "./test4";
-    import "test6";
-    `;
-    const expectCode: string = 'import lazy { test } from "./test";\n' +
-    'import lazy { test1 as t } from "./test1";\n' +
-    'import test2 from "./test2";\n' +
-    'import * as test3 from "./test3";\n' +
-    'import test4, { test5 } from "./test4";\n' +
-    'import "test6";\n';
-    const result: string = transformLazyImport(code, undefined, "index.js");
-    expect(result === expectCode).to.be.true;
-  });
-  
-  mocha.it('11-1: test the error message of lazy-import re-export', function () {
-    this.rollup.build(RELEASE);
-    jsLazyImportReExportCheck(LAZY_IMPORT_RE_EXPORT_ERROR, 'test.js', 'error');
-    const errInfo1 = createErrInfo('e1');
-    const errInfo2 = createErrInfo('e2');
-    const errInfo3 = createErrInfo('a3');
-    const errInfo4 = createErrInfo('d1');
-    const errInfo5 = createErrInfo('d2');
-    const errInfo6 = createErrInfo('a4');
-    const errInfo7 = createErrInfo('e5');
-    const errInfo8 = createErrInfo('componentUtils');
-    const errInfo9 = createErrInfo('k1');
-    const errInfo10 = createErrInfo('uiObserver');
-    const errInfo11 = createErrInfo('lazy');
-
-    const hasError1 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo1.toString())
-    );
-    const hasError2 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo2.toString())
-    );
-    const hasError3 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo3.toString())
-    );
-    const hasError4 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo4.toString())
-    );
-    const hasError5 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo5.toString())
-    );
-    const hasError6 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo6.toString())
-    );
-    const hasError7 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo7.toString())
-    );
-    const hasError8 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo8.toString())
-    );
-    const hasError9 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo9.toString())
-    );
-    const hasError10 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo10.toString())
-    );
-    const hasError11 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo11.toString())
-    );
-
-    expect(hasError1).to.be.true;
-    expect(hasError2).to.be.true;
-    expect(hasError3).to.be.true;
-    expect(hasError4).to.be.true;
-    expect(hasError5).to.be.true;
-    expect(hasError6).to.be.true;
-    expect(hasError7).to.be.true;
-    expect(hasError8).to.be.true;
-    expect(hasError9).to.be.true;
-    expect(hasError10).to.be.true;
-    expect(hasError11).to.be.true;
-  });
-
-  mocha.it('11-2: test the error message of lazy-import re-export with the name lazy', function () {
-    this.rollup.build(RELEASE);
-    const code: string = `
-    import lazy lazy from "./test";
-    export { lazy };
-    `;
-    jsLazyImportReExportCheck(code, 'test.js', 'error');
-    const errInfo = createErrInfo('lazy');
-    const hasError = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo.toString())
-    );
-    expect(hasError).to.be.true;
-  });
-
-  mocha.it('11-3: test the warn message of lazy-import re-export', function () {
-    this.rollup.build(RELEASE);
-    const code: string = `
-    import lazy { y1 } from "./test";
-    export { y1 };
-    `;
-    jsLazyImportReExportCheck(code, 'test.js', 'warn');
-    const errInfo = createErrInfo('y1');
-    const hasError = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo.toString())
-    );
-    expect(hasError).to.be.true;
   });
 });

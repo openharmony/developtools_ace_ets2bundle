@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-// @Local union types
+// This test case is used to verify @Local union types.
 @Entry
 @ComponentV2
 struct Index {

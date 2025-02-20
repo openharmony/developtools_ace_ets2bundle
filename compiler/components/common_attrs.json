@@ -37,6 +37,6 @@
     "renderFit",
     "pixelRound", "expandSafeArea",
     "safeAreaPadding",
-    "chainWeight"
+    "chainWeight", "reuse"
   ]
 }

@@ -57,6 +57,8 @@ class Page extends ViewV2 {
         this.renderTimes = 0;
         this.finalizeConstruction();
     }
+    resetStateVarsOnReuse(params) {
+    }
     isRender(id) {
         console.info(`id: ${id} renderTimes: ${this.renderTimes}`);
         this.renderTimes++;

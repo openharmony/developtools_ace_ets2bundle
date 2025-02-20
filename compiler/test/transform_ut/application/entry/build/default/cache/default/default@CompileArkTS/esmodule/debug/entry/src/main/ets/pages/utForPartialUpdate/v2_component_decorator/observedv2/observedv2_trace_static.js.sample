@@ -39,6 +39,8 @@ class Index extends ViewV2 {
         super(parent, elmtId, extraInfo);
         this.finalizeConstruction();
     }
+    resetStateVarsOnReuse(params) {
+    }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();

@@ -41,7 +41,6 @@ const {
   SYSTEM_PLUGIN
 } = require('../lib/pre_define');
 const {
-  partialUpdateConfig,
   projectConfig,
   resources
 } = require('../main');
@@ -120,11 +119,7 @@ function expectActual(name, filePath, checkError = false) {
     actualResult = result.outputText;
   }
   processStructComponentV2.default.resetStructMapInEts();
-  if (checkError) {
-    assertError(name);
-  } else {
-    expect(actualResult).eql(content.expectResult);
-  }
+  expect(actualResult).eql(content.expectResult);
 }
 
 function generateIntermediateContent(sourceFile) {
@@ -137,23 +132,12 @@ function generateIntermediateContent(sourceFile) {
 
 mocha.describe('compiler', () => {
   let utPath = path.resolve(__dirname, './ut');
-  if (process.argv.includes('--partialUpdate')) {
-    partialUpdateConfig.partialUpdateMode = true;
-    utPath = path.resolve(__dirname, './utForPartialUpdate');
-  } else if (process.argv.includes('--assertError')) {
-    partialUpdateConfig.partialUpdateMode = true;
-    utPath = path.resolve(__dirname, './utForValidate');
-  }
   const utFiles = [];
   readFile(utPath, utFiles);
   utFiles.forEach((item) => {
     const fileName = path.basename(item, '.ts');
     mocha.it(fileName, () => {
-      if (process.argv.includes('--assertError')) {
-        expectActual(fileName, item, true);
-      } else {
-        expectActual(fileName, item);
-      }
+      expectActual(fileName, item);
     });
   });
 });
@@ -196,30 +180,4 @@ function processSystemApi(content) {
     return item;
   });
   return newContent;
-}
-
-function replaceFunctions(message) {
-  const regex = /\${(.*?)}/g;
-  return message.replace(regex, (match, p1) => {
-    return eval(p1);
-  });
-}
-
-function validateError(logmsg, logtype, message, type) {
-  expect(logmsg).to.be.equal(message);
-  expect(logtype).to.be.equal(type);
-}
-
-function assertError(fileName) {
-  const errorJson = require('./error.json');
-  const errorInfo = errorJson[fileName];
-  if (errorInfo) {
-    if (Array.isArray(errorInfo)) {
-      errorInfo.forEach((item, index) => {
-        validateError(transformLog.errors[index].message, transformLog.errors[index].type, replaceFunctions(item.message), item.type);
-      });
-    } else {
-      validateError(transformLog.errors[0].message, transformLog.errors[0].type, replaceFunctions(errorInfo.message), errorInfo.type);
-    }
-  }
 }

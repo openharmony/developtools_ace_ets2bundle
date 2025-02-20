@@ -102,6 +102,7 @@ import {
   HvigorErrorInfo
 } from './hvigor_error_code/hvigor_error_info';
 import { ErrorCodeModule } from './hvigor_error_code/const/error_code_module';
+import { buildErrorInfoFromDiagnostic } from './hvigor_error_code/utils';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -534,6 +535,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
 
   globalProgram.builderProgram = languageService.getBuilderProgram(/*withLinterProgram*/ true);
   globalProgram.program = globalProgram.builderProgram.getProgram();
+  traverseProgramSourceFiles(languageService.getProps());
   props = languageService.getProps();
   timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
   MemoryMonitor.stopRecordStage(recordInfo);
@@ -564,6 +566,12 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
           global.gc();
         }
   }
+}
+
+function traverseProgramSourceFiles(props: string[]): void {
+  globalProgram.program.getSourceFiles().forEach((sourceFile: ts.SourceFile) => {
+    checkUISyntax(sourceFile, sourceFile.fileName, [], props);
+  })
 }
 
 function isJsonString(cacheFile: string): [boolean, WholeCache | undefined] {
@@ -798,6 +806,12 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
   MemoryMonitor.stopRecordStage(ignoreDiagnosticsRecordInfo);
 }
 
+interface MessageCollection {
+  positionMessage: string,
+  message: string,
+  logMessage: string
+}
+
 export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModule, errorCodeLogger?: Object | undefined): void {
   if (projectConfig.ignoreWarning) {
     return;
@@ -820,7 +834,6 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
 
     const logPrefix: string = diagnostic.category === ts.DiagnosticCategory.Error ? 'ERROR' : 'WARN';
     const etsCheckerLogger = fastBuildLogger || logger;
-    let errorCode: ts.ErrorInfo;
     let logMessage: string;
     if (logPrefix === 'ERROR') {
       checkerResult.count += 1;
@@ -838,22 +851,8 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
     }
 
     if (errorCodeLogger) {
-      if (diagnostic.category === ts.DiagnosticCategory.Error) {
-        if (ts.getErrorCodeArea && ts.getErrorCode && flag === ErrorCodeModule.TSC &&
-            ts.getErrorCodeArea(diagnostic.code) === ts.ErrorCodeArea.TSC) {
-          errorCode = ts.getErrorCode(diagnostic);
-          errorCodeLogger.printError(errorCode);
-        } else if (flag === ErrorCodeModule.LINTER ||
-            (ts.getErrorCodeArea && ts.getErrorCode && flag === ErrorCodeModule.TSC &&
-            ts.getErrorCodeArea(diagnostic.code) === ts.ErrorCodeArea.LINTER)) {
-          const linterErrorInfo: HvigorErrorInfo = transfromErrorCode(diagnostic.code, positionMessage, message);
-          errorCodeLogger.printError(linterErrorInfo);
-        } else {
-          etsCheckerLogger.error('\u001b[31m' + logMessage);
-        }
-      } else {
-        etsCheckerLogger.warn('\u001b[33m' + logMessage);
-      }
+      const msgCollection: MessageCollection = { positionMessage, message, logMessage };
+      printErrorCode(diagnostic, etsCheckerLogger, msgCollection, errorCodeLogger, flag);
     } else {
       if (diagnostic.category === ts.DiagnosticCategory.Error) {
         etsCheckerLogger.error('\u001b[31m' + logMessage);
@@ -862,6 +861,62 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
       }
     }
   }
+}
+
+function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
+  msgCollection: MessageCollection, errorCodeLogger: Object, flag: ErrorCodeModule | undefined): void {
+  const { positionMessage, message, logMessage } = msgCollection;
+  // If the diagnostic is not an error, log a warning and return early.
+  if (diagnostic.category !== ts.DiagnosticCategory.Error) {
+    etsCheckerLogger.warn('\u001b[33m' + logMessage);
+    return;
+  }
+
+  // Check for TSC error codes
+  if (flag === ErrorCodeModule.TSC && 
+    validateUseErrorCodeLogger(ErrorCodeModule.TSC, diagnostic.code)) {
+    const errorCode = ts.getErrorCode(diagnostic);
+    errorCodeLogger.printError(errorCode);
+    return;
+  }
+
+  // Check for LINTER error codes
+  if (flag === ErrorCodeModule.LINTER || (flag === ErrorCodeModule.TSC && 
+    validateUseErrorCodeLogger(ErrorCodeModule.LINTER, diagnostic.code))) {
+    const linterErrorInfo: HvigorErrorInfo = transfromErrorCode(diagnostic.code, positionMessage, message);
+    errorCodeLogger.printError(linterErrorInfo);
+    return;
+  }
+
+  // Check for ArkUI error codes
+  if (flag === ErrorCodeModule.UI || (flag === ErrorCodeModule.TSC && 
+    validateUseErrorCodeLogger(ErrorCodeModule.UI, diagnostic.code))) {
+    const uiErrorInfo: HvigorErrorInfo | undefined = buildErrorInfoFromDiagnostic(
+      diagnostic.code, positionMessage, message);
+    if (!uiErrorInfo) {
+      etsCheckerLogger.error('\u001b[31m' + logMessage);
+    } else {
+      errorCodeLogger.printError(uiErrorInfo);
+    }
+    return;
+  }
+
+  // If the error is not a TSC/Linter/ArkUI error, log using etsCheckerLogger
+  etsCheckerLogger.error('\u001b[31m' + logMessage);
+}
+
+function validateUseErrorCodeLogger(flag: ErrorCodeModule, code: number): boolean {
+  if (!ts.getErrorCodeArea || !ts.getErrorCode) {
+    return false;
+  }
+  if (flag === ErrorCodeModule.TSC) {
+    return ts.getErrorCodeArea(code) === ts.ErrorCodeArea.TSC;
+  } else if (flag === ErrorCodeModule.LINTER) {
+    return ts.getErrorCodeArea(code) === ts.ErrorCodeArea.LINTER;
+  } else if (flag === ErrorCodeModule.UI) {
+    return ts.getErrorCodeArea(code) === ts.ErrorCodeArea.UI;
+  }
+  return false;
 }
 
 function validateError(message: string): boolean {
@@ -1215,7 +1270,6 @@ export function watchChecker(rootFileNames: string[], newLogger: any = null, res
 
 export function instanceInsteadThis(content: string, fileName: string, extendFunctionInfo: extendInfo[],
   props: string[]): string {
-  checkUISyntax(content, fileName, extendFunctionInfo, props);
   extendFunctionInfo.reverse().forEach((item) => {
     const subStr: string = content.substring(item.start, item.end);
     const insert: string = subStr.replace(/(\s)\$(\.)/g, (origin, item1, item2) => {
@@ -1238,12 +1292,10 @@ export const dollarCollection: Set<string> = new Set();
 export const extendCollection: Set<string> = new Set();
 export const importModuleCollection: Set<string> = new Set();
 
-function checkUISyntax(source: string, fileName: string, extendFunctionInfo: extendInfo[], props: string[]): void {
-  if (/\.ets$/.test(fileName)) {
+function checkUISyntax(sourceFile: ts.SourceFile, fileName: string, extendFunctionInfo: extendInfo[], props: string[]): void {
+  if (/\.ets$/.test(fileName) && !/\.d.ets$/.test(fileName)) {
     if (process.env.compileMode === 'moduleJson' ||
       path.resolve(fileName) !== path.resolve(projectConfig.projectPath, 'app.ets')) {
-      const sourceFile: ts.SourceFile = ts.createSourceFile(fileName, source,
-        ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS, compilerOptions);
       collectComponents(sourceFile);
       collectionCustomizeStyles(sourceFile);
       parseAllNode(sourceFile, sourceFile, extendFunctionInfo);
@@ -1645,7 +1697,7 @@ export function getMaxFlowDepth(): number {
     const maxFlowDepthLogger = fastBuildLogger || logger;
     maxFlowDepth = MAX_FLOW_DEPTH_DEFAULT_VALUE;
     maxFlowDepthLogger.warn('\u001b[33m' + 'ArkTS: Invalid maxFlowDepth for control flow analysis.' +
-      `The value of maxFlowDepth ranges from ${ MAX_FLOW_DEPTH_DEFAULT_VALUE } to ${ MAX_FLOW_DEPTH_MAXIMUM_VALUE }.\n` +
+      `The value of maxFlowDepth ranges from ${MAX_FLOW_DEPTH_DEFAULT_VALUE} to ${MAX_FLOW_DEPTH_MAXIMUM_VALUE}.\n` +
       'If the modification does not take effect, set maxFlowDepth to the default value.');
   }
   return maxFlowDepth;

@@ -23,6 +23,10 @@ class HomeComponent extends ViewV2 {
         this.buildTest1 = "buildTest1" in params ? params.buildTest1 : this.testBuilder;
         this.finalizeConstruction();
     }
+    resetStateVarsOnReuse(params) {
+        this.buildTest = "buildTest" in params ? params.buildTest : undefined;
+        this.buildTest1 = "buildTest1" in params ? params.buildTest1 : this.testBuilder;
+    }
     testBuilder(parent = null) {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("hello testBuilder");

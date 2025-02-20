@@ -323,7 +323,7 @@ function testIfIdComponent(value, parent = null) {
                     {
                         const itemCreation = (elmtId, isInitialRender, value = __value__) => {
                             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                            itemCreation2(elmtId, isInitialRender, value);
+                            ListItem.create(deepRenderFunction, true);
                             if (!isInitialRender) {
                                 ListItem.pop();
                             }
@@ -468,7 +468,7 @@ function testItemComponent(value, parent = null) {
             {
                 const itemCreation = (elmtId, isInitialRender, value = __value__) => {
                     ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                    itemCreation2(elmtId, isInitialRender, value);
+                    ListItem.create(deepRenderFunction, true);
                     if (!isInitialRender) {
                         ListItem.pop();
                     }

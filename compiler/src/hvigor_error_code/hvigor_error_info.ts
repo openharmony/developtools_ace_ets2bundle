@@ -14,11 +14,26 @@
  */
 
 export const ERROR_DESCRIPTION = 'ArkTS Compiler Error';
+export const ARKUI_SUBSYSTEM_CODE = '109'; // ArkUI subsystem coding
 export const LINTER_SUBSYSTEM_CODE = '106'; // Linter subsystem coding
 export const ERROR_TYPE_CODE = '05'; // Error Type Code
 export const EXTENSION_CODE = '999'; // Extended Codes Defined by Various Subsystems
 
-export class HvigorErrorInfo {
+interface MoreInfo {
+    cn: string;
+    en: string;
+}
+
+export interface HvigorLogInfo {
+    code?: string;
+    description?: string;
+    cause?: string;
+    position?: string;
+    solutions?: string[];
+    moreInfo?: MoreInfo;
+}
+
+export class HvigorErrorInfo implements HvigorLogInfo {
     code: string = '';
     description: string = ERROR_DESCRIPTION;
     cause: string = '';

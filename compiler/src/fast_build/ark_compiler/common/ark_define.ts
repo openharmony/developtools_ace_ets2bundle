@@ -64,6 +64,10 @@ export const PROTOS: string = 'protos';
 export const TS2ABC: string = 'ts2abc';
 export const ES2ABC: string = 'es2abc';
 
+export const JS: string = 'js';
+export const TS: string = 'ts';
+export const ETS: string = 'ets';
+
 export const MAX_WORKER_NUMBER: number = 3;
 
 export const GEN_ABC_SCRIPT: string = 'gen_abc.js';

@@ -250,3 +250,158 @@ mocha.describe('getMaxFlowDepth', () => {
         expect(result).to.equal(MAX_FLOW_DEPTH_DEFAULT_VALUE);
     });
 });
+
+mocha.describe('setProgramSourceFiles', () => { 
+    mocha.it('1-1: test add new sourcefile to program', () => {
+        const compilerOptions: ts.CompilerOptions = {
+            target: ts.ScriptTarget.ES2021
+        };
+        const fileNames: string[] = ['../testdata/testfiles/testProgramSourceFiles.ts'];
+        let program: ts.Program = ts.createProgram(fileNames, compilerOptions);
+        const fileContent: string = `
+            let a = 1;
+        `;
+        let newSourceFile: ts.SourceFile = ts.createSourceFile('demo.ts', fileContent, ts.ScriptTarget.ES2021, true);
+        expect(program.getSourceFiles().includes(newSourceFile)).to.be.false;
+        expect(program.getSourceFile('demo.ts')).to.be.undefined;
+        const origrinFileSize: number = program.getSourceFiles().length;
+        program.setProgramSourceFiles(newSourceFile);
+        const newFileSize: number = program.getSourceFiles().length;
+        expect(program.getSourceFiles().includes(newSourceFile)).to.be.true;
+        expect(program.getSourceFile('demo.ts')).to.not.be.undefined;
+        expect(origrinFileSize === (newFileSize - 1)).to.be.true;
+    });
+  
+    mocha.it('1-2: test should do nothing when adding an existed sourcefile to the program', () => {
+        const compilerOptions: ts.CompilerOptions = {
+            target: ts.ScriptTarget.ES2021
+        };
+        const fileNames: string[] = ['../testdata/testfiles/testProgramSourceFiles.ts'];
+        let program: ts.Program = ts.createProgram(fileNames, compilerOptions);
+        const fileContent1: string = `let a = 1;`;
+        let newSourceFile1: ts.SourceFile = ts.createSourceFile('demo.ts', fileContent1, ts.ScriptTarget.ES2021, true);
+        program.setProgramSourceFiles(newSourceFile1);
+        const origrinFileSize: number = program.getSourceFiles().length;
+        expect(program.getSourceFiles().includes(newSourceFile1)).to.be.true;
+        expect(program.getSourceFile('demo.ts').text).to.be.equal('let a = 1;');
+        const fileContent2: string = `let b = 1;`;
+        let newSourceFile2: ts.SourceFile = ts.createSourceFile('demo.ts', fileContent2, ts.ScriptTarget.ES2021, true);
+        program.setProgramSourceFiles(newSourceFile2);
+        const newFileSize: number = program.getSourceFiles().length;
+        expect(program.getSourceFiles().includes(newSourceFile2)).to.be.false;
+        expect(program.getSourceFile('demo.ts').text).to.be.equal('let a = 1;');
+        expect(origrinFileSize === newFileSize).to.be.true;
+    });
+});
+
+mocha.describe('initProcessingFiles and getProcessingFiles', () => { 
+    mocha.it('1-1: test should return undefined when processingDefaultFiles and processingOtherFiles is undefined', () => {
+        const compilerOptions: ts.CompilerOptions = {
+            target: ts.ScriptTarget.ES2021
+        };
+        const fileNames: string[] = ['../testdata/testfiles/testProgramSourceFiles.ts'];
+        let program: ts.Program = ts.createProgram(fileNames, compilerOptions);
+        let processingFiles: ts.SourceFile[] | undefined = program.getProcessingFiles();
+        expect(processingFiles === undefined).to.be.true;
+    });
+  
+    mocha.it('1-2: test should return array when processingDefaultFiles and processingOtherFiles is not undefined', () => {
+        const compilerOptions: ts.CompilerOptions = {
+            target: ts.ScriptTarget.ES2021
+        };
+        const fileNames: string[] = ['../testdata/testfiles/testProgramSourceFiles.ts'];
+        let program: ts.Program = ts.createProgram(fileNames, compilerOptions);
+        program.initProcessingFiles();
+        let processingFiles: ts.SourceFile[] | undefined = program.getProcessingFiles();
+        expect(processingFiles === undefined).to.be.false;
+    });
+
+});
+
+mocha.describe('refreshTypeChecker', () => { 
+    mocha.it('1-1: test should recreate typeChecker and linterTypeChecker', () => {
+        const compilerOptions: ts.CompilerOptions = {
+            target: ts.ScriptTarget.ES2021
+        };
+        const fileNames: string[] = ['../testdata/testfiles/testProgramSourceFiles.ts'];
+        let program: ts.Program = ts.createProgram(fileNames, compilerOptions);
+        const fileContent: string = `
+            let a = 1;
+            let b = x; // Error!
+        `;
+        let newSourceFile: ts.SourceFile = ts.createSourceFile('demo.ts', fileContent, ts.ScriptTarget.ES2021, true);
+        newSourceFile.originalFileName = newSourceFile.fileName;
+        newSourceFile.resolvedPath = 'demo.ts';
+        newSourceFile.path = 'demo.ts';
+        program.processImportedModules(newSourceFile);
+        program.setProgramSourceFiles(newSourceFile);
+        program.refreshTypeChecker();
+        const diagnostics: readonly ts.Diagnostic[] = program.getSemanticDiagnostics(newSourceFile);
+        expect(diagnostics[0].messageText === `Cannot find name 'x'.`);
+        expect(diagnostics.length === 1).to.be.true;
+    });
+});
+
+mocha.describe('deleteProgramSourceFiles', () => { 
+    mocha.it('1-1: test should delete when sourcefiles are exist in program', () => {
+        const compilerOptions: ts.CompilerOptions = {
+            target: ts.ScriptTarget.ES2021
+        };
+        const fileNames: string[] = ['../testdata/testfiles/testProgramSourceFiles.ts'];
+        let program: ts.Program = ts.createProgram(fileNames, compilerOptions);
+        const fileContent1: string = `
+            let a = 1;
+        `;
+        let newSourceFile1: ts.SourceFile = ts.createSourceFile('demo1.ts', fileContent1, ts.ScriptTarget.ES2021, true);
+        program.setProgramSourceFiles(newSourceFile1);
+        expect(program.getSourceFiles().includes(newSourceFile1)).to.be.true;
+        expect(program.getSourceFile('demo1.ts')).to.not.be.undefined;
+        const fileContent2: string = `
+            let b = 1;
+        `;
+        let newSourceFile2: ts.SourceFile = ts.createSourceFile('demo2.ts', fileContent2, ts.ScriptTarget.ES2021, true);
+        program.setProgramSourceFiles(newSourceFile2);
+        expect(program.getSourceFiles().includes(newSourceFile2)).to.be.true;
+        expect(program.getSourceFile('demo2.ts')).to.not.be.undefined;
+        const origrinFileSize: number = program.getSourceFiles().length;
+        const deleteFileNames: string[] = ['demo1.ts', 'demo2.ts'];
+        program.deleteProgramSourceFiles(deleteFileNames);
+        expect(program.getSourceFiles().includes(newSourceFile1)).to.be.false;
+        expect(program.getSourceFile('demo1.ts')).to.be.undefined;
+        expect(program.getSourceFiles().includes(newSourceFile2)).to.be.false;
+        expect(program.getSourceFile('demo2.ts')).to.be.undefined;
+        const newFileSize: number = program.getSourceFiles().length;
+        expect(origrinFileSize === (newFileSize + 2)).to.be.true;
+    });
+
+    mocha.it('1-2: test should do nothing when sourcefiles are not exist in program', () => {
+        const compilerOptions: ts.CompilerOptions = {
+            target: ts.ScriptTarget.ES2021
+        };
+        const fileNames: string[] = ['../testdata/testfiles/testProgramSourceFiles.ts'];
+        let program: ts.Program = ts.createProgram(fileNames, compilerOptions);
+        const fileContent1: string = `
+            let a = 1;
+        `;
+        let newSourceFile1: ts.SourceFile = ts.createSourceFile('demo1.ts', fileContent1, ts.ScriptTarget.ES2021, true);
+        program.setProgramSourceFiles(newSourceFile1);
+        expect(program.getSourceFiles().includes(newSourceFile1)).to.be.true;
+        expect(program.getSourceFile('demo1.ts')).to.not.be.undefined;
+        const fileContent2: string = `
+            let b = 1;
+        `;
+        let newSourceFile2: ts.SourceFile = ts.createSourceFile('demo2.ts', fileContent2, ts.ScriptTarget.ES2021, true);
+        program.setProgramSourceFiles(newSourceFile2);
+        expect(program.getSourceFiles().includes(newSourceFile2)).to.be.true;
+        expect(program.getSourceFile('demo2.ts')).to.not.be.undefined;
+        const origrinFileSize: number = program.getSourceFiles().length;
+        const deleteFileNames: string[] = ['demo3.ts', 'demo4.ts'];
+        program.deleteProgramSourceFiles(deleteFileNames);
+        expect(program.getSourceFiles().includes(newSourceFile1)).to.be.true;
+        expect(program.getSourceFile('demo1.ts')).to.not.be.undefined;
+        expect(program.getSourceFiles().includes(newSourceFile2)).to.be.true;
+        expect(program.getSourceFile('demo2.ts')).to.not.be.undefined;
+        const newFileSize: number = program.getSourceFiles().length;
+        expect(origrinFileSize === newFileSize).to.be.true;
+    });
+});

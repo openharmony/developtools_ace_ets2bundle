@@ -29,6 +29,9 @@ class Index extends ViewV2 {
         this.count = 10;
         this.finalizeConstruction();
     }
+    resetStateVarsOnReuse(params) {
+        this.count = 10;
+    }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
