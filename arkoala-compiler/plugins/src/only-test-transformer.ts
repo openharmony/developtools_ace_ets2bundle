@@ -18,12 +18,12 @@ import { AbstractVisitor } from "./AbstractVisitor"
 
 export class TestTransformer extends AbstractVisitor {
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
-        const node = this.visitEachChild(beforeChildren);
+        const node = this.visitEachChild(beforeChildren) as arkts.EtsImportDeclaration;
 
         // This is only for testing purpose. Now the .d.ets transformation is not ready,
         // there are @koalaui.arkui and @koalaui.arkts-arkui, the former one is for transformation before checked,
         // the later one is for transformation after checked.
-        if (arkts.isEtsImportDeclaration(node) && node.importSource.str.startsWith("@koalaui.arkui")) {
+        if (arkts.isETSImportDeclaration(node) && node.importSource.str.startsWith("@koalaui.arkui")) {
             const source = node.importSource;
             return arkts.factory.updateImportDeclaration(
                 node,

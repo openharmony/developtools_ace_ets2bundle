@@ -56,13 +56,13 @@ function updateFunctionBody(node: arkts.BlockStatement | undefined, hash: arkts.
                         false,
                         false
                     ),
-                    arkts.factory.createTSTypeParameterInstantiation(
+                    [arkts.factory.createTSTypeParameterInstantiation(
                         [
                             arkts.factory.createTypeReferenceFromId(
                                 arkts.factory.createIdentifier("void")
                             )
                         ]
-                    ),
+                    )],
                     [
                         createIdArgument(hash)
                     ]

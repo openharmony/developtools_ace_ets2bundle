@@ -12,7 +12,7 @@
     "devDependencies": {
     },
     "dependencies": {
-      "build_system": "file:${absolute_path_to_etsfrontend}/ets2panda/driver/build_system",
-      "libarkts": "file:${absolute_path_to_etsfrontend_sig}"
+      "build_system": "/home/kee/ark/plugin/ets2panda/driver/build_system",
+      "libarkts": "/home/kee/ark/plugin/ets2panda/driver/koala_wrapper"
     }
   }
