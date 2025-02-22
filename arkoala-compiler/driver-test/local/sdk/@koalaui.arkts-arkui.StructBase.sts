@@ -1,6 +1,24 @@
-import { __memo_context_type, __memo_id_type } from "@koalaui/runtime";
+import { BuilderLambda } from "@koalaui.arkts-arkui.Common"
+import { __memo_context_type, __memo_id_type, memo } from "@koalaui/runtime";
 
 export declare class StructBase<T, OptionsT> {
+    @BuilderLambda("instantiateImpl")
+    static $_instantiate<S extends StructBase<S, OptionsS>, OptionsS> (
+        factory: () => S,
+        options?: OptionsS,
+        content?: () => void
+    ): S
+
+    @memo
+    static instantiateImpl<S extends StructBase<S, OptionsS>, OptionsS>(
+        @memo
+        builder: ((instance: S)=>S)|undefined,
+        factory: () => S,
+        options?: OptionsS,
+        @memo
+        content?: () => void
+    ): void
+
     static instantiateImpl<S extends StructBase<S, OptionsS>, OptionsS>(
         __memo_context: __memo_context_type, 
         __memo_id: __memo_id_type, 
@@ -10,7 +28,11 @@ export declare class StructBase<T, OptionsT> {
         content?: (__memo_context: __memo_context_type, __memo_id: __memo_id_type) => void
     ): void;
 
-    _build(
+    build(): void
+
+    @memo protected _build(@memo style: ((instance: T)=>T)|undefined, @memo content: (() => void)|undefined, options: OptionsT|undefined): void
+
+    protected _build(
         __memo_context: __memo_context_type, 
         __memo_id: __memo_id_type, 
         style: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: T) => T) | undefined, 

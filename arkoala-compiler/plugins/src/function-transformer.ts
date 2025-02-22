@@ -81,49 +81,45 @@ function updateFunctionBody(
             false,
             false
         ),
-        arkts.factory.createReturnStatement(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createIdentifier(RuntimeNames.SCOPE),
-                arkts.factory.createIdentifier(RuntimeNames.INTERNAL_VALUE),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_NONE,
-                false,
-                false
-            )
+        arkts.factory.createBlock(
+            [
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createIdentifier(RuntimeNames.SCOPE),
+                    arkts.factory.createIdentifier(RuntimeNames.INTERNAL_VALUE),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_NONE,
+                    false,
+                    false
+                ),
+                arkts.factory.createReturnStatement()
+            ]
         )
+
     )
-    const recache = arkts.factory.createReturnStatement(
-        arkts.factory.createCallExpression(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createIdentifier(RuntimeNames.SCOPE),
-                arkts.factory.createIdentifier(RuntimeNames.INTERNAL_VALUE_NEW),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
-            undefined,
-            []
-        )
-    )
-    // console.log("3 rechecking dumpSrc: ", recache.dumpSrc());
-    // arkts.recheckSubtree(recache)
-    // console.log("3 rechecking PASS!");
+    const recache = arkts.factory.createCallExpression(
+        arkts.factory.createMemberExpression(
+            arkts.factory.createIdentifier(RuntimeNames.SCOPE),
+            arkts.factory.createIdentifier(RuntimeNames.INTERNAL_VALUE_NEW),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
+        ),
+        undefined,
+        []
+    );
     return arkts.factory.updateBlock(
         node,
         [
             scopeDeclaraion,
             unchangedCheck,
             ...(updateStatementFunc ? node.statements.map(updateStatementFunc) : node.statements),
-            recache
+            recache,
+            arkts.factory.createReturnStatement()
         ]
     )
 }
 
 function transformMemoMethodParameter(parameter: arkts.ETSParameterExpression): arkts.ETSParameterExpression {
-    console.log("[transformMemoMethodParameter] parameter dumpSrc: ", parameter.dumpSrc());
-    console.log("[transformMemoMethodParameter] parameter dumpJson: ", parameter.dumpJson());
     if (hasMemoAnnotation(parameter)) {
-        console.log("[transformMemoMethodParameter] parameter memo dumpSrc: ", parameter.dumpSrc());
-        console.log("[transformMemoMethodParameter] parameter memo dumpJson: ", parameter.dumpJson());
         const name: arkts.Identifier = parameter.identifier;
         const typeAnnotation: arkts.AstNode = name.typeAnnotation!;
 
