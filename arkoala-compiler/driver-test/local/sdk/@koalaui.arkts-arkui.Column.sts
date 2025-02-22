@@ -1,6 +1,25 @@
-import { __memo_context_type, __memo_id_type } from "@koalaui/runtime";
+import { BuilderLambda } from "@koalaui.arkts-arkui.Common"
+import { __memo_context_type, __memo_id_type, memo } from "@koalaui/runtime";
 
 export declare class Column {
+    @BuilderLambda("instantiateImpl")
+    static $_instantiate(
+        factory: () => Column,
+        content?: () => void,
+        options?: ColumnOptions | undefined
+    ): Column
+
+    @memo
+    static instantiateImpl(
+        @memo
+        style: (instance: Column) => Column | undefined,
+        factory: () => Column,
+        @memo
+        content?: () => void,
+        options?: ColumnOptions | undefined
+
+    ): void
+
     static instantiateImpl(
         __memo_context: __memo_context_type,
         __memo_id: __memo_id_type,
@@ -12,5 +31,5 @@ export declare class Column {
 }
 
 export interface ColumnOptions {
-    space: number
+    space?: number
 }

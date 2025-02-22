@@ -1,6 +1,25 @@
-import { __memo_context_type, __memo_id_type } from "@koalaui/runtime";
+import { BuilderLambda } from "@koalaui.arkts-arkui.Common"
+import { __memo_context_type, __memo_id_type, memo } from "@koalaui/runtime";
 
 export declare class Button {
+    // TODO: the second argument will be gone after hte plugin is improved
+    @BuilderLambda("instantiateImpl")
+    static $_instantiate(
+        factory: () => Button,
+        options?: string,
+        content?: () => void
+    ): Button;
+
+    @memo
+    static instantiateImpl(
+        @memo
+        style: (instance: Button) => Button | undefined,
+        factory: () => Button,
+        options?: string,
+        @memo
+        content?: () => void
+    ): void;
+
     static instantiateImpl(
         __memo_context: __memo_context_type, 
         __memo_id: __memo_id_type, 

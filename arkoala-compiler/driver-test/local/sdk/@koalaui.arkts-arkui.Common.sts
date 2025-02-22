@@ -1,11 +1,7 @@
-// Annotations
+export @interface BuilderLambda {
+    value: string
+}
 
 export @interface Component {}
 
 export @interface State {}
-
-export @interface memo {}
-
-export @interface BuilderLambda {
-    value: string
-}

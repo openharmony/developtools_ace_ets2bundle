@@ -33,7 +33,7 @@ export function koalaUITransform() {
             const node = this.getArkTSAst();
             if (node) {
                 let script: ts.EtsScript = node;
-                script = new ComponentTransformer({ arkui: "@koalaui.arkui.StructBase" }).visitor(node) as ts.EtsScript;
+                script = new ComponentTransformer({ arkui: "@koalaui.arkts-arkui.StructBase" }).visitor(node) as ts.EtsScript;
                 ts.setAllParents(script);
                 this.setArkTSAst(script);
                 return script;
