@@ -1,22 +1,20 @@
-import { memo } from "@koalaui/runtime"
+import { __memo_context_type, __memo_id_type } from "@koalaui/runtime";
 
 export declare class StructBase<T, OptionsT> {
-    @memo
-    static instantiateImpl<S extends StructBase<S, OptionsS>, OptionsS> (
-        @memo
-        builder: ((instance: S) => S) | undefined,
-        factory: () => S,
-        options?: OptionsS,
-        @memo
-        content?: () => void
-    ): void
+    static instantiateImpl<S extends StructBase<S, OptionsS>, OptionsS>(
+        __memo_context: __memo_context_type, 
+        __memo_id: __memo_id_type, 
+        builder: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: S) => S) | undefined, 
+        factory: () => S, 
+        options?: OptionsS, 
+        content?: (__memo_context: __memo_context_type, __memo_id: __memo_id_type) => void
+    ): void;
 
-    @memo
     _build(
-        @memo
-        style: ((instance: T)=>T)|undefined, 
-        @memo
-        content: (() => void)|undefined, 
-        options: OptionsT|undefined
-    ): void
+        __memo_context: __memo_context_type, 
+        __memo_id: __memo_id_type, 
+        style: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: T) => T) | undefined, 
+        content: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => void) | undefined, 
+        options: OptionsT | undefined
+    ): void;
 }

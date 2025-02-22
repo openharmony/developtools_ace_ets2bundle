@@ -1,27 +1,33 @@
 import { BuilderLambda } from "@koalaui.arkui.Common"
+import { __memo_context_type, __memo_id_type, memo } from "@koalaui/runtime";
 
-export class Column {
+export declare class Column {
     @BuilderLambda("instantiateImpl")
     static $_instantiate(
         factory: () => Column,
         content?: () => void,
-        options?: ColumnOptions
-    ): Column {
-        throw new Error("This method should only be called through a @BuilderLambda redirect")
-    }
+        options?: ColumnOptions | undefined
+    ): Column
+
+    @memo
+    static instantiateImpl(
+        @memo
+        style: (instance: Column) => Column | undefined,
+        factory: () => Column,
+        @memo
+        content?: () => void,
+        options?: ColumnOptions | undefined
+
+    ): void
 
     static instantiateImpl(
-        style: (instance: Column) => Column,
+        __memo_context: __memo_context_type,
+        __memo_id: __memo_id_type,
+        style: (__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Column) => Column|undefined,
         factory: () => Column,
-        content?: () => void,
-        options?: ColumnOptions
-
-    ): void {
-        console.log("Column({space:", options.space, "})")
-        const instance = factory()
-        style(instance)
-        content()
-    }
+        content?: (__memo_context: __memo_context_type, __memo_id: __memo_id_type) => void,
+        options?: ColumnOptions | undefined,
+    ): void
 }
 
 export interface ColumnOptions {

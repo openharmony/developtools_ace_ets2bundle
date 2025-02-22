@@ -16,11 +16,10 @@
 import { Text } from "@koalaui.arkui.Text"
 import { Column } from "@koalaui.arkui.Column"
 import { Button } from "@koalaui.arkui.Button"
-import { Component, State, Entry } from "@koalaui.arkui.Common"
-
+import { Component } from "@koalaui.arkui.Common"
+import { __memo_context_type, __memo_id_type } from "@koalaui/runtime";
 import { memo } from "@koalaui/runtime"
 
-@Entry
 @Component
 struct MyStateSample {
     build() {
@@ -33,6 +32,7 @@ struct MyStateSample {
 }
 
 export class ArkUIEntry {
+    @memo
     static run()  {
         console.log("About to invoke the struct")
         // The proper call fails because of a compiler frontend bug.
@@ -45,3 +45,4 @@ export class ArkUIEntry {
         )
     }
 }
+

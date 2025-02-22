@@ -1,27 +1,32 @@
 import { BuilderLambda } from "@koalaui.arkui.Common"
+import { __memo_context_type, __memo_id_type, memo } from "@koalaui/runtime";
 
-export class Text {
+export declare class Text {
     @BuilderLambda("instantiateImpl")
     static $_instantiate(
         factory: () => Text,
-        options?: TextOptions|string,
-        //content?: () => void
-    ): Text {
-        throw new Error("This method should only be called through a @BuilderLambda redirect")
-    }
+        options?: string,
+        content?: () => void
+    ): Text
 
-    // TODO: the second argument will be gone after hte plugin is improved
+    @memo
     static instantiateImpl(
-        style: (instance: Text) => Text,
+        @memo
+        style: (instance: Text) => Text | undefined,
         factory: () => Text,
-        options?: TextOptions|string,
-        //content?: () => void
-    ): void {
-        console.log("Text(", options,  ")")
-        const instance = factory()
-        style(instance)
-        //content()
-    }
+        options?: string,
+        @memo
+        content?: () => void
+    ): void
+
+    static instantiateImpl(
+        __memo_context: __memo_context_type,
+        __memo_id: __memo_id_type,
+        style: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Text) => Text) | undefined,
+        factory: () => Text,
+        options?: string,
+        content?: (__memo_context: __memo_context_type, __memo_id: __memo_id_type) => void
+    ): void
 }
 
 export interface TextOptions {}

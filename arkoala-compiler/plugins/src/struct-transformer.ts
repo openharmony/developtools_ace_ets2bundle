@@ -149,7 +149,10 @@ function tranformClassMembers(node: arkts.ClassDeclaration): arkts.ClassDeclarat
             );
         }
         if (arkts.isMethodDefinition(member) && isKnownMethodDefinition(member, "build")) {
-            return transformBuildMethod(member, className);
+            const stub = transformBuildMethod(member, className);
+            console.log("[transformBuildMethod] stub dumpSrc: ", stub.dumpSrc());
+            console.log("[transformBuildMethod] stub dumpJson: ", stub.dumpJson());
+            return stub;
         }
 
         return member;

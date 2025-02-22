@@ -1,15 +1,14 @@
-import { memo } from "@koalaui/runtime"
+import { __memo_context_type, __memo_id_type } from "@koalaui/runtime";
 
 export declare class Button {
-    @memo
     static instantiateImpl(
-        @memo
-        style: ((instance: Button) => Button) | undefined,
-        factory: () => Button,
-        options?: string,
-        @memo
-        content?: () => void
-    ): void
+        __memo_context: __memo_context_type, 
+        __memo_id: __memo_id_type, 
+        style: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Button) => Button) | undefined, 
+        factory: () => Button, 
+        options?: string, 
+        content?: (__memo_context: __memo_context_type, __memo_id: __memo_id_type) => void
+    ): void;
 }
 
 export interface ButtonOptions {}
