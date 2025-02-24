@@ -157,6 +157,7 @@ import {
 } from './process_ui_syntax';
 import constantDefine from './constant_define';
 import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
+import { node } from 'webpack';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
   log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
@@ -729,10 +730,20 @@ function checkStateName(node: ts.PropertyAccessExpression): string {
 }
 
 function isNeedGetRawObject(node: ts.Node): boolean {
-  return !isInComponentV2Context() && ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.name) &&
-    stateObjectCollection.has(checkStateName(node)) && node.parent && ts.isCallExpression(node.parent) &&
+  return !isInComponentV2Context() && !isEnableV2CompatibilityOrMakeV1Observed(node) && ts.isPropertyAccessExpression(node) &&
+    ts.isIdentifier(node.name) && stateObjectCollection.has(checkStateName(node)) && node.parent && ts.isCallExpression(node.parent) &&
     ts.isPropertyAccessExpression(node.parent.expression) && node !== node.parent.expression &&
     node.parent.expression.name.escapedText.toString() !== FOREACH_GET_RAW_OBJECT;
+}
+
+function isEnableV2CompatibilityOrMakeV1Observed(node: ts.Node): boolean {
+  if (node.parent && ts.isCallExpression(node.parent) && ts.isPropertyAccessExpression(node.parent.expression) &&
+    ts.isIdentifier(node.parent.expression.name) &&
+    ['enableV2Compatibility', 'makeV1Observed'].includes(node.parent.expression.name.escapedText.toString())) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 function isInComponentV2Context(): boolean {

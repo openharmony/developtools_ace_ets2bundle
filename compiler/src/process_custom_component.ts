@@ -84,7 +84,8 @@ import {
   createViewCreate,
   createCustomComponentNewExpression,
   isLocalStorageParameter,
-  isBasicType
+  isBasicType,
+  isObserved
 } from './process_component_member';
 import {
   LogType,
@@ -440,26 +441,8 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
     if (info.propsAndObjectLinks.includes(itemName)) {
       childParam.push(item);
     }
-    if (isForbiddenAssignToComponentV1(item, itemName, info)) {
-      log.push({
-        type: LogType.ERROR,
-        message: `Property '${itemName}' in the @Component component '${info.childName}' are not allowed to be assigned values here.`,
-        pos: item.getStart(),
-        code: '10905322'
-      });
-    }
   }
   logMessageCollection.checkIfAssignToStaticProps(item, itemName, info.childStructInfo.staticPropertySet, log);
-}
-
-function isForbiddenAssignToComponentV1(item: ts.PropertyAssignment, itemName: string,
-  info: ChildAndParentComponentInfo): boolean {
-  if (info.parentStructInfo.isComponentV2 && info.childStructInfo.updatePropsDecoratorsV1.includes(itemName) &&
-    isObervedProperty(item.initializer, info, false) && globalProgram.checker) {
-    const type: ts.Type = globalProgram.checker.getTypeAtLocation(item.initializer);
-    return isForbiddenTypeToComponentV1(type);
-  }
-  return false;
 }
 
 function isForbiddenTypeToComponentV1(type: ts.Type): boolean {
@@ -483,7 +466,7 @@ function isForbiddenAssignToComponentV2(item: ts.PropertyAssignment, itemName: s
   if (!info.parentStructInfo.isComponentV2 && info.updatePropsDecoratorsV2.includes(itemName) &&
     isObervedProperty(item.initializer, info) && globalProgram.strictChecker) {
     const type: ts.Type = globalProgram.strictChecker.getTypeAtLocation(item.initializer);
-    return !isAllowedTypeToComponentV2(type);
+    return !(isAllowedTypeToComponentV2(type) || isObserved(type) || isForbiddenTypeToComponentV1(type));
   }
   return false;
 }
