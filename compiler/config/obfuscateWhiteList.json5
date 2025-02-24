@@ -18,7 +18,8 @@
     "NavigationBuilderRegister",
     "ViewV2",
     "initParam",
-    "updateParam"
+    "updateParam",
+    "$selected"
   ],
   "OptimizedReservedPropertyNames": [
     "$$",

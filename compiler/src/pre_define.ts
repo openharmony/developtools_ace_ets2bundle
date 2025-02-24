@@ -404,7 +404,6 @@ export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
   [TEXT_PICKER, new Set([VALUE, SELECTED])],
   [TOGGLE, new Set([IS_ON])],
   [ALPHABET_INDEXER, new Set([SELECTED])],
-  [ARC_ALPHABET_INDEXER, new Set([SELECTED])],
   [SELECT, new Set([SELECTED, VALUE])],
   [CALENDAR, new Set([DATE])],
   [GRID_ITEM, new Set([SELECTED])],
