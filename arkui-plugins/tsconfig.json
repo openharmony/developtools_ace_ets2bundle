@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "lib": ["ESNext", "ESNext.WeakRef", "DOM"],
+        "module": "CommonJS",
+        "rootDir": ".",
+        "baseUrl": ".",
+        "outDir": "./build",
+        "moduleResolution": "node",
+        "composite": true,
+        "incremental": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "declaration": true,
+        "noEmitOnError": true,
+        "strict": true,
+        "skipLibCheck": true,
+        "removeComments": false
+    },
+    "include": [
+        "./common/**/*.ts",
+        "./memo-plugins/**/*.ts",
+        "./ui-plugins/**/*.ts",
+    ],
+    "exclude": [
+        "./test/**/*"
+    ]
+}
