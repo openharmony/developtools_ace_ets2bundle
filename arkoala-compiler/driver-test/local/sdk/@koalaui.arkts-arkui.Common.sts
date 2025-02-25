@@ -1,7 +1,0 @@
-export @interface BuilderLambda {
-    value: string
-}
-
-export @interface Component {}
-
-export @interface State {}

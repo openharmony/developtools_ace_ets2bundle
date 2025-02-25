@@ -1,0 +1,34 @@
+{
+    "plugins": {
+        "ui-plugin": "../lib/ui-plugins/index",
+        "memo-plugin": "../lib/memo-plugins/index"
+    },
+
+    "compileFiles": [
+        "./demo/hello_world/entry/a.ets"
+    ],
+
+    "packageName" : "entry",
+
+    "buildType": "build",
+    "buildMode": "Debug",
+    "moduleRootPath": "./demo/hello_world/entry/",
+    "sourceRoots": ["./", "src/main1/ets"],
+
+    "loaderOutPath": "./dist",
+    "cachePath": "./dist/cache",
+
+    "buildSdkPath": ".",
+    "pandaSdkPath": "./node_modules/libarkts/node_modules/@panda/sdk",
+
+    "dependentModuleList": [
+        {
+            "packageName": "@koalaui/runtime",
+            "moduleName": "@koalaui/runtime",
+            "moduleType": "har",
+            "modulePath": "./demo/hello_world/runtime-api",
+            "sourceRoots": ["./"],
+            "entryFile": "index.sts"
+        }
+    ]
+}

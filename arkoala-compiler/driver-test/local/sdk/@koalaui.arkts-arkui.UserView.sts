@@ -1,7 +1,0 @@
-import { __memo_context_type, __memo_id_type, memo } from "@koalaui/runtime";
-
-export type UserViewBuilder = (__memo_context: __memo_context_type, __memo_id: __memo_id_type) => void;
-
-export declare class UserView {
-    getBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type): UserViewBuilder;
-}
