@@ -131,7 +131,7 @@ function emitLogInfoFromHvigorLogger(hvigorLogger: any, info: LogInfo, loader: a
 
 function emitLogInfoFromLoader(loader: any, info: LogInfo, fastBuild: boolean = false,
   resourcePath: string | null = null): void {
-  const message: string = fastBuild ? '\u001b[31m' + getMessage(info.fileName || resourcePath, info, true)
+  const message: string = fastBuild ? getMessage(info.fileName || resourcePath, info, true)
     : getMessage(info.fileName || loader.resourcePath, info);
   switch (info.type) {
     case LogType.ERROR:
