@@ -157,7 +157,6 @@ import {
 } from './process_ui_syntax';
 import constantDefine from './constant_define';
 import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
-import { node } from 'webpack';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
   log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
@@ -729,6 +728,7 @@ function checkStateName(node: ts.PropertyAccessExpression): string {
   return null;
 }
 
+// EnableV2Compatibility MakeV1Observed Do not generate ObservedObject GetRawObject.
 function isNeedGetRawObject(node: ts.Node): boolean {
   return !isInComponentV2Context() && !isEnableV2CompatibilityOrMakeV1Observed(node) && ts.isPropertyAccessExpression(node) &&
     ts.isIdentifier(node.name) && stateObjectCollection.has(checkStateName(node)) && node.parent && ts.isCallExpression(node.parent) &&
