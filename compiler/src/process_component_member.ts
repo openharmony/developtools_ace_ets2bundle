@@ -1346,7 +1346,7 @@ function updateSynchedPropertyOneWayPU(nameIdentifier: ts.Identifier, type: ts.T
 
 function updateSynchedPropertyNesedObjectPU(nameIdentifier: ts.Identifier,
   type: ts.TypeNode, decoractor: string, log: LogInfo[]): ts.ExpressionStatement {
-  if (partialUpdateConfig.partialUpdateMode && projectConfig.compileMode === 'esmodule' && checkObjectLinkType(type)) {
+  if (partialUpdateConfig.partialUpdateMode && projectConfig.compileMode === 'esmodule') {
     return createInitExpressionStatementForDecorator(nameIdentifier.getText(), SYNCHED_PROPERTY_NESED_OBJECT_PU,
       createPropertyAccessExpressionWithParams(nameIdentifier.getText()));
   } else if ((projectConfig.compileMode !== 'esmodule' || !partialUpdateConfig.partialUpdateMode) && isObservedClassType(type)) {
@@ -1396,34 +1396,7 @@ function validatePropDecorator(decorators: readonly ts.Decorator[]): boolean {
   return false;
 }
 
-function checkObjectLinkType(typeNode: ts.TypeNode): boolean {
-  if (globalProgram.checker) {
-    const type: ts.Type = globalProgram.checker.getTypeFromTypeNode(typeNode);
-    if (typeNode.parent && ts.isPropertyDeclaration(typeNode.parent) && isObserved(type)) {
-      return true;
-    }
-    // @ts-ignore
-    if (type.types && type.types.length) {
-      let observedNumber: number = 0;
-      for (let i = 0; i < type.types.length; i++) {
-        if (type.types[i].intrinsicName) {
-          return false;
-        }
-        if (isObserved(type.types[i])) {
-          observedNumber += 1;
-        }
-      }
-      if (observedNumber === type.types.length) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-  }
-  return false;
-}
-
-function isObserved(type: ts.Type): boolean {
+export function isObserved(type: ts.Type): boolean {
   if (type && type.getSymbol() && type.getSymbol().declarations) {
     return type.getSymbol().declarations.some((classDeclaration: ts.ClassDeclaration) => {
       const decorators: readonly ts.Decorator[] = ts.getAllDecorators(classDeclaration);
