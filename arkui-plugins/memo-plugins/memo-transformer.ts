@@ -15,8 +15,10 @@
 
 import * as arkts from "@koalaui/libarkts"
 import { FunctionTransformer } from "./function-transformer"
-import { ImportTransformer } from "./import-transformer"
 import { PositionalIdTracker } from "./utils"
+import { factory } from "./memo-factory"
+import { ReturnTransformer } from "./return-transformer"
+import { ParameterTransformer } from "./parameter-transformer"
 
 export interface TransformerOptions {
     trace?: boolean,
@@ -27,9 +29,18 @@ export default function memoTransformer(
 ) {
     return (node: arkts.EtsScript) => {
         const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false)
-        const importTransformer = new ImportTransformer()
-        const functionTransformer = new FunctionTransformer(positionalIdTracker)
-        importTransformer.visitor(node)
-        return functionTransformer.visitor(node)
+        const parameterTransformer = new ParameterTransformer(positionalIdTracker)
+        const returnTransformer = new ReturnTransformer()
+        const functionTransformer = new FunctionTransformer(positionalIdTracker, parameterTransformer, returnTransformer)
+        return functionTransformer.visitor(
+            arkts.factory.updateEtsScript(
+                node,
+                [
+                    ...node.getChildren().filter(it => it instanceof arkts.EtsImportDeclaration),
+                    factory.createContextTypesImportDeclaration(),
+                    ...node.getChildren().filter(it => !(it instanceof arkts.EtsImportDeclaration)),
+                ]
+            )
+        )
     }
 }

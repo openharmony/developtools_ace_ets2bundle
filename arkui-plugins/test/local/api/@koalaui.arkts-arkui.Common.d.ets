@@ -21,3 +21,7 @@ export @interface BuilderLambda {
 export @interface Component {}
 
 export @interface State {}
+
+export @interface StorageLink {
+    value: string
+}

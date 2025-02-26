@@ -25,6 +25,13 @@ export function annotation(name: string): arkts.AnnotationUsage {
     return annotation;
 }
 
+export function expectName(node: arkts.AstNode): string {
+    if (!arkts.isIdentifier(node)) {
+        throw new Error("Expected an identifier, got: " + arkts.nodeType(node).toString());
+    }
+    return node.name;
+}
+
 export function mangle(value: string): string {
     return `__${value}`;
 }

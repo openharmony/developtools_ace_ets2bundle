@@ -16,13 +16,17 @@
 import { Text } from "@koalaui.arkts-arkui.Text"
 import { Column } from "@koalaui.arkts-arkui.Column"
 import { Button } from "@koalaui.arkts-arkui.Button"
-import { Component } from "@koalaui.arkts-arkui.Common"
+import { Component, StorageLink, State } from "@koalaui.arkts-arkui.Common"
 import { UserView, UserViewBuilder } from "@koalaui.arkts-arkui.UserView"
 import { __memo_context_type, __memo_id_type } from "@koalaui/runtime";
 import { memo } from "@koalaui/runtime"
 
 @Component
 struct MyStateSample {
+    @State a:number = 0;
+    @State bb:number = 0;
+    @StorageLink('PropA') storageLink: number = 1;
+
     build() {
         Column() {
             Text("Hello World!")
