@@ -129,11 +129,6 @@
         "type": "ERROR",
         "code": "10905305"
     },
-    "validateNonObservedClassType": {
-        "message": "The type of the @ObjectLink property 'message' can only be objects of classes decorated with @Observed class decorator in ets (not ts).",
-        "type": "ERROR",
-        "code": "10905307"
-    },
     "validateHasIllegalDecoratorInEntry": {
         "message": "The @Entry component 'ValidateHasIllegalDecoratorInEntryIndex' cannot have the @Prop property 'message'.",
         "type": "WARN"
@@ -1006,11 +1001,6 @@
     ],
     "v1ToV2ComponentValidate": [
         {
-            "message": "The type of the @Param property can not be a class decorated with @Observed.",
-            "type": "ERROR",
-            "code": "10905347"
-        },
-        {
             "message": "Property 'param_value' in the @ComponentV2 component 'TestV2Child2' are not allowed to be assigned values here.",
             "type": "ERROR",
             "code": "10905323"
@@ -1046,11 +1036,6 @@
             "code": "10905323"
         },
         {
-            "message": "Property 'objectLink_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR",
-            "code": "10905323"
-        },
-        {
             "message": "Property 'storage_link_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
             "type": "ERROR",
             "code": "10905323"
@@ -1073,59 +1058,14 @@
     ],
     "v2ToV1ComponentValidate": [
         {
-            "message": "The type of the @Provider property can not be a class decorated with @Observed.",
-            "type": "ERROR",
-            "code": "10905347"
-        },
-        {
             "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
             "type": "ERROR",
             "code": "10905213"
         },
         {
-            "message": "Property 'set_value' in the @Component component 'TestV1Child1' are not allowed to be assigned values here.",
-            "type": "ERROR",
-            "code": "10905322"
-        },
-        {
-            "message": "Property 'set_value_alias' in the @Component component 'TestV1Child1' are not allowed to be assigned values here.",
-            "type": "ERROR",
-            "code": "10905322"
-        },
-        {
             "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
             "type": "ERROR",
             "code": "10905213"
-        },
-        {
-            "message": "Property 'set_value' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR",
-            "code": "10905322"
-        },
-        {
-            "message": "Property 'map_value' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR",
-            "code": "10905322"
-        },
-        {
-            "message": "Property 'arr_value' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR",
-            "code": "10905322"
-        },
-        {
-            "message": "Property 'arr_value1' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR",
-            "code": "10905322"
-        },
-        {
-            "message": "Property 'arr_value2' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR",
-            "code": "10905322"
-        },
-        {
-            "message": "Property 'arr_value3' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR",
-            "code": "10905322"
         }
     ],
     "property_observe_validate": [
@@ -1193,66 +1133,6 @@
             "message": "The type of the @LocalStorageProp property can not be a class decorated with @ObservedV2.",
             "type": "ERROR",
             "code": "10905348"
-        },
-        {
-            "message": "The type of the @Local property can not be a class decorated with @Observed.",
-            "type": "ERROR",
-            "code": "10905347"
-        },
-        {
-            "message": "The type of the @Local property can not be a class decorated with @Observed.",
-            "type": "ERROR",
-            "code": "10905347"
-        },
-        {
-            "message": "The type of the @Local property can not be a class decorated with @Observed.",
-            "type": "ERROR",
-            "code": "10905347"
-        },
-        {
-            "message": "The type of the @Local property can not be a class decorated with @Observed.",
-            "type": "ERROR",
-            "code": "10905347"
-        },
-        {
-            "message": "The type of the @Local property can not be a class decorated with @Observed.",
-            "type": "ERROR",
-            "code": "10905347"
-        },
-        {
-            "message": "The type of the @Local property can not be a class decorated with @Observed.",
-            "type": "ERROR",
-            "code": "10905347"
-        },
-        {
-            "message": "The type of the @Param property can not be a class decorated with @Observed.",
-            "type": "ERROR",
-            "code": "10905347"
-        },
-        {
-            "message": "The type of the @Param property can not be a class decorated with @Observed.",
-            "type": "ERROR",
-            "code": "10905347"
-        },
-        {
-            "message": "The type of the @Param property can not be a class decorated with @Observed.",
-            "type": "ERROR",
-            "code": "10905347"
-        },
-        {
-            "message": "The type of the @Event property can not be a class decorated with @Observed.",
-            "type": "ERROR",
-            "code": "10905347"
-        },
-        {
-            "message": "The type of the @Provider property can not be a class decorated with @Observed.",
-            "type": "ERROR",
-            "code": "10905347"
-        },
-        {
-            "message": "The type of the @Consumer property can not be a class decorated with @Observed.",
-            "type": "ERROR",
-            "code": "10905347"
         }
     ],
     "validateControllerCount": [

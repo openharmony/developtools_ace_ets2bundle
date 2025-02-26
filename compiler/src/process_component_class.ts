@@ -728,11 +728,22 @@ function checkStateName(node: ts.PropertyAccessExpression): string {
   return null;
 }
 
+// EnableV2Compatibility MakeV1Observed Do not generate ObservedObject GetRawObject.
 function isNeedGetRawObject(node: ts.Node): boolean {
-  return !isInComponentV2Context() && ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.name) &&
-    stateObjectCollection.has(checkStateName(node)) && node.parent && ts.isCallExpression(node.parent) &&
+  return !isInComponentV2Context() && !isEnableV2CompatibilityOrMakeV1Observed(node) && ts.isPropertyAccessExpression(node) &&
+    ts.isIdentifier(node.name) && stateObjectCollection.has(checkStateName(node)) && node.parent && ts.isCallExpression(node.parent) &&
     ts.isPropertyAccessExpression(node.parent.expression) && node !== node.parent.expression &&
     node.parent.expression.name.escapedText.toString() !== FOREACH_GET_RAW_OBJECT;
+}
+
+function isEnableV2CompatibilityOrMakeV1Observed(node: ts.Node): boolean {
+  if (node.parent && ts.isCallExpression(node.parent) && ts.isPropertyAccessExpression(node.parent.expression) &&
+    ts.isIdentifier(node.parent.expression.name) &&
+    ['enableV2Compatibility', 'makeV1Observed'].includes(node.parent.expression.name.escapedText.toString())) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 function isInComponentV2Context(): boolean {
