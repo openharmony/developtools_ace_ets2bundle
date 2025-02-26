@@ -14,7 +14,10 @@
  */
 
 import { memo, memo_intrinsic } from "../annotations"
-import { State } from "../states/State"
+import { State, StateContext } from "../states/State"
+import { KoalaCallsiteKey } from "../common"
+import { ReadonlyTreeNode } from "../tree/ReadonlyTreeNode"
 @memo_intrinsic export declare function contextLocal<Value>(name: string): State<Value> | undefined
-@memo_intrinsic export declare function contextLocalValue<Value>(name: string): Value
+@memo_intrinsic export declare function contextLocalValue<Value = ReadonlyTreeNode>(name: string): Value // TODO
+export declare function contextLocalValue<Value = ReadonlyTreeNode>(stateContext: StateContext, id: KoalaCallsiteKey, name: string): Value // TODO
 @memo_intrinsic export declare function contextLocalScope<Value>(name: string, value: Value, @memo content: () => void): void

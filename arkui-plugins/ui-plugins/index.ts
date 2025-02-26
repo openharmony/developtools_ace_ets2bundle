@@ -31,6 +31,7 @@ export function uiTransform() {
                 const componentTransformer = new ComponentTransformer({ arkui: "@koalaui.arkts-arkui.StructBase" });
 
                 script = componentTransformer.visitor(node) as arkts.EtsScript;
+                console.log("[AFTER PARSED SCRIPT]: ", script.dumpSrc());
 
                 arkts.setAllParents(script);
                 this.setArkTSAst(script);
