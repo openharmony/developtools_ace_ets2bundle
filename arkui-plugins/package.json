@@ -1,0 +1,28 @@
+{
+  "name": "arkui-plugin",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "preinstall": "chmod 777 ./npm_preinstall.sh && ./npm_preinstall.sh --init",
+    "install": "npm run preinstall",
+    "compile:plugins": "./node_modules/.bin/babel . --out-dir lib --extensions .ts"
+  },
+  "devDependencies": {
+    "@koalaui/build-common": "1.5.5+devel",
+    "@koalaui/common": "1.5.5+devel",
+    "@koalaui/compat": "1.5.5+devel",
+    "@koalaui/interop": "1.4.1-dev.2604",
+    "@koalaui/ets-tsc": "4.9.5-r4",
+    "@babel/cli": "7.20.7",
+    "@babel/core": "7.20.12",
+    "@babel/plugin-proposal-class-properties": "7.18.6",
+    "@babel/preset-env": "7.20.2",
+    "@babel/preset-typescript": "7.18.6",
+    "@babel/runtime": "7.20.13"
+  },
+  "dependencies": {
+    "@koalaui/libarkts": "latest",
+    "@koalaui/libarkts2": "latest"
+  }
+}
