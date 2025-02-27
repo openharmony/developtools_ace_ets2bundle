@@ -15,9 +15,11 @@
 
 import * as arkts from "@koalaui/libarkts"
 
-import { PluginContext } from "common/plugin-context";
+import { PluginContext } from "../common/plugin-context";
 import { FunctionTransformer } from "./function-transformer";
 import { PositionalIdTracker } from "./utils";
+import { ReturnTransformer } from "./return-transformer";
+import { ParameterTransformer } from "./parameter-transformer";
 
 export function unmemoizeTransform() {
     return {
@@ -27,9 +29,12 @@ export function unmemoizeTransform() {
             const node = this.getArkTSAst();
             if (node) {
                 let script: arkts.EtsScript = node;
+                console.log('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
 
-                const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
-                const functionTransformer = new FunctionTransformer(positionalIdTracker);
+                const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false)
+                const parameterTransformer = new ParameterTransformer(positionalIdTracker)
+                const returnTransformer = new ReturnTransformer()
+                const functionTransformer = new FunctionTransformer(positionalIdTracker, parameterTransformer, returnTransformer)
                 script = functionTransformer.visitor(script) as arkts.EtsScript;
 
                 arkts.setAllParents(script);

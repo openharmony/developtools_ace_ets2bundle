@@ -20,60 +20,21 @@ export enum RuntimeNames {
     __CONTEXT = "__context",
     __ID = "__id",
     ANNOTATION = "memo",
+    ANNOTATION_INTRINSIC = "memo_intrinsic",
+    COMPUTE = "compute",
     CONTEXT = "__memo_context",
     CONTEXT_TYPE = "__memo_context_type",
     CONTEXT_TYPE_DEFAULT_IMPORT = "@koalaui/runtime",
     ID = "__memo_id",
     ID_TYPE = "__memo_id_type",
+    INTERNAL_PARAMETER_STATE = "param",
     INTERNAL_SCOPE = "scope",
     INTERNAL_VALUE = "cached",
     INTERNAL_VALUE_NEW = "recache",
     INTERNAL_VALUE_OK = "unchanged",
+    PARAMETER = "__memo_parameter",
     SCOPE = "__memo_scope",
-}
-
-export function createContextTypeImportSpecifier(): arkts.ImportSpecifier {
-    return arkts.factory.createImportSpecifier(
-        arkts.factory.createIdentifier(RuntimeNames.CONTEXT_TYPE),
-        arkts.factory.createIdentifier(RuntimeNames.CONTEXT_TYPE),
-    )
-}
-
-export function createIdTypeImportSpecifier(): arkts.ImportSpecifier {
-    return arkts.factory.createImportSpecifier(
-        arkts.factory.createIdentifier(RuntimeNames.ID_TYPE),
-        arkts.factory.createIdentifier(RuntimeNames.ID_TYPE),
-    )
-}
-
-export function createContextParameter(): arkts.ETSParameterExpression {
-    return arkts.factory.createParameterDeclaration(
-        arkts.factory.createIdentifier(RuntimeNames.CONTEXT,
-            arkts.factory.createIdentifier(RuntimeNames.CONTEXT_TYPE)
-        ),
-        undefined
-    )
-}
-
-export function createIdParameter(): arkts.ETSParameterExpression {
-    return arkts.factory.createParameterDeclaration(
-        arkts.factory.createIdentifier(RuntimeNames.ID,
-            arkts.factory.createIdentifier(RuntimeNames.ID_TYPE)
-        ),
-        undefined
-    )
-}
-
-export function createContextArgument(): arkts.AstNode {
-    return arkts.factory.createIdentifier(RuntimeNames.CONTEXT)
-}
-
-export function createIdArgument(hash: arkts.NumberLiteral | arkts.StringLiteral): arkts.AstNode {
-    return arkts.factory.createBinaryExpression(
-        arkts.factory.createIdentifier(RuntimeNames.ID),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_PLUS,
-        hash
-    )
+    VALUE = "value",
 }
 
 function baseName(path: string): string {
@@ -104,7 +65,7 @@ export class PositionalIdTracker {
         return `${PositionalIdTracker.callCount++}_${callName}_id_DIRNAME/${fileName}`
     }
 
-    id(callName: string): arkts.NumberLiteral | arkts.StringLiteral {
+    id(callName: string = ""): arkts.NumberLiteral | arkts.StringLiteral {
 
         const fileName = this.stableForTests ?
             baseName(this.filename) :
@@ -119,4 +80,38 @@ export class PositionalIdTracker {
             ? arkts.factory.createStringLiteral(positionId)
             : arkts.factory.createNumericLiteral(parseInt(positionId, 16))
     }
+}
+
+export function isMemoAnnotation(node: arkts.AnnotationUsage, memoName: RuntimeNames) {
+    return node.expr !== undefined && arkts.isIdentifier(node.expr) && node.expr.name === memoName
+}
+
+export function hasMemoAnnotation(node: arkts.ScriptFunction | arkts.ETSParameterExpression) {
+    return node.annotations.some((it) => isMemoAnnotation(it, RuntimeNames.ANNOTATION))
+}
+
+export function hasMemoIntrinsicAnnotation(node: arkts.ScriptFunction | arkts.ETSParameterExpression) {
+    return node.annotations.some((it) => isMemoAnnotation(it, RuntimeNames.ANNOTATION_INTRINSIC))
+}
+
+/**
+ * TODO:
+ * @deprecated
+ */
+export function isSyntheticReturnStatement(node: arkts.AstNode) {
+    return node instanceof arkts.ReturnStatement &&
+        node.argument instanceof arkts.MemberExpression &&
+        node.argument.object instanceof arkts.Identifier &&
+        node.argument.object.name === RuntimeNames.SCOPE &&
+        node.argument.property instanceof arkts.Identifier &&
+        node.argument.property.name === RuntimeNames.INTERNAL_VALUE
+}
+
+/**
+ * TODO:
+ * @deprecated
+ */
+export function isMemoParametersDeclaration(node: arkts.AstNode) {
+    return node instanceof arkts.VariableDeclaration &&
+        node.declarators.every((it) => it.name.name.startsWith(RuntimeNames.PARAMETER))
 }
