@@ -434,13 +434,14 @@ function parsePropertyDecorator(member: ts.PropertyDeclaration, decorators: read
   if (isRegular) {
     structInfo.regularSet.add(member.name.getText());
   }
-  checkPropertyDecorator(propertyDecorator, member, log, sourceFileNode);
+  checkPropertyDecorator(propertyDecorator, member, log, sourceFileNode, structInfo);
 }
 
 function checkPropertyDecorator(propertyDecorator: PropertyDecorator,
-  member: ts.PropertyDeclaration, log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  member: ts.PropertyDeclaration, log: LogInfo[], sourceFileNode: ts.SourceFile,
+  structInfo: StructInfo): void {
   if (log && sourceFileNode) {
-    checkParamDecorator(propertyDecorator, member, log, sourceFileNode);
+    checkParamDecorator(propertyDecorator, member, log, sourceFileNode, structInfo);
   }
 }
 
@@ -502,8 +503,17 @@ function parseBuilderParamDecorator(propertyDecorator: PropertyDecorator, member
   structInfo.builderParamDecoratorSet.add(member.name.getText());
 }
 
+function checkHasBuilderParamDecorator(propertyDecorator: PropertyDecorator, member: ts.PropertyDeclaration,
+  sourceFileNode: ts.SourceFile, structInfo: StructInfo): boolean {
+  let checkResult: boolean = false;
+  if (StructInfo) {
+    checkResult = structInfo.builderParamDecoratorSet.has(member.name.getText());
+  }
+  return checkResult;
+}
+
 function checkParamDecorator(propertyDecorator: PropertyDecorator, member: ts.PropertyDeclaration, log: LogInfo[],
-  sourceFileNode: ts.SourceFile): void {
+  sourceFileNode: ts.SourceFile, structInfo: StructInfo): void {
   if (propertyDecorator.hasParam && !member.initializer && !propertyDecorator.hasRequire) {
     const message: string = 'When a variable decorated with @Param is not assigned a default value, ' +
       'it must also be decorated with @Require.';
@@ -513,7 +523,8 @@ function checkParamDecorator(propertyDecorator: PropertyDecorator, member: ts.Pr
     const message: string = 'When a variable decorated with @Once, it must also be decorated with @Param.';
     addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode, { code: '10905326' });
   }
-  if (propertyDecorator.hasRequire && !propertyDecorator.hasParam) {
+  if (propertyDecorator.hasRequire && !propertyDecorator.hasParam && !checkHasBuilderParamDecorator(propertyDecorator,
+    member, sourceFileNode, structInfo)) {
     const message: string = 'In a struct decorated with @ComponentV2, @Require can only be used with @Param.';
     addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode, { code: '10905325' });
   }
