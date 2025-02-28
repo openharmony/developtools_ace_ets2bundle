@@ -159,7 +159,8 @@ import {
   ID_ATTRS,
   SPECIFIC_PARENT_COMPONENT,
   STYLES_ATTRIBUTE,
-  INNER_CUSTOM_LOCALBUILDER_METHOD
+  INNER_CUSTOM_LOCALBUILDER_METHOD,
+  COMMON_ATTRS
 } from './component_map';
 import {
   componentCollection,
@@ -3317,11 +3318,13 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
   }
   if (isEtsComponent(node)) {
     if (componentCollection.customComponents.has(name)) {
+      isCustomComponentAttributes(node, log);
       return ComponentType.customComponent;
     } else {
       return ComponentType.innerComponent;
     }
   } else if (!isPartMethod(node) && componentCollection.customComponents.has(name)) {
+    isCustomComponentAttributes(node, log);
     return ComponentType.customComponent;
   } else if (name === COMPONENT_FOREACH || name === COMPONENT_LAZYFOREACH) {
     return ComponentType.forEachComponent;
@@ -3348,6 +3351,17 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
     });
   }
   return null;
+}
+
+function isCustomComponentAttributes(node: ts.ExpressionStatement, log: LogInfo[]): void {
+  if (node.expression && ts.isCallExpression(node.expression) && ts.isPropertyAccessExpression(node.expression.expression) &&
+    ts.isIdentifier(node.expression.expression.name) && !COMMON_ATTRS.has(node.expression.expression.name.escapedText.toString())) {
+      log.push({
+        type: LogType.ERROR,
+        message: `'${node.getText()}' does not meet UI component syntax.`,
+        pos: node.getStart()
+      });
+  }
 }
 
 function isLocalBuilderOrBuilderMethod(LocalBuilderOrBuilderSet: Set<string>,
