@@ -1827,17 +1827,19 @@ export function generateDeclarationFileForSTS(rootFileNames: string[], allResolv
     return toUnixPath(path);
   });
 
+  const regex = new RegExp(projectConfig.packageDir);
   const uniqueFiles = Array.from(new Set([
     ...unixRootFileNames,
     ...allResolvedModules
-  ]));
+  ])).filter(file => !regex.test(file));
 
   const config: RunnerParms = {
     inputDirs: [],
     inputFiles: uniqueFiles,
     outDir: path.resolve(projectConfig.aceModuleBuild, '../etsFortgz/ets'),
     rootDir: projectConfig.projectRootPath,
-    customResolveModuleNames: resolveModuleNames
+    customResolveModuleNames: resolveModuleNames,
+    customCompilerOptions: compilerOptions
   };
   if (fs.existsSync(config.outDir)) {
     fs.rmSync(config.outDir, { recursive: true, force: true });
