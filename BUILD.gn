@@ -328,7 +328,8 @@ ohos_copy("ohos_declaration_ets_ark") {
     deps += [ "//interface/sdk-js:ohos_declaration_ets" ]
   }
 
-  sources = [ root_out_dir + "/ohos_declaration/ohos_declaration_ets" ]
+  sources =
+      [ root_out_dir + "/ohos_declaration/${sdk_type}/ohos_declaration_ets" ]
 
   outputs = [ target_out_dir + "/../api" ]
 }
