@@ -54,6 +54,7 @@ export const CLASS_MIN_TRACK_DECORATOR: string = 'Trace';
 export const COMPONENT_DECORATOR_COMPONENT_V2: string = '@ComponentV2';
 export const COMPONENT_DECORATOR_REUSABLE_V2: string = '@ReusableV2';
 export const DECORATOR_REUSABLE_V2: string = 'ReusableV2';
+export const REUSABLE_V2_INNER_DECORATOR: string = '__ReusableV2_Inner_Decorator__';
 export const REUSE_ATTRIBUTE: string = 'reuse';
 
 export const COMPONENT_DECORATORS_PARAMS: Set<string> = new Set([COMPONENT_CONSUME_DECORATOR,
@@ -573,6 +574,10 @@ export const SUPER_ARGS: string = 'args';
 export const FINALIZE_CONSTRUCTION: string = 'finalizeConstruction';
 export const PROTOTYPE: string = 'prototype';
 export const REFLECT: string = 'Reflect';
+export const DEFINE_PROPERTY: string = 'defineProperty';
+export const BASE_CLASS: string = 'BaseClass';
+export const IS_REUSABLE_: string = 'isReusable_';
+export const GET_ATTRIBUTE: string = 'get';
 
 export const CARD_ENTRY_FUNCTION_NAME: string = 'loadEtsCard';
 export const CARD_ENABLE_DECORATORS: Set<string> = new Set([
