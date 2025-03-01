@@ -184,6 +184,7 @@ export function processUISyntax(program: ts.Program, ut = false,
     let pageFile: string;
     let hasUseResource: boolean = false;
     let hasStruct: boolean = false;
+    let StateManagementV2: { hasReusableV2: boolean } = { hasReusableV2: false };
     return (node: ts.SourceFile) => {
       startTimeStatisticsLocation(compilationTime ? compilationTime.processUISyntaxTime : undefined);
       pagesDir = path.resolve(path.dirname(node.fileName));
@@ -228,7 +229,10 @@ export function processUISyntax(program: ts.Program, ut = false,
         }
         INTERFACE_NODE_SET.forEach(item => {
           statements.unshift(item);
-        });
+        })
+        if (StateManagementV2.hasReusableV2) {
+          statements.unshift(processStructComponentV2.createReusableV2ReflectFunction());
+        }
         if (partialUpdateConfig.partialUpdateMode && hasStruct) {
           if (storedFileInfo.hasLocalBuilderInFile) {
             statements.unshift(checkContextStack());
@@ -295,7 +299,7 @@ export function processUISyntax(program: ts.Program, ut = false,
         componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);
         startTimeStatisticsLocation(compilationTime ? compilationTime.processComponentClassTime : undefined);
         node = processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName).isComponentV2 ?
-          processStructComponentV2.processStructComponentV2(node, transformLog.errors, context) :
+          processStructComponentV2.processStructComponentV2(node, transformLog.errors, context, StateManagementV2) :
           processComponentClass(node, context, transformLog.errors, program);
         stopTimeStatisticsLocation(compilationTime ? compilationTime.processComponentClassTime : undefined);
         componentCollection.currentClassName = null;
