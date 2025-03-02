@@ -20,28 +20,40 @@ import { FunctionTransformer } from "./function-transformer";
 import { PositionalIdTracker } from "./utils";
 import { ReturnTransformer } from "./return-transformer";
 import { ParameterTransformer } from "./parameter-transformer";
+import { ProgramVisitor } from "../common/program-visitor";
+import { EXTERNAL_SOURCE_PREFIX_NAMES } from "../common/predefines";
 
 export function unmemoizeTransform() {
     return {
         name: 'memo-plugin',
         checked(this: PluginContext) {
             console.log("In ArkUI afterChecked")
-            const node = this.getArkTSAst();
-            if (node) {
-                let script: arkts.EtsScript = node;
+            // const node = this.getArkTSAst();
+            let program = this.getArkTSProgram();
+            if (program) {
+                let script: arkts.EtsScript = program.astNode;
                 console.log('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
 
-                const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false)
-                const parameterTransformer = new ParameterTransformer(positionalIdTracker)
-                const returnTransformer = new ReturnTransformer()
-                const functionTransformer = new FunctionTransformer(positionalIdTracker, parameterTransformer, returnTransformer)
-                script = functionTransformer.visitor(script) as arkts.EtsScript;
+                const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
+                const parameterTransformer = new ParameterTransformer(positionalIdTracker);
+                const returnTransformer = new ReturnTransformer();
+                const functionTransformer = new FunctionTransformer(
+                    positionalIdTracker, 
+                    parameterTransformer, 
+                    returnTransformer
+                );
 
-                arkts.setAllParents(script);
-                this.setArkTSAst(script);
+                const programVisitor = new ProgramVisitor(
+                    [functionTransformer],
+                    { skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES }
+                );
+
+                program = programVisitor.programVisitor(program);
+                script = program.astNode;
 
                 console.log('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
 
+                this.setArkTSAst(script);
                 return script;
             }
         }

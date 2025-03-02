@@ -7,3 +7,6 @@ build/
 lib/
 
 *.tgz
+
+package-lock.json
+/**/*/package-lock.json

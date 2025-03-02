@@ -18,9 +18,11 @@ import * as arkts from "@koalaui/libarkts"
 // TODO: move this to arkts-api
 export class PluginContext {
     private ast: arkts.EtsScript | undefined;
+    private program: arkts.Program | undefined;
   
     constructor() {
         this.ast = undefined;
+        this.program = undefined
     }
   
     public setArkTSAst(ast: arkts.EtsScript): void {
@@ -30,4 +32,13 @@ export class PluginContext {
     public getArkTSAst(): arkts.EtsScript | undefined {
         return this.ast;
     }
+  
+    public setArkTSProgram(program: arkts.Program): void {
+        this.program = program;
+    }
+  
+    public getArkTSProgram(): arkts.Program | undefined {
+        return this.program;
+    }
 }
+  
