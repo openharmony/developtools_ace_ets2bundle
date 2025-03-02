@@ -85,16 +85,14 @@ export class ComponentTransformer extends AbstractVisitor {
             arkts.factory.createTypeReference(
                 arkts.factory.createTypeReferencePart(
                     arkts.factory.createIdentifier('StructBase'),
-                    arkts.factory.createTSTypeParameterInstantiation(
-                        [
-                            arkts.factory.createTypeReferenceFromId(
-                                arkts.factory.createIdentifier(className)
-                            ),
-                            arkts.factory.createTypeReferenceFromId(
-                                arkts.factory.createIdentifier(`__Options_${className}`)
-                            ),
-                        ]
-                    )
+                    [
+                        arkts.factory.createTypeReferenceFromId(
+                            arkts.factory.createIdentifier(className)
+                        ),
+                        arkts.factory.createTypeReferenceFromId(
+                            arkts.factory.createIdentifier(`__Options_${className}`)
+                        ),
+                    ]
                 )
             )
         )

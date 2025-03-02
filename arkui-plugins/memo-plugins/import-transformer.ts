@@ -15,20 +15,7 @@
 
 import * as arkts from "@koalaui/libarkts"
 import { AbstractVisitor } from "../common/abstract-visitor"
-import { 
-    createContextTypeImportSpecifier, 
-    createIdTypeImportSpecifier, 
-    RuntimeNames
-} from "./utils"
-
-function createContextTypesImportDeclaration(): arkts.EtsImportDeclaration {
-    return arkts.factory.createImportDeclaration(
-        arkts.factory.createStringLiteral(RuntimeNames.CONTEXT_TYPE_DEFAULT_IMPORT),
-        [createContextTypeImportSpecifier(), createIdTypeImportSpecifier()],
-        arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPE,
-        true,
-    )
-}
+import { factory } from "./memo-factory"
 
 export class ImportTransformer extends AbstractVisitor {
     visitor(node: arkts.AstNode): arkts.AstNode {
@@ -37,7 +24,7 @@ export class ImportTransformer extends AbstractVisitor {
                 node,
                 [
                     ...node.getChildren().filter(it => it instanceof arkts.EtsImportDeclaration),
-                    createContextTypesImportDeclaration(),
+                    factory.createContextTypesImportDeclaration(),
                     ...node.getChildren().filter(it => !(it instanceof arkts.EtsImportDeclaration)),
                 ]
             )
