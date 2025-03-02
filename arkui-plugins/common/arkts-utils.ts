@@ -48,3 +48,12 @@ export function collect<T>(...value: (ReadonlyArray<T> | T | undefined)[]): T[] 
     const empty: (T | undefined)[] = []
     return filterDefined(empty.concat(...value))
 }
+
+export function matchPrefix(prefixCollection: string[], name: string): boolean {
+    for (const prefix of prefixCollection) {
+        if (name.startsWith(prefix)) {
+            return true;
+        }
+    }
+    return false;
+}

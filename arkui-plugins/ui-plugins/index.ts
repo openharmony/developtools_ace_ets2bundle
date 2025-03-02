@@ -19,41 +19,50 @@ import { ComponentTransformer } from './component-transformer'
 import { BuilderLambdaTransformer } from './builder-lambda-transformer'
 import { StructTransformer } from './struct-transformer'
 import { PluginContext } from "../common/plugin-context"
+import { ProgramVisitor } from "../common/program-visitor"
+import { EXTERNAL_SOURCE_PREFIX_NAMES } from "../common/predefines"
 
 export function uiTransform() {
     return {
         name: 'ui-plugin',
         parsed(this: PluginContext) {
-            const node = this.getArkTSAst();
-            if (node) {
-                let script: arkts.EtsScript = node;
+            let program = this.getArkTSProgram();
+            if (program) {
+                let script: arkts.EtsScript = program.astNode;
 
                 const componentTransformer = new ComponentTransformer({ arkui: "@koalaui.arkts-arkui.StructBase" });
+                const programVisitor = new ProgramVisitor(
+                    [componentTransformer],
+                    { skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES }
+                );
 
-                script = componentTransformer.visitor(node) as arkts.EtsScript;
+                program = programVisitor.programVisitor(program);
+                script = program.astNode;
+
                 console.log("[AFTER PARSED SCRIPT]: ", script.dumpSrc());
 
-                arkts.setAllParents(script);
                 this.setArkTSAst(script);
                 return script;
             }
         },
         checked(this: PluginContext) {
-            const node = this.getArkTSAst();
-            if (node) {
-                let script: arkts.EtsScript = node;
+            let program = this.getArkTSProgram();
+            if (program) {
+                let script: arkts.EtsScript = program.astNode;
 
                 const builderLambdaTransformer = new BuilderLambdaTransformer();
                 const structTransformer = new StructTransformer();
+                const programVisitor = new ProgramVisitor(
+                    [builderLambdaTransformer, structTransformer],
+                    { skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES }
+                );
 
-                script = builderLambdaTransformer.visitor(script) as arkts.EtsScript;
-                script = structTransformer.visitor(script) as arkts.EtsScript;
-
-                arkts.setAllParents(script);
-                this.setArkTSAst(script);
+                program = programVisitor.programVisitor(program);
+                script = program.astNode;
 
                 console.log("[AFTER STRUCT SCRIPT] script: ", script.dumpSrc());
 
+                this.setArkTSAst(script);
                 return script;
             }
         }
