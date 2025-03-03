@@ -523,7 +523,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     processBuildHap(cacheFile, rootFileNames, compilationTime, rollupShareObject);
   }
   if (rollupShareObject?.projectConfig.mixCompile) {
-    generateDeclarationFileForSTS(rootFileNames, allResolvedModules);
+    generateDeclarationFileForSTS(rootFileNames);
   }
   if (globalProgram.program &&
     (process.env.watchMode !== 'true' && !projectConfig.isPreview &&
@@ -1679,7 +1679,7 @@ export function resetEtsCheck(): void {
   fileToIgnoreDiagnostics = undefined;
 }
 
-export function generateDeclarationFileForSTS(rootFileNames: string[], allResolvedModules: Set<string>) {
+export function generateDeclarationFileForSTS(rootFileNames: string[]) {
   if (!(projectConfig.compileHar || projectConfig.compileShared)) {
     return;
   }
@@ -1690,19 +1690,25 @@ export function generateDeclarationFileForSTS(rootFileNames: string[], allResolv
   const regex = new RegExp(projectConfig.packageDir);
   const uniqueFiles = Array.from(new Set([
     ...unixRootFileNames,
-    ...allResolvedModules
+    /**
+     * arkui lacks explicit import statements and needs to be manually added to the global rootfile,
+     * otherwise an error will be reported during the tsc compilation of declgen
+     */
+    ...readDeaclareFiles()
   ])).filter(file => !regex.test(file));
 
   const config: RunnerParms = {
     inputDirs: [],
     inputFiles: uniqueFiles,
-    outDir: path.resolve(projectConfig.aceModuleBuild, '../etsFortgz/ets'),
-    rootDir: projectConfig.projectRootPath,
+    outDir: projectConfig.dependentModuleMap.get(projectConfig.moduleName).declgenV2OutPath,
+    // use package name as folder name
+    rootDir: projectConfig.moduleRootPath,
     customResolveModuleNames: resolveModuleNames,
     customCompilerOptions: compilerOptions
   };
   if (fs.existsSync(config.outDir)) {
     fs.rmSync(config.outDir, { recursive: true, force: true });
   }
+  fs.mkdirSync(config.outDir, { recursive: true });
   generateInteropDecls(config);
 }
