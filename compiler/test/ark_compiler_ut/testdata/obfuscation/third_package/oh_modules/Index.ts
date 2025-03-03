@@ -15,10 +15,13 @@
 
 export function foo1(): void {
 }
+
+// @KeepSymbol
 export class foo2 {
   prop21: string = '';
 }
 
+// @KeepAsConsumer
 function foo3(): void {
 }
 class foo4 {

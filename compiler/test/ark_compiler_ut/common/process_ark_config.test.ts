@@ -65,7 +65,7 @@ import {
   MergedConfig
 } from '../../../lib/fast_build/ark_compiler/common/ob_config_resolver';
 import { ArkObfuscator } from 'arkguard';
-import { UnobfuscationCollections } from 'arkguard/lib/utils/CommonCollections';
+import { UnobfuscationCollections, AtKeepCollections } from 'arkguard/lib/utils/CommonCollections';
 
 const WINDOWS: string = 'Windows_NT';
 const LINUX: string = 'Linux';
@@ -467,6 +467,54 @@ mocha.describe('test process_ark_config file api', function () {
       expect(UnobfuscationCollections.reservedExportNameAndProp.has('prop21')).to.be.true;
       expect(UnobfuscationCollections.reservedExportNameAndProp.size === 6).to.be.true;
       UnobfuscationCollections.clear();
+    });
+
+    mocha.it('5-5: test readProjectAndLibsSource with enableAtKeep', function () {
+      this.rollup.build(RELEASE);
+      arkguardConfig.mNameObfuscation.mEnableAtKeep = true;
+      const cachePath: string = path.join(__dirname, '../../../test/ark_compiler_ut/testdata/obfuscation/');
+      const rulesPath: string = path.join(__dirname, '../../../test/ark_compiler_ut/testdata/obfuscation/third_package/oh_modules/obfuscation-rules.txt');
+      const consumerRulesPath: string = path.join(__dirname, '../../../test/ark_compiler_ut/testdata/obfuscation/third_package/oh_modules/consumer-rules.txt');
+      const atKeepExportedPath: string = path.join(__dirname, '../../../test/ark_compiler_ut/testdata/obfuscation/third_package/oh_modules/exported-rules.txt');
+      this.rollup.share.projectConfig.obfuscationOptions = {
+        'selfConfig': {
+          'ruleOptions': {
+            'enable': true,
+            'rules': [rulesPath]
+          },
+          'consumerRules': [consumerRulesPath],
+        },
+        'dependencies': {
+          'libraries': [],
+          'hars': []
+        },
+        obfuscationCacheDir: './test/testData/cache',
+        exportRulePath: atKeepExportedPath,
+        sdkApis: []
+      };
+      this.rollup.share.projectConfig.compileHar = true;
+      const logger: object = this.rollup.share.getLogger(OBFUSCATION_TOOL);
+      const obConfigResolver: ObConfigResolver =  new ObConfigResolver(this.rollup.share.projectConfig, logger, true);
+      obConfigResolver.resolveObfuscationConfigs();
+      let arkObfuscator: ArkObfuscator = new ArkObfuscator();
+      arkObfuscator.init(arkguardConfig, cachePath);
+      arkObfuscator.obfConfigResolver = obConfigResolver;
+      mergedObConfig.options.enableAtKeep = true;
+      readProjectAndLibsSource(allFiles, mergedObConfig, arkObfuscator, false, keepFilesAndDependencies);
+      expect(AtKeepCollections.keepSymbol.globalNames.has('foo2')).to.be.true;
+      expect(AtKeepCollections.keepSymbol.propertyNames.has('foo2')).to.be.true;
+      expect(AtKeepCollections.keepSymbol.propertyNames.has('prop21')).to.be.true;
+      expect(AtKeepCollections.keepAsConsumer.globalNames.has('foo3')).to.be.true;
+      expect(AtKeepCollections.keepAsConsumer.propertyNames.has('foo3')).to.be.false;
+      const exportedContent = fs.readFileSync(atKeepExportedPath, 'utf-8');
+      expect(exportedContent).to.include('-enable-property-obfuscation');
+      expect(exportedContent).to.include('-keep-global-name');
+      expect(exportedContent).to.include('foo3');
+      expect(exportedContent).to.include('globalName00');
+      expect(exportedContent).to.include('-keep-property-name');
+      expect(exportedContent).to.include('propertyName00');
+      expect(exportedContent).not.to.include('foo2');
+      expect(exportedContent).not.to.include('prop21');
     });
   });
 
