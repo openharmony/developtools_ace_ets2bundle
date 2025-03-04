@@ -52,7 +52,7 @@ function getStorageLinkAnnotationValue(anno: arkts.AnnotationUsage): string | un
 }
 
 function getStorageLinkValueInAnnotation(node: arkts.ClassProperty): string | undefined {
-    const annotations: arkts.AnnotationUsage[] = node.annotations;
+    const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
 
     for (let i = 0; i < annotations.length; i++) {
         const anno: arkts.AnnotationUsage = annotations[i];
@@ -81,19 +81,17 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
         const originNode: arkts.ClassProperty = arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(originalName).setOptional(true),
             undefined,
-            arkts.factory.createIdentifier(this.property.typeAnnotation.dumpSrc()),
+            this.property.typeAnnotation,
             this.property.modifiers,
             false
         );
-
         const translatedNode: arkts.ClassProperty = arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(newName).setOptional(true),
             undefined,
-            arkts.factory.createIdentifier(this.property.typeAnnotation.dumpSrc()),
+            this.property.typeAnnotation,
             this.property.modifiers,
             false
         );
-
         currentStructInfo.stateVariables.add({ originNode, translatedNode });
 
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
@@ -105,23 +103,21 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
         const field: arkts.ClassProperty = arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(newName).setOptional(true),
-            undefined,
+            undefined, // TODO: probably need to change this.
             arkts.factory.createTypeReference(
                 arkts.factory.createTypeReferencePart(
                     arkts.factory.createIdentifier('MutableState'),
+                    arkts.factory.createTSTypeParameterInstantiation(
                         [
-                            arkts.factory.createTypeReferenceFromId(
-                                arkts.factory.createIdentifier(
-                                    this.property.typeAnnotation.dumpSrc()
-                                )
-                            ),
+                            this.property.typeAnnotation ??
+                            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
                         ]
+                    )
                 )
             ),
             this.property.modifiers,
             false
         )
-
         const member: arkts.MemberExpression = arkts.factory.createMemberExpression(
             arkts.factory.createIdentifier(`${newName}!`),
             arkts.factory.createIdentifier('value'),
@@ -144,7 +140,7 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
 
     translateGetter(
         originalName: string, 
-        typeAnnotation: arkts.AstNode, 
+        typeAnnotation: arkts.TypeNode | undefined, 
         returnValue: arkts.MemberExpression
     ): arkts.MethodDefinition {
         return createGetter(originalName, typeAnnotation, returnValue);
@@ -152,7 +148,7 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
 
     translateSetter(
         originalName: string, 
-        typeAnnotation: arkts.AstNode, 
+        typeAnnotation: arkts.TypeNode | undefined, 
         left: arkts.MemberExpression
     ): arkts.MethodDefinition {
         const right: arkts.CallExpression = arkts.factory.createCallExpression(
@@ -175,7 +171,7 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
 
         const call = arkts.factory.createCallExpression(
             arkts.factory.createIdentifier('AppStorageLinkState'),
-            [ this.property.typeAnnotation ],
+            this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
             [ 
                 arkts.factory.createStringLiteral(storageLinkValueStr),
                 this.property.value ?? arkts.factory.createIdentifier('undefined')

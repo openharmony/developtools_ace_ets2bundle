@@ -39,8 +39,6 @@ export class ComExampleTrivialApplication extends UserView {
     getBuilder(): UserViewBuilder {
         let wrapper = (__memo_context: __memo_context_type, __memo_id: __memo_id_type) => { 
             MyStateSample.instantiateImpl(
-                __memo_context, 
-                ((__memo_id) + (21211165)), 
                 undefined,
                 (): MyStateSample => new MyStateSample(),
                 {} as __Options_MyStateSample,

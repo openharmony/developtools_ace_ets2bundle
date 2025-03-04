@@ -42,7 +42,7 @@ export function hasDecorator(property: arkts.ClassProperty, decoratorName: Decor
 
 export function createGetter(
     name: string, 
-    type: arkts.AstNode, 
+    type: arkts.TypeNode | undefined, 
     returns: arkts.MemberExpression
 ): arkts.MethodDefinition {
     const body = arkts.factory.createBlock(
@@ -75,7 +75,7 @@ export function createGetter(
 
 export function createSetter(
     name: string, 
-    type: arkts.AstNode, 
+    type: arkts.TypeNode | undefined, 
     left: arkts.MemberExpression,
     right: arkts.AstNode,
 ): arkts.MethodDefinition {
