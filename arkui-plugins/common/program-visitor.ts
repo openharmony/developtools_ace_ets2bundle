@@ -47,7 +47,6 @@ export class ProgramVisitor extends AbstractVisitor {
                 const script = this.visitor(currProgram.astNode);
                 if (script) {
                     console.log("[AFTER TRANSFORM EXTERNAL SOURCE] script: ", script.dumpSrc());
-                    arkts.setAllParents(script);
                 }
             }
 
@@ -70,7 +69,6 @@ export class ProgramVisitor extends AbstractVisitor {
 
         let programScript = program.astNode;
         programScript = this.visitor(programScript) as arkts.EtsScript;
-        arkts.setAllParents(programScript);
 
         return program;
     }

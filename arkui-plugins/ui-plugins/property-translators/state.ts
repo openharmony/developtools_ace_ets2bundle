@@ -45,14 +45,14 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
         const originNode: arkts.ClassProperty = arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(originalName).setOptional(true),
             undefined,
-            arkts.factory.createIdentifier(this.property.typeAnnotation.dumpSrc()),
+            this.property.typeAnnotation,
             this.property.modifiers,
             false
         );
         const translatedNode: arkts.ClassProperty = arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(newName).setOptional(true),
             undefined,
-            arkts.factory.createIdentifier(this.property.typeAnnotation.dumpSrc()),
+            this.property.typeAnnotation,
             this.property.modifiers,
             false
         );
@@ -73,11 +73,12 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
             arkts.factory.createTypeReference(
                 arkts.factory.createTypeReferencePart(
                     arkts.factory.createIdentifier('MutableState'),
-                    [
-                        arkts.factory.createTypeReferenceFromId(
-                            arkts.factory.createIdentifier(this.property.typeAnnotation.dumpSrc())
-                        ),
-                    ]
+                    arkts.factory.createTSTypeParameterInstantiation(
+                        [
+                            this.property.typeAnnotation ??
+                            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
+                        ]
+                    )
                 )
             ),
             this.property.modifiers,
@@ -106,7 +107,7 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
 
     translateGetter(
         originalName: string, 
-        typeAnnotation: arkts.AstNode, 
+        typeAnnotation: arkts.TypeNode | undefined, 
         returnValue: arkts.MemberExpression
     ): arkts.MethodDefinition {
         return createGetter(originalName, typeAnnotation, returnValue);
@@ -114,7 +115,7 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
 
     translateSetter(
         originalName: string, 
-        typeAnnotation: arkts.AstNode, 
+        typeAnnotation: arkts.TypeNode | undefined, 
         left: arkts.MemberExpression
     ): arkts.MethodDefinition {
         const right: arkts.CallExpression = arkts.factory.createCallExpression(
@@ -138,12 +139,12 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
                 false,
                 false
             ),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING,
-            this.property.value ?? arkts.factory.createIdentifier('undefined')
+            this.property.value ?? arkts.factory.createIdentifier('undefined'),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         )
         const call = arkts.factory.createCallExpression(
             arkts.factory.createIdentifier('stateOf'),
-            [this.property.typeAnnotation],
+            this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
             [
                 binaryItem,
                 arkts.factory.createIdentifier('this')

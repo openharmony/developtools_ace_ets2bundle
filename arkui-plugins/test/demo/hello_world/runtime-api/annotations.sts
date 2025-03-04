@@ -13,9 +13,18 @@
  * limitations under the License.
  */
 
-
+@Retention({policy: "SOURCE"})
 export @interface memo {}
+
+@Retention({policy: "SOURCE"})
 export @interface memo_intrinsic {}
+
+@Retention({policy: "SOURCE"})
 export @interface memo_entry {}
+
+@Retention({policy: "SOURCE"})
 export @interface memo_stable {}
+
+@Retention({policy: "SOURCE"})
 export @interface memo_skip {}
+

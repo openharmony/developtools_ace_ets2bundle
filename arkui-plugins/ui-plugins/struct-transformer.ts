@@ -32,7 +32,7 @@ import {
 
 function isCustomComponentClass(node: arkts.ClassDeclaration): boolean {
     const structCollection: Set<string> = arkts.GlobalInfo.getInfoInstance().getStructCollection();
-    if (structCollection.has(node.definition.name.name)) {
+    if (node.definition?.ident?.name && structCollection.has(node.definition.ident.name)) {
         return true;
     }
     return false;
@@ -50,25 +50,28 @@ function createStyleArgInBuildMethod(className: string): arkts.ETSParameterExpre
     const styleLambdaParams: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
         arkts.factory.createIdentifier(
             'instance',
-            arkts.factory.createIdentifier(className),
+            arkts.factory.createTypeReferencePart(
+                arkts.factory.createIdentifier(className)
+            )
         ),
         undefined
     );
 
     const styleLambda: arkts.ETSFunctionType = arkts.factory.createFunctionType(
-        arkts.FunctionSignature.create(
+        arkts.FunctionSignature.createFunctionSignature(
             undefined,
             [
                 styleLambdaParams
             ],
-            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
+            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            false
         ),
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
     );
 
     const optionalStyleLambda: arkts.ETSUnionType = arkts.factory.createUnionType([
         styleLambda,
-        arkts.factory.createUndefinedLiteral()
+        arkts.factory.createETSUndefinedType()
     ]);
 
     const styleParam: arkts.Identifier = arkts.factory.createIdentifier(
@@ -84,17 +87,18 @@ function createStyleArgInBuildMethod(className: string): arkts.ETSParameterExpre
 
 function createContentArgInBuildMethod(): arkts.ETSParameterExpression {
     const contentLambda: arkts.ETSFunctionType = arkts.factory.createFunctionType(
-        arkts.FunctionSignature.create(
+        arkts.FunctionSignature.createFunctionSignature(
             undefined,
             [],
-            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
+            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            false
         ),
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
     );
 
     const optionalContentLambda: arkts.ETSUnionType = arkts.factory.createUnionType([
         contentLambda,
-        arkts.factory.createUndefinedLiteral()
+        arkts.factory.createETSUndefinedType()
     ]);
 
     const contentParam: arkts.Identifier = arkts.factory.createIdentifier(
@@ -173,10 +177,11 @@ function tranformPropertyMembers(className: string, propertyTranslators: Propert
         arkts.factory.createIdentifier(
             'content',
             arkts.factory.createFunctionType(
-                arkts.FunctionSignature.create(
+                arkts.FunctionSignature.createFunctionSignature(
                     undefined,
                     [],
-                    arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
+                    arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                    false
                 ),
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
             )
@@ -216,7 +221,7 @@ function tranformPropertyMembers(className: string, propertyTranslators: Propert
             'initializers',
             arkts.factory.createUnionType([
                 createInitializerOptions(className),
-                arkts.factory.createIdentifier('undefined')
+                arkts.factory.createETSUndefinedType()
             ])
         ),
         undefined
@@ -272,31 +277,38 @@ function addVariableInInterface(interfaceNode: arkts.TSInterfaceDeclaration): ar
         paramters.push(propertyItem.originNode)
         paramters.push(propertyItem.translatedNode)
     });
-    const body: arkts.TSInterfaceBody = arkts.factory.createInterfaceBody([arkts.factory.createBlock(paramters)], 1);
+    const body: arkts.TSInterfaceBody = arkts.factory.createInterfaceBody([arkts.factory.createBlock(paramters)]);
     const newInterface: arkts.TSInterfaceDeclaration = arkts.factory.updateInterfaceDeclaration(
         interfaceNode,
-        [],
-        0,
+        interfaceNode.extends,
         interfaceNode.id,
-        undefined,
+        interfaceNode.typeParams,
         body,
-        false,
-        false
+        interfaceNode.isStatic,
+        // TODO: how do I get it?
+        true
     );
     return newInterface;
 }
 
 function tranformClassMembers(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
+    if (!node.definition) {
+        return node;
+    }
+
     const definition: arkts.ClassDefinition = node.definition;
-    const className: string = node.definition.name.name;
+    const className: string | undefined = node.definition.ident?.name;
+    if (!className) {
+        throw "Non Empty className expected for Component"
+    }
 
     const propertyTranslators: PropertyTranslator[] = filterDefined(
-        definition.members.map(it => classifyProperty(it, definition.name.name))
+        definition.body.map(it => classifyProperty(it, className))
     );
 
     const translatedMembers: arkts.AstNode[] = tranformPropertyMembers(className, propertyTranslators);
 
-    const updateMembers: arkts.AstNode[] = definition.members
+    const updateMembers: arkts.AstNode[] = definition.body
         .filter((member)=>!arkts.isClassProperty(member))
         .map((member: arkts.AstNode) => {
             if (arkts.isMethodDefinition(member) && isKnownMethodDefinition(member, "constructor")) {
@@ -319,12 +331,15 @@ function tranformClassMembers(node: arkts.ClassDeclaration): arkts.ClassDeclarat
 
     const updateClassDef: arkts.ClassDefinition = arkts.factory.updateClassDefinition(
         definition,
-        definition.name,
+        definition.ident,
+        definition.typeParams,
+        definition.superTypeParams,
+        definition.implements,
+        undefined,
+        definition.super,
         [...translatedMembers, ...updateMembers],
         definition.modifiers,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-        definition.typeParamsDecl,
-        definition.superClass
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
     );
 
     return arkts.factory.updateClassDeclaration(node, updateClassDef);

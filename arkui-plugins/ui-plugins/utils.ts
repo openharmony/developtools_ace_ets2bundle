@@ -18,15 +18,17 @@ import * as arkts from "@koalaui/libarkts"
 export function createCustomComponentInitializerOptions(className: string): arkts.Identifier {
     return arkts.factory.createIdentifier(
         'initializers',
-        arkts.factory.createTypeReferenceFromId(
-            createInitializerOptions(className)
-        )
+        createInitializerOptions(className)
     )
 }
 
 // TODO: currently, we forcely assume initializerOptions is named in pattern __Options_xxx
-export function createInitializerOptions(className: string): arkts.Identifier {
-    return arkts.factory.createIdentifier(`__Options_${className}`);
+export function createInitializerOptions(className: string): arkts.TypeNode {    
+    return arkts.factory.createTypeReference(
+        arkts.factory.createTypeReferencePart(
+            arkts.factory.createIdentifier(`__Options_${className}`)
+        )
+    );
 }
 
 // TODO: currently, we forcely assume initializerOptions is named in pattern __Options_xxx

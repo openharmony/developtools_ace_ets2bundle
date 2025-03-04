@@ -25,7 +25,10 @@ export function annotation(name: string): arkts.AnnotationUsage {
     return annotation;
 }
 
-export function expectName(node: arkts.AstNode): string {
+export function expectName(node: arkts.AstNode | undefined): string {
+    if (!node) {
+        throw new Error("Expected an identifier, got empty node");
+    }
     if (!arkts.isIdentifier(node)) {
         throw new Error("Expected an identifier, got: " + arkts.nodeType(node).toString());
     }

@@ -18,12 +18,12 @@ import * as arkts from "@koalaui/libarkts";
 export interface GetterSetter {
     translateGetter(
         originalName: string, 
-        typeAnnotation: arkts.AstNode, 
+        typeAnnotation: arkts.TypeNode | undefined, 
         returnValue: arkts.MemberExpression
     ): arkts.MethodDefinition;
     translateSetter(
         originalName: string, 
-        typeAnnotation: arkts.AstNode, 
+        typeAnnotation: arkts.TypeNode | undefined, 
         left: arkts.MemberExpression
     ): arkts.MethodDefinition;
 }

@@ -48,8 +48,10 @@ export function unmemoizeTransform() {
                     { skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES }
                 );
 
-                program = programVisitor.programVisitor(program);
-                script = program.astNode;
+                // program = programVisitor.programVisitor(program);
+                // script = program.astNode;
+
+                script = programVisitor.visitor(script);
 
                 console.log('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
 

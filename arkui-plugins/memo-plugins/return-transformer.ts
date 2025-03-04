@@ -42,14 +42,12 @@ export class ReturnTransformer extends AbstractVisitor {
         }
         const node = this.visitEachChild(beforeChildren)
         if (node instanceof arkts.ReturnStatement) {
-            // const argument = node.argument;
             return arkts.factory.createBlock(
                 [
                     factory.createRecacheCall(node.argument),
                     arkts.factory.createReturnStatement()
                 ]
             )
-            // return arkts.factory.updateReturnStatement(node, factory.createRecacheCall(node.argument))
         }
         return node
     }
