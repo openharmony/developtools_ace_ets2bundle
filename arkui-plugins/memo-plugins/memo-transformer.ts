@@ -18,16 +18,19 @@ import { FunctionTransformer } from "./function-transformer"
 import { PositionalIdTracker } from "./utils"
 import { factory } from "./memo-factory"
 import { ReturnTransformer } from "./return-transformer"
-import { ParameterTransformer } from "./parameter-transformer"
+import { ParameterTransformer } from "./parameter-transformer" 
+import { EtsglobalRemover } from "../common/etsglobal-remover"
 
 export interface TransformerOptions {
     trace?: boolean,
+    removeEtsglobal?: boolean
 }
 
 export default function memoTransformer(
     userPluginOptions?: TransformerOptions
 ) {
-    return (node: arkts.EtsScript) => {
+    return (node0: arkts.EtsScript) => {
+        const node = (userPluginOptions?.removeEtsglobal ? new EtsglobalRemover().visitor(node0) : node0) as arkts.EtsScript
         const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false)
         const parameterTransformer = new ParameterTransformer(positionalIdTracker)
         const returnTransformer = new ReturnTransformer()
@@ -36,11 +39,12 @@ export default function memoTransformer(
             arkts.factory.updateEtsScript(
                 node,
                 [
-                    ...node.getChildren().filter(it => it instanceof arkts.EtsImportDeclaration),
+                    ...node.getChildren().filter(it => arkts.isEtsImportDeclaration(it)),
                     factory.createContextTypesImportDeclaration(),
-                    ...node.getChildren().filter(it => !(it instanceof arkts.EtsImportDeclaration)),
+                    ...node.getChildren().filter(it => !arkts.isEtsImportDeclaration(it)),
                 ]
             )
         )
     }
 }
+

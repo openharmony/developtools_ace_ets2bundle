@@ -29,7 +29,7 @@ import { ReturnTransformer } from "./return-transformer"
 function updateFunctionBody(
     node: arkts.BlockStatement,
     parameters: arkts.ETSParameterExpression[],
-    returnTypeAnnotation: arkts.AstNode | undefined,
+    returnTypeAnnotation: arkts.TypeNode | undefined,
     hash: arkts.NumberLiteral | arkts.StringLiteral,
     updateStatementFunc?: (statement: arkts.AstNode) => arkts.AstNode
 ): [
@@ -87,12 +87,12 @@ function findFunctionType(param: arkts.ETSParameterExpression): arkts.ETSFunctio
     const paramType: arkts.AstNode | undefined = param.type;
     if (!paramType) return undefined;
 
-    if (arkts.isUnionType(paramType)) {
+    if (arkts.isETSUnionType(paramType)) {
         const functionType: arkts.ETSFunctionType | undefined = 
-            paramType.types.find(arkts.isFunctionType);
+            paramType.types.find(arkts.isETSFunctionType);
         return functionType;
     }
-    if (arkts.isFunctionType(paramType)) {
+    if (arkts.isETSFunctionType(paramType)) {
         return paramType
     }
     return undefined;
@@ -194,6 +194,7 @@ export class FunctionTransformer extends AbstractVisitor {
                         undefined,
                         [...factory.createHiddenParameters(), ...functionType.params],
                         functionType.returnType,
+                        false
                     ),
                     arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
                 )

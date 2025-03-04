@@ -13,11 +13,18 @@
  * limitations under the License.
  */
 
-
+@Retention({policy: "SOURCE"})
 export @interface BuilderLambda {
     value: string
 }
 
+@Retention({policy: "SOURCE"})
 export @interface Component {}
 
+@Retention({policy: "SOURCE"})
 export @interface State {}
+
+@Retention({policy: "SOURCE"})
+export @interface StorageLink {
+    value: string
+}
