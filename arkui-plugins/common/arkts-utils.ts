@@ -25,6 +25,16 @@ export function annotation(name: string): arkts.AnnotationUsage {
     return annotation;
 }
 
+export function expectName(node: arkts.AstNode | undefined): string {
+    if (!node) {
+        throw new Error("Expected an identifier, got empty node");
+    }
+    if (!arkts.isIdentifier(node)) {
+        throw new Error("Expected an identifier, got: " + arkts.nodeType(node).toString());
+    }
+    return node.name;
+}
+
 export function mangle(value: string): string {
     return `__${value}`;
 }
@@ -40,4 +50,13 @@ export function filterDefined<T>(value: (T | undefined)[]): T[] {
 export function collect<T>(...value: (ReadonlyArray<T> | T | undefined)[]): T[] {
     const empty: (T | undefined)[] = []
     return filterDefined(empty.concat(...value))
+}
+
+export function matchPrefix(prefixCollection: string[], name: string): boolean {
+    for (const prefix of prefixCollection) {
+        if (name.startsWith(prefix)) {
+            return true;
+        }
+    }
+    return false;
 }

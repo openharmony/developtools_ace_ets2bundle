@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,18 +13,13 @@
  * limitations under the License.
  */
 
-import { int32, uint32 } from "../common"
-import { TreePath } from "./TreePath"
-export declare class TreeUpdater<Node> {
-    private current: TreePath<Node>
-    readonly reverse: boolean
-    constructor(root: Node, reverse: boolean = false)
-    get path(): TreePath<Node>
-    get node(): Node
-    down(node: Node): void
-    up(): void
-    clear(): void
-    insert(index: int32, node: Node): void
-    remove(index: int32, amount: uint32): void
-    move(indexFrom: int32, indexTo: int32, amount: uint32): void
+import * as arkts from "@koalaui/libarkts";
+
+export abstract class PropertyTranslator {
+    constructor(
+        protected property: arkts.ClassProperty,
+        protected structName: string
+    ) { }
+
+    abstract translateMember(): arkts.AstNode[];
 }
