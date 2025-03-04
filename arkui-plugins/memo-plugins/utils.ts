@@ -24,7 +24,7 @@ export enum RuntimeNames {
     COMPUTE = "compute",
     CONTEXT = "__memo_context",
     CONTEXT_TYPE = "__memo_context_type",
-    CONTEXT_TYPE_DEFAULT_IMPORT = "@koalaui/runtime",
+    CONTEXT_TYPE_DEFAULT_IMPORT = "@ohos.arkui.StateManagement.runtime",
     ID = "__memo_id",
     ID_TYPE = "__memo_id_type",
     INTERNAL_PARAMETER_STATE = "param",

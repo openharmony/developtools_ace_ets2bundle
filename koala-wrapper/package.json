@@ -1,0 +1,59 @@
+{
+    "name": "@koalaui/libarkts",
+    "version": "1.0.0",
+    "private": true,
+    "main": "./build/lib/es2panda.js",
+    "types": "./build/src/arkts-api/index.d.ts",
+    "exports": {
+        ".": "./build/lib/arkts-api/index.js",
+        "./build/lib/es2panda": "./build/lib/es2panda.js"
+    },
+    "files": [
+        "./build/*"
+    ],
+    "config": {
+        "gen_version": "3.0.19"
+    },
+    "devDependencies": {
+        "@babel/cli": "7.20.7",
+        "@babel/core": "7.20.12",
+        "@babel/plugin-proposal-class-properties": "7.18.6",
+        "@babel/preset-env": "7.20.2",
+        "@babel/preset-typescript": "7.18.6",
+        "@babel/runtime": "7.20.13",
+        "@tsconfig/recommended": "1.0.8",
+        "node-addon-api": "^8.3.0",
+        "node-api-headers": "^1.4.0",
+        "typescript": "^5.0.0",
+        "@types/commander": "^2.12.5"
+    },
+    "dependencies": {
+        "@koalaui/interop": "file:./koalaui/interop"
+    },
+    "scripts": {
+        "clean": "rimraf build native/build*",
+        "compile:koala:interop": "npm run --prefix ../../interop compile",
+        "compile:meson": "cd native && meson setup build && meson compile -C build",
+        "copy:.node": "mkdir -p ./build/lib/native/ && cp ./native/build/es2panda.node ./build/lib/native",
+        "compile:native": "npm run compile:meson && npm run copy:.node",
+        "compile:src": "./node_modules/.bin/babel ./src --out-dir build/lib --extensions .ts",
+        "compile:types": "npx tsc -p ./tsconfig.json --emitDeclarationOnly",
+        "compile:src:tsc": "tsc -p ./tsconfig.json",
+        "compile:tsc": "npm run compile:src && npm run compile:types",
+        "compile": "npm run compile:native && npm run compile:src && npm run compile:types",
+        "compile:plugins": "npx ets-tsc -p plugins/tsconfig.json",
+        "restart": "PANDA_SDK_PATH=../../incremental/tools/panda/node_modules/@panda/sdk node . --file ./plugins/input/main.sts --output ./build/abc/main.abc --dump-plugin-ast --arktsconfig ./arktsconfig.json --restart-stages",
+        "direct": "PANDA_SDK_PATH=../../incremental/tools/panda/node_modules/@panda/sdk node . --file ./plugins/input/no-import-no-struct.sts --output ./build/abc/no-import-no-struct.abc --dump-plugin-ast --arktsconfig ./arktsconfig-print-only.json",
+        "memo": "PANDA_SDK_PATH=../../incremental/tools/panda/node_modules/@panda/sdk node . --file ./plugins/input/memo.sts --output ./build/abc/memo.abc --dump-plugin-ast --arktsconfig ./arktsconfig-memo.json --restart-stages",
+        "run": "npm run compile && npm run compile:plugins && npm run restart",
+        "run:memo": "npm run compile && npm run compile:plugins && npm run compile --prefix ../memo-plugin && npm run memo",
+        "run:abc": "../../incremental/tools/panda/node_modules/@panda/sdk/linux_host_tools/bin/ark --load-runtimes=ets --boot-panda-files=../../incremental/tools/panda/node_modules/@panda/sdk/ets/etsstdlib.abc ./main.abc main.ETSGLOBAL::main",
+        "compile:playground": "cd playground && meson setup build && meson compile -C build",
+        "run:playground": "npm run compile:playground && ./playground/build/playground.out",
+        "panda:sdk:clean": "cd ../../incremental/tools/panda && rimraf node_modules",
+        "panda:sdk:install": "cd ../../incremental/tools/panda && npm run panda:sdk:install",
+        "panda:sdk:reinstall": "npm run panda:sdk:clean && npm run panda:sdk:install",
+        "regenerate": "npx @idlizer/libarkts-gen@$npm_package_config_gen_version --input-file $npm_package_config_input_file --output-dir ../ --files bridges,nativeModule",
+        "reinstall:regenerate": "npm run panda:sdk:reinstall && npm run regenerate"
+    }
+}

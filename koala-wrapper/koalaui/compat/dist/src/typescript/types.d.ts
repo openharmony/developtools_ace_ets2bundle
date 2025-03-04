@@ -1,0 +1,11 @@
+/// <reference types="src/typescript/Types" />
+export type uint8 = int;
+export type int8 = int;
+export type int16 = int;
+export type int32 = int;
+export type uint32 = int;
+export type int64 = long;
+export type uint64 = long;
+export type float32 = float;
+export type float64 = double;
+//# sourceMappingURL=types.d.ts.map
