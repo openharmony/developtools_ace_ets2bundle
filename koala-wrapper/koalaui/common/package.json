@@ -1,0 +1,50 @@
+{
+    "name": "@koalaui/common",
+    "version": "1.5.5",
+    "description": "",
+    "main": "dist/lib/src/index.js",
+    "types": "./index.d.ts",
+    "files": [
+        "dist/lib/**/*.js",
+        "dist/lib/**/*.d.ts",
+        "dist/bridges/ohos/**/*.js",
+        "dist/bridges/ohos/**/*.d.ts",
+        "src/**/*",
+        "oh-package.json5"
+    ],
+    "exports": {
+        ".": "./dist/lib/src/index.js",
+        "./golden": "./test/golden.js",
+        "./bridges": {
+            "ark": "./dist/bridges/ohos/index.js",
+            "default": null
+        }
+    },
+    "typesVersions": {
+        "*": {
+            "bridges": [
+                "dist/bridges/ohos/index.d.ts"
+            ],
+            "*": [
+                "dist/lib/src/*",
+                "dist/lib/typescript/*"
+            ]
+        }
+    },
+    "keywords": [],
+    "dependencies": {
+        "@koalaui/compat": "../compat"
+    },
+    "devDependencies": {
+        "@ohos/hypium": "1.0.6",
+        "@types/chai": "^4.3.1",
+        "@types/mocha": "^9.1.0",
+        "@typescript-eslint/eslint-plugin": "^5.20.0",
+        "@typescript-eslint/parser": "^5.20.0",
+        "chai": "^4.3.6",
+        "eslint": "^8.13.0",
+        "eslint-plugin-unused-imports": "^2.0.0",
+        "mocha": "^9.2.2",
+        "source-map-support": "^0.5.21"
+    }
+}
