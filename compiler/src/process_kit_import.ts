@@ -18,7 +18,7 @@ import fs from 'fs';
 import path from 'path';
 
 import {
-  FileLog,
+  IFileLog,
   LogType,
   startTimeStatisticsLocation,
   stopTimeStatisticsLocation,
@@ -30,6 +30,7 @@ import { collectKitModules } from './fast_build/system_api/rollup-plugin-system-
 import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from './fast_build/ark_compiler/utils';
 import { compilerOptions } from './ets_checker';
 import { transformLazyImport } from './ark_utils';
+import createAstNodeUtils from './create_ast_node_utils';
 
 /*
 * basic implementation logic:
@@ -41,7 +42,7 @@ import { transformLazyImport } from './ark_utils';
 *                  | -> replace each origin declaration with corresponding ohosImports
 */
 
-export const kitTransformLog: FileLog = new FileLog();
+export const kitTransformLog: IFileLog = new createAstNodeUtils.FileLog();
 
 const KIT_PREFIX = '@kit.';
 const KEEPTS = '// @keepTs';

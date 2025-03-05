@@ -73,30 +73,10 @@ export interface LogInfo {
 
 export const repeatLog: Map<string, LogInfo> = new Map();
 
-export class FileLog {
-  private _sourceFile: ts.SourceFile | undefined;
-  private _errors: LogInfo[] = [];
-
-  public get sourceFile() {
-    return this._sourceFile;
-  }
-
-  public set sourceFile(newValue: ts.SourceFile) {
-    this._sourceFile = newValue;
-  }
-
-  public get errors() {
-    return this._errors;
-  }
-
-  public set errors(newValue: LogInfo[]) {
-    this._errors = newValue;
-  }
-
-  public cleanUp(): void {
-    this._sourceFile = undefined;
-    this._errors = [];
-  }
+export interface IFileLog {
+  sourceFile: ts.SourceFile | undefined;
+  errors: LogInfo[];
+  cleanUp(): void
 }
 
 export function emitLogInfo(loader: any, infos: LogInfo[], fastBuild: boolean = false,
@@ -146,7 +126,7 @@ export function getMessage(fileName: string, info: LogInfo, fastBuild: boolean =
   return message;
 }
 
-export function getTransformLog(transformLog: FileLog): LogInfo[] {
+export function getTransformLog(transformLog: IFileLog): LogInfo[] {
   const sourceFile: ts.SourceFile = transformLog.sourceFile;
   const logInfos: LogInfo[] = transformLog.errors.map((item) => {
     if (item.pos) {
@@ -559,7 +539,7 @@ export function unlinkSync(filePath: string): void {
 
 export function getExtensionIfUnfullySpecifiedFilepath(filePath: string): string {
   if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-    return "";
+    return '';
   }
 
   let extension: string = EXTNAME_ETS;
@@ -795,7 +775,7 @@ export class ProcessFileInfo {
     }
   }
 
-  addFileCacheInfo(id: string, fileCacheInfo: fileInfo) {
+  addFileCacheInfo(id: string, fileCacheInfo: fileInfo): void {
     if (fileCacheInfo && process.env.compileMode === 'moduleJson') {
       if (Array.isArray(fileCacheInfo.fileToResourceList)) {
         fileCacheInfo.fileToResourceList = new Set(fileCacheInfo.fileToResourceList);
@@ -810,13 +790,13 @@ export class ProcessFileInfo {
     }
   }
 
-  collectTransformedFiles(id: string) {
+  collectTransformedFiles(id: string): void {
     if (id.match(process.env.compileMode === 'moduleJson' ? /(?<!\.d)\.(ets|ts)$/ : /(?<!\.d)\.(ets)$/)) {
       this.transformedFiles.add(id);
     }
   }
 
-  collectCachedFiles(id: string) {
+  collectCachedFiles(id: string): void {
     if (id.match(process.env.compileMode === 'moduleJson' ? /(?<!\.d)\.(ets|ts)$/ : /(?<!\.d)\.(ets)$/)) {
       this.cachedFiles.push(id);
     }
@@ -883,11 +863,11 @@ export class ProcessFileInfo {
     }
   }
 
-  updateResourceList(resource: string) {
+  updateResourceList(resource: string): void {
     this.resourceList.add(resource);
   }
 
-  compareResourceDiff() {
+  compareResourceDiff(): void {
     // delete resource
     for (const resource of this.lastResourceList) {
       if (!this.resourceList.has(resource) && this.resourceToFile[resource]) {
@@ -915,7 +895,7 @@ export class ProcessFileInfo {
     }
   }
 
-  clearCollectedInfo(cache) {
+  clearCollectedInfo(cache): void {
     this.buildStart = false;
     this.resourceTableChanged = false;
     this.isAsPageImport = false;
@@ -973,7 +953,7 @@ class SpecialArkTSFileInfo extends TSFileInfo {
     this.fileInfo = cacheInfo || this.fileInfo;
   }
 
-  get hasEntry() {
+  get hasEntry(): boolean {
     return this.fileInfo.hasEntry;
   }
   set hasEntry(value: boolean) {
@@ -1091,7 +1071,7 @@ export class CompilationTimeStatistics {
   etsTransformLoadTime: CompileEvent;
   processKitImportTime: CompileEvent;
   processUISyntaxTime: CompileEvent;
-  constructor(share: Record<string, any>, pluginName: string, hookName: string) {
+  constructor(share, pluginName: string, hookName: string) {
     if (share && share.getHookEventFactory) {
       if (pluginName === 'etsChecker' && hookName === 'buildStart' && share.getHookEventFactory(pluginName, hookName)) {
         this.hookEventFactory = share.getHookEventFactory(pluginName, hookName);

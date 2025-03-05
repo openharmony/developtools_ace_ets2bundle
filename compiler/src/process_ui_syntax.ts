@@ -87,7 +87,7 @@ import {
   LogInfo,
   LogType,
   hasDecorator,
-  FileLog,
+  IFileLog,
   getPossibleBuilderTypeParameter,
   storedFileInfo,
   ExtendResult,
@@ -170,7 +170,7 @@ import {
   routerBundleOrModule
 } from './process_module_package';
 
-export let transformLog: FileLog = new FileLog();
+export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
@@ -178,12 +178,12 @@ export const builderTypeParameter: { params: string[] } = { params: [] };
 export function processUISyntax(program: ts.Program, ut = false,
   compilationTime: CompilationTimeStatistics = null, filePath: string = ''): Function {
   let entryNodeKey: ts.Expression;
-  let hasStruct: boolean = false;
   return (context: ts.TransformationContext) => {
     contextGlobal = context;
     let pagesDir: string;
     let pageFile: string;
     let hasUseResource: boolean = false;
+    let hasStruct: boolean = false;
     return (node: ts.SourceFile) => {
       startTimeStatisticsLocation(compilationTime ? compilationTime.processUISyntaxTime : undefined);
       pagesDir = path.resolve(path.dirname(node.fileName));
@@ -1955,7 +1955,7 @@ export function validatorCard(log: any[], type: number, pos: number,
 }
 
 export function resetProcessUiSyntax(): void {
-  transformLog = new FileLog();
+  transformLog = new createAstNodeUtils.FileLog();
   contextGlobal = undefined;
 }
 
