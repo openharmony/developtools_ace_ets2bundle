@@ -540,6 +540,7 @@ export const warnCheckerResult: WarnCheckerResult = { count: 0 };
 export let languageService: ts.LanguageService = null;
 let tsImportSendable: boolean = false;
 let skipOhModulesLint: boolean = false;
+export let maxMemoryInServiceChecker: number = 0;
 export function serviceChecker(rootFileNames: string[], newLogger: Object = null, resolveModulePaths: string[] = null,
   parentEvent?: CompileEvent, rollupShareObject?: Object): void {
   fastBuildLogger = newLogger;
@@ -600,6 +601,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     MemoryMonitor.stopRecordStage(processBuildHaprrecordInfo);
   }
 
+  maxMemoryInServiceChecker = process.memoryUsage().heapUsed;
   // Release the typeChecker early and perform GC in the following scenarios:
   // In memory-priority mode or default mode, when the preview mode is disabled in a full compilation scenario, 
   // and it is not a preview, hot reload, or cold reload scenario. The typeChecker is not released early in performance-priority mode.
@@ -1865,4 +1867,5 @@ export function resetEtsCheck(): void {
   dirExistsCache.clear();
   targetESVersionChanged = false;
   fileToIgnoreDiagnostics = undefined;
+  maxMemoryInServiceChecker = 0;
 }
