@@ -204,6 +204,7 @@
     "monopolizeEvents",
     "onTouchIntercept",
     "onSizeChange",
-    "accessibilityFocusDrawLevel"
+    "accessibilityFocusDrawLevel",
+    "toolbar"
   ]
 }
