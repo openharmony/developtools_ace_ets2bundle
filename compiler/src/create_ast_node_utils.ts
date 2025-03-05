@@ -20,6 +20,38 @@ import {
   FINALIZE_CONSTRUCTION
 } from './pre_define';
 
+import { 
+  IFileLog, 
+  LogInfo 
+} from './utils';
+
+class FileLog implements IFileLog {
+  private _sourceFile: ts.SourceFile | undefined;
+  private _errors: LogInfo[] = [];
+
+  public get sourceFile(): ts.SourceFile | undefined {
+    return this._sourceFile;
+  }
+
+  public set sourceFile(newValue: ts.SourceFile) {
+    this._sourceFile = newValue;
+  }
+
+  public get errors(): LogInfo[] {
+    return this._errors;
+  }
+
+  public set errors(newValue: LogInfo[]) {
+    this._errors = newValue;
+  }
+
+  public cleanUp(): void {
+    this._sourceFile = undefined;
+    this._errors = [];
+  }
+}
+
+
 function createParameterDeclaration(name: string): ts.ParameterDeclaration {
   let initializer: ts.Expression;
   if (name === ELMTID) {
@@ -57,6 +89,7 @@ function createImportNodeForModuleInfo(): ts.ImportDeclaration {
 }
 
 export default {
+  FileLog: FileLog,
   createParameterDeclaration: createParameterDeclaration,
   createFinalizeConstruction: createFinalizeConstruction,
   createImportNodeForModuleInfo: createImportNodeForModuleInfo

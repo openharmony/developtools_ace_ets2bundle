@@ -82,7 +82,8 @@ import {
   GLOBAL_CUSTOM_BUILDER_METHOD,
   INNER_CUSTOM_BUILDER_METHOD,
   resetComponentMap,
-  INNER_CUSTOM_LOCALBUILDER_METHOD
+  INNER_CUSTOM_LOCALBUILDER_METHOD,
+  EXTEND_ATTRIBUTE
 } from '../../component_map';
 import {
   kitTransformLog,
@@ -300,10 +301,10 @@ interface EmitResult {
 
 function getCompilerHost(): ts.CompilerHost {
   const compilerHost: ts.CompilerHost = ts.createCompilerHost(etsCheckerCompilerOptions);
-  compilerHost.writeFile = () => {};
+  compilerHost.writeFile = (): void => {};
   compilerHost.resolveModuleNames = resolveModuleNames;
-  compilerHost.getCurrentDirectory = () => process.cwd();
-  compilerHost.getDefaultLibFileName = options => ts.getDefaultLibFilePath(options);
+  compilerHost.getCurrentDirectory = (): string => process.cwd();
+  compilerHost.getDefaultLibFileName = (options: ts.CompilerOptions): string => ts.getDefaultLibFilePath(options);
   compilerHost.resolveTypeReferenceDirectives = resolveTypeReferenceDirectives;
   return compilerHost;
 }
@@ -583,6 +584,7 @@ function resetCollection() {
   componentInfo.id = 0;
   propertyCollection.clear();
   linkCollection.clear();
+  EXTEND_ATTRIBUTE.clear();
   resetComponentCollection();
   storedFileInfo.hasLocalBuilderInFile = false;
 }
