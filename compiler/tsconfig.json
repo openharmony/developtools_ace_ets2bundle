@@ -270,6 +270,7 @@
         "TextTimer",
         "TimePicker",
         "Toggle",
+        "ToolBarItem",
         "Video",
         "Web",
         "WindowScene",
@@ -856,6 +857,11 @@
             "name": "Toggle",
             "type": "ToggleAttribute",
             "instance": "ToggleInstance"
+          },
+          {
+            "name": "ToolBarItem",
+            "type": "ToolBarItemAttribute",
+            "instance": "ToolBarItemInterface"
           },
           {
             "name": "Video",
