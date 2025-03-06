@@ -17,3 +17,7 @@ export const EXTERNAL_SOURCE_PREFIX_NAMES: string[] = [
     "std",
     "escompat"
 ];
+
+export const EXTERNAL_SOURCE_ALLOWED_IMPORT_INSERT_NAMES: string[] = [
+    "@ohos.arkui"
+]

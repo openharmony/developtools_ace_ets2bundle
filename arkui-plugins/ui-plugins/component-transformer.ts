@@ -17,114 +17,180 @@ import * as arkts from "@koalaui/libarkts"
 import { getInteropPath } from "../path"
 const interop = require(getInteropPath())
 const nullptr = interop.nullptr
-import { AbstractVisitor } from "../common/abstract-visitor";
-import { hasDecorator, DecoratorNames } from "./property-translators/utils"
-import { EntryHandler } from "./entry-translators/entry"
+import {
+    AbstractVisitor,
+    VisitorOptions
+} from "../common/abstract-visitor";
+import {
+    CustomComponentNames,
+    getCustomComponentOptionsName
+} from "./utils";
+import {
+    isAnnotation
+} from "../common/arkts-utils";
+import {
+    findEntryWithStorageInClassAnnotations
+} from "./entry-translators/utils";
+import {
+    factory as entryFactory
+} from "./entry-translators/factory"
 
-export interface ComponentTransformerOptions {
-    arkui: string
+export interface ComponentTransformerOptions extends VisitorOptions {
+    arkui?: string
+}
+
+type ScopeInfo = {
+    name: string,
+    isEntry?: boolean,
+    isComponent?: boolean,
+    isReusable?: boolean
 }
 
 export class ComponentTransformer extends AbstractVisitor {
-    constructor(private options?: ComponentTransformerOptions) {
-        super()
+    private scopeInfos: ScopeInfo[] = [];
+    private componentNames: string[] = [];
+    private entryNames: string[] = [];
+    private reusableNames: string[] = [];
+    private arkui?: string;
+
+    constructor(options?: ComponentTransformerOptions) {
+        const _options: ComponentTransformerOptions = options ?? {};
+        super(_options);
+        this.arkui = _options.arkui;
     }
 
-    private context: { componentNames: string[] } = { componentNames: [] }
-
-    isComponentStruct(node: arkts.StructDeclaration): boolean {
-        // For now just rewrite any struct
-        return true
+    enter(node: arkts.AstNode) {
+        if (arkts.isStructDeclaration(node) && !!node.definition.ident) {
+            const scopeInfo: ScopeInfo = { name: node.definition.ident.name };
+            node.definition.annotations.forEach((anno) => {
+                scopeInfo.isEntry ||= isAnnotation(anno, CustomComponentNames.ENTRY_ANNOTATION_NAME);
+                scopeInfo.isComponent ||= isAnnotation(anno, CustomComponentNames.COMPONENT_ANNOTATION_NAME);
+                scopeInfo.isReusable ||= isAnnotation(anno, CustomComponentNames.RESUABLE_ANNOTATION_NAME);
+            });
+            this.scopeInfos.push(scopeInfo);
+        }
     }
 
-    createImportDeclaration() {
-        return arkts.factory.createImportDeclaration(
-            // TODO: es2panda has already resolved the "paths" section
-            arkts.factory.create1StringLiteral(this.options?.arkui ?? '@ohos.arkui.runtime'),
+    exit(node: arkts.AstNode) {
+        if (arkts.isStructDeclaration(node) || arkts.isClassDeclaration(node)) {
+            if (!node.definition || !node.definition.ident || this.scopeInfos.length === 0) return;
+            if (this.scopeInfos[this.scopeInfos.length - 1]?.name === node.definition.ident.name) {
+                this.scopeInfos.pop();
+            }
+        }
+    }
+
+    isComponentStruct(): boolean {
+        if (this.scopeInfos.length === 0) return false;
+        const scopeInfo: ScopeInfo = this.scopeInfos[this.scopeInfos.length - 1];
+        return !!scopeInfo.isComponent;
+    }
+
+    createImportDeclaration(): void {
+        const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(
+            this.arkui ?? CustomComponentNames.COMPONENT_DEFAULT_IMPORT
+        );
+        const resolvedSource: arkts.StringLiteral = arkts.factory.create1StringLiteral(
+            arkts.ImportPathManager.create().resolvePath('', source.str)
+        );
+        const imported: arkts.Identifier = arkts.factory.createIdentifier(
+            CustomComponentNames.COMPONENT_CLASS_NAME
+        );
+        const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
+            arkts.ImportSource.createImportSource(
+                source,
+                resolvedSource,
+                false
+            ),
             [
                 arkts.factory.createImportSpecifier(
-                    arkts.factory.createIdentifier('StructBase'),
-                    nullptr // TODO: wtf
+                    imported,
+                    imported
                 )
             ],
-            arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPE,
-            false
+            arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE
         )
+        // Insert this import at the top of the script's statements.
+        arkts.importDeclarationInsert(importDecl);
+        return;
     }
 
     processEtsScript(node: arkts.EtsScript): arkts.EtsScript {
-        const entryWrapper = EntryHandler.instance.createEntryWrapper();
-        const interfaceDeclarations = this.context.componentNames.map(
-            name => arkts.factory.createInterfaceDeclaration(
-                [],
-                arkts.factory.createIdentifier(`__Options_${name}`),
-                nullptr, // TODO: wtf
-                arkts.factory.createBlock([]),
-                false,
-                false
+        if (
+            this.isExternal 
+            && this.componentNames.length === 0 
+            && this.entryNames.length === 0
+        ) {
+            return node;
+        }
+        
+        if (!this.isExternal && this.componentNames.length > 0) {
+            this.createImportDeclaration();
+        }
+
+        let updateStatements: arkts.AstNode[] = [];
+        updateStatements.push(
+            ...this.componentNames.map(
+                name => arkts.factory.createInterfaceDeclaration(
+                    [],
+                    arkts.factory.createIdentifier(
+                        getCustomComponentOptionsName(name)
+                    ),
+                    nullptr, // TODO: wtf
+                    arkts.factory.createBlock([]),
+                    false,
+                    false
+                )
             )
-        )
-        return arkts.factory.updateEtsScript(
-            node,
-            [
-                this.createImportDeclaration(),
-                ...node.statements,
-                ...interfaceDeclarations,
-                ...entryWrapper
-            ]
-        )
+        );
+        // TODO: normally, we should only have at most one @Entry component in a single file.
+        // probably need to handle error message here.
+        updateStatements.push(
+            ...this.entryNames.map(entryFactory.generateEntryWrapper)
+        );
+        if (updateStatements.length > 0) {
+            return arkts.factory.updateEtsScript(
+                node,
+                [
+                    ...node.statements,
+                    ...updateStatements,
+                ]
+            )
+        }
+        return node;
     }
 
     processComponent(node: arkts.ClassDeclaration | arkts.StructDeclaration): arkts.ClassDeclaration | arkts.StructDeclaration {
-        const className = node.definition?.ident?.name
-        if (!className) {
-            throw "Non Empty className expected for Component"
+        const scopeInfo = this.scopeInfos[this.scopeInfos.length - 1];
+        const className = node.definition?.ident?.name;
+        if (!className || scopeInfo?.name !== className) {
+            return node;
         }
-        let entryStorageProperty = null;
-        if (hasDecorator(node.definition, DecoratorNames.ENTRY)) {
-            EntryHandler.instance.rememberEntryFunction(node);
-            if (node.definition?.annotations[0].properties[0] != undefined) {
-                const key = JSON.parse(node.definition?.annotations[0].properties[0].dumpJson())["key"]["name"];
-                const EntryRightValue = JSON.parse(node.definition?.annotations[0].properties[0].dumpJson())["value"]["value"];
-                if (key === 'storage') {
-                    entryStorageProperty = arkts.factory.createClassProperty(
-                        arkts.factory.createIdentifier("_entry_local_storage_"),
-                        arkts.factory.createIdentifier(EntryRightValue),
-                        undefined,
-                        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
-                        false
-                    );
-                }
+
+        arkts.GlobalInfo.getInfoInstance().add(className);
+        this.componentNames.push(className);
+
+        const definition: arkts.ClassDefinition = node.definition;
+        const newDefinitionBody: arkts.AstNode[] = [];
+        if (scopeInfo.isEntry) {
+            this.entryNames.push(className);
+            const entryWithStorage: arkts.ClassProperty | undefined = 
+                findEntryWithStorageInClassAnnotations(definition);
+            if (!!entryWithStorage) {
+                newDefinitionBody.push(entryFactory.createEntryLocalStorageInClass(entryWithStorage));
             }
         }
-        arkts.GlobalInfo.getInfoInstance().add(className);
-        this.context.componentNames.push(className)
 
-        if (!node.definition) {
-            return node
-        }
         const newDefinition = arkts.factory.updateClassDefinition(
-            node.definition,
-            node.definition?.ident,
+            definition,
+            definition.ident,
             undefined,
             undefined, // superTypeParams doen't work
-            // arkts.factory.createTSTypeParameterInstantiation(
-            //     [
-            //         arkts.factory.createTypeReference(
-            //             arkts.factory.createTypeReferencePart(
-            //                 arkts.factory.createIdentifier("H")
-            //             )
-            //         ),
-            //         arkts.factory.createTypeReferenceFromId(
-            //             arkts.factory.createIdentifier(`__Options_${className}`)
-            //         ),
-            //     ]
-            // ),
-            node.definition?.implements,
+            definition.implements,
             undefined,
             arkts.factory.createTypeReference(
                 arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier('StructBase'),
+                    arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CLASS_NAME),
                     arkts.factory.createTSTypeParameterInstantiation(
                         [
                             arkts.factory.createTypeReference(
@@ -134,37 +200,39 @@ export class ComponentTransformer extends AbstractVisitor {
                             ),
                             arkts.factory.createTypeReference(
                                 arkts.factory.createTypeReferencePart(
-                                    arkts.factory.createIdentifier(`__Options_${className}`)
+                                    arkts.factory.createIdentifier(
+                                        `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${className}`
+                                    )
                                 )
                             ),
                         ]
                     )
                 )
             ),
-            entryStorageProperty ? [entryStorageProperty, ...node.definition?.body] : node.definition?.body,
-            node.definition?.modifiers,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_FINAL
+            [...newDefinitionBody, ...definition.body],
+            definition.modifiers,
+            arkts.classDefinitionFlags(definition) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_FINAL
         )
 
         if (arkts.isStructDeclaration(node)) {
-            return arkts.factory.createClassDeclaration(
-                newDefinition
-            )
+            const _node = arkts.factory.createClassDeclaration(newDefinition);
+            _node.modifiers = node.modifiers;
+            return _node;
         } else {
-            return arkts.factory.updateClassDeclaration(
-                node,
-                newDefinition
-            )
+            return arkts.factory.updateClassDeclaration(node, newDefinition);
         }
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {
+        this.enter(node);
         const newNode = this.visitEachChild(node)
-        if (arkts.isEtsScript(newNode)&&arkts.global.generatedEs2panda._ETSModuleIsETSScriptConst(arkts.global.context, newNode.peer)) {
+        if (arkts.isEtsScript(newNode)) {
             return this.processEtsScript(newNode)
         }
-        if (arkts.isStructDeclaration(newNode) && this.isComponentStruct(newNode)) {
-            return this.processComponent(newNode)
+        if (arkts.isStructDeclaration(newNode) && this.isComponentStruct()) {
+            const updateNode = this.processComponent(newNode);
+            this.exit(newNode);
+            return updateNode;
         }
         return newNode
     }

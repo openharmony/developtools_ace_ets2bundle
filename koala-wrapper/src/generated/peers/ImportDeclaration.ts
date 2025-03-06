@@ -34,7 +34,7 @@ import { StringLiteral } from "./StringLiteral"
 import { Es2pandaImportKinds } from "./../Es2pandaEnums"
 export class ImportDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 39)
+        // assertValidPeer(pointer, 39)
         super(pointer)
         
     }

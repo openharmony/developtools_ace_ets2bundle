@@ -30,13 +30,27 @@ export class factory {
             arkts.factory.createIdentifier(RuntimeNames.ID_TYPE),
         )
     }
-    static createContextTypesImportDeclaration(): arkts.EtsImportDeclaration {
-        return arkts.factory.createImportDeclaration(
-            arkts.factory.createStringLiteral(RuntimeNames.CONTEXT_TYPE_DEFAULT_IMPORT),
-            [factory.createContextTypeImportSpecifier(), factory.createIdTypeImportSpecifier()],
-            arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPE,
-            true,
+    // TODO: Currently, import declaration can only be inserted at after-parsed stage.
+    static createContextTypesImportDeclaration(): void {
+        const source: arkts.StringLiteral = arkts.factory.createStringLiteral(RuntimeNames.CONTEXT_TYPE_DEFAULT_IMPORT);
+        const resolvedSource: arkts.StringLiteral = arkts.factory.create1StringLiteral(
+            arkts.ImportPathManager.create().resolvePath('', source.str)
+        );
+        const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
+            arkts.ImportSource.createImportSource(
+                source,
+                resolvedSource,
+                false
+            ),
+            [
+                factory.createContextTypeImportSpecifier(),
+                factory.createIdTypeImportSpecifier()
+            ],
+            arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPE
         )
+        // Insert this import at the top of the script's statements.
+        arkts.importDeclarationInsert(importDecl);
+        return;
     }
 
     // Parameters
@@ -206,8 +220,29 @@ export class factory {
             arg ? [arg] : undefined,
         )
     }
-    static createSyntheticReturnStatement(): arkts.ReturnStatement {
-        return arkts.factory.createReturnStatement(
+    static createReturnThis(): arkts.BlockStatement {
+        return arkts.factory.createBlock([
+            arkts.factory.createExpressionStatement(
+                factory.createRecacheCall()
+            ),
+            arkts.factory.createReturnStatement(
+                arkts.factory.createThisExpression()
+            )
+        ])
+    }
+    static createSyntheticReturnStatement(stableThis: boolean): arkts.ReturnStatement | arkts.BlockStatement {
+        if (!stableThis) {
+            return arkts.factory.createReturnStatement(
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createIdentifier(RuntimeNames.SCOPE),
+                    arkts.factory.createIdentifier(RuntimeNames.INTERNAL_VALUE),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_NONE,
+                    false,
+                    false,
+                ),
+            )
+        }
+        return arkts.factory.createBlock([
             arkts.factory.createMemberExpression(
                 arkts.factory.createIdentifier(RuntimeNames.SCOPE),
                 arkts.factory.createIdentifier(RuntimeNames.INTERNAL_VALUE),
@@ -215,9 +250,24 @@ export class factory {
                 false,
                 false,
             ),
-        )
+            arkts.factory.createReturnStatement(
+                arkts.factory.createThisExpression()
+            )
+        ])
     }
-    static createIfStatementWithSyntheticReturnStatement(syntheticReturnStatement: arkts.ReturnStatement): arkts.IfStatement {
+    static createIfStatementWithSyntheticReturnStatement(
+        syntheticReturnStatement: arkts.ReturnStatement | arkts.BlockStatement,
+        isVoidValue: boolean
+    ): arkts.IfStatement {
+        let returnStatement = syntheticReturnStatement;
+        if (isVoidValue && arkts.isReturnStatement(syntheticReturnStatement)) {
+            returnStatement = arkts.factory.createBlock([
+                arkts.factory.createExpressionStatement(
+                    syntheticReturnStatement.argument!
+                ),
+                arkts.factory.createReturnStatement()
+            ])
+        }
         return arkts.factory.createIfStatement(
             arkts.factory.createMemberExpression(
                 arkts.factory.createIdentifier(RuntimeNames.SCOPE),
@@ -226,7 +276,7 @@ export class factory {
                 false,
                 false,
             ),
-            syntheticReturnStatement,
+            returnStatement,
         )
     }
 
@@ -237,13 +287,14 @@ export class factory {
                 arkts.factory.createBlock([
                     arkts.factory.createReturnStatement(node)
                 ]),
+                arkts.factory.createFunctionSignature(
+                    undefined,
+                    [],
+                    undefined,
+                    false,
+                ),
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
                 arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-                false,
-                undefined,
-                [],
-                undefined,
-                undefined,
             )
         )
     }

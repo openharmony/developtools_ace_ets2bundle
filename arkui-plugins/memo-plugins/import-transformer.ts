@@ -20,13 +20,10 @@ import { factory } from "./memo-factory"
 export class ImportTransformer extends AbstractVisitor {
     visitor(node: arkts.AstNode): arkts.AstNode {
         if (node instanceof arkts.EtsScript) {
+            factory.createContextTypesImportDeclaration();
             return arkts.factory.updateEtsScript(
                 node,
-                [
-                    ...node.getChildren().filter(it => it instanceof arkts.EtsImportDeclaration),
-                    factory.createContextTypesImportDeclaration(),
-                    ...node.getChildren().filter(it => !(it instanceof arkts.EtsImportDeclaration)),
-                ]
+                node.statements
             )
         }
         return node
