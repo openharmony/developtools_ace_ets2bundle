@@ -28,7 +28,11 @@ module.exports = function(api) {
     ],
     './custom-import-plugin'
   ];
-  const ignore = ['**/test/**', '**/node_modules/**'];
+  const ignore = [
+    '**/test/**', 
+    '**/node_modules/**',
+    'jest-test.config.ts'
+  ];
 
   return {
     presets,

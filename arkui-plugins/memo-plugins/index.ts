@@ -14,8 +14,7 @@
  */
 
 import * as arkts from "@koalaui/libarkts"
-
-import { PluginContext } from "../common/plugin-context";
+import { Plugins, PluginContext } from "../common/plugin-context";
 import { FunctionTransformer } from "./function-transformer";
 import { PositionalIdTracker } from "./utils";
 import { ReturnTransformer } from "./return-transformer";
@@ -25,37 +24,36 @@ import { EXTERNAL_SOURCE_PREFIX_NAMES } from "../common/predefines";
 
 const DEBUG = process.argv.includes('--debug');
 
-export function unmemoizeTransform() {
+export function unmemoizeTransform(): Plugins {
     return {
         name: 'memo-plugin',
         checked(this: PluginContext) {
             console.log("[MEMO PLUGIN] AFTER CHECKED ENTER");
             // const node = this.getArkTSAst();
-            let node = this.getArkTSAst();
-            if (node) {
-                let script: arkts.EtsScript = node;
+            let program = arkts.arktsGlobal.compilerContext.program;
+            let script = program.astNode;
+            if (script) {
                 if (DEBUG) {
                     console.log('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
                 }
 
                 const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
-                const parameterTransformer = new ParameterTransformer(positionalIdTracker);
+                const parameterTransformer = new ParameterTransformer({ positionalIdTracker });
                 const returnTransformer = new ReturnTransformer();
-                const functionTransformer = new FunctionTransformer(
+                const functionTransformer = new FunctionTransformer({
                     positionalIdTracker, 
                     parameterTransformer, 
                     returnTransformer
-                );
+                });
 
-                const programVisitor = new ProgramVisitor(
-                    [functionTransformer],
-                    { skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES }
-                );
+                const programVisitor = new ProgramVisitor({
+                    state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
+                    visitors: [functionTransformer],
+                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
+                });
 
-                // program = programVisitor.programVisitor(program);
-                // script = program.astNode;
-
-                script = programVisitor.visitor(script);
+                program = programVisitor.programVisitor(program);
+                script = program.astNode;
 
                 if (DEBUG) {
                     console.log('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());

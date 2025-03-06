@@ -14,35 +14,33 @@
  */
 
 import * as arkts from "@koalaui/libarkts"
-
 import { ComponentTransformer } from './component-transformer'
 import { BuilderLambdaTransformer } from './builder-lambda-transformer'
 import { StructTransformer } from './struct-transformer'
-import { PluginContext } from "../common/plugin-context"
+import { Plugins, PluginContext } from "../common/plugin-context"
 import { ProgramVisitor } from "../common/program-visitor"
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from "../common/predefines"
 
 const DEBUG = process.argv.includes('--debug');
 
-export function uiTransform() {
+export function uiTransform(): Plugins {
     return {
         name: 'ui-plugin',
         parsed(this: PluginContext) {
             console.log("[UI PLUGIN] AFTER PARSED ENTER");
-            let node = this.getArkTSAst();
-            if (node) {
-                let script: arkts.EtsScript = node;
+            let program = arkts.arktsGlobal.compilerContext.program;
+            let script = program.astNode;
+            if (script) {
+                console.log("[BEFORE PARSED SCRIPT] script: ", script.dumpSrc());
+                const componentTransformer = new ComponentTransformer();
+                const programVisitor = new ProgramVisitor({
+                    state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
+                    visitors: [componentTransformer],
+                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
+                });
 
-                const componentTransformer = new ComponentTransformer({ arkui: "@koalaui.arkts-arkui.StructBase" });
-                const programVisitor = new ProgramVisitor(
-                    [componentTransformer],
-                    { skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES }
-                );
-
-                // program = programVisitor.programVisitor(program);
-                // script = program.astNode;
-
-                script = programVisitor.visitor(script);
+                program = programVisitor.programVisitor(program);
+                script = program.astNode;
 
                 if (DEBUG) {
                     console.log("[AFTER PARSED SCRIPT]: ", script.dumpSrc());   
@@ -56,21 +54,20 @@ export function uiTransform() {
         },
         checked(this: PluginContext) {
             console.log("[UI PLUGIN] AFTER CHECKED ENTER");
-            let node = this.getArkTSAst();
-            if (node) {
-                let script: arkts.EtsScript = node;
-
+            let program = arkts.arktsGlobal.compilerContext.program;
+            let script = program.astNode;
+            if (script) {
+                console.log("[BEFORE STRUCT SCRIPT] script: ", script.dumpSrc());
                 const builderLambdaTransformer = new BuilderLambdaTransformer();
                 const structTransformer = new StructTransformer();
-                const programVisitor = new ProgramVisitor(
-                    [builderLambdaTransformer, structTransformer],
-                    { skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES }
-                );
+                const programVisitor = new ProgramVisitor({
+                    state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
+                    visitors: [builderLambdaTransformer, structTransformer],
+                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
+                });
 
-                // program = programVisitor.programVisitor(program);
-                // script = program.astNode;
-
-                script = programVisitor.visitor(script);
+                program = programVisitor.programVisitor(program);
+                script = program.astNode;
 
                 if (DEBUG) {
                     console.log("[AFTER STRUCT SCRIPT] script: ", script.dumpSrc());

@@ -16,20 +16,13 @@
 import * as arkts from "@koalaui/libarkts"
 import { AbstractVisitor } from "./abstract-visitor"
 
-export interface TransformerOptions {
-    trace?: boolean,
-}
-
 const ETSGLOBAL = "ETSGLOBAL"
 
 export class EtsglobalRemover extends AbstractVisitor {
     visitor(node: arkts.AstNode): arkts.AstNode {
         if (arkts.isEtsScript(node)) {
-            const idETSGLOBAL = node.statements.findIndex((it) => {
-                return arkts.isClassDeclaration(it) && it.definition?.ident?.name == ETSGLOBAL
-            })
-            const keep = node.statements.filter((it, index) => {
-                return !arkts.isClassDeclaration(it) || it.definition?.ident?.name != ETSGLOBAL || index == idETSGLOBAL
+            const keep = node.statements.filter((it) => {
+                return !(arkts.isClassDeclaration(it) && it.definition?.ident?.name == ETSGLOBAL)
             })
             return arkts.factory.updateEtsScript(
                 node,

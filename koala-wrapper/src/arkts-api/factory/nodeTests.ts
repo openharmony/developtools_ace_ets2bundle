@@ -17,7 +17,6 @@ import { global } from "../static/global"
 import {
     ArrowFunctionExpression,
     CallExpression,
-    EtsImportDeclaration,
     ETSParameterExpression,
     EtsScript,
     ExpressionStatement,
@@ -25,7 +24,7 @@ import {
     FunctionExpression,
     IfStatement,
     MethodDefinition,
-    ScriptFunction,
+    // ScriptFunction,
     StructDeclaration,
     VariableDeclaration,
     VariableDeclarator,
@@ -77,13 +76,9 @@ export function isVariableDeclaration(node: AstNode): node is VariableDeclaratio
     return node instanceof VariableDeclaration
 }
 
-export function isScriptFunction(node: AstNode): node is ScriptFunction {
-    return node instanceof ScriptFunction
-}
-
-export function isEtsImportDeclaration(node: AstNode): node is EtsImportDeclaration {
-    return node instanceof EtsImportDeclaration
-}
+// export function isScriptFunction(node: AstNode): node is ScriptFunction {
+//     return node instanceof ScriptFunction
+// }
 
 export function isIfStatement(node: AstNode): node is IfStatement {
     return node instanceof IfStatement

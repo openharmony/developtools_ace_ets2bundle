@@ -1,11 +1,11 @@
 {
     "compilerOptions": {
-        "target": "es2017",
+        "target": "es2018",
         "lib": ["ESNext", "ESNext.WeakRef", "DOM"],
         "module": "CommonJS",
         "rootDir": ".",
         "baseUrl": ".",
-        "outDir": "./build",
+        "outDir": "./lib",
         "moduleResolution": "node",
         "composite": true,
         "incremental": true,
@@ -22,8 +22,11 @@
         "./memo-plugins/**/*.ts",
         "./ui-plugins/**/*.ts",
         "./path.ts",
+        "./test/ut/**/*.ts",
+        "./test/utils/**/*.ts"
     ],
     "exclude": [
-        "./test/**/*"
+        "./test/demo/",
+        "./test/local/"
     ]
 }

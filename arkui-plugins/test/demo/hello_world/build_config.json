@@ -20,5 +20,14 @@
 
     "buildSdkPath": "/home/l00913061/workspace/0310openharmony/out/sdk/ohos-sdk/linux/ets/ets1.2/",
 
-    "dependentModuleList": []
+    "dependentModuleList": [
+        {
+            "packageName": "@koalaui/runtime",
+            "moduleName": "@koalaui/runtime",
+            "moduleType": "har",
+            "modulePath": "./demo/runtime-api",
+            "sourceRoots": ["./"],
+            "entryFile": "index.sts"
+        }
+    ]
 }

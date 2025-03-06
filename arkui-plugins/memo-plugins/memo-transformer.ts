@@ -32,17 +32,16 @@ export default function memoTransformer(
     return (node0: arkts.EtsScript) => {
         const node = (userPluginOptions?.removeEtsglobal ? new EtsglobalRemover().visitor(node0) : node0) as arkts.EtsScript
         const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false)
-        const parameterTransformer = new ParameterTransformer(positionalIdTracker)
+        const parameterTransformer = new ParameterTransformer({
+            positionalIdTracker
+        })
         const returnTransformer = new ReturnTransformer()
-        const functionTransformer = new FunctionTransformer(positionalIdTracker, parameterTransformer, returnTransformer)
+        const functionTransformer = new FunctionTransformer({ positionalIdTracker, parameterTransformer, returnTransformer })
+        factory.createContextTypesImportDeclaration();
         return functionTransformer.visitor(
             arkts.factory.updateEtsScript(
                 node,
-                [
-                    ...node.getChildren().filter(it => arkts.isEtsImportDeclaration(it)),
-                    factory.createContextTypesImportDeclaration(),
-                    ...node.getChildren().filter(it => !arkts.isEtsImportDeclaration(it)),
-                ]
+                node.statements
             )
         )
     }
