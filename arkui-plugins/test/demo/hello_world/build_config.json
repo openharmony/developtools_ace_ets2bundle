@@ -1,7 +1,7 @@
 {
     "plugins": {
-        "ui-plugin": "../lib/ui-plugins/index",
-        "memo-plugin": "../lib/memo-plugins/index"
+        "ui-plugin": "${absolute_path_to_ohos_sdk}/ets/ets1.2/build-tools/ui-plugins/lib/ui-plugins/index",
+        "memo-plugin": "${absolute_path_to_ohos_sdk}/ets/ets1.2/build-tools/ui-plugins/lib/memo-plugins/index"
     },
 
     "compileFiles": [
@@ -18,17 +18,7 @@
     "loaderOutPath": "./dist",
     "cachePath": "./dist/cache",
 
-    "buildSdkPath": "./local",
-    "pandaSdkPath": "./node_modules/libarkts/node_modules/@panda/sdk",
+    "buildSdkPath": "${absolute_path_to_ohos_sdk}/ets/ets1.2",
 
-    "dependentModuleList": [
-        {
-            "packageName": "@koalaui/runtime",
-            "moduleName": "@koalaui/runtime",
-            "moduleType": "har",
-            "modulePath": "./demo/hello_world/runtime-api",
-            "sourceRoots": ["./"],
-            "entryFile": "index.sts"
-        }
-    ]
+    "dependentModuleList": []
 }

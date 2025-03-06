@@ -14,7 +14,7 @@
 # limitations under the License.
 
 if [ "$1" == "--init" ]; then
-    cd ../../../arkcompiler/ets_frontend/ets2panda/driver/koala_wrapper
+    cd ../koala-wrapper
     npm install
     npm run compile
     npm link
@@ -24,7 +24,7 @@ if [ "$1" == "--init" ]; then
     npm run compile
     npm link
 
-    cd ../../../../../developtools/ace_ets2bundle/arkui-plugins
+    cd ../arkui-plugins
     mkdir node_modules
-    npm link @koalaui/libarkts @koalaui/libarkts2
+    npm link @koalaui/libarkts
 fi
