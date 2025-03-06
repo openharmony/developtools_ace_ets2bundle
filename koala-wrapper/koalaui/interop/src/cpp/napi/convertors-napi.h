@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -409,12 +409,6 @@ inline KBoolean getBoolean(const CallbackInfo& info, int index) {
   NAPI_ASSERT_INDEX(info, index, false);
   return getBoolean(info.Env(), info[index]);
 }
-// TODO should we keep supporting conversion to and from raw JS object values?
-// napi_value getObject(napi_env env, napi_value value);
-// inline napi_value getObject(const CallbackInfo& info, int index) {
-//   NAPI_ASSERT_INDEX(info, index, info.Env().Global());
-//   return getObject(info.Env(), info[index]);
-// }
 
 template <typename Type>
 inline Type getArgument(const CallbackInfo& info, int index) = delete;

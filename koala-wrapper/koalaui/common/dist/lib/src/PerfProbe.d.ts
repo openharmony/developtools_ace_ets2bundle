@@ -1,22 +1,18 @@
-/**
- * A probe to measure performance.
+/*
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * A probe can measure performance of any activity which has an entry and an exit points.
- * Such activity can be a method call, or a sequence of actions, possibly asynchronous.
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * A probe which has been entered and exited is considered a performed probe (see {@link MainPerfProbe.probePerformed}).
- * A probe can be entered recursively. When all the recursive calls exits the probe becomes a performed probe.
- *
- * All performing probes form a hierarchy which is rooted at the main probe (see {@link enterMainPerfProbe}).
- * A last started probe (see {@link MainPerfProbe.enterProbe}) which has not yet performed becomes a parent
- * for the next started probe. It's the responsibility of the API caller to keep this parent-child relationship valid,
- * that is: a child probe should exit before its parent probe exits.
- *
- * Statistics gathered by a probe:
- * - call count
- * - recursive call count
- * - total time and percentage relative to the main (root) probe
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 export interface PerfProbe {
     /**
      * The name of the probe.
