@@ -13,9 +13,11 @@
  * limitations under the License.
  */
 
+import { global } from "./static/global"
 import { factory } from "./factory/nodeFactory"
 import {
     Es2pandaClassDefinitionModifiers,
+    Es2pandaImportKinds,
     Es2pandaModifierFlags,
     Es2pandaVariableDeclaratorFlag
 } from "../generated/Es2pandaEnums"
@@ -27,7 +29,12 @@ import {
     isTSInterfaceDeclaration, 
     isClassDeclaration, 
     isClassDefinition,
-    isTSAsExpression
+    isTSAsExpression,
+    isETSImportDeclaration,
+    ImportSource,
+    isScriptFunction,
+    FunctionSignature,
+    isClassProperty
 } from "../generated"
 import {
     isEtsScript,
@@ -36,15 +43,14 @@ import {
     isExpressionStatement,
     isStructDeclaration,
     isMethodDefinition,
-    isScriptFunction,
-    isEtsImportDeclaration,
+    // isScriptFunction,
     isMemberExpression,
     isIfStatement,
     isVariableDeclaration,
     isVariableDeclarator,
     isArrowFunctionExpression  
 } from "./factory/nodeTests"
-import { classDefinitionFlags } from "./utilities/public"
+import { classDefinitionFlags, classPropertySetOptional, hasModifierFlag } from "./utilities/public"
 
 type Visitor = (node: AstNode) => AstNode
 
@@ -121,7 +127,7 @@ export function visitEachChild(
         return factory.updateEtsScript(
             node,
             nodesVisitor(node.statements, visitor)
-        )
+        );
     }
     if (isCallExpression(node)) {
         return factory.updateCallExpression(
@@ -130,7 +136,7 @@ export function visitEachChild(
             nodesVisitor(node.typeArguments, visitor),
             nodesVisitor(node.arguments, visitor),
             nodeVisitor(node.trailingBlock, visitor)
-        )
+        );
     }
     if (isFunctionDeclaration(node)) {
         return factory.updateFunctionDeclaration(
@@ -138,35 +144,31 @@ export function visitEachChild(
             nodeVisitor(node.scriptFunction, visitor),
             node.isAnon,
             node.annotations,
-        )
+        );
     }
     if (isBlockStatement(node)) {
         return factory.updateBlock(
             node,
             nodesVisitor(node.statements, visitor),
-        )
+        );
     }
     if (isExpressionStatement(node)) {
         return factory.updateExpressionStatement(
             node,
             nodeVisitor(node.expression, visitor)
-        )
+        );
     }
     if (isClassDeclaration(node)) {
         return factory.updateClassDeclaration(
             node,
             nodeVisitor(node.definition, visitor)
-        )
+        );
     }
     if (isStructDeclaration(node)) {
-        // FIXME: workaround for annotations loss after updateStructDeclaration
-        const anno = node.definition.annotations
-        const result = factory.updateStructDeclaration(
+        return factory.updateStructDeclaration(
             node,
             nodeVisitor(node.definition, visitor)
-        )
-        result.definition.setAnnotations(anno)
-        return result
+        );
     }
     if (isClassDefinition(node)) {
         // TODO: fix
@@ -181,7 +183,7 @@ export function visitEachChild(
             nodesVisitor(node.body, visitor),
             node.modifiers,
             classDefinitionFlags(node)
-        )
+        );
     }
     if (isMethodDefinition(node)) {
         // TODO: fix
@@ -195,30 +197,21 @@ export function visitEachChild(
             ),
             node.modifiers,
             false
-        )
+        );
     }
     if (isScriptFunction(node)) {
         return factory.updateScriptFunction(
             node,
             nodeVisitor(node.body, visitor),
-            node.scriptFunctionFlags,
-            Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-            false,
-            nodeVisitor(node.ident, visitor),
-            nodesVisitor(node.parameters, visitor),
-            nodeVisitor(node.typeParamsDecl, visitor),
-            nodeVisitor(node.returnTypeAnnotation, visitor),
-            node.annotations
-        )
-    }
-    if (isEtsImportDeclaration(node)) {
-        return factory.updateImportDeclaration(
-            node,
-            nodeVisitor(node.importSource, visitor),
-            nodesVisitor(node.importSpecifiers, visitor),
-            node.importKind,
-            node.hasDecl
-        )
+            FunctionSignature.createFunctionSignature(
+                nodeVisitor(node.typeParams, visitor),
+                nodesVisitor(node.params, visitor),
+                nodeVisitor(node.returnTypeAnnotation, visitor),
+                node.hasReceiver
+            ),
+            node.flags,
+            node.modifiers
+        );
     }
     if (isMemberExpression(node)) {
         return factory.updateMemberExpression(
@@ -228,7 +221,7 @@ export function visitEachChild(
             node.kind,
             node.computed,
             node.optional
-        )
+        );
     }
     if (isTSInterfaceDeclaration(node)) {
         return factory.updateInterfaceDeclaration(
@@ -240,13 +233,13 @@ export function visitEachChild(
             node.isStatic,
             // TODO: how do I get it?
             true
-        )
+        );
     }
     if (isTSInterfaceBody(node)) {
         return factory.updateInterfaceBody(
             node,
             nodesVisitor(node.body, visitor)
-        )
+        );
     }
     if (isIfStatement(node)) {
         return factory.updateIfStatement(
@@ -254,7 +247,7 @@ export function visitEachChild(
             nodeVisitor(node.test, visitor),
             nodeVisitor(node.consequent, visitor),
             nodeVisitor(node.alternate, visitor),
-        )
+        );
     }
     if (isConditionalExpression(node)) {
         return factory.updateConditionalExpression(
@@ -262,7 +255,7 @@ export function visitEachChild(
             nodeVisitor(node.test, visitor),
             nodeVisitor(node.consequent, visitor),
             nodeVisitor(node.alternate, visitor),
-        )
+        );
     }
     if (isVariableDeclaration(node)) {
         return factory.updateVariableDeclaration(
@@ -270,21 +263,21 @@ export function visitEachChild(
             0,
             node.declarationKind,
             nodesVisitor(node.declarators, visitor),
-        )
+        );
     }
     if (isVariableDeclarator(node)) {
         return factory.updateVariableDeclarator(
             node,
-            Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_UNKNOWN,
+            global.generatedEs2panda._VariableDeclaratorFlag(global.context, node.peer),
             nodeVisitor(node.name, visitor),
             nodeVisitor(node.initializer, visitor),
-        )
+        );
     }
     if (isArrowFunctionExpression(node)) {
         return factory.updateArrowFunction(
             node,
             nodeVisitor(node.scriptFunction, visitor),
-        )
+        );
     }
     if (isTSAsExpression(node)) {
         return factory.updateTSAsExpression(
@@ -292,6 +285,16 @@ export function visitEachChild(
             nodeVisitor(node.expr, visitor),
             nodeVisitor(node.typeAnnotation, visitor),
             node.isConst
+        );
+    }
+    if (isClassProperty(node)) {
+        return factory.updateClassProperty(
+            node,
+            node.key,
+            nodeVisitor(node.value, visitor),
+            node.typeAnnotation,
+            node.modifiers,
+            node.isComputed
         );
     }
     // TODO

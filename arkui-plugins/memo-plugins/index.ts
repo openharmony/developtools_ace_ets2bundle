@@ -14,54 +14,52 @@
  */
 
 import * as arkts from "@koalaui/libarkts"
-
-import { PluginContext } from "../common/plugin-context";
+import { Plugins, PluginContext } from "../common/plugin-context";
 import { FunctionTransformer } from "./function-transformer";
 import { PositionalIdTracker } from "./utils";
 import { ReturnTransformer } from "./return-transformer";
 import { ParameterTransformer } from "./parameter-transformer";
 import { ProgramVisitor } from "../common/program-visitor";
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from "../common/predefines";
+import { debugDump, debugLog, getDumpFileName } from "../common/debug"
+import { SignatureTransformer } from "./signature-transformer";
 
-const DEBUG = process.argv.includes('--debug');
-
-export function unmemoizeTransform() {
+export function unmemoizeTransform(): Plugins {
     return {
         name: 'memo-plugin',
         checked(this: PluginContext) {
             console.log("[MEMO PLUGIN] AFTER CHECKED ENTER");
-            // const node = this.getArkTSAst();
-            let node = this.getArkTSAst();
-            if (node) {
-                let script: arkts.EtsScript = node;
-                if (DEBUG) {
-                    console.log('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
-                }
+            let program = arkts.arktsGlobal.compilerContext.program;
+            let script = program.astNode;
+            if (script) {
+                debugLog("[BEFORE MEMO SCRIPT] script: ", script.dumpSrc());
+                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 5, "MEMO_AfterCheck_Begin"), true);
 
                 const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
-                const parameterTransformer = new ParameterTransformer(positionalIdTracker);
+                const parameterTransformer = new ParameterTransformer({ positionalIdTracker });
                 const returnTransformer = new ReturnTransformer();
-                const functionTransformer = new FunctionTransformer(
+                const signatureTransformer = new SignatureTransformer();
+                const functionTransformer = new FunctionTransformer({
                     positionalIdTracker, 
                     parameterTransformer, 
-                    returnTransformer
-                );
+                    returnTransformer,
+                    signatureTransformer
+                });
 
-                const programVisitor = new ProgramVisitor(
-                    [functionTransformer],
-                    { skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES }
-                );
+                const programVisitor = new ProgramVisitor({
+                    pluginName: unmemoizeTransform.name,
+                    state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
+                    visitors: [functionTransformer],
+                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
+                });
 
-                // program = programVisitor.programVisitor(program);
-                // script = program.astNode;
+                program = programVisitor.programVisitor(program);
+                script = program.astNode;
 
-                script = programVisitor.visitor(script);
+                debugLog('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
+                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 6, "MEMO_AfterCheck_End"), true);
 
-                if (DEBUG) {
-                    console.log('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
-                }
-
-
+                arkts.recheckSubtree(script);
                 this.setArkTSAst(script);
                 console.log("[MEMO PLUGIN] AFTER CHECKED EXIT");
                 return script;

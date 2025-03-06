@@ -16,7 +16,6 @@
 import * as arkts from "@koalaui/libarkts"
 
 export enum DecoratorNames {
-    ENTRY = "Entry",
     STATE = "State",
     STORAGE_LINK = "StorageLink",
     STORAGE_PROP = "StorageProp",
@@ -56,13 +55,14 @@ export function createGetter(
 
     const scriptFunction = arkts.factory.createScriptFunction(
         body,
+        arkts.FunctionSignature.createFunctionSignature(
+            undefined,
+            [],
+            type,
+            false
+        ),
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
-        false,
-        undefined,
-        [],
-        undefined,
-        type
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
     )
 
     return arkts.factory.createMethodDefinition(
@@ -92,21 +92,22 @@ export function createSetter(
 
     const scriptFunction = arkts.factory.createScriptFunction(
         body,
+        arkts.FunctionSignature.createFunctionSignature(
+            undefined,
+            [
+                arkts.factory.createParameterDeclaration(
+                    arkts.factory.createIdentifier(
+                        'value',
+                        type
+                    ),
+                    undefined
+                )
+            ],
+            undefined,
+            false
+        ),
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
-        false,
-        undefined,
-        [
-            arkts.factory.createParameterDeclaration(
-                arkts.factory.createIdentifier(
-                    'value',
-                    type
-                ),
-                undefined
-            )
-        ],
-        undefined,
-        undefined
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
     )
 
     return arkts.factory.createMethodDefinition(
