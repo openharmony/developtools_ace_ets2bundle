@@ -15,9 +15,16 @@
 
 import * as arkts from "@koalaui/libarkts"
 
-export abstract class AbstractVisitor {
-    constructor(
-    ) {}
+export interface VisitorOptions {
+    isExternal?: boolean
+} 
+
+export abstract class AbstractVisitor implements VisitorOptions {
+    public isExternal: boolean;
+
+    constructor(options?: VisitorOptions) {
+        this.isExternal = options?.isExternal ?? false;
+    }
 
     indentation = 0
 

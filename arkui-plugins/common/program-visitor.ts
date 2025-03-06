@@ -15,23 +15,30 @@
 
 import * as arkts from "@koalaui/libarkts"
 import { KPointer } from "@koalaui/interop"
-import { AbstractVisitor } from "./abstract-visitor";
+import { AbstractVisitor, VisitorOptions } from "./abstract-visitor";
 import { matchPrefix } from "./arkts-utils";
+// import { Importer } from "./importer";
 
-export interface ProgramVisitorOptions{
-    skipPrefixNames: string[]
+export interface ProgramVisitorOptions extends VisitorOptions {
+    state: arkts.Es2pandaContextState;
+    visitors: AbstractVisitor[];
+    skipPrefixNames: string[];
 }
 
 export class ProgramVisitor extends AbstractVisitor {
-    constructor(
-        private visitors: AbstractVisitor[],
-        private options?: ProgramVisitorOptions
-    ) {
-        super();
+    private state: arkts.Es2pandaContextState;
+    private visitors: AbstractVisitor[];
+    private skipPrefixNames: string[];
+
+    constructor(options: ProgramVisitorOptions) {
+        super(options);
+        this.state = options.state;
+        this.visitors = options.visitors;
+        this.skipPrefixNames = options.skipPrefixNames ?? [];
     }
 
     programVisitor(program: arkts.Program): arkts.Program {
-        const skipPrefixes: string[] = this.options?.skipPrefixNames ?? [];
+        const skipPrefixes: string[] = this.skipPrefixNames;
 
         const visited: Set<KPointer> = new Set();
         const queue: arkts.Program[] = [program];
@@ -43,10 +50,10 @@ export class ProgramVisitor extends AbstractVisitor {
             }
     
             if (currProgram.peer !== program.peer) {
-                console.log("[BEFORE TRANSFORM EXTERNAL SOURCE] script: ", currProgram.astNode.dumpSrc());
-                const script = this.visitor(currProgram.astNode);
+                console.log(`[BEFORE TRANSFORM EXTERNAL SOURCE] ${this.state} script: `, currProgram.astNode.dumpSrc());
+                const script = this.visitor(currProgram.astNode, true);
                 if (script) {
-                    console.log("[AFTER TRANSFORM EXTERNAL SOURCE] script: ", script.dumpSrc());
+                    console.log(`[AFTER TRANSFORM EXTERNAL SOURCE] ${this.state} script: `, script.dumpSrc());
                 }
             }
 
@@ -68,16 +75,29 @@ export class ProgramVisitor extends AbstractVisitor {
         }
 
         let programScript = program.astNode;
-        programScript = this.visitor(programScript) as arkts.EtsScript;
+        programScript = this.visitor(programScript, this.isExternal) as arkts.EtsScript;
 
         return program;
     }
 
-    visitor(node: arkts.AstNode): arkts.EtsScript {
+    visitor(node: arkts.AstNode, isExternal?: boolean): arkts.EtsScript {
         let script: arkts.EtsScript = node as arkts.EtsScript;
+        let count = 0;
         for (const transformer of this.visitors) {
+            // script = new Importer().visitor(script) as arkts.EtsScript;
+            transformer.isExternal = isExternal ?? false;
             script = transformer.visitor(script) as arkts.EtsScript;
-        } 
+            arkts.setAllParents(script);
+        }
+
+        if (this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED) {
+            console.log(`[AFTER ${count} TRANSFORMER] rechecking...`)
+            arkts.recheckSubtree(script);
+            console.log(`[AFTER ${count} TRANSFORMER] rechecking PASS`)
+        }
+
+        console.log(`[AFTER ${count} TRANSFORMER] script: dumpSrc: `, script.dumpSrc());
+        console.log(`[AFTER ${count} TRANSFORMER] script: dumpJson: `, script.dumpJson());
         return script;
     }
 }

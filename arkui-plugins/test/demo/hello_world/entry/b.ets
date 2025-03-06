@@ -13,35 +13,44 @@
  * limitations under the License.
  */
 
-import { Text } from "@koalaui.arkui.Text"
-import { Column } from "@koalaui.arkui.Column"
-import { Button } from "@koalaui.arkui.Button"
-import { Component, State, Entry } from "@koalaui.arkui.Common"
+import { TextImpl, TextAttribute } from "@ohos.arkui.component.text";
+import { Column, ColumnOptions, ColumnImpl, ColumnAttribute } from "@ohos.arkui.component.column";
+import { Text, TextImpl, TextAttribute } from "@ohos.arkui.component.text";
+import { Color } from "@ohos.arkui.component.enums";
 
-import { memo } from "@ohos.arkui.StateManagement.runtime"
+import { Component } from "@koalaui.arkts-arkui.Common";
+import { UserView, UserViewBuilder } from "@koalaui.arkts-arkui.UserView";
+import { __memo_context_type, __memo_id_type } from "@koalaui/runtime";
+import { memo } from "@koalaui/runtime"
 
-@Entry
 @Component
 struct MyStateSample {
     build() {
-        Column() {
-            Text("Hello World!")
-            Button('change')
-        }
-
+        Child(undefined)
     }
 }
 
-export class ArkUIEntry {
-    static run()  {
-        console.log("About to invoke the struct")
-        // The proper call fails because of a compiler frontend bug.
-        // MyStateSample({} as __Options_MyStateSample)
-        MyStateSample.instantiateImpl(
-            undefined,
-            (): MyStateSample => new MyStateSample(),
-            {} as __Options_MyStateSample,
-            undefined
-        )
+@Component
+struct Child {
+    build() {
+        Column({} as ColumnOptions) {
+            Text("Hello World").backgroundColor(Color.Red)
+        }.width(100).height(100)
+    }
+}
+
+export class ComExampleTrivialApplication extends UserView {
+    getBuilder(): UserViewBuilder {
+        let wrapper = (__memo_context: __memo_context_type, __memo_id: __memo_id_type) => { 
+            MyStateSample._instantiateImpl(
+                __memo_context,
+                ((__memo_id) + (21211165)),
+                undefined,
+                (): MyStateSample => new MyStateSample(),
+                {} as __Options_MyStateSample,
+                undefined
+            )
+        }
+        return wrapper
     }
 }

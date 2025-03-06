@@ -19,35 +19,39 @@ import { AbstractVisitor } from "../common/abstract-visitor"
 import { isSyntheticReturnStatement } from "./utils"
 
 export class ReturnTransformer extends AbstractVisitor {
-    private skipNode?: arkts.ReturnStatement
+    private skipNode?: arkts.ReturnStatement | arkts.BlockStatement
+    private stableThis: boolean = false
 
-    skip(syntheticReturnStatement?: arkts.ReturnStatement): ReturnTransformer {
+    skip(syntheticReturnStatement?: arkts.ReturnStatement | arkts.BlockStatement): ReturnTransformer {
         this.skipNode = syntheticReturnStatement
+        return this
+    }
+
+    rewriteThis(stableThis: boolean): ReturnTransformer {
+        this.stableThis = stableThis
         return this
     }
 
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         // TODO: temporary checking skip nodes by comparison with expected skip nodes
         // Should be fixed when update procedure implemented properly
-        if (/* beforeChildren === this.skipNode */ beforeChildren instanceof arkts.ReturnStatement && isSyntheticReturnStatement(beforeChildren)) {
-            return arkts.factory.createBlock(
-                [
-                    factory.createRecacheCall(beforeChildren.argument),
-                    arkts.factory.createReturnStatement()
-                ]
-            )
+        if (/* beforeChildren === this.skipNode */ isSyntheticReturnStatement(beforeChildren)) {
+            return beforeChildren;
         }
-        if (beforeChildren instanceof arkts.ScriptFunction) {
+        if (arkts.isScriptFunction(beforeChildren)) {
             return beforeChildren
         }
         const node = this.visitEachChild(beforeChildren)
-        if (node instanceof arkts.ReturnStatement) {
-            return arkts.factory.createBlock(
-                [
-                    factory.createRecacheCall(node.argument),
-                    arkts.factory.createReturnStatement()
-                ]
-            )
+        if (arkts.isReturnStatement(node)) {
+            if (this.stableThis && node.argument && arkts.isThisExpression(node.argument)) {
+                return factory.createReturnThis()
+            }
+            return arkts.factory.createBlock([
+                arkts.factory.createExpressionStatement(
+                    factory.createRecacheCall(node.argument)
+                ),
+                node
+            ]);
         }
         return node
     }
