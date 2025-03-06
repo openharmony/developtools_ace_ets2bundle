@@ -7,7 +7,7 @@ function loadNativeLibrary(name) {
         return globalThis.requireNapi(name, true);
     else {
         const suffixedName = name.endsWith(".node") ? name : `${name}.node`;
-        return eval(`let exports = {}; process.dlopen({ exports }, require.resolve("${suffixedName}"), 2); exports`);
+        return require(suffixedName)
     }
 }
 exports.loadNativeLibrary = loadNativeLibrary;
