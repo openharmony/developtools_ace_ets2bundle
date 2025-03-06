@@ -8,12 +8,9 @@
       "generate_abc:helloworld": "PANDA_SDK_PATH=./node_modules/libarkts/node_modules/@panda/sdk node ./node_modules/build_system/dist/entry.js ./demo/hello_world/build_config.json",
       "run:helloworld": "npm run compile:plugins --prefix .. && npm run generate_abc:helloworld && npm run run_abc:helloworld",
       "build_system:run:helloworld": "npm run run:helloworld --prefix ./node_modules/build_system",
-      "run:gdb": "PANDA_SDK_PATH=./node_modules/libarkts/node_modules/@panda/sdk gdb --args node ./node_modules/build_system/dist/entry.js ./demo/hello_world/build_config.json"
-    },
-    "devDependencies": {
-    },
-    "dependencies": {
-      "build_system": "file:${absolute_path_to_ets_frontend}/ets2panda/driver/build_system",
-      "libarkts": "file:${absolute_path_to_ets_frontend}/ets2panda/driver/koala_wrapper"
+      "run:gdb": "PANDA_SDK_PATH=./node_modules/libarkts/node_modules/@panda/sdk gdb --args node ./node_modules/build_system/dist/entry.js ./demo/hello_world/build_config.json",
+      "compile:ohos_sdk": "node /home/kee/1108/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/driver/build-system/dist/entry.js ./demo/hello_world/build_config.json",
+      "compile:ohos": "node /home/kee/1108/arkcompiler/ets_frontend/ets2panda/driver/build-system/dist/entry.js ./demo/hello_world/build_config.json",
+      "compile:gdb": "gdb --args node /home/kee/1108/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/driver/build-system/dist/entry.js ./demo/hello_world/build_config.json"
     }
   }

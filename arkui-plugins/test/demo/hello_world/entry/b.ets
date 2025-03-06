@@ -18,7 +18,7 @@ import { Column } from "@koalaui.arkui.Column"
 import { Button } from "@koalaui.arkui.Button"
 import { Component, State, Entry } from "@koalaui.arkui.Common"
 
-import { memo } from "@koalaui/runtime"
+import { memo } from "@ohos.arkui.StateManagement.runtime"
 
 @Entry
 @Component
