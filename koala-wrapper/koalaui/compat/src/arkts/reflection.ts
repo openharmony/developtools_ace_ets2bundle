@@ -18,3 +18,5 @@ import { className } from "./ts-reflection"
 export function lcClassName(object: Object) {
     return className(object).toLowerCase()
 }
+
+export @interface Entry {}
