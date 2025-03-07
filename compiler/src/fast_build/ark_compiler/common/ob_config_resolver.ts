@@ -23,6 +23,7 @@ import {
   deleteLineInfoForNameString,
   endFilesEvent,
   endSingleFileEvent,
+  enableTimeAndMemoryPrint,
   EventList,
   getRelativeSourcePath,
   handleUniversalPathInObf,
@@ -32,6 +33,7 @@ import {
   performancePrinter,
   printTimeSumData,
   printTimeSumInfo,
+  PerfMode,
   ProjectCollections,
   startFilesEvent,
   startSingleFileEvent,
@@ -500,4 +502,8 @@ export function writeObfuscationCaches(sourceProjectConfig: Object, parentEvent:
   }
 
   stopEvent(eventObfuscatedCode);
+  
+  if (sourceProjectConfig.perf === PerfMode.ADVANCED) {
+    enableTimeAndMemoryPrint();
+  }
 }
