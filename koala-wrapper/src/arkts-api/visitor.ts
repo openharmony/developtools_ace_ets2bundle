@@ -158,10 +158,14 @@ export function visitEachChild(
         )
     }
     if (isStructDeclaration(node)) {
-        return factory.updateStructDeclaration(
+        // FIXME: workaround for annotations loss after updateStructDeclaration
+        const anno = node.definition.annotations
+        const result = factory.updateStructDeclaration(
             node,
             nodeVisitor(node.definition, visitor)
         )
+        result.definition.setAnnotations(anno)
+        return result
     }
     if (isClassDefinition(node)) {
         // TODO: fix

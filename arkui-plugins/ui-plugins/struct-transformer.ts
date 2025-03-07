@@ -29,6 +29,9 @@ import {
     createInitializerOptions, 
     getCustomComponentNameFromInitializerOptions 
 } from "./utils";
+import {
+    EntryHandler
+} from "./entry-translators/entry"
 
 function isCustomComponentClass(node: arkts.ClassDeclaration): boolean {
     const structCollection: Set<string> = arkts.GlobalInfo.getInfoInstance().getStructCollection();
@@ -354,6 +357,10 @@ export class StructTransformer extends AbstractVisitor {
         const node = this.visitEachChild(beforeChildren);
         if (arkts.isClassDeclaration(node) && isCustomComponentClass(node)) {
             return tranformClassMembers(node);
+        } else if (arkts.isClassDeclaration(node)) {
+            if (EntryHandler.instance.hasEntryAnnotation(node)) {
+                EntryHandler.instance.updateEntryAnnotion(node)
+            }
         } else if (arkts.isTSInterfaceDeclaration(node) && isCustomComponentInterface(node)) {
             return addVariableInInterface(node);
         }
