@@ -26,9 +26,9 @@ export function uiTransform() {
     return {
         name: 'ui-plugin',
         parsed(this: PluginContext) {
-            let program = this.getArkTSProgram();
-            if (program) {
-                let script: arkts.EtsScript = program.astNode;
+            let node = this.getArkTSAst();
+            if (node) {
+                let script: arkts.EtsScript = node;
 
                 const componentTransformer = new ComponentTransformer({ arkui: "@koalaui.arkts-arkui.StructBase" });
                 const programVisitor = new ProgramVisitor(
@@ -48,9 +48,9 @@ export function uiTransform() {
             }
         },
         checked(this: PluginContext) {
-            let program = this.getArkTSProgram();
-            if (program) {
-                let script: arkts.EtsScript = program.astNode;
+            let node = this.getArkTSAst();
+            if (node) {
+                let script: arkts.EtsScript = node;
 
                 const builderLambdaTransformer = new BuilderLambdaTransformer();
                 const structTransformer = new StructTransformer();

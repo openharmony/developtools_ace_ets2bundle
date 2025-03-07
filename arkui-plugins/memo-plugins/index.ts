@@ -29,9 +29,9 @@ export function unmemoizeTransform() {
         checked(this: PluginContext) {
             console.log("In ArkUI afterChecked")
             // const node = this.getArkTSAst();
-            let program = this.getArkTSProgram();
-            if (program) {
-                let script: arkts.EtsScript = program.astNode;
+            let node = this.getArkTSAst();
+            if (node) {
+                let script: arkts.EtsScript = node;
                 console.log('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
 
                 const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
