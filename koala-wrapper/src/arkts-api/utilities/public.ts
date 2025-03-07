@@ -15,8 +15,8 @@
 
 import { global } from "../static/global"
 import { isNumber, throwError } from "../../utils"
-import { KNativePointer, nullptr, withStringResult } from "#koalaui/interop"
-import { passNode, unpackNodeArray, unpackNonNullableNode } from "./private"
+import { KNativePointer, KInt, nullptr, withStringResult } from "#koalaui/interop"
+import { passNode, passString, unpackNodeArray, unpackNonNullableNode } from "./private"
 import { isFunctionDeclaration, isMemberExpression, isScriptFunction } from "../factory/nodeTests"
 import { Es2pandaContextState, Es2pandaModifierFlags } from "../../generated/Es2pandaEnums"
 import type { AstNode } from "../peers/AstNode"
@@ -117,4 +117,8 @@ export function destroyConfig(config: KNativePointer): void {
 
 export function setAllParents(ast: AstNode) {
     global.es2panda._AstNodeUpdateAll(global.context, ast.peer)
+}
+
+export function generateTsDeclarationsFromContext(outputDeclEts: string, outputEts: string, exportAll: boolean): KInt {
+    return global.es2panda._GenerateTsDeclarationsFromContext(global.context, passString(outputDeclEts), passString(outputEts), exportAll)
 }
