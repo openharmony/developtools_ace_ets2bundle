@@ -30,7 +30,9 @@ import {
   isEs2Abc,
   writeArkguardObfuscatedSourceCode,
   writeMinimizedSourceCode,
-  tryMangleFileName
+  tryMangleFileName,
+  getPreviousStageSourceMap,
+  collectObfuscationFileContent
 } from '../../lib/ark_utils';
 import {
   DEBUG,
@@ -570,7 +572,7 @@ mocha.describe('test ark_utils file api', function () {
     };
 
     try {
-      await writeArkguardObfuscatedSourceCode(moduleInfo, logger, projectConfig, {});
+      await writeArkguardObfuscatedSourceCode(moduleInfo, logger, projectConfig, undefined);
     } catch (e) {
     }
     const expectedResult = `export function add(d: number, e: number): number {
@@ -595,7 +597,7 @@ export function findElement<a>(b: a[], c: (item: a) => boolean): a | undefined {
     };
 
     try {
-      await writeArkguardObfuscatedSourceCode(declModuleInfo, logger, projectConfig, {});
+      await writeArkguardObfuscatedSourceCode(declModuleInfo, logger, projectConfig, undefined);
     } catch (e) {
     }
 
@@ -604,5 +606,164 @@ export declare function findElement<a>(b: a[], c: (item: a) => boolean): a | und
 `;
     const declResult = fs.readFileSync(declModuleInfo.buildFilePath, 'utf-8');
     expect(declResult === expectedDeclResult).to.be.true;
+  });
+
+  mocha.describe('10: test getPreviousStageSourceMap', function() {
+    let sourceMapGeneratorStub;
+    mocha.beforeEach(function () {
+      sourceMapGeneratorStub = sinon.stub(SourceMapGenerator, 'getInstance');
+    });
+  
+    mocha.afterEach(() => {
+      sinon.restore();
+    });
+
+    mocha.it('10-1: should return undefined if relativeSourceFilePath is empty', async function () {
+      const moduleInfo = {
+        buildFilePath: 'file.js',
+        relativeSourceFilePath: '',
+        rollupModuleId: 'moduleId'
+      };
+      const result = getPreviousStageSourceMap(moduleInfo);
+      expect(result).to.be.undefined;
+    });
+
+    mocha.it('10-2: should return undefined if the file is a declaration file', function() {
+      const moduleInfo = {
+        buildFilePath: 'file.d.ts',
+        relativeSourceFilePath: 'sourceFile.ts',
+        rollupModuleId: 'moduleId'
+      };
+      const result = getPreviousStageSourceMap(moduleInfo);
+      expect(result).to.be.undefined;
+    });
+
+    mocha.it('10-3: should call getSpecifySourceMap with rollupModuleId if isNewSourceMaps is true', function() {
+      const fakeSourceMap = {};
+      const instanceStub = {
+        isNewSourceMaps: sinon.stub().returns(true),
+        getSpecifySourceMap: sinon.stub().returns(fakeSourceMap)
+      };
+      sourceMapGeneratorStub.returns(instanceStub);
+  
+      const moduleInfo = {
+        buildFilePath: 'file.js',
+        relativeSourceFilePath: 'sourceFile.ts',
+        rollupModuleId: 'moduleId'
+      };
+      const result = getPreviousStageSourceMap(moduleInfo);
+  
+      expect(instanceStub.getSpecifySourceMap.calledWith({}, 'moduleId')).to.be.true;
+      expect(result).to.equal(fakeSourceMap);
+    });
+
+    mocha.it('10-4: should call getSpecifySourceMap with relativeSourceFilePath if isNewSourceMaps is false', function() {
+      const fakeSourceMap = {};
+      const instanceStub = {
+        isNewSourceMaps: sinon.stub().returns(false),
+        getSpecifySourceMap: sinon.stub().returns(fakeSourceMap)
+      };
+      sourceMapGeneratorStub.returns(instanceStub);
+  
+      const moduleInfo = {
+        buildFilePath: 'file.js',
+        relativeSourceFilePath: 'sourceFile.ts',
+        rollupModuleId: 'moduleId'
+      };
+      const result = getPreviousStageSourceMap(moduleInfo);
+  
+      expect(instanceStub.getSpecifySourceMap.calledWith({}, 'sourceFile.ts')).to.be.true;
+      expect(result).to.equal(fakeSourceMap);
+    });
+  })
+  mocha.describe('11: test collectObfuscationFileContent', function () {
+    let fileContentManagerStub;
+  
+    mocha.beforeEach(function () {
+      fileContentManagerStub = {
+        updateFileContent: sinon.stub(),
+      };
+    });
+  
+    mocha.afterEach(function () {
+      sinon.restore();
+    });
+    
+    mocha.it('11-1: should not call updateFileContent if filePathManager is not defined', function () {
+      const moduleInfo = {
+        buildFilePath: 'file.js',
+        originSourceFilePath: 'sourceFile.ts',
+      };
+      const projectConfig = {
+        arkObfuscator: {},
+      };
+      const previousStageSourceMap = {};
+  
+      collectObfuscationFileContent(moduleInfo, projectConfig, previousStageSourceMap);
+  
+      expect(fileContentManagerStub.updateFileContent.called).to.be.false;
+    });
+  
+    mocha.it('11-2: should not call updateFileContent if the file is a declaration file and not an original declaration file', function () {
+      const moduleInfo = {
+        buildFilePath: 'file.d.ts',
+        originSourceFilePath: 'sourceFile.ts',
+      };
+      const projectConfig = {
+        arkObfuscator: {
+          filePathManager: {},
+          fileContentManager: fileContentManagerStub,
+        },
+      };
+      const previousStageSourceMap = {};
+  
+      collectObfuscationFileContent(moduleInfo, projectConfig, previousStageSourceMap);
+  
+      expect(fileContentManagerStub.updateFileContent.called).to.be.false;
+    });
+  
+    mocha.it('11-3: should call updateFileContent if the file is not a declaration file', function () {
+      const moduleInfo = {
+        buildFilePath: 'file.js',
+        originSourceFilePath: 'sourceFile.ts',
+      };
+      const projectConfig = {
+        arkObfuscator: {
+          filePathManager: {},
+          fileContentManager: fileContentManagerStub,
+        },
+      };
+      const previousStageSourceMap = {};
+  
+      collectObfuscationFileContent(moduleInfo, projectConfig, previousStageSourceMap);
+  
+      expect(fileContentManagerStub.updateFileContent.calledOnce).to.be.true;
+      expect(fileContentManagerStub.updateFileContent.calledWith({
+        moduleInfo: moduleInfo,
+        previousStageSourceMap: previousStageSourceMap,
+      })).to.be.true;
+    });
+  
+    mocha.it('11-4: should call updateFileContent if the file is an original declaration file', function () {
+      const moduleInfo = {
+        buildFilePath: 'file.d.ts',
+        originSourceFilePath: 'file.d.ts',
+      };
+      const projectConfig = {
+        arkObfuscator: {
+          filePathManager: {},
+          fileContentManager: fileContentManagerStub,
+        },
+      };
+      const previousStageSourceMap = {};
+  
+      collectObfuscationFileContent(moduleInfo, projectConfig, previousStageSourceMap);
+  
+      expect(fileContentManagerStub.updateFileContent.calledOnce).to.be.true;
+      expect(fileContentManagerStub.updateFileContent.calledWith({
+        moduleInfo: moduleInfo,
+        previousStageSourceMap: previousStageSourceMap,
+      })).to.be.true;
+    });
   });
 });
