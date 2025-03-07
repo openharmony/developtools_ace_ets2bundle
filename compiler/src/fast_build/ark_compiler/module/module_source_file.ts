@@ -28,9 +28,7 @@ import {
   getOhmUrlByByteCodeHar,
   getOhmUrlByFilepath,
   getOhmUrlByExternalPackage,
-  getOhmUrlBySystemApiOrLibRequest,
-  mangleDeclarationFileName,
-  compileToolIsRollUp
+  getOhmUrlBySystemApiOrLibRequest
 } from '../../../ark_utils';
 import { writeFileSyncByNode } from '../../../process_module_files';
 import {
@@ -47,33 +45,24 @@ import {
 } from '../../../ark_utils';
 import { SourceMapGenerator } from '../generate_sourcemap';
 import {
-  MergedConfig,
-  handleKeepFilesAndGetDependencies,
-  writeObfuscationNameCache,
-  writeUnobfuscationContent,
-  handleUniversalPathInObf,
-  printObfLogger
+  printObfLogger,
+  collectSourcesWhiteList,
+  handlePostObfuscationTasks,
+  writeObfuscationCaches
 } from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
 import {
-  ESMODULE,
   TRANSFORMED_MOCK_CONFIG,
   USER_DEFINE_MOCK_CONFIG
 } from '../../../pre_define';
-import { readProjectAndLibsSource } from '../common/process_ark_config';
 import {
   allSourceFilePaths,
-  collectAllFiles,
   compilerOptions,
   localPackageSet
 } from '../../../ets_checker';
 import { projectConfig } from '../../../../main';
 import {
   EventList,
-  endFilesEvent,
-  performancePrinter,
-  printTimeSumData,
-  printTimeSumInfo,
   startFilesEvent
 } from 'arkguard';
 import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
@@ -375,21 +364,8 @@ export class ModuleSourceFile {
       ModuleSourceFile.removePotentialMockConfigCache(rollupObject);
     }
 
-    collectAllFiles(undefined, rollupObject.getModuleIds(), rollupObject);
-    startFilesEvent(EventList.SCAN_SOURCEFILES, performancePrinter.timeSumPrinter);
-    const recordInfo = MemoryMonitor.recordStage(MemoryDefine.SCAN_SOURCEFILES);
-    let sourceProjectConfig: Object = ModuleSourceFile.projectConfig;
-    // obfuscation initialization, include collect file, resolve denpendency, read source
-    if (compileToolIsRollUp()) {
-      const obfuscationConfig: MergedConfig = sourceProjectConfig.obfuscationMergedObConfig;
-      handleUniversalPathInObf(obfuscationConfig, allSourceFilePaths);
-      const keepFilesAndDependencies = handleKeepFilesAndGetDependencies(obfuscationConfig,
-        sourceProjectConfig.arkObfuscator, sourceProjectConfig);
-      readProjectAndLibsSource(allSourceFilePaths, obfuscationConfig, sourceProjectConfig.arkObfuscator,
-        sourceProjectConfig.compileHar, keepFilesAndDependencies);
-    }
-    MemoryMonitor.stopRecordStage(recordInfo);
-    endFilesEvent(EventList.SCAN_SOURCEFILES, performancePrinter.timeSumPrinter);
+    const sourceProjectConfig = ModuleSourceFile.projectConfig;
+    collectSourcesWhiteList(rollupObject, allSourceFilePaths, sourceProjectConfig, ModuleSourceFile.sourceFiles);
 
     startFilesEvent(EventList.ALL_FILES_OBFUSCATION);
     let byteCodeHar = false;
@@ -415,26 +391,10 @@ export class ModuleSourceFile {
       MemoryMonitor.stopRecordStage(filesForEach);
     }
 
-    if (compileToolIsRollUp() && rollupObject.share.arkProjectConfig.compileMode === ESMODULE) {
-      await mangleDeclarationFileName(printObfLogger, rollupObject.share.arkProjectConfig, sourceFileBelongProject);
-    }
-    printTimeSumInfo('All files obfuscation:');
-    printTimeSumData();
-    endFilesEvent(EventList.ALL_FILES_OBFUSCATION);
+    await handlePostObfuscationTasks(sourceProjectConfig, ModuleSourceFile.projectConfig, rollupObject, printObfLogger);
     MemoryMonitor.stopRecordStage(allFilesObfuscationRecordInfo);
 
-    const eventObfuscatedCode = createAndStartEvent(parentEvent, 'write obfuscation name cache');
-    const needToWriteCache = compileToolIsRollUp() && sourceProjectConfig.arkObfuscator && sourceProjectConfig.obfuscationOptions;
-    const isWidgetCompile = sourceProjectConfig.widgetCompile;
-    if (needToWriteCache) {
-      writeObfuscationNameCache(sourceProjectConfig, sourceProjectConfig.entryPackageInfo, sourceProjectConfig.obfuscationOptions.obfuscationCacheDir,
-        sourceProjectConfig.obfuscationMergedObConfig.options?.printNameCache);
-    }
-    if (needToWriteCache && !isWidgetCompile) {
-      // Do not print unobfuscation names and whitelists when widget compiles
-      writeUnobfuscationContent(sourceProjectConfig);
-    }
-    stopEvent(eventObfuscatedCode);
+    writeObfuscationCaches(sourceProjectConfig, parentEvent);
 
     const eventGenerateMockConfigFile = createAndStartEvent(parentEvent, 'generate mock config file');
     if (ModuleSourceFile.needProcessMock) {

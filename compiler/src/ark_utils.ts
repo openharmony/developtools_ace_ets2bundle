@@ -19,14 +19,13 @@ import type sourceMap from 'source-map';
 
 import { minify, MinifyOutput } from 'terser';
 import {
-  deleteLineInfoForNameString,
-  MemoryUtils,
-  nameCacheMap,
-  unobfuscationNamesObj,
-  performancePrinter,
-  EventList,
   endFilesEvent,
   endSingleFileEvent,
+  EventList,
+  MemoryUtils,
+  nameCacheMap,
+  performancePrinter,
+  ProjectCollections,
   startFilesEvent,
   startSingleFileEvent,
 } from 'arkguard';
@@ -98,6 +97,7 @@ import {
   LogData,
   LogDataFactory
 } from './fast_build/ark_compiler/logger';
+import * as ts from 'typescript';
 
 export const SRC_MAIN: string = 'src/main';
 
@@ -585,9 +585,14 @@ export async function writeObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: 
   if (compileToolIsRollUp() && projectConfig.arkObfuscator) {
     startFilesEvent(moduleInfo.buildFilePath);
     const recordInfo = MemoryMonitor.recordStage(MemoryDefine.WRITE_OBFUSCATED_SOURCE_CODE);
-    MemoryUtils.tryGC();
-    await writeArkguardObfuscatedSourceCode(moduleInfo, logger as Function, projectConfig, rollupNewSourceMaps);
-    MemoryUtils.tryGC();
+    const previousStageSourceMap: sourceMap.RawSourceMap | undefined = getPreviousStageSourceMap(moduleInfo, rollupNewSourceMaps);
+    collectObfuscationFileContent(moduleInfo, projectConfig, previousStageSourceMap);
+    // We should skip obfuscate here if we need reObfuscate all files, since they will all be obfuscated later in function 'reObfuscate'.
+    if (!projectConfig.arkObfuscator.shouldReObfuscate) {
+      MemoryUtils.tryGC();
+      await writeArkguardObfuscatedSourceCode(moduleInfo, logger as Function, projectConfig, previousStageSourceMap);
+      MemoryUtils.tryGC();
+    }
     MemoryMonitor.stopRecordStage(recordInfo);
     endFilesEvent(moduleInfo.buildFilePath, undefined, true);
     return;
@@ -614,12 +619,42 @@ export async function writeObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: 
   fs.writeFileSync(moduleInfo.buildFilePath, moduleInfo.content);
 }
 
+export function getPreviousStageSourceMap(moduleInfo: ModuleInfo, rollupNewSourceMaps: Object = {}): sourceMap.RawSourceMap | undefined {
+  const isDeclaration = (/\.d\.e?ts$/).test(moduleInfo.buildFilePath);
+  const sourceMapGeneratorInstance = SourceMapGenerator.getInstance();
+  let previousStageSourceMap: sourceMap.RawSourceMap | undefined = undefined;
+  if (moduleInfo.relativeSourceFilePath.length > 0 && !isDeclaration) {
+    const selectedFilePath = sourceMapGeneratorInstance.isNewSourceMaps() ? moduleInfo.rollupModuleId! : moduleInfo.relativeSourceFilePath;
+    previousStageSourceMap = sourceMapGeneratorInstance.getSpecifySourceMap(rollupNewSourceMaps, selectedFilePath) as sourceMap.RawSourceMap;
+  }
+  return previousStageSourceMap;
+}
+
+/**
+ * collect current obfuscated input content, used for re-obfuscate.
+ */
+export function collectObfuscationFileContent(moduleInfo: ModuleInfo, projectConfig: Object,
+  previousStageSourceMap: sourceMap.RawSourceMap | undefined): void {
+  const arkObfuscator = projectConfig.arkObfuscator;
+  const isDeclaration = (/\.d\.e?ts$/).test(moduleInfo.buildFilePath);
+  const isOriginalDeclaration = (/\.d\.e?ts$/).test(moduleInfo.originSourceFilePath);
+
+  // We only collect non-declaration files, unless it's a user-written declaration file
+  if (arkObfuscator.filePathManager && (!isDeclaration || isOriginalDeclaration)) {
+    const fileContent: ProjectCollections.FileContent = {
+      moduleInfo: moduleInfo,
+      previousStageSourceMap: previousStageSourceMap as ts.RawSourceMap,
+    };
+    arkObfuscator.fileContentManager.updateFileContent(fileContent);
+  }
+}
+
 /**
  * This Api only be used by rollup compiling process & only be
  * exported for unit test.
  */
 export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, printObfLogger: Function,
-  projectConfig: Object, rollupNewSourceMaps: Object = {}): Promise<void> {
+  projectConfig: Object, previousStageSourceMap: sourceMap.RawSourceMap | undefined): Promise<void> {
   const arkObfuscator = projectConfig.arkObfuscator;
   const isDeclaration = (/\.d\.e?ts$/).test(moduleInfo.buildFilePath);
   const packageDir = projectConfig.packageDir;
@@ -628,12 +663,6 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
   const localPackageSet = projectConfig.localPackageSet;
   const useTsHar = projectConfig.useTsHar;
   const sourceMapGeneratorInstance = SourceMapGenerator.getInstance();
-
-  let previousStageSourceMap: sourceMap.RawSourceMap | undefined = undefined;
-  if (moduleInfo.relativeSourceFilePath.length > 0 && !isDeclaration) {
-    const selectedFilePath = sourceMapGeneratorInstance.isNewSourceMaps() ? moduleInfo.rollupModuleId! : moduleInfo.relativeSourceFilePath;
-    previousStageSourceMap = sourceMapGeneratorInstance.getSpecifySourceMap(rollupNewSourceMaps, selectedFilePath) as sourceMap.RawSourceMap;
-  }
 
   const historyNameCache: Map<string, string> = getNameCacheByPath(moduleInfo, isDeclaration, projectRootPath);
 
@@ -646,6 +675,7 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
     useTsHar: boolean
   } = { packageDir, projectRootPath, localPackageSet, useNormalized, useTsHar };
   let filePathObj = { buildFilePath: moduleInfo.buildFilePath, relativeFilePath: moduleInfo.relativeSourceFilePath };
+
   try {
     startSingleFileEvent(EventList.OBFUSCATE, performancePrinter.timeSumPrinter, filePathObj.buildFilePath);
     mixedInfo = await arkObfuscator.obfuscate(moduleInfo.content, filePathObj, previousStageSourceMap,
@@ -667,7 +697,7 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
     const selectedFilePath = sourceMapGeneratorInstance.isNewSourceMaps() ? moduleInfo.rollupModuleId! : moduleInfo.relativeSourceFilePath;
     mixedInfo.sourceMap.sources = [moduleInfo.relativeSourceFilePath];
     sourceMapGeneratorInstance.fillSourceMapPackageInfo(moduleInfo.rollupModuleId!, mixedInfo.sourceMap);
-    sourceMapGeneratorInstance.updateSpecifySourceMap(rollupNewSourceMaps, selectedFilePath, mixedInfo.sourceMap);
+    sourceMapGeneratorInstance.updateSourceMap(selectedFilePath, mixedInfo.sourceMap);
   }
 
   setNewNameCache(mixedInfo.nameCache, isDeclaration, moduleInfo, projectConfig);
