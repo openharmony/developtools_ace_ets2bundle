@@ -23,6 +23,7 @@ import {
   EventList,
   blockPrinter,
   endFilesEvent,
+  configurePerformancePrinter,
   startFilesEvent
 } from 'arkguard';
 
@@ -184,6 +185,8 @@ export function initArkProjectConfig(share: Object): Object {
   }
   if (!isDebug(projectConfig)) {
     arkProjectConfig.useTsHar = mainProjectConfig.useTsHar;
+    // Configure the performance printer for obfuscation performance tracking
+    configurePerformancePrinter(projectConfig.perf);
     startFilesEvent(EventList.OBFUSCATION_INITIALIZATION, performancePrinter.timeSumPrinter);
     const recordInfo = MemoryMonitor.recordStage(MemoryDefine.INIT_ARK_PROJECT_CONFIG);
     MemoryMonitor.stopRecordStage(recordInfo);

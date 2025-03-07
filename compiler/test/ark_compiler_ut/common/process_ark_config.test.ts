@@ -64,7 +64,13 @@ import {
   ObConfigResolver,
   MergedConfig
 } from '../../../lib/fast_build/ark_compiler/common/ob_config_resolver';
-import { ArkObfuscator } from 'arkguard';
+import {
+  ArkObfuscator,
+  PerfMode,
+  TimeAndMemTimeTracker,
+  performanceTimeAndMemPrinter,
+  printerTimeAndMemDataConfig,
+} from 'arkguard';
 import { UnobfuscationCollections, AtKeepCollections } from 'arkguard/lib/utils/CommonCollections';
 
 const WINDOWS: string = 'Windows_NT';
@@ -224,6 +230,31 @@ mocha.describe('test process_ark_config file api', function () {
     expect(arkConfig.moduleName === ENTRY_MODULE_NAME_DEFAULT).to.be.true;
     expect(arkConfig.bundleName === BUNDLE_NAME_DEFAULT).to.be.true;
     expect(arkConfig.compileMode === ESMODULE).to.be.true;
+  });
+
+  mocha.it('2-5: test initArkProjectConfig under build debug: perf is not ADVANCED', function () {
+    performanceTimeAndMemPrinter.singleFilePrinter = new TimeAndMemTimeTracker();
+    performanceTimeAndMemPrinter.filesPrinter = new TimeAndMemTimeTracker();
+    this.rollup.build(RELEASE);
+    this.rollup.share.projectConfig.perf = PerfMode.NORMAL;
+    initArkProjectConfig(this.rollup.share);
+
+    expect(performanceTimeAndMemPrinter.filesPrinter).to.be.undefined;
+    expect(performanceTimeAndMemPrinter.singleFilePrinter).to.be.undefined;
+  });
+
+  mocha.it('2-6: test initArkProjectConfig under build debug: perf is ADVANCED', function () {
+    printerTimeAndMemDataConfig.mTimeAndMemPrinter = false;
+    performanceTimeAndMemPrinter.singleFilePrinter = undefined;
+    performanceTimeAndMemPrinter.filesPrinter = undefined;
+
+    this.rollup.build(RELEASE);
+    this.rollup.share.projectConfig.perf = PerfMode.ADVANCED;
+    initArkProjectConfig(this.rollup.share);
+
+    expect(printerTimeAndMemDataConfig.mTimeAndMemPrinter).to.be.true;
+    expect(performanceTimeAndMemPrinter.filesPrinter).to.not.be.undefined;
+    expect(performanceTimeAndMemPrinter.singleFilePrinter).to.not.be.undefined;
   });
 
   mocha.it('3-1: test initTerserConfig under build debug', function () {
