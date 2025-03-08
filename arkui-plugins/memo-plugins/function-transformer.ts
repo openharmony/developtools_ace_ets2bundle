@@ -83,17 +83,23 @@ function updateFunctionBody(
 }
 
 // TODO: A workaround to unmemoize complex types with @memo
-function findFunctionType(param: arkts.ETSParameterExpression): arkts.ETSFunctionType | undefined {
+function findFunctionType(param: arkts.ETSParameterExpression): [arkts.ETSFunctionType, arkts.TypeNode[] | undefined] | undefined {
     const paramType: arkts.AstNode | undefined = param.type;
     if (!paramType) return undefined;
 
     if (arkts.isETSUnionType(paramType)) {
-        const functionType: arkts.ETSFunctionType | undefined = 
-            paramType.types.find(arkts.isETSFunctionType);
-        return functionType;
+        const functionTypeIndex: number = 
+            paramType.types.findIndex(arkts.isETSFunctionType);
+        if (functionTypeIndex === -1) {
+            return undefined;
+        }
+        return [
+            paramType.types.at(functionTypeIndex) as arkts.ETSFunctionType, 
+            paramType.types.filter((_, idx) => idx !== functionTypeIndex)
+        ];
     }
     if (arkts.isETSFunctionType(paramType)) {
-        return paramType
+        return [paramType, undefined];
     }
     return undefined;
 }
@@ -185,11 +191,13 @@ export class FunctionTransformer extends AbstractVisitor {
             .visitor(afterParameterTransformer)
         const updatedParameters = scriptFunction.parameters.map((param) => {
             if (hasMemoAnnotation(param)) {
-                const functionType = findFunctionType(param);
-                if (!functionType) {
+                const functionTypeResult = findFunctionType(param);
+                if (!functionTypeResult) {
                     throw "ArrowFunctionExpression expected for @memo parameter of @memo function"
                 }
-                param.type = arkts.factory.createFunctionType(
+                const [functionType, otherTypes] = functionTypeResult;
+
+                let updateFunctionType = arkts.factory.createFunctionType(
                     arkts.factory.createFunctionSignature(
                         undefined,
                         [...factory.createHiddenParameters(), ...functionType.params],
@@ -198,6 +206,14 @@ export class FunctionTransformer extends AbstractVisitor {
                     ),
                     arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
                 )
+                if (otherTypes) {
+                    param.type = arkts.factory.createUnionType([
+                        updateFunctionType,
+                        ...otherTypes
+                    ]);
+                } else {
+                    param.type = updateFunctionType;
+                }
             }
             return removeMemoAnnotationInParam(param)
         })
