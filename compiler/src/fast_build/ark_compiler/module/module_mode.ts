@@ -50,7 +50,8 @@ import {
   SOURCEMAPS_JSON,
   WIDGETS_ABC,
   TS2ABC,
-  ES2ABC
+  ES2ABC,
+  GEN_ABC_CMD
 } from '../common/ark_define';
 import {
   needAotCompiler,
@@ -150,6 +151,7 @@ export class ModuleMode extends CommonMode {
   compileContextInfoPath: string;
   abcPaths: string[] = [];
   byteCodeHar: boolean;
+  rollupCache: Object;
 
   constructor(rollupObject: Object) {
     super(rollupObject);
@@ -182,6 +184,7 @@ export class ModuleMode extends CommonMode {
     if (this.useNormalizedOHMUrl) {
       this.compileContextInfoPath = this.generateCompileContextInfo(rollupObject);
     }
+    this.rollupCache = rollupObject.cache;
   }
 
   private generateCompileContextInfo(rollupObject: Object): string {
@@ -585,6 +588,12 @@ export class ModuleMode extends CommonMode {
     let errMsg: string = '';
     const eventGenDescriptionsForMergedEs2abc = createAndStartEvent(parentEvent, 'generate descriptions for merged es2abc');
     stopEvent(eventGenDescriptionsForMergedEs2abc);
+
+    if (this.projectConfig.invokeEs2abcByHvigor) {
+      this.rollupCache.set(GEN_ABC_CMD, this.cmdArgs);
+      return;
+    }
+    
     const genAbcCmd: string = this.cmdArgs.join(' ');
     try {
       let eventGenAbc: Object;
