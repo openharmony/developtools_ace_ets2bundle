@@ -63,7 +63,11 @@ function createStyleArgInBuildMethod(className: string): arkts.ETSParameterExpre
             [
                 styleLambdaParams
             ],
-            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier(className)
+                )
+            ),
             false
         ),
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
