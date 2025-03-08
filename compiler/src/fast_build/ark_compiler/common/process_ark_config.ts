@@ -255,7 +255,8 @@ export function readProjectAndLibsSource(allFiles: Set<string>, mergedObConfig: 
         mEnable: true,
         mReservedProperties: [],
         mRenameProperties: obfOptions.enablePropertyObfuscation,
-        mKeepStringProperty: !obfOptions.enableStringPropertyObfuscation
+        mKeepStringProperty: !obfOptions.enableStringPropertyObfuscation,
+        mEnableAtKeep: obfOptions.enableAtKeep
       },
       mExportObfuscation: obfOptions.enableExportObfuscation,
       mKeepFileSourceCode: {
@@ -268,6 +269,10 @@ export function readProjectAndLibsSource(allFiles: Set<string>, mergedObConfig: 
   }
   if (obfOptions.enableExportObfuscation) {
     arkObfuscator.addReservedSetForDefaultObf(projectAndLibs);
+  }
+  if (obfOptions.enableAtKeep) {
+    // emit atKeep names and consumer configs
+    arkObfuscator.obfConfigResolver.emitConsumerConfigFiles();
   }
 }
 
