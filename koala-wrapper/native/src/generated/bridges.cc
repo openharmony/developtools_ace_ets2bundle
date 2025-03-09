@@ -1637,62 +1637,6 @@ KNativePointer impl_TSTypeReferenceBaseNameConst(KNativePointer context, KNative
 }
 KOALA_INTEROP_2(TSTypeReferenceBaseNameConst, KNativePointer, KNativePointer, KNativePointer);
 
-KNativePointer impl_CreateImportSource(KNativePointer context, KNativePointer source, KNativePointer resolvedSource, KBoolean hasDecl)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _source = reinterpret_cast<es2panda_AstNode*>(source);
-    const auto _resolvedSource = reinterpret_cast<es2panda_AstNode*>(resolvedSource);
-    const auto _hasDecl = static_cast<KBoolean>(hasDecl);
-    auto result = GetImpl()->CreateImportSource(_context, _source, _resolvedSource, _hasDecl);
-    return result;
-}
-KOALA_INTEROP_4(CreateImportSource, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KBoolean);
-
-KNativePointer impl_ImportSourceSourceConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_ImportSource*>(receiver);
-    auto result = GetImpl()->ImportSourceSourceConst(_context, _receiver);
-    return (void*)result;
-}
-KOALA_INTEROP_2(ImportSourceSourceConst, KNativePointer, KNativePointer, KNativePointer);
-
-KNativePointer impl_ImportSourceSource(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_ImportSource*>(receiver);
-    auto result = GetImpl()->ImportSourceSource(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ImportSourceSource, KNativePointer, KNativePointer, KNativePointer);
-
-KNativePointer impl_ImportSourceResolvedSourceConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_ImportSource*>(receiver);
-    auto result = GetImpl()->ImportSourceResolvedSourceConst(_context, _receiver);
-    return (void*)result;
-}
-KOALA_INTEROP_2(ImportSourceResolvedSourceConst, KNativePointer, KNativePointer, KNativePointer);
-
-KNativePointer impl_ImportSourceResolvedSource(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_ImportSource*>(receiver);
-    auto result = GetImpl()->ImportSourceResolvedSource(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ImportSourceResolvedSource, KNativePointer, KNativePointer, KNativePointer);
-
-KBoolean impl_ImportSourceHasDeclConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_ImportSource*>(receiver);
-    auto result = GetImpl()->ImportSourceHasDeclConst(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ImportSourceHasDeclConst, KBoolean, KNativePointer, KNativePointer);
-
 KNativePointer impl_CreateNamedType(KNativePointer context, KNativePointer name)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -6787,14 +6731,14 @@ KNativePointer impl_UpdateETSPackageDeclaration(KNativePointer context, KNativeP
 }
 KOALA_INTEROP_3(UpdateETSPackageDeclaration, KNativePointer, KNativePointer, KNativePointer, KNativePointer);
 
-KNativePointer impl_CreateETSImportDeclaration(KNativePointer context, KNativePointer source, KNativePointerArray specifiers, KUInt specifiersSequenceLength, KInt importKind)
+KNativePointer impl_CreateETSImportDeclaration(KNativePointer context, KNativePointer source , KNativePointerArray specifiers, KUInt specifiersSequenceLength, KInt importKind)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _source = reinterpret_cast<es2panda_ImportSource*>(source);
+    const auto _source = reinterpret_cast<es2panda_AstNode*>(source);
     const auto _specifiers = reinterpret_cast<es2panda_AstNode**>(specifiers);
     const auto _specifiersSequenceLength = static_cast<KUInt>(specifiersSequenceLength);
     const auto _importKind = static_cast<Es2pandaImportKinds>(importKind);
-    auto result = GetImpl()->CreateETSImportDeclaration(_context, _source, _specifiers, _specifiersSequenceLength, _importKind);
+    auto result = GetImpl()->ETSParserBuildImportDeclaration(_context, _importKind, _specifiers, _specifiersSequenceLength, _source);
     return result;
 }
 KOALA_INTEROP_5(CreateETSImportDeclaration, KNativePointer, KNativePointer, KNativePointer, KNativePointerArray, KUInt, KInt);
@@ -6803,7 +6747,7 @@ KNativePointer impl_UpdateETSImportDeclaration(KNativePointer context, KNativePo
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
     const auto _original = reinterpret_cast<es2panda_AstNode*>(original);
-    const auto _source = reinterpret_cast<es2panda_ImportSource*>(source);
+    const auto _source = reinterpret_cast<es2panda_AstNode*>(source);
     const auto _specifiers = reinterpret_cast<es2panda_AstNode**>(specifiers);
     const auto _specifiersSequenceLength = static_cast<KUInt>(specifiersSequenceLength);
     const auto _importKind = static_cast<Es2pandaImportKinds>(importKind);
@@ -6811,24 +6755,6 @@ KNativePointer impl_UpdateETSImportDeclaration(KNativePointer context, KNativePo
     return result;
 }
 KOALA_INTEROP_6(UpdateETSImportDeclaration, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointerArray, KUInt, KInt);
-
-KBoolean impl_ETSImportDeclarationHasDeclConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ETSImportDeclarationHasDeclConst(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ETSImportDeclarationHasDeclConst, KBoolean, KNativePointer, KNativePointer);
-
-KBoolean impl_ETSImportDeclarationIsPureDynamicConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ETSImportDeclarationIsPureDynamicConst(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ETSImportDeclarationIsPureDynamicConst, KBoolean, KNativePointer, KNativePointer);
 
 KNativePointer impl_ETSImportDeclarationAssemblerName(KNativePointer context, KNativePointer receiver)
 {
@@ -6848,30 +6774,12 @@ KNativePointer impl_ETSImportDeclarationAssemblerNameConst(KNativePointer contex
 }
 KOALA_INTEROP_2(ETSImportDeclarationAssemblerNameConst, KNativePointer, KNativePointer, KNativePointer);
 
-KNativePointer impl_ETSImportDeclarationSourceConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ETSImportDeclarationSourceConst(_context, _receiver);
-    return (void*)result;
-}
-KOALA_INTEROP_2(ETSImportDeclarationSourceConst, KNativePointer, KNativePointer, KNativePointer);
-
-KNativePointer impl_ETSImportDeclarationResolvedSource(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ETSImportDeclarationResolvedSource(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ETSImportDeclarationResolvedSource, KNativePointer, KNativePointer, KNativePointer);
-
 KNativePointer impl_ETSImportDeclarationResolvedSourceConst(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
     const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
     auto result = GetImpl()->ETSImportDeclarationResolvedSourceConst(_context, _receiver);
-    return (void*)result;
+    return new std::string(result);
 }
 KOALA_INTEROP_2(ETSImportDeclarationResolvedSourceConst, KNativePointer, KNativePointer, KNativePointer);
 

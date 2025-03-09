@@ -34,6 +34,7 @@ import {
     unpackNode,
     unpackNodeArray,
     unpackNonNullableNode,
+    unpackString,
     updatePeerByNode,
 } from "./utilities/private"
 import { proceedToState } from "./utilities/public"
@@ -742,15 +743,15 @@ export class EtsImportDeclaration extends AstNode {
     constructor(peer: KPtr) {
         assertValidPeer(peer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_IMPORT_DECLARATION)
         super(peer)
-        this.importSource = unpackNonNullableNode(global.generatedEs2panda._ETSImportDeclarationSourceConst(global.context, this.peer))
+        this.importSource = unpackNonNullableNode(global.generatedEs2panda._ImportDeclarationSourceConst(global.context, this.peer))
         this.importSpecifiers = unpackNodeArray(global.generatedEs2panda._ImportDeclarationSpecifiersConst(global.context, this.peer))
-        this.resolvedSource = unpackNonNullableNode(global.generatedEs2panda._ETSImportDeclarationResolvedSource(global.context, this.peer))
+        this.resolvedSource = unpackString(global.generatedEs2panda._ETSImportDeclarationResolvedSourceConst(global.context, this.peer))
         this.importKind = global.generatedEs2panda._ImportDeclarationIsTypeKindConst(global.context, this.peer)
-        this.hasDecl = global.generatedEs2panda._ETSImportDeclarationHasDeclConst(global.context, this.peer)
+        this.hasDecl = false;
     }
 
     static create(
-        source: StringLiteral,
+        importSource: StringLiteral,
         specifiers: readonly ImportSpecifier[],
         importKind: Es2pandaImportKinds,
         hasDecl: boolean,
@@ -758,10 +759,7 @@ export class EtsImportDeclaration extends AstNode {
         return new EtsImportDeclaration(
             global.generatedEs2panda._CreateETSImportDeclaration(
                 global.context,
-                ImportSource.create(
-                    source,
-                    hasDecl,
-                ).peer,
+                importSource.peer,
                 passNodeArray(specifiers),
                 specifiers.length,
                 +importKind
@@ -770,7 +768,7 @@ export class EtsImportDeclaration extends AstNode {
     }
 
     readonly importSource: StringLiteral
-    readonly resolvedSource: StringLiteral
+    readonly resolvedSource: string
     readonly importSpecifiers: readonly ImportSpecifier[]
     readonly importKind: Es2pandaImportKinds
     readonly hasDecl: boolean
