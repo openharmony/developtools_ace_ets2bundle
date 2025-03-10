@@ -542,7 +542,7 @@ function readCardForm(form) {
     const cardPath = path.resolve(projectConfig.projectPath, '..', sourcePath + '.ets');
     if (cardPath && fs.existsSync(cardPath)) {
       projectConfig.entryObj['../' + sourcePath] = cardPath + '?entry';
-      setEntryArrayForObf(sourcePath)
+      setEntryArrayForObf(sourcePath);
       projectConfig.cardEntryObj['../' + sourcePath] = cardPath;
       projectConfig.cardObj[cardPath] = sourcePath.replace(/^\.\//, '');
     }
@@ -651,8 +651,7 @@ function readWorkerFile() {
 
 function readPatchConfig() {
   if (aceBuildJson.patchConfig) {
-    projectConfig.hotReload = (process.env.watchMode === 'true' && !projectConfig.isPreview) ||
-      aceBuildJson.patchConfig.mode === 'hotReload';
+    projectConfig.hotReload = process.env.watchMode === 'true' && !projectConfig.isPreview;
     projectConfig.coldReload = aceBuildJson.patchConfig.mode === COLD_RELOAD_MODE ? true : false;
     // The "isFirstBuild" field indicates whether it is the first compilation of cold reload mode
     // It is determined by hvigor and passed via env
@@ -660,8 +659,7 @@ function readPatchConfig() {
     projectConfig.patchAbcPath = aceBuildJson.patchConfig.patchAbcPath;
     projectConfig.changedFileList = aceBuildJson.patchConfig.changedFileList ?
       aceBuildJson.patchConfig.changedFileList : path.join(projectConfig.cachePath, 'changedFileList.json');
-    projectConfig.removeChangedFileListInSdk = aceBuildJson.patchConfig.removeChangedFileListInSdk === 'true' || false;
-    if (!projectConfig.removeChangedFileListInSdk && projectConfig.hotReload) {
+    if (projectConfig.hotReload) {
       writeFileSync(projectConfig.changedFileList, JSON.stringify({
         modifiedFiles: [],
         removedFiles: []
@@ -975,6 +973,9 @@ function isPartialUpdate(metadata, moduleType) {
       if (item.name === 'Api11ArkTSCheckMode' && item.value === 'DoArkTSCheckInCompatibleModeInApi11') {
         partialUpdateConfig.standardArkTSLinter = false;
       }
+      if (item.name === 'ArkoalaPlugin' && item.value === 'true') {
+        projectConfig.useArkoala = true;
+      }
       if (item.name === 'ArkTSVersion') {
         partialUpdateConfig.arkTSVersion = item.value;
       }
@@ -986,9 +987,6 @@ function isPartialUpdate(metadata, moduleType) {
       }
       if (item.name === 'SkipArkTSStaticBlocksCheck' && item.value === 'true') {
         partialUpdateConfig.skipArkTSStaticBlocksCheck = true;
-      }
-      if (item.name === 'ArkoalaPlugin' && item.value === 'true') {
-        projectConfig.useArkoala = true;
       }
       if (item.name === 'UseTsHar' && item.value === 'true' && moduleType === 'har') {
         projectConfig.useTsHar = true;
@@ -1101,7 +1099,6 @@ function resetProjectConfig() {
   projectConfig.isFirstBuild = undefined;
   projectConfig.changedFileList = undefined;
   projectConfig.patchAbcPath = undefined;
-  projectConfig.removeChangedFileListInSdk = false;
   projectConfig.allowEmptyBundleName = false;
   const props = ['projectPath', 'buildPath', 'aceModuleBuild', 'manifestFilePath', 'aceProfilePath',
     'aceModuleJsonPath', 'aceSuperVisualPath', 'hashProjectPath', 'aceBuildJson', 'cachePath',
