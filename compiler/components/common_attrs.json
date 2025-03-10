@@ -3,7 +3,7 @@
     "reuseId", "width", "height", "size", "constraintSize", "layoutPriority", "layoutWeight",
     "padding", "paddingLeft", "paddingRight", "paddingTop", "paddingBottom",
     "margin", "marginLeft", "marginRight", "marginTop", "marginBottom",
-    "border", "borderStyle", "borderWidth", "borderColor", "borderRadius", "background",
+    "border", "borderStyle", "borderWidth", "borderColor", "borderRadius", "background", "backgroundBrightness",
     "backgroundColor", "backgroundImage", "backgroundImageSize", "backgroundImagePosition", "backgroundBlurStyle",
     "obscured", "opacity", "animation", "transition", "stateStyles", "foregroundBlurStyle",
     "onClick", "onTouch", "touchable", "onKeyEvent", "onHover", "hoverEffect", "onMouse", "onAreaChange",
@@ -28,6 +28,13 @@
     "onAttach", "onDetach",
     "onPreDrag", "dragPreviewOptions", "allowDrop", "dragPreview",
     "keyboardShortcut",
+    "sphericalEffect", "lightUpEffect", "pixelStretchEffect", "systemBarEffect", "linearGradientBlur", "renderGroup", "blendMode", "useShadowBatching", "freeze",
+    "clipShape", "maskShape",
+    "motionBlur",
+    "outline", "outlineRadius", "outlineColor", "outlineWidth", "outlineStyle",
+    "compositingFilter", "foregroundFilter", "backgroundFilter", "visualEffect",
+    "customProperty",
+    "renderFit",
     "pixelRound", "expandSafeArea",
     "safeAreaPadding"
   ]
