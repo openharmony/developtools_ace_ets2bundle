@@ -557,14 +557,17 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     MemoryMonitor.stopRecordStage(processBuildHaprrecordInfo);
   }
 
-  if (globalProgram.program &&
-    (process.env.watchMode !== 'true' && !projectConfig.isPreview &&
-      !projectConfig.hotReload && !projectConfig.coldReload)) {
-        globalProgram.program.releaseTypeChecker();
-        const allowGC: boolean = global && global.gc && typeof global.gc === 'function';
-        if (allowGC) {
-          global.gc();
-        }
+  // Release the typeChecker early and perform GC in the following scenarios:
+  // In memory-priority mode or default mode, when the preview mode is disabled in a full compilation scenario, 
+  // and it is not a preview, hot reload, or cold reload scenario. The typeChecker is not released early in performance-priority mode.
+  let shouldReleaseTypeChecker: boolean = rollupShareObject?.projectConfig?.executionMode !== 'performance' && globalProgram.program &&
+    process.env.watchMode !== 'true' && !projectConfig.isPreview && !projectConfig.hotReload && !projectConfig.coldReload;
+  if (shouldReleaseTypeChecker) {
+    globalProgram.program.releaseTypeChecker();
+    const allowGC: boolean = global && global.gc && typeof global.gc === 'function';
+    if (allowGC) {
+      global.gc();
+    }
   }
 }
 
