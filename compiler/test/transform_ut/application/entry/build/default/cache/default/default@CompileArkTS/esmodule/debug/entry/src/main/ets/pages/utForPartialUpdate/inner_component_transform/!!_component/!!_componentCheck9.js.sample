@@ -108,7 +108,7 @@ class Index extends ViewV2 {
                 {
                     const itemCreation = (elmtId, isInitialRender) => {
                         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                        ListItem.create(deepRenderFunction, true);
+                        itemCreation2(elmtId, isInitialRender);
                         if (!isInitialRender) {
                             ListItem.pop();
                         }
