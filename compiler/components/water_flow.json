@@ -1,7 +1,8 @@
 {
     "name": "WaterFlow",
     "children": [
-        "FlowItem"
+        "FlowItem",
+        "LazyVGridLayout"
     ],
     "attrs": [
         "onReachEnd",

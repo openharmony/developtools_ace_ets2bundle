@@ -201,8 +201,9 @@
         "Image",
         "ImageAnimator",
         "IndicatorComponent",
+        "LazyVGridLayout",
         "Line",
-	"LinearIndicator",
+        "LinearIndicator",
         "List",
         "ListItem",
         "ListItemGroup",
@@ -501,6 +502,11 @@
             "name": "IndicatorComponent",
             "type": "IndicatorComponentAttribute",
             "instance": "IndicatorComponentInstance"
+          },
+          {
+            "name": "LazyVGridLayout",
+            "type": "LazyVGridLayoutAttribute",
+            "instance": "LazyVGridLayoutInstance"
           },
           {
             "name": "Line",
