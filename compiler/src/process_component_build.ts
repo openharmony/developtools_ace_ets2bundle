@@ -1184,11 +1184,11 @@ function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResu
   if (idName) {
     generateItem = ifRetakeId([createItemBlock(
       node, itemRenderInnerStatements, deepItemRenderInnerStatements, nameResult, isLazyCreate,
-      immutableStatements, isGlobalBuilder, builderParamsResult, itemCreateStatement)], idName);
+      immutableStatements, isGlobalBuilder, builderParamsResult)], idName);
   } else {
     generateItem = createItemBlock(
       node, itemRenderInnerStatements, deepItemRenderInnerStatements, nameResult, isLazyCreate,
-      immutableStatements, isGlobalBuilder, builderParamsResult, itemCreateStatement);
+      immutableStatements, isGlobalBuilder, builderParamsResult);
   }
   innerCompStatements.push(generateItem);
 }
@@ -1237,8 +1237,7 @@ function createItemBlock(
   nameResult: NameResult, isLazyCreate: boolean,
   immutableStatements: ts.Statement[],
   isGlobalBuilder: boolean,
-  builderParamsResult: BuilderParamsResult,
-  itemCreateStatement: ts.Statement
+  builderParamsResult: BuilderParamsResult
 ): ts.Block {
   const blockNode: ts.Statement[] = [
     createItemCreation2(node, itemRenderInnerStatements, nameResult, immutableStatements,
@@ -1246,7 +1245,7 @@ function createItemBlock(
   ];
   const itemCreation: ItemCreation = getItemCreation(nameResult);
   if (isLazyCreate) {
-    blockNode.unshift(createItemCreation(node, isGlobalBuilder, builderParamsResult, itemCreateStatement));
+    blockNode.unshift(createItemCreation(node, isGlobalBuilder, builderParamsResult));
     blockNode.push(
       createDeepRenderFunction(node, deepItemRenderInnerStatements, isGlobalBuilder, builderParamsResult),
       ts.factory.createExpressionStatement(ts.factory.createCallExpression(
@@ -1288,12 +1287,7 @@ function checkLazyCreate(node: ts.ExpressionStatement, nameResult: NameResult): 
 }
 
 function createItemCreation(node: ts.ExpressionStatement, isGlobalBuilder: boolean,
-  builderParamsResult: BuilderParamsResult, itemCreateStatement: ts.Statement = undefined): ts.VariableStatement {
-  if (!partialUpdateConfig.optimizeComponent) {
-    itemCreateStatement = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-      ts.factory.createIdentifier(ITEMCREATION2),
-      undefined, createItemCreationArgs(isGlobalBuilder, builderParamsResult)));
-  }
+  builderParamsResult: BuilderParamsResult): ts.VariableStatement {
   return ts.factory.createVariableStatement(
     undefined,
     ts.factory.createVariableDeclarationList(
@@ -1305,7 +1299,10 @@ function createItemCreation(node: ts.ExpressionStatement, isGlobalBuilder: boole
           ts.factory.createBlock(
             [
               createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
-              itemCreateStatement,
+              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                ts.factory.createIdentifier(ITEMCREATION2),
+                undefined, createItemCreationArgs(isGlobalBuilder, builderParamsResult)
+              )),
               ts.factory.createIfStatement(
                 ts.factory.createPrefixUnaryExpression(
                   ts.SyntaxKind.ExclamationToken,
