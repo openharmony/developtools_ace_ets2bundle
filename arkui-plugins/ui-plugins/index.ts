@@ -26,6 +26,7 @@ export function uiTransform() {
     return {
         name: 'ui-plugin',
         parsed(this: PluginContext) {
+            console.log("[UI PLUGIN] AFTER PARSED ENTER");
             let node = this.getArkTSAst();
             if (node) {
                 let script: arkts.EtsScript = node;
@@ -44,10 +45,13 @@ export function uiTransform() {
                 console.log("[AFTER PARSED SCRIPT]: ", script.dumpSrc());
 
                 this.setArkTSAst(script);
+                console.log("[UI PLUGIN] AFTER PARSED EXIT");
                 return script;
             }
+            console.log("[UI PLUGIN] AFTER PARSED EXIT WITH NO TRANSFORM");
         },
         checked(this: PluginContext) {
+            console.log("[UI PLUGIN] AFTER CHECKED ENTER");
             let node = this.getArkTSAst();
             if (node) {
                 let script: arkts.EtsScript = node;
@@ -67,8 +71,10 @@ export function uiTransform() {
                 console.log("[AFTER STRUCT SCRIPT] script: ", script.dumpSrc());
 
                 this.setArkTSAst(script);
+                console.log("[UI PLUGIN] AFTER CHECKED EXIT");
                 return script;
             }
+            console.log("[UI PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM");
         }
     }
 }

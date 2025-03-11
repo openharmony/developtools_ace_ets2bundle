@@ -45,10 +45,8 @@ void* FindLibrary() {
     std::string libraryName;
     char* envValue = getenv("PANDA_SDK_PATH");
     if (envValue) {
-        std::cout << "PANDA_SDK_PATH" << envValue << endl;
         libraryName = std::string(envValue)  + ("/" PLUGIN_DIR "/lib/") + LIB_ES2PANDA_PUBLIC;
     } else {
-        std::cout << "PANDA_SDK_PATH not specified.Using ohos sdk path: /ets/ets1.2/ets2panda/lib " << std::endl;
         libraryName = LIB_ES2PANDA_PUBLIC;
     }
     return loadLibrary(libraryName);
