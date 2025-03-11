@@ -26,7 +26,8 @@ import {
     isTSInterfaceBody, 
     isTSInterfaceDeclaration, 
     isClassDeclaration, 
-    isClassDefinition 
+    isClassDefinition,
+    isTSAsExpression
 } from "../generated"
 import {
     isEtsScript,
@@ -280,6 +281,14 @@ export function visitEachChild(
             node,
             nodeVisitor(node.scriptFunction, visitor),
         )
+    }
+    if (isTSAsExpression(node)) {
+        return factory.updateTSAsExpression(
+            node,
+            nodeVisitor(node.expr, visitor),
+            nodeVisitor(node.typeAnnotation, visitor),
+            node.isConst
+        );
     }
     // TODO
     return node

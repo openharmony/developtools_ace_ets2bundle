@@ -60,7 +60,8 @@ import {
     TSTypeParameterDeclaration,
     TSTypeParameterInstantiation,
     TypeNode,
-    UndefinedLiteral
+    UndefinedLiteral,
+    TSAsExpression
 } from "../../generated"
 
 function compose<T extends AstNode, ARGS extends any[]>(
@@ -329,6 +330,12 @@ export const factory = {
     },
     get updateConditionalExpression() {
         return compose(ConditionalExpression.createConditionalExpression)
+    },
+    get createTSAsExpression() {
+        return TSAsExpression.createTSAsExpression
+    },
+    get updateTSAsExpression() {
+        return compose(TSAsExpression.createTSAsExpression)
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {
