@@ -23,7 +23,9 @@ import type { AstNode } from "../peers/AstNode"
 import { ClassDefinition, isClassDefinition, type AnnotationUsage } from "../../generated"
 
 export function proceedToState(state: Es2pandaContextState): void {
+    console.log("[TS WRAPPER] PROCEED TO STATE: ", state);
     if (state <= global.es2panda._ContextState(global.context)) {
+        console.log("[TS WRAPPER] PROCEED TO STATE: SKIPPING");
         return
     }
     try {
