@@ -277,8 +277,6 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/process_ui_syntax/UnknownSrcType',
 
   'Decorators/v1AndV2ComponentDecorators/property_observe_validate',
-  'Decorators/v1AndV2ComponentDecorators/v1ToV2Component',
-  'Decorators/v1AndV2ComponentDecorators/v1ToV2ComponentValidate',
   'Decorators/v1AndV2ComponentDecorators/v2ToV1ComponentValidate',
   'Decorators/v1AndV2ComponentDecorators/v2ToV1Link',
 
