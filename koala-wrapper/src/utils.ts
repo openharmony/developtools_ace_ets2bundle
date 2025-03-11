@@ -26,15 +26,56 @@ export function isNumber(value: any): value is number {
     return typeof value === `number`
 }
 
+function replacePercentOutsideStrings(code: string): string  {
+    const stringPattern = /("[^"]*"|'[^']*'|`[^`]*`)/g;
+    const percentPattern = /(?<!["'`])(%)(?![\d\s])/g;
+    const strings = code.match(stringPattern) || [];
+
+    let placeholderCounter = 0;
+    const placeholderMap = new Map<string, string>();
+    strings.forEach((string) => {
+        const placeholder = `__STRING_PLACEHOLDER_${placeholderCounter++}__`;
+        placeholderMap.set(placeholder, string);
+        code = code.replace(string, placeholder);
+    });
+
+    code = code.replace(percentPattern, '_');
+
+    placeholderMap.forEach((originalString, placeholder) => {
+        code = code.replace(new RegExp(placeholder, 'g'), originalString);
+    });
+  
+    return code;
+}
+  
+function replaceIllegalHashes(code: string): string {
+    const stringPattern = /("[^"]*"|'[^']*'|`[^`]*`)/g;
+    const strings = code.match(stringPattern) || [];
+
+    let placeholderCounter = 0;
+    const placeholderMap = new Map<string, string>();
+    strings.forEach((string) => {
+        const placeholder = `__STRING_PLACEHOLDER_${placeholderCounter++}__`;
+        placeholderMap.set(placeholder, string);
+        code = code.replace(string, placeholder);
+    });
+
+    code = code.replace(/#/g, '_');
+
+    placeholderMap.forEach((originalString, placeholder) => {
+        code = code.replace(new RegExp(placeholder, 'g'), originalString);
+    });
+
+    return code;
+}
+
 /*
     TODO:
      The lowerings insert %% and other special symbols into names of temporary variables.
      Until we keep feeding ast dumps back to the parser this function is needed.
  */
 export function filterSource(text: string): string {
-    const filtered =  text
-        .replaceAll(/%/g, "_")
-        .replaceAll(/#/g, "_")
+    const filtered = replaceIllegalHashes(replacePercentOutsideStrings(text))
         .replaceAll("<cctor>", "_cctor_")
 
     return filtered
