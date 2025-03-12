@@ -74,11 +74,10 @@ import {
   COMPONENT_CONSTRUCTOR_PARAMS,
   RESERT,
   COMPONENT_IF_UNDEFINED,
+  OBSERVED,
   COMPONENT_REQUIRE_DECORATOR,
   TRUE,
-  FALSE,
-  MIN_OBSERVED,
-  COMPONENT_OBSERVEDV2_DECORATOR
+  FALSE
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -118,7 +117,7 @@ import {
   CUSTOM_BUILDER_METHOD,
   INNER_CUSTOM_LOCALBUILDER_METHOD
 } from './component_map';
-import { isAllowedTypeForBasic } from './process_custom_component';
+
 export type ControllerType = {
   hasController: boolean;
   unassignedControllerSet: Set<string>;
@@ -1230,24 +1229,14 @@ function validateNonSimpleType(propertyName: ts.Identifier, decorator: string,
 }
 
 function validateNonObservedClassType(propertyName: ts.Identifier, decorator: string,
-  log: LogInfo[], isEsmoduleAndUpdateMode: boolean = false): void {
-  if (isEsmoduleAndUpdateMode) {
-    log.push({
-      type: projectConfig.optLazyForEach ? LogType.WARN : LogType.ERROR,
-      message: `The type of the ${decorator} property '${propertyName.getText()}' cannot be an ` +
-        `objects of classes decorated with ${COMPONENT_OBSERVEDV2_DECORATOR} class decorator in ets (not ts).`,
-      pos: propertyName.getStart(),
-      code: '10905307'
-    });
-  } else {
-    log.push({
-      type: projectConfig.optLazyForEach ? LogType.WARN : LogType.ERROR,
-      message: `The type of the ${decorator} property '${propertyName.getText()}' can only be ` +
-        `objects of classes decorated with ${COMPONENT_OBSERVED_DECORATOR} class decorator in ets (not ts).`,
-      pos: propertyName.getStart(),
-      code: '10905307'
-    });
-  } 
+  log: LogInfo[]): void {
+  log.push({
+    type: projectConfig.optLazyForEach ? LogType.WARN : LogType.ERROR,
+    message: `The type of the ${decorator} property '${propertyName.getText()}' can only be ` +
+      `objects of classes decorated with ${COMPONENT_OBSERVED_DECORATOR} class decorator in ets (not ts).`,
+    pos: propertyName.getStart(),
+    code: '10905307'
+  });
 }
 
 function validateHasIllegalQuestionToken(propertyName: ts.Identifier, decorator: string,
@@ -1357,34 +1346,16 @@ function updateSynchedPropertyOneWayPU(nameIdentifier: ts.Identifier, type: ts.T
 
 function updateSynchedPropertyNesedObjectPU(nameIdentifier: ts.Identifier,
   type: ts.TypeNode, decoractor: string, log: LogInfo[]): ts.ExpressionStatement {
-  const isEsmoduleAndUpdateMode: boolean = partialUpdateConfig.partialUpdateMode && projectConfig.compileMode === 'esmodule';
-  if (isEsmoduleAndUpdateMode && checkObjectLinkType(type)) {
+  if (partialUpdateConfig.partialUpdateMode && projectConfig.compileMode === 'esmodule') {
     return createInitExpressionStatementForDecorator(nameIdentifier.getText(), SYNCHED_PROPERTY_NESED_OBJECT_PU,
       createPropertyAccessExpressionWithParams(nameIdentifier.getText()));
   } else if ((projectConfig.compileMode !== 'esmodule' || !partialUpdateConfig.partialUpdateMode) && isObservedClassType(type)) {
     return createInitExpressionStatementForDecorator(nameIdentifier.getText(), SYNCHED_PROPERTY_NESED_OBJECT_PU,
       createPropertyAccessExpressionWithParams(nameIdentifier.getText()));
   } else {
-    validateNonObservedClassType(nameIdentifier, decoractor, log, isEsmoduleAndUpdateMode);
+    validateNonObservedClassType(nameIdentifier, decoractor, log);
     return undefined;
   }
-}
-
-// check @ObjectLink type Non basic types and @Observedv2.
-function checkObjectLinkType(typeNode: ts.TypeNode): boolean {
-  if (globalProgram.checker) {
-    const type: ts.Type = globalProgram.checker.getTypeFromTypeNode(typeNode);
-    const isPropertyDeclaration: boolean = typeNode.parent && ts.isPropertyDeclaration(typeNode.parent);
-    if (isPropertyDeclaration && !type.types) {
-      if (type.types && type.types.length) {
-        return !type.types.some((item: ts.Type) => {
-          return (isAllowedTypeForBasic(item.flags) || isObservedV2(item))});
-      } else {
-        return !(isObservedV2(type) || isAllowedTypeForBasic(type.flags));
-      } 
-    }
-  }
-  return false;
 }
 
 function validateCustomDecorator(decorators: readonly ts.Decorator[], log: LogInfo[]): boolean {
@@ -1425,13 +1396,13 @@ function validatePropDecorator(decorators: readonly ts.Decorator[]): boolean {
   return false;
 }
 
-export function isObservedV2(type: ts.Type): boolean {
+export function isObserved(type: ts.Type): boolean {
   if (type && type.getSymbol() && type.getSymbol().declarations) {
     return type.getSymbol().declarations.some((classDeclaration: ts.ClassDeclaration) => {
       const decorators: readonly ts.Decorator[] = ts.getAllDecorators(classDeclaration);
       if (ts.isClassDeclaration(classDeclaration) && decorators) {
         return decorators.some((decorator: ts.Decorator) => {
-          return ts.isIdentifier(decorator.expression) && decorator.expression.escapedText.toString() === MIN_OBSERVED;
+          return ts.isIdentifier(decorator.expression) && decorator.expression.escapedText.toString() === OBSERVED;
         });
       }
       return false;
