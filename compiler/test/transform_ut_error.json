@@ -987,6 +987,75 @@
             "code": "10905328"
         }
     ],
+    "v1ToV2Component": [
+        {
+            "message": "Property 'func_value1' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR",
+            "code": "10905323"
+        },
+        {
+            "message": "Property 'func_value2' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR",
+            "code": "10905323"
+        }
+    ],
+    "v1ToV2ComponentValidate": [
+        {
+            "message": "Property 'param_value' in the @ComponentV2 component 'TestV2Child2' are not allowed to be assigned values here.",
+            "type": "ERROR",
+            "code": "10905323"
+        },
+        {
+            "message": "Property 'param_value_alias_type' in the @ComponentV2 component 'TestV2Child2' are not allowed to be assigned values here.",
+            "type": "ERROR",
+            "code": "10905323"
+        },
+        {
+            "message": "Property 'state_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR",
+            "code": "10905323"
+        },
+        {
+            "message": "Property 'prop_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR",
+            "code": "10905323"
+        },
+        {
+            "message": "Property 'link_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR",
+            "code": "10905323"
+        },
+        {
+            "message": "Property 'provide_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR",
+            "code": "10905323"
+        },
+        {
+            "message": "Property 'consume_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR",
+            "code": "10905323"
+        },
+        {
+            "message": "Property 'storage_link_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR",
+            "code": "10905323"
+        },
+        {
+            "message": "Property 'storage_prop_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR",
+            "code": "10905323"
+        },
+        {
+            "message": "Property 'local_storage_link_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR",
+            "code": "10905323"
+        },
+        {
+            "message": "Property 'local_storage_prop_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR",
+            "code": "10905323"
+        }
+    ],
     "v2ToV1ComponentValidate": [
         {
             "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
