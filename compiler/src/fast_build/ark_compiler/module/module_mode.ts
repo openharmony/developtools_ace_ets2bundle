@@ -575,9 +575,21 @@ export class ModuleMode extends CommonMode {
 
   private generateCompileFilesInfo(includeByteCodeHarInfo: boolean): void {
     let filesInfo: string = '';
+    const cacheFilePathSet: Set<string> = new Set();
     this.moduleInfos.forEach((info) => {
       const moduleType: string = info.isCommonJs ? COMMONJS : ESM;
       const isSharedModule: boolean = sharedModuleSet.has(info.filePath);
+      if (cacheFilePathSet.has(info.cacheFilePath)) {
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_EXTERNAL_DUPLICATE_FILE_NAMES_ERROR,
+          ArkTSErrorDescription,
+          `Failed to generate filesInfo.\n
+          File ${info.filePath} with the same name in module ${info.packageName}.\n
+          Please modify the names of these files with the same name in the source code.`
+        );
+        this.logger.printError(errInfo);
+      }
+      cacheFilePathSet.add(info.cacheFilePath);
       filesInfo += `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName};` +
         `${isSharedModule};${info.originSourceLang}\n`;
     });

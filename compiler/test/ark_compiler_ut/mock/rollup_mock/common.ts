@@ -38,6 +38,7 @@ export const META: string = 'meta';
 export const ENTRYABILITY_TS_PATH_DEFAULT: string = '/src/main/entryability/EntryAbility.ts';
 export const ENTRYABILITY_JS_PATH_DEFAULT: string = '/src/main/entryability/EntryAbility.js';
 export const INDEX_ETS_PATH_DEFAULT: string = '/src/main/pages/Index.ets';
+export const INDEX_TS_PATH_DEFAULT: string = '/src/main/pages/Index.ts';
 export const INDEX_JS_PATH_DEFAULT: string = '/src/main/pages/Index.js';
 export const INDEX_SOURCE_PATH: string = 'entry/src/main/pages/Index.ets';
 export const INDEX_JS_CACHE_PATH: string = 'entry/build/entry/src/main/pages/Index.js';
