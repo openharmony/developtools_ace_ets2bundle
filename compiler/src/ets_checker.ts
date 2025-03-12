@@ -1954,7 +1954,8 @@ export function generateDeclarationFileForSTS(rootFileNames: string[]) {
     // use package name as folder name
     rootDir: projectConfig.moduleRootPath,
     customResolveModuleNames: resolveModuleNames,
-    customCompilerOptions: compilerOptions
+    customCompilerOptions: compilerOptions,
+    includePaths: [projectConfig.modulePath]
   };
   if (fs.existsSync(config.outDir)) {
     fs.rmSync(config.outDir, { recursive: true, force: true });
