@@ -85,7 +85,7 @@ import {
   createCustomComponentNewExpression,
   isLocalStorageParameter,
   isBasicType,
-  isObserved
+  isObservedV2
 } from './process_component_member';
 import {
   LogType,
@@ -466,7 +466,7 @@ function isForbiddenAssignToComponentV2(item: ts.PropertyAssignment, itemName: s
   if (!info.parentStructInfo.isComponentV2 && info.updatePropsDecoratorsV2.includes(itemName) &&
     isObervedProperty(item.initializer, info) && globalProgram.strictChecker) {
     const type: ts.Type = globalProgram.strictChecker.getTypeAtLocation(item.initializer);
-    return !(isAllowedTypeToComponentV2(type) || isObserved(type) || isForbiddenTypeToComponentV1(type));
+    return !(isAllowedTypeToComponentV2(type) || !isObservedV2(type) || isForbiddenTypeToComponentV1(type));
   }
   return false;
 }
@@ -482,7 +482,7 @@ function isObervedProperty(value: ts.Expression, info: ChildAndParentComponentIn
   return false;
 }
 
-function isAllowedTypeToComponentV2(type: ts.Type): boolean {
+export function isAllowedTypeToComponentV2(type: ts.Type): boolean {
   if (type) {
     // @ts-ignore
     if (type.types && type.types.length) {
@@ -499,7 +499,7 @@ function isAllowedTypeToComponentV2(type: ts.Type): boolean {
   return false;
 }
 
-function isAllowedTypeForBasic(flags: ts.TypeFlags): boolean {
+export function isAllowedTypeForBasic(flags: ts.TypeFlags): boolean {
   if (isBasicType(flags) || (flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined))) {
     return true;
   }
