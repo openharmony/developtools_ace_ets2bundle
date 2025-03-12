@@ -48,7 +48,6 @@ export const kitModules: Map<string, Map<string, Set<string>>> = new Map();
 
 export function apiTransform() {
   const useOSFiles: Set<string> = new Set();
-  let hiresStatus: boolean = true;
   let needModuleCollection: boolean = false;
   let needComponentCollection: boolean = false;
   return {
@@ -69,6 +68,7 @@ export function apiTransform() {
       code: string;
       map: SourceMap;
     } {
+      let hiresStatus: boolean = this.share.projectConfig.needCompleteSourcesMap;
       const shouldEmitJsFlag: boolean = id.endsWith('.js') ||
         shouldEmitJsFlagById(id) || projectConfig.compileMode !== 'esmodule';
       if (!shouldEmitJsFlag &&
@@ -80,7 +80,7 @@ export function apiTransform() {
       if (projectConfig.isCrossplatform ? filterCrossplatform(id) : filter(id)) {
         if (projectConfig.compileMode === 'esmodule') {
           code = processSystemApiAndLibso(code, id, useOSFiles);
-          hiresStatus = this.share.projectConfig.needCompleteSourcesMap || hasTsNoCheckOrTsIgnoreFiles.includes(id) ?
+          hiresStatus = hiresStatus || hasTsNoCheckOrTsIgnoreFiles.includes(id) ?
             true :
             false;
         } else {
