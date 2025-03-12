@@ -154,7 +154,8 @@ class RollUpPluginMock {
       patchAbcPath: undefined,
       changedFileList: undefined,
       compileMode: ESMODULE,
-      anBuildOutPut: `${projectRootDir}/${entryName}/${mode}/${AN_BUILD_OUTPUT_PATH}`
+      anBuildOutPut: `${projectRootDir}/${entryName}/${mode}/${AN_BUILD_OUTPUT_PATH}`,
+      processTs: true
     }
   }
 

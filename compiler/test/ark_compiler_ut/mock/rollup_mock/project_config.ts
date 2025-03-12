@@ -57,7 +57,8 @@ interface IArkProjectConfig {
   hotReload: object,
   patchAbcPath: object,
   changedFileList: object,
-  compileMode: string
+  compileMode: string,
+  processTs: boolean
 }
 
 class ProjectConfig {

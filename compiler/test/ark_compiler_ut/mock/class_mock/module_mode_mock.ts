@@ -21,18 +21,20 @@ import {
   EXTNAME_PROTO_BIN,
   EXTNAME_JS,
   EXTNAME_TS,
-  EXTNAME_ETS
+  EXTNAME_ETS,
+  EXTNAME_MJS,
+  EXTNAME_CJS
 } from '../../../../lib/fast_build/ark_compiler/common/ark_define';
 import {
   ModuleMode,
   PackageEntryInfo
 } from '../../../../lib/fast_build/ark_compiler/module/module_mode';
+import { getNormalizedOhmUrlByFilepath } from '../../../../lib/ark_utils';
 import {
-  getNormalizedOhmUrlByFilepath,
-  transformOhmurlToPkgName,
-  transformOhmurlToRecordName
-} from '../../../../lib/ark_utils';
-import { changeFileExtension } from '../../../../lib/fast_build/ark_compiler/utils';
+  changeFileExtension,
+  compilingEtsOrTsFiles,
+  shouldETSOrTSFileTransformToJS
+} from '../../../../lib/fast_build/ark_compiler/utils';
 import { toUnixPath } from '../../../../lib/utils';
 import { META } from '../rollup_mock/common';
 import { sharedModuleSet } from '../../../../lib/fast_build/ark_compiler/check_shared_module';
@@ -43,30 +45,37 @@ class ModuleModeMock extends ModuleMode {
     this.collectModuleFileList(rollupObject, fileList);
   }
 
-  addModuleInfoItemMock(rollupObject: object, isCommonJs: boolean, extName: string) {
+  addModuleInfoItemMock(rollupObject: object) {
     const mockFileList = rollupObject.getModuleIds();
     for (const filePath of mockFileList) {
       if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS) || filePath.endsWith(EXTNAME_JS)) {
-        const subStrings: string = filePath.split('.');
-
         const moduleInfo: object = rollupObject.getModuleInfo(filePath);
         const metaInfo: object = moduleInfo[META];
-        this.addModuleInfoItem(filePath, isCommonJs, extName, metaInfo, this.moduleInfos, subStrings[subStrings.length - 1]);
+        compilingEtsOrTsFiles.push(filePath);
+        this.processModuleInfos(filePath, this.moduleInfos, metaInfo);
       }
     }
   }
 
   addSourceMapMock(rollupObject: object, sourceMapGenerator: SourceMapGenerator) {
     for (const filePath of rollupObject.getModuleIds()) {
+      
       const isValidSuffix: boolean =
         filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS) || filePath.endsWith(EXTNAME_JS);
       if (!isValidSuffix)
         continue;
+      const moduleInfo: object = rollupObject.getModuleInfo(filePath);
+      const metaInfo: object = moduleInfo[META];
+      compilingEtsOrTsFiles.push(filePath);
       if (sourceMapGenerator.isNewSourceMaps()) {
         sourceMapGenerator.updateSourceMap(filePath, {});
       } else {
-        const filePathCache: string = this.genFileCachePath(
-          filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath)
+        let filePathCache: string = this.genFileCachePath(
+          filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
+        const extName: string = this.getExtName(filePath, metaInfo);
+        if (extName) {
+          filePathCache = changeFileExtension(filePathCache, this.getExtName(filePath, metaInfo));
+        }
         sourceMapGenerator.updateSourceMap(
           filePathCache.replace(this.projectConfig.projectRootPath + path.sep, ''), {});
       }
@@ -76,8 +85,26 @@ class ModuleModeMock extends ModuleMode {
   static getModuleInfosAndSourceMapMock(rollupObject: object, sourceMapGenerator: SourceMapGenerator) {
     const moduleMode = new ModuleModeMock(rollupObject);
     moduleMode.addSourceMapMock(rollupObject, sourceMapGenerator);
-    moduleMode.addModuleInfoItemMock(rollupObject, false, '');
+    moduleMode.addModuleInfoItemMock(rollupObject);
     return { moduleInfos: moduleMode.moduleInfos, sourceMap: sourceMapGenerator.getSourceMaps() };
+  }
+
+  getExtName(moduleId: string, metaInfo: object): string {
+    switch (path.extname(moduleId)) {
+      case EXTNAME_ETS: {
+        return shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig, metaInfo) ? EXTNAME_JS : EXTNAME_TS;
+      }
+      case EXTNAME_TS: {
+        return shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig, metaInfo) ? EXTNAME_JS : '';
+      }
+      case EXTNAME_JS:
+      case EXTNAME_MJS:
+      case EXTNAME_CJS: {
+        return (moduleId.endsWith(EXTNAME_MJS) || moduleId.endsWith(EXTNAME_CJS)) ? EXTNAME_JS : '';
+      }
+      default:
+        return ''
+    }
   }
 
   generateCompileFilesInfoMock(includeByteCodeHarInfo: boolean) {
