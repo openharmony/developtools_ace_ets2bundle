@@ -1,7 +1,7 @@
 {
     "plugins": {
-        "ui-plugin": "${absolute_path_to_ohos_sdk}/ets/ets1.2/build-tools/ui-plugins/lib/ui-plugins/index",
-        "memo-plugin": "${absolute_path_to_ohos_sdk}/ets/ets1.2/build-tools/ui-plugins/lib/memo-plugins/index"
+        "ui-plugin": "/home/l00913061/workspace/0310openharmony/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/ui-plugins/index",
+        "memo-plugin": "/home/l00913061/workspace/0310openharmony/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/memo-plugins/index"
     },
 
     "compileFiles": [
@@ -18,7 +18,7 @@
     "loaderOutPath": "./dist",
     "cachePath": "./dist/cache",
 
-    "buildSdkPath": "${absolute_path_to_ohos_sdk}/ets/ets1.2",
+    "buildSdkPath": "/home/l00913061/workspace/0310openharmony/out/sdk/ohos-sdk/linux/ets/ets1.2/",
 
     "dependentModuleList": []
 }

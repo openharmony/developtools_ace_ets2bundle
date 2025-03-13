@@ -14,7 +14,7 @@
  */
 
 import { Wrapper, nullptr, isNullPtr } from "./Wrapper"
-import { finalizerRegister, finalizerUnregister, Thunk } from "@koalaui/common"
+import { finalizerRegister, finalizerUnregister, Thunk } from "#koalaui/common"
 import { InteropNativeModule } from "./InteropNativeModule"
 import { pointer } from "./InteropTypes"
 

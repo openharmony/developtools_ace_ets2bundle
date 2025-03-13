@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { int32 } from "@koalaui/compat";
+import { int32 } from "#koalaui/compat";
 /**
  * Computes a hash code from the string {@link value}.
  */

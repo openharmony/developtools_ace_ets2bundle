@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { float32 } from "@koalaui/compat"
+import { float32 } from "#koalaui/compat"
 
 export class Point3 {
     x: float32

@@ -15,7 +15,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getDistancePx = exports.isFiniteNumber = exports.parseNumber = exports.modulo = exports.clamp = exports.lerp = void 0;
-const compat_1 = require("@koalaui/compat");
+const compat_1 = require("#koalaui/compat");
 /**
  * Computes the linear interpolation between `source` and `target` based on `weight`.
  *

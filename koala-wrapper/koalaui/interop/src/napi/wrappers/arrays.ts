@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { CustomTextDecoder, CustomTextEncoder } from "@koalaui/common"
+import { CustomTextDecoder, CustomTextEncoder } from "#koalaui/common"
 import { Access, Exec, ExecWithLength, PtrArray, TypedArray } from "../../interop/arrays"
 import { nullptr } from "./Wrapper"
 import { Wrapper } from "../../interop/Wrapper"

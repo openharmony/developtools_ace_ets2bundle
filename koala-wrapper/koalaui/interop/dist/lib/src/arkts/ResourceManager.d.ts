@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { int32 } from "@koalaui/common";
+import { int32 } from "#koalaui/common";
 export type ResourceId = int32;
 export declare class ResourceHolder {
     private static nextResourceId;

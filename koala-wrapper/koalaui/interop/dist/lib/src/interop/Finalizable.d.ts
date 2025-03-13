@@ -14,7 +14,7 @@
  */
 
 import { Wrapper } from "./Wrapper";
-import { Thunk } from "@koalaui/common";
+import { Thunk } from "#koalaui/common";
 import { pointer } from "./InteropTypes";
 export declare class NativeThunk implements Thunk {
     finalizer: pointer;

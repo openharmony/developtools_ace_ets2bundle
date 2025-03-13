@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { finalizerRegister, finalizerUnregister, Thunk } from "@koalaui/common"
+import { finalizerRegister, finalizerUnregister, Thunk } from "#koalaui/common"
 import { InteropNativeModule } from "./InteropNativeModule"
 import { pointer, nullptr } from "./InteropTypes"
 

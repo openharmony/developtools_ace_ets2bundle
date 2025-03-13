@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
+import { getArktsPath } from "../path"
+const arkts = require(getArktsPath())
 
 export function createCustomComponentInitializerOptions(className: string): arkts.Identifier {
     return arkts.factory.createIdentifier(

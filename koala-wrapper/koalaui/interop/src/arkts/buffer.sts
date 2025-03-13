@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { int8 } from "@koalaui/common"
+import { int8 } from "#koalaui/common"
 
 export class KBuffer {
     private readonly _buffer: byte[]

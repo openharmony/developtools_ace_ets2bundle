@@ -38,7 +38,7 @@ export {
     refEqual,
     int8Array,
     unsafeCast
-} from "@koalaui/compat"
+} from "#koalaui/compat"
 export { clamp, lerp, modulo, parseNumber, isFiniteNumber, getDistancePx } from "./math"
 export { hashCodeFromString } from "./stringUtils"
 export { KoalaProfiler } from "./KoalaProfiler"

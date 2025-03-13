@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts";
+import { getArktsPath } from "../../path"
+const arkts = require(getArktsPath());
 
 export enum DecoratorNames {
     STATE = "State",

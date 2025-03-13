@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { int32 } from "@koalaui/compat";
+import { int32 } from "#koalaui/compat";
 export declare function createSha1(): SHA1Hash;
 export declare class SHA1Hash {
     private A;

@@ -16,7 +16,7 @@
 import { Es2pandaAstNodeType } from "../Es2pandaEnums"
 import { throwError } from "../utils"
 import { global } from "./static/global"
-import { KNativePointer, nullptr } from "@koalaui/interop"
+import { KNativePointer, nullptr } from "#koalaui/interop"
 import { AstNode, UnsupportedNode } from "./peers/AstNode"
 
 export const nodeByType = new Map<Es2pandaAstNodeType, { new(peer: KNativePointer): AstNode }>([])
