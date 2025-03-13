@@ -21,6 +21,7 @@
         "./common/**/*.ts",
         "./memo-plugins/**/*.ts",
         "./ui-plugins/**/*.ts",
+        "./path.ts",
     ],
     "exclude": [
         "./test/**/*"

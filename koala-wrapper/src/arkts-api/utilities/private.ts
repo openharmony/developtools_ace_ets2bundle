@@ -23,7 +23,7 @@ import {
     withString,
     withStringArray,
     withStringResult
-} from "@koalaui/interop"
+} from "#koalaui/interop"
 import { NativePtrDecoder } from "./nativePtrDecoder"
 import { Es2pandaModifierFlags, Es2pandaScriptFunctionFlags } from "../../generated/Es2pandaEnums"
 import { classByPeer } from "../class-by-peer"

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { int32 } from "@koalaui/compat"
+import { int32 } from "#koalaui/compat"
 import { createSha1 } from "./sha1";
 
 export class UniqueId {

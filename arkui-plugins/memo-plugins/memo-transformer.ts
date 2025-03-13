@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
+import { getArktsPath } from "../path"
+const arkts = require(getArktsPath())
 import { FunctionTransformer } from "./function-transformer"
 import { PositionalIdTracker } from "./utils"
 import { factory } from "./memo-factory"

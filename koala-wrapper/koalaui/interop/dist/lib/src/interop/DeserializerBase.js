@@ -30,7 +30,7 @@ exports.CustomDeserializer = exports.DeserializerBase = void 0;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const common_1 = require("@koalaui/common");
+const common_1 = require("#koalaui/common");
 const SerializerBase_1 = require("./SerializerBase");
 const InteropNativeModule_1 = require("./InteropNativeModule");
 class DeserializerBase {

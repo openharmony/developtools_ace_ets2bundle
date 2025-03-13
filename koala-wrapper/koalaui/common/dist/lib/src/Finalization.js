@@ -15,7 +15,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.finalizerUnregister = exports.finalizerRegisterWithCleaner = exports.finalizerRegister = void 0;
-const compat_1 = require("@koalaui/compat");
+const compat_1 = require("#koalaui/compat");
 function finalizerRegister(target, thunk) {
     (0, compat_1.finalizerRegister)(target, thunk);
 }

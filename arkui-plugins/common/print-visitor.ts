@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
+import { getArktsPath } from "../path"
+const arkts = require(getArktsPath())
 import { AbstractVisitor } from "../common/abstract-visitor";
 
 export class PrintVisitor extends AbstractVisitor {

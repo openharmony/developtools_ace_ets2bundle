@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { CustomTextEncoder, CustomTextDecoder, int32 } from "@koalaui/common"
+import { CustomTextEncoder, CustomTextDecoder, int32 } from "#koalaui/common"
 
 import { KPointer } from "../../interop/InteropTypes"
 import { Wrapper } from "../../interop/Wrapper"

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { float32 } from "@koalaui/compat";
+import { float32 } from "#koalaui/compat";
 import { Matrix33 } from "./Matrix33";
 import { Point3 } from "./Point3";
 export interface RotateOptions {

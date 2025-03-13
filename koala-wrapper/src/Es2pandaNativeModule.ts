@@ -21,7 +21,7 @@ import {
     registerNativeModuleLibraryName,
     loadNativeModuleLibrary,
     KDouble
-} from "@koalaui/interop"
+} from "#koalaui/interop"
 import { Es2pandaNativeModule as GeneratedEs2pandaNativeModule } from "./generated/Es2pandaNativeModule"
 import * as path from "path"
 

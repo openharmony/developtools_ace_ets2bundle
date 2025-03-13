@@ -14,7 +14,7 @@
  */
 
 import { KUint8ArrayPtr } from "./InteropTypes"
-import { int32 } from "@koalaui/common"
+import { int32 } from "#koalaui/common"
 
 export type CallbackType = (args: KUint8ArrayPtr, length: int32) => int32
 

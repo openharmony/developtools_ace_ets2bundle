@@ -17,7 +17,7 @@ import { ArktsObject } from "./ArktsObject"
 import { global } from "../static/global"
 import { throwError, filterSource } from "../../utils"
 import { passString } from "../utilities/private"
-import { KNativePointer } from "@koalaui/interop"
+import { KNativePointer } from "#koalaui/interop"
 import { AstNode } from "./AstNode"
 import { Program } from "./Program"
 export class Context extends ArktsObject {

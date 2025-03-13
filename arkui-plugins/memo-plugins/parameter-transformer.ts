@@ -12,11 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import * as arkts from "@koalaui/libarkts"
+import { getArktsPath, getInteropPath } from "../path"
+const arkts = require(getArktsPath());
+const interop = require(getInteropPath());
+const KPointer = interop.KPointer
 import { factory } from "./memo-factory"
 import { AbstractVisitor } from "../common/abstract-visitor"
-import { KPointer } from "@koalaui/interop"
 import { 
     hasMemoAnnotation, 
     hasMemoIntrinsicAnnotation, 

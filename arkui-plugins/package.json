@@ -15,10 +15,18 @@
     "@babel/preset-typescript": "7.18.6",
     "@babel/runtime": "7.20.13"
   },
-  "dependencies": {
-    "@koalaui/libarkts": "../koala-wrapper",
-    "@koalaui/common": "../koala-wrapper/koalaui/common",
-    "@koalaui/compat": "../koala-wrapper/koalaui/compat",
-    "@koalaui/interop": "../koala-wrapper/koalaui/interop"
+  "imports": {
+      "#koalaui/interop": {
+          "default":  "../koala-wrapper/koalaui/interop/dist/lib/src/interop/index.js"
+      },
+      "#koalaui/common": {
+          "default": "../koala-wrapper/koalaui/common/dist/lib/src/index.js"
+      },
+      "#koalaui/compat": {
+          "default": "../koala-wrapper/koalaui/compat/dist/src/index.js"
+      },
+      "#koalaui/libarkts": {
+        "default": "../koala-wrapper"
+    }
   }
 }

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { float32 } from "@koalaui/compat";
+import { float32 } from "#koalaui/compat";
 export declare function mat33(array?: Float32Array): Matrix33;
 export declare class Matrix33 {
     readonly array: Float32Array;

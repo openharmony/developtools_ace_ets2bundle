@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { int32 } from "@koalaui/common";
+import { int32 } from "#koalaui/common";
 import { Wrapper } from "./Wrapper";
 import { KPointer } from "./InteropTypes";
 export declare abstract class NativeStringBase extends Wrapper {

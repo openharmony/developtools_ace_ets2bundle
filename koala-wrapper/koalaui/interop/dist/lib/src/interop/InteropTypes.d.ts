@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { int32, int64, float32, float64 } from "@koalaui/common";
+import { int32, int64, float32, float64 } from "#koalaui/common";
 export type KStringPtr = int32 | string | null;
 export type KStringArrayPtr = int32 | Uint8Array | null;
 export type KInt32ArrayPtr = int32 | Int32Array | null;

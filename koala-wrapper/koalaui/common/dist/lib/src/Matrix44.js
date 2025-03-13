@@ -15,7 +15,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Matrix44 = exports.mat44 = void 0;
-const compat_1 = require("@koalaui/compat");
+const compat_1 = require("#koalaui/compat");
 const Matrix33_1 = require("./Matrix33");
 const Point3_1 = require("./Point3");
 // TODO: this is because ArkTS doesn allow interface literal instances.

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { KNativePointer } from "@koalaui/interop"
+import { KNativePointer } from "#koalaui/interop"
 
 export abstract class ArktsObject {
     protected constructor(peer: KNativePointer) {

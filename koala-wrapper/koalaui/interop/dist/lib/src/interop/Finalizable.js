@@ -16,7 +16,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Finalizable = exports.NativeThunk = void 0;
 const Wrapper_1 = require("./Wrapper");
-const common_1 = require("@koalaui/common");
+const common_1 = require("#koalaui/common");
 const InteropNativeModule_1 = require("./InteropNativeModule");
 class NativeThunk {
     constructor(obj, finalizer, name) {

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { float32, int32, int64 } from "@koalaui/common";
+import { float32, int32, int64 } from "#koalaui/common";
 import { CallbackResource } from "./SerializerBase";
 import { pointer } from "./InteropTypes";
 export declare class DeserializerBase {

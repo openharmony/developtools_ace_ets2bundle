@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Array_from_number, float32 } from "@koalaui/compat"
+import { Array_from_number, float32 } from "#koalaui/compat"
 import { Matrix33 } from "./Matrix33"
 import { Point3 } from "./Point3"
 
