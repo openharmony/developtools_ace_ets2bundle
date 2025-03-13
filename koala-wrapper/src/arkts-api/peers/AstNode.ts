@@ -110,6 +110,10 @@ export abstract class AstNode extends ArktsObject {
         global.generatedEs2panda._AstNodeClearModifier(global.context, this.peer, allFlags)
         global.generatedEs2panda._AstNodeAddModifier(global.context, this.peer, flags ?? Es2pandaModifierFlags.MODIFIER_FLAGS_NONE)
     }
+
+    public get isStatic(): boolean {
+        return global.generatedEs2panda._AstNodeIsStaticConst(global.context, this.peer)
+    }
 }
 
 

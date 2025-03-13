@@ -28,7 +28,7 @@ import {
 import { 
     createCustomComponentInitializerOptions, 
     createInitializerOptions, 
-    getCustomComponentNameFromInitializerOptions 
+    getCustomComponentNameFromInitializerOptions
 } from "./utils";
 
 function isCustomComponentClass(node: arkts.ClassDeclaration): boolean {

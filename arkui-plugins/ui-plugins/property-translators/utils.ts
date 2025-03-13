@@ -38,13 +38,13 @@ export function isDecoratorAnnotation(anno: arkts.AnnotationUsage, decoratorName
 }
 
 export function hasDecorator(property: arkts.ClassProperty, decoratorName: DecoratorNames): boolean {
-    return property.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName))
-} 
+    return property.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName));
+}
 
 export function createGetter(
     name: string, 
     type: arkts.TypeNode | undefined, 
-    returns: arkts.MemberExpression
+    returns: arkts.Expression
 ): arkts.MethodDefinition {
     const body = arkts.factory.createBlock(
         [
@@ -69,7 +69,7 @@ export function createGetter(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET,
         arkts.factory.createIdentifier(name),
         arkts.factory.createFunctionExpression(scriptFunction),
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_GETTER,
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
         false
     );
 }
@@ -106,14 +106,14 @@ export function createSetter(
             )
         ],
         undefined,
-        arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
+        undefined
     )
 
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET,
         arkts.factory.createIdentifier(name),
         arkts.factory.createFunctionExpression(scriptFunction),
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_SETTER,
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
         false
     );
 }

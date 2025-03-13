@@ -20,11 +20,15 @@ import { PropertyTranslator } from "./base";
 import { DecoratorNames, hasDecorator } from "./utils";
 import { StateTranslator } from "./state";
 import { StorageLinkTranslator } from "./storagelink";
+import { regularPropertyTranslator } from "./regularProperty";
+import { staticPropertyTranslator } from "./staticProperty";
+import { isStatic } from "../utils";
 
 export { PropertyTranslator };
 
 export function classifyProperty(member: arkts.AstNode, structName: string): PropertyTranslator | undefined {
     if (!arkts.isClassProperty(member)) return undefined;
+    if (isStatic(member)) return new staticPropertyTranslator(member, structName);
 
     if (hasDecorator(member, DecoratorNames.STATE)) {
         return new StateTranslator(member, structName);
@@ -32,4 +36,6 @@ export function classifyProperty(member: arkts.AstNode, structName: string): Pro
     if (hasDecorator(member, DecoratorNames.STORAGE_LINK)) {
         return new StorageLinkTranslator(member, structName);
     }
+
+    return new regularPropertyTranslator(member, structName);
 }

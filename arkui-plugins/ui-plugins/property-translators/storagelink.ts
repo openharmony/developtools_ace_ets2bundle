@@ -23,8 +23,7 @@ import {
 import { PropertyTranslator } from "./base";
 import { 
     GetterSetter, 
-    InitializerConstructor, 
-    StructModifier 
+    InitializerConstructor 
 } from "./types";
 import { 
     createGetter, 
@@ -67,7 +66,7 @@ function getStorageLinkValueInAnnotation(node: arkts.ClassProperty): string | un
     return undefined;
 }
 
-export class StorageLinkTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter, StructModifier {
+export class StorageLinkTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
@@ -94,10 +93,8 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
             false
         );
         currentStructInfo.stateVariables.add({ originNode, translatedNode });
-
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
         currentStructInfo.initializeBody.push(initializeStruct);
-
         arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
@@ -116,7 +113,7 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
                     )
                 )
             ),
-            this.property.modifiers,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
         )
         const member: arkts.MemberExpression = arkts.factory.createMemberExpression(
@@ -190,9 +187,5 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
             call
         )
-    }
-
-    generateUpdateStruct(newName: string, originalName: string): arkts.AstNode {
-        throw new Error("StorageLink does not need to update struct.");
     }
 }
