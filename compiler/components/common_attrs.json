@@ -164,6 +164,7 @@
     "key",
     "id",
     "geometryTransition",
+    "bindTips",
     "bindPopup",
     "bindMenu",
     "bindContextMenu",
