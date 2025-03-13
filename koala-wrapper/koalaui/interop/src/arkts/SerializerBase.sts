@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { float32, float64, int8, int32, int64, int32BitsFromFloat } from "@koalaui/common"
+import { float32, float64, int8, int32, int64, int32BitsFromFloat } from "#koalaui/common"
 import { pointer, KUint8ArrayPtr } from "./InteropTypes"
 import { ResourceId, ResourceHolder } from "./ResourceManager"
 import { KBuffer } from "./buffer"

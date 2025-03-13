@@ -14,7 +14,7 @@
  */
 
 import { pointer } from './InteropTypes';
-import { int32, int64 } from '@koalaui/common';
+import { int32, int64 } from '#koalaui/common';
 export declare class NativeBuffer extends ArrayBuffer {
     data: pointer;
     length: int64;

@@ -15,7 +15,7 @@
 
 import { global } from "../static/global"
 import { isNumber, throwError } from "../../utils"
-import { KNativePointer, nullptr, withStringResult } from "@koalaui/interop"
+import { KNativePointer, nullptr, withStringResult } from "#koalaui/interop"
 import { passNode, unpackNodeArray, unpackNonNullableNode } from "./private"
 import { isFunctionDeclaration, isMemberExpression, isScriptFunction } from "../factory/nodeTests"
 import { Es2pandaContextState, Es2pandaModifierFlags } from "../../generated/Es2pandaEnums"

@@ -16,7 +16,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ptrEqual = exports.getPtr = exports.Wrapper = exports.ptrToString = exports.isSamePtr = exports.bitsToPtr = exports.ptrToBits = exports.nullptr = exports.isNullPtr = void 0;
 const Wrapper_1 = require("#common/wrappers/Wrapper");
-const common_1 = require("@koalaui/common");
+const common_1 = require("#koalaui/common");
 var Wrapper_2 = require("#common/wrappers/Wrapper");
 Object.defineProperty(exports, "isNullPtr", { enumerable: true, get: function () { return Wrapper_2.isNullPtr; } });
 Object.defineProperty(exports, "nullptr", { enumerable: true, get: function () { return Wrapper_2.nullptr; } });

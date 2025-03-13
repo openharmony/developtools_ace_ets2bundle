@@ -15,7 +15,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SHA1Hash = exports.createSha1 = void 0;
-const compat_1 = require("@koalaui/compat");
+const compat_1 = require("#koalaui/compat");
 const K = [
     (0x5a827999 | 0),
     (0x6ed9eba1 | 0),

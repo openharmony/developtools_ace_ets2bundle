@@ -25,14 +25,49 @@
         "node-addon-api": "^8.3.0",
         "node-api-headers": "^1.4.0",
         "typescript": "^5.0.0",
-        "@types/commander": "^2.12.5"
+        "@types/commander": "^2.12.5",
+        
+        "@ohos/hypium": "1.0.6",
+        "@types/chai": "^4.3.1",
+        "@types/node": "^18.0.0",
+        "@types/mocha": "^9.1.0",
+        "@typescript-eslint/eslint-plugin": "^5.20.0",
+        "@typescript-eslint/parser": "^5.20.0",
+        "chai": "^4.3.6",
+        "eslint": "^8.13.0",
+        "eslint-plugin-unused-imports": "^2.0.0",
+        "mocha": "^9.2.2",
+        "source-map-support": "^0.5.21"
     },
-    "dependencies": {
-        "@koalaui/interop": "file:./koalaui/interop"
+    "imports": {
+        "#koalaui/interop": {
+            "default":  "./koalaui/interop/dist/lib/src/interop/index.js"
+        },
+        "#koalaui/common": {
+            "default": "./koalaui/common/dist/lib/src/index.js"
+        },
+        "#koalaui/compat": {
+            "default": "./koalaui/compat/dist/src/index.js"
+        },
+        "#common/wrappers": {
+            "browser": "./koalaui/interop/dist/lib/src/wasm/wrappers/index.js",
+            "node": "./koalaui/interop/dist/lib/src/napi/wrappers/index.js"
+        },
+        "#common/wrappers/*": {
+            "browser": "./koalaui/interop/dist/lib/src/wasm/wrappers/*.js",
+            "node": "./koalaui/interop/dist/lib/src/napi/wrappers/*.js",
+            "default": "./koalaui/interop/dist/lib/src/napi/wrappers/*.js"
+        },
+        "#platform": {
+            "ark": "./koalaui/compat/dist/src/ohos/index.js",
+            "ios": "./koalaui/compat/dist/src/typescript/index.js",
+            "browser": "./koalaui/compat/dist/src/typescript/index.js",
+            "node": "./koalaui/compat/dist/src/typescript/index.js",
+            "default": "./koalaui/compat/dist/src/typescript/index.js"
+        }
     },
     "scripts": {
         "clean": "rimraf build native/build*",
-        "compile:koala:interop": "npm run --prefix ../../interop compile",
         "compile:meson": "cd native && meson setup build && meson compile -C build",
         "copy:.node": "mkdir -p ./build/lib/native/ && cp ./native/build/es2panda.node ./build/lib/native",
         "compile:native": "npm run compile:meson && npm run copy:.node",

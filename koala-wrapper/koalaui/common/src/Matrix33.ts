@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Array_from_number, float32, float64 } from "@koalaui/compat"
+import { Array_from_number, float32, float64 } from "#koalaui/compat"
 
 export function mat33(array?: Float32Array): Matrix33 {
     return (array == undefined) ? new Matrix33 () : new Matrix33(array)

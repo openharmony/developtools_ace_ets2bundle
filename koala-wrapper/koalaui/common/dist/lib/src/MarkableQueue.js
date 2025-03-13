@@ -15,7 +15,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.markableQueue = void 0;
-const compat_1 = require("@koalaui/compat");
+const compat_1 = require("#koalaui/compat");
 /**
  * Creates a new markable queue to safely process callbacks across several threads or tasks.
  * @param reversed - `true` changes the order of calling callbacks

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { float32 } from "@koalaui/compat";
+import { float32 } from "#koalaui/compat";
 export declare class Point {
     coordinates: Float32Array;
     constructor(x: float32, y: float32);

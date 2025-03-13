@@ -13,8 +13,10 @@
  * limitations under the License.
  */
 
-import { UniqueId } from "@koalaui/common"
-import * as arkts from "@koalaui/libarkts"
+import { getArktsPath, getCommonPath } from "../path"
+const arkts = require(getArktsPath())
+const common = require(getCommonPath())
+const UniqueId = common.UniqueId
 
 export enum RuntimeNames {
     __CONTEXT = "__context",

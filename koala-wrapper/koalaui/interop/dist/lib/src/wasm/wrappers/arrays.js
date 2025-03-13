@@ -15,7 +15,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.wasmHeap = exports.withFloat64Array = exports.withFloat32Array = exports.withInt32Array = exports.withUint32Array = exports.withInt16Array = exports.withUint16Array = exports.withInt8Array = exports.withUint8Array = exports.fromPtrArray = exports.toPtrArray = exports.withPtrArray = exports.withStringArray = exports.withString = exports.encodeToData = exports.decodeToString = void 0;
-const common_1 = require("@koalaui/common");
+const common_1 = require("#koalaui/common");
 const arrays_1 = require("../../interop/arrays");
 const encoder = new common_1.CustomTextEncoder();
 const decoder = new common_1.CustomTextDecoder();
