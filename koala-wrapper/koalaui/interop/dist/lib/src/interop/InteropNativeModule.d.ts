@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { int32 } from "@koalaui/common";
+import { int32 } from "#koalaui/common";
 import { KPointer, KStringPtr, KUint8ArrayPtr } from "./InteropTypes";
 export declare class InteropNativeModule {
     static _SetCallbackDispatcher(dispatcher: (id: int32, args: Uint8Array, length: int32) => int32): void;

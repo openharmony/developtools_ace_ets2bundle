@@ -13,8 +13,10 @@
  * limitations under the License.
  */
 
-import { KPointer } from "@koalaui/interop";
-import * as arkts from "@koalaui/libarkts";
+import { getArktsPath, getInteropPath } from "../path"
+const arkts = require(getArktsPath());
+const interop = require(getInteropPath());
+const KPointer = interop.KPointer
 import { AbstractVisitor } from "./abstract-visitor";
 import { matchPrefix } from "./arkts-utils";
 

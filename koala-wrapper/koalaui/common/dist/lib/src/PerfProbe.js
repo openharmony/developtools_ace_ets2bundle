@@ -15,7 +15,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getMainPerfProbe = exports.enterMainPerfProbe = void 0;
-const compat_1 = require("@koalaui/compat");
+const compat_1 = require("#koalaui/compat");
 /**
  * Creates a {@link MainPerfProbe} instance with the {@link name} and enters its main probe.
  *

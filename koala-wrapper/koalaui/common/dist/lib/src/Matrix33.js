@@ -15,7 +15,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Matrix33 = exports.mat33 = void 0;
-const compat_1 = require("@koalaui/compat");
+const compat_1 = require("#koalaui/compat");
 function mat33(array) {
     return (array == undefined) ? new Matrix33() : new Matrix33(array);
 }

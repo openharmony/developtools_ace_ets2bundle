@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { int32 } from "@koalaui/common";
+import { int32 } from "#koalaui/common";
 export type CallbackType = (args: Uint8Array, length: int32) => int32;
 export declare function wrapCallback(callback: CallbackType, autoDisposable?: boolean): int32;
 export declare function wrapSystemCallback(id: number, callback: CallbackType): int32;

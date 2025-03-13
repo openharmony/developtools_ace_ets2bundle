@@ -14,7 +14,7 @@
  */
 
 import { ptrToString, nullptr, isSamePtr } from "#common/wrappers/Wrapper"
-import { className } from "@koalaui/common"
+import { className } from "#koalaui/common"
 import { KPointer } from "./InteropTypes"
 
 export { isNullPtr, nullptr, ptrToBits, bitsToPtr, isSamePtr, ptrToString } from "#common/wrappers/Wrapper"

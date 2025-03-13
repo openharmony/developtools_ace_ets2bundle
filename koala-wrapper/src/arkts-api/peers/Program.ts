@@ -16,7 +16,7 @@
 import { ArktsObject } from "./ArktsObject"
 import { global } from "../static/global"
 import { acceptNativeObjectArrayResult, unpackString } from "../utilities/private"
-import { KNativePointer } from "@koalaui/interop"
+import { KNativePointer } from "#koalaui/interop"
 import { EtsScript } from "../types"
 
 export class Program extends ArktsObject {

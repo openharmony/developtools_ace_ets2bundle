@@ -14,7 +14,7 @@
  */
 
 import { pointer } from './InteropTypes'
-import { int32, int64 } from '@koalaui/common'
+import { int32, int64 } from '#koalaui/common'
 
 // stub wrapper for KInteropBuffer
 export class NativeBuffer {

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { int32 } from "@koalaui/common"
+import { int32 } from "#koalaui/common"
 import { isNullPtr, nullptr, Wrapper } from "./Wrapper"
 import { decodeToString } from "#common/wrappers/arrays"
 import { setCallbackRegistry } from "#common/wrappers/Callback"

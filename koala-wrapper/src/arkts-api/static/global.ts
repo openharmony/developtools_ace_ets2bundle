@@ -14,7 +14,7 @@
  */
 
 import { throwError } from "../../utils"
-import { KNativePointer } from "@koalaui/interop"
+import { KNativePointer } from "#koalaui/interop"
 import { initEs2panda, Es2pandaNativeModule, initGeneratedEs2panda } from "../../Es2pandaNativeModule"
 import { Es2pandaNativeModule as GeneratedEs2pandaNativeModule } from "../../generated/Es2pandaNativeModule"
 import { initInterop, InteropNativeModule } from "../../InteropNativeModule"

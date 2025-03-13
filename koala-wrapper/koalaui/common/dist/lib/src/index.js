@@ -29,7 +29,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UniqueId = exports.createSha1 = exports.SHA1Hash = exports.KoalaProfiler = exports.hashCodeFromString = exports.getDistancePx = exports.isFiniteNumber = exports.parseNumber = exports.modulo = exports.lerp = exports.clamp = exports.unsafeCast = exports.int8Array = exports.refEqual = exports.propDeepCopy = exports.isFunction = exports.observableProxyArray = exports.observableProxy = exports.ObservableHandler = exports.Observed = exports.functionOverValue = exports.lcClassName = exports.className = exports.CustomTextEncoder = exports.CustomTextDecoder = exports.AtomicRef = exports.Array_from_set = exports.int32BitsFromFloat = exports.float32FromBits = exports.asFloat64 = exports.asArray = void 0;
-var compat_1 = require("@koalaui/compat");
+var compat_1 = require("#koalaui/compat");
 Object.defineProperty(exports, "asArray", { enumerable: true, get: function () { return compat_1.asArray; } });
 Object.defineProperty(exports, "asFloat64", { enumerable: true, get: function () { return compat_1.asFloat64; } });
 Object.defineProperty(exports, "float32FromBits", { enumerable: true, get: function () { return compat_1.float32FromBits; } });

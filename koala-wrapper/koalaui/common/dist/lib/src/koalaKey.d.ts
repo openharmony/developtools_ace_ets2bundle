@@ -14,7 +14,7 @@
  */
 
 
-import { int32 } from "@koalaui/compat";
+import { int32 } from "#koalaui/compat";
 export type KoalaCallsiteKey = int32;
 export declare class KoalaCallsiteKeys {
     static readonly empty: KoalaCallsiteKey;
