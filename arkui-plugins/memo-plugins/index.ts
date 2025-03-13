@@ -27,7 +27,7 @@ export function unmemoizeTransform() {
     return {
         name: 'memo-plugin',
         checked(this: PluginContext) {
-            console.log("In ArkUI afterChecked")
+            console.log("[MEMO PLUGIN] AFTER CHECKED ENTER");
             // const node = this.getArkTSAst();
             let node = this.getArkTSAst();
             if (node) {
@@ -56,8 +56,10 @@ export function unmemoizeTransform() {
                 console.log('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
 
                 this.setArkTSAst(script);
+                console.log("[MEMO PLUGIN] AFTER CHECKED EXIT");
                 return script;
             }
+            console.log("[MEMO PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM");
         }
     }
 }

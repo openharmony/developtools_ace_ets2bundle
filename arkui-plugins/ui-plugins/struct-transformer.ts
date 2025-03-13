@@ -27,7 +27,7 @@ import {
 import { 
     createCustomComponentInitializerOptions, 
     createInitializerOptions, 
-    getCustomComponentNameFromInitializerOptions 
+    getCustomComponentNameFromInitializerOptions
 } from "./utils";
 import {
     EntryHandler

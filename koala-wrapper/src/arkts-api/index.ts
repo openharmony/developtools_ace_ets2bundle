@@ -38,6 +38,7 @@ export * from "../generated/peers/ReturnStatement"
 export * from "../generated/peers/Expression"
 export * from "../generated/peers/Statement"
 export * from "../generated/peers/ImportSpecifier"
+export * from "../generated/peers/TSAsExpression"
 
 export * from "./types"
 export * from "./utilities/private"

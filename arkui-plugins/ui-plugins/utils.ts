@@ -38,3 +38,7 @@ export function getCustomComponentNameFromInitializerOptions(name: string): stri
         return name.substring(prefix.length);
     }
 }
+
+export function isStatic(node: arkts.AstNode): boolean {
+    return node.isStatic;
+}
