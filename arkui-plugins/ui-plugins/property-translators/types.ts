@@ -19,24 +19,13 @@ export interface GetterSetter {
     translateGetter(
         originalName: string, 
         typeAnnotation: arkts.TypeNode | undefined, 
-        returnValue: arkts.MemberExpression
+        returnValue: arkts.Expression
     ): arkts.MethodDefinition;
     translateSetter(
         originalName: string, 
         typeAnnotation: arkts.TypeNode | undefined, 
         left: arkts.MemberExpression
     ): arkts.MethodDefinition;
-}
-
-export interface StructModifier {
-    generateInitializeStruct(
-        newName: string, 
-        originalName: string
-    ): arkts.AstNode;
-    generateUpdateStruct(
-        newName: string, 
-        originalName: string
-    ): arkts.AstNode;
 }
 
 export interface InitializerConstructor {
