@@ -13,8 +13,7 @@
  * limitations under the License.
  */
 
-import { getArktsPath } from "../path"
-const arkts = require(getArktsPath())
+import * as arkts from "@koalaui/libarkts"
 
 // TODO: move this to arkts-api
 export class PluginContext {
