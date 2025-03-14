@@ -155,7 +155,7 @@ function transformBuildMethod(
         updateKey,
         params,
         scriptFunction.typeParamsDecl,
-        scriptFunction.returnTypeAnnotation
+        arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
     );
 
     updateScriptFunction.annotations = [annotation("memo")];
