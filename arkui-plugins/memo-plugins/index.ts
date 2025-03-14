@@ -13,8 +13,7 @@
  * limitations under the License.
  */
 
-import { getArktsPath } from "../path"
-const arkts = require(getArktsPath())
+import * as arkts from "@koalaui/libarkts"
 
 import { PluginContext } from "../common/plugin-context";
 import { FunctionTransformer } from "./function-transformer";

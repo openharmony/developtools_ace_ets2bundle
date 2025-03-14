@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { getArktsPath, getInteropPath } from "../path"
-const arkts = require(getArktsPath())
+import * as arkts from "@koalaui/libarkts"
+import { getInteropPath } from "../path"
 const interop = require(getInteropPath())
 const nullptr = interop.nullptr
 import { AbstractVisitor } from "../common/abstract-visitor";

@@ -13,8 +13,7 @@
  * limitations under the License.
  */
 
-import { getArktsPath } from "../path"
-const arkts = require(getArktsPath())
+import * as arkts from "@koalaui/libarkts"
 import { factory } from "./memo-factory"
 import { AbstractVisitor } from "../common/abstract-visitor"
 import {
