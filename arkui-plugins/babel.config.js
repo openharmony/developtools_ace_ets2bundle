@@ -25,7 +25,8 @@ module.exports = function(api) {
       {
         spec: true
       }
-    ]
+    ],
+    './custom-import-plugin'
   ];
   const ignore = ['**/test/**', '**/node_modules/**'];
 

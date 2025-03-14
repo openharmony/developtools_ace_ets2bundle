@@ -12,9 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { getArktsPath, getCommonPath } from "../path"
-const arkts = require(getArktsPath())
+import * as arkts from "@koalaui/libarkts"
+import { getCommonPath } from "../path"
 const common = require(getCommonPath())
 const UniqueId = common.UniqueId
 

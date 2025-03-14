@@ -13,8 +13,7 @@
  * limitations under the License.
  */
 
-import { getArktsPath } from "../path"
-const arkts = require(getArktsPath())
+import * as arkts from "@koalaui/libarkts"
 
 export function annotation(name: string): arkts.AnnotationUsage {
     const ident: arkts.Identifier = arkts.factory.createIdentifier(name).setAnnotationUsage();

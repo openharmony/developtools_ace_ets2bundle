@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { getArktsPath, getInteropPath } from "../path"
-const arkts = require(getArktsPath());
+import * as arkts from "@koalaui/libarkts"
+import { getInteropPath } from "../path"
 const interop = require(getInteropPath());
 const KPointer = interop.KPointer
 import { factory } from "./memo-factory"
