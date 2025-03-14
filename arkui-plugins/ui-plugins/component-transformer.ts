@@ -18,8 +18,10 @@ const arkts = require(getArktsPath())
 const interop = require(getInteropPath())
 const nullptr = interop.nullptr
 import { AbstractVisitor } from "../common/abstract-visitor";
+import { hasDecorator, DecoratorNames } from "./property-translators/utils"
+import {EntryHandler} from "./entry-translators/entry"
 
-export interface ComponentTransformerOptions{
+export interface ComponentTransformerOptions {
     arkui: string
 }
 
@@ -51,6 +53,7 @@ export class ComponentTransformer extends AbstractVisitor {
     }
 
     processEtsScript(node: arkts.EtsScript): arkts.EtsScript {
+        const entryWrapper = EntryHandler.instance.createEntryWrapper();
         const interfaceDeclarations = this.context.componentNames.map(
             name => arkts.factory.createInterfaceDeclaration(
                 [],
@@ -66,7 +69,8 @@ export class ComponentTransformer extends AbstractVisitor {
             [
                 this.createImportDeclaration(),
                 ...node.statements,
-                ...interfaceDeclarations
+                ...interfaceDeclarations,
+                ...entryWrapper
             ]
         )
     }
@@ -75,6 +79,9 @@ export class ComponentTransformer extends AbstractVisitor {
         const className = node.definition?.ident?.name
         if (!className) {
             throw "Non Empty className expected for Component"
+        }
+        if (hasDecorator(node.definition, DecoratorNames.ENTRY)) {
+            EntryHandler.instance.rememberEntryFunction(node)
         }
         arkts.GlobalInfo.getInfoInstance().add(className);
         this.context.componentNames.push(className)
@@ -128,7 +135,7 @@ export class ComponentTransformer extends AbstractVisitor {
         if (arkts.isStructDeclaration(node)) {
             return arkts.factory.createClassDeclaration(
                 newDefinition
-             )
+            )
         } else {
             return arkts.factory.updateClassDeclaration(
                 node,

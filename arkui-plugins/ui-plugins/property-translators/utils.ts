@@ -17,6 +17,7 @@ import { getArktsPath } from "../../path"
 const arkts = require(getArktsPath());
 
 export enum DecoratorNames {
+    ENTRY = "Entry",
     STATE = "State",
     STORAGE_LINK = "StorageLink",
     STORAGE_PROP = "StorageProp",
@@ -37,7 +38,7 @@ export function isDecoratorAnnotation(anno: arkts.AnnotationUsage, decoratorName
     return !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName;
 }
 
-export function hasDecorator(property: arkts.ClassProperty, decoratorName: DecoratorNames): boolean {
+export function hasDecorator(property: arkts.ClassProperty | arkts.ClassDefinition, decoratorName: DecoratorNames): boolean {
     return property.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName));
 }
 
