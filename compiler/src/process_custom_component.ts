@@ -466,7 +466,21 @@ function isForbiddenAssignToComponentV2(item: ts.PropertyAssignment, itemName: s
   if (!info.parentStructInfo.isComponentV2 && info.updatePropsDecoratorsV2.includes(itemName) &&
     isObervedProperty(item.initializer, info) && globalProgram.strictChecker) {
     const type: ts.Type = globalProgram.strictChecker.getTypeAtLocation(item.initializer);
-    return !(isAllowedTypeToComponentV2(type) || !isObservedV2(type) || isForbiddenTypeToComponentV1(type));
+    return !(isAllowedTypeToComponentV2(type) || isForbiddenTypeToComponentV1(type) || !(isObservedV2(type) || isFunctionType(type)));
+  }
+  return false;
+}
+
+// isFunctionType 
+function isFunctionType(type: ts.Type): boolean {
+  if (type.types && type.types.length) {
+    return !type.types.some((item: ts.Type) => {
+      return !isFunctionType(item);
+  });
+  }
+  const name: string = type?.getSymbol()?.getName();
+  if (name && name === 'Function') {
+    return true;
   }
   return false;
 }
