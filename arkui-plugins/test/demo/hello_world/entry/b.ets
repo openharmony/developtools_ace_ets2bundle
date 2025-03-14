@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-import { Text } from "#koalaui.arkui.Text"
-import { Column } from "#koalaui.arkui.Column"
-import { Button } from "#koalaui.arkui.Button"
-import { Component, State, Entry } from "#koalaui.arkui.Common"
+import { Text } from "@koalaui.arkui.Text"
+import { Column } from "@koalaui.arkui.Column"
+import { Button } from "@koalaui.arkui.Button"
+import { Component, State, Entry } from "@koalaui.arkui.Common"
 
 import { memo } from "@ohos.arkui.StateManagement.runtime"
 
