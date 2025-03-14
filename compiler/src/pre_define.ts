@@ -73,6 +73,7 @@ export const STRUCT_DECORATORS: Set<string> = new Set([...INNER_COMPONENT_DECORA
   ...INNER_COMPONENT_MEMBER_DECORATORS]);
 
 export const COMPONENT_OBSERVED_DECORATOR: string = '@Observed';
+export const COMPONENT_OBSERVEDV2_DECORATOR: string = '@ObservedV2';
 export const OBSERVED: string = 'Observed';
 export const MIN_OBSERVED: string = 'ObservedV2';
 export const SENDABLE: string = 'Sendable';
