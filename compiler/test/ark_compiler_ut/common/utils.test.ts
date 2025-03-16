@@ -160,18 +160,19 @@ mocha.describe('test utils file api', function () {
     this.rollup.build();
     this.mockfileList = this.rollup.getModuleIds();
     this.rollup.share.arkProjectConfig.cachePath = this.rollup.share.projectConfig.cachePath;
+    this.rollup.share.arkProjectConfig.processTs = false;
     for (const filePath of this.mockfileList) {
       if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS) || filePath.endsWith(EXTNAME_JS)) {
         expect(shouldETSOrTSFileTransformToJS(filePath, this.rollup.share.arkProjectConfig) === true).to.be.true;
       }
     }
+    this.rollup.share.arkProjectConfig.processTs = true;
   });
 
   mocha.it('2-1-2: test shouldETSOrTSFileTransformToJS under build debug: arkProjectConfig.processTs is true', function () {
     this.rollup.build();
     this.mockfileList = this.rollup.getModuleIds();
     this.rollup.share.arkProjectConfig.cachePath = this.rollup.share.projectConfig.cachePath;
-    this.rollup.share.arkProjectConfig.processTs = true;
     for (const filePath of this.mockfileList) {
       if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS) || filePath.endsWith(EXTNAME_JS)) {
         compilingEtsOrTsFiles.push(filePath);
