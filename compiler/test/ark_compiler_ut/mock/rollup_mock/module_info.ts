@@ -30,6 +30,7 @@ class Meta {
   pkgPath: string;
   dependencyPkgInfo: Object;
   belongProjectPath: string;
+  commonjs: Object;
 
   constructor(entryModuleName: string, modulePath: string) {
     this.belongModulePath = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/${DEFAULT_ENTRY}`;
@@ -41,6 +42,9 @@ class Meta {
     this.pkgPath = modulePath;
     this.dependencyPkgInfo = undefined;
     this.belongProjectPath = `${PROJECT_ROOT}/${DEFAULT_PROJECT}`;
+    this.commonjs = {
+      isCommonJS: false
+    };
   }
 };
 
