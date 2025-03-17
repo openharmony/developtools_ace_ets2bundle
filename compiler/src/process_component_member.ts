@@ -118,7 +118,10 @@ import {
   CUSTOM_BUILDER_METHOD,
   INNER_CUSTOM_LOCALBUILDER_METHOD
 } from './component_map';
-import { isAllowedTypeForBasic } from './process_custom_component';
+import {
+  isAllowedTypeForBasic,
+  isFunctionType
+} from './process_custom_component';
 export type ControllerType = {
   hasController: boolean;
   unassignedControllerSet: Set<string>;
@@ -1379,7 +1382,7 @@ function checkObjectLinkType(typeNode: ts.TypeNode): boolean {
       if (type.types && type.types.length) {
         return checkTypes(type);
       } else {
-        return !(isObservedV2(type) || isAllowedTypeForBasic(type.flags));
+        return !(isObservedV2(type) || isAllowedTypeForBasic(type.flags) || isFunctionType(type));
       } 
     }
   }
@@ -1389,7 +1392,7 @@ function checkObjectLinkType(typeNode: ts.TypeNode): boolean {
 // check union type.
 function checkTypes(type: ts.Type): boolean {
   return !type.types.some((item: ts.Type) => {
-    return (isAllowedTypeForBasic(item.flags) || isObservedV2(item));
+    return (isAllowedTypeForBasic(item.flags) || isObservedV2(item) || isFunctionType(item));
   });
 }
 
