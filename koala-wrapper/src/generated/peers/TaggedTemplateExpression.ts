@@ -36,7 +36,7 @@ export class TaggedTemplateExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 140)
         super(pointer)
-        console.warn("Warning: stub node TaggedTemplateExpression")
+        
     }
     static createTaggedTemplateExpression(tag?: Expression, quasi?: TemplateLiteral, typeParams?: TSTypeParameterInstantiation): TaggedTemplateExpression {
         return new TaggedTemplateExpression(global.generatedEs2panda._CreateTaggedTemplateExpression(global.context, passNode(tag), passNode(quasi), passNode(typeParams)))

@@ -36,7 +36,7 @@ export class ETSWildcardType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 67)
         super(pointer)
-        console.warn("Warning: stub node ETSWildcardType")
+        
     }
     static createETSWildcardType(typeReference: ETSTypeReference | undefined, flags: Es2pandaModifierFlags): ETSWildcardType {
         return new ETSWildcardType(global.generatedEs2panda._CreateETSWildcardType(global.context, passNode(typeReference), flags))

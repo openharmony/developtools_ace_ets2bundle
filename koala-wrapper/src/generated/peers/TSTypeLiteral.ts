@@ -34,7 +34,7 @@ export class TSTypeLiteral extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 103)
         super(pointer)
-        console.warn("Warning: stub node TSTypeLiteral")
+        
     }
     static createTSTypeLiteral(members: readonly AstNode[]): TSTypeLiteral {
         return new TSTypeLiteral(global.generatedEs2panda._CreateTSTypeLiteral(global.context, passNodeArray(members), members.length))

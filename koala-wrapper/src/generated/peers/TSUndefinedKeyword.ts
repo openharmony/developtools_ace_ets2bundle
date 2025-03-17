@@ -34,7 +34,7 @@ export class TSUndefinedKeyword extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 94)
         super(pointer)
-        console.warn("Warning: stub node TSUndefinedKeyword")
+        
     }
     static createTSUndefinedKeyword(): TSUndefinedKeyword {
         return new TSUndefinedKeyword(global.generatedEs2panda._CreateTSUndefinedKeyword(global.context))

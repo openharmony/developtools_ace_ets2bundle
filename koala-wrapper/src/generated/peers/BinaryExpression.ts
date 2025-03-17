@@ -35,7 +35,7 @@ export class BinaryExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 6)
         super(pointer)
-        console.warn("Warning: stub node BinaryExpression")
+        
     }
     static createBinaryExpression(left: Expression | undefined, right: Expression | undefined, operatorType: Es2pandaTokenType): BinaryExpression {
         return new BinaryExpression(global.generatedEs2panda._CreateBinaryExpression(global.context, passNode(left), passNode(right), operatorType))

@@ -33,7 +33,7 @@ import { StringLiteral } from "./StringLiteral"
 export class ImportSource extends ArktsObject {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node ImportSource")
+        
     }
     static createImportSource(source: StringLiteral | undefined, resolvedSource: StringLiteral | undefined, hasDecl: boolean): ImportSource {
         return new ImportSource(global.generatedEs2panda._CreateImportSource(global.context, passNode(source), passNode(resolvedSource), hasDecl))

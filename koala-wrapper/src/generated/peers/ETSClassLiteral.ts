@@ -35,7 +35,7 @@ export class ETSClassLiteral extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 70)
         super(pointer)
-        console.warn("Warning: stub node ETSClassLiteral")
+        
     }
     static createETSClassLiteral(expr?: TypeNode): ETSClassLiteral {
         return new ETSClassLiteral(global.generatedEs2panda._CreateETSClassLiteral(global.context, passNode(expr)))

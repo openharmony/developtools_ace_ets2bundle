@@ -34,7 +34,7 @@ export class NumberLiteral extends Literal {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 52)
         super(pointer)
-        console.warn("Warning: stub node NumberLiteral")
+        
     }
     get str(): string {
         return unpackString(global.generatedEs2panda._NumberLiteralStrConst(global.context, this.peer))

@@ -34,7 +34,7 @@ export class BigIntLiteral extends Literal {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 5)
         super(pointer)
-        console.warn("Warning: stub node BigIntLiteral")
+        
     }
     static createBigIntLiteral(src: string): BigIntLiteral {
         return new BigIntLiteral(global.generatedEs2panda._CreateBigIntLiteral(global.context, src))

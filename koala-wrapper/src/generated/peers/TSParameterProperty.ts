@@ -35,7 +35,7 @@ export class TSParameterProperty extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 121)
         super(pointer)
-        console.warn("Warning: stub node TSParameterProperty")
+        
     }
     static createTSParameterProperty(accessibility: Es2pandaAccessibilityOption, parameter: Expression | undefined, readonly_arg: boolean, isStatic: boolean, isExport: boolean): TSParameterProperty {
         return new TSParameterProperty(global.generatedEs2panda._CreateTSParameterProperty(global.context, accessibility, passNode(parameter), readonly_arg, isStatic, isExport))

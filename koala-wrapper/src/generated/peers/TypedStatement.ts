@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 export class TypedStatement extends Statement {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node TypedStatement")
+        
     }
 }
 export function isTypedStatement(node: AstNode): node is TypedStatement {

@@ -37,7 +37,7 @@ export class TSConstructorType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 125)
         super(pointer)
-        console.warn("Warning: stub node TSConstructorType")
+        
     }
     static createTSConstructorType(signature: FunctionSignature | undefined, abstract: boolean): TSConstructorType {
         return new TSConstructorType(global.generatedEs2panda._CreateTSConstructorType(global.context, passNode(signature), abstract))

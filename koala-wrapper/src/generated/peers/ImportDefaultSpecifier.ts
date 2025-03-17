@@ -35,7 +35,7 @@ export class ImportDefaultSpecifier extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 41)
         super(pointer)
-        console.warn("Warning: stub node ImportDefaultSpecifier")
+        
     }
     static createImportDefaultSpecifier(local?: Identifier): ImportDefaultSpecifier {
         return new ImportDefaultSpecifier(global.generatedEs2panda._CreateImportDefaultSpecifier(global.context, passNode(local)))

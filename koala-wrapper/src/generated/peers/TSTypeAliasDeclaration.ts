@@ -39,7 +39,7 @@ export class TSTypeAliasDeclaration extends AnnotatedStatement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 126)
         super(pointer)
-        console.warn("Warning: stub node TSTypeAliasDeclaration")
+        
     }
     static createTSTypeAliasDeclaration(id?: Identifier, typeParams?: TSTypeParameterDeclaration, typeAnnotation?: TypeNode): TSTypeAliasDeclaration {
         return new TSTypeAliasDeclaration(global.generatedEs2panda._CreateTSTypeAliasDeclaration(global.context, passNode(id), passNode(typeParams), passNode(typeAnnotation)))

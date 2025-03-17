@@ -34,7 +34,7 @@ export class EmptyStatement extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 25)
         super(pointer)
-        console.warn("Warning: stub node EmptyStatement")
+        
     }
     static createEmptyStatement(): EmptyStatement {
         return new EmptyStatement(global.generatedEs2panda._CreateEmptyStatement(global.context))

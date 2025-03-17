@@ -36,7 +36,7 @@ export class ImportDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 39)
         super(pointer)
-        console.warn("Warning: stub node ImportDeclaration")
+        
     }
     static createImportDeclaration(source: StringLiteral | undefined, specifiers: readonly AstNode[], importKind: Es2pandaImportKinds): ImportDeclaration {
         return new ImportDeclaration(global.generatedEs2panda._CreateImportDeclaration(global.context, passNode(source), passNodeArray(specifiers), specifiers.length, importKind))

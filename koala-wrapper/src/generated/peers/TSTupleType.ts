@@ -34,7 +34,7 @@ export class TSTupleType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 133)
         super(pointer)
-        console.warn("Warning: stub node TSTupleType")
+        
     }
     static createTSTupleType(elementTypes: readonly TypeNode[]): TSTupleType {
         return new TSTupleType(global.generatedEs2panda._CreateTSTupleType(global.context, passNodeArray(elementTypes), elementTypes.length))

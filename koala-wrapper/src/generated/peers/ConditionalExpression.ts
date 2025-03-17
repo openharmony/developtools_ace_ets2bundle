@@ -34,7 +34,7 @@ export class ConditionalExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 19)
         super(pointer)
-        console.warn("Warning: stub node ConditionalExpression")
+        
     }
     static createConditionalExpression(test?: Expression, consequent?: Expression, alternate?: Expression): ConditionalExpression {
         return new ConditionalExpression(global.generatedEs2panda._CreateConditionalExpression(global.context, passNode(test), passNode(consequent), passNode(alternate)))

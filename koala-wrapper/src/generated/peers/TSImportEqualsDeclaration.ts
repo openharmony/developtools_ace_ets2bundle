@@ -36,7 +36,7 @@ export class TSImportEqualsDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 123)
         super(pointer)
-        console.warn("Warning: stub node TSImportEqualsDeclaration")
+        
     }
     static createTSImportEqualsDeclaration(id: Identifier | undefined, moduleReference: Expression | undefined, isExport: boolean): TSImportEqualsDeclaration {
         return new TSImportEqualsDeclaration(global.generatedEs2panda._CreateTSImportEqualsDeclaration(global.context, passNode(id), passNode(moduleReference), isExport))

@@ -34,7 +34,7 @@ import { Es2pandaTokenType } from "./../Es2pandaEnums"
 export class AssignmentExpression extends Expression {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node AssignmentExpression")
+        
     }
     get left(): Expression | undefined {
         return unpackNode(global.generatedEs2panda._AssignmentExpressionLeftConst(global.context, this.peer))

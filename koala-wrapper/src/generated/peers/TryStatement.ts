@@ -36,7 +36,7 @@ export class TryStatement extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 146)
         super(pointer)
-        console.warn("Warning: stub node TryStatement")
+        
     }
     get finallyBlock(): BlockStatement | undefined {
         return unpackNode(global.generatedEs2panda._TryStatementFinallyBlockConst(global.context, this.peer))

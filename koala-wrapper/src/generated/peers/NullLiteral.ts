@@ -34,7 +34,7 @@ export class NullLiteral extends Literal {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 50)
         super(pointer)
-        console.warn("Warning: stub node NullLiteral")
+        
     }
     static createNullLiteral(): NullLiteral {
         return new NullLiteral(global.generatedEs2panda._CreateNullLiteral(global.context))

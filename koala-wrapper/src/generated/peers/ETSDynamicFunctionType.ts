@@ -33,7 +33,7 @@ import { ETSFunctionType } from "./ETSFunctionType"
 export class ETSDynamicFunctionType extends ETSFunctionType {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node ETSDynamicFunctionType")
+        
     }
 }
 export function isETSDynamicFunctionType(node: AstNode): node is ETSDynamicFunctionType {

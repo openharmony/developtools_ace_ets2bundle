@@ -38,7 +38,7 @@ export class ClassProperty extends ClassElement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 17)
         super(pointer)
-        console.warn("Warning: stub node ClassProperty")
+        
     }
     static createClassProperty(key: Expression | undefined, value: Expression | undefined, typeAnnotation: TypeNode | undefined, modifiers: Es2pandaModifierFlags, isComputed: boolean): ClassProperty {
         return new ClassProperty(global.generatedEs2panda._CreateClassProperty(global.context, passNode(key), passNode(value), passNode(typeAnnotation), modifiers, isComputed))

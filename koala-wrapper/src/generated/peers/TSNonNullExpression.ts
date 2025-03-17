@@ -34,7 +34,7 @@ export class TSNonNullExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 99)
         super(pointer)
-        console.warn("Warning: stub node TSNonNullExpression")
+        
     }
     static createTSNonNullExpression(expr?: Expression): TSNonNullExpression {
         return new TSNonNullExpression(global.generatedEs2panda._CreateTSNonNullExpression(global.context, passNode(expr)))

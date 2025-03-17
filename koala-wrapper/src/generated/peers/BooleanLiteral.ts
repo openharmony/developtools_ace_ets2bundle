@@ -34,7 +34,7 @@ export class BooleanLiteral extends Literal {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 8)
         super(pointer)
-        console.warn("Warning: stub node BooleanLiteral")
+        
     }
     static createBooleanLiteral(value: boolean): BooleanLiteral {
         return new BooleanLiteral(global.generatedEs2panda._CreateBooleanLiteral(global.context, value))

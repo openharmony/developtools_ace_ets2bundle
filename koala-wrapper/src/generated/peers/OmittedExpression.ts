@@ -34,7 +34,7 @@ export class OmittedExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 53)
         super(pointer)
-        console.warn("Warning: stub node OmittedExpression")
+        
     }
     static createOmittedExpression(): OmittedExpression {
         return new OmittedExpression(global.generatedEs2panda._CreateOmittedExpression(global.context))

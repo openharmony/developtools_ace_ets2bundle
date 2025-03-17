@@ -35,7 +35,7 @@ export class BreakStatement extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 9)
         super(pointer)
-        console.warn("Warning: stub node BreakStatement")
+        
     }
     static createBreakStatement(): BreakStatement {
         return new BreakStatement(global.generatedEs2panda._CreateBreakStatement(global.context))

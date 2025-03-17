@@ -35,7 +35,7 @@ export class ReturnStatement extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 58)
         super(pointer)
-        console.warn("Warning: stub node ReturnStatement")
+        
     }
     static createReturnStatement(): ReturnStatement {
         return new ReturnStatement(global.generatedEs2panda._CreateReturnStatement(global.context))

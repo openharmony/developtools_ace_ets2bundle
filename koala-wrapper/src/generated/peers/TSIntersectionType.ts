@@ -35,7 +35,7 @@ export class TSIntersectionType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 112)
         super(pointer)
-        console.warn("Warning: stub node TSIntersectionType")
+        
     }
     static createTSIntersectionType(types: readonly Expression[]): TSIntersectionType {
         return new TSIntersectionType(global.generatedEs2panda._CreateTSIntersectionType(global.context, passNodeArray(types), types.length))
