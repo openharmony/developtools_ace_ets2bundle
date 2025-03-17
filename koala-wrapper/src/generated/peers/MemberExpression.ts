@@ -36,7 +36,7 @@ export class MemberExpression extends MaybeOptionalExpression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 45)
         super(pointer)
-        console.warn("Warning: stub node MemberExpression")
+        
     }
     static createMemberExpression(object_arg: Expression | undefined, property: Expression | undefined, kind: Es2pandaMemberExpressionKind, computed: boolean, optional_arg: boolean): MemberExpression {
         return new MemberExpression(global.generatedEs2panda._CreateMemberExpression(global.context, passNode(object_arg), passNode(property), kind, computed, optional_arg))

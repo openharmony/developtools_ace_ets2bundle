@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 export class AnnotatedStatement extends Statement {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node AnnotatedStatement")
+        
     }
 }
 export function isAnnotatedStatement(node: AstNode): node is AnnotatedStatement {

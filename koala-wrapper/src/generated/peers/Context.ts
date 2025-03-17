@@ -32,6 +32,6 @@ import {
 export class Context extends ArktsObject {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node Context")
+        
     }
 }

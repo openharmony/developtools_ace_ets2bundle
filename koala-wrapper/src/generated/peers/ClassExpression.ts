@@ -35,7 +35,7 @@ export class ClassExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 16)
         super(pointer)
-        console.warn("Warning: stub node ClassExpression")
+        
     }
     static createClassExpression(def?: ClassDefinition): ClassExpression {
         return new ClassExpression(global.generatedEs2panda._CreateClassExpression(global.context, passNode(def)))

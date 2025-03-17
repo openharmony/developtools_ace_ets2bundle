@@ -34,7 +34,7 @@ export class TSUnionType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 102)
         super(pointer)
-        console.warn("Warning: stub node TSUnionType")
+        
     }
     static createTSUnionType(types: readonly TypeNode[]): TSUnionType {
         return new TSUnionType(global.generatedEs2panda._CreateTSUnionType(global.context, passNodeArray(types), types.length))

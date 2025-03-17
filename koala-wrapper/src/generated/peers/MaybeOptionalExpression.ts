@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 export class MaybeOptionalExpression extends Expression {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node MaybeOptionalExpression")
+        
     }
     get isOptional(): boolean {
         return global.generatedEs2panda._MaybeOptionalExpressionIsOptionalConst(global.context, this.peer)

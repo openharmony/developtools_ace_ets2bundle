@@ -34,7 +34,7 @@ import { Es2pandaTSOperatorType } from "./../Es2pandaEnums"
 export class AstDumper extends ArktsObject {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node AstDumper")
+        
     }
     static createAstDumper(node: AstNode | undefined, sourceCode: string): AstDumper {
         return new AstDumper(global.generatedEs2panda._CreateAstDumper(global.context, passNode(node), sourceCode))

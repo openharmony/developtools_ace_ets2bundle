@@ -34,7 +34,7 @@ export class TSObjectKeyword extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 96)
         super(pointer)
-        console.warn("Warning: stub node TSObjectKeyword")
+        
     }
     static createTSObjectKeyword(): TSObjectKeyword {
         return new TSObjectKeyword(global.generatedEs2panda._CreateTSObjectKeyword(global.context))

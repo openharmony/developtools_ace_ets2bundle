@@ -34,7 +34,7 @@ export class TemplateElement extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 141)
         super(pointer)
-        console.warn("Warning: stub node TemplateElement")
+        
     }
     static createTemplateElement(): TemplateElement {
         return new TemplateElement(global.generatedEs2panda._CreateTemplateElement(global.context))

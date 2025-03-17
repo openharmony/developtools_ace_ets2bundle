@@ -35,7 +35,7 @@ export class TSTypeQuery extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 136)
         super(pointer)
-        console.warn("Warning: stub node TSTypeQuery")
+        
     }
     static createTSTypeQuery(exprName?: Expression): TSTypeQuery {
         return new TSTypeQuery(global.generatedEs2panda._CreateTSTypeQuery(global.context, passNode(exprName)))

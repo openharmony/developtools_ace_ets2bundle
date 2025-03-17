@@ -34,7 +34,7 @@ export class TSUnknownKeyword extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 95)
         super(pointer)
-        console.warn("Warning: stub node TSUnknownKeyword")
+        
     }
     static createTSUnknownKeyword(): TSUnknownKeyword {
         return new TSUnknownKeyword(global.generatedEs2panda._CreateTSUnknownKeyword(global.context))

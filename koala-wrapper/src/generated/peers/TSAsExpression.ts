@@ -36,7 +36,7 @@ export class TSAsExpression extends AnnotatedExpression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 137)
         super(pointer)
-        console.warn("Warning: stub node TSAsExpression")
+        
     }
     static createTSAsExpression(expression: Expression | undefined, typeAnnotation: TypeNode | undefined, isConst: boolean): TSAsExpression {
         return new TSAsExpression(global.generatedEs2panda._CreateTSAsExpression(global.context, passNode(expression), passNode(typeAnnotation), isConst))

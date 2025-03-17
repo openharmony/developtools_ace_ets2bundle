@@ -35,7 +35,7 @@ export class ETSLaunchExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 74)
         super(pointer)
-        console.warn("Warning: stub node ETSLaunchExpression")
+        
     }
     static createETSLaunchExpression(expr?: CallExpression): ETSLaunchExpression {
         return new ETSLaunchExpression(global.generatedEs2panda._CreateETSLaunchExpression(global.context, passNode(expr)))

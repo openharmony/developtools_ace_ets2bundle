@@ -34,7 +34,7 @@ export class ETSTuple extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 80)
         super(pointer)
-        console.warn("Warning: stub node ETSTuple")
+        
     }
     static createETSTuple(): ETSTuple {
         return new ETSTuple(global.generatedEs2panda._CreateETSTuple(global.context))

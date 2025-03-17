@@ -35,7 +35,7 @@ export class ETSStructDeclaration extends ClassDeclaration {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 83)
         super(pointer)
-        console.warn("Warning: stub node ETSStructDeclaration")
+        
     }
     static createETSStructDeclaration(def?: ClassDefinition): ETSStructDeclaration {
         return new ETSStructDeclaration(global.generatedEs2panda._CreateETSStructDeclaration(global.context, passNode(def)))

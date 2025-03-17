@@ -34,7 +34,7 @@ export class ETSUnionType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 73)
         super(pointer)
-        console.warn("Warning: stub node ETSUnionType")
+        
     }
     static createETSUnionType(types: readonly TypeNode[]): ETSUnionType {
         return new ETSUnionType(global.generatedEs2panda._CreateETSUnionTypeIr(global.context, passNodeArray(types), types.length))

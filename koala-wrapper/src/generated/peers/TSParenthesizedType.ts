@@ -35,7 +35,7 @@ export class TSParenthesizedType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 107)
         super(pointer)
-        console.warn("Warning: stub node TSParenthesizedType")
+        
     }
     static createTSParenthesizedType(type?: TypeNode): TSParenthesizedType {
         return new TSParenthesizedType(global.generatedEs2panda._CreateTSParenthesizedType(global.context, passNode(type)))

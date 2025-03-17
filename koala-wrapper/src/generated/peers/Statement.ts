@@ -32,7 +32,7 @@ import {
 export class Statement extends AstNode {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node Statement")
+        
     }
 }
 export function isStatement(node: AstNode): node is Statement {

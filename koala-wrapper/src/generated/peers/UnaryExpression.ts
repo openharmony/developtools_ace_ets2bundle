@@ -35,7 +35,7 @@ export class UnaryExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 147)
         super(pointer)
-        console.warn("Warning: stub node UnaryExpression")
+        
     }
     static createUnaryExpression(argument: Expression | undefined, unaryOperator: Es2pandaTokenType): UnaryExpression {
         return new UnaryExpression(global.generatedEs2panda._CreateUnaryExpression(global.context, passNode(argument), unaryOperator))

@@ -34,7 +34,7 @@ export class TSInterfaceBody extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 131)
         super(pointer)
-        console.warn("Warning: stub node TSInterfaceBody")
+        
     }
     static createTSInterfaceBody(body: readonly AstNode[]): TSInterfaceBody {
         return new TSInterfaceBody(global.generatedEs2panda._CreateTSInterfaceBody(global.context, passNodeArray(body), body.length))

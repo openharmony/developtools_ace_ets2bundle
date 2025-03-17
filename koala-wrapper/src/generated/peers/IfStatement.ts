@@ -35,7 +35,7 @@ export class IfStatement extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 38)
         super(pointer)
-        console.warn("Warning: stub node IfStatement")
+        
     }
     static createIfStatement(test?: Expression, consequent?: Statement, alternate?: Statement): IfStatement {
         return new IfStatement(global.generatedEs2panda._CreateIfStatement(global.context, passNode(test), passNode(consequent), passNode(alternate)))

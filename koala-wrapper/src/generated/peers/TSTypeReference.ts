@@ -37,7 +37,7 @@ export class TSTypeReference extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 127)
         super(pointer)
-        console.warn("Warning: stub node TSTypeReference")
+        
     }
     static createTSTypeReference(typeName?: Expression, typeParams?: TSTypeParameterInstantiation): TSTypeReference {
         return new TSTypeReference(global.generatedEs2panda._CreateTSTypeReference(global.context, passNode(typeName), passNode(typeParams)))

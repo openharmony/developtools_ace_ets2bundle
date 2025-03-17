@@ -34,7 +34,7 @@ export class TSThisType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 115)
         super(pointer)
-        console.warn("Warning: stub node TSThisType")
+        
     }
     static createTSThisType(): TSThisType {
         return new TSThisType(global.generatedEs2panda._CreateTSThisType(global.context))

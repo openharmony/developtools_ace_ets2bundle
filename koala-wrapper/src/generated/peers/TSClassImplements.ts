@@ -35,7 +35,7 @@ export class TSClassImplements extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 138)
         super(pointer)
-        console.warn("Warning: stub node TSClassImplements")
+        
     }
     static createTSClassImplements(expression?: Expression, typeParameters?: TSTypeParameterInstantiation): TSClassImplements {
         return new TSClassImplements(global.generatedEs2panda._CreateTSClassImplements(global.context, passNode(expression), passNode(typeParameters)))

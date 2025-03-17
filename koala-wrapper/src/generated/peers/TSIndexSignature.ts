@@ -37,7 +37,7 @@ export class TSIndexSignature extends TypedAstNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 135)
         super(pointer)
-        console.warn("Warning: stub node TSIndexSignature")
+        
     }
     static createTSIndexSignature(param: Expression | undefined, typeAnnotation: TypeNode | undefined, readonly_arg: boolean): TSIndexSignature {
         return new TSIndexSignature(global.generatedEs2panda._CreateTSIndexSignature(global.context, passNode(param), passNode(typeAnnotation), readonly_arg))

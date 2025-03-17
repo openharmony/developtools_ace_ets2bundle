@@ -35,7 +35,7 @@ export class TSTypeParameterInstantiation extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 119)
         super(pointer)
-        console.warn("Warning: stub node TSTypeParameterInstantiation")
+        
     }
     static createTSTypeParameterInstantiation(params: readonly TypeNode[]): TSTypeParameterInstantiation {
         return new TSTypeParameterInstantiation(global.generatedEs2panda._CreateTSTypeParameterInstantiation(global.context, passNodeArray(params), params.length))

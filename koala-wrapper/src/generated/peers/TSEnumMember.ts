@@ -35,7 +35,7 @@ export class TSEnumMember extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 87)
         super(pointer)
-        console.warn("Warning: stub node TSEnumMember")
+        
     }
     static createTSEnumMember(key?: Expression, init?: Expression): TSEnumMember {
         return new TSEnumMember(global.generatedEs2panda._CreateTSEnumMember(global.context, passNode(key), passNode(init)))

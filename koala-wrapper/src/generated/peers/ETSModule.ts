@@ -36,7 +36,7 @@ export class ETSModule extends BlockStatement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 81)
         super(pointer)
-        console.warn("Warning: stub node ETSModule")
+        
     }
     get ident(): Identifier | undefined {
         return unpackNode(global.generatedEs2panda._ETSModuleIdentConst(global.context, this.peer))

@@ -35,7 +35,7 @@ export class TSInferType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 109)
         super(pointer)
-        console.warn("Warning: stub node TSInferType")
+        
     }
     static createTSInferType(typeParam?: TSTypeParameter): TSInferType {
         return new TSInferType(global.generatedEs2panda._CreateTSInferType(global.context, passNode(typeParam)))

@@ -35,7 +35,7 @@ import { TypeNode } from "./TypeNode"
 export class FunctionSignature extends ArktsObject {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node FunctionSignature")
+        
     }
     static createFunctionSignature(typeParams: TSTypeParameterDeclaration | undefined, params: readonly Expression[], returnTypeAnnotation: TypeNode | undefined, hasReceiver: boolean): FunctionSignature {
         return new FunctionSignature(global.generatedEs2panda._CreateFunctionSignature(global.context, passNode(typeParams), passNodeArray(params), params.length, passNode(returnTypeAnnotation), hasReceiver))

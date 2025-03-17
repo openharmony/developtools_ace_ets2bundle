@@ -37,7 +37,7 @@ export class ArrowFunctionExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 0)
         super(pointer)
-        console.warn("Warning: stub node ArrowFunctionExpression")
+        
     }
     static createArrowFunctionExpression(func?: ScriptFunction): ArrowFunctionExpression {
         return new ArrowFunctionExpression(global.generatedEs2panda._CreateArrowFunctionExpression(global.context, passNode(func)))

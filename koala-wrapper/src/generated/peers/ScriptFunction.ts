@@ -42,7 +42,7 @@ export class ScriptFunction extends AstNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 59)
         super(pointer)
-        console.warn("Warning: stub node ScriptFunction")
+        
     }
     static createScriptFunction(databody: AstNode | undefined, datasignature: FunctionSignature | undefined, datafuncFlags: number, dataflags: number): ScriptFunction {
         return new ScriptFunction(global.generatedEs2panda._CreateScriptFunction(global.context, passNode(databody), passNode(datasignature), datafuncFlags, dataflags))

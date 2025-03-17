@@ -35,7 +35,7 @@ export class ImportNamespaceSpecifier extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 42)
         super(pointer)
-        console.warn("Warning: stub node ImportNamespaceSpecifier")
+        
     }
     static createImportNamespaceSpecifier(local?: Identifier): ImportNamespaceSpecifier {
         return new ImportNamespaceSpecifier(global.generatedEs2panda._CreateImportNamespaceSpecifier(global.context, passNode(local)))

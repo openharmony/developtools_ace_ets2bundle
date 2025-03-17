@@ -34,7 +34,7 @@ export class TSArrayType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 101)
         super(pointer)
-        console.warn("Warning: stub node TSArrayType")
+        
     }
     static createTSArrayType(elementType?: TypeNode): TSArrayType {
         return new TSArrayType(global.generatedEs2panda._CreateTSArrayType(global.context, passNode(elementType)))

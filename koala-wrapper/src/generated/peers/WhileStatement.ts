@@ -36,7 +36,7 @@ export class WhileStatement extends LoopStatement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 151)
         super(pointer)
-        console.warn("Warning: stub node WhileStatement")
+        
     }
     static createWhileStatement(test?: Expression, body?: Statement): WhileStatement {
         return new WhileStatement(global.generatedEs2panda._CreateWhileStatement(global.context, passNode(test), passNode(body)))

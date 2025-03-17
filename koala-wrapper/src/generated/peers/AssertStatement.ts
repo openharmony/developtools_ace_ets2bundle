@@ -35,7 +35,7 @@ export class AssertStatement extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 3)
         super(pointer)
-        console.warn("Warning: stub node AssertStatement")
+        
     }
     static createAssertStatement(test?: Expression, second?: Expression): AssertStatement {
         return new AssertStatement(global.generatedEs2panda._CreateAssertStatement(global.context, passNode(test), passNode(second)))

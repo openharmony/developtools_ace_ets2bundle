@@ -35,7 +35,7 @@ export class TSTypeOperator extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 116)
         super(pointer)
-        console.warn("Warning: stub node TSTypeOperator")
+        
     }
     static createTSTypeOperator(type: TypeNode | undefined, operatorType: Es2pandaTSOperatorType): TSTypeOperator {
         return new TSTypeOperator(global.generatedEs2panda._CreateTSTypeOperator(global.context, passNode(type), operatorType))

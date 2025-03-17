@@ -37,7 +37,7 @@ export class Identifier extends AnnotatedExpression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 36)
         super(pointer)
-        console.warn("Warning: stub node Identifier")
+        
     }
     static createIdentifier(): Identifier {
         return new Identifier(global.generatedEs2panda._CreateIdentifier(global.context))

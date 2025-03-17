@@ -22,6 +22,9 @@ compiler/src/process_ui_syntax.ts @lixingchi1
 compiler/src/result_process.ts @lixingchi1
 compiler/src/utils.ts @lixingchi1
 compiler/src/validate_ui_syntax.ts @lixingchi1
+koala-wrapper/native/src/bridges.cc @keerecles
+koala-wrapper/native/src/common.cc @keerecles
+koala-wrapper/native/src/generated/bridges.cc @keerecles
 
 # Code owners for ArkCompiler ace_ets2bundle
 

@@ -34,7 +34,7 @@ export class CharLiteral extends Literal {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 13)
         super(pointer)
-        console.warn("Warning: stub node CharLiteral")
+        
     }
     static createCharLiteral(): CharLiteral {
         return new CharLiteral(global.generatedEs2panda._CreateCharLiteral(global.context))

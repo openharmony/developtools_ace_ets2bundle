@@ -34,7 +34,7 @@ export class ImportExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 40)
         super(pointer)
-        console.warn("Warning: stub node ImportExpression")
+        
     }
     static createImportExpression(source?: Expression): ImportExpression {
         return new ImportExpression(global.generatedEs2panda._CreateImportExpression(global.context, passNode(source)))

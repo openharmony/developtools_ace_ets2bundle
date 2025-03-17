@@ -34,7 +34,7 @@ export class ChainExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 12)
         super(pointer)
-        console.warn("Warning: stub node ChainExpression")
+        
     }
     static createChainExpression(expression?: Expression): ChainExpression {
         return new ChainExpression(global.generatedEs2panda._CreateChainExpression(global.context, passNode(expression)))
