@@ -36,7 +36,7 @@ export class TSMappedType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 113)
         super(pointer)
-        console.warn("Warning: stub node TSMappedType")
+        
     }
     static createTSMappedType(typeParameter: TSTypeParameter | undefined, typeAnnotation: TypeNode | undefined, readonly_arg: Es2pandaMappedOption, optional_arg: Es2pandaMappedOption): TSMappedType {
         return new TSMappedType(global.generatedEs2panda._CreateTSMappedType(global.context, passNode(typeParameter), passNode(typeAnnotation), readonly_arg, optional_arg))

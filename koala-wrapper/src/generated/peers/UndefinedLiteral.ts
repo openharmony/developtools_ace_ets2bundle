@@ -34,7 +34,7 @@ export class UndefinedLiteral extends Literal {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 51)
         super(pointer)
-        console.warn("Warning: stub node UndefinedLiteral")
+        
     }
     static createUndefinedLiteral(): UndefinedLiteral {
         return new UndefinedLiteral(global.generatedEs2panda._CreateUndefinedLiteral(global.context))

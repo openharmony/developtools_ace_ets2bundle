@@ -35,7 +35,7 @@ export class TSTypePredicate extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 120)
         super(pointer)
-        console.warn("Warning: stub node TSTypePredicate")
+        
     }
     static createTSTypePredicate(parameterName: Expression | undefined, typeAnnotation: TypeNode | undefined, asserts: boolean): TSTypePredicate {
         return new TSTypePredicate(global.generatedEs2panda._CreateTSTypePredicate(global.context, passNode(parameterName), passNode(typeAnnotation), asserts))

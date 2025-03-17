@@ -35,7 +35,7 @@ export class TSModuleDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 122)
         super(pointer)
-        console.warn("Warning: stub node TSModuleDeclaration")
+        
     }
     static createTSModuleDeclaration(name: Expression | undefined, body: Statement | undefined, declare: boolean, _global: boolean): TSModuleDeclaration {
         return new TSModuleDeclaration(global.generatedEs2panda._CreateTSModuleDeclaration(global.context, passNode(name), passNode(body), declare, _global))

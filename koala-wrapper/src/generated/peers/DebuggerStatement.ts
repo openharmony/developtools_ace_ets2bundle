@@ -34,7 +34,7 @@ export class DebuggerStatement extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 21)
         super(pointer)
-        console.warn("Warning: stub node DebuggerStatement")
+        
     }
     static createDebuggerStatement(): DebuggerStatement {
         return new DebuggerStatement(global.generatedEs2panda._CreateDebuggerStatement(global.context))

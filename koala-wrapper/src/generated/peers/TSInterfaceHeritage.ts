@@ -35,7 +35,7 @@ export class TSInterfaceHeritage extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 132)
         super(pointer)
-        console.warn("Warning: stub node TSInterfaceHeritage")
+        
     }
     static createTSInterfaceHeritage(expr?: TypeNode): TSInterfaceHeritage {
         return new TSInterfaceHeritage(global.generatedEs2panda._CreateTSInterfaceHeritage(global.context, passNode(expr)))

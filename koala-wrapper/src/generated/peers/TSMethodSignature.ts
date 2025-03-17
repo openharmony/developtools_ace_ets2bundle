@@ -37,7 +37,7 @@ export class TSMethodSignature extends AstNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 105)
         super(pointer)
-        console.warn("Warning: stub node TSMethodSignature")
+        
     }
     static createTSMethodSignature(key: Expression | undefined, signature: FunctionSignature | undefined, computed: boolean, optional_arg: boolean): TSMethodSignature {
         return new TSMethodSignature(global.generatedEs2panda._CreateTSMethodSignature(global.context, passNode(key), passNode(signature), computed, optional_arg))

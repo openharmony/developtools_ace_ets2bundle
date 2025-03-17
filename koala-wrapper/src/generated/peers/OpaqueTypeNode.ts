@@ -34,7 +34,7 @@ export class OpaqueTypeNode extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 153)
         super(pointer)
-        console.warn("Warning: stub node OpaqueTypeNode")
+        
     }
     static create1OpaqueTypeNode(): OpaqueTypeNode {
         return new OpaqueTypeNode(global.generatedEs2panda._CreateOpaqueTypeNode1(global.context))

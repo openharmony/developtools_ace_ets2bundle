@@ -46,7 +46,7 @@ export class ClassDefinition extends TypedAstNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 14)
         super(pointer)
-        console.warn("Warning: stub node ClassDefinition")
+        
     }
     static createClassDefinition(ident: Identifier | undefined, typeParams: TSTypeParameterDeclaration | undefined, superTypeParams: TSTypeParameterInstantiation | undefined, _implements: readonly TSClassImplements[], ctor: MethodDefinition | undefined, superClass: Expression | undefined, body: readonly AstNode[], modifiers: Es2pandaClassDefinitionModifiers, flags: Es2pandaModifierFlags): ClassDefinition {
         return new ClassDefinition(global.generatedEs2panda._CreateClassDefinition(global.context, passNode(ident), passNode(typeParams), passNode(superTypeParams), passNodeArray(_implements), _implements.length, passNode(ctor), passNode(superClass), passNodeArray(body), body.length, modifiers, flags))

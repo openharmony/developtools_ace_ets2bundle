@@ -33,7 +33,7 @@ import { TSInterfaceDeclaration } from "./TSInterfaceDeclaration"
 export class InterfaceDecl extends TSInterfaceDeclaration {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node InterfaceDecl")
+        
     }
 }
 export function isInterfaceDecl(node: AstNode): node is InterfaceDecl {

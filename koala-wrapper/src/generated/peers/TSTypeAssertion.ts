@@ -36,7 +36,7 @@ export class TSTypeAssertion extends AnnotatedExpression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 139)
         super(pointer)
-        console.warn("Warning: stub node TSTypeAssertion")
+        
     }
     static createTSTypeAssertion(typeAnnotation?: TypeNode, expression?: Expression): TSTypeAssertion {
         return new TSTypeAssertion(global.generatedEs2panda._CreateTSTypeAssertion(global.context, passNode(typeAnnotation), passNode(expression)))

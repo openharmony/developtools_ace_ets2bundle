@@ -34,7 +34,7 @@ export class TSExternalModuleReference extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 88)
         super(pointer)
-        console.warn("Warning: stub node TSExternalModuleReference")
+        
     }
     static createTSExternalModuleReference(expr?: Expression): TSExternalModuleReference {
         return new TSExternalModuleReference(global.generatedEs2panda._CreateTSExternalModuleReference(global.context, passNode(expr)))

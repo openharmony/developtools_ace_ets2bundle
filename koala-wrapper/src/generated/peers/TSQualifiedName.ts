@@ -35,7 +35,7 @@ export class TSQualifiedName extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 128)
         super(pointer)
-        console.warn("Warning: stub node TSQualifiedName")
+        
     }
     static createTSQualifiedName(left?: Expression, right?: Identifier): TSQualifiedName {
         return new TSQualifiedName(global.generatedEs2panda._CreateTSQualifiedName(global.context, passNode(left), passNode(right)))

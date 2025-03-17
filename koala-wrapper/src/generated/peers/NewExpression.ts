@@ -34,7 +34,7 @@ export class NewExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 49)
         super(pointer)
-        console.warn("Warning: stub node NewExpression")
+        
     }
     static createNewExpression(callee: Expression | undefined, _arguments: readonly Expression[]): NewExpression {
         return new NewExpression(global.generatedEs2panda._CreateNewExpression(global.context, passNode(callee), passNodeArray(_arguments), _arguments.length))

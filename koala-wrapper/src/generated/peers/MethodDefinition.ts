@@ -38,7 +38,7 @@ export class MethodDefinition extends ClassElement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 47)
         super(pointer)
-        console.warn("Warning: stub node MethodDefinition")
+        
     }
     static createMethodDefinition(kind: Es2pandaMethodDefinitionKind, key: Expression | undefined, value: Expression | undefined, modifiers: Es2pandaModifierFlags, isComputed: boolean): MethodDefinition {
         return new MethodDefinition(global.generatedEs2panda._CreateMethodDefinition(global.context, kind, passNode(key), passNode(value), modifiers, isComputed))

@@ -35,7 +35,7 @@ export class MetaProperty extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 46)
         super(pointer)
-        console.warn("Warning: stub node MetaProperty")
+        
     }
     static createMetaProperty(kind: Es2pandaMetaPropertyKind): MetaProperty {
         return new MetaProperty(global.generatedEs2panda._CreateMetaProperty(global.context, kind))

@@ -34,7 +34,7 @@ export class TSBooleanKeyword extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 92)
         super(pointer)
-        console.warn("Warning: stub node TSBooleanKeyword")
+        
     }
     static createTSBooleanKeyword(): TSBooleanKeyword {
         return new TSBooleanKeyword(global.generatedEs2panda._CreateTSBooleanKeyword(global.context))

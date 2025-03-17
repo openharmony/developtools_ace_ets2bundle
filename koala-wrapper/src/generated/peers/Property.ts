@@ -36,7 +36,7 @@ export class Property extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 55)
         super(pointer)
-        console.warn("Warning: stub node Property")
+        
     }
     static createProperty(key?: Expression, value?: Expression): Property {
         return new Property(global.generatedEs2panda._CreateProperty(global.context, passNode(key), passNode(value)))

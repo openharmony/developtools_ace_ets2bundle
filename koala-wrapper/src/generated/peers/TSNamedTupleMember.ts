@@ -35,7 +35,7 @@ export class TSNamedTupleMember extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 134)
         super(pointer)
-        console.warn("Warning: stub node TSNamedTupleMember")
+        
     }
     static createTSNamedTupleMember(label: Expression | undefined, elementType: TypeNode | undefined, optional_arg: boolean): TSNamedTupleMember {
         return new TSNamedTupleMember(global.generatedEs2panda._CreateTSNamedTupleMember(global.context, passNode(label), passNode(elementType), optional_arg))

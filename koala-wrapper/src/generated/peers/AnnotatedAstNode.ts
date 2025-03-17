@@ -32,7 +32,7 @@ import {
 export class AnnotatedAstNode extends AstNode {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node AnnotatedAstNode")
+        
     }
 }
 export function isAnnotatedAstNode(node: AstNode): node is AnnotatedAstNode {

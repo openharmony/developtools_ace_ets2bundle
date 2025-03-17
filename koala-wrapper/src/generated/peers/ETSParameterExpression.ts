@@ -39,7 +39,7 @@ export class ETSParameterExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 79)
         super(pointer)
-        console.warn("Warning: stub node ETSParameterExpression")
+        
     }
     static createETSParameterExpression(identOrSpread: AnnotatedExpression | undefined, isOptional: boolean): ETSParameterExpression {
         return new ETSParameterExpression(global.generatedEs2panda._CreateETSParameterExpression(global.context, passNode(identOrSpread), isOptional))

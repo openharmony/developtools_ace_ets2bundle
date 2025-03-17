@@ -35,7 +35,7 @@ export class BlockExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 154)
         super(pointer)
-        console.warn("Warning: stub node BlockExpression")
+        
     }
     static createBlockExpression(statements: readonly Statement[]): BlockExpression {
         return new BlockExpression(global.generatedEs2panda._CreateBlockExpression(global.context, passNodeArray(statements), statements.length))

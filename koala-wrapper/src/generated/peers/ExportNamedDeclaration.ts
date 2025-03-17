@@ -36,7 +36,7 @@ export class ExportNamedDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 28)
         super(pointer)
-        console.warn("Warning: stub node ExportNamedDeclaration")
+        
     }
     static createExportNamedDeclaration(source: StringLiteral | undefined, specifiers: readonly ExportSpecifier[]): ExportNamedDeclaration {
         return new ExportNamedDeclaration(global.generatedEs2panda._CreateExportNamedDeclaration(global.context, passNode(source), passNodeArray(specifiers), specifiers.length))

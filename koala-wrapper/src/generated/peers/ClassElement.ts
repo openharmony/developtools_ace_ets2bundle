@@ -37,7 +37,7 @@ import { Es2pandaPrivateFieldKind } from "./../Es2pandaEnums"
 export class ClassElement extends TypedStatement {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node ClassElement")
+        
     }
     get key(): Expression | undefined {
         return unpackNode(global.generatedEs2panda._ClassElementKeyConst(global.context, this.peer))

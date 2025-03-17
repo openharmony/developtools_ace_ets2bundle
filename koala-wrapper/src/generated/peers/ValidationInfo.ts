@@ -32,7 +32,7 @@ import {
 export class ValidationInfo extends ArktsObject {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node ValidationInfo")
+        
     }
     static createValidationInfo(): ValidationInfo {
         return new ValidationInfo(global.generatedEs2panda._CreateValidationInfo(global.context))

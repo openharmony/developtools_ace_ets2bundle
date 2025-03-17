@@ -34,7 +34,7 @@ export class TypeofExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 144)
         super(pointer)
-        console.warn("Warning: stub node TypeofExpression")
+        
     }
     static createTypeofExpression(argument?: Expression): TypeofExpression {
         return new TypeofExpression(global.generatedEs2panda._CreateTypeofExpression(global.context, passNode(argument)))

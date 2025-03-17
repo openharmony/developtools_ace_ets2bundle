@@ -36,7 +36,7 @@ export class TSImportType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 111)
         super(pointer)
-        console.warn("Warning: stub node TSImportType")
+        
     }
     static createTSImportType(param: Expression | undefined, typeParams: TSTypeParameterInstantiation | undefined, qualifier: Expression | undefined, isTypeof: boolean): TSImportType {
         return new TSImportType(global.generatedEs2panda._CreateTSImportType(global.context, passNode(param), passNode(typeParams), passNode(qualifier), isTypeof))

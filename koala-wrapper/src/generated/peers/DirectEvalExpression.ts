@@ -36,7 +36,7 @@ export class DirectEvalExpression extends CallExpression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 23)
         super(pointer)
-        console.warn("Warning: stub node DirectEvalExpression")
+        
     }
     static createDirectEvalExpression(callee: Expression | undefined, _arguments: readonly Expression[], typeParams: TSTypeParameterInstantiation | undefined, optional_arg: boolean, parserStatus: number): DirectEvalExpression {
         return new DirectEvalExpression(global.generatedEs2panda._CreateDirectEvalExpression(global.context, passNode(callee), passNodeArray(_arguments), _arguments.length, passNode(typeParams), optional_arg, parserStatus))

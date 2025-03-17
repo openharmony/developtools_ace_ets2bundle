@@ -34,7 +34,7 @@ export class SuperExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 82)
         super(pointer)
-        console.warn("Warning: stub node SuperExpression")
+        
     }
     static createSuperExpression(): SuperExpression {
         return new SuperExpression(global.generatedEs2panda._CreateSuperExpression(global.context))

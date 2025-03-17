@@ -35,7 +35,7 @@ export class ETSPrimitiveType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 68)
         super(pointer)
-        console.warn("Warning: stub node ETSPrimitiveType")
+        
     }
     static createETSPrimitiveType(type: Es2pandaPrimitiveType): ETSPrimitiveType {
         return new ETSPrimitiveType(global.generatedEs2panda._CreateETSPrimitiveType(global.context, type))

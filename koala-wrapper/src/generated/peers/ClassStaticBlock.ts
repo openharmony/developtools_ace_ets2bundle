@@ -36,7 +36,7 @@ export class ClassStaticBlock extends ClassElement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 18)
         super(pointer)
-        console.warn("Warning: stub node ClassStaticBlock")
+        
     }
     static createClassStaticBlock(value?: Expression): ClassStaticBlock {
         return new ClassStaticBlock(global.generatedEs2panda._CreateClassStaticBlock(global.context, passNode(value)))

@@ -36,7 +36,7 @@ export class FunctionExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 35)
         super(pointer)
-        console.warn("Warning: stub node FunctionExpression")
+        
     }
     static createFunctionExpression(func?: ScriptFunction): FunctionExpression {
         return new FunctionExpression(global.generatedEs2panda._CreateFunctionExpression(global.context, passNode(func)))

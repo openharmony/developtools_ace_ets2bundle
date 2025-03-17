@@ -34,7 +34,7 @@ export class TSNeverKeyword extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 98)
         super(pointer)
-        console.warn("Warning: stub node TSNeverKeyword")
+        
     }
     static createTSNeverKeyword(): TSNeverKeyword {
         return new TSNeverKeyword(global.generatedEs2panda._CreateTSNeverKeyword(global.context))

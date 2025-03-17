@@ -36,7 +36,7 @@ export class ForUpdateStatement extends LoopStatement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 33)
         super(pointer)
-        console.warn("Warning: stub node ForUpdateStatement")
+        
     }
     static createForUpdateStatement(init?: AstNode, test?: Expression, update?: Expression, body?: Statement): ForUpdateStatement {
         return new ForUpdateStatement(global.generatedEs2panda._CreateForUpdateStatement(global.context, passNode(init), passNode(test), passNode(update), passNode(body)))

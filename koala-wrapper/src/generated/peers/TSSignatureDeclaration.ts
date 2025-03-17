@@ -39,7 +39,7 @@ export class TSSignatureDeclaration extends TypedAstNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 106)
         super(pointer)
-        console.warn("Warning: stub node TSSignatureDeclaration")
+        
     }
     static createTSSignatureDeclaration(kind: Es2pandaTSSignatureDeclarationKind, signature?: FunctionSignature): TSSignatureDeclaration {
         return new TSSignatureDeclaration(global.generatedEs2panda._CreateTSSignatureDeclaration(global.context, kind, passNode(signature)))

@@ -36,7 +36,7 @@ export class ClassDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 15)
         super(pointer)
-        console.warn("Warning: stub node ClassDeclaration")
+        
     }
     static createClassDeclaration(def?: ClassDefinition): ClassDeclaration {
         return new ClassDeclaration(global.generatedEs2panda._CreateClassDeclaration(global.context, passNode(def)))

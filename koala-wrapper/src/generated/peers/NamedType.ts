@@ -36,7 +36,7 @@ export class NamedType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 48)
         super(pointer)
-        console.warn("Warning: stub node NamedType")
+        
     }
     static createNamedType(name?: Identifier): NamedType {
         return new NamedType(global.generatedEs2panda._CreateNamedType(global.context, passNode(name)))

@@ -37,7 +37,7 @@ import { TypeNode } from "./TypeNode"
 export class SpreadElement extends AnnotatedExpression {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node SpreadElement")
+        
     }
     get argument(): Expression | undefined {
         return unpackNode(global.generatedEs2panda._SpreadElementArgumentConst(global.context, this.peer))

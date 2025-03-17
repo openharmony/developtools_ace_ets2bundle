@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 export class LoopStatement extends Statement {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node LoopStatement")
+        
     }
 }
 export function isLoopStatement(node: AstNode): node is LoopStatement {

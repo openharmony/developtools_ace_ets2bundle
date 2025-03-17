@@ -34,7 +34,7 @@ import { TypeNode } from "./TypeNode"
 export class AnnotatedExpression extends Expression {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node AnnotatedExpression")
+        
     }
     get typeAnnotation(): TypeNode | undefined {
         return unpackNode(global.generatedEs2panda._AnnotatedExpressionTypeAnnotationConst(global.context, this.peer))

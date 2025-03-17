@@ -35,7 +35,7 @@ export class ExpressionStatement extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 30)
         super(pointer)
-        console.warn("Warning: stub node ExpressionStatement")
+        
     }
     static createExpressionStatement(expr?: Expression): ExpressionStatement {
         return new ExpressionStatement(global.generatedEs2panda._CreateExpressionStatement(global.context, passNode(expr)))

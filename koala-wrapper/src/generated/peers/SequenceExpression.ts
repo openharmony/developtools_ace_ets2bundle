@@ -34,7 +34,7 @@ export class SequenceExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 60)
         super(pointer)
-        console.warn("Warning: stub node SequenceExpression")
+        
     }
     static createSequenceExpression(sequence_arg: readonly Expression[]): SequenceExpression {
         return new SequenceExpression(global.generatedEs2panda._CreateSequenceExpression(global.context, passNodeArray(sequence_arg), sequence_arg.length))

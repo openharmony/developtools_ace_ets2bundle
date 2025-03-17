@@ -35,7 +35,7 @@ export class UpdateExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 148)
         super(pointer)
-        console.warn("Warning: stub node UpdateExpression")
+        
     }
     static createUpdateExpression(argument: Expression | undefined, updateOperator: Es2pandaTokenType, isPrefix: boolean): UpdateExpression {
         return new UpdateExpression(global.generatedEs2panda._CreateUpdateExpression(global.context, passNode(argument), updateOperator, isPrefix))

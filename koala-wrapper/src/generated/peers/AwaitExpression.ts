@@ -34,7 +34,7 @@ export class AwaitExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 4)
         super(pointer)
-        console.warn("Warning: stub node AwaitExpression")
+        
     }
     static createAwaitExpression(argument?: Expression): AwaitExpression {
         return new AwaitExpression(global.generatedEs2panda._CreateAwaitExpression(global.context, passNode(argument)))
