@@ -36,7 +36,7 @@ export class AnnotationUsage extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 2)
         super(pointer)
-        console.warn("Warning: stub node AnnotationUsage")
+        
     }
     static createAnnotationUsage(expr?: Expression): AnnotationUsage {
         return new AnnotationUsage(global.generatedEs2panda._CreateAnnotationUsageIr(global.context, passNode(expr)))

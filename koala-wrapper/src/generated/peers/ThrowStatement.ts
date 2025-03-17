@@ -35,7 +35,7 @@ export class ThrowStatement extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 145)
         super(pointer)
-        console.warn("Warning: stub node ThrowStatement")
+        
     }
     static createThrowStatement(argument?: Expression): ThrowStatement {
         return new ThrowStatement(global.generatedEs2panda._CreateThrowStatement(global.context, passNode(argument)))

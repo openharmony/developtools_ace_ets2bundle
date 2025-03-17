@@ -35,7 +35,7 @@ export class Decorator extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 22)
         super(pointer)
-        console.warn("Warning: stub node Decorator")
+        
     }
     static createDecorator(expr?: Expression): Decorator {
         return new Decorator(global.generatedEs2panda._CreateDecorator(global.context, passNode(expr)))

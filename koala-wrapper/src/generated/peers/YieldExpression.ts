@@ -34,7 +34,7 @@ export class YieldExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 152)
         super(pointer)
-        console.warn("Warning: stub node YieldExpression")
+        
     }
     static createYieldExpression(argument: Expression | undefined, isDelegate: boolean): YieldExpression {
         return new YieldExpression(global.generatedEs2panda._CreateYieldExpression(global.context, passNode(argument), isDelegate))

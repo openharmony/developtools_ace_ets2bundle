@@ -36,7 +36,7 @@ export class VariableDeclarator extends TypedStatement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 150)
         super(pointer)
-        console.warn("Warning: stub node VariableDeclarator")
+        
     }
     static createVariableDeclarator(flag: Es2pandaVariableDeclaratorFlag, ident?: Expression): VariableDeclarator {
         return new VariableDeclarator(global.generatedEs2panda._CreateVariableDeclarator(global.context, flag, passNode(ident)))

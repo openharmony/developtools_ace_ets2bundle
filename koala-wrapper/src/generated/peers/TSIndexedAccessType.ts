@@ -34,7 +34,7 @@ export class TSIndexedAccessType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 129)
         super(pointer)
-        console.warn("Warning: stub node TSIndexedAccessType")
+        
     }
     static createTSIndexedAccessType(objectType?: TypeNode, indexType?: TypeNode): TSIndexedAccessType {
         return new TSIndexedAccessType(global.generatedEs2panda._CreateTSIndexedAccessType(global.context, passNode(objectType), passNode(indexType)))

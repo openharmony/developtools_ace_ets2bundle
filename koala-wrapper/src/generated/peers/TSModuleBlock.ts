@@ -34,7 +34,7 @@ export class TSModuleBlock extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 114)
         super(pointer)
-        console.warn("Warning: stub node TSModuleBlock")
+        
     }
     static createTSModuleBlock(statements: readonly Statement[]): TSModuleBlock {
         return new TSModuleBlock(global.generatedEs2panda._CreateTSModuleBlock(global.context, passNodeArray(statements), statements.length))

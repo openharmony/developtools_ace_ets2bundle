@@ -35,7 +35,7 @@ export class ETSNewArrayInstanceExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 75)
         super(pointer)
-        console.warn("Warning: stub node ETSNewArrayInstanceExpression")
+        
     }
     static createETSNewArrayInstanceExpression(typeReference?: TypeNode, dimension?: Expression): ETSNewArrayInstanceExpression {
         return new ETSNewArrayInstanceExpression(global.generatedEs2panda._CreateETSNewArrayInstanceExpression(global.context, passNode(typeReference), passNode(dimension)))

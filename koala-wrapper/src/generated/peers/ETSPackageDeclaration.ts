@@ -35,7 +35,7 @@ export class ETSPackageDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 69)
         super(pointer)
-        console.warn("Warning: stub node ETSPackageDeclaration")
+        
     }
     static createETSPackageDeclaration(name?: Expression): ETSPackageDeclaration {
         return new ETSPackageDeclaration(global.generatedEs2panda._CreateETSPackageDeclaration(global.context, passNode(name)))

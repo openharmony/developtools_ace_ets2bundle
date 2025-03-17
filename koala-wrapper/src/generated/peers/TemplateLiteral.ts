@@ -35,7 +35,7 @@ export class TemplateLiteral extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 142)
         super(pointer)
-        console.warn("Warning: stub node TemplateLiteral")
+        
     }
     static createTemplateLiteral(quasis: readonly TemplateElement[], expressions: readonly Expression[], multilineString: string): TemplateLiteral {
         return new TemplateLiteral(global.generatedEs2panda._CreateTemplateLiteral(global.context, passNodeArray(quasis), quasis.length, passNodeArray(expressions), expressions.length, multilineString))

@@ -35,7 +35,7 @@ export class TSConditionalType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 110)
         super(pointer)
-        console.warn("Warning: stub node TSConditionalType")
+        
     }
     static createTSConditionalType(checkType?: Expression, extendsType?: Expression, trueType?: Expression, falseType?: Expression): TSConditionalType {
         return new TSConditionalType(global.generatedEs2panda._CreateTSConditionalType(global.context, passNode(checkType), passNode(extendsType), passNode(trueType), passNode(falseType)))

@@ -35,7 +35,7 @@ export class ContinueStatement extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 20)
         super(pointer)
-        console.warn("Warning: stub node ContinueStatement")
+        
     }
     static createContinueStatement(): ContinueStatement {
         return new ContinueStatement(global.generatedEs2panda._CreateContinueStatement(global.context))

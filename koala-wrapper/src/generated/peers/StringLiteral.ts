@@ -33,7 +33,7 @@ export class StringLiteral extends Literal {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 61)
         super(pointer)
-        console.warn("Warning: stub node StringLiteral")
+        
     }
     static createStringLiteral(): StringLiteral {
         return new StringLiteral(global.generatedEs2panda._CreateStringLiteral(global.context))

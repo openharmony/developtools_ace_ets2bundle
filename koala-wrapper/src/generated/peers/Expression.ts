@@ -36,7 +36,7 @@ import { AnnotatedExpression } from "./AnnotatedExpression"
 export class Expression extends TypedAstNode {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node Expression")
+        
     }
     get isGrouped(): boolean {
         return global.generatedEs2panda._ExpressionIsGroupedConst(global.context, this.peer)

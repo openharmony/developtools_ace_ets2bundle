@@ -32,7 +32,7 @@ import {
 export class SrcDumper extends ArktsObject {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node SrcDumper")
+        
     }
     static createSrcDumper(node?: AstNode): SrcDumper {
         return new SrcDumper(global.generatedEs2panda._CreateSrcDumper(global.context, passNode(node)))

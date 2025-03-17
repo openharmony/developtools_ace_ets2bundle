@@ -39,7 +39,7 @@ export class ETSFunctionType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 66)
         super(pointer)
-        console.warn("Warning: stub node ETSFunctionType")
+        
     }
     static createETSFunctionType(signature: FunctionSignature | undefined, funcFlags: Es2pandaScriptFunctionFlags): ETSFunctionType {
         return new ETSFunctionType(global.generatedEs2panda._CreateETSFunctionTypeIr(global.context, passNode(signature), funcFlags))

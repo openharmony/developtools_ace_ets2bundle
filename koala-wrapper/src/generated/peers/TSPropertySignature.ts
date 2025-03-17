@@ -36,7 +36,7 @@ export class TSPropertySignature extends AnnotatedAstNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 104)
         super(pointer)
-        console.warn("Warning: stub node TSPropertySignature")
+        
     }
     static createTSPropertySignature(key: Expression | undefined, typeAnnotation: TypeNode | undefined, computed: boolean, optional_arg: boolean, readonly_arg: boolean): TSPropertySignature {
         return new TSPropertySignature(global.generatedEs2panda._CreateTSPropertySignature(global.context, passNode(key), passNode(typeAnnotation), computed, optional_arg, readonly_arg))

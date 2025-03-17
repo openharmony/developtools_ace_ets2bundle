@@ -36,7 +36,7 @@ export class ForOfStatement extends LoopStatement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 32)
         super(pointer)
-        console.warn("Warning: stub node ForOfStatement")
+        
     }
     static createForOfStatement(left: AstNode | undefined, right: Expression | undefined, body: Statement | undefined, isAwait: boolean): ForOfStatement {
         return new ForOfStatement(global.generatedEs2panda._CreateForOfStatement(global.context, passNode(left), passNode(right), passNode(body), isAwait))

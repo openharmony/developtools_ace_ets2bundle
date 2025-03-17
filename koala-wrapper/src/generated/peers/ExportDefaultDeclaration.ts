@@ -34,7 +34,7 @@ export class ExportDefaultDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 27)
         super(pointer)
-        console.warn("Warning: stub node ExportDefaultDeclaration")
+        
     }
     static createExportDefaultDeclaration(decl: AstNode | undefined, exportEquals: boolean): ExportDefaultDeclaration {
         return new ExportDefaultDeclaration(global.generatedEs2panda._CreateExportDefaultDeclaration(global.context, passNode(decl), exportEquals))

@@ -37,7 +37,7 @@ export class TSEnumDeclaration extends TypedStatement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 86)
         super(pointer)
-        console.warn("Warning: stub node TSEnumDeclaration")
+        
     }
     static createTSEnumDeclaration(key: Identifier | undefined, members: readonly AstNode[], isConst: boolean, isStatic: boolean, isDeclare: boolean): TSEnumDeclaration {
         return new TSEnumDeclaration(global.generatedEs2panda._CreateTSEnumDeclaration(global.context, passNode(key), passNodeArray(members), members.length, isConst, isStatic, isDeclare))

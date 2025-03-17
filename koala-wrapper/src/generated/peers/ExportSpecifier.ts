@@ -35,7 +35,7 @@ export class ExportSpecifier extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 29)
         super(pointer)
-        console.warn("Warning: stub node ExportSpecifier")
+        
     }
     static createExportSpecifier(local?: Identifier, exported?: Identifier): ExportSpecifier {
         return new ExportSpecifier(global.generatedEs2panda._CreateExportSpecifier(global.context, passNode(local), passNode(exported)))

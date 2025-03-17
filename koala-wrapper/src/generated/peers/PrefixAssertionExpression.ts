@@ -35,7 +35,7 @@ export class PrefixAssertionExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 54)
         super(pointer)
-        console.warn("Warning: stub node PrefixAssertionExpression")
+        
     }
     static createPrefixAssertionExpression(expr?: Expression, type?: TypeNode): PrefixAssertionExpression {
         return new PrefixAssertionExpression(global.generatedEs2panda._CreatePrefixAssertionExpression(global.context, passNode(expr), passNode(type)))

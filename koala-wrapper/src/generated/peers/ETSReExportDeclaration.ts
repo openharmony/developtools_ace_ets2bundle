@@ -35,7 +35,7 @@ export class ETSReExportDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 57)
         super(pointer)
-        console.warn("Warning: stub node ETSReExportDeclaration")
+        
     }
     get getETSImportDeclarations(): ETSImportDeclaration | undefined {
         return unpackNode(global.generatedEs2panda._ETSReExportDeclarationGetETSImportDeclarationsConst(global.context, this.peer))

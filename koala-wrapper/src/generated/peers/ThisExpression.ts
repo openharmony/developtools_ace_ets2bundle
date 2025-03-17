@@ -34,7 +34,7 @@ export class ThisExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 143)
         super(pointer)
-        console.warn("Warning: stub node ThisExpression")
+        
     }
     static createThisExpression(): ThisExpression {
         return new ThisExpression(global.generatedEs2panda._CreateThisExpression(global.context))

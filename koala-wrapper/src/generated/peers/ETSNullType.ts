@@ -34,7 +34,7 @@ export class ETSNullType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 62)
         super(pointer)
-        console.warn("Warning: stub node ETSNullType")
+        
     }
     static createETSNullType(): ETSNullType {
         return new ETSNullType(global.generatedEs2panda._CreateETSNullTypeIr(global.context))

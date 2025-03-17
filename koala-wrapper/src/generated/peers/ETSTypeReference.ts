@@ -36,7 +36,7 @@ export class ETSTypeReference extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 71)
         super(pointer)
-        console.warn("Warning: stub node ETSTypeReference")
+        
     }
     static createETSTypeReference(part?: ETSTypeReferencePart): ETSTypeReference {
         return new ETSTypeReference(global.generatedEs2panda._CreateETSTypeReference(global.context, passNode(part)))

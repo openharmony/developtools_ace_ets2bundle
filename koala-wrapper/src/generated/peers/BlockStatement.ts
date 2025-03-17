@@ -34,7 +34,7 @@ export class BlockStatement extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 7)
         super(pointer)
-        console.warn("Warning: stub node BlockStatement")
+        
     }
     static createBlockStatement(statementList: readonly Statement[]): BlockStatement {
         return new BlockStatement(global.generatedEs2panda._CreateBlockStatement(global.context, passNodeArray(statementList), statementList.length))

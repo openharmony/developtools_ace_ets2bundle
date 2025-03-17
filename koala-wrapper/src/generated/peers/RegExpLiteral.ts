@@ -35,7 +35,7 @@ export class RegExpLiteral extends Literal {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 56)
         super(pointer)
-        console.warn("Warning: stub node RegExpLiteral")
+        
     }
     static createRegExpLiteral(pattern: string, flags: Es2pandaRegExpFlags, flagsStr: string): RegExpLiteral {
         return new RegExpLiteral(global.generatedEs2panda._CreateRegExpLiteral(global.context, pattern, flags, flagsStr))

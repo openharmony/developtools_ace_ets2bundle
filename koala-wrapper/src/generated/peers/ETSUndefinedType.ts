@@ -34,7 +34,7 @@ export class ETSUndefinedType extends TypeNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 63)
         super(pointer)
-        console.warn("Warning: stub node ETSUndefinedType")
+        
     }
     static createETSUndefinedType(): ETSUndefinedType {
         return new ETSUndefinedType(global.generatedEs2panda._CreateETSUndefinedTypeIr(global.context))

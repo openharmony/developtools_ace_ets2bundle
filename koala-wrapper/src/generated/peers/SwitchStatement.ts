@@ -36,7 +36,7 @@ export class SwitchStatement extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 85)
         super(pointer)
-        console.warn("Warning: stub node SwitchStatement")
+        
     }
     static createSwitchStatement(discriminant: Expression | undefined, cases: readonly SwitchCaseStatement[]): SwitchStatement {
         return new SwitchStatement(global.generatedEs2panda._CreateSwitchStatement(global.context, passNode(discriminant), passNodeArray(cases), cases.length))

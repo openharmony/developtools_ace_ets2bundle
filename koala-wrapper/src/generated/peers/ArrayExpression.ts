@@ -37,7 +37,7 @@ import { TypeNode } from "./TypeNode"
 export class ArrayExpression extends AnnotatedExpression {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node ArrayExpression")
+        
     }
     get elements(): readonly Expression[] {
         return unpackNodeArray(global.generatedEs2panda._ArrayExpressionElementsConst(global.context, this.peer))

@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 export class Literal extends Expression {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node Literal")
+        
     }
 }
 export function isLiteral(node: AstNode): node is Literal {

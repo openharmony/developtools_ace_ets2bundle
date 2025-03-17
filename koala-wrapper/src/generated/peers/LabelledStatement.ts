@@ -35,7 +35,7 @@ export class LabelledStatement extends Statement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 44)
         super(pointer)
-        console.warn("Warning: stub node LabelledStatement")
+        
     }
     static createLabelledStatement(ident?: Identifier, body?: Statement): LabelledStatement {
         return new LabelledStatement(global.generatedEs2panda._CreateLabelledStatement(global.context, passNode(ident), passNode(body)))

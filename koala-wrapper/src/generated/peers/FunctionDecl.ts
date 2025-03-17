@@ -33,7 +33,7 @@ import { ScriptFunction } from "./ScriptFunction"
 export class FunctionDecl extends ScriptFunction {
      constructor(pointer: KNativePointer) {
         super(pointer)
-        console.warn("Warning: stub node FunctionDecl")
+        
     }
 }
 export function isFunctionDecl(node: AstNode): node is FunctionDecl {

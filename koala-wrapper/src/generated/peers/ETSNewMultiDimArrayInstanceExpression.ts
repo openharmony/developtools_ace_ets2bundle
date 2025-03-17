@@ -35,7 +35,7 @@ export class ETSNewMultiDimArrayInstanceExpression extends Expression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 76)
         super(pointer)
-        console.warn("Warning: stub node ETSNewMultiDimArrayInstanceExpression")
+        
     }
     static createETSNewMultiDimArrayInstanceExpression(typeReference: TypeNode | undefined, dimensions: readonly Expression[]): ETSNewMultiDimArrayInstanceExpression {
         return new ETSNewMultiDimArrayInstanceExpression(global.generatedEs2panda._CreateETSNewMultiDimArrayInstanceExpression(global.context, passNode(typeReference), passNodeArray(dimensions), dimensions.length))

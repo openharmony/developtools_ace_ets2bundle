@@ -37,7 +37,7 @@ export class CallExpression extends MaybeOptionalExpression {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 10)
         super(pointer)
-        console.warn("Warning: stub node CallExpression")
+        
     }
     static createCallExpression(callee: Expression | undefined, _arguments: readonly Expression[], typeParams: TSTypeParameterInstantiation | undefined, optional_arg: boolean, trailingComma: boolean): CallExpression {
         return new CallExpression(global.generatedEs2panda._CreateCallExpression(global.context, passNode(callee), passNodeArray(_arguments), _arguments.length, passNode(typeParams), optional_arg, trailingComma))

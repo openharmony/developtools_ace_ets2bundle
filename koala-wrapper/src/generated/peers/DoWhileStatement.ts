@@ -36,7 +36,7 @@ export class DoWhileStatement extends LoopStatement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 24)
         super(pointer)
-        console.warn("Warning: stub node DoWhileStatement")
+        
     }
     static createDoWhileStatement(body?: Statement, test?: Expression): DoWhileStatement {
         return new DoWhileStatement(global.generatedEs2panda._CreateDoWhileStatement(global.context, passNode(body), passNode(test)))

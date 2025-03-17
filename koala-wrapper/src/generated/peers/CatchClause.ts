@@ -36,7 +36,7 @@ export class CatchClause extends TypedStatement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 11)
         super(pointer)
-        console.warn("Warning: stub node CatchClause")
+        
     }
     static createCatchClause(param?: Expression, body?: BlockStatement): CatchClause {
         return new CatchClause(global.generatedEs2panda._CreateCatchClause(global.context, passNode(param), passNode(body)))

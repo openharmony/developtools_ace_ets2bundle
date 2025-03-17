@@ -41,7 +41,7 @@ export class TSInterfaceDeclaration extends TypedStatement {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, 130)
         super(pointer)
-        console.warn("Warning: stub node TSInterfaceDeclaration")
+        
     }
     static createTSInterfaceDeclaration(_extends: readonly TSInterfaceHeritage[], id: AstNode | undefined, typeParams: AstNode | undefined, body: AstNode | undefined, isStatic: boolean, isExternal: boolean): TSInterfaceDeclaration {
         return new TSInterfaceDeclaration(global.generatedEs2panda._CreateTSInterfaceDeclaration(global.context, passNodeArray(_extends), _extends.length, passNode(id), passNode(typeParams), passNode(body), isStatic, isExternal))
