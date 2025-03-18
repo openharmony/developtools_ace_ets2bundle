@@ -8,6 +8,7 @@
     "multiSelectable", "enableScrollInteraction", "onScrollIndex", "onScrollBegin", "scrollSnapAlign", "fadingEdge",
     "alignListItem", "nestedScroll", "friction", "contentStartOffset", "contentEndOffset", "childrenMainSize",
     "maintainVisibleContentPosition", "onScrollFrameBegin", "onScrollStart", "onScrollVisibleContentChange",
-    "flingSpeedLimit", "clipContent", "onWillScroll", "onDidScroll", "scrollBarColor", "scrollBarWidth", "backToTop"
+    "flingSpeedLimit", "clipContent", "onWillScroll", "onDidScroll", "scrollBarColor", "scrollBarWidth", "backToTop",
+    "stackFromEnd"
   ]
 }
