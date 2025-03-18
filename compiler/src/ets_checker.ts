@@ -373,6 +373,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
       return reuseLanguageServiceForDepChange && needReCheckForChangedDepUsers;
     }
   };
+  ts.PerformanceDotting?.setPerformanceSwitch(projectConfig?.perf);
 
   if (process.env.watchMode === 'true') {
     const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ETS_CHECKER_CREATE_LANGUAGE_SERVICE);
