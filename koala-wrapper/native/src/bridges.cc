@@ -263,3 +263,11 @@ KBoolean impl_IsETSFunctionType(KNativePointer nodePtr)
     return GetImpl()->IsETSFunctionType(node);
 }
 KOALA_INTEROP_1(IsETSFunctionType, KBoolean, KNativePointer)
+
+KInt impl_GenerateTsDeclarationsFromContext(KNativePointer contextPtr, KStringPtr &outputDeclEts, KStringPtr &outputEts,
+                                            KBoolean exportAll)
+{
+    auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
+    return GetImpl()->GenerateTsDeclarationsFromContext(context, outputDeclEts.data(), outputEts.data(), exportAll);
+}
+KOALA_INTEROP_4(GenerateTsDeclarationsFromContext, KInt, KNativePointer, KStringPtr, KStringPtr, KBoolean)

@@ -610,6 +610,10 @@ export class Es2pandaNativeModule {
     _ExternalSourcePrograms(instance: KNativePointer): KNativePointer {
         throw new Error("Not implemented");
     }
+
+    _GenerateTsDeclarationsFromContext(config: KPtr, outputDeclEts: String, outputEts: String, exportAll: KBoolean): KPtr {
+        throw new Error("Not implemented")
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {
