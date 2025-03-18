@@ -174,3 +174,37 @@ export function getTypeParamsFromClassDecl(node: arkts.ClassDeclaration | undefi
 export function getTypeNameFromTypeParameter(node: arkts.TypeParameter | undefined): string | undefined {
     return node?.name?.name;
 }
+
+export function createOptionalClassProperty(
+    name: string,
+    property: arkts.ClassProperty,
+    stageManagementIdent: string,
+    modifiers: arkts.Es2pandaModifierFlags
+): arkts.ClassProperty {
+    return arkts.factory.createClassProperty(
+        arkts.factory.createIdentifier(name).setOptional(true),
+        undefined,
+        stageManagementIdent.length ? createStageManagementType(stageManagementIdent, property) : 
+        property.typeAnnotation,
+        modifiers,
+        false
+    );
+}
+
+export function createStageManagementType (stageManagementIdent: string, property: arkts.ClassProperty): arkts.ETSTypeReference {
+    return arkts.factory.createTypeReference(
+        arkts.factory.createTypeReferencePart(
+            arkts.factory.createIdentifier(stageManagementIdent),
+            arkts.factory.createTSTypeParameterInstantiation(
+                [
+                    arkts.factory.createTypeReference(
+                        arkts.factory.createTypeReferencePart(
+                            arkts.factory.createIdentifier(property.typeAnnotation ? 
+                                property.typeAnnotation.dumpSrc() : 'undefined')
+                        )
+                    )
+                ]
+            )
+        )
+    );
+}

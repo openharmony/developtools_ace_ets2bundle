@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
+import * as arkts from "@koalaui/libarkts";
+import { annotation } from "../../common/arkts-utils";
 
 export enum DecoratorNames {
     ENTRY = "Entry",
@@ -27,6 +28,7 @@ export enum DecoratorNames {
     OBJECT_LINK = "ObjectLink",
     OBSERVED = "Observed",
     WATCH = "Watch",
+    BUILDER = "Builder",
     BUILDER_PARAM = "BuilderParam",
     CUSTOM_DIALOG = "CustomDialog",
     LOCAL_STORAGE_PROP = "LocalStorageProp",
@@ -37,7 +39,10 @@ export function isDecoratorAnnotation(anno: arkts.AnnotationUsage, decoratorName
     return !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName;
 }
 
-export function hasDecorator(property: arkts.ClassProperty | arkts.ClassDefinition, decoratorName: DecoratorNames): boolean {
+export function hasDecorator(property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition, decoratorName: DecoratorNames): boolean {
+    if (arkts.isMethodDefinition(property)) {
+        return property.scriptFunction.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName));
+    }
     return property.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName));
 }
 
@@ -64,7 +69,7 @@ export function createGetter(
         ),
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
-    )
+    );
 
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET,
@@ -80,6 +85,7 @@ export function createSetter(
     type: arkts.TypeNode | undefined, 
     left: arkts.MemberExpression,
     right: arkts.AstNode,
+    needMemo: boolean = false
 ): arkts.MethodDefinition {
     const body = arkts.factory.createBlock(
         [
@@ -89,28 +95,20 @@ export function createSetter(
                 right
             )
         ]
-    )
-
+    );
+    const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
+        arkts.factory.createIdentifier('value', type),
+        undefined
+    );
+    if (needMemo) {
+        param.annotations = [annotation("memo")];
+    }
     const scriptFunction = arkts.factory.createScriptFunction(
         body,
-        arkts.FunctionSignature.createFunctionSignature(
-            undefined,
-            [
-                arkts.factory.createParameterDeclaration(
-                    arkts.factory.createIdentifier(
-                        'value',
-                        type
-                    ),
-                    undefined
-                )
-            ],
-            undefined,
-            false
-        ),
-        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
+        arkts.FunctionSignature.createFunctionSignature(undefined, [param], undefined, false),
+        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_SETTER,
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
-    )
-
+    );
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET,
         arkts.factory.createIdentifier(name),
@@ -118,4 +116,48 @@ export function createSetter(
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
         false
     );
+}
+
+export function generateThisValue(newName: string): arkts.MemberExpression {
+    const member: arkts.MemberExpression = arkts.factory.createMemberExpression(
+        arkts.factory.createThisExpression(),
+        arkts.factory.createIdentifier(`${newName}`), // TODO: probably need to change this.
+        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+        false,
+        false
+    );
+    return arkts.factory.createMemberExpression(
+        member,
+        arkts.factory.createIdentifier('value'),
+        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+        false,
+        false
+    );
+}
+
+function getValueStr(node: arkts.AstNode): string | undefined {
+    if (!arkts.isClassProperty(node) || !node.value) return undefined;
+    return arkts.isStringLiteral(node.value) ? node.value.str : undefined;
+}
+
+function getAnnotationValue(anno: arkts.AnnotationUsage, decoratorName: DecoratorNames): string | undefined {
+    const isSuitableAnnotation: boolean = !!anno.expr 
+        && arkts.isIdentifier(anno.expr) 
+        && anno.expr.name === decoratorName;
+    if (isSuitableAnnotation && anno.properties.length === 1) {
+        return getValueStr(anno.properties.at(0)!);
+    }
+    return undefined;
+}
+
+export function getValueInAnnotation(node: arkts.ClassProperty, decoratorName: DecoratorNames): string | undefined {
+    const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
+    for (let i = 0; i < annotations.length; i++) {
+        const anno: arkts.AnnotationUsage = annotations[i];
+        const str: string | undefined = getAnnotationValue(anno, decoratorName);
+        if (!!str) {
+            return str;
+        }
+    }
+    return undefined;
 }
