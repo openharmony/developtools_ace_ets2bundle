@@ -38,6 +38,7 @@ import {
 import {
     EntryHandler
 } from "./entry-translators/entry"
+import { DecoratorNames, hasDecorator } from "./property-translators/utils";
 
 function isCustomComponentClass(node: arkts.ClassDeclaration): boolean {
     if (!node.definition?.ident?.name) return false;
@@ -55,6 +56,13 @@ function isKnownMethodDefinition(method: arkts.MethodDefinition, name: string): 
     // For now, we only considered matched method name.
     const isNameMatched: boolean = method.name?.name === name;
     return isNameMatched;
+}
+
+function isEtsGlobalClass(node: arkts.ClassDeclaration): boolean {
+    if (node.definition?.ident?.name === 'ETSGLOBAL') {
+        return true;
+    }
+    return false;
 }
 
 function transformBuildMethod(
@@ -203,55 +211,6 @@ function tranformPropertyMembers(
     return collect(...collections, ...propertyMembers);
 }
 
-function isCustomComponentInterface(node: arkts.TSInterfaceDeclaration): boolean {
-    const structCollection: Set<string> = arkts.GlobalInfo
-        .getInfoInstance()
-        .getStructCollection();
-
-    if (node.id && node.id.name) {
-        const customComponentName: string | undefined = 
-            getCustomComponentNameFromInitializerOptions(node.id.name);
-        return !!customComponentName && structCollection.has(customComponentName);
-    }
-    return false;
-}
-
-function addVariableInInterface(
-    interfaceNode: arkts.TSInterfaceDeclaration
-): arkts.TSInterfaceDeclaration {
-    let interfaceName: string | undefined;
-    if (interfaceNode.id && interfaceNode.id.name) {
-        interfaceName = getCustomComponentNameFromInitializerOptions(interfaceNode.id.name);
-    }
-
-    if (!interfaceName) {
-        throw new Error("Should get initializerOptions");
-    }
-
-    const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo
-        .getInfoInstance()
-        .getStructInfo(interfaceName);
-    const paramters: arkts.AstNode[] = [];
-    currentStructInfo.stateVariables.forEach((propertyItem) => {
-        paramters.push(propertyItem.originNode)
-        paramters.push(propertyItem.translatedNode)
-    });
-    const body: arkts.TSInterfaceBody = arkts.factory.createInterfaceBody([
-        arkts.factory.createBlock(paramters)
-    ]);
-    const newInterface: arkts.TSInterfaceDeclaration = arkts.factory.updateInterfaceDeclaration(
-        interfaceNode,
-        interfaceNode.extends,
-        interfaceNode.id,
-        interfaceNode.typeParams,
-        body,
-        interfaceNode.isStatic,
-        // TODO: how do I get it?
-        true
-    );
-    return newInterface;
-}
-
 function tranformClassMembers(
     node: arkts.ClassDeclaration, 
     isDecl?: boolean,
@@ -290,6 +249,10 @@ function tranformClassMembers(
     const updateMembers: arkts.AstNode[] = definition.body
         .filter((member)=>!arkts.isClassProperty(member))
         .map((member: arkts.AstNode) => {
+            if (arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.BUILDER)) {
+                member.scriptFunction.setAnnotations([annotation("memo")]);
+                return member;
+            }
             if (
                 arkts.isMethodDefinition(member) 
                 && isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI)
@@ -345,6 +308,19 @@ type ScopeInfo = {
     hasReusableRebind?: boolean
 }
 
+function transformEtsGlobalClassMembers(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
+    if (!node.definition) {
+        return node;
+    }
+    node.definition.body.map((member: arkts.AstNode) => {
+        if (arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.BUILDER)) {
+            member.scriptFunction.setAnnotations([annotation("memo")]);
+        }
+        return member;
+    });
+    return node;
+}
+
 export class StructTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
 
@@ -386,12 +362,12 @@ export class StructTransformer extends AbstractVisitor {
             );
             this.exit(beforeChildren);
             return newClass;
+        } else if (arkts.isClassDeclaration(node) && isEtsGlobalClass(node)) {
+            return transformEtsGlobalClassMembers(node);
         } else if (arkts.isClassDeclaration(node)) {
             if (EntryHandler.instance.hasEntryAnnotation(node)) {
                 EntryHandler.instance.updateEntryAnnotion(node)
             }
-        } else if (arkts.isTSInterfaceDeclaration(node) && isCustomComponentInterface(node)) {
-            return addVariableInInterface(node);
         }
         return node;
     }

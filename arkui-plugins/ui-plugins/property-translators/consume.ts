@@ -18,7 +18,9 @@ import * as arkts from "@koalaui/libarkts"
 import { 
     createGetter, 
     createSetter,
-    generateThisValue
+    DecoratorNames,
+    generateThisValue,
+    getValueInAnnotation,
 } from "./utils";
 import { PropertyTranslator } from "./base";
 import { 
@@ -31,7 +33,7 @@ import {
 } from "../../common/arkts-utils";
 import { createOptionalClassProperty } from "../utils";
 
-export class StateTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
+export class ConsumeTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
@@ -41,7 +43,7 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
-        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
+        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName);
         currentStructInfo.initializeBody.push(initializeStruct);
         arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
@@ -79,24 +81,16 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
     }
 
     generateInitializeStruct(        
-        newName: string, 
-        originalName: string
+        newName: string
     ): arkts.AstNode {
-        const binaryItem = arkts.factory.createBinaryExpression(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createIdentifier('initializers').setOptional(true),
-                arkts.factory.createIdentifier(originalName),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
-            this.property.value ?? arkts.factory.createIdentifier('undefined'),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-        );
-        const call = arkts.factory.createCallExpression(
-            arkts.factory.createIdentifier('stateOf'),
-            this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
-            [binaryItem]
+        const consumeValueStr: string | undefined = getValueInAnnotation(this.property, DecoratorNames.CONSUME);
+        if (!consumeValueStr) {
+            throw new Error("Consume required only one value!!") // TODO: replace this with proper error message.
+        }
+        const right: arkts.CallExpression = arkts.factory.createCallExpression(
+            arkts.factory.createIdentifier('contextLocal'),
+            this.property.typeAnnotation ? [this.property.typeAnnotation] : undefined,
+            [arkts.factory.create1StringLiteral(consumeValueStr)]
         );
         return arkts.factory.createAssignmentExpression(
             arkts.factory.createMemberExpression(
@@ -107,7 +101,7 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
                 false
             ),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            call
+            right
         );
     }
 }

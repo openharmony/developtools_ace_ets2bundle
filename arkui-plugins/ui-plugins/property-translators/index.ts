@@ -18,10 +18,15 @@ import * as arkts from "@koalaui/libarkts"
 import { PropertyTranslator } from "./base";
 import { DecoratorNames, hasDecorator } from "./utils";
 import { StateTranslator } from "./state";
+import { PropTranslator } from "./prop";
 import { StorageLinkTranslator } from "./storagelink";
+import { StoragePropTranslator } from "./storageProp";
+import { ProvideTranslator } from "./provide";
+import { ConsumeTranslator } from "./consume";
 import { regularPropertyTranslator } from "./regularProperty";
 import { staticPropertyTranslator } from "./staticProperty";
 import { isStatic } from "../utils";
+import { BuilderParamTranslator } from "./builderParam";
 
 export { PropertyTranslator };
 
@@ -34,6 +39,21 @@ export function classifyProperty(member: arkts.AstNode, structName: string): Pro
     }
     if (hasDecorator(member, DecoratorNames.STORAGE_LINK)) {
         return new StorageLinkTranslator(member, structName);
+    }
+    if (hasDecorator(member, DecoratorNames.STORAGE_PROP)) {
+        return new StoragePropTranslator(member, structName);
+    }
+    if (hasDecorator(member, DecoratorNames.PROP)) {
+        return new PropTranslator(member, structName);
+    }
+    if (hasDecorator(member, DecoratorNames.PROVIDE)) {
+        return new ProvideTranslator(member, structName);
+    }
+    if (hasDecorator(member, DecoratorNames.CONSUME)) {
+        return new ConsumeTranslator(member, structName);
+    }
+    if (hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
+        return new BuilderParamTranslator(member, structName);
     }
 
     return new regularPropertyTranslator(member, structName);

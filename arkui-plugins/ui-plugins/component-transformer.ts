@@ -20,10 +20,17 @@ const nullptr = interop.nullptr
 import { AbstractVisitor, VisitorOptions } from "../common/abstract-visitor";
 import { hasDecorator, DecoratorNames, isDecoratorAnnotation } from "./property-translators/utils"
 import { EntryHandler } from "./entry-translators/entry"
-import { CustomComponentNames } from "./utils";
+import { CustomComponentNames, createOptionalClassProperty } from "./utils";
+import { annotation } from "../common/arkts-utils";
+import { backingField, expectName } from "../common/arkts-utils";
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string
+}
+
+interface ComponentContext {
+    componentNames: string[], 
+    structMembers: Map<string, arkts.AstNode[]>,
 }
 
 export class ComponentTransformer extends AbstractVisitor {
@@ -37,7 +44,7 @@ export class ComponentTransformer extends AbstractVisitor {
         this.structAnnotationMap = new Map();
     }
 
-    private context: { componentNames: string[] } = { componentNames: [] }
+    private context: ComponentContext = { componentNames: [], structMembers: new Map() };
 
     isComponentStruct(node: arkts.StructDeclaration): boolean {
         // For now just rewrite any struct
@@ -81,8 +88,11 @@ export class ComponentTransformer extends AbstractVisitor {
                 arkts.factory.createIdentifier(
                     `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${name}`
                 ),
-                nullptr, // TODO: wtf
-                arkts.factory.createBlock([]),
+                undefined, // TODO: wtf
+                arkts.factory.createInterfaceBody(
+                    this.context.structMembers.get(name) ? 
+                    this.context.structMembers.get(name)! : []
+                ),
                 false,
                 false
             )
@@ -149,15 +159,39 @@ export class ComponentTransformer extends AbstractVisitor {
         )
 
         if (arkts.isStructDeclaration(node)) {
-            return arkts.factory.createClassDeclaration(
-                newDefinition
-            )
+            this.collectComponentMembers(node, className);
+            return arkts.factory.createClassDeclaration(newDefinition);
         } else {
             return arkts.factory.updateClassDeclaration(
                 node,
                 newDefinition
             )
         }
+    }
+
+    collectComponentMembers(node: arkts.StructDeclaration, className: string): void {
+        if (!this.context.structMembers.has(className)) {
+            this.context.structMembers.set(className, []);
+        }
+        node.definition.body.map(it => {
+            if (arkts.isClassProperty(it)) {
+                this.context.structMembers.get(className)!.push(...this.createInterfaceInnerMember(it));
+            }
+        });
+    }
+
+    createInterfaceInnerMember(member: arkts.ClassProperty): arkts.ClassProperty[] {
+        const originalName: string = expectName(member.key);
+        const newName: string = backingField(originalName);
+        const originMember: arkts.ClassProperty = createOptionalClassProperty(originalName, member,
+            '', arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
+        if (hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
+            originMember.setAnnotations([annotation("memo")]);
+            return [originMember];
+        }
+        const newMember: arkts.ClassProperty = createOptionalClassProperty(newName, member,
+            "MutableState", arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
+        return [originMember, newMember];
     }
 
     collectComponentAnnotations(statement: arkts.Statement) {
