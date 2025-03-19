@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class OpaqueTypeNode extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 154)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_OPAQUE_TYPE_NODE)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class OpaqueTypeNode extends TypeNode {
 export function isOpaqueTypeNode(node: AstNode): node is OpaqueTypeNode {
     return node instanceof OpaqueTypeNode
 }
-if (!nodeByType.has(154)) {
-    nodeByType.set(154, OpaqueTypeNode)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_OPAQUE_TYPE_NODE)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_OPAQUE_TYPE_NODE, OpaqueTypeNode)
 }

@@ -34,7 +34,7 @@ import { Expression } from "./Expression"
 import { Statement } from "./Statement"
 export class ForUpdateStatement extends LoopStatement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 33)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_FOR_UPDATE_STATEMENT)
         super(pointer)
         
     }
@@ -57,6 +57,6 @@ export class ForUpdateStatement extends LoopStatement {
 export function isForUpdateStatement(node: AstNode): node is ForUpdateStatement {
     return node instanceof ForUpdateStatement
 }
-if (!nodeByType.has(33)) {
-    nodeByType.set(33, ForUpdateStatement)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_FOR_UPDATE_STATEMENT)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_FOR_UPDATE_STATEMENT, ForUpdateStatement)
 }

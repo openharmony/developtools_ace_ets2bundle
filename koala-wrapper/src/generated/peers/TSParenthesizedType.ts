@@ -33,7 +33,7 @@ import { TypeNode } from "./TypeNode"
 import { Expression } from "./Expression"
 export class TSParenthesizedType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 108)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_PARENT_TYPE)
         super(pointer)
         
     }
@@ -50,6 +50,6 @@ export class TSParenthesizedType extends TypeNode {
 export function isTSParenthesizedType(node: AstNode): node is TSParenthesizedType {
     return node instanceof TSParenthesizedType
 }
-if (!nodeByType.has(108)) {
-    nodeByType.set(108, TSParenthesizedType)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_PARENT_TYPE)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_PARENT_TYPE, TSParenthesizedType)
 }

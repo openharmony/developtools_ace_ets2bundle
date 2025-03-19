@@ -32,7 +32,7 @@ import {
 import { Expression } from "./Expression"
 export class NewExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 49)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_NEW_EXPRESSION)
         super(pointer)
         
     }
@@ -52,6 +52,6 @@ export class NewExpression extends Expression {
 export function isNewExpression(node: AstNode): node is NewExpression {
     return node instanceof NewExpression
 }
-if (!nodeByType.has(49)) {
-    nodeByType.set(49, NewExpression)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_NEW_EXPRESSION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_NEW_EXPRESSION, NewExpression)
 }

@@ -32,7 +32,7 @@ import {
 import { Expression } from "./Expression"
 export class TSExternalModuleReference extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 89)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_EXTERNAL_MODULE_REFERENCE)
         super(pointer)
         
     }
@@ -49,6 +49,6 @@ export class TSExternalModuleReference extends Expression {
 export function isTSExternalModuleReference(node: AstNode): node is TSExternalModuleReference {
     return node instanceof TSExternalModuleReference
 }
-if (!nodeByType.has(89)) {
-    nodeByType.set(89, TSExternalModuleReference)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_EXTERNAL_MODULE_REFERENCE)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_EXTERNAL_MODULE_REFERENCE, TSExternalModuleReference)
 }
