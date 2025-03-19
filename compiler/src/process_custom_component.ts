@@ -472,7 +472,7 @@ function isForbiddenAssignToComponentV2(item: ts.PropertyAssignment, itemName: s
 }
 
 // isFunctionType 
-function isFunctionType(type: ts.Type): boolean {
+export function isFunctionType(type: ts.Type): boolean {
   if (type.types && type.types.length) {
     return !type.types.some((item: ts.Type) => {
       return !isFunctionType(item);
