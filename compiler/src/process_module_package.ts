@@ -17,7 +17,10 @@ import ts from 'typescript';
 import path from 'path';
 
 import { projectConfig } from '../main';
-import { resourceFileName } from './process_ui_syntax';
+import {
+  resourceFileName,
+  isDynamic
+} from './process_ui_syntax';
 import {
   PAGE_PATH,
   INTEGRATED_HSP,
@@ -66,9 +69,9 @@ function moduleType(): string {
   return constantDefine.FOLLOW_WITH_HAP;
 }
 
-export function routerBundleOrModule(context: ts.TransformationContext, isByteCodeHar: boolean, type: string): ts.PropertyAssignment {
+export function routerBundleOrModule(context: ts.TransformationContext, type: string): ts.PropertyAssignment {
   const typeKey: string = type === RESOURCE_NAME_BUNDLE ? RESOURCE_NAME_BUNDLE : RESOURCE_NAME_MODULE;
-  if (isByteCodeHar) {
+  if (isDynamic()) {
     return context.factory.createPropertyAssignment(
       context.factory.createIdentifier(typeKey),
       context.factory.createIdentifier(type === RESOURCE_NAME_BUNDLE ? (projectConfig.allowEmptyBundleName ? '' : '__BUNDLE_NAME__') : '__MODULE_NAME__')

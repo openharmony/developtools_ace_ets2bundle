@@ -803,31 +803,31 @@ function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment>, re
     projectConfig.bundleName = '__harDefaultBundleName__';
     projectConfig.moduleName = '__harDefaultModuleName__';
   }
-  const isByteCodeHar: boolean = projectConfig.compileHar && projectConfig.byteCodeHar;
-  const moduleNameNode: ts.Expression = createResourceModuleNode(resourceModuleName, isResourceModule, isByteCodeHar);
+  const isDynamicBundleOrModule: boolean = isDynamic();
+  const moduleNameNode: ts.Expression = createResourceModuleNode(resourceModuleName, isResourceModule, isDynamicBundleOrModule);
   if (projectConfig.bundleName || projectConfig.bundleName === '') {
     propertyArray.push(ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_BUNDLE),
       (projectConfig.resetBundleName || projectConfig.allowEmptyBundleName) ? ts.factory.createStringLiteral('') :
-        createBundleOrModuleNode(isByteCodeHar, 'bundleName')
+        createBundleOrModuleNode(isDynamicBundleOrModule, 'bundleName')
     ));
   }
   if (projectConfig.moduleName || projectConfig.moduleName === '' || moduleNameNode) {
     propertyArray.push(ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_MODULE),
-      isResourceModule ? moduleNameNode : createBundleOrModuleNode(isByteCodeHar, 'moduleName')
+      isResourceModule ? moduleNameNode : createBundleOrModuleNode(isDynamicBundleOrModule, 'moduleName')
     ));
   }
 }
 
 function createResourceModuleNode(resourceModuleName: string, isResourceModule: boolean,
-  isByteCodeHar: boolean): ts.Expression {
+  isDynamicBundleOrModule: boolean): ts.Expression {
   if (isResourceModule) {
     if (resourceModuleName) {
       const moduleName: string = resourceModuleName.replace(/^\[|\]$/g, '');
       return ts.factory.createStringLiteral(moduleName);
     }
-    if (isByteCodeHar) {
+    if (isDynamicBundleOrModule) {
       return ts.factory.createIdentifier('__MODULE_NAME__');
     }
     return projectConfig.moduleName ? ts.factory.createStringLiteral(projectConfig.moduleName) : undefined;
@@ -835,8 +835,8 @@ function createResourceModuleNode(resourceModuleName: string, isResourceModule: 
   return undefined;
 }
 
-function createBundleOrModuleNode(isByteCodeHar: boolean, type: string): ts.Expression {
-  if (isByteCodeHar) {
+function createBundleOrModuleNode(isDynamicBundleOrModule: boolean, type: string): ts.Expression {
+  if (isDynamicBundleOrModule) {
     return ts.factory.createIdentifier(type === 'bundleName' ? '__BUNDLE_NAME__' : '__MODULE_NAME__');
   }
   return ts.factory.createStringLiteral(type === 'bundleName' ? projectConfig.bundleName :
@@ -1580,7 +1580,6 @@ function loadDocumentWithRoute(context: ts.TransformationContext, name: string, 
 
 function createRegisterNamedRoute(context: ts.TransformationContext, newExpressionParams: ts.NewExpression[],
   isObject: boolean, entryOptionNode: ts.Expression, hasRouteName: boolean): ts.ExpressionStatement {
-  const isByteCodeHar: boolean = projectConfig.compileHar && projectConfig.byteCodeHar;
   return context.factory.createExpressionStatement(context.factory.createCallExpression(
     context.factory.createIdentifier(REGISTER_NAMED_ROUTE),
     undefined,
@@ -1599,8 +1598,8 @@ function createRegisterNamedRoute(context: ts.TransformationContext, newExpressi
       ) : ts.factory.createStringLiteral(''),
       context.factory.createObjectLiteralExpression(
         [
-          routerBundleOrModule(context, isByteCodeHar, RESOURCE_NAME_BUNDLE),
-          routerBundleOrModule(context, isByteCodeHar, RESOURCE_NAME_MODULE),
+          routerBundleOrModule(context, RESOURCE_NAME_BUNDLE),
+          routerBundleOrModule(context, RESOURCE_NAME_MODULE),
           routerOrNavPathWrite(context, PAGE_PATH, projectConfig.projectPath, projectConfig.projectRootPath),
           routerOrNavPathWrite(context, PAGE_FULL_PATH, projectConfig.projectRootPath),
           context.factory.createPropertyAssignment(
@@ -1995,8 +1994,15 @@ function createSharedStorageWithRoute(context: ts.TransformationContext, name: s
 }
 
 function insertImportModuleNode(statements: ts.Statement[], hasUseResource: boolean): ts.Statement[] {
-  if (projectConfig.compileHar && projectConfig.byteCodeHar && (hasUseResource || componentCollection.entryComponent)) {
+  if (isDynamic() && (hasUseResource || componentCollection.entryComponent)) {
     statements.unshift(createAstNodeUtils.createImportNodeForModuleInfo());
   }
   return statements;
+}
+
+// Do you want to start dynamic bundleName or moduleName.
+export function isDynamic(): boolean {
+  const isByteCodeHar: boolean = projectConfig.compileHar && projectConfig.byteCodeHar;
+  const uiTransformOptimization: boolean = !!projectConfig.uiTransformOptimization;
+  return uiTransformOptimization ? uiTransformOptimization : isByteCodeHar;
 }

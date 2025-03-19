@@ -110,6 +110,7 @@ function initProjectConfig(projectConfig) {
   // Packages which need to update version in bytecode har 
   projectConfig.updateVersionInfo = undefined;
   projectConfig.allowEmptyBundleName = false;
+  projectConfig.uiTransformOptimization = false;
 }
 
 function initProjectPathConfig(projectConfig) {
@@ -1066,7 +1067,7 @@ const partialUpdateConfig = {
   optimizeComponent: true,
   arkTSVersion: undefined,
   skipTscOhModuleCheck: false,
-  skipArkTSStaticBlocksCheck: false,
+  skipArkTSStaticBlocksCheck: false
 };
 
 function resetMain() {
@@ -1115,6 +1116,7 @@ function resetProjectConfig() {
   projectConfig.patchAbcPath = undefined;
   projectConfig.removeChangedFileListInSdk = false;
   projectConfig.allowEmptyBundleName = false;
+  projectConfig.uiTransformOptimization = false;
   const props = ['projectPath', 'buildPath', 'aceModuleBuild', 'manifestFilePath', 'aceProfilePath',
     'aceModuleJsonPath', 'aceSuperVisualPath', 'hashProjectPath', 'aceBuildJson', 'cachePath',
     'aceSoPath', 'localPropertiesPath', 'projectProfilePath', 'isPreview', 'compileMode', 'runtimeOS',
