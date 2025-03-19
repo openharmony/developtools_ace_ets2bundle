@@ -7242,43 +7242,6 @@ KNativePointer impl_UpdateEmptyStatement(KNativePointer context, KNativePointer 
 }
 KOALA_INTEROP_2(UpdateEmptyStatement, KNativePointer, KNativePointer, KNativePointer);
 
-KNativePointer impl_CreateETSLaunchExpression(KNativePointer context, KNativePointer expr)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _expr = reinterpret_cast<es2panda_AstNode*>(expr);
-    auto result = GetImpl()->CreateETSLaunchExpression(_context, _expr);
-    return result;
-}
-KOALA_INTEROP_2(CreateETSLaunchExpression, KNativePointer, KNativePointer, KNativePointer);
-
-KNativePointer impl_UpdateETSLaunchExpression(KNativePointer context, KNativePointer original, KNativePointer expr)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _original = reinterpret_cast<es2panda_AstNode*>(original);
-    const auto _expr = reinterpret_cast<es2panda_AstNode*>(expr);
-    auto result = GetImpl()->UpdateETSLaunchExpression(_context, _original, _expr);
-    return result;
-}
-KOALA_INTEROP_3(UpdateETSLaunchExpression, KNativePointer, KNativePointer, KNativePointer, KNativePointer);
-
-KBoolean impl_ETSLaunchExpressionIsStaticCallConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ETSLaunchExpressionIsStaticCallConst(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ETSLaunchExpressionIsStaticCallConst, KBoolean, KNativePointer, KNativePointer);
-
-KNativePointer impl_ETSLaunchExpressionCallConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ETSLaunchExpressionCallConst(_context, _receiver);
-    return (void*)result;
-}
-KOALA_INTEROP_2(ETSLaunchExpressionCallConst, KNativePointer, KNativePointer, KNativePointer);
-
 KNativePointer impl_CreateWhileStatement(KNativePointer context, KNativePointer test, KNativePointer body)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);

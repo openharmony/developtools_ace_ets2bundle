@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class TSNeverKeyword extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 99)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_NEVER_KEYWORD)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class TSNeverKeyword extends TypeNode {
 export function isTSNeverKeyword(node: AstNode): node is TSNeverKeyword {
     return node instanceof TSNeverKeyword
 }
-if (!nodeByType.has(99)) {
-    nodeByType.set(99, TSNeverKeyword)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_NEVER_KEYWORD)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_NEVER_KEYWORD, TSNeverKeyword)
 }

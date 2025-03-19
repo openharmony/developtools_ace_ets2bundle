@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 import { Es2pandaMetaPropertyKind } from "./../Es2pandaEnums"
 export class MetaProperty extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 46)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_META_PROPERTY_EXPRESSION)
         super(pointer)
         
     }
@@ -50,6 +50,6 @@ export class MetaProperty extends Expression {
 export function isMetaProperty(node: AstNode): node is MetaProperty {
     return node instanceof MetaProperty
 }
-if (!nodeByType.has(46)) {
-    nodeByType.set(46, MetaProperty)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_META_PROPERTY_EXPRESSION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_META_PROPERTY_EXPRESSION, MetaProperty)
 }
