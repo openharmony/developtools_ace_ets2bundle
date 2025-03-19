@@ -66,7 +66,9 @@ import {
   CONSTANT_STEP_1,
   CONSTANT_STEP_2,
   CONSTANT_STEP_3,
-  GLOBAL_DECLARE_WHITE_LIST
+  GLOBAL_DECLARE_WHITE_LIST,
+  SINCE_TAG_NAME,
+  SINCE_TAG_CHECK_ERROER
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 
@@ -324,6 +326,9 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
       ts.DiagnosticCategory.Warning, '', false));
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSTEM_API_TAG_CHECK_NAME], SYSTEM_API_TAG_CHECK_WARNING, false,
       ts.DiagnosticCategory.Warning, '', false));
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([SINCE_TAG_NAME],
+      SINCE_TAG_CHECK_ERROER, false, ts.DiagnosticCategory.Warning,
+      CANIUSE_FUNCTION_NAME, false, undefined, checkSinceValue));
     // TODO: the third param is to be opened
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSCAP_TAG_CHECK_NAME],
       SYSCAP_TAG_CHECK_WARNING, false, ts.DiagnosticCategory.Warning,
@@ -517,6 +522,38 @@ function collectExternalSyscapInfos(
   });
 }
 
+/**
+ * Determine the necessity of since check.
+ * 
+ * @param jsDocTags 
+ * @param config 
+ * @returns 
+ */
+function checkSinceValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
+  if (!jsDocTags[0]?.parent?.parent) {
+    return false;
+  }
+  const currentNode: ts.HasJSDoc = jsDocTags[0].parent.parent as ts.HasJSDoc;
+  if (!currentNode['jsDoc']) {
+    return false;
+  }
+  let minSince: string = '';
+  const hasSince: boolean = currentNode['jsDoc'].some((doc: ts.JSDoc) => {
+    return doc.tags.some((tag: ts.JSDocTag) => {
+      if (tag.tagName.escapedText.toString() === SINCE_TAG_NAME) {
+        minSince = tag.comment.toString();
+        return true;
+      }
+      return false;
+    });
+  });
+  const compatibleSdkVersion: string = projectConfig.compatibleSdkVersion;
+  if (hasSince && Number(minSince) > Number(compatibleSdkVersion)) {
+    config.message = config.message.replace('$SINCE1', minSince).replace('$SINCE2', compatibleSdkVersion);
+    return true;
+  }
+  return false;
+}
 /**
  * Determine the necessity of syscap check.
  * @param jsDocTags 
