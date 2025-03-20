@@ -91,6 +91,7 @@ import {
   checkHasKeepTs,
   resetKitImportLog
 } from '../../process_kit_import';
+import parseIntent from '../../parse_Intent';
 import { resetProcessComponentMember } from '../../process_component_member';
 import {
   collectReservedNameForObf,
@@ -210,6 +211,12 @@ export function etsTransform() {
       }
     },
     afterBuildEnd() {
+      const cacheSourceMapPath = path.join(projectConfig.aceProfilePath, 'test.json');
+      fs.writeFile(cacheSourceMapPath, JSON.stringify(parseIntent.intentData, null, 2), 'utf-8', (err) => {
+        if (err) {
+          console.error('lmz fail');
+        }
+      });
       // Copy the cache files in the compileArkTS directory to the loader_out directory
       if (projectConfig.compileHar && !projectConfig.byteCodeHar) {
         for (let moduleInfoId of allModuleIds.keys()) {
@@ -373,7 +380,7 @@ async function transform(code: string, id: string) {
     const result: ts.TranspileOutput = ts.transpileModule(newContent, {
       compilerOptions: compilerOptions,
       fileName: id,
-      transformers: { before: [processUISyntax(null)] }
+      transformers: { before: [processUISyntax(globalProgram.program)] }
     });
 
     resetCollection();
@@ -454,7 +461,7 @@ async function transform(code: string, id: string) {
       tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
         {
           before: [
-            processUISyntax(null, false, compilationTime, id),
+            processUISyntax(tsProgram, false, compilationTime, id),
             processKitImport(id, metaInfo, compilationTime, true, lazyImportOptions),
             collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
               shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))
@@ -470,7 +477,7 @@ async function transform(code: string, id: string) {
         undefined : targetSourceFile, undefined);
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
-        [processUISyntax(null, false, compilationTime, id),
+        [processUISyntax(tsProgram, false, compilationTime, id),
         processKitImport(id, metaInfo, compilationTime, false, lazyImportOptions),
         collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
           shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))], false);

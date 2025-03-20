@@ -80,7 +80,8 @@ import {
   PAGE_FULL_PATH,
   LENGTH,
   PUV2_VIEW_BASE,
-  CONTEXT_STACK
+  CONTEXT_STACK,
+  COMPONENT_INTENT_DECORATOR
 } from './pre_define';
 import {
   componentInfo,
@@ -169,14 +170,18 @@ import {
   routerModuleType,
   routerBundleOrModule
 } from './process_module_package';
-
+import parseIntent from './parse_Intent';
+import { getNormalizedOhmUrlByFilepath } from './ark_utils';
+import {
+  IntentLogger
+} from './Intent_Logger';
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
 
 export function processUISyntax(program: ts.Program, ut = false,
-  compilationTime: CompilationTimeStatistics = null, filePath: string = ''): Function {
+  compilationTime: CompilationTimeStatistics = null, filePath: string = '', metaInfo: Object = {}): Function {
   let entryNodeKey: ts.Expression;
   return (context: ts.TransformationContext) => {
     contextGlobal = context;
@@ -403,6 +408,25 @@ export function processUISyntax(program: ts.Program, ut = false,
           });
         }
       } else if (ts.isClassDeclaration(node)) {
+        if (hasDecorator(node, COMPONENT_INTENT_DECORATOR)) {
+          const checker = program.getTypeChecker();
+          const currentFile = filePath; // C:\Users\l00813716\DevEcoStudioProjects\MyApplication6\entry\src\main\ets\pages\Index.ets
+          const realpath = program.getCurrentDirectory();
+          const relativePath = '.\\' + path.relative(realpath, currentFile);
+          const convertedPath = relativePath.replace(/\\+/g, '/');
+          const pkgParams = {
+            pkgName: metaInfo.pkgName,
+            pkgPath: metaInfo.pkgPath
+          };
+          const Logger = IntentLogger.getInstance();
+          const recordName = getNormalizedOhmUrlByFilepath(convertedPath, projectConfig, Logger, pkgParams, filePath);
+          console.log(`recordName------${recordName}`);
+          parseIntent.handleIntent(node, checker, `@normalized:${recordName}`);
+
+          // remove @Intent
+          node = processSendableClass(node);
+        }
+
         if (hasDecorator(node, COMPONENT_SENDABLE_DECORATOR)) {
           if (projectConfig.compileHar && !projectConfig.useTsHar) {
             let warnMessage: string = 'If you use @Sendable in js har, an exception will occur during runtime.\n' +
