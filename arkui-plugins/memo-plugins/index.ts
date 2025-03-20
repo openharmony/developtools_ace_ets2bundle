@@ -23,6 +23,8 @@ import { ParameterTransformer } from "./parameter-transformer";
 import { ProgramVisitor } from "../common/program-visitor";
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from "../common/predefines";
 
+const DEBUG = process.argv.includes('--debug');
+
 export function unmemoizeTransform() {
     return {
         name: 'memo-plugin',
@@ -32,7 +34,9 @@ export function unmemoizeTransform() {
             let node = this.getArkTSAst();
             if (node) {
                 let script: arkts.EtsScript = node;
-                console.log('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
+                if (DEBUG) {
+                    console.log('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
+                }
 
                 const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
                 const parameterTransformer = new ParameterTransformer(positionalIdTracker);
@@ -53,7 +57,10 @@ export function unmemoizeTransform() {
 
                 script = programVisitor.visitor(script);
 
-                console.log('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
+                if (DEBUG) {
+                    console.log('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
+                }
+
 
                 this.setArkTSAst(script);
                 console.log("[MEMO PLUGIN] AFTER CHECKED EXIT");

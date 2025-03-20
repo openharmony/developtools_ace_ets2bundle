@@ -22,6 +22,8 @@ import { PluginContext } from "../common/plugin-context"
 import { ProgramVisitor } from "../common/program-visitor"
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from "../common/predefines"
 
+const DEBUG = process.argv.includes('--debug');
+
 export function uiTransform() {
     return {
         name: 'ui-plugin',
@@ -42,7 +44,9 @@ export function uiTransform() {
 
                 script = programVisitor.visitor(script);
 
-                console.log("[AFTER PARSED SCRIPT]: ", script.dumpSrc());
+                if (DEBUG) {
+                    console.log("[AFTER PARSED SCRIPT]: ", script.dumpSrc());   
+                }
 
                 this.setArkTSAst(script);
                 console.log("[UI PLUGIN] AFTER PARSED EXIT");
@@ -68,7 +72,9 @@ export function uiTransform() {
 
                 script = programVisitor.visitor(script);
 
-                console.log("[AFTER STRUCT SCRIPT] script: ", script.dumpSrc());
+                if (DEBUG) {
+                    console.log("[AFTER STRUCT SCRIPT] script: ", script.dumpSrc());
+                }
 
                 this.setArkTSAst(script);
                 console.log("[UI PLUGIN] AFTER CHECKED EXIT");

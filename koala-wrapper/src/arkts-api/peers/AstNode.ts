@@ -120,6 +120,6 @@ export abstract class AstNode extends ArktsObject {
 export class UnsupportedNode extends AstNode {
     constructor(peer: KPtr) {
         super(peer)
-        console.warn(`Warning: unsupported node ${Es2pandaAstNodeType[nodeType(this)]}`)
+        
     }
 }
