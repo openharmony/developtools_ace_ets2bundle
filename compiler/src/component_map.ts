@@ -47,7 +47,7 @@ export let COMMON_ATTRS: Set<string> = new Set([]);
           }
         } else {
           if (id === COMPONENTS) {
-            COMMON_ATTRS = new Set(json.attrs);
+            COMMON_ATTRS = new Set(json.old_attrs);
           }
         }
       }
