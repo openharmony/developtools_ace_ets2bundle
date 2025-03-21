@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { CustomTextDecoder, float32, int32, int64 } from "#koalaui/common"
+import { CustomTextDecoder, float32, int32, int64 } from "@koalaui/common"
 import { Tags, CallbackResource } from "./SerializerBase";
 import { pointer } from "./InteropTypes"
 import { InteropNativeModule } from "./InteropNativeModule"

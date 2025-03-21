@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { float32, int32, int64 } from "#koalaui/common"
+import { float32, int32, int64 } from "@koalaui/common"
 import { pointer, KPointer } from "./InteropTypes"
 import { wrapCallback } from "./InteropOps"
 import { InteropNativeModule } from "./InteropNativeModule"
