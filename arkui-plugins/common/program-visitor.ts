@@ -29,7 +29,7 @@ export class ProgramVisitor extends AbstractVisitor {
     private state: arkts.Es2pandaContextState;
     private visitors: AbstractVisitor[];
     private skipPrefixNames: string[];
-
+    private filenames: Map<arkts.Program, string> = new Map<arkts.Program, string>;
     constructor(options: ProgramVisitorOptions) {
         super(options);
         this.state = options.state;
@@ -67,6 +67,7 @@ export class ProgramVisitor extends AbstractVisitor {
     
                 const nextProgramArr: arkts.Program[] = externalSource.programs ?? [];
                 for (const nextProgram of nextProgramArr) {
+                    this.filenames.set(nextProgram, externalSource.getName());
                     if (!visited.has(nextProgram.peer)) {
                         queue.push(nextProgram);
                     }
@@ -97,7 +98,7 @@ export class ProgramVisitor extends AbstractVisitor {
         }
 
         console.log(`[AFTER ${count} TRANSFORMER] script: dumpSrc: `, script.dumpSrc());
-        console.log(`[AFTER ${count} TRANSFORMER] script: dumpJson: `, script.dumpJson());
+        // console.log(`[AFTER ${count} TRANSFORMER] script: dumpJson: `, script.dumpJson());
         return script;
     }
 }

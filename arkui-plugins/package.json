@@ -9,7 +9,8 @@
   "scripts": {
     "local:install": "chmod 777 ./npm_preinstall.sh && ./npm_preinstall.sh --init",
     "compile:plugins": "./node_modules/.bin/babel . --out-dir lib --extensions .ts",
-    "test": "jest --config ./jest-test.config.ts"
+    "test": "jest --config ./jest-test.config.ts",
+    "compile": "npm run compile:plugins && cp -rf ./lib $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/"
   },
   "devDependencies": {
     "@babel/cli": "7.20.7",

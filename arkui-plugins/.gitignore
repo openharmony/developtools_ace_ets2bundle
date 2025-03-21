@@ -13,3 +13,5 @@ package-lock.json
 
 coverage/
 **/*/generated
+
+test/demo/localtest/build_config.json
