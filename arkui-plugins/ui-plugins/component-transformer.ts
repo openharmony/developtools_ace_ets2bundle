@@ -146,7 +146,7 @@ export class ComponentTransformer extends AbstractVisitor {
 
     visitor(node: arkts.AstNode): arkts.AstNode {
         const newNode = this.visitEachChild(node)
-        if (arkts.isEtsScript(newNode)) {
+        if (arkts.isEtsScript(newNode)&&arkts.global.generatedEs2panda._ETSModuleIsETSScriptConst(arkts.global.context, newNode.peer)) {
             return this.processEtsScript(newNode)
         }
         if (arkts.isStructDeclaration(newNode) && this.isComponentStruct(newNode)) {

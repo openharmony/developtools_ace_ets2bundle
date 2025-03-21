@@ -44,3 +44,9 @@ export class ComExampleTrivialApplication extends UserView {
         return wrapper
     }
 }
+
+export namespace MyNameSpace {
+    export function myFunc(): void {
+        return 
+    } 
+}
