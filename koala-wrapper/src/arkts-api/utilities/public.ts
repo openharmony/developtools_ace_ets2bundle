@@ -14,7 +14,7 @@
  */
 
 import { global } from "../static/global"
-import { isNumber, throwError } from "../../utils"
+import { isNumber, throwError, getEnumName } from "../../utils"
 import { KNativePointer, KInt, nullptr, withStringResult } from "#koalaui/interop"
 import { passNode, passString, unpackNodeArray, unpackNonNullableNode } from "./private"
 import { isFunctionDeclaration, isMemberExpression } from "../factory/nodeTests"
@@ -23,7 +23,7 @@ import type { AstNode } from "../peers/AstNode"
 import { ClassDefinition, ETSImportDeclaration, isClassDefinition, isScriptFunction, type AnnotationUsage } from "../../generated"
 
 export function proceedToState(state: Es2pandaContextState): void {
-    console.log("[TS WRAPPER] PROCEED TO STATE: ", state);
+    console.log("[TS WRAPPER] PROCEED TO STATE: ", getEnumName(Es2pandaContextState, state));
     if (state <= global.es2panda._ContextState(global.context)) {
         console.log("[TS WRAPPER] PROCEED TO STATE: SKIPPING");
         return

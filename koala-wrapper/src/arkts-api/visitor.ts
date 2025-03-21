@@ -286,14 +286,14 @@ export function visitEachChild(
         _node.modifiers = node.modifiers;
         return _node;
     }
-    if (isTSInterfaceBody(node)) {
-        const _node = factory.updateInterfaceBody(
-            node,
-            nodesVisitor(node.body, visitor)
-        )
-        _node.modifiers = node.modifiers;
-        return _node;
-    }
+    // if (isTSInterfaceBody(node)) {
+    //     const _node = factory.updateInterfaceBody(
+    //         node,
+    //         nodesVisitor(node.body, visitor)
+    //     )
+    //     _node.modifiers = node.modifiers;
+    //     return _node;
+    // }
     if (isIfStatement(node)) {
         const _node = factory.updateIfStatement(
             node,
