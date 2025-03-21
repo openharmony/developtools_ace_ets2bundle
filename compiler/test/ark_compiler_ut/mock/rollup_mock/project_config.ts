@@ -30,14 +30,16 @@ import {
   NODE_JS_PATH,
   PORT_DEFAULT,
   ENTRY_MODULE_VERSION_DEFAULT,
-  SDK_VERSION_STAGE
+  SDK_VERSION_STAGE,
+  DECLFILESPATH,
+  DECLGENV2OUTPATH
 } from "./common";
 import {
   ESMODULE,
   OHPM,
   RELEASE
 } from "../../../../lib/fast_build/ark_compiler/common/ark_define";
-import EntryAbility from "../../testdata/expect/expect_EntryAbility";
+import { ArkTsEvolutionModule } from "../../../../lib/ark_utils";
 
 interface IArkProjectConfig {
   projectRootPath: string,
@@ -130,6 +132,7 @@ class ProjectConfig {
   widgetCompile: boolean;
   arkRouterMap: Array<object>;
   declarationEntry: Array<string>;
+  dependentModuleMap: Map<string, ArkTsEvolutionModule>;
 
   constructor(buildMode: string) {
     this.watchMode = 'false';
@@ -144,10 +147,12 @@ class ProjectConfig {
     this.hspNameOhmMap = {};
     this.arkRouterMap = [];
     this.declarationEntry = [];
+    this.dependentModuleMap = new Map();
   }
 
   public scan(testcase: string) {
     this.initPath(`${PROJECT_ROOT}/${testcase}`);
+    this.setDependentModuleMap();
   }
 
   public setPreview(isPreview: boolean) {
@@ -259,6 +264,18 @@ class ProjectConfig {
     this.stageRouterConfig = [];
     this.port = PORT_DEFAULT;
     this.aceSoPath = `${this.projectTopDir}/entry/preview/cache/nativeDependencies.txt`;
+  }
+
+  private setDependentModuleMap() {
+    const arkTsEvolutionModuleInfo = {
+      language: '1.1',
+      pkgName: this.entryModuleName,
+      moduleName: this.entryModuleName,
+      modulePath: this.modulePath,
+      declgenV2OutPath: DECLGENV2OUTPATH,
+      declFilesPath: DECLFILESPATH
+    }
+    this.dependentModuleMap.set(this.entryModuleName, arkTsEvolutionModuleInfo)
   }
 }
 

@@ -32,5 +32,6 @@ projectConfig.harNameOhmMap = {
 projectConfig.hspNameOhmMap = {};
 projectConfig.cachePath = '../../test/ark_compiler_ut/cache/';
 projectConfig.pkgContextInfo = {};
+projectConfig.dependentModuleMap = new Map();
 
 export default projectConfig;
