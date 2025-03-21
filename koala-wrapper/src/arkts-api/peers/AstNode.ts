@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { isNullPtr, KInt, KNativePointer as KPtr, KNativePointer, nullptr } from "#koalaui/interop"
+import { isNullPtr, KInt, KNativePointer as KPtr, KNativePointer, nullptr } from "@koalaui/interop"
 import { global } from "../static/global"
 import { allFlags, nodeType, unpackNodeArray, unpackNonNullableNode, unpackString } from "../utilities/private"
 import { throwError } from "../../utils"

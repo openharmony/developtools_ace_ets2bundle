@@ -22,7 +22,7 @@ import {
     KDouble,
     KFloat,
     KLong
-} from "#koalaui/interop"
+} from "@koalaui/interop"
 
 // TODO: this type should be in interop
 export type KNativePointerArray = BigUint64Array

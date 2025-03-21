@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 import { global } from "./static/global"
-import { KInt, KNativePointer, KNativePointer as KPtr, nullptr } from "#koalaui/interop"
+import { KInt, KNativePointer, KNativePointer as KPtr, nullptr } from "@koalaui/interop"
 import {
     Es2pandaContextState,
     Es2pandaImportKinds,

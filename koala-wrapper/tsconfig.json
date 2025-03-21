@@ -17,13 +17,13 @@
         "rootDir": ".",
         "module": "CommonJS",
         "paths": {
-            "#koalaui/interop": [
+            "@koalaui/interop": [
                 "./koalaui/interop/dist/lib/src/interop/"
             ],
-            "#koalaui/common": [
+            "@koalaui/common": [
                 "./koalaui/common/dist/lib/src/"
             ],
-            "#koalaui/compat": [
+            "@koalaui/compat": [
                 "./koalaui/compat/dist/src/"
             ]
         }
