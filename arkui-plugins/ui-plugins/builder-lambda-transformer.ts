@@ -29,6 +29,8 @@ import {
     removeAnnotationByName
 } from "../common/arkts-utils";
 
+import { DEBUG_DUMP } from "common/utils";
+
 function createStyleArgInBuilderLambda(
     lambdaBody: arkts.Expression | undefined,
     typeNode: arkts.TypeNode | undefined,
@@ -123,17 +125,7 @@ function updateFactoryArgInBuilderLambda(
     if (!!func.id) {
         updateFunc.setIdent(func.id);
     }
-    // const updateFunc: arkts.ScriptFunction = arkts.factory.updateScriptFunction(
-    //     func,
-    //     func.body,
-    //     func.scriptFunctionFlags,
-    //     func.modifiers,
-    //     false,
-    //     func.ident,
-    //     func.parameters,
-    //     func.typeParamsDecl,
-    //     typeNode
-    // );
+
     return arkts.factory.updateArrowFunction(
         arg,
         updateFunc
@@ -299,23 +291,6 @@ function createOrUpdateArgInBuilderLambda(
             updateFunc.setIdent(func.id);
         }
 
-        // const updateFunc: arkts.ScriptFunction = arkts.factory.updateScriptFunction(
-        //     func,
-        //     func.body ? arkts.factory.updateBlock(
-        //         func.body,
-        //         func.body.statements.map(
-        //             (st) => updateContentBodyInBuilderLambda(st, isExternal)
-        //         )
-        //     ) : undefined,
-        //     func.scriptFunctionFlags,
-        //     func.modifiers,
-        //     false,
-        //     func.ident,
-        //     func.parameters,
-        //     func.typeParamsDecl,
-        //     func.returnTypeAnnotation
-        // );
-
         return arkts.factory.updateArrowFunction(
             arg,
             updateFunc
@@ -416,26 +391,12 @@ function transformBuilderLambdaMethodDecl(node: arkts.MethodDefinition): arkts.A
     ).setAnnotations(
         removeAnnotationByName(func.annotations, BuilderLambdaNames.ANNOTATION_NAME)
     );
+    console.log("Kee transformBuilderLambdaMethodDecl updateFunc", updateFunc.dumpSrc())
     if (!!func.id) {
         updateFunc.setIdent(func.id);
     }
-    // const updateFunc: arkts.ScriptFunction = arkts.factory.updateScriptFunction(
-    //     func,
-    //     func.body,
-    //     func.scriptFunctionFlags,
-    //     func.modifiers,
-    //     true,
-    //     func.ident,
-    //     [
-    //         createStyleArgInBuilderLambdaDecl(typeNode),
-    //         ...func.parameters
-    //     ],
-    //     func.typeParamsDecl,
-    //     func.returnTypeAnnotation,
-    //     removeAnnotationByName(func.annotations, BuilderLambdaNames.ANNOTATION_NAME)
-    // );
 
-    return arkts.factory.updateMethodDefinition(
+    let newNode: arkts.AstNode = arkts.factory.updateMethodDefinition(
         node,
         node.kind,
         arkts.factory.updateIdentifier(
@@ -446,6 +407,8 @@ function transformBuilderLambdaMethodDecl(node: arkts.MethodDefinition): arkts.A
         node.modifiers,
         false // TODO: how do I get it?
     )
+    console.log("Kee transformBuilderLambdaMethodDecl updateFunc", newNode.dumpSrc())
+    return node;
 }
 
 function isBuilderLambda(node: arkts.AstNode, isExternal?: boolean): boolean {
@@ -523,12 +486,15 @@ export class BuilderLambdaTransformer extends AbstractVisitor {
         const node = this.visitEachChild(beforeChildren)
 
         if (arkts.isCallExpression(node) && isBuilderLambda(node, this.isExternal)) {
+            console.log("Kee transformBuilderLambda")
             const lambda = transformBuilderLambda(node, this.isExternal);
             // arkts.recheckSubtree(lambda);
             return lambda;
         }
         if (arkts.isMethodDefinition(node) && isBuilderLambdaMethodDecl(node, this.isExternal)) {
+            console.log("Kee transformBuilderLambdaMethodDecl :", node.dumpSrc())
             const lambda = transformBuilderLambdaMethodDecl(node);
+            console.log("Kee transformBuilderLambdaMethodDecl :", lambda.dumpSrc())
             return lambda;
         }
 

@@ -56,6 +56,7 @@ export interface Plugins {
     afterNew?: PluginHandler,
     parsed?: PluginHandler,
     scopeInited?: PluginHandler,
+    bound?: PluginHandler,
     checked?: PluginHandler,
     lowered?: PluginHandler,
     asmGenerated?: PluginHandler,
