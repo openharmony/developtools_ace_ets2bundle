@@ -90,6 +90,10 @@ export interface CheckJsDocSpecialValidCallbackInterface {
   (jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean;
 }
 
+interface HasJSDocNode extends ts.Node {
+  jsDoc?: ts.JSDoc[];
+}
+
 /**
  * get the bundleInfo of ohm
  *
@@ -328,7 +332,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
       ts.DiagnosticCategory.Warning, '', false));
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SINCE_TAG_NAME],
       SINCE_TAG_CHECK_ERROER, false, ts.DiagnosticCategory.Warning,
-      CANIUSE_FUNCTION_NAME, false, undefined, checkSinceValue));
+      '', false, undefined, checkSinceValue));
     // TODO: the third param is to be opened
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSCAP_TAG_CHECK_NAME],
       SYSCAP_TAG_CHECK_WARNING, false, ts.DiagnosticCategory.Warning,
@@ -533,12 +537,12 @@ function checkSinceValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNode
   if (!jsDocTags[0]?.parent?.parent) {
     return false;
   }
-  const currentNode: ts.HasJSDoc = jsDocTags[0].parent.parent as ts.HasJSDoc;
-  if (!currentNode['jsDoc']) {
+  const currentNode: HasJSDocNode = jsDocTags[0].parent.parent as HasJSDocNode;
+  if (!currentNode.jsDoc) {
     return false;
   }
   let minSince: string = '';
-  const hasSince: boolean = currentNode['jsDoc'].some((doc: ts.JSDoc) => {
+  const hasSince: boolean = currentNode.jsDoc.some((doc: ts.JSDoc) => {
     return doc.tags.some((tag: ts.JSDocTag) => {
       if (tag.tagName.escapedText.toString() === SINCE_TAG_NAME) {
         minSince = tag.comment.toString();
@@ -549,7 +553,7 @@ function checkSinceValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNode
   });
   const compatibleSdkVersion: string = projectConfig.compatibleSdkVersion;
   if (hasSince && Number(minSince) > Number(compatibleSdkVersion)) {
-    config.message = config.message.replace('$SINCE1', minSince).replace('$SINCE2', compatibleSdkVersion);
+    config.message = SINCE_TAG_CHECK_ERROER.replace('$SINCE1', minSince).replace('$SINCE2', compatibleSdkVersion);
     return true;
   }
   return false;
@@ -622,7 +626,7 @@ export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: 
   const comment: string = typeof jsDocTag.comment === 'string' ?
     jsDocTag.comment :
     ts.getTextOfJSDocComment(jsDocTag.comment);
-  config.message = config.message.replace('$DT', comment);
+  config.message = PERMISSION_TAG_CHECK_ERROR.replace('$DT', comment);
   return comment !== '' && !JsDocCheckService.validPermission(comment, permissionsArray);
 }
 
