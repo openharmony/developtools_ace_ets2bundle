@@ -50,7 +50,8 @@ export function unmemoizeTransform(): Plugins {
                 const programVisitor = new ProgramVisitor({
                     pluginName: "2_Memo",
                     state: arkts.Es2pandaContextState.ES2PANDA_STATE_BOUND,
-                    visitors: [functionTransformer],
+                    // visitors: [functionTransformer],
+                    visitors: [],
                     skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
                 });
 
@@ -62,7 +63,7 @@ export function unmemoizeTransform(): Plugins {
                     console.log('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
                 }
 
-
+                arkts.rebindSubtree(script);
                 this.setArkTSAst(script);
                 console.log("[MEMO PLUGIN] AFTER CHECKED EXIT");
                 return script;

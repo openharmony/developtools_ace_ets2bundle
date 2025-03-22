@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,30 +13,35 @@
  * limitations under the License.
  */
 
-// import { TextAttribute, Text, memo, Component } from "@ohos.arkui.component.test"
+import { Text, Component } from "@ohos.arkui.component"
+import { State } from "@ohos.arkui.stateManagement.common"
+import { memo } from "@ohos.arkui.StateManagement.runtime"  // 临时加，需要使用UI Plugin添加
+import { MutableState, observableProxy, stateOf } from "@ohos.arkui.stateManagement.runtime"
 
-// Text("Hello World").fontSize(1)
-// import { CustomComponent, TestClass } from "@ohos.arkui.component.test";
-// import { TestClass as TestClass } from "@ohos.arkui.component.test"
-
-// class A {}
-
-
-import { memo, __memo_context_type, __memo_id_type } from "@ohos.arkui.stateManagement.runtime" // should be insert by ui-plugins
-import { Text, TextAttribute } from "@ohos.arkui.component.text"  // TextAttribute should be insert by ui-plugins
-import { Column } from "@ohos.arkui.component.column"
-import { Component } from "@ohos.arkui.component.customComponent"
+class Person {  
+  public name: string  
+  constructor(name: string) {  
+    this.name = name  
+  }  
+}  
+class Model {  
+  public value: string;  
+  public name: Person;  
+  constructor(value: string, person: Person) {  
+    this.value = value;  
+    this.name = person;  
+  }  
+}
 
 @Component
 struct MyStateSample {
+    @State state1: number = 0.0;
+    @State state2: string = "str";
+    @State state3: Date = new Date('2021-08-08');
+    @State state7: Model = new Model('Hello', new Person('World'));
+
     build() {
-        Column(undefined) { // after parse crash
-            Text("Hello World").fontSize(1)
-        }
+        Text("Hello World")
     }
 }
 
-// @Component
-// struct MyStateSample {
-
-// }

@@ -50,7 +50,7 @@ export function uiTransform(): Plugins {
                 const structTransformer = new StructTransformer();
                 const programVisitor1 = new ProgramVisitor({
                     pluginName: "1_UI",
-                    state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
+                    state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
                     visitors: [structTransformer],
                     skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
                 });
@@ -58,18 +58,20 @@ export function uiTransform(): Plugins {
                 script = program.astNode;
                 console.log("[AFTER structTransformer] script: ", script.dumpSrc());
                 DEBUG_DUMP(script.dumpSrc(), "0_SRC_3_StructTransformer", true)
-                // DEBUG_DUMP(script.dumpJson(), "0_SRC_3_StructTransformer.ets", false)
+                DEBUG_DUMP(script.dumpJson(), "0_SRC_3_StructTransformer.ets", false)
                 // const builderLambdaTransformer = new BuilderLambdaTransformer();
                 // const programVisitor2 = new ProgramVisitor({
-                //     state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
+                //     pluginName: "1_UI",
+                //     state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
                 //     visitors: [builderLambdaTransformer],
+                //     // visitors: [],
                 //     skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
                 // });
                 // program = programVisitor2.programVisitor(program);
                 // script = program.astNode;
                 // console.log("[AFTER builderLambdaTransformer] script: ", script.dumpSrc());
                 // DEBUG_DUMP(script.dumpSrc(), "0_SRC_2_BuilderLambdaTransformer.ets", true)
-                // // DEBUG_DUMP(script.dumpJson(), "0_SRC_2_BuilderLambdaTransformer.ets", false)
+                // DEBUG_DUMP(script.dumpJson(), "0_SRC_2_BuilderLambdaTransformer.ets", false)
                 this.setArkTSAst(script);
                 console.log("------------- [UI PLUGIN] AFTER PARSED EXIT ------------- ");
 
@@ -102,20 +104,20 @@ export function uiTransform(): Plugins {
             }
             console.log("!!!!!!![UI PLUGIN] AFTER PARSED EXIT WITH NO BOUND!!!!!!!");
         },
-        checked(this: PluginContext) {
-            console.log("[UI PLUGIN] AFTER CHECKED ENTER");
-            let program = arkts.arktsGlobal.compilerContext.program;
-            let script = program.astNode;
-            if (script) {
-                console.log("[BEFORE STRUCT SCRIPT] script: ", script.dumpSrc());
-                DEBUG_DUMP(script.dumpSrc(), "0_SRC_6_AfterCheck_Begin.ets", true)
-                // DEBUG_DUMP(script.dumpJson(), "0_SRC_6_AfterCheck_Begin.ets", false)
-                this.setArkTSAst(script);
-                console.log("[UI PLUGIN] AFTER CHECKED EXIT");
-                return script;
-            }
-            console.log("!!!!!!![UI PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM!!!!!!!");
-        }
+        // checked(this: PluginContext) {
+        //     console.log("[UI PLUGIN] AFTER CHECKED ENTER");
+        //     let program = arkts.arktsGlobal.compilerContext.program;
+        //     let script = program.astNode;
+        //     if (script) {
+        //         console.log("[BEFORE STRUCT SCRIPT] script: ", script.dumpSrc());
+        //         DEBUG_DUMP(script.dumpSrc(), "0_SRC_6_AfterCheck_Begin.ets", true)
+        //         // DEBUG_DUMP(script.dumpJson(), "0_SRC_6_AfterCheck_Begin.ets", false)
+        //         this.setArkTSAst(script);
+        //         console.log("[UI PLUGIN] AFTER CHECKED EXIT");
+        //         return script;
+        //     }
+        //     console.log("!!!!!!![UI PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM!!!!!!!");
+        // }
         // checked(this: PluginContext) {
         //     console.log("[UI PLUGIN] AFTER CHECKED ENTER");
         //     let program = arkts.arktsGlobal.compilerContext.program;
