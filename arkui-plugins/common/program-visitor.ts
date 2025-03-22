@@ -17,21 +17,24 @@ import * as arkts from "@koalaui/libarkts"
 import { KPointer } from "@koalaui/interop"
 import { AbstractVisitor, VisitorOptions } from "./abstract-visitor";
 import { matchPrefix } from "./arkts-utils";
-// import { Importer } from "./importer";
+import { DEBUG_DUMP, getEnumName } from "./utils";
 
 export interface ProgramVisitorOptions extends VisitorOptions {
+    pluginName: string;
     state: arkts.Es2pandaContextState;
     visitors: AbstractVisitor[];
     skipPrefixNames: string[];
 }
 
 export class ProgramVisitor extends AbstractVisitor {
+    private pluginName: string;
     private state: arkts.Es2pandaContextState;
     private visitors: AbstractVisitor[];
     private skipPrefixNames: string[];
     private filenames: Map<arkts.Program, string> = new Map<arkts.Program, string>;
     constructor(options: ProgramVisitorOptions) {
         super(options);
+        this.pluginName = options.pluginName
         this.state = options.state;
         this.visitors = options.visitors;
         this.skipPrefixNames = options.skipPrefixNames ?? [];
@@ -50,10 +53,21 @@ export class ProgramVisitor extends AbstractVisitor {
             }
     
             if (currProgram.peer !== program.peer) {
-                console.log(`[BEFORE TRANSFORM EXTERNAL SOURCE] ${this.state} script: `, currProgram.astNode.dumpSrc());
+                // console.log(`[BEFORE TRANSFORM EXTERNAL SOURCE] ${this.state} script: `, currProgram.astNode.dumpSrc());
+                if (this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED) {
+                    DEBUG_DUMP(currProgram.astNode.dumpSrc(), "0_ORI_" + this.filenames.get(currProgram), true)
+                    // DEBUG_DUMP(currProgram.astNode.dumpJson(), "0_ORI_" + this.filenames.get(currProgram)+ ".ets", false)
+                }
                 const script = this.visitor(currProgram.astNode, true);
                 if (script) {
-                    console.log(`[AFTER TRANSFORM EXTERNAL SOURCE] ${this.state} script: `, script.dumpSrc());
+                    // console.log(`[AFTER TRANSFORM EXTERNAL SOURCE] ${this.state} script: `, script.dumpSrc());
+                    DEBUG_DUMP(script.dumpSrc(), this.state + "_" + getEnumName(arkts.Es2pandaContextState, this.state) + "_" + this.pluginName + "_" + this.filenames.get(currProgram), true)
+                    // DEBUG_DUMP(script.dumpJson(), this.state + "_" + getEnumName(arkts.Es2pandaContextState, this.state) + "_" + this.pluginName + "_" +this.filenames.get(currProgram)+ ".ets", false)
+                }
+
+                if (this.pluginName === "2_Memo") {
+                    DEBUG_DUMP(currProgram.astNode.dumpSrc(), this.filenames.get(currProgram)+ ".ets", true)
+                    // DEBUG_DUMP(currProgram.astNode.dumpJson(), this.filenames.get(currProgram)+ ".ets", false)
                 }
             }
 
@@ -91,13 +105,13 @@ export class ProgramVisitor extends AbstractVisitor {
             arkts.setAllParents(script);
         }
 
-        if (this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED) {
-            console.log(`[AFTER ${count} TRANSFORMER] rechecking...`)
-            arkts.recheckSubtree(script);
-            console.log(`[AFTER ${count} TRANSFORMER] rechecking PASS`)
-        }
+        // if (this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED) {
+        //     console.log(`[AFTER ${count} TRANSFORMER] rechecking...`)
+        //     arkts.recheckSubtree(script);
+        //     console.log(`[AFTER ${count} TRANSFORMER] rechecking PASS`)
+        // }
 
-        console.log(`[AFTER ${count} TRANSFORMER] script: dumpSrc: `, script.dumpSrc());
+        // console.log(`[AFTER ${count} TRANSFORMER] script: dumpSrc: `, script.dumpSrc());
         // console.log(`[AFTER ${count} TRANSFORMER] script: dumpJson: `, script.dumpJson());
         return script;
     }

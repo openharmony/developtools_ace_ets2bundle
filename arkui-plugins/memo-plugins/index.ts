@@ -21,15 +21,14 @@ import { ReturnTransformer } from "./return-transformer";
 import { ParameterTransformer } from "./parameter-transformer";
 import { ProgramVisitor } from "../common/program-visitor";
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from "../common/predefines";
-
+import { DEBUG_DUMP } from "../common/utils"
 const DEBUG = process.argv.includes('--debug');
 
 export function unmemoizeTransform(): Plugins {
     return {
         name: 'memo-plugin',
-        checked(this: PluginContext) {
+        bound(this: PluginContext) {
             console.log("[MEMO PLUGIN] AFTER CHECKED ENTER");
-            // const node = this.getArkTSAst();
             let program = arkts.arktsGlobal.compilerContext.program;
             let script = program.astNode;
             if (script) {
@@ -37,6 +36,8 @@ export function unmemoizeTransform(): Plugins {
                     console.log('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
                 }
 
+                DEBUG_DUMP(script.dumpSrc(), "0_SRC_Memo_1_AfterBound_Begin", true)
+                // DEBUG_DUMP(script.dumpJson(), "0_SRC_Memo_1_AfterBound_Begin.ets", false)
                 const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
                 const parameterTransformer = new ParameterTransformer({ positionalIdTracker });
                 const returnTransformer = new ReturnTransformer();
@@ -47,14 +48,16 @@ export function unmemoizeTransform(): Plugins {
                 });
 
                 const programVisitor = new ProgramVisitor({
-                    state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
+                    pluginName: "2_Memo",
+                    state: arkts.Es2pandaContextState.ES2PANDA_STATE_BOUND,
                     visitors: [functionTransformer],
                     skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
                 });
 
                 program = programVisitor.programVisitor(program);
                 script = program.astNode;
-
+                DEBUG_DUMP(script.dumpSrc(), "0_SRC_Memo_2_FunctionTransformer.ets", true)
+                // DEBUG_DUMP(script.dumpJson(), "0_SRC_Memo_2_FunctionTransformer.ets", false)
                 if (DEBUG) {
                     console.log('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
                 }
@@ -65,6 +68,45 @@ export function unmemoizeTransform(): Plugins {
                 return script;
             }
             console.log("[MEMO PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM");
-        }
+        },
+        // checked(this: PluginContext) {
+        //     console.log("[MEMO PLUGIN] AFTER CHECKED ENTER");
+        //     // const node = this.getArkTSAst();
+        //     let program = arkts.arktsGlobal.compilerContext.program;
+        //     let script = program.astNode;
+        //     if (script) {
+        //         if (DEBUG) {
+        //             console.log('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
+        //         }
+
+        //         const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
+        //         const parameterTransformer = new ParameterTransformer({ positionalIdTracker });
+        //         const returnTransformer = new ReturnTransformer();
+        //         const functionTransformer = new FunctionTransformer({
+        //             positionalIdTracker, 
+        //             parameterTransformer, 
+        //             returnTransformer
+        //         });
+
+        //         const programVisitor = new ProgramVisitor({
+        //             state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
+        //             visitors: [functionTransformer],
+        //             skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
+        //         });
+
+        //         program = programVisitor.programVisitor(program);
+        //         script = program.astNode;
+
+        //         if (DEBUG) {
+        //             console.log('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
+        //         }
+
+
+        //         this.setArkTSAst(script);
+        //         console.log("[MEMO PLUGIN] AFTER CHECKED EXIT");
+        //         return script;
+        //     }
+        //     console.log("[MEMO PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM");
+        // }
     }
 }
