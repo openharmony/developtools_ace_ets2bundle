@@ -21,7 +21,8 @@ import {
     findBuilderLambdaInCall,
     hasModifierFlag,
     isBuilderLambdaAnnotation,
-    isBuilderLambdaCall
+    isBuilderLambdaCall,
+    isBuilderLambdaMethod
 } from "./utils";
 import {
     annotation,
@@ -93,7 +94,7 @@ function createStyleArgInBuilderLambdaDecl(
     const parameter = arkts.factory.createParameterDeclaration(
         arkts.factory.createIdentifier(
             BuilderLambdaNames.STYLE_PARAM_NAME, 
-            funcType
+            optionalFuncType
         ).setOptional(true),
         undefined
     );
@@ -164,9 +165,9 @@ function builderLambdaArgumentName(annotation: arkts.AnnotationUsage): string | 
 }
 
 function builderLambdaFunctionName(node: arkts.CallExpression): string | undefined {
-    const annotation = findBuilderLambdaInCall(node);
-    if (!annotation) return undefined;
-    console.log("[BUILDER LAMBDA CALL] annotation: ", annotation.dumpSrc());
+    // const annotation = findBuilderLambdaInCall(node); // TODO: this is correct
+    // if (!annotation) return undefined; // TODO: this is correct
+    // console.log("[BUILDER LAMBDA CALL] annotation: ", annotation.dumpSrc());
     if (arkts.isIdentifier(node.expression)) {
         return node.expression.name;
     }
@@ -227,15 +228,27 @@ function builderLambdaMethodDeclType(
 }
 
 function getBuilderLambdaArgNumFromDecl(node: arkts.CallExpression): number | undefined {
-    const decl = findBuilderLambdaDecl(node);
-    if (!decl) return undefined;
-
-    if (arkts.isMethodDefinition(decl)) {
-        const params = decl.scriptFunction.params;
-        return params.length;
+    if (arkts.isCallExpression(node) && arkts.isIdentifier(node.expression)) {
+        if (node.expression.name === "Text") {
+            return 3;
+        }
+        if (node.expression.name === "Column") {
+            return 2;
+        }
     }
 
     return undefined;
+
+    // TODO: this is correct
+    // const decl = findBuilderLambdaDecl(node);
+    // if (!decl) return undefined;
+
+    // if (arkts.isMethodDefinition(decl)) {
+    //     const params = decl.scriptFunction.params;
+    //     return params.length;
+    // }
+
+    // return undefined;
 }
 
 function builderLambdaReplace(leaf: arkts.CallExpression): arkts.Identifier | arkts.MemberExpression | undefined {
@@ -243,6 +256,7 @@ function builderLambdaReplace(leaf: arkts.CallExpression): arkts.Identifier | ar
 	const node = leaf.expression;
 
     const funcName = builderLambdaFunctionName(leaf);
+    console.log("[builderLambdaReplace] funcName: ", funcName);
     if (!funcName) return undefined;
 
     if (arkts.isIdentifier(node)) {
@@ -299,10 +313,32 @@ function createOrUpdateArgInBuilderLambda(
     return arg;
 }
 
+function updateTailingBlockInBuilderLambda(
+    node: arkts.AstNode | undefined,
+    isExternal?: boolean
+) {
+    if (!node) {
+        return undefined;
+    }
+
+    if (arkts.isBlockStatement(node)) {
+        return arkts.factory.updateBlock(
+            node,
+            filterDefined(
+                node.statements
+                    .map((
+                        (st) => updateContentBodyInBuilderLambda(st, isExternal)
+                    ))
+            )
+        )
+    }
+    return undefined;
+}
+
 function transformBuilderLambda(node: arkts.CallExpression, isExternal?: boolean): arkts.AstNode {
     let instanceCalls: arkts.CallExpression[] = [];
     let leaf: arkts.CallExpression = node;
-    let isFunctionCall: boolean = false;
+    let isFunctionCall: boolean = false; // TODO: remove this
 
     while (true
         && arkts.isMemberExpression(leaf.expression)
@@ -351,12 +387,7 @@ function transformBuilderLambda(node: arkts.CallExpression, isExternal?: boolean
     const args: (arkts.AstNode | undefined)[] = [
         createStyleArgInBuilderLambda(lambdaBody, typeNode)
     ]
-
     let index = 0;
-    if (!isFunctionCall) {
-        args.push(updateFactoryArgInBuilderLambda(leaf.arguments.at(index), typeNode));
-        index ++;
-    }
     while (index < argNum) {
         args.push(createOrUpdateArgInBuilderLambda(leaf.arguments.at(index), isExternal));
         index ++;
@@ -366,7 +397,8 @@ function transformBuilderLambda(node: arkts.CallExpression, isExternal?: boolean
         node,
         replace,
         undefined,
-        filterDefined(args)
+        filterDefined(args),
+        updateTailingBlockInBuilderLambda(node.trailingBlock, isExternal)
     );
 }
 
@@ -388,15 +420,12 @@ function transformBuilderLambdaMethodDecl(node: arkts.MethodDefinition): arkts.A
         ),
         func.flags,
         func.modifiers
-    ).setAnnotations(
-        removeAnnotationByName(func.annotations, BuilderLambdaNames.ANNOTATION_NAME)
-    );
-    console.log("Kee transformBuilderLambdaMethodDecl updateFunc", updateFunc.dumpSrc())
+    ).setAnnotations(func.annotations);
     if (!!func.id) {
         updateFunc.setIdent(func.id);
     }
 
-    let newNode: arkts.AstNode = arkts.factory.updateMethodDefinition(
+    return arkts.factory.updateMethodDefinition(
         node,
         node.kind,
         arkts.factory.updateIdentifier(
@@ -406,9 +435,7 @@ function transformBuilderLambdaMethodDecl(node: arkts.MethodDefinition): arkts.A
         arkts.factory.createFunctionExpression(updateFunc),
         node.modifiers,
         false // TODO: how do I get it?
-    ).setOverloads(node.overloads)
-    console.log("Kee transformBuilderLambdaMethodDecl updateFunc", newNode.dumpSrc())
-    return node;
+    ).setOverloads(node.overloads);
 }
 
 function isBuilderLambda(node: arkts.AstNode, isExternal?: boolean): boolean {
@@ -424,13 +451,11 @@ function isBuilderLambdaMethodDecl(node: arkts.AstNode, isExternal?: boolean): b
 function getDeclForBuilderLambdaMethodDecl(node: arkts.AstNode, isExternal?: boolean): arkts.AstNode | undefined  {
     if (!node || !arkts.isMethodDefinition(node)) return undefined;
 
-    const isBuilderLambda: boolean = !!node.name && isBuilderLambdaCall(node.name);
     const isMethodDecl: boolean = !!node.scriptFunction 
         && hasModifierFlag(node.scriptFunction, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
-    if (
-        isBuilderLambda
-        && isMethodDecl
-    ) {
+    const isBuilderLambda: boolean = (isMethodDecl && isBuilderLambdaMethod(node));
+
+    if (isBuilderLambda) {
         return node;
     }
     return undefined;
@@ -467,6 +492,14 @@ function getDeclForBuilderLambda(node: arkts.AstNode, isExternal?: boolean): ark
         currNode = _node.object;
     }
 
+    if (arkts.isCallExpression(node) && arkts.isIdentifier(node.expression)) {
+        if (node.expression.name === "Text") {
+            return node;
+        }
+        if (node.expression.name === "Column") {
+            return node;
+        }
+    }
     return undefined;
 }
 
@@ -486,15 +519,11 @@ export class BuilderLambdaTransformer extends AbstractVisitor {
         const node = this.visitEachChild(beforeChildren)
 
         if (arkts.isCallExpression(node) && isBuilderLambda(node, this.isExternal)) {
-            console.log("Kee transformBuilderLambda")
             const lambda = transformBuilderLambda(node, this.isExternal);
-            // arkts.recheckSubtree(lambda);
             return lambda;
         }
         if (arkts.isMethodDefinition(node) && isBuilderLambdaMethodDecl(node, this.isExternal)) {
-            console.log("Kee transformBuilderLambdaMethodDecl :", node.dumpSrc())
             const lambda = transformBuilderLambdaMethodDecl(node);
-            console.log("Kee transformBuilderLambdaMethodDecl :", lambda.dumpSrc())
             return lambda;
         }
 

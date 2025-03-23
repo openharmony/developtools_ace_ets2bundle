@@ -50,6 +50,7 @@ import {
     FunctionSignature,
     Identifier,
     ImportSpecifier,
+    NullLiteral,
     ReturnStatement,
     ScriptFunction,
     StringLiteral,
@@ -346,6 +347,12 @@ export const factory = {
     },
     get updateTSNonNullExpression() {
         return TSNonNullExpression.updateTSNonNullExpression;
+    },
+    get createNullLiteral() {
+        return NullLiteral.createNullLiteral;
+    },
+    get updateNullLiteral() {
+        return NullLiteral.updateNullLiteral;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {
