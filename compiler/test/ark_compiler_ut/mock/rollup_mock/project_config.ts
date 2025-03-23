@@ -39,7 +39,7 @@ import {
   OHPM,
   RELEASE
 } from "../../../../lib/fast_build/ark_compiler/common/ark_define";
-import { ArkTsEvolutionModule } from "../../../../lib/ark_utils";
+import { ArkTSEvolutionModule } from "../../../../lib/process_arkts_evolution";
 
 interface IArkProjectConfig {
   projectRootPath: string,
@@ -133,7 +133,7 @@ class ProjectConfig {
   widgetCompile: boolean;
   arkRouterMap: Array<object>;
   declarationEntry: Array<string>;
-  dependentModuleMap: Map<string, ArkTsEvolutionModule>;
+  dependentModuleMap: Map<string, ArkTSEvolutionModule>;
 
   constructor(buildMode: string) {
     this.watchMode = 'false';
@@ -268,7 +268,7 @@ class ProjectConfig {
   }
 
   private setDependentModuleMap() {
-    const arkTsEvolutionModuleInfo = {
+    const arkTSEvolutionModuleInfo = {
       language: '1.1',
       pkgName: this.entryModuleName,
       moduleName: this.entryModuleName,
@@ -276,7 +276,7 @@ class ProjectConfig {
       declgenV2OutPath: DECLGENV2OUTPATH,
       declFilesPath: DECLFILESPATH
     }
-    this.dependentModuleMap.set(this.entryModuleName, arkTsEvolutionModuleInfo)
+    this.dependentModuleMap.set(this.entryModuleName, arkTSEvolutionModuleInfo)
   }
 }
 

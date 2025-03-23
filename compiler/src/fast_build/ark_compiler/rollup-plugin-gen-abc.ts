@@ -26,6 +26,7 @@ import { SourceMapGenerator } from './generate_sourcemap';
 import { cleanUpUtilsObjects, writeDeclarationFiles } from '../../ark_utils';
 import { cleanUpKitImportObjects } from '../../process_kit_import';
 import { cleanUpFilesList } from './utils';
+import { cleanUpProcessArkTSEvolutionObj } from '../../process_arkts_evolution';
 import { CommonLogger } from './logger';
 import {
   getHookEventFactory,
@@ -83,6 +84,7 @@ export function genAbc() {
       CommonLogger.destroyInstance();
       cleanUpAsyncEvents();
       BytecodeObfuscator.cleanBcObfuscatorObject();
+      cleanUpProcessArkTSEvolutionObj();
     }
   };
 }
