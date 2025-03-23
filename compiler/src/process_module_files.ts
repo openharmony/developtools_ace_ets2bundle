@@ -20,8 +20,7 @@ import fs from 'fs';
 import { SourceMapGenerator } from './fast_build/ark_compiler/generate_sourcemap';
 import {
   EXTNAME_TS,
-  EXTNAME_ETS,
-  ARK_TS_1_2
+  EXTNAME_ETS
 } from './pre_define';
 import {
   genTemporaryPath,
@@ -61,8 +60,7 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
    * In the current realization, when moduleId mechanism is changed, there would be a compilation error.
    */
   let filePath: string = moduleId ? moduleId : node.fileName;
-  // When the file is glue code for a ArkTS1.2 module, use the path to the glue code.
-  let temporaryFile: string = metaInfo.language === ARK_TS_1_2 ? filePath : genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath,
+  let temporaryFile: string = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath,
     projectConfig, metaInfo);
   if (temporaryFile.length === 0) {
     return;
