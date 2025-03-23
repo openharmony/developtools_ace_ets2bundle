@@ -36,6 +36,7 @@ shared_library("es2panda") {
     "../node_modules/node-addon-api",
     "./include",
     "//arkcompiler/ets_frontend/ets2panda/public/",
+    "//third_party/node/src",
     rebase_path("$root_gen_dir/arkcompiler/ets_frontend/ets2panda/"),
   ]
 

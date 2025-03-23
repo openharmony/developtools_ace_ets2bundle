@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { int32 } from "#koalaui/common"
+import { int32 } from "@koalaui/common"
 import {
     Access,
     ArrayDecoder,
@@ -23,7 +23,7 @@ import {
     pointer,
     providePlatformDefinedData,
     withByteArray
-} from "#koalaui/interop"
+} from "@koalaui/interop"
 import { global } from "../static/global"
 
 class NativeString extends NativeStringBase {

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { int32 } from "#koalaui/common"
+import { int32 } from "@koalaui/common"
 import { KPointer } from "../../interop/InteropTypes"
 
 export const nullptr = BigInt(0)

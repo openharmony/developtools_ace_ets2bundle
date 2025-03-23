@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { CustomTextDecoder } from "#koalaui/compat"
-import { int32 } from "#koalaui/compat"
+import { CustomTextDecoder } from "@koalaui/compat"
+import { int32 } from "@koalaui/compat"
 
 const K = [
     (0x5a827999 | 0) as int32,

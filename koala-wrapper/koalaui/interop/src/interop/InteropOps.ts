@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { int32 } from "#koalaui/common"
+import { int32 } from "@koalaui/common"
 import { withStringResult } from "./Platform"
 import { KInt, KStringPtr, KUint8ArrayPtr, pointer } from "./InteropTypes"
 

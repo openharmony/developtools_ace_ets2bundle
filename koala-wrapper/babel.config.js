@@ -25,7 +25,8 @@ module.exports = function(api) {
         {
           spec: true
         }
-      ]
+      ],
+      './koalaui-transform'
     ];
   
     return {
