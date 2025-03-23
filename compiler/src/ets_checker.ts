@@ -98,8 +98,11 @@ import { sourceFileDependencies } from './fast_build/ark_compiler/common/ob_conf
 import {
   RunnerParms,
   generateInteropDecls
-} from '../node_modules/declgen/build/src/generateInteropDecls'
-import { ArkTsEvolutionModule } from './ark_utils';
+} from '../node_modules/declgen/build/src/generateInteropDecls';
+import {
+  arkTSEvolutionModuleMap,
+  getArkTSEvoDeclFilePath
+} from './process_arkts_evolution';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -110,8 +113,6 @@ export interface LanguageServiceCache {
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
 export let localPackageSet: Set<string> = new Set();
-
-export let arkTsEvolutionModuleMap: Map<string, ArkTsEvolutionModule> = new Map();
 
 export function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
@@ -959,26 +960,17 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
             resolvedModules.push(result.resolvedModule);
           }
         } else if (result.resolvedModule.resolvedFileName && /\.ets$/.test(result.resolvedModule.resolvedFileName) &&
-          !/\.d\.ets$/.test(result.resolvedModule.resolvedFileName) && arkTsEvolutionModuleMap.size !== 0) {
+          !/\.d\.ets$/.test(result.resolvedModule.resolvedFileName) && arkTSEvolutionModuleMap.size !== 0) {
           // When result has a value and the path parsed is the source code file path of module 1.2,
           // the parsing result needs to be modified to the glue code path of module 1.2
-          let staticDeclFileExist: boolean = false;
+          let arktsEvoDeclFilePathExist: boolean = false;
           const resolvedFileName: string  = toUnixPath(result.resolvedModule.resolvedFileName);
-          for (const [pkgName, arkTsEvolutionModuleInfo] of arkTsEvolutionModuleMap) {
-            const modulePath: string = toUnixPath(arkTsEvolutionModuleInfo.modulePath);
-            const declgenV1OutPath: string = toUnixPath(arkTsEvolutionModuleInfo.declgenV1OutPath);
-            const declgenBridgeCodePath: string = toUnixPath(arkTsEvolutionModuleInfo.declgenBridgeCodePath);
-            if (resolvedFileName.startsWith(modulePath + '/') && !resolvedFileName.startsWith(declgenBridgeCodePath + '/')) {
-              const resultDETSPath: string =
-                resolvedFileName.replace(modulePath, toUnixPath(path.join(declgenV1OutPath, pkgName))).replace(EXTNAME_ETS, EXTNAME_D_ETS);
-              if (ts.sys.fileExists(resultDETSPath)) {
-                resolvedModules.push(getResolveModule(resultDETSPath, EXTNAME_D_ETS));
-                staticDeclFileExist = true;
-                break;
-              }
-            }
+          const resultDETSPath: string = getArkTSEvoDeclFilePath({ moduleRequest: '', resolvedFileName });
+          if (ts.sys.fileExists(resultDETSPath)) {
+            resolvedModules.push(getResolveModule(resultDETSPath, EXTNAME_D_ETS));
+            arktsEvoDeclFilePathExist = true;
           }
-          if (!staticDeclFileExist) {
+          if (!arktsEvoDeclFilePathExist) {
             resolvedModules.push(result.resolvedModule);
           }
         } else {
@@ -1025,7 +1017,7 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           path.resolve(__dirname, '../node_modules', moduleName + '/index.js');
         const DETSModulePath: string = path.resolve(path.dirname(containingFile),
           /\.d\.ets$/.test(moduleName) ? moduleName : moduleName + EXTNAME_D_ETS);
-        const arktsEvoDeclFilePath: string = getArktsEvoDeclFilePath(moduleName);
+        const arktsEvoDeclFilePath: string = getArkTSEvoDeclFilePath({ moduleRequest: moduleName, resolvedFileName: '' });
         if (ts.sys.fileExists(modulePath)) {
           resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
         } else if (ts.sys.fileExists(systemDETSModulePath)) {
@@ -1075,26 +1067,6 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
   }
   stopTimeStatisticsLocation(resolveModuleNamesTime);
   return resolvedModulesCache.get(path.resolve(containingFile));
-}
-
-function getArktsEvoDeclFilePath(moduleRequest: string): string {
-  let staticDeclFilePath: string = moduleRequest;
-  for (const [moduleName, arkTsEvolutionModuleInfo] of arkTsEvolutionModuleMap) {
-    const declgenV1OutPath: string = toUnixPath(arkTsEvolutionModuleInfo.declgenV1OutPath);
-    if (moduleRequest === moduleName) {
-      staticDeclFilePath = path.join(declgenV1OutPath, moduleName, 'Index.d.ets');
-      break;
-    } else if (moduleRequest.startsWith(moduleName + '/')) {
-      staticDeclFilePath =
-        moduleRequest.replace(moduleName, toUnixPath(path.join(declgenV1OutPath, moduleName, 'src/main/ets'))) + EXTNAME_D_ETS;
-      break;
-    }
-  }
-  return staticDeclFilePath;
-}
-
-export function cleanUpArkTsEvolutionModuleMap(): void {
-  arkTsEvolutionModuleMap = new Map();
 }
 
 export interface ResolveModuleInfo {
@@ -1727,7 +1699,6 @@ export function resetEtsCheck(): void {
   dirExistsCache.clear();
   targetESVersionChanged = false;
   fileToIgnoreDiagnostics = undefined;
-  cleanUpArkTsEvolutionModuleMap();
 }
 
 export function generateDeclarationFileForSTS(rootFileNames: string[]) {

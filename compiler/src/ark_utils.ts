@@ -85,36 +85,22 @@ export const SRC_MAIN: string = 'src/main';
 
 export let newSourceMaps: Object = {};
 
-interface DeclFileConfig {
-  declPath: string;
-  ohmUrl: string;
-}
-
-interface DeclFilesConfig {
-  packageName: string;
-  files: {
-    [filePath: string]: DeclFileConfig;
-  }
-}
-
-export interface ArkTsEvolutionModule {
-  language: string; // "1.1" | "1.2"
-  pkgName: string;
-  moduleName: string;
-  modulePath: string;
-  declgenV1OutPath?: string;
-  declgenV2OutPath?: string;
-  declgenBridgeCodePath?: string;
-  declFilesPath?: string;
-}
-
-export let pkgDeclFilesConfig: { [pkgName: string]: DeclFilesConfig } = {}
-
 export const packageCollection: Map<string, Array<string>> = new Map();
 // Splicing ohmurl or record name based on filePath and context information table.
 export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object,
   pkgParams: Object, importerFile: string): string {
-  const { pkgName, moduleName, pkgPath, isRecordName, isArkTsEvolution } = pkgParams;
+  const { pkgName, pkgPath, isRecordName } = pkgParams;
+  const { projectFilePath, pkgInfo } = getPkgInfo(filePath, projectConfig, logger, pkgPath, pkgName, importerFile);
+  const recordName: string = `${pkgInfo.bundleName}&${pkgName}/${projectFilePath}&${pkgInfo.version}`;
+  if (isRecordName) {
+    // record name style: <bunldName>&<packageName>/entry/ets/xxx/yyy&<version>
+    return recordName;
+  }
+  return `${pkgInfo.isSO ? 'Y' : 'N'}&${pkgInfo.moduleName}&${recordName}`;
+}
+
+export function getPkgInfo(filePath: string, projectConfig: Object, logger: Object, pkgPath: string,
+  pkgName: string, importerFile?: string): Object {
   // rollup uses commonjs plugin to handle commonjs files,
   // the commonjs files are prefixed with '\x00' and need to be removed.
   if (filePath.startsWith('\x00')) {
@@ -130,50 +116,14 @@ export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: O
   // case6: /library/index.ts
   // ---> @normalized:N&<moduleName>&<bunldName>&<packageName>/entry/ets/xxx/yyy&<version>
   let pkgInfo = projectConfig.pkgContextInfo[pkgName];
-  let arkTsEvolutionModuleInfo = projectConfig.dependentModuleMap.get(moduleName);
   if (!pkgInfo || !pkgPath) {
     logger.error(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
       `Error Message: Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}".\n` +
       `Solutions: > Check whether the module which ${filePath} belongs to is correctly configured.` +
       '> Check the corresponding file name is correct(including case-sensitivity).', reset);
   }
-  let declgenBridgeCodePath: string;
-  let declgenV2OutPath: string;
-  let isNeedGenerateDeclFilesConfig: boolean = false;
-  if (isArkTsEvolution && arkTsEvolutionModuleInfo && arkTsEvolutionModuleInfo.declgenBridgeCodePath) {
-    declgenBridgeCodePath = toUnixPath(arkTsEvolutionModuleInfo.declgenBridgeCodePath);
-  }
-  if (!isArkTsEvolution && arkTsEvolutionModuleInfo && arkTsEvolutionModuleInfo.declgenV2OutPath) {
-    declgenV2OutPath = toUnixPath(arkTsEvolutionModuleInfo.declgenV2OutPath);
-    isNeedGenerateDeclFilesConfig = true;
-  }
-  let projectFilePath: string = declgenBridgeCodePath && unixFilePath.startsWith(declgenBridgeCodePath + '/') ?
-    unixFilePath.replace(toUnixPath(path.join(declgenBridgeCodePath, moduleName)) + '/', '') :
-    unixFilePath.replace(toUnixPath(pkgPath) + '/', '');
-  const recordName: string = `${pkgInfo.bundleName}&${pkgName}/${projectFilePath}&${pkgInfo.version}`;
-  if (isRecordName) {
-    // record name style: <bunldName>&<packageName>/entry/ets/xxx/yyy&<version>
-    if (isNeedGenerateDeclFilesConfig) {
-      if (!pkgDeclFilesConfig[pkgName]) {
-        pkgDeclFilesConfig[pkgName] = { packageName: pkgName, files: {}}
-      }
-      const packageInfo = getPackageInfo(projectConfig.aceModuleJsonPath);
-      const ohmUrl: string = `${pkgInfo.isSO ? 'Y' : 'N'}&${moduleName}&${packageInfo[0]}&${pkgName}/${projectFilePath}&${pkgInfo.version}`;
-      const declFileInfo: Object = { projectFilePath, declgenV2OutPath, ohmUrl: `@normalized:${ohmUrl}` };
-      addDeclFilesConfig(pkgDeclFilesConfig[pkgName], declFileInfo);
-    }
-    return recordName;
-  }
-  return `${pkgInfo.isSO ? 'Y' : 'N'}&${pkgInfo.moduleName}&${recordName}`;
-}
-
-function addDeclFilesConfig(declFilesConfig: DeclFilesConfig, declFileInfo: Object): void {
-  const { projectFilePath, declgenV2OutPath, ohmUrl } =  declFileInfo;
-  if (declFilesConfig.files[projectFilePath]) {
-    return;
-  }
-  const declPath: string = path.join(declgenV2OutPath, projectFilePath) + EXTNAME_D_ETS;
-  declFilesConfig.files[projectFilePath] = { declPath, ohmUrl }
+  const projectFilePath: string = unixFilePath.replace(toUnixPath(pkgPath) + '/', '');
+  return { projectFilePath, pkgInfo };
 }
 
 export function getOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object, namespace?: string,
@@ -902,7 +852,6 @@ export function cleanUpUtilsObjects(): void {
   newSourceMaps = {};
   nameCacheMap.clear();
   packageCollection.clear();
-  pkgDeclFilesConfig = {};
 }
 
 export function getHookEventFactory(share: Object, pluginName: string, hookName: string): Object {
