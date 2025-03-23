@@ -119,12 +119,14 @@ export function createSetter(
 }
 
 export function generateThisValue(newName: string): arkts.MemberExpression {
-    const member: arkts.MemberExpression = arkts.factory.createMemberExpression(
-        arkts.factory.createThisExpression(),
-        arkts.factory.createIdentifier(`${newName}`), // TODO: probably need to change this.
-        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-        false,
-        false
+    const member: arkts.Expression = arkts.factory.createTSNonNullExpression(
+        arkts.factory.createMemberExpression(
+            arkts.factory.createThisExpression(),
+            arkts.factory.createIdentifier(newName),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
+        )
     );
     return arkts.factory.createMemberExpression(
         member,

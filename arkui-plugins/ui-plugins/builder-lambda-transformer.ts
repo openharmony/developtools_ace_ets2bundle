@@ -406,7 +406,7 @@ function transformBuilderLambdaMethodDecl(node: arkts.MethodDefinition): arkts.A
         arkts.factory.createFunctionExpression(updateFunc),
         node.modifiers,
         false // TODO: how do I get it?
-    )
+    ).setOverloads(node.overloads)
     console.log("Kee transformBuilderLambdaMethodDecl updateFunc", newNode.dumpSrc())
     return node;
 }

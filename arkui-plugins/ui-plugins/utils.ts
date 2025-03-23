@@ -167,11 +167,11 @@ export function findBuilderLambdaDecl(node: arkts.CallExpression | arkts.Identif
     return decl;
 }
 
-export function getTypeParamsFromClassDecl(node: arkts.ClassDeclaration | undefined): readonly arkts.TypeParameter[] {
+export function getTypeParamsFromClassDecl(node: arkts.ClassDeclaration | undefined): readonly arkts.TSTypeParameter[] {
     return node?.definition?.typeParams?.params ?? [];
 }
 
-export function getTypeNameFromTypeParameter(node: arkts.TypeParameter | undefined): string | undefined {
+export function getTypeNameFromTypeParameter(node: arkts.TSTypeParameter | undefined): string | undefined {
     return node?.name?.name;
 }
 
@@ -191,18 +191,14 @@ export function createOptionalClassProperty(
     );
 }
 
-export function createStageManagementType (stageManagementIdent: string, property: arkts.ClassProperty): arkts.ETSTypeReference {
+export function createStageManagementType(stageManagementIdent: string, property: arkts.ClassProperty): arkts.ETSTypeReference {
     return arkts.factory.createTypeReference(
         arkts.factory.createTypeReferencePart(
             arkts.factory.createIdentifier(stageManagementIdent),
             arkts.factory.createTSTypeParameterInstantiation(
                 [
-                    arkts.factory.createTypeReference(
-                        arkts.factory.createTypeReferencePart(
-                            arkts.factory.createIdentifier(property.typeAnnotation ? 
-                                property.typeAnnotation.dumpSrc() : 'undefined')
-                        )
-                    )
+                    property.typeAnnotation? property.typeAnnotation:
+                    arkts.factory.createETSUndefinedType(),
                 ]
             )
         )

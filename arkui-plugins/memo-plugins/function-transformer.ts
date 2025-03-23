@@ -247,7 +247,7 @@ export class FunctionTransformer extends AbstractVisitor {
                     ),
                     node.modifiers,
                     false
-                )
+                ).setOverloads(node.overloads)
             }
         }
         if (arkts.isCallExpression(node)) {

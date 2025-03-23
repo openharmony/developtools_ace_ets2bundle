@@ -60,7 +60,7 @@ export class StoragePropTranslator extends PropertyTranslator implements Initial
             this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
             [
                 arkts.factory.createStringLiteral(storagePropValueStr),
-                this.property.value ?? arkts.factory.createIdentifier('undefined')
+                this.property.value ?? arkts.factory.createUndefinedLiteral()
             ]
         );
         const insideMemberExpression = arkts.factory.createMemberExpression(
