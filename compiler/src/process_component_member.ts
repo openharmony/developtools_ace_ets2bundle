@@ -561,7 +561,8 @@ function processWatch(node: ts.PropertyDeclaration, decorator: ts.Decorator,
         } else {
           log.push({
             type: LogType.ERROR,
-            message: `Cannot find name ${argument.getText()} in struct '${node.parent.name.getText()}'.`,
+            message: `'@Watch' cannot be used with ${argument.getText()}.` +
+            ` Apply it only to parameters that correspond to existing methods.`,
             pos: argument.getStart(),
             code: '10905301'
           });
@@ -571,12 +572,12 @@ function processWatch(node: ts.PropertyDeclaration, decorator: ts.Decorator,
         const propertyNode: ts.PropertyAccessExpression = createPropertyAccessExpressionWithThis(content);
         watchMap.set(propertyName, propertyNode);
         decoratorParamSet.add(content);
-        validateWatchParam(LogType.WARN, argument.getStart(), log);
-      } else if (ts.isPropertyAccessExpression(decorator.expression.arguments[0])) {
+        validateWatchParam(LogType.WARN, argument.getStart(), log, argument.getText());
+      } else if (ts.isPropertyAccessExpression(decorator.expression.arguments[0])) {    
         watchMap.set(propertyName, decorator.expression.arguments[0]);
-        validateWatchParam(LogType.WARN, argument.getStart(), log);
+        validateWatchParam(LogType.WARN, argument.getStart(), log, argument.getText());
       } else {
-        validateWatchParam(LogType.ERROR, argument.getStart(), log);
+        validateWatchParam(LogType.ERROR, argument.getStart(), log, argument.getText());
       }
     }
   }
@@ -650,7 +651,7 @@ function wrongDecoratorInPreview(node: ts.PropertyDeclaration, decorator: string
   if (hasPreview && projectConfig.isPreview) {
     log.push({
       type: LogType.WARN,
-      message: `The variable with ${decorator} in component with @Preview may ` +
+      message: `The variable with '${decorator}' in component with '@Preview' may ` +
         `cause error in component preview mode`,
       pos: node.getStart()
     });
@@ -880,7 +881,7 @@ function updateBuilderParamProperty(node: ts.PropertyDeclaration,
   if (judgeBuilderParamAssignedByBuilder(node)) {
     log.push({
       type: LogType.ERROR,
-      message: 'BuilderParam property can only initialized by Builder function or LocalBuilder method in struct.',
+      message: `'@BuilderParam' property can only initialized by '@Builder' function or '@LocalBuilder' method in struct.`,
       pos: node.getStart(),
       code: '10905101'
     });
@@ -1182,7 +1183,7 @@ export function isSingleKey(node: ts.PropertyDeclaration, isOptionalKey: boolean
 function validateMultiDecorators(name: ts.Identifier, log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
-    message: `The property '${name.escapedText.toString()}' cannot have mutilate state management decorators.`,
+    message: `The property '${name.escapedText.toString()}' cannot have multiple state management decorators.`,
     pos: name.getStart(),
     code: '10905302'
   });
@@ -1192,7 +1193,7 @@ function validatePropertyNonDefaultValue(propertyName: ts.Identifier, decorator:
   log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
-    message: `The ${decorator} property '${propertyName.getText()}' must be specified a default value.`,
+    message: `The '${decorator}' property '${propertyName.getText()}' must be specified a default value.`,
     pos: propertyName.getStart(),
     code: '10905303'
   });
@@ -1202,7 +1203,7 @@ function validatePropertyDefaultValue(propertyName: ts.Identifier, decorator: st
   log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
-    message: `The ${decorator} property '${propertyName.getText()}' cannot be specified a default value.`,
+    message: `The '${decorator}' property cannot be specified a default value.`,
     pos: propertyName.getStart(),
     code: '10905304',
     solutions: ['Please initialize the rules according to the decorator.']
@@ -1234,16 +1235,16 @@ function validateNonObservedClassType(propertyName: ts.Identifier, decorator: st
   if (isEsmoduleAndUpdateMode) {
     log.push({
       type: projectConfig.optLazyForEach ? LogType.WARN : LogType.ERROR,
-      message: `The type of the ${decorator} property '${propertyName.getText()}' cannot be an ` +
-        `objects of classes decorated with ${COMPONENT_OBSERVEDV2_DECORATOR} class decorator in ets (not ts).`,
+      message: `'@ObjectLink' cannot be used with this type.` +
+        ` Apply it only to classes decorated by '@Observed' or initialized using the return value of 'makeV1Observed'.`,
       pos: propertyName.getStart(),
       code: '10905307'
     });
   } else {
     log.push({
       type: projectConfig.optLazyForEach ? LogType.WARN : LogType.ERROR,
-      message: `The type of the ${decorator} property '${propertyName.getText()}' can only be ` +
-        `objects of classes decorated with ${COMPONENT_OBSERVED_DECORATOR} class decorator in ets (not ts).`,
+      message: `'@ObjectLink' cannot be used with this type.` +
+        ` Apply it only to classes decorated by '@Observed' or initialized using the return value of 'makeV1Observed'.`,
       pos: propertyName.getStart(),
       code: '10905307'
     });
@@ -1263,8 +1264,8 @@ function validateHasIllegalDecoratorInEntry(parentName: ts.Identifier, propertyN
   decorator: string, log: LogInfo[]): void {
   log.push({
     type: LogType.WARN,
-    message: `The @Entry component '${parentName.getText()}' cannot have the ` +
-      `${decorator} property '${propertyName.getText()}'.`,
+    message: `The '@Entry' component '${parentName.getText()}' cannot have the ` +
+      `'${decorator}' property '${propertyName.getText()}'.`,
     pos: propertyName.getStart()
   });
 }
@@ -1273,7 +1274,7 @@ function validateForbiddenUseStateType(propertyName: ts.Identifier, decorator: s
   log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
-    message: `The ${decorator} property '${propertyName.getText()}' cannot be a '${type}' object.`,
+    message: `The '${decorator}' property '${propertyName.getText()}' cannot be a '${type}' object.`,
     pos: propertyName.getStart(),
     code: '10905308'
   });
@@ -1300,7 +1301,7 @@ function validateWatchDecorator(propertyName: ts.Identifier, decorators: readonl
   if (decorators.length === 1 || isRegular) {
     log.push({
       type: LogType.ERROR,
-      message: `Regular variable '${propertyName.escapedText.toString()}' can not be decorated with @Watch.`,
+      message: `Regular variable '${propertyName.escapedText.toString()}' can not be decorated with '@Watch'.`,
       pos: propertyName.getStart(),
       code: '10905310'
     });
@@ -1309,10 +1310,10 @@ function validateWatchDecorator(propertyName: ts.Identifier, decorators: readonl
   return true;
 }
 
-function validateWatchParam(type: LogType, pos: number, log: LogInfo[]): void {
+function validateWatchParam(type: LogType, pos: number, log: LogInfo[], paramName: string): void {
   log.push({
     type: type,
-    message: 'The parameter should be a string.',
+    message: `'@Watch' cannot be used with '${paramName}'. Apply it only to 'string' parameters.`,
     pos,
     code: '10905311'
   });
@@ -1410,7 +1411,7 @@ function validateCustomDecorator(decorators: readonly ts.Decorator[], log: LogIn
   if (hasCustomDecorator && hasInnerDecorator) {
     log.push({
       type: LogType.ERROR,
-      message: `The inner decorator ${innerDecorator.getText()} cannot be used together with custom decorator.`,
+      message: `The inner decorator '${innerDecorator.getText()}' cannot be used together with custom decorator.`,
       pos: innerDecorator.getStart(),
       code: '10905312'
     });

@@ -371,7 +371,8 @@ function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
   if (!isValid) {
     log.push({
       type: LogType.ERROR,
-      message: `There should have a root container component.`,
+      message: `In an '@Entry' decorated component, the 'build' method can have only one root node,`
+      + ` which must be a container component.`,
       pos: node.body.statements.pos,
       code: '10905210'
     });
@@ -540,8 +541,8 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
         processIfStatement(item, newStatements, log, isBuilder, isGlobalBuilder, builderParamsResult, isInRepeatTemplate);
       } else if (!ts.isBlock(item)) {
         log.push({
-          type: LogType.ERROR,
-          message: `Only UI component syntax can be written in build method.`,
+          type: LogType.ERROR,  
+          message: `Only UI component syntax can be written here.`,
           pos: item.getStart(),
           code: '10905209'
         });
@@ -735,7 +736,7 @@ function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode
     log.push({
       type: LogType.ERROR,
       message: `In the trailing lambda case, '${name}' must have one and only one property decorated with ` +
-        '@BuilderParam, and its @BuilderParam expects no parameter.',
+        `'@BuilderParam', and its '@BuilderParam' expects no parameter.`,
       pos: node.getStart(),
       code: '10905102'
     });
@@ -2773,7 +2774,7 @@ function addComponentAttr(temp, node: ts.Identifier, lastStatement,
     if (newsupplement.isAcceleratePreview) {
       log.push({
         type: LogType.ERROR,
-        message: `Doesn't support Extend function now`,
+        message: `Doesn't support '@Extend' function now`,
         pos: temp.getStart(),
         code: '10906205'
       });
@@ -3406,7 +3407,7 @@ function judgeBuilderType(node: ts.ExpressionStatement): boolean {
 export function validateStateStyleSyntax(temp, log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
-    message: `.stateStyles doesn't conform standard.`,
+    message: `'.stateStyles' doesn't conform standard.`,
     pos: temp.getStart(),
     code: '10905203'
   });
