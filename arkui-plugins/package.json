@@ -17,19 +17,5 @@
   },
   "dependencies": {
     "@koalaui/libarkts": "../koala-wrapper"
-  },
-  "imports": {
-      "#koalaui/interop": {
-          "default":  "../koala-wrapper/koalaui/interop/dist/lib/src/interop/index.js"
-      },
-      "#koalaui/common": {
-          "default": "../koala-wrapper/koalaui/common/dist/lib/src/index.js"
-      },
-      "#koalaui/compat": {
-          "default": "../koala-wrapper/koalaui/compat/dist/src/index.js"
-      },
-      "#koalaui/libarkts": {
-        "default": "../koala-wrapper"
-    }
   }
 }

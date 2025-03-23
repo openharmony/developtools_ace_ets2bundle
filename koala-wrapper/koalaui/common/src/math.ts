@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { asFloat64, asString, float64 } from "#koalaui/compat"
+import { asFloat64, asString, float64 } from "@koalaui/compat"
 
 /**
  * Computes the linear interpolation between `source` and `target` based on `weight`.

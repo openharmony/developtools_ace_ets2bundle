@@ -18,7 +18,7 @@ import {
     KInt,
     registerNativeModuleLibraryName,
     loadNativeModuleLibrary
-} from "#koalaui/interop"
+} from "@koalaui/interop"
 import * as path from "path"
 
 export class InteropNativeModule {

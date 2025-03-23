@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { float64, int32, timeNow, numberToFixed } from "#koalaui/compat"
+import { float64, int32, timeNow, numberToFixed } from "@koalaui/compat"
 
 /**
  * A probe to measure performance.

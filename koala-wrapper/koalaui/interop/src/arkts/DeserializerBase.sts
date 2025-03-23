@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { float32, int32, int64, float32FromBits } from "#koalaui/common"
+import { float32, int32, int64, float32FromBits } from "@koalaui/common"
 import { pointer, KUint8ArrayPtr } from "./InteropTypes"
 import { KBuffer } from "./buffer"
 import { NativeBuffer } from "./NativeBuffer"
