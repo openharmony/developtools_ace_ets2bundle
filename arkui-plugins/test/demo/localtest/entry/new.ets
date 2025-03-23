@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 
-import { Text, Component } from "@ohos.arkui.component"
+import { Text } from "@ohos.arkui.component.text"
+import { Component } from "@ohos.arkui.component.customComponent"
 import { State } from "@ohos.arkui.stateManagement.common"
 import { memo } from "@ohos.arkui.StateManagement.runtime"  // 临时加，需要使用UI Plugin添加
 import { MutableState, observableProxy, stateOf } from "@ohos.arkui.stateManagement.runtime"
