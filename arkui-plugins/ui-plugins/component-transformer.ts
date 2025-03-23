@@ -19,7 +19,7 @@ const interop = require(getInteropPath())
 const nullptr = interop.nullptr
 import { AbstractVisitor } from "../common/abstract-visitor";
 import { hasDecorator, DecoratorNames } from "./property-translators/utils"
-import {EntryHandler} from "./entry-translators/entry"
+import { EntryHandler } from "./entry-translators/entry"
 
 export interface ComponentTransformerOptions {
     arkui: string
@@ -80,8 +80,22 @@ export class ComponentTransformer extends AbstractVisitor {
         if (!className) {
             throw "Non Empty className expected for Component"
         }
+        let entryStorageProperty = null;
         if (hasDecorator(node.definition, DecoratorNames.ENTRY)) {
-            EntryHandler.instance.rememberEntryFunction(node)
+            EntryHandler.instance.rememberEntryFunction(node);
+            if (node.definition?.annotations[0].properties[0] != undefined) {
+                const key = JSON.parse(node.definition?.annotations[0].properties[0].dumpJson())["key"]["name"];
+                const EntryRightValue = JSON.parse(node.definition?.annotations[0].properties[0].dumpJson())["value"]["value"];
+                if (key === 'storage') {
+                    entryStorageProperty = arkts.factory.createClassProperty(
+                        arkts.factory.createIdentifier("_entry_local_storage_"),
+                        arkts.factory.createIdentifier(EntryRightValue),
+                        undefined,
+                        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+                        false
+                    );
+                }
+            }
         }
         arkts.GlobalInfo.getInfoInstance().add(className);
         this.context.componentNames.push(className)
@@ -127,7 +141,7 @@ export class ComponentTransformer extends AbstractVisitor {
                     )
                 )
             ),
-            node.definition?.body,
+            entryStorageProperty ? [entryStorageProperty, ...node.definition?.body] : node.definition?.body,
             node.definition?.modifiers,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_FINAL
         )
