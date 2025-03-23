@@ -811,6 +811,11 @@ export class MethodDefinition extends AstNode {
         return unpackNodeArray(global.generatedEs2panda._MethodDefinitionOverloadsConst(global.context, this.peer))
     }
 
+    setOverloads(overloads: readonly MethodDefinition[]): this {
+        global.generatedEs2panda._MethodDefinitionSetOverloads(global.context, this.peer, passNodeArray(overloads), overloads.length)
+        return this
+    }
+
     readonly kind: Es2pandaMethodDefinitionKind;
     readonly scriptFunction: ScriptFunction
     readonly name: Identifier

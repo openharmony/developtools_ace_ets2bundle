@@ -210,7 +210,7 @@ export function visitEachChild(
             ),
             node.modifiers,
             false
-        )
+        ).setOverloads(node.overloads);
     }
     if (isScriptFunction(node)) {
         const _node = factory.updateScriptFunction(

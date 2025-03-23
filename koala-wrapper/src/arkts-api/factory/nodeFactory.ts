@@ -26,7 +26,6 @@ import {
     IfStatement,
     MethodDefinition,
     NumberLiteral,
-    // ScriptFunction,
     StructDeclaration,
     VariableDeclaration,
     VariableDeclarator
@@ -58,6 +57,7 @@ import {
     ThisExpression,
     TSInterfaceBody,
     TSInterfaceDeclaration,
+    TSNonNullExpression,
     TSTypeParameter,
     TSTypeParameterDeclaration,
     TSTypeParameterInstantiation,
@@ -340,6 +340,12 @@ export const factory = {
     },
     get updateThisExpression() {
         return ThisExpression.updateThisExpression
+    },
+    get createTSNonNullExpression() {
+        return TSNonNullExpression.createTSNonNullExpression;
+    },
+    get updateTSNonNullExpression() {
+        return TSNonNullExpression.updateTSNonNullExpression;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {

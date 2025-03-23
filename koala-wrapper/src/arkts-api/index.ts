@@ -46,6 +46,7 @@ export * from "../generated/peers/ImportSource"
 export * from "../generated/peers/ScriptFunction"
 export * from "../generated/peers/TSTypeParameterDeclaration"
 export * from "../generated/peers/TSTypeParameter"
+export * from "../generated/peers/TSNonNullExpression"
 
 export * from "./types"
 export * from "./utilities/private"
