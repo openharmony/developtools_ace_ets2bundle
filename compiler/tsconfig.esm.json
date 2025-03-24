@@ -161,6 +161,7 @@
       "components": [
         "AbilityComponent",
         "AlphabetIndexer",
+        "AnalogClock",
         "Animator",
         "Badge",
         "Blank",
@@ -287,6 +288,11 @@
             "name": "AlphabetIndexer",
             "type": "AlphabetIndexerAttribute",
             "instance": "AlphabetIndexerInstance"
+          },
+          {
+            "name": "AnalogClock",
+            "type": "AnalogClockAttribute",
+            "instance": "AnalogClockInstance"
           },
           {
             "name": "Animator",
