@@ -89,7 +89,7 @@ function checkNestedComponents(parentComponentType: ParentType, isRecycleChild: 
   if (parentComponentType === ParentType.NormalComponentV1 && isReuseV2Child) {
     log.push({
       type: LogType.ERROR,
-      message: `A custom component decorated with @Component cannot contain child components decorated with @ReusableV2.`,
+      message: `A custom component decorated with '@Component' cannot contain child components decorated with '@ReusableV2'.`,
       pos: node.getStart(),
       code: '10905244'
     });
@@ -97,7 +97,7 @@ function checkNestedComponents(parentComponentType: ParentType, isRecycleChild: 
   if (parentComponentType === ParentType.ReuseComponentV1 && isReuseV2Child) {
     log.push({
       type: LogType.ERROR,
-      message: `A custom component decorated with @Reusable cannot contain child components decorated with @ReusableV2.`,
+      message: `A custom component decorated with '@Reusable' cannot contain child components decorated with '@ReusableV2'.`,
       pos: node.getStart(),
       code: '10905245'
     });
@@ -105,7 +105,7 @@ function checkNestedComponents(parentComponentType: ParentType, isRecycleChild: 
   if (parentComponentType === ParentType.ReuseComponentV2 && isRecycleChild) {
     log.push({
       type: LogType.ERROR,
-      message: `A custom component decorated with @ReusableV2 cannot contain child components decorated with @Reusable.`,
+      message: `A custom component decorated with '@ReusableV2' cannot contain child components decorated with '@Reusable'.`,
       pos: node.getStart(),
       code: '10905246'
     });
@@ -113,7 +113,7 @@ function checkNestedComponents(parentComponentType: ParentType, isRecycleChild: 
   if (parentComponentType === ParentType.NormalComponentV2 && isRecycleChild) {
     log.push({
       type: LogType.WARN,
-      message: `When a custom component is decorated with @ComponentV2 and contains a child decorated with @Reusable, ` + 
+      message: `When a custom component is decorated with '@ComponentV2' and contains a child decorated with '@Reusable', ` + 
         `the child component will not create.`,
       pos: node.getStart()
     });
@@ -125,7 +125,7 @@ function checkIfReuseV2InRepeatTemplate(isInRepeatTemplate: boolean, isReuseV2Ch
   if (isInRepeatTemplate && isReuseV2Child) {
     log.push({
       type: LogType.ERROR,
-      message: `The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.`,
+      message: `The template attribute of the Repeat component cannot contain any custom component decorated with '@ReusableV2'.`,
       pos: node.getStart(),
       code: '10905247'
     });
@@ -136,7 +136,7 @@ function checkUsageOfReuseAttribute(node: ts.CallExpression, isReusableV2NodeAtt
   if (!isReusableV2NodeAttr) {
     log.push({
       type: LogType.ERROR,
-      message: `The reuse attribute is only applicable to custom components decorated with both @ComponentV2 and @ReusableV2.`,
+      message: `The reuse attribute is only applicable to custom components decorated with both '@ComponentV2' and '@ReusableV2'.`,
       pos: node.getStart(),
       code: '10905248'
     });
@@ -147,7 +147,7 @@ function checkUsageOfReuseIdAttribute(node: ts.CallExpression, isReusableV2NodeA
   if (isReusableV2NodeAttr) {
     log.push({
       type: LogType.ERROR,
-      message: `The reuseId attribute is not applicable to custom components decorated with both @ComponentV2 and @ReusableV2.`,
+      message: `The reuseId attribute is not applicable to custom components decorated with both '@ComponentV2' and '@ReusableV2'.`,
       pos: node.getStart(),
       code: '10905249'
     });

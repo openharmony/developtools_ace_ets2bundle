@@ -636,7 +636,7 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
       } else {
         log.push({
           type: LogType.ERROR,
-          message: `@Styles can't have parameters.`,
+          message: `'@Styles' decorated functions and methods cannot have arguments.`,
           pos: node.getStart(),
           code: '10905105'
         });
@@ -653,7 +653,7 @@ function checkDecoratorMethod(node: ts.MethodDeclaration, modifiers: readonly ts
       if (modifiers[i].kind && modifiers[i].kind === ts.SyntaxKind.StaticKeyword) {
         log.push({
           type: LogType.ERROR,
-          message: `Static methods in custom components cannot be decorated by @LocalBuilder.`,
+          message: `Static methods in custom components cannot be decorated by '@LocalBuilder'.`,
           pos: node.getStart(),
           code: '10905104'
         });
@@ -797,7 +797,7 @@ export function updateHeritageClauses(node: ts.StructDeclaration, log: LogInfo[]
   if (node.heritageClauses && !checkHeritageClauses(node)) {
     log.push({
       type: LogType.ERROR,
-      message: 'The struct component is not allowed to extends other class or implements other interface.',
+      message: 'Structs are not allowed to inherit from classes or implement interfaces.',
       pos: node.heritageClauses.pos,
       code: '10905212'
     });
@@ -1047,7 +1047,7 @@ export function validateBuildMethodCount(buildCount: BuildCount, parentComponent
   if (buildCount.count !== 1) {
     log.push({
       type: LogType.ERROR,
-      message: `struct '${parentComponentName.getText()}' must be at least or at most one 'build' method.`,
+      message: `The struct '${parentComponentName.getText()}' must have at least and at most one 'build' method.`,
       pos: parentComponentName.getStart(),
       code: '10905103',
       solutions: [`A structurally modified page must have at least one and no more than one 'build' method.`]
@@ -1060,7 +1060,7 @@ function validateHasControllerAndControllerCount(componentName: ts.Identifier, c
   if (!checkController.hasController) {
     log.push({
       type: LogType.ERROR,
-      message: '@CustomDialog component should have a property of the CustomDialogController type.',
+      message: `The '@CustomDialog' decorated custom component must contain a property of the CustomDialogController type.`,
       pos: componentName.pos,
       code: '10905211'
     });
