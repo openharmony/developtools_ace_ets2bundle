@@ -35,7 +35,7 @@ import { TSTypeParameterDeclaration } from "./TSTypeParameterDeclaration"
 import { TypeNode } from "./TypeNode"
 export class TSMethodSignature extends AstNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 105)
+        assertValidPeer(pointer, 106)
         super(pointer)
         
     }
@@ -67,6 +67,6 @@ export class TSMethodSignature extends AstNode {
 export function isTSMethodSignature(node: AstNode): node is TSMethodSignature {
     return node instanceof TSMethodSignature
 }
-if (!nodeByType.has(105)) {
-    nodeByType.set(105, TSMethodSignature)
+if (!nodeByType.has(106)) {
+    nodeByType.set(106, TSMethodSignature)
 }

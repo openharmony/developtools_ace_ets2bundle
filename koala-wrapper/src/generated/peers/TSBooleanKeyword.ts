@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class TSBooleanKeyword extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 92)
+        assertValidPeer(pointer, 93)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class TSBooleanKeyword extends TypeNode {
 export function isTSBooleanKeyword(node: AstNode): node is TSBooleanKeyword {
     return node instanceof TSBooleanKeyword
 }
-if (!nodeByType.has(92)) {
-    nodeByType.set(92, TSBooleanKeyword)
+if (!nodeByType.has(93)) {
+    nodeByType.set(93, TSBooleanKeyword)
 }

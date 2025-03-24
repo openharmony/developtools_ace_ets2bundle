@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class TSBigintKeyword extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 97)
+        assertValidPeer(pointer, 98)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class TSBigintKeyword extends TypeNode {
 export function isTSBigintKeyword(node: AstNode): node is TSBigintKeyword {
     return node instanceof TSBigintKeyword
 }
-if (!nodeByType.has(97)) {
-    nodeByType.set(97, TSBigintKeyword)
+if (!nodeByType.has(98)) {
+    nodeByType.set(98, TSBigintKeyword)
 }

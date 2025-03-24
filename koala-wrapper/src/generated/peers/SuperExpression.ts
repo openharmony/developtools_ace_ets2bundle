@@ -32,7 +32,7 @@ import {
 import { Expression } from "./Expression"
 export class SuperExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 82)
+        assertValidPeer(pointer, 83)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class SuperExpression extends Expression {
 export function isSuperExpression(node: AstNode): node is SuperExpression {
     return node instanceof SuperExpression
 }
-if (!nodeByType.has(82)) {
-    nodeByType.set(82, SuperExpression)
+if (!nodeByType.has(83)) {
+    nodeByType.set(83, SuperExpression)
 }

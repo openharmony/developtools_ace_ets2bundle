@@ -33,7 +33,7 @@ import { TypeNode } from "./TypeNode"
 import { Expression } from "./Expression"
 export class TSConditionalType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 110)
+        assertValidPeer(pointer, 111)
         super(pointer)
         
     }
@@ -59,6 +59,6 @@ export class TSConditionalType extends TypeNode {
 export function isTSConditionalType(node: AstNode): node is TSConditionalType {
     return node instanceof TSConditionalType
 }
-if (!nodeByType.has(110)) {
-    nodeByType.set(110, TSConditionalType)
+if (!nodeByType.has(111)) {
+    nodeByType.set(111, TSConditionalType)
 }

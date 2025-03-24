@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 import { Expression } from "./Expression"
 export class SwitchCaseStatement extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 84)
+        assertValidPeer(pointer, 85)
         super(pointer)
         
     }
@@ -53,6 +53,6 @@ export class SwitchCaseStatement extends Statement {
 export function isSwitchCaseStatement(node: AstNode): node is SwitchCaseStatement {
     return node instanceof SwitchCaseStatement
 }
-if (!nodeByType.has(84)) {
-    nodeByType.set(84, SwitchCaseStatement)
+if (!nodeByType.has(85)) {
+    nodeByType.set(85, SwitchCaseStatement)
 }

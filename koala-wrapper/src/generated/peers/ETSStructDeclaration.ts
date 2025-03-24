@@ -33,7 +33,7 @@ import { ClassDeclaration } from "./ClassDeclaration"
 import { ClassDefinition } from "./ClassDefinition"
 export class ETSStructDeclaration extends ClassDeclaration {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 83)
+        assertValidPeer(pointer, 84)
         super(pointer)
         
     }
@@ -47,6 +47,6 @@ export class ETSStructDeclaration extends ClassDeclaration {
 export function isETSStructDeclaration(node: AstNode): node is ETSStructDeclaration {
     return node instanceof ETSStructDeclaration
 }
-if (!nodeByType.has(83)) {
-    nodeByType.set(83, ETSStructDeclaration)
+if (!nodeByType.has(84)) {
+    nodeByType.set(84, ETSStructDeclaration)
 }

@@ -37,7 +37,7 @@ import { TypeNode } from "./TypeNode"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class ETSParameterExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 79)
+        assertValidPeer(pointer, 80)
         super(pointer)
         
     }
@@ -104,6 +104,6 @@ export class ETSParameterExpression extends Expression {
 export function isETSParameterExpression(node: AstNode): node is ETSParameterExpression {
     return node instanceof ETSParameterExpression
 }
-if (!nodeByType.has(79)) {
-    nodeByType.set(79, ETSParameterExpression)
+if (!nodeByType.has(80)) {
+    nodeByType.set(80, ETSParameterExpression)
 }

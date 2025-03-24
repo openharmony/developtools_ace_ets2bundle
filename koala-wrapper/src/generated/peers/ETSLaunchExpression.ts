@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 import { CallExpression } from "./CallExpression"
 export class ETSLaunchExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 74)
+        assertValidPeer(pointer, 75)
         super(pointer)
         
     }
@@ -50,6 +50,6 @@ export class ETSLaunchExpression extends Expression {
 export function isETSLaunchExpression(node: AstNode): node is ETSLaunchExpression {
     return node instanceof ETSLaunchExpression
 }
-if (!nodeByType.has(74)) {
-    nodeByType.set(74, ETSLaunchExpression)
+if (!nodeByType.has(75)) {
+    nodeByType.set(75, ETSLaunchExpression)
 }

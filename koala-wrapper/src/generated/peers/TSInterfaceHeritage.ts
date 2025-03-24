@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 import { TypeNode } from "./TypeNode"
 export class TSInterfaceHeritage extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 132)
+        assertValidPeer(pointer, 133)
         super(pointer)
         
     }
@@ -50,6 +50,6 @@ export class TSInterfaceHeritage extends Expression {
 export function isTSInterfaceHeritage(node: AstNode): node is TSInterfaceHeritage {
     return node instanceof TSInterfaceHeritage
 }
-if (!nodeByType.has(132)) {
-    nodeByType.set(132, TSInterfaceHeritage)
+if (!nodeByType.has(133)) {
+    nodeByType.set(133, TSInterfaceHeritage)
 }

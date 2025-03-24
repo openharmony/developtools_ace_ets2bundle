@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class TSNeverKeyword extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 98)
+        assertValidPeer(pointer, 99)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class TSNeverKeyword extends TypeNode {
 export function isTSNeverKeyword(node: AstNode): node is TSNeverKeyword {
     return node instanceof TSNeverKeyword
 }
-if (!nodeByType.has(98)) {
-    nodeByType.set(98, TSNeverKeyword)
+if (!nodeByType.has(99)) {
+    nodeByType.set(99, TSNeverKeyword)
 }

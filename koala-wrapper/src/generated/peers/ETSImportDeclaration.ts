@@ -35,7 +35,7 @@ import { Es2pandaImportKinds } from "./../Es2pandaEnums"
 import { StringLiteral } from "./StringLiteral"
 export class ETSImportDeclaration extends ImportDeclaration {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 78)
+        assertValidPeer(pointer, 79)
         super(pointer)
         
     }
@@ -64,6 +64,6 @@ export class ETSImportDeclaration extends ImportDeclaration {
 export function isETSImportDeclaration(node: AstNode): node is ETSImportDeclaration {
     return node instanceof ETSImportDeclaration
 }
-if (!nodeByType.has(78)) {
-    nodeByType.set(78, ETSImportDeclaration)
+if (!nodeByType.has(79)) {
+    nodeByType.set(79, ETSImportDeclaration)
 }

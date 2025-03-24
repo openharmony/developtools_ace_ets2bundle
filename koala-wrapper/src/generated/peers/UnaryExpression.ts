@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 import { Es2pandaTokenType } from "./../Es2pandaEnums"
 export class UnaryExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 147)
+        assertValidPeer(pointer, 148)
         super(pointer)
         
     }
@@ -53,6 +53,6 @@ export class UnaryExpression extends Expression {
 export function isUnaryExpression(node: AstNode): node is UnaryExpression {
     return node instanceof UnaryExpression
 }
-if (!nodeByType.has(147)) {
-    nodeByType.set(147, UnaryExpression)
+if (!nodeByType.has(148)) {
+    nodeByType.set(148, UnaryExpression)
 }

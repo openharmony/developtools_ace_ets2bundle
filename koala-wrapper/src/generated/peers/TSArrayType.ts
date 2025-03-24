@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class TSArrayType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 101)
+        assertValidPeer(pointer, 102)
         super(pointer)
         
     }
@@ -49,6 +49,6 @@ export class TSArrayType extends TypeNode {
 export function isTSArrayType(node: AstNode): node is TSArrayType {
     return node instanceof TSArrayType
 }
-if (!nodeByType.has(101)) {
-    nodeByType.set(101, TSArrayType)
+if (!nodeByType.has(102)) {
+    nodeByType.set(102, TSArrayType)
 }

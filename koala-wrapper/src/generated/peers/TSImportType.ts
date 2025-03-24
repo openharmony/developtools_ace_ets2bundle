@@ -34,7 +34,7 @@ import { Expression } from "./Expression"
 import { TSTypeParameterInstantiation } from "./TSTypeParameterInstantiation"
 export class TSImportType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 111)
+        assertValidPeer(pointer, 112)
         super(pointer)
         
     }
@@ -60,6 +60,6 @@ export class TSImportType extends TypeNode {
 export function isTSImportType(node: AstNode): node is TSImportType {
     return node instanceof TSImportType
 }
-if (!nodeByType.has(111)) {
-    nodeByType.set(111, TSImportType)
+if (!nodeByType.has(112)) {
+    nodeByType.set(112, TSImportType)
 }
