@@ -351,7 +351,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           } else {
             transformLog.errors.push({
               type: LogType.ERROR,
-              message: `@Styles can't have parameters.`,
+              message: `'@Styles' decorated functions and methods cannot have arguments.`,
               pos: node.getStart(),
               code: '10905110'
             });
@@ -397,7 +397,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           !CUSTOM_BUILDER_METHOD.has(node.arguments[0].escapedText.toString()))) {
           transformLog.errors.push({
             type: LogType.ERROR,
-            message: `wrapBuilder's parameter should be @Builder function.`,
+            message: `The wrapBuilder's parameter should be '@Builder' function.`,
             pos: node.getStart(),
             code: '10905109'
           });
@@ -767,7 +767,7 @@ function getResourceDataNode(node: ts.CallExpression,
     if (resourceType === undefined && !previewLog.isAcceleratePreview) {
       transformLog.errors.push({
         type: LogType.ERROR,
-        message: `The resource type ${resourceData[1]} is not supported.`,
+        message: `The resource type '${resourceData[1]}' is not supported.`,
         pos: node.getStart(),
         code: '10906334'
       });
@@ -909,7 +909,7 @@ function validateResourceData(resourceData: string[], resources: object, pos: nu
   if (resourceData.length !== 3) {
     log.push({
       type: LogType.ERROR,
-      message: 'The input parameter is not supported.',
+      message: `Invalid resource file parameter. Enter a value in the format of 'xxx.yyy.zzz'.`,
       pos,
       code: '10905332'
     });
@@ -1213,7 +1213,7 @@ function parseExtendNode(node: ts.CallExpression, extendResult: ExtendResult, ch
       node.arguments && node.arguments.length !== 1) {
       transformLog.errors.push({
         type: LogType.ERROR,
-        message: `@${extendResult.decoratorName} should have one and only one parameter`,
+        message: `'@${extendResult.decoratorName}' should have one and only one parameter.`,
         pos: node.getStart(),
         code: '10905108'
       });
@@ -1281,7 +1281,7 @@ function createEntryFunction(name: string, context: ts.TransformationContext, ca
       if (entryOptionNode && ts.isObjectLiteralExpression(entryOptionNode)) {
         transformLog.errors.push({
           type: LogType.ERROR,
-          message: `@Entry doesn't support {} parameter in card`,
+          message: `'@Entry' doesn't support {} parameter in card`,
           pos: componentCollection.entryComponentPos,
           code: '10906218'
         });
@@ -1680,10 +1680,10 @@ function addStorageParam(name: string): [string, ts.Expression] {
     if (componentCollection.localStorageName) {
       localStorageName = componentCollection.localStorageName;
     }
-    if (!hasStorage() && localStorageNum) {
+    if (!hasStorage() && localStorageNum) {  
       transformLog.errors.push({
         type: LogType.WARN,
-        message: `@Entry should have a parameter, like '@Entry (storage)'.`,
+        message: `'@Entry' should have a parameter, like '@Entry (storage)'.`,
         pos: componentCollection.entryComponentPos
       });
     }
@@ -1916,7 +1916,7 @@ function createPreviewElseBlock(name: string, context: ts.TransformationContext,
         if (entryOptionNode && ts.isObjectLiteralExpression(entryOptionNode)) {
           transformLog.errors.push({
             type: LogType.ERROR,
-            message: `@Entry doesn't support {} parameter in card`,
+            message: `'@Entry' doesn't support {} parameter in card`,
             pos: componentCollection.entryComponentPos,
             code: '10906217'
           });
