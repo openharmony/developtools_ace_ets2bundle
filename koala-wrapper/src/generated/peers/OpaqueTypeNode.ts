@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class OpaqueTypeNode extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 153)
+        assertValidPeer(pointer, 154)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class OpaqueTypeNode extends TypeNode {
 export function isOpaqueTypeNode(node: AstNode): node is OpaqueTypeNode {
     return node instanceof OpaqueTypeNode
 }
-if (!nodeByType.has(153)) {
-    nodeByType.set(153, OpaqueTypeNode)
+if (!nodeByType.has(154)) {
+    nodeByType.set(154, OpaqueTypeNode)
 }

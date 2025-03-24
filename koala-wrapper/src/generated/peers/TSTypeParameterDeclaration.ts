@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 import { TSTypeParameter } from "./TSTypeParameter"
 export class TSTypeParameterDeclaration extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 118)
+        assertValidPeer(pointer, 119)
         super(pointer)
         
     }
@@ -58,6 +58,6 @@ export class TSTypeParameterDeclaration extends Expression {
 export function isTSTypeParameterDeclaration(node: AstNode): node is TSTypeParameterDeclaration {
     return node instanceof TSTypeParameterDeclaration
 }
-if (!nodeByType.has(118)) {
-    nodeByType.set(118, TSTypeParameterDeclaration)
+if (!nodeByType.has(119)) {
+    nodeByType.set(119, TSTypeParameterDeclaration)
 }

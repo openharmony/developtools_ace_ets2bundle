@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class ETSTuple extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 80)
+        assertValidPeer(pointer, 81)
         super(pointer)
         
     }
@@ -77,6 +77,6 @@ export class ETSTuple extends TypeNode {
 export function isETSTuple(node: AstNode): node is ETSTuple {
     return node instanceof ETSTuple
 }
-if (!nodeByType.has(80)) {
-    nodeByType.set(80, ETSTuple)
+if (!nodeByType.has(81)) {
+    nodeByType.set(81, ETSTuple)
 }

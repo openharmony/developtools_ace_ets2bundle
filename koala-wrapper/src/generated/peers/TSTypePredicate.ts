@@ -33,7 +33,7 @@ import { TypeNode } from "./TypeNode"
 import { Expression } from "./Expression"
 export class TSTypePredicate extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 120)
+        assertValidPeer(pointer, 121)
         super(pointer)
         
     }
@@ -56,6 +56,6 @@ export class TSTypePredicate extends TypeNode {
 export function isTSTypePredicate(node: AstNode): node is TSTypePredicate {
     return node instanceof TSTypePredicate
 }
-if (!nodeByType.has(120)) {
-    nodeByType.set(120, TSTypePredicate)
+if (!nodeByType.has(121)) {
+    nodeByType.set(121, TSTypePredicate)
 }

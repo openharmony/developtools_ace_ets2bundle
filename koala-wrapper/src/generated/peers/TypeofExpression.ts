@@ -32,7 +32,7 @@ import {
 import { Expression } from "./Expression"
 export class TypeofExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 144)
+        assertValidPeer(pointer, 145)
         super(pointer)
         
     }
@@ -49,6 +49,6 @@ export class TypeofExpression extends Expression {
 export function isTypeofExpression(node: AstNode): node is TypeofExpression {
     return node instanceof TypeofExpression
 }
-if (!nodeByType.has(144)) {
-    nodeByType.set(144, TypeofExpression)
+if (!nodeByType.has(145)) {
+    nodeByType.set(145, TypeofExpression)
 }

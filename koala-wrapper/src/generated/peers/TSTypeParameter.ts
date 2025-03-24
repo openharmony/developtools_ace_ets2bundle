@@ -36,7 +36,7 @@ import { Es2pandaModifierFlags } from "./../Es2pandaEnums"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class TSTypeParameter extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 117)
+        assertValidPeer(pointer, 118)
         super(pointer)
         
     }
@@ -83,6 +83,6 @@ export class TSTypeParameter extends Expression {
 export function isTSTypeParameter(node: AstNode): node is TSTypeParameter {
     return node instanceof TSTypeParameter
 }
-if (!nodeByType.has(117)) {
-    nodeByType.set(117, TSTypeParameter)
+if (!nodeByType.has(118)) {
+    nodeByType.set(118, TSTypeParameter)
 }

@@ -32,7 +32,7 @@ import {
 import { Expression } from "./Expression"
 export class TSInterfaceBody extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 131)
+        assertValidPeer(pointer, 132)
         super(pointer)
         
     }
@@ -52,6 +52,6 @@ export class TSInterfaceBody extends Expression {
 export function isTSInterfaceBody(node: AstNode): node is TSInterfaceBody {
     return node instanceof TSInterfaceBody
 }
-if (!nodeByType.has(131)) {
-    nodeByType.set(131, TSInterfaceBody)
+if (!nodeByType.has(132)) {
+    nodeByType.set(132, TSInterfaceBody)
 }

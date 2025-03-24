@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 import { TemplateElement } from "./TemplateElement"
 export class TemplateLiteral extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 142)
+        assertValidPeer(pointer, 143)
         super(pointer)
         
     }
@@ -53,6 +53,6 @@ export class TemplateLiteral extends Expression {
 export function isTemplateLiteral(node: AstNode): node is TemplateLiteral {
     return node instanceof TemplateLiteral
 }
-if (!nodeByType.has(142)) {
-    nodeByType.set(142, TemplateLiteral)
+if (!nodeByType.has(143)) {
+    nodeByType.set(143, TemplateLiteral)
 }
