@@ -14,16 +14,16 @@
  */
 
 import { global } from "../static/global"
-import { isNumber, throwError } from "../../utils"
+import { isNumber, throwError, getEnumName } from "../../utils"
 import { KNativePointer, KInt, nullptr, withStringResult } from "#koalaui/interop"
 import { passNode, passString, unpackNodeArray, unpackNonNullableNode } from "./private"
-import { isFunctionDeclaration, isMemberExpression, isScriptFunction } from "../factory/nodeTests"
+import { isFunctionDeclaration, isMemberExpression } from "../factory/nodeTests"
 import { Es2pandaContextState, Es2pandaModifierFlags } from "../../generated/Es2pandaEnums"
 import type { AstNode } from "../peers/AstNode"
-import { ClassDefinition, isClassDefinition, type AnnotationUsage } from "../../generated"
+import { ClassDefinition, ETSImportDeclaration, isClassDefinition, isScriptFunction, type AnnotationUsage } from "../../generated"
 
 export function proceedToState(state: Es2pandaContextState): void {
-    console.log("[TS WRAPPER] PROCEED TO STATE: ", state);
+    console.log("[TS WRAPPER] PROCEED TO STATE: ", getEnumName(Es2pandaContextState, state));
     if (state <= global.es2panda._ContextState(global.context)) {
         console.log("[TS WRAPPER] PROCEED TO STATE: SKIPPING");
         return
@@ -100,6 +100,11 @@ export function getFileName(): string {
 // the language level modifiers: public, declare, export, etc.
 export function classDefinitionFlags(node: ClassDefinition): Es2pandaModifierFlags {
     return global.generatedEs2panda._AstNodeModifiers(global.context, node.peer)
+}
+
+// TODO: Import statements should be inserted to the statements
+export function importDeclarationInsert(node: ETSImportDeclaration): void {
+    global.es2panda._InsertETSImportDeclarationAfterParse(global.context, node.peer)
 }
 
 export function modifiersToString(modifiers: Es2pandaModifierFlags): string {

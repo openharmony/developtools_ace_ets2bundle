@@ -64,10 +64,9 @@ export class EntryHandler {
     }
     public updateEntryAnnotion(node: arkts.ClassDeclaration | arkts.StructDeclaration) {
         node.definition?.body.forEach(member => {
-            console.log("updateEntryAnnotion")
             if (arkts.isMethodDefinition(member)) {
-                if (member.scriptFunction.ident?.name == EntryHandler.ENTRY_FUNC) {
-                    member.scriptFunction.annotations = [annotation("memo")];
+                if (member.scriptFunction.id?.name == EntryHandler.ENTRY_FUNC) {
+                    member.scriptFunction.setAnnotations([annotation("memo")])
                 }
             }
         })
@@ -87,13 +86,14 @@ export class EntryHandler {
         )
         const entryScript = arkts.factory.createScriptFunction(
             block,
+            arkts.FunctionSignature.createFunctionSignature(
+                undefined,
+                [],
+                arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                false
+            ),
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
-            false,
-            undefined,
-            [],
-            undefined,
-            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
         )
         const def = arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,

@@ -25,6 +25,17 @@ export function annotation(name: string): arkts.AnnotationUsage {
     return annotation;
 }
 
+export function isAnnotation(node: arkts.AnnotationUsage, annoName: string) {
+    return node.expr !== undefined && arkts.isIdentifier(node.expr) && node.expr.name === annoName;
+}
+
+export function removeAnnotationByName(
+    annotations: readonly arkts.AnnotationUsage[], 
+    annoName: string
+): arkts.AnnotationUsage[] {
+    return annotations.filter((it) => !isAnnotation(it, annoName));
+}
+
 export function expectName(node: arkts.AstNode | undefined): string {
     if (!node) {
         throw new Error("Expected an identifier, got empty node");

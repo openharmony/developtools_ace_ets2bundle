@@ -41,4 +41,32 @@ export class PluginContext {
         return this.program;
     }
 }
-  
+
+export type PluginHandlerFunction = () => void;
+
+export type PluginHandlerObject = {
+  order: 'pre' | 'post' | undefined
+  handler: PluginHandlerFunction
+};
+
+export type PluginHandler = PluginHandlerFunction | PluginHandlerObject;
+
+export interface Plugins {
+    name: string;
+    afterNew?: PluginHandler,
+    parsed?: PluginHandler,
+    scopeInited?: PluginHandler,
+    bound?: PluginHandler,
+    checked?: PluginHandler,
+    lowered?: PluginHandler,
+    asmGenerated?: PluginHandler,
+    binGenerated?: PluginHandler,
+    clean?: PluginHandler,
+};
+
+export type PluginState = keyof Omit<Plugins, "name">;
+
+export type PluginExecutor = {
+    name: string
+    handler: PluginHandlerFunction
+};

@@ -22,6 +22,7 @@ export enum RuntimeNames {
     __ID = "__id",
     ANNOTATION = "memo",
     ANNOTATION_INTRINSIC = "memo_intrinsic",
+    ANNOTATION_STABLE = "memo_stable",
     COMPUTE = "compute",
     CONTEXT = "__memo_context",
     CONTEXT_TYPE = "__memo_context_type",
@@ -95,17 +96,36 @@ export function hasMemoIntrinsicAnnotation(node: arkts.ScriptFunction | arkts.ET
     return node.annotations.some((it) => isMemoAnnotation(it, RuntimeNames.ANNOTATION_INTRINSIC))
 }
 
+export function hasMemoStableAnnotation(node: arkts.ClassDefinition) {
+    return node.annotations.some((it) =>
+        it.expr !== undefined && arkts.isIdentifier(it.expr) && it.expr.name === RuntimeNames.ANNOTATION_STABLE
+    )
+}
+
+export function removeMemoAnnotationInParam(param: arkts.ETSParameterExpression): arkts.ETSParameterExpression {
+    param.annotations = param.annotations.filter(
+        (it) => (
+            !isMemoAnnotation(it, RuntimeNames.ANNOTATION) 
+            && !isMemoAnnotation(it, RuntimeNames.ANNOTATION_INTRINSIC)
+            && !isMemoAnnotation(it, RuntimeNames.ANNOTATION_STABLE)
+        )
+    );
+    return param;
+}
+
 /**
  * TODO:
  * @deprecated
  */
 export function isSyntheticReturnStatement(node: arkts.AstNode) {
-    return node instanceof arkts.ReturnStatement &&
-        node.argument instanceof arkts.MemberExpression &&
-        node.argument.object instanceof arkts.Identifier &&
+    return (
+        arkts.isReturnStatement(node) &&
+        node.argument && arkts.isMemberExpression(node.argument) &&
+        arkts.isIdentifier(node.argument.object) &&
         node.argument.object.name === RuntimeNames.SCOPE &&
-        node.argument.property instanceof arkts.Identifier &&
+        arkts.isIdentifier(node.argument.property) &&
         node.argument.property.name === RuntimeNames.INTERNAL_VALUE
+    ) || arkts.isBlockStatement(node)
 }
 
 /**
@@ -113,6 +133,13 @@ export function isSyntheticReturnStatement(node: arkts.AstNode) {
  * @deprecated
  */
 export function isMemoParametersDeclaration(node: arkts.AstNode) {
-    return node instanceof arkts.VariableDeclaration &&
+    return arkts.isVariableDeclaration(node) &&
         node.declarators.every((it) => it.name.name.startsWith(RuntimeNames.PARAMETER))
+}
+
+/**
+ * TODO: change this to TypeNodeGetType to check void type
+ */
+export function isVoidType(typeNode: arkts.TypeNode | undefined) {
+    return typeNode?.dumpSrc() === "void"
 }

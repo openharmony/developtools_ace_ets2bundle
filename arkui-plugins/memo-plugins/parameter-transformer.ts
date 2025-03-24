@@ -17,7 +17,7 @@ import { getInteropPath } from "../path"
 const interop = require(getInteropPath());
 const KPointer = interop.KPointer
 import { factory } from "./memo-factory"
-import { AbstractVisitor } from "../common/abstract-visitor"
+import { AbstractVisitor, VisitorOptions } from "../common/abstract-visitor"
 import { 
     hasMemoAnnotation, 
     hasMemoIntrinsicAnnotation, 
@@ -25,13 +25,19 @@ import {
     PositionalIdTracker
 } from "./utils"
 
+export interface ParameterTransformerOptions extends VisitorOptions {
+    positionalIdTracker: PositionalIdTracker
+}
+
 export class ParameterTransformer extends AbstractVisitor {
     private rewriteIdentifiers?: Map<KPointer, () => arkts.MemberExpression | arkts.Identifier>
     private rewriteCalls?: Map<KPointer, (passArgs: arkts.AstNode[]) => arkts.CallExpression>
     private skipNode?: arkts.VariableDeclaration
+    private positionalIdTracker: PositionalIdTracker
 
-    constructor(private positionalIdTracker: PositionalIdTracker) {
-        super()
+    constructor(options: ParameterTransformerOptions) {
+        super(options)
+        this.positionalIdTracker = options.positionalIdTracker
     }
 
     withParameters(parameters: arkts.ETSParameterExpression[]): ParameterTransformer {
@@ -66,6 +72,9 @@ export class ParameterTransformer extends AbstractVisitor {
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         // TODO: temporary checking skip nodes by comparison with expected skip nodes
         // Should be fixed when update procedure implemented properly
+        if (!beforeChildren) {
+            return beforeChildren;
+        }
         if (/* beforeChildren === this.skipNode */ isMemoParametersDeclaration(beforeChildren)) {
             return beforeChildren
         }
