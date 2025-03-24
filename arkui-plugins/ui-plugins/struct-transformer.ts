@@ -25,20 +25,29 @@ import {
     PropertyTranslator 
 } from "./property-translators";
 import { 
-    createCustomComponentInitializerOptions, 
-    createInitializerOptions, 
-    getCustomComponentNameFromInitializerOptions
+    CustomComponentNames, 
+    getCustomComponentNameFromInitializerOptions,
+    getCustomComponentOptionsName,
+    getTypeNameFromTypeParameter,
+    getTypeParamsFromClassDecl,
+    hasModifierFlag
 } from "./utils";
+import {
+    factory
+} from "./ui-factory";
 import {
     EntryHandler
 } from "./entry-translators/entry"
+import { DecoratorNames, hasDecorator } from "./property-translators/utils";
 
 function isCustomComponentClass(node: arkts.ClassDeclaration): boolean {
+    if (!node.definition?.ident?.name) return false;
+    const name: string = node.definition.ident.name;
     const structCollection: Set<string> = arkts.GlobalInfo.getInfoInstance().getStructCollection();
-    if (node.definition?.ident?.name && structCollection.has(node.definition.ident.name)) {
-        return true;
-    }
-    return false;
+    return (
+        name === CustomComponentNames.COMPONENT_CLASS_NAME
+        || structCollection.has(name)
+    );
 }
 
 function isKnownMethodDefinition(method: arkts.MethodDefinition, name: string): boolean {
@@ -49,276 +58,206 @@ function isKnownMethodDefinition(method: arkts.MethodDefinition, name: string): 
     return isNameMatched;
 }
 
-function createStyleArgInBuildMethod(className: string): arkts.ETSParameterExpression {
-    const styleLambdaParams: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
-        arkts.factory.createIdentifier(
-            'instance',
-            arkts.factory.createTypeReferencePart(
-                arkts.factory.createIdentifier(className)
-            )
-        ),
-        undefined
-    );
-
-    const styleLambda: arkts.ETSFunctionType = arkts.factory.createFunctionType(
-        arkts.FunctionSignature.createFunctionSignature(
-            undefined,
-            [
-                styleLambdaParams
-            ],
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier(className)
-                )
-            ),
-            false
-        ),
-        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
-    );
-
-    const optionalStyleLambda: arkts.ETSUnionType = arkts.factory.createUnionType([
-        styleLambda,
-        arkts.factory.createETSUndefinedType()
-    ]);
-
-    const styleParam: arkts.Identifier = arkts.factory.createIdentifier(
-        'style',
-        optionalStyleLambda
-    );
-
-    const param = arkts.factory.createParameterDeclaration(styleParam, undefined);
-    param.annotations = [annotation("memo")];
-
-    return param;
-}
-
-function createContentArgInBuildMethod(): arkts.ETSParameterExpression {
-    const contentLambda: arkts.ETSFunctionType = arkts.factory.createFunctionType(
-        arkts.FunctionSignature.createFunctionSignature(
-            undefined,
-            [],
-            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-            false
-        ),
-        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
-    );
-
-    const optionalContentLambda: arkts.ETSUnionType = arkts.factory.createUnionType([
-        contentLambda,
-        arkts.factory.createETSUndefinedType()
-    ]);
-
-    const contentParam: arkts.Identifier = arkts.factory.createIdentifier(
-        'content',
-        optionalContentLambda
-    );
-
-    const param = arkts.factory.createParameterDeclaration(contentParam, undefined);
-    param.annotations = [annotation("memo")];
-
-    return param;
-}
-
-function createInitializerArgInBuildMethod(className: string): arkts.ETSParameterExpression {
-    return arkts.factory.createParameterDeclaration(
-        createCustomComponentInitializerOptions(className).setOptional(true),
-        undefined
-    );
-}
-
-function prepareArgsInBuildMethod(className: string): arkts.ETSParameterExpression[] {
-    return [
-        createStyleArgInBuildMethod(className),
-        createContentArgInBuildMethod(),
-        createInitializerArgInBuildMethod(className)
-    ];
-}
-
-function transformBuildMethod(
-    method: arkts.MethodDefinition,
-    className: string
-): arkts.MethodDefinition {
-    const updateKey: arkts.Identifier = arkts.factory.createIdentifier(
-        '_build'
-    );
-
-    const scriptFunction: arkts.ScriptFunction = method.scriptFunction;
-
-    const params: arkts.ETSParameterExpression[] = prepareArgsInBuildMethod(className);
-
-    const updateScriptFunction = arkts.factory.createScriptFunction(
-        scriptFunction.body,
-        scriptFunction.scriptFunctionFlags,
-        scriptFunction.modifiers,
-        false,
-        updateKey,
-        params,
-        scriptFunction.typeParamsDecl,
-        arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
-    );
-
-    updateScriptFunction.annotations = [annotation("memo")];
-
-    return arkts.factory.createMethodDefinition(
-        arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
-        updateKey,
-        arkts.factory.createFunctionExpression(updateScriptFunction),
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PROTECTED,
-        false
-    );
-}
-
-function tranformPropertyMembers(className: string, propertyTranslators: PropertyTranslator[]): arkts.AstNode[] {
-    const propertyMembers = propertyTranslators.map(translator =>
-        translator.translateMember()
-    );
-    const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(className);
-    const bodyArr: arkts.AstNode[] = currentStructInfo.initializeBody;
-    const body: arkts.BlockStatement = arkts.factory.createBlock(bodyArr);
-    const paramInitializers: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
-        createCustomComponentInitializerOptions(className).setOptional(true),
-        undefined
-    )
-
-    const paramContent: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
-        arkts.factory.createIdentifier(
-            'content',
-            arkts.factory.createFunctionType(
-                arkts.FunctionSignature.createFunctionSignature(
-                    undefined,
-                    [],
-                    arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                    false
-                ),
-                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
-            )
-        ).setOptional(true),
-        undefined
-    )
-    paramContent.annotations = [annotation("memo")];
-
-    const scriptFunction: arkts.ScriptFunction = arkts.factory.createScriptFunction(
-        body,
-        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
-        false,
-        undefined,
-        [
-            paramInitializers,
-            paramContent
-        ],
-        undefined,
-        arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
-    )
-    
-    const initializeStruct: arkts.MethodDefinition = arkts.factory.createMethodDefinition(
-        arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
-        arkts.factory.createIdentifier('__initializeStruct'),
-        arkts.factory.createFunctionExpression(scriptFunction),
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
-        false
-    );
-
-    const updateBodyArr: arkts.AstNode[] = currentStructInfo.updateBody;
-
-    const updateBody: arkts.BlockStatement = arkts.factory.createBlock(updateBodyArr);
-    
-    const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
-        arkts.factory.createIdentifier(
-            'initializers',
-            arkts.factory.createUnionType([
-                createInitializerOptions(className),
-                arkts.factory.createETSUndefinedType()
-            ])
-        ),
-        undefined
-    )
-    
-    const updateStructScriptFunction: arkts.ScriptFunction = arkts.factory.createScriptFunction(
-        updateBody,
-        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
-        false,
-        undefined,
-        [param],
-        undefined,
-        arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-    )
-
-    scriptFunction.annotations = [annotation("memo")];
-
-    const updateStruct: arkts.MethodDefinition = arkts.factory.createMethodDefinition(
-        arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
-        arkts.factory.createIdentifier('__updateStruct'),
-        arkts.factory.createFunctionExpression(updateStructScriptFunction),
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
-        false
-    );
-
-    return collect(initializeStruct, updateStruct, ...propertyMembers);
-}
-
-function isCustomComponentInterface(node: arkts.TSInterfaceDeclaration): boolean {
-    const structCollection: Set<string> = arkts.GlobalInfo.getInfoInstance().getStructCollection();
-
-    if (node.id && node.id.name) {
-        const customComponentName: string | undefined = getCustomComponentNameFromInitializerOptions(node.id.name);
-        return !!customComponentName && structCollection.has(customComponentName);
+function isEtsGlobalClass(node: arkts.ClassDeclaration): boolean {
+    if (node.definition?.ident?.name === 'ETSGLOBAL') {
+        return true;
     }
     return false;
 }
 
-function addVariableInInterface(interfaceNode: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
-    let interfaceName: string | undefined;
-    if (interfaceNode.id && interfaceNode.id.name) {
-        interfaceName = getCustomComponentNameFromInitializerOptions(interfaceNode.id.name);
-    }
-
-    if (!interfaceName) {
-        throw new Error("Should get initializerOptions");
-    }
-
-    const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(interfaceName);
-    const paramters: arkts.AstNode[] = [];
-    currentStructInfo.stateVariables.forEach((propertyItem) => {
-        paramters.push(propertyItem.originNode)
-        paramters.push(propertyItem.translatedNode)
-    });
-    const body: arkts.TSInterfaceBody = arkts.factory.createInterfaceBody([arkts.factory.createBlock(paramters)]);
-    const newInterface: arkts.TSInterfaceDeclaration = arkts.factory.updateInterfaceDeclaration(
-        interfaceNode,
-        interfaceNode.extends,
-        interfaceNode.id,
-        interfaceNode.typeParams,
-        body,
-        interfaceNode.isStatic,
-        // TODO: how do I get it?
-        true
+function transformBuildMethod(
+    method: arkts.MethodDefinition,
+    typeName: string,
+    optionsName: string,
+    isDecl?: boolean
+): arkts.MethodDefinition {
+    const updateKey: arkts.Identifier = arkts.factory.createIdentifier(
+        CustomComponentNames.COMPONENT_BUILD
     );
-    return newInterface;
+
+    const scriptFunction: arkts.ScriptFunction = method.scriptFunction;
+    const updateScriptFunction = arkts.factory.createScriptFunction(
+        scriptFunction.body,
+        arkts.FunctionSignature.createFunctionSignature(
+            scriptFunction.typeParams,
+            [
+                factory.createStyleParameter(typeName),
+                factory.createContentParameter(),
+                factory.createInitializersOptionsParameter(optionsName)
+            ],
+            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            false
+        ),
+        scriptFunction.flags,
+        scriptFunction.modifiers
+    )
+    .setIdent(updateKey)
+    .setAnnotations([annotation("memo")]);
+
+    const modifiers: arkts.Es2pandaModifierFlags = isDecl
+        ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_ABSTRACT
+        : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
+    return arkts.factory.createMethodDefinition(
+        arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+        updateKey,
+        arkts.factory.createFunctionExpression(updateScriptFunction),
+        modifiers,
+        false
+    );
 }
 
-function tranformClassMembers(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
+function createInitializeStruct(
+    structInfo: arkts.StructInfo, 
+    optionsTypeName: string,
+    isDecl?: boolean
+) {
+    const updateKey: arkts.Identifier = arkts.factory.createIdentifier(
+        CustomComponentNames.COMPONENT_INITIALIZE_STRUCT
+    );
+
+    let body: arkts.BlockStatement | undefined;
+    let modifiers: arkts.Es2pandaModifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_ABSTRACT;
+    if (!isDecl) {
+        body = arkts.factory.createBlock(structInfo.initializeBody);
+        modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
+    }
+    const scriptFunction: arkts.ScriptFunction = arkts.factory.createScriptFunction(
+        body,
+        arkts.FunctionSignature.createFunctionSignature(
+            undefined,
+            [
+                factory.createInitializersOptionsParameter(optionsTypeName),
+                factory.createContentParameter()
+            ],
+            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            false
+        ),
+        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+        modifiers
+    )
+    .setIdent(updateKey)
+    .setAnnotations([annotation("memo")]);
+
+    return arkts.factory.createMethodDefinition(
+        arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+        updateKey,
+        arkts.factory.createFunctionExpression(scriptFunction),
+        modifiers,
+        false
+    );
+}
+
+function createUpdateStruct(
+    structInfo: arkts.StructInfo, 
+    optionsTypeName: string,
+    isDecl?: boolean
+) {
+    const updateKey: arkts.Identifier = arkts.factory.createIdentifier(
+        CustomComponentNames.COMPONENT_UPDATE_STRUCT
+    );
+
+    let body: arkts.BlockStatement | undefined;
+    let modifiers: arkts.Es2pandaModifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_ABSTRACT;
+    if (!isDecl) {
+        body = arkts.factory.createBlock(structInfo.updateBody);
+        modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
+    }
+
+    const scriptFunction: arkts.ScriptFunction = arkts.factory.createScriptFunction(
+        body,
+        arkts.FunctionSignature.createFunctionSignature(
+            undefined,
+            [
+                factory.createInitializersOptionsParameter(optionsTypeName)
+            ],
+            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            false
+        ),
+        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+        modifiers
+    )
+    .setIdent(updateKey)
+    .setAnnotations([annotation("memo")]);
+
+    return arkts.factory.createMethodDefinition(
+        arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+        updateKey,
+        arkts.factory.createFunctionExpression(scriptFunction),
+        modifiers,
+        false
+    );
+}
+
+function tranformPropertyMembers(
+    className: string, 
+    propertyTranslators: PropertyTranslator[],
+    optionsTypeName: string,
+    isDecl?: boolean,
+    scope?: ScopeInfo
+): arkts.AstNode[] {
+    const propertyMembers = propertyTranslators.map(translator =>
+        translator.translateMember()
+    );
+    const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo
+        .getInfoInstance()
+        .getStructInfo(className);
+    const collections = [];
+    if (!scope?.hasInitializeStruct) {
+        collections.push(createInitializeStruct(currentStructInfo, optionsTypeName, isDecl))
+    }
+    if (!scope?.hasUpdateStruct) {
+        collections.push(createUpdateStruct(currentStructInfo, optionsTypeName, isDecl))
+    }
+    return collect(...collections, ...propertyMembers);
+}
+
+function tranformClassMembers(
+    node: arkts.ClassDeclaration, 
+    isDecl?: boolean,
+    scope?: ScopeInfo
+): arkts.ClassDeclaration {
     if (!node.definition) {
         return node;
+    }
+
+    let classTypeName: string | undefined;
+    let classOptionsName: string | undefined;
+    if (isDecl) {
+        const [classType, classOptions] = getTypeParamsFromClassDecl(node);
+        classTypeName = getTypeNameFromTypeParameter(classType);
+        classOptionsName = getTypeNameFromTypeParameter(classOptions);
     }
 
     const definition: arkts.ClassDefinition = node.definition;
     const className: string | undefined = node.definition.ident?.name;
     if (!className) {
-        throw "Non Empty className expected for Component"
+        throw new Error("Non Empty className expected for Component")
     }
 
     const propertyTranslators: PropertyTranslator[] = filterDefined(
         definition.body.map(it => classifyProperty(it, className))
     );
 
-    const translatedMembers: arkts.AstNode[] = tranformPropertyMembers(className, propertyTranslators);
+    const translatedMembers: arkts.AstNode[] = tranformPropertyMembers(
+        className, 
+        propertyTranslators,
+        classOptionsName ?? getCustomComponentOptionsName(className),
+        isDecl,
+        scope
+    );
 
     const updateMembers: arkts.AstNode[] = definition.body
         .filter((member)=>!arkts.isClassProperty(member))
         .map((member: arkts.AstNode) => {
-            if (arkts.isMethodDefinition(member) && isKnownMethodDefinition(member, "constructor")) {
+            if (arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.BUILDER)) {
+                member.scriptFunction.setAnnotations([annotation("memo")]);
+                return member;
+            }
+            if (
+                arkts.isMethodDefinition(member) 
+                && isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI)
+                && !isDecl
+            ) {
                 return arkts.factory.createMethodDefinition(
                     arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
                     member.name,
@@ -327,9 +266,17 @@ function tranformClassMembers(node: arkts.ClassDeclaration): arkts.ClassDeclarat
                     false
                 );
             }
-            if (arkts.isMethodDefinition(member) && isKnownMethodDefinition(member, "build")) {
-                const stub = transformBuildMethod(member, className);
-                return stub;
+            if (
+                arkts.isMethodDefinition(member) 
+                && isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_BUILD_ORI)
+            ) {
+                const buildMethod = transformBuildMethod(
+                    member, 
+                    classTypeName ?? className,
+                    classOptionsName ?? getCustomComponentOptionsName(className),
+                    isDecl
+                );
+                return buildMethod;
             }
 
             return member;
@@ -346,23 +293,81 @@ function tranformClassMembers(node: arkts.ClassDeclaration): arkts.ClassDeclarat
         definition.super,
         [...translatedMembers, ...updateMembers],
         definition.modifiers,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+        arkts.classDefinitionFlags(definition)
     );
 
-    return arkts.factory.updateClassDeclaration(node, updateClassDef);
+    const newClassDecl = arkts.factory.updateClassDeclaration(node, updateClassDef);
+    newClassDecl.modifiers = node.modifiers;
+    return newClassDecl;
+}
+
+type ScopeInfo = {
+    name: string,
+    hasInitializeStruct?: boolean,
+    hasUpdateStruct?: boolean,
+    hasReusableRebind?: boolean
+}
+
+function transformEtsGlobalClassMembers(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
+    if (!node.definition) {
+        return node;
+    }
+    node.definition.body.map((member: arkts.AstNode) => {
+        if (arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.BUILDER)) {
+            member.scriptFunction.setAnnotations([annotation("memo")]);
+        }
+        return member;
+    });
+    return node;
 }
 
 export class StructTransformer extends AbstractVisitor {
+    private scopeInfos: ScopeInfo[] = [];
+
+    enter(node: arkts.AstNode) {
+        if (arkts.isClassDeclaration(node) && isCustomComponentClass(node)) {
+            this.scopeInfos.push({ name: node.definition!.ident!.name });
+        }
+        if (arkts.isMethodDefinition(node) && this.scopeInfos.length > 0) {
+            const name = node.name.name;
+            const scopeInfo = this.scopeInfos.pop()!;
+            if (name === CustomComponentNames.COMPONENT_INITIALIZE_STRUCT) {
+                scopeInfo.hasInitializeStruct = true;
+            } else if (name === CustomComponentNames.COMPONENT_UPDATE_STRUCT) {
+                scopeInfo.hasUpdateStruct = true;
+            } else if (name === CustomComponentNames.REUSABLE_COMPONENT_REBIND_STATE) {
+                scopeInfo.hasReusableRebind = true;
+            }
+        }
+    }
+
+    exit(node: arkts.AstNode) {
+        if (arkts.isClassDeclaration(node) && isCustomComponentClass(node)) {
+            this.scopeInfos.pop();
+        }
+    }
+
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
+        this.enter(beforeChildren);
         const node = this.visitEachChild(beforeChildren);
         if (arkts.isClassDeclaration(node) && isCustomComponentClass(node)) {
-            return tranformClassMembers(node);
+            let scope: ScopeInfo | undefined;
+            if (this.scopeInfos.length > 0) {
+                scope = this.scopeInfos[this.scopeInfos.length - 1];
+            }
+            const newClass: arkts.ClassDeclaration = tranformClassMembers(
+                node,
+                hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE),
+                scope
+            );
+            this.exit(beforeChildren);
+            return newClass;
+        } else if (arkts.isClassDeclaration(node) && isEtsGlobalClass(node)) {
+            return transformEtsGlobalClassMembers(node);
         } else if (arkts.isClassDeclaration(node)) {
             if (EntryHandler.instance.hasEntryAnnotation(node)) {
                 EntryHandler.instance.updateEntryAnnotion(node)
             }
-        } else if (arkts.isTSInterfaceDeclaration(node) && isCustomComponentInterface(node)) {
-            return addVariableInInterface(node);
         }
         return node;
     }

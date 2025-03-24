@@ -17,39 +17,67 @@ import * as arkts from "@koalaui/libarkts"
 import { getInteropPath } from "../path"
 const interop = require(getInteropPath())
 const nullptr = interop.nullptr
-import { AbstractVisitor } from "../common/abstract-visitor";
-import { hasDecorator, DecoratorNames } from "./property-translators/utils"
-import {EntryHandler} from "./entry-translators/entry"
+import { AbstractVisitor, VisitorOptions } from "../common/abstract-visitor";
+import { hasDecorator, DecoratorNames, isDecoratorAnnotation } from "./property-translators/utils"
+import { EntryHandler } from "./entry-translators/entry"
+import { CustomComponentNames, createOptionalClassProperty } from "./utils";
+import { annotation } from "../common/arkts-utils";
+import { backingField, expectName } from "../common/arkts-utils";
 
-export interface ComponentTransformerOptions {
-    arkui: string
+export interface ComponentTransformerOptions extends VisitorOptions {
+    arkui?: string
+}
+
+interface ComponentContext {
+    componentNames: string[], 
+    structMembers: Map<string, arkts.AstNode[]>,
 }
 
 export class ComponentTransformer extends AbstractVisitor {
-    constructor(private options?: ComponentTransformerOptions) {
-        super()
+    private structAnnotationMap: Map<string, readonly arkts.AnnotationUsage[]>;
+    private arkui?: string;
+
+    constructor(options?: ComponentTransformerOptions) {
+        const _options: ComponentTransformerOptions = options ?? {};
+        super(_options);
+        this.arkui = _options.arkui;
+        this.structAnnotationMap = new Map();
     }
 
-    private context: { componentNames: string[] } = { componentNames: [] }
+    private context: ComponentContext = { componentNames: [], structMembers: new Map() };
 
     isComponentStruct(node: arkts.StructDeclaration): boolean {
         // For now just rewrite any struct
-        return true
+        return true;
     }
 
-    createImportDeclaration() {
-        return arkts.factory.createImportDeclaration(
-            // TODO: es2panda has already resolved the "paths" section
-            arkts.factory.create1StringLiteral(this.options?.arkui ?? '@ohos.arkui.runtime'),
+    createImportDeclaration(): void {
+        const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(
+            this.arkui ?? CustomComponentNames.COMPONENT_DEFAULT_IMPORT
+        );
+        const resolvedSource: arkts.StringLiteral = arkts.factory.create1StringLiteral(
+            arkts.ImportPathManager.create().resolvePath('', source.str)
+        );
+        const imported: arkts.Identifier = arkts.factory.createIdentifier(
+            CustomComponentNames.COMPONENT_CLASS_NAME
+        );
+        const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
+            arkts.ImportSource.createImportSource(
+                source,
+                resolvedSource,
+                false
+            ),
             [
                 arkts.factory.createImportSpecifier(
-                    arkts.factory.createIdentifier('StructBase'),
-                    nullptr // TODO: wtf
+                    imported,
+                    imported
                 )
             ],
-            arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPE,
-            false
+            arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE
         )
+        // Insert this import at the top of the script's statements.
+        arkts.importDeclarationInsert(importDecl);
+        return;
     }
 
     processEtsScript(node: arkts.EtsScript): arkts.EtsScript {
@@ -57,17 +85,24 @@ export class ComponentTransformer extends AbstractVisitor {
         const interfaceDeclarations = this.context.componentNames.map(
             name => arkts.factory.createInterfaceDeclaration(
                 [],
-                arkts.factory.createIdentifier(`__Options_${name}`),
-                nullptr, // TODO: wtf
-                arkts.factory.createBlock([]),
+                arkts.factory.createIdentifier(
+                    `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${name}`
+                ),
+                undefined, // TODO: wtf
+                arkts.factory.createInterfaceBody(
+                    this.context.structMembers.get(name) ? 
+                    this.context.structMembers.get(name)! : []
+                ),
                 false,
                 false
             )
         )
+        if (!this.isExternal) {
+            this.createImportDeclaration();
+        }
         return arkts.factory.updateEtsScript(
             node,
             [
-                this.createImportDeclaration(),
                 ...node.statements,
                 ...interfaceDeclarations,
                 ...entryWrapper
@@ -80,7 +115,8 @@ export class ComponentTransformer extends AbstractVisitor {
         if (!className) {
             throw "Non Empty className expected for Component"
         }
-        if (hasDecorator(node.definition, DecoratorNames.ENTRY)) {
+        const annotations = this.structAnnotationMap.get(className) ?? [];
+        if (annotations.some((anno) => isDecoratorAnnotation(anno, DecoratorNames.ENTRY))) {
             EntryHandler.instance.rememberEntryFunction(node)
         }
         arkts.GlobalInfo.getInfoInstance().add(className);
@@ -94,23 +130,11 @@ export class ComponentTransformer extends AbstractVisitor {
             node.definition?.ident,
             undefined,
             undefined, // superTypeParams doen't work
-            // arkts.factory.createTSTypeParameterInstantiation(
-            //     [
-            //         arkts.factory.createTypeReference(
-            //             arkts.factory.createTypeReferencePart(
-            //                 arkts.factory.createIdentifier("H")
-            //             )
-            //         ),
-            //         arkts.factory.createTypeReferenceFromId(
-            //             arkts.factory.createIdentifier(`__Options_${className}`)
-            //         ),
-            //     ]
-            // ),
             node.definition?.implements,
             undefined,
             arkts.factory.createTypeReference(
                 arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier('StructBase'),
+                    arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CLASS_NAME),
                     arkts.factory.createTSTypeParameterInstantiation(
                         [
                             arkts.factory.createTypeReference(
@@ -120,7 +144,9 @@ export class ComponentTransformer extends AbstractVisitor {
                             ),
                             arkts.factory.createTypeReference(
                                 arkts.factory.createTypeReferencePart(
-                                    arkts.factory.createIdentifier(`__Options_${className}`)
+                                    arkts.factory.createIdentifier(
+                                        `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${className}`
+                                    )
                                 )
                             ),
                         ]
@@ -129,18 +155,54 @@ export class ComponentTransformer extends AbstractVisitor {
             ),
             node.definition?.body,
             node.definition?.modifiers,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_FINAL
+            arkts.classDefinitionFlags(node.definition) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_FINAL
         )
 
         if (arkts.isStructDeclaration(node)) {
-            return arkts.factory.createClassDeclaration(
-                newDefinition
-            )
+            this.collectComponentMembers(node, className);
+            return arkts.factory.createClassDeclaration(newDefinition);
         } else {
             return arkts.factory.updateClassDeclaration(
                 node,
                 newDefinition
             )
+        }
+    }
+
+    collectComponentMembers(node: arkts.StructDeclaration, className: string): void {
+        if (!this.context.structMembers.has(className)) {
+            this.context.structMembers.set(className, []);
+        }
+        node.definition.body.map(it => {
+            if (arkts.isClassProperty(it)) {
+                this.context.structMembers.get(className)!.push(...this.createInterfaceInnerMember(it));
+            }
+        });
+    }
+
+    createInterfaceInnerMember(member: arkts.ClassProperty): arkts.ClassProperty[] {
+        const originalName: string = expectName(member.key);
+        const newName: string = backingField(originalName);
+        const originMember: arkts.ClassProperty = createOptionalClassProperty(originalName, member,
+            '', arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
+        if (hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
+            originMember.setAnnotations([annotation("memo")]);
+            return [originMember];
+        }
+        const newMember: arkts.ClassProperty = createOptionalClassProperty(newName, member,
+            "MutableState", arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
+        return [originMember, newMember];
+    }
+
+    collectComponentAnnotations(statement: arkts.Statement) {
+        if (
+            arkts.isStructDeclaration(statement)
+            && !!statement.definition.ident
+            && this.isComponentStruct(statement)
+        ) {
+            const className: string = statement.definition.ident.name;
+            const annotations: readonly arkts.AnnotationUsage[] = statement.definition.annotations;
+            this.structAnnotationMap.set(className, annotations);
         }
     }
 

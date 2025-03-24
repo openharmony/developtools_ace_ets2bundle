@@ -15,29 +15,41 @@
 
 import * as arkts from "@koalaui/libarkts"
 import { factory } from "./memo-factory"
-import { AbstractVisitor } from "../common/abstract-visitor"
+import { AbstractVisitor, VisitorOptions } from "../common/abstract-visitor"
 import {
     PositionalIdTracker,
-    RuntimeNames,
     hasMemoAnnotation,
     hasMemoIntrinsicAnnotation,
-    isMemoAnnotation,
+    hasMemoStableAnnotation,
+    isVoidType
 } from "./utils"
 import { ParameterTransformer } from "./parameter-transformer"
 import { ReturnTransformer } from "./return-transformer"
+
+function mayAddLastReturn(node: arkts.BlockStatement): boolean {
+    return node.statements.length > 0 &&
+        !arkts.isReturnStatement(node.statements[node.statements.length - 1]) &&
+        !arkts.isThrowStatement(node.statements[node.statements.length - 1])
+}
 
 function updateFunctionBody(
     node: arkts.BlockStatement,
     parameters: arkts.ETSParameterExpression[],
     returnTypeAnnotation: arkts.TypeNode | undefined,
-    hash: arkts.NumberLiteral | arkts.StringLiteral,
-    updateStatementFunc?: (statement: arkts.AstNode) => arkts.AstNode
+    stableThis: boolean,
+    hash: arkts.NumberLiteral | arkts.StringLiteral
 ): [
     arkts.BlockStatement,
     arkts.VariableDeclaration | undefined,
-    arkts.ReturnStatement | undefined,
+    arkts.ReturnStatement | arkts.BlockStatement | undefined,
 ] {
-    const scopeDeclaration = factory.createScopeDeclaration(returnTypeAnnotation, hash, parameters.length)
+    let returnTypeAnno = stableThis
+        ? arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
+        : returnTypeAnnotation;
+    const scopeDeclaration = factory.createScopeDeclaration(
+        returnTypeAnno,
+        hash, parameters.length
+    )
     const memoParameters = parameters.map((name, id) => { return factory.createMemoParameterDeclarator(id, name.identifier.name) })
     const memoParametersDeclaration = memoParameters.length
         ? [
@@ -48,9 +60,10 @@ function updateFunctionBody(
             )
         ]
         : []
-    const syntheticReturnStatement = factory.createSyntheticReturnStatement()
-    const unchangedCheck = factory.createIfStatementWithSyntheticReturnStatement(syntheticReturnStatement)
-    if (node.statements.length && node.statements[node.statements.length - 1] instanceof arkts.ReturnStatement) {
+    const syntheticReturnStatement = factory.createSyntheticReturnStatement(stableThis)
+    const isVoidValue = isVoidType(returnTypeAnno)
+    const unchangedCheck = factory.createIfStatementWithSyntheticReturnStatement(syntheticReturnStatement, isVoidValue)
+    if (node) {
         return [
             arkts.factory.updateBlock(
                 node,
@@ -59,6 +72,7 @@ function updateFunctionBody(
                     ...memoParametersDeclaration,
                     unchangedCheck,
                     ...node.statements,
+                    ...(mayAddLastReturn(node) ? [arkts.factory.createReturnStatement()] : []),
                 ]
             ),
             memoParametersDeclaration.length ? memoParametersDeclaration[0] : undefined,
@@ -66,238 +80,163 @@ function updateFunctionBody(
         ]
     } else {
         return [
-            arkts.factory.updateBlock(
-                node,
-                [
-                    scopeDeclaration,
-                    ...memoParametersDeclaration,
-                    unchangedCheck,
-                    ...(updateStatementFunc ? node.statements.map(updateStatementFunc) : node.statements),
-                    arkts.factory.createReturnStatement(),
-                ]
-            ),
+            node,
             memoParametersDeclaration.length ? memoParametersDeclaration[0] : undefined,
             syntheticReturnStatement,
         ]
     }
 }
 
-// TODO: A workaround to unmemoize complex types with @memo
-function findFunctionType(param: arkts.ETSParameterExpression): [arkts.ETSFunctionType, arkts.TypeNode[] | undefined] | undefined {
-    const paramType: arkts.AstNode | undefined = param.type;
-    if (!paramType) return undefined;
-
-    if (arkts.isETSUnionType(paramType)) {
-        const functionTypeIndex: number = 
-            paramType.types.findIndex(arkts.isETSFunctionType);
-        if (functionTypeIndex === -1) {
-            return undefined;
-        }
-        return [
-            paramType.types.at(functionTypeIndex) as arkts.ETSFunctionType, 
-            paramType.types.filter((_, idx) => idx !== functionTypeIndex)
-        ];
-    }
-    if (arkts.isETSFunctionType(paramType)) {
-        return [paramType, undefined];
-    }
-    return undefined;
+type ScopeInfo = {
+    name?: string,
+    isMemo: boolean
 }
 
-function removeMemoAnnotationInParam(param: arkts.ETSParameterExpression): arkts.ETSParameterExpression {
-    param.annotations = param.annotations.filter(
-        (it) => !isMemoAnnotation(it, RuntimeNames.ANNOTATION) && !isMemoAnnotation(it, RuntimeNames.ANNOTATION_INTRINSIC)
-    );
-    return param;
-}
-
-function transformStyleInMemoBuilderLambda(argument: arkts.AstNode): arkts.AstNode {
-    if (!arkts.isArrowFunctionExpression(argument)) return argument;
-
-    const scriptFunction: arkts.ScriptFunction = argument.scriptFunction;
-    const updateScriptFunction = arkts.factory.createScriptFunction(
-        scriptFunction.body,
-        scriptFunction.scriptFunctionFlags,
-        scriptFunction.modifiers,
-        false,
-        scriptFunction.ident,
-        [...factory.createHiddenParameters(), ...scriptFunction.parameters],
-        scriptFunction.typeParamsDecl,
-        scriptFunction.returnTypeAnnotation
-    );
-    return arkts.factory.updateArrowFunction(argument, updateScriptFunction);
-}
-
-function isBuilderLambda(node: arkts.AstNode): boolean {
-    const builderLambda: arkts.AstNode | undefined = _getDeclForBuilderLambda(node);
-    return !!builderLambda;
-}
-
-// TODO: temporary solution for get declaration of a builder lambda
-function _getDeclForBuilderLambda(node: arkts.AstNode): arkts.AstNode | undefined {
-    if (!node || !arkts.isCallExpression(node)) return undefined;
-
-    if (node.expression && arkts.isMemberExpression(node.expression)) {
-        const _node: arkts.MemberExpression = node.expression;
-        if (_node.property && arkts.isIdentifier(_node.property) && _node.property.name === "instantiateImpl") {
-            return node;
-        }
-        if (_node.object && arkts.isCallExpression(_node.object)) {
-            return _getDeclForBuilderLambda(_node.object);
-        }
-    }
-
-    return undefined;
+export interface FunctionTransformerOptions extends VisitorOptions {
+    positionalIdTracker: PositionalIdTracker;
+    parameterTransformer: ParameterTransformer;
+    returnTransformer: ReturnTransformer;
 }
 
 export class FunctionTransformer extends AbstractVisitor {
-    constructor(
-        private positionalIdTracker: PositionalIdTracker,
-        private parameterTransformer: ParameterTransformer,
-        private returnTransformer: ReturnTransformer
-    ) {
-        super()
+    private positionalIdTracker: PositionalIdTracker;
+    private parameterTransformer: ParameterTransformer;
+    private returnTransformer: ReturnTransformer;
+
+    constructor(options: FunctionTransformerOptions) {
+        super(options)
+        this.positionalIdTracker = options.positionalIdTracker
+        this.parameterTransformer = options.parameterTransformer
+        this.returnTransformer = options.returnTransformer
     }
 
-    visitEachChild(node: arkts.AstNode): arkts.AstNode {
-        if (arkts.isCallExpression(node) && isBuilderLambda(node)) {
-            return node;
-        }
+    private scopes: ScopeInfo[] = []
+    private stable: number = 0
 
-        return super.visitEachChild(node);
+    enter(node: arkts.AstNode) {
+        if (arkts.isMethodDefinition(node)) {
+            const name = node.name.name
+            const isMemo = hasMemoAnnotation(node.scriptFunction) || hasMemoIntrinsicAnnotation(node.scriptFunction)
+            this.scopes.push({ name , isMemo })
+        }
+        if (arkts.isClassDefinition(node)) {
+            if (hasMemoStableAnnotation(node)) {
+                this.stable++
+            }
+        }
+        return this
+    }
+
+    exit(node: arkts.AstNode) {
+        if (arkts.isMethodDefinition(node)) {
+            this.scopes.pop()
+        }
+        if (arkts.isClassDefinition(node)) {
+            if (hasMemoStableAnnotation(node)) {
+                this.stable--
+            }
+        }
+        return this
+    }
+
+    enterAnonymousScope(node: arkts.ScriptFunction) {
+        const name = undefined
+        const isMemo = hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node)
+        this.scopes.push({ name, isMemo })
+        return this
+    }
+
+    exitAnonymousScope() {
+        this.scopes.pop()
+        return this
+    }
+
+    checkMemoCall(decl: arkts.MethodDefinition) {
+        if (this.scopes[this.scopes.length - 1].isMemo == false) {
+            if (this.scopes[this.scopes.length - 1].name) {
+                console.error(`Attempt to call @memo-method ${decl.name.name} from non-@memo-method ${this.scopes[this.scopes.length - 1].name}`)
+                throw "Invalid @memo usage"
+            } else {
+                console.error(`Attempt to call @memo-method ${decl.name.name} from anonymous non-@memo-method`)
+                throw "Invalid @memo usage"
+            }
+        }
+        return this
     }
 
     updateScriptFunction(
         scriptFunction: arkts.ScriptFunction,
         name: string = "",
-        updateStatementFunc?: (statement: arkts.AstNode) => arkts.AstNode
     ): arkts.ScriptFunction {
-        if (!scriptFunction.body) {
-            return scriptFunction
-        }
+        const isStableThis = this.stable > 0 && scriptFunction.returnTypeAnnotation !== undefined && arkts.isTSThisType(scriptFunction.returnTypeAnnotation)
         const [body, memoParametersDeclaration, syntheticReturnStatement] = updateFunctionBody(
-            scriptFunction.body,
-            scriptFunction.parameters,
+            scriptFunction.body as arkts.BlockStatement,
+            scriptFunction.params as arkts.ETSParameterExpression[],
             scriptFunction.returnTypeAnnotation,
+            isStableThis,
             this.positionalIdTracker.id(name),
-            updateStatementFunc
         )
         const afterParameterTransformer = this.parameterTransformer
-            .withParameters(scriptFunction.parameters)
+            .withParameters(scriptFunction.params as arkts.ETSParameterExpression[])
             .skip(memoParametersDeclaration)
             .visitor(body)
         const afterReturnTransformer = this.returnTransformer
             .skip(syntheticReturnStatement)
+            .rewriteThis(this.stable > 0)
             .visitor(afterParameterTransformer)
-        const updatedParameters = scriptFunction.parameters.map((param) => {
-            if (hasMemoAnnotation(param)) {
-                const functionTypeResult = findFunctionType(param);
-                if (!functionTypeResult) {
-                    throw "ArrowFunctionExpression expected for @memo parameter of @memo function"
-                }
-                const [functionType, otherTypes] = functionTypeResult;
-
-                let updateFunctionType = arkts.factory.createFunctionType(
-                    arkts.factory.createFunctionSignature(
-                        undefined,
-                        [...factory.createHiddenParameters(), ...functionType.params],
-                        functionType.returnType,
-                        false
-                    ),
-                    arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                )
-                if (otherTypes) {
-                    param.type = arkts.factory.createUnionType([
-                        updateFunctionType,
-                        ...otherTypes
-                    ]);
+        const updatedParameters = scriptFunction.params.map((param) => {
+            if (arkts.isEtsParameterExpression(param) && hasMemoAnnotation(param)) {
+                if (param.type && arkts.isETSFunctionType(param.type)) {
+                    param.type = factory.updateFunctionTypeWithMemoParameters(param.type)
+                } else if (param.type && arkts.isETSUnionType(param.type)) {
+                    param.type = arkts.factory.updateUnionType(
+                        param.type,
+                        param.type.types.map((it) => {
+                            if (arkts.isETSFunctionType(it)) {
+                                return factory.updateFunctionTypeWithMemoParameters(it)
+                            }
+                            return it
+                        })
+                    )
                 } else {
-                    param.type = updateFunctionType;
+                    if (name) {
+                        console.error(`ETSFunctionType or ETSUnionType expected for @memo-parameter ${param.identifier.name} of @memo-method ${name}`)
+                        throw "Invalid @memo usage"
+                    } else {
+                        console.error(`ETSFunctionType or ETSUnionType expected for @memo-parameter ${param.identifier.name} of anonymous @memo-method`)
+                        throw "Invalid @memo usage"
+                    }
                 }
             }
-            return removeMemoAnnotationInParam(param)
+            return param
         })
-        return arkts.factory.updateScriptFunction(
+        const updateScriptFunction = arkts.factory.updateScriptFunction(
             scriptFunction,
             afterReturnTransformer,
-            scriptFunction.scriptFunctionFlags,
-            scriptFunction.modifiers,
-            false,
-            scriptFunction.ident,
-            [...factory.createHiddenParameters(), ...updatedParameters.map(removeMemoAnnotationInParam)],
-            scriptFunction.typeParamsDecl,
-            scriptFunction.returnTypeAnnotation
+            arkts.FunctionSignature.createFunctionSignature(
+                scriptFunction.typeParams,
+                [
+                    ...factory.createHiddenParameters(),
+                    ...updatedParameters
+                ],
+                scriptFunction.returnTypeAnnotation,
+                scriptFunction.hasReceiver
+            ),
+            scriptFunction.flags,
+            scriptFunction.modifiers
         )
-    }
-
-    transformContentInMemoBuilderLambda(
-        argument: arkts.AstNode, 
-        positionalIdTracker: PositionalIdTracker,
-        positionKey: string
-    ): arkts.AstNode {
-        if (!arkts.isArrowFunctionExpression(argument)) return argument;
-    
-        const updateChildrenInContent = (statement: arkts.AstNode): arkts.AstNode => {
-            if (arkts.isCallExpression(statement) && isBuilderLambda(statement)) {
-                return this.transformMemoBuilderLambda(statement, positionalIdTracker);
-            }
-    
-            return statement;
+        if (!!scriptFunction.id) {
+            updateScriptFunction.setIdent(scriptFunction.id);
         }
-    
-        const scriptFunction: arkts.ScriptFunction = argument.scriptFunction;
-        const updateScriptFunction = this.updateScriptFunction(
-            scriptFunction,
-            positionKey,
-            updateChildrenInContent
-        );
-    
-        const stub =  arkts.factory.updateArrowFunction(argument, updateScriptFunction);
-    
-        return stub;
-    }
-    
-    transformMemoBuilderLambda(
-        lambda: arkts.CallExpression, 
-        positionalIdTracker: PositionalIdTracker
-    ): arkts.CallExpression {
-        const exprName = lambda.expression.dumpSrc();
-    
-        let args = lambda.arguments.length > 2 
-            ? [
-                transformStyleInMemoBuilderLambda(lambda.arguments.at(0)!),
-                ...lambda.arguments.slice(1, lambda.arguments.length - 1),
-                this.transformContentInMemoBuilderLambda(
-                    lambda.arguments.at(lambda.arguments.length - 1)!,
-                    positionalIdTracker,
-                    exprName
-                )
-            ]
-            : [
-                transformStyleInMemoBuilderLambda(lambda.arguments.at(0)!),
-                ...lambda.arguments.slice(1)
-            ];
-    
-        return arkts.factory.updateCallExpression(
-            lambda,
-            lambda.expression,
-            lambda.typeArguments,
-            [
-                ...factory.createHiddenArguments(positionalIdTracker.id(exprName)), 
-                ...args
-            ]
-        );
+        return updateScriptFunction;
     }
 
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
-        // TODO: Remove (currently annotations are lost on visitor)
-        // const methodDefinitionHasMemoAnnotation =
-        //     beforeChildren instanceof arkts.MethodDefinition && hasMemoAnnotation(beforeChildren.scriptFunction)
-        // const methodDefinitionHasMemoIntrinsicAnnotation =
-        //     beforeChildren instanceof arkts.MethodDefinition && hasMemoIntrinsicAnnotation(beforeChildren.scriptFunction)
-
+        this.enter(beforeChildren)
         const node = this.visitEachChild(beforeChildren)
-        if (arkts.isMethodDefinition(node) && node.scriptFunction.body) {
+        this.exit(beforeChildren)
+        // if (arkts.isMethodDefinition(node) && node.scriptFunction.body) {
+        if (arkts.isMethodDefinition(node)) {
             if (hasMemoAnnotation(node.scriptFunction) || hasMemoIntrinsicAnnotation(node.scriptFunction)) {
                 return arkts.factory.updateMethodDefinition(
                     node,
@@ -308,28 +247,29 @@ export class FunctionTransformer extends AbstractVisitor {
                     ),
                     node.modifiers,
                     false
-                )
+                ).setOverloads(node.overloads)
             }
         }
-        if (node instanceof arkts.CallExpression) {
-            if (isBuilderLambda(node)) {
-                const updateNode = this.transformMemoBuilderLambda(node, this.positionalIdTracker);
-                return updateNode;
-            }
+        if (arkts.isCallExpression(node)) {
             const expr = node.expression
             const decl = arkts.getDecl(expr)
-            if (decl instanceof arkts.MethodDefinition && (hasMemoAnnotation(decl.scriptFunction) || hasMemoIntrinsicAnnotation(decl.scriptFunction))) {
+            if (decl && arkts.isMethodDefinition(decl) && (hasMemoAnnotation(decl.scriptFunction) || hasMemoIntrinsicAnnotation(decl.scriptFunction))) {
+                this.checkMemoCall(decl)
                 const updatedArguments = node.arguments.map((it, index) => {
-                    const param = decl.scriptFunction.parameters[index];
-                    const functionType = findFunctionType(param);
-                    if (!!functionType) {
-                        if (!hasMemoAnnotation(param) && !hasMemoIntrinsicAnnotation(param)) {
+                    const type = (decl.scriptFunction.params[index] as arkts.ETSParameterExpression)?.type
+                    if (type && arkts.isETSFunctionType(type)) {
+                        if (
+                            !hasMemoAnnotation(decl.scriptFunction.params[index] as arkts.ETSParameterExpression) 
+                            && !hasMemoIntrinsicAnnotation(decl.scriptFunction.params[index] as arkts.ETSParameterExpression)
+                        ) {
                             return factory.createComputeExpression(this.positionalIdTracker.id(decl.name.name), it)
                         }
-                        if (!(it instanceof arkts.ArrowFunctionExpression)) {
-                            throw "ArrowFunctionExpression expected for @memo argument of @memo function"
+                        if (arkts.isArrowFunctionExpression(it)) {
+                            this.enterAnonymousScope(it.scriptFunction)
+                            const res = this.updateScriptFunction(it.scriptFunction)
+                            this.exitAnonymousScope()
+                            return arkts.factory.updateArrowFunction(it, res)
                         }
-                        return this.updateScriptFunction(it.scriptFunction)
                     }
                     return it
                 })

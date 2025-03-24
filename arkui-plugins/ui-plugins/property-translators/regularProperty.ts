@@ -73,7 +73,7 @@ export class regularPropertyTranslator extends PropertyTranslator implements Ini
                 false
             ),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            this.property.value ?? arkts.factory.createIdentifier('undefined')
+            this.property.value ?? arkts.factory.createUndefinedLiteral()
         );
     }
 }

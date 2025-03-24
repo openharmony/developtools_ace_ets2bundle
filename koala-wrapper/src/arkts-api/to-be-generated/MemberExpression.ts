@@ -51,6 +51,27 @@ export class MemberExpression extends Expression {
         )
     }
 
+    static update(
+        node: MemberExpression,
+        object: AstNode,
+        property: AstNode,
+        kind: Es2pandaMemberExpressionKind,
+        computed: boolean,
+        optional: boolean
+    ): MemberExpression {
+        return new MemberExpression(
+            global.generatedEs2panda._UpdateMemberExpression(
+                global.context,
+                node.peer,
+                passNode(object),
+                passNode(property),
+                kind,
+                computed,
+                optional
+            )
+        )
+    }
+
     protected override dumpMessage(): string {
         return ` <kind: ${this.kind}>`
     }

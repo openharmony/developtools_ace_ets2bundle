@@ -18,7 +18,6 @@ import {
     ArrowFunctionExpression,
     AssignmentExpression,
     CallExpression,
-    EtsImportDeclaration,
     ETSParameterExpression,
     EtsScript,
     ExpressionStatement,
@@ -27,7 +26,6 @@ import {
     IfStatement,
     MethodDefinition,
     NumberLiteral,
-    ScriptFunction,
     StructDeclaration,
     VariableDeclaration,
     VariableDeclarator
@@ -42,6 +40,7 @@ import {
     ClassDefinition,
     ClassProperty,
     ConditionalExpression,
+    ETSImportDeclaration,
     ETSFunctionType,
     ETSPrimitiveType,
     ETSTypeReference,
@@ -51,11 +50,15 @@ import {
     FunctionSignature,
     Identifier,
     ImportSpecifier,
+    NullLiteral,
     ReturnStatement,
+    ScriptFunction,
     StringLiteral,
     SuperExpression,
+    ThisExpression,
     TSInterfaceBody,
     TSInterfaceDeclaration,
+    TSNonNullExpression,
     TSTypeParameter,
     TSTypeParameterDeclaration,
     TSTypeParameterInstantiation,
@@ -76,25 +79,25 @@ export const factory = {
         return Identifier.create2Identifier
     },
     get updateIdentifier() {
-        return compose(Identifier.create2Identifier)
+        return Identifier.update2Identifier
     },
     get createCallExpression() {
         return CallExpression.create
     },
     get updateCallExpression() {
-        return compose(CallExpression.create)
+        return CallExpression.update
     },
     get createExpressionStatement() {
         return ExpressionStatement.create
     },
     get updateExpressionStatement() {
-        return compose(ExpressionStatement.create)
+        return ExpressionStatement.update
     },
     get createMemberExpression() {
         return MemberExpression.create
     },
     get updateMemberExpression() {
-        return compose(MemberExpression.create)
+        return MemberExpression.update
     },
     get createEtsScript() {
         return EtsScript.createFromSource
@@ -106,221 +109,217 @@ export const factory = {
         return FunctionDeclaration.create
     },
     get updateFunctionDeclaration() {
-        return compose(FunctionDeclaration.create)
+        return FunctionDeclaration.update
     },
     get createBlock() {
         return BlockStatement.createBlockStatement
     },
     get updateBlock() {
-        return compose(BlockStatement.createBlockStatement)
+        return BlockStatement.updateBlockStatement
     },
     get createArrowFunction() {
         return ArrowFunctionExpression.create
     },
     get updateArrowFunction() {
-        return compose(ArrowFunctionExpression.create)
+        return ArrowFunctionExpression.update
     },
     get createScriptFunction() {
-        return ScriptFunction.create
+        return ScriptFunction.createScriptFunction
     },
     get updateScriptFunction() {
-        return compose(ScriptFunction.create)
+        return ScriptFunction.updateScriptFunction
     },
     get createStringLiteral() {
         return StringLiteral.create1StringLiteral
     },
     get updateStringLiteral() {
-        return compose(StringLiteral.createStringLiteral)
+        return StringLiteral.update1StringLiteral
     },
     get create1StringLiteral() {
         return StringLiteral.create1StringLiteral
     },
     get update1StringLiteral() {
-        return compose(StringLiteral.create1StringLiteral)
+        return StringLiteral.update1StringLiteral
     },
     get createNumericLiteral() {
         return NumberLiteral.create
     },
     get updateNumericLiteral() {
-        return compose(NumberLiteral.create)
+        return compose(NumberLiteral.create) // TODO: No UpdateNumberLiteral, need to change this
     },
     get createParameterDeclaration() {
         return ETSParameterExpression.create
     },
     get updateParameterDeclaration() {
-        return compose(ETSParameterExpression.create)
+        return ETSParameterExpression.update
     },
     get createTypeParameter() {
         return TSTypeParameter.createTSTypeParameter
     },
     get updateTypeParameter() {
-        return compose(TSTypeParameter.createTSTypeParameter)
+        return TSTypeParameter.updateTSTypeParameter
     },
     get createTypeParameterDeclaration() {
         return TSTypeParameterDeclaration.createTSTypeParameterDeclaration
     },
     get updateTypeParameterDeclaration() {
-        return compose(TSTypeParameterDeclaration.createTSTypeParameterDeclaration)
+        return TSTypeParameterDeclaration.updateTSTypeParameterDeclaration
     },
     get createPrimitiveType() {
         return ETSPrimitiveType.createETSPrimitiveType
     },
     get updatePrimitiveType() {
-        return compose(ETSPrimitiveType.createETSPrimitiveType)
+        return ETSPrimitiveType.updateETSPrimitiveType
     },
     get createTypeReference() {
         return ETSTypeReference.createETSTypeReference
     },
     get updateTypeReference() {
-        return compose(ETSTypeReference.createETSTypeReference)
+        return ETSTypeReference.updateETSTypeReference
     },
     get createTypeReferencePart() {
         return ETSTypeReferencePart.createETSTypeReferencePart
     },
     get updateTypeReferencePart() {
-        return compose(ETSTypeReferencePart.createETSTypeReferencePart)
+        return ETSTypeReferencePart.updateETSTypeReferencePart
     },
     get createImportDeclaration() {
-        return EtsImportDeclaration.create
+        return ETSImportDeclaration.createETSImportDeclaration
     },
     get updateImportDeclaration() {
-        return compose(EtsImportDeclaration.create)
+        return ETSImportDeclaration.updateETSImportDeclaration
     },
     get createImportSpecifier() {
         return ImportSpecifier.createImportSpecifier
     },
     get updateImportSpecifier() {
-        return compose(ImportSpecifier.createImportSpecifier)
+        return ImportSpecifier.updateImportSpecifier
     },
-
-// create ImportSource: ImportSource.create,
-// update ImportSource: compose(ImportSource.create),
-
     get createVariableDeclaration() {
         return VariableDeclaration.create
     },
     get updateVariableDeclaration() {
-        return compose(VariableDeclaration.create)
+        return VariableDeclaration.update
     },
     get createVariableDeclarator() {
         return VariableDeclarator.create
     },
     get updateVariableDeclarator() {
-        return compose(VariableDeclarator.create)
+        return VariableDeclarator.update
     },
     get createUnionType() {
         return ETSUnionType.createETSUnionType
     },
     get updateUnionType() {
-        return compose(ETSUnionType.createETSUnionType)
+        return ETSUnionType.updateETSUnionType
     },
     get createReturnStatement() {
         return ReturnStatement.create1ReturnStatement
     },
     get updateReturnStatement() {
-        return compose(ReturnStatement.create1ReturnStatement)
+        return ReturnStatement.update1ReturnStatement
     },
     get createIfStatement() {
         return IfStatement.create
     },
     get updateIfStatement() {
-        return compose(IfStatement.create)
+        return IfStatement.update
     },
     get createBinaryExpression() {
         return BinaryExpression.createBinaryExpression
     },
     get updateBinaryExpression() {
-        return compose(BinaryExpression.createBinaryExpression)
+        return BinaryExpression.updateBinaryExpression
     },
     get createClassDeclaration() {
         return ClassDeclaration.createClassDeclaration
     },
     get updateClassDeclaration() {
-        return compose(ClassDeclaration.createClassDeclaration)
+        return ClassDeclaration.updateClassDeclaration
     },
     get createStructDeclaration() {
         return StructDeclaration.create
     },
     get updateStructDeclaration() {
-        return compose(StructDeclaration.create)
+        return StructDeclaration.update
     },
     get createClassDefinition() {
         return ClassDefinition.createClassDefinition
     },
     get updateClassDefinition() {
-        return compose(ClassDefinition.createClassDefinition)
+        return ClassDefinition.updateClassDefinition
     },
     get createClassProperty() {
         return ClassProperty.createClassProperty
     },
     get updateClassProperty() {
-        return compose(ClassProperty.createClassProperty)
+        return ClassProperty.updateClassProperty
     },
     get createFunctionType() {
         return ETSFunctionType.createETSFunctionType
     },
     get updateFunctionType() {
-        return compose(ETSFunctionType.createETSFunctionType)
+        return ETSFunctionType.updateETSFunctionType
     },
     get createFunctionExpression() {
         return FunctionExpression.create
     },
     get updateFunctionExpression() {
-        return compose(FunctionExpression.create)
+        return FunctionExpression.update
     },
     get createMethodDefinition() {
         return MethodDefinition.create
     },
     get updateMethodDefinition() {
-        return compose(MethodDefinition.create)
+        return MethodDefinition.update
     },
     get createSuperExpression() {
         return SuperExpression.createSuperExpression
     },
     get updateSuperExpression() {
-        return compose(SuperExpression.createSuperExpression)
+        return SuperExpression.updateSuperExpression
     },
     get createTSTypeParameterInstantiation() {
         return TSTypeParameterInstantiation.createTSTypeParameterInstantiation
     },
     get updateTSTypeParameterInstantiation() {
-        return compose(TSTypeParameterInstantiation.createTSTypeParameterInstantiation)
+        return TSTypeParameterInstantiation.updateTSTypeParameterInstantiation
     },
     get createInterfaceDeclaration() {
         return TSInterfaceDeclaration.createTSInterfaceDeclaration
     },
     get updateInterfaceDeclaration() {
-        return compose(TSInterfaceDeclaration.createTSInterfaceDeclaration)
+        return TSInterfaceDeclaration.updateTSInterfaceDeclaration
     },
     get createInterfaceBody() {
         return TSInterfaceBody.createTSInterfaceBody
     },
     get updateInterfaceBody() {
-        return compose(TSInterfaceBody.createTSInterfaceBody)
+        return TSInterfaceBody.updateTSInterfaceBody
     },
     get createUndefinedLiteral() {
         return UndefinedLiteral.createUndefinedLiteral
     },
     get updateUndefinedLiteral() {
-        return compose(UndefinedLiteral.createUndefinedLiteral)
+        return UndefinedLiteral.updateUndefinedLiteral
     },
     get createAnnotationUsage() {
         return AnnotationUsage.createAnnotationUsage
     },
     get updateAnnotationUsageIr() {
-        return compose(AnnotationUsage.createAnnotationUsage)
+        return AnnotationUsage.updateAnnotationUsage
     },
     get createAssignmentExpression() {
         return AssignmentExpression.create
     },
     get updateAssignmentExpression() {
-        return compose(AssignmentExpression.create)
+        return AssignmentExpression.update
     },
     get createETSUndefinedType() {
         return ETSUndefinedType.createETSUndefinedType
     },
     get updateETSUndefinedType() {
-        return compose(ETSUndefinedType.createETSUndefinedType)
+        return ETSUndefinedType.updateETSUndefinedType
     },
     get createFunctionSignature() {
         return FunctionSignature.createFunctionSignature
@@ -329,13 +328,31 @@ export const factory = {
         return ConditionalExpression.createConditionalExpression
     },
     get updateConditionalExpression() {
-        return compose(ConditionalExpression.createConditionalExpression)
+        return ConditionalExpression.updateConditionalExpression
     },
     get createTSAsExpression() {
         return TSAsExpression.createTSAsExpression
     },
     get updateTSAsExpression() {
-        return compose(TSAsExpression.createTSAsExpression)
+        return TSAsExpression.updateTSAsExpression
+    },
+    get createThisExpression() {
+        return ThisExpression.createThisExpression
+    },
+    get updateThisExpression() {
+        return ThisExpression.updateThisExpression
+    },
+    get createTSNonNullExpression() {
+        return TSNonNullExpression.createTSNonNullExpression;
+    },
+    get updateTSNonNullExpression() {
+        return TSNonNullExpression.updateTSNonNullExpression;
+    },
+    get createNullLiteral() {
+        return NullLiteral.createNullLiteral;
+    },
+    get updateNullLiteral() {
+        return NullLiteral.updateNullLiteral;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {

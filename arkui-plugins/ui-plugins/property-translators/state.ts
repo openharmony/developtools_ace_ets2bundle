@@ -18,6 +18,7 @@ import * as arkts from "@koalaui/libarkts"
 import { 
     createGetter, 
     createSetter,
+    generateThisValue
 } from "./utils";
 import { PropertyTranslator } from "./base";
 import { 
@@ -28,72 +29,27 @@ import {
     backingField, 
     expectName 
 } from "../../common/arkts-utils";
+import { createOptionalClassProperty } from "../utils";
 
 export class StateTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
-
         this.cacheTranslatedInitializer(newName, originalName); // TODO: need to release cache after some point...
         return this.translateWithoutInitializer(newName, originalName);
     }
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
-    
-        const originNode: arkts.ClassProperty = arkts.factory.createClassProperty(
-            arkts.factory.createIdentifier(originalName).setOptional(true),
-            undefined,
-            this.property.typeAnnotation,
-            this.property.modifiers,
-            false
-        );
-        const translatedNode: arkts.ClassProperty = arkts.factory.createClassProperty(
-            arkts.factory.createIdentifier(newName).setOptional(true),
-            undefined,
-            this.property.typeAnnotation,
-            this.property.modifiers,
-            false
-        );
-        currentStructInfo.stateVariables.add({ originNode, translatedNode });
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
         currentStructInfo.initializeBody.push(initializeStruct);
         arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = arkts.factory.createClassProperty(
-            arkts.factory.createIdentifier(newName).setOptional(true),
-            undefined, // TODO: probably need to change this.
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier('MutableState'),
-                    arkts.factory.createTSTypeParameterInstantiation(
-                        [
-                            this.property.typeAnnotation ??
-                            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
-                        ]
-                    )
-                )
-            ),
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
-            false
-        )
-        const member: arkts.MemberExpression = arkts.factory.createMemberExpression(
-            arkts.factory.createIdentifier(`${newName}!`), // TODO: probably need to change this.
-            arkts.factory.createIdentifier('value'),
-            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-            false,
-            false
-        )
-        const thisValue: arkts.MemberExpression = arkts.factory.createMemberExpression(
-            arkts.factory.createIdentifier('this'),
-            member,
-            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-            false,
-            false
-        )
-    
+        const field: arkts.ClassProperty = createOptionalClassProperty(newName, this.property, 'MutableState',
+                    arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE);
+        const thisValue: arkts.MemberExpression = generateThisValue(newName);
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.property.typeAnnotation, thisValue);
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.property.typeAnnotation, thisValue);
     
@@ -117,7 +73,7 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
             arkts.factory.createIdentifier('observableProxy'),
             undefined,
             [arkts.factory.createIdentifier('value')]
-        )
+        );
 
         return createSetter(originalName, typeAnnotation, left, right);
     }
@@ -134,20 +90,17 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
                 false,
                 false
             ),
-            this.property.value ?? arkts.factory.createIdentifier('undefined'),
+            this.property.value ?? arkts.factory.createUndefinedLiteral(),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-        )
+        );
         const call = arkts.factory.createCallExpression(
             arkts.factory.createIdentifier('stateOf'),
             this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
-            [
-                binaryItem,
-                arkts.factory.createIdentifier('this')
-            ]
-        )
+            [binaryItem]
+        );
         return arkts.factory.createAssignmentExpression(
             arkts.factory.createMemberExpression(
-                arkts.factory.createIdentifier('this'),
+                arkts.factory.createThisExpression(),
                 arkts.factory.createIdentifier(newName),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
@@ -155,6 +108,6 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
             ),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
             call
-        )
+        );
     }
 }

@@ -80,3 +80,7 @@ export function filterSource(text: string): string {
 
     return filtered
 }
+
+export function getEnumName(enumType: any, value: number): string | undefined {
+    return enumType[value];
+}

@@ -18,8 +18,8 @@ import { Column } from "@koalaui.arkts-arkui.Column"
 import { Button } from "@koalaui.arkts-arkui.Button"
 import { Component, StorageLink, State } from "@koalaui.arkts-arkui.Common"
 import { UserView, UserViewBuilder } from "@koalaui.arkts-arkui.UserView"
-import { __memo_context_type, __memo_id_type } from "@ohos.arkui.StateManagement.runtime";
-import { memo } from "@ohos.arkui.StateManagement.runtime"
+import { __memo_context_type, __memo_id_type } from "@koalaui/runtime";
+import { memo } from "@koalaui/runtime"
 
 @Component
 struct MyStateSample {
