@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -91,7 +91,7 @@ import {
   checkHasKeepTs,
   resetKitImportLog
 } from '../../process_kit_import';
-import parseIntent from '../../parse_Intent';
+import parseUserIntents from '../../userIntents_parser/parseUserIntents';
 import { resetProcessComponentMember } from '../../process_component_member';
 import {
   collectReservedNameForObf,
@@ -211,12 +211,7 @@ export function etsTransform() {
       }
     },
     afterBuildEnd() {
-      const cacheSourceMapPath = path.join(projectConfig.aceProfilePath, 'test.json');
-      fs.writeFile(cacheSourceMapPath, JSON.stringify(parseIntent.intentData, null, 2), 'utf-8', (err) => {
-        if (err) {
-          console.error('lmz fail');
-        }
-      });
+      parseUserIntents.writeUserIntentJsonFile();
       // Copy the cache files in the compileArkTS directory to the loader_out directory
       if (projectConfig.compileHar && !projectConfig.byteCodeHar) {
         for (let moduleInfoId of allModuleIds.keys()) {
@@ -281,6 +276,7 @@ export function etsTransform() {
       resetUtils();
       resetValidateUiSyntax();
       resetObfuscation();
+      parseUserIntents.clear();
     }
   };
 }
@@ -377,10 +373,12 @@ async function transform(code: string, id: string) {
     compilerOptions.moduleResolution = 'nodenext';
     compilerOptions.module = 'es2020';
     const newContent: string = jsBundlePreProcess(code, id, this.getModuleInfo(id).isEntry, logger, hvigorLogger);
+    const metaInfo: Object = this.getModuleInfo(id).metaInfo || {};
+    metaInfo.tsProgram = globalProgram.program;
     const result: ts.TranspileOutput = ts.transpileModule(newContent, {
       compilerOptions: compilerOptions,
       fileName: id,
-      transformers: { before: [processUISyntax(globalProgram.program)] }
+      transformers: { before: [processUISyntax(null, false, null, id, metaInfo)] }
     });
 
     resetCollection();
@@ -451,6 +449,7 @@ async function transform(code: string, id: string) {
   try {
     startTimeStatisticsLocation(compilationTime ? compilationTime.tsProgramEmitTime : undefined);
     const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_UI_KIT);
+    metaInfo.tsProgram = tsProgram;
     if (projectConfig.useArkoala) {
       tsProgram = getArkoalaTsProgram(tsProgram);
       targetSourceFile = tsProgram.getSourceFile(id);
@@ -461,7 +460,7 @@ async function transform(code: string, id: string) {
       tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
         {
           before: [
-            processUISyntax(tsProgram, false, compilationTime, id),
+            processUISyntax(null, false, compilationTime, id, metaInfo),
             processKitImport(id, metaInfo, compilationTime, true, lazyImportOptions),
             collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
               shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))
@@ -475,9 +474,10 @@ async function transform(code: string, id: string) {
       startTimeStatisticsLocation(compilationTime ? compilationTime.transformNodesTime : undefined);
       const emitResolver: ts.EmitResolver = globalProgram.checker.getEmitResolver(outFile(tsProgram.getCompilerOptions()) ?
         undefined : targetSourceFile, undefined);
+      metaInfo.tsProgram = tsProgram;
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
-        [processUISyntax(tsProgram, false, compilationTime, id),
+        [processUISyntax(null, false, compilationTime, id, metaInfo),
         processKitImport(id, metaInfo, compilationTime, false, lazyImportOptions),
         collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
           shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))], false);
