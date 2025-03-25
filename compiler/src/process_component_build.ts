@@ -371,8 +371,8 @@ function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
   if (!isValid) {
     log.push({
       type: LogType.ERROR,
-      message: `In an '@Entry' decorated component, the 'build' method can have only one root node,`
-      + ` which must be a container component.`,
+      message: `In an '@Entry' decorated component, the 'build' method can have only one root node,` +
+        ` which must be a container component.`,
       pos: node.body.statements.pos,
       code: '10905210'
     });

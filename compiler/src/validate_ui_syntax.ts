@@ -781,8 +781,8 @@ function validateMemberInClass(isObservedClass: boolean, decoratorName: string, 
   log: LogInfo[], sourceFileNode: ts.SourceFile, isObservedV1Class: boolean, isSendableClass: boolean, isTypeFromSdk: boolean): void {
   if (decoratorName === CLASS_TRACK_DECORATOR) {
     if (isObservedClass) {
-      const message: string = `'@${decoratorName}' cannot be used with classes decorated by '@ObservedV2.'`
-      + ` Use the '@Trace' decorator instead.`;
+      const message: string = `'@${decoratorName}' cannot be used with classes decorated by '@ObservedV2.'` +
+        ` Use the '@Trace' decorator instead.`;
       addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905344' });
     }
     return;
