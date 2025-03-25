@@ -568,7 +568,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   }
 }
 
-function traverseProgramSourceFiles(props: string[]): void {
+export function traverseProgramSourceFiles(props: string[]): void {
   globalProgram.program.getSourceFiles().forEach((sourceFile: ts.SourceFile) => {
     checkUISyntax(sourceFile, sourceFile.fileName, [], props);
   })
