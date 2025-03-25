@@ -30,7 +30,8 @@ import {
   runArkTSLinter,
   targetESVersionChanged,
   collectFileToIgnoreDiagnostics,
-  TSC_SYSTEM_CODE
+  TSC_SYSTEM_CODE,
+  traverseProgramSourceFiles
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
@@ -110,6 +111,7 @@ export function etsChecker() {
           timePrinterInstance.appendTime(ts.TimePhase.START);
           globalProgram.builderProgram = languageService.getBuilderProgram(/*withLinterProgram*/ true);
           globalProgram.program = globalProgram.builderProgram.getProgram();
+          traverseProgramSourceFiles(languageService.getProps());
           timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
           MemoryMonitor.stopRecordStage(buildProgramRecordInfo);
           const collectFileToIgnore = MemoryMonitor.recordStage(MemoryDefine.COLLECT_FILE_TOIGNORE_RUN_TSLINTER);
