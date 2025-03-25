@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -85,7 +85,7 @@ export const COMPONENT_STYLES_DECORATOR: string = '@Styles';
 export const COMPONENT_ANIMATABLE_EXTEND_DECORATOR: string = '@AnimatableExtend';
 export const COMPONENT_CONCURRENT_DECORATOR: string = '@Concurrent';
 export const COMPONENT_SENDABLE_DECORATOR: string = '@Sendable';
-export const COMPONENT_INTENT_DECORATOR:string = '@InsightIntentLinkDecorator';
+export const COMPONENT_USER_INTENTS_DECORATOR: string = '@InsightIntentLinkDecorator';
 export const CHECK_COMPONENT_EXTEND_DECORATOR: string = 'Extend';
 export const STRUCT_CONTEXT_METHOD_DECORATORS: Set<string> = new Set([COMPONENT_BUILDER_DECORATOR,
   COMPONENT_STYLES_DECORATOR, COMPONENT_LOCAL_BUILDER_DECORATOR]);

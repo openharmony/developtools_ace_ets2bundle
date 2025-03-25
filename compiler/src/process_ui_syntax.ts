@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import ts from 'typescript';
+import ts, { TypeChecker } from 'typescript';
 import path from 'path';
 import fs from 'fs';
 
@@ -81,7 +81,7 @@ import {
   LENGTH,
   PUV2_VIEW_BASE,
   CONTEXT_STACK,
-  COMPONENT_INTENT_DECORATOR
+  COMPONENT_USER_INTENTS_DECORATOR
 } from './pre_define';
 import {
   componentInfo,
@@ -170,11 +170,7 @@ import {
   routerModuleType,
   routerBundleOrModule
 } from './process_module_package';
-import parseIntent from './parse_Intent';
-import { getNormalizedOhmUrlByFilepath } from './ark_utils';
-import {
-  IntentLogger
-} from './Intent_Logger';
+import parseUserIntents from './userIntents_parser/parseUserIntents';
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
@@ -408,25 +404,11 @@ export function processUISyntax(program: ts.Program, ut = false,
           });
         }
       } else if (ts.isClassDeclaration(node)) {
-        if (hasDecorator(node, COMPONENT_INTENT_DECORATOR)) {
-          const checker = program.getTypeChecker();
-          const currentFile = filePath; // C:\Users\l00813716\DevEcoStudioProjects\MyApplication6\entry\src\main\ets\pages\Index.ets
-          const realpath = program.getCurrentDirectory();
-          const relativePath = '.\\' + path.relative(realpath, currentFile);
-          const convertedPath = relativePath.replace(/\\+/g, '/');
-          const pkgParams = {
-            pkgName: metaInfo.pkgName,
-            pkgPath: metaInfo.pkgPath
-          };
-          const Logger = IntentLogger.getInstance();
-          const recordName = getNormalizedOhmUrlByFilepath(convertedPath, projectConfig, Logger, pkgParams, filePath);
-          console.log(`recordName------${recordName}`);
-          parseIntent.handleIntent(node, checker, `@normalized:${recordName}`);
-
-          // remove @Intent
-          node = processSendableClass(node);
+        if (hasDecorator(node, COMPONENT_USER_INTENTS_DECORATOR)) {
+          const checker: TypeChecker = metaInfo.tsProgram.getTypeChecker();
+          parseUserIntents.handleIntent(node, checker, filePath, metaInfo);
+          node = parseUserIntents.removeDecorator(node);
         }
-
         if (hasDecorator(node, COMPONENT_SENDABLE_DECORATOR)) {
           if (projectConfig.compileHar && !projectConfig.useTsHar) {
             let warnMessage: string = 'If you use @Sendable in js har, an exception will occur during runtime.\n' +
