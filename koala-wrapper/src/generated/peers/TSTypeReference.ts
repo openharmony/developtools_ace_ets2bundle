@@ -35,7 +35,7 @@ import { TSTypeParameterInstantiation } from "./TSTypeParameterInstantiation"
 import { Identifier } from "./Identifier"
 export class TSTypeReference extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 127)
+        assertValidPeer(pointer, 128)
         super(pointer)
         
     }
@@ -55,6 +55,6 @@ export class TSTypeReference extends TypeNode {
 export function isTSTypeReference(node: AstNode): node is TSTypeReference {
     return node instanceof TSTypeReference
 }
-if (!nodeByType.has(127)) {
-    nodeByType.set(127, TSTypeReference)
+if (!nodeByType.has(128)) {
+    nodeByType.set(128, TSTypeReference)
 }

@@ -32,7 +32,7 @@ import {
 import { Expression } from "./Expression"
 export class YieldExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 152)
+        assertValidPeer(pointer, 153)
         super(pointer)
         
     }
@@ -52,6 +52,6 @@ export class YieldExpression extends Expression {
 export function isYieldExpression(node: AstNode): node is YieldExpression {
     return node instanceof YieldExpression
 }
-if (!nodeByType.has(152)) {
-    nodeByType.set(152, YieldExpression)
+if (!nodeByType.has(153)) {
+    nodeByType.set(153, YieldExpression)
 }

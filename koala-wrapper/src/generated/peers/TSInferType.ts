@@ -33,7 +33,7 @@ import { TypeNode } from "./TypeNode"
 import { TSTypeParameter } from "./TSTypeParameter"
 export class TSInferType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 109)
+        assertValidPeer(pointer, 110)
         super(pointer)
         
     }
@@ -50,6 +50,6 @@ export class TSInferType extends TypeNode {
 export function isTSInferType(node: AstNode): node is TSInferType {
     return node instanceof TSInferType
 }
-if (!nodeByType.has(109)) {
-    nodeByType.set(109, TSInferType)
+if (!nodeByType.has(110)) {
+    nodeByType.set(110, TSInferType)
 }

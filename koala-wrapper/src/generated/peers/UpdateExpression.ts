@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 import { Es2pandaTokenType } from "./../Es2pandaEnums"
 export class UpdateExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 148)
+        assertValidPeer(pointer, 149)
         super(pointer)
         
     }
@@ -56,6 +56,6 @@ export class UpdateExpression extends Expression {
 export function isUpdateExpression(node: AstNode): node is UpdateExpression {
     return node instanceof UpdateExpression
 }
-if (!nodeByType.has(148)) {
-    nodeByType.set(148, UpdateExpression)
+if (!nodeByType.has(149)) {
+    nodeByType.set(149, UpdateExpression)
 }

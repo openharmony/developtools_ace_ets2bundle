@@ -34,7 +34,7 @@ import { TypeNode } from "./TypeNode"
 import { Expression } from "./Expression"
 export class TSTypeAssertion extends AnnotatedExpression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 139)
+        assertValidPeer(pointer, 140)
         super(pointer)
         
     }
@@ -59,6 +59,6 @@ export class TSTypeAssertion extends AnnotatedExpression {
 export function isTSTypeAssertion(node: AstNode): node is TSTypeAssertion {
     return node instanceof TSTypeAssertion
 }
-if (!nodeByType.has(139)) {
-    nodeByType.set(139, TSTypeAssertion)
+if (!nodeByType.has(140)) {
+    nodeByType.set(140, TSTypeAssertion)
 }

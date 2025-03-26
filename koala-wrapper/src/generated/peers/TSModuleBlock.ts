@@ -32,7 +32,7 @@ import {
 import { Statement } from "./Statement"
 export class TSModuleBlock extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 114)
+        assertValidPeer(pointer, 115)
         super(pointer)
         
     }
@@ -49,6 +49,6 @@ export class TSModuleBlock extends Statement {
 export function isTSModuleBlock(node: AstNode): node is TSModuleBlock {
     return node instanceof TSModuleBlock
 }
-if (!nodeByType.has(114)) {
-    nodeByType.set(114, TSModuleBlock)
+if (!nodeByType.has(115)) {
+    nodeByType.set(115, TSModuleBlock)
 }

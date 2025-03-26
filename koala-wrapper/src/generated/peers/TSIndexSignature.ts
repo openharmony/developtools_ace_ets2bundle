@@ -35,7 +35,7 @@ import { TypeNode } from "./TypeNode"
 import { Es2pandaTSIndexSignatureKind } from "./../Es2pandaEnums"
 export class TSIndexSignature extends TypedAstNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 135)
+        assertValidPeer(pointer, 136)
         super(pointer)
         
     }
@@ -58,6 +58,6 @@ export class TSIndexSignature extends TypedAstNode {
 export function isTSIndexSignature(node: AstNode): node is TSIndexSignature {
     return node instanceof TSIndexSignature
 }
-if (!nodeByType.has(135)) {
-    nodeByType.set(135, TSIndexSignature)
+if (!nodeByType.has(136)) {
+    nodeByType.set(136, TSIndexSignature)
 }

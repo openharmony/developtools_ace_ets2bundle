@@ -37,7 +37,7 @@ import { Expression } from "./Expression"
 import { TypeNode } from "./TypeNode"
 export class TSSignatureDeclaration extends TypedAstNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 106)
+        assertValidPeer(pointer, 107)
         super(pointer)
         
     }
@@ -63,6 +63,6 @@ export class TSSignatureDeclaration extends TypedAstNode {
 export function isTSSignatureDeclaration(node: AstNode): node is TSSignatureDeclaration {
     return node instanceof TSSignatureDeclaration
 }
-if (!nodeByType.has(106)) {
-    nodeByType.set(106, TSSignatureDeclaration)
+if (!nodeByType.has(107)) {
+    nodeByType.set(107, TSSignatureDeclaration)
 }

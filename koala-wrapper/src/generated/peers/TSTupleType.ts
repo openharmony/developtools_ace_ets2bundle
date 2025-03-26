@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class TSTupleType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 133)
+        assertValidPeer(pointer, 134)
         super(pointer)
         
     }
@@ -49,6 +49,6 @@ export class TSTupleType extends TypeNode {
 export function isTSTupleType(node: AstNode): node is TSTupleType {
     return node instanceof TSTupleType
 }
-if (!nodeByType.has(133)) {
-    nodeByType.set(133, TSTupleType)
+if (!nodeByType.has(134)) {
+    nodeByType.set(134, TSTupleType)
 }
