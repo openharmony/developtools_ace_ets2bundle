@@ -114,6 +114,7 @@ export interface LanguageServiceCache {
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
 export let localPackageSet: Set<string> = new Set();
 export const TSC_SYSTEM_CODE = '105';
+export const fileCache: Map<string, string> = new Map();
 
 export const MAX_FLOW_DEPTH_DEFAULT_VALUE = 2000;
 export const MAX_FLOW_DEPTH_MAXIMUM_VALUE = 65535;
@@ -292,12 +293,23 @@ function createHash(str: string): string {
   return hash.digest('hex');
 }
 
+export function getFileContentWithHash(fileName: string): string {
+  let fileContent: string | undefined = fileCache.get(fileName);
+  if (fileContent === undefined) {      
+    fileContent = fs.readFileSync(fileName).toString();
+    fileCache.set(fileName, fileContent);
+    // Provide the hash value for hvigor's remote cache, and let them handle the cleanup.
+    setHashValueByFilePath?.(fileName, createHash(fileContent));
+  }
+  return fileContent;
+}
+
 export const fileHashScriptVersion: (fileName: string) => string = (fileName: string) => {
   if (!fs.existsSync(fileName)) {
     return '0';
   }
 
-  let fileContent: string = fs.readFileSync(fileName).toString();
+  let fileContent: string = getFileContentWithHash(fileName);
   let cacheInfo: CacheFileName = cache[path.resolve(fileName)];
 
   // Error code corresponding to message `Cannot find module xx or its corresponding type declarations`
@@ -307,8 +319,9 @@ export const fileHashScriptVersion: (fileName: string) => string = (fileName: st
     // If this file had errors that require recheck in the last compilation,
     // mark the file as modified by modifying its hash value, thereby triggering tsc to recheck.
     fileContent += Date.now().toString();
+    return createHash(fileContent);
   }
-  return createHash(fileContent);
+  return getHashByFilePath?.(fileName) ?? createHash(fileContent);
 };
 
 // Reuse the last language service when dependency in oh-package.json5 changes to enhance performance in incremental building.
@@ -316,9 +329,13 @@ export const fileHashScriptVersion: (fileName: string) => string = (fileName: st
 const reuseLanguageServiceForDepChange: boolean = true;
 // When dependency changes and reusing the last language service, enable this flag to recheck code dependent on those dependencies.
 export let needReCheckForChangedDepUsers: boolean = false;
+let setHashValueByFilePath: Function | undefined = undefined;
+let getHashByFilePath: Function | undefined = undefined;
 
 export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[],
   parentEvent?: CompileEvent, rollupShareObject?: any): ts.LanguageService {
+  setHashValueByFilePath = rollupShareObject?.setHashValueByFilePath;
+  getHashByFilePath = rollupShareObject?.getHashByFilePath;
   setCompilerOptions(resolveModulePaths);
   const servicesHost: ts.LanguageServiceHost = {
     getScriptFileNames: () => [...rootFileNames, ...readDeaclareFiles()],
@@ -327,16 +344,17 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
       if (!fs.existsSync(fileName)) {
         return undefined;
       }
+      let fileContent: string = getFileContentWithHash(fileName);
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
         ts.PerformanceDotting.startAdvanced('scriptSnapshot');
         appComponentCollection.set(path.join(fileName), new Set());
-        let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
+        let content: string = processContent(fileContent, fileName);
         const extendFunctionInfo: extendInfo[] = [];
         content = instanceInsteadThis(content, fileName, extendFunctionInfo, this.uiProps);
         ts.PerformanceDotting.stopAdvanced('scriptSnapshot');
         return ts.ScriptSnapshot.fromString(content);
       }
-      return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName).toString());
+      return ts.ScriptSnapshot.fromString(fileContent);
     },
     getCurrentDirectory: () => process.cwd(),
     getCompilationSettings: () => compilerOptions,
@@ -370,6 +388,9 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     // TSC will re-do resolution if this callback return true.
     hasInvalidatedResolutions: (filePath: string): boolean => {
       return reuseLanguageServiceForDepChange && needReCheckForChangedDepUsers;
+    },
+    clearFileCache: function() {
+      fileCache.clear();
     }
   };
 
