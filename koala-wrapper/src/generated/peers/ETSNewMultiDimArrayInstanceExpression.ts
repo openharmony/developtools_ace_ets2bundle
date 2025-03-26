@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 import { TypeNode } from "./TypeNode"
 export class ETSNewMultiDimArrayInstanceExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 76)
+        assertValidPeer(pointer, 77)
         super(pointer)
         
     }
@@ -59,6 +59,6 @@ export class ETSNewMultiDimArrayInstanceExpression extends Expression {
 export function isETSNewMultiDimArrayInstanceExpression(node: AstNode): node is ETSNewMultiDimArrayInstanceExpression {
     return node instanceof ETSNewMultiDimArrayInstanceExpression
 }
-if (!nodeByType.has(76)) {
-    nodeByType.set(76, ETSNewMultiDimArrayInstanceExpression)
+if (!nodeByType.has(77)) {
+    nodeByType.set(77, ETSNewMultiDimArrayInstanceExpression)
 }

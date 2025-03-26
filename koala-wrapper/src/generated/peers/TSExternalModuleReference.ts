@@ -32,7 +32,7 @@ import {
 import { Expression } from "./Expression"
 export class TSExternalModuleReference extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 88)
+        assertValidPeer(pointer, 89)
         super(pointer)
         
     }
@@ -49,6 +49,6 @@ export class TSExternalModuleReference extends Expression {
 export function isTSExternalModuleReference(node: AstNode): node is TSExternalModuleReference {
     return node instanceof TSExternalModuleReference
 }
-if (!nodeByType.has(88)) {
-    nodeByType.set(88, TSExternalModuleReference)
+if (!nodeByType.has(89)) {
+    nodeByType.set(89, TSExternalModuleReference)
 }

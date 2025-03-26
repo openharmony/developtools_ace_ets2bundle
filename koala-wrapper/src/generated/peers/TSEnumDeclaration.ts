@@ -35,7 +35,7 @@ import { ClassDefinition } from "./ClassDefinition"
 import { Decorator } from "./Decorator"
 export class TSEnumDeclaration extends TypedStatement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 86)
+        assertValidPeer(pointer, 87)
         super(pointer)
         
     }
@@ -77,6 +77,6 @@ export class TSEnumDeclaration extends TypedStatement {
 export function isTSEnumDeclaration(node: AstNode): node is TSEnumDeclaration {
     return node instanceof TSEnumDeclaration
 }
-if (!nodeByType.has(86)) {
-    nodeByType.set(86, TSEnumDeclaration)
+if (!nodeByType.has(87)) {
+    nodeByType.set(87, TSEnumDeclaration)
 }

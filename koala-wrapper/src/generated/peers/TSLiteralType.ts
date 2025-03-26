@@ -33,7 +33,7 @@ import { TypeNode } from "./TypeNode"
 import { Expression } from "./Expression"
 export class TSLiteralType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 108)
+        assertValidPeer(pointer, 109)
         super(pointer)
         
     }
@@ -50,6 +50,6 @@ export class TSLiteralType extends TypeNode {
 export function isTSLiteralType(node: AstNode): node is TSLiteralType {
     return node instanceof TSLiteralType
 }
-if (!nodeByType.has(108)) {
-    nodeByType.set(108, TSLiteralType)
+if (!nodeByType.has(109)) {
+    nodeByType.set(109, TSLiteralType)
 }

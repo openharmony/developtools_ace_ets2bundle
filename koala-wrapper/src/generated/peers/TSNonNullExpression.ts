@@ -32,7 +32,7 @@ import {
 import { Expression } from "./Expression"
 export class TSNonNullExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 99)
+        assertValidPeer(pointer, 100)
         super(pointer)
         
     }
@@ -54,6 +54,6 @@ export class TSNonNullExpression extends Expression {
 export function isTSNonNullExpression(node: AstNode): node is TSNonNullExpression {
     return node instanceof TSNonNullExpression
 }
-if (!nodeByType.has(99)) {
-    nodeByType.set(99, TSNonNullExpression)
+if (!nodeByType.has(100)) {
+    nodeByType.set(100, TSNonNullExpression)
 }

@@ -33,7 +33,7 @@ import { TypeNode } from "./TypeNode"
 import { Expression } from "./Expression"
 export class TSIntersectionType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 112)
+        assertValidPeer(pointer, 113)
         super(pointer)
         
     }
@@ -50,6 +50,6 @@ export class TSIntersectionType extends TypeNode {
 export function isTSIntersectionType(node: AstNode): node is TSIntersectionType {
     return node instanceof TSIntersectionType
 }
-if (!nodeByType.has(112)) {
-    nodeByType.set(112, TSIntersectionType)
+if (!nodeByType.has(113)) {
+    nodeByType.set(113, TSIntersectionType)
 }

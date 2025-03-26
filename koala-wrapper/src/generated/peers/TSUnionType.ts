@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class TSUnionType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 102)
+        assertValidPeer(pointer, 103)
         super(pointer)
         
     }
@@ -49,6 +49,6 @@ export class TSUnionType extends TypeNode {
 export function isTSUnionType(node: AstNode): node is TSUnionType {
     return node instanceof TSUnionType
 }
-if (!nodeByType.has(102)) {
-    nodeByType.set(102, TSUnionType)
+if (!nodeByType.has(103)) {
+    nodeByType.set(103, TSUnionType)
 }

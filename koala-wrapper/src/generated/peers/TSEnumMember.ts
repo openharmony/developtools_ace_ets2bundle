@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 import { Expression } from "./Expression"
 export class TSEnumMember extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 87)
+        assertValidPeer(pointer, 88)
         super(pointer)
         
     }
@@ -62,6 +62,6 @@ export class TSEnumMember extends Statement {
 export function isTSEnumMember(node: AstNode): node is TSEnumMember {
     return node instanceof TSEnumMember
 }
-if (!nodeByType.has(87)) {
-    nodeByType.set(87, TSEnumMember)
+if (!nodeByType.has(88)) {
+    nodeByType.set(88, TSEnumMember)
 }

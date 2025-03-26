@@ -34,7 +34,7 @@ import { BlockStatement } from "./BlockStatement"
 import { CatchClause } from "./CatchClause"
 export class TryStatement extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 146)
+        assertValidPeer(pointer, 147)
         super(pointer)
         
     }
@@ -62,6 +62,6 @@ export class TryStatement extends Statement {
 export function isTryStatement(node: AstNode): node is TryStatement {
     return node instanceof TryStatement
 }
-if (!nodeByType.has(146)) {
-    nodeByType.set(146, TryStatement)
+if (!nodeByType.has(147)) {
+    nodeByType.set(147, TryStatement)
 }
