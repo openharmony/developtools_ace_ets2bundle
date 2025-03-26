@@ -17,6 +17,7 @@ import mocha from 'mocha';
 import fs from 'fs';
 import path from 'path';
 import { expect } from 'chai';
+import * as sinon from 'sinon';
 import * as ts from 'typescript';
 
 import { EXPECT_INDEX_ETS } from './mock/rollup_mock/path_config';
@@ -29,7 +30,9 @@ import {
   resetEtsCheck,
   serviceChecker,
   getMaxFlowDepth,
-  MAX_FLOW_DEPTH_DEFAULT_VALUE
+  MAX_FLOW_DEPTH_DEFAULT_VALUE,
+  fileCache,
+  getFileContentWithHash
 } from '../../lib/ets_checker';
 import { TS_BUILD_INFO_SUFFIX } from '../../lib/pre_define';
 import {
@@ -403,5 +406,38 @@ mocha.describe('deleteProgramSourceFiles', () => {
         expect(program.getSourceFile('demo2.ts')).to.not.be.undefined;
         const newFileSize: number = program.getSourceFiles().length;
         expect(origrinFileSize === newFileSize).to.be.true;
+    });
+});
+
+mocha.describe('optimize createProgram', () => {
+    const testFileName = 'test.txt';
+    const testFileContent = 'Hello, world!';
+    let readFileSyncStub: sinon.SinonStub;
+
+    mocha.beforeEach(() => {
+      fileCache.clear();
+      readFileSyncStub = sinon.stub(fs, 'readFileSync').returns(Buffer.from(testFileContent));
+    });
+  
+    mocha.afterEach(() => {
+      sinon.restore();
+    });
+
+    mocha.it('1-1: test should return file content when file exists ', () => {
+      const result = getFileContentWithHash(testFileName);
+      expect(result).to.equal(testFileContent);
+    });
+
+    mocha.it('1-2: test should cache the file content after first read', () => {
+        // First call - should read from file system
+        const firstResult = getFileContentWithHash(testFileName);
+        expect(fileCache.has(testFileName)).to.be.true;
+        expect(fileCache.get(testFileName)).to.equal(testFileContent);
+        
+        // Second call - should use cache
+        readFileSyncStub.resetHistory();
+        const secondResult = getFileContentWithHash(testFileName);
+        expect(readFileSyncStub.called).to.be.false;
+        expect(secondResult).to.equal(firstResult);
     });
 });
