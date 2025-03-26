@@ -576,14 +576,14 @@ function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: 
   if (ts.isPropertyDeclaration(node) || ts.isGetAccessor(node) || ts.isMethodDeclaration(node)) {
     const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
     let innerDecoratorCount: number = 0;
-    const exludeDecorators: string[] = ['@Require', '@Once'];
+    const excludeDecorators: string[] = ['@Require', '@Once'];
     const v1MethodDecorators: string[] = ['@Builder', '@Styles'];
     const v1DecoratorMap: Map<string, number> = new Map<string, number>();
     const v2DecoratorMap: Map<string, number> = new Map<string, number>();
     let checkDecoratorCount: number = 0;
     decorators.forEach((item: ts.Decorator) => {
       const decoratorName: string = item.getText().replace(/\([^\(\)]*\)/, '');
-      if (!exludeDecorators.includes(decoratorName) && (constantDefine.DECORATOR_V2.includes(decoratorName) ||
+      if (!excludeDecorators.includes(decoratorName) && (constantDefine.DECORATOR_V2.includes(decoratorName) ||
         decoratorName === '@BuilderParam')) {
         const count: number = v2DecoratorMap.get(decoratorName) || 0;
         v2DecoratorMap.set(decoratorName, count + 1);
@@ -613,13 +613,26 @@ function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: 
       v2DecoratorMapValues.some((count: number) => count > 1);
     const v1Duplicate: boolean = v1DecoratorMapValues.length &&
       v1DecoratorMapValues.some((count: number) => count > 1);
-    const duplicateMessage: string = 'Duplicate decorators for method are not allowed.';
     if (v1Duplicate) {
+      const duplicateDecorators: string = findDuplicateDecoratorMethod(v1DecoratorMapKeys, v1DecoratorMapValues);
+      const duplicateMessage: string = `Duplicate '${duplicateDecorators}' decorators for method are not allowed.`;
       addLog(LogType.WARN, duplicateMessage, node.getStart(), log, sourceFileNode);
     } else if (v2Duplicate) {
+      const duplicateDecorators: string = findDuplicateDecoratorMethod(v2DecoratorMapKeys, v2DecoratorMapValues);
+      const duplicateMessage: string = `Duplicate '${duplicateDecorators}' decorators for method are not allowed.`;
       addLog(LogType.ERROR, duplicateMessage, node.getStart(), log, sourceFileNode, { code: '10905119' });
     }
   }
+}
+
+function findDuplicateDecoratorMethod(mapKeys: string[], mapValues: number[]): string {
+  const duplicateDecorators: string[] = [];
+  mapValues.forEach((value, index) => {
+    value > 1 && duplicateDecorators.push(mapKeys[index]);
+  });
+  const output = duplicateDecorators.length > 1 ?
+    duplicateDecorators.join(', ') : duplicateDecorators[0];
+  return output;
 }
 
 export function methodDecoratorCollect(node: ts.MethodDeclaration | ts.FunctionDeclaration): void {
@@ -676,19 +689,30 @@ function validateFunction(node: ts.MethodDeclaration | ts.FunctionDeclaration,
       decoratorMap.set(decoratorName, count + 1);
     });
     const decoratorValues: number[] = Array.from(decoratorMap.values());
+    const decoratorKeys: string[] = Array.from(decoratorMap.keys());
     const hasDuplicate: boolean = decoratorValues.length &&
       decoratorValues.some((count: number) => count > 1);
     if (hasDuplicate) {
-      const message: string = 'Duplicate decorators for function are not allowed.';
+      const duplicateDecorators: string = findDuplicateDecoratorFunction(decoratorKeys, decoratorValues);
+      const message: string = `Duplicate '@${duplicateDecorators}' decorators for function are not allowed.`;
       addLog(LogType.WARN, message, node.getStart(), log, sourceFileNode);
     }
-    const decoratorKeys: string[] = Array.from(decoratorMap.keys());
     if (decoratorKeys.length > 1 || decoratorKeys.includes('LocalBuilder')) {
       const message: string = 'A function can only be decorated by one of the ' +
         `'@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.`;
       addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode, { code: '10905117' });
     }
   }
+}
+
+function findDuplicateDecoratorFunction(mapKeys: string[], mapValues: number[]): string {
+  const duplicateDecorators: string[] = [];
+  mapValues.forEach((value, index) => {
+    value > 1 && duplicateDecorators.push(mapKeys[index]);
+  });
+  const output = duplicateDecorators.length > 1 ?
+    duplicateDecorators.join(', @') : duplicateDecorators[0];
+  return output;
 }
 
 function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
