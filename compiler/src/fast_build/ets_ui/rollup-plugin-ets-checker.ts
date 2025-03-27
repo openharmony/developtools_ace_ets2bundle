@@ -29,14 +29,9 @@ import {
   emitBuildInfo,
   runArkTSLinter,
   targetESVersionChanged,
-  collectFileToIgnoreDiagnostics,
-  arkTsEvolutionModuleMap,
-  cleanUpArkTsEvolutionModuleMap,
+  collectFileToIgnoreDiagnostics
 } from '../../ets_checker';
-import {
-  ARK_TS_1_2,
-  TS_WATCH_END_MSG
-} from '../../pre_define';
+import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
   setChecker,
   startTimeStatisticsLocation,
@@ -47,7 +42,7 @@ import {
   configureSyscapInfo,
   configurePermission
 } from '../system_api/api_check_utils';
-import { ArkTsEvolutionModule } from '../../ark_utils';
+import { collectArkTSEvolutionModuleInfo } from '../../process_arkts_evolution';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -58,7 +53,7 @@ export function etsChecker() {
     name: 'etsChecker',
     buildStart() {
       if (this.share.projectConfig.dependentModuleMap) {
-        collectArkTSEvolutionModuleInfo(this.share.projectConfig.dependentModuleMap);
+        collectArkTSEvolutionModuleInfo(this.share);
       }
       const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsChecker', 'buildStart');
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
@@ -145,12 +140,4 @@ function rootFileNamesCollect(rootFileNames: string[]): void {
   entryFiles.forEach((fileName: string) => {
     rootFileNames.push(path.resolve(fileName));
   });
-}
-
-function collectArkTSEvolutionModuleInfo(dependentModuleMap: Map<string, ArkTsEvolutionModule>): void {
-  for (const [moduleName, arkTsEvolutionModuleInfo] of dependentModuleMap) {
-    if (arkTsEvolutionModuleInfo?.declgenV1OutPath && arkTsEvolutionModuleInfo.language === ARK_TS_1_2) {
-      arkTsEvolutionModuleMap.set(moduleName, arkTsEvolutionModuleInfo);
-    }
-  }
 }

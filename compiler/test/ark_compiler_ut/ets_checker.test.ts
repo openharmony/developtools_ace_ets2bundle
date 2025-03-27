@@ -35,9 +35,7 @@ import {
   needReCheckForChangedDepUsers,
   resetEtsCheck,
   serviceChecker,
-  resolveModuleNames as resolveModuleNamesMain,
-  arkTsEvolutionModuleMap,
-  cleanUpArkTsEvolutionModuleMap
+  resolveModuleNames as resolveModuleNamesMain
 } from '../../lib/ets_checker';
 import { TS_BUILD_INFO_SUFFIX } from '../../lib/pre_define'
 import {
@@ -45,6 +43,10 @@ import {
   projectConfig
 } from '../../main';
 import { mkdirsSync } from '../../lib/utils';
+import {
+  arkTSEvolutionModuleMap,
+  cleanUpProcessArkTSEvolutionObj
+} from '../../lib/process_arkts_evolution';
 
 mocha.describe('test ets_checker file api', function () {
     mocha.before(function () {
@@ -203,7 +205,7 @@ mocha.describe('test ets_checker file api', function () {
             'har',
             'har/test'
         ];
-        arkTsEvolutionModuleMap.set('har', {
+        arkTSEvolutionModuleMap.set('har', {
             language: '1.2',
             packageName: 'har',
             moduleName: 'har',
@@ -212,8 +214,8 @@ mocha.describe('test ets_checker file api', function () {
             declgenBridgeCodePath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har/build/default/intermediates/declgen/default/bridgecode`
         })
         const filePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/${DEFAULT_ENTRY}/src/main/entryability/test.ets`;
-        const arktsEvoIndexDeclFilePath: string = `${arkTsEvolutionModuleMap.get('har').declgenV1OutPath}/har/Index.d.ets`;
-        const arktsEvoTestDeclFilePath: string = `${arkTsEvolutionModuleMap.get('har').declgenV1OutPath}/har/src/main/ets/test.d.ets`;
+        const arktsEvoIndexDeclFilePath: string = `${arkTSEvolutionModuleMap.get('har').declgenV1OutPath}/har/Index.d.ets`;
+        const arktsEvoTestDeclFilePath: string = `${arkTSEvolutionModuleMap.get('har').declgenV1OutPath}/har/src/main/ets/test.d.ets`;
         fs.writeFileSync(filePath, code);
         mkdirsSync(path.dirname(arktsEvoIndexDeclFilePath));
         mkdirsSync(path.dirname(arktsEvoTestDeclFilePath));
@@ -225,12 +227,12 @@ mocha.describe('test ets_checker file api', function () {
         fs.unlinkSync(filePath);
         fs.unlinkSync(arktsEvoIndexDeclFilePath);
         fs.unlinkSync(arktsEvoTestDeclFilePath);
-        cleanUpArkTsEvolutionModuleMap();
+        cleanUpProcessArkTSEvolutionObj();
     });
 
     mocha.it('2-2: test resolveModuleNames parse the 1.2 module declaration file that the 1.1 module depends on (packageName)', function () {
         const moduleNames: string[] = ['testhar'];
-        arkTsEvolutionModuleMap.set('har', {
+        arkTSEvolutionModuleMap.set('har', {
             language: '1.2',
             packageName: 'testhar',
             moduleName: 'testhar',
@@ -240,7 +242,7 @@ mocha.describe('test ets_checker file api', function () {
         })
         const filePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/${DEFAULT_ENTRY}/src/main/entryability/test.ets`;
         const arktsEvoIndexFilePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/testhar/Index.ets`;
-        const arktsEvoIndexDeclFilePath: string = `${arkTsEvolutionModuleMap.get('har').declgenV1OutPath}/testhar/Index.d.ets`;
+        const arktsEvoIndexDeclFilePath: string = `${arkTSEvolutionModuleMap.get('har').declgenV1OutPath}/testhar/Index.d.ets`;
         const resolveModuleNameStub = sinon.stub(ts, 'resolveModuleName').returns({
           resolvedModule: {
               resolvedFileName: arktsEvoIndexFilePath,
@@ -270,7 +272,7 @@ mocha.describe('test ets_checker file api', function () {
 
     mocha.it('2-3: test resolveModuleNames parse the 1.2 module declaration file that the 1.1 module depends on', function () {
         const moduleNames: string[] = ['testhar/src/main/ets/test'];
-        arkTsEvolutionModuleMap.set('har', {
+        arkTSEvolutionModuleMap.set('har', {
             language: '1.2',
             packageName: 'testhar',
             moduleName: 'testhar',
@@ -280,7 +282,7 @@ mocha.describe('test ets_checker file api', function () {
         })
         const filePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/${DEFAULT_ENTRY}/src/main/entryability/test.ets`;
         const arktsEvoTestFilePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/testhar/src/main/ets/test.ets`;
-        const arktsEvoTestDeclFilePath: string = `${arkTsEvolutionModuleMap.get('har').declgenV1OutPath}/testhar/src/main/ets/test.d.ets`;
+        const arktsEvoTestDeclFilePath: string = `${arkTSEvolutionModuleMap.get('har').declgenV1OutPath}/testhar/src/main/ets/test.d.ets`;
         const resolveModuleNameStub = sinon.stub(ts, 'resolveModuleName').returns({
             resolvedModule: {
                 resolvedFileName: arktsEvoTestFilePath,
