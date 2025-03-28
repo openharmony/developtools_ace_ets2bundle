@@ -272,30 +272,14 @@ KInt impl_GenerateTsDeclarationsFromContext(KNativePointer contextPtr, KStringPt
 }
 KOALA_INTEROP_4(GenerateTsDeclarationsFromContext, KInt, KNativePointer, KStringPtr, KStringPtr, KBoolean)
 
-void impl_InsertETSImportDeclarationAfterParse(KNativePointer context, KNativePointer importDeclaration)
+void impl_InsertETSImportDeclarationAndParse(KNativePointer context, KNativePointer importDeclaration)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
     const auto _ast = reinterpret_cast<es2panda_AstNode*>(importDeclaration);
-    GetImpl()->InsertETSImportDeclarationAfterParse(_context, _ast);
+    GetImpl()->InsertETSImportDeclarationAndParse(_context, _ast);
     return ;
 }
-KOALA_INTEROP_V2(InsertETSImportDeclarationAfterParse, KNativePointer, KNativePointer);
-
-KNativePointer impl_ImportPathManagerResolvePathConst(KNativePointer contextPtr, KNativePointer importPathManager,
-                                                      KStringPtr& currentModulePath, KStringPtr& importPath,
-                                                      KNativePointer sourcePositionPtr)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(contextPtr);
-    const auto _importPathManager = reinterpret_cast<es2panda_ImportPathManager*>(importPathManager);
-    const auto _sourcePosition = reinterpret_cast<es2panda_SourcePosition*>(sourcePositionPtr);
-
-    auto result = GetImpl()->ImportPathManagerResolvePathConst(
-        _context, _importPathManager, currentModulePath.data(), importPath.data(), _sourcePosition
-    );
-    return new std::string(result);
-}
-KOALA_INTEROP_5(ImportPathManagerResolvePathConst,
-    KNativePointer, KNativePointer, KNativePointer, KStringPtr, KStringPtr, KNativePointer);
+KOALA_INTEROP_V2(InsertETSImportDeclarationAndParse, KNativePointer, KNativePointer);
 
 KNativePointer impl_ETSParserGetImportPathManager(KNativePointer contextPtr)
 {

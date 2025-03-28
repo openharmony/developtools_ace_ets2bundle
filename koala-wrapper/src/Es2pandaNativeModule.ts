@@ -615,11 +615,7 @@ export class Es2pandaNativeModule {
         throw new Error("Not implemented");
     }
 
-    _InsertETSImportDeclarationAfterParse(context: KNativePointer, importDeclaration: KNativePointer): void {
-        throw new Error("Not implemented");
-    }
-
-    _ImportPathManagerResolvePathConst(context: KNativePointer, importPathManager: KNativePointer, currentModulePath: String, importPath: String, sourcePosition: KNativePointer): KNativePointer {
+    _InsertETSImportDeclarationAndParse(context: KNativePointer, importDeclaration: KNativePointer): void {
         throw new Error("Not implemented");
     }
 

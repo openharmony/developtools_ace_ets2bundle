@@ -39,10 +39,10 @@ export class ETSImportDeclaration extends ImportDeclaration {
         super(pointer)
         
     }
-    static createETSImportDeclaration(source: ImportSource | undefined, specifiers: readonly AstNode[], importKind: Es2pandaImportKinds): ETSImportDeclaration {
+    static createETSImportDeclaration(source: StringLiteral | undefined, specifiers: readonly AstNode[], importKind: Es2pandaImportKinds): ETSImportDeclaration {
         return new ETSImportDeclaration(global.generatedEs2panda._CreateETSImportDeclaration(global.context, passNode(source), passNodeArray(specifiers), specifiers.length, importKind))
     }
-    static updateETSImportDeclaration(original: ETSImportDeclaration | undefined, source: ImportSource | undefined, specifiers: readonly AstNode[], importKind: Es2pandaImportKinds): ETSImportDeclaration {
+    static updateETSImportDeclaration(original: ETSImportDeclaration | undefined, source: StringLiteral | undefined, specifiers: readonly AstNode[], importKind: Es2pandaImportKinds): ETSImportDeclaration {
         return new ETSImportDeclaration(global.generatedEs2panda._UpdateETSImportDeclaration(global.context, passNode(original), passNode(source), passNodeArray(specifiers), specifiers.length, importKind))
     }
     get hasDecl(): boolean {
@@ -54,9 +54,9 @@ export class ETSImportDeclaration extends ImportDeclaration {
     get assemblerName(): string {
         return unpackString(global.generatedEs2panda._ETSImportDeclarationAssemblerNameConst(global.context, this.peer))
     }
-    get source(): StringLiteral | undefined {
-        return unpackNode(global.generatedEs2panda._ETSImportDeclarationSourceConst(global.context, this.peer))
-    }
+    // get source(): StringLiteral | undefined {
+    //     return unpackNode(global.generatedEs2panda._ETSImportDeclarationSourceConst(global.context, this.peer))
+    // }
     get resolvedSource(): StringLiteral | undefined {
         return unpackNode(global.generatedEs2panda._ETSImportDeclarationResolvedSourceConst(global.context, this.peer))
     }
