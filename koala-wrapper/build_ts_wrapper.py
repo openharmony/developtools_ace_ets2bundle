@@ -40,7 +40,7 @@ def run_cmd(cmd, execution_path=None):
                            cwd=execution_path)
     stdout, stderr = proc.communicate(timeout=1000)
     if proc.returncode != 0:
-        raise Exception(stderr.decode())
+        raise Exception(stdout.decode() + stderr.decode())
 
 
 def build(options):
