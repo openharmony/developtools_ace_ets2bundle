@@ -17,9 +17,11 @@ import * as arkts from "@koalaui/libarkts"
 
 import { 
     createGetter, 
-    createSetter2,
+    createSetter,
+    generateThisBackingValue,
     generateThisBacking,
-    generateGetOrSetCall
+    getValueInAnnotation,
+    DecoratorNames
 } from "./utils";
 import { PropertyTranslator } from "./base";
 import { 
@@ -31,41 +33,36 @@ import {
     expectName 
 } from "../../common/arkts-utils";
 import { createOptionalClassProperty } from "../utils";
-import { factory } from "./factory";
 
-export class StateTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
+export class ConsumeTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
-
         this.cacheTranslatedInitializer(newName, originalName); // TODO: need to release cache after some point...
         return this.translateWithoutInitializer(newName, originalName);
     }
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
-        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
+        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName);
         currentStructInfo.initializeBody.push(initializeStruct);
         arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = createOptionalClassProperty(newName, this.property, "StateDecoratedVariable",
+        const field: arkts.ClassProperty = createOptionalClassProperty(newName, this.property, 'MutableState',
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE);
-        const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, "get");
-        const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            generateGetOrSetCall(thisValue, "set"));
-        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.property.typeAnnotation, thisGet);
-        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.property.typeAnnotation, thisSet);
-    
+        const thisValue: arkts.MemberExpression = generateThisBackingValue(newName, false, true);
+        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.property.typeAnnotation, thisValue);
+        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.property.typeAnnotation, thisValue);
+
         return [field, getter, setter];
     }
 
     translateGetter(
         originalName: string, 
         typeAnnotation: arkts.TypeNode | undefined, 
-        returnValue: arkts.Expression
+        returnValue: arkts.MemberExpression
     ): arkts.MethodDefinition {
         return createGetter(originalName, typeAnnotation, returnValue);
     }
@@ -73,36 +70,40 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
     translateSetter(
         originalName: string, 
         typeAnnotation: arkts.TypeNode | undefined, 
-        statement: arkts.AstNode
+        left: arkts.MemberExpression
     ): arkts.MethodDefinition {
-        return createSetter2(originalName, typeAnnotation, statement);
+        const right: arkts.CallExpression = arkts.factory.createCallExpression(
+            arkts.factory.createIdentifier('observableProxy'),
+            undefined,
+            [arkts.factory.createIdentifier('value')]
+        );
+
+        return createSetter(originalName, typeAnnotation, left, right);
     }
 
     generateInitializeStruct(        
-        newName: string, 
-        originalName: string
+        newName: string
     ): arkts.AstNode {
-        const binaryItem = arkts.factory.createBinaryExpression(
-            factory.createBlockStatementForOptionalExpression(arkts.factory.createIdentifier('initializers'), originalName),
-            this.property.value ?? arkts.factory.createIdentifier('undefined'),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+        const consumeValueStr: string | undefined = getValueInAnnotation(this.property, DecoratorNames.CONSUME);
+        if (!consumeValueStr) {
+            throw new Error("Consume required only one value!!") // TODO: replace this with proper error message.
+        }
+        const right: arkts.CallExpression = arkts.factory.createCallExpression(
+            arkts.factory.createIdentifier('contextLocal'),
+            this.property.typeAnnotation ? [this.property.typeAnnotation] : undefined,
+            [arkts.factory.create1StringLiteral(consumeValueStr)]
         );
-        const right = arkts.factory.createETSNewClassInstanceExpression(
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier("StateDecoratedVariable"),
-                    arkts.factory.createTSTypeParameterInstantiation(
-                        this.property.typeAnnotation ? [this.property.typeAnnotation] : []
-                    )
-                )
+        return arkts.factory.createAssignmentExpression(
+            arkts.factory.createMemberExpression(
+                arkts.factory.createThisExpression(),
+                arkts.factory.createIdentifier(newName),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
             ),
-            [binaryItem]
-        );
-        const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
-            generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
             right
         );
-        return arkts.factory.createExpressionStatement(assign);
     }
+
 }

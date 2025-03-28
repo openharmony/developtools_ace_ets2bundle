@@ -48,6 +48,7 @@ export function uiTransform(): Plugins {
                 debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 2, "UI_AfterParse_End"), true);
 
                 this.setArkTSAst(script);
+                // console.log("[UI PLUGIN] AFTER PARSED EXIT: ", script.dumpSrc());
                 console.log("[UI PLUGIN] AFTER PARSED EXIT");
                 return script;
             }

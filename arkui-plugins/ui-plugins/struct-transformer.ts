@@ -29,7 +29,9 @@ import {
     getCustomComponentNameFromInitializerOptions,
     getCustomComponentOptionsName,
     getTypeNameFromTypeParameter,
-    getTypeParamsFromClassDecl
+    getTypeParamsFromClassDecl,
+    hasModifierFlag,
+    Dollars
 } from "./utils";
 import {
     factory
@@ -40,6 +42,8 @@ import {
 import {
     factory as entryFactory
 } from "./entry-translators/factory";
+import { DecoratorNames, hasDecorator } from "./property-translators/utils";
+import { nodeByType } from "@koalaui/libarkts/build/src/reexport-for-generated";
 
 function isCustomComponentClass(node: arkts.ClassDeclaration): boolean {
     if (!node.definition?.ident?.name) return false;
@@ -57,6 +61,21 @@ function isKnownMethodDefinition(method: arkts.MethodDefinition, name: string): 
     // For now, we only considered matched method name.
     const isNameMatched: boolean = method.name?.name === name;
     return isNameMatched;
+}
+
+function isEtsGlobalClass(node: arkts.ClassDeclaration): boolean {
+    if (node.definition?.ident?.name === 'ETSGLOBAL') {
+        return true;
+    }
+    return false;
+}
+
+function isReourceNode(node: arkts.CallExpression): boolean {
+    if (node.expression.dumpSrc() === Dollars.DOLLAR_RESOURCE || 
+        node.expression.dumpSrc() === Dollars.DOLLAR_RAWFILE) {
+        return true;
+    }
+    return false;
 }
 
 function transformBuildMethod(
@@ -201,53 +220,17 @@ function tranformPropertyMembers(
     return collect(...collections, ...propertyMembers);
 }
 
-function isCustomComponentInterface(node: arkts.TSInterfaceDeclaration): boolean {
-    const structCollection: Set<string> = arkts.GlobalInfo
-        .getInfoInstance()
-        .getStructCollection();
-
-    if (node.id && node.id.name) {
-        const customComponentName: string | undefined = 
-            getCustomComponentNameFromInitializerOptions(node.id.name);
-        return !!customComponentName && structCollection.has(customComponentName);
+function transformEtsGlobalClassMembers(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
+    if (!node.definition) {
+        return node;
     }
-    return false;
-}
-
-function addVariableInInterface(
-    interfaceNode: arkts.TSInterfaceDeclaration
-): arkts.TSInterfaceDeclaration {
-    let interfaceName: string | undefined;
-    if (interfaceNode.id && interfaceNode.id.name) {
-        interfaceName = getCustomComponentNameFromInitializerOptions(interfaceNode.id.name);
-    }
-
-    if (!interfaceName) {
-        throw new Error("Should get initializerOptions");
-    }
-
-    const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo
-        .getInfoInstance()
-        .getStructInfo(interfaceName);
-    const paramters: arkts.AstNode[] = [];
-    currentStructInfo.stateVariables.forEach((propertyItem) => {
-        paramters.push(propertyItem.originNode)
-        paramters.push(propertyItem.translatedNode)
+    node.definition.body.map((member: arkts.AstNode) => {
+        if (arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.BUILDER)) {
+            member.scriptFunction.setAnnotations([annotation("memo")]);
+        }
+        return member;
     });
-    const body: arkts.TSInterfaceBody = arkts.factory.createInterfaceBody([
-        arkts.factory.createBlock(paramters)
-    ]);
-    const newInterface: arkts.TSInterfaceDeclaration = arkts.factory.updateInterfaceDeclaration(
-        interfaceNode,
-        interfaceNode.extends,
-        interfaceNode.id,
-        interfaceNode.typeParams,
-        body,
-        interfaceNode.isStatic,
-        // TODO: how do I get it?
-        true
-    );
-    return newInterface;
+    return node;
 }
 
 function tranformClassMembers(
@@ -288,6 +271,10 @@ function tranformClassMembers(
     const updateMembers: arkts.AstNode[] = definition.body
         .filter((member)=>!arkts.isClassProperty(member))
         .map((member: arkts.AstNode) => {
+            if (arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.BUILDER)) {
+                member.scriptFunction.setAnnotations([annotation("memo")]);
+                return member;
+            }
             if (
                 arkts.isMethodDefinition(member) 
                 && isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI)
@@ -334,6 +321,25 @@ function tranformClassMembers(
     return arkts.factory.updateClassDeclaration(node, updateClassDef);
 }
 
+function transformResource(resourceNode: arkts.CallExpression): arkts.CallExpression {
+    const newArgs: arkts.AstNode[] = [
+        // arkts.factory.create1StringLiteral(projectConfig.bundleName),
+        // arkts.factory.create1StringLiteral(projectConfig.moduleName),
+        arkts.factory.create1StringLiteral("projectConfig.bundleName"),
+        arkts.factory.create1StringLiteral("projectConfig.moduleName"),
+        ...resourceNode.arguments
+    ];
+    const transformedKey: string = 
+        resourceNode.expression.dumpSrc() === Dollars.DOLLAR_RESOURCE ? '_r' : '_rawfile';
+    return arkts.factory.updateCallExpression(
+        resourceNode,
+        arkts.factory.createIdentifier(transformedKey),
+        resourceNode.typeArguments,
+        newArgs,
+        resourceNode.trailingBlock
+    );
+}
+
 type ScopeInfo = {
     name: string,
     hasInitializeStruct?: boolean,
@@ -343,6 +349,12 @@ type ScopeInfo = {
 
 export class StructTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
+    // projectConfig: Object;
+
+    // constructor(projectConfig: Object) {
+    //     super()
+    //     this.projectConfig = projectConfig;
+    // }
 
     enter(node: arkts.AstNode) {
         if (arkts.isClassDeclaration(node) && isCustomComponentClass(node)) {
@@ -382,9 +394,10 @@ export class StructTransformer extends AbstractVisitor {
         } else if (isEntryWrapperClass(node)) {
             entryFactory.addMemoToEntryWrapperPropertyValue(node);
             return node;
-        } 
-        else if (arkts.isTSInterfaceDeclaration(node) && isCustomComponentInterface(node)) {
-            return addVariableInInterface(node);
+        } else if (arkts.isClassDeclaration(node) && isEtsGlobalClass(node)) {
+            return transformEtsGlobalClassMembers(node);
+        } else if (arkts.isCallExpression(node) && isReourceNode(node)) {
+            return transformResource(node);
         }
         return node;
     }

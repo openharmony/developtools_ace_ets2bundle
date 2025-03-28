@@ -41,6 +41,18 @@ export enum BuilderLambdaNames {
     CONTENT_PARAM_NAME = 'content',
 }
 
+export enum Dollars {
+    DOLLAR_RESOURCE = "$r",
+    DOLLAR_RAWFILE = "$rawfile",
+    DOLLAR_DOLLAR = "$$",
+}
+
+export function hasModifierFlag(node: arkts.AstNode, flag: arkts.Es2pandaModifierFlags): boolean {
+    if (!node) return false;
+
+    return (node.modifiers & flag) === flag;
+}
+
 // TODO: currently, we forcely assume initializerOptions is named in pattern __Options_xxx
 export function getCustomComponentNameFromInitializerOptions(name: string): string | undefined {
     const prefix: string = CustomComponentNames.COMPONENT_INTERFACE_PREFIX;
@@ -147,4 +159,35 @@ export function getTypeParamsFromClassDecl(node: arkts.ClassDeclaration | undefi
 
 export function getTypeNameFromTypeParameter(node: arkts.TSTypeParameter | undefined): string | undefined {
     return node?.name?.name;
+}
+
+export function createOptionalClassProperty(
+    name: string,
+    property: arkts.ClassProperty,
+    stageManagementIdent: string,
+    modifiers: arkts.Es2pandaModifierFlags
+): arkts.ClassProperty {
+    const newProperty = arkts.factory.createClassProperty(
+        arkts.factory.createIdentifier(name),
+        undefined,
+        stageManagementIdent.length ? createStageManagementType(stageManagementIdent, property) : 
+        property.typeAnnotation?.clone(),
+        modifiers,
+        false
+    );
+    return arkts.classPropertySetOptional(newProperty, true);
+}
+
+export function createStageManagementType (stageManagementIdent: string, property: arkts.ClassProperty): arkts.ETSTypeReference {
+    return arkts.factory.createTypeReference(
+        arkts.factory.createTypeReferencePart(
+            arkts.factory.createIdentifier(stageManagementIdent),
+            arkts.factory.createTSTypeParameterInstantiation(
+                [
+                    property.typeAnnotation ? property.typeAnnotation.clone():
+                    arkts.factory.createETSUndefinedType(),
+                ]
+            )
+        )
+    );
 }
