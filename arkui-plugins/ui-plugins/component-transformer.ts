@@ -102,18 +102,14 @@ export class ComponentTransformer extends AbstractVisitor {
         const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(
             this.arkui ?? CustomComponentNames.COMPONENT_DEFAULT_IMPORT
         );
-        const resolvedSource: arkts.StringLiteral = arkts.factory.create1StringLiteral(
-            arkts.ImportPathManager.create().resolvePath('', source.str)
-        );
+        // const resolvedSource: arkts.StringLiteral = arkts.factory.create1StringLiteral(
+        //     arkts.ImportPathManager.create().resolvePath('', source.str)
+        // );
         const imported: arkts.Identifier = arkts.factory.createIdentifier(
             CustomComponentNames.COMPONENT_CLASS_NAME
         );
         const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
-            arkts.ImportSource.createImportSource(
-                source,
-                resolvedSource,
-                false
-            ),
+            source,
             [
                 arkts.factory.createImportSpecifier(
                     imported,

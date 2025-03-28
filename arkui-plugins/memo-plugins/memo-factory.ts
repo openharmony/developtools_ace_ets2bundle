@@ -33,15 +33,11 @@ export class factory {
     // TODO: Currently, import declaration can only be inserted at after-parsed stage.
     static createContextTypesImportDeclaration(): void {
         const source: arkts.StringLiteral = arkts.factory.createStringLiteral(RuntimeNames.CONTEXT_TYPE_DEFAULT_IMPORT);
-        const resolvedSource: arkts.StringLiteral = arkts.factory.create1StringLiteral(
-            arkts.ImportPathManager.create().resolvePath('', source.str)
-        );
+        // const resolvedSource: arkts.StringLiteral = arkts.factory.create1StringLiteral(
+        //     arkts.ImportPathManager.create().resolvePath('', source.str)
+        // );
         const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
-            arkts.ImportSource.createImportSource(
-                source,
-                resolvedSource,
-                false
-            ),
+            source,
             [
                 factory.createContextTypeImportSpecifier(),
                 factory.createIdTypeImportSpecifier()

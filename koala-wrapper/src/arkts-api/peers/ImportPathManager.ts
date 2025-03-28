@@ -31,15 +31,6 @@ export class ImportPathManager extends ArktsObject {
     }
 
     resolvePath(currentModulePath: string, importPath: string): string {
-        const sourcePosition: SourcePosition = SourcePosition.create(0, 0);
-        return unpackString(
-            global.es2panda._ImportPathManagerResolvePathConst(
-                global.context,
-                this.peer,
-                passString(currentModulePath),
-                passString(importPath),
-                sourcePosition.peer
-            )
-        );
+        return ''; // TODO: no longer support this.
     }
 }
