@@ -847,36 +847,36 @@
     ],
     "validateDuplicateMethod": [
         {
-            "message": "Duplicate decorators for function are not allowed.",
+            "message": "Duplicate '@Builder' decorators for function are not allowed.",
             "type": "WARN"
         },
         {
-            "message": "Duplicate decorators for function are not allowed.",
+            "message": "Duplicate '@CustomMethod' decorators for function are not allowed.",
             "type": "WARN"
         },
         {
-            "message": "Duplicate decorators for method are not allowed.",
+            "message": "Duplicate '@Builder' decorators for method are not allowed.",
             "type": "WARN"
         },
         {
-            "message": "Duplicate decorators for method are not allowed.",
+            "message": "Duplicate '@Styles' decorators for method are not allowed.",
             "type": "WARN"
         },
         {
-            "message": "Duplicate decorators for method are not allowed.",
+            "message": "Duplicate '@Builder' decorators for method are not allowed.",
             "type": "WARN"
         },
         {
-            "message": "Duplicate decorators for method are not allowed.",
+            "message": "Duplicate '@Styles' decorators for method are not allowed.",
             "type": "WARN"
         },
         {
-            "message": "Duplicate decorators for method are not allowed.",
+            "message": "Duplicate '@Monitor' decorators for method are not allowed.",
             "type": "ERROR",
             "code": "10905119"
         },
         {
-            "message": "Duplicate decorators for method are not allowed.",
+            "message": "Duplicate '@Computed' decorators for method are not allowed.",
             "type": "ERROR",
             "code": "10905119"
         }
