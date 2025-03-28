@@ -50,7 +50,11 @@ import {
     isVariableDeclarator,
     isArrowFunctionExpression  
 } from "./factory/nodeTests"
-import { classDefinitionFlags, classPropertySetOptional, hasModifierFlag } from "./utilities/public"
+import { 
+    classDefinitionFlags, 
+    hasModifierFlag,
+    classPropertySetOptional
+ } from "./utilities/public"
 
 type Visitor = (node: AstNode) => AstNode
 
@@ -296,6 +300,21 @@ export function visitEachChild(
             node.modifiers,
             node.isComputed
         );
+    }
+    if (isClassProperty(node)) {
+        const _node = factory.updateClassProperty(
+            node,
+            node.key,
+            nodeVisitor(node.value, visitor),
+            node.typeAnnotation,
+            node.modifiers,
+            node.isComputed
+        );
+        if (hasModifierFlag(node, Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL)) {
+            classPropertySetOptional(_node, true);
+        }
+        _node.setAnnotations(node.annotations);
+        return _node;
     }
     // TODO
     return node

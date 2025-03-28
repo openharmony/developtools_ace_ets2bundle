@@ -64,7 +64,12 @@ import {
     TypeNode,
     UndefinedLiteral,
     TSAsExpression,
-    TSTypeAliasDeclaration
+    TSTypeAliasDeclaration,
+    TSNonNullExpression,
+    ChainExpression,
+    BlockExpression,
+    NullLiteral,
+    ETSNewClassInstanceExpression
 } from "../../generated"
 import {
     Es2pandaModifierFlags
@@ -521,6 +526,36 @@ export const factory = {
             attachModifiers,
             (node: TSTypeAliasDeclaration, original: TSTypeAliasDeclaration) => node.setAnnotations(original.annotations)
         )
+    },
+    get createTSNonNullExpression() {
+        return TSNonNullExpression.createTSNonNullExpression
+    },
+    get updateTSNonNullExpression() {
+        return TSNonNullExpression.updateTSNonNullExpression
+    },
+    get createChainExpression() {
+        return ChainExpression.createChainExpression
+    },
+    get updateChainExpression() {
+        return ChainExpression.updateChainExpression
+    },
+    get createBlockExpression() {
+        return BlockExpression.createBlockExpression
+    },
+    get updateBlockExpression() {
+        return BlockExpression.updateBlockExpression
+    },
+    get createNullLiteral() {
+        return NullLiteral.createNullLiteral
+    },
+    get updateNullLiteral() {
+        return NullLiteral.updateNullLiteral
+    },
+    get createETSNewClassInstanceExpression() {
+        return ETSNewClassInstanceExpression.createETSNewClassInstanceExpression
+    },
+    get updateETSNewClassInstanceExpression() {
+        return ETSNewClassInstanceExpression.updateETSNewClassInstanceExpression
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {

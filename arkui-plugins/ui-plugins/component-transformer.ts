@@ -23,7 +23,8 @@ import {
 } from "../common/abstract-visitor";
 import {
     CustomComponentNames,
-    getCustomComponentOptionsName
+    getCustomComponentOptionsName,
+    createOptionalClassProperty
 } from "./utils";
 import {
     isAnnotation
@@ -34,6 +35,11 @@ import {
 import {
     factory as entryFactory
 } from "./entry-translators/factory"
+import { hasDecorator, DecoratorNames } from "./property-translators/utils"
+import { annotation } from "../common/arkts-utils";
+import { backingField, expectName } from "../common/arkts-utils";
+import { getStageManagmentType } from "./property-translators/utils";
+import { nodeByType } from "@koalaui/libarkts/build/src/reexport-for-generated";
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string
@@ -46,12 +52,18 @@ type ScopeInfo = {
     isReusable?: boolean
 }
 
+interface ComponentContext {
+    componentNames: string[], 
+    structMembers: Map<string, arkts.AstNode[]>,
+}
+
 export class ComponentTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
     private componentNames: string[] = [];
     private entryNames: string[] = [];
     private reusableNames: string[] = [];
     private arkui?: string;
+    private context: ComponentContext = { componentNames: [], structMembers: new Map() };
 
     constructor(options?: ComponentTransformerOptions) {
         const _options: ComponentTransformerOptions = options ?? {};
@@ -137,7 +149,10 @@ export class ComponentTransformer extends AbstractVisitor {
                         getCustomComponentOptionsName(name)
                     ),
                     nullptr, // TODO: wtf
-                    arkts.factory.createBlock([]),
+                    arkts.factory.createInterfaceBody(
+                    this.context.structMembers.get(name) ? 
+                    this.context.structMembers.get(name)! : []
+                    ),
                     false,
                     false
                 )
@@ -215,12 +230,43 @@ export class ComponentTransformer extends AbstractVisitor {
         )
 
         if (arkts.isStructDeclaration(node)) {
+            this.collectComponentMembers(node, className);
             const _node = arkts.factory.createClassDeclaration(newDefinition);
             _node.modifiers = node.modifiers;
             return _node;
         } else {
-            return arkts.factory.updateClassDeclaration(node, newDefinition);
+            return arkts.factory.updateClassDeclaration(
+                node,
+                newDefinition
+            )
         }
+    }
+
+    collectComponentMembers(node: arkts.StructDeclaration, className: string): void {
+        if (!this.context.structMembers.has(className)) {
+            this.context.structMembers.set(className, []);
+        }
+        node.definition.body.map(it => {
+            if (arkts.isClassProperty(it)) {
+                this.context.structMembers.get(className)!.push(...this.createInterfaceInnerMember(it));
+            }
+        });
+    }
+
+    createInterfaceInnerMember(member: arkts.ClassProperty): arkts.ClassProperty[] {
+        const originalName: string = expectName(member.key);
+        const newName: string = backingField(originalName);
+        const originMember: arkts.ClassProperty = createOptionalClassProperty(originalName, member,
+            '', arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
+        if (member.annotations.length > 0 && !hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
+            const newMember: arkts.ClassProperty = createOptionalClassProperty(newName, member,
+                getStageManagmentType(member), arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
+            return [originMember, newMember];
+        }
+        if (hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
+            originMember.setAnnotations([annotation("memo")]);
+        }
+        return [originMember];
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {
