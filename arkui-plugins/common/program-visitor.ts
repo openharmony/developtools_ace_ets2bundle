@@ -14,26 +14,37 @@
  */
 
 import * as arkts from "@koalaui/libarkts"
-import { KPointer } from "@koalaui/interop"
-import { AbstractVisitor } from "./abstract-visitor";
+import { AbstractVisitor, VisitorOptions } from "./abstract-visitor";
 import { matchPrefix } from "./arkts-utils";
+import { debugDump, getEnumName, getDumpFileName } from "./debug";
 
-export interface ProgramVisitorOptions{
-    skipPrefixNames: string[]
+export interface ProgramVisitorOptions extends VisitorOptions {
+    pluginName: string;
+    state: arkts.Es2pandaContextState;
+    visitors: AbstractVisitor[];
+    skipPrefixNames: string[];
 }
 
 export class ProgramVisitor extends AbstractVisitor {
-    constructor(
-        private visitors: AbstractVisitor[],
-        private options?: ProgramVisitorOptions
-    ) {
-        super();
+    private pluginName: string;
+    private state: arkts.Es2pandaContextState;
+    private visitors: AbstractVisitor[];
+    private skipPrefixNames: string[];
+    private filenames: Map<number, string>;
+
+    constructor(options: ProgramVisitorOptions) {
+        super(options);
+        this.pluginName = options.pluginName
+        this.state = options.state;
+        this.visitors = options.visitors;
+        this.skipPrefixNames = options.skipPrefixNames ?? [];
+        this.filenames = new Map();
     }
 
     programVisitor(program: arkts.Program): arkts.Program {
-        const skipPrefixes: string[] = this.options?.skipPrefixNames ?? [];
+        const skipPrefixes: string[] = this.skipPrefixNames;
 
-        const visited: Set<KPointer> = new Set();
+        const visited = new Set();
         const queue: arkts.Program[] = [program];
 
         while (queue.length > 0) {
@@ -43,10 +54,19 @@ export class ProgramVisitor extends AbstractVisitor {
             }
     
             if (currProgram.peer !== program.peer) {
-                console.log("[BEFORE TRANSFORM EXTERNAL SOURCE] script: ", currProgram.astNode.dumpSrc());
-                const script = this.visitor(currProgram.astNode);
+                const name: string = this.filenames.get(currProgram.peer)!;
+                debugDump(
+                    currProgram.astNode.dumpSrc(), 
+                    getDumpFileName(this.state, "ORI", undefined, name), 
+                    true
+                );
+                const script = this.visitor(currProgram.astNode, name);
                 if (script) {
-                    console.log("[AFTER TRANSFORM EXTERNAL SOURCE] script: ", script.dumpSrc());
+                    debugDump(
+                        script.dumpSrc(), 
+                        getDumpFileName(this.state, this.pluginName, undefined, name),
+                        true
+                    );
                 }
             }
 
@@ -57,9 +77,10 @@ export class ProgramVisitor extends AbstractVisitor {
                 if (matchPrefix(skipPrefixes, externalSource.getName())) {
                     continue;
                 }
-    
+
                 const nextProgramArr: arkts.Program[] = externalSource.programs ?? [];
                 for (const nextProgram of nextProgramArr) {
+                    this.filenames.set(nextProgram.peer, externalSource.getName());
                     if (!visited.has(nextProgram.peer)) {
                         queue.push(nextProgram);
                     }
@@ -68,16 +89,28 @@ export class ProgramVisitor extends AbstractVisitor {
         }
 
         let programScript = program.astNode;
-        programScript = this.visitor(programScript) as arkts.EtsScript;
+        programScript = this.visitor(programScript, this.externalSourceName);
 
         return program;
     }
 
-    visitor(node: arkts.AstNode): arkts.EtsScript {
+    visitor(node: arkts.AstNode, externalSourceName?: string): arkts.EtsScript {
         let script: arkts.EtsScript = node as arkts.EtsScript;
+        let count: number = 0;
         for (const transformer of this.visitors) {
+            transformer.isExternal = !!externalSourceName;
+            transformer.externalSourceName = externalSourceName;
             script = transformer.visitor(script) as arkts.EtsScript;
-        } 
+            arkts.setAllParents(script);
+            if (!transformer.isExternal) {
+                debugDump(
+                    script.dumpSrc(), 
+                    getDumpFileName(this.state, this.pluginName, count, transformer.constructor.name), 
+                    true
+                );
+                count += 1;
+            }
+        }
         return script;
     }
 }

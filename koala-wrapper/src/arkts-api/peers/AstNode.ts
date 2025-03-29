@@ -90,6 +90,10 @@ export abstract class AstNode extends ArktsObject {
         return unpackString(global.es2panda._AstNodeDumpModifiers(global.context, this.peer))
     }
 
+    public clone(): this {
+        return unpackNonNullableNode(global.generatedEs2panda._AstNodeClone(global.context, this.peer, this.parent.peer));
+    }
+
     public get parent(): AstNode {
         const parent = global.generatedEs2panda._AstNodeParent(global.context, this.peer)
         if (parent === nullptr) {
