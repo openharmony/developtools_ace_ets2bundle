@@ -26,10 +26,10 @@ export interface ProgramVisitorOptions extends VisitorOptions {
 }
 
 export class ProgramVisitor extends AbstractVisitor {
-    private pluginName: string;
-    private state: arkts.Es2pandaContextState;
-    private visitors: AbstractVisitor[];
-    private skipPrefixNames: string[];
+    private readonly pluginName: string;
+    private readonly state: arkts.Es2pandaContextState;
+    private readonly visitors: AbstractVisitor[];
+    private readonly skipPrefixNames: string[];
     private filenames: Map<number, string>;
 
     constructor(options: ProgramVisitorOptions) {
@@ -38,6 +38,11 @@ export class ProgramVisitor extends AbstractVisitor {
         this.state = options.state;
         this.visitors = options.visitors;
         this.skipPrefixNames = options.skipPrefixNames ?? [];
+        this.filenames = new Map();
+    }
+
+    reset(): void {
+        super.reset();
         this.filenames = new Map();
     }
 
@@ -101,6 +106,7 @@ export class ProgramVisitor extends AbstractVisitor {
             transformer.isExternal = !!externalSourceName;
             transformer.externalSourceName = externalSourceName;
             script = transformer.visitor(script) as arkts.EtsScript;
+            transformer.reset();
             arkts.setAllParents(script);
             if (!transformer.isExternal) {
                 debugDump(
