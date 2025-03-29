@@ -31,7 +31,7 @@ export class factory {
         )
     }
     // TODO: Currently, import declaration can only be inserted at after-parsed stage.
-    static createContextTypesImportDeclaration(): void {
+    static createContextTypesImportDeclaration(program?: arkts.Program): void {
         const source: arkts.StringLiteral = arkts.factory.createStringLiteral(RuntimeNames.CONTEXT_TYPE_DEFAULT_IMPORT);
         // const resolvedSource: arkts.StringLiteral = arkts.factory.create1StringLiteral(
         //     arkts.ImportPathManager.create().resolvePath('', source.str)
@@ -45,7 +45,10 @@ export class factory {
             arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPE
         )
         // Insert this import at the top of the script's statements.
-        arkts.importDeclarationInsert(importDecl);
+        if (!program) {
+            throw Error("Failed to insert import: Transformer has no program");
+        }
+        arkts.importDeclarationInsert(importDecl, program);
         return;
     }
 

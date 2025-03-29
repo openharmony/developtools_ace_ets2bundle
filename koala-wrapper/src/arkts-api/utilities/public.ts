@@ -21,6 +21,7 @@ import { isFunctionDeclaration, isMemberExpression } from "../factory/nodeTests"
 import { Es2pandaContextState, Es2pandaModifierFlags } from "../../generated/Es2pandaEnums"
 import type { AstNode } from "../peers/AstNode"
 import { ClassDefinition, ClassProperty, ETSImportDeclaration, isClassDefinition, isScriptFunction, type AnnotationUsage } from "../../generated"
+import { Program } from "../peers/Program"
 
 export function proceedToState(state: Es2pandaContextState): void {
     console.log("[TS WRAPPER] PROCEED TO STATE: ", getEnumName(Es2pandaContextState, state));
@@ -103,8 +104,8 @@ export function classDefinitionFlags(node: ClassDefinition): Es2pandaModifierFla
 }
 
 // TODO: Import statements should be inserted to the statements
-export function importDeclarationInsert(node: ETSImportDeclaration): void {
-    global.es2panda._InsertETSImportDeclarationAndParse(global.context, node.peer)
+export function importDeclarationInsert(node: ETSImportDeclaration, program: Program): void {
+    global.es2panda._InsertETSImportDeclarationAndParse(global.context, program.peer, node.peer)
 }
 
 export function hasModifierFlag(node: AstNode, flag: Es2pandaModifierFlags): boolean {
