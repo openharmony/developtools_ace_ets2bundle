@@ -144,7 +144,10 @@ export class ComponentTransformer extends AbstractVisitor {
             arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE
         )
         // Insert this import at the top of the script's statements.
-        arkts.importDeclarationInsert(importDecl);
+        if (!this.program) {
+            throw Error("Failed to insert import: Transformer has no program");
+        }
+        arkts.importDeclarationInsert(importDecl, this.program);
         return;
     }
 
