@@ -615,7 +615,7 @@ export class Es2pandaNativeModule {
         throw new Error("Not implemented");
     }
 
-    _InsertETSImportDeclarationAndParse(context: KNativePointer, importDeclaration: KNativePointer): void {
+    _InsertETSImportDeclarationAndParse(context: KNativePointer, program: KNativePointer, importDeclaration: KNativePointer): void {
         throw new Error("Not implemented");
     }
 
