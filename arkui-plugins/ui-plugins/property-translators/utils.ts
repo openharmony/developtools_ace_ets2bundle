@@ -34,6 +34,16 @@ export enum DecoratorNames {
     LOCAL_STORAGE_LINK = "LocalStorageLink",
 }
 
+export function collectPropertyDecorators(property: arkts.ClassProperty): string[] {
+    const properties: string[] = [];
+    property.annotations.forEach((anno) => {
+        if (!!anno.expr && arkts.isIdentifier(anno.expr)) {
+            properties.push(anno.expr.name);
+        }
+    });
+    return properties;
+}
+
 export function isDecoratorAnnotation(anno: arkts.AnnotationUsage, decoratorName: DecoratorNames): boolean {
     return !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName;
 }

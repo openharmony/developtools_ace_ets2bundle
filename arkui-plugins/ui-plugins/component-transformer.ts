@@ -27,7 +27,8 @@ import {
     createOptionalClassProperty
 } from "./utils";
 import {
-    isAnnotation
+    isAnnotation,
+    updateStructMetadata
 } from "../common/arkts-utils";
 import {
     findEntryWithStorageInClassAnnotations
@@ -35,7 +36,7 @@ import {
 import {
     factory as entryFactory
 } from "./entry-translators/factory"
-import { hasDecorator, DecoratorNames } from "./property-translators/utils"
+import { hasDecorator, DecoratorNames, collectPropertyDecorators } from "./property-translators/utils"
 import { annotation } from "../common/arkts-utils";
 import { backingField, expectName } from "../common/arkts-utils";
 import { getStageManagmentType } from "./property-translators/utils";
@@ -239,19 +240,28 @@ export class ComponentTransformer extends AbstractVisitor {
     }
 
     collectComponentMembers(node: arkts.StructDeclaration, className: string): void {
+        const structInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(className);
         if (!this.context.structMembers.has(className)) {
             this.context.structMembers.set(className, []);
         }
         node.definition.body.map(it => {
             if (arkts.isClassProperty(it)) {
-                this.context.structMembers.get(className)!.push(...this.createInterfaceInnerMember(it));
+                this.context.structMembers.get(className)!.push(
+                    ...this.createInterfaceInnerMember(it, structInfo)
+                );
             }
         });
+        arkts.GlobalInfo.getInfoInstance().setStructInfo(className, structInfo);
     }
 
-    createInterfaceInnerMember(member: arkts.ClassProperty): arkts.ClassProperty[] {
+    createInterfaceInnerMember(member: arkts.ClassProperty, structInfo: arkts.StructInfo): arkts.ClassProperty[] {
         const originalName: string = expectName(member.key);
         const newName: string = backingField(originalName);
+
+        const properties = collectPropertyDecorators(member);
+        const hasStateManagementType = properties.length > 0;
+        updateStructMetadata(structInfo, originalName, properties, member.modifiers, hasStateManagementType);
+
         const originMember: arkts.ClassProperty = createOptionalClassProperty(originalName, member,
             '', arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
         if (member.annotations.length > 0 && !hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
