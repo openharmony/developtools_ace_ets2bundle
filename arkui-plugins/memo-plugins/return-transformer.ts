@@ -22,6 +22,12 @@ export class ReturnTransformer extends AbstractVisitor {
     private skipNode?: arkts.ReturnStatement | arkts.BlockStatement
     private stableThis: boolean = false
 
+    reset() {
+        super.reset();
+        this.skipNode = undefined;
+        this.stableThis = false;
+    }
+
     skip(syntheticReturnStatement?: arkts.ReturnStatement | arkts.BlockStatement): ReturnTransformer {
         this.skipNode = syntheticReturnStatement
         return this

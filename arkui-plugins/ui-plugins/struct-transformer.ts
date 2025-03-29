@@ -348,12 +348,11 @@ type ScopeInfo = {
 
 export class StructTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
-    // projectConfig: Object;
 
-    // constructor(projectConfig: Object) {
-    //     super()
-    //     this.projectConfig = projectConfig;
-    // }
+    reset(): void {
+        super.reset();
+        this.scopeInfos = [];
+    }
 
     enter(node: arkts.AstNode) {
         if (arkts.isClassDeclaration(node) && isCustomComponentClass(node)) {

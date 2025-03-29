@@ -63,13 +63,24 @@ export class ComponentTransformer extends AbstractVisitor {
     private componentNames: string[] = [];
     private entryNames: string[] = [];
     private reusableNames: string[] = [];
-    private arkui?: string;
+    private readonly arkui?: string;
     private context: ComponentContext = { structMembers: new Map(), reusableComps: new Map()};
+    private isCustomComponentImported: boolean = false;
 
     constructor(options?: ComponentTransformerOptions) {
         const _options: ComponentTransformerOptions = options ?? {};
         super(_options);
         this.arkui = _options.arkui;
+    }
+
+    reset(): void {
+        super.reset();
+        this.scopeInfos = [];
+        this.componentNames = [];
+        this.entryNames = [];
+        this.reusableNames = [];
+        this.context = { structMembers: new Map(), reusableComps: new Map() };
+        this.isCustomComponentImported = false;
     }
 
     enter(node: arkts.AstNode) {
@@ -81,6 +92,18 @@ export class ComponentTransformer extends AbstractVisitor {
                 scopeInfo.isReusable ||= isAnnotation(anno, CustomComponentNames.RESUABLE_ANNOTATION_NAME);
             });
             this.scopeInfos.push(scopeInfo);
+        }
+        if (arkts.isETSImportDeclaration(node) && !this.isCustomComponentImported) {
+            const hasCustomComponent = node.specifiers.some((spec) => (
+                arkts.isImportSpecifier(spec) 
+                && !!spec.local 
+                && spec.local.name === CustomComponentNames.COMPONENT_CLASS_NAME
+            ));
+            const isFromCustomComponent = (
+                !!node.source
+                && node.source.str === CustomComponentNames.COMPONENT_DEFAULT_IMPORT
+            );
+            this.isCustomComponentImported = hasCustomComponent && isFromCustomComponent;
         }
     }
 
@@ -100,6 +123,7 @@ export class ComponentTransformer extends AbstractVisitor {
     }
 
     createImportDeclaration(): void {
+        console.log()
         const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(
             this.arkui ?? CustomComponentNames.COMPONENT_DEFAULT_IMPORT
         );
@@ -133,28 +157,28 @@ export class ComponentTransformer extends AbstractVisitor {
             return node;
         }
         
-        if (!this.isExternal && this.componentNames.length > 0) {
+        let updateStatements: arkts.AstNode[] = [];
+        if (!this.isCustomComponentImported && this.componentNames.length > 0) {
             this.createImportDeclaration();
+            updateStatements.push(
+                ...this.componentNames.map(
+                    name => arkts.factory.createInterfaceDeclaration(
+                        [],
+                        arkts.factory.createIdentifier(
+                            getCustomComponentOptionsName(name)
+                        ),
+                        nullptr, // TODO: wtf
+                        arkts.factory.createInterfaceBody(
+                        this.context.structMembers.get(name) ? 
+                        this.context.structMembers.get(name)! : []
+                        ),
+                        false,
+                        false
+                    )
+                )
+            );
         }
 
-        let updateStatements: arkts.AstNode[] = [];
-        updateStatements.push(
-            ...this.componentNames.map(
-                name => arkts.factory.createInterfaceDeclaration(
-                    [],
-                    arkts.factory.createIdentifier(
-                        getCustomComponentOptionsName(name)
-                    ),
-                    nullptr, // TODO: wtf
-                    arkts.factory.createInterfaceBody([
-                        ...(this.context.reusableComps.get(name) || []),
-                        ...(this.context.structMembers.get(name) || [])
-                    ]),
-                    false,
-                    false
-                )
-            )
-        );
         // TODO: normally, we should only have at most one @Entry component in a single file.
         // probably need to handle error message here.
         updateStatements.push(
