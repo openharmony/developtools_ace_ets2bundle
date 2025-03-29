@@ -128,6 +128,9 @@ export class PreprocessorTransformer extends AbstractVisitor {
     }
 
     updateScriptWithImport(): void {
+        if (!this.program) {
+            throw Error("Failed to insert import: Transformer has no program");
+        }
         new Set(this.outNameArr).forEach((item: string) => {
             const source: string = this.getSourceDependency(item);
             const newImport: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
@@ -135,10 +138,10 @@ export class PreprocessorTransformer extends AbstractVisitor {
                 [factory.createAdditionalImportSpecifier(item, item)],
                 arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE
             );
-            arkts.importDeclarationInsert(newImport);
+            arkts.importDeclarationInsert(newImport, this.program!);
         });
         this.structInterfaceImport.forEach((element: arkts.ETSImportDeclaration) => {
-            arkts.importDeclarationInsert(element);
+            arkts.importDeclarationInsert(element, this.program!);
         });
     }
 

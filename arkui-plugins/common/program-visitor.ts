@@ -65,7 +65,7 @@ export class ProgramVisitor extends AbstractVisitor {
                     getDumpFileName(this.state, "ORI", undefined, name), 
                     true
                 );
-                const script = this.visitor(currProgram.astNode, name);
+                const script = this.visitor(currProgram.astNode, currProgram, name);
                 if (script) {
                     debugDump(
                         script.dumpSrc(), 
@@ -94,17 +94,18 @@ export class ProgramVisitor extends AbstractVisitor {
         }
 
         let programScript = program.astNode;
-        programScript = this.visitor(programScript, this.externalSourceName);
+        programScript = this.visitor(programScript, program, this.externalSourceName);
 
         return program;
     }
 
-    visitor(node: arkts.AstNode, externalSourceName?: string): arkts.EtsScript {
+    visitor(node: arkts.AstNode, program?: arkts.Program, externalSourceName?: string): arkts.EtsScript {
         let script: arkts.EtsScript = node as arkts.EtsScript;
         let count: number = 0;
         for (const transformer of this.visitors) {
             transformer.isExternal = !!externalSourceName;
             transformer.externalSourceName = externalSourceName;
+            transformer.program = program;
             script = transformer.visitor(script) as arkts.EtsScript;
             transformer.reset();
             arkts.setAllParents(script);
