@@ -352,7 +352,7 @@ export class Es2pandaNativeModule {
     _CreateCallExpression(context: KPtr, callee: KPtr, args: KPtrArray, argsLen: KInt, typeParams: KPtr, optional: KBoolean, trailingComma: KBoolean): KPtr {
         throw new Error("Not implemented")
     }
-    _UpdateCallExpression(node: KPtr, context: KPtr, callee: KPtr, args: KPtrArray, argsLen: KInt, typeParams: KPtr, optional: KBoolean, trailingComma: KBoolean): KPtr {
+    _UpdateCallExpression(context: KPtr, node: KPtr, callee: KPtr, args: KPtrArray, argsLen: KInt, typeParams: KPtr, optional: KBoolean, trailingComma: KBoolean): KPtr {
         throw new Error("Not implemented")
     }
     _CreateArrowFunctionExpression(context: KPtr, node: KPtr): KPtr {
@@ -612,7 +612,25 @@ export class Es2pandaNativeModule {
     }
 
     _GenerateTsDeclarationsFromContext(config: KPtr, outputDeclEts: String, outputEts: String, exportAll: KBoolean): KPtr {
-        throw new Error("Not implemented")
+        throw new Error("Not implemented");
+    }
+
+    _InsertETSImportDeclarationAndParse(context: KNativePointer, importDeclaration: KNativePointer): void {
+        throw new Error("Not implemented");
+    }
+
+    _ETSParserGetImportPathManager(context: KNativePointer): KPtr {
+        throw new Error("Not implemented");
+    }
+
+    _CreateSourcePosition(context: KNativePointer, index: KInt, line: KInt): KNativePointer {
+        throw new Error("Not implemented");
+    }
+    _SourcePositionIndex(context: KNativePointer, instance: KNativePointer): KInt {
+        throw new Error("Not implemented");
+    }
+    _SourcePositionLine(context: KNativePointer, instance: KNativePointer): KInt {
+        throw new Error("Not implemented");
     }
 }
 

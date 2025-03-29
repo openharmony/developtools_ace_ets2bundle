@@ -28,7 +28,7 @@
     },
     "imports": {
         "#koalaui/interop": {
-            "default":  "./koalaui/interop/dist/lib/src/interop/index.js"
+            "default": "./koalaui/interop/dist/lib/src/interop/index.js"
         },
         "#koalaui/common": {
             "default": "./koalaui/common/dist/lib/src/index.js"
