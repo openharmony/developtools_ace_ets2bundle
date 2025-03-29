@@ -58,13 +58,15 @@ import {
 
 type Visitor = (node: AstNode) => AstNode
 
-export interface DoubleNode {
-    originNode: AstNode;
-    translatedNode: AstNode;
+export interface StructVariableMetadata {
+    name: string,
+    properties: string[],
+    modifiers: Es2pandaModifierFlags,
+    hasStateManagementType?: boolean
 }
 
 export class StructInfo {
-    stateVariables: Set<DoubleNode> = new Set();
+    metadata: Record<string, StructVariableMetadata> = {};
     initializeBody: AstNode[] = [];
     updateBody: AstNode[] = [];
 }
