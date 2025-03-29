@@ -13,20 +13,47 @@
  * limitations under the License.
  */
 
-import { memo, __memo_context_type, __memo_id_type } from "@ohos.arkui.stateManagement.runtime" // should be insert by ui-plugins
-import { Text, TextAttribute } from "@ohos.arkui.component.text"  // TextAttribute should be insert by ui-plugins
-import { Column } from "@ohos.arkui.component.column"
-import { Component } from "@ohos.arkui.component.customComponent"
-import { LocalStorage } from "@ohos.arkui.stateManagement.storage"
+import { memo, __memo_context_type, __memo_id_type } from "@ohos.arkui.stateManagement" // should be insert by ui-plugins
+import { Text, TextAttribute, Column, Component, Button, ButtonAttribute, ClickEvent, UserView } from "@ohos.arkui.component"  // TextAttribute should be insert by ui-plugins
+import { State, StateDecoratedVariable, MutableState, stateOf, observableProxy } from "@ohos.arkui.stateManagement" // should be insert by ui-plugins
+import hilog from '@ohos.hilog'
 
-const aaa = new LocalStorage();
-
-@Entry({ storage: "aaa" })
 @Component
 struct MyStateSample {
-    build() {
-        Column(undefined) {
-            Text("Hello World").fontSize(1)
-        }
+  @State stateVar: string = "state var";
+  message: string = "var";
+  changeValue() {
+    this.stateVar+="~"
+  }
+  build() {
+    Column(undefined) {
+      Text("Hello World").fontSize(20)
+      Button(this.message).backgroundColor("#FFFF00FF")
+        .onClick((e: ClickEvent) => {
+          hilog.info(0x0000, 'testTag', 'On Click');
+          this.changeValue()
+        })
+      Text(this.stateVar).fontSize(20)
+      Child({stateVar: this.stateVar} as __Options_Child)
     }
+  }
+}
+
+@Component
+struct Child {
+  @State stateVar: string = "Child";
+  build() {
+    Text(this.stateVar).fontSize(50)
+  }
+}
+
+export class ComExampleTrivialApplication extends UserView {
+  getBuilder() {
+    hilog.info(0x0000, 'testTag', 'getBuilder');
+    let wrapper = @memo () => {
+      hilog.info(0x0000, 'testTag', 'MyStateSample');
+      MyStateSample(undefined)
+    }
+    return wrapper
+  }
 }
