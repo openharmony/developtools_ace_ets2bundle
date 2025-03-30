@@ -20,6 +20,7 @@ import {
     collect, 
     filterDefined 
 } from "../common/arkts-utils";
+import { ProjectConfig } from "../common/plugin-context";
 import { 
     classifyProperty, 
     PropertyTranslator 
@@ -318,12 +319,10 @@ function tranformClassMembers(
     return arkts.factory.updateClassDeclaration(node, updateClassDef);
 }
 
-function transformResource(resourceNode: arkts.CallExpression): arkts.CallExpression {
+function transformResource(resourceNode: arkts.CallExpression, projectConfig: ProjectConfig | undefined): arkts.CallExpression {
     const newArgs: arkts.AstNode[] = [
-        // arkts.factory.create1StringLiteral(projectConfig.bundleName),
-        // arkts.factory.create1StringLiteral(projectConfig.moduleName),
-        arkts.factory.create1StringLiteral("projectConfig.bundleName"),
-        arkts.factory.create1StringLiteral("projectConfig.moduleName"),
+        arkts.factory.create1StringLiteral(projectConfig?.bundleName ? projectConfig.bundleName : ""),
+        arkts.factory.create1StringLiteral(projectConfig?.moduleName ? projectConfig.moduleName : ""),
         ...resourceNode.arguments
     ];
     const transformedKey: string = 
@@ -346,6 +345,12 @@ type ScopeInfo = {
 
 export class StructTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
+    projectConfig: ProjectConfig | undefined;
+
+    constructor(projectConfig: ProjectConfig | undefined) {
+        super()
+        this.projectConfig = projectConfig;
+    }
 
     reset(): void {
         super.reset();
@@ -393,7 +398,7 @@ export class StructTransformer extends AbstractVisitor {
         } else if (arkts.isClassDeclaration(node) && isEtsGlobalClass(node)) {
             return transformEtsGlobalClassMembers(node);
         } else if (arkts.isCallExpression(node) && isReourceNode(node)) {
-            return transformResource(node);
+            return transformResource(node, this.projectConfig);
         }
         return node;
     }
