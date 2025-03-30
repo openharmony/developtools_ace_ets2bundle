@@ -20,29 +20,27 @@ import { PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { DecoratorNames, generateToRecord } from './utils';
 
-function getStorageLinkValueStr(node: arkts.AstNode): string | undefined {
+function getLocalStorageLinkValueStr(node: arkts.AstNode): string | undefined {
     if (!arkts.isClassProperty(node) || !node.value) return undefined;
-
     return arkts.isStringLiteral(node.value) ? node.value.str : undefined;
 }
 
-function getStorageLinkAnnotationValue(anno: arkts.AnnotationUsage): string | undefined {
+function getLocalStorageLinkAnnotationValue(anno: arkts.AnnotationUsage): string | undefined {
     const isStorageLinkAnnotation: boolean =
-        !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === DecoratorNames.STORAGE_LINK;
+        !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === DecoratorNames.LOCAL_STORAGE_LINK;
 
     if (isStorageLinkAnnotation && anno.properties.length === 1) {
-        return getStorageLinkValueStr(anno.properties.at(0)!);
+        return getLocalStorageLinkValueStr(anno.properties.at(0)!);
     }
     return undefined;
 }
 
-function getStorageLinkValueInAnnotation(node: arkts.ClassProperty): string | undefined {
+function getLocalStorageLinkValueInAnnotation(node: arkts.ClassProperty): string | undefined {
     const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
 
     for (let i = 0; i < annotations.length; i++) {
         const anno: arkts.AnnotationUsage = annotations[i];
-        const str: string | undefined = getStorageLinkAnnotationValue(anno);
-
+        const str: string | undefined = getLocalStorageLinkAnnotationValue(anno);
         if (!!str) {
             return str;
         }
@@ -51,7 +49,7 @@ function getStorageLinkValueInAnnotation(node: arkts.ClassProperty): string | un
     return undefined;
 }
 
-export class StorageLinkTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
+export class LocalStorageLinkTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
@@ -74,16 +72,23 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
     }
 
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        const storageLinkValueStr: string | undefined = getStorageLinkValueInAnnotation(this.property);
-        if (!storageLinkValueStr) {
-            throw new Error('StorageLink required only one value!!'); // TODO: replace this with proper error message.
+        const localStorageLinkValueStr: string | undefined = getLocalStorageLinkValueInAnnotation(this.property);
+        if (!localStorageLinkValueStr) {
+            throw new Error('LocalStorageLink required only one value!!'); // TODO: replace this with proper error message.
         }
 
         const call = arkts.factory.createCallExpression(
-            arkts.factory.createIdentifier('AppStorageLinkState'),
+            arkts.factory.createIdentifier('StorageLinkState'),
             this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
             [
-                arkts.factory.createStringLiteral(storageLinkValueStr),
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createThisExpression(),
+                    arkts.factory.createIdentifier('_entry_local_storage_'),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false,
+                ),
+                arkts.factory.createStringLiteral(localStorageLinkValueStr),
                 this.property.value ?? arkts.factory.createIdentifier('undefined'),
             ],
         );

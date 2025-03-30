@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
-import { getInteropPath } from "../path"
+import * as arkts from "@koalaui/libarkts";
+import { getInteropPath } from "../path";
 const interop = require(getInteropPath())
 const nullptr = interop.nullptr
 import {
@@ -27,18 +27,19 @@ import {
     createOptionalClassProperty
 } from "./utils";
 import {
-    isAnnotation
+    isAnnotation,
+    updateStructMetadata,
+    backingField, 
+    expectName,
+    annotation
 } from "../common/arkts-utils";
 import {
     findEntryWithStorageInClassAnnotations
 } from "./entry-translators/utils";
 import {
     factory as entryFactory
-} from "./entry-translators/factory"
-import { hasDecorator, DecoratorNames } from "./property-translators/utils"
-import { annotation } from "../common/arkts-utils";
-import { backingField, expectName } from "../common/arkts-utils";
-import { getStageManagmentType } from "./property-translators/utils";
+} from "./entry-translators/factory";
+import { hasDecorator, DecoratorNames, getStageManagementType, collectPropertyDecorators } from "./property-translators/utils"
 import { nodeByType } from "@koalaui/libarkts/build/src/reexport-for-generated";
 
 export interface ComponentTransformerOptions extends VisitorOptions {
@@ -53,8 +54,8 @@ type ScopeInfo = {
 }
 
 interface ComponentContext {
-    componentNames: string[], 
     structMembers: Map<string, arkts.AstNode[]>,
+    reusableComps: Map<string, arkts.AstNode[]>
 }
 
 export class ComponentTransformer extends AbstractVisitor {
@@ -63,7 +64,7 @@ export class ComponentTransformer extends AbstractVisitor {
     private entryNames: string[] = [];
     private reusableNames: string[] = [];
     private arkui?: string;
-    private context: ComponentContext = { componentNames: [], structMembers: new Map() };
+    private context: ComponentContext = { structMembers: new Map(), reusableComps: new Map()};
 
     constructor(options?: ComponentTransformerOptions) {
         const _options: ComponentTransformerOptions = options ?? {};
@@ -145,10 +146,10 @@ export class ComponentTransformer extends AbstractVisitor {
                         getCustomComponentOptionsName(name)
                     ),
                     nullptr, // TODO: wtf
-                    arkts.factory.createInterfaceBody(
-                    this.context.structMembers.get(name) ? 
-                    this.context.structMembers.get(name)! : []
-                    ),
+                    arkts.factory.createInterfaceBody([
+                        ...(this.context.reusableComps.get(name) || []),
+                        ...(this.context.structMembers.get(name) || [])
+                    ]),
                     false,
                     false
                 )
@@ -171,6 +172,31 @@ export class ComponentTransformer extends AbstractVisitor {
         return node;
     }
 
+    processReusableComponent(className: string) {
+        const first = arkts.factory.createClassProperty(
+            arkts.factory.createIdentifier("__class_name"),
+            undefined,
+            arkts.factory.createETSStringLiteralType(className),
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            false
+        )
+        const second = arkts.factory.createClassProperty(
+            arkts.factory.createIdentifier("__reuseId"),
+            undefined,
+            arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier("string")
+                )
+            ),
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            false
+        )
+        this.context.reusableComps.set(className, [first, second])
+        const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(className);
+        currentStructInfo.isReusable = true;
+        arkts.GlobalInfo.getInfoInstance().setStructInfo(className, currentStructInfo);
+    }
+
     processComponent(node: arkts.ClassDeclaration | arkts.StructDeclaration): arkts.ClassDeclaration | arkts.StructDeclaration {
         const scopeInfo = this.scopeInfos[this.scopeInfos.length - 1];
         const className = node.definition?.ident?.name;
@@ -181,6 +207,10 @@ export class ComponentTransformer extends AbstractVisitor {
         arkts.GlobalInfo.getInfoInstance().add(className);
         this.componentNames.push(className);
 
+        if(scopeInfo.isReusable){
+            this.processReusableComponent(className)
+        }
+        
         const definition: arkts.ClassDefinition = node.definition;
         const newDefinitionBody: arkts.AstNode[] = [];
         if (scopeInfo.isEntry) {
@@ -201,6 +231,7 @@ export class ComponentTransformer extends AbstractVisitor {
             undefined,
             arkts.factory.createTypeReference(
                 arkts.factory.createTypeReferencePart(
+                    scopeInfo.isReusable ? arkts.factory.createIdentifier('ArkReusableStructBase'):
                     arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CLASS_NAME),
                     arkts.factory.createTSTypeParameterInstantiation(
                         [
@@ -239,24 +270,33 @@ export class ComponentTransformer extends AbstractVisitor {
     }
 
     collectComponentMembers(node: arkts.StructDeclaration, className: string): void {
+        const structInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(className);
         if (!this.context.structMembers.has(className)) {
             this.context.structMembers.set(className, []);
         }
         node.definition.body.map(it => {
             if (arkts.isClassProperty(it)) {
-                this.context.structMembers.get(className)!.push(...this.createInterfaceInnerMember(it));
+                this.context.structMembers.get(className)!.push(
+                    ...this.createInterfaceInnerMember(it, structInfo)
+                );
             }
         });
+        arkts.GlobalInfo.getInfoInstance().setStructInfo(className, structInfo);
     }
 
-    createInterfaceInnerMember(member: arkts.ClassProperty): arkts.ClassProperty[] {
+    createInterfaceInnerMember(member: arkts.ClassProperty, structInfo: arkts.StructInfo): arkts.ClassProperty[] {
         const originalName: string = expectName(member.key);
         const newName: string = backingField(originalName);
+
+        const properties = collectPropertyDecorators(member);
+        const hasStateManagementType = properties.length > 0;
+        updateStructMetadata(structInfo, originalName, properties, member.modifiers, hasStateManagementType);
+
         const originMember: arkts.ClassProperty = createOptionalClassProperty(originalName, member,
             '', arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
         if (member.annotations.length > 0 && !hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
             const newMember: arkts.ClassProperty = createOptionalClassProperty(newName, member,
-                getStageManagmentType(member), arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
+                getStageManagementType(member), arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
             return [originMember, newMember];
         }
         if (hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
