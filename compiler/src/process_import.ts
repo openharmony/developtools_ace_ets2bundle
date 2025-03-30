@@ -769,6 +769,8 @@ export function processImportModule(node: ts.ImportDeclaration, pageFile: string
     node.importClause.namedBindings.elements) {
     node.importClause.namedBindings.elements.forEach((importSpecifier: ts.ImportSpecifier) => {
       if (ts.isImportSpecifier(importSpecifier) && importSpecifier.name && ts.isIdentifier(importSpecifier.name)) {
+        console.error("lxc --- processImportModule");
+        console.error(importSpecifier.name?.escapedText?.toString())
         getDefinedNode(importSymbol, realSymbol, originNode, importSpecifier.name, pageInfo);
       }
     });
@@ -865,6 +867,7 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   let needCollection: boolean = true;
   const originFile: string = originNode.getSourceFile() ? originNode.getSourceFile().fileName : undefined;
   if (ts.isStructDeclaration(originNode) && ts.isIdentifier(originNode.name)) {
+    console.error("lxc --- processImportNode isStructDeclaration " + originNode.name.escapedText.toString());
     parseComponentInImportNode(originNode, name, asComponentName, structDecorator, originFile);
   } else if (isObservedClass(originNode)) {
     observedClassCollection.add(name);
@@ -940,6 +943,7 @@ function parseComponentInImportNode(originNode: ts.StructDeclaration, name: stri
     componentCollection.customDialogs.add(name);
   }
   if (isCustomComponent(originNode, structDecorator)) {
+    console.error("lxc --- isCustomComponent")
     structInfo.isComponentV1 = true;
     let isDETS: boolean = false;
     const componentSet: IComponentSet = getComponentSet(originNode, false);

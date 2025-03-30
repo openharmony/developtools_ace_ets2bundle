@@ -42,7 +42,7 @@ export class Context extends ArktsObject {
     static destroyAndRecreate(
         ast: AstNode
     ): Context {
-        console.log("[TS WRAPPER] DESTROY AND RECREATE");
+        // console.log("[TS WRAPPER] DESTROY AND RECREATE");
         const source = filterSource(ast.dumpSrc())
         global.es2panda._DestroyContext(global.context)
         global.compilerContext = Context.createFromString(source)

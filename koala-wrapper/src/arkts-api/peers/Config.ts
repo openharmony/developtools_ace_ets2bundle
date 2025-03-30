@@ -28,7 +28,7 @@ export class Config extends ArktsObject {
     static create(
         input: readonly string[]
     ): Config {
-        console.log("[TS WRAPPER] CREATE CONFIG");
+        // console.log("[TS WRAPPER] CREATE CONFIG");
         return new Config(
             global.es2panda._CreateConfig(input.length, passStringArray(input))
         )
