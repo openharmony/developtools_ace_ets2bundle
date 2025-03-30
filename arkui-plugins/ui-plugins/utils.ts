@@ -13,13 +13,14 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts";
-import { isAnnotation } from "../common/arkts-utils";
+import * as arkts from '@koalaui/libarkts';
+import { isAnnotation } from '../common/arkts-utils';
+import { DecoratorNames, isDecoratorAnnotation } from './property-translators/utils';
 
 export enum CustomComponentNames {
-    ENTRY_ANNOTATION_NAME = "Entry",
-    COMPONENT_ANNOTATION_NAME = "Component",
-    RESUABLE_ANNOTATION_NAME = "Reusable",
+    ENTRY_ANNOTATION_NAME = 'Entry',
+    COMPONENT_ANNOTATION_NAME = 'Component',
+    RESUABLE_ANNOTATION_NAME = 'Reusable',
     COMPONENT_BUILD_ORI = 'build',
     COMPONENT_CONSTRUCTOR_ORI = 'constructor',
     COMPONENT_DEFAULT_IMPORT = '@ohos.arkui.component',
@@ -29,7 +30,7 @@ export enum CustomComponentNames {
     COMPONENT_UPDATE_STRUCT = '__updateStruct',
     COMPONENT_BUILD = '_build',
     REUSABLE_COMPONENT_REBIND_STATE = '__rebindStates',
-    COMPONENT_INITIALIZERS_NAME = 'initializers'
+    COMPONENT_INITIALIZERS_NAME = 'initializers',
 }
 
 export enum BuilderLambdaNames {
@@ -42,9 +43,9 @@ export enum BuilderLambdaNames {
 }
 
 export enum Dollars {
-    DOLLAR_RESOURCE = "$r",
-    DOLLAR_RAWFILE = "$rawfile",
-    DOLLAR_DOLLAR = "$$",
+    DOLLAR_RESOURCE = '$r',
+    DOLLAR_RAWFILE = '$rawfile',
+    DOLLAR_DOLLAR = '$$',
 }
 
 export function hasModifierFlag(node: arkts.AstNode, flag: arkts.Es2pandaModifierFlags): boolean {
@@ -62,7 +63,7 @@ export function getCustomComponentNameFromInitializerOptions(name: string): stri
 }
 
 export function getCustomComponentOptionsName(className: string): string {
-    return `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${className}`
+    return `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${className}`;
 }
 
 export function isStatic(node: arkts.AstNode): boolean {
@@ -73,14 +74,12 @@ export function isBuilderLambdaAnnotation(node: arkts.AnnotationUsage): boolean 
     return isAnnotation(node, BuilderLambdaNames.ANNOTATION_NAME);
 }
 
-export function hasBuilderLambdaAnnotation(
-    node: arkts.ScriptFunction | arkts.ETSParameterExpression
-): boolean {
+export function hasBuilderLambdaAnnotation(node: arkts.ScriptFunction | arkts.ETSParameterExpression): boolean {
     return node.annotations.some(isBuilderLambdaAnnotation);
 }
 
 export function findBuilderLambdaAnnotation(
-    node: arkts.ScriptFunction | arkts.ETSParameterExpression
+    node: arkts.ScriptFunction | arkts.ETSParameterExpression,
 ): arkts.AnnotationUsage | undefined {
     return node.annotations.find(isBuilderLambdaAnnotation);
 }
@@ -90,7 +89,7 @@ export function isBuilderLambdaMethod(node: arkts.MethodDefinition): boolean {
 
     const result = hasBuilderLambdaAnnotation(node.scriptFunction);
     if (result) return true;
-    if(node.overloads.length > 0) {
+    if (node.overloads.length > 0) {
         return node.overloads.some(isBuilderLambdaMethod);
     }
     return false;
@@ -131,7 +130,9 @@ export function isBuilderLambdaCall(node: arkts.CallExpression | arkts.Identifie
     return false;
 }
 
-export function findBuilderLambdaInCall(node: arkts.CallExpression | arkts.Identifier): arkts.AnnotationUsage | undefined {
+export function findBuilderLambdaInCall(
+    node: arkts.CallExpression | arkts.Identifier,
+): arkts.AnnotationUsage | undefined {
     const decl = findBuilderLambdaDecl(node);
     if (!decl) return undefined;
 
@@ -165,29 +166,30 @@ export function createOptionalClassProperty(
     name: string,
     property: arkts.ClassProperty,
     stageManagementIdent: string,
-    modifiers: arkts.Es2pandaModifierFlags
+    modifiers: arkts.Es2pandaModifierFlags,
 ): arkts.ClassProperty {
     const newProperty = arkts.factory.createClassProperty(
         arkts.factory.createIdentifier(name),
         undefined,
-        stageManagementIdent.length ? createStageManagementType(stageManagementIdent, property) : 
-        property.typeAnnotation?.clone(),
+        stageManagementIdent.length
+            ? createStageManagementType(stageManagementIdent, property)
+            : property.typeAnnotation?.clone(),
         modifiers,
-        false
+        false,
     );
     return arkts.classPropertySetOptional(newProperty, true);
 }
 
-export function createStageManagementType (stageManagementIdent: string, property: arkts.ClassProperty): arkts.ETSTypeReference {
+export function createStageManagementType(
+    stageManagementIdent: string,
+    property: arkts.ClassProperty,
+): arkts.ETSTypeReference {
     return arkts.factory.createTypeReference(
         arkts.factory.createTypeReferencePart(
             arkts.factory.createIdentifier(stageManagementIdent),
-            arkts.factory.createTSTypeParameterInstantiation(
-                [
-                    property.typeAnnotation ? property.typeAnnotation.clone():
-                    arkts.factory.createETSUndefinedType(),
-                ]
-            )
-        )
+            arkts.factory.createTSTypeParameterInstantiation([
+                property.typeAnnotation ? property.typeAnnotation.clone() : arkts.factory.createETSUndefinedType(),
+            ]),
+        ),
     );
 }

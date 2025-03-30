@@ -34,6 +34,7 @@ import {
     ImportSource,
     isScriptFunction,
     FunctionSignature,
+    Property,
     isClassProperty
 } from "../generated"
 import {
@@ -69,6 +70,8 @@ export class StructInfo {
     metadata: Record<string, StructVariableMetadata> = {};
     initializeBody: AstNode[] = [];
     updateBody: AstNode[] = [];
+    isReusable: boolean = false;
+    toRecordBody: Property[] = [];
 }
 
 export class GlobalInfo {

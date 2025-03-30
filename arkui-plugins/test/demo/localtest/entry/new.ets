@@ -15,34 +15,44 @@
 
 import { memo, __memo_context_type, __memo_id_type } from "@ohos.arkui.stateManagement" // should be insert by ui-plugins
 import { Text, TextAttribute, Column, Component, Button, ButtonAttribute, ClickEvent, UserView } from "@ohos.arkui.component"  // TextAttribute should be insert by ui-plugins
-import { State, StateDecoratedVariable, MutableState, stateOf, observableProxy } from "@ohos.arkui.stateManagement" // should be insert by ui-plugins
+import { State, Link, StateDecoratedVariable, LinkDecoratedVariable,MutableState, stateOf, observableProxy, DecoratedMutableVariable } from "@ohos.arkui.stateManagement" // should be insert by ui-plugins
 import hilog from '@ohos.hilog'
 
 @Component
 struct MyStateSample {
-  @State stateVar: string = "state var";
+  @State stateVar: string = "Parent";
   message: string = "var";
   changeValue() {
-    this.stateVar+="~"
+    this.stateVar+="~";
   }
   build() {
     Column(undefined) {
-      Text("Hello World").fontSize(20)
-      Button(this.message).backgroundColor("#FFFF00FF")
+      Button("ParentChange").backgroundColor("#FFFF00FF")
         .onClick((e: ClickEvent) => {
           hilog.info(0x0000, 'testTag', 'On Click');
-          this.changeValue()
+          this.changeValue();
         })
       Text(this.stateVar).fontSize(20)
-      Child({stateVar: this.stateVar} as __Options_Child)
+      ChildLink({stateVar: this.stateVar, stateVar1: this.stateVar, stateVar2: ""} as __Options_ChildLink)
     }
   }
 }
 
+
 @Component
-struct Child {
-  @State stateVar: string = "Child";
+struct ChildLink {
+  @Link stateVar: string = "Child";
+  @State stateVar1: string = "Child";
+  @Link stateVar2: string = "Child";
+  changeValue() {
+    this.stateVar+="~";
+  }
   build() {
+    Button("ChildChange").backgroundColor("#FFFF00FF")
+      .onClick((e: ClickEvent) => {
+        hilog.info(0x0000, 'testTag', 'On Click');
+        this.changeValue();
+      })
     Text(this.stateVar).fontSize(50)
   }
 }
@@ -52,8 +62,8 @@ export class ComExampleTrivialApplication extends UserView {
     hilog.info(0x0000, 'testTag', 'getBuilder');
     let wrapper = @memo () => {
       hilog.info(0x0000, 'testTag', 'MyStateSample');
-      MyStateSample(undefined)
+      MyStateSample(undefined);
     }
-    return wrapper
+    return wrapper;
   }
 }

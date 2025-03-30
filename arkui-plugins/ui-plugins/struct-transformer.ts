@@ -26,7 +26,6 @@ import {
 } from "./property-translators";
 import { 
     CustomComponentNames, 
-    getCustomComponentNameFromInitializerOptions,
     getCustomComponentOptionsName,
     getTypeNameFromTypeParameter,
     getTypeParamsFromClassDecl,
