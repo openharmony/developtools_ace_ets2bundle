@@ -24,25 +24,19 @@ import {
 import {
     factory
 } from "./ui-factory";
+import { 
+    IMPORT_SOURCE_MAP,
+    OUTPUT_DEPENDENCY_MAP
+} from "../common/predefines";
 
 export class PreprocessorTransformer extends AbstractVisitor {
-    private importStatements: arkts.ETSImportDeclaration[] = [];
-    importMap: Map<string, Set<string>> = this.initImportMap();
-    outputMap: Map<string, string[]> = this.initOutputMap();
+    private outNameArr: string[] = [];
+    private structInterfaceImport: arkts.ETSImportDeclaration[] = [];
 
-    initImportMap(): Map<string, Set<string>> {
-        return new Map<string, Set<string>>([
-            ["@ohos.arkui.external", new Set(["$r", "$rawfile"])],
-            ["@ohos.arkui.stateManagement", new Set(["State", "Prop"])]
-        ]);
-    }
-
-    initOutputMap(): Map<string, string[]> {
-        return new Map<string, string[]>([
-            ["$r", ["_r"]],
-            ["$rawfile", ["_rawfile"]],
-            ["State", ["StateDecoratedVariable"]]
-        ])
+    reset(): void {
+        super.reset();
+        this.outNameArr = [];
+        this.structInterfaceImport = [];
     }
 
     isCustomConponentDecl(node: arkts.CallExpression) {
@@ -59,7 +53,7 @@ export class PreprocessorTransformer extends AbstractVisitor {
         if (arkts.isObjectExpression(node.arguments[0])) {
             const componentName: string = 
                 `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${node.expression.dumpSrc()}`;
-            return arkts.factory.createTSAsExpression(
+            const newArg = arkts.factory.createTSAsExpression(
                 node.arguments[0].clone(),
                 arkts.factory.createTypeReference(
                     arkts.factory.createTypeReferencePart(
@@ -68,14 +62,36 @@ export class PreprocessorTransformer extends AbstractVisitor {
                 ),
                 true
             );
+            return arkts.factory.updateCallExpression(
+                node,
+                node.expression,
+                node.typeArguments,
+                [newArg, ...node.arguments.slice(1)],
+                node.trailingBlock
+            );
         } else {
             return node;
         }
     }
 
     addDependencesImport(node: arkts.ETSImportDeclaration): void {
+        const structCollection: Set<string> = arkts.GlobalInfo.getInfoInstance().getStructCollection();
         node.specifiers.forEach((item: arkts.AstNode) => {
-                if (arkts.isImportSpecifier(item)) {
+                if (!arkts.isImportSpecifier(item)) return;
+ 
+                if (
+                    item.imported?.name &&
+                    structCollection.has(item.imported?.name) &&
+                    this.isExternal === false
+                ) {
+                    const interfaceName: string = CustomComponentNames.COMPONENT_INTERFACE_PREFIX + item.imported?.name;
+                    const newImport: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
+                        node.source?.clone(),
+                        [factory.createAdditionalImportSpecifier(interfaceName, interfaceName)],
+                        arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE
+                    );
+                    this.structInterfaceImport.push(newImport);
+                } else {
                     this.addImportWithSpecifier(item);
                 }
             }
@@ -84,7 +100,7 @@ export class PreprocessorTransformer extends AbstractVisitor {
 
     getSourceDependency(sourceName: string): string {
         let dependencyName: string = "";
-        this.importMap.forEach((value: Set<string>, key: string) => {
+        IMPORT_SOURCE_MAP.forEach((value: Set<string>, key: string) => {
             if (value.has(sourceName)) {
                 dependencyName = key;
             }
@@ -92,14 +108,14 @@ export class PreprocessorTransformer extends AbstractVisitor {
         return dependencyName;
     }
 
-    getSpecifierDependency(importName: string): arkts.ImportSpecifier[] {
-        const res: arkts.ImportSpecifier[] = [];
-        if (this.outputMap.has(importName)) {
-            this.outputMap.get(importName)!.forEach((item: string) => {
-                res.push(factory.createAdditionalImportSpecifier(item, item));
+    getOutDependencyName(inputName: string): string[] {
+        const sourceName: string[] = [];
+        if (OUTPUT_DEPENDENCY_MAP.has(inputName)) {
+            OUTPUT_DEPENDENCY_MAP.get(inputName)!.forEach((item: string) => {
+                sourceName.push(item);
             })
         }
-        return res;
+        return sourceName;
     }
 
     addImportWithSpecifier(node: arkts.ImportSpecifier): void {
@@ -107,30 +123,26 @@ export class PreprocessorTransformer extends AbstractVisitor {
             return;
         }
 
-        const source: string = this.getSourceDependency(node.imported.name);
-        const specifiers: arkts.ImportSpecifier[] = this.getSpecifierDependency(node.imported.name);
-        
-        if (source && specifiers.length) {
-            const newImport: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
-                arkts.factory.create1StringLiteral(source),
-                specifiers,
-                arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPE
-            );
-            this.importStatements.push(newImport);
-        }
+        const outName: string[] = this.getOutDependencyName(node.imported?.name);
+        this.outNameArr.push(...outName);
     }
 
-    updateScriptWithImport(node: arkts.EtsScript): arkts.EtsScript {
-        if (this.importStatements.length > 0) {
-            return arkts.factory.updateEtsScript(
-                node,
-                [
-                    ...this.importStatements,
-                    ...node.statements,
-                ]
-            );
+    updateScriptWithImport(): void {
+        if (!this.program) {
+            throw Error("Failed to insert import: Transformer has no program");
         }
-        return node;
+        new Set(this.outNameArr).forEach((item: string) => {
+            const source: string = this.getSourceDependency(item);
+            const newImport: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
+                arkts.factory.create1StringLiteral(source),
+                [factory.createAdditionalImportSpecifier(item, item)],
+                arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE
+            );
+            arkts.importDeclarationInsert(newImport, this.program!);
+        });
+        this.structInterfaceImport.forEach((element: arkts.ETSImportDeclaration) => {
+            arkts.importDeclarationInsert(element, this.program!);
+        });
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {
@@ -140,7 +152,7 @@ export class PreprocessorTransformer extends AbstractVisitor {
         } else if (arkts.isETSImportDeclaration(newNode)) {
             this.addDependencesImport(newNode);
         } else if (arkts.isEtsScript(node)) {
-            return this.updateScriptWithImport(node);
+            this.updateScriptWithImport();
         }
         return newNode;
     }

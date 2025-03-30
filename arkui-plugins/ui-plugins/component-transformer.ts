@@ -69,7 +69,7 @@ interface ComponentContext {
 
 export class ComponentTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
-    private componentNames: string[] = [];
+    private componentInterfaceCollection: arkts.TSInterfaceDeclaration[] = [];
     private entryNames: string[] = [];
     private reusableNames: string[] = [];
     private readonly arkui?: string;
@@ -86,7 +86,7 @@ export class ComponentTransformer extends AbstractVisitor {
     reset(): void {
         super.reset();
         this.scopeInfos = [];
-        this.componentNames = [];
+        this.componentInterfaceCollection = [];
         this.entryNames = [];
         this.reusableNames = [];
         this.context = { structMembers: new Map(), reusableComps: new Map() };
@@ -158,31 +158,15 @@ export class ComponentTransformer extends AbstractVisitor {
     processEtsScript(node: arkts.EtsScript): arkts.EtsScript {
         if (
             this.isExternal 
-            && this.componentNames.length === 0 
+            && this.componentInterfaceCollection.length === 0 
             && this.entryNames.length === 0
         ) {
             return node;
         }
         let updateStatements: arkts.AstNode[] = [];
-        if (this.componentNames.length > 0) {
+        if (this.componentInterfaceCollection.length > 0) {
             if (!this.isCustomComponentImported) this.createImportDeclaration();
-            updateStatements.push(
-                ...this.componentNames.map(
-                    name => arkts.factory.createInterfaceDeclaration(
-                        [],
-                        arkts.factory.createIdentifier(
-                            getCustomComponentOptionsName(name)
-                        ),
-                        nullptr, // TODO: wtf
-                        arkts.factory.createInterfaceBody(
-                        this.context.structMembers.get(name) ? 
-                        this.context.structMembers.get(name)! : []
-                        ),
-                        false,
-                        false
-                    )
-                )
-            );
+            updateStatements.push(...this.componentInterfaceCollection);
         }
 
         if (this.entryNames.length > 0) {
@@ -272,10 +256,15 @@ export class ComponentTransformer extends AbstractVisitor {
         }
 
         arkts.GlobalInfo.getInfoInstance().add(className);
-        this.componentNames.push(className);
+
+        if (arkts.isStructDeclaration(node)) {
+            this.collectComponentMembers(node, className);
+        }
+
+        this.componentInterfaceCollection.push(this.generateComponentInterface(className, node.modifiers));
 
         if(scopeInfo.isReusable){
-            this.processReusableComponent(className)
+            this.processReusableComponent(className);
         }
         
         const definition: arkts.ClassDefinition = node.definition;
@@ -333,7 +322,6 @@ export class ComponentTransformer extends AbstractVisitor {
         )
 
         if (arkts.isStructDeclaration(node)) {
-            this.collectComponentMembers(node, className);
             const _node = arkts.factory.createClassDeclaration(newDefinition);
             _node.modifiers = node.modifiers;
             return _node;
@@ -343,6 +331,24 @@ export class ComponentTransformer extends AbstractVisitor {
                 newDefinition
             )
         }
+    }
+
+    generateComponentInterface(name: string, modifiers: number): arkts.TSInterfaceDeclaration {
+        const interfaceNode = arkts.factory.createInterfaceDeclaration(
+            [],
+            arkts.factory.createIdentifier(
+                getCustomComponentOptionsName(name)
+            ),
+            nullptr, // TODO: wtf
+            arkts.factory.createInterfaceBody(
+            this.context.structMembers.get(name) ? 
+            this.context.structMembers.get(name)! : []
+            ),
+            false,
+            false
+        );
+        interfaceNode.modifiers = modifiers;
+        return interfaceNode;
     }
 
     collectComponentMembers(node: arkts.StructDeclaration, className: string): void {
@@ -385,7 +391,7 @@ export class ComponentTransformer extends AbstractVisitor {
         this.enter(node);
         const newNode = this.visitEachChild(node)
         if (arkts.isEtsScript(newNode)) {
-            return this.processEtsScript(newNode)
+            return this.processEtsScript(newNode);
         }
         if (arkts.isStructDeclaration(newNode) && this.isComponentStruct()) {
             const updateNode = this.processComponent(newNode);

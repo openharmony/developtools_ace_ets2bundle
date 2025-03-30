@@ -19,7 +19,6 @@ import {
     createGetter, 
     createSetter,
     generateThisBackingValue,
-    generateThisBacking,
     getValueInAnnotation,
     DecoratorNames
 } from "./utils";
@@ -45,7 +44,7 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
-        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName);
+        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
         currentStructInfo.initializeBody.push(initializeStruct);
         arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
@@ -83,29 +82,13 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
     }
 
     generateInitializeStruct(        
-        newName: string
+        newName: string,
+        originName: string
     ): arkts.AstNode {
-        const provideValueStr: string | undefined = getValueInAnnotation(this.property, DecoratorNames.PROVIDE);
+        let provideValueStr: string | undefined = getValueInAnnotation(this.property, DecoratorNames.PROVIDE);
         if (!provideValueStr) {
-            throw new Error("Provide required only one value!!") // TODO: replace this with proper error message.
+            provideValueStr = originName;
         }
-        // const memExp: arkts.ChainExpression = arkts.factory.createChainExpression(
-        //         arkts.factory.createMemberExpression(
-        //             arkts.factory.createChainExpression(
-        //             arkts.factory.createMemberExpression(
-        //                 arkts.factory.createIdentifier('initializers'),
-        //                 arkts.factory.createIdentifier(`${newName}`),
-        //                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-        //                 false,
-        //                 true
-        //             )
-        //         ),
-        //         arkts.factory.createIdentifier(`value`),
-        //         arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-        //         false,
-        //         true
-        //     )
-        // );
         const memExp: arkts.Expression = 
             factory.createDoubleBlockStatementForOptionalExpression(
                 arkts.factory.createIdentifier('initializers'), newName, 'value');

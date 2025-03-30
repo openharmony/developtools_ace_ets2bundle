@@ -20,4 +20,42 @@ export const EXTERNAL_SOURCE_PREFIX_NAMES: string[] = [
 
 export const EXTERNAL_SOURCE_ALLOWED_IMPORT_INSERT_NAMES: string[] = [
     "@ohos.arkui"
-]
+];
+
+export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<string>>([
+    ["@ohos.arkui.component", new Set(["$r", "$rawfile", "ArkReusableStructBase", "Reusable"])],
+    ["@ohos.arkui.external", new Set(["_r", "_rawfile"])],
+    ["@ohos.arkui.stateManagement", new Set([
+        "State",
+        "Prop",
+        "Provide",
+        "Consume",
+        "StorageLink",
+        "StorageProp",
+        "LocalStorageLink",
+        "LocalStorageProp",
+        "StateDecoratedVariable",
+        "MutableState",
+        "contextLocalStateOf",
+        "contextLocal",
+        "observableProxy",
+        "SyncedProperty",
+        "propState",
+        "AppStorageLinkState",
+        "DecoratedMutableVariable",
+        "LinkDecoratedVariable",
+        "PropDecoratedVariable"
+    ])]
+]);
+
+export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, string[]>([
+    ["$r", ["_r"]],
+    ["$rawfile", ["_rawfile"]],
+    ["State", ["StateDecoratedVariable"]],
+    ["Link", ["LinkDecoratedVariable", "DecoratedMutableVariable"]],
+    ["Prop", ["PropDecoratedVariable"]],
+    ["Provide", ["MutableState", "contextLocalStateOf", "observableProxy"]],
+    ["Consume", ["MutableState", "contextLocal", "observableProxy"]],
+    ["StorageProp", ["SyncedProperty", "AppStorageLinkState", "observableProxy", "propState"]],
+    ["Reusable", ["ArkReusableStructBase"]],
+]);
