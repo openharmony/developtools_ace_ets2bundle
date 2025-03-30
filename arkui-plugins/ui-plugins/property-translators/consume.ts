@@ -44,7 +44,7 @@ export class ConsumeTranslator extends PropertyTranslator implements Initializer
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
-        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName);
+        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
         currentStructInfo.initializeBody.push(initializeStruct);
         arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
@@ -82,11 +82,12 @@ export class ConsumeTranslator extends PropertyTranslator implements Initializer
     }
 
     generateInitializeStruct(        
-        newName: string
+        newName: string,
+        originalName: string
     ): arkts.AstNode {
-        const consumeValueStr: string | undefined = getValueInAnnotation(this.property, DecoratorNames.CONSUME);
+        let consumeValueStr: string | undefined = getValueInAnnotation(this.property, DecoratorNames.CONSUME);
         if (!consumeValueStr) {
-            throw new Error("Consume required only one value!!") // TODO: replace this with proper error message.
+            consumeValueStr = originalName;
         }
         const right: arkts.CallExpression = arkts.factory.createCallExpression(
             arkts.factory.createIdentifier('contextLocal'),
