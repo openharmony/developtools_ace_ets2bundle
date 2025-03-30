@@ -14,7 +14,7 @@
  */
 
 import * as arkts from "@koalaui/libarkts";
-import { getInteropPath } from "../../path"
+import { getInteropPath } from "../../path";
 import { GenSymGenerator } from "../../common/gensym-generator";
 const interop = require(getInteropPath())
 const nullptr = interop.nullptr

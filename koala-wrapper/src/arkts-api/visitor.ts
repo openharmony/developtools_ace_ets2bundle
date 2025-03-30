@@ -34,6 +34,7 @@ import {
     ImportSource,
     isScriptFunction,
     FunctionSignature,
+    Property,
     isClassProperty
 } from "../generated"
 import {
@@ -58,15 +59,19 @@ import {
 
 type Visitor = (node: AstNode) => AstNode
 
-export interface DoubleNode {
-    originNode: AstNode;
-    translatedNode: AstNode;
+export interface StructVariableMetadata {
+    name: string,
+    properties: string[],
+    modifiers: Es2pandaModifierFlags,
+    hasStateManagementType?: boolean
 }
 
 export class StructInfo {
-    stateVariables: Set<DoubleNode> = new Set();
+    metadata: Record<string, StructVariableMetadata> = {};
     initializeBody: AstNode[] = [];
     updateBody: AstNode[] = [];
+    isReusable: boolean = false;
+    toRecordBody: Property[] = [];
 }
 
 export class GlobalInfo {

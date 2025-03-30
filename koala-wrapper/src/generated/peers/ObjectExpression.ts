@@ -34,6 +34,8 @@ import { Expression } from "./Expression"
 import { Decorator } from "./Decorator"
 import { ValidationInfo } from "./ValidationInfo"
 import { TypeNode } from "./TypeNode"
+import { Es2pandaObjectTypeKind } from "../Es2pandaEnums"
+import { Property } from "./Property"
 export class ObjectExpression extends AnnotatedExpression {
      constructor(pointer: KNativePointer) {
         super(pointer)
@@ -68,6 +70,12 @@ export class ObjectExpression extends AnnotatedExpression {
     setTsTypeAnnotation(typeAnnotation: TypeNode): this {
         global.generatedEs2panda._ObjectExpressionSetTsTypeAnnotation(global.context, this.peer, passNode(typeAnnotation))
         return this
+    }
+    static createObjectExpression(nodeType: Es2pandaAstNodeType, properties: Property[], trailingComma: boolean): ObjectExpression {
+        return new ObjectExpression(global.generatedEs2panda._CreateObjectExpression(global.context, nodeType, passNodeArray(properties), properties.length, trailingComma))
+    }
+    static updateObjectExpression(original: ObjectExpression, nodeType: Es2pandaAstNodeType, properties: Property[], trailingComma: boolean): ObjectExpression {
+        return new ObjectExpression(global.generatedEs2panda._UpdateObjectExpression(global.context, passNode(original), nodeType, passNodeArray(properties), properties.length, trailingComma))
     }
 }
 export function isObjectExpression(node: AstNode): node is ObjectExpression {

@@ -319,3 +319,11 @@ KNativePointer impl_CreateSourceRange(KNativePointer context, KNativePointer sta
     return GetImpl()->CreateSourceRange(_context_, _start_, _end_);
 }
 KOALA_INTEROP_3(CreateSourceRange, KNativePointer, KNativePointer, KNativePointer, KNativePointer);
+
+KNativePointer impl_CreateETSStringLiteralType(KNativePointer contextPtr, KStringPtr& str)
+{
+    auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    const auto _str = getStringCopy(str);
+    return GetImpl()->CreateETSStringLiteralType(context, _str);
+}
+KOALA_INTEROP_2(CreateETSStringLiteralType, KNativePointer, KNativePointer, KStringPtr)

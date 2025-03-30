@@ -26,10 +26,10 @@ import {
     IfStatement,
     MethodDefinition,
     NumberLiteral,
-    // ScriptFunction,
     StructDeclaration,
     VariableDeclaration,
-    VariableDeclarator
+    VariableDeclarator,
+    ETSStringLiteralType
 } from "../types"
 import { MemberExpression } from "../to-be-generated/MemberExpression"
 import { AstNode } from "../peers/AstNode"
@@ -51,6 +51,7 @@ import {
     FunctionSignature,
     Identifier,
     ImportSpecifier,
+    NullLiteral,
     ReturnStatement,
     ScriptFunction,
     StringLiteral,
@@ -58,6 +59,7 @@ import {
     ThisExpression,
     TSInterfaceBody,
     TSInterfaceDeclaration,
+    TSNonNullExpression,
     TSTypeParameter,
     TSTypeParameterDeclaration,
     TSTypeParameterInstantiation,
@@ -65,10 +67,8 @@ import {
     UndefinedLiteral,
     TSAsExpression,
     TSTypeAliasDeclaration,
-    TSNonNullExpression,
     ChainExpression,
     BlockExpression,
-    NullLiteral,
     ETSNewClassInstanceExpression
 } from "../../generated"
 import {
@@ -556,6 +556,9 @@ export const factory = {
     },
     get updateETSNewClassInstanceExpression() {
         return ETSNewClassInstanceExpression.updateETSNewClassInstanceExpression
+    },
+    get createETSStringLiteralType(){
+        return ETSStringLiteralType.create;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {

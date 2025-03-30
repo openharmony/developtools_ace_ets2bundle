@@ -632,6 +632,9 @@ export class Es2pandaNativeModule {
     _SourcePositionLine(context: KNativePointer, instance: KNativePointer): KInt {
         throw new Error("Not implemented");
     }
+    _CreateETSStringLiteralType(context: KNativePointer, str: String): KNativePointer {
+        throw new Error("Not implemented")
+    }   
 }
 
 export function initEs2panda(): Es2pandaNativeModule {
