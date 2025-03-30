@@ -19,10 +19,12 @@ import * as arkts from "@koalaui/libarkts"
 export class PluginContext {
     private ast: arkts.EtsScript | undefined;
     private program: arkts.Program | undefined;
+    private projectConfig: ProjectConfig | undefined;
   
     constructor() {
         this.ast = undefined;
-        this.program = undefined
+        this.program = undefined;
+        this.projectConfig = undefined;
     }
   
     public setArkTSAst(ast: arkts.EtsScript): void {
@@ -40,6 +42,19 @@ export class PluginContext {
     public getArkTSProgram(): arkts.Program | undefined {
         return this.program;
     }
+
+    public setProjectConfig(projectConfig: ProjectConfig): void {
+        throw new Error("do not set projectConfig!");
+    }
+
+    public getProjectConfig(): ProjectConfig | undefined {
+         return this.projectConfig;
+    }
+}
+
+export interface ProjectConfig {
+    bundleName: string,
+    moduleName: string
 }
 
 export type PluginHandlerFunction = () => void;
