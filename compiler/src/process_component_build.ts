@@ -162,7 +162,8 @@ import {
   componentCollection,
   builderParamObjectCollection,
   checkAllNode,
-  enumCollection
+  enumCollection,
+  consumeCollection
 } from './validate_ui_syntax';
 import {
   processCustomComponent,
@@ -482,6 +483,22 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
               }
               processCustomComponent(item as ts.ExpressionStatement, newStatements, log, name,
                 isBuilder, isGlobalBuilder, idName, builderParamsResult);
+            }
+            break;
+          }
+          case ComponentType.arkoalaComponent: {
+            const idName: ts.Expression = checkIdInIf(item, savedParent);
+            parent = undefined;
+            if (!newsupplement.isAcceleratePreview) {
+              if (item.expression && ts.isEtsComponentExpression(item.expression) && item.expression.body) {
+                const expressionResult: ts.ExpressionStatement =
+                  processExpressionStatementChange(item, item.expression.body, log);
+                if (expressionResult) {
+                  item = expressionResult;
+                }
+              }
+              processCustomComponent(item as ts.ExpressionStatement, newStatements, log, name,
+                isBuilder, isGlobalBuilder, idName, builderParamsResult, true);
             }
             break;
           }
@@ -3186,7 +3203,8 @@ enum ComponentType {
   builderParamMethod,
   function,
   builderTypeFunction,
-  repeatComponent
+  repeatComponent,
+  arkoalaComponent
 }
 
 function isEtsComponent(node: ts.ExpressionStatement): boolean {
@@ -3220,11 +3238,15 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
     isBuilderName = false;
   }
   if (isEtsComponent(node)) {
-    if (componentCollection.customComponents.has(name)) {
+    if (componentCollection.arkoalaComponents.has(name)) {
+      return ComponentType.arkoalaComponent;
+    } else if (componentCollection.customComponents.has(name)) {
       return ComponentType.customComponent;
     } else {
       return ComponentType.innerComponent;
     }
+  } else if (!isPartMethod(node) && componentCollection.arkoalaComponents.has(name)) {
+    return ComponentType.arkoalaComponent;
   } else if (!isPartMethod(node) && componentCollection.customComponents.has(name)) {
     return ComponentType.customComponent;
   } else if (name === COMPONENT_FOREACH || name === COMPONENT_LAZYFOREACH) {

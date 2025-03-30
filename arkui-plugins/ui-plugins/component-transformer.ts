@@ -197,6 +197,40 @@ export class ComponentTransformer extends AbstractVisitor {
         arkts.GlobalInfo.getInfoInstance().setStructInfo(className, currentStructInfo);
     }
 
+    createStaticMethod(definition: arkts.ClassDefinition):arkts.MethodDefinition  {
+        const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
+            arkts.factory.createIdentifier(
+                CustomComponentNames.OPTIONS,
+                arkts.factory.createTypeReference(
+                        arkts.factory.createTypeReferencePart(
+                            arkts.factory.createIdentifier(getCustomComponentOptionsName(definition.ident!.name))
+                        )
+                    )
+            ),
+            undefined
+        );
+
+        const script = arkts.factory.createScriptFunction(
+            arkts.factory.createBlock([arkts.factory.createReturnStatement()]),
+            arkts.FunctionSignature.createFunctionSignature(
+                undefined,
+                [param],
+                arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                false
+            ),
+            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+        )
+
+        return arkts.factory.createMethodDefinition(
+            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+            arkts.factory.createIdentifier(CustomComponentNames.BUILDCOMPATIBLENODE),
+            arkts.factory.createFunctionExpression(script),
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+            false
+        )
+    }
+
     processComponent(node: arkts.ClassDeclaration | arkts.StructDeclaration): arkts.ClassDeclaration | arkts.StructDeclaration {
         const scopeInfo = this.scopeInfos[this.scopeInfos.length - 1];
         const className = node.definition?.ident?.name;
@@ -219,6 +253,15 @@ export class ComponentTransformer extends AbstractVisitor {
                 findEntryWithStorageInClassAnnotations(definition);
             if (!!entryWithStorage) {
                 newDefinitionBody.push(entryFactory.createEntryLocalStorageInClass(entryWithStorage));
+            }
+        }
+
+        const staticMethonBody: arkts.AstNode[] = [];
+        const hasExportFlag = (node.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
+        if (hasExportFlag) {
+            const buildCompatibleNode:arkts.MethodDefinition = this.createStaticMethod(definition);
+            if(!!buildCompatibleNode) {
+                staticMethonBody.push(buildCompatibleNode);
             }
         }
 
@@ -251,7 +294,7 @@ export class ComponentTransformer extends AbstractVisitor {
                     )
                 )
             ),
-            [...newDefinitionBody, ...definition.body],
+            [...newDefinitionBody, ...definition.body, ...staticMethonBody],
             definition.modifiers,
             arkts.classDefinitionFlags(definition) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_FINAL
         )
