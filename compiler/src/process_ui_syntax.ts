@@ -175,8 +175,46 @@ export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
 
+
+function generateExportStatements(): ts.Statement[] {
+  const statements: ts.Statement[] = [];
+  for (const name of componentCollection.arkoalaComponents) {
+    const optionsVariable = ts.factory.createVariableDeclaration(
+      ts.factory.createIdentifier(`__Options_${name}`),
+      undefined,
+      undefined,
+      ts.factory.createCallExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createAsExpression(
+            ts.factory.createIdentifier("globalThis"),
+            ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
+          ),
+          ts.factory.createIdentifier("Panda.getClass")
+        ),
+        undefined,
+        [ts.factory.createStringLiteral(`har_2/__Options_${name}`)]
+      )
+    );
+
+    const optionsVariableStatement = ts.factory.createVariableStatement(
+      [ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
+      ts.factory.createVariableDeclarationList([optionsVariable], ts.NodeFlags.Const)
+    );
+
+    statements.push(optionsVariableStatement);
+  }
+  return statements;
+}
+
+function insertExportsAtTop(sourceFile: ts.SourceFile): ts.SourceFile {
+  const exportStatements = generateExportStatements();
+  const newStatements = [...exportStatements, ...sourceFile.statements];
+  return ts.factory.updateSourceFile(sourceFile, newStatements);
+}
+
+
 export function processUISyntax(program: ts.Program, ut = false,
-  compilationTime: CompilationTimeStatistics = null, filePath: string = ''): Function {
+  compilationTime: CompilationTimeStatistics = null, filePath: string = '', rollupObject: Object = undefined): Function {
   let entryNodeKey: ts.Expression;
   return (context: ts.TransformationContext) => {
     contextGlobal = context;
@@ -213,7 +251,8 @@ export function processUISyntax(program: ts.Program, ut = false,
           return visitEachChildNode;
         }
         const id: number = ++componentInfo.id;
-        node = ts.visitEachChild(node, processAllNodes, context);
+        node = ts.visitEachChild(node, processAllNodes.bind(rollupObject), context);
+        node = insertExportsAtTop(node);
         node = createEntryNode(node, context, entryNodeKey, id);
         GLOBAL_STYLE_FUNCTION.forEach((block, styleName) => {
           BUILDIN_STYLE_NAMES.delete(styleName);
@@ -279,12 +318,12 @@ export function processUISyntax(program: ts.Program, ut = false,
       if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
         ts.isImportDeclaration(node)) {
         startTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
-        processImportModule(node, pageFile, transformLog.errors);
+        processImportModule(node, pageFile, transformLog.errors, this);
         stopTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
       } else if ((projectConfig.compileMode !== 'esmodule' || process.env.compileTool !== 'rollup') &&
         (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
         ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier))) {
-        processImport(node, pagesDir, transformLog.errors);
+        processImport(node, pagesDir, transformLog.errors, this);
       }
       if (ts.isStructDeclaration(node)) {
         hasStruct = true;
@@ -413,7 +452,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           node.illegalDecorators = undefined;
         }
       }
-      return ts.visitEachChild(node, processAllNodes, context);
+      return ts.visitEachChild(node, processAllNodes.bind(this), context);
     }
 
     function processResourceNode(node: ts.Node): ts.Node {
