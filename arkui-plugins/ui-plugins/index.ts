@@ -13,76 +13,74 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
-import { ComponentTransformer } from './component-transformer'
-import { BuilderLambdaTransformer } from './builder-lambda-transformer'
-import { StructTransformer } from './struct-transformer'
-import { Plugins, PluginContext } from "../common/plugin-context"
-import { ProgramVisitor } from "../common/program-visitor"
-import { EXTERNAL_SOURCE_PREFIX_NAMES } from "../common/predefines"
-import { debugDump, debugLog, getDumpFileName } from "../common/debug"
+import * as arkts from '@koalaui/libarkts';
+import { ComponentTransformer } from './component-transformer';
+import { BuilderLambdaTransformer } from './builder-lambda-transformer';
+import { StructTransformer } from './struct-transformer';
+import { Plugins, PluginContext } from '../common/plugin-context';
+import { ProgramVisitor } from '../common/program-visitor';
+import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../common/predefines';
+import { debugDump, debugLog, getDumpFileName } from '../common/debug';
 
 export function uiTransform(): Plugins {
     return {
         name: 'ui-plugin',
         parsed(this: PluginContext) {
-            console.log("[UI PLUGIN] AFTER PARSED ENTER");
+            console.log('[UI PLUGIN] AFTER PARSED ENTER');
             let program = arkts.arktsGlobal.compilerContext.program;
             let script = program.astNode;
             if (script) {
-                debugLog("[BEFORE PARSED SCRIPT] script: ", script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 1, "UI_AfterParse_Begin"), true);
+                debugLog('[BEFORE PARSED SCRIPT] script: ', script.dumpSrc());
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 1, 'UI_AfterParse_Begin'), true);
 
                 const componentTransformer = new ComponentTransformer();
                 const programVisitor = new ProgramVisitor({
                     pluginName: uiTransform.name,
                     state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
                     visitors: [componentTransformer],
-                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
+                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
                 });
 
                 program = programVisitor.programVisitor(program);
                 script = program.astNode;
 
-                debugLog("[AFTER PARSED SCRIPT] script: ", script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 2, "UI_AfterParse_End"), true);
+                debugLog('[AFTER PARSED SCRIPT] script: ', script.dumpSrc());
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 2, 'UI_AfterParse_End'), true);
 
                 this.setArkTSAst(script);
-                // console.log("[UI PLUGIN] AFTER PARSED EXIT: ", script.dumpSrc());
-                console.log("[UI PLUGIN] AFTER PARSED EXIT");
+                console.log('[UI PLUGIN] AFTER PARSED EXIT');
                 return script;
             }
-            console.log("[UI PLUGIN] AFTER PARSED EXIT WITH NO TRANSFORM");
+            console.log('[UI PLUGIN] AFTER PARSED EXIT WITH NO TRANSFORM');
         },
         checked(this: PluginContext) {
-            console.log("[UI PLUGIN] AFTER CHECKED ENTER");
+            console.log('[UI PLUGIN] AFTER CHECKED ENTER');
             let program = arkts.arktsGlobal.compilerContext.program;
             let script = program.astNode;
             if (script) {
-                debugLog("[BEFORE STRUCT SCRIPT] script: ", script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 3, "UI_AfterCheck_Begin"), true);
+                debugLog('[BEFORE STRUCT SCRIPT] script: ', script.dumpSrc());
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 3, 'UI_AfterCheck_Begin'), true);
 
                 const builderLambdaTransformer = new BuilderLambdaTransformer();
                 const structTransformer = new StructTransformer();
                 const programVisitor = new ProgramVisitor({
                     pluginName: uiTransform.name,
                     state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
-                    visitors: [builderLambdaTransformer, structTransformer],
-                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
+                    visitors: [structTransformer, builderLambdaTransformer],
+                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
                 });
 
                 program = programVisitor.programVisitor(program);
                 script = program.astNode;
-
-                debugLog("[AFTER STRUCT SCRIPT] script: ", script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 4, "UI_AfterCheck_End"), true);
+                debugLog('[AFTER STRUCT SCRIPT] script: ', script.dumpSrc());
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 4, 'UI_AfterCheck_End'), true);
 
                 arkts.recheckSubtree(script);
                 this.setArkTSAst(script);
-                console.log("[UI PLUGIN] AFTER CHECKED EXIT");
+                console.log('[UI PLUGIN] AFTER CHECKED EXIT');
                 return script;
             }
-            console.log("[UI PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM");
-        }
-    }
+            console.log('[UI PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
+        },
+    };
 }

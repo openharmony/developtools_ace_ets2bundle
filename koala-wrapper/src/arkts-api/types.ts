@@ -30,6 +30,7 @@ import {
     nodeType,
     passNode,
     passNodeArray,
+    passString,
     unpackNode,
     unpackNodeArray,
     unpackNonNullableNode,
@@ -56,6 +57,7 @@ import {
     Identifier,
     ImportSpecifier,
     Literal,
+    ObjectExpression,
     ScriptFunction,
     StringLiteral,
     TSTypeParameterDeclaration,
@@ -958,6 +960,24 @@ export class SuperExpression extends AstNode {
     readonly id?: Identifier;
 }
 
+export class ETSStringLiteralType extends TypeNode {
+    constructor(peer: KPtr) {
+        assertValidPeer(peer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_STRING_LITERAL_TYPE)
+        super(peer)
+    }
+
+    static create(
+        str: string,
+    ): ETSStringLiteralType {
+        return new ETSStringLiteralType(
+            global.es2panda._CreateETSStringLiteralType(
+                global.context,
+                passString(str)
+            )
+        )
+    }
+}
+
 const pairs: [Es2pandaAstNodeType, { new(peer: KNativePointer): AstNode }][] = [
     [Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE, EtsScript],
     [Es2pandaAstNodeType.AST_NODE_TYPE_IDENTIFIER, Identifier],
@@ -979,7 +999,8 @@ const pairs: [Es2pandaAstNodeType, { new(peer: KNativePointer): AstNode }][] = [
     [Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATOR, VariableDeclarator],
     [Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_EXPRESSION, FunctionExpression],
     [Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TYPE_REFERENCE, ETSTypeReference],
-    [Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TYPE_REFERENCE_PART, ETSTypeReferencePart]
+    [Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TYPE_REFERENCE_PART, ETSTypeReferencePart],
+    [Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION, ObjectExpression]
 ]
 pairs.forEach(([nodeType, astNode]) =>
     nodeByType.set(nodeType, astNode)

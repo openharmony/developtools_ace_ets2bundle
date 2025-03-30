@@ -37,7 +37,6 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
-
         this.cacheTranslatedInitializer(newName, originalName); // TODO: need to release cache after some point...
         return this.translateWithoutInitializer(newName, originalName);
     }

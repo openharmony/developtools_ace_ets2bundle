@@ -25,8 +25,10 @@ import {
 import {
     annotation,
     filterDefined,
-    removeAnnotationByName
+    removeAnnotationByName,
+    backingField
 } from "../common/arkts-utils";
+import { DecoratorNames } from "./property-translators/utils";
 
 function createStyleArgInBuilderLambda(
     lambdaBody: arkts.Expression | undefined,
@@ -58,7 +60,7 @@ function createStyleArgInBuilderLambda(
             false
         ),
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
     )
 
     return arkts.factory.createArrowFunction(func);
@@ -198,10 +200,9 @@ function callIsGoodForBuilderLambda(leaf: arkts.CallExpression): boolean {
     return arkts.isIdentifier(node) || arkts.isMemberExpression(node);
 }
 
-function builderLambdaType(leaf: arkts.CallExpression): arkts.TypeNode | undefined {
+function builderLambdaTypeName(leaf: arkts.CallExpression): string | undefined{
     if (!callIsGoodForBuilderLambda(leaf)) return undefined;
     const node = leaf.expression;
-
     let name: string | undefined;
     if (arkts.isIdentifier(node)) {
         name = node.name;
@@ -209,8 +210,14 @@ function builderLambdaType(leaf: arkts.CallExpression): arkts.TypeNode | undefin
     if (arkts.isMemberExpression(node) && arkts.isIdentifier(node.object)) {
         name = node.object.name;
     }
+    return name;
+}
 
-    if (!name) return undefined;
+function builderLambdaType(
+    leaf: arkts.CallExpression,
+): arkts.TypeNode | undefined {
+   const name: string | undefined = builderLambdaTypeName(leaf);
+   if(!name) return undefined;
 
     // TODO: it should be the return type of the function annotated with the @BuilderLambda
     return arkts.factory.createTypeReference(
@@ -275,12 +282,12 @@ function builderLambdaReplace(leaf: arkts.CallExpression): arkts.Identifier | ar
 
 function createOrUpdateArgInBuilderLambda(
     arg: arkts.Expression | undefined,
-    isExternal?: boolean
+    isExternal?: boolean,
+    typeName?: string
 ) {
     if (!arg) {
         return arkts.factory.createUndefinedLiteral();
     }
-
     if (arkts.isArrowFunctionExpression(arg)) {
         const func: arkts.ScriptFunction = arg.scriptFunction;
         const updateFunc = arkts.factory.updateScriptFunction(
@@ -305,6 +312,70 @@ function createOrUpdateArgInBuilderLambda(
             arg,
             updateFunc
         );
+    }
+
+    const isReusable: boolean = typeName
+        ? arkts.GlobalInfo.getInfoInstance().getStructInfo(typeName).isReusable
+        : false;
+
+    if (arkts.isTSAsExpression(arg) && arg.expr && arkts.isObjectExpression(arg.expr)) {
+        if (isReusable) {
+            const className: arkts.Property = arkts.Property.createProperty(
+                arkts.factory.createIdentifier('__class_name'),
+                arkts.factory.createStringLiteral(typeName!),
+            );
+            const reuseId: arkts.Property = arkts.Property.createProperty(
+                arkts.factory.createIdentifier('__reuseId'),
+                arkts.factory.createStringLiteral('_id'),
+            );
+            const updatedProperties: arkts.Property[] = [
+                ...(arg.expr.properties as arkts.Property[]),
+                className,
+                reuseId,
+            ];
+            const updatedExpr: arkts.ObjectExpression = arkts.ObjectExpression.updateObjectExpression(
+                arg.expr,
+                arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+                updatedProperties,
+                false,
+            );
+            return arkts.TSAsExpression.updateTSAsExpression(arg, updatedExpr, arg.typeAnnotation, arg.isConst);
+        }
+        const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(typeName!);
+        const properties = arg.expr.properties as arkts.Property[];
+        properties.forEach((prop, index) => {
+            if (
+                prop.key &&
+                prop.value &&
+                arkts.isIdentifier(prop.key) &&
+                arkts.isMemberExpression(prop.value) &&
+                arkts.isThisExpression(prop.value.object) &&
+                arkts.isIdentifier(prop.value.property)
+            ) {
+                const structVariableMetadata = currentStructInfo.metadata[prop.key.name];
+                if (structVariableMetadata.properties.includes(DecoratorNames.LINK)) {
+                    properties[index] = arkts.Property.updateProperty(
+                        prop,
+                        arkts.factory.createIdentifier(backingField(prop.key.name)),
+                        arkts.factory.updateMemberExpression(
+                            prop.value,
+                            prop.value.object,
+                            arkts.factory.createIdentifier(backingField(prop.value.property.name)),
+                            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                            false,
+                            false,
+                        ),
+                    );
+                }
+            }
+        });
+        const updatedExpr: arkts.ObjectExpression = arkts.ObjectExpression.updateObjectExpression(
+            arg.expr,
+            arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+            properties,
+            false,
+        );
+        return arkts.TSAsExpression.updateTSAsExpression(arg, updatedExpr, arg.typeAnnotation, arg.isConst);
     }
     return arg;
 }
@@ -359,13 +430,13 @@ function transformBuilderLambda(node: arkts.CallExpression, isExternal?: boolean
 
 
     const typeNode: arkts.TypeNode | undefined = builderLambdaType(leaf);
+    const typeName: string | undefined = builderLambdaTypeName(leaf);
     const args: (arkts.AstNode | undefined)[] = [
         createStyleArgInBuilderLambda(lambdaBody, typeNode)
     ]
-
     let index = 0;
     while (index < params.length) {
-        args.push(createOrUpdateArgInBuilderLambda(leaf.arguments.at(index), isExternal));
+        args.push(createOrUpdateArgInBuilderLambda(leaf.arguments.at(index), isExternal, typeName));
         index ++;
     }
 
