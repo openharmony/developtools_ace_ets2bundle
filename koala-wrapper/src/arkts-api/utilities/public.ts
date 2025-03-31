@@ -95,6 +95,14 @@ export function getFileName(): string {
     return global.filePath
 }
 
+export function classDefinitionSetFromStructModifier(node: ClassDefinition): void {
+    global.es2panda._ClassDefinitionSetFromStructModifier(global.context, node.peer);
+}
+
+export function classDefinitionIsFromStructConst(node: ClassDefinition): boolean {
+    return global.es2panda._ClassDefinitionIsFromStructConst(global.context, node.peer);
+}
+
 // TODO: It seems like Definition overrides AstNode  modifiers
 // with it's own modifiers which is completely unrelated set of flags.
 // Use this function if you need
@@ -149,12 +157,4 @@ export function setAllParents(ast: AstNode) {
 
 export function generateTsDeclarationsFromContext(outputDeclEts: string, outputEts: string, exportAll: boolean): KInt {
     return global.es2panda._GenerateTsDeclarationsFromContext(global.context, passString(outputDeclEts), passString(outputEts), exportAll)
-}
-
-export function classDefinitionSetFromStructModifier(node: ClassDefinition): void {
-    global.es2panda._ClassDefinitionSetFromStructModifier(global.context, node.peer);
-}
-
-export function classDefinitionIsFromStructConst(node: ClassDefinition): boolean {
-    return global.es2panda._ClassDefinitionIsFromStructConst(global.context, node.peer);
 }
