@@ -21,7 +21,6 @@ import { isFunctionDeclaration, isMemberExpression } from "../factory/nodeTests"
 import { Es2pandaContextState, Es2pandaModifierFlags } from "../../generated/Es2pandaEnums"
 import type { AstNode } from "../peers/AstNode"
 import { ClassDefinition, ClassProperty, ETSImportDeclaration, isClassDefinition, isScriptFunction, type AnnotationUsage } from "../../generated"
-import { Program } from "../peers/Program"
 
 export function proceedToState(state: Es2pandaContextState, forceDtsEmit = false): void {
     console.log("[TS WRAPPER] PROCEED TO STATE: ", getEnumName(Es2pandaContextState, state));
