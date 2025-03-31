@@ -31,6 +31,8 @@ export enum CustomComponentNames {
     COMPONENT_BUILD = '_build',
     REUSABLE_COMPONENT_REBIND_STATE = '__rebindStates',
     COMPONENT_INITIALIZERS_NAME = 'initializers',
+    BUILDCOMPATIBLENODE = '_buildCompatibleNode',
+    OPTIONS = 'options'
 }
 
 export enum BuilderLambdaNames {

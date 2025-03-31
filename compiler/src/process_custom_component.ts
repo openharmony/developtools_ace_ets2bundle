@@ -55,7 +55,9 @@ import {
   COMPONENT_PARAMS_FUNCTION,
   COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION,
   NAME,
-  COMPONENT_CALL
+  COMPONENT_CALL,
+  BUILDCOMPATIBLENODE,
+  OPTIONS
 } from './pre_define';
 import {
   stateCollection,
@@ -123,7 +125,7 @@ let decoractorMap: Map<string, Map<string, Set<string>>>;
 
 export function processCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   log: LogInfo[], name: string, isBuilder: boolean = false, isGlobalBuilder: boolean = false,
-  idName: ts.Expression = undefined, builderParamsResult: BuilderParamsResult = null): void {
+  idName: ts.Expression = undefined, builderParamsResult: BuilderParamsResult = null, isArkoala: boolean = false): void {
   decoractorMap = new Map(
     [[COMPONENT_STATE_DECORATOR, stateCollection],
       [COMPONENT_LINK_DECORATOR, linkCollection],
@@ -193,7 +195,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
       newStatements.push(createRecycleComponent(isGlobalBuilder));
     }
     addCustomComponent(node, newStatements, customComponentNewExpression, log, name, componentNode,
-      isBuilder, isGlobalBuilder, isRecycleComponent, componentAttrInfo, builderParamsResult);
+      isBuilder, isGlobalBuilder, isRecycleComponent, componentAttrInfo, builderParamsResult, isArkoala);
     if (hasChainCall && (!partialUpdateConfig.partialUpdateMode || needCommon)) {
       newStatements.push(ts.factory.createExpressionStatement(
         createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
@@ -293,12 +295,12 @@ function changeNodeFromCallToArrowDetermine(node: ts.CallExpression, builderBind
 function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   newNode: ts.NewExpression, log: LogInfo[], name: string, componentNode: ts.CallExpression,
   isBuilder: boolean, isGlobalBuilder: boolean, isRecycleComponent: boolean,
-  componentAttrInfo: ComponentAttrInfo, builderParamsResult: BuilderParamsResult): void {
+  componentAttrInfo: ComponentAttrInfo, builderParamsResult: BuilderParamsResult, isArkoala: boolean = false): void {
   if (ts.isNewExpression(newNode)) {
     const propertyArray: ts.ObjectLiteralElementLike[] = [];
     validateCustomComponentPrams(componentNode, name, propertyArray, log, isBuilder);
     addCustomComponentStatements(node, newStatements, newNode, name, propertyArray, componentNode,
-      isBuilder, isGlobalBuilder, isRecycleComponent, componentAttrInfo, builderParamsResult, log);
+      isBuilder, isGlobalBuilder, isRecycleComponent, componentAttrInfo, builderParamsResult, log, isArkoala);
   }
 }
 
@@ -306,7 +308,7 @@ function addCustomComponentStatements(node: ts.ExpressionStatement, newStatement
   newNode: ts.NewExpression, name: string, props: ts.ObjectLiteralElementLike[],
   componentNode: ts.CallExpression, isBuilder: boolean, isGlobalBuilder: boolean,
   isRecycleComponent: boolean, componentAttrInfo: ComponentAttrInfo,
-  builderParamsResult: BuilderParamsResult, log: LogInfo[]): void {
+  builderParamsResult: BuilderParamsResult, log: LogInfo[], isArkoala: boolean = false): void {
   if (!partialUpdateConfig.partialUpdateMode) {
     const id: string = componentInfo.id.toString();
     newStatements.push(createFindChildById(id, name, isBuilder), createCustomComponentIfStatement(id,
@@ -314,7 +316,7 @@ function addCustomComponentStatements(node: ts.ExpressionStatement, newStatement
       ts.factory.createObjectLiteralExpression(props, true), name));
   } else {
     newStatements.push(createCustomComponent(newNode, name, componentNode, isGlobalBuilder, isBuilder,
-      isRecycleComponent, componentAttrInfo, builderParamsResult, log));
+      isRecycleComponent, componentAttrInfo, builderParamsResult, log, isArkoala));
   }
 }
 
@@ -538,7 +540,7 @@ function validateInitParam(childName: string, curChildProps: Set<string>,
 
 function createCustomComponent(newNode: ts.NewExpression, name: string, componentNode: ts.CallExpression,
   isGlobalBuilder: boolean, isBuilder: boolean, isRecycleComponent: boolean,
-  componentAttrInfo: ComponentAttrInfo, builderParamsResult: BuilderParamsResult, log: LogInfo[]): ts.Block {
+  componentAttrInfo: ComponentAttrInfo, builderParamsResult: BuilderParamsResult, log: LogInfo[], isArkoala: boolean = false): ts.Block {
   let componentParameter: ts.ObjectLiteralExpression;
   if (componentNode.arguments && componentNode.arguments.length) {
     componentParameter = ts.factory.createObjectLiteralExpression(createChildElmtId(componentNode, name, log), true);
@@ -556,7 +558,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
   const arrowBolck: ts.Statement[] = [
     projectConfig.optLazyForEach && storedFileInfo.processLazyForEach ? createCollectElmtIdNode() : undefined,
     createIfCustomComponent(newNode, componentNode, componentParameter, name, isGlobalBuilder,
-      isBuilder, isRecycleComponent, componentAttrInfo, log)
+      isBuilder, isRecycleComponent, componentAttrInfo, log, isArkoala)
   ];
   if (isRecycleComponent) {
     arrowArgArr.push(ts.factory.createParameterDeclaration(
@@ -687,13 +689,78 @@ function splitComponentParams(componentNode: ts.CallExpression, isBuilder: boole
   return [keyArray, valueArray];
 }
 
+function createOptionsStatement(name: string) {
+  const optionsConstructorCall = ts.factory.createNewExpression(ts.factory.createIdentifier(name), undefined, []);
+  const optionsVariableDeclaration = ts.factory.createVariableDeclaration(
+    OPTIONS,
+    undefined,
+    undefined,
+    optionsConstructorCall
+  );
+  const variableDeclarationList = ts.factory.createVariableDeclarationList(
+    [optionsVariableDeclaration],
+    ts.NodeFlags.Let
+  );
+  return ts.factory.createVariableStatement(undefined, variableDeclarationList);
+}
+
+function createComponentCallStatement(name: string) {
+  const buildCompatibleNodeCall = ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(name), BUILDCOMPATIBLENODE),
+    undefined,
+    [ts.factory.createIdentifier(OPTIONS)]
+  );
+  const componentCallVariableDeclaration = ts.factory.createVariableDeclaration(
+    COMPONENT_CALL,
+    undefined,
+    undefined,
+    buildCompatibleNodeCall
+  );
+  const componentCallDeclarationList = ts.factory.createVariableDeclarationList(
+    [componentCallVariableDeclaration],
+    ts.NodeFlags.Let
+  );
+  return ts.factory.createVariableStatement(undefined, componentCallDeclarationList);
+}
+
+function createOptionsStatements(componentNode: ts.CallExpression, isBuilder: boolean): ts.Statement[] {
+  const isParamsLambda: boolean = true;
+  const [keyArray, valueArray]: [ts.Node[], ts.Node[]] = splitComponentParams(componentNode, isBuilder, isParamsLambda);
+  const statements: ts.Statement[] = [];
+  for (let i = 0; i < keyArray.length; i++) {
+    const key = keyArray[i];
+    const value = valueArray[i];
+
+    const propertyAccess = ts.factory.createPropertyAccessExpression(
+      ts.factory.createIdentifier(OPTIONS),
+      key as ts.Identifier
+    );
+
+    const assignmentStatement = ts.factory.createExpressionStatement(
+      ts.factory.createBinaryExpression(propertyAccess, ts.SyntaxKind.EqualsToken, value)
+    );
+
+    statements.push(assignmentStatement);
+  }
+  return statements;
+}
+
 function createIfCustomComponent(newNode: ts.NewExpression, componentNode: ts.CallExpression,
   componentParameter: ts.ObjectLiteralExpression, name: string, isGlobalBuilder: boolean, isBuilder: boolean,
-  isRecycleComponent: boolean, componentAttrInfo: ComponentAttrInfo, log: LogInfo[]): ts.IfStatement {
+  isRecycleComponent: boolean, componentAttrInfo: ComponentAttrInfo, log: LogInfo[], isArkoala: boolean = false): ts.IfStatement {
   return ts.factory.createIfStatement(
     ts.factory.createIdentifier(ISINITIALRENDER),
-    ts.factory.createBlock(
-      [componentParamDetachment(newNode, isRecycleComponent, name, log, componentNode),
+    isArkoala ? ts.factory.createBlock(
+      [ createOptionsStatement(name),
+        ...createOptionsStatements(componentNode, isBuilder),
+        createComponentCallStatement(name),
+        isRecycleComponent ? createNewRecycleComponent(newNode, componentNode, name, componentAttrInfo) :
+          createNewComponent(COMPONENT_CALL, name, componentNode),
+        assignComponentParams(componentNode, isBuilder),
+        assignmentFunction(COMPONENT_CALL)
+      ], true) 
+      : ts.factory.createBlock(
+      [ componentParamDetachment(newNode, isRecycleComponent, name, log, componentNode),
         isRecycleComponent ? createNewRecycleComponent(newNode, componentNode, name, componentAttrInfo) :
           createNewComponent(COMPONENT_CALL, name, componentNode),
         assignComponentParams(componentNode, isBuilder),
@@ -973,7 +1040,7 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
   validateInitParam(name, curChildProps, node, log, parentStructInfo);
 }
 
-function getCustomComponentNode(node: ts.ExpressionStatement): ts.CallExpression {
+export function getCustomComponentNode(node: ts.ExpressionStatement): ts.CallExpression {
   let temp: any = node.expression;
   let child: any = null;
   let componentNode: any = null;

@@ -348,7 +348,7 @@ async function transform(code: string, id: string) {
     const result: ts.TranspileOutput = ts.transpileModule(newContent, {
       compilerOptions: compilerOptions,
       fileName: id,
-      transformers: { before: [processUISyntax(null)] }
+      transformers: { before: [processUISyntax(null, false, null, '', this)] }
     });
 
     resetCollection();
@@ -437,7 +437,7 @@ async function transform(code: string, id: string) {
       tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
         {
           before: [
-            processUISyntax(null, false, compilationTime, id),
+            processUISyntax(null, false, compilationTime, id, this),
             processKitImport(id, metaInfo, compilationTime),
             collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
               shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))
@@ -451,7 +451,7 @@ async function transform(code: string, id: string) {
         undefined : targetSourceFile, undefined);
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
-        [processUISyntax(null, false, compilationTime, id),
+        [processUISyntax(null, false, compilationTime, id, this),
         processKitImport(id, metaInfo, compilationTime, false),
         collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
           shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))], false);
