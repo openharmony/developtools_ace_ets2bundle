@@ -20,6 +20,7 @@
         "./common/**/*.ts",
         "./memo-plugins/**/*.ts",
         "./ui-plugins/**/*.ts",
+        "./interop-plugins/**/*.ts",
     ],
     "exclude": [
         "./test/**"

@@ -22,7 +22,7 @@ import { Es2pandaContextState, Es2pandaModifierFlags } from "../../generated/Es2
 import type { AstNode } from "../peers/AstNode"
 import { ClassDefinition, ClassProperty, ETSImportDeclaration, isClassDefinition, isScriptFunction, type AnnotationUsage } from "../../generated"
 
-export function proceedToState(state: Es2pandaContextState): void {
+export function proceedToState(state: Es2pandaContextState, forceDtsEmit = false): void {
     console.log("[TS WRAPPER] PROCEED TO STATE: ", getEnumName(Es2pandaContextState, state));
     if (state <= global.es2panda._ContextState(global.context)) {
         console.log("[TS WRAPPER] PROCEED TO STATE: SKIPPING");
@@ -30,7 +30,7 @@ export function proceedToState(state: Es2pandaContextState): void {
     }
     try {
         global.es2panda._ProceedToState(global.context, state)
-        if (global.es2panda._ContextState(global.context) === Es2pandaContextState.ES2PANDA_STATE_ERROR) {
+        if (global.es2panda._ContextState(global.context) === Es2pandaContextState.ES2PANDA_STATE_ERROR && !forceDtsEmit) {
             const errorMessage = withStringResult(global.es2panda._ContextErrorMessage(global.context))
             if (errorMessage === undefined) {
                 throwError(`Could not get ContextErrorMessage`)
@@ -92,6 +92,14 @@ export function getOriginalNode(node: AstNode): AstNode {
 
 export function getFileName(): string {
     return global.filePath
+}
+
+export function classDefinitionSetFromStructModifier(node: ClassDefinition): void {
+    global.es2panda._ClassDefinitionSetFromStructModifier(global.context, node.peer);
+}
+
+export function classDefinitionIsFromStructConst(node: ClassDefinition): boolean {
+    return global.es2panda._ClassDefinitionIsFromStructConst(global.context, node.peer);
 }
 
 // TODO: It seems like Definition overrides AstNode  modifiers

@@ -635,6 +635,14 @@ export class Es2pandaNativeModule {
     _CreateETSStringLiteralType(context: KNativePointer, str: String): KNativePointer {
         throw new Error("Not implemented")
     }   
+
+    _ClassDefinitionIsFromStructConst(context: KNativePointer, instance: KNativePointer): KBoolean {
+        throw new Error("Not implemented");
+    }
+
+    _ClassDefinitionSetFromStructModifier(context: KNativePointer, instance: KNativePointer): void {
+        throw new Error("Not implemented");
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {
