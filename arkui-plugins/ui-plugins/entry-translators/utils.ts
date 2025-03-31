@@ -20,9 +20,11 @@ import { CustomComponentNames } from "../utils";
 
 export enum EntryWrapperNames {
     ENTRY_FUNC = 'entry',
-    WRAPPER_CLASS_NAME = '__EntryWrapper_Entry',
+    WRAPPER_CLASS_NAME = '__EntryWrapper',
     ENTRY_STORAGE_ANNOTATION_KEY = 'storage',
-    ENTRY_STORAGE_LOCAL_STORAGE_PROPERTY_NAME = '_entry_local_storage_'
+    ENTRY_STORAGE_LOCAL_STORAGE_PROPERTY_NAME = '_entry_local_storage_',
+    ENTRY_DEFAULT_IMPORT = '@ohos.arkui.component',
+    ENTRY_POINT_CLASS_NAME = 'EntryPoint'
 }
 
 /**
@@ -75,12 +77,12 @@ export function findEntryWithStorageInClassAnnotations(
     const annotation = node.annotations.find(
         (anno) => {
             if (!isAnnotation(anno, CustomComponentNames.ENTRY_ANNOTATION_NAME)) return false;
-            const property = anno.properties.at(0);
+            const property = anno.properties?.at(0);
             if (!property || !arkts.isClassProperty(property)) return false;
             if (!property.key || !arkts.isIdentifier(property.key)) return false;
             if (!property.value || !arkts.isStringLiteral(property.value)) return false;
             return property.key.name === EntryWrapperNames.ENTRY_STORAGE_ANNOTATION_KEY;
         }
     );
-    return annotation!.properties.at(0)! as arkts.ClassProperty;
+    return annotation?.properties?.at(0) as arkts.ClassProperty | undefined;
 }

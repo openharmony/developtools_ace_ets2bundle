@@ -272,7 +272,8 @@ KInt impl_GenerateTsDeclarationsFromContext(KNativePointer contextPtr, KStringPt
 }
 KOALA_INTEROP_4(GenerateTsDeclarationsFromContext, KInt, KNativePointer, KStringPtr, KStringPtr, KBoolean)
 
-void impl_InsertETSImportDeclarationAndParse(KNativePointer context, KNativePointer program, KNativePointer importDeclaration)
+void impl_InsertETSImportDeclarationAndParse(KNativePointer context, KNativePointer program,
+                                             KNativePointer importDeclaration)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
     const auto _program = reinterpret_cast<es2panda_Program *>(program);

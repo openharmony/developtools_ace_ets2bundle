@@ -19,13 +19,13 @@ const interop = require(getInteropPath())
 const nullptr = interop.nullptr
 import { EntryWrapperNames } from "./utils";
 import { annotation } from "../../common/arkts-utils";
+import { factory as uiFactory } from "../ui-factory";
 
 export class factory {
     /**
      * insert an 'entry' method to an entry wrapper class.
      * 
      * @param node entry wrapper class declaration node.
-     * @deprecated
      */
     static registerEntryFunction(node: arkts.ClassDeclaration): arkts.AstNode {
         const definition: arkts.ClassDefinition | undefined = node.definition;
@@ -41,7 +41,7 @@ export class factory {
             definition.implements,
             undefined,
             definition.super,
-            [...definition.body, factory.generateEntryFunc(classname)],
+            [...definition.body, factory.generateEntryFunction(classname)],
             definition.modifiers,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
         );
@@ -52,6 +52,7 @@ export class factory {
      * insert an 'entry' property to an entry wrapper class.
      * 
      * @param node entry wrapper class declaration node.
+     * @deprecated
      */
     static registerEntryProperty(node: arkts.ClassDeclaration): arkts.AstNode {
         const definition: arkts.ClassDefinition | undefined = node.definition;
@@ -79,9 +80,8 @@ export class factory {
      * which calls the struct within the method.
      * 
      * @param name class/struct name that has `@Entry` annotation.
-     * @deprecated
      */
-    static generateEntryFunc(name: string): arkts.MethodDefinition {
+    static generateEntryFunction(name: string): arkts.MethodDefinition {
         const exp = arkts.factory.createExpressionStatement(
             arkts.factory.createCallExpression(
                 arkts.factory.createIdentifier(name),
@@ -119,6 +119,7 @@ export class factory {
      * which calls the struct within the arrow function.
      * 
      * @param name class/struct name that has `@Entry` annotation.
+     * @deprecated
      */
     static generateEntryProperty(name: string): arkts.ClassProperty {
         const exp = arkts.factory.createExpressionStatement(
@@ -170,8 +171,12 @@ export class factory {
             undefined,
             [],
             undefined,
-            undefined,
-            [factory.generateEntryProperty(name)],
+            arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_POINT_CLASS_NAME)
+                )
+            ),
+            [factory.generateEntryFunction(name)],
             arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_CLASS_DECL 
                 | arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_DECLARATION
                 | arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_ID_REQUIRED,
@@ -186,7 +191,6 @@ export class factory {
      * add `@memo` to all class methods that are named 'entry'.
      * 
      * @param node class declaration node
-     * @deprecated
      */
     static addMemoToEntryWrapperClassMethods(node: arkts.ClassDeclaration): void {
         node.definition?.body.forEach(member => {
@@ -204,6 +208,7 @@ export class factory {
      * add `@memo` to the class property's value (expecting an arrow function), where the property is named 'entry'.
      * 
      * @param node class declaration node
+     * @deprecated
      */
     static addMemoToEntryWrapperPropertyValue(node: arkts.ClassDeclaration): void {
         node.definition?.body.forEach(member => {
@@ -236,6 +241,30 @@ export class factory {
             undefined,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
+        );
+    }
+
+    /**
+     * create and insert `import { EntryPoint as EntryPoint } from "@ohos.arkui.UserView";`
+     * to the top of script's statements.
+     */
+    static createAndInsertEntryPointImport(program?: arkts.Program) {
+        const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(
+            EntryWrapperNames.ENTRY_DEFAULT_IMPORT
+        );
+        const imported: arkts.Identifier = arkts.factory.createIdentifier(
+            EntryWrapperNames.ENTRY_POINT_CLASS_NAME
+        );
+        // Insert this import at the top of the script's statements.
+        if (!program) {
+            throw Error("Failed to insert import: Transformer has no program");
+        }
+        uiFactory.createAndInsertImportDeclaration(
+            source,
+            imported,
+            imported,
+            arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE,
+            program
         );
     }
 }
