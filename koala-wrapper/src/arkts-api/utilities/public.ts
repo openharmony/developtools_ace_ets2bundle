@@ -111,8 +111,8 @@ export function classDefinitionFlags(node: ClassDefinition): Es2pandaModifierFla
 }
 
 // TODO: Import statements should be inserted to the statements
-export function importDeclarationInsert(node: ETSImportDeclaration, program: Program): void {
-    global.es2panda._InsertETSImportDeclarationAndParse(global.context, program.peer, node.peer)
+export function importDeclarationInsert(node: ETSImportDeclaration): void {
+    global.es2panda._InsertETSImportDeclarationAndParse(global.context, node.peer)
 }
 
 export function hasModifierFlag(node: AstNode, flag: Es2pandaModifierFlags): boolean {
