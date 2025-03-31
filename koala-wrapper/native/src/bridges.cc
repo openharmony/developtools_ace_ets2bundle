@@ -15,6 +15,22 @@
 
 #include "common.h"
 
+KBoolean impl_ClassDefinitionIsFromStructConst(KNativePointer contextPtr, KNativePointer instancePtr)
+{
+    auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
+    auto node = reinterpret_cast<es2panda_AstNode*>(instancePtr);
+    return GetImpl()->ClassDefinitionIsFromStructConst(context, node);
+}
+KOALA_INTEROP_2(ClassDefinitionIsFromStructConst, KBoolean, KNativePointer, KNativePointer);
+
+void impl_ClassDefinitionSetFromStructModifier(KNativePointer contextPtr, KNativePointer instancePtr)
+{
+    auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
+    auto node = reinterpret_cast<es2panda_AstNode*>(instancePtr);
+    return GetImpl()->ClassDefinitionSetFromStructModifier(context, node);
+}
+KOALA_INTEROP_V2(ClassDefinitionSetFromStructModifier, KNativePointer, KNativePointer);
+
 KNativePointer impl_AstNodeRecheck(KNativePointer contextPtr, KNativePointer nodePtr)
 {
     auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
