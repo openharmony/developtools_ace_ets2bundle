@@ -30,21 +30,14 @@ export interface ParameterTransformerOptions extends VisitorOptions {
 }
 
 export class ParameterTransformer extends AbstractVisitor {
-    private rewriteIdentifiers?: Map<number, () => arkts.MemberExpression | arkts.Identifier>
-    private rewriteCalls?: Map<number, (passArgs: arkts.AstNode[]) => arkts.CallExpression>
+    private rewriteIdentifiers?: Map<KPointer, () => arkts.MemberExpression | arkts.Identifier>
+    private rewriteCalls?: Map<KPointer, (passArgs: arkts.AstNode[]) => arkts.CallExpression>
     private skipNode?: arkts.VariableDeclaration
-    private readonly positionalIdTracker: PositionalIdTracker
+    private positionalIdTracker: PositionalIdTracker
 
     constructor(options: ParameterTransformerOptions) {
         super(options)
         this.positionalIdTracker = options.positionalIdTracker
-    }
-
-    reset(): void {
-        super.reset();
-        this.rewriteIdentifiers = undefined;
-        this.rewriteCalls = undefined;
-        this.skipNode = undefined;
     }
 
     withParameters(parameters: arkts.ETSParameterExpression[]): ParameterTransformer {

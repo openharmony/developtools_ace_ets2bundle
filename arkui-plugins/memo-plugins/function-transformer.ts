@@ -154,15 +154,6 @@ export class FunctionTransformer extends AbstractVisitor {
     private scopes: ScopeInfo[] = []
     private stable: number = 0
 
-    reset() {
-        super.reset();
-        this.scopes = [];
-        this.stable = 0;
-        this.parameterTransformer.reset();
-        this.returnTransformer.reset();
-        this.signatureTransformer.reset();
-    }
-
     enter(node: arkts.AstNode) {
         if (arkts.isMethodDefinition(node)) {
             const name = node.name.name
