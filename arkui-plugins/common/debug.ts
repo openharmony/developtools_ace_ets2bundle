@@ -26,16 +26,6 @@ export function debugDump(content: string, fileName: string, isInit: boolean): v
 
     const currentDirectory = process.cwd();
     const filePath: string = currentDirectory + "/dist/cache/" + fileName;
-    // if (fileName.includes("ORI__") || fileName.includes('@ohos.') || fileName.includes('@arkts.')) {
-    // if (!fileName.includes('new') || !fileName.includes('index')) {
-    //     return;
-    // } else {
-    //     console.error("lxc --- filename: " + fileName)
-    // }
-    // if (!fileName.includes('UI')) {
-    //     // console.error(fileName)
-    //     return;
-    // }
     try {
         if (!isInit && fs.existsSync(filePath)) {
             const existingContent = fs.readFileSync(filePath, 'utf8');

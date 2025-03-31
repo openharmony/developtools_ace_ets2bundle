@@ -4,7 +4,6 @@
   "description": "",
   "private": true,
   "scripts": {
-    "test": "./retest.sh",
     "compile:ohos": "node $INIT_CWD/../../../../arkcompiler/ets_frontend/ets2panda/driver/build-system/dist/entry.js ./demo/hello_world/build_config.json",
     "compile:gdb": "gdb --args node $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/driver/build-system/dist/entry.js ./demo/hello_world/build_config.json",
     "compile:plugins": "npm run compile --prefix .. ",
