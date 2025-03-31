@@ -158,4 +158,28 @@ export class factory {
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
         )
     }
+
+    /**
+     * create and insert `import { <imported> as <local> } from <source>` to the top of script's statements.
+     */
+    static createAndInsertImportDeclaration(
+        source: arkts.StringLiteral,
+        imported: arkts.Identifier,
+        local: arkts.Identifier,
+        importKind: arkts.Es2pandaImportKinds,
+        program: arkts.Program
+    ): void {
+        const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
+            source,
+            [
+                arkts.factory.createImportSpecifier(
+                    imported,
+                    local
+                )
+            ],
+            importKind
+        )
+        arkts.importDeclarationInsert(importDecl, program);
+        return;
+    }
 }

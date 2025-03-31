@@ -24,7 +24,8 @@ import {
 import {
     CustomComponentNames,
     getCustomComponentOptionsName,
-    createOptionalClassProperty
+    createOptionalClassProperty,
+    findLocalImport
 } from "./utils";
 import {
     isAnnotation,
@@ -34,13 +35,21 @@ import {
     annotation
 } from "../common/arkts-utils";
 import {
+    EntryWrapperNames,
     findEntryWithStorageInClassAnnotations
 } from "./entry-translators/utils";
 import {
     factory as entryFactory
 } from "./entry-translators/factory";
-import { hasDecorator, DecoratorNames, getStateManagementType, collectPropertyDecorators } from "./property-translators/utils"
-import { nodeByType } from "@koalaui/libarkts/build/src/reexport-for-generated";
+import {
+    hasDecorator,
+    DecoratorNames,
+    getStateManagementType,
+    collectPropertyDecorators
+} from "./property-translators/utils";
+import {
+    factory
+} from "./ui-factory";
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string
@@ -66,6 +75,7 @@ export class ComponentTransformer extends AbstractVisitor {
     private readonly arkui?: string;
     private context: ComponentContext = { structMembers: new Map(), reusableComps: new Map()};
     private isCustomComponentImported: boolean = false;
+    private isEntryPointImported: boolean = false;
 
     constructor(options?: ComponentTransformerOptions) {
         const _options: ComponentTransformerOptions = options ?? {};
@@ -81,6 +91,7 @@ export class ComponentTransformer extends AbstractVisitor {
         this.reusableNames = [];
         this.context = { structMembers: new Map(), reusableComps: new Map() };
         this.isCustomComponentImported = false;
+        this.isEntryPointImported = false;
     }
 
     enter(node: arkts.AstNode) {
@@ -94,16 +105,18 @@ export class ComponentTransformer extends AbstractVisitor {
             this.scopeInfos.push(scopeInfo);
         }
         if (arkts.isETSImportDeclaration(node) && !this.isCustomComponentImported) {
-            const hasCustomComponent = node.specifiers.some((spec) => (
-                arkts.isImportSpecifier(spec) 
-                && !!spec.local 
-                && spec.local.name === CustomComponentNames.COMPONENT_CLASS_NAME
-            ));
-            const isFromCustomComponent = (
-                !!node.source
-                && node.source.str === CustomComponentNames.COMPONENT_DEFAULT_IMPORT
+            this.isCustomComponentImported = !!findLocalImport(
+                node,
+                CustomComponentNames.COMPONENT_DEFAULT_IMPORT,
+                CustomComponentNames.COMPONENT_CLASS_NAME
             );
-            this.isCustomComponentImported = hasCustomComponent && isFromCustomComponent;
+        }
+        if (arkts.isETSImportDeclaration(node) && !this.isEntryPointImported) {
+            this.isEntryPointImported = !!findLocalImport(
+                node,
+                EntryWrapperNames.ENTRY_DEFAULT_IMPORT,
+                EntryWrapperNames.ENTRY_POINT_CLASS_NAME
+            );
         }
     }
 
@@ -123,32 +136,23 @@ export class ComponentTransformer extends AbstractVisitor {
     }
 
     createImportDeclaration(): void {
-        console.log()
         const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(
             this.arkui ?? CustomComponentNames.COMPONENT_DEFAULT_IMPORT
         );
-        // const resolvedSource: arkts.StringLiteral = arkts.factory.create1StringLiteral(
-        //     arkts.ImportPathManager.create().resolvePath('', source.str)
-        // );
         const imported: arkts.Identifier = arkts.factory.createIdentifier(
             CustomComponentNames.COMPONENT_CLASS_NAME
         );
-        const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
-            source,
-            [
-                arkts.factory.createImportSpecifier(
-                    imported,
-                    imported
-                )
-            ],
-            arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE
-        )
         // Insert this import at the top of the script's statements.
         if (!this.program) {
             throw Error("Failed to insert import: Transformer has no program");
         }
-        arkts.importDeclarationInsert(importDecl, this.program);
-        return;
+        factory.createAndInsertImportDeclaration(
+            source,
+            imported,
+            imported,
+            arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE,
+            this.program
+        );
     }
 
     processEtsScript(node: arkts.EtsScript): arkts.EtsScript {
@@ -159,10 +163,9 @@ export class ComponentTransformer extends AbstractVisitor {
         ) {
             return node;
         }
-        
         let updateStatements: arkts.AstNode[] = [];
-        if (!this.isCustomComponentImported && this.componentNames.length > 0) {
-            this.createImportDeclaration();
+        if (this.componentNames.length > 0) {
+            if (!this.isCustomComponentImported) this.createImportDeclaration();
             updateStatements.push(
                 ...this.componentNames.map(
                     name => arkts.factory.createInterfaceDeclaration(
@@ -182,11 +185,14 @@ export class ComponentTransformer extends AbstractVisitor {
             );
         }
 
-        // TODO: normally, we should only have at most one @Entry component in a single file.
-        // probably need to handle error message here.
-        updateStatements.push(
-            ...this.entryNames.map(entryFactory.generateEntryWrapper)
-        );
+        if (this.entryNames.length > 0) {
+            if (!this.isEntryPointImported) entryFactory.createAndInsertEntryPointImport(this.program);
+            // TODO: normally, we should only have at most one @Entry component in a single file.
+            // probably need to handle error message here.
+            updateStatements.push(
+                ...this.entryNames.map(entryFactory.generateEntryWrapper)
+            );
+        }
         if (updateStatements.length > 0) {
             return arkts.factory.updateEtsScript(
                 node,
