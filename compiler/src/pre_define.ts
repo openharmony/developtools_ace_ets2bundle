@@ -591,6 +591,8 @@ export const UPDATE_LAZY_FOREACH_ELEMENTS = 'UpdateLazyForEachElements';
 export const IS_INITIAL_ITEM = 'isInitialItem';
 export const MY_IDS = 'myIds';
 export const COMPONENT_CALL: string = 'componentCall';
+export const BUILDCOMPATIBLENODE = '_buildCompatibleNode';
+export const OPTIONS = 'options';
 
 export const TS_BUILD_INFO_SUFFIX = '.tsbuildinfo';
 export const ARKTS_LINTER_BUILD_INFO_SUFFIX = 'inversedArkTsLinter.tsbuildinfo';
