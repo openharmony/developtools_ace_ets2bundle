@@ -261,12 +261,12 @@ export class ComponentTransformer extends AbstractVisitor {
             this.collectComponentMembers(node, className);
         }
 
-        this.componentInterfaceCollection.push(this.generateComponentInterface(className, node.modifiers));
-
         if(scopeInfo.isReusable){
             this.processReusableComponent(className);
         }
-        
+
+        this.componentInterfaceCollection.push(this.generateComponentInterface(className, node.modifiers));
+
         const definition: arkts.ClassDefinition = node.definition;
         const newDefinitionBody: arkts.AstNode[] = [];
         if (scopeInfo.isEntry) {
@@ -341,8 +341,10 @@ export class ComponentTransformer extends AbstractVisitor {
             ),
             nullptr, // TODO: wtf
             arkts.factory.createInterfaceBody(
-            this.context.structMembers.get(name) ? 
-            this.context.structMembers.get(name)! : []
+                [
+                    ...(this.context.reusableComps.get(name) || []),
+                    ...(this.context.structMembers.get(name) || [])
+                ]
             ),
             false,
             false

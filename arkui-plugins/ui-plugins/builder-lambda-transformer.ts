@@ -283,10 +283,11 @@ function builderLambdaReplace(leaf: arkts.CallExpression): arkts.Identifier | ar
 function createOrUpdateArgInBuilderLambda(
     arg: arkts.Expression | undefined,
     isExternal?: boolean,
-    typeName?: string
+    typeName?: string,
+    fallback?: arkts.AstNode
 ) {
     if (!arg) {
-        return arkts.factory.createUndefinedLiteral();
+        return fallback ?? arkts.factory.createUndefinedLiteral();
     }
     if (arkts.isArrowFunctionExpression(arg)) {
         const func: arkts.ScriptFunction = arg.scriptFunction;
@@ -319,28 +320,6 @@ function createOrUpdateArgInBuilderLambda(
         : false;
 
     if (arkts.isTSAsExpression(arg) && arg.expr && arkts.isObjectExpression(arg.expr)) {
-        if (isReusable) {
-            const className: arkts.Property = arkts.Property.createProperty(
-                arkts.factory.createIdentifier('__class_name'),
-                arkts.factory.createStringLiteral(typeName!),
-            );
-            const reuseId: arkts.Property = arkts.Property.createProperty(
-                arkts.factory.createIdentifier('__reuseId'),
-                arkts.factory.createStringLiteral('_id'),
-            );
-            const updatedProperties: arkts.Property[] = [
-                ...(arg.expr.properties as arkts.Property[]),
-                className,
-                reuseId,
-            ];
-            const updatedExpr: arkts.ObjectExpression = arkts.ObjectExpression.updateObjectExpression(
-                arg.expr,
-                arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
-                updatedProperties,
-                false,
-            );
-            return arkts.TSAsExpression.updateTSAsExpression(arg, updatedExpr, arg.typeAnnotation, arg.isConst);
-        }
         const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(typeName!);
         const properties = arg.expr.properties as arkts.Property[];
         properties.forEach((prop, index) => {
@@ -436,8 +415,16 @@ function transformBuilderLambda(node: arkts.CallExpression, isExternal?: boolean
     ]
     let index = 0;
     while (index < params.length) {
-        args.push(createOrUpdateArgInBuilderLambda(leaf.arguments.at(index), isExternal, typeName));
-        index ++;
+        const isReusable: boolean = typeName
+            ? arkts.GlobalInfo.getInfoInstance().getStructInfo(typeName).isReusable
+            : false;
+        if (isReusable && index == params.length - 1) {
+            const reuseId = arkts.factory.createStringLiteral(typeName!);
+            args.push(createOrUpdateArgInBuilderLambda(leaf.arguments.at(index), isExternal, typeName, reuseId));
+        } else {
+            args.push(createOrUpdateArgInBuilderLambda(leaf.arguments.at(index), isExternal, typeName));
+        }
+        index++;
     }
 
     return arkts.factory.updateCallExpression(

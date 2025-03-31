@@ -237,19 +237,6 @@ export function generateToRecord(newName: string, originalName: string): arkts.P
     return arkts.Property.createProperty(
         arkts.factory.createStringLiteral(originalName),
         arkts.factory.createBinaryExpression(
-            // arkts.factory.createMemberExpression(
-            //     arkts.factory.createMemberExpression(
-            //         arkts.factory.createThisExpression(),
-            //         arkts.factory.createIdentifier(newName),
-            //         arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-            //         false,
-            //         false
-            //     ),
-            //     arkts.factory.createIdentifier("value"),
-            //     arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-            //     false,
-            //     false
-            // ),
             factory.createBlockStatementForOptionalExpression(
                 arkts.factory.createMemberExpression(
                     arkts.factory.createThisExpression(),
@@ -258,7 +245,8 @@ export function generateToRecord(newName: string, originalName: string): arkts.P
                     false,
                     false,
                 ),
-                'value',
+                'get',
+                true
             ),
             arkts.ETSNewClassInstanceExpression.createETSNewClassInstanceExpression(
                 arkts.factory.createTypeReference(
