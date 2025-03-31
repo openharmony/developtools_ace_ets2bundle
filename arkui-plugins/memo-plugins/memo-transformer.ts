@@ -39,7 +39,7 @@ export default function memoTransformer(
         const returnTransformer = new ReturnTransformer()
         const signatureTransformer = new SignatureTransformer()
         const functionTransformer = new FunctionTransformer({ positionalIdTracker, parameterTransformer, returnTransformer, signatureTransformer })
-        factory.createContextTypesImportDeclaration(arkts.arktsGlobal.compilerContext.program);
+        factory.createContextTypesImportDeclaration();
         return functionTransformer.visitor(
             arkts.factory.updateEtsScript(
                 node,

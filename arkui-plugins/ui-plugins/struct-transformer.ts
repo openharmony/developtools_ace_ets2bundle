@@ -355,11 +355,6 @@ export class StructTransformer extends AbstractVisitor {
     //     this.projectConfig = projectConfig;
     // }
 
-    reset(): void {
-        super.reset();
-        this.scopeInfos = [];
-    }
-
     enter(node: arkts.AstNode) {
         if (arkts.isClassDeclaration(node) && isCustomComponentClass(node)) {
             this.scopeInfos.push({ name: node.definition!.ident!.name });
