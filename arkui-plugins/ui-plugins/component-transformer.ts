@@ -39,7 +39,7 @@ import {
 import {
     factory as entryFactory
 } from "./entry-translators/factory";
-import { hasDecorator, DecoratorNames, getStageManagementType, collectPropertyDecorators } from "./property-translators/utils"
+import { hasDecorator, DecoratorNames, getStateManagementType, collectPropertyDecorators } from "./property-translators/utils"
 import { nodeByType } from "@koalaui/libarkts/build/src/reexport-for-generated";
 
 export interface ComponentTransformerOptions extends VisitorOptions {
@@ -296,7 +296,7 @@ export class ComponentTransformer extends AbstractVisitor {
             '', arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
         if (member.annotations.length > 0 && !hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
             const newMember: arkts.ClassProperty = createOptionalClassProperty(newName, member,
-                getStageManagementType(member), arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
+                getStateManagementType(member), arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
             return [originMember, newMember];
         }
         if (hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
