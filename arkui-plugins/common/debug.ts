@@ -13,24 +13,37 @@
  * limitations under the License.
  */
 import * as fs from 'fs';
+import * as path from 'path';
 
 const isDebugLog: boolean = false;
-const isDebugDump: boolean = false;
+const isDebugDump: boolean = true;
 
 export function getEnumName(enumType: any, value: number): string | undefined {
     return enumType[value];
+}
+
+function mkDir(filePath: string): void {
+    const parent = path.join(filePath, '..');
+    if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
+        mkDir(parent);
+    }
+    fs.mkdirSync(filePath);
 }
 
 export function debugDump(content: string, fileName: string, isInit: boolean): void {
     if (!isDebugDump) return;
 
     const currentDirectory = process.cwd();
-    const filePath: string = currentDirectory + "/dist/cache/" + fileName;
+    const outputDir: string = path.resolve(currentDirectory, 'dist', 'cache');
+    const filePath: string = path.resolve(outputDir, fileName);
+    if (!fs.existsSync(outputDir)) {
+        mkDir(outputDir);
+    }
     try {
         if (!isInit && fs.existsSync(filePath)) {
             const existingContent = fs.readFileSync(filePath, 'utf8');
             const newContent = existingContent &&!existingContent.endsWith('\n') 
-               ? existingContent + '\n' + content 
+                ? existingContent + '\n' + content
                 : existingContent + content;
             fs.writeFileSync(filePath, newContent, 'utf8');
         } else {
