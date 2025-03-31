@@ -56,7 +56,7 @@ export function unmemoizeTransform(): Plugins {
                 program = programVisitor.programVisitor(program);
                 script = program.astNode;
 
-                console.error('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
+                debugLog('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
                 debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 6, "MEMO_AfterCheck_End"), true);
 
                 arkts.recheckSubtree(script);

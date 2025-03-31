@@ -17,12 +17,10 @@ import * as arkts from "@koalaui/libarkts";
 
 import { AbstractVisitor } from "../common/abstract-visitor";
 
-interface DeclTransformerOptions {
-  arkui: string;
-}
+import { debugLog } from '../common/debug';
 
 export class DeclTransformer extends AbstractVisitor {
-  constructor(private options?: DeclTransformerOptions) {
+  constructor(private options?: interop.DeclTransformerOptions) {
     super();
   }
 
@@ -34,8 +32,6 @@ export class DeclTransformer extends AbstractVisitor {
 
     let newDec: arkts.ClassDeclaration = arkts.factory.createClassDeclaration(node.definition);
 
-    console.log("lxc --- old: " + node.definition.body.length);
-
     const newDefinition = arkts.factory.updateClassDefinition(
       newDec.definition!,
       newDec.definition?.ident,
@@ -44,40 +40,28 @@ export class DeclTransformer extends AbstractVisitor {
       newDec.definition?.implements!,
       undefined,
       undefined,
-      // newDec.definition?.body!.filter(child => !(arkts.isMethodDefinition(child) && this.fn() && child.name?.name === 'constructor'))!,
-      node.definition?.body.filter(child => !(arkts.isMethodDefinition(child) && child.name?.name === 'constructor')),
+      node.definition?.body,
       newDec.definition?.modifiers!,
       arkts.classDefinitionFlags(newDec.definition!) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
     );
-
-    console.log("lxc --- new: " + newDefinition.body.length);
-
-    // console.error(`DeclTransformer:dumpast:${newDefinition.dumpJson()}`)
-    
 
     arkts.factory.updateClassDeclaration(newDec, newDefinition);
     newDec.modifiers = node.modifiers;
     return newDec;
   }
 
-  fn(child: arkts.MethodDefinition) {
-    console.error("lxc --- method: " + child.isConstructor() + child.name?.name);
-    return true;
-  }
-
   visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
     let astNode:arkts.AstNode = beforeChildren;
     if (arkts.isEtsScript(astNode)) {
       astNode = this.transformImportDecl(astNode);
-      // console.error(`liulong------ before visitor`, astNode.dumpJson());
     }
 
     const node = this.visitEachChild(astNode);
     if (arkts.isStructDeclaration(node)) {
-      console.error(`DeclTransformer:before:flag:${arkts.classDefinitionIsFromStructConst(node.definition!)}`);
+      debugLog(`DeclTransformer:before:flag:${arkts.classDefinitionIsFromStructConst(node.definition!)}`);
       arkts.classDefinitionSetFromStructModifier(node.definition!);
       let newnode = this.processComponent(node);
-      console.error(`DeclTransformer:after:flag:${arkts.classDefinitionIsFromStructConst(newnode.definition!)}`);
+      debugLog(`DeclTransformer:after:flag:${arkts.classDefinitionIsFromStructConst(newnode.definition!)}`);
       return newnode;
     }
     return node;
@@ -87,14 +71,14 @@ export class DeclTransformer extends AbstractVisitor {
     if (!arkts.isEtsScript(estNode)) {
       return estNode;
     }
-    // console.error(`liulong------ before transformImportDecl`, estNode.statements.length);
-    let statements = estNode.statements.filter(node=>this.isImportDeclarationNeedFilter(node)).map(node=>this.updateImportDeclaration(node));
-    // console.error(`liulong------ end transformImportDecl`, statements.length);
+
+    let statements = estNode.statements.filter(node => this.isImportDeclarationNeedFilter(node))
+      .map(node => this.updateImportDeclaration(node));
+
     return arkts.factory.updateEtsScript(estNode,statements)
   }
 
   isImportDeclarationNeedFilter(astNode: arkts.AstNode):boolean {
-    // long sir
     return !arkts.isETSImportDeclaration(astNode);
   }
 

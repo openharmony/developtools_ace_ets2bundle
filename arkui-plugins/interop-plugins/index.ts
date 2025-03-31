@@ -13,68 +13,8 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
-
-import { DeclTransformer } from './decl-transformer';
-import { EmitTransformer } from './emit-transformer';
-import { ProgramVisitor } from "../common/program-visitor";
-import { EXTERNAL_SOURCE_PREFIX_NAMES } from "../common/predefines";
+import { interopPlugin } from './interop_plugin';
 
 export function interopTransform() {
-  return {
-    name: 'interop-plugin',
-    parsed(this: interop.PluginContext) {
-      console.log("interopTransform:parsed");
-      let node = this.getArkTSAst();
-
-      if (node) {
-        // console.log("interopTransform:parsed:before:ast:", node.dumpSrc());
-        // console.log("interopTransform:parsed:before:ast:", node.dumpJson());
-
-        let script: arkts.EtsScript = node as arkts.EtsScript;
-
-        const declTransformer = new DeclTransformer({ arkui: "@koalaui.arkts-arkui.DeclBase" });
-        const programVisitor = new ProgramVisitor({
-            pluginName: "decl",
-            state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
-            visitors: [declTransformer],
-            skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
-        });
-
-        script = programVisitor.visitor(script);
-
-        console.log("interopTransform:parsed:after:ast:", script.dumpSrc());
-        // console.log("interopTransform:parsed:after:ast:", script.dumpJson());
-
-        this.setArkTSAst(script);
-        return script;
-      }
-    },
-    checked(this: interop.PluginContext) {
-      console.log("interopTransform:checked");
-      let node = this.getArkTSAst();
-      if (node) {
-        // console.log("interopTransform:checked:before:ast:", node.dumpSrc());
-        // console.log("interopTransform:parsed:before:ast:", node.dumpJson());
-
-        let script: arkts.EtsScript = node as arkts.EtsScript;
-
-        const emitTransformer = new EmitTransformer({ arkui: "@koalaui.arkts-arkui.EmitBase" });
-        const programVisitor = new ProgramVisitor({
-            pluginName: "emit",
-            state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
-            visitors: [emitTransformer],
-            skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
-        });
-
-        // script = programVisitor.visitor(script);
-
-        // console.log("interopTransform:checked:after:ast:", script.dumpSrc());
-        // console.log("interopTransform:checked:after:ast:", script.dumpJson());
-
-        this.setArkTSAst(script);
-        return script;
-      }
-    }
-  }
+  return interopPlugin;
 }
