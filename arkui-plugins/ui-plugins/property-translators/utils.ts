@@ -60,16 +60,15 @@ export function hasDecorator(
     return property.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName));
 }
 
-export function getStageManagementType(node: arkts.ClassProperty): string {
+export function getStateManagementType(node: arkts.ClassProperty): string {
     if (hasDecorator(node, DecoratorNames.STATE)) {
         return 'StateDecoratedVariable';
     } else if (hasDecorator(node, DecoratorNames.LINK)) {
         return 'DecoratedMutableVariable';
-    } else if (
-        hasDecorator(node, DecoratorNames.PROP) ||
-        hasDecorator(node, DecoratorNames.STORAGE_PROP) ||
-        hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP) ||
-        hasDecorator(node, DecoratorNames.OBJECT_LINK)
+    } else if (hasDecorator(node, DecoratorNames.PROP)) {
+        return "PropDecoratedVariable";
+    } else if (hasDecorator(node, DecoratorNames.STORAGE_PROP) ||
+    hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP) || hasDecorator(node, DecoratorNames.OBJECT_LINK)
     ) {
         return 'SyncedProperty';
     }
