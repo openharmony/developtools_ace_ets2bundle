@@ -16,7 +16,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const isDebugLog: boolean = false;
-const isDebugDump: boolean = true;
+const isDebugDump: boolean = false;
 
 export function getEnumName(enumType: any, value: number): string | undefined {
     return enumType[value];
@@ -34,7 +34,7 @@ export function debugDump(content: string, fileName: string, isInit: boolean): v
     if (!isDebugDump) return;
 
     const currentDirectory = process.cwd();
-    const outputDir: string = path.resolve(currentDirectory, 'dist', 'cache');
+    const outputDir: string = path.resolve(currentDirectory, 'entry', 'build', 'default', 'generated', 'dist', 'cache');
     const filePath: string = path.resolve(outputDir, fileName);
     if (!fs.existsSync(outputDir)) {
         mkDir(outputDir);
