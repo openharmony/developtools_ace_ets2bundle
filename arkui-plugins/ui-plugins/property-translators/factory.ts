@@ -103,5 +103,25 @@ export class factory {
         return arkts.factory.createBlockExpression(statements);
     }
 
-
+    /**
+     * generate an memberExpression with nonNull or optional, e.g. object.property, object?.property or object!.property
+     * 
+     * @param object item before point.
+     * @param property item after point.
+     */
+    static createNonNullOrOptionalMemberExpression(
+        object: string,
+        property: string,
+        optional: boolean,
+        nonNull: boolean
+    ): arkts.Expression {
+        const objectNode: arkts.Identifier = arkts.factory.createIdentifier(object);
+        return arkts.factory.createMemberExpression(
+            nonNull ? arkts.factory.createTSNonNullExpression(objectNode) : objectNode,
+            arkts.factory.createIdentifier(property),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            optional
+        );
+    }
 }
