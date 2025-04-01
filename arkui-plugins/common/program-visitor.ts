@@ -26,10 +26,10 @@ export interface ProgramVisitorOptions extends VisitorOptions {
 }
 
 export class ProgramVisitor extends AbstractVisitor {
-    private pluginName: string;
-    private state: arkts.Es2pandaContextState;
-    private visitors: AbstractVisitor[];
-    private skipPrefixNames: string[];
+    private readonly pluginName: string;
+    private readonly state: arkts.Es2pandaContextState;
+    private readonly visitors: AbstractVisitor[];
+    private readonly skipPrefixNames: string[];
     private filenames: Map<number, string>;
 
     constructor(options: ProgramVisitorOptions) {
@@ -38,6 +38,11 @@ export class ProgramVisitor extends AbstractVisitor {
         this.state = options.state;
         this.visitors = options.visitors;
         this.skipPrefixNames = options.skipPrefixNames ?? [];
+        this.filenames = new Map();
+    }
+
+    reset(): void {
+        super.reset();
         this.filenames = new Map();
     }
 
@@ -60,7 +65,7 @@ export class ProgramVisitor extends AbstractVisitor {
                     getDumpFileName(this.state, "ORI", undefined, name), 
                     true
                 );
-                const script = this.visitor(currProgram.astNode, name);
+                const script = this.visitor(currProgram.astNode, currProgram, name);
                 if (script) {
                     debugDump(
                         script.dumpSrc(), 
@@ -89,18 +94,20 @@ export class ProgramVisitor extends AbstractVisitor {
         }
 
         let programScript = program.astNode;
-        programScript = this.visitor(programScript, this.externalSourceName);
+        programScript = this.visitor(programScript, program, this.externalSourceName);
 
         return program;
     }
 
-    visitor(node: arkts.AstNode, externalSourceName?: string): arkts.EtsScript {
+    visitor(node: arkts.AstNode, program?: arkts.Program, externalSourceName?: string): arkts.EtsScript {
         let script: arkts.EtsScript = node as arkts.EtsScript;
         let count: number = 0;
         for (const transformer of this.visitors) {
             transformer.isExternal = !!externalSourceName;
             transformer.externalSourceName = externalSourceName;
+            transformer.program = program;
             script = transformer.visitor(script) as arkts.EtsScript;
+            transformer.reset();
             arkts.setAllParents(script);
             if (!transformer.isExternal) {
                 debugDump(

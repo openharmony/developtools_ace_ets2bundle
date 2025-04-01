@@ -29,7 +29,6 @@ import {
     getCustomComponentOptionsName,
     getTypeNameFromTypeParameter,
     getTypeParamsFromClassDecl,
-    hasModifierFlag,
     Dollars
 } from "./utils";
 import {
@@ -42,7 +41,6 @@ import {
     factory as entryFactory
 } from "./entry-translators/factory";
 import { DecoratorNames, hasDecorator } from "./property-translators/utils";
-import { nodeByType } from "@koalaui/libarkts/build/src/reexport-for-generated";
 
 function isCustomComponentClass(node: arkts.ClassDeclaration): boolean {
     if (!node.definition?.ident?.name) return false;
@@ -348,12 +346,11 @@ type ScopeInfo = {
 
 export class StructTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
-    // projectConfig: Object;
 
-    // constructor(projectConfig: Object) {
-    //     super()
-    //     this.projectConfig = projectConfig;
-    // }
+    reset(): void {
+        super.reset();
+        this.scopeInfos = [];
+    }
 
     enter(node: arkts.AstNode) {
         if (arkts.isClassDeclaration(node) && isCustomComponentClass(node)) {
@@ -391,7 +388,7 @@ export class StructTransformer extends AbstractVisitor {
             this.exit(beforeChildren);
             return newClass;
         } else if (isEntryWrapperClass(node)) {
-            entryFactory.addMemoToEntryWrapperPropertyValue(node);
+            entryFactory.addMemoToEntryWrapperClassMethods(node);
             return node;
         } else if (arkts.isClassDeclaration(node) && isEtsGlobalClass(node)) {
             return transformEtsGlobalClassMembers(node);
