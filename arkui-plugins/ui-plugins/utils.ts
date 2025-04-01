@@ -50,10 +50,23 @@ export enum Dollars {
     DOLLAR_DOLLAR = '$$',
 }
 
-export function hasModifierFlag(node: arkts.AstNode, flag: arkts.Es2pandaModifierFlags): boolean {
-    if (!node) return false;
+export function findLocalImport(
+    node: arkts.ETSImportDeclaration,
+    sourceName: string,
+    importedName: string
+): arkts.Identifier | undefined {
+    const isFromSource = (
+        !!node.source
+        && node.source.str === sourceName
+    );
+    if (!isFromSource) return undefined;
 
-    return (node.modifiers & flag) === flag;
+    const importSpecifier = node.specifiers.find((spec) => (
+        arkts.isImportSpecifier(spec)
+        && !!spec.imported
+        && spec.imported.name === importedName
+    )) as arkts.ImportSpecifier | undefined;
+    return importSpecifier?.local ?? importSpecifier?.imported;
 }
 
 // TODO: currently, we forcely assume initializerOptions is named in pattern __Options_xxx

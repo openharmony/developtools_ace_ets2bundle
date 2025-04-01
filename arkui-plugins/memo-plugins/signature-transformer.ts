@@ -21,6 +21,11 @@ import { AbstractVisitor } from "../common/abstract-visitor"
 export class SignatureTransformer extends AbstractVisitor {
     public modified = false
 
+    reset(): void {
+        super.reset();
+        this.modified = false;
+    }
+
     visitor<T extends arkts.AstNode>(node: T, applyMemo: boolean = false): T {
         if (arkts.isScriptFunction(node)) {
             const memo = hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node) || applyMemo

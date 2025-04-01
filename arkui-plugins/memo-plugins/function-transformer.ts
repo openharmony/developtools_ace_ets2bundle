@@ -138,10 +138,10 @@ export interface FunctionTransformerOptions extends VisitorOptions {
 }
 
 export class FunctionTransformer extends AbstractVisitor {
-    private positionalIdTracker: PositionalIdTracker;
-    private parameterTransformer: ParameterTransformer;
-    private returnTransformer: ReturnTransformer;
-    private signatureTransformer: SignatureTransformer;
+    private readonly positionalIdTracker: PositionalIdTracker;
+    private readonly parameterTransformer: ParameterTransformer;
+    private readonly returnTransformer: ReturnTransformer;
+    private readonly signatureTransformer: SignatureTransformer;
 
     constructor(options: FunctionTransformerOptions) {
         super(options)
@@ -153,6 +153,15 @@ export class FunctionTransformer extends AbstractVisitor {
 
     private scopes: ScopeInfo[] = []
     private stable: number = 0
+
+    reset() {
+        super.reset();
+        this.scopes = [];
+        this.stable = 0;
+        this.parameterTransformer.reset();
+        this.returnTransformer.reset();
+        this.signatureTransformer.reset();
+    }
 
     enter(node: arkts.AstNode) {
         if (arkts.isMethodDefinition(node)) {
