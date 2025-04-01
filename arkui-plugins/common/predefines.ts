@@ -18,8 +18,13 @@ export const EXTERNAL_SOURCE_PREFIX_NAMES: string[] = [
     "escompat"
 ];
 
+export const ARKUI_COMPONENT_IMPORT_NAME: string = "@ohos.arkui.component";
+
+export const ARKUI_STATEMANAGEMENT_IMPORT_NAME: string = "@ohos.arkui.stateManagement";
+
 export const EXTERNAL_SOURCE_ALLOWED_IMPORT_INSERT_NAMES: string[] = [
-    "@ohos.arkui"
+    ARKUI_COMPONENT_IMPORT_NAME,
+    ARKUI_STATEMANAGEMENT_IMPORT_NAME
 ];
 
 export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<string>>([
@@ -46,7 +51,10 @@ export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<s
         "LinkDecoratedVariable",
         "PropDecoratedVariable",
         "StorageLinkDecoratedVariable",
-        "StoragePropDecoratedVariable"
+        "StoragePropDecoratedVariable",
+        "memo",
+        "__memo_context_type",
+        "__memo_id_type"
     ])]
 ]);
 
