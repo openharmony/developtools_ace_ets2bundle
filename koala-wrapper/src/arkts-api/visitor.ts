@@ -151,13 +151,16 @@ export function visitEachChild(
         );
     }
     if (isCallExpression(node)) {
-        return factory.updateCallExpression(
+        const call = factory.updateCallExpression(
             node,
             nodeVisitor(node.expression, visitor),
             nodesVisitor(node.typeArguments, visitor),
-            nodesVisitor(node.arguments, visitor),
-            nodeVisitor(node.trailingBlock, visitor)
+            nodesVisitor(node.arguments, visitor)
         );
+        if (!!node.trailingBlock) {
+            call.setTralingBlock(nodeVisitor(node.trailingBlock, visitor));
+        }
+        return call;
     }
     if (isFunctionDeclaration(node)) {
         return factory.updateFunctionDeclaration(

@@ -417,8 +417,7 @@ function transformResource(resourceNode: arkts.CallExpression, projectConfig: Pr
         resourceNode,
         arkts.factory.createIdentifier(transformedKey),
         resourceNode.typeArguments,
-        newArgs,
-        resourceNode.trailingBlock
+        newArgs
     );
 }
 
