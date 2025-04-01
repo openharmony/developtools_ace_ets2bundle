@@ -18,7 +18,15 @@ import * as arkts from '@koalaui/libarkts';
 import { backingField, expectName } from '../../common/arkts-utils';
 import { PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
-import { DecoratorNames, generateToRecord } from './utils';
+import {
+    DecoratorNames,
+    generateToRecord,
+    createGetter,
+    createSetter2,
+    generateThisBacking,
+    generateGetOrSetCall,
+} from './utils';
+import { createOptionalClassProperty } from '../utils';
 
 function getStorageLinkValueStr(node: arkts.AstNode): string | undefined {
     if (!arkts.isClassProperty(node) || !node.value) return undefined;
@@ -42,12 +50,10 @@ function getStorageLinkValueInAnnotation(node: arkts.ClassProperty): string | un
     for (let i = 0; i < annotations.length; i++) {
         const anno: arkts.AnnotationUsage = annotations[i];
         const str: string | undefined = getStorageLinkAnnotationValue(anno);
-
         if (!!str) {
             return str;
         }
     }
-
     return undefined;
 }
 
@@ -79,11 +85,18 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
             throw new Error('StorageLink required only one value!!'); // TODO: replace this with proper error message.
         }
 
-        const call = arkts.factory.createCallExpression(
-            arkts.factory.createIdentifier('AppStorageLinkState'),
-            this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
+        const newClass = arkts.factory.createETSNewClassInstanceExpression(
+            arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier('StorageLinkDecoratedVariable'),
+                    arkts.factory.createTSTypeParameterInstantiation(
+                        this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
+                    ),
+                ),
+            ),
             [
                 arkts.factory.createStringLiteral(storageLinkValueStr),
+                arkts.factory.create1StringLiteral(originalName),
                 this.property.value ?? arkts.factory.createIdentifier('undefined'),
             ],
         );
@@ -97,7 +110,48 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
                 false,
             ),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            call,
+            newClass,
         );
+    }
+
+    translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
+        const field = createOptionalClassProperty(
+            newName,
+            this.property,
+            'StorageLinkDecoratedVariable',
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+        );
+        const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
+        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, 'get');
+        const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
+            generateGetOrSetCall(thisValue, 'set'),
+        );
+        const getter: arkts.MethodDefinition = this.translateGetter(
+            originalName,
+            this.property.typeAnnotation,
+            thisGet,
+        );
+        const setter: arkts.MethodDefinition = this.translateSetter(
+            originalName,
+            this.property.typeAnnotation,
+            thisSet,
+        );
+        return [field, getter, setter];
+    }
+
+    translateGetter(
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
+        returnValue: arkts.Expression,
+    ): arkts.MethodDefinition {
+        return createGetter(originalName, typeAnnotation, returnValue);
+    }
+
+    translateSetter(
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
+        statement: arkts.AstNode,
+    ): arkts.MethodDefinition {
+        return createSetter2(originalName, typeAnnotation, statement);
     }
 }
