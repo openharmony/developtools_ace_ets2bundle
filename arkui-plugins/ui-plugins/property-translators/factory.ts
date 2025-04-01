@@ -26,14 +26,14 @@ export class factory {
      * @param object item before ?..
      * @param key item after ?..
      */
-    static createBlockStatementForOptionalExpression(object: arkts.AstNode, key: string): arkts.Expression {
+    static createBlockStatementForOptionalExpression(object: arkts.AstNode, key: string, isCall: boolean = false): arkts.Expression {
         let id = GenSymGenerator.getInstance().id(key);
         const statements: arkts.Statement[] = [
             factory.generateLetVariableDecl(
                 arkts.factory.createIdentifier(id), 
                 object
             ),
-            factory.generateTernaryExpression(id, key)
+            factory.generateTernaryExpression(id, key, isCall)
         ];
         return arkts.factory.createBlockExpression(statements);
     }
@@ -62,7 +62,7 @@ export class factory {
      * @param testLeft the left hand of the test condition.
      * @param key item after ?.
      */
-    static generateTernaryExpression(testLeft: string, key: string): arkts.ExpressionStatement {
+    static generateTernaryExpression(testLeft: string, key: string, isCall: boolean = false): arkts.ExpressionStatement {
         const test = arkts.factory.createBinaryExpression(
             arkts.factory.createIdentifier(testLeft),
             arkts.factory.createNullLiteral(),
@@ -77,7 +77,7 @@ export class factory {
             false
         );
         return arkts.factory.createExpressionStatement(
-            arkts.factory.createConditionalExpression(test, consequent, alternate)
+            arkts.factory.createConditionalExpression(test, consequent, isCall? arkts.factory.createCallExpression(alternate, undefined, undefined) : alternate)
         );
     }
 

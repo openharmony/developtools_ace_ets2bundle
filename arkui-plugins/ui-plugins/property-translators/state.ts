@@ -16,6 +16,7 @@
 import * as arkts from "@koalaui/libarkts"
 
 import { 
+    generateToRecord,
     createGetter, 
     createSetter2,
     generateThisBacking,
@@ -45,6 +46,10 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
         const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
         currentStructInfo.initializeBody.push(initializeStruct);
+        if (currentStructInfo.isReusable) {
+            const toRecord = generateToRecord(newName, originalName);
+            currentStructInfo.toRecordBody.push(toRecord);
+        }
         arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
