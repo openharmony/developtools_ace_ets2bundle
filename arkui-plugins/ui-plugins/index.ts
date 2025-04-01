@@ -13,14 +13,15 @@
  * limitations under the License.
  */
 
-import * as arkts from '@koalaui/libarkts';
-import { ComponentTransformer } from './component-transformer';
-import { BuilderLambdaTransformer } from './builder-lambda-transformer';
-import { StructTransformer } from './struct-transformer';
-import { Plugins, PluginContext } from '../common/plugin-context';
-import { ProgramVisitor } from '../common/program-visitor';
-import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../common/predefines';
-import { debugDump, debugLog, getDumpFileName } from '../common/debug';
+import * as arkts from "@koalaui/libarkts"
+import { ComponentTransformer } from './component-transformer'
+import { PreprocessorTransformer } from './preprocessor-transform'
+import { BuilderLambdaTransformer } from './builder-lambda-transformer'
+import { StructTransformer } from './struct-transformer'
+import { Plugins, PluginContext } from "../common/plugin-context"
+import { ProgramVisitor } from "../common/program-visitor"
+import { EXTERNAL_SOURCE_PREFIX_NAMES } from "../common/predefines"
+import { debugDump, debugLog, getDumpFileName } from "../common/debug"
 
 export function uiTransform(): Plugins {
     return {
@@ -34,11 +35,12 @@ export function uiTransform(): Plugins {
                 debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 1, 'UI_AfterParse_Begin'), true);
 
                 const componentTransformer = new ComponentTransformer();
+                const preprocessorTransformer = new PreprocessorTransformer();
                 const programVisitor = new ProgramVisitor({
                     pluginName: uiTransform.name,
                     state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
-                    visitors: [componentTransformer],
-                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+                    visitors: [componentTransformer, preprocessorTransformer],
+                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
                 });
 
                 program = programVisitor.programVisitor(program);
@@ -62,7 +64,7 @@ export function uiTransform(): Plugins {
                 debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 3, 'UI_AfterCheck_Begin'), true);
 
                 const builderLambdaTransformer = new BuilderLambdaTransformer();
-                const structTransformer = new StructTransformer();
+                const structTransformer = new StructTransformer(this.getProjectConfig());
                 const programVisitor = new ProgramVisitor({
                     pluginName: uiTransform.name,
                     state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
