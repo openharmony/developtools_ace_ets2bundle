@@ -195,6 +195,89 @@ function createUpdateStruct(
     );
 }
 
+function toRecord(optionsTypeName: string, toRecordBody: arkts.Property[]){
+    // const paramsCasted = params as ChildOptions
+    const paramsCasted = arkts.factory.createVariableDeclaration(
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+        arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
+        [arkts.factory.createVariableDeclarator(
+            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_CONST,
+            arkts.factory.createIdentifier("paramsCasted"),
+            arkts.TSAsExpression.createTSAsExpression(
+                arkts.factory.createIdentifier("params"),
+                arkts.factory.createTypeReference(
+                    arkts.factory.createTypeReferencePart(
+                        arkts.factory.createIdentifier(optionsTypeName)
+                    )
+                ),
+                false
+            )
+        )]
+    )
+
+    const returnRecord = arkts.factory.createReturnStatement(
+        arkts.ObjectExpression.createObjectExpression(
+            arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+            toRecordBody,
+            false
+        )
+    )
+
+    const body: arkts.BlockStatement = arkts.factory.createBlock([paramsCasted, returnRecord]);
+
+    const params = arkts.ETSParameterExpression.create(
+        arkts.factory.createIdentifier(
+            "params",
+            arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier("Object")
+                )
+            )
+        ),
+        undefined
+    )
+
+    const typeRecord = arkts.factory.createTypeReference(
+        arkts.factory.createTypeReferencePart(
+            arkts.factory.createIdentifier("Record"),
+            arkts.factory.createTSTypeParameterInstantiation(
+                [
+                    arkts.factory.createTypeReference(
+                        arkts.factory.createTypeReferencePart(
+                            arkts.factory.createIdentifier("string"),
+                        )
+                    ),
+                    arkts.factory.createTypeReference(
+                        arkts.factory.createTypeReferencePart(
+                            arkts.factory.createIdentifier("Object")
+                        )
+                    )
+                ]
+            )
+        )
+    )
+
+    const toRecordScriptFunction = arkts.factory.createScriptFunction(
+        body,
+        arkts.FunctionSignature.createFunctionSignature(
+            undefined,
+            [ params ],
+            typeRecord,
+            false
+        ),
+        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC 
+    )
+
+    return arkts.factory.createMethodDefinition(
+        arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
+        arkts.factory.createIdentifier('__toRecord'),
+        arkts.factory.createFunctionExpression(toRecordScriptFunction),
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OVERRIDE,
+        false
+    );
+}
+
 function tranformPropertyMembers(
     className: string, 
     propertyTranslators: PropertyTranslator[],
@@ -214,6 +297,9 @@ function tranformPropertyMembers(
     }
     if (!scope?.hasUpdateStruct) {
         collections.push(createUpdateStruct(currentStructInfo, optionsTypeName, isDecl))
+    }
+    if(currentStructInfo.isReusable){
+        collections.push(toRecord(optionsTypeName, currentStructInfo.toRecordBody))
     }
     return collect(...collections, ...propertyMembers);
 }
