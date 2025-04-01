@@ -14,6 +14,7 @@
 import("//build/ohos.gni")
 import("//build/ohos/ace/ace.gni")
 import("//build/ohos_var.gni")
+import("//build/templates/bpf/ohos_bpf_config.gni")
 import("//foundation/arkui/ace_engine/ace_config.gni")
 if (sdk_build_public) {
   import("//out/sdk-public/public_interface/sdk-js/interface_config.gni")
@@ -46,6 +47,11 @@ action("build_ets_loader_library") {
     ":install_arkguard_tsc_declgen",
     ":server",
   ]
+  if (sdk_build_public) {
+    deps += [ "//out/sdk-public/public_interface/sdk-js:ets_component" ]
+  } else {
+    deps += [ "//interface/sdk-js:ets_component" ]
+  }
   script = "build_ets_loader_library.py"
   depfile = "$target_gen_dir/$target_name.d"
   outputs = [
@@ -63,14 +69,17 @@ action("build_ets_loader_library") {
   } else {
     _ace_config_dir = "//prebuilts/ace-toolkit/ets-loader/compiler"
   }
-  _declarations_file_dir = "//interface/sdk-js/api/@internal/component/ets"
+  input_project_dir = "//interface/sdk-js"
+  if (sdk_build_public || product_name == "ohos-sdk") {
+    input_project_dir = "//out/sdk-public/public_interface/sdk-js"
+  }
+  _declarations_file_dir =
+      input_project_dir + "/ets/${bpf_inc_out_dir}/ets_component"
   _kit_configs_file_dir = "//interface/sdk-js/kits"
   _kit_apis_file_dir = "//interface/sdk-js/api"
   _arkts_apis_file_dir = "//interface/sdk-js/arkts"
   isPublic = "false"
   if (sdk_build_public) {
-    _declarations_file_dir =
-        "//out/sdk-public/public_interface/sdk-js/api/@internal/component/ets"
     _kit_configs_file_dir = "//out/sdk-public/public_interface/sdk-js/kits"
     _kit_apis_file_dir = "//out/sdk-public/public_interface/sdk-js/api"
     _arkts_apis_file_dir = "//out/sdk-public/public_interface/sdk-js/arkts"
