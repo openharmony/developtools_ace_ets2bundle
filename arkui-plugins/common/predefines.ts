@@ -44,7 +44,9 @@ export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<s
         "AppStorageLinkState",
         "DecoratedMutableVariable",
         "LinkDecoratedVariable",
-        "PropDecoratedVariable"
+        "PropDecoratedVariable",
+        "StorageLinkDecoratedVariable",
+        "StoragePropDecoratedVariable"
     ])]
 ]);
 
@@ -56,6 +58,7 @@ export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, stri
     ["Prop", ["PropDecoratedVariable"]],
     ["Provide", ["MutableState", "contextLocalStateOf", "observableProxy"]],
     ["Consume", ["MutableState", "contextLocal", "observableProxy"]],
-    ["StorageProp", ["SyncedProperty", "AppStorageLinkState", "observableProxy", "propState"]],
+    ["StorageProp", ["StoragePropDecoratedVariable"]],
     ["Reusable", ["ArkReusableStructBase"]],
+    ["StorageLink", ["StorageLinkDecoratedVariable"]]
 ]);
