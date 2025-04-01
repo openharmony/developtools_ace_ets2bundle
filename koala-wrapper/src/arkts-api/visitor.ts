@@ -35,7 +35,8 @@ import {
     isScriptFunction,
     FunctionSignature,
     Property,
-    isClassProperty
+    isClassProperty,
+    isImportDeclaration
 } from "../generated"
 import {
     isEtsScript,
@@ -126,6 +127,17 @@ function nodesVisitor<T extends AstNode, TIn extends readonly T[] | undefined>(n
         return nodes
     }
     return nodes.map(node => visitor(node) as T)
+}
+
+// TODO: apply this to all nodes that does not require updating
+function visitWithoutUpdate<T extends AstNode>(
+    node: T,
+    visitor: Visitor
+): T {
+    if (isImportDeclaration(node)) {
+        nodesVisitor(node.specifiers, visitor);
+    }
+    return node;
 }
 
 export function visitEachChild(
@@ -322,5 +334,5 @@ export function visitEachChild(
         return _node;
     }
     // TODO
-    return node
+    return visitWithoutUpdate(node, visitor);
 }

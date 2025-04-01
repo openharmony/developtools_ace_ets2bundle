@@ -182,4 +182,17 @@ export class factory {
         arkts.importDeclarationInsert(importDecl, program);
         return;
     }
+    
+    /*
+    * create `import { <name1> as <name2> } ...`.
+    */
+    static createAdditionalImportSpecifier(
+        name1: string,
+        name2: string
+    ): arkts.ImportSpecifier {
+        return arkts.factory.createImportSpecifier(
+            arkts.factory.createIdentifier(name1),
+            arkts.factory.createIdentifier(name2),
+        );
+    }
 }
