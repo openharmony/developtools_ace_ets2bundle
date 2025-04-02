@@ -31,8 +31,9 @@ export function uiTransform(): Plugins {
             let program = arkts.arktsGlobal.compilerContext.program;
             let script = program.astNode;
             if (script) {
+                const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
                 debugLog('[BEFORE PARSED SCRIPT] script: ', script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 1, 'UI_AfterParse_Begin'), true);
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 1, 'UI_AfterParse_Begin'), true, cachePath);
 
                 const componentTransformer = new ComponentTransformer();
                 const preprocessorTransformer = new PreprocessorTransformer();
@@ -40,14 +41,15 @@ export function uiTransform(): Plugins {
                     pluginName: uiTransform.name,
                     state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
                     visitors: [componentTransformer, preprocessorTransformer],
-                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
+                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+                    pluginContext: this,
                 });
 
                 program = programVisitor.programVisitor(program);
                 script = program.astNode;
 
                 debugLog('[AFTER PARSED SCRIPT] script: ', script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 2, 'UI_AfterParse_End'), true);
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 2, 'UI_AfterParse_End'), true, cachePath);
 
                 this.setArkTSAst(script);
                 console.log('[UI PLUGIN] AFTER PARSED EXIT');
@@ -60,8 +62,9 @@ export function uiTransform(): Plugins {
             let program = arkts.arktsGlobal.compilerContext.program;
             let script = program.astNode;
             if (script) {
+                const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
                 debugLog('[BEFORE STRUCT SCRIPT] script: ', script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 3, 'UI_AfterCheck_Begin'), true);
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 3, 'UI_AfterCheck_Begin'), true, cachePath);
 
                 const builderLambdaTransformer = new BuilderLambdaTransformer();
                 const structTransformer = new StructTransformer(this.getProjectConfig());
@@ -70,12 +73,13 @@ export function uiTransform(): Plugins {
                     state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
                     visitors: [structTransformer, builderLambdaTransformer],
                     skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+                    pluginContext: this,
                 });
 
                 program = programVisitor.programVisitor(program);
                 script = program.astNode;
                 debugLog('[AFTER STRUCT SCRIPT] script: ', script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 4, 'UI_AfterCheck_End'), true);
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 4, 'UI_AfterCheck_End'), true, cachePath);
 
                 arkts.recheckSubtree(script);
                 this.setArkTSAst(script);
