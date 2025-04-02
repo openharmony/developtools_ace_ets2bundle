@@ -36,6 +36,8 @@ export function unmemoizeTransform(): Plugins {
                 const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
                 debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 5, "MEMO_AfterCheck_Begin"), true, cachePath);
 
+                arkts.Performance.getInstance().createEvent("memo-checked");
+
                 const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
                 const parameterTransformer = new ParameterTransformer({ positionalIdTracker });
                 const returnTransformer = new ReturnTransformer();
@@ -58,10 +60,17 @@ export function unmemoizeTransform(): Plugins {
                 program = programVisitor.programVisitor(program);
                 script = program.astNode;
 
+                arkts.Performance.getInstance().stopEvent("memo-checked", true);
+
                 debugLog('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
                 debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 6, "MEMO_AfterCheck_End"), true, cachePath);
 
+                arkts.Performance.getInstance().createEvent("memo-recheck");
                 arkts.recheckSubtree(script);
+                arkts.Performance.getInstance().stopEvent("memo-recheck", true);
+
+                arkts.Performance.getInstance().clearAllEvents();
+
                 this.setArkTSAst(script);
                 console.log("[MEMO PLUGIN] AFTER CHECKED EXIT");
                 return script;
