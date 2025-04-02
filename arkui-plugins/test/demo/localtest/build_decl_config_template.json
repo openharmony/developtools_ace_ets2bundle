@@ -1,0 +1,29 @@
+{
+    "plugins": {
+        "interop_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/interop-plugins/index"
+    },
+
+    "compileFiles": [
+        "./demo/localtest/entry/new.ets"
+    ],
+
+    "packageName" : "entry",
+
+    "buildType": "build",
+    "buildMode": "Debug",
+    "moduleRootPath": "./demo/localtest/entry/",
+    "sourceRoots": ["./"],
+
+    "loaderOutPath": "./dist",
+    "cachePath": "./dist/cache",
+
+    "buildSdkPath": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/",
+
+    "dependentModuleList": [],
+
+    "isIDE": "false",
+    "enableDeclgenEts2Ts": true,
+
+    "declgenV1OutPath": "workspace/developtools/ace_ets2bundle/arkui-plugins/test/demo/hello_world/declgenV1OutPath",
+    "declgenBridgeCodePath": "workspace/developtools/ace_ets2bundle/arkui-plugins/test/demo/hello_world/declgenBridgeCodePath"
+}
