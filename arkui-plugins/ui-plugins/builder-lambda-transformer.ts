@@ -154,6 +154,29 @@ function updateContentBodyInBuilderLambda(
             transformBuilderLambda(statement.expression)
         );
     }
+    if (arkts.isIfStatement(statement)) {
+        return arkts.factory.updateIfStatement(
+            statement,
+            statement.test,
+            arkts.isBlockStatement(statement.consequent) 
+                ? arkts.factory.updateBlock(
+                    statement.consequent,
+                    statement.consequent.statements.map(
+                        (st) => updateContentBodyInBuilderLambda(st, isExternal)
+                    )
+                )
+                : statement.consequent,
+            !!statement.alternate && arkts.isBlockStatement(statement.alternate)
+                ? arkts.factory.updateBlock(
+                    statement.alternate,
+                    statement.alternate.statements.map(
+                        (st) => updateContentBodyInBuilderLambda(st, isExternal)
+                    )
+                )
+                : statement.alternate
+        )
+    }
+
     return statement;
 }
 
