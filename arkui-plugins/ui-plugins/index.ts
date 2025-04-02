@@ -28,9 +28,11 @@ export function uiTransform(): Plugins {
         name: 'ui-plugin',
         parsed(this: PluginContext) {
             console.log('[UI PLUGIN] AFTER PARSED ENTER');
-            let program = arkts.arktsGlobal.compilerContext.program;
-            let script = program.astNode;
-            if (script) {
+            const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+            if (!!contextPtr) {
+                let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+                let script = program.astNode;
+
                 const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
                 debugLog('[BEFORE PARSED SCRIPT] script: ', script.dumpSrc());
                 debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 1, 'UI_AfterParse_Begin'), true, cachePath);
@@ -63,9 +65,11 @@ export function uiTransform(): Plugins {
         },
         checked(this: PluginContext) {
             console.log('[UI PLUGIN] AFTER CHECKED ENTER');
-            let program = arkts.arktsGlobal.compilerContext.program;
-            let script = program.astNode;
-            if (script) {
+            const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+            if (!!contextPtr) {
+                let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+                let script = program.astNode;
+
                 const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
                 debugLog('[BEFORE STRUCT SCRIPT] script: ', script.dumpSrc());
                 debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 3, 'UI_AfterCheck_Begin'), true, cachePath);
@@ -103,5 +107,8 @@ export function uiTransform(): Plugins {
             }
             console.log('[UI PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
         },
+        clean() {
+            arkts.arktsGlobal.clearContext();
+        }
     };
 }

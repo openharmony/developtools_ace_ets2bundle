@@ -26,7 +26,7 @@ export interface ProgramVisitorOptions extends VisitorOptions {
     visitors: AbstractVisitor[];
     skipPrefixNames: string[];
     hooks?: ProgramHooks;
-    pluginContext: PluginContext;
+    pluginContext?: PluginContext;
 }
 
 export interface ProgramHookConfig {
@@ -83,7 +83,7 @@ export class ProgramVisitor extends AbstractVisitor {
     private readonly skipPrefixNames: string[];
     private readonly hooks?: ProgramHooks;
     private filenames: Map<number, string>;
-    private pluginContext: PluginContext;
+    private pluginContext?: PluginContext;
 
     constructor(options: ProgramVisitorOptions) {
         super(options);
@@ -115,7 +115,7 @@ export class ProgramVisitor extends AbstractVisitor {
     
             if (currProgram.peer !== program.peer) {
                 const name: string = this.filenames.get(currProgram.peer)!;
-                const cachePath: string | undefined =  this.pluginContext.getProjectConfig()?.cachePath;
+                const cachePath: string | undefined =  this.pluginContext?.getProjectConfig()?.cachePath;
                 debugDump(
                     currProgram.astNode.dumpSrc(), 
                     getDumpFileName(this.state, "ORI", undefined, name), 
@@ -194,7 +194,7 @@ export class ProgramVisitor extends AbstractVisitor {
                     script.dumpSrc(), 
                     getDumpFileName(this.state, this.pluginName, count, transformer.constructor.name), 
                     true,
-                    this.pluginContext.getProjectConfig()?.cachePath
+                    this.pluginContext?.getProjectConfig()?.cachePath
                 );
                 count += 1;
             }
