@@ -35,6 +35,8 @@ export function uiTransform(): Plugins {
                 debugLog('[BEFORE PARSED SCRIPT] script: ', script.dumpSrc());
                 debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 1, 'UI_AfterParse_Begin'), true, cachePath);
 
+                arkts.Performance.getInstance().createEvent("ui-parsed");
+
                 const componentTransformer = new ComponentTransformer();
                 const preprocessorTransformer = new PreprocessorTransformer();
                 const programVisitor = new ProgramVisitor({
@@ -47,6 +49,8 @@ export function uiTransform(): Plugins {
 
                 program = programVisitor.programVisitor(program);
                 script = program.astNode;
+
+                arkts.Performance.getInstance().stopEvent("ui-parsed", true);
 
                 debugLog('[AFTER PARSED SCRIPT] script: ', script.dumpSrc());
                 debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 2, 'UI_AfterParse_End'), true, cachePath);
@@ -66,6 +70,8 @@ export function uiTransform(): Plugins {
                 debugLog('[BEFORE STRUCT SCRIPT] script: ', script.dumpSrc());
                 debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 3, 'UI_AfterCheck_Begin'), true, cachePath);
 
+                arkts.Performance.getInstance().createEvent("ui-checked");
+
                 const builderLambdaTransformer = new BuilderLambdaTransformer();
                 const structTransformer = new StructTransformer(this.getProjectConfig());
                 const programVisitor = new ProgramVisitor({
@@ -78,11 +84,19 @@ export function uiTransform(): Plugins {
 
                 program = programVisitor.programVisitor(program);
                 script = program.astNode;
+
+                arkts.Performance.getInstance().stopEvent("ui-checked", true);
+
                 debugLog('[AFTER STRUCT SCRIPT] script: ', script.dumpSrc());
                 debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 4, 'UI_AfterCheck_End'), true, cachePath);
 
                 arkts.GlobalInfo.getInfoInstance().reset();
+                arkts.Performance.getInstance().createEvent("ui-recheck");
                 arkts.recheckSubtree(script);
+                arkts.Performance.getInstance().stopEvent("ui-recheck", true);
+
+                arkts.Performance.getInstance().clearAllEvents();
+
                 this.setArkTSAst(script);
                 console.log('[UI PLUGIN] AFTER CHECKED EXIT');
                 return script;
