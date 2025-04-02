@@ -1,0 +1,24 @@
+{
+    "plugins": {
+        "ui_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/ui-plugins/index",
+        "memo_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/memo-plugins/index"
+    },
+
+    "compileFiles": [
+        "./demo/localtest/entry/new.ets"
+    ],
+
+    "packageName" : "entry",
+
+    "buildType": "build",
+    "buildMode": "Debug",
+    "moduleRootPath": "./demo/localtest/entry/",
+    "sourceRoots": ["./"],
+
+    "loaderOutPath": "./dist",
+    "cachePath": "./dist/cache",
+
+    "buildSdkPath": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/",
+
+    "dependentModuleList": []
+}

@@ -1,0 +1,17 @@
+node_modules/
+**/*/node_modules/
+
+**/*/dist/
+**/*/build/
+build/
+lib/
+
+*.tgz
+
+package-lock.json
+/**/*/package-lock.json
+
+coverage/
+**/*/generated
+
+test/demo/localtest/build_config.json
