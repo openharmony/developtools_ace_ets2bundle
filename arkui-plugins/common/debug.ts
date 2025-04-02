@@ -30,11 +30,12 @@ function mkDir(filePath: string): void {
     fs.mkdirSync(filePath);
 }
 
-export function debugDump(content: string, fileName: string, isInit: boolean): void {
+export function debugDump(content: string, fileName: string, isInit: boolean, cachePath: string | undefined): void {
     if (!isDebugDump) return;
-
     const currentDirectory = process.cwd();
-    const outputDir: string = path.resolve(currentDirectory, 'entry', 'build', 'default', 'generated', 'dist', 'cache');
+    const outputDir: string = cachePath
+        ? path.resolve(currentDirectory, cachePath)
+        : path.resolve(currentDirectory, 'dist', 'cache');
     const filePath: string = path.resolve(outputDir, fileName);
     if (!fs.existsSync(outputDir)) {
         mkDir(outputDir);

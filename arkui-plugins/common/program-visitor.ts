@@ -18,6 +18,7 @@ import { AbstractVisitor, VisitorOptions } from "./abstract-visitor";
 import { matchPrefix } from "./arkts-utils";
 import { debugDump, getDumpFileName } from "./debug";
 import { ARKUI_COMPONENT_IMPORT_NAME } from "./predefines";
+import { PluginContext } from "./plugin-context";
 
 export interface ProgramVisitorOptions extends VisitorOptions {
     pluginName: string;
@@ -25,6 +26,7 @@ export interface ProgramVisitorOptions extends VisitorOptions {
     visitors: AbstractVisitor[];
     skipPrefixNames: string[];
     hooks?: ProgramHooks;
+    pluginContext: PluginContext;
 }
 
 export interface ProgramHookConfig {
@@ -81,6 +83,7 @@ export class ProgramVisitor extends AbstractVisitor {
     private readonly skipPrefixNames: string[];
     private readonly hooks?: ProgramHooks;
     private filenames: Map<number, string>;
+    private pluginContext: PluginContext;
 
     constructor(options: ProgramVisitorOptions) {
         super(options);
@@ -90,6 +93,7 @@ export class ProgramVisitor extends AbstractVisitor {
         this.skipPrefixNames = options.skipPrefixNames ?? [];
         this.hooks = options.hooks;
         this.filenames = new Map();
+        this.pluginContext = options.pluginContext;
     }
 
     reset(): void {
@@ -111,17 +115,20 @@ export class ProgramVisitor extends AbstractVisitor {
     
             if (currProgram.peer !== program.peer) {
                 const name: string = this.filenames.get(currProgram.peer)!;
+                const cachePath: string | undefined =  this.pluginContext.getProjectConfig()?.cachePath;
                 debugDump(
                     currProgram.astNode.dumpSrc(), 
                     getDumpFileName(this.state, "ORI", undefined, name), 
-                    true
+                    true,
+                    cachePath
                 );
                 const script = this.visitor(currProgram.astNode, currProgram, name);
                 if (script) {
                     debugDump(
                         script.dumpSrc(), 
                         getDumpFileName(this.state, this.pluginName, undefined, name),
-                        true
+                        true,
+                        cachePath
                     );
                 }
             }
@@ -186,7 +193,8 @@ export class ProgramVisitor extends AbstractVisitor {
                 debugDump(
                     script.dumpSrc(), 
                     getDumpFileName(this.state, this.pluginName, count, transformer.constructor.name), 
-                    true
+                    true,
+                    this.pluginContext.getProjectConfig()?.cachePath
                 );
                 count += 1;
             }

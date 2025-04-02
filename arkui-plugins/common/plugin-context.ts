@@ -54,7 +54,8 @@ export class PluginContext {
 
 export interface ProjectConfig {
     bundleName: string,
-    moduleName: string
+    moduleName: string,
+    cachePath: string
 }
 
 export type PluginHandlerFunction = () => void;
