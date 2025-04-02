@@ -73,4 +73,5 @@ export * from "./peers/Program"
 export * from "./peers/ImportPathManager"
 export * from "./peers/SourcePosition"
 export * from "./to-be-generated/MemberExpression"
+export * from "./static/globalUtils"
 export { global as arktsGlobal } from "./static/global";

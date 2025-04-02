@@ -29,9 +29,11 @@ export function unmemoizeTransform(): Plugins {
         name: 'memo-plugin',
         checked(this: PluginContext) {
             console.log("[MEMO PLUGIN] AFTER CHECKED ENTER");
-            let program = arkts.arktsGlobal.compilerContext.program;
-            let script = program.astNode;
-            if (script) {
+            const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+            if (!!contextPtr) {
+                let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+                let script = program.astNode;
+
                 debugLog("[BEFORE MEMO SCRIPT] script: ", script.dumpSrc());
                 const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
                 debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 5, "MEMO_AfterCheck_Begin"), true, cachePath);
@@ -76,6 +78,9 @@ export function unmemoizeTransform(): Plugins {
                 return script;
             }
             console.log("[MEMO PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM");
+        },
+        clean() {
+            arkts.arktsGlobal.clearContext();
         }
     }
 }
