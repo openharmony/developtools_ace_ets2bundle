@@ -33,7 +33,8 @@ export function unmemoizeTransform(): Plugins {
             let script = program.astNode;
             if (script) {
                 debugLog("[BEFORE MEMO SCRIPT] script: ", script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 5, "MEMO_AfterCheck_Begin"), true);
+                const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
+                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 5, "MEMO_AfterCheck_Begin"), true, cachePath);
 
                 const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
                 const parameterTransformer = new ParameterTransformer({ positionalIdTracker });
@@ -50,14 +51,15 @@ export function unmemoizeTransform(): Plugins {
                     pluginName: unmemoizeTransform.name,
                     state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
                     visitors: [functionTransformer],
-                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
+                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+                    pluginContext: this,
                 });
 
                 program = programVisitor.programVisitor(program);
                 script = program.astNode;
 
                 debugLog('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 6, "MEMO_AfterCheck_End"), true);
+                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 6, "MEMO_AfterCheck_End"), true, cachePath);
 
                 arkts.recheckSubtree(script);
                 this.setArkTSAst(script);
