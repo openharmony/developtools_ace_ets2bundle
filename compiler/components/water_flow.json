@@ -12,7 +12,6 @@
         "columnsGap",
         "rowsGap",
         "layoutDirection",
-        "enableScrollInteraction",
-        "fadingEdge"
+        "enableScrollInteraction"
     ]
 }
