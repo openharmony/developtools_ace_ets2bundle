@@ -104,7 +104,7 @@ function readFile(dir, fileDir) {
     const status = fs.statSync(filePath);
     if (status.isDirectory()) {
       readFile(filePath, fileDir);
-    } else {
+    } else if (filePath.endsWith('.d.ts')) {
       fileDir.push(filePath);
     }
   });
@@ -115,10 +115,14 @@ function readSystemApis(dir, fileDir) {
   files.forEach(file => {
     const filePath = path.join(dir, file);
     const status = fs.statSync(filePath);
-    if (!status.isDirectory()) {
+    if (!status.isDirectory() && !hasSameApi(filePath)) {
       fileDir.push(file);
     }
   });
+}
+
+function hasSameApi(filePath) {
+  return filePath.endsWith('.d.ets') && fs.existsSync(filePath.replace('.d.ets', '.d.ts'));
 }
 
 function mkDir(filePath) {
