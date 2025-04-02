@@ -15,7 +15,6 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { isAnnotation } from '../common/arkts-utils';
-import { DecoratorNames, isDecoratorAnnotation } from './property-translators/utils';
 
 export enum CustomComponentNames {
     ENTRY_ANNOTATION_NAME = 'Entry',
@@ -89,7 +88,11 @@ export function isBuilderLambdaAnnotation(node: arkts.AnnotationUsage): boolean 
     return isAnnotation(node, BuilderLambdaNames.ANNOTATION_NAME);
 }
 
-export function hasBuilderLambdaAnnotation(node: arkts.ScriptFunction | arkts.ETSParameterExpression): boolean {
+export type BuilderLambdaAstNode = arkts.ScriptFunction
+    | arkts.ETSParameterExpression
+    | arkts.FunctionDeclaration;
+
+export function hasBuilderLambdaAnnotation(node: BuilderLambdaAstNode): boolean {
     return node.annotations.some(isBuilderLambdaAnnotation);
 }
 
@@ -122,14 +125,6 @@ export function findBuilderLambdaInMethod(node: arkts.MethodDefinition): arkts.A
     return undefined;
 }
 
-export function isBuilderLambdaFunction(node: arkts.FunctionExpression): boolean {
-    return hasBuilderLambdaAnnotation(node.scriptFunction);
-}
-
-export function findBuilderLambdaInFunction(node: arkts.FunctionExpression): arkts.AnnotationUsage | undefined {
-    return findBuilderLambdaAnnotation(node.scriptFunction);
-}
-
 export function isBuilderLambdaCall(node: arkts.CallExpression | arkts.Identifier): boolean {
     const expr = arkts.isIdentifier(node) ? node : node.expression;
     const decl = arkts.getDecl(expr);
@@ -140,7 +135,7 @@ export function isBuilderLambdaCall(node: arkts.CallExpression | arkts.Identifie
         return isBuilderLambdaMethod(decl);
     }
     if (arkts.isFunctionExpression(decl)) {
-        return isBuilderLambdaFunction(decl);
+        return hasBuilderLambdaAnnotation(decl.scriptFunction);
     }
     return false;
 }
@@ -155,7 +150,7 @@ export function findBuilderLambdaInCall(
         return findBuilderLambdaInMethod(decl);
     }
     if (arkts.isFunctionExpression(decl)) {
-        return findBuilderLambdaInFunction(decl);
+        return findBuilderLambdaAnnotation(decl.scriptFunction);
     }
     return undefined;
 }
