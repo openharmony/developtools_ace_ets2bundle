@@ -140,6 +140,34 @@ function updateFactoryArgInBuilderLambda(
     );
 }
 
+// TODO: very time-consuming...
+function updateIfElseContentBodyInBuilderLambda(
+    statement: arkts.AstNode,
+    isExternal?: boolean
+): arkts.AstNode {
+    if (arkts.isIfStatement(statement)) {
+        const alternate = !!statement.alternate
+            ? updateIfElseContentBodyInBuilderLambda(statement.alternate, isExternal)
+            : statement.alternate;
+        const consequence = updateIfElseContentBodyInBuilderLambda(statement.consequent, isExternal);
+        return arkts.factory.updateIfStatement(
+            statement,
+            statement.test,
+            consequence!,
+            alternate
+        )
+    }
+    if (arkts.isBlockStatement(statement)) {
+        return arkts.factory.updateBlock(
+            statement,
+            statement.statements.map(
+                (st) => updateContentBodyInBuilderLambda(st, isExternal)
+            )
+        )
+    }
+    return statement;
+}
+
 function updateContentBodyInBuilderLambda(
     statement: arkts.Statement,
     isExternal?: boolean
@@ -154,27 +182,9 @@ function updateContentBodyInBuilderLambda(
             transformBuilderLambda(statement.expression)
         );
     }
+    // TODO: very time-consuming...
     if (arkts.isIfStatement(statement)) {
-        return arkts.factory.updateIfStatement(
-            statement,
-            statement.test,
-            arkts.isBlockStatement(statement.consequent) 
-                ? arkts.factory.updateBlock(
-                    statement.consequent,
-                    statement.consequent.statements.map(
-                        (st) => updateContentBodyInBuilderLambda(st, isExternal)
-                    )
-                )
-                : statement.consequent,
-            !!statement.alternate && arkts.isBlockStatement(statement.alternate)
-                ? arkts.factory.updateBlock(
-                    statement.alternate,
-                    statement.alternate.statements.map(
-                        (st) => updateContentBodyInBuilderLambda(st, isExternal)
-                    )
-                )
-                : statement.alternate
-        )
+        return updateIfElseContentBodyInBuilderLambda(statement, isExternal);
     }
 
     return statement;
