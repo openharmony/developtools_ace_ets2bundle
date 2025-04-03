@@ -24,11 +24,13 @@ export class Performance {
     private events: Map<string, Event>;
     private scopes: string[];
     private shouldSkip: boolean;
+    private totalDuration: number;
 
     private constructor() {
         this.events = new Map();
         this.scopes = [];
         this.shouldSkip = true;
+        this.totalDuration = 0;
     }
 
     public static getInstance(): Performance {
@@ -65,9 +67,12 @@ export class Performance {
         const endTime: number = performance.now();
         const parentEvent: string = this.scopes[this.scopes.length - 1];
         const duration: number = endTime - event.startTime;
+        this.totalDuration += duration;
 
         if (shouldLog) {
-            console.log(`[PERFORMANCE] name: ${event.name}, parent: ${parentEvent}, duration: ${formatTime(duration)}`);
+            console.log(
+                `[PERFORMANCE] name: ${event.name}, parent: ${parentEvent}, duration: ${formatTime(duration)}, total: ${formatTime(this.totalDuration)}`
+            );
         }
 
         return { ...event, endTime, parentEvent, duration };
@@ -87,9 +92,12 @@ export class Performance {
         const endTime: number = performance.now();
         const parentEvent: string = this.scopes[this.scopes.length - 1];
         const duration: number = endTime - event.startTime;
+        this.totalDuration += duration;
 
         if (shouldLog) {
-            console.log(`[PERFORMANCE] name: ${event.name}, parent: ${parentEvent}, duration: ${formatTime(duration)}`);
+            console.log(
+                `[PERFORMANCE] name: ${event.name}, parent: ${parentEvent}, duration: ${formatTime(duration)}, total: ${formatTime(this.totalDuration)}`
+            );
         }
 
         return { ...event, endTime, parentEvent, duration };
@@ -101,5 +109,9 @@ export class Performance {
             this.stopLastEvent(shouldLog);
         }
         this.events = new Map();
+    }
+
+    clearTotalDuration(): void {
+        this.totalDuration = 0;
     }
 }
