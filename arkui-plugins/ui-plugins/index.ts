@@ -81,6 +81,7 @@ export function uiTransform(): Plugins {
                 debugLog('[AFTER STRUCT SCRIPT] script: ', script.dumpSrc());
                 debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 4, 'UI_AfterCheck_End'), true, cachePath);
 
+                arkts.GlobalInfo.getInfoInstance().reset();
                 arkts.recheckSubtree(script);
                 this.setArkTSAst(script);
                 console.log('[UI PLUGIN] AFTER CHECKED EXIT');
