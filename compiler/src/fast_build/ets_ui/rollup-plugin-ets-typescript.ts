@@ -622,6 +622,7 @@ function resetCollection() {
   propertyCollection.clear();
   linkCollection.clear();
   EXTEND_ATTRIBUTE.clear();
+  storedFileInfo.getCurrentArkTsFile().reuseComponentsV2.clear();
   resetComponentCollection();
   storedFileInfo.hasLocalBuilderInFile = false;
 }
