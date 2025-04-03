@@ -283,6 +283,9 @@ function judgeCacheShouldDisabled(): void {
       this.cache.get('disableCacheOptions')[key] !== this.share.projectConfig[key]) {
       if (key === 'resourceTableHash' && process.env.compileMode === 'moduleJson') {
         storedFileInfo.resourceTableChanged = true;
+      } else if (!!projectConfig.uiTransformOptimization && key === 'bundleName' &&
+        process.env.compileMode === 'moduleJson') {
+        shouldDisableCache = false;
       } else if (!shouldDisableCache) {
         shouldDisableCache = true;
       }
