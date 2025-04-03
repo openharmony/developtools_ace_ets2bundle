@@ -111,6 +111,11 @@ export class GlobalInfo {
     public setStructInfo(structName: string, info: StructInfo): void {
         this._structMap.set(structName, info);
     }
+
+    public reset(): void {
+        this._structMap.clear();
+        this._structCollection.clear();
+    }
 }
 
 // TODO: rethink (remove as)
