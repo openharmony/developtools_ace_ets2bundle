@@ -100,7 +100,7 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
                     )
                 )
             ),
-            [binaryItem]
+            [arkts.factory.create1StringLiteral(originalName), binaryItem]
         );
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
