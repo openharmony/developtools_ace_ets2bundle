@@ -248,25 +248,23 @@ export class factory {
      * create and insert `import { EntryPoint as EntryPoint } from "@ohos.arkui.UserView";`
      * to the top of script's statements.
      */
-    static createAndInsertEntryPointImport() {
+    static createAndInsertEntryPointImport(program?: arkts.Program) {
         const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(
             EntryWrapperNames.ENTRY_DEFAULT_IMPORT
         );
         const imported: arkts.Identifier = arkts.factory.createIdentifier(
             EntryWrapperNames.ENTRY_POINT_CLASS_NAME
         );
-        const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
-            source,
-            [
-                arkts.factory.createImportSpecifier(
-                    imported,
-                    imported
-                )
-            ],
-            arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE
-        )
         // Insert this import at the top of the script's statements.
-        arkts.importDeclarationInsert(importDecl);
-        return;
+        if (!program) {
+            throw Error("Failed to insert import: Transformer has no program");
+        }
+        uiFactory.createAndInsertImportDeclaration(
+            source,
+            imported,
+            imported,
+            arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE,
+            program
+        );
     }
 }

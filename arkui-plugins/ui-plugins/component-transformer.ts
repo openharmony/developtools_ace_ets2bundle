@@ -142,19 +142,17 @@ export class ComponentTransformer extends AbstractVisitor {
         const imported: arkts.Identifier = arkts.factory.createIdentifier(
             CustomComponentNames.COMPONENT_CLASS_NAME
         );
-        const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
-            source,
-            [
-                arkts.factory.createImportSpecifier(
-                    imported,
-                    imported
-                )
-            ],
-            arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE
-        )
         // Insert this import at the top of the script's statements.
-        arkts.importDeclarationInsert(importDecl);
-        return;
+        if (!this.program) {
+            throw Error("Failed to insert import: Transformer has no program");
+        }
+        factory.createAndInsertImportDeclaration(
+            source,
+            imported,
+            imported,
+            arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE,
+            this.program
+        );
     }
 
     processEtsScript(node: arkts.EtsScript): arkts.EtsScript {
@@ -172,7 +170,7 @@ export class ComponentTransformer extends AbstractVisitor {
         }
 
         if (this.entryNames.length > 0) {
-            if (!this.isEntryPointImported) entryFactory.createAndInsertEntryPointImport();
+            if (!this.isEntryPointImported) entryFactory.createAndInsertEntryPointImport(this.program);
             // TODO: normally, we should only have at most one @Entry component in a single file.
             // probably need to handle error message here.
             updateStatements.push(

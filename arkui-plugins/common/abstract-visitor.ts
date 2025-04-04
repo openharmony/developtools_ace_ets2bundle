@@ -17,16 +17,19 @@ import * as arkts from "@koalaui/libarkts"
 
 export interface VisitorOptions {
     isExternal?: boolean,
-    externalSourceName?: string
+    externalSourceName?: string,
+    program?: arkts.Program
 } 
 
 export abstract class AbstractVisitor implements VisitorOptions {
     public isExternal: boolean;
     public externalSourceName?: string;
+    public program?: arkts.Program;
 
     constructor(options?: VisitorOptions) {
         this.isExternal = options?.isExternal ?? false;
         this.externalSourceName = options?.externalSourceName;
+        this.program = options?.program;
     }
 
     indentation = 0
