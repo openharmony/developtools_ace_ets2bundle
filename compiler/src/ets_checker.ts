@@ -103,6 +103,7 @@ import {
   arkTSEvolutionModuleMap,
   getArkTSEvoDeclFilePath
 } from './process_arkts_evolution';
+import { processInteropUI } from './process_interop_ui';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -529,6 +530,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   }
   if (rollupShareObject?.projectConfig.mixCompile) {
     generateDeclarationFileForSTS(rootFileNames);
+    processInteropUI(projectConfig.dependentModuleMap?.get(projectConfig.moduleName)?.declgenV2OutPath);
   }
   if (globalProgram.program &&
     (process.env.watchMode !== 'true' && !projectConfig.isPreview &&
