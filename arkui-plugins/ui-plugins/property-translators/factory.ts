@@ -124,4 +124,73 @@ export class factory {
             optional
         );
     }
+
+    /*
+    * create `(<params>)<typeParams>: <returnType> => { <bodyStatementsList> }`.
+    */
+    static createArrowFunctionWithParamsAndBody(
+        typeParams: arkts.TSTypeParameterDeclaration | undefined,
+        params: arkts.Expression[] | undefined,
+        returnType: arkts.TypeNode | undefined,
+        hasReceiver: boolean,
+        bodyStatementsList: arkts.Statement[]
+    ): arkts.ArrowFunctionExpression {
+        return arkts.factory.createArrowFunction(
+            arkts.factory.createScriptFunction(
+                arkts.BlockStatement.createBlockStatement(bodyStatementsList),
+                arkts.factory.createFunctionSignature(
+                    typeParams,
+                    params ? params : [],
+                    returnType,
+                    hasReceiver,
+                ),
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            )
+        );
+    }
+
+    /*
+    * create `initializers!.<newName>!.<getOrSet>(<args>)`.
+    */
+    static createBackingGetOrSetCall(
+        newName: string,
+        getOrSet: string,
+        args: arkts.AstNode[] | undefined
+    ): arkts.CallExpression {
+        return arkts.factory.createCallExpression(
+            arkts.factory.createMemberExpression(
+                arkts.factory.createTSNonNullExpression(
+                    factory.createNonNullOrOptionalMemberExpression('initializers', newName, false, true),
+                ),
+                arkts.factory.createIdentifier(getOrSet),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false,
+            ),
+            undefined,
+            args,
+        );
+    }
+
+    /*
+    * create `new <className><typeAnnotation>(<args>)`.
+    */
+    static createNewDecoratedInstantiate(
+        className: string,
+        typeAnnotation: arkts.TypeNode | undefined,
+        args: arkts.Expression[] | undefined
+    ): arkts.ETSNewClassInstanceExpression {
+        return arkts.factory.createETSNewClassInstanceExpression(
+            arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier(className),
+                    arkts.factory.createTSTypeParameterInstantiation(
+                        typeAnnotation ? [typeAnnotation.clone()] : [],
+                    ),
+                ),
+            ),
+            args?.length ? args : [],
+        );
+    }
 }

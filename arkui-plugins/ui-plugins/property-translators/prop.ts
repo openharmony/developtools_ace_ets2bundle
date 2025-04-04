@@ -104,7 +104,7 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
                     )
                 )
             ),
-            [this.property.value ? binaryItem : nonNullItem]
+            [arkts.factory.create1StringLiteral(originalName), this.property.value ? binaryItem : nonNullItem]
         );
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
