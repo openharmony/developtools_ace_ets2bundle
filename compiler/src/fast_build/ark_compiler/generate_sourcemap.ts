@@ -15,10 +15,6 @@
 
 import path from 'path';
 import fs from 'fs';
-import { 
-  createAndStartEvent,
-  stopEvent
-} from '../../ark_utils';
 import {
   EXTNAME_ETS,
   EXTNAME_JS,
@@ -59,6 +55,11 @@ import {
   LogData,
   LogDataFactory
 } from './logger';
+import {
+  createAndStartEvent,
+  CompileEvent,
+  stopEvent
+} from '../../performance';
 
 export class SourceMapGenerator {
   private static instance: SourceMapGenerator | undefined = undefined;
@@ -193,7 +194,7 @@ export class SourceMapGenerator {
       path.join(this.projectConfig.cachePath, SOURCEMAPS);
   }
 
-  public buildModuleSourceMapInfo(parentEvent: Object): void {
+  public buildModuleSourceMapInfo(parentEvent: CompileEvent | undefined): void {
     if (this.projectConfig.widgetCompile) {
       return;
     }
