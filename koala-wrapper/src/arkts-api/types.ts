@@ -165,15 +165,14 @@ export class CallExpression extends Expression {
             unpackNodeArray(global.generatedEs2panda._TSTypeParameterInstantiationParamsConst(global.context, tsTypeParameterInstantiation.peer)) : undefined
         this.arguments = unpackNodeArray(
             global.generatedEs2panda._CallExpressionArguments(global.context, this.peer))
-        this.trailingBlock = unpackNode(
-            global.generatedEs2panda._CallExpressionTrailingBlockConst(global.context, this.peer))
     }
 
     static create(
         expression: AstNode,
         typeArguments: readonly TypeNode[] | undefined,
         args: readonly AstNode[] | undefined,
-        trailingBlock: AstNode | undefined = undefined
+        isOptional: boolean = false,
+        trailingComma: boolean = false
     ): CallExpression {
         const peer = global.generatedEs2panda._CreateCallExpression(
             global.context,
@@ -181,16 +180,10 @@ export class CallExpression extends Expression {
             passNodeArray(args),
             args?.length ?? 0,
             typeArguments ? passNode(TSTypeParameterInstantiation.createTSTypeParameterInstantiation(typeArguments)) : nullptr,
-            false,
-            false
+            isOptional,
+            trailingComma
         )
-        const call = new CallExpression(peer)
-        if (trailingBlock) {
-            global.generatedEs2panda._CallExpressionSetTrailingBlock(
-                global.context, peer, trailingBlock?.peer
-            )
-        }
-        return call
+        return new CallExpression(peer)
     }
 
     static update(
@@ -198,7 +191,8 @@ export class CallExpression extends Expression {
         expression: AstNode,
         typeArguments: readonly TypeNode[] | undefined,
         args: readonly AstNode[] | undefined,
-        trailingBlock: AstNode | undefined = undefined
+        isOptional: boolean = false,
+        trailingComma: boolean = false
     ): CallExpression {
         const peer = global.es2panda._UpdateCallExpression(
             global.context,
@@ -207,22 +201,27 @@ export class CallExpression extends Expression {
             passNodeArray(args),
             args?.length ?? 0,
             typeArguments ? passNode(TSTypeParameterInstantiation.createTSTypeParameterInstantiation(typeArguments)) : nullptr,
-            false,
-            false
+            isOptional,
+            trailingComma
         )
-        const call = new CallExpression(peer)
-        if (trailingBlock) {
-            global.generatedEs2panda._CallExpressionSetTrailingBlock(
-                global.context, peer, trailingBlock?.peer
-            )
-        }
-        return call
+        return new CallExpression(peer)
+    }
+
+    get trailingBlock(): BlockStatement | undefined {
+        return unpackNode(
+            global.generatedEs2panda._CallExpressionTrailingBlockConst(global.context, this.peer)
+        );
+    }
+
+    setTralingBlock(trailingBlock: BlockStatement | undefined): this {
+        if (!trailingBlock) return this;
+        global.generatedEs2panda._CallExpressionSetTrailingBlock(global.context, this.peer, trailingBlock.peer);
+        return this;
     }
 
     readonly expression: AstNode // Expression
     readonly typeArguments: readonly TypeNode[] | undefined
     readonly arguments: readonly Expression[]
-    readonly trailingBlock: AstNode|undefined // BlockStatement
 }
 
 export class AssignmentExpression extends AstNode {

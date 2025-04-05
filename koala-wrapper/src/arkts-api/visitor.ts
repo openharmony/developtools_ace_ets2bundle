@@ -111,6 +111,11 @@ export class GlobalInfo {
     public setStructInfo(structName: string, info: StructInfo): void {
         this._structMap.set(structName, info);
     }
+
+    public reset(): void {
+        this._structMap.clear();
+        this._structCollection.clear();
+    }
 }
 
 // TODO: rethink (remove as)
@@ -151,13 +156,16 @@ export function visitEachChild(
         );
     }
     if (isCallExpression(node)) {
-        return factory.updateCallExpression(
+        const call = factory.updateCallExpression(
             node,
             nodeVisitor(node.expression, visitor),
             nodesVisitor(node.typeArguments, visitor),
-            nodesVisitor(node.arguments, visitor),
-            nodeVisitor(node.trailingBlock, visitor)
+            nodesVisitor(node.arguments, visitor)
         );
+        if (!!node.trailingBlock) {
+            call.setTralingBlock(nodeVisitor(node.trailingBlock, visitor));
+        }
+        return call;
     }
     if (isFunctionDeclaration(node)) {
         return factory.updateFunctionDeclaration(

@@ -126,7 +126,8 @@ export const factory = {
     get updateCallExpression() {
         return updateThenAttach(
             CallExpression.update,
-            attachModifiers
+            attachModifiers,
+            (node: CallExpression, original: CallExpression) => !!original.trailingBlock ? node.setTralingBlock(original.trailingBlock) : node
         )
     },
     get createExpressionStatement() {

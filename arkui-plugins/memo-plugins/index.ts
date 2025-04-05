@@ -29,11 +29,16 @@ export function unmemoizeTransform(): Plugins {
         name: 'memo-plugin',
         checked(this: PluginContext) {
             console.log("[MEMO PLUGIN] AFTER CHECKED ENTER");
-            let program = arkts.arktsGlobal.compilerContext.program;
-            let script = program.astNode;
-            if (script) {
+            const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+            if (!!contextPtr) {
+                let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+                let script = program.astNode;
+
                 debugLog("[BEFORE MEMO SCRIPT] script: ", script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 5, "MEMO_AfterCheck_Begin"), true);
+                const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
+                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 5, "MEMO_AfterCheck_Begin"), true, cachePath);
+
+                arkts.Performance.getInstance().createEvent("memo-checked");
 
                 const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
                 const parameterTransformer = new ParameterTransformer({ positionalIdTracker });
@@ -50,21 +55,32 @@ export function unmemoizeTransform(): Plugins {
                     pluginName: unmemoizeTransform.name,
                     state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
                     visitors: [functionTransformer],
-                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
+                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+                    pluginContext: this,
                 });
 
                 program = programVisitor.programVisitor(program);
                 script = program.astNode;
 
-                debugLog('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 6, "MEMO_AfterCheck_End"), true);
+                arkts.Performance.getInstance().stopEvent("memo-checked", true);
 
+                debugLog('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
+                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 6, "MEMO_AfterCheck_End"), true, cachePath);
+
+                arkts.Performance.getInstance().createEvent("memo-recheck");
                 arkts.recheckSubtree(script);
+                arkts.Performance.getInstance().stopEvent("memo-recheck", true);
+
+                arkts.Performance.getInstance().clearAllEvents();
+
                 this.setArkTSAst(script);
                 console.log("[MEMO PLUGIN] AFTER CHECKED EXIT");
                 return script;
             }
             console.log("[MEMO PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM");
+        },
+        clean() {
+            arkts.arktsGlobal.clearContext();
         }
     }
 }

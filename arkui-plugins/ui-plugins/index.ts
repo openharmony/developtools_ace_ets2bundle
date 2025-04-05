@@ -28,11 +28,16 @@ export function uiTransform(): Plugins {
         name: 'ui-plugin',
         parsed(this: PluginContext) {
             console.log('[UI PLUGIN] AFTER PARSED ENTER');
-            let program = arkts.arktsGlobal.compilerContext.program;
-            let script = program.astNode;
-            if (script) {
+            const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+            if (!!contextPtr) {
+                let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+                let script = program.astNode;
+
+                const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
                 debugLog('[BEFORE PARSED SCRIPT] script: ', script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 1, 'UI_AfterParse_Begin'), true);
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 1, 'UI_AfterParse_Begin'), true, cachePath);
+
+                arkts.Performance.getInstance().createEvent("ui-parsed");
 
                 const componentTransformer = new ComponentTransformer();
                 const preprocessorTransformer = new PreprocessorTransformer();
@@ -40,14 +45,17 @@ export function uiTransform(): Plugins {
                     pluginName: uiTransform.name,
                     state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
                     visitors: [componentTransformer, preprocessorTransformer],
-                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES
+                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+                    pluginContext: this,
                 });
 
                 program = programVisitor.programVisitor(program);
                 script = program.astNode;
 
+                arkts.Performance.getInstance().stopEvent("ui-parsed", true);
+
                 debugLog('[AFTER PARSED SCRIPT] script: ', script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 2, 'UI_AfterParse_End'), true);
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 2, 'UI_AfterParse_End'), true, cachePath);
 
                 this.setArkTSAst(script);
                 console.log('[UI PLUGIN] AFTER PARSED EXIT');
@@ -57,11 +65,16 @@ export function uiTransform(): Plugins {
         },
         checked(this: PluginContext) {
             console.log('[UI PLUGIN] AFTER CHECKED ENTER');
-            let program = arkts.arktsGlobal.compilerContext.program;
-            let script = program.astNode;
-            if (script) {
+            const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+            if (!!contextPtr) {
+                let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+                let script = program.astNode;
+
+                const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
                 debugLog('[BEFORE STRUCT SCRIPT] script: ', script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 3, 'UI_AfterCheck_Begin'), true);
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 3, 'UI_AfterCheck_Begin'), true, cachePath);
+
+                arkts.Performance.getInstance().createEvent("ui-checked");
 
                 const builderLambdaTransformer = new BuilderLambdaTransformer();
                 const structTransformer = new StructTransformer(this.getProjectConfig());
@@ -70,19 +83,32 @@ export function uiTransform(): Plugins {
                     state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
                     visitors: [structTransformer, builderLambdaTransformer],
                     skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+                    pluginContext: this,
                 });
 
                 program = programVisitor.programVisitor(program);
                 script = program.astNode;
-                debugLog('[AFTER STRUCT SCRIPT] script: ', script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 4, 'UI_AfterCheck_End'), true);
 
+                arkts.Performance.getInstance().stopEvent("ui-checked", true);
+
+                debugLog('[AFTER STRUCT SCRIPT] script: ', script.dumpSrc());
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 4, 'UI_AfterCheck_End'), true, cachePath);
+
+                arkts.GlobalInfo.getInfoInstance().reset();
+                arkts.Performance.getInstance().createEvent("ui-recheck");
                 arkts.recheckSubtree(script);
+                arkts.Performance.getInstance().stopEvent("ui-recheck", true);
+
+                arkts.Performance.getInstance().clearAllEvents();
+
                 this.setArkTSAst(script);
                 console.log('[UI PLUGIN] AFTER CHECKED EXIT');
                 return script;
             }
             console.log('[UI PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
         },
+        clean() {
+            arkts.arktsGlobal.clearContext();
+        }
     };
 }
