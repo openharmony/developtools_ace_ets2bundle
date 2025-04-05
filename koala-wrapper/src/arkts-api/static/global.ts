@@ -18,7 +18,7 @@ import { KNativePointer } from "@koalaui/interop"
 import { initEs2panda, Es2pandaNativeModule, initGeneratedEs2panda } from "../../Es2pandaNativeModule"
 import { Es2pandaNativeModule as GeneratedEs2pandaNativeModule } from "../../generated/Es2pandaNativeModule"
 import { initInterop, InteropNativeModule } from "../../InteropNativeModule"
-import { Context } from "../peers/Context"
+import type { Context } from "../peers/Context"
 
 export class global {
     public static filePath: string = "./plugins/input/main.sts"
@@ -39,11 +39,15 @@ export class global {
 
     // TODO: rename to contextPeer
     public static get context(): KNativePointer {
-        return global.compilerContext.peer ?? throwError('Global.context not initialized')
+        return global.compilerContext?.peer ?? throwError('Global.context not initialized')
     }
 
-    // TODO: rename to context when the pointer valued one is eliminated
-    public static compilerContext: Context
+    // unsafe - could be undefined
+    public static compilerContext: Context | undefined
+
+    public static clearContext(): void {
+        this.compilerContext = undefined;
+    }
 
     private static _es2panda: Es2pandaNativeModule | undefined = undefined
     public static get es2panda(): Es2pandaNativeModule {

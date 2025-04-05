@@ -18,13 +18,17 @@ export const EXTERNAL_SOURCE_PREFIX_NAMES: string[] = [
     "escompat"
 ];
 
+export const ARKUI_COMPONENT_IMPORT_NAME: string = "@ohos.arkui.component";
+
+export const ARKUI_STATEMANAGEMENT_IMPORT_NAME: string = "@ohos.arkui.stateManagement";
+
 export const EXTERNAL_SOURCE_ALLOWED_IMPORT_INSERT_NAMES: string[] = [
-    "@ohos.arkui"
+    ARKUI_COMPONENT_IMPORT_NAME,
+    ARKUI_STATEMANAGEMENT_IMPORT_NAME
 ];
 
 export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<string>>([
-    ["@ohos.arkui.component", new Set(["$r", "$rawfile", "ArkReusableStructBase", "Reusable"])],
-    ["@ohos.arkui.external", new Set(["_r", "_rawfile"])],
+    ["@ohos.arkui.component", new Set(["$r", "$rawfile", "ArkReusableStructBase", "Reusable", "_r", "_rawfile"])],
     ["@ohos.arkui.stateManagement", new Set([
         "State",
         "Prop",
@@ -34,20 +38,28 @@ export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<s
         "StorageProp",
         "LocalStorageLink",
         "LocalStorageProp",
+        "Watch",
+        "ObjectLink",
         "StateDecoratedVariable",
         "MutableState",
         "contextLocalStateOf",
         "contextLocal",
         "observableProxy",
         "SyncedProperty",
+        "objectLinkState",
         "propState",
         "AppStorageLinkState",
+        "StorageLinkState",
         "DecoratedMutableVariable",
         "LinkDecoratedVariable",
         "PropDecoratedVariable",
         "StorageLinkDecoratedVariable",
-        "StoragePropDecoratedVariable"
-    ])]
+        "StoragePropDecoratedVariable",
+        "memo",
+        "__memo_context_type",
+        "__memo_id_type"
+    ])],
+    ["@koalaui.runtime.memo.changeListener",  new Set(["OnChange"])]
 ]);
 
 export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, string[]>([
@@ -60,5 +72,9 @@ export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, stri
     ["Consume", ["MutableState", "contextLocal", "observableProxy"]],
     ["StorageProp", ["StoragePropDecoratedVariable"]],
     ["Reusable", ["ArkReusableStructBase"]],
-    ["StorageLink", ["StorageLinkDecoratedVariable"]]
+    ["StorageLink", ["StorageLinkDecoratedVariable"]],
+    ["LocalStorageLink", ["StorageLinkState", "MutableState", "observableProxy"]],
+    ["LocalStorageProp", ["StorageLinkState", "MutableState", "observableProxy", "propState"]],
+    ["Watch", ["OnChange"]],
+    ["ObjectLink", ["objectLinkState", "observableProxy", "SyncedProperty"]]
 ]);

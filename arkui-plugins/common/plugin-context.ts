@@ -15,30 +15,44 @@
 
 import * as arkts from "@koalaui/libarkts"
 
-// TODO: move this to arkts-api
+// This is the same plugin-context in the build-system.
 export class PluginContext {
     private ast: arkts.EtsScript | undefined;
     private program: arkts.Program | undefined;
     private projectConfig: ProjectConfig | undefined;
+    private contextPtr: number | undefined;
   
     constructor() {
         this.ast = undefined;
         this.program = undefined;
         this.projectConfig = undefined;
+        this.contextPtr = undefined;
     }
   
+    /**
+     * @deprecated
+     */
     public setArkTSAst(ast: arkts.EtsScript): void {
         this.ast = ast;
     }
-  
+
+    /**
+     * @deprecated
+     */
     public getArkTSAst(): arkts.EtsScript | undefined {
         return this.ast;
     }
-  
+
+    /**
+     * @deprecated
+     */
     public setArkTSProgram(program: arkts.Program): void {
         this.program = program;
     }
-  
+
+    /**
+     * @deprecated
+     */
     public getArkTSProgram(): arkts.Program | undefined {
         return this.program;
     }
@@ -50,11 +64,20 @@ export class PluginContext {
     public getProjectConfig(): ProjectConfig | undefined {
          return this.projectConfig;
     }
+
+    public setContextPtr(ptr: number): void {
+        this.contextPtr = ptr;
+    }
+
+    public getContextPtr(): number | undefined {
+        return this.contextPtr;
+    }
 }
 
 export interface ProjectConfig {
     bundleName: string,
-    moduleName: string
+    moduleName: string,
+    cachePath: string
 }
 
 export type PluginHandlerFunction = () => void;
