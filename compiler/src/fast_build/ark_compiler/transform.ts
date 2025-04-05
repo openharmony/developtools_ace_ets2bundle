@@ -35,11 +35,6 @@ import {
   getTransformLog
 } from '../../utils';
 import {
-  getHookEventFactory,
-  createAndStartEvent,
-  stopEvent
-} from '../../ark_utils';
-import {
   resetReExportCheckLog,
   reExportNoCheckMode,
   processJsCodeLazyImport,
@@ -49,6 +44,12 @@ import {
 import { SourceMapGenerator } from './generate_sourcemap';
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../meomry_monitor/memory_define';
+import {
+  getHookEventFactory,
+  createAndStartEvent,
+  stopEvent,
+  CompileEvent
+} from '../../performance';
 
 /**
  * rollup transform hook
@@ -56,7 +57,7 @@ import { MemoryDefine } from '../meomry_monitor/memory_define';
  * @param {string} id: absolute path of an input file
  */
 export function transformForModule(code: string, id: string): string {
-  const hookEventFactory = getHookEventFactory(this.share, 'genAbc', 'transform');
+  const hookEventFactory: CompileEvent | undefined = getHookEventFactory(this.share, 'genAbc', 'transform');
   const eventTransformForModule = createAndStartEvent(hookEventFactory, 'transform for module');
   const {
     autoLazyImport,
@@ -107,7 +108,7 @@ export function transformForModule(code: string, id: string): string {
   return code;
 }
 
-function preserveSourceMap(sourceFilePath: string, sourcemap: Object, projectConfig: Object, metaInfo: Object, parentEvent: Object): void {
+function preserveSourceMap(sourceFilePath: string, sourcemap: Object, projectConfig: Object, metaInfo: Object, parentEvent: CompileEvent): void {
   if (isCommonJsPluginVirtualFile(sourceFilePath)) {
     // skip automatic generated files like 'jsfile.js?commonjs-exports'
     return;
@@ -127,7 +128,7 @@ function preserveSourceMap(sourceFilePath: string, sourcemap: Object, projectCon
   stopEvent(eventAddSourceMapInfo);
 }
 
-function transformJsByBabelPlugin(code: string, parentEvent: Object): Object {
+function transformJsByBabelPlugin(code: string, parentEvent: CompileEvent): Object {
   const eventTransformByBabel = createAndStartEvent(parentEvent, 'transform Js by babel plugin');
   const transformed: Object = require('@babel/core').transformSync(code,
     {

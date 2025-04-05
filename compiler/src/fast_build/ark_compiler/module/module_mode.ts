@@ -53,7 +53,8 @@ import {
   ES2ABC,
   ETS,
   TS,
-  JS
+  JS,
+  PERFREPORT_JSON
 } from '../common/ark_define';
 import {
   needAotCompiler,
@@ -88,8 +89,6 @@ import {
   getOhmUrlByExternalPackage,
   isTs2Abc,
   isEs2Abc,
-  createAndStartEvent,
-  stopEvent,
   transformOhmurlToPkgName,
   transformOhmurlToRecordName
 } from '../../../ark_utils';
@@ -115,6 +114,14 @@ import {
   LogData,
   LogDataFactory
 } from '../logger';
+import {
+  CompileEvent,
+  createAndStartEvent,
+  ExternalEventType,
+  isNeedPerformanceDotting,
+  processExternalEvents,
+  stopEvent
+ } from '../../../performance';
 
 export class ModuleInfo {
   filePath: string;
@@ -166,6 +173,7 @@ export class ModuleMode extends CommonMode {
   compileContextInfoPath: string;
   abcPaths: string[] = [];
   byteCodeHar: boolean;
+  perfReportPath: string;
 
   constructor(rollupObject: Object) {
     super(rollupObject);
@@ -173,6 +181,7 @@ export class ModuleMode extends CommonMode {
     this.pkgEntryInfos = new Map<String, PackageEntryInfo>();
     this.hashJsonObject = {};
     this.filesInfoPath = path.join(this.projectConfig.cachePath, FILESINFO_TXT);
+    this.perfReportPath = path.join(this.projectConfig.cachePath, PERFREPORT_JSON);
     this.npmEntriesInfoPath = path.join(this.projectConfig.cachePath, NPMENTRIES_TXT);
     const outPutABC: string = this.projectConfig.widgetCompile ? WIDGETS_ABC : MODULES_ABC;
     this.moduleAbcPath = path.join(this.projectConfig.aceModuleBuild, outPutABC);
@@ -295,7 +304,7 @@ export class ModuleMode extends CommonMode {
     });
   }
 
-  prepareForCompilation(rollupObject: Object, parentEvent: Object): void {
+  prepareForCompilation(rollupObject: Object, parentEvent: CompileEvent): void {
     const eventPrepareForCompilation = createAndStartEvent(parentEvent, 'preparation for compilation');
     this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
     this.removeCacheInfo(rollupObject);
@@ -566,6 +575,9 @@ export class ModuleMode extends CommonMode {
     if (this.projectConfig.allowEtsAnnotations) {
       this.cmdArgs.push('--enable-annotations');
     }
+    if (isNeedPerformanceDotting(this.projectConfig)) {
+      this.cmdArgs.push(`--perf-file=${this.perfReportPath}`);
+    }
   }
 
   addCacheFileArgs() {
@@ -647,23 +659,23 @@ export class ModuleMode extends CommonMode {
     return changeFileExtension(tempPath, EXTNAME_PROTO_BIN);
   }
 
-  genDescriptionsForMergedEs2abc(includeByteCodeHarInfo: boolean): void {
+  genDescriptionsForMergedEs2abc(includeByteCodeHarInfo: boolean, parentEvent: CompileEvent): void {
+    const eventEenDescriptionsForMergedEs2abc = createAndStartEvent(parentEvent, 'generate descriptions for merged es2abc');
     this.generateCompileFilesInfo(includeByteCodeHarInfo);
     if (!this.byteCodeHar) {
       this.generateNpmEntriesInfo();
     }
     this.generateAbcCacheFilesInfo();
+    stopEvent(eventEenDescriptionsForMergedEs2abc)
   }
 
-  generateMergedAbcOfEs2Abc(parentEvent: Object): void {
+  generateMergedAbcOfEs2Abc(parentEvent: CompileEvent): void {
     // collect data error from subprocess
     let logDataList: Object[] = [];
     let errMsg: string = '';
-    const eventGenDescriptionsForMergedEs2abc = createAndStartEvent(parentEvent, 'generate descriptions for merged es2abc');
-    stopEvent(eventGenDescriptionsForMergedEs2abc);
     const genAbcCmd: string = this.cmdArgs.join(' ');
+    let eventGenAbc: CompileEvent;
     try {
-      let eventGenAbc: Object;
       const child = this.triggerAsync(() => {
         eventGenAbc = createAndStartEvent(parentEvent, 'generate merged abc by es2abc (async)', true);
         return childProcess.exec(genAbcCmd, { windowsHide: true });
@@ -673,6 +685,7 @@ export class ModuleMode extends CommonMode {
           stopEvent(eventGenAbc, true);
           this.triggerEndSignal();
           this.processAotIfNeeded();
+          processExternalEvents(this.projectConfig, ExternalEventType.ES2ABC, { parentEvent: eventGenAbc, filePath: this.perfReportPath });
           return;
         }
         for (const logData of logDataList) {
