@@ -91,9 +91,6 @@ import {
   getPossibleBuilderTypeParameter,
   storedFileInfo,
   ExtendResult,
-  startTimeStatisticsLocation,
-  stopTimeStatisticsLocation,
-  CompilationTimeStatistics,
   getStoredFileInfo,
   ProcessFileInfo,
   RouterInfo,
@@ -169,6 +166,11 @@ import {
   routerModuleType,
   routerBundleOrModule
 } from './process_module_package';
+import {
+  CompileEvent,
+  createAndStartEvent,
+  stopEvent
+} from './performance';
 
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -176,8 +178,9 @@ export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
 
 export function processUISyntax(program: ts.Program, ut = false,
-  compilationTime: CompilationTimeStatistics = null, filePath: string = ''): Function {
+  parentEvent?: CompileEvent, filePath: string = ''): Function {
   let entryNodeKey: ts.Expression;
+  let eventProcessUISyntax: CompileEvent = undefined;
   return (context: ts.TransformationContext) => {
     contextGlobal = context;
     let pagesDir: string;
@@ -186,7 +189,7 @@ export function processUISyntax(program: ts.Program, ut = false,
     let hasStruct: boolean = false;
     let StateManagementV2: { hasReusableV2: boolean } = { hasReusableV2: false };
     return (node: ts.SourceFile) => {
-      startTimeStatisticsLocation(compilationTime ? compilationTime.processUISyntaxTime : undefined);
+      eventProcessUISyntax = createAndStartEvent(parentEvent, 'processUISyntax');
       pagesDir = path.resolve(path.dirname(node.fileName));
       resourceFileName = path.resolve(node.fileName);
       pageFile = path.resolve(filePath !== '' ? filePath : node.fileName);
@@ -210,7 +213,7 @@ export function processUISyntax(program: ts.Program, ut = false,
             }
           }
           const visitEachChildNode: ts.SourceFile = ts.visitEachChild(node, visitor, context);
-          stopTimeStatisticsLocation(compilationTime ? compilationTime.processUISyntaxTime : undefined);
+          stopEvent(eventProcessUISyntax);
           return visitEachChildNode;
         }
         const id: number = ++componentInfo.id;
@@ -250,10 +253,10 @@ export function processUISyntax(program: ts.Program, ut = false,
           }
         }
         const visitEachChildNode: ts.SourceFile = ts.visitEachChild(node, visitor, context);
-        stopTimeStatisticsLocation(compilationTime ? compilationTime.processUISyntaxTime : undefined);
+        stopEvent(eventProcessUISyntax);
         return visitEachChildNode;
       } else {
-        stopTimeStatisticsLocation(compilationTime ? compilationTime.processUISyntaxTime : undefined);
+        stopEvent(eventProcessUISyntax);
         return node;
       }
     };
@@ -285,9 +288,9 @@ export function processUISyntax(program: ts.Program, ut = false,
     function processAllNodes(node: ts.Node): ts.Node {
       if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
         ts.isImportDeclaration(node)) {
-        startTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
+        const eventProcessImport = createAndStartEvent(eventProcessUISyntax, 'processImport');
         processImportModule(node, pageFile, transformLog.errors);
-        stopTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
+        stopEvent(eventProcessImport);
       } else if ((projectConfig.compileMode !== 'esmodule' || process.env.compileTool !== 'rollup') &&
         (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
         ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier))) {
@@ -297,11 +300,11 @@ export function processUISyntax(program: ts.Program, ut = false,
         hasStruct = true;
         componentCollection.currentClassName = node.name.getText();
         componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);
-        startTimeStatisticsLocation(compilationTime ? compilationTime.processComponentClassTime : undefined);
+        const eventProcessComponentClass = createAndStartEvent(eventProcessUISyntax, 'processComponentClass');
         node = processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName).isComponentV2 ?
           processStructComponentV2.processStructComponentV2(node, transformLog.errors, context, StateManagementV2) :
           processComponentClass(node, context, transformLog.errors, program);
-        stopTimeStatisticsLocation(compilationTime ? compilationTime.processComponentClassTime : undefined);
+        stopEvent(eventProcessComponentClass);
         componentCollection.currentClassName = null;
         INNER_STYLE_FUNCTION.forEach((block, styleName) => {
           BUILDIN_STYLE_NAMES.delete(styleName);
