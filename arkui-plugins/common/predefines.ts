@@ -58,8 +58,7 @@ export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<s
         "memo",
         "__memo_context_type",
         "__memo_id_type"
-    ])],
-    ["@koalaui.runtime.memo.changeListener",  new Set(["OnChange"])]
+    ])]
 ]);
 
 export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, string[]>([
@@ -75,6 +74,5 @@ export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, stri
     ["StorageLink", ["StorageLinkDecoratedVariable"]],
     ["LocalStorageLink", ["StorageLinkState", "MutableState", "observableProxy"]],
     ["LocalStorageProp", ["StorageLinkState", "MutableState", "observableProxy", "propState"]],
-    ["Watch", ["OnChange"]],
     ["ObjectLink", ["objectLinkState", "observableProxy", "SyncedProperty"]]
 ]);
