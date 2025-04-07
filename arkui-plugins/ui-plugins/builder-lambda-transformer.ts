@@ -318,78 +318,75 @@ function createOrUpdateArgInBuilderLambda(
     isExternal?: boolean,
     typeName?: string,
     fallback?: arkts.AstNode
-) {
+): arkts.AstNode {
     if (!arg) {
         return fallback ?? arkts.factory.createUndefinedLiteral();
     }
     if (arkts.isArrowFunctionExpression(arg)) {
-        const func: arkts.ScriptFunction = arg.scriptFunction;
-        const updateFunc = arkts.factory.updateScriptFunction(
-            func,
-            !!func.body && arkts.isBlockStatement(func.body) ? arkts.factory.updateBlock(
-                func.body,
-                func.body.statements.map(
-                    (st) => updateContentBodyInBuilderLambda(st, isExternal)
-                )
-            ) : undefined,
-            arkts.FunctionSignature.createFunctionSignature(
-                func.typeParams,
-                func.params,
-                func.returnTypeAnnotation,
-                false
-            ),
-            func.flags,
-            func.modifiers
-        )
-
-        return arkts.factory.updateArrowFunction(
-            arg,
-            updateFunc
-        );
+        return processArgArrowFunction(arg, isExternal);
     }
-
-    const isReusable: boolean = typeName
-        ? arkts.GlobalInfo.getInfoInstance().getStructInfo(typeName).isReusable
-        : false;
-
-    if (arkts.isTSAsExpression(arg) && arg.expr && arkts.isObjectExpression(arg.expr)) {
-        const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(typeName!);
-        const properties = arg.expr.properties as arkts.Property[];
-        properties.forEach((prop, index) => {
-            if (
-                prop.key &&
-                prop.value &&
-                arkts.isIdentifier(prop.key) &&
-                arkts.isMemberExpression(prop.value) &&
-                arkts.isThisExpression(prop.value.object) &&
-                arkts.isIdentifier(prop.value.property)
-            ) {
-                const structVariableMetadata = currentStructInfo.metadata[prop.key.name];
-                if (structVariableMetadata.properties.includes(DecoratorNames.LINK)) {
-                    properties[index] = arkts.Property.updateProperty(
-                        prop,
-                        arkts.factory.createIdentifier(backingField(prop.key.name)),
-                        arkts.factory.updateMemberExpression(
-                            prop.value,
-                            prop.value.object,
-                            arkts.factory.createIdentifier(backingField(prop.value.property.name)),
-                            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                            false,
-                            false,
-                        ),
-                    );
-                }
-            }
-        });
-        const updatedExpr: arkts.ObjectExpression = arkts.ObjectExpression.updateObjectExpression(
-            arg.expr,
-            arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
-            properties,
-            false,
-        );
-        return arkts.TSAsExpression.updateTSAsExpression(arg, updatedExpr, arg.typeAnnotation, arg.isConst);
+    if (arkts.isObjectExpression(arg)) {
+        return processArgObjectExpression(arg, typeName!);
     }
     return arg;
+}
+
+function processArgArrowFunction(
+    arg: arkts.ArrowFunctionExpression,
+    isExternal?: boolean
+): arkts.ArrowFunctionExpression {
+    const func: arkts.ScriptFunction = arg.scriptFunction;
+    const updateFunc = arkts.factory.updateScriptFunction(
+        func,
+        !!func.body && arkts.isBlockStatement(func.body)
+            ? arkts.factory.updateBlock(
+                  func.body,
+                  func.body.statements.map((st) => updateContentBodyInBuilderLambda(st, isExternal))
+              )
+            : undefined,
+        arkts.FunctionSignature.createFunctionSignature(func.typeParams, func.params, func.returnTypeAnnotation, false),
+        func.flags,
+        func.modifiers
+    );
+
+    return arkts.factory.updateArrowFunction(arg, updateFunc);
+}
+
+function processArgObjectExpression(arg: arkts.ObjectExpression, typeName: string): arkts.ObjectExpression {
+    const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(typeName);
+    const properties = arg.properties as arkts.Property[];
+    properties.forEach((prop, index) => {
+        if (
+            prop.key &&
+            prop.value &&
+            arkts.isIdentifier(prop.key) &&
+            arkts.isMemberExpression(prop.value) &&
+            arkts.isThisExpression(prop.value.object) &&
+            arkts.isIdentifier(prop.value.property)
+        ) {
+            const structVariableMetadata = currentStructInfo.metadata[prop.key.name];
+            if (structVariableMetadata.properties.includes(DecoratorNames.LINK)) {
+                properties[index] = arkts.Property.updateProperty(
+                    prop,
+                    arkts.factory.createIdentifier(backingField(prop.key.name)),
+                    arkts.factory.updateMemberExpression(
+                        prop.value,
+                        prop.value.object,
+                        arkts.factory.createIdentifier(backingField(prop.value.property.name)),
+                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                        false,
+                        false
+                    )
+                );
+            }
+        }
+    });
+    return arkts.ObjectExpression.updateObjectExpression(
+        arg,
+        arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+        properties,
+        false
+    );
 }
 
 function transformBuilderLambda(node: arkts.CallExpression, isExternal?: boolean): arkts.AstNode {
