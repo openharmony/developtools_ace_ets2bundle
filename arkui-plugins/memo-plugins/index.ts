@@ -36,7 +36,7 @@ export function unmemoizeTransform(): Plugins {
 
                 debugLog("[BEFORE MEMO SCRIPT] script: ", script.dumpSrc());
                 const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
-                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 5, "MEMO_AfterCheck_Begin"), true, cachePath);
+                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 5, "MEMO_AfterCheck_Begin"), true, cachePath, program.programFileNameWithExtension);
 
                 arkts.Performance.getInstance().createEvent("memo-checked");
 
@@ -65,7 +65,7 @@ export function unmemoizeTransform(): Plugins {
                 arkts.Performance.getInstance().stopEvent("memo-checked", true);
 
                 debugLog('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 6, "MEMO_AfterCheck_End"), true, cachePath);
+                debugDump(script.dumpSrc(), getDumpFileName(0, "SRC", 6, "MEMO_AfterCheck_End"), true, cachePath, program.programFileNameWithExtension);
 
                 arkts.Performance.getInstance().createEvent("memo-recheck");
                 arkts.recheckSubtree(script);
