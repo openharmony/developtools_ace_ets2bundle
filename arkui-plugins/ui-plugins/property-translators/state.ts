@@ -20,7 +20,8 @@ import {
     createGetter, 
     createSetter2,
     generateThisBacking,
-    generateGetOrSetCall
+    generateGetOrSetCall,
+    judgeIfAddWatchFunc
 } from "./utils";
 import { PropertyTranslator } from "./base";
 import { 
@@ -91,6 +92,8 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
             this.property.value ?? arkts.factory.createIdentifier('undefined'),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         );
+        const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(originalName), binaryItem];
+        judgeIfAddWatchFunc(args, this.property);
         const right = arkts.factory.createETSNewClassInstanceExpression(
             arkts.factory.createTypeReference(
                 arkts.factory.createTypeReferencePart(
@@ -100,7 +103,7 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
                     )
                 )
             ),
-            [arkts.factory.create1StringLiteral(originalName), binaryItem]
+            args
         );
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),

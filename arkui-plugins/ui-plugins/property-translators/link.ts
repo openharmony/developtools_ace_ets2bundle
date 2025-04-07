@@ -15,7 +15,14 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { generateToRecord, createGetter, createSetter2, generateThisBacking, generateGetOrSetCall } from './utils';
+import { 
+    generateToRecord,
+    createGetter,
+    createSetter2,
+    generateThisBacking,
+    generateGetOrSetCall,
+    judgeIfAddWatchFunc
+} from './utils';
 import { PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName } from '../../common/arkts-utils';
@@ -48,6 +55,13 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
             newName,
         );
 
+        const args: arkts.Expression[] = [
+            arkts.factory.create1StringLiteral(originalName),
+            arkts.factory.createTSNonNullExpression(
+                factory.createNonNullOrOptionalMemberExpression('initializers', newName, false, true)
+            )
+        ];
+        judgeIfAddWatchFunc(args, this.property);
         const consequent = arkts.BlockStatement.createBlockStatement([
             arkts.factory.createExpressionStatement(
                 arkts.factory.createAssignmentExpression(
@@ -56,12 +70,7 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
                     factory.createNewDecoratedInstantiate(
                         'LinkDecoratedVariable',
                         this.property.typeAnnotation,
-                        [
-                            arkts.factory.create1StringLiteral(originalName),
-                            arkts.factory.createTSNonNullExpression(
-                                factory.createNonNullOrOptionalMemberExpression('initializers', newName, false, true)
-                            )
-                        ]
+                        args
                     )
                 ),
             ),

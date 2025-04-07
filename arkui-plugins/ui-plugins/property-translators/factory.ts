@@ -16,6 +16,7 @@
 import * as arkts from "@koalaui/libarkts";
 import { getInteropPath } from "../../path";
 import { GenSymGenerator } from "../../common/gensym-generator";
+import { factory as UIFactory } from "../ui-factory";
 const interop = require(getInteropPath())
 const nullptr = interop.nullptr
 
@@ -148,6 +149,52 @@ export class factory {
                 arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             )
         );
+    }
+
+    /*
+    * create @Watch callback, e.g. (propertyName: string): void => {this.<callbackName>(propertyName)}.
+    */
+    static createWatchCallback(
+        callbackName: string,
+    ): arkts.ArrowFunctionExpression {
+        return factory.createArrowFunctionWithParamsAndBody(
+            undefined,
+            [
+                arkts.factory.createParameterDeclaration(
+                    arkts.factory.createIdentifier('_', UIFactory.createTypeReferenceFromString('string')),
+                    undefined
+                )
+            ],
+            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            false,
+            [
+                arkts.factory.createExpressionStatement(
+                    arkts.factory.createCallExpression(
+                        factory.generateThisCall(callbackName),
+                        undefined,
+                        [arkts.factory.createIdentifier('_')]
+                    )
+                )
+            ]
+        );
+    }
+
+    /*
+    * create this.<name> with optional or nonNullable.
+    */
+    static generateThisCall(
+        name: string,
+        optional: boolean = false,
+        nonNull: boolean = false,
+    ): arkts.Expression {
+        const member: arkts.Expression = arkts.factory.createMemberExpression(
+            arkts.factory.createThisExpression(),
+            arkts.factory.createIdentifier(`${name}`),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            optional,
+        );
+        return nonNull ? arkts.factory.createTSNonNullExpression(member) : member;
     }
 
     /*
