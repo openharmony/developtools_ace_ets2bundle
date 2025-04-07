@@ -29,15 +29,14 @@ import {
   emitBuildInfo,
   runArkTSLinter,
   targetESVersionChanged,
-  collectFileToIgnoreDiagnostics,
-  TSC_SYSTEM_CODE
+  collectFileToIgnoreDiagnostics
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
   setChecker,
   startTimeStatisticsLocation,
   stopTimeStatisticsLocation,
-  CompilationTimeStatistics
+  CompilationTimeStatistics,
 } from '../../utils';
 import {
   configureSyscapInfo,
@@ -47,6 +46,7 @@ import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../meomry_monitor/memory_define';
 import { LINTER_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info';
 import { ErrorCodeModule } from '../../hvigor_error_code/const/error_code_module';
+import { collectArkTSEvolutionModuleInfo } from '../../process_arkts_evolution';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -57,6 +57,9 @@ export function etsChecker() {
     name: 'etsChecker',
     buildStart() {
       const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ROLLUP_PLUGIN_BUILD_START);
+      if (this.share.projectConfig.dependentModuleMap) {
+        collectArkTSEvolutionModuleInfo(this.share);
+      }
       const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsChecker', 'buildStart');
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();

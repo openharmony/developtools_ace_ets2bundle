@@ -54,10 +54,11 @@ def run(args):
     arkguard_path = args[1]
     source_path = args[2]
     current_os = args[3]
+    declgen_path = args[4]
     node_modules_path = os.path.join(source_path, "node_modules")
     extract(tsc_path, node_modules_path, 'typescript', current_os)
     extract(arkguard_path, node_modules_path, 'arkguard', current_os)
-
+    extract(declgen_path, node_modules_path, 'declgen', current_os)
 
 if __name__ == "__main__":
     run(sys.argv[1:])

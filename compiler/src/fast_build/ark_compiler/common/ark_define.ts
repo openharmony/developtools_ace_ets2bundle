@@ -120,3 +120,6 @@ export const USE_SHARED_COMMENT: string = '// "use shared"';
 export const SEPARATOR_BITWISE_AND: string = '&';
 export const SEPARATOR_AT: string = '@';
 export const SEPARATOR_SLASH: string = '/';
+
+export const GEN_ABC_CMD: string = "genAbcCmd";
+export const GEN_ABC_CMD_FILE_PATH: string = "genAbcCmd.json";

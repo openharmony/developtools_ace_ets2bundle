@@ -20,7 +20,7 @@ import fs from 'fs';
 import { SourceMapGenerator } from './fast_build/ark_compiler/generate_sourcemap';
 import {
   EXTNAME_TS,
-  EXTNAME_ETS,
+  EXTNAME_ETS
 } from './pre_define';
 import {
   genTemporaryPath,
@@ -59,7 +59,8 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
    * Note: current realization is related to the moduleId mechanism in the rollup framework, which is needed to be reconsidered to improve the code robustness.
    * In the current realization, when moduleId mechanism is changed, there would be a compilation error.
    */
-  let temporaryFile: string = genTemporaryPath(moduleId ? moduleId : node.fileName, projectConfig.projectPath, process.env.cachePath,
+  let filePath: string = moduleId ? moduleId : node.fileName;
+  let temporaryFile: string = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath,
     projectConfig, metaInfo);
   if (temporaryFile.length === 0) {
     return;
@@ -67,7 +68,7 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
   if (temporaryFile.endsWith(EXTNAME_ETS)) {
     temporaryFile = temporaryFile.replace(/\.ets$/, EXTNAME_TS);
   }
-  let relativeFilePath = getRelativeSourcePath(moduleId ? moduleId : node.fileName, projectConfig.projectRootPath, metaInfo?.belongProjectPath);
+  let relativeFilePath = getRelativeSourcePath(filePath, projectConfig.projectRootPath, metaInfo?.belongProjectPath);
   let sourceMaps: Object;
   if (process.env.compileTool === 'rollup') {
     const key = sourceMapGenerator.isNewSourceMaps() ? moduleId! : relativeFilePath;
