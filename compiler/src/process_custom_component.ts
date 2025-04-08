@@ -1531,7 +1531,7 @@ function validateInitDecorator(node: ts.CallExpression, customComponentName: str
     if (item && !curChildProps.has(item) && decoratorVariable && decoratorVariable.has(item)) {
       log.push({
         type: LogType.ERROR,
-        message: `Property '${item}' must be initialized through the component constructor.`,
+        message: `'@Require' decorated '${item}' must be initialized through the component constructor.`,
         pos: node.getStart(),
         code: '10905359'
       });

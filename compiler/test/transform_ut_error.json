@@ -178,27 +178,27 @@
     },
     "validateInitDecorator": [
         {
-            "message": "Property 'build_value' must be initialized through the component constructor.",
+            "message": "'@Require' decorated 'build_value' must be initialized through the component constructor.",
             "type": "ERROR",
             "code": "10905359"
         },
         {
-            "message": "Property 'prop_value' must be initialized through the component constructor.",
+            "message": "'@Require' decorated 'prop_value' must be initialized through the component constructor.",
             "type": "ERROR",
             "code": "10905359"
         },
         {
-            "message": "Property 'regular_value' must be initialized through the component constructor.",
+            "message": "'@Require' decorated 'regular_value' must be initialized through the component constructor.",
             "type": "ERROR",
             "code": "10905359"
         },
         {
-            "message": "Property 'state_value' must be initialized through the component constructor.",
+            "message": "'@Require' decorated 'state_value' must be initialized through the component constructor.",
             "type": "ERROR",
             "code": "10905359"
         },
         {
-            "message": "Property 'provide_value' must be initialized through the component constructor.",
+            "message": "'@Require' decorated 'provide_value' must be initialized through the component constructor.",
             "type": "ERROR",
             "code": "10905359"
         }
