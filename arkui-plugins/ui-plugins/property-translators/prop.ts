@@ -16,10 +16,12 @@
 import * as arkts from "@koalaui/libarkts"
 
 import { 
+    generateToRecord,
     createGetter, 
     createSetter2,
     generateGetOrSetCall,
-    generateThisBacking
+    generateThisBacking,
+    judgeIfAddWatchFunc
 } from "./utils";
 import { PropertyTranslator } from "./base";
 import { 
@@ -49,6 +51,10 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
         const updateStruct: arkts.AstNode = this.generateUpdateStruct(mutableThis, originalName);
         currentStructInfo.initializeBody.push(initializeStruct);
         currentStructInfo.updateBody.push(updateStruct);
+        if (currentStructInfo.isReusable) {
+            const toRecord = generateToRecord(newName, originalName);
+            currentStructInfo.toRecordBody.push(toRecord);
+        }
         arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
@@ -95,6 +101,8 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
         );
         const nonNullItem =arkts.factory.createTSNonNullExpression(
             factory.createNonNullOrOptionalMemberExpression('initializers', originalName, false, true));
+        const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(originalName), this.property.value ? binaryItem : nonNullItem];
+        judgeIfAddWatchFunc(args, this.property);
         const right = arkts.factory.createETSNewClassInstanceExpression(
             arkts.factory.createTypeReference(
                 arkts.factory.createTypeReferencePart(
@@ -104,7 +112,7 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
                     )
                 )
             ),
-            [this.property.value ? binaryItem : nonNullItem]
+            args
         );
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
