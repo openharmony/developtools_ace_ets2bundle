@@ -35,7 +35,7 @@ export function uiTransform(): Plugins {
 
                 const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
                 debugLog('[BEFORE PARSED SCRIPT] script: ', script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 1, 'UI_AfterParse_Begin'), true, cachePath);
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 1, 'UI_AfterParse_Begin'), true, cachePath, program.programFileNameWithExtension);
 
                 arkts.Performance.getInstance().createEvent("ui-parsed");
 
@@ -55,7 +55,7 @@ export function uiTransform(): Plugins {
                 arkts.Performance.getInstance().stopEvent("ui-parsed", true);
 
                 debugLog('[AFTER PARSED SCRIPT] script: ', script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 2, 'UI_AfterParse_End'), true, cachePath);
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 2, 'UI_AfterParse_End'), true, cachePath, program.programFileNameWithExtension);
 
                 this.setArkTSAst(script);
                 console.log('[UI PLUGIN] AFTER PARSED EXIT');
@@ -72,7 +72,7 @@ export function uiTransform(): Plugins {
 
                 const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
                 debugLog('[BEFORE STRUCT SCRIPT] script: ', script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 3, 'UI_AfterCheck_Begin'), true, cachePath);
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 3, 'UI_AfterCheck_Begin'), true, cachePath, program.programFileNameWithExtension);
 
                 arkts.Performance.getInstance().createEvent("ui-checked");
 
@@ -92,7 +92,7 @@ export function uiTransform(): Plugins {
                 arkts.Performance.getInstance().stopEvent("ui-checked", true);
 
                 debugLog('[AFTER STRUCT SCRIPT] script: ', script.dumpSrc());
-                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 4, 'UI_AfterCheck_End'), true, cachePath);
+                debugDump(script.dumpSrc(), getDumpFileName(0, 'SRC', 4, 'UI_AfterCheck_End'), true, cachePath, program.programFileNameWithExtension);
 
                 arkts.GlobalInfo.getInfoInstance().reset();
                 arkts.Performance.getInstance().createEvent("ui-recheck");

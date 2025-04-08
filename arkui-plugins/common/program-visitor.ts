@@ -120,7 +120,8 @@ export class ProgramVisitor extends AbstractVisitor {
                     currProgram.astNode.dumpSrc(), 
                     getDumpFileName(this.state, "ORI", undefined, name), 
                     true,
-                    cachePath
+                    cachePath,
+                    program.programFileNameWithExtension
                 );
                 const script = this.visitor(currProgram.astNode, currProgram, name);
                 if (script) {
@@ -128,7 +129,8 @@ export class ProgramVisitor extends AbstractVisitor {
                         script.dumpSrc(), 
                         getDumpFileName(this.state, this.pluginName, undefined, name),
                         true,
-                        cachePath
+                        cachePath,
+                        program.programFileNameWithExtension
                     );
                 }
             }
@@ -194,7 +196,8 @@ export class ProgramVisitor extends AbstractVisitor {
                     script.dumpSrc(), 
                     getDumpFileName(this.state, this.pluginName, count, transformer.constructor.name), 
                     true,
-                    this.pluginContext?.getProjectConfig()?.cachePath
+                    this.pluginContext?.getProjectConfig()?.cachePath,
+                    program!.programFileNameWithExtension
                 );
                 count += 1;
             }

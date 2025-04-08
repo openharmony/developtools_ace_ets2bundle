@@ -21,7 +21,7 @@ import { EtsScript } from "../types"
 
 export class Program extends ArktsObject {
     constructor(peer: KNativePointer) {
-        super(peer)
+        super(peer);
     }
 
     get astNode(): EtsScript {
@@ -35,6 +35,17 @@ export class Program extends ArktsObject {
         );
     }
 
+    get programFileName(): string {
+        return unpackString(global.es2panda._ProgramFileNameConst(global.context, this.peer));
+    }
+
+    get programFileNameWithExtension(): string {
+        return unpackString(global.es2panda._ProgramFileNameWithExtensionConst(global.context, this.peer));
+    }
+
+    get programGlobalAbsName(): string {
+        return unpackString(global.es2panda._ETSParserGetGlobalProgramAbsName(global.context));
+    }
 }
 
 export class ExternalSource extends ArktsObject {
