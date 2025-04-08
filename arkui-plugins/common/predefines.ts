@@ -28,7 +28,7 @@ export const EXTERNAL_SOURCE_ALLOWED_IMPORT_INSERT_NAMES: string[] = [
 ];
 
 export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<string>>([
-    ["@ohos.arkui.component", new Set(["$r", "$rawfile", "ArkReusableStructBase", "Reusable", "_r", "_rawfile"])],
+    ["@ohos.arkui.component", new Set(["$r", "$rawfile", "_r", "_rawfile"])],
     ["@ohos.arkui.stateManagement", new Set([
         "State",
         "Prop",
@@ -71,7 +71,6 @@ export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, stri
     ["Provide", ["MutableState", "contextLocalStateOf", "observableProxy"]],
     ["Consume", ["MutableState", "contextLocal", "observableProxy"]],
     ["StorageProp", ["StoragePropDecoratedVariable"]],
-    ["Reusable", ["ArkReusableStructBase"]],
     ["StorageLink", ["StorageLinkDecoratedVariable"]],
     ["LocalStorageLink", ["StorageLinkState", "MutableState", "observableProxy"]],
     ["LocalStorageProp", ["StorageLinkState", "MutableState", "observableProxy", "propState"]],
