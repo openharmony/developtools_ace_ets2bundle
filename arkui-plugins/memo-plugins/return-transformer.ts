@@ -52,10 +52,13 @@ export class ReturnTransformer extends AbstractVisitor {
             if (this.stableThis && node.argument && arkts.isThisExpression(node.argument)) {
                 return factory.createReturnThis();
             }
-            return arkts.factory.createBlock([
-                arkts.factory.createExpressionStatement(factory.createRecacheCall(node.argument)),
-                node,
-            ]);
+            if (node.argument === undefined) {
+                return arkts.factory.createBlock([
+                    arkts.factory.createExpressionStatement(factory.createRecacheCall()),
+                    node,
+                ]);
+            }
+            return arkts.factory.updateReturnStatement(node, factory.createRecacheCall(node.argument));
         }
         return node;
     }
