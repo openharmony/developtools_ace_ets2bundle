@@ -758,11 +758,11 @@ function isDollarParameter(parameters: ts.ParameterDeclaration[]): boolean {
 
 interface ChildrenCacheFile {
   fileName: string,
-  mtimeMs: number,
+  hash: string
 }
 
 export interface CacheFile {
-  mtimeMs: number,
+  hash: string,
   children: Array<ChildrenCacheFile>,
 }
 
