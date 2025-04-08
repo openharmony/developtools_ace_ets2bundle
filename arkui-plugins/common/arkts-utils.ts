@@ -13,24 +13,32 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
+import * as arkts from '@koalaui/libarkts';
 
 export function annotation(name: string): arkts.AnnotationUsage {
-    const ident: arkts.Identifier = arkts.factory.createIdentifier(name).setAnnotationUsage();
-    const annotation: arkts.AnnotationUsage = arkts.factory.createAnnotationUsage(ident);
+    const ident: arkts.Identifier = arkts.factory
+        .createIdentifier(name)
+        .setAnnotationUsage();
+    const annotation: arkts.AnnotationUsage =
+        arkts.factory.createAnnotationUsage(ident);
 
-    annotation.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_ANNOTATION_USAGE;
+    annotation.modifiers =
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_ANNOTATION_USAGE;
     ident.parent = annotation;
 
     return annotation;
 }
 
 export function isAnnotation(node: arkts.AnnotationUsage, annoName: string) {
-    return node.expr !== undefined && arkts.isIdentifier(node.expr) && node.expr.name === annoName;
+    return (
+        node.expr !== undefined &&
+        arkts.isIdentifier(node.expr) &&
+        node.expr.name === annoName
+    );
 }
 
 export function removeAnnotationByName(
-    annotations: readonly arkts.AnnotationUsage[], 
+    annotations: readonly arkts.AnnotationUsage[],
     annoName: string
 ): arkts.AnnotationUsage[] {
     return annotations.filter((it) => !isAnnotation(it, annoName));
@@ -38,10 +46,12 @@ export function removeAnnotationByName(
 
 export function expectName(node: arkts.AstNode | undefined): string {
     if (!node) {
-        throw new Error("Expected an identifier, got empty node");
+        throw new Error('Expected an identifier, got empty node');
     }
     if (!arkts.isIdentifier(node)) {
-        throw new Error("Expected an identifier, got: " + arkts.nodeType(node).toString());
+        throw new Error(
+            'Expected an identifier, got: ' + arkts.nodeType(node).toString()
+        );
     }
     return node.name;
 }
@@ -58,14 +68,27 @@ export function filterDefined<T>(value: (T | undefined)[]): T[] {
     return value.filter((it: T | undefined): it is T => it != undefined);
 }
 
-export function collect<T>(...value: (ReadonlyArray<T> | T | undefined)[]): T[] {
-    const empty: (T | undefined)[] = []
-    return filterDefined(empty.concat(...value))
+export function collect<T>(
+    ...value: (ReadonlyArray<T> | T | undefined)[]
+): T[] {
+    const empty: (T | undefined)[] = [];
+    return filterDefined(empty.concat(...value));
 }
 
-export function matchPrefix(prefixCollection: string[], name: string): boolean {
+export function matchPrefix(
+    prefixCollection: (string | RegExp)[],
+    name: string
+): boolean {
     for (const prefix of prefixCollection) {
-        if (name.startsWith(prefix)) {
+        let regex: RegExp;
+
+        if (typeof prefix === 'string') {
+            regex = new RegExp('^' + prefix);
+        } else {
+            regex = new RegExp('^' + prefix.source);
+        }
+
+        if (regex.test(name)) {
             return true;
         }
     }
@@ -79,8 +102,14 @@ export function updateStructMetadata(
     modifiers: arkts.Es2pandaModifierFlags,
     hasStateManagementType?: boolean
 ): arkts.StructInfo {
-    const metadata: Record<string, arkts.StructVariableMetadata> = structInfo.metadata ?? {};
-    metadata[propertyName] = { name: propertyName, properties, modifiers, hasStateManagementType };
+    const metadata: Record<string, arkts.StructVariableMetadata> =
+        structInfo.metadata ?? {};
+    metadata[propertyName] = {
+        name: propertyName,
+        properties,
+        modifiers,
+        hasStateManagementType,
+    };
     structInfo.metadata = metadata;
     return structInfo;
 }
