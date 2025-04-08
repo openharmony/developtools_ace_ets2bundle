@@ -79,6 +79,30 @@ export class PreprocessorTransformer extends AbstractVisitor {
         return this.localComponentNames.includes(node.expression.name);
     }
 
+    transformComponentCall(node: arkts.CallExpression): arkts.TSAsExpression | arkts.CallExpression {
+        if (arkts.isObjectExpression(node.arguments[0])) {
+            const componentName: string = 
+                `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${node.expression.dumpSrc()}`;
+            const newArg = arkts.factory.createTSAsExpression(
+                node.arguments[0].clone(),
+                arkts.factory.createTypeReference(
+                    arkts.factory.createTypeReferencePart(
+                        arkts.factory.createIdentifier(componentName)
+                    )
+                ),
+                true
+            );
+            return arkts.factory.updateCallExpression(
+                node,
+                node.expression,
+                node.typeArguments,
+                [newArg, ...node.arguments.slice(1)]
+            ).setTralingBlock(node.trailingBlock);
+        } else {
+            return node;
+        }
+    }
+
     transformComponentFunctionCall(node: arkts.CallExpression) {
         if (!node || !arkts.isIdentifier(node.expression)) return node;
 
@@ -247,7 +271,9 @@ export class PreprocessorTransformer extends AbstractVisitor {
     visitor(node: arkts.AstNode): arkts.AstNode {
         this.enter(node);
         const newNode = this.visitEachChild(node)
-        if (arkts.isCallExpression(newNode) && this.isComponentFunctionCall(newNode)) {
+        if (arkts.isCallExpression(newNode) && this.isCustomConponentDecl(newNode)) {
+            return this.transformComponentCall(newNode);
+        } else if (arkts.isCallExpression(newNode) && this.isComponentFunctionCall(newNode)) {
             return this.transformComponentFunctionCall(newNode);
         } if (arkts.isETSImportDeclaration(node)) {
             this.addDependencesImport(node);
