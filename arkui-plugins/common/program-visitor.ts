@@ -24,7 +24,7 @@ export interface ProgramVisitorOptions extends VisitorOptions {
     pluginName: string;
     state: arkts.Es2pandaContextState;
     visitors: AbstractVisitor[];
-    skipPrefixNames: string[];
+    skipPrefixNames: (string | RegExp)[];
     hooks?: ProgramHooks;
     pluginContext?: PluginContext;
 }
@@ -80,7 +80,7 @@ export class ProgramVisitor extends AbstractVisitor {
     private readonly pluginName: string;
     private readonly state: arkts.Es2pandaContextState;
     private readonly visitors: AbstractVisitor[];
-    private readonly skipPrefixNames: string[];
+    private readonly skipPrefixNames: (string | RegExp)[];
     private readonly hooks?: ProgramHooks;
     private filenames: Map<number, string>;
     private pluginContext?: PluginContext;
@@ -102,7 +102,7 @@ export class ProgramVisitor extends AbstractVisitor {
     }
 
     programVisitor(program: arkts.Program): arkts.Program {
-        const skipPrefixes: string[] = this.skipPrefixNames;
+        const skipPrefixes: (string | RegExp)[] = this.skipPrefixNames;
 
         const visited = new Set();
         const queue: arkts.Program[] = [program];
