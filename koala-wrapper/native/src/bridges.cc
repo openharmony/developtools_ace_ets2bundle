@@ -345,3 +345,29 @@ KNativePointer impl_CreateETSStringLiteralType(KNativePointer contextPtr, KStrin
     return GetImpl()->CreateETSStringLiteralType(context, _str);
 }
 KOALA_INTEROP_2(CreateETSStringLiteralType, KNativePointer, KNativePointer, KStringPtr)
+
+KNativePointer impl_ProgramFileNameConst(KNativePointer contextPtr, KNativePointer programPtr)
+{
+    auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    auto program = reinterpret_cast<es2panda_Program*>(programPtr);
+    auto result = GetImpl()->ProgramFileNameConst(context, program);
+    return new std::string(result);
+}
+KOALA_INTEROP_2(ProgramFileNameConst, KNativePointer, KNativePointer, KNativePointer)
+
+KNativePointer impl_ProgramFileNameWithExtensionConst(KNativePointer contextPtr, KNativePointer programPtr)
+{
+    auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    auto program = reinterpret_cast<es2panda_Program*>(programPtr);
+    auto result = GetImpl()->ProgramFileNameWithExtensionConst(context, program);
+    return new std::string(result);
+}
+KOALA_INTEROP_2(ProgramFileNameWithExtensionConst, KNativePointer, KNativePointer, KNativePointer)
+
+KNativePointer impl_ETSParserGetGlobalProgramAbsName(KNativePointer contextPtr)
+{
+    auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    auto result = GetImpl()->ETSParserGetGlobalProgramAbsName(context);
+    return new std::string(result);
+}
+KOALA_INTEROP_1(ETSParserGetGlobalProgramAbsName, KNativePointer, KNativePointer)

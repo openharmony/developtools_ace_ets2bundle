@@ -33,12 +33,13 @@ function mkDir(filePath: string): void {
     fs.mkdirSync(filePath);
 }
 
-export function debugDump(content: string, fileName: string, isInit: boolean, cachePath: string | undefined): void {
+export function debugDump(content: string, fileName: string, isInit: boolean, cachePath: string | undefined, programFileName: string): void {
     if (!isDebugDump) return;
     const currentDirectory = process.cwd();
+    const modifiedFileName = programFileName.replaceAll('.', '_');
     const outputDir: string = cachePath
-        ? path.resolve(currentDirectory, cachePath)
-        : path.resolve(currentDirectory, 'dist', 'cache');
+        ? path.resolve(currentDirectory, cachePath, modifiedFileName)
+        : path.resolve(currentDirectory, 'dist', 'cache', modifiedFileName);
     const filePath: string = path.resolve(outputDir, fileName);
     if (!fs.existsSync(outputDir)) {
         mkDir(outputDir);
