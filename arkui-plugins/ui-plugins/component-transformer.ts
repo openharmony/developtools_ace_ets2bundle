@@ -64,7 +64,6 @@ type ScopeInfo = {
 
 interface ComponentContext {
     structMembers: Map<string, arkts.AstNode[]>,
-    reusableComps: Map<string, arkts.AstNode[]>
 }
 
 export class ComponentTransformer extends AbstractVisitor {
@@ -73,7 +72,7 @@ export class ComponentTransformer extends AbstractVisitor {
     private entryNames: string[] = [];
     private reusableNames: string[] = [];
     private readonly arkui?: string;
-    private context: ComponentContext = { structMembers: new Map(), reusableComps: new Map()};
+    private context: ComponentContext = { structMembers: new Map() };
     private isCustomComponentImported: boolean = false;
     private isEntryPointImported: boolean = false;
 
@@ -89,7 +88,7 @@ export class ComponentTransformer extends AbstractVisitor {
         this.componentInterfaceCollection = [];
         this.entryNames = [];
         this.reusableNames = [];
-        this.context = { structMembers: new Map(), reusableComps: new Map() };
+        this.context = { structMembers: new Map() };
         this.isCustomComponentImported = false;
         this.isEntryPointImported = false;
     }
@@ -139,12 +138,10 @@ export class ComponentTransformer extends AbstractVisitor {
         const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(
             this.arkui ?? CustomComponentNames.COMPONENT_DEFAULT_IMPORT
         );
-        const imported: arkts.Identifier = arkts.factory.createIdentifier(
-            CustomComponentNames.COMPONENT_CLASS_NAME
-        );
+        const imported: arkts.Identifier = arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CLASS_NAME);
         // Insert this import at the top of the script's statements.
         if (!this.program) {
-            throw Error("Failed to insert import: Transformer has no program");
+            throw Error('Failed to insert import: Transformer has no program');
         }
         factory.createAndInsertImportDeclaration(
             source,
@@ -156,11 +153,7 @@ export class ComponentTransformer extends AbstractVisitor {
     }
 
     processEtsScript(node: arkts.EtsScript): arkts.EtsScript {
-        if (
-            this.isExternal 
-            && this.componentInterfaceCollection.length === 0 
-            && this.entryNames.length === 0
-        ) {
+        if (this.isExternal && this.componentInterfaceCollection.length === 0 && this.entryNames.length === 0) {
             return node;
         }
         let updateStatements: arkts.AstNode[] = [];
@@ -173,56 +166,23 @@ export class ComponentTransformer extends AbstractVisitor {
             if (!this.isEntryPointImported) entryFactory.createAndInsertEntryPointImport(this.program);
             // TODO: normally, we should only have at most one @Entry component in a single file.
             // probably need to handle error message here.
-            updateStatements.push(
-                ...this.entryNames.map(entryFactory.generateEntryWrapper)
-            );
+            updateStatements.push(...this.entryNames.map(entryFactory.generateEntryWrapper));
         }
         if (updateStatements.length > 0) {
-            return arkts.factory.updateEtsScript(
-                node,
-                [
-                    ...node.statements,
-                    ...updateStatements,
-                ]
-            )
+            return arkts.factory.updateEtsScript(node, [...node.statements, ...updateStatements]);
         }
         return node;
     }
 
-    processReusableComponent(className: string) {
-        const first = arkts.factory.createClassProperty(
-            arkts.factory.createIdentifier("__class_name"),
-            undefined,
-            arkts.factory.createETSStringLiteralType(className),
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-            false
-        )
-        const second = arkts.factory.createClassProperty(
-            arkts.factory.createIdentifier("__reuseId"),
-            undefined,
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier("string")
-                )
-            ),
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-            false
-        )
-        this.context.reusableComps.set(className, [first, second])
-        const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(className);
-        currentStructInfo.isReusable = true;
-        arkts.GlobalInfo.getInfoInstance().setStructInfo(className, currentStructInfo);
-    }
-
-    createStaticMethod(definition: arkts.ClassDefinition):arkts.MethodDefinition  {
+    createStaticMethod(definition: arkts.ClassDefinition): arkts.MethodDefinition {
         const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
             arkts.factory.createIdentifier(
                 CustomComponentNames.OPTIONS,
                 arkts.factory.createTypeReference(
-                        arkts.factory.createTypeReferencePart(
-                            arkts.factory.createIdentifier(getCustomComponentOptionsName(definition.ident!.name))
-                        )
+                    arkts.factory.createTypeReferencePart(
+                        arkts.factory.createIdentifier(getCustomComponentOptionsName(definition.ident!.name))
                     )
+                )
             ),
             undefined
         );
@@ -236,8 +196,8 @@ export class ComponentTransformer extends AbstractVisitor {
                 false
             ),
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
-        )
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
+        );
 
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
@@ -245,10 +205,12 @@ export class ComponentTransformer extends AbstractVisitor {
             arkts.factory.createFunctionExpression(script),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
             false
-        )
+        );
     }
 
-    processComponent(node: arkts.ClassDeclaration | arkts.StructDeclaration): arkts.ClassDeclaration | arkts.StructDeclaration {
+    processComponent(
+        node: arkts.ClassDeclaration | arkts.StructDeclaration
+    ): arkts.ClassDeclaration | arkts.StructDeclaration {
         const scopeInfo = this.scopeInfos[this.scopeInfos.length - 1];
         const className = node.definition?.ident?.name;
         if (!className || scopeInfo?.name !== className) {
@@ -261,33 +223,57 @@ export class ComponentTransformer extends AbstractVisitor {
             this.collectComponentMembers(node, className);
         }
 
-        if(scopeInfo.isReusable){
-            this.processReusableComponent(className);
+        if (scopeInfo.isReusable) {
+            const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(className);
+            currentStructInfo.isReusable = true;
+            arkts.GlobalInfo.getInfoInstance().setStructInfo(className, currentStructInfo);
         }
 
         this.componentInterfaceCollection.push(this.generateComponentInterface(className, node.modifiers));
 
-        const definition: arkts.ClassDefinition = node.definition;
+        const definition: arkts.ClassDefinition = node.definition!;
         const newDefinitionBody: arkts.AstNode[] = [];
         if (scopeInfo.isEntry) {
             this.entryNames.push(className);
-            const entryWithStorage: arkts.ClassProperty | undefined = 
+            const entryWithStorage: arkts.ClassProperty | undefined =
                 findEntryWithStorageInClassAnnotations(definition);
             if (!!entryWithStorage) {
                 newDefinitionBody.push(entryFactory.createEntryLocalStorageInClass(entryWithStorage));
             }
         }
+        const newDefinition: arkts.ClassDefinition = this.createNewDefinition(
+            node,
+            className,
+            definition,
+            newDefinitionBody
+        );
 
+        if (arkts.isStructDeclaration(node)) {
+            const _node = arkts.factory.createClassDeclaration(newDefinition);
+            _node.modifiers = node.modifiers;
+            return _node;
+        } else {
+            return arkts.factory.updateClassDeclaration(node, newDefinition);
+        }
+    }
+
+    createNewDefinition(
+        node: arkts.ClassDeclaration | arkts.StructDeclaration,
+        className: string,
+        definition: arkts.ClassDefinition,
+        newDefinitionBody: arkts.AstNode[]
+    ): arkts.ClassDefinition {
         const staticMethonBody: arkts.AstNode[] = [];
-        const hasExportFlag = (node.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
+        const hasExportFlag =
+            (node.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT) ===
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
         if (hasExportFlag) {
-            const buildCompatibleNode:arkts.MethodDefinition = this.createStaticMethod(definition);
-            if(!!buildCompatibleNode) {
+            const buildCompatibleNode: arkts.MethodDefinition = this.createStaticMethod(definition);
+            if (!!buildCompatibleNode) {
                 staticMethonBody.push(buildCompatibleNode);
             }
         }
-
-        const newDefinition = arkts.factory.updateClassDefinition(
+        return arkts.factory.updateClassDefinition(
             definition,
             definition.ident,
             undefined,
@@ -296,56 +282,33 @@ export class ComponentTransformer extends AbstractVisitor {
             undefined,
             arkts.factory.createTypeReference(
                 arkts.factory.createTypeReferencePart(
-                    scopeInfo.isReusable ? arkts.factory.createIdentifier('ArkReusableStructBase'):
                     arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CLASS_NAME),
-                    arkts.factory.createTSTypeParameterInstantiation(
-                        [
-                            arkts.factory.createTypeReference(
-                                arkts.factory.createTypeReferencePart(
-                                    arkts.factory.createIdentifier(className)
+                    arkts.factory.createTSTypeParameterInstantiation([
+                        arkts.factory.createTypeReference(
+                            arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(className))
+                        ),
+                        arkts.factory.createTypeReference(
+                            arkts.factory.createTypeReferencePart(
+                                arkts.factory.createIdentifier(
+                                    `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${className}`
                                 )
-                            ),
-                            arkts.factory.createTypeReference(
-                                arkts.factory.createTypeReferencePart(
-                                    arkts.factory.createIdentifier(
-                                        `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${className}`
-                                    )
-                                )
-                            ),
-                        ]
-                    )
+                            )
+                        ),
+                    ])
                 )
             ),
             [...newDefinitionBody, ...definition.body, ...staticMethonBody],
             definition.modifiers,
             arkts.classDefinitionFlags(definition) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_FINAL
-        )
-
-        if (arkts.isStructDeclaration(node)) {
-            const _node = arkts.factory.createClassDeclaration(newDefinition);
-            _node.modifiers = node.modifiers;
-            return _node;
-        } else {
-            return arkts.factory.updateClassDeclaration(
-                node,
-                newDefinition
-            )
-        }
+        );
     }
 
     generateComponentInterface(name: string, modifiers: number): arkts.TSInterfaceDeclaration {
         const interfaceNode = arkts.factory.createInterfaceDeclaration(
             [],
-            arkts.factory.createIdentifier(
-                getCustomComponentOptionsName(name)
-            ),
+            arkts.factory.createIdentifier(getCustomComponentOptionsName(name)),
             nullptr, // TODO: wtf
-            arkts.factory.createInterfaceBody(
-                [
-                    ...(this.context.reusableComps.get(name) || []),
-                    ...(this.context.structMembers.get(name) || [])
-                ]
-            ),
+            arkts.factory.createInterfaceBody([...(this.context.structMembers.get(name) || [])]),
             false,
             false
         );
@@ -358,11 +321,9 @@ export class ComponentTransformer extends AbstractVisitor {
         if (!this.context.structMembers.has(className)) {
             this.context.structMembers.set(className, []);
         }
-        node.definition.body.map(it => {
+        node.definition.body.map((it) => {
             if (arkts.isClassProperty(it)) {
-                this.context.structMembers.get(className)!.push(
-                    ...this.createInterfaceInnerMember(it, structInfo)
-                );
+                this.context.structMembers.get(className)!.push(...this.createInterfaceInnerMember(it, structInfo));
             }
         });
         arkts.GlobalInfo.getInfoInstance().setStructInfo(className, structInfo);
@@ -376,22 +337,30 @@ export class ComponentTransformer extends AbstractVisitor {
         const hasStateManagementType = properties.length > 0;
         updateStructMetadata(structInfo, originalName, properties, member.modifiers, hasStateManagementType);
 
-        const originMember: arkts.ClassProperty = createOptionalClassProperty(originalName, member,
-            '', arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
+        const originMember: arkts.ClassProperty = createOptionalClassProperty(
+            originalName,
+            member,
+            '',
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+        );
         if (member.annotations.length > 0 && !hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
-            const newMember: arkts.ClassProperty = createOptionalClassProperty(newName, member,
-                getStateManagementType(member), arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
+            const newMember: arkts.ClassProperty = createOptionalClassProperty(
+                newName,
+                member,
+                getStateManagementType(member),
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+            );
             return [originMember, newMember];
         }
         if (hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
-            originMember.setAnnotations([annotation("memo")]);
+            originMember.setAnnotations([annotation('memo')]);
         }
         return [originMember];
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {
         this.enter(node);
-        const newNode = this.visitEachChild(node)
+        const newNode = this.visitEachChild(node);
         if (arkts.isEtsScript(newNode)) {
             return this.processEtsScript(newNode);
         }
@@ -400,6 +369,6 @@ export class ComponentTransformer extends AbstractVisitor {
             this.exit(newNode);
             return updateNode;
         }
-        return newNode
+        return newNode;
     }
 }
