@@ -14,7 +14,6 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { isAnnotation } from '../common/arkts-utils';
 
 export enum CustomComponentNames {
     ENTRY_ANNOTATION_NAME = 'Entry',
@@ -82,86 +81,6 @@ export function getCustomComponentOptionsName(className: string): string {
 
 export function isStatic(node: arkts.AstNode): boolean {
     return node.isStatic;
-}
-
-export function isBuilderLambdaAnnotation(node: arkts.AnnotationUsage): boolean {
-    return isAnnotation(node, BuilderLambdaNames.ANNOTATION_NAME);
-}
-
-export type BuilderLambdaAstNode = arkts.ScriptFunction
-    | arkts.ETSParameterExpression
-    | arkts.FunctionDeclaration;
-
-export function hasBuilderLambdaAnnotation(node: BuilderLambdaAstNode): boolean {
-    return node.annotations.some(isBuilderLambdaAnnotation);
-}
-
-export function findBuilderLambdaAnnotation(
-    node: arkts.ScriptFunction | arkts.ETSParameterExpression,
-): arkts.AnnotationUsage | undefined {
-    return node.annotations.find(isBuilderLambdaAnnotation);
-}
-
-export function isBuilderLambdaMethod(node: arkts.MethodDefinition): boolean {
-    if (!node || !arkts.isMethodDefinition(node)) return false;
-
-    const result = hasBuilderLambdaAnnotation(node.scriptFunction);
-    if (result) return true;
-    if (node.overloads.length > 0) {
-        return node.overloads.some(isBuilderLambdaMethod);
-    }
-    return false;
-}
-
-export function findBuilderLambdaInMethod(node: arkts.MethodDefinition): arkts.AnnotationUsage | undefined {
-    if (!node || !arkts.isMethodDefinition(node)) return undefined;
-
-    const result = findBuilderLambdaAnnotation(node.scriptFunction);
-    if (!!result) return result;
-    node.overloads.forEach((overload) => {
-        const anno: arkts.AnnotationUsage | undefined = findBuilderLambdaInMethod(overload);
-        if (!!anno) return anno;
-    });
-    return undefined;
-}
-
-export function isBuilderLambdaCall(node: arkts.CallExpression | arkts.Identifier): boolean {
-    const expr = arkts.isIdentifier(node) ? node : node.expression;
-    const decl = arkts.getDecl(expr);
-
-    if (!decl) return false;
-
-    if (arkts.isMethodDefinition(decl)) {
-        return isBuilderLambdaMethod(decl);
-    }
-    if (arkts.isFunctionExpression(decl)) {
-        return hasBuilderLambdaAnnotation(decl.scriptFunction);
-    }
-    return false;
-}
-
-export function findBuilderLambdaInCall(
-    node: arkts.CallExpression | arkts.Identifier,
-): arkts.AnnotationUsage | undefined {
-    const decl = findBuilderLambdaDecl(node);
-    if (!decl) return undefined;
-
-    if (arkts.isMethodDefinition(decl)) {
-        return findBuilderLambdaInMethod(decl);
-    }
-    if (arkts.isFunctionExpression(decl)) {
-        return findBuilderLambdaAnnotation(decl.scriptFunction);
-    }
-    return undefined;
-}
-
-export function findBuilderLambdaDecl(node: arkts.CallExpression | arkts.Identifier): arkts.AstNode | undefined {
-    const expr = arkts.isIdentifier(node) ? node : node.expression;
-    const decl = arkts.getDecl(expr);
-
-    if (!decl) return undefined;
-
-    return decl;
 }
 
 export function getTypeParamsFromClassDecl(node: arkts.ClassDeclaration | undefined): readonly arkts.TSTypeParameter[] {
