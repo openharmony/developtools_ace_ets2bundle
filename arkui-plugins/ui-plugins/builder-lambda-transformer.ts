@@ -325,8 +325,8 @@ function createOrUpdateArgInBuilderLambda(
     if (arkts.isArrowFunctionExpression(arg)) {
         return processArgArrowFunction(arg, isExternal);
     }
-    if (arkts.isObjectExpression(arg)) {
-        return processArgObjectExpression(arg, typeName!);
+    if (arkts.isTSAsExpression(arg)) {
+        return processArgTSAsExpression(arg, typeName!);
     }
     return arg;
 }
@@ -348,13 +348,15 @@ function processArgArrowFunction(
         func.flags,
         func.modifiers
     );
-
     return arkts.factory.updateArrowFunction(arg, updateFunc);
 }
 
-function processArgObjectExpression(arg: arkts.ObjectExpression, typeName: string): arkts.ObjectExpression {
-    const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(typeName);
-    const properties = arg.properties as arkts.Property[];
+function processArgTSAsExpression(arg: arkts.TSAsExpression, typeName: string): arkts.TSAsExpression {
+    if (!arg.expr || !arkts.isObjectExpression(arg.expr)) {
+        return arg;
+    } 
+    const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(typeName!);
+    const properties = arg.expr.properties as arkts.Property[];
     properties.forEach((prop, index) => {
         if (
             prop.key &&
@@ -381,12 +383,13 @@ function processArgObjectExpression(arg: arkts.ObjectExpression, typeName: strin
             }
         }
     });
-    return arkts.ObjectExpression.updateObjectExpression(
-        arg,
+    const updatedExpr: arkts.ObjectExpression = arkts.ObjectExpression.updateObjectExpression(
+        arg.expr,
         arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
         properties,
         false
     );
+    return arkts.TSAsExpression.updateTSAsExpression(arg, updatedExpr, arg.typeAnnotation, arg.isConst);
 }
 
 function transformBuilderLambda(node: arkts.CallExpression, isExternal?: boolean): arkts.AstNode {
