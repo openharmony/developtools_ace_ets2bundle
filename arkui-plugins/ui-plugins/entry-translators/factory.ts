@@ -13,25 +13,25 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts";
-import { getInteropPath } from "../../path"
-const interop = require(getInteropPath())
-const nullptr = interop.nullptr
-import { EntryWrapperNames } from "./utils";
-import { annotation } from "../../common/arkts-utils";
-import { factory as uiFactory } from "../ui-factory";
+import * as arkts from '@koalaui/libarkts';
+import { getInteropPath } from '../../path';
+const interop = require(getInteropPath());
+const nullptr = interop.nullptr;
+import { EntryWrapperNames } from './utils';
+import { annotation } from '../../common/arkts-utils';
+import { factory as uiFactory } from '../ui-factory';
 
 export class factory {
     /**
      * insert an 'entry' method to an entry wrapper class.
-     * 
+     *
      * @param node entry wrapper class declaration node.
      */
     static registerEntryFunction(node: arkts.ClassDeclaration): arkts.AstNode {
         const definition: arkts.ClassDefinition | undefined = node.definition;
-        const classname = node?.definition?.ident?.name
+        const classname = node?.definition?.ident?.name;
         if (!definition || !classname) {
-            throw new Error("Node definition is undefined");
+            throw new Error('Node definition is undefined');
         }
         const updateClassDef: arkts.ClassDefinition = arkts.factory.updateClassDefinition(
             definition,
@@ -50,15 +50,15 @@ export class factory {
 
     /**
      * insert an 'entry' property to an entry wrapper class.
-     * 
+     *
      * @param node entry wrapper class declaration node.
      * @deprecated
      */
     static registerEntryProperty(node: arkts.ClassDeclaration): arkts.AstNode {
         const definition: arkts.ClassDefinition | undefined = node.definition;
-        const classname = node?.definition?.ident?.name
+        const classname = node?.definition?.ident?.name;
         if (!definition || !classname) {
-            throw new Error("Node definition is undefined");
+            throw new Error('Node definition is undefined');
         }
         const updateClassDef: arkts.ClassDefinition = arkts.factory.updateClassDefinition(
             definition,
@@ -78,7 +78,7 @@ export class factory {
     /**
      * create `entry(): void { <name>(); }` class method for the entry wrapper class,
      * which calls the struct within the method.
-     * 
+     *
      * @param name class/struct name that has `@Entry` annotation.
      */
     static generateEntryFunction(name: string): arkts.MethodDefinition {
@@ -86,22 +86,24 @@ export class factory {
             arkts.factory.createCallExpression(
                 arkts.factory.createIdentifier(name),
                 undefined,
-                [arkts.factory.createUndefinedLiteral()], // TODO: Add this undefined later
+                [arkts.factory.createUndefinedLiteral()] // TODO: Add this undefined later
             )
         );
         const key: arkts.Identifier = arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_FUNC);
         const block = arkts.factory.createBlock([exp]);
-        const entryScript = arkts.factory.createScriptFunction(
-            block,
-            arkts.FunctionSignature.createFunctionSignature(
-                undefined,
-                [],
-                arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                false
-            ),
-            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
-        ).setIdent(key);
+        const entryScript = arkts.factory
+            .createScriptFunction(
+                block,
+                arkts.FunctionSignature.createFunctionSignature(
+                    undefined,
+                    [],
+                    arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                    false
+                ),
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+            )
+            .setIdent(key);
 
         const def = arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
@@ -117,7 +119,7 @@ export class factory {
     /**
      * create `entry = (): void => { <name>(); }` class property for the entry wrapper class,
      * which calls the struct within the arrow function.
-     * 
+     *
      * @param name class/struct name that has `@Entry` annotation.
      * @deprecated
      */
@@ -126,7 +128,7 @@ export class factory {
             arkts.factory.createCallExpression(
                 arkts.factory.createIdentifier(name),
                 undefined,
-                [arkts.factory.createUndefinedLiteral()], // TODO: Add this undefined later
+                [arkts.factory.createUndefinedLiteral()] // TODO: Add this undefined later
             )
         );
         const key: arkts.Identifier = arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_FUNC);
@@ -137,20 +139,19 @@ export class factory {
             arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
             false
         );
-        const entryScript: arkts.ScriptFunction = arkts.factory.createScriptFunction(
-            block,
-            signature,
-            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
-        ).setIdent(key);
+        const entryScript: arkts.ScriptFunction = arkts.factory
+            .createScriptFunction(
+                block,
+                signature,
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+            )
+            .setIdent(key);
 
         const def = arkts.factory.createClassProperty(
             key,
             arkts.factory.createArrowFunction(entryScript),
-            arkts.factory.createFunctionType(
-                signature,
-                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
-            ),
+            arkts.factory.createFunctionType(signature, arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
             false
         );
@@ -161,7 +162,7 @@ export class factory {
     /**
      * create `__EntryWrapper_Entry` entry wrapper class that contains an 'entry' method that
      * calls the struct within the method.
-     * 
+     *
      * @param name class/struct name that has `@Entry` annotation.
      */
     static generateEntryWrapper(name: string): arkts.ClassDeclaration {
@@ -177,11 +178,11 @@ export class factory {
                 )
             ),
             [factory.generateEntryFunction(name)],
-            arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_CLASS_DECL 
-                | arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_DECLARATION
-                | arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_ID_REQUIRED,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-        )
+            arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_CLASS_DECL |
+                arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_DECLARATION |
+                arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_ID_REQUIRED,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+        );
         const newClass = arkts.factory.createClassDeclaration(definition);
         newClass.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE;
         return newClass;
@@ -189,54 +190,52 @@ export class factory {
 
     /**
      * add `@memo` to all class methods that are named 'entry'.
-     * 
+     *
      * @param node class declaration node
      */
     static addMemoToEntryWrapperClassMethods(node: arkts.ClassDeclaration): void {
-        node.definition?.body.forEach(member => {
+        node.definition?.body.forEach((member) => {
             if (
-                arkts.isMethodDefinition(member)
-                && !!member.scriptFunction.id
-                && member.scriptFunction.id.name == EntryWrapperNames.ENTRY_FUNC
+                arkts.isMethodDefinition(member) &&
+                !!member.scriptFunction.id &&
+                member.scriptFunction.id.name === EntryWrapperNames.ENTRY_FUNC
             ) {
-                member.scriptFunction.setAnnotations([annotation("memo")]);
+                member.scriptFunction.setAnnotations([annotation('memo')]);
             }
         });
     }
 
     /**
      * add `@memo` to the class property's value (expecting an arrow function), where the property is named 'entry'.
-     * 
+     *
      * @param node class declaration node
      * @deprecated
      */
     static addMemoToEntryWrapperPropertyValue(node: arkts.ClassDeclaration): void {
-        node.definition?.body.forEach(member => {
+        node.definition?.body.forEach((member) => {
             if (
-                arkts.isClassProperty(member)
-                && !!member.value
-                && arkts.isArrowFunctionExpression(member.value)
-                && !!member.key
-                && arkts.isIdentifier(member.key)
-                && member.key.name == EntryWrapperNames.ENTRY_FUNC
+                arkts.isClassProperty(member) &&
+                !!member.value &&
+                arkts.isArrowFunctionExpression(member.value) &&
+                !!member.key &&
+                arkts.isIdentifier(member.key) &&
+                member.key.name === EntryWrapperNames.ENTRY_FUNC
             ) {
-                member.setAnnotations([annotation("memo")]);
+                member.setAnnotations([annotation('memo')]);
             }
         });
     }
 
     /**
-     * create `private _entry_local_storage_ = <name>;` class property 
+     * create `private _entry_local_storage_ = <name>;` class property
      * from `{storage: "<name>"}` in `@Entry`'s properties.
-     * 
+     *
      * @param annotation `@Entry` annotation.
      */
     static createEntryLocalStorageInClass(property: arkts.ClassProperty) {
         const value = property.value as arkts.StringLiteral;
         return arkts.factory.createClassProperty(
-            arkts.factory.createIdentifier(
-                EntryWrapperNames.ENTRY_STORAGE_LOCAL_STORAGE_PROPERTY_NAME
-            ),
+            arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_STORAGE_LOCAL_STORAGE_PROPERTY_NAME),
             arkts.factory.createIdentifier(value.str),
             undefined,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
@@ -249,15 +248,11 @@ export class factory {
      * to the top of script's statements.
      */
     static createAndInsertEntryPointImport(program?: arkts.Program) {
-        const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(
-            EntryWrapperNames.ENTRY_DEFAULT_IMPORT
-        );
-        const imported: arkts.Identifier = arkts.factory.createIdentifier(
-            EntryWrapperNames.ENTRY_POINT_CLASS_NAME
-        );
+        const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(EntryWrapperNames.ENTRY_DEFAULT_IMPORT);
+        const imported: arkts.Identifier = arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_POINT_CLASS_NAME);
         // Insert this import at the top of the script's statements.
         if (!program) {
-            throw Error("Failed to insert import: Transformer has no program");
+            throw Error('Failed to insert import: Transformer has no program');
         }
         uiFactory.createAndInsertImportDeclaration(
             source,

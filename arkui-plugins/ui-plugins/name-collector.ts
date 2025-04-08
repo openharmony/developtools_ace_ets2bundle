@@ -15,7 +15,7 @@
 
 import * as arkts from "@koalaui/libarkts";
 import { AbstractVisitor } from "../common/abstract-visitor";
-import { hasBuilderLambdaAnnotation } from "./utils";
+import { hasBuilderLambdaAnnotation } from "./builder-lambda-translators/utils";
 
 interface ComponentInfo {
     argsNum: number;
