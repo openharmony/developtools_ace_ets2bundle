@@ -50,7 +50,7 @@ export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<s
         "propState",
         "AppStorageLinkState",
         "StorageLinkState",
-        "DecoratedMutableVariable",
+        "DecoratedV1VariableBase",
         "LinkDecoratedVariable",
         "PropDecoratedVariable",
         "StorageLinkDecoratedVariable",
@@ -58,15 +58,14 @@ export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<s
         "memo",
         "__memo_context_type",
         "__memo_id_type"
-    ])],
-    ["@koalaui.runtime.memo.changeListener",  new Set(["OnChange"])]
+    ])]
 ]);
 
 export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, string[]>([
     ["$r", ["_r"]],
     ["$rawfile", ["_rawfile"]],
     ["State", ["StateDecoratedVariable"]],
-    ["Link", ["LinkDecoratedVariable", "DecoratedMutableVariable"]],
+    ["Link", ["LinkDecoratedVariable", "DecoratedV1VariableBase"]],
     ["Prop", ["PropDecoratedVariable"]],
     ["Provide", ["MutableState", "contextLocalStateOf", "observableProxy"]],
     ["Consume", ["MutableState", "contextLocal", "observableProxy"]],
@@ -75,6 +74,5 @@ export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, stri
     ["StorageLink", ["StorageLinkDecoratedVariable"]],
     ["LocalStorageLink", ["StorageLinkState", "MutableState", "observableProxy"]],
     ["LocalStorageProp", ["StorageLinkState", "MutableState", "observableProxy", "propState"]],
-    ["Watch", ["OnChange"]],
     ["ObjectLink", ["objectLinkState", "observableProxy", "SyncedProperty"]]
 ]);

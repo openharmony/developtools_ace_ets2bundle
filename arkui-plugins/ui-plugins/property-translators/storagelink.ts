@@ -25,6 +25,7 @@ import {
     createSetter2,
     generateThisBacking,
     generateGetOrSetCall,
+    judgeIfAddWatchFunc
 } from './utils';
 import { createOptionalClassProperty } from '../utils';
 
@@ -85,6 +86,13 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
             throw new Error('StorageLink required only one value!!'); // TODO: replace this with proper error message.
         }
 
+        const args: arkts.Expression[] = [
+            arkts.factory.createStringLiteral(storageLinkValueStr),
+            arkts.factory.create1StringLiteral(originalName),
+            this.property.value ?? arkts.factory.createIdentifier('undefined'),
+        ];
+        judgeIfAddWatchFunc(args, this.property);
+
         const newClass = arkts.factory.createETSNewClassInstanceExpression(
             arkts.factory.createTypeReference(
                 arkts.factory.createTypeReferencePart(
@@ -94,11 +102,7 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
                     ),
                 ),
             ),
-            [
-                arkts.factory.createStringLiteral(storageLinkValueStr),
-                arkts.factory.create1StringLiteral(originalName),
-                this.property.value ?? arkts.factory.createIdentifier('undefined'),
-            ],
+            args
         );
 
         return arkts.factory.createAssignmentExpression(
