@@ -83,13 +83,17 @@ export function getStateManagementType(node: arkts.ClassProperty): string {
 export function createGetter(
     name: string,
     type: arkts.TypeNode | undefined,
-    returns: arkts.Expression
+    returns: arkts.Expression,
+    needMemo: boolean = false,
 ): arkts.MethodDefinition {
+    const returnType: arkts.TypeNode | undefined = type?.clone();
+    if (needMemo) {
+        returnType?.setAnnotations([annotation('memo')]);
+    }
     const body = arkts.factory.createBlock([arkts.factory.createReturnStatement(returns)]);
-
     const scriptFunction = arkts.factory.createScriptFunction(
         body,
-        arkts.FunctionSignature.createFunctionSignature(undefined, [], type?.clone(), false),
+        arkts.FunctionSignature.createFunctionSignature(undefined, [], returnType, false),
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
     );

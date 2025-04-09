@@ -346,8 +346,8 @@ export class ComponentTransformer extends AbstractVisitor {
             );
             return [originMember, newMember];
         }
-        if (hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
-            originMember.setAnnotations([annotation('memo')]);
+        if (hasDecorator(member, DecoratorNames.BUILDER_PARAM) && !!originMember.typeAnnotation) {
+            originMember.typeAnnotation.setAnnotations([annotation('memo')]);
         }
         return [originMember];
     }
