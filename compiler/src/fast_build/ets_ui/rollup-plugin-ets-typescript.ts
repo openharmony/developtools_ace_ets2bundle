@@ -510,7 +510,11 @@ async function transform(code: string, id: string) {
     meta: {
       shouldEmitJs: true
     }
-  } : printSourceFile(transformResult.transformed[0], eventEtsTransformForEsmodule);
+  } : {
+    meta: {
+      tsAst: transformResult.transformed[0]
+    }
+  };
 
   stopEvent(eventEtsTransformForEsmodule);
   return result;
