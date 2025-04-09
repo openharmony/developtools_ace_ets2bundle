@@ -66,7 +66,7 @@ function processSystemApi(content: string): string {
 }
 
 export function cleanCopyRight(str: string): string {
-  const copyrightBlockRegex = /(?:\/\*.*Copyright \(c\) [\d\- ]+ Huawei Device Co\., Ltd\..*\*\/)/gs;
+  const copyrightBlockRegex = /(?:\/\*.*Copyright \([c|C]\) [- \d]+ [\w ]+\., Ltd\..*\*\/)/gs;
 
   return str.replace(copyrightBlockRegex, '');
 }
