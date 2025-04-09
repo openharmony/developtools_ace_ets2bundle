@@ -24,7 +24,7 @@ export const FORM_MAP: any = {};
 
 export let COMMON_ATTRS: Set<string> = new Set([]);
 
-(function readComponents() {
+(function readComponents(): void {
   const componentPath: Map<string, string> = new Map([
     [`${COMPONENTS}`, `../${COMPONENTS}`],
     [`${FORM_COMPONENTS}`, `../${FORM_COMPONENTS}`]
@@ -32,7 +32,7 @@ export let COMMON_ATTRS: Set<string> = new Set([]);
   for (const [id, relPath] of componentPath.entries()) {
     const componentsFile: string = path.join(__dirname, relPath);
     const files: string[] = fs.readdirSync(componentsFile);
-    files.forEach(function(item) {
+    files.forEach(function (item) {
       const fPath: string = path.join(componentsFile, item);
       const json: any = require(fPath);
       const stat: any = fs.statSync(fPath);
