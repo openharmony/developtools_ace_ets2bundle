@@ -86,11 +86,11 @@ export class LocalStorageLinkTranslator extends PropertyTranslator implements In
                     arkts.factory.createIdentifier('_entry_local_storage_'),
                     arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                     false,
-                    false,
+                    false
                 ),
                 arkts.factory.createStringLiteral(localStorageLinkValueStr),
                 this.property.value ?? arkts.factory.createIdentifier('undefined'),
-            ],
+            ]
         );
 
         return arkts.factory.createAssignmentExpression(
@@ -99,10 +99,10 @@ export class LocalStorageLinkTranslator extends PropertyTranslator implements In
                 arkts.factory.createIdentifier(newName),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
-                false,
+                false
             ),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            call,
+            call
         );
     }
 }

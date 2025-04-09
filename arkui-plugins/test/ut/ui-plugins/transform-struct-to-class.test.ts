@@ -13,19 +13,17 @@
  * limitations under the License.
  */
 
-import * as path from "path";
-import * as arkts from "@koalaui/libarkts";
-import { PluginTestContext, PluginTester } from "../../utils/plugin-tester";
-import { BuildConfig, mockBuildConfig } from "../../utils/artkts-config";
-import { getRootPath, MOCK_ENTRY_DIR_PATH } from "../../utils/path-config";
-import { parseDumpSrc } from "../../utils/parse-string";
-import { PluginContext, Plugins } from "../../../common/plugin-context";
-import { ComponentTransformer } from "../../../ui-plugins/component-transformer";
+import * as path from 'path';
+import * as arkts from '@koalaui/libarkts';
+import { PluginTestContext, PluginTester } from '../../utils/plugin-tester';
+import { BuildConfig, mockBuildConfig } from '../../utils/artkts-config';
+import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../utils/path-config';
+import { parseDumpSrc } from '../../utils/parse-string';
+import { PluginContext, Plugins } from '../../../common/plugin-context';
+import { ComponentTransformer } from '../../../ui-plugins/component-transformer';
 
 const buildConfig: BuildConfig = mockBuildConfig();
-buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, "struct-to-class.ets")
-];
+buildConfig.compileFiles = [path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, 'struct-to-class.ets')];
 
 const componentTransform: Plugins = {
     name: 'component',
@@ -34,17 +32,17 @@ const componentTransform: Plugins = {
         if (program) {
             let script: arkts.EtsScript = program.astNode;
 
-            const componentTransformer = new ComponentTransformer(
-                { arkui: "@koalaui.arkts-arkui.StructBase" }
-            );
+            const componentTransformer = new ComponentTransformer({
+                arkui: '@koalaui.arkts-arkui.StructBase',
+            });
             script = componentTransformer.visitor(script) as arkts.EtsScript;
             arkts.setAllParents(script);
             return script;
         }
-    }
-}
+    },
+};
 
-const pluginTester = new PluginTester("test component transformer", buildConfig);
+const pluginTester = new PluginTester('test component transformer', buildConfig);
 
 function testComponentTransformer(this: PluginTestContext): void {
     const script: arkts.EtsScript = this.script as arkts.EtsScript;
@@ -67,23 +65,27 @@ interface __Options_MyStateSample {
 
 `;
     expect(parseDumpSrc(script.dumpSrc())).toBe(parseDumpSrc(expectedScript));
-};
+}
 
 pluginTester.run(
-    "transform struct to class",
+    'transform struct to class',
     [componentTransform],
     {
         'parsed:component': [testComponentTransformer],
     },
     {
-        stopAfter: "parsed"
+        stopAfter: 'parsed',
     },
     {
-        beforeEach: [() => {
-            jest.spyOn(console, 'warn').mockImplementation(() => {});
-        }],
-        afterEach: [() => {
-            jest.spyOn(console, 'warn').mockRestore();
-        }]
+        beforeEach: [
+            () => {
+                jest.spyOn(console, 'warn').mockImplementation(() => {});
+            },
+        ],
+        afterEach: [
+            () => {
+                jest.spyOn(console, 'warn').mockRestore();
+            },
+        ],
     }
 );

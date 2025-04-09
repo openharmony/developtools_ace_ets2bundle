@@ -13,48 +13,48 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts";
+import * as arkts from '@koalaui/libarkts';
 
-import { AbstractVisitor } from "../common/abstract-visitor";
+import { AbstractVisitor } from '../common/abstract-visitor';
 
 import { debugLog } from '../common/debug';
 
 export class EmitTransformer extends AbstractVisitor {
-  constructor(private options?: interop.EmitTransformerOptions) {
-    super();
-  }
-
-  processComponent(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
-    const className = node.definition?.ident?.name;
-    if (!className) {
-      throw "Non Empty className expected for Component";
+    constructor(private options?: interop.EmitTransformerOptions) {
+        super();
     }
 
-    const newDefinition = arkts.factory.updateClassDefinition(
-      node.definition,
-      node.definition?.ident,
-      undefined,
-      undefined,
-      node.definition?.implements,
-      undefined,
-      undefined,
-      node.definition?.body,
-      node.definition?.modifiers,
-      arkts.classDefinitionFlags(node.definition) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
-    );
+    processComponent(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
+        const className = node.definition?.ident?.name;
+        if (!className) {
+            throw 'Non Empty className expected for Component';
+        }
 
-    let newDec: arkts.ClassDeclaration = arkts.factory.updateClassDeclaration(node, newDefinition);
+        const newDefinition = arkts.factory.updateClassDefinition(
+            node.definition,
+            node.definition?.ident,
+            undefined,
+            undefined,
+            node.definition?.implements,
+            undefined,
+            undefined,
+            node.definition?.body,
+            node.definition?.modifiers,
+            arkts.classDefinitionFlags(node.definition) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+        );
 
-    debugLog(`DeclTransformer:checked:struct_ast:${newDefinition.dumpJson()}`);
-    newDec.modifiers = node.modifiers;
-    return newDec;
-  }
+        let newDec: arkts.ClassDeclaration = arkts.factory.updateClassDeclaration(node, newDefinition);
 
-  visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
-    const node = this.visitEachChild(beforeChildren);
-    if (arkts.isClassDeclaration(node) && arkts.classDefinitionIsFromStructConst(node.definition!)) {
-      return this.processComponent(node);
+        debugLog(`DeclTransformer:checked:struct_ast:${newDefinition.dumpJson()}`);
+        newDec.modifiers = node.modifiers;
+        return newDec;
     }
-    return node;
-  }
+
+    visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
+        const node = this.visitEachChild(beforeChildren);
+        if (arkts.isClassDeclaration(node) && arkts.classDefinitionIsFromStructConst(node.definition!)) {
+            return this.processComponent(node);
+        }
+        return node;
+    }
 }

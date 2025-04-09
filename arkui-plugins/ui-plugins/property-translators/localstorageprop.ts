@@ -83,7 +83,7 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
             arkts.factory.createIdentifier('_entry_local_storage_'),
             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
             false,
-            false,
+            false
         );
         const binaryItem = arkts.factory.createCallExpression(
             arkts.factory.createIdentifier('StorageLinkState'),
@@ -92,7 +92,7 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
                 insideMember,
                 arkts.factory.createStringLiteral(localStorageporpValueStr),
                 this.property.value ?? arkts.factory.createIdentifier('undefined'),
-            ],
+            ]
         );
         const call = arkts.factory.createCallExpression(
             arkts.factory.createIdentifier('propState'),
@@ -103,9 +103,9 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
                     arkts.factory.createIdentifier('value'),
                     arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                     false,
-                    false,
+                    false
                 ),
-            ],
+            ]
         );
         return arkts.factory.createAssignmentExpression(
             arkts.factory.createMemberExpression(
@@ -113,10 +113,10 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
                 arkts.factory.createIdentifier(newName),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
-                false,
+                false
             ),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            call,
+            call
         );
     }
 
@@ -136,16 +136,16 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
                         arkts.factory.createIdentifier('_entry_local_storage_'),
                         arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                         false,
-                        false,
+                        false
                     ),
                     arkts.factory.createStringLiteral(localStorageporpValueStr),
                     this.property.value ?? arkts.factory.createIdentifier('undefined'),
-                ],
+                ]
             ),
             arkts.factory.createIdentifier('value'),
             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
             false,
-            false,
+            false
         );
 
         const test = arkts.factory.createMemberExpression(
@@ -153,7 +153,7 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
             arkts.factory.createIdentifier(newName),
             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
             false,
-            false,
+            false
         );
 
         const consequent = arkts.BlockStatement.createBlockStatement([
@@ -164,11 +164,11 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
                         arkts.factory.createIdentifier('update'),
                         arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                         false,
-                        false,
+                        false
                     ),
                     undefined,
-                    [StorageLinkStateValue],
-                ),
+                    [StorageLinkStateValue]
+                )
             ),
         ]);
 

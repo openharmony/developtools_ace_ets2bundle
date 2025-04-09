@@ -13,19 +13,16 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
-import { AbstractVisitor } from "../common/abstract-visitor"
-import { factory } from "./memo-factory"
+import * as arkts from '@koalaui/libarkts';
+import { AbstractVisitor } from '../common/abstract-visitor';
+import { factory } from './memo-factory';
 
 export class ImportTransformer extends AbstractVisitor {
     visitor(node: arkts.AstNode): arkts.AstNode {
         if (node instanceof arkts.EtsScript) {
             factory.createContextTypesImportDeclaration(arkts.arktsGlobal.compilerContext?.program);
-            return arkts.factory.updateEtsScript(
-                node,
-                node.statements
-            )
+            return arkts.factory.updateEtsScript(node, node.statements);
         }
-        return node
+        return node;
     }
 }

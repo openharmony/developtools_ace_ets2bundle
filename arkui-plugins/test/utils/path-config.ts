@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from 'fs';
+import * as path from 'path';
 
 export const ARKTS_CONFIG_FILE_PATH: string = 'arktsconfig.json';
 export const PANDA_SDK_PATH: string = 'node_modules/@panda/sdk';
@@ -33,12 +33,12 @@ export const ETS_SUFFIX: string = '.ets';
 export const ABC_SUFFIX: string = '.abc';
 
 function getRootPath(): string {
-    return path.resolve(__dirname, "..");
+    return path.resolve(__dirname, '..');
 }
 
 function getPandaSDKPath(): string {
     if (!process.env.ETS2PANDA_PATH) {
-        throw new Error("Environment Error: ets2panda path is not defined");
+        throw new Error('Environment Error: ets2panda path is not defined');
     }
 
     return path.resolve(process.env.ETS2PANDA_PATH);
@@ -69,10 +69,4 @@ function ensurePathExists(filePath: string): void {
     }
 }
 
-export { 
-    getRootPath,
-    getPandaSDKPath,
-    changeFileExtension,
-    getFileName,
-    ensurePathExists
-};
+export { getRootPath, getPandaSDKPath, changeFileExtension, getFileName, ensurePathExists };

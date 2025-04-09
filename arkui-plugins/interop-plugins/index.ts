@@ -16,5 +16,5 @@
 import { interopPlugin } from './interop_plugin';
 
 export function interopTransform() {
-  return interopPlugin;
+    return interopPlugin;
 }
