@@ -88,7 +88,6 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
 
         program = programVisitor.programVisitor(program);
         script = program.astNode;
-        arkts.GlobalInfo.getInfoInstance()?.reset();
         arkts.recheckSubtree(script);
         this.setArkTSAst(script); 
         debugLog('interopTransform:checked exit');

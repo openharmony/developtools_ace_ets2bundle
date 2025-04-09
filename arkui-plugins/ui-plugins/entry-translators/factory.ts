@@ -83,11 +83,7 @@ export class factory {
      */
     static generateEntryFunction(name: string): arkts.MethodDefinition {
         const exp = arkts.factory.createExpressionStatement(
-            arkts.factory.createCallExpression(
-                arkts.factory.createIdentifier(name),
-                undefined,
-                [arkts.factory.createUndefinedLiteral()] // TODO: Add this undefined later
-            )
+            arkts.factory.createCallExpression(arkts.factory.createIdentifier(name), undefined, [])
         );
         const key: arkts.Identifier = arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_FUNC);
         const block = arkts.factory.createBlock([exp]);
@@ -108,7 +104,7 @@ export class factory {
         const def = arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             key,
-            arkts.factory.createFunctionExpression(entryScript),
+            entryScript,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
             false
         );
@@ -132,7 +128,7 @@ export class factory {
         const def = arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
             key,
-            arkts.factory.createFunctionExpression(entryScript),
+            entryScript,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             false
         );
@@ -151,7 +147,7 @@ export class factory {
             arkts.factory.createCallExpression(
                 arkts.factory.createIdentifier(name),
                 undefined,
-                [arkts.factory.createUndefinedLiteral()] // TODO: Add this undefined later
+                []
             )
         );
         const key: arkts.Identifier = arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_FUNC);

@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { memoNoRecheck } from '../../../utils/plugins';
+import { memoNoRecheck, recheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 
 const METHOD_DIR_PATH: string = 'memo/methods';
 
@@ -28,7 +29,8 @@ buildConfig.compileFiles = [path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, MET
 const pluginTester = new PluginTester('test memo method', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"@ohos.arkui.stateManagement\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
 function main() {}
 function __context(): __memo_context_type
 function __id(): __memo_id_type
@@ -62,14 +64,14 @@ class Test {
         }
         return __memo_scope.recache(__memo_parameter_arg.value);
     }
-    public intrinsic_method(): int {
+    @memo_intrinsic() public intrinsic_method(__memo_context: __memo_context_type, __memo_id: __memo_id_type): int {
         return 0;
     }
-    public intrinsic_method_with_this(): int {
+    @memo_intrinsic() public intrinsic_method_with_this(__memo_context: __memo_context_type, __memo_id: __memo_id_type): int {
         this.void_method(__memo_context, ((__memo_id) + (<some_random_number>)));
         return 0;
     }
-    public memoEntry<R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() entry: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> R)): R {
+    @memo_entry() public memoEntry<R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() entry: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> R)): R {
         const getContext = (() => {
             return __context();
         });
@@ -109,7 +111,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'transform methods with non-void return type',
-    [memoNoRecheck],
+    [memoNoRecheck, recheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],
     },

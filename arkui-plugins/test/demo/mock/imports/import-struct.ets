@@ -13,4 +13,16 @@
  * limitations under the License.
  */
 
-export type Resource = boolean;
+import { Component, Text } from "@ohos.arkui.component"
+import { SimpleStruct } from "./utils/simple-struct"
+
+@Component
+struct ImportStruct {
+    build() {
+        SimpleStruct();
+        SimpleStruct({ message: "str1" });
+        SimpleStruct() {
+            Text("a");
+        }
+    }
+}

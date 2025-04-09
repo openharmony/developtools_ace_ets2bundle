@@ -877,9 +877,6 @@ export class Es2pandaNativeModule {
     _TSTypeAliasDeclarationSetTypeParameters(context: KNativePointer, receiver: KNativePointer, typeParams: KNativePointer): void {
         throw new Error("'TSTypeAliasDeclarationSetTypeParameters was not overloaded by native module initialization")
     }
-    _TSTypeAliasDeclarationAnnotations(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'TSTypeAliasDeclarationAnnotations was not overloaded by native module initialization")
-    }
     _TSTypeAliasDeclarationAnnotationsConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'TSTypeAliasDeclarationAnnotationsConst was not overloaded by native module initialization")
     }
@@ -1074,9 +1071,6 @@ export class Es2pandaNativeModule {
     }
     _ScriptFunctionAddFlag(context: KNativePointer, receiver: KNativePointer, flags: KInt): void {
         throw new Error("'ScriptFunctionAddFlag was not overloaded by native module initialization")
-    }
-    _ScriptFunctionAddModifier(context: KNativePointer, receiver: KNativePointer, flags: KInt): void {
-        throw new Error("'ScriptFunctionAddModifier was not overloaded by native module initialization")
     }
     _ScriptFunctionFormalParamsLengthConst(context: KNativePointer, receiver: KNativePointer): KUInt {
         throw new Error("'ScriptFunctionFormalParamsLengthConst was not overloaded by native module initialization")
@@ -1497,6 +1491,18 @@ export class Es2pandaNativeModule {
     }
     _ETSTupleSetTypeAnnotationsList(context: KNativePointer, receiver: KNativePointer, typeNodeList: BigUint64Array, typeNodeListSequenceLength: KUInt): void {
         throw new Error("'ETSTupleSetTypeAnnotationsList was not overloaded by native module initialization")
+    }
+    _CreateTryStatement(context: KNativePointer, block: KNativePointer, catchClauses: BigUint64Array, catchClausesSequenceLength: KUInt, finalizer: KNativePointer, finalizerInsertionsLabelPair: BigUint64Array, finalizerInsertionsLabelPairSequenceLength: KUInt, finalizerInsertionsStatement: BigUint64Array, finalizerInsertionsStatementSequenceLength: KUInt): KNativePointer {
+        throw new Error("'CreateTryStatement was not overloaded by native module initialization")
+    }
+    _UpdateTryStatement(context: KNativePointer, original: KNativePointer, block: KNativePointer, catchClauses: BigUint64Array, catchClausesSequenceLength: KUInt, finalizer: KNativePointer, finalizerInsertionsLabelPair: BigUint64Array, finalizerInsertionsLabelPairSequenceLength: KUInt, finalizerInsertionsStatement: BigUint64Array, finalizerInsertionsStatementSequenceLength: KUInt): KNativePointer {
+        throw new Error("'UpdateTryStatement was not overloaded by native module initialization")
+    }
+    _CreateTryStatement1(context: KNativePointer, other: KNativePointer): KNativePointer {
+        throw new Error("'CreateTryStatement1 was not overloaded by native module initialization")
+    }
+    _UpdateTryStatement1(context: KNativePointer, original: KNativePointer, other: KNativePointer): KNativePointer {
+        throw new Error("'UpdateTryStatement1 was not overloaded by native module initialization")
     }
     _TryStatementFinallyBlockConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'TryStatementFinallyBlockConst was not overloaded by native module initialization")
@@ -2116,9 +2122,6 @@ export class Es2pandaNativeModule {
     _ImportDeclarationSpecifiersConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'ImportDeclarationSpecifiersConst was not overloaded by native module initialization")
     }
-    _ImportDeclarationSpecifiers(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'ImportDeclarationSpecifiers was not overloaded by native module initialization")
-    }
     _ImportDeclarationIsTypeKindConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'ImportDeclarationIsTypeKindConst was not overloaded by native module initialization")
     }
@@ -2151,9 +2154,6 @@ export class Es2pandaNativeModule {
     }
     _ETSImportDeclarationIsPureDynamicConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'ETSImportDeclarationIsPureDynamicConst was not overloaded by native module initialization")
-    }
-    _ETSImportDeclarationAssemblerName(context: KNativePointer, receiver: KNativePointer): KStringPtr {
-        throw new Error("'ETSImportDeclarationAssemblerName was not overloaded by native module initialization")
     }
     _ETSImportDeclarationAssemblerNameConst(context: KNativePointer, receiver: KNativePointer): KStringPtr {
         throw new Error("'ETSImportDeclarationAssemblerNameConst was not overloaded by native module initialization")

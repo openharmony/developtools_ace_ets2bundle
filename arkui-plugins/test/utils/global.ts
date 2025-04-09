@@ -13,11 +13,10 @@
  * limitations under the License.
  */
 
-import * as fs from 'fs';
-import { CompileFileInfo } from './artkts-config';
 import * as arkts from '@koalaui/libarkts';
+import { CompileFileInfo } from './shared-types';
 
-function initGlobal(fileInfo: CompileFileInfo, isDebug: boolean = true): void {
+function createGlobalConfig(fileInfo: CompileFileInfo, isDebug: boolean = true): arkts.Config {
     const config = [
         '_',
         '--extension',
@@ -33,11 +32,31 @@ function initGlobal(fileInfo: CompileFileInfo, isDebug: boolean = true): void {
     }
     config.push(fileInfo.filePath);
 
+    arkts.MemInitialize();
     arkts.arktsGlobal.filePath = fileInfo.filePath;
-    resetConfig(config);
+    return resetConfig(config);
+}
 
-    const source: string = fs.readFileSync(fileInfo.filePath).toString();
-    resetContext(source);
+function destroyGlobalConfig(config: arkts.Config): void {
+    destroyConfig(config);
+    arkts.MemFinalize();
+}
+
+function createGlobalContextPtr(config: arkts.Config, files: string[]): number {
+    return arkts.CreateGlobalContext(config.peer, files, files.length, false);
+}
+
+function destroyGlobalContextPtr(globalContextPtr: number): void {
+    arkts.DestroyGlobalContext(globalContextPtr);
+}
+
+function createCacheContextFromFile(
+    config: arkts.Config,
+    filePath: string,
+    globalContextPtr: number,
+    isExternal: boolean
+): arkts.Context {
+    return arkts.Context.createCacheContextFromFile(config.peer, filePath, globalContextPtr, isExternal);
 }
 
 function resetContext(source: string): void {
@@ -51,48 +70,43 @@ function resetContext(source: string): void {
     }
 }
 
-function resetConfig(cmd: string[]): void {
+function resetConfig(cmd: string[]): arkts.Config {
     try {
         arkts.arktsGlobal.config;
-        destroyConfig();
+        destroyConfig(arkts.arktsGlobal.config);
     } catch (e) {
         // Do nothing
     } finally {
-        const arkTSConfig: arkts.Config = arkts.Config.create(cmd);
-        arkts.arktsGlobal.config = arkTSConfig.peer;
+        const config = arkts.Config.create(cmd);
+        arkts.arktsGlobal.config = config.peer;
+        return config;
     }
 }
 
-function destroyContext(): void {
+function destroyContext(context: arkts.Context): void {
     try {
-        arkts.arktsGlobal.clearContext();
+        arkts.arktsGlobal.es2panda._DestroyContext(context.peer);
     } catch (e) {
         // Do nothing
     }
 }
 
-function destroyConfig(): void {
+function destroyConfig(config: arkts.Config): void {
     try {
-        arkts.destroyConfig(arkts.arktsGlobal.config);
+        arkts.destroyConfig(config);
     } catch (e) {
         // Do nothing
     }
 }
 
-function canProceedToState(state: arkts.Es2pandaContextState): boolean {
-    const stateToSkip: arkts.Es2pandaContextState[] = [
-        arkts.Es2pandaContextState.ES2PANDA_STATE_SCOPE_INITED,
-        arkts.Es2pandaContextState.ES2PANDA_STATE_BOUND,
-        arkts.Es2pandaContextState.ES2PANDA_STATE_LOWERED,
-        arkts.Es2pandaContextState.ES2PANDA_STATE_ASM_GENERATED,
-        arkts.Es2pandaContextState.ES2PANDA_STATE_ERROR,
-    ];
-    if (state in stateToSkip) {
-        return false;
-    }
-
-    const currState = arkts.arktsGlobal.es2panda._ContextState(arkts.arktsGlobal.context);
-    return currState < state;
-}
-
-export { initGlobal, resetContext, resetConfig, destroyContext, destroyConfig, canProceedToState };
+export {
+    createGlobalConfig,
+    destroyGlobalConfig,
+    createGlobalContextPtr,
+    destroyGlobalContextPtr,
+    createCacheContextFromFile,
+    resetContext,
+    resetConfig,
+    destroyContext,
+    destroyConfig,
+};

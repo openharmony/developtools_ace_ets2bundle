@@ -74,10 +74,23 @@ export class PluginContext {
     }
 }
 
+export interface DependentModuleConfig {
+    packageName: string;
+    moduleName: string;
+    moduleType: string;
+    modulePath: string;
+    sourceRoots: string[];
+    entryFile: string;
+    language: string,
+    declFilesPath?: string,
+    dependencies?: string[]
+}
+
 export interface ProjectConfig {
     bundleName: string;
     moduleName: string;
     cachePath: string;
+    dependentModuleList: DependentModuleConfig[];
 }
 
 export type PluginHandlerFunction = () => void;

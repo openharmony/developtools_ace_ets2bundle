@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,12 +38,8 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
-import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
-import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Column as Column, Text as Text } from "@ohos.arkui.component";
 import { State as State } from "@ohos.arkui.stateManagement";
@@ -70,15 +67,15 @@ class Per {
     this.__backing_parentVar1!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: Parent)=> Parent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Parent | undefined): void {
-    Column(undefined, undefined, (() => {
+    Column(undefined, (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), ({
         childVar1: this.parentVar1,
-      } as __Options_Child), undefined, undefined);
+      } as __Options_Child));
     }));
   }
-  public constructor() {}
+  private constructor() {}
 }
 
 @Component({freezeWhenInactive:false}) final class Child extends CustomComponent<Child, __Options_Child> {
@@ -95,20 +92,20 @@ class Per {
     this.__backing_childVar1!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {
-    Text(undefined, this.childVar1.str, undefined, undefined);
+    Text(undefined, this.childVar1.str);
   }
-  public constructor() {}
+  private constructor() {}
   
 }
 
-interface __Options_Parent {
+@Component({freezeWhenInactive:false}) export interface __Options_Parent {
   set parentVar1(parentVar1: Per | undefined)
   get parentVar1(): Per | undefined
   set __backing_parentVar1(__backing_parentVar1: StateDecoratedVariable<Per> | undefined)
   get __backing_parentVar1(): StateDecoratedVariable<Per> | undefined
 }
 
-interface __Options_Child {
+@Component({freezeWhenInactive:false}) export interface __Options_Child {
   set childVar1(childVar1: Per | undefined)
   get childVar1(): Per | undefined
   set __backing_childVar1(__backing_childVar1: StateDecoratedVariable<Per> | undefined)
@@ -122,9 +119,9 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @State decorated variables passing',
-    [parsedTransform, uiNoRecheck],
+    [parsedTransform, uiNoRecheck, recheck],
     {
-        checked: [testParsedAndCheckedTransformer],
+        'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },
     {
         stopAfter: 'checked',

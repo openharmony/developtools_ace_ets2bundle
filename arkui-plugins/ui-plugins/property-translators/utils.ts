@@ -14,8 +14,15 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { annotation } from '../../common/arkts-utils';
-import { factory } from './factory';
+import { DeclarationCollector } from '../../common/declaration-collector';
+import { ImportCollector } from '../import-collector';
+import { ARKUI_COMPONENT_IMPORT_NAME, ARKUI_STATEMANAGEMENT_IMPORT_NAME } from '../../common/predefines';
+import {
+    addMemoAnnotation,
+    findCanAddMemoFromParamExpression,
+    findCanAddMemoFromTypeAnnotation,
+    findImportSource,
+} from '../utils';
 
 export enum DecoratorNames {
     STATE = 'State',
@@ -37,18 +44,129 @@ export enum DecoratorNames {
     TRACK = 'Track',
 }
 
-export function collectPropertyDecorators(property: arkts.ClassProperty): string[] {
-    const properties: string[] = [];
-    property.annotations.forEach((anno) => {
-        if (!!anno.expr && arkts.isIdentifier(anno.expr)) {
-            properties.push(anno.expr.name);
-        }
-    });
-    return properties;
+export enum DecoratorIntrinsicNames {
+    LINK = '__Link_intrinsic',
 }
 
-export function isDecoratorAnnotation(anno: arkts.AnnotationUsage, decoratorName: DecoratorNames): boolean {
+export enum DecoratorDeclarationNames {
+    STMT_COMMON = 'arkui.stateManagement.common',
+    COMP_COMMON = 'arkui.component.common',
+    CUSTOM_COMP = 'arkui.component.customComponent',
+}
+
+export enum StateManagementTypes {
+    STATE_DECORATED = 'StateDecoratedVariable',
+    LINK_DECORATED = 'LinkDecoratedVariable',
+    STORAGE_LINK_DECORATED = 'StorageLinkDecoratedVariable',
+    STORAGE_PROP_DECORATED = 'StoragePropDecoratedVariable',
+    DECORATED_V1 = 'DecoratedV1VariableBase',
+    PROP_DECORATED = 'PropDecoratedVariable',
+    MUTABLE_STATE = 'MutableState',
+    MUTABLE_STATE_META = 'MutableStateMeta',
+    SYNCED_PROPERTY = 'SyncedProperty',
+    PROVIDE_DECORATED = 'ProvideDecoratedVariable',
+    CONSUME_DECORATED = 'ConsumeDecoratedVariable',
+    OBJECT_LINK_DECORATED = 'ObjectLinkDecoratedVariable',
+    BACKING_VALUE = 'BackingValue',
+    SET_OBSERVATION_DEPTH = 'setObservationDepth',
+    OBSERVED_OBJECT = 'IObservedObject',
+    WATCH_ID_TYPE = 'WatchIdType',
+    SUBSCRIBED_WATCHES = 'SubscribedWatches',
+    STORAGE_LINK_STATE = 'StorageLinkState',
+    OBSERVABLE_PROXY = 'observableProxy',
+    PROP_STATE = 'propState',
+    INT_32 = 'int32',
+}
+
+export interface DecoratorInfo {
+    annotation: arkts.AnnotationUsage;
+    name: DecoratorNames;
+}
+
+export const decoratorTypeMap = new Map<DecoratorNames, StateManagementTypes>([
+    [DecoratorNames.STATE, StateManagementTypes.STATE_DECORATED],
+    [DecoratorNames.LINK, StateManagementTypes.DECORATED_V1],
+    [DecoratorNames.PROP, StateManagementTypes.PROP_DECORATED],
+    [DecoratorNames.STORAGE_LINK, StateManagementTypes.STORAGE_LINK_DECORATED],
+    [DecoratorNames.STORAGE_PROP, StateManagementTypes.STORAGE_PROP_DECORATED],
+    [DecoratorNames.LOCAL_STORAGE_PROP, StateManagementTypes.SYNCED_PROPERTY],
+    [DecoratorNames.LOCAL_STORAGE_LINK, StateManagementTypes.MUTABLE_STATE],
+    [DecoratorNames.OBJECT_LINK, StateManagementTypes.OBJECT_LINK_DECORATED],
+    [DecoratorNames.PROVIDE, StateManagementTypes.PROVIDE_DECORATED],
+    [DecoratorNames.CONSUME, StateManagementTypes.CONSUME_DECORATED],
+]);
+
+export function isFromDecoratorDeclaration(value: any): value is DecoratorDeclarationNames {
+    return Object.values(DecoratorDeclarationNames).includes(value);
+}
+
+export function getImportSourceFromDeclarationName(name: DecoratorDeclarationNames): string {
+    if (name === DecoratorDeclarationNames.STMT_COMMON) {
+        return ARKUI_STATEMANAGEMENT_IMPORT_NAME;
+    }
+    return ARKUI_COMPONENT_IMPORT_NAME;
+}
+
+export function isDecoratorIntrinsicAnnotation(
+    anno: arkts.AnnotationUsage,
+    decoratorName: DecoratorIntrinsicNames
+): boolean {
     return !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName;
+}
+
+export function isDecoratorAnnotation(
+    anno: arkts.AnnotationUsage,
+    decoratorName: DecoratorNames,
+    ignoreDecl?: boolean
+): boolean {
+    if (!(!!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName)) {
+        return false;
+    }
+    if (!ignoreDecl) {
+        const decl = arkts.getDecl(anno.expr);
+        if (!decl) {
+            return false;
+        }
+        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        if (!isFromDecoratorDeclaration(moduleName)) {
+            return false;
+        }
+        ImportCollector.getInstance().collectSource(decoratorName, getImportSourceFromDeclarationName(moduleName));
+        DeclarationCollector.getInstance().collect(decl);
+    }
+    return true;
+}
+
+export function removeDecorator(
+    property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition,
+    decoratorName: DecoratorNames,
+    ignoreDecl?: boolean
+): void {
+    if (arkts.isMethodDefinition(property)) {
+        property.scriptFunction.setAnnotations(
+            property.scriptFunction.annotations.filter(
+                (anno) => !isDecoratorAnnotation(anno, decoratorName, ignoreDecl)
+            )
+        );
+    } else {
+        property.setAnnotations(
+            property.annotations.filter((anno) => !isDecoratorAnnotation(anno, decoratorName, ignoreDecl))
+        );
+    }
+}
+
+/**
+ * checking whether astNode's annotations contain given corresponding decorator name,
+ * regardless where the annotation's declaration is from arkui declaration files.
+ */
+export function hasDecoratorName(
+    property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition,
+    decoratorName: DecoratorNames
+): boolean {
+    if (arkts.isMethodDefinition(property)) {
+        return property.scriptFunction.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName, true));
+    }
+    return property.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName, true));
 }
 
 export function hasDecorator(
@@ -68,45 +186,75 @@ export function hasDecorator(
  */
 export function needDefiniteOrOptionalModifier(st: arkts.ClassProperty): boolean {
     return (
-        hasDecorator(st, DecoratorNames.LINK) ||
-        hasDecorator(st, DecoratorNames.CONSUME) ||
-        hasDecorator(st, DecoratorNames.OBJECT_LINK) ||
-        (hasDecorator(st, DecoratorNames.PROP) && !st.value)
+        hasDecoratorName(st, DecoratorNames.LINK) ||
+        hasDecoratorName(st, DecoratorNames.CONSUME) ||
+        hasDecoratorName(st, DecoratorNames.OBJECT_LINK) ||
+        (hasDecoratorName(st, DecoratorNames.PROP) && !st.value)
     );
 }
 
-export function getStateManagementType(node: arkts.ClassProperty): string {
-    if (hasDecorator(node, DecoratorNames.STATE)) {
-        return 'StateDecoratedVariable';
-    } else if (hasDecorator(node, DecoratorNames.LINK)) {
-        return 'DecoratedV1VariableBase';
-    } else if (hasDecorator(node, DecoratorNames.PROP)) {
-        return 'PropDecoratedVariable';
-    } else if (hasDecorator(node, DecoratorNames.STORAGE_LINK)) {
-        return 'StorageLinkDecoratedVariable';
-    } else if (hasDecorator(node, DecoratorNames.STORAGE_PROP)) {
-        return 'StoragePropDecoratedVariable';
-    } else if (hasDecorator(node, DecoratorNames.PROVIDE)) {
-        return 'ProvideDecoratedVariable';
-    } else if (hasDecorator(node, DecoratorNames.CONSUME)) {
-        return 'ConsumeDecoratedVariable';
-    } else if (hasDecorator(node, DecoratorNames.OBJECT_LINK)) {
-        return 'ObjectLinkDecoratedVariable';
-    } else if (hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP)) {
-        return 'SyncedProperty';
+export function findDecoratorByName(
+    property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition,
+    decoratorName: DecoratorNames
+): arkts.AnnotationUsage | undefined {
+    if (arkts.isMethodDefinition(property)) {
+        return property.scriptFunction.annotations.find((anno) => isDecoratorAnnotation(anno, decoratorName, true));
     }
-    return 'MutableState';
+    return property.annotations.find((anno) => isDecoratorAnnotation(anno, decoratorName, true));
+}
+
+export function findDecorator(
+    property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition,
+    decoratorName: DecoratorNames
+): arkts.AnnotationUsage | undefined {
+    if (arkts.isMethodDefinition(property)) {
+        return property.scriptFunction.annotations.find((anno) => isDecoratorAnnotation(anno, decoratorName));
+    }
+    return property.annotations.find((anno) => isDecoratorAnnotation(anno, decoratorName));
+}
+
+export function findDecoratorInfos(
+    property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition
+): DecoratorInfo[] {
+    const decoratorNames = Object.values(DecoratorNames);
+    const infos: DecoratorInfo[] = [];
+    for (let i = 0; i < decoratorNames.length; i++) {
+        const name = decoratorNames[i];
+        const annotation: arkts.AnnotationUsage | undefined = findDecoratorByName(property, name);
+        if (!!annotation) {
+            infos.push({ annotation, name });
+        }
+    }
+    return infos;
+}
+
+export function getStateManagementType(decoratorInfo: DecoratorInfo): StateManagementTypes {
+    const decoratorName = decoratorInfo.name;
+    const typeName = decoratorTypeMap.get(decoratorName);
+    if (!!typeName) {
+        return typeName;
+    }
+    return StateManagementTypes.MUTABLE_STATE;
+}
+
+export function collectStateManagementTypeImport(type: StateManagementTypes): void {
+    ImportCollector.getInstance().collectImport(type);
+}
+
+export function collectStateManagementTypeSource(type: StateManagementTypes): void {
+    const source = findImportSource(type);
+    ImportCollector.getInstance().collectSource(type, source);
 }
 
 export function createGetter(
     name: string,
     type: arkts.TypeNode | undefined,
     returns: arkts.Expression,
-    needMemo: boolean = false,
+    needMemo: boolean = false
 ): arkts.MethodDefinition {
     const returnType: arkts.TypeNode | undefined = type?.clone();
-    if (needMemo) {
-        returnType?.setAnnotations([annotation('memo')]);
+    if (needMemo && findCanAddMemoFromTypeAnnotation(returnType)) {
+        addMemoAnnotation(returnType);
     }
     const body = arkts.factory.createBlock([arkts.factory.createReturnStatement(returns)]);
     const scriptFunction = arkts.factory.createScriptFunction(
@@ -118,7 +266,7 @@ export function createGetter(
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET,
         arkts.factory.createIdentifier(name),
-        arkts.factory.createFunctionExpression(scriptFunction),
+        scriptFunction,
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
         false
     );
@@ -144,8 +292,8 @@ export function createSetter(
         arkts.factory.createIdentifier('value', type?.clone()),
         undefined
     );
-    if (needMemo) {
-        param.annotations = [annotation('memo')];
+    if (needMemo && findCanAddMemoFromParamExpression(param)) {
+        addMemoAnnotation(param);
     }
     const scriptFunction = arkts.factory.createScriptFunction(
         body,
@@ -157,7 +305,7 @@ export function createSetter(
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET,
         arkts.factory.createIdentifier(name),
-        arkts.factory.createFunctionExpression(scriptFunction),
+        scriptFunction,
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
         false
     );
@@ -183,7 +331,7 @@ export function createSetter2(
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET,
         arkts.factory.createIdentifier(name),
-        arkts.factory.createFunctionExpression(scriptFunction),
+        scriptFunction,
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
         false
     );
@@ -293,15 +441,6 @@ function getDifferentAnnoTypeValue(value: arkts.Expression): string | boolean {
     return value.dumpSrc();
 }
 
-export function judgeIfAddWatchFunc(args: arkts.Expression[], property: arkts.ClassProperty): void {
-    if (hasDecorator(property, DecoratorNames.WATCH)) {
-        const watchStr: string | undefined = getValueInAnnotation(property, DecoratorNames.WATCH);
-        if (watchStr) {
-            args.push(factory.createWatchCallback(watchStr));
-        }
-    }
-}
-
 export function generateGetOrSetCall(beforCall: arkts.AstNode, type: string) {
     return arkts.factory.createCallExpression(
         arkts.factory.createMemberExpression(
@@ -339,25 +478,59 @@ export function generateToRecord(newName: string, originalName: string): arkts.P
     );
 }
 
-export function getStageManagementIdent(property: arkts.ClassProperty): string {
-    const useMutableState: boolean =
-        hasDecorator(property, DecoratorNames.STATE) ||
-        hasDecorator(property, DecoratorNames.STORAGE_LINK) ||
-        hasDecorator(property, DecoratorNames.PROVIDE) ||
-        hasDecorator(property, DecoratorNames.CONSUME) ||
-        hasDecorator(property, DecoratorNames.LINK) ||
-        hasDecorator(property, DecoratorNames.LOCAL_STORAGE_LINK) ||
-        hasDecorator(property, DecoratorNames.LINK);
-    const useSyncedProperty: boolean =
-        hasDecorator(property, DecoratorNames.PROP) ||
-        hasDecorator(property, DecoratorNames.STORAGE_PROP) ||
-        hasDecorator(property, DecoratorNames.LOCAL_STORAGE_PROP) ||
-        hasDecorator(property, DecoratorNames.OBJECT_LINK);
-    if (useMutableState) {
-        return 'MutableState';
-    } else if (useSyncedProperty) {
-        return 'SyncedProperty';
-    } else {
-        return '';
+// CACHE
+export interface PropertyCachedBody {
+    initializeBody?: arkts.AstNode[];
+    updateBody?: arkts.AstNode[];
+    toRecordBody?: arkts.Property[];
+}
+
+export class PropertyCache {
+    private _cache: Map<string, PropertyCachedBody>;
+    private static instance: PropertyCache;
+
+    private constructor() {
+        this._cache = new Map<string, PropertyCachedBody>();
+    }
+
+    static getInstance(): PropertyCache {
+        if (!this.instance) {
+            this.instance = new PropertyCache();
+        }
+        return this.instance;
+    }
+
+    reset(): void {
+        this._cache.clear();
+    }
+
+    getInitializeBody(name: string): arkts.AstNode[] {
+        return this._cache.get(name)?.initializeBody ?? [];
+    }
+
+    getUpdateBody(name: string): arkts.AstNode[] {
+        return this._cache.get(name)?.updateBody ?? [];
+    }
+
+    getToRecordBody(name: string): arkts.Property[] {
+        return this._cache.get(name)?.toRecordBody ?? [];
+    }
+
+    collectInitializeStruct(name: string, initializeStruct: arkts.AstNode[]): void {
+        const initializeBody = this._cache.get(name)?.initializeBody ?? [];
+        const newInitializeBody = [...initializeBody, ...initializeStruct];
+        this._cache.set(name, { ...this._cache.get(name), initializeBody: newInitializeBody });
+    }
+
+    collectUpdateStruct(name: string, updateStruct: arkts.AstNode[]): void {
+        const updateBody = this._cache.get(name)?.updateBody ?? [];
+        const newUpdateBody = [...updateBody, ...updateStruct];
+        this._cache.set(name, { ...this._cache.get(name), updateBody: newUpdateBody });
+    }
+
+    collectToRecord(name: string, toRecord: arkts.Property[]): void {
+        const toRecordBody = this._cache.get(name)?.toRecordBody ?? [];
+        const newToRecordBody = [...toRecordBody, ...toRecord];
+        this._cache.set(name, { ...this._cache.get(name), toRecordBody: newToRecordBody });
     }
 }

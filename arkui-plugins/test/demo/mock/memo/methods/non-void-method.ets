@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { memo, __memo_context_type, __memo_id_type } from "@ohos.arkui.stateManagement"
+import { memo, __memo_context_type, __memo_id_type } from "arkui.stateManagement.runtime";
 
 @Retention({policy:"SOURCE"}) @interface memo_intrinsic {}
 @Retention({policy:"SOURCE"}) @interface memo_entry {}

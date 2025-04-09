@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
-        "target": "es2018",
+        "target": "esnext",
         "lib": ["ESNext", "ESNext.WeakRef", "DOM"],
-        "module": "CommonJS",
+        "module": "esnext",
         "rootDir": ".",
         "baseUrl": ".",
         "outDir": "./lib",
@@ -16,7 +16,8 @@
         "strict": true,
         "skipLibCheck": true,
         "removeComments": false,
-        "isolatedModules": true
+        "isolatedModules": true,
+        "esModuleInterop": true
     },
     "include": [
         "./common/**/*.ts",

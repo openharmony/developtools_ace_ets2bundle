@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -33,21 +34,15 @@ const pluginTester = new PluginTester('test resource transform in build method',
 
 const parsedTransform: Plugins = {
     name: 'resource-in-build',
-    parsed: uiTransform().parsed
+    parsed: uiTransform().parsed,
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { UIImageAnimatorAttribute as UIImageAnimatorAttribute } from "@ohos.arkui.component";
-import { UISelectAttribute as UISelectAttribute } from "@ohos.arkui.component";
-import { UITextInputAttribute as UITextInputAttribute } from "@ohos.arkui.component";
-import { UIImageAttribute as UIImageAttribute } from "@ohos.arkui.component";
-import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
-import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
 import { _rawfile as _rawfile } from "@ohos.arkui.component";
 import { _r as _r } from "@ohos.arkui.component";
+import { UIImageAnimatorAttribute as UIImageAnimatorAttribute } from "@ohos.arkui.component";
+import { UIImageAttribute as UIImageAttribute } from "@ohos.arkui.component";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, $r as $r, $rawfile as $rawfile, Column as Column, Text as Text, Image as Image, TextInput as TextInput, Select as Select, SelectOption as SelectOption, Margin as Margin, ImageAnimator as ImageAnimator } from "@ohos.arkui.component";
 
@@ -77,14 +72,14 @@ function main() {}
   }
   
   @memo() public _build(@memo() style: ((instance: ResourceComponent)=> ResourceComponent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_ResourceComponent | undefined): void {
-    Column(undefined, undefined, (() => {
-      Text(undefined, _r("", "", "app.string.app_name"), undefined, undefined);
-      Image(undefined, _rawfile("", "", "app.photo.png"), undefined, undefined);
+    Column(undefined, (() => {
+      Text(undefined, _r("", "", "app.string.app_name"));
+      Image(undefined, _rawfile("", "", "app.photo.png"));
       TextInput(undefined, {
         text: _r("", "", "app.string.input_content"),
-      }, undefined);
-      Text(undefined, _r("", "", this.str1), undefined, undefined);
-      Text(undefined, _r("", "", this.str2), undefined, undefined);
+      });
+      Text(undefined, _r("", "", this.str1));
+      Text(undefined, _r("", "", this.str2));
       Select(undefined, new Array<SelectOption>({
         value: "aaa",
         icon: _r("", "", "app.media.selection"),
@@ -97,14 +92,14 @@ function main() {}
       }, {
         value: "ddd",
         icon: _r("", "", "app.media.selection"),
-      }), undefined);
+      }));
       Image(@memo() ((instance: UIImageAttribute): void => {
         instance.margin(({
           top: _r("", "", "app.float.elements_margin_horizontal_m"),
           bottom: _r("", "", "app.float.elements_margin_horizontal_l"),
         } as Margin));
         return;
-      }), _r("", "", "app.media.app_icon"), undefined, undefined);
+      }), _r("", "", "app.media.app_icon"));
       ImageAnimator(@memo() ((instance: UIImageAnimatorAttribute): void => {
         instance.images([{
           src: _r("", "", "app.media.aaa"),
@@ -112,13 +107,13 @@ function main() {}
           src: _r("", "", "app.media.bbb"),
         }]);
         return;
-      }), undefined);
+      }));
     }));
   }
-  public constructor() {}
+  private constructor() {}
 }
 
-interface __Options_ResourceComponent {
+@Component({freezeWhenInactive:false}) export interface __Options_ResourceComponent {
   set str1(str1: string | undefined)
   get str1(): string | undefined
   set str2(str2: string | undefined)
@@ -132,9 +127,9 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test resource transform in build method',
-    [parsedTransform, uiNoRecheck],
+    [parsedTransform, uiNoRecheck, recheck],
     {
-        checked: [testParsedAndCheckedTransformer],
+        'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },
     {
         stopAfter: 'checked',

@@ -21,6 +21,7 @@ import {
     registerNativeModuleLibraryName,
     loadNativeModuleLibrary,
     KDouble,
+    KStringArrayPtr,
 } from '@koalaui/interop';
 import { Es2pandaNativeModule as GeneratedEs2pandaNativeModule } from './generated/Es2pandaNativeModule';
 import * as path from 'path';
@@ -734,7 +735,12 @@ export class Es2pandaNativeModule {
     _ProgramExternalSources(context: KNativePointer, instance: KNativePointer): KNativePointer {
         throw new Error('Not implemented');
     }
-
+    _ProgramDirectExternalSources(context: KNativePointer, instance: KNativePointer): KNativePointer {
+        throw new Error('Not implemented');
+    }
+    _AstNodeProgram(context: KNativePointer, instance: KNativePointer): KNativePointer {
+        throw new Error('Not implemented');
+    }
     _ExternalSourceName(instance: KNativePointer): KNativePointer {
         throw new Error('Not implemented');
     }
@@ -793,6 +799,10 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
+    _ProgramIsASTLoweredConst(context: KPtr, program: KPtr): KBoolean {
+        throw new Error('Not implemented');
+    }
+
     _ETSParserGetGlobalProgramAbsName(context: KNativePointer): KNativePointer {
         throw new Error('Not implemented');
     }
@@ -825,6 +835,10 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
+    _ProgramModuleNameConst(context: KPtr, program: KPtr): KNativePointer {
+        throw new Error('Not implemented');
+    }
+
     _AstNodeRangeConst(context: KNativePointer, node: KNativePointer): KNativePointer {
         throw new Error('CreateFunctionDecl was not overloaded by native module initialization');
     }
@@ -842,7 +856,37 @@ export class Es2pandaNativeModule {
     }
 
     _IsArrayExpression(node: KPtr): KBoolean {
-        throw new Error('Not implemented');
+        throw new Error('IsArrayExpression was not overloaded by native module initialization');
+    }
+        
+    _MemInitialize(): void {
+        throw new Error('MemInitialize was not overloaded by native module initialization');
+    }
+
+    _MemFinalize(): void {
+        throw new Error('MemFinalize was not overloaded by native module initialization');
+    }
+
+    _CreateGlobalContext(configPtr: KNativePointer, externalFileList: KStringArrayPtr, fileNum: KInt, 
+        lspUsage: boolean): KNativePointer {
+        throw new Error('CreateGlobalContext was not overloaded by native module initialization');
+    }
+
+    _DestroyGlobalContext(contextPtr: KNativePointer): void {
+        throw new Error('DestroyGlobalContext was not overloaded by native module initialization');
+    }
+
+    _CreateCacheContextFromFile(configPtr: KNativePointer, filename: string, globalContext: KNativePointer,
+        isExternal: KBoolean): KNativePointer {
+        throw new Error('CreateCacheContextFromFile was not overloaded by native module initialization');
+    }
+
+    _InsertGlobalStructInfo(context: KNativePointer, str: String): void {
+        throw new Error('InsertGlobalStructInfo was not overloaded by native module initialization');
+    }
+
+    _HasGlobalStructInfo(context: KNativePointer, str: String): KBoolean {
+        throw new Error('HasGlobalStructInfo was not overloaded by native module initialization');
     }
 }
 

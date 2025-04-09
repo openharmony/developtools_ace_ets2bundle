@@ -2707,16 +2707,6 @@ void impl_TSTypeAliasDeclarationSetTypeParameters(KNativePointer context, KNativ
 }
 KOALA_INTEROP_V3(TSTypeAliasDeclarationSetTypeParameters, KNativePointer, KNativePointer, KNativePointer);
 
-KNativePointer impl_TSTypeAliasDeclarationAnnotations(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    std::size_t length;
-    auto result = GetImpl()->TSTypeAliasDeclarationAnnotations(_context, _receiver, &length);
-    return new std::vector<void*>(result, result + length);
-}
-KOALA_INTEROP_2(TSTypeAliasDeclarationAnnotations, KNativePointer, KNativePointer, KNativePointer);
-
 KNativePointer impl_TSTypeAliasDeclarationAnnotationsConst(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -3324,16 +3314,6 @@ void impl_ScriptFunctionAddFlag(KNativePointer context, KNativePointer receiver,
     return ;
 }
 KOALA_INTEROP_V3(ScriptFunctionAddFlag, KNativePointer, KNativePointer, KInt);
-
-void impl_ScriptFunctionAddModifier(KNativePointer context, KNativePointer receiver, KInt flags)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    const auto _flags = static_cast<Es2pandaModifierFlags>(flags);
-    GetImpl()->ScriptFunctionAddModifier(_context, _receiver, _flags);
-    return ;
-}
-KOALA_INTEROP_V3(ScriptFunctionAddModifier, KNativePointer, KNativePointer, KInt);
 
 KUInt impl_ScriptFunctionFormalParamsLengthConst(KNativePointer context, KNativePointer receiver)
 {
@@ -4680,6 +4660,58 @@ void impl_ETSTupleSetTypeAnnotationsList(KNativePointer context, KNativePointer 
     return ;
 }
 KOALA_INTEROP_V4(ETSTupleSetTypeAnnotationsList, KNativePointer, KNativePointer, KNativePointerArray, KUInt);
+
+KNativePointer impl_CreateTryStatement(KNativePointer context, KNativePointer block, KNativePointerArray catchClauses, KUInt catchClausesSequenceLength, KNativePointer finalizer, KNativePointerArray finalizerInsertionsLabelPair, KUInt finalizerInsertionsLabelPairSequenceLength, KNativePointerArray finalizerInsertionsStatement, KUInt finalizerInsertionsStatementSequenceLength)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _block = reinterpret_cast<es2panda_AstNode*>(block);
+    const auto _catchClauses = reinterpret_cast<es2panda_AstNode**>(catchClauses);
+    const auto _catchClausesSequenceLength = static_cast<KUInt>(catchClausesSequenceLength);
+    const auto _finalizer = reinterpret_cast<es2panda_AstNode*>(finalizer);
+    const auto _finalizerInsertionsLabelPair = reinterpret_cast<es2panda_LabelPair**>(finalizerInsertionsLabelPair);
+    const auto _finalizerInsertionsLabelPairSequenceLength = static_cast<KUInt>(finalizerInsertionsLabelPairSequenceLength);
+    const auto _finalizerInsertionsStatement = reinterpret_cast<es2panda_AstNode**>(finalizerInsertionsStatement);
+    const auto _finalizerInsertionsStatementSequenceLength = static_cast<KUInt>(finalizerInsertionsStatementSequenceLength);
+    auto result = GetImpl()->CreateTryStatement(_context, _block, _catchClauses, _catchClausesSequenceLength, _finalizer, _finalizerInsertionsLabelPair, _finalizerInsertionsLabelPairSequenceLength, _finalizerInsertionsStatement, _finalizerInsertionsStatementSequenceLength);
+    return result;
+}
+KOALA_INTEROP_9(CreateTryStatement, KNativePointer, KNativePointer, KNativePointer, KNativePointerArray, KUInt, KNativePointer, KNativePointerArray, KUInt, KNativePointerArray, KUInt);
+
+KNativePointer impl_UpdateTryStatement(KNativePointer context, KNativePointer original, KNativePointer block, KNativePointerArray catchClauses, KUInt catchClausesSequenceLength, KNativePointer finalizer, KNativePointerArray finalizerInsertionsLabelPair, KUInt finalizerInsertionsLabelPairSequenceLength, KNativePointerArray finalizerInsertionsStatement, KUInt finalizerInsertionsStatementSequenceLength)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _original = reinterpret_cast<es2panda_AstNode*>(original);
+    const auto _block = reinterpret_cast<es2panda_AstNode*>(block);
+    const auto _catchClauses = reinterpret_cast<es2panda_AstNode**>(catchClauses);
+    const auto _catchClausesSequenceLength = static_cast<KUInt>(catchClausesSequenceLength);
+    const auto _finalizer = reinterpret_cast<es2panda_AstNode*>(finalizer);
+    const auto _finalizerInsertionsLabelPair = reinterpret_cast<es2panda_LabelPair**>(finalizerInsertionsLabelPair);
+    const auto _finalizerInsertionsLabelPairSequenceLength = static_cast<KUInt>(finalizerInsertionsLabelPairSequenceLength);
+    const auto _finalizerInsertionsStatement = reinterpret_cast<es2panda_AstNode**>(finalizerInsertionsStatement);
+    const auto _finalizerInsertionsStatementSequenceLength = static_cast<KUInt>(finalizerInsertionsStatementSequenceLength);
+    auto result = GetImpl()->UpdateTryStatement(_context, _original, _block, _catchClauses, _catchClausesSequenceLength, _finalizer, _finalizerInsertionsLabelPair, _finalizerInsertionsLabelPairSequenceLength, _finalizerInsertionsStatement, _finalizerInsertionsStatementSequenceLength);
+    return result;
+}
+KOALA_INTEROP_10(UpdateTryStatement, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointerArray, KUInt, KNativePointer, KNativePointerArray, KUInt, KNativePointerArray, KUInt);
+
+KNativePointer impl_CreateTryStatement1(KNativePointer context, KNativePointer other)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _other = reinterpret_cast<es2panda_AstNode*>(other);
+    auto result = GetImpl()->CreateTryStatement1(_context, _other);
+    return result;
+}
+KOALA_INTEROP_2(CreateTryStatement1, KNativePointer, KNativePointer, KNativePointer);
+
+KNativePointer impl_UpdateTryStatement1(KNativePointer context, KNativePointer original, KNativePointer other)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _original = reinterpret_cast<es2panda_AstNode*>(original);
+    const auto _other = reinterpret_cast<es2panda_AstNode*>(other);
+    auto result = GetImpl()->UpdateTryStatement1(_context, _original, _other);
+    return result;
+}
+KOALA_INTEROP_3(UpdateTryStatement1, KNativePointer, KNativePointer, KNativePointer, KNativePointer);
 
 KNativePointer impl_TryStatementFinallyBlockConst(KNativePointer context, KNativePointer receiver)
 {
@@ -6639,16 +6671,6 @@ KNativePointer impl_ImportDeclarationSpecifiersConst(KNativePointer context, KNa
 }
 KOALA_INTEROP_2(ImportDeclarationSpecifiersConst, KNativePointer, KNativePointer, KNativePointer);
 
-KNativePointer impl_ImportDeclarationSpecifiers(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    std::size_t length;
-    auto result = GetImpl()->ImportDeclarationSpecifiers(_context, _receiver, &length);
-    return new std::vector<void*>(result, result + length);
-}
-KOALA_INTEROP_2(ImportDeclarationSpecifiers, KNativePointer, KNativePointer, KNativePointer);
-
 KBoolean impl_ImportDeclarationIsTypeKindConst(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -6734,15 +6756,6 @@ KNativePointer impl_UpdateETSImportDeclaration(KNativePointer context, KNativePo
     return result;
 }
 KOALA_INTEROP_6(UpdateETSImportDeclaration, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointerArray, KUInt, KInt);
-
-KNativePointer impl_ETSImportDeclarationAssemblerName(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ETSImportDeclarationAssemblerName(_context, _receiver);
-    return new std::string(result);
-}
-KOALA_INTEROP_2(ETSImportDeclarationAssemblerName, KNativePointer, KNativePointer, KNativePointer);
 
 KNativePointer impl_ETSImportDeclarationAssemblerNameConst(KNativePointer context, KNativePointer receiver)
 {

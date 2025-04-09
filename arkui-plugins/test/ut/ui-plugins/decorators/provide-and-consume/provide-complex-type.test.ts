@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { structNoRecheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,8 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { ProvideDecoratedVariable as ProvideDecoratedVariable } from "@ohos.arkui.stateManagement";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
@@ -217,10 +216,10 @@ final class PropType extends BaseEnum<int> {
     this.__backing_provideVar12!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: Parent)=> Parent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Parent | undefined): void {}
-  public constructor() {}
+  private constructor() {}
 }
 
-interface __Options_Parent {
+@Component({freezeWhenInactive:false}) export interface __Options_Parent {
   set provideVar1(provideVar1: Per | undefined)
   get provideVar1(): Per | undefined
   set __backing_provideVar1(__backing_provideVar1: ProvideDecoratedVariable<Per> | undefined)
@@ -263,12 +262,12 @@ interface __Options_Parent {
   get __backing_provideVar10(): ProvideDecoratedVariable<Map<number, Per>> | undefined
   set provideVar11(provideVar11: string | number | undefined)
   get provideVar11(): string | number | undefined
-  set __backing_provideVar11(__backing_provideVar11: ProvideDecoratedVariable<string | number> | undefined)
-  get __backing_provideVar11(): ProvideDecoratedVariable<string | number> | undefined
+  set __backing_provideVar11(__backing_provideVar11: ProvideDecoratedVariable<string> | ProvideDecoratedVariable<number> | undefined)
+  get __backing_provideVar11(): ProvideDecoratedVariable<string> | ProvideDecoratedVariable<number> | undefined
   set provideVar12(provideVar12: Set<string> | Per | undefined)
   get provideVar12(): Set<string> | Per | undefined
-  set __backing_provideVar12(__backing_provideVar12: ProvideDecoratedVariable<Set<string> | Per> | undefined)
-  get __backing_provideVar12(): ProvideDecoratedVariable<Set<string> | Per> | undefined
+  set __backing_provideVar12(__backing_provideVar12: ProvideDecoratedVariable<Set<string>> | ProvideDecoratedVariable<Per> | undefined)
+  get __backing_provideVar12(): ProvideDecoratedVariable<Set<string>> | ProvideDecoratedVariable<Per> | undefined
 }
 `;
 
@@ -278,9 +277,9 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test complex type @Provide decorated variables transformation',
-    [parsedTransform, structNoRecheck],
+    [parsedTransform, structNoRecheck, recheck],
     {
-        checked: [testParsedAndCheckedTransformer],
+        'checked:struct-no-recheck': [testParsedAndCheckedTransformer],
     },
     {
         stopAfter: 'checked',

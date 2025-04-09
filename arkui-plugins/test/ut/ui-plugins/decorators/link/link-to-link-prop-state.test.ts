@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,15 +38,11 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { DecoratedV1VariableBase as DecoratedV1VariableBase } from "@ohos.arkui.stateManagement";
 import { PropDecoratedVariable as PropDecoratedVariable } from "@ohos.arkui.stateManagement";
 import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
-import { DecoratedV1VariableBase as DecoratedV1VariableBase } from "@ohos.arkui.stateManagement";
+import { memo as memo } from "arkui.stateManagement.runtime";
 import { LinkDecoratedVariable as LinkDecoratedVariable } from "@ohos.arkui.stateManagement";
-import { UITextInputAttribute as UITextInputAttribute } from "@ohos.arkui.component";
-import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Column as Column, TextInput as TextInput } from "@ohos.arkui.component";
 import { Link as Link, State as State, Prop as Prop } from "@ohos.arkui.stateManagement";
@@ -68,10 +65,10 @@ function main() {}
     this.__backing_text1!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: Parant)=> Parant) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Parant | undefined): void {
-    Column(undefined, undefined, (() => {
+    Column(undefined, (() => {
       TextInput(undefined, {
         text: this.text1,
-      }, undefined);
+      });
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), ({
@@ -79,10 +76,10 @@ function main() {}
         childText2: this.text1,
         childText3: this.text1,
         childText4: this.text1,
-      } as __Options_Child), undefined, undefined);
+      } as __Options_Child));
     }));
   }
-  public constructor() {}
+  private constructor() {}
 }
 
 @Component({freezeWhenInactive:false}) final class Child extends CustomComponent<Child, __Options_Child> {
@@ -138,21 +135,23 @@ function main() {}
   @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {
     TextInput(undefined, {
       text: this.childText,
-    }, undefined);
+    });
   }
-  public constructor() {}
+  private constructor() {}
 }
 
-interface __Options_Parant {
-  set text1(text1: string | undefined)
-  get text1(): string | undefined
+@Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
+
+@Component({freezeWhenInactive:false}) export interface __Options_Parant {
+  @__Link_intrinsic() set text1(text1: string | undefined)
+  @__Link_intrinsic() get text1(): string | undefined
   set __backing_text1(__backing_text1: DecoratedV1VariableBase<string> | undefined)
   get __backing_text1(): DecoratedV1VariableBase<string> | undefined
 }
 
-interface __Options_Child {
-  set childText(childText: string | undefined)
-  get childText(): string | undefined
+@Component({freezeWhenInactive:false}) export interface __Options_Child {
+  @__Link_intrinsic() set childText(childText: string | undefined)
+  @__Link_intrinsic() get childText(): string | undefined
   set __backing_childText(__backing_childText: DecoratedV1VariableBase<string> | undefined)
   get __backing_childText(): DecoratedV1VariableBase<string> | undefined
   set childText2(childText2: string | undefined)
@@ -176,9 +175,9 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Link decorated variables passing to other variables',
-    [parsedTransform, uiNoRecheck],
+    [parsedTransform, uiNoRecheck, recheck],
     {
-        checked: [testParsedAndCheckedTransformer],
+        'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },
     {
         stopAfter: 'checked',

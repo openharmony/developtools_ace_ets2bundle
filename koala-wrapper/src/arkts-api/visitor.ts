@@ -46,6 +46,8 @@ import {
     isBlockExpression,
     isReturnStatement,
     isArrayExpression,
+    isTryStatement,
+    isBinaryExpression,
 } from '../generated';
 import {
     isEtsScript,
@@ -66,64 +68,6 @@ import { classDefinitionFlags } from './utilities/public';
 import { Es2pandaAstNodeType } from '../Es2pandaEnums';
 
 type Visitor = (node: AstNode) => AstNode;
-
-export interface StructVariableMetadata {
-    name: string;
-    properties: string[];
-    modifiers: Es2pandaModifierFlags;
-    hasStateManagementType?: boolean;
-}
-
-export class StructInfo {
-    metadata: Record<string, StructVariableMetadata> = {};
-    initializeBody: AstNode[] = [];
-    updateBody: AstNode[] = [];
-    isReusable: boolean = false;
-    toRecordBody: Property[] = [];
-}
-
-export class GlobalInfo {
-    private _structCollection: Set<string>;
-    private static instance: GlobalInfo;
-    private _structMap: Map<string, StructInfo>;
-
-    private constructor() {
-        this._structCollection = new Set();
-        this._structMap = new Map();
-    }
-
-    public static getInfoInstance(): GlobalInfo {
-        if (!this.instance) {
-            this.instance = new GlobalInfo();
-        }
-        return this.instance;
-    }
-
-    public add(str: string): void {
-        this._structCollection.add(str);
-    }
-
-    public getStructCollection(): Set<string> {
-        return this._structCollection;
-    }
-
-    public getStructInfo(structName: string): StructInfo {
-        const structInfo = this._structMap.get(structName);
-        if (!structInfo) {
-            return new StructInfo();
-        }
-        return structInfo;
-    }
-
-    public setStructInfo(structName: string, info: StructInfo): void {
-        this._structMap.set(structName, info);
-    }
-
-    public reset(): void {
-        this._structMap.clear();
-        this._structCollection.clear();
-    }
-}
 
 // TODO: rethink (remove as)
 function nodeVisitor<T extends AstNode | undefined>(node: T, visitor: Visitor): T {
@@ -156,6 +100,7 @@ export function visitEachChild(node: AstNode, visitor: Visitor): AstNode {
     script = visitStatement(script, visitor);
     script = visitOuterExpression(script, visitor);
     script = visitInnerExpression(script, visitor);
+    script = visitTrivialExpression(script, visitor);
     script = visitLiteral(script, visitor);
     // TODO
     return visitWithoutUpdate(script, visitor);
@@ -263,6 +208,23 @@ function visitInnerExpression(node: AstNode, visitor: Visitor): AstNode {
     return node;
 }
 
+function visitTrivialExpression(node: AstNode, visitor: Visitor): AstNode {
+    if (updated) {
+        return node;
+    }
+    if (isBinaryExpression(node)) {
+        updated = true;
+        return factory.updateBinaryExpression(
+            node,
+            nodeVisitor(node.left, visitor),
+            nodeVisitor(node.right, visitor),
+            node.operatorType
+        );
+    }
+    // TODO
+    return node;
+}
+
 function visitDeclaration(node: AstNode, visitor: Visitor): AstNode {
     if (updated) {
         return node;
@@ -335,7 +297,7 @@ function visitDefinition(node: AstNode, visitor: Visitor): AstNode {
             node,
             node.kind,
             node.name,
-            factory.createFunctionExpression(nodeVisitor(node.scriptFunction, visitor)),
+            nodeVisitor(node.scriptFunction, visitor),
             node.modifiers,
             false
         );
@@ -380,6 +342,17 @@ function visitStatement(node: AstNode, visitor: Visitor): AstNode {
     if (isReturnStatement(node)) {
         updated = true;
         return factory.updateReturnStatement(node, nodeVisitor(node.argument, visitor));
+    }
+    if (isTryStatement(node)) {
+        updated = true;
+        return factory.updateTryStatement(
+            node,
+            nodeVisitor(node.block, visitor),
+            nodesVisitor(node.catchClauses, visitor),
+            nodeVisitor(node.finallyBlock, visitor),
+            [],
+            []
+        );
     }
     // TODO
     return node;

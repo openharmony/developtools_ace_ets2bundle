@@ -29,7 +29,7 @@ import { FunctionTransformer } from '../../../memo-plugins/function-transformer'
 export const memoNoRecheck: Plugins = {
     name: 'memo-no-recheck',
     checked(this: PluginContext): arkts.EtsScript | undefined {
-        const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+        const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
             let script = program.astNode;
