@@ -21,7 +21,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from "../../../utils/path-config";
 import { parseDumpSrc } from "../../../utils/parse-string";
 import { PluginContext, Plugins } from "../../../../common/plugin-context";
 import { ComponentTransformer } from "../../../../ui-plugins/component-transformer";
-import { BuilderLambdaTransformer } from "../../../../ui-plugins/builder-lambda-transformer";
+import { BuilderLambdaTransformer } from "../../../../ui-plugins/builder-lambda-translators/builder-lambda-transformer";
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
