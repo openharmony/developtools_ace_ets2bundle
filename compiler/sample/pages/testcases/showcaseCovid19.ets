@@ -122,7 +122,7 @@ class CountryData {
 
   compareName(c2: CountryData): number {
     return (this.name == c2.name) ? 0 : (this.name < c2.name) ? -1 : 1;
-    // FXXME V8 ICU issue workaround, do not use: return this.name.localeCompare(c2.name);
+    // FXXME ICU issue workaround, do not use: return this.name.localeCompare(c2.name);
   }
 }
 
