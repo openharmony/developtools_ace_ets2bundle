@@ -21,7 +21,6 @@ import { StateTranslator } from './state';
 import { PropTranslator } from './prop';
 import { StorageLinkTranslator } from './storagelink';
 import { LocalStorageLinkTranslator } from './localstoragelink';
-import { WatchTranslator } from './watch';
 import { LinkTranslator } from './link';
 import { ObjectLinkTranslator } from './objectlink';
 import { LocalStoragePropTranslator } from './localstorageprop';
@@ -37,53 +36,42 @@ export { PropertyTranslator };
 
 export function classifyProperty(
     member: arkts.AstNode,
-    structName: string,
-    skipDecorator?: DecoratorNames[],
+    structName: string
 ): PropertyTranslator | undefined {
     if (!arkts.isClassProperty(member)) return undefined;
     if (isStatic(member)) return new staticPropertyTranslator(member, structName);
 
-    if (!skipDecorator?.includes(DecoratorNames.WATCH) && hasDecorator(member, DecoratorNames.WATCH)) {
-        return new WatchTranslator(member, structName, classifyProperty(member, structName, [DecoratorNames.WATCH]));
-    }
-
-    if (!skipDecorator?.includes(DecoratorNames.STATE) && hasDecorator(member, DecoratorNames.STATE)) {
+    if (hasDecorator(member, DecoratorNames.STATE)) {
         return new StateTranslator(member, structName);
     }
-    if (!skipDecorator?.includes(DecoratorNames.STORAGE_LINK) && hasDecorator(member, DecoratorNames.STORAGE_LINK)) {
+    if (hasDecorator(member, DecoratorNames.STORAGE_LINK)) {
         return new StorageLinkTranslator(member, structName);
     }
-    if (
-        !skipDecorator?.includes(DecoratorNames.LOCAL_STORAGE_LINK) &&
-        hasDecorator(member, DecoratorNames.LOCAL_STORAGE_LINK)
-    ) {
+    if (hasDecorator(member, DecoratorNames.LOCAL_STORAGE_LINK)) {
         return new LocalStorageLinkTranslator(member, structName);
     }
-    if (!skipDecorator?.includes(DecoratorNames.LINK) && hasDecorator(member, DecoratorNames.LINK)) {
+    if (hasDecorator(member, DecoratorNames.LINK)) {
         return new LinkTranslator(member, structName);
     }
-    if (!skipDecorator?.includes(DecoratorNames.OBJECT_LINK) && hasDecorator(member, DecoratorNames.OBJECT_LINK)) {
+    if (hasDecorator(member, DecoratorNames.OBJECT_LINK)) {
         return new ObjectLinkTranslator(member, structName);
     }
-    if (
-        !skipDecorator?.includes(DecoratorNames.LOCAL_STORAGE_PROP) &&
-        hasDecorator(member, DecoratorNames.LOCAL_STORAGE_PROP)
-    ) {
+    if (hasDecorator(member, DecoratorNames.LOCAL_STORAGE_PROP)) {
         return new LocalStoragePropTranslator(member, structName);
     }
-    if (!skipDecorator?.includes(DecoratorNames.STORAGE_PROP) && hasDecorator(member, DecoratorNames.STORAGE_PROP)) {
+    if (hasDecorator(member, DecoratorNames.STORAGE_PROP)) {
         return new StoragePropTranslator(member, structName);
     }
-    if (!skipDecorator?.includes(DecoratorNames.PROP) && hasDecorator(member, DecoratorNames.PROP)) {
+    if (hasDecorator(member, DecoratorNames.PROP)) {
         return new PropTranslator(member, structName);
     }
-    if (!skipDecorator?.includes(DecoratorNames.PROVIDE) && hasDecorator(member, DecoratorNames.PROVIDE)) {
+    if (hasDecorator(member, DecoratorNames.PROVIDE)) {
         return new ProvideTranslator(member, structName);
     }
-    if (!skipDecorator?.includes(DecoratorNames.CONSUME) && hasDecorator(member, DecoratorNames.CONSUME)) {
+    if (hasDecorator(member, DecoratorNames.CONSUME)) {
         return new ConsumeTranslator(member, structName);
     }
-    if (!skipDecorator?.includes(DecoratorNames.BUILDER_PARAM) && hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
+    if (hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
         return new BuilderParamTranslator(member, structName);
     }
 

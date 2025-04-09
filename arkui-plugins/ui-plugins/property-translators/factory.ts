@@ -16,6 +16,7 @@
 import * as arkts from "@koalaui/libarkts";
 import { getInteropPath } from "../../path";
 import { GenSymGenerator } from "../../common/gensym-generator";
+import { factory as UIFactory } from "../ui-factory";
 const interop = require(getInteropPath())
 const nullptr = interop.nullptr
 
@@ -122,6 +123,121 @@ export class factory {
             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
             false,
             optional
+        );
+    }
+
+    /*
+    * create `(<params>)<typeParams>: <returnType> => { <bodyStatementsList> }`.
+    */
+    static createArrowFunctionWithParamsAndBody(
+        typeParams: arkts.TSTypeParameterDeclaration | undefined,
+        params: arkts.Expression[] | undefined,
+        returnType: arkts.TypeNode | undefined,
+        hasReceiver: boolean,
+        bodyStatementsList: arkts.Statement[]
+    ): arkts.ArrowFunctionExpression {
+        return arkts.factory.createArrowFunction(
+            arkts.factory.createScriptFunction(
+                arkts.BlockStatement.createBlockStatement(bodyStatementsList),
+                arkts.factory.createFunctionSignature(
+                    typeParams,
+                    params ? params : [],
+                    returnType,
+                    hasReceiver,
+                ),
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            )
+        );
+    }
+
+    /*
+    * create @Watch callback, e.g. (propertyName: string): void => {this.<callbackName>(propertyName)}.
+    */
+    static createWatchCallback(
+        callbackName: string,
+    ): arkts.ArrowFunctionExpression {
+        return factory.createArrowFunctionWithParamsAndBody(
+            undefined,
+            [
+                arkts.factory.createParameterDeclaration(
+                    arkts.factory.createIdentifier('_', UIFactory.createTypeReferenceFromString('string')),
+                    undefined
+                )
+            ],
+            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            false,
+            [
+                arkts.factory.createExpressionStatement(
+                    arkts.factory.createCallExpression(
+                        factory.generateThisCall(callbackName),
+                        undefined,
+                        [arkts.factory.createIdentifier('_')]
+                    )
+                )
+            ]
+        );
+    }
+
+    /*
+    * create this.<name> with optional or nonNullable.
+    */
+    static generateThisCall(
+        name: string,
+        optional: boolean = false,
+        nonNull: boolean = false,
+    ): arkts.Expression {
+        const member: arkts.Expression = arkts.factory.createMemberExpression(
+            arkts.factory.createThisExpression(),
+            arkts.factory.createIdentifier(`${name}`),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            optional,
+        );
+        return nonNull ? arkts.factory.createTSNonNullExpression(member) : member;
+    }
+
+    /*
+    * create `initializers!.<newName>!.<getOrSet>(<args>)`.
+    */
+    static createBackingGetOrSetCall(
+        newName: string,
+        getOrSet: string,
+        args: arkts.AstNode[] | undefined
+    ): arkts.CallExpression {
+        return arkts.factory.createCallExpression(
+            arkts.factory.createMemberExpression(
+                arkts.factory.createTSNonNullExpression(
+                    factory.createNonNullOrOptionalMemberExpression('initializers', newName, false, true),
+                ),
+                arkts.factory.createIdentifier(getOrSet),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false,
+            ),
+            undefined,
+            args,
+        );
+    }
+
+    /*
+    * create `new <className><typeAnnotation>(<args>)`.
+    */
+    static createNewDecoratedInstantiate(
+        className: string,
+        typeAnnotation: arkts.TypeNode | undefined,
+        args: arkts.Expression[] | undefined
+    ): arkts.ETSNewClassInstanceExpression {
+        return arkts.factory.createETSNewClassInstanceExpression(
+            arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier(className),
+                    arkts.factory.createTSTypeParameterInstantiation(
+                        typeAnnotation ? [typeAnnotation.clone()] : [],
+                    ),
+                ),
+            ),
+            args?.length ? args : [],
         );
     }
 }
