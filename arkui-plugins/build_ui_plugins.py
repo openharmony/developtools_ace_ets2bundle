@@ -56,6 +56,7 @@ def copy_output(options):
     copy_files(os.path.join(options.source_path, 'package.json'),
                os.path.join(options.output_path, 'package.json'), True)
 
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--npm', help='path to a npm exetuable')

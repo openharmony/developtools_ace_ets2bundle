@@ -13,21 +13,12 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
+import * as arkts from '@koalaui/libarkts';
 
-import { 
-    createGetter, 
-    createSetter,
-} from "./utils";
-import { PropertyTranslator } from "./base";
-import { 
-    GetterSetter, 
-    InitializerConstructor
-} from "./types";
-import { 
-    backingField, 
-    expectName 
-} from "../../common/arkts-utils";
+import { createGetter, createSetter } from './utils';
+import { PropertyTranslator } from './base';
+import { GetterSetter, InitializerConstructor } from './types';
+import { backingField, expectName } from '../../common/arkts-utils';
 
 export class regularPropertyTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
@@ -44,26 +35,23 @@ export class regularPropertyTranslator extends PropertyTranslator implements Ini
     }
 
     translateGetter(
-        originalName: string, 
-        typeAnnotation: arkts.TypeNode | undefined, 
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
         returnValue: arkts.Expression
     ): arkts.MethodDefinition {
         return createGetter(originalName, typeAnnotation, returnValue);
     }
 
     translateSetter(
-        originalName: string, 
-        typeAnnotation: arkts.TypeNode | undefined, 
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
         left: arkts.MemberExpression
     ): arkts.MethodDefinition {
         const right: arkts.Identifier = arkts.factory.createIdentifier('value');
         return createSetter(originalName, typeAnnotation, left, right);
     }
 
-    generateInitializeStruct(        
-        newName: string, 
-        originalName: string
-    ): arkts.AstNode {
+    generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
         return arkts.factory.createAssignmentExpression(
             arkts.factory.createMemberExpression(
                 arkts.factory.createIdentifier('this'),

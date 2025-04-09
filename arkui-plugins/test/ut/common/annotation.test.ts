@@ -13,34 +13,38 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts";
-import { PluginTestContext, PluginTester } from "../../utils/plugin-tester";
-import { annotation } from "../../../common/arkts-utils";
+import * as arkts from '@koalaui/libarkts';
+import { PluginTestContext, PluginTester } from '../../utils/plugin-tester';
+import { annotation } from '../../../common/arkts-utils';
 
-const pluginTester = new PluginTester("test arkts-utils");
+const pluginTester = new PluginTester('test arkts-utils');
 
 function testAnnotation(this: PluginTestContext): void {
-    const anno: arkts.AnnotationUsage = annotation("State");
+    const anno: arkts.AnnotationUsage = annotation('State');
     expect(arkts.isAnnotationUsage(anno)).toBeTruthy();
-    expect(anno.dumpSrc()).toBe("@State()");
+    expect(anno.dumpSrc()).toBe('@State()');
 }
 
 pluginTester.run(
-    "annotation", 
+    'annotation',
     [],
     {
         parsed: [testAnnotation],
-        checked: [testAnnotation]
+        checked: [testAnnotation],
     },
     {
-        stopAfter: "checked"
+        stopAfter: 'checked',
     },
     {
-        beforeEach: [() => {
-            jest.spyOn(console, 'warn').mockImplementation(() => {});
-        }],
-        afterEach: [() => {
-            jest.spyOn(console, 'warn').mockRestore();
-        }]
+        beforeEach: [
+            () => {
+                jest.spyOn(console, 'warn').mockImplementation(() => {});
+            },
+        ],
+        afterEach: [
+            () => {
+                jest.spyOn(console, 'warn').mockRestore();
+            },
+        ],
     }
 );

@@ -13,17 +13,17 @@
  * limitations under the License.
  */
 
-import * as path from "path";
-import * as arkts from "@koalaui/libarkts";
-import { PluginTestContext, PluginTester } from "../../../utils/plugin-tester";
-import { mockBuildConfig } from "../../../utils/artkts-config";
-import { getRootPath, MOCK_ENTRY_DIR_PATH } from "../../../utils/path-config";
-import { parseDumpSrc } from "../../../utils/parse-string";
-import { PluginContext, Plugins } from "../../../../common/plugin-context";
-import { ComponentTransformer } from "../../../../ui-plugins/component-transformer";
-import { BuilderLambdaTransformer } from "../../../../ui-plugins/builder-lambda-translators/builder-lambda-transformer";
+import * as path from 'path';
+import * as arkts from '@koalaui/libarkts';
+import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
+import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
+import { parseDumpSrc } from '../../../utils/parse-string';
+import { PluginContext, Plugins } from '../../../../common/plugin-context';
+import { ComponentTransformer } from '../../../../ui-plugins/component-transformer';
+import { BuilderLambdaTransformer } from '../../../../ui-plugins/builder-lambda-translators/builder-lambda-transformer';
 
-const moduleRootPath: string = path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, "builder-lambda");
+const moduleRootPath: string = path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, 'builder-lambda');
 
 const instantiateTransform: Plugins = {
     name: 'instantiate',
@@ -32,9 +32,9 @@ const instantiateTransform: Plugins = {
         if (program) {
             let script: arkts.EtsScript = program.astNode;
 
-            const componentTransformer = new ComponentTransformer(
-                { arkui: "@koalaui.arkts-arkui.StructBase" }
-            );
+            const componentTransformer = new ComponentTransformer({
+                arkui: '@koalaui.arkts-arkui.StructBase',
+            });
             script = componentTransformer.visitor(script) as arkts.EtsScript;
             arkts.setAllParents(script);
             return script;
@@ -50,10 +50,10 @@ const instantiateTransform: Plugins = {
             arkts.setAllParents(script);
             return script;
         }
-    }
+    },
 };
 
-const pluginTester = new PluginTester("test build-lambda transformer");
+const pluginTester = new PluginTester('test build-lambda transformer');
 
 // Test single-content instantiateImpl transformation
 function testSingleContent(this: PluginTestContext): void {
@@ -100,35 +100,34 @@ interface __Options_MyStateSample {
 
 `;
     expect(parseDumpSrc(script.dumpSrc())).toBe(parseDumpSrc(expectedScript));
-};
+}
 
 pluginTester.run(
-    "transform $_instantiate for single component content",
+    'transform $_instantiate for single component content',
     [instantiateTransform],
     {
         'checked:instantiate': [testSingleContent],
     },
     {
-        stopAfter: "checked",
+        stopAfter: 'checked',
         buildConfig: {
             ...mockBuildConfig(),
             compileFiles: [
-                path.resolve(
-                    getRootPath(), 
-                    MOCK_ENTRY_DIR_PATH, 
-                    "builder-lambda", 
-                    "instantiate-content.ets"
-                )
+                path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, 'builder-lambda', 'instantiate-content.ets'),
             ],
-            moduleRootPath
-        }
+            moduleRootPath,
+        },
     },
     {
-        beforeEach: [() => {
-            jest.spyOn(console, 'warn').mockImplementation(() => {});
-        }],
-        afterEach: [() => {
-            jest.spyOn(console, 'warn').mockRestore();
-        }]
+        beforeEach: [
+            () => {
+                jest.spyOn(console, 'warn').mockImplementation(() => {});
+            },
+        ],
+        afterEach: [
+            () => {
+                jest.spyOn(console, 'warn').mockRestore();
+            },
+        ],
     }
 );

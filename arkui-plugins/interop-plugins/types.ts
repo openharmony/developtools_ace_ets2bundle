@@ -14,43 +14,43 @@
  */
 
 namespace interop {
-	export type NativePointer = number;
+    export type NativePointer = number;
 
-	export interface PluginContext {
-    setArkTSAst(ast: Node): void;
-    getArkTSAst(): Node | undefined;
-    setArkTSProgram(program: Node): void;
-    getArkTSProgram(): Node | undefined;
-    setProjectConfig(projectConfig: Node): void;
-    getProjectConfig(): Node | undefined;
-	}
+    export interface PluginContext {
+        setArkTSAst(ast: Node): void;
+        getArkTSAst(): Node | undefined;
+        setArkTSProgram(program: Node): void;
+        getArkTSProgram(): Node | undefined;
+        setProjectConfig(projectConfig: Node): void;
+        getProjectConfig(): Node | undefined;
+    }
 
-	export interface ArktsObject {
-    readonly peer: NativePointer;
-  }
+    export interface ArktsObject {
+        readonly peer: NativePointer;
+    }
 
-  export interface Node extends ArktsObject {
-    get originalPeer(): NativePointer;
-    set originalPeer(peer: NativePointer);
-    dumpJson(): string;
-    dumpSrc(): string;
-  }
+    export interface Node extends ArktsObject {
+        get originalPeer(): NativePointer;
+        set originalPeer(peer: NativePointer);
+        dumpJson(): string;
+        dumpSrc(): string;
+    }
 
-  export interface EtsScript extends Node {}
+    export interface EtsScript extends Node {}
 
-  export interface Plugin {
-      name: string,
-      parsed?(context: PluginContext): EtsScript | undefined;
-      checked?(context: PluginContext): EtsScript | undefined;
-  }
+    export interface Plugin {
+        name: string;
+        parsed?(context: PluginContext): EtsScript | undefined;
+        checked?(context: PluginContext): EtsScript | undefined;
+    }
 
-  export type TransfromerName = string & {__TransfromerNameBrand: any };
+    export type TransfromerName = string & { __TransfromerNameBrand: any };
 
-  export interface EmitTransformerOptions {
-    arkui: TransfromerName;
-  }
+    export interface EmitTransformerOptions {
+        arkui: TransfromerName;
+    }
 
-  export interface DeclTransformerOptions {
-    arkui: TransfromerName;
-  }
+    export interface DeclTransformerOptions {
+        arkui: TransfromerName;
+    }
 }

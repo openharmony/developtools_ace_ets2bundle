@@ -52,7 +52,7 @@ export function isDecoratorAnnotation(anno: arkts.AnnotationUsage, decoratorName
 
 export function hasDecorator(
     property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition,
-    decoratorName: DecoratorNames,
+    decoratorName: DecoratorNames
 ): boolean {
     if (arkts.isMethodDefinition(property)) {
         return property.scriptFunction.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName));
@@ -66,12 +66,15 @@ export function getStateManagementType(node: arkts.ClassProperty): string {
     } else if (hasDecorator(node, DecoratorNames.LINK)) {
         return 'DecoratedV1VariableBase';
     } else if (hasDecorator(node, DecoratorNames.PROP)) {
-        return "PropDecoratedVariable";
+        return 'PropDecoratedVariable';
     } else if (hasDecorator(node, DecoratorNames.STORAGE_LINK)) {
-        return "StorageLinkDecoratedVariable"
+        return 'StorageLinkDecoratedVariable';
     } else if (hasDecorator(node, DecoratorNames.STORAGE_PROP)) {
-        return "StoragePropDecoratedVariable"
-    } else if (hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP) || hasDecorator(node, DecoratorNames.OBJECT_LINK)) {
+        return 'StoragePropDecoratedVariable';
+    } else if (
+        hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP) ||
+        hasDecorator(node, DecoratorNames.OBJECT_LINK)
+    ) {
         return 'SyncedProperty';
     }
     return 'MutableState';
@@ -80,7 +83,7 @@ export function getStateManagementType(node: arkts.ClassProperty): string {
 export function createGetter(
     name: string,
     type: arkts.TypeNode | undefined,
-    returns: arkts.Expression,
+    returns: arkts.Expression
 ): arkts.MethodDefinition {
     const body = arkts.factory.createBlock([arkts.factory.createReturnStatement(returns)]);
 
@@ -88,14 +91,14 @@ export function createGetter(
         body,
         arkts.FunctionSignature.createFunctionSignature(undefined, [], type?.clone(), false),
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
     );
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET,
         arkts.factory.createIdentifier(name),
         arkts.factory.createFunctionExpression(scriptFunction),
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
-        false,
+        false
     );
 }
 
@@ -104,20 +107,20 @@ export function createSetter(
     type: arkts.TypeNode | undefined,
     left: arkts.Expression,
     right: arkts.AstNode,
-    needMemo: boolean = false,
+    needMemo: boolean = false
 ): arkts.MethodDefinition {
     const body = arkts.factory.createBlock([
         arkts.factory.createExpressionStatement(
             arkts.factory.createAssignmentExpression(
                 left,
                 arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                right,
-            ),
+                right
+            )
         ),
     ]);
     const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
         arkts.factory.createIdentifier('value', type?.clone()),
-        undefined,
+        undefined
     );
     if (needMemo) {
         param.annotations = [annotation('memo')];
@@ -126,7 +129,7 @@ export function createSetter(
         body,
         arkts.FunctionSignature.createFunctionSignature(undefined, [param], undefined, false),
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_SETTER,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
     );
 
     return arkts.factory.createMethodDefinition(
@@ -134,25 +137,25 @@ export function createSetter(
         arkts.factory.createIdentifier(name),
         arkts.factory.createFunctionExpression(scriptFunction),
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
-        false,
+        false
     );
 }
 
 export function createSetter2(
     name: string,
     type: arkts.TypeNode | undefined,
-    statement: arkts.AstNode,
+    statement: arkts.AstNode
 ): arkts.MethodDefinition {
     const body = arkts.factory.createBlock([statement]);
     const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
         arkts.factory.createIdentifier('value', type?.clone()),
-        undefined,
+        undefined
     );
     const scriptFunction = arkts.factory.createScriptFunction(
         body,
         arkts.FunctionSignature.createFunctionSignature(undefined, [param], undefined, false),
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_SETTER,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
     );
 
     return arkts.factory.createMethodDefinition(
@@ -160,14 +163,14 @@ export function createSetter2(
         arkts.factory.createIdentifier(name),
         arkts.factory.createFunctionExpression(scriptFunction),
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
-        false,
+        false
     );
 }
 
 export function generateThisBackingValue(
     name: string,
     optional: boolean = false,
-    nonNull: boolean = false,
+    nonNull: boolean = false
 ): arkts.MemberExpression {
     const member: arkts.Expression = generateThisBacking(name, optional, nonNull);
     return arkts.factory.createMemberExpression(
@@ -175,21 +178,21 @@ export function generateThisBackingValue(
         arkts.factory.createIdentifier('value'),
         arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
         false,
-        false,
+        false
     );
 }
 
 export function generateThisBacking(
     name: string,
     optional: boolean = false,
-    nonNull: boolean = false,
+    nonNull: boolean = false
 ): arkts.Expression {
     const member: arkts.Expression = arkts.factory.createMemberExpression(
         arkts.factory.createThisExpression(),
         arkts.factory.createIdentifier(`${name}`),
         arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
         false,
-        optional,
+        optional
     );
     return nonNull ? arkts.factory.createTSNonNullExpression(member) : member;
 }
@@ -267,11 +270,11 @@ export function generateGetOrSetCall(beforCall: arkts.AstNode, type: string) {
             arkts.factory.createIdentifier(type),
             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
             false,
-            false,
+            false
         ),
         undefined,
         type === 'set' ? [arkts.factory.createIdentifier('value')] : undefined,
-        undefined,
+        undefined
     );
 }
 
@@ -285,19 +288,19 @@ export function generateToRecord(newName: string, originalName: string): arkts.P
                     arkts.factory.createIdentifier(newName),
                     arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                     false,
-                    false,
+                    false
                 ),
                 'get',
                 true
             ),
             arkts.ETSNewClassInstanceExpression.createETSNewClassInstanceExpression(
                 arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('Object')),
+                    arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('Object'))
                 ),
-                [],
+                []
             ),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING,
-        ),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+        )
     );
 }
 

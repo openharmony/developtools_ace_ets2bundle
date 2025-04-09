@@ -25,7 +25,7 @@ import {
     createSetter2,
     generateThisBacking,
     generateGetOrSetCall,
-    judgeIfAddWatchFunc
+    judgeIfAddWatchFunc,
 } from './utils';
 import { createOptionalClassProperty } from '../utils';
 
@@ -98,9 +98,9 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
                 arkts.factory.createTypeReferencePart(
                     arkts.factory.createIdentifier('StorageLinkDecoratedVariable'),
                     arkts.factory.createTSTypeParameterInstantiation(
-                        this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
-                    ),
-                ),
+                        this.property.typeAnnotation ? [this.property.typeAnnotation] : []
+                    )
+                )
             ),
             args
         );
@@ -111,10 +111,10 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
                 arkts.factory.createIdentifier(newName),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
-                false,
+                false
             ),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            newClass,
+            newClass
         );
     }
 
@@ -123,22 +123,22 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
             newName,
             this.property,
             'StorageLinkDecoratedVariable',
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
         const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, 'get');
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            generateGetOrSetCall(thisValue, 'set'),
+            generateGetOrSetCall(thisValue, 'set')
         );
         const getter: arkts.MethodDefinition = this.translateGetter(
             originalName,
             this.property.typeAnnotation,
-            thisGet,
+            thisGet
         );
         const setter: arkts.MethodDefinition = this.translateSetter(
             originalName,
             this.property.typeAnnotation,
-            thisSet,
+            thisSet
         );
         return [field, getter, setter];
     }
@@ -146,7 +146,7 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
     translateGetter(
         originalName: string,
         typeAnnotation: arkts.TypeNode | undefined,
-        returnValue: arkts.Expression,
+        returnValue: arkts.Expression
     ): arkts.MethodDefinition {
         return createGetter(originalName, typeAnnotation, returnValue);
     }
@@ -154,7 +154,7 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
     translateSetter(
         originalName: string,
         typeAnnotation: arkts.TypeNode | undefined,
-        statement: arkts.AstNode,
+        statement: arkts.AstNode
     ): arkts.MethodDefinition {
         return createSetter2(originalName, typeAnnotation, statement);
     }

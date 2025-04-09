@@ -13,26 +13,14 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
+import * as arkts from '@koalaui/libarkts';
 
-import { 
-    createGetter, 
-    createSetter,
-    generateThisBackingValue,
-    getValueInAnnotation,
-    DecoratorNames
-} from "./utils";
-import { PropertyTranslator } from "./base";
-import { 
-    GetterSetter, 
-    InitializerConstructor
-} from "./types";
-import { 
-    backingField, 
-    expectName 
-} from "../../common/arkts-utils";
-import { createOptionalClassProperty } from "../utils";
-import { factory } from "./factory";
+import { createGetter, createSetter, generateThisBackingValue, getValueInAnnotation, DecoratorNames } from './utils';
+import { PropertyTranslator } from './base';
+import { GetterSetter, InitializerConstructor } from './types';
+import { backingField, expectName } from '../../common/arkts-utils';
+import { createOptionalClassProperty } from '../utils';
+import { factory } from './factory';
 
 export class ProvideTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
@@ -50,26 +38,38 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = createOptionalClassProperty(newName, this.property, 'MutableState',
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE);
+        const field: arkts.ClassProperty = createOptionalClassProperty(
+            newName,
+            this.property,
+            'MutableState',
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
+        );
         const thisValue: arkts.MemberExpression = generateThisBackingValue(newName, false, true);
-        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.property.typeAnnotation, thisValue);
-        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.property.typeAnnotation, thisValue);
+        const getter: arkts.MethodDefinition = this.translateGetter(
+            originalName,
+            this.property.typeAnnotation,
+            thisValue
+        );
+        const setter: arkts.MethodDefinition = this.translateSetter(
+            originalName,
+            this.property.typeAnnotation,
+            thisValue
+        );
 
         return [field, getter, setter];
     }
 
     translateGetter(
-        originalName: string, 
-        typeAnnotation: arkts.TypeNode | undefined, 
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
         returnValue: arkts.MemberExpression
     ): arkts.MethodDefinition {
         return createGetter(originalName, typeAnnotation, returnValue);
     }
 
     translateSetter(
-        originalName: string, 
-        typeAnnotation: arkts.TypeNode | undefined, 
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
         left: arkts.MemberExpression
     ): arkts.MethodDefinition {
         const right: arkts.CallExpression = arkts.factory.createCallExpression(
@@ -81,46 +81,35 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
         return createSetter(originalName, typeAnnotation, left, right);
     }
 
-    generateInitializeStruct(        
-        newName: string,
-        originName: string
-    ): arkts.AstNode {
+    generateInitializeStruct(newName: string, originName: string): arkts.AstNode {
         let provideValueStr: string | undefined = getValueInAnnotation(this.property, DecoratorNames.PROVIDE);
         if (!provideValueStr) {
             provideValueStr = originName;
         }
-        const memExp: arkts.Expression = 
-            factory.createDoubleBlockStatementForOptionalExpression(
-                arkts.factory.createIdentifier('initializers'), newName, 'value');
-        const body: arkts.BlockStatement = arkts.factory.createBlock(
-            [
-                arkts.factory.createReturnStatement(
-                    arkts.factory.createBinaryExpression(
-                        memExp, 
-                        this.property.value, 
-                        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-                    )
-                )
-            ]
+        const memExp: arkts.Expression = factory.createDoubleBlockStatementForOptionalExpression(
+            arkts.factory.createIdentifier('initializers'),
+            newName,
+            'value'
         );
+        const body: arkts.BlockStatement = arkts.factory.createBlock([
+            arkts.factory.createReturnStatement(
+                arkts.factory.createBinaryExpression(
+                    memExp,
+                    this.property.value,
+                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+                )
+            ),
+        ]);
         const script = arkts.factory.createScriptFunction(
             body,
-            arkts.FunctionSignature.createFunctionSignature(
-                undefined,
-                [],
-                this.property.typeAnnotation,
-                false
-            ),
+            arkts.FunctionSignature.createFunctionSignature(undefined, [], this.property.typeAnnotation, false),
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
         );
         const right: arkts.CallExpression = arkts.factory.createCallExpression(
             arkts.factory.createIdentifier('contextLocalStateOf'),
             this.property.typeAnnotation ? [this.property.typeAnnotation] : undefined,
-            [
-                arkts.factory.create1StringLiteral(provideValueStr),
-                arkts.factory.createArrowFunction(script)
-            ]
+            [arkts.factory.create1StringLiteral(provideValueStr), arkts.factory.createArrowFunction(script)]
         );
         return arkts.factory.createExpressionStatement(
             arkts.factory.createAssignmentExpression(
@@ -136,5 +125,4 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
             )
         );
     }
-
 }

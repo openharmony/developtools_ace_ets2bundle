@@ -220,7 +220,7 @@ function tranformPropertyMembers(
     if (!scope?.hasUpdateStruct) {
         collections.push(structFactory.createUpdateStruct(currentStructInfo, optionsTypeName, isDecl));
     }
-    if ( currentStructInfo.isReusable ) {
+    if (currentStructInfo.isReusable) {
         collections.push(structFactory.toRecord(optionsTypeName, currentStructInfo.toRecordBody));
     }
     return collect(...collections, ...propertyMembers);

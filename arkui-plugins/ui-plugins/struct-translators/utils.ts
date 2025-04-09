@@ -32,7 +32,7 @@ export type ScopeInfo = {
 export function isCustomComponentClass(node: arkts.ClassDeclaration): boolean {
     if (!node.definition?.ident?.name) {
         return false;
-    };
+    }
     const name: string = node.definition.ident.name;
     const structCollection: Set<string> = arkts.GlobalInfo.getInfoInstance().getStructCollection();
     return name === CustomComponentNames.COMPONENT_CLASS_NAME || structCollection.has(name);
@@ -47,7 +47,7 @@ export function isCustomComponentClass(node: arkts.ClassDeclaration): boolean {
 export function isKnownMethodDefinition(method: arkts.MethodDefinition, name: string): boolean {
     if (!method || !arkts.isMethodDefinition(method)) {
         return false;
-    };
+    }
 
     // For now, we only considered matched method name.
     const isNameMatched: boolean = method.name?.name === name;

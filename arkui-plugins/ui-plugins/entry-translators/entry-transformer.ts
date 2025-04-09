@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
+import * as arkts from '@koalaui/libarkts';
 
-import { AbstractVisitor } from "../../common/abstract-visitor";
-import { isEntryWrapperClass } from "./utils";
-import { factory } from "./factory";
+import { AbstractVisitor } from '../../common/abstract-visitor';
+import { isEntryWrapperClass } from './utils';
+import { factory } from './factory';
 
 export class EntryTransformer extends AbstractVisitor {
     visitor(node: arkts.AstNode): arkts.AstNode {

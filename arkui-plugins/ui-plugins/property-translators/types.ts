@@ -13,28 +13,22 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
+import * as arkts from '@koalaui/libarkts';
 
 export interface GetterSetter {
     translateGetter(
-        originalName: string, 
-        typeAnnotation: arkts.TypeNode | undefined, 
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
         returnValue: arkts.Expression
     ): arkts.MethodDefinition;
     translateSetter(
-        originalName: string, 
-        typeAnnotation: arkts.TypeNode | undefined, 
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
         left: arkts.MemberExpression
     ): arkts.MethodDefinition;
 }
 
 export interface InitializerConstructor {
-    cacheTranslatedInitializer(
-        newName: string, 
-        originalName: string
-    ): void;
-    translateWithoutInitializer(
-        newName: string, 
-        originalName: string
-    ): arkts.AstNode[];
+    cacheTranslatedInitializer(newName: string, originalName: string): void;
+    translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[];
 }

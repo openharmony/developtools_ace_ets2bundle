@@ -13,15 +13,15 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts";
-import { AbstractVisitor } from "../common/abstract-visitor";
-import { hasBuilderLambdaAnnotation } from "./builder-lambda-translators/utils";
+import * as arkts from '@koalaui/libarkts';
+import { AbstractVisitor } from '../common/abstract-visitor';
+import { hasBuilderLambdaAnnotation } from './builder-lambda-translators/utils';
 
 interface ComponentInfo {
     argsNum: number;
 }
 
-type ComponentCollection = Map<string, ComponentInfo> 
+type ComponentCollection = Map<string, ComponentInfo>;
 
 export class NameCollector extends AbstractVisitor {
     private components: ComponentCollection;
@@ -62,10 +62,9 @@ export class NameCollector extends AbstractVisitor {
 
     findComponentFunction(node: arkts.FunctionDeclaration): arkts.ScriptFunction | undefined {
         const isDeclareAndExport: boolean = arkts.hasModifierFlag(
-            node, 
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE 
-            | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT
-        )
+            node,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT
+        );
         if (!isDeclareAndExport) return undefined;
 
         const isComponentBuilder = hasBuilderLambdaAnnotation(node);
@@ -75,7 +74,7 @@ export class NameCollector extends AbstractVisitor {
         return node.scriptFunction;
     }
 
-    visitor(node: arkts.AstNode): arkts.AstNode { 
+    visitor(node: arkts.AstNode): arkts.AstNode {
         const newNode = this.visitEachChild(node);
         if (arkts.isFunctionDeclaration(newNode)) {
             const component = this.findComponentFunction(newNode);

@@ -15,13 +15,13 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { 
+import {
     generateToRecord,
     createGetter,
     createSetter2,
     generateThisBacking,
     generateGetOrSetCall,
-    judgeIfAddWatchFunc
+    judgeIfAddWatchFunc,
 } from './utils';
 import { PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
@@ -52,14 +52,14 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
     generateInitializeStruct(newName: string, originalName: string) {
         const test = factory.createBlockStatementForOptionalExpression(
             arkts.factory.createIdentifier('initializers'),
-            newName,
+            newName
         );
 
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
             arkts.factory.createTSNonNullExpression(
                 factory.createNonNullOrOptionalMemberExpression('initializers', newName, false, true)
-            )
+            ),
         ];
         judgeIfAddWatchFunc(args, this.property);
         const consequent = arkts.BlockStatement.createBlockStatement([
@@ -67,12 +67,8 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
                 arkts.factory.createAssignmentExpression(
                     generateThisBacking(newName, false, false),
                     arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                    factory.createNewDecoratedInstantiate(
-                        'LinkDecoratedVariable',
-                        this.property.typeAnnotation,
-                        args
-                    )
-                ),
+                    factory.createNewDecoratedInstantiate('LinkDecoratedVariable', this.property.typeAnnotation, args)
+                )
             ),
         ]);
 
@@ -84,22 +80,22 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
             newName,
             this.property,
             'LinkDecoratedVariable',
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
         const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, 'get');
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            generateGetOrSetCall(thisValue, 'set'),
+            generateGetOrSetCall(thisValue, 'set')
         );
         const getter: arkts.MethodDefinition = this.translateGetter(
             originalName,
             this.property.typeAnnotation,
-            thisGet,
+            thisGet
         );
         const setter: arkts.MethodDefinition = this.translateSetter(
             originalName,
             this.property.typeAnnotation,
-            thisSet,
+            thisSet
         );
 
         return [field, getter, setter];
@@ -108,7 +104,7 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
     translateGetter(
         originalName: string,
         typeAnnotation: arkts.TypeNode | undefined,
-        returnValue: arkts.Expression,
+        returnValue: arkts.Expression
     ): arkts.MethodDefinition {
         return createGetter(originalName, typeAnnotation, returnValue);
     }
@@ -116,7 +112,7 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
     translateSetter(
         originalName: string,
         typeAnnotation: arkts.TypeNode | undefined,
-        statement: arkts.AstNode,
+        statement: arkts.AstNode
     ): arkts.MethodDefinition {
         return createSetter2(originalName, typeAnnotation, statement);
     }

@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts";
-import { factory } from "./factory";
-import { isAnnotation } from "../../common/arkts-utils";
-import { CustomComponentNames } from "../utils";
+import * as arkts from '@koalaui/libarkts';
+import { factory } from './factory';
+import { isAnnotation } from '../../common/arkts-utils';
+import { CustomComponentNames } from '../utils';
 
 export enum EntryWrapperNames {
     ENTRY_FUNC = 'entry',
@@ -24,7 +24,7 @@ export enum EntryWrapperNames {
     ENTRY_STORAGE_ANNOTATION_KEY = 'storage',
     ENTRY_STORAGE_LOCAL_STORAGE_PROPERTY_NAME = '_entry_local_storage_',
     ENTRY_DEFAULT_IMPORT = '@ohos.arkui.component',
-    ENTRY_POINT_CLASS_NAME = 'EntryPoint'
+    ENTRY_POINT_CLASS_NAME = 'EntryPoint',
 }
 
 /**
@@ -52,8 +52,8 @@ export class EntryHandler {
 
     public createEntryWrapper(): arkts.ClassDeclaration[] {
         let result: arkts.ClassDeclaration[] = [];
-        this.entryDefClassName.forEach(classname => {
-            result.push(factory.generateEntryWrapper(classname))
+        this.entryDefClassName.forEach((classname) => {
+            result.push(factory.generateEntryWrapper(classname));
         });
         return result;
     }
@@ -68,21 +68,17 @@ export function isEntryWrapperClass(node: arkts.AstNode): node is arkts.ClassDec
 
 /**
  * find `{storage: "<name>"}` in `@Entry({storage: "<name>"})` (i.e. annotation's properties).
- * 
+ *
  * @param node class definition node
  */
-export function findEntryWithStorageInClassAnnotations(
-    node: arkts.ClassDefinition
-): arkts.ClassProperty | undefined {
-    const annotation = node.annotations.find(
-        (anno) => {
-            if (!isAnnotation(anno, CustomComponentNames.ENTRY_ANNOTATION_NAME)) return false;
-            const property = anno.properties?.at(0);
-            if (!property || !arkts.isClassProperty(property)) return false;
-            if (!property.key || !arkts.isIdentifier(property.key)) return false;
-            if (!property.value || !arkts.isStringLiteral(property.value)) return false;
-            return property.key.name === EntryWrapperNames.ENTRY_STORAGE_ANNOTATION_KEY;
-        }
-    );
+export function findEntryWithStorageInClassAnnotations(node: arkts.ClassDefinition): arkts.ClassProperty | undefined {
+    const annotation = node.annotations.find((anno) => {
+        if (!isAnnotation(anno, CustomComponentNames.ENTRY_ANNOTATION_NAME)) return false;
+        const property = anno.properties?.at(0);
+        if (!property || !arkts.isClassProperty(property)) return false;
+        if (!property.key || !arkts.isIdentifier(property.key)) return false;
+        if (!property.value || !arkts.isStringLiteral(property.value)) return false;
+        return property.key.name === EntryWrapperNames.ENTRY_STORAGE_ANNOTATION_KEY;
+    });
     return annotation?.properties?.at(0) as arkts.ClassProperty | undefined;
 }
