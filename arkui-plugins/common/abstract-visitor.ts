@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
+import * as arkts from '@koalaui/libarkts';
 
 export interface VisitorOptions {
-    isExternal?: boolean,
-    externalSourceName?: string,
-    program?: arkts.Program
-} 
+    isExternal?: boolean;
+    externalSourceName?: string;
+    program?: arkts.Program;
+}
 
 export abstract class AbstractVisitor implements VisitorOptions {
     public isExternal: boolean;
@@ -32,27 +32,22 @@ export abstract class AbstractVisitor implements VisitorOptions {
         this.program = options?.program;
     }
 
-    indentation = 0
+    indentation = 0;
 
     withIndentation<T>(exec: () => T) {
-        this.indentation++
-        const result = exec()
-        this.indentation--
-        return result
+        this.indentation++;
+        const result = exec();
+        this.indentation--;
+        return result;
     }
 
-    abstract visitor(node: arkts.AstNode): arkts.AstNode
+    abstract visitor(node: arkts.AstNode): arkts.AstNode;
 
     reset(): void {
         this.indentation = 0;
     }
 
     visitEachChild(node: arkts.AstNode): arkts.AstNode {
-        return this.withIndentation(() =>
-            arkts.visitEachChild(
-                node,
-                it => this.visitor(it)
-            )
-        )
+        return this.withIndentation(() => arkts.visitEachChild(node, (it) => this.visitor(it)));
     }
 }

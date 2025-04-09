@@ -49,7 +49,7 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
         const call = arkts.factory.createCallExpression(
             arkts.factory.createIdentifier('objectLinkState'),
             this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
-            [],
+            []
         );
         return arkts.factory.createAssignmentExpression(
             arkts.factory.createMemberExpression(
@@ -57,10 +57,10 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
                 arkts.factory.createIdentifier(newName),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
-                false,
+                false
             ),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            call,
+            call
         );
     }
 
@@ -70,7 +70,7 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
             arkts.factory.createIdentifier(newName),
             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
             false,
-            false,
+            false
         );
 
         const consequent = arkts.BlockStatement.createBlockStatement([
@@ -81,16 +81,16 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
                         arkts.factory.createIdentifier('update'),
                         arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                         false,
-                        false,
+                        false
                     ),
                     undefined,
                     [
                         factory.createBlockStatementForOptionalExpression(
                             arkts.factory.createIdentifier('initializers'),
-                            originalName,
+                            originalName
                         ),
-                    ],
-                ),
+                    ]
+                )
             ),
         ]);
         return arkts.factory.createExpressionStatement(arkts.factory.createIfStatement(test, consequent));

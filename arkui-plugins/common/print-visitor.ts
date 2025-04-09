@@ -13,22 +13,22 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
-import { AbstractVisitor } from "../common/abstract-visitor";
+import * as arkts from '@koalaui/libarkts';
+import { AbstractVisitor } from '../common/abstract-visitor';
 
 export class PrintVisitor extends AbstractVisitor {
-    private result = ""
+    private result = '';
 
     private printNode(node: arkts.AstNode) {
-        return `${" ".repeat(4 * this.indentation) + node.constructor.name} ${this.nameIfIdentifier(node)}`
+        return `${' '.repeat(4 * this.indentation) + node.constructor.name} ${this.nameIfIdentifier(node)}`;
     }
 
     private nameIfIdentifier(node: arkts.AstNode): string {
-        return arkts.isIdentifier(node) ? `'${node.name}'` : ""
+        return arkts.isIdentifier(node) ? `'${node.name}'` : '';
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {
-        console.log(this.printNode(node))
-        return this.visitEachChild(node)
+        console.log(this.printNode(node));
+        return this.visitEachChild(node);
     }
 }

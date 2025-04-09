@@ -16,18 +16,11 @@
 export default {
     testEnvironment: 'node',
     transform: {
-        '^.+\\.ts$': [
-            'ts-jest', 
-            { isolatedModules: true }
-        ]
+        '^.+\\.ts$': ['ts-jest', { isolatedModules: true }],
     },
     testRegex: './test/ut/.+\\.test\\.ts$',
     moduleFileExtensions: ['ts', 'js', 'json', 'node'],
     coverageDirectory: './test/report',
-    collectCoverageFrom: [
-        'common/**', 
-        'memo-plugins/**', 
-        'ui-plugins/**',
-    ],
-    verbose: true
-}
+    collectCoverageFrom: ['common/**', 'memo-plugins/**', 'ui-plugins/**'],
+    verbose: true,
+};

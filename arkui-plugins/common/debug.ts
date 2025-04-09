@@ -33,7 +33,13 @@ function mkDir(filePath: string): void {
     fs.mkdirSync(filePath);
 }
 
-export function debugDump(content: string, fileName: string, isInit: boolean, cachePath: string | undefined, programFileName: string): void {
+export function debugDump(
+    content: string,
+    fileName: string,
+    isInit: boolean,
+    cachePath: string | undefined,
+    programFileName: string
+): void {
     if (!isDebugDump) return;
     const currentDirectory = process.cwd();
     const modifiedFileName = programFileName.replaceAll('.', '_');
@@ -47,9 +53,10 @@ export function debugDump(content: string, fileName: string, isInit: boolean, ca
     try {
         if (!isInit && fs.existsSync(filePath)) {
             const existingContent = fs.readFileSync(filePath, 'utf8');
-            const newContent = existingContent &&!existingContent.endsWith('\n') 
-                ? existingContent + '\n' + content
-                : existingContent + content;
+            const newContent =
+                existingContent && !existingContent.endsWith('\n')
+                    ? existingContent + '\n' + content
+                    : existingContent + content;
             fs.writeFileSync(filePath, newContent, 'utf8');
         } else {
             fs.writeFileSync(filePath, content, 'utf8');
@@ -64,11 +71,6 @@ export function debugLog(message?: any, ...optionalParams: any[]): void {
     console.log(message, ...optionalParams);
 }
 
-export function getDumpFileName(
-    state: number,
-    prefix: string,
-    index: number | undefined,
-    suffix: string
-): string {
+export function getDumpFileName(state: number, prefix: string, index: number | undefined, suffix: string): string {
     return `${state}_${prefix}_${index ?? ''}_${suffix}.sts`;
 }

@@ -33,29 +33,29 @@ function findMatchingFile(currentPath: string, targetFileName1: string, targetFi
         }
         current = parentPath;
     }
-    throw new Error("ui-plugins not found.")
+    throw new Error('ui-plugins not found.');
 }
 
 function findRootDir() {
-    const plugins =  findMatchingFile(__dirname, UI_PLUGINS, ARKUI_PLUGINS);
+    const plugins = findMatchingFile(__dirname, UI_PLUGINS, ARKUI_PLUGINS);
     if (plugins === null) {
-        throw ("error")
+        throw 'error';
     }
-    return plugins
+    return plugins;
 }
 
 export function getArktsPath() {
-    return path.join(findRootDir(), 'koala-wrapper','./build/lib/arkts-api/index.js')
+    return path.join(findRootDir(), 'koala-wrapper', './build/lib/arkts-api/index.js');
 }
 
 export function getInteropPath() {
-    return path.join(findRootDir(), 'koala-wrapper/koalaui/interop', "./dist/lib/src/interop/index.js")
+    return path.join(findRootDir(), 'koala-wrapper/koalaui/interop', './dist/lib/src/interop/index.js');
 }
 
 export function getCommonPath() {
-    return path.join(findRootDir(), 'koala-wrapper/koalaui/common', "./dist/lib/src/index.js")
+    return path.join(findRootDir(), 'koala-wrapper/koalaui/common', './dist/lib/src/index.js');
 }
 
 export function getCompatPath() {
-    return path.join(findRootDir(), 'koala-wrapper/koalaui/compat', "./dist/src/index.js")
+    return path.join(findRootDir(), 'koala-wrapper/koalaui/compat', './dist/src/index.js');
 }

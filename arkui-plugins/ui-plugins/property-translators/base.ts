@@ -20,7 +20,7 @@ import { createOptionalClassProperty } from '../utils';
 export abstract class PropertyTranslator {
     constructor(
         protected property: arkts.ClassProperty,
-        protected structName: string,
+        protected structName: string
     ) {}
 
     abstract translateMember(): arkts.AstNode[];
@@ -30,7 +30,7 @@ export abstract class PropertyTranslator {
             newName,
             this.property,
             getStageManagementIdent(this.property),
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
 
         const member = arkts.factory.createTSNonNullExpression(
@@ -39,26 +39,26 @@ export abstract class PropertyTranslator {
                 arkts.factory.createIdentifier(newName),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
-                false,
-            ),
+                false
+            )
         );
         const thisValue: arkts.MemberExpression = arkts.factory.createMemberExpression(
             member,
             arkts.factory.createIdentifier('value'),
             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
             false,
-            false,
+            false
         );
 
         const getter: arkts.MethodDefinition = this.translateGetter(
             originalName,
             this.property.typeAnnotation,
-            thisValue,
+            thisValue
         );
         const setter: arkts.MethodDefinition = this.translateSetter(
             originalName,
             this.property.typeAnnotation,
-            thisValue,
+            thisValue
         );
         return [field, getter, setter];
     }
@@ -66,7 +66,7 @@ export abstract class PropertyTranslator {
     translateGetter(
         originalName: string,
         typeAnnotation: arkts.TypeNode | undefined,
-        returnValue: arkts.MemberExpression,
+        returnValue: arkts.MemberExpression
     ): arkts.MethodDefinition {
         return createGetter(originalName, typeAnnotation, returnValue);
     }
@@ -74,12 +74,12 @@ export abstract class PropertyTranslator {
     translateSetter(
         originalName: string,
         typeAnnotation: arkts.TypeNode | undefined,
-        left: arkts.MemberExpression,
+        left: arkts.MemberExpression
     ): arkts.MethodDefinition {
         const right: arkts.CallExpression = arkts.factory.createCallExpression(
             arkts.factory.createIdentifier('observableProxy'),
             undefined,
-            [arkts.factory.createIdentifier('value')],
+            [arkts.factory.createIdentifier('value')]
         );
         return createSetter(originalName, typeAnnotation, left, right);
     }

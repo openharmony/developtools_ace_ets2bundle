@@ -13,76 +13,77 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts";
+import * as arkts from '@koalaui/libarkts';
 
-import { AbstractVisitor } from "../common/abstract-visitor";
+import { AbstractVisitor } from '../common/abstract-visitor';
 
 import { debugLog } from '../common/debug';
 
 export class DeclTransformer extends AbstractVisitor {
-  constructor(private options?: interop.DeclTransformerOptions) {
-    super();
-  }
-
-  processComponent(node: arkts.StructDeclaration): arkts.ClassDeclaration {
-    const className = node.definition?.ident?.name;
-    if (!className) {
-      throw "Non Empty className expected for Component";
+    constructor(private options?: interop.DeclTransformerOptions) {
+        super();
     }
 
-    let newDec: arkts.ClassDeclaration = arkts.factory.createClassDeclaration(node.definition);
+    processComponent(node: arkts.StructDeclaration): arkts.ClassDeclaration {
+        const className = node.definition?.ident?.name;
+        if (!className) {
+            throw 'Non Empty className expected for Component';
+        }
 
-    const newDefinition = arkts.factory.updateClassDefinition(
-      newDec.definition!,
-      newDec.definition?.ident,
-      undefined,
-      undefined,
-      newDec.definition?.implements!,
-      undefined,
-      undefined,
-      node.definition?.body,
-      newDec.definition?.modifiers!,
-      arkts.classDefinitionFlags(newDec.definition!) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
-    );
+        let newDec: arkts.ClassDeclaration = arkts.factory.createClassDeclaration(node.definition);
 
-    arkts.factory.updateClassDeclaration(newDec, newDefinition);
-    newDec.modifiers = node.modifiers;
-    return newDec;
-  }
+        const newDefinition = arkts.factory.updateClassDefinition(
+            newDec.definition!,
+            newDec.definition?.ident,
+            undefined,
+            undefined,
+            newDec.definition?.implements!,
+            undefined,
+            undefined,
+            node.definition?.body,
+            newDec.definition?.modifiers!,
+            arkts.classDefinitionFlags(newDec.definition!) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+        );
 
-  visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
-    let astNode:arkts.AstNode = beforeChildren;
-    if (arkts.isEtsScript(astNode)) {
-      astNode = this.transformImportDecl(astNode);
+        arkts.factory.updateClassDeclaration(newDec, newDefinition);
+        newDec.modifiers = node.modifiers;
+        return newDec;
     }
 
-    const node = this.visitEachChild(astNode);
-    if (arkts.isStructDeclaration(node)) {
-      debugLog(`DeclTransformer:before:flag:${arkts.classDefinitionIsFromStructConst(node.definition!)}`);
-      arkts.classDefinitionSetFromStructModifier(node.definition!);
-      let newnode = this.processComponent(node);
-      debugLog(`DeclTransformer:after:flag:${arkts.classDefinitionIsFromStructConst(newnode.definition!)}`);
-      return newnode;
+    visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
+        let astNode: arkts.AstNode = beforeChildren;
+        if (arkts.isEtsScript(astNode)) {
+            astNode = this.transformImportDecl(astNode);
+        }
+
+        const node = this.visitEachChild(astNode);
+        if (arkts.isStructDeclaration(node)) {
+            debugLog(`DeclTransformer:before:flag:${arkts.classDefinitionIsFromStructConst(node.definition!)}`);
+            arkts.classDefinitionSetFromStructModifier(node.definition!);
+            let newnode = this.processComponent(node);
+            debugLog(`DeclTransformer:after:flag:${arkts.classDefinitionIsFromStructConst(newnode.definition!)}`);
+            return newnode;
+        }
+        return node;
     }
-    return node;
-  }
 
-  transformImportDecl(estNode: arkts.AstNode):arkts.AstNode {
-    if (!arkts.isEtsScript(estNode)) {
-      return estNode;
+    transformImportDecl(estNode: arkts.AstNode): arkts.AstNode {
+        if (!arkts.isEtsScript(estNode)) {
+            return estNode;
+        }
+
+        let statements = estNode.statements
+            .filter((node) => this.isImportDeclarationNeedFilter(node))
+            .map((node) => this.updateImportDeclaration(node));
+
+        return arkts.factory.updateEtsScript(estNode, statements);
     }
 
-    let statements = estNode.statements.filter(node => this.isImportDeclarationNeedFilter(node))
-      .map(node => this.updateImportDeclaration(node));
+    isImportDeclarationNeedFilter(astNode: arkts.AstNode): boolean {
+        return !arkts.isETSImportDeclaration(astNode);
+    }
 
-    return arkts.factory.updateEtsScript(estNode,statements)
-  }
-
-  isImportDeclarationNeedFilter(astNode: arkts.AstNode):boolean {
-    return !arkts.isETSImportDeclaration(astNode);
-  }
-
-  updateImportDeclaration(astNode: arkts.AstNode):arkts.AstNode {
-    return astNode;
-  }
+    updateImportDeclaration(astNode: arkts.AstNode): arkts.AstNode {
+        return astNode;
+    }
 }

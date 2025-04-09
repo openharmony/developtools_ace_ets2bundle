@@ -22,12 +22,9 @@ function parseDumpSrc(str: string): string {
 }
 
 function filterSource(text: string): string {
-    const filtered: string = text
-        .replaceAll(/%/g, "_")
-        .replaceAll(/#/g, "_")
-        .replaceAll("<cctor>", "_cctor_")
+    const filtered: string = text.replaceAll(/%/g, '_').replaceAll(/#/g, '_').replaceAll('<cctor>', '_cctor_');
 
-    return filtered
+    return filtered;
 }
 
 function cleanCopyRight(str: string): string {
@@ -42,9 +39,4 @@ function removeSpaceAndReturn(str: string): string {
     return str.replace(spaceAndReturnRegex, '');
 }
 
-export {
-    parseDumpSrc,
-    filterSource,
-    cleanCopyRight,
-    removeSpaceAndReturn
-}
+export { parseDumpSrc, filterSource, cleanCopyRight, removeSpaceAndReturn };

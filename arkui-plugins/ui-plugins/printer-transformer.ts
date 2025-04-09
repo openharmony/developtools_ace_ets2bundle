@@ -13,17 +13,15 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
-import { PrintVisitor } from '../common/print-visitor'
+import * as arkts from '@koalaui/libarkts';
+import { PrintVisitor } from '../common/print-visitor';
 
 export interface TransformerOptions {
-    trace?: boolean,
+    trace?: boolean;
 }
 
-export default function printerTransformer(
-    userPluginOptions?: TransformerOptions
-) {
+export default function printerTransformer(userPluginOptions?: TransformerOptions) {
     return (node: arkts.EtsScript) => {
-        return new PrintVisitor().visitor(node)
-    }
+        return new PrintVisitor().visitor(node);
+    };
 }

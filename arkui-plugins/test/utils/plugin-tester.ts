@@ -13,35 +13,13 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts";
-import {
-    ArktsConfigBuilder,
-    BuildConfig,
-    CompileFileInfo,
-    MockArktsConfigBuilder,
-    ModuleInfo
-} from "./artkts-config";
-import {
-    MockPluginDriver,
-    PluginDriver,
-    stateName
-} from "./plugin-driver";
-import {
-    isNumber
-} from "./safe-types";
-import {
-    canProceedToState,
-    initGlobal
-} from "./global";
-import {
-    insertPlugin,
-    restartCompilerUptoState
-} from "./compile";
-import {
-    PluginExecutor,
-    Plugins,
-    PluginState
-} from "../../common/plugin-context";
+import * as arkts from '@koalaui/libarkts';
+import { ArktsConfigBuilder, BuildConfig, CompileFileInfo, MockArktsConfigBuilder, ModuleInfo } from './artkts-config';
+import { MockPluginDriver, PluginDriver, stateName } from './plugin-driver';
+import { isNumber } from './safe-types';
+import { canProceedToState, initGlobal } from './global';
+import { insertPlugin, restartCompilerUptoState } from './compile';
+import { PluginExecutor, Plugins, PluginState } from '../../common/plugin-context';
 
 type TestParams = Parameters<typeof test>;
 
@@ -49,24 +27,24 @@ type SkipFirstParam<T extends unknown[]> = T extends [unknown, ...infer Rest] ? 
 
 type PluginTestHooks = {
     [K in PluginState | `${PluginState}:${string}`]?: SkipFirstParam<TestParams>;
-}
+};
 
 type TestHooks = {
     beforeAll?: Parameters<jest.Lifecycle>;
     afterAll?: Parameters<jest.Lifecycle>;
     beforeEach?: Parameters<jest.Lifecycle>;
     afterEach?: Parameters<jest.Lifecycle>;
-}
+};
 
 export interface PluginTestContext {
-    script?: arkts.AstNode,
-    errors?: string[],
-    warnings?: string[]
+    script?: arkts.AstNode;
+    errors?: string[];
+    warnings?: string[];
 }
 
 export interface PluginTesterOptions {
-    stopAfter: PluginState,
-    buildConfig?: BuildConfig
+    stopAfter: PluginState;
+    buildConfig?: BuildConfig;
 }
 
 class PluginTester {
@@ -123,18 +101,18 @@ class PluginTester {
         pluginHooks: PluginTestHooks,
         plugins?: PluginExecutor[]
     ): void {
-        if (plugins && plugins.length > 0){
+        if (plugins && plugins.length > 0) {
             plugins.forEach((plugin) => {
                 const pluginName: string = plugin.name;
                 const key: `${PluginState}:${string}` = `${state}:${pluginName}`;
                 this.test(key, index, `[${key}] ${testName}`, pluginHooks, plugin);
-            })
+            });
         }
         this.test(state, index, `[${state}] ${testName}`, pluginHooks);
     }
 
     private singleFileCompile(
-        fileInfo: CompileFileInfo, 
+        fileInfo: CompileFileInfo,
         moduleInfo: ModuleInfo,
         testName: string,
         pluginHooks: PluginTestHooks,
@@ -146,26 +124,22 @@ class PluginTester {
 
         Object.values(arkts.Es2pandaContextState)
             .filter(isNumber)
-            .forEach(it => {
+            .forEach((it) => {
                 if (shouldStop) return;
                 const state: PluginState = stateName(it);
                 const plugins: PluginExecutor[] | undefined = this.pluginDriver.getSortedPlugins(it);
                 this.proceedToState(
-                    state, 
-                    it, 
+                    state,
+                    it,
                     `${moduleInfo.packageName} - ${fileInfo.fileName}: ${testName}`,
                     pluginHooks,
                     plugins
-                )
+                );
                 shouldStop = state === stopAfter;
             });
     }
 
-    private traverseFile(
-        testName: string,
-        pluginHooks: PluginTestHooks,
-        stopAfter: PluginState
-    ): void {
+    private traverseFile(testName: string, pluginHooks: PluginTestHooks, stopAfter: PluginState): void {
         this.configBuilder.moduleInfos.forEach((moduleInfo) => {
             moduleInfo.compileFileInfos.forEach((fileInfo) => {
                 this.singleFileCompile(fileInfo, moduleInfo, testName, pluginHooks, stopAfter);
@@ -174,8 +148,8 @@ class PluginTester {
     }
 
     run(
-        testName: string, 
-        plugins: Plugins[], 
+        testName: string,
+        plugins: Plugins[],
         pluginHooks: PluginTestHooks,
         options: PluginTesterOptions,
         testHooks?: TestHooks
@@ -204,6 +178,4 @@ class PluginTester {
     }
 }
 
-export {
-    PluginTester
-}
+export { PluginTester };

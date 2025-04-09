@@ -30,7 +30,7 @@ export enum CustomComponentNames {
     REUSABLE_COMPONENT_REBIND_STATE = '__rebindStates',
     COMPONENT_INITIALIZERS_NAME = 'initializers',
     BUILDCOMPATIBLENODE = '_buildCompatibleNode',
-    OPTIONS = 'options'
+    OPTIONS = 'options',
 }
 
 export enum BuilderLambdaNames {
@@ -53,17 +53,12 @@ export function findLocalImport(
     sourceName: string,
     importedName: string
 ): arkts.Identifier | undefined {
-    const isFromSource = (
-        !!node.source
-        && node.source.str === sourceName
-    );
+    const isFromSource = !!node.source && node.source.str === sourceName;
     if (!isFromSource) return undefined;
 
-    const importSpecifier = node.specifiers.find((spec) => (
-        arkts.isImportSpecifier(spec)
-        && !!spec.imported
-        && spec.imported.name === importedName
-    )) as arkts.ImportSpecifier | undefined;
+    const importSpecifier = node.specifiers.find(
+        (spec) => arkts.isImportSpecifier(spec) && !!spec.imported && spec.imported.name === importedName
+    ) as arkts.ImportSpecifier | undefined;
     return importSpecifier?.local ?? importSpecifier?.imported;
 }
 
@@ -95,7 +90,7 @@ export function createOptionalClassProperty(
     name: string,
     property: arkts.ClassProperty,
     stageManagementIdent: string,
-    modifiers: arkts.Es2pandaModifierFlags,
+    modifiers: arkts.Es2pandaModifierFlags
 ): arkts.ClassProperty {
     const newProperty = arkts.factory.createClassProperty(
         arkts.factory.createIdentifier(name),
@@ -104,21 +99,21 @@ export function createOptionalClassProperty(
             ? createStageManagementType(stageManagementIdent, property)
             : property.typeAnnotation?.clone(),
         modifiers,
-        false,
+        false
     );
     return arkts.classPropertySetOptional(newProperty, true);
 }
 
 export function createStageManagementType(
     stageManagementIdent: string,
-    property: arkts.ClassProperty,
+    property: arkts.ClassProperty
 ): arkts.ETSTypeReference {
     return arkts.factory.createTypeReference(
         arkts.factory.createTypeReferencePart(
             arkts.factory.createIdentifier(stageManagementIdent),
             arkts.factory.createTSTypeParameterInstantiation([
                 property.typeAnnotation ? property.typeAnnotation.clone() : arkts.factory.createETSUndefinedType(),
-            ]),
-        ),
+            ])
+        )
     );
 }
