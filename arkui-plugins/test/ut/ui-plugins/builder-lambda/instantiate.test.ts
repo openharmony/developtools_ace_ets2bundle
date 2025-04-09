@@ -13,21 +13,19 @@
  * limitations under the License.
  */
 
-import * as path from "path";
-import * as arkts from "@koalaui/libarkts";
-import { PluginTestContext, PluginTester } from "../../../utils/plugin-tester";
-import { BuildConfig, mockBuildConfig } from "../../../utils/artkts-config";
-import { getRootPath, MOCK_ENTRY_DIR_PATH } from "../../../utils/path-config";
-import { parseDumpSrc } from "../../../utils/parse-string";
-import { PluginContext, Plugins } from "../../../../common/plugin-context";
-import { ComponentTransformer } from "../../../../ui-plugins/component-transformer";
-import { BuilderLambdaTransformer } from "../../../../ui-plugins/builder-lambda-translators/builder-lambda-transformer";
+import * as path from 'path';
+import * as arkts from '@koalaui/libarkts';
+import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
+import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
+import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
+import { parseDumpSrc } from '../../../utils/parse-string';
+import { PluginContext, Plugins } from '../../../../common/plugin-context';
+import { ComponentTransformer } from '../../../../ui-plugins/component-transformer';
+import { BuilderLambdaTransformer } from '../../../../ui-plugins/builder-lambda-translators/builder-lambda-transformer';
 
 const buildConfig: BuildConfig = mockBuildConfig();
-buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, "builder-lambda", "instantiate.ets")
-];
-buildConfig.moduleRootPath = path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, "builder-lambda");
+buildConfig.compileFiles = [path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, 'builder-lambda', 'instantiate.ets')];
+buildConfig.moduleRootPath = path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, 'builder-lambda');
 
 const instantiateTransform: Plugins = {
     name: 'instantiate',
@@ -36,9 +34,9 @@ const instantiateTransform: Plugins = {
         if (program) {
             let script: arkts.EtsScript = program.astNode;
 
-            const componentTransformer = new ComponentTransformer(
-                { arkui: "@koalaui.arkts-arkui.StructBase" }
-            );
+            const componentTransformer = new ComponentTransformer({
+                arkui: '@koalaui.arkts-arkui.StructBase',
+            });
             script = componentTransformer.visitor(script) as arkts.EtsScript;
             arkts.setAllParents(script);
             return script;
@@ -55,10 +53,10 @@ const instantiateTransform: Plugins = {
             arkts.setAllParents(script);
             return script;
         }
-    }
+    },
 };
 
-const pluginTester = new PluginTester("test build-lambda transformer", buildConfig);
+const pluginTester = new PluginTester('test build-lambda transformer', buildConfig);
 
 function testInstantiateImpl(this: PluginTestContext): void {
     const script: arkts.EtsScript = this.script as arkts.EtsScript;
@@ -99,20 +97,24 @@ interface __Options_MyStateSample {
 }
 
 pluginTester.run(
-    "transform $_instantiate for a single component",
+    'transform $_instantiate for a single component',
     [instantiateTransform],
     {
         'checked:instantiate': [testInstantiateImpl],
     },
     {
-        stopAfter: "checked"
+        stopAfter: 'checked',
     },
     {
-        beforeEach: [() => {
-            jest.spyOn(console, 'warn').mockImplementation(() => {});
-        }],
-        afterEach: [() => {
-            jest.spyOn(console, 'warn').mockRestore();
-        }]
+        beforeEach: [
+            () => {
+                jest.spyOn(console, 'warn').mockImplementation(() => {});
+            },
+        ],
+        afterEach: [
+            () => {
+                jest.spyOn(console, 'warn').mockRestore();
+            },
+        ],
     }
 );

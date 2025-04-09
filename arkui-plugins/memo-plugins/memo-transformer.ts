@@ -13,39 +13,38 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
-import { FunctionTransformer } from "./function-transformer"
-import { PositionalIdTracker } from "./utils"
-import { factory } from "./memo-factory"
-import { ReturnTransformer } from "./return-transformer"
-import { ParameterTransformer } from "./parameter-transformer" 
-import { EtsglobalRemover } from "../common/etsglobal-remover"
-import { SignatureTransformer } from "./signature-transformer"
+import * as arkts from '@koalaui/libarkts';
+import { FunctionTransformer } from './function-transformer';
+import { PositionalIdTracker } from './utils';
+import { factory } from './memo-factory';
+import { ReturnTransformer } from './return-transformer';
+import { ParameterTransformer } from './parameter-transformer';
+import { EtsglobalRemover } from '../common/etsglobal-remover';
+import { SignatureTransformer } from './signature-transformer';
 
 export interface TransformerOptions {
-    trace?: boolean,
-    removeEtsglobal?: boolean
+    trace?: boolean;
+    removeEtsglobal?: boolean;
 }
 
-export default function memoTransformer(
-    userPluginOptions?: TransformerOptions
-) {
+export default function memoTransformer(userPluginOptions?: TransformerOptions) {
     return (node0: arkts.EtsScript) => {
-        const node = (userPluginOptions?.removeEtsglobal ? new EtsglobalRemover().visitor(node0) : node0) as arkts.EtsScript
-        const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false)
+        const node = (
+            userPluginOptions?.removeEtsglobal ? new EtsglobalRemover().visitor(node0) : node0
+        ) as arkts.EtsScript;
+        const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
         const parameterTransformer = new ParameterTransformer({
-            positionalIdTracker
-        })
-        const returnTransformer = new ReturnTransformer()
-        const signatureTransformer = new SignatureTransformer()
-        const functionTransformer = new FunctionTransformer({ positionalIdTracker, parameterTransformer, returnTransformer, signatureTransformer })
+            positionalIdTracker,
+        });
+        const returnTransformer = new ReturnTransformer();
+        const signatureTransformer = new SignatureTransformer();
+        const functionTransformer = new FunctionTransformer({
+            positionalIdTracker,
+            parameterTransformer,
+            returnTransformer,
+            signatureTransformer,
+        });
         factory.createContextTypesImportDeclaration(arkts.arktsGlobal.compilerContext?.program);
-        return functionTransformer.visitor(
-            arkts.factory.updateEtsScript(
-                node,
-                node.statements
-            )
-        )
-    }
+        return functionTransformer.visitor(arkts.factory.updateEtsScript(node, node.statements));
+    };
 }
-

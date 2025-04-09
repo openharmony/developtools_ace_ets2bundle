@@ -13,15 +13,12 @@
  * limitations under the License.
  */
 
-import * as fs from "fs";
-import * as arkts from "@koalaui/libarkts";
-import { arktsGlobal } from "@koalaui/libarkts/build/lib/es2panda";
-import { CompileFileInfo } from "./artkts-config";
+import * as fs from 'fs';
+import * as arkts from '@koalaui/libarkts';
+import { arktsGlobal } from '@koalaui/libarkts/build/lib/es2panda';
+import { CompileFileInfo } from './artkts-config';
 
-function initGlobal(
-    fileInfo: CompileFileInfo,
-    isDebug: boolean = true
-): void {
+function initGlobal(fileInfo: CompileFileInfo, isDebug: boolean = true): void {
     const config = [
         '_',
         '--extension',
@@ -79,7 +76,7 @@ function canProceedToState(state: arkts.Es2pandaContextState): boolean {
     const stateToSkip: arkts.Es2pandaContextState[] = [
         arkts.Es2pandaContextState.ES2PANDA_STATE_SCOPE_INITED,
         arkts.Es2pandaContextState.ES2PANDA_STATE_ASM_GENERATED,
-        arkts.Es2pandaContextState.ES2PANDA_STATE_ERROR
+        arkts.Es2pandaContextState.ES2PANDA_STATE_ERROR,
     ];
 
     if (state in stateToSkip) {
@@ -90,9 +87,4 @@ function canProceedToState(state: arkts.Es2pandaContextState): boolean {
     return currState < state;
 }
 
-export {
-    initGlobal,
-    resetContext,
-    resetConfig,
-    canProceedToState
-};
+export { initGlobal, resetContext, resetConfig, canProceedToState };

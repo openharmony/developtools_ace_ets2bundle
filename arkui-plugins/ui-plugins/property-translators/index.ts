@@ -34,10 +34,7 @@ import { BuilderParamTranslator } from './builderParam';
 
 export { PropertyTranslator };
 
-export function classifyProperty(
-    member: arkts.AstNode,
-    structName: string
-): PropertyTranslator | undefined {
+export function classifyProperty(member: arkts.AstNode, structName: string): PropertyTranslator | undefined {
     if (!arkts.isClassProperty(member)) return undefined;
     if (isStatic(member)) return new staticPropertyTranslator(member, structName);
 

@@ -13,22 +13,19 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
-import { AbstractVisitor } from "./abstract-visitor"
+import * as arkts from '@koalaui/libarkts';
+import { AbstractVisitor } from './abstract-visitor';
 
-const ETSGLOBAL = "ETSGLOBAL"
+const ETSGLOBAL = 'ETSGLOBAL';
 
 export class EtsglobalRemover extends AbstractVisitor {
     visitor(node: arkts.AstNode): arkts.AstNode {
         if (arkts.isEtsScript(node)) {
             const keep = node.statements.filter((it) => {
-                return !(arkts.isClassDeclaration(it) && it.definition?.ident?.name == ETSGLOBAL)
-            })
-            return arkts.factory.updateEtsScript(
-                node,
-                keep
-            )
+                return !(arkts.isClassDeclaration(it) && it.definition?.ident?.name == ETSGLOBAL);
+            });
+            return arkts.factory.updateEtsScript(node, keep);
         }
-        return node
+        return node;
     }
 }

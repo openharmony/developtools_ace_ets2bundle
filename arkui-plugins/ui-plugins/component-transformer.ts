@@ -13,57 +13,41 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts";
-import { getInteropPath } from "../path";
-const interop = require(getInteropPath())
-const nullptr = interop.nullptr
-import {
-    AbstractVisitor,
-    VisitorOptions
-} from "../common/abstract-visitor";
+import * as arkts from '@koalaui/libarkts';
+import { getInteropPath } from '../path';
+const interop = require(getInteropPath());
+const nullptr = interop.nullptr;
+import { AbstractVisitor, VisitorOptions } from '../common/abstract-visitor';
 import {
     CustomComponentNames,
     getCustomComponentOptionsName,
     createOptionalClassProperty,
-    findLocalImport
-} from "./utils";
-import {
-    isAnnotation,
-    updateStructMetadata,
-    backingField, 
-    expectName,
-    annotation
-} from "../common/arkts-utils";
-import {
-    EntryWrapperNames,
-    findEntryWithStorageInClassAnnotations
-} from "./entry-translators/utils";
-import {
-    factory as entryFactory
-} from "./entry-translators/factory";
+    findLocalImport,
+} from './utils';
+import { isAnnotation, updateStructMetadata, backingField, expectName, annotation } from '../common/arkts-utils';
+import { EntryWrapperNames, findEntryWithStorageInClassAnnotations } from './entry-translators/utils';
+import { factory as entryFactory } from './entry-translators/factory';
 import {
     hasDecorator,
     DecoratorNames,
     getStateManagementType,
-    collectPropertyDecorators
-} from "./property-translators/utils";
-import {
-    factory
-} from "./ui-factory";
+    collectPropertyDecorators,
+} from './property-translators/utils';
+import { factory } from './ui-factory';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
-    arkui?: string
+    arkui?: string;
 }
 
 type ScopeInfo = {
-    name: string,
-    isEntry?: boolean,
-    isComponent?: boolean,
-    isReusable?: boolean
-}
+    name: string;
+    isEntry?: boolean;
+    isComponent?: boolean;
+    isReusable?: boolean;
+};
 
 interface ComponentContext {
-    structMembers: Map<string, arkts.AstNode[]>,
+    structMembers: Map<string, arkts.AstNode[]>;
 }
 
 export class ComponentTransformer extends AbstractVisitor {

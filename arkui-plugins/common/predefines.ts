@@ -14,13 +14,13 @@
  */
 
 export const EXTERNAL_SOURCE_PREFIX_NAMES: (string | RegExp)[] = [
-    "std",
-    "escompat",
-    "security",
-    "application",
-    "permissions",
-    "bundleManager",
-    "commonEvent",
+    'std',
+    'escompat',
+    'security',
+    'application',
+    'permissions',
+    'bundleManager',
+    'commonEvent',
     /@arkts\..*/,
     /@ohos\.(?!arkui).*/,
     /@system\..*/,
@@ -28,60 +28,63 @@ export const EXTERNAL_SOURCE_PREFIX_NAMES: (string | RegExp)[] = [
     /ability\..*/,
 ];
 
-export const ARKUI_COMPONENT_IMPORT_NAME: string = "@ohos.arkui.component";
+export const ARKUI_COMPONENT_IMPORT_NAME: string = '@ohos.arkui.component';
 
-export const ARKUI_STATEMANAGEMENT_IMPORT_NAME: string = "@ohos.arkui.stateManagement";
+export const ARKUI_STATEMANAGEMENT_IMPORT_NAME: string = '@ohos.arkui.stateManagement';
 
 export const EXTERNAL_SOURCE_ALLOWED_IMPORT_INSERT_NAMES: string[] = [
     ARKUI_COMPONENT_IMPORT_NAME,
-    ARKUI_STATEMANAGEMENT_IMPORT_NAME
+    ARKUI_STATEMANAGEMENT_IMPORT_NAME,
 ];
 
 export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<string>>([
-    ["@ohos.arkui.component", new Set(["$r", "$rawfile", "_r", "_rawfile"])],
-    ["@ohos.arkui.stateManagement", new Set([
-        "State",
-        "Prop",
-        "Provide",
-        "Consume",
-        "StorageLink",
-        "StorageProp",
-        "LocalStorageLink",
-        "LocalStorageProp",
-        "Watch",
-        "ObjectLink",
-        "StateDecoratedVariable",
-        "MutableState",
-        "contextLocalStateOf",
-        "contextLocal",
-        "observableProxy",
-        "SyncedProperty",
-        "objectLinkState",
-        "propState",
-        "AppStorageLinkState",
-        "StorageLinkState",
-        "DecoratedV1VariableBase",
-        "LinkDecoratedVariable",
-        "PropDecoratedVariable",
-        "StorageLinkDecoratedVariable",
-        "StoragePropDecoratedVariable",
-        "memo",
-        "__memo_context_type",
-        "__memo_id_type"
-    ])]
+    ['@ohos.arkui.component', new Set(['$r', '$rawfile', '_r', '_rawfile'])],
+    [
+        '@ohos.arkui.stateManagement',
+        new Set([
+            'State',
+            'Prop',
+            'Provide',
+            'Consume',
+            'StorageLink',
+            'StorageProp',
+            'LocalStorageLink',
+            'LocalStorageProp',
+            'Watch',
+            'ObjectLink',
+            'StateDecoratedVariable',
+            'MutableState',
+            'contextLocalStateOf',
+            'contextLocal',
+            'observableProxy',
+            'SyncedProperty',
+            'objectLinkState',
+            'propState',
+            'AppStorageLinkState',
+            'StorageLinkState',
+            'DecoratedV1VariableBase',
+            'LinkDecoratedVariable',
+            'PropDecoratedVariable',
+            'StorageLinkDecoratedVariable',
+            'StoragePropDecoratedVariable',
+            'memo',
+            '__memo_context_type',
+            '__memo_id_type',
+        ]),
+    ],
 ]);
 
 export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, string[]>([
-    ["$r", ["_r"]],
-    ["$rawfile", ["_rawfile"]],
-    ["State", ["StateDecoratedVariable"]],
-    ["Link", ["LinkDecoratedVariable", "DecoratedV1VariableBase"]],
-    ["Prop", ["PropDecoratedVariable"]],
-    ["Provide", ["MutableState", "contextLocalStateOf", "observableProxy"]],
-    ["Consume", ["MutableState", "contextLocal", "observableProxy"]],
-    ["StorageProp", ["StoragePropDecoratedVariable"]],
-    ["StorageLink", ["StorageLinkDecoratedVariable"]],
-    ["LocalStorageLink", ["StorageLinkState", "MutableState", "observableProxy"]],
-    ["LocalStorageProp", ["StorageLinkState", "MutableState", "observableProxy", "propState"]],
-    ["ObjectLink", ["objectLinkState", "observableProxy", "SyncedProperty"]]
+    ['$r', ['_r']],
+    ['$rawfile', ['_rawfile']],
+    ['State', ['StateDecoratedVariable']],
+    ['Link', ['LinkDecoratedVariable', 'DecoratedV1VariableBase']],
+    ['Prop', ['PropDecoratedVariable']],
+    ['Provide', ['MutableState', 'contextLocalStateOf', 'observableProxy']],
+    ['Consume', ['MutableState', 'contextLocal', 'observableProxy']],
+    ['StorageProp', ['StoragePropDecoratedVariable']],
+    ['StorageLink', ['StorageLinkDecoratedVariable']],
+    ['LocalStorageLink', ['StorageLinkState', 'MutableState', 'observableProxy']],
+    ['LocalStorageProp', ['StorageLinkState', 'MutableState', 'observableProxy', 'propState']],
+    ['ObjectLink', ['objectLinkState', 'observableProxy', 'SyncedProperty']],
 ]);

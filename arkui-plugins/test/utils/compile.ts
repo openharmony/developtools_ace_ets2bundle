@@ -13,37 +13,25 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts";
-import {
-    arktsGlobal
-} from "@koalaui/libarkts/build/lib/es2panda";
-import {
-    PluginDriver
-} from "./plugin-driver";
-import { 
-    PluginContext, 
-    PluginExecutor, 
-} from "../../common/plugin-context";
-import {
-    EtsglobalRemover
-} from "../../common/etsglobal-remover";
+import * as arkts from '@koalaui/libarkts';
+import { arktsGlobal } from '@koalaui/libarkts/build/lib/es2panda';
+import { PluginDriver } from './plugin-driver';
+import { PluginContext, PluginExecutor } from '../../common/plugin-context';
+import { EtsglobalRemover } from '../../common/etsglobal-remover';
 
-function restartCompilerUptoState(
-    state: arkts.Es2pandaContextState, 
-    restart: boolean
-): boolean {
+function restartCompilerUptoState(state: arkts.Es2pandaContextState, restart: boolean): boolean {
     try {
         const ast: arkts.EtsScript | undefined = arkts.EtsScript.fromContext();
         if (!ast) {
             return false;
         }
-    
+
         if (restart) {
-            const srcText = new EtsglobalRemover().visitor(ast).dumpSrc()
-            arktsGlobal.es2panda._DestroyContext(arktsGlobal.context)
-            arktsGlobal.compilerContext = arkts.Context.createFromString(srcText)
+            const srcText = new EtsglobalRemover().visitor(ast).dumpSrc();
+            arktsGlobal.es2panda._DestroyContext(arktsGlobal.context);
+            arktsGlobal.compilerContext = arkts.Context.createFromString(srcText);
         }
-    
+
         arkts.proceedToState(state);
         return true;
     } catch (e) {
@@ -72,7 +60,4 @@ function insertPlugin(
     return true;
 }
 
-export {
-    restartCompilerUptoState,
-    insertPlugin
-}
+export { restartCompilerUptoState, insertPlugin };

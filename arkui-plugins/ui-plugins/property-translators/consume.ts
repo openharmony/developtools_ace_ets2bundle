@@ -13,26 +13,20 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
+import * as arkts from '@koalaui/libarkts';
 
-import { 
-    createGetter, 
+import {
+    createGetter,
     createSetter,
     generateThisBackingValue,
     generateThisBacking,
     getValueInAnnotation,
-    DecoratorNames
-} from "./utils";
-import { PropertyTranslator } from "./base";
-import { 
-    GetterSetter, 
-    InitializerConstructor
-} from "./types";
-import { 
-    backingField, 
-    expectName 
-} from "../../common/arkts-utils";
-import { createOptionalClassProperty } from "../utils";
+    DecoratorNames,
+} from './utils';
+import { PropertyTranslator } from './base';
+import { GetterSetter, InitializerConstructor } from './types';
+import { backingField, expectName } from '../../common/arkts-utils';
+import { createOptionalClassProperty } from '../utils';
 
 export class ConsumeTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
@@ -50,26 +44,38 @@ export class ConsumeTranslator extends PropertyTranslator implements Initializer
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = createOptionalClassProperty(newName, this.property, 'MutableState',
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE);
+        const field: arkts.ClassProperty = createOptionalClassProperty(
+            newName,
+            this.property,
+            'MutableState',
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
+        );
         const thisValue: arkts.MemberExpression = generateThisBackingValue(newName, false, true);
-        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.property.typeAnnotation, thisValue);
-        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.property.typeAnnotation, thisValue);
+        const getter: arkts.MethodDefinition = this.translateGetter(
+            originalName,
+            this.property.typeAnnotation,
+            thisValue
+        );
+        const setter: arkts.MethodDefinition = this.translateSetter(
+            originalName,
+            this.property.typeAnnotation,
+            thisValue
+        );
 
         return [field, getter, setter];
     }
 
     translateGetter(
-        originalName: string, 
-        typeAnnotation: arkts.TypeNode | undefined, 
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
         returnValue: arkts.MemberExpression
     ): arkts.MethodDefinition {
         return createGetter(originalName, typeAnnotation, returnValue);
     }
 
     translateSetter(
-        originalName: string, 
-        typeAnnotation: arkts.TypeNode | undefined, 
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
         left: arkts.MemberExpression
     ): arkts.MethodDefinition {
         const right: arkts.CallExpression = arkts.factory.createCallExpression(
@@ -81,10 +87,7 @@ export class ConsumeTranslator extends PropertyTranslator implements Initializer
         return createSetter(originalName, typeAnnotation, left, right);
     }
 
-    generateInitializeStruct(        
-        newName: string,
-        originalName: string
-    ): arkts.AstNode {
+    generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
         let consumeValueStr: string | undefined = getValueInAnnotation(this.property, DecoratorNames.CONSUME);
         if (!consumeValueStr) {
             consumeValueStr = originalName;
@@ -106,5 +109,4 @@ export class ConsumeTranslator extends PropertyTranslator implements Initializer
             right
         );
     }
-
 }

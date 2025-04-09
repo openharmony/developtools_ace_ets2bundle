@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
-import { factory } from "./memo-factory"
-import { hasMemoAnnotation, hasMemoIntrinsicAnnotation } from "./utils"
-import { AbstractVisitor } from "../common/abstract-visitor"
+import * as arkts from '@koalaui/libarkts';
+import { factory } from './memo-factory';
+import { hasMemoAnnotation, hasMemoIntrinsicAnnotation } from './utils';
+import { AbstractVisitor } from '../common/abstract-visitor';
 
 export class SignatureTransformer extends AbstractVisitor {
-    public modified = false
+    public modified = false;
 
     reset(): void {
         super.reset();
@@ -28,65 +28,67 @@ export class SignatureTransformer extends AbstractVisitor {
 
     visitor<T extends arkts.AstNode>(node: T, applyMemo: boolean = false): T {
         if (arkts.isScriptFunction(node)) {
-            const memo = hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node) || applyMemo
+            const memo = hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node) || applyMemo;
             if (memo) {
-                this.modified = true
+                this.modified = true;
             }
             return arkts.factory.updateScriptFunction(
                 node,
                 node.body,
                 arkts.factory.createFunctionSignature(
                     node.typeParams,
-                    [...(memo ? factory.createHiddenParameters() : []), ...node.params.map(it => this.visitor(it))],
+                    [...(memo ? factory.createHiddenParameters() : []), ...node.params.map((it) => this.visitor(it))],
                     node.returnTypeAnnotation
                         ? this.visitor(node.returnTypeAnnotation)
-                        : memo ? arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID) : undefined,
-                    node.hasReceiver,
+                        : memo
+                          ? arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
+                          : undefined,
+                    node.hasReceiver
                 ),
                 node.flags,
                 node.modifiers
-            ) as any as T
+            ) as any as T;
         }
         if (arkts.isEtsParameterExpression(node)) {
-            const memo = hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node)
+            const memo = hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node);
             if (!node.type) {
                 if (memo) {
-                    console.error(`@memo parameter ${node.identifier.name} without type annotatation`)
-                    throw "Invalid @memo usage"
+                    console.error(`@memo parameter ${node.identifier.name} without type annotatation`);
+                    throw 'Invalid @memo usage';
                 }
-                return node
+                return node;
             }
-            node.type = this.visitor(node.type, memo)
-            return node as any as T
+            node.type = this.visitor(node.type, memo);
+            return node as any as T;
         }
         if (arkts.isETSFunctionType(node)) {
-            const memo = hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node) || applyMemo
+            const memo = hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node) || applyMemo;
             if (memo) {
-                this.modified = true
+                this.modified = true;
             }
             return arkts.factory.updateFunctionType(
                 node,
                 arkts.factory.createFunctionSignature(
                     undefined,
-                    [...(memo ? factory.createHiddenParameters() : []), ...node.params.map(it => this.visitor(it))],
+                    [...(memo ? factory.createHiddenParameters() : []), ...node.params.map((it) => this.visitor(it))],
                     this.visitor(node.returnType!),
-                    false,
+                    false
                 ),
-                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-            ) as any as T
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
+            ) as any as T;
         }
         if (arkts.isETSUnionType(node)) {
             return arkts.factory.updateUnionType(
                 node,
-                node.types.map(it => this.visitor(it, applyMemo))
-            ) as any as T
+                node.types.map((it) => this.visitor(it, applyMemo))
+            ) as any as T;
         }
         if (arkts.isETSUndefinedType(node)) {
-            return node as any as T
+            return node as any as T;
         }
         if (applyMemo) {
-            throw "Invalid @memo usage"
+            throw 'Invalid @memo usage';
         }
-        return node
+        return node;
     }
 }

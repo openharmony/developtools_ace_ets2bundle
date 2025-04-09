@@ -13,14 +13,14 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
-import { factory } from "./memo-factory"
-import { AbstractVisitor } from "../common/abstract-visitor"
-import { isSyntheticReturnStatement } from "./utils"
+import * as arkts from '@koalaui/libarkts';
+import { factory } from './memo-factory';
+import { AbstractVisitor } from '../common/abstract-visitor';
+import { isSyntheticReturnStatement } from './utils';
 
 export class ReturnTransformer extends AbstractVisitor {
-    private skipNode?: arkts.ReturnStatement | arkts.BlockStatement
-    private stableThis: boolean = false
+    private skipNode?: arkts.ReturnStatement | arkts.BlockStatement;
+    private stableThis: boolean = false;
 
     reset() {
         super.reset();
@@ -29,13 +29,13 @@ export class ReturnTransformer extends AbstractVisitor {
     }
 
     skip(syntheticReturnStatement?: arkts.ReturnStatement | arkts.BlockStatement): ReturnTransformer {
-        this.skipNode = syntheticReturnStatement
-        return this
+        this.skipNode = syntheticReturnStatement;
+        return this;
     }
 
     rewriteThis(stableThis: boolean): ReturnTransformer {
-        this.stableThis = stableThis
-        return this
+        this.stableThis = stableThis;
+        return this;
     }
 
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
@@ -45,20 +45,18 @@ export class ReturnTransformer extends AbstractVisitor {
             return beforeChildren;
         }
         if (arkts.isScriptFunction(beforeChildren)) {
-            return beforeChildren
+            return beforeChildren;
         }
-        const node = this.visitEachChild(beforeChildren)
+        const node = this.visitEachChild(beforeChildren);
         if (arkts.isReturnStatement(node)) {
             if (this.stableThis && node.argument && arkts.isThisExpression(node.argument)) {
-                return factory.createReturnThis()
+                return factory.createReturnThis();
             }
             return arkts.factory.createBlock([
-                arkts.factory.createExpressionStatement(
-                    factory.createRecacheCall(node.argument)
-                ),
-                node
+                arkts.factory.createExpressionStatement(factory.createRecacheCall(node.argument)),
+                node,
             ]);
         }
-        return node
+        return node;
     }
 }

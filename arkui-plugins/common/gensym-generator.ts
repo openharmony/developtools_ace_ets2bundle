@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import { getCommonPath } from "../path"
-const common = require(getCommonPath())
-const UniqueId = common.UniqueId
+import { getCommonPath } from '../path';
+const common = require(getCommonPath());
+const UniqueId = common.UniqueId;
 
 export class GenSymGenerator {
     // Global for the whole program.
@@ -39,7 +39,7 @@ export class GenSymGenerator {
 
     sha1Id(callName: string): string {
         const uniqId = new UniqueId();
-        uniqId.addString("gensym uniqid");
+        uniqId.addString('gensym uniqid');
         uniqId.addString(callName);
         uniqId.addI32(GenSymGenerator.callCount++);
         return uniqId.compute().substring(0, 7);
@@ -49,10 +49,8 @@ export class GenSymGenerator {
         return `${GenSymGenerator.callCount++}_${callName}_id`;
     }
 
-    id(callName: string = ""): string {
-        const positionId = (this.stableForTests) ?
-            this.stringId(callName) :
-            this.sha1Id(callName);
+    id(callName: string = ''): string {
+        const positionId = this.stableForTests ? this.stringId(callName) : this.sha1Id(callName);
 
         const coreceToStr = parseInt(positionId, 16).toString();
 

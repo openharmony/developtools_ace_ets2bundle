@@ -13,27 +13,21 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
+import * as arkts from '@koalaui/libarkts';
 
-import { 
+import {
     generateToRecord,
-    createGetter, 
+    createGetter,
     createSetter2,
     generateGetOrSetCall,
     generateThisBacking,
-    judgeIfAddWatchFunc
-} from "./utils";
-import { PropertyTranslator } from "./base";
-import { 
-    GetterSetter, 
-    InitializerConstructor
-} from "./types";
-import { 
-    backingField, 
-    expectName 
-} from "../../common/arkts-utils";
-import { createOptionalClassProperty } from "../utils";
-import { factory } from "./factory";
+    judgeIfAddWatchFunc,
+} from './utils';
+import { PropertyTranslator } from './base';
+import { GetterSetter, InitializerConstructor } from './types';
+import { backingField, expectName } from '../../common/arkts-utils';
+import { createOptionalClassProperty } from '../utils';
+import { factory } from './factory';
 
 export class PropTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
@@ -59,38 +53,48 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = createOptionalClassProperty(newName, this.property, "PropDecoratedVariable",
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE);
+        const field: arkts.ClassProperty = createOptionalClassProperty(
+            newName,
+            this.property,
+            'PropDecoratedVariable',
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
+        );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, "get");
+        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, 'get');
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            generateGetOrSetCall(thisValue, "set"));
-        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.property.typeAnnotation, thisGet);
-        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.property.typeAnnotation, thisSet);
-    
+            generateGetOrSetCall(thisValue, 'set')
+        );
+        const getter: arkts.MethodDefinition = this.translateGetter(
+            originalName,
+            this.property.typeAnnotation,
+            thisGet
+        );
+        const setter: arkts.MethodDefinition = this.translateSetter(
+            originalName,
+            this.property.typeAnnotation,
+            thisSet
+        );
+
         return [field, getter, setter];
     }
 
     translateGetter(
-        originalName: string, 
-        typeAnnotation: arkts.TypeNode | undefined, 
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
         returnValue: arkts.Expression
     ): arkts.MethodDefinition {
         return createGetter(originalName, typeAnnotation, returnValue);
     }
 
     translateSetter(
-        originalName: string, 
-        typeAnnotation: arkts.TypeNode | undefined, 
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
         statement: arkts.AstNode
     ): arkts.MethodDefinition {
         return createSetter2(originalName, typeAnnotation, statement);
     }
 
-    generateInitializeStruct(        
-        newName: string, 
-        originalName: string
-    ): arkts.AstNode {
+    generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
         const binaryItem = arkts.factory.createBinaryExpression(
             factory.createBlockStatementForOptionalExpression(
                 arkts.factory.createIdentifier('initializers'),
@@ -99,14 +103,18 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
             this.property.value ?? arkts.factory.createIdentifier('undefined'),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         );
-        const nonNullItem =arkts.factory.createTSNonNullExpression(
-            factory.createNonNullOrOptionalMemberExpression('initializers', originalName, false, true));
-        const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(originalName), this.property.value ? binaryItem : nonNullItem];
+        const nonNullItem = arkts.factory.createTSNonNullExpression(
+            factory.createNonNullOrOptionalMemberExpression('initializers', originalName, false, true)
+        );
+        const args: arkts.Expression[] = [
+            arkts.factory.create1StringLiteral(originalName),
+            this.property.value ? binaryItem : nonNullItem,
+        ];
         judgeIfAddWatchFunc(args, this.property);
         const right = arkts.factory.createETSNewClassInstanceExpression(
             arkts.factory.createTypeReference(
                 arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier("PropDecoratedVariable"),
+                    arkts.factory.createIdentifier('PropDecoratedVariable'),
                     arkts.factory.createTSTypeParameterInstantiation(
                         this.property.typeAnnotation ? [this.property.typeAnnotation] : []
                     )
@@ -122,10 +130,7 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
         return arkts.factory.createExpressionStatement(assign);
     }
 
-    generateUpdateStruct(
-        mutableThis: arkts.Expression,
-        originalName: string
-    ): arkts.AstNode {
+    generateUpdateStruct(mutableThis: arkts.Expression, originalName: string): arkts.AstNode {
         const binaryItem = arkts.factory.createBinaryExpression(
             factory.createBlockStatementForOptionalExpression(
                 arkts.factory.createIdentifier('initializers'),
@@ -141,14 +146,16 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
             false,
             false
         );
-        const nonNullItem =arkts.factory.createTSNonNullExpression(
-            factory.createNonNullOrOptionalMemberExpression('initializers', originalName, false, true));
+        const nonNullItem = arkts.factory.createTSNonNullExpression(
+            factory.createNonNullOrOptionalMemberExpression('initializers', originalName, false, true)
+        );
         return arkts.factory.createIfStatement(
             binaryItem,
-            arkts.factory.createBlock(
-                [arkts.factory.createExpressionStatement(
-                    arkts.factory.createCallExpression(member, undefined, [nonNullItem]))]
-            )
+            arkts.factory.createBlock([
+                arkts.factory.createExpressionStatement(
+                    arkts.factory.createCallExpression(member, undefined, [nonNullItem])
+                ),
+            ])
         );
     }
 }

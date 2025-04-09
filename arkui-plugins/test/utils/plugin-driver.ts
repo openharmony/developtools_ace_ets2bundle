@@ -13,17 +13,9 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts";
-import {
-    isNumber
-} from "./safe-types";
-import { 
-    Plugins, 
-    PluginContext, 
-    PluginHandler, 
-    PluginState ,
-    PluginExecutor
-} from "../../common/plugin-context";
+import * as arkts from '@koalaui/libarkts';
+import { isNumber } from './safe-types';
+import { Plugins, PluginContext, PluginHandler, PluginState, PluginExecutor } from '../../common/plugin-context';
 
 export interface PluginDriver {
     initPlugins(plugins: Plugins[]): void;
@@ -45,9 +37,7 @@ function toCamelCase(str: string): string {
 
 function stateName(value: arkts.Es2pandaContextState): PluginState {
     return toCamelCase(
-        arkts.Es2pandaContextState[value]
-            .substring("ES2PANDA_STATE_".length)
-            .toLowerCase()
+        arkts.Es2pandaContextState[value].substring('ES2PANDA_STATE_'.length).toLowerCase()
     ) as PluginState;
 }
 
@@ -57,16 +47,16 @@ function selectPlugins(plugins: Plugins[], stage: PluginState): PluginExecutor[]
     const post: PluginExecutor[] = [];
 
     plugins
-        .filter(it => (stage in it))
-        .forEach(it => {
+        .filter((it) => stage in it)
+        .forEach((it) => {
             const pluginName: string = it.name;
             const handler: PluginHandler = it[stage]!;
             const order: string | undefined = typeof handler === 'object' ? handler.order : undefined;
             const rawPluginHook: PluginExecutor = {
                 name: pluginName,
-                handler: typeof handler === 'object' ? handler.handler : handler
+                handler: typeof handler === 'object' ? handler.handler : handler,
             };
-    
+
             if (order === 'pre') {
                 pre.push(rawPluginHook);
             } else if (order === 'post') {
@@ -93,7 +83,7 @@ class MockPluginDriver implements PluginDriver {
 
         Object.values(arkts.Es2pandaContextState)
             .filter(isNumber)
-            .forEach(it => {
+            .forEach((it) => {
                 const selected = selectPlugins(plugins, stateName(it));
                 if (selected.length > 0) {
                     pluginsByState.set(it, selected);
@@ -114,7 +104,4 @@ class MockPluginDriver implements PluginDriver {
     }
 }
 
-export {
-    stateName,
-    MockPluginDriver
-}
+export { stateName, MockPluginDriver };

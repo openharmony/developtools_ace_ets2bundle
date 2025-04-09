@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
+import * as arkts from '@koalaui/libarkts';
 
 // This is the same plugin-context in the build-system.
 export class PluginContext {
@@ -21,14 +21,14 @@ export class PluginContext {
     private program: arkts.Program | undefined;
     private projectConfig: ProjectConfig | undefined;
     private contextPtr: number | undefined;
-  
+
     constructor() {
         this.ast = undefined;
         this.program = undefined;
         this.projectConfig = undefined;
         this.contextPtr = undefined;
     }
-  
+
     /**
      * @deprecated
      */
@@ -58,11 +58,11 @@ export class PluginContext {
     }
 
     public setProjectConfig(projectConfig: ProjectConfig): void {
-        throw new Error("do not set projectConfig!");
+        throw new Error('do not set projectConfig!');
     }
 
     public getProjectConfig(): ProjectConfig | undefined {
-         return this.projectConfig;
+        return this.projectConfig;
     }
 
     public setContextPtr(ptr: number): void {
@@ -75,35 +75,35 @@ export class PluginContext {
 }
 
 export interface ProjectConfig {
-    bundleName: string,
-    moduleName: string,
-    cachePath: string
+    bundleName: string;
+    moduleName: string;
+    cachePath: string;
 }
 
 export type PluginHandlerFunction = () => void;
 
 export type PluginHandlerObject = {
-  order: 'pre' | 'post' | undefined
-  handler: PluginHandlerFunction
+    order: 'pre' | 'post' | undefined;
+    handler: PluginHandlerFunction;
 };
 
 export type PluginHandler = PluginHandlerFunction | PluginHandlerObject;
 
 export interface Plugins {
     name: string;
-    afterNew?: PluginHandler,
-    parsed?: PluginHandler,
-    scopeInited?: PluginHandler,
-    checked?: PluginHandler,
-    lowered?: PluginHandler,
-    asmGenerated?: PluginHandler,
-    binGenerated?: PluginHandler,
-    clean?: PluginHandler,
-};
+    afterNew?: PluginHandler;
+    parsed?: PluginHandler;
+    scopeInited?: PluginHandler;
+    checked?: PluginHandler;
+    lowered?: PluginHandler;
+    asmGenerated?: PluginHandler;
+    binGenerated?: PluginHandler;
+    clean?: PluginHandler;
+}
 
-export type PluginState = keyof Omit<Plugins, "name">;
+export type PluginState = keyof Omit<Plugins, 'name'>;
 
 export type PluginExecutor = {
-    name: string
-    handler: PluginHandlerFunction
+    name: string;
+    handler: PluginHandlerFunction;
 };
