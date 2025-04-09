@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,14 +38,10 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
-import { memo as memo } from "arkui.stateManagement.runtime";
 import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
 import { PropDecoratedVariable as PropDecoratedVariable } from "@ohos.arkui.stateManagement";
-import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
+import { memo as memo } from "arkui.stateManagement.runtime";
 import { UIButtonAttribute as UIButtonAttribute } from "@ohos.arkui.component";
-import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Text as Text, Button as Button, Column as Column, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 import { Prop as Prop, State as State } from "@ohos.arkui.stateManagement";
@@ -80,21 +77,21 @@ function main() {}
   }
   
   @memo() public _build(@memo() style: ((instance: CountDownComponent)=> CountDownComponent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_CountDownComponent | undefined): void {
-    Column(undefined, undefined, (() => {
+    Column(undefined, (() => {
       if (((this.count) > (0))) {
-        Text(undefined, (((("You have") + (this.count))) + ("Nuggets left")), undefined, undefined);
+        Text(undefined, (((("You have") + (this.count))) + ("Nuggets left")));
       } else {
-        Text(undefined, "Game over!", undefined, undefined);
+        Text(undefined, "Game over!");
       }
       Button(@memo() ((instance: UIButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.count -= this.costOfOneAttempt;
         }));
         return;
-      }), "Try again", undefined, undefined);
+      }), "Try again");
     }));
   }
-  public constructor() {}
+  private constructor() {}
 }
 
 @Component({freezeWhenInactive:false}) final class ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> {
@@ -111,32 +108,32 @@ function main() {}
     this.__backing_countDownStartValue!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: ParentComponent)=> ParentComponent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_ParentComponent | undefined): void {
-    Column(undefined, undefined, (() => {
-      Text(undefined, (((("Grant") + (this.countDownStartValue))) + ("nuggets to play.")), undefined, undefined);
+    Column(undefined, (() => {
+      Text(undefined, (((("Grant") + (this.countDownStartValue))) + ("nuggets to play.")));
       Button(@memo() ((instance: UIButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.countDownStartValue += 1;
         }));
         return;
-      }), "+1 - Nuggets in New Game", undefined, undefined);
+      }), "+1 - Nuggets in New Game");
       Button(@memo() ((instance: UIButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.countDownStartValue -= 1;
         }));
         return;
-      }), "-1 - Nuggets in New Game", undefined, undefined);
+      }), "-1 - Nuggets in New Game");
       CountDownComponent._instantiateImpl(undefined, (() => {
         return new CountDownComponent();
       }), ({
         count: this.countDownStartValue,
         costOfOneAttempt: 2,
-      } as __Options_CountDownComponent), undefined, undefined);
+      } as __Options_CountDownComponent));
     }));
   }
-  public constructor() {}
+  private constructor() {}
 }
 
-interface __Options_CountDownComponent {
+@Component({freezeWhenInactive:false}) export interface __Options_CountDownComponent {
   set count(count: number | undefined)
   get count(): number | undefined
   set __backing_count(__backing_count: PropDecoratedVariable<number> | undefined)
@@ -145,7 +142,7 @@ interface __Options_CountDownComponent {
   get costOfOneAttempt(): number | undefined
 }
 
-interface __Options_ParentComponent {
+@Component({freezeWhenInactive:false}) export interface __Options_ParentComponent {
   set countDownStartValue(countDownStartValue: number | undefined)
   get countDownStartValue(): number | undefined
   set __backing_countDownStartValue(__backing_countDownStartValue: StateDecoratedVariable<number> | undefined)
@@ -159,9 +156,9 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Prop decorated variables passing',
-    [parsedTransform, uiNoRecheck],
+    [parsedTransform, uiNoRecheck, recheck],
     {
-        checked: [testParsedAndCheckedTransformer],
+        'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },
     {
         stopAfter: 'checked',

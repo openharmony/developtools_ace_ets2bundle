@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { structNoRecheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,8 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { PropDecoratedVariable as PropDecoratedVariable } from "@ohos.arkui.stateManagement";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
@@ -118,10 +117,10 @@ function main() {}
     this.__backing_propVar5!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: PropParent)=> PropParent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_PropParent | undefined): void {}
-  public constructor() {}
+  private constructor() {}
 }
 
-interface __Options_PropParent {
+@Component({freezeWhenInactive:false}) export interface __Options_PropParent {
   set propVar1(propVar1: string | undefined)
   get propVar1(): string | undefined
   set __backing_propVar1(__backing_propVar1: PropDecoratedVariable<string> | undefined)
@@ -136,8 +135,8 @@ interface __Options_PropParent {
   get __backing_propVar3(): PropDecoratedVariable<boolean> | undefined
   set propVar4(propVar4: undefined | undefined)
   get propVar4(): undefined | undefined
-  set __backing_propVar4(__backing_propVar4: PropDecoratedVariable<undefined> | undefined)
-  get __backing_propVar4(): PropDecoratedVariable<undefined> | undefined
+  set __backing_propVar4(__backing_propVar4: undefined | undefined)
+  get __backing_propVar4(): undefined | undefined
   set propVar5(propVar5: null | undefined)
   get propVar5(): null | undefined
   set __backing_propVar5(__backing_propVar5: PropDecoratedVariable<null> | undefined)
@@ -151,9 +150,9 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic type @Prop decorated variables transformation',
-    [parsedTransform, structNoRecheck],
+    [parsedTransform, structNoRecheck, recheck],
     {
-        checked: [testParsedAndCheckedTransformer],
+        'checked:struct-no-recheck': [testParsedAndCheckedTransformer],
     },
     {
         stopAfter: 'checked',

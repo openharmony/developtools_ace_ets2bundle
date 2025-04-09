@@ -36,7 +36,7 @@ export function uiTransform(): Plugins {
 function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
     let script: arkts.EtsScript | undefined;
     console.log('[UI PLUGIN] AFTER PARSED ENTER');
-    const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+    const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
         script = program.astNode;
@@ -47,7 +47,7 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
             getDumpFileName(0, 'SRC', 1, 'UI_AfterParse_Begin'),
             true,
             cachePath,
-            program.programFileNameWithExtension
+            program.fileNameWithExtension
         );
         arkts.Performance.getInstance().createEvent('ui-parsed');
         const componentTransformer = new ComponentTransformer();
@@ -61,14 +61,14 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
         });
         program = programVisitor.programVisitor(program);
         script = program.astNode;
-        arkts.Performance.getInstance().stopEvent('ui-parsed', true);
+        arkts.Performance.getInstance().stopEvent('ui-parsed', false);
         debugLog('[AFTER PARSED SCRIPT] script: ', script.dumpSrc());
         debugDump(
             script.dumpSrc(),
             getDumpFileName(0, 'SRC', 2, 'UI_AfterParse_End'),
             true,
             cachePath,
-            program.programFileNameWithExtension
+            program.fileNameWithExtension
         );
         this.setArkTSAst(script);
         console.log('[UI PLUGIN] AFTER PARSED EXIT');
@@ -81,7 +81,7 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
 function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
     let script: arkts.EtsScript | undefined;
     console.log('[UI PLUGIN] AFTER CHECKED ENTER');
-    const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+    const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
         script = program.astNode;
@@ -92,7 +92,7 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
             getDumpFileName(0, 'SRC', 3, 'UI_AfterCheck_Begin'),
             true,
             cachePath,
-            program.programFileNameWithExtension
+            program.fileNameWithExtension
         );
         arkts.Performance.getInstance().createEvent('ui-checked');
         const checkedTransformer = new CheckedTransformer(this.getProjectConfig());
@@ -105,20 +105,22 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         });
         program = programVisitor.programVisitor(program);
         script = program.astNode;
-        arkts.Performance.getInstance().stopEvent('ui-checked', true);
+        arkts.Performance.getInstance().stopEvent('ui-checked', false);
         debugLog('[AFTER STRUCT SCRIPT] script: ', script.dumpSrc());
         debugDump(
             script.dumpSrc(),
             getDumpFileName(0, 'SRC', 4, 'UI_AfterCheck_End'),
             true,
             cachePath,
-            program.programFileNameWithExtension
+            program.fileNameWithExtension
         );
-        arkts.GlobalInfo.getInfoInstance().reset();
         arkts.Performance.getInstance().createEvent('ui-recheck');
         arkts.recheckSubtree(script);
-        arkts.Performance.getInstance().stopEvent('ui-recheck', true);
-        arkts.Performance.getInstance().clearAllEvents();
+        arkts.Performance.getInstance().stopEvent('ui-recheck', false);
+        arkts.Performance.getInstance().clearAllEvents(false);
+        arkts.Performance.getInstance().visualizeEvents(true);
+        arkts.Performance.getInstance().clearHistory();
+        arkts.Performance.getInstance().clearTotalDuration();
         this.setArkTSAst(script);
         console.log('[UI PLUGIN] AFTER CHECKED EXIT');
         return script;

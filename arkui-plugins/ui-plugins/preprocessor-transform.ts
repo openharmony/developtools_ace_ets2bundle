@@ -26,19 +26,10 @@ import {
 } from '../common/predefines';
 import { NameCollector } from './name-collector';
 
-interface MemoImportCollection {
-    memo: boolean;
-    memoContextType: boolean;
-    memoIdType: boolean;
-}
-
 export class PreprocessorTransformer extends AbstractVisitor {
     private outNameArr: string[] = [];
-    private memoNameArr: string[] = [];
     private structInterfaceImport: arkts.ETSImportDeclaration[] = [];
-    private memoImportCollection: Partial<MemoImportCollection> = {};
     private localComponentNames: string[] = [];
-    private isMemoImportOnce: boolean = false;
 
     private readonly nameCollector: NameCollector;
 
@@ -50,19 +41,13 @@ export class PreprocessorTransformer extends AbstractVisitor {
     reset(): void {
         super.reset();
         this.outNameArr = [];
-        this.memoNameArr = [];
         this.structInterfaceImport = [];
-        this.memoImportCollection = {};
         this.localComponentNames = [];
-        this.isMemoImportOnce = false;
-        IMPORT_SOURCE_MAP.clear();
-        IMPORT_SOURCE_MAP.set('arkui.stateManagement.runtime', new Set(['memo', '__memo_context_type', '__memo_id_type']));
     }
 
     isCustomConponentDecl(node: arkts.CallExpression): boolean {
-        const structCollection: Set<string> = arkts.GlobalInfo.getInfoInstance().getStructCollection();
         const nodeName: string = node.expression.dumpSrc();
-        if (structCollection.has(nodeName)) {
+        if (arkts.hasGlobalStructInfo(nodeName)) {
             return true;
         }
         return false;
@@ -75,9 +60,7 @@ export class PreprocessorTransformer extends AbstractVisitor {
 
     transformComponentCall(node: arkts.CallExpression): arkts.TSAsExpression | arkts.CallExpression {
         if (node.arguments.length === 0 && node.trailingBlock) {
-            return arkts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
-                arkts.factory.createUndefinedLiteral(),
-            ]);
+            return node;
         } else if (arkts.isObjectExpression(node.arguments[0])) {
             const componentName: string = `${
                 CustomComponentNames.COMPONENT_INTERFACE_PREFIX
@@ -122,19 +105,15 @@ export class PreprocessorTransformer extends AbstractVisitor {
         if (!node.source) return;
 
         const isFromCompImport: boolean = node.source.str === ARKUI_COMPONENT_IMPORT_NAME || node.source.str === KIT_ARKUI_NAME;
-        const structCollection: Set<string> = arkts.GlobalInfo.getInfoInstance().getStructCollection();
         node.specifiers.forEach((item: arkts.AstNode) => {
             if (!arkts.isImportSpecifier(item) || !item.imported?.name) return;
 
             const importName: string = item.imported.name;
-            this.memoImportCollection.memo ||= importName === 'memo';
-            this.memoImportCollection.memoContextType ||= importName === '__memo_context_type';
-            this.memoImportCollection.memoIdType ||= importName === '__memo_id_type';
             if (isFromCompImport && this.nameCollector.getComponents().includes(importName)) {
                 this.localComponentNames.push(item.local?.name ?? importName);
             }
 
-            if (structCollection.has(importName)) {
+            if (arkts.hasGlobalStructInfo(importName)) {
                 const interfaceName: string = CustomComponentNames.COMPONENT_INTERFACE_PREFIX + importName;
                 const newImport: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
                     node.source?.clone(),
@@ -190,51 +169,9 @@ export class PreprocessorTransformer extends AbstractVisitor {
         }
     }
 
-    prepareDependencyMap(node: arkts.ImportSpecifier, source: arkts.StringLiteral): void {
-        if (!node.imported?.name) return;
-
-        // Handling component imports
-        const importName: string = node.imported.name;
-        const sourceName: string = source.str;
-        if (
-            this.nameCollector.getComponents().includes(importName) &&
-            (sourceName === ARKUI_COMPONENT_IMPORT_NAME || sourceName === KIT_ARKUI_NAME)
-        ) {
-            const newDependencies = [`UI${importName}Attribute`];
-            this.updateOutDependencyMap(importName, newDependencies);
-            this.updateSourceDependencyMap(sourceName, newDependencies);
-        } else if (
-            OUTPUT_DEPENDENCY_MAP.get(importName) &&
-            (sourceName === ARKUI_COMPONENT_IMPORT_NAME ||
-                sourceName === ARKUI_STATEMANAGEMENT_IMPORT_NAME ||
-                sourceName === KIT_ARKUI_NAME)
-        ) {
-            const newDependencies: string[] = OUTPUT_DEPENDENCY_MAP.get(importName) ?? [];
-            this.updateSourceDependencyMap(sourceName, newDependencies);
-        }
-    }
-
-    prepareMemoImports(): void {
-        const newDependencies = [];
-        if (!this.memoImportCollection.memo) {
-            newDependencies.push('memo');
-        }
-        if (!this.memoImportCollection.memoContextType) {
-            newDependencies.push('__memo_context_type');
-        }
-        if (!this.memoImportCollection.memoIdType) {
-            newDependencies.push('__memo_id_type');
-        }
-        if (newDependencies.length > 0) {
-            this.memoNameArr.push(...newDependencies);
-            this.isMemoImportOnce = true;
-        }
-    }
-
     addImportWithSpecifier(node: arkts.ImportSpecifier, source: arkts.StringLiteral): void {
         if (!node.imported?.name) return;
 
-        this.prepareDependencyMap(node, source);
         const outName: string[] = this.getOutDependencyName(node.imported?.name);
         this.outNameArr.push(...outName);
     }
@@ -244,7 +181,7 @@ export class PreprocessorTransformer extends AbstractVisitor {
             throw Error('Failed to insert import: Transformer has no program');
         }
 
-        const outNames = new Set([...this.outNameArr, ...this.memoNameArr]);
+        const outNames = new Set([...this.outNameArr]);
         outNames.forEach((item: string) => {
             const source: string = this.getSourceDependency(item);
             const newImport: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
@@ -269,17 +206,13 @@ export class PreprocessorTransformer extends AbstractVisitor {
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {
-        this.enter(node);
         const newNode = this.visitEachChild(node);
         if (arkts.isCallExpression(newNode) && this.isCustomConponentDecl(newNode)) {
             return this.transformComponentCall(newNode);
-        } else if (arkts.isCallExpression(newNode) && this.isComponentFunctionCall(newNode)) {
-            return this.transformComponentFunctionCall(newNode);
         }
         if (arkts.isETSImportDeclaration(node)) {
             this.addDependencesImport(node);
         } else if (arkts.isEtsScript(node)) {
-            if (!this.isMemoImportOnce) this.prepareMemoImports();
             this.updateScriptWithImport();
         }
         return newNode;

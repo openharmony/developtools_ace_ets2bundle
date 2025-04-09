@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { builderLambdaNoRecheck, structNoRecheck, uiNoRecheck } from '../../../utils/plugins';
+import { recheck, uiNoRecheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -33,13 +34,11 @@ const pluginTester = new PluginTester('test function with receiver style transfo
 
 const parsedTransform: Plugins = {
     name: 'style-with-receiver',
-    parsed: uiTransform().parsed
+    parsed: uiTransform().parsed,
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
-import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
+import { memo as memo } from "arkui.stateManagement.runtime";
 import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { memo as memo } from "@ohos.arkui.stateManagement";
@@ -65,23 +64,23 @@ function main() {}
   public __updateStruct(initializers: __Options_MM | undefined): void {}
   
   @memo() public _build(@memo() style: ((instance: MM)=> MM) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MM | undefined): void {
-    Column(undefined, undefined, (() => {
+    Column(undefined, (() => {
       Text(@memo() ((instance: UITextAttribute): void => {
         style22(cardStyle(instance.height(200).fontColor("#000000"), 600, "#eeeeee").fontSize(60).fontWeight(400)).width(900);
         return;
-      }), "hello world", undefined, undefined);
+      }), "hello world");
       Text(@memo() ((instance: UITextAttribute): void => {
         cardStyle(instance, 600, "#eeeeee");
         return;
-      }), "hello world", undefined, undefined);
+      }), "hello world");
     }));
   }
   
-  public constructor() {}
+  private constructor() {}
   
 }
 
-interface __Options_MM {
+@Component({freezeWhenInactive:false}) export interface __Options_MM {
   
 }
 `;
@@ -92,9 +91,9 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test function with receiver style transformstion',
-    [parsedTransform, uiNoRecheck],
+    [parsedTransform, uiNoRecheck, recheck],
     {
-        checked: [testParsedAndCheckedTransformer],
+        'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },
     {
         stopAfter: 'checked',

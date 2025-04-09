@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,17 +13,20 @@
  * limitations under the License.
  */
 
-import { Resource } from "@ohos.arkui.external.resource"
-import { Color } from "@ohos.arkui.component.enums";
+@Retention({policy:"SOURCE"}) @interface TestAnno {}
 
-export type PX = string;
-export type VP = string | number;
-export type FP = string;
-export type LPX = string;
-export type Percentage = string;
+type TestType = number;
 
-export type Dimension = PX | VP | FP | LPX | Percentage | Resource;
+() => {};
 
-export type Length = string | number | Resource;
+class A {
+    prop: number = 1;
 
-export type ResourceColor = Color | number | string | Resource;
+    method(arg1: number): void {
+        const a: number = arg1;
+    }
+}
+
+interface __A {
+    prop: number;
+}

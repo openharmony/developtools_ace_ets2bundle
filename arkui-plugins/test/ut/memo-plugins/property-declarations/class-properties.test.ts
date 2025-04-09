@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { memoNoRecheck } from '../../../utils/plugins';
+import { memoNoRecheck, recheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 
 const PROPERTY_DIR_PATH: string = 'memo/properties';
 
@@ -30,7 +31,8 @@ buildConfig.compileFiles = [
 const pluginTester = new PluginTester('test memo property', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "@ohos.arkui.stateManagement";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
 class A {
     public arg: (()=> void);
@@ -96,7 +98,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'transform properties in class',
-    [memoNoRecheck],
+    [memoNoRecheck, recheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],
     },

@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { uiNoRecheck } from '../../../utils/plugins';
+import { recheck, uiNoRecheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -32,25 +33,15 @@ buildConfig.compileFiles = [
 const xcomponentTransform: Plugins = {
     name: 'xcomponent',
     parsed: uiTransform().parsed,
-}
+};
 
 const pluginTester = new PluginTester('test basic XComponent transform', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
-
-import { UIXComponentAttribute as UIXComponentAttribute } from "@ohos.arkui.component";
-
 import { UIFlexAttribute as UIFlexAttribute } from "@ohos.arkui.component";
-
 import { EntryPoint as EntryPoint } from "arkui.UserView";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
 import { Component as Component, Flex as Flex, XComponent as XComponent, FlexDirection as FlexDirection, XComponentType as XComponentType, Entry as Entry, XComponentController as XComponentController, ItemAlign as ItemAlign, FlexAlign as FlexAlign, XComponentParameter as XComponentParameter } from "@ohos.arkui.component";
 
 function main() {}
@@ -89,15 +80,15 @@ function main() {}
         type: XComponentType.TEXTURE,
         libraryname: "nativerender",
         controller: this.myXComponentController,
-      } as XComponentParameter), "", undefined);
+      } as XComponentParameter), "");
     }));
   }
   
-  public constructor() {}
+  private constructor() {}
   
 }
 
-interface __Options_Index {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) export interface __Options_Index {
   set myXComponentController(myXComponentController: XComponentController | undefined)
   
   get myXComponentController(): XComponentController | undefined
@@ -108,7 +99,7 @@ class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     Index._instantiateImpl(undefined, (() => {
       return new Index();
-    }), undefined, undefined, undefined);
+    }));
   }
   
   public constructor() {}
@@ -122,9 +113,9 @@ function testXComponentTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic XComponent transform',
-    [xcomponentTransform, uiNoRecheck],
+    [xcomponentTransform, uiNoRecheck, recheck],
     {
-        checked: [testXComponentTransformer],
+        'checked:ui-no-recheck': [testXComponentTransformer],
     },
     {
         stopAfter: 'checked',

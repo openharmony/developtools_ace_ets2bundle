@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { uiNoRecheck } from '../../../utils/plugins';
+import { recheck, uiNoRecheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -37,22 +38,11 @@ const animationTransform: Plugins = {
 const pluginTester = new PluginTester('test basic animation transform', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
-
-import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
-
 import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
-
 import { EntryPoint as EntryPoint } from "arkui.UserView";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
 import { Text as Text, Column as Column, Component as Component, Color as Color, Curve as Curve } from "@ohos.arkui.component";
-
 import { Entry as Entry } from "@ohos.arkui.component";
 
 function main() {}
@@ -65,7 +55,7 @@ function main() {}
   public __updateStruct(initializers: __Options_AnimatablePropertyExample | undefined): void {}
   
   @memo() public _build(@memo() style: ((instance: AnimatablePropertyExample)=> AnimatablePropertyExample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_AnimatablePropertyExample | undefined): void {
-    Column(undefined, undefined, (() => {
+    Column(undefined, (() => {
       Text(@memo() ((instance: UITextAttribute): void => {
         instance.animationStart({
           duration: 2000,
@@ -81,15 +71,15 @@ function main() {}
           curve: Curve.Ease,
         }).width("100%");
         return;
-      }), "AnimatableProperty", undefined, undefined);
+      }), "AnimatableProperty");
     }));
   }
   
-  public constructor() {}
+  private constructor() {}
   
 }
 
-interface __Options_AnimatablePropertyExample {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) export interface __Options_AnimatablePropertyExample {
   
 }
 
@@ -97,7 +87,7 @@ class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     AnimatablePropertyExample._instantiateImpl(undefined, (() => {
       return new AnimatablePropertyExample();
-    }), undefined, undefined, undefined);
+    }));
   }
   
   public constructor() {}
@@ -111,7 +101,7 @@ function testAnimationTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic animation transform',
-    [animationTransform, uiNoRecheck],
+    [animationTransform, uiNoRecheck, recheck],
     {
         checked: [testAnimationTransformer],
     },

@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { structNoRecheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,8 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { ProvideDecoratedVariable as ProvideDecoratedVariable } from "@ohos.arkui.stateManagement";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
@@ -97,10 +96,10 @@ function main() {}
     this.__backing_provideVar5!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: PropParent)=> PropParent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_PropParent | undefined): void {}
-  public constructor() {}
+  private constructor() {}
 }
 
-interface __Options_PropParent {
+@Component({freezeWhenInactive:false}) export interface __Options_PropParent {
   set provideVar1(provideVar1: string | undefined)
   get provideVar1(): string | undefined
   set __backing_provideVar1(__backing_provideVar1: ProvideDecoratedVariable<string> | undefined)
@@ -115,8 +114,8 @@ interface __Options_PropParent {
   get __backing_provideVar3(): ProvideDecoratedVariable<boolean> | undefined
   set provideVar4(provideVar4: undefined | undefined)
   get provideVar4(): undefined | undefined
-  set __backing_provideVar4(__backing_provideVar4: ProvideDecoratedVariable<undefined> | undefined)
-  get __backing_provideVar4(): ProvideDecoratedVariable<undefined> | undefined
+  set __backing_provideVar4(__backing_provideVar4: undefined | undefined)
+  get __backing_provideVar4(): undefined | undefined
   set provideVar5(provideVar5: null | undefined)
   get provideVar5(): null | undefined
   set __backing_provideVar5(__backing_provideVar5: ProvideDecoratedVariable<null> | undefined)
@@ -130,9 +129,9 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic type @Provide decorated variables transformation',
-    [parsedTransform, structNoRecheck],
+    [parsedTransform, structNoRecheck, recheck],
     {
-        checked: [testParsedAndCheckedTransformer],
+        'checked:struct-no-recheck': [testParsedAndCheckedTransformer],
     },
     {
         stopAfter: 'checked',

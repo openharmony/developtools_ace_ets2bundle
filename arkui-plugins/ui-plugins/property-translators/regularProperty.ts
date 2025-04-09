@@ -15,37 +15,34 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { createGetter, generateToRecord, generateThisBacking, createSetter2 } from './utils';
-import { PropertyTranslator } from './base';
+import { createGetter, generateToRecord, generateThisBacking, createSetter2, PropertyCache } from './utils';
+import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
-import { createOptionalClassProperty } from '../utils';
 import { backingField, expectName } from '../../common/arkts-utils';
 import { factory } from './factory';
 
-export class regularPropertyTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
+export class RegularPropertyTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
-        this.cacheTranslatedInitializer(newName, originalName); // TODO: need to release cache after some point...
+        this.cacheTranslatedInitializer(newName, originalName);
         return this.translateWithoutInitializer(newName, originalName);
     }
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
-        const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
-        currentStructInfo.initializeBody.push(initializeStruct);
-        if (currentStructInfo.isReusable) {
+        PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
+        if (!!this.structInfo.annotations?.reusable) {
             const toRecord = generateToRecord(newName, originalName);
-            currentStructInfo.toRecordBody.push(toRecord);
+            PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);
         }
-        arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = createOptionalClassProperty(
+        const field: arkts.ClassProperty = factory.createOptionalClassProperty(
             newName,
             this.property,
-            '',
+            undefined,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
@@ -53,7 +50,7 @@ export class regularPropertyTranslator extends PropertyTranslator implements Ini
             arkts.factory.createAssignmentExpression(
                 thisValue,
                 arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                arkts.factory.createIdentifier('value'),
+                arkts.factory.createIdentifier('value')
             )
         );
         const getter: arkts.MethodDefinition = this.translateGetter(
@@ -101,5 +98,15 @@ export class regularPropertyTranslator extends PropertyTranslator implements Ini
             binaryItem
         );
         return arkts.factory.createExpressionStatement(assign);
+    }
+}
+
+export class RegularInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+    translateProperty(): T {
+        return this.property;
+    }
+
+    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+        return true;
     }
 }

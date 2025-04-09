@@ -21,32 +21,34 @@ import {
     createSetter2,
     generateThisBacking,
     generateGetOrSetCall,
-    judgeIfAddWatchFunc,
+    StateManagementTypes,
+    collectStateManagementTypeSource,
+    collectStateManagementTypeImport,
+    hasDecorator,
+    DecoratorNames,
+    PropertyCache,
 } from './utils';
-import { PropertyTranslator } from './base';
+import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName } from '../../common/arkts-utils';
 import { factory } from './factory';
-import { createOptionalClassProperty } from '../utils';
 
 export class LinkTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
 
-        this.cacheTranslatedInitializer(newName, originalName); // TODO: need to release cache after some point...
+        this.cacheTranslatedInitializer(newName, originalName);
         return this.translateWithoutInitializer(newName, originalName);
     }
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
-        const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
-        currentStructInfo.initializeBody.push(initializeStruct);
-        if (currentStructInfo.isReusable) {
+        PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
+        if (!!this.structInfo.annotations?.reusable) {
             const toRecord = generateToRecord(newName, originalName);
-            currentStructInfo.toRecordBody.push(toRecord);
+            PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);
         }
-        arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
     generateInitializeStruct(newName: string, originalName: string) {
@@ -61,13 +63,19 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
                 factory.createNonNullOrOptionalMemberExpression('initializers', newName, false, true)
             ),
         ];
-        judgeIfAddWatchFunc(args, this.property);
+        factory.judgeIfAddWatchFunc(args, this.property);
+        collectStateManagementTypeSource(StateManagementTypes.LINK_DECORATED);
+        collectStateManagementTypeImport(StateManagementTypes.LINK_DECORATED);
         const consequent = arkts.BlockStatement.createBlockStatement([
             arkts.factory.createExpressionStatement(
                 arkts.factory.createAssignmentExpression(
                     generateThisBacking(newName, false, false),
                     arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                    factory.createNewDecoratedInstantiate('LinkDecoratedVariable', this.property.typeAnnotation, args)
+                    factory.createNewDecoratedInstantiate(
+                        StateManagementTypes.LINK_DECORATED,
+                        this.property.typeAnnotation,
+                        args
+                    )
                 )
             ),
         ]);
@@ -76,10 +84,10 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = createOptionalClassProperty(
+        const field: arkts.ClassProperty = factory.createOptionalClassProperty(
             newName,
             this.property,
-            'LinkDecoratedVariable',
+            StateManagementTypes.LINK_DECORATED,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
@@ -115,5 +123,47 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
         statement: arkts.AstNode
     ): arkts.MethodDefinition {
         return createSetter2(originalName, typeAnnotation, statement);
+    }
+}
+
+export class LinkInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+    translateProperty(): T {
+        if (arkts.isMethodDefinition(this.property)) {
+            this.modified = true;
+            return this.updateStateMethodInInterface(this.property) as T;
+        } else if (arkts.isClassProperty(this.property)) {
+            this.modified = true;
+            return this.updateStatePropertyInInterface(this.property) as T;
+        }
+        return this.property;
+    }
+
+    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+        if (arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.LINK)) {
+            return true;
+        } else if (arkts.isClassProperty(node) && hasDecorator(node, DecoratorNames.LINK)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
+     * to `DecoratedV1VariableBase<T> | undefined`.
+     *
+     * @param method expecting getter with `@Link` and a setter with `@Link` in the overloads.
+     */
+    private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.LINK);
+    }
+
+    /**
+     * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
+     * to `DecoratedV1VariableBase<T> | undefined`.
+     *
+     * @param property expecting property with `@Link`.
+     */
+    private updateStatePropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
+        return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.LINK);
     }
 }

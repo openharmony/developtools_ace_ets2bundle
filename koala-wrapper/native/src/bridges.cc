@@ -15,6 +15,28 @@
 
 #include "common.h"
 
+#include <set>
+#include <string>
+#include <mutex>
+
+std::set<std::string> globalStructInfo;
+std::mutex g_structMutex;
+
+void impl_InsertGlobalStructInfo(KNativePointer contextPtr, KStringPtr& instancePtr)
+{
+    std::lock_guard<std::mutex> lock(g_structMutex);
+    globalStructInfo.insert(getStringCopy(instancePtr));
+    return;
+}
+KOALA_INTEROP_V2(InsertGlobalStructInfo, KNativePointer, KStringPtr);
+
+KBoolean impl_HasGlobalStructInfo(KNativePointer contextPtr, KStringPtr& instancePtr)
+{
+    std::lock_guard<std::mutex> lock(g_structMutex);
+    return globalStructInfo.count(getStringCopy(instancePtr));
+}
+KOALA_INTEROP_2(HasGlobalStructInfo, KBoolean, KNativePointer, KStringPtr);
+
 KBoolean impl_ClassDefinitionIsFromStructConst(KNativePointer contextPtr, KNativePointer instancePtr)
 {
     auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
@@ -178,7 +200,7 @@ KOALA_INTEROP_1(ContextProgram, KNativePointer, KNativePointer)
 
 KNativePointer impl_ProgramAst(KNativePointer contextPtr, KNativePointer programPtr)
 {
-    auto context = reinterpret_cast<es2panda_Context*>(programPtr);
+    auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
     auto program = reinterpret_cast<es2panda_Program*>(programPtr);
     return GetImpl()->ProgramAst(context, program);
 }
@@ -252,11 +274,30 @@ static KNativePointer impl_ProgramExternalSources(KNativePointer contextPtr, KNa
 {
     auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
     auto&& instance = reinterpret_cast<es2panda_Program *>(instancePtr);
-    std::size_t source_len = 0;
-    auto external_sources = GetImpl()->ProgramExternalSources(context, instance, &source_len);
-    return new std::vector<void*>(external_sources, external_sources + source_len);
+    std::size_t sourceLen = 0;
+    auto externalSources = GetImpl()->ProgramExternalSources(context, instance, &sourceLen);
+    return new std::vector<void*>(externalSources, externalSources + sourceLen);
 }
 KOALA_INTEROP_2(ProgramExternalSources, KNativePointer, KNativePointer, KNativePointer);
+
+static KNativePointer impl_ProgramDirectExternalSources(KNativePointer contextPtr, KNativePointer instancePtr)
+{
+    auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    auto&& instance = reinterpret_cast<es2panda_Program *>(instancePtr);
+    std::size_t sourceLen = 0;
+    auto externalSources = GetImpl()->ProgramDirectExternalSources(context, instance, &sourceLen);
+    return new std::vector<void*>(externalSources, externalSources + sourceLen);
+}
+KOALA_INTEROP_2(ProgramDirectExternalSources, KNativePointer, KNativePointer, KNativePointer);
+
+static KNativePointer impl_ProgramModuleNameConst(KNativePointer contextPtr, KNativePointer instancePtr)
+{
+    auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    auto program = reinterpret_cast<es2panda_Program*>(instancePtr);
+    auto result = GetImpl()->ProgramModuleNameConst(context, program);
+    return new std::string(result);
+}
+KOALA_INTEROP_2(ProgramModuleNameConst, KNativePointer, KNativePointer, KNativePointer);
 
 static KNativePointer impl_ExternalSourceName(KNativePointer instance)
 {
@@ -269,9 +310,9 @@ KOALA_INTEROP_1(ExternalSourceName, KNativePointer, KNativePointer);
 static KNativePointer impl_ExternalSourcePrograms(KNativePointer instance)
 {
     auto&& _instance_ = reinterpret_cast<es2panda_ExternalSource *>(instance);
-    std::size_t program_len = 0;
-    auto programs = GetImpl()->ExternalSourcePrograms(_instance_, &program_len);
-    return new std::vector<void*>(programs, programs + program_len);
+    std::size_t programLen = 0;
+    auto programs = GetImpl()->ExternalSourcePrograms(_instance_, &programLen);
+    return new std::vector<void*>(programs, programs + programLen);
 }
 KOALA_INTEROP_1(ExternalSourcePrograms, KNativePointer, KNativePointer);
 
@@ -379,6 +420,14 @@ KNativePointer impl_ProgramFileNameWithExtensionConst(KNativePointer contextPtr,
     return new std::string(result);
 }
 KOALA_INTEROP_2(ProgramFileNameWithExtensionConst, KNativePointer, KNativePointer, KNativePointer)
+
+KBoolean impl_ProgramIsASTLoweredConst(KNativePointer contextPtr, KNativePointer instancePtr)
+{
+    auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
+    auto &&instance = reinterpret_cast<es2panda_Program *>(instancePtr);
+    return GetImpl()->ProgramIsASTLoweredConst(context, instance);
+}
+KOALA_INTEROP_2(ProgramIsASTLoweredConst, KBoolean, KNativePointer, KNativePointer);
 
 KNativePointer impl_ETSParserGetGlobalProgramAbsName(KNativePointer contextPtr)
 {

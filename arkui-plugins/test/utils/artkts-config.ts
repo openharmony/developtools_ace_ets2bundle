@@ -22,18 +22,19 @@ import {
     ensurePathExists,
     getFileName,
     getRootPath,
+    MOCK_DEP_ANALYZER_PATH,
     MOCK_ENTRY_DIR_PATH,
     MOCK_ENTRY_FILE_NAME,
-    MOCK_LOCAL_SDK_DIR_PATH,
     MOCK_OUTPUT_CACHE_PATH,
     MOCK_OUTPUT_DIR_PATH,
     MOCK_OUTPUT_FILE_NAME,
     PANDA_SDK_STDLIB_PATH,
-    RUNTIME_API_PATH,
     STDLIB_ESCOMPAT_PATH,
     STDLIB_PATH,
     STDLIB_STD_PATH,
 } from './path-config';
+import { ArkTSConfigContextCache } from './cache';
+import { BuildConfig, CompileFileInfo, DependentModule } from './shared-types';
 
 export interface ArkTSConfigObject {
     compilerOptions: {
@@ -43,15 +44,6 @@ export interface ArkTSConfigObject {
         dependencies: string[] | undefined;
         entry: string;
     };
-}
-
-export interface CompileFileInfo {
-    fileName: string;
-    filePath: string;
-    dependentFiles: string[];
-    abcFilePath: string;
-    arktsConfigFile: string;
-    stdLibPath: string;
 }
 
 export interface ModuleInfo {
@@ -65,41 +57,10 @@ export interface ModuleInfo {
     dependencies?: string[];
 }
 
-export interface DependentModule {
-    packageName: string;
-    moduleName: string;
-    moduleType: string;
-    modulePath: string;
-    sourceRoots: string[];
-    entryFile: string;
-}
-
-export type ModuleType = 'har' | string; // TODO: module type unclear
-
-export interface DependentModule {
-    packageName: string;
-    moduleName: string;
-    moduleType: ModuleType;
-    modulePath: string;
-    sourceRoots: string[];
-    entryFile: string;
-}
-
-export interface BuildConfig {
-    packageName: string;
-    compileFiles: string[];
-    loaderOutPath: string;
-    cachePath: string;
-    pandaSdkPath: string;
-    buildSdkPath: string;
-    sourceRoots: string[];
-    moduleRootPath: string;
-    dependentModuleList: DependentModule[];
-}
-
 export interface ArktsConfigBuilder {
     buildConfig: BuildConfig;
     entryFiles: Set<string>;
+    compileFiles: Map<string, CompileFileInfo>;
     outputDir: string;
     cacheDir: string;
     pandaSdkPath: string;
@@ -112,6 +73,8 @@ export interface ArktsConfigBuilder {
     mergedAbcFile: string;
     // logger: Logger; // TODO
     isDebug: boolean;
+
+    clear(): void;
 }
 
 function writeArkTSConfigFile(
@@ -158,21 +121,6 @@ function getDependentModules(moduleInfo: ModuleInfo, moduleInfoMap: Map<string, 
     return depModules;
 }
 
-function traverse(currentDir: string, pathSection: Record<string, string[]>) {
-    const items = fs.readdirSync(currentDir);
-    for (const item of items) {
-        const itemPath = path.join(currentDir, item);
-        const stat = fs.statSync(itemPath);
-
-        if (stat.isFile()) {
-            const basename = path.basename(item, '.d.ets');
-            pathSection[basename] = [changeFileExtension(itemPath, '', '.d.ets')];
-        } else if (stat.isDirectory()) {
-            traverse(itemPath, pathSection);
-        }
-    }
-}
-
 function traverseSDK(currentDir: string, pathSection: Record<string, string[]>, prefix?: string) {
     const items = fs.readdirSync(currentDir);
 
@@ -204,6 +152,7 @@ function mockBuildConfig(): BuildConfig {
         cachePath: path.resolve(getRootPath(), MOCK_OUTPUT_CACHE_PATH),
         pandaSdkPath: global.PANDA_SDK_PATH,
         buildSdkPath: global.API_PATH,
+        depAnalyzerPath: path.resolve(global.PANDA_SDK_PATH, MOCK_DEP_ANALYZER_PATH),
         sourceRoots: [getRootPath()],
         moduleRootPath: path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH),
         dependentModuleList: [],
@@ -211,8 +160,10 @@ function mockBuildConfig(): BuildConfig {
 }
 
 class MockArktsConfigBuilder implements ArktsConfigBuilder {
+    hashId: string;
     buildConfig: BuildConfig;
     entryFiles: Set<string>;
+    compileFiles: Map<string, CompileFileInfo>;
     outputDir: string;
     cacheDir: string;
     pandaSdkPath: string;
@@ -225,7 +176,9 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
     mergedAbcFile: string;
     isDebug: boolean;
 
-    constructor(buildConfig?: BuildConfig) {
+    constructor(hashId: string, buildConfig?: BuildConfig) {
+        this.hashId = hashId;
+
         const _buildConfig: BuildConfig = buildConfig ?? mockBuildConfig();
         this.buildConfig = _buildConfig;
         this.entryFiles = new Set<string>(_buildConfig.compileFiles as string[]);
@@ -239,11 +192,50 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
         this.dependentModuleList = _buildConfig.dependentModuleList as DependentModule[];
         this.isDebug = true;
 
+        this.compileFiles = new Map<string, CompileFileInfo>();
         this.moduleInfos = new Map<string, ModuleInfo>();
         this.mergedAbcFile = path.resolve(this.outputDir, MOCK_OUTPUT_FILE_NAME);
 
         this.generateModuleInfos();
         this.generateArkTSConfigForModules();
+        this.cacheArkTSConfig();
+    }
+
+    private cacheArkTSConfig(): void {
+        const mainModuleInfo: ModuleInfo = this.moduleInfos.get(this.moduleRootPath)!;
+        const arktsConfigFile: string = mainModuleInfo.arktsConfigFile;
+        const compileFiles: Map<string, CompileFileInfo> = this.compileFiles;
+        ArkTSConfigContextCache.getInstance().set(this.hashId, { arktsConfigFile, compileFiles });
+    }
+
+    private generateModuleInfosInEntryFile(file: string): void {
+        const _file = path.resolve(file);
+        for (const [modulePath, moduleInfo] of this.moduleInfos) {
+            if (!_file.startsWith(modulePath)) {
+                throw new Error('Entry File does not belong to any module in moduleInfos.');
+            }
+            const filePathFromModuleRoot: string = path.relative(modulePath, _file);
+            const filePathInCache: string = path.join(
+                this.cacheDir,
+                this.hashId,
+                moduleInfo.packageName,
+                filePathFromModuleRoot
+            );
+            const abcFilePath: string = path.resolve(changeFileExtension(filePathInCache, ABC_SUFFIX));
+
+            const fileInfo: CompileFileInfo = {
+                fileName: getFileName(_file),
+                filePath: _file,
+                dependentFiles: [],
+                abcFilePath: abcFilePath,
+                arktsConfigFile: moduleInfo.arktsConfigFile,
+                stdLibPath: path.resolve(this.pandaSdkPath, PANDA_SDK_STDLIB_PATH, STDLIB_PATH),
+            };
+            moduleInfo.compileFileInfos.push(fileInfo);
+            if (!this.compileFiles.has(_file)) {
+                this.compileFiles.set(_file, fileInfo);
+            }
+        }
     }
 
     private generateModuleInfos(): void {
@@ -256,7 +248,7 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
             moduleRootPath: this.moduleRootPath,
             sourceRoots: this.sourceRoots,
             entryFile: '',
-            arktsConfigFile: path.resolve(this.cacheDir, this.packageName, ARKTS_CONFIG_FILE_PATH),
+            arktsConfigFile: path.resolve(this.cacheDir, this.hashId, this.packageName, ARKTS_CONFIG_FILE_PATH),
             compileFileInfos: [],
         };
         this.moduleInfos.set(this.moduleRootPath, mainModuleInfo);
@@ -270,36 +262,13 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
                 moduleRootPath: module.modulePath,
                 sourceRoots: module.sourceRoots,
                 entryFile: module.entryFile,
-                arktsConfigFile: path.resolve(this.cacheDir, module.packageName, ARKTS_CONFIG_FILE_PATH),
+                arktsConfigFile: path.resolve(this.cacheDir, this.hashId, module.packageName, ARKTS_CONFIG_FILE_PATH),
                 compileFileInfos: [],
             };
             this.moduleInfos.set(module.modulePath, moduleInfo);
         });
         this.entryFiles.forEach((file: string) => {
-            const _file = path.resolve(file);
-            for (const [modulePath, moduleInfo] of this.moduleInfos) {
-                if (_file.startsWith(modulePath)) {
-                    const filePathFromModuleRoot: string = path.relative(modulePath, _file);
-                    const filePathInCache: string = path.join(
-                        this.cacheDir,
-                        moduleInfo.packageName,
-                        filePathFromModuleRoot
-                    );
-                    const abcFilePath: string = path.resolve(changeFileExtension(filePathInCache, ABC_SUFFIX));
-
-                    const fileInfo: CompileFileInfo = {
-                        fileName: getFileName(_file),
-                        filePath: _file,
-                        dependentFiles: [],
-                        abcFilePath: abcFilePath,
-                        arktsConfigFile: moduleInfo.arktsConfigFile,
-                        stdLibPath: path.resolve(this.pandaSdkPath, PANDA_SDK_STDLIB_PATH, STDLIB_PATH),
-                    };
-                    moduleInfo.compileFileInfos.push(fileInfo);
-                    return;
-                }
-            }
-            throw new Error('Entry File does not belong to any module in moduleInfos.');
+            this.generateModuleInfosInEntryFile(file);
         });
     }
 
@@ -328,6 +297,10 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
             }
             dependenciesSection.push(depModuleInfo.arktsConfigFile);
         });
+    }
+
+    clear(): void {
+        ArkTSConfigContextCache.getInstance().delete(this.hashId);
     }
 }
 

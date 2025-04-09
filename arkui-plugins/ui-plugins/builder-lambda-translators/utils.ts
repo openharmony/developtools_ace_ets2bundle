@@ -16,6 +16,9 @@
 import * as arkts from '@koalaui/libarkts';
 import { isAnnotation } from '../../common/arkts-utils';
 import { BuilderLambdaNames, Dollars } from '../utils';
+import { ImportCollector } from '../import-collector';
+import { DeclarationCollector } from '../../common/declaration-collector';
+import { ARKUI_COMPONENT_IMPORT_NAME } from '../../common/predefines';
 
 export type BuilderLambdaDeclInfo = {
     isFunctionCall: boolean; // isFunctionCall means it is from $_instantiate.
@@ -54,12 +57,7 @@ export function builderLambdaArgumentName(annotation: arkts.AnnotationUsage): st
     return property.value.str;
 }
 
-/**
- * Determine whether it is a custom component.
- *
- * @param node class declaration node
- */
-export function isBuilderLambda(node: arkts.AstNode, isExternal?: boolean): boolean {
+export function isBuilderLambda(node: arkts.AstNode): boolean {
     const builderLambdaCall: arkts.AstNode | undefined = getDeclForBuilderLambda(node);
     if (!builderLambdaCall) {
         return arkts.isCallExpression(node) && node.arguments.length > 0 && isBuilderLambda(node.arguments[0]);
@@ -131,15 +129,12 @@ export function replaceBuilderLambdaDeclMethodName(name: string | undefined): st
     return undefined;
 }
 
-export function isBuilderLambdaMethodDecl(node: arkts.AstNode, isExternal?: boolean): boolean {
+export function isBuilderLambdaMethodDecl(node: arkts.AstNode): boolean {
     const builderLambdaMethodDecl: arkts.AstNode | undefined = getDeclForBuilderLambdaMethodDecl(node);
     return !!builderLambdaMethodDecl;
 }
 
-export function getDeclForBuilderLambdaMethodDecl(
-    node: arkts.AstNode,
-    isExternal?: boolean
-): arkts.AstNode | undefined {
+export function getDeclForBuilderLambdaMethodDecl(node: arkts.AstNode): arkts.AstNode | undefined {
     if (!node || !arkts.isMethodDefinition(node)) {
         return undefined;
     }
@@ -154,7 +149,7 @@ export function getDeclForBuilderLambdaMethodDecl(
     return undefined;
 }
 
-export function getDeclForBuilderLambda(node: arkts.AstNode, isExternal?: boolean): arkts.AstNode | undefined {
+export function getDeclForBuilderLambda(node: arkts.AstNode): arkts.AstNode | undefined {
     if (!node || !arkts.isCallExpression(node)) {
         return undefined;
     }
@@ -278,6 +273,7 @@ export function findBuilderLambdaDecl(node: arkts.CallExpression | arkts.Identif
     if (!decl) {
         return undefined;
     }
+    DeclarationCollector.getInstance().collect(decl);
     return decl;
 }
 
@@ -348,17 +344,17 @@ export function builderLambdaMethodDeclType(method: arkts.MethodDefinition): ark
     return method.scriptFunction.returnTypeAnnotation;
 }
 
-export function builderLambdaTypeName(leaf: arkts.CallExpression): string | undefined {
+export function builderLambdaType(leaf: arkts.CallExpression): arkts.Identifier | undefined {
     if (!callIsGoodForBuilderLambda(leaf)) {
         return undefined;
     }
     const node = leaf.expression;
-    let name: string | undefined;
+    let name: arkts.Identifier | undefined;
     if (arkts.isIdentifier(node)) {
-        name = node.name;
+        name = node;
     }
     if (arkts.isMemberExpression(node) && arkts.isIdentifier(node.object)) {
-        name = node.object.name;
+        name = node.object;
     }
     return name;
 }
@@ -411,7 +407,7 @@ export function hasBindableProperty(type: arkts.AstNode, bindableDecl: BindableD
  *
  * @param value expression node
  */
-export function isDoubleDollarCall(value: arkts.Expression): boolean {
+export function isDoubleDollarCall(value: arkts.Expression): value is arkts.CallExpression {
     if (
         arkts.isCallExpression(value) &&
         value.expression &&
@@ -474,4 +470,25 @@ export function getElementTypeFromArray(arrayType: arkts.TypeNode): arkts.TypeNo
         return arrayType.part.typeParams.params[0].clone();
     }
     return undefined;
+}
+
+export function collectComponentAttributeImport(type: arkts.TypeNode | undefined): void {
+    if (
+        !type ||
+        !arkts.isETSTypeReference(type) ||
+        !type.part ||
+        !type.part.name ||
+        !arkts.isIdentifier(type.part.name)
+    ) {
+        return;
+    }
+
+    const regex: RegExp = /(?<source>\w+Attribute)(?:<.*>)?$/;
+    const name: string = type.part.name.name;
+    const match: RegExpExecArray | null = regex.exec(name);
+    const attributeName: string | undefined = match?.groups?.source;
+    if (!!attributeName) {
+        ImportCollector.getInstance().collectSource(attributeName, ARKUI_COMPONENT_IMPORT_NAME);
+        ImportCollector.getInstance().collectImport(attributeName);
+    }
 }

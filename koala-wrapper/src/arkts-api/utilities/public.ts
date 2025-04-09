@@ -16,7 +16,7 @@
 import { global } from '../static/global';
 import { isNumber, throwError, getEnumName } from '../../utils';
 import { KNativePointer, KInt, nullptr, withStringResult } from '@koalaui/interop';
-import { passNode, passString, unpackNodeArray, unpackNonNullableNode } from './private';
+import { passNode, passString, passStringArray, unpackNodeArray, unpackNonNullableNode } from './private';
 import { isFunctionDeclaration, isMemberExpression, isMethodDefinition, isNumberLiteral } from '../factory/nodeTests';
 import {
     Es2pandaContextState,
@@ -43,34 +43,32 @@ import { clearNodeCache } from '../class-by-peer';
 import { SourcePosition } from '../peers/SourcePosition';
 import { MemberExpression } from '../to-be-generated/MemberExpression';
 
-export function proceedToState(state: Es2pandaContextState, forceDtsEmit = false): void {
+export function proceedToState(state: Es2pandaContextState, context: KNativePointer, forceDtsEmit = false): void {
     console.log('[TS WRAPPER] PROCEED TO STATE: ', getEnumName(Es2pandaContextState, state));
-    if (global.es2panda._ContextState(global.context) === Es2pandaContextState.ES2PANDA_STATE_ERROR) {
-        processErrorState(state, forceDtsEmit);
+    if (global.es2panda._ContextState(context) === Es2pandaContextState.ES2PANDA_STATE_ERROR) {
+        clearNodeCache();
+        processErrorState(state, context, forceDtsEmit);
     }
-    if (state <= global.es2panda._ContextState(global.context)) {
+    if (state <= global.es2panda._ContextState(context)) {
         console.log('[TS WRAPPER] PROCEED TO STATE: SKIPPING');
         return;
     }
     clearNodeCache();
-    global.es2panda._ProceedToState(global.context, state);
-    processErrorState(state, forceDtsEmit);
+    global.es2panda._ProceedToState(context, state);
+    processErrorState(state, context, forceDtsEmit);
 }
 
-function processErrorState(state: Es2pandaContextState, forceDtsEmit = false): void {
+function processErrorState(state: Es2pandaContextState, context: KNativePointer, forceDtsEmit = false): void {
     try {
-        if (
-            global.es2panda._ContextState(global.context) === Es2pandaContextState.ES2PANDA_STATE_ERROR &&
-            !forceDtsEmit
-        ) {
-            const errorMessage = withStringResult(global.es2panda._ContextErrorMessage(global.context));
+        if (global.es2panda._ContextState(context) === Es2pandaContextState.ES2PANDA_STATE_ERROR && !forceDtsEmit) {
+            const errorMessage = withStringResult(global.es2panda._ContextErrorMessage(context));
             if (errorMessage === undefined) {
                 throwError(`Could not get ContextErrorMessage`);
             }
             throwError([`Failed to proceed to ${Es2pandaContextState[state]}`, errorMessage].join(`\n`));
         }
     } catch (e) {
-        global.es2panda._DestroyContext(global.context);
+        global.es2panda._DestroyContext(context);
         throw e;
     }
 }
@@ -98,7 +96,7 @@ export function getDecl(node: AstNode): AstNode | undefined {
     if (!!decl) {
         return decl;
     }
-    if (isProperty(node.parent)) {
+    if (!!node.parent && isProperty(node.parent)) {
         return getDeclFromProperty(node.parent);
     }
     return undefined;
@@ -108,7 +106,7 @@ function getDeclFromProperty(node: Property): AstNode | undefined {
     if (!node.key) {
         return undefined;
     }
-    if (!isObjectExpression(node.parent)) {
+    if (!!node.parent && !isObjectExpression(node.parent)) {
         return getPeerDecl(passNode(node.key));
     }
     return getDeclFromObjectExpressionProperty(node);
@@ -210,6 +208,10 @@ export function importDeclarationInsert(node: ETSImportDeclaration, program: Pro
     global.es2panda._InsertETSImportDeclarationAndParse(global.context, program.peer, node.peer);
 }
 
+export function getProgramFromAstNode(node: AstNode): Program {
+    return new Program(global.es2panda._AstNodeProgram(global.context, node.peer));
+}
+
 export function hasModifierFlag(node: AstNode, flag: Es2pandaModifierFlags): boolean {
     if (!node) return false;
 
@@ -246,7 +248,7 @@ export function destroyConfig(config: KNativePointer): void {
     global.resetConfig();
 }
 
-export function setAllParents(ast: AstNode) {
+export function setAllParents(ast: AstNode): void {
     global.es2panda._AstNodeUpdateAll(global.context, ast.peer);
 }
 
@@ -269,4 +271,42 @@ export function getStartPosition(node: AstNode): SourcePosition {
 
 export function getEndPosition(node: AstNode): SourcePosition {
     return new SourcePosition(global.es2panda._AstNodeEndConst(global.context, node.peer));
+}
+
+export function MemInitialize(): void {
+    global.es2panda._MemInitialize();
+}
+
+export function MemFinalize(): void {
+    global.es2panda._MemFinalize();
+}
+
+export function CreateGlobalContext(
+    config: KNativePointer,
+    externalFileList: string[],
+    fileNum: KInt,
+    lspUsage: boolean
+): KNativePointer {
+    return global.es2panda._CreateGlobalContext(config, passStringArray(externalFileList), fileNum, lspUsage);
+}
+
+export function DestroyGlobalContext(context: KNativePointer): void {
+    global.es2panda._DestroyGlobalContext(context);
+}
+
+export function CreateCacheContextFromFile(
+    configPtr: KNativePointer,
+    filename: string,
+    globalContext: KNativePointer,
+    isExternal: Boolean
+): KNativePointer {
+    return global.es2panda._CreateCacheContextFromFile(configPtr, passString(filename), globalContext, isExternal);
+}
+
+export function insertGlobalStructInfo(structName: string): void {
+    global.es2panda._InsertGlobalStructInfo(global.context, passString(structName));
+}
+
+export function hasGlobalStructInfo(structName: string): boolean {
+    return global.es2panda._HasGlobalStructInfo(global.context, passString(structName));
 }

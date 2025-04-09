@@ -13,10 +13,11 @@
  * limitations under the License.
  */
 
-export * from "@ohos.arkui.component.customComponent";
-export * from "@ohos.arkui.component.common";
-export * from "@ohos.arkui.component.column";
-export * from "@ohos.arkui.component.text";
-export * from "@ohos.arkui.component.styledString";
-export * from "@ohos.arkui.component.enums";
-export * from "@ohos.arkui.component.units";
+import { Component } from "@ohos.arkui.component"
+
+@Component
+export struct SimpleStruct {
+    message: string = "str";
+
+    build() {}
+}

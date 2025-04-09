@@ -18,36 +18,40 @@ import * as arkts from '@koalaui/libarkts';
 import {
     createGetter,
     createSetter,
-    generateThisBackingValue,
     generateThisBacking,
-    getValueInAnnotation,
     DecoratorNames,
+    hasDecorator,
+    removeDecorator,
+    PropertyCache,
 } from './utils';
-import { PropertyTranslator } from './base';
+import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName } from '../../common/arkts-utils';
-import { createOptionalClassProperty } from '../utils';
+import { addMemoAnnotation, findCanAddMemoFromParamExpression, findCanAddMemoFromTypeAnnotation } from '../utils';
 import { factory } from './factory';
 
 export class BuilderParamTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
-        this.cacheTranslatedInitializer(newName, originalName); // TODO: need to release cache after some point...
+        this.cacheTranslatedInitializer(newName, originalName);
         return this.translateWithoutInitializer(newName, originalName);
     }
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
-        const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
         const mutableThis: arkts.Expression = generateThisBacking(newName);
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(mutableThis, originalName);
-        currentStructInfo.initializeBody.push(initializeStruct);
-        arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
+        PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = createOptionalClassProperty(newName, this.property, '',
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE, true);
+        const field: arkts.ClassProperty = factory.createOptionalClassProperty(
+            newName,
+            this.property,
+            undefined,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+            true
+        );
         const thisGetValue: arkts.Expression = generateThisBacking(newName, false, true);
         const thisSetValue: arkts.Expression = generateThisBacking(newName, false, false);
         const getter: arkts.MethodDefinition = this.translateGetter(
@@ -98,5 +102,70 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
                 arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
             )
         );
+    }
+}
+
+export class BuilderParamInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+    translateProperty(): T {
+        if (arkts.isMethodDefinition(this.property)) {
+            this.modified = true;
+            return this.updateBuilderParamMethodInInterface(this.property) as T;
+        } else if (arkts.isClassProperty(this.property)) {
+            this.modified = true;
+            return this.updateBuilderParamPropertyInInterface(this.property) as T;
+        }
+        return this.property;
+    }
+
+    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+        if (arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.BUILDER_PARAM)) {
+            return true;
+        } else if (arkts.isClassProperty(node) && hasDecorator(node, DecoratorNames.BUILDER_PARAM)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Add `@memo` to getter's return type and setter's param type (expecting a function type or a function type within a union type).
+     *
+     * @param method expecting getter with `@BuilderParam` and a setter with `@BuilderParam` in the overloads.
+     */
+    private updateBuilderParamMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
+        if (method.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
+            const type: arkts.TypeNode | undefined = method.scriptFunction.returnTypeAnnotation;
+            if (findCanAddMemoFromTypeAnnotation(type)) {
+                addMemoAnnotation(type);
+            }
+            const newOverLoads = method.overloads.map((overload) => {
+                if (arkts.isMethodDefinition(overload)) {
+                    return this.updateBuilderParamMethodInInterface(overload);
+                }
+                return overload;
+            });
+            method.setOverloads(newOverLoads);
+            removeDecorator(method, DecoratorNames.BUILDER_PARAM);
+        } else if (method.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {
+            const param: arkts.Expression | undefined = method.scriptFunction.params.at(0);
+            if (findCanAddMemoFromParamExpression(param)) {
+                addMemoAnnotation(param);
+            }
+            removeDecorator(method, DecoratorNames.BUILDER_PARAM);
+        }
+        return method;
+    }
+
+    /**
+     * Add `@memo` to the type of the property (expecting a function type or a function type within a union type).
+     *
+     * @param property expecting property with `@BuilderParam`.
+     */
+    private updateBuilderParamPropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
+        const type: arkts.TypeNode | undefined = property.typeAnnotation;
+        if (findCanAddMemoFromTypeAnnotation(type)) {
+            addMemoAnnotation(type);
+        }
+        removeDecorator(property, DecoratorNames.BUILDER_PARAM);
+        return property;
     }
 }

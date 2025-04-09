@@ -24,41 +24,82 @@ export const EXTERNAL_SOURCE_PREFIX_NAMES: (string | RegExp)[] = [
     /@arkts\..*/,
     /@ohos\.(?!arkui).*/,
     /@system\..*/,
-    /arkui\.(?![Uu]serView$)[A-Z]/, // temporary solution
+    /arkui\.(?!Ark|[Uu]serView$)[A-Z]/, // temporary solution
     /ability\..*/,
 ];
+
+export const ARKUI_IMPORT_PREFIX_NAMES: (string | RegExp)[] = [/@ohos\..*/, /arkui\..*/];
 
 export const ARKUI_COMPONENT_IMPORT_NAME: string = '@ohos.arkui.component';
 export const ARKUI_STATEMANAGEMENT_IMPORT_NAME: string = '@ohos.arkui.stateManagement';
 export const KIT_ARKUI_NAME: string = '@kit.ArkUI';
 
-export const EXTERNAL_SOURCE_ALLOWED_IMPORT_INSERT_NAMES: string[] = [
-    ARKUI_COMPONENT_IMPORT_NAME,
-    ARKUI_STATEMANAGEMENT_IMPORT_NAME,
-];
+export const KOALAUI_COMMON_IMPORT_NAME: string = '@koalaui.runtime.common';
 
 export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<string>>([
     ['arkui.stateManagement.runtime', new Set(['memo', '__memo_context_type', '__memo_id_type'])]
 ]);
 
-export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, string[]>([
-    ['$r', ['_r']],
-    ['$rawfile', ['_rawfile']],
-    ['State', ['StateDecoratedVariable']],
-    ['Link', ['LinkDecoratedVariable', 'DecoratedV1VariableBase']],
-    ['Prop', ['PropDecoratedVariable']],
-    ['Provide', ['ProvideDecoratedVariable']],
-    ['Consume', ['ConsumeDecoratedVariable']],
-    ['StorageProp', ['StoragePropDecoratedVariable']],
-    ['StorageLink', ['StorageLinkDecoratedVariable']],
-    ['LocalStorageLink', ['StorageLinkState', 'MutableState', 'observableProxy']],
-    ['LocalStorageProp', ['StorageLinkState', 'SyncedProperty', 'observableProxy', 'propState']],
-    ['ObjectLink', ['ObjectLinkDecoratedVariable']],
-    ['Observed', ['MutableStateMeta', 'BackingValue', 'setObservationDepth', 'IObservedObject', 'int32', 'WatchIdType', 'SubscribedWatches']],
-    ['Track', ['MutableStateMeta', 'BackingValue', 'setObservationDepth', 'IObservedObject', 'int32', 'WatchIdType', 'SubscribedWatches']],
-    ['$$', ['Bindable']],
+export const IMPORT_SOURCE_MAP_V2: Map<string, string> = new Map<string, string>([
+    ['$r', ARKUI_COMPONENT_IMPORT_NAME],
+    ['$rawfile', ARKUI_COMPONENT_IMPORT_NAME],
+    ['_r', ARKUI_COMPONENT_IMPORT_NAME],
+    ['_rawfile', ARKUI_COMPONENT_IMPORT_NAME],
+    ['Bindable', ARKUI_COMPONENT_IMPORT_NAME],
+    ['State', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['Prop', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['Provide', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['Consume', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['StorageLink', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['StorageProp', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['LocalStorageLink', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['LocalStorageProp', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['Watch', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['ObjectLink', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['StateDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['MutableState', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['contextLocalStateOf', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['contextLocal', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['observableProxy', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['SyncedProperty', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['objectLinkState', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['propState', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['AppStorageLinkState', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['StorageLinkState', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['DecoratedV1VariableBase', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['LinkDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['PropDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['StorageLinkDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['StoragePropDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['ProvideDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['ConsumeDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['ObjectLinkDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['MutableStateMeta', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['BackingValue', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['setObservationDepth', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['IObservedObject', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['WatchIdType', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['SubscribedWatches', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
+    ['int32', KOALAUI_COMMON_IMPORT_NAME],
 ]);
 
+export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, string[]>([
+    ['$r', []],
+    ['$rawfile', []],
+    ['State', []],
+    ['Link', []],
+    ['Prop', []],
+    ['Provide', []],
+    ['Consume', []],
+    ['StorageProp', []],
+    ['StorageLink', []],
+    ['LocalStorageLink', []],
+    ['LocalStorageProp', []],
+    ['ObjectLink', []],
+    ['Observed', []],
+    ['Track', []],
+    ['$$', []],
+]);
 
 export enum InteroperAbilityNames {
     ARKTS_1_1 = '1.1',

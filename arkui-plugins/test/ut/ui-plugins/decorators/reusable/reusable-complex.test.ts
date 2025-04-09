@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,26 +38,14 @@ const reusableTransform: Plugins = {
 const pluginTester = new PluginTester('test complex reusable', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
-
-import { memo as memo } from "arkui.stateManagement.runtime";
-
-import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
-
-import { UIButtonAttribute as UIButtonAttribute } from "@ohos.arkui.component";
-
 import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
-
+import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
+import { memo as memo } from "arkui.stateManagement.runtime";
+import { UIButtonAttribute as UIButtonAttribute } from "@ohos.arkui.component";
 import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
-
 import { EntryPoint as EntryPoint } from "arkui.UserView";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
 import { Component as Component, Entry as Entry, Reusable as Reusable, Column as Column, Text as Text, Button as Button, ClickEvent as ClickEvent, FontWeight as FontWeight } from "@ohos.arkui.component";
-
 import { State as State } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -94,24 +83,24 @@ class Message {
     Column(@memo() ((instance: UIColumnAttribute): void => {
       instance.height("100%").width("100%");
       return;
-    }), undefined, (() => {
+    }), (() => {
       Button(@memo() ((instance: UIButtonAttribute): void => {
         instance.fontSize(30).fontWeight(FontWeight.Bold).onClick(((e: ClickEvent) => {
           this.display = !(this.display);
         }));
         return;
-      }), "Hello", undefined, undefined);
+      }), "Hello");
       if (this.display) {
         Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), ({
         message: new Message("Child"),
-      } as __Options_Child), undefined, "Child");
+      } as __Options_Child), "Child", undefined);
       }
     }));
   }
   
-  public constructor() {}
+  private constructor() {}
   
 }
 
@@ -148,19 +137,19 @@ class Message {
     Column(@memo() ((instance: UIColumnAttribute): void => {
       instance.borderWidth(1).height(100);
       return;
-    }), undefined, (() => {
+    }), (() => {
       Text(@memo() ((instance: UITextAttribute): void => {
         instance.fontSize(30);
         return;
-      }), this.message.value, undefined, undefined);
+      }), this.message.value);
     }));
   }
   
-  public constructor() {}
+  private constructor() {}
   
 }
 
-interface __Options_Index {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) export interface __Options_Index {
   set display(display: boolean | undefined)
   
   get display(): boolean | undefined
@@ -170,7 +159,7 @@ interface __Options_Index {
   
 }
 
-interface __Options_Child {
+@Reusable() @Component({freezeWhenInactive:false}) export interface __Options_Child {
   set message(message: Message | undefined)
   
   get message(): Message | undefined
@@ -184,7 +173,7 @@ class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     Index._instantiateImpl(undefined, (() => {
       return new Index();
-    }), undefined, undefined, undefined);
+    }));
   }
   
   public constructor() {}
@@ -199,9 +188,9 @@ function testReusableTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test complex reusable',
-    [reusableTransform, uiNoRecheck],
+    [reusableTransform, uiNoRecheck, recheck],
     {
-        checked: [testReusableTransformer],
+        'checked:ui-no-recheck': [testReusableTransformer],
     },
     {
         stopAfter: 'checked',

@@ -179,7 +179,7 @@ export class ScriptFunction extends AstNode {
     }
     /** @deprecated */
     addModifier(flags: Es2pandaModifierFlags): this {
-        global.generatedEs2panda._ScriptFunctionAddModifier(global.context, this.peer, flags)
+        global.generatedEs2panda._AstNodeAddModifier(global.context, this.peer, flags)
         return this
     }
     get annotations(): readonly AnnotationUsage[] {

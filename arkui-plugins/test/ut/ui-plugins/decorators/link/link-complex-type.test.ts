@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { structNoRecheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,14 +38,12 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
-import { memo as memo } from "arkui.stateManagement.runtime";
-import { DecoratedV1VariableBase as DecoratedV1VariableBase } from "@ohos.arkui.stateManagement";
-import { LinkDecoratedVariable as LinkDecoratedVariable } from "@ohos.arkui.stateManagement";
-import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-import { Component as Component } from "@ohos.arkui.component";
-import { Link as Link } from "@ohos.arkui.stateManagement";
+import { DecoratedV1VariableBase as DecoratedV1VariableBase } from \"@ohos.arkui.stateManagement\";
+import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { LinkDecoratedVariable as LinkDecoratedVariable } from \"@ohos.arkui.stateManagement\";
+import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
+import { Component as Component } from \"@ohos.arkui.component\";
+import { Link as Link } from \"@ohos.arkui.stateManagement\";
 
 function main() {}
 
@@ -54,7 +53,7 @@ class Per {
     this.num = num;
   }
 }
-
+  
 final class LinkType extends BaseEnum<int> {
   private readonly #ordinal: int;
   private static <cctor>() {}
@@ -62,32 +61,35 @@ final class LinkType extends BaseEnum<int> {
     super(value);
     this.#ordinal = ordinal;
   }
+
   public static readonly TYPE1: LinkType = new LinkType(0, 0);
   public static readonly TYPE2: LinkType = new LinkType(1, 1);
   public static readonly TYPE3: LinkType = new LinkType(2, 3);
-  private static readonly #NamesArray: String[] = ["TYPE1", "TYPE2", "TYPE3"];
+  private static readonly #NamesArray: String[] = [\"TYPE1\", \"TYPE2\", \"TYPE3\"];
   private static readonly #ValuesArray: int[] = [0, 1, 3];
-  private static readonly #StringValuesArray: String[] = ["0", "1", "3"];
+  private static readonly #StringValuesArray: String[] = [\"0\", \"1\", \"3\"];
   private static readonly #ItemsArray: LinkType[] = [LinkType.TYPE1, LinkType.TYPE2, LinkType.TYPE3];
+
   public getName(): String {
     return LinkType.#NamesArray[this.#ordinal];
   }
+
   public static getValueOf(name: String): LinkType {
     for (let i = 0;((i) < (LinkType.#NamesArray.length));(++i)) {
       if (((name) == (LinkType.#NamesArray[i]))) {
         return LinkType.#ItemsArray[i];
       }
     }
-    throw new Error((("No enum constant LinkType.") + (name)));
+    throw new Error(((\"No enum constant LinkType.\") + (name)));
   }
-  
+
   public static fromValue(value: int): LinkType {
     for (let i = 0;((i) < (LinkType.#ValuesArray.length));(++i)) {
       if (((value) == (LinkType.#ValuesArray[i]))) {
         return LinkType.#ItemsArray[i];
       }
     }
-    throw new Error((("No enum LinkType with value ") + (value)));
+    throw new Error(((\"No enum LinkType with value \") + (value)));
   }
   public valueOf(): int {
     return LinkType.#ValuesArray[this.#ordinal];
@@ -108,53 +110,53 @@ final class LinkType extends BaseEnum<int> {
 
 @Component({freezeWhenInactive:false}) final class Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {
-    if (({let gensym___11910109 = initializers;
-    (((gensym___11910109) == (null)) ? undefined : gensym___11910109.__backing_linkVar1)})) {
-      this.__backing_linkVar1 = new LinkDecoratedVariable<Per>("linkVar1", initializers!.__backing_linkVar1!);
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__backing_linkVar1)})) {
+      this.__backing_linkVar1 = new LinkDecoratedVariable<Per>(\"linkVar1\", initializers!.__backing_linkVar1!);
     };
-    if (({let gensym___181684045 = initializers;
-    (((gensym___181684045) == (null)) ? undefined : gensym___181684045.__backing_linkVar2)})) {
-      this.__backing_linkVar2 = new LinkDecoratedVariable<Array<number>>("linkVar2", initializers!.__backing_linkVar2!);
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__backing_linkVar2)})) {
+      this.__backing_linkVar2 = new LinkDecoratedVariable<Array<number>>(\"linkVar2\", initializers!.__backing_linkVar2!);
     };
-    if (({let gensym___24446313 = initializers;
-    (((gensym___24446313) == (null)) ? undefined : gensym___24446313.__backing_linkVar3)})) {
-      this.__backing_linkVar3 = new LinkDecoratedVariable<LinkType>("linkVar3", initializers!.__backing_linkVar3!);
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__backing_linkVar3)})) {
+      this.__backing_linkVar3 = new LinkDecoratedVariable<LinkType>(\"linkVar3\", initializers!.__backing_linkVar3!);
     };
-    if (({let gensym___167989826 = initializers;
-    (((gensym___167989826) == (null)) ? undefined : gensym___167989826.__backing_linkVar4)})) {
-      this.__backing_linkVar4 = new LinkDecoratedVariable<Set<string>>("linkVar4", initializers!.__backing_linkVar4!);
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__backing_linkVar4)})) {
+      this.__backing_linkVar4 = new LinkDecoratedVariable<Set<string>>(\"linkVar4\", initializers!.__backing_linkVar4!);
     };
-    if (({let gensym___157566097 = initializers;
-    (((gensym___157566097) == (null)) ? undefined : gensym___157566097.__backing_linkVar5)})) {
-      this.__backing_linkVar5 = new LinkDecoratedVariable<Array<boolean>>("linkVar5", initializers!.__backing_linkVar5!);
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__backing_linkVar5)})) {
+      this.__backing_linkVar5 = new LinkDecoratedVariable<Array<boolean>>(\"linkVar5\", initializers!.__backing_linkVar5!);
     };
-    if (({let gensym___60105491 = initializers;
-    (((gensym___60105491) == (null)) ? undefined : gensym___60105491.__backing_linkVar6)})) {
-      this.__backing_linkVar6 = new LinkDecoratedVariable<Array<Per>>("linkVar6", initializers!.__backing_linkVar6!);
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__backing_linkVar6)})) {
+      this.__backing_linkVar6 = new LinkDecoratedVariable<Array<Per>>(\"linkVar6\", initializers!.__backing_linkVar6!);
     };
-    if (({let gensym___3429048 = initializers;
-    (((gensym___3429048) == (null)) ? undefined : gensym___3429048.__backing_linkVar7)})) {
-      this.__backing_linkVar7 = new LinkDecoratedVariable<Array<Per>>("linkVar7", initializers!.__backing_linkVar7!);
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__backing_linkVar7)})) {
+      this.__backing_linkVar7 = new LinkDecoratedVariable<Array<Per>>(\"linkVar7\", initializers!.__backing_linkVar7!);
     };
-    if (({let gensym___139916435 = initializers;
-    (((gensym___139916435) == (null)) ? undefined : gensym___139916435.__backing_linkVar8)})) {
-      this.__backing_linkVar8 = new LinkDecoratedVariable<((sr: string)=> void)>("linkVar8", initializers!.__backing_linkVar8!);
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__backing_linkVar8)})) {
+      this.__backing_linkVar8 = new LinkDecoratedVariable<((sr: string)=> void)>(\"linkVar8\", initializers!.__backing_linkVar8!);
     };
-    if (({let gensym___145003260 = initializers;
-    (((gensym___145003260) == (null)) ? undefined : gensym___145003260.__backing_linkVar9)})) {
-      this.__backing_linkVar9 = new LinkDecoratedVariable<Date>("linkVar9", initializers!.__backing_linkVar9!);
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__backing_linkVar9)})) {
+      this.__backing_linkVar9 = new LinkDecoratedVariable<Date>(\"linkVar9\", initializers!.__backing_linkVar9!);
     };
-    if (({let gensym___122643185 = initializers;
-    (((gensym___122643185) == (null)) ? undefined : gensym___122643185.__backing_linkVar10)})) {
-      this.__backing_linkVar10 = new LinkDecoratedVariable<Map<number, Per>>("linkVar10", initializers!.__backing_linkVar10!);
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__backing_linkVar10)})) {
+      this.__backing_linkVar10 = new LinkDecoratedVariable<Map<number, Per>>(\"linkVar10\", initializers!.__backing_linkVar10!);
     };
-    if (({let gensym___222468503 = initializers;
-    (((gensym___222468503) == (null)) ? undefined : gensym___222468503.__backing_linkVar11)})) {
-      this.__backing_linkVar11 = new LinkDecoratedVariable<string | number>("linkVar11", initializers!.__backing_linkVar11!);
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__backing_linkVar11)})) {
+      this.__backing_linkVar11 = new LinkDecoratedVariable<string | number>(\"linkVar11\", initializers!.__backing_linkVar11!);
     };
-    if (({let gensym___243301539 = initializers;
-    (((gensym___243301539) == (null)) ? undefined : gensym___243301539.__backing_linkVar12)})) {
-      this.__backing_linkVar12 = new LinkDecoratedVariable<Set<string> | Per>("linkVar12", initializers!.__backing_linkVar12!);
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__backing_linkVar12)})) {
+      this.__backing_linkVar12 = new LinkDecoratedVariable<Set<string> | Per>(\"linkVar12\", initializers!.__backing_linkVar12!);
     };
   }
   public __updateStruct(initializers: __Options_Parent | undefined): void {}
@@ -243,58 +245,60 @@ final class LinkType extends BaseEnum<int> {
     this.__backing_linkVar12!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: Parent)=> Parent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Parent | undefined): void {}
-  public constructor() {}
+  private constructor() {}
 }
 
-interface __Options_Parent {
-  set linkVar1(linkVar1: Per | undefined)
-  get linkVar1(): Per | undefined
+@Retention({policy:\"SOURCE\"}) @interface __Link_intrinsic {}
+
+@Component({freezeWhenInactive:false}) export interface __Options_Parent {
+  @__Link_intrinsic() set linkVar1(linkVar1: Per | undefined)
+  @__Link_intrinsic() get linkVar1(): Per | undefined
   set __backing_linkVar1(__backing_linkVar1: DecoratedV1VariableBase<Per> | undefined)
   get __backing_linkVar1(): DecoratedV1VariableBase<Per> | undefined
-  set linkVar2(linkVar2: Array<number> | undefined)
-  get linkVar2(): Array<number> | undefined
+  @__Link_intrinsic() set linkVar2(linkVar2: Array<number> | undefined)
+  @__Link_intrinsic() get linkVar2(): Array<number> | undefined
   set __backing_linkVar2(__backing_linkVar2: DecoratedV1VariableBase<Array<number>> | undefined)
   get __backing_linkVar2(): DecoratedV1VariableBase<Array<number>> | undefined
-  set linkVar3(linkVar3: LinkType | undefined)
-  get linkVar3(): LinkType | undefined
+  @__Link_intrinsic() set linkVar3(linkVar3: LinkType | undefined)
+  @__Link_intrinsic() get linkVar3(): LinkType | undefined
   set __backing_linkVar3(__backing_linkVar3: DecoratedV1VariableBase<LinkType> | undefined)
   get __backing_linkVar3(): DecoratedV1VariableBase<LinkType> | undefined
-  set linkVar4(linkVar4: Set<string> | undefined)
-  get linkVar4(): Set<string> | undefined
+  @__Link_intrinsic() set linkVar4(linkVar4: Set<string> | undefined)
+  @__Link_intrinsic() get linkVar4(): Set<string> | undefined
   set __backing_linkVar4(__backing_linkVar4: DecoratedV1VariableBase<Set<string>> | undefined)
   get __backing_linkVar4(): DecoratedV1VariableBase<Set<string>> | undefined
-  set linkVar5(linkVar5: Array<boolean> | undefined)
-  get linkVar5(): Array<boolean> | undefined
+  @__Link_intrinsic() set linkVar5(linkVar5: Array<boolean> | undefined)
+  @__Link_intrinsic() get linkVar5(): Array<boolean> | undefined
   set __backing_linkVar5(__backing_linkVar5: DecoratedV1VariableBase<Array<boolean>> | undefined)
   get __backing_linkVar5(): DecoratedV1VariableBase<Array<boolean>> | undefined
-  set linkVar6(linkVar6: Array<Per> | undefined)
-  get linkVar6(): Array<Per> | undefined
+  @__Link_intrinsic() set linkVar6(linkVar6: Array<Per> | undefined)
+  @__Link_intrinsic() get linkVar6(): Array<Per> | undefined
   set __backing_linkVar6(__backing_linkVar6: DecoratedV1VariableBase<Array<Per>> | undefined)
   get __backing_linkVar6(): DecoratedV1VariableBase<Array<Per>> | undefined
-  set linkVar7(linkVar7: Array<Per> | undefined)
-  get linkVar7(): Array<Per> | undefined
+  @__Link_intrinsic() set linkVar7(linkVar7: Array<Per> | undefined)
+  @__Link_intrinsic() get linkVar7(): Array<Per> | undefined
   set __backing_linkVar7(__backing_linkVar7: DecoratedV1VariableBase<Array<Per>> | undefined)
   get __backing_linkVar7(): DecoratedV1VariableBase<Array<Per>> | undefined
-  set linkVar8(linkVar8: ((sr: string)=> void) | undefined)
-  get linkVar8(): ((sr: string)=> void) | undefined
+  @__Link_intrinsic() set linkVar8(linkVar8: ((sr: string)=> void) | undefined)
+  @__Link_intrinsic() get linkVar8(): ((sr: string)=> void) | undefined
   set __backing_linkVar8(__backing_linkVar8: DecoratedV1VariableBase<((sr: string)=> void)> | undefined)
   get __backing_linkVar8(): DecoratedV1VariableBase<((sr: string)=> void)> | undefined
-  set linkVar9(linkVar9: Date | undefined)
-  get linkVar9(): Date | undefined
+  @__Link_intrinsic() set linkVar9(linkVar9: Date | undefined)
+  @__Link_intrinsic() get linkVar9(): Date | undefined
   set __backing_linkVar9(__backing_linkVar9: DecoratedV1VariableBase<Date> | undefined)
   get __backing_linkVar9(): DecoratedV1VariableBase<Date> | undefined
-  set linkVar10(linkVar10: Map<number, Per> | undefined)
-  get linkVar10(): Map<number, Per> | undefined
+  @__Link_intrinsic() set linkVar10(linkVar10: Map<number, Per> | undefined)
+  @__Link_intrinsic() get linkVar10(): Map<number, Per> | undefined
   set __backing_linkVar10(__backing_linkVar10: DecoratedV1VariableBase<Map<number, Per>> | undefined)
   get __backing_linkVar10(): DecoratedV1VariableBase<Map<number, Per>> | undefined
-  set linkVar11(linkVar11: string | number | undefined)
-  get linkVar11(): string | number | undefined
-  set __backing_linkVar11(__backing_linkVar11: DecoratedV1VariableBase<string | number> | undefined)
-  get __backing_linkVar11(): DecoratedV1VariableBase<string | number> | undefined
-  set linkVar12(linkVar12: Set<string> | Per | undefined)
-  get linkVar12(): Set<string> | Per | undefined
-  set __backing_linkVar12(__backing_linkVar12: DecoratedV1VariableBase<Set<string> | Per> | undefined)
-  get __backing_linkVar12(): DecoratedV1VariableBase<Set<string> | Per> | undefined
+  @__Link_intrinsic() set linkVar11(linkVar11: string | number | undefined)
+  @__Link_intrinsic() get linkVar11(): string | number | undefined
+  set __backing_linkVar11(__backing_linkVar11: DecoratedV1VariableBase<string> | DecoratedV1VariableBase<number> | undefined)
+  get __backing_linkVar11(): DecoratedV1VariableBase<string> | DecoratedV1VariableBase<number> | undefined
+  @__Link_intrinsic() set linkVar12(linkVar12: Set<string> | Per | undefined)
+  @__Link_intrinsic() get linkVar12(): Set<string> | Per | undefined
+  set __backing_linkVar12(__backing_linkVar12: DecoratedV1VariableBase<Set<string>> | DecoratedV1VariableBase<Per> | undefined)
+  get __backing_linkVar12(): DecoratedV1VariableBase<Set<string>> | DecoratedV1VariableBase<Per> | undefined
 }
 `;
 
@@ -304,9 +308,9 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test complex type @Link decorated variables transformation',
-    [parsedTransform, structNoRecheck],
+    [parsedTransform, structNoRecheck, recheck],
     {
-        checked: [testParsedAndCheckedTransformer],
+        'checked:struct-no-recheck': [testParsedAndCheckedTransformer],
     },
     {
         stopAfter: 'checked',
