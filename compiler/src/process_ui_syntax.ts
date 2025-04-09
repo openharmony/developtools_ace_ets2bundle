@@ -178,7 +178,7 @@ export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
 
 export function processUISyntax(program: ts.Program, ut = false,
-  parentEvent?: CompileEvent, filePath: string = ''): Function {
+  parentEvent?: CompileEvent, filePath: string = '', share: object = null): Function {
   let entryNodeKey: ts.Expression;
   let eventProcessUISyntax: CompileEvent = undefined;
   return (context: ts.TransformationContext) => {
@@ -194,8 +194,9 @@ export function processUISyntax(program: ts.Program, ut = false,
       resourceFileName = path.resolve(node.fileName);
       pageFile = path.resolve(filePath !== '' ? filePath : node.fileName);
       if (process.env.compiler === BUILD_ON || process.env.compileTool === 'rollup') {
+        const fileHash = share?.getHashByFilePath ? share?.getHashByFilePath(pageFile) : '';
         storedFileInfo.transformCacheFiles[pageFile] = {
-          mtimeMs: fs.existsSync(pageFile) ? fs.statSync(pageFile).mtimeMs : 0,
+          hash: fileHash,
           children: []
         };
         transformLog.sourceFile = node;
@@ -289,7 +290,7 @@ export function processUISyntax(program: ts.Program, ut = false,
       if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
         ts.isImportDeclaration(node)) {
         const eventProcessImport = createAndStartEvent(eventProcessUISyntax, 'processImport');
-        processImportModule(node, pageFile, transformLog.errors);
+        processImportModule(node, pageFile, transformLog.errors, share);
         stopEvent(eventProcessImport);
       } else if ((projectConfig.compileMode !== 'esmodule' || process.env.compileTool !== 'rollup') &&
         (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
