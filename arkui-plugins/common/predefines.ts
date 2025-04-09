@@ -13,9 +13,19 @@
  * limitations under the License.
  */
 
-export const EXTERNAL_SOURCE_PREFIX_NAMES: string[] = [
+export const EXTERNAL_SOURCE_PREFIX_NAMES: (string | RegExp)[] = [
     "std",
-    "escompat"
+    "escompat",
+    "security",
+    "application",
+    "permissions",
+    "bundleManager",
+    "commonEvent",
+    /@arkts\..*/,
+    /@ohos\.(?!arkui).*/,
+    /@system\..*/,
+    /arkui\.(?![Uu]serView$)[A-Z]/, // temporary solution
+    /ability\..*/,
 ];
 
 export const ARKUI_COMPONENT_IMPORT_NAME: string = "@ohos.arkui.component";
