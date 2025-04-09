@@ -15,7 +15,14 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { generateToRecord, createGetter, createSetter2, generateThisBacking, generateGetOrSetCall } from './utils';
+import { 
+    generateToRecord,
+    createGetter,
+    createSetter2,
+    generateThisBacking,
+    generateGetOrSetCall,
+    judgeIfAddWatchFunc
+} from './utils';
 import { PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName } from '../../common/arkts-utils';
@@ -48,104 +55,23 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
             newName,
         );
 
-        const first = arkts.factory.createArrowFunction(
-            arkts.factory.createScriptFunction(
-                arkts.BlockStatement.createBlockStatement([
-                    arkts.factory.createReturnStatement(
-                        arkts.factory.createCallExpression(
-                            arkts.factory.createMemberExpression(
-                                arkts.factory.createTSNonNullExpression(
-                                    arkts.factory.createMemberExpression(
-                                        arkts.factory.createTSNonNullExpression(
-                                            arkts.factory.createIdentifier('initializers'),
-                                        ),
-                                        arkts.factory.createIdentifier(newName),
-                                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                                        false,
-                                        false,
-                                    ),
-                                ),
-                                arkts.factory.createIdentifier('get'),
-                                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                                false,
-                                false,
-                            ),
-                            undefined,
-                            undefined,
-                        ),
-                    ),
-                ]),
-                arkts.factory.createFunctionSignature(undefined, [], undefined, false),
-                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-            ),
-        );
-
-        const second = arkts.factory.createArrowFunction(
-            arkts.factory.createScriptFunction(
-                arkts.BlockStatement.createBlockStatement([
-                    arkts.factory.createExpressionStatement(
-                        arkts.factory.createCallExpression(
-                            arkts.factory.createMemberExpression(
-                                arkts.factory.createTSNonNullExpression(
-                                    arkts.factory.createMemberExpression(
-                                        arkts.factory.createTSNonNullExpression(
-                                            arkts.factory.createIdentifier('initializers'),
-                                        ),
-                                        arkts.factory.createIdentifier(newName),
-                                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                                        false,
-                                        false,
-                                    ),
-                                ),
-                                arkts.factory.createIdentifier('set'),
-                                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                                false,
-                                false,
-                            ),
-                            undefined,
-                            [arkts.factory.createIdentifier('newValue')],
-                        ),
-                    ),
-                ]),
-                arkts.factory.createFunctionSignature(
-                    undefined,
-                    [
-                        arkts.ETSParameterExpression.create(
-                            arkts.factory.createIdentifier('newValue', this.property.typeAnnotation),
-                            undefined,
-                        ),
-                    ],
-                    undefined,
-                    false,
-                ),
-                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-            ),
-        );
-
+        const args: arkts.Expression[] = [
+            arkts.factory.create1StringLiteral(originalName),
+            arkts.factory.createTSNonNullExpression(
+                factory.createNonNullOrOptionalMemberExpression('initializers', newName, false, true)
+            )
+        ];
+        judgeIfAddWatchFunc(args, this.property);
         const consequent = arkts.BlockStatement.createBlockStatement([
             arkts.factory.createExpressionStatement(
                 arkts.factory.createAssignmentExpression(
-                    arkts.factory.createMemberExpression(
-                        arkts.factory.createThisExpression(),
-                        arkts.factory.createIdentifier(newName),
-                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                        false,
-                        false,
-                    ),
+                    generateThisBacking(newName, false, false),
                     arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                    arkts.factory.createETSNewClassInstanceExpression(
-                        arkts.factory.createTypeReference(
-                            arkts.factory.createTypeReferencePart(
-                                arkts.factory.createIdentifier('LinkDecoratedVariable'),
-                                arkts.factory.createTSTypeParameterInstantiation(
-                                    this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
-                                ),
-                            ),
-                        ),
-                        [first, second],
-                    ),
+                    factory.createNewDecoratedInstantiate(
+                        'LinkDecoratedVariable',
+                        this.property.typeAnnotation,
+                        args
+                    )
                 ),
             ),
         ]);

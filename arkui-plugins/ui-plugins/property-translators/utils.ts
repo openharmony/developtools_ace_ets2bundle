@@ -64,7 +64,7 @@ export function getStateManagementType(node: arkts.ClassProperty): string {
     if (hasDecorator(node, DecoratorNames.STATE)) {
         return 'StateDecoratedVariable';
     } else if (hasDecorator(node, DecoratorNames.LINK)) {
-        return 'DecoratedMutableVariable';
+        return 'DecoratedV1VariableBase';
     } else if (hasDecorator(node, DecoratorNames.PROP)) {
         return "PropDecoratedVariable";
     } else if (hasDecorator(node, DecoratorNames.STORAGE_LINK)) {
@@ -218,6 +218,46 @@ export function getValueInAnnotation(node: arkts.ClassProperty, decoratorName: D
         }
     }
     return undefined;
+}
+
+function getWatchValueStr(node: arkts.AstNode): string | undefined {
+    if (!arkts.isClassProperty(node) || !node.value) {
+        return undefined;
+    }
+    return arkts.isStringLiteral(node.value) ? node.value.str : undefined;
+}
+
+function getWatchAnnotationValue(anno: arkts.AnnotationUsage): string | undefined {
+    const isWatchAnnotation: boolean =
+        !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === DecoratorNames.WATCH;
+
+    if (isWatchAnnotation && anno.properties.length === 1) {
+        return getWatchValueStr(anno.properties.at(0)!);
+    }
+    return undefined;
+}
+
+function getWatchValueInAnnotation(node: arkts.ClassProperty): string | undefined {
+    const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
+
+    for (let i = 0; i < annotations.length; i++) {
+        const anno: arkts.AnnotationUsage = annotations[i];
+        const str: string | undefined = getWatchAnnotationValue(anno);
+        if (!!str) {
+            return str;
+        }
+    }
+
+    return undefined;
+}
+
+export function judgeIfAddWatchFunc(args: arkts.Expression[], property: arkts.ClassProperty): void {
+    if (hasDecorator(property, DecoratorNames.WATCH)) {
+        const watchStr: string | undefined = getWatchValueInAnnotation(property);
+        if (watchStr) {
+            args.push(factory.createWatchCallback(watchStr));
+        }
+    }
 }
 
 export function generateGetOrSetCall(beforCall: arkts.AstNode, type: string) {
