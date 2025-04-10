@@ -518,7 +518,7 @@ export class ModuleSourceFile {
   private static spliceNormalizedOhmurl(moduleInfo: Object, filePath: string, importerFile?: string): string {
     const isArkTSEvolution: boolean = moduleInfo.meta.language === ARKTS_1_2;
     const pkgPath: string = isArkTSEvolution ?
-      path.join(getDeclgenBridgeCodePath(moduleInfo.meta.moduleName), moduleInfo.meta.moduleName) : moduleInfo.meta.pkgPath;
+      path.join(getDeclgenBridgeCodePath(moduleInfo.meta.pkgName), moduleInfo.meta.moduleName) : moduleInfo.meta.pkgPath;
     const pkgParams = {
       pkgName: moduleInfo.meta.pkgName,
       pkgPath,
