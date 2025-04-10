@@ -213,7 +213,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
     if (hasDecorator(item, COMPONENT_STYLES_DECORATOR)) {
       methodDecoratorCollect(item);
     }
-  })
+  });
   members.forEach((item: ts.ClassElement) => {
     let updateItem: ts.ClassElement;
     if (ts.isPropertyDeclaration(item)) {

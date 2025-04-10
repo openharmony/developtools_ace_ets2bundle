@@ -475,7 +475,7 @@ export class ResultStates {
   }
 }
 
-function handleFinishModules(modules, callback) {
+function handleFinishModules(modules, callback): void {
   if (projectConfig.compileHar) {
     modules.forEach(module => {
       if (module !== undefined && module.resourceResolveData !== undefined) {

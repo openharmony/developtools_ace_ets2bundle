@@ -215,7 +215,7 @@ export function processUISyntax(program: ts.Program, ut = false,
         }
         const id: number = ++componentInfo.id;
         node = ts.visitEachChild(node, processAllNodes, context);
-        if(context.getCompilerOptions().etsAnnotationsEnable){
+        if (context.getCompilerOptions().etsAnnotationsEnable) {
           node = ts.getAnnotationTransformer()(context)(node);
         }
         node = createEntryNode(node, context, entryNodeKey, id);
@@ -229,7 +229,7 @@ export function processUISyntax(program: ts.Program, ut = false,
         }
         INTERFACE_NODE_SET.forEach(item => {
           statements.unshift(item);
-        })
+        });
         if (StateManagementV2.hasReusableV2) {
           statements.unshift(processStructComponentV2.createReusableV2ReflectFunction());
         }

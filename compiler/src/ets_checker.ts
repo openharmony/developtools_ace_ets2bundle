@@ -571,7 +571,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
 export function traverseProgramSourceFiles(props: string[]): void {
   globalProgram.program.getSourceFiles().forEach((sourceFile: ts.SourceFile) => {
     checkUISyntax(sourceFile, sourceFile.fileName, [], props);
-  })
+  });
 }
 
 function isJsonString(cacheFile: string): [boolean, WholeCache | undefined] {
@@ -641,7 +641,7 @@ function isOtherProjectResolvedModulesFilePaths(rollupShareObject: Object, fileN
   return false;
 }
 
-export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollupObject: Object) {
+export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollupObject: Object): void {
   const recordInfo = MemoryMonitor.recordStage(MemoryDefine.MERGE_ROLL_UP_FILES_LOCAL_PACKAGE_SET);
   for (const moduleId of rollupFileList) {
     if (fs.existsSync(moduleId)) {
