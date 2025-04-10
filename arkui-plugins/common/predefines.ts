@@ -86,5 +86,13 @@ export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, stri
     ['StorageLink', ['StorageLinkDecoratedVariable']],
     ['LocalStorageLink', ['StorageLinkState', 'MutableState', 'observableProxy']],
     ['LocalStorageProp', ['StorageLinkState', 'MutableState', 'observableProxy', 'propState']],
-    ['ObjectLink', ['objectLinkState', 'observableProxy', 'SyncedProperty']],
+    ['ObjectLink', ['objectLinkState', 'observableProxy', 'SyncedProperty']]
 ]);
+
+export const ARKTS_1_1: string = '1.1';
+export const ARKTS_1_2: string = '1.2';
+export const ARKUICOMPATIBLE: string = 'ArkUICompatible';
+export const ESOBJECT: string = 'ESObject';
+export const INITEMPTYOBJECT: string = 'instantiateEmptyObject';
+export const SETPROPERTYBYNAME: string = 'setPropertyByName';
+export const NUMBER: string = 'number';
