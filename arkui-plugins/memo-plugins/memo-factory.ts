@@ -39,7 +39,9 @@ export class factory {
         const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
             source,
             [factory.createContextTypeImportSpecifier(), factory.createIdTypeImportSpecifier()],
-            arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPE
+            arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPE,
+            program!,
+            arkts.Es2pandaImportFlags.IMPORT_FLAGS_NONE
         );
         // Insert this import at the top of the script's statements.
         if (!program) {

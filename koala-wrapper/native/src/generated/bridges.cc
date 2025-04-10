@@ -6731,18 +6731,6 @@ KNativePointer impl_UpdateETSPackageDeclaration(KNativePointer context, KNativeP
 }
 KOALA_INTEROP_3(UpdateETSPackageDeclaration, KNativePointer, KNativePointer, KNativePointer, KNativePointer);
 
-KNativePointer impl_CreateETSImportDeclaration(KNativePointer context, KNativePointer source , KNativePointerArray specifiers, KUInt specifiersSequenceLength, KInt importKind)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _source = reinterpret_cast<es2panda_AstNode*>(source);
-    const auto _specifiers = reinterpret_cast<es2panda_AstNode**>(specifiers);
-    const auto _specifiersSequenceLength = static_cast<KUInt>(specifiersSequenceLength);
-    const auto _importKind = static_cast<Es2pandaImportKinds>(importKind);
-    auto result = GetImpl()->ETSParserBuildImportDeclaration(_context, _importKind, _specifiers, _specifiersSequenceLength, _source);
-    return result;
-}
-KOALA_INTEROP_5(CreateETSImportDeclaration, KNativePointer, KNativePointer, KNativePointer, KNativePointerArray, KUInt, KInt);
-
 KNativePointer impl_UpdateETSImportDeclaration(KNativePointer context, KNativePointer original, KNativePointer source, KNativePointerArray specifiers, KUInt specifiersSequenceLength, KInt importKind)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
