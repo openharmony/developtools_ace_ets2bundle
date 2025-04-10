@@ -46,15 +46,15 @@ struct UserView {
                 }
                 .width(700).backgroundColor("#b0c4de").margin(20)
             } else if(this.currentView === "button") {
-                Button("V8 Button test:" + this.button_name)
+                Button("Button test:" + this.button_name)
                 .width(600).height(100).backgroundColor("#b0c4de").margin(50)
                 .onClick(() => {
-                    console.log("V8 Button test click start");
+                    console.log("Button test click start");
                     this.button_name = "After click";
-                    console.log("V8 Button test click end");
+                    console.log("Button test click end");
                 })
             } else if(this.currentView === "text") {
-                Text("V8 Text test")
+                Text("Text test")
                 .width(600).height(100).backgroundColor("#b0c4de")
                 .margin(50).fontColor("#ff33aa").fontSize(50).fontWeight("bold")
             } else if(this.currentView === "image") {
