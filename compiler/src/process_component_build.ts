@@ -421,7 +421,7 @@ type NameResult = {
   node?: ts.Node
 };
 
-function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpression, result?: NameResult) {
+function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpression, result?: NameResult): boolean {
   let childNode: ts.Node = node;
   result.name = null;
   while (ts.isCallExpression(childNode) && childNode.expression &&
@@ -2168,7 +2168,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   const isReuseComponentInV2: boolean = isReuseInV2(componentCollection.currentClassName);
   if (ts.isPropertyAccessExpression(temp) || isStylesUIComponent) {
     log.push({
-      type: isStylesUIComponent ? LogType.WARN :LogType.ERROR,
+      type: isStylesUIComponent ? LogType.WARN : LogType.ERROR,
       message: `'${node.getText()}' does not meet UI component syntax.`,
       pos: node.getStart(),
       code: '10905206'
