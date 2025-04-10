@@ -371,3 +371,21 @@ KNativePointer impl_ETSParserGetGlobalProgramAbsName(KNativePointer contextPtr)
     return new std::string(result);
 }
 KOALA_INTEROP_1(ETSParserGetGlobalProgramAbsName, KNativePointer, KNativePointer)
+
+KNativePointer impl_CreateETSImportDeclaration(KNativePointer context, KNativePointer source,
+                                               KNativePointerArray specifiers, KUInt specifiersSequenceLength,
+                                               KInt importKind, KNativePointer programPtr, KInt flags)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _source = reinterpret_cast<es2panda_AstNode*>(source);
+    const auto _specifiers = reinterpret_cast<es2panda_AstNode**>(specifiers);
+    const auto _specifiersSequenceLength = static_cast<KUInt>(specifiersSequenceLength);
+    const auto _importKind = static_cast<Es2pandaImportKinds>(importKind);
+    const auto _program = reinterpret_cast<es2panda_Program*>(programPtr);
+    const auto _flags = static_cast<Es2pandaImportFlags>(flags);
+    auto result = GetImpl()->ETSParserBuildImportDeclaration(_context, _importKind, _specifiers,
+                                                             _specifiersSequenceLength, _source, _program, _flags);
+    return result;
+}
+KOALA_INTEROP_7(CreateETSImportDeclaration, KNativePointer, KNativePointer, KNativePointer, KNativePointerArray,
+                KUInt, KInt, KNativePointer, KInt);
