@@ -50,10 +50,7 @@ export class PositionalIdTracker {
     // Set `stable` to true if you want to have more predictable values.
     // For example for tests.
     // Don't use it in production!
-    constructor(
-        public filename: string,
-        public stableForTests: boolean = false
-    ) {
+    constructor(public filename: string, public stableForTests: boolean = false) {
         if (stableForTests) PositionalIdTracker.callCount = 0;
     }
 
@@ -81,7 +78,7 @@ export class PositionalIdTracker {
     }
 }
 
-export function isMemoAnnotation(node: arkts.AnnotationUsage, memoName: RuntimeNames) {
+export function isMemoAnnotation(node: arkts.AnnotationUsage, memoName: RuntimeNames): boolean {
     return node.expr !== undefined && arkts.isIdentifier(node.expr) && node.expr.name === memoName;
 }
 
@@ -101,7 +98,7 @@ export function hasMemoIntrinsicAnnotation<T extends MemoAstNode>(node: T): bool
     return node.annotations.some((it) => isMemoAnnotation(it, RuntimeNames.ANNOTATION_INTRINSIC));
 }
 
-export function hasMemoStableAnnotation(node: arkts.ClassDefinition) {
+export function hasMemoStableAnnotation(node: arkts.ClassDefinition): boolean {
     return node.annotations.some(
         (it) => it.expr !== undefined && arkts.isIdentifier(it.expr) && it.expr.name === RuntimeNames.ANNOTATION_STABLE
     );
@@ -125,16 +122,52 @@ export function removeMemoAnnotation<T extends MemoAstNode>(node: T): T {
  * TODO:
  * @deprecated
  */
-export function isSyntheticReturnStatement(node: arkts.AstNode) {
+export function isSyntheticReturnStatement(node: arkts.AstNode): boolean {
+    return isIfStatementWithSyntheticReturn(node) || isSimpleSyntheticReturn(node) || isSyntheticReturnInBlock(node);
+}
+
+function isIfStatementWithSyntheticReturn(node: arkts.AstNode): boolean {
     return (
-        (arkts.isReturnStatement(node) &&
-            node.argument &&
-            arkts.isMemberExpression(node.argument) &&
-            arkts.isIdentifier(node.argument.object) &&
-            node.argument.object.name === RuntimeNames.SCOPE &&
-            arkts.isIdentifier(node.argument.property) &&
-            node.argument.property.name === RuntimeNames.INTERNAL_VALUE) ||
-        arkts.isBlockStatement(node)
+        arkts.isIfStatement(node) &&
+        !!node.test &&
+        arkts.isMemberExpression(node.test) &&
+        arkts.isIdentifier(node.test.object) &&
+        node.test.object.name === RuntimeNames.SCOPE &&
+        arkts.isIdentifier(node.test.property) &&
+        node.test.property.name === RuntimeNames.INTERNAL_VALUE_OK &&
+        (arkts.isBlockStatement(node.consequent) || arkts.isReturnStatement(node.consequent))
+    );
+}
+
+function isSimpleSyntheticReturn(node: arkts.AstNode): boolean {
+    return (
+        arkts.isReturnStatement(node) &&
+        !!node.argument &&
+        arkts.isMemberExpression(node.argument) &&
+        arkts.isIdentifier(node.argument.object) &&
+        node.argument.object.name === RuntimeNames.SCOPE &&
+        arkts.isIdentifier(node.argument.property) &&
+        node.argument.property.name === RuntimeNames.INTERNAL_VALUE
+    );
+}
+
+function isSyntheticReturnInBlock(node: arkts.AstNode): boolean {
+    if (!arkts.isBlockStatement(node) || node.statements.length !== 2) {
+        return false;
+    }
+    if (!arkts.isReturnStatement(node.statements[1])) {
+        return false;
+    }
+    const isReturnThis: boolean = !!node.statements[1].argument && arkts.isThisExpression(node.statements[1].argument);
+    const isReturnVoid: boolean = node.statements[1].argument === undefined;
+
+    return (
+        arkts.isMemberExpression(node.statements[0]) &&
+        arkts.isIdentifier(node.statements[0].object) &&
+        node.statements[0].object.name === RuntimeNames.SCOPE &&
+        arkts.isIdentifier(node.statements[0].property) &&
+        node.statements[0].property.name === RuntimeNames.INTERNAL_VALUE &&
+        (isReturnThis || isReturnVoid)
     );
 }
 
@@ -142,7 +175,7 @@ export function isSyntheticReturnStatement(node: arkts.AstNode) {
  * TODO:
  * @deprecated
  */
-export function isMemoParametersDeclaration(node: arkts.AstNode) {
+export function isMemoParametersDeclaration(node: arkts.AstNode): boolean {
     return (
         arkts.isVariableDeclaration(node) &&
         node.declarators.every((it) => it.name.name.startsWith(RuntimeNames.PARAMETER))
@@ -152,7 +185,7 @@ export function isMemoParametersDeclaration(node: arkts.AstNode) {
 /**
  * TODO: change this to TypeNodeGetType to check void type
  */
-export function isVoidType(typeNode: arkts.TypeNode | undefined) {
+export function isVoidType(typeNode: arkts.TypeNode | undefined): boolean {
     return typeNode?.dumpSrc() === 'void';
 }
 
