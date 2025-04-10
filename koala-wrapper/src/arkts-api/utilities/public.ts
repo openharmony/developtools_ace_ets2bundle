@@ -20,8 +20,9 @@ import { passNode, passString, unpackNodeArray, unpackNonNullableNode } from "./
 import { isFunctionDeclaration, isMemberExpression } from "../factory/nodeTests"
 import { Es2pandaContextState, Es2pandaModifierFlags } from "../../generated/Es2pandaEnums"
 import type { AstNode } from "../peers/AstNode"
-import { ClassDefinition, ClassProperty, ETSImportDeclaration, isClassDefinition, isScriptFunction, type AnnotationUsage } from "../../generated"
+import { ClassDefinition, ClassProperty, ETSImportDeclaration, ImportSpecifier, isClassDefinition, isScriptFunction, type AnnotationUsage } from "../../generated"
 import { Program } from "../peers/Program"
+
 
 export function proceedToState(state: Es2pandaContextState, forceDtsEmit = false): void {
     console.log("[TS WRAPPER] PROCEED TO STATE: ", getEnumName(Es2pandaContextState, state));
@@ -101,6 +102,14 @@ export function classDefinitionSetFromStructModifier(node: ClassDefinition): voi
 
 export function classDefinitionIsFromStructConst(node: ClassDefinition): boolean {
     return global.es2panda._ClassDefinitionIsFromStructConst(global.context, node.peer);
+}
+
+export function ImportSpecifierSetRemovable(node: ImportSpecifier): void {
+    global.es2panda._ImportSpecifierSetRemovable(global.context, node.peer);
+}
+
+export function ImportSpecifierIsRemovableConst(node: ImportSpecifier): boolean {
+    return global.es2panda._ImportSpecifierIsRemovableConst(global.context, node.peer);
 }
 
 // TODO: It seems like Definition overrides AstNode  modifiers
