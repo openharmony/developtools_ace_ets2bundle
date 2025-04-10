@@ -561,14 +561,13 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   MemoryMonitor.stopRecordStage(runArkTSLinterRecordInfo);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
 
-  if (process.env.watchMode !== 'true') {
+  if (process.env.watchMode !== 'true' && !projectConfig.isRemoteModule) {
     const processBuildHaprrecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP);
     processBuildHap(cacheFile, rootFileNames, compilationTime, rollupShareObject);
     MemoryMonitor.stopRecordStage(processBuildHaprrecordInfo);
   }
   if (rollupShareObject?.projectConfig.mixCompile) {
     generateDeclarationFileForSTS(rootFileNames);
-    processInteropUI(projectConfig.dependentModuleMap?.get(projectConfig.moduleName)?.declgenV2OutPath);
   }
   if (globalProgram.program &&
     (process.env.watchMode !== 'true' && !projectConfig.isPreview &&
@@ -1851,7 +1850,6 @@ export function generateDeclarationFileForSTS(rootFileNames: string[]) {
     return toUnixPath(path);
   });
 
-  const regex = new RegExp(projectConfig.packageDir);
   const uniqueFiles = Array.from(new Set([
     ...unixRootFileNames,
     /**
@@ -1859,14 +1857,14 @@ export function generateDeclarationFileForSTS(rootFileNames: string[]) {
      * otherwise an error will be reported during the tsc compilation of declgen
      */
     ...readDeaclareFiles()
-  ])).filter(file => !regex.test(file));
+  ]));
 
   const config: RunnerParms = {
     inputDirs: [],
     inputFiles: uniqueFiles,
-    outDir: projectConfig.dependentModuleMap.get(projectConfig.moduleName).declgenV2OutPath,
+    outDir: projectConfig.dependentModuleMap.get(projectConfig.entryPackageName).declgenV2OutPath,
     // use package name as folder name
-    rootDir: projectConfig.moduleRootPath,
+    rootDir: projectConfig.modulePath,
     customResolveModuleNames: resolveModuleNames,
     customCompilerOptions: compilerOptions,
     includePaths: [projectConfig.modulePath]
@@ -1876,4 +1874,5 @@ export function generateDeclarationFileForSTS(rootFileNames: string[]) {
   }
   fs.mkdirSync(config.outDir, { recursive: true });
   generateInteropDecls(config);
+  processInteropUI(projectConfig.dependentModuleMap?.get(projectConfig.entryPackageName)?.declgenV2OutPath);
 }

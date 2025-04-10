@@ -106,7 +106,7 @@ mocha.describe('process arkts evolution tests', function () {
       pkgName: 'har',
       declgenV2OutPath: HAR_DECLGENV2OUTPATH
     })
-    addDeclFilesConfig(filePath, 'har', projectConfig, undefined, '/har', 'har');
+    addDeclFilesConfig(filePath, projectConfig, undefined, '/har', 'har');
     const expectDeclPath: string = `${HAR_DECLGENV2OUTPATH}/Index.d.ets`;
     const expectOhmUrl: string = `@normalized:N&entry&${BUNDLE_NAME_DEFAULT}&har/Index&1.0.0`;
     expect(pkgDeclFilesConfig['har'].files.length !== 0).to.be.true;
