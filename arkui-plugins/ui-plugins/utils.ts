@@ -48,6 +48,11 @@ export enum Dollars {
     DOLLAR_DOLLAR = '$$',
 }
 
+export enum Router {
+    REGISTERROUTER = 'registerRouter',
+    REGISTERPAGE = 'registerPage',
+}
+
 export function findLocalImport(
     node: arkts.ETSImportDeclaration,
     sourceName: string,
