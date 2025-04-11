@@ -13,19 +13,34 @@
  * limitations under the License.
  */
 
-import { Es2pandaAstNodeType } from "../Es2pandaEnums"
-import { throwError } from "../utils"
-import { global } from "./static/global"
-import { KNativePointer, nullptr } from "@koalaui/interop"
-import { AstNode, UnsupportedNode } from "./peers/AstNode"
+import { Es2pandaAstNodeType } from '../Es2pandaEnums';
+import { throwError } from '../utils';
+import { global } from './static/global';
+import { KNativePointer, nullptr } from '@koalaui/interop';
+import { AstNode, UnsupportedNode } from './peers/AstNode';
 
-export const nodeByType = new Map<Es2pandaAstNodeType, { new(peer: KNativePointer): AstNode }>([])
+export const nodeByType = new Map<Es2pandaAstNodeType, { new (peer: KNativePointer): AstNode }>([]);
+
+const cache = new Map<KNativePointer, AstNode>();
+export function clearNodeCache(): void {
+    cache.clear();
+}
+
+function getOrPut(peer: KNativePointer, create: (peer: KNativePointer) => AstNode): AstNode {
+    if (cache.has(peer)) {
+        return cache.get(peer)!;
+    }
+
+    const newNode = create(peer);
+    cache.set(peer, newNode);
+    return newNode;
+}
 
 export function classByPeer<T extends AstNode>(peer: KNativePointer): T {
     if (peer === nullptr) {
-        throwError('classByPeer: peer is NULLPTR')
+        throwError('classByPeer: peer is NULLPTR');
     }
-    const type = global.generatedEs2panda._AstNodeTypeConst(global.context, peer)
-    const node = nodeByType.get(type) ?? UnsupportedNode
-    return new node(peer) as T
+    const type = global.generatedEs2panda._AstNodeTypeConst(global.context, peer);
+    const node = nodeByType.get(type) ?? UnsupportedNode;
+    return getOrPut(peer, (peer) => new node(peer)) as T;
 }
