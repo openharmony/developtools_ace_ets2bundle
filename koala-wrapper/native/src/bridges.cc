@@ -31,6 +31,22 @@ void impl_ClassDefinitionSetFromStructModifier(KNativePointer contextPtr, KNativ
 }
 KOALA_INTEROP_V2(ClassDefinitionSetFromStructModifier, KNativePointer, KNativePointer);
 
+KBoolean impl_ImportSpecifierIsRemovableConst(KNativePointer contextPtr, KNativePointer instancePtr)
+{
+    auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
+    auto node = reinterpret_cast<es2panda_AstNode*>(instancePtr);
+    return GetImpl()->ImportSpecifierIsRemovableConst(context, node);
+}
+KOALA_INTEROP_2(ImportSpecifierIsRemovableConst, KBoolean, KNativePointer, KNativePointer);
+
+void impl_ImportSpecifierSetRemovable(KNativePointer contextPtr, KNativePointer instancePtr)
+{
+    auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
+    auto node = reinterpret_cast<es2panda_AstNode*>(instancePtr);
+    return GetImpl()->ImportSpecifierSetRemovable(context, node, true);
+}
+KOALA_INTEROP_V2(ImportSpecifierSetRemovable, KNativePointer, KNativePointer);
+
 KNativePointer impl_AstNodeRecheck(KNativePointer contextPtr, KNativePointer nodePtr)
 {
     auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
