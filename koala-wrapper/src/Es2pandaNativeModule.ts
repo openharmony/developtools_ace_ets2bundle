@@ -794,6 +794,14 @@ export class Es2pandaNativeModule {
     _ETSParserGetGlobalProgramAbsName(context: KNativePointer): KNativePointer {
         throw new Error('Not implemented');
     }
+
+   _ImportSpecifierIsRemovableConst(context: KNativePointer, instance: KNativePointer): KBoolean {
+          throw new Error('Not implemented');
+   }
+ 
+   _ImportSpecifierSetRemovable(context: KNativePointer, instance: KNativePointer): void {
+       throw new Error('Not implemented');
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {
