@@ -78,75 +78,79 @@ import {
     classPropertySetOptional,
     hasModifierFlag
 } from "../utilities/public"
-
-/**
- * @deprecated
- */
-function compose<T extends AstNode, ARGS extends any[]>(
-    create: (...args: ARGS) => T,
-    update: (node: T, original: T) => T = updateNodeByNode
-): (node: T, ...args: ARGS) => T {
-    return (node: T, ...args: ARGS) => update(create(...args), node);
-}
-
-function updateThenAttach<T extends AstNode, ARGS extends any[]>(
-    update: (original: T, ...args: ARGS) => T,
-    ...attachFuncs: ((node: T, original: T) => T)[]
-): (node: T, ...args: ARGS) => T {
-    return (node: T, ...args: ARGS) => {
-        let _node: T = update(node, ...args);
-        attachFuncs.forEach((attach) => {
-            _node = attach(_node, node);
-        })
-        return _node;
-    }
-}
-
-function attachModifiers<T extends AstNode>(
-    node: T,
-    original: T
-): T {
-    node.modifiers = original.modifiers;
-    return node;
-}
+import { updateIdentifier } from "../node-utilities/Identifier"
+import { updateCallExpression } from "../node-utilities/CallExpression"
+import { updateExpressionStatement } from "../node-utilities/ExpressionStatement"
+import { updateMemberExpression } from "../node-utilities/MemberExpression"
+import { updateFunctionDeclaration } from "../node-utilities/FunctionDeclaration"
+import { updateBlockStatement } from "../node-utilities/BlockStatement"
+import { updateArrowFunctionExpression } from "../node-utilities/ArrowFunctionExpression"
+import { updateScriptFunction } from "../node-utilities/ScriptFunction"
+import { updateStringLiteral } from "../node-utilities/StringLiteral"
+import { updateNumberLiteral } from "../node-utilities/NumberLiteral"
+import { updateETSParameterExpression } from "../node-utilities/ETSParameterExpression"
+import { updateTSTypeParameter } from "../node-utilities/TSTypeParameter"
+import { updateTSTypeParameterDeclaration } from "../node-utilities/TSTypeParameterDeclaration"
+import { updateETSPrimitiveType } from "../node-utilities/ETSPrimitiveType"
+import { updateETSTypeReference } from "../node-utilities/ETSTypeReference"
+import { updateETSTypeReferencePart } from "../node-utilities/ETSTypeReferencePart"
+import { updateETSImportDeclaration } from "../node-utilities/ETSImportDeclaration"
+import { updateImportSpecifier } from "../node-utilities/ImportSpecifier"
+import { updateVariableDeclaration } from "../node-utilities/VariableDeclaration"
+import { updateVariableDeclarator } from "../node-utilities/VariableDeclarator"
+import { updateETSUnionType } from "../node-utilities/ETSUnionType"
+import { updateReturnStatement } from "../node-utilities/ReturnStatement"
+import { updateIfStatement } from "../node-utilities/IfStatement"
+import { updateBinaryExpression } from "../node-utilities/BinaryExpression"
+import { updateClassDeclaration } from "../node-utilities/ClassDeclaration"
+import { updateStructDeclaration } from "../node-utilities/StructDeclaration"
+import { updateClassDefinition } from "../node-utilities/ClassDefinition"
+import { updateClassProperty } from "../node-utilities/ClassProperty"
+import { updateETSFunctionType } from "../node-utilities/ETSFunctionType"
+import { updateFunctionExpression } from "../node-utilities/FunctionExpression"
+import { updateMethodDefinition } from "../node-utilities/MethodDefinition"
+import { updateSuperExpression } from "../node-utilities/SuperExpression"
+import { updateTSTypeParameterInstantiation } from "../node-utilities/TSTypeParameterInstantiation"
+import { updateTSInterfaceDeclaration } from "../node-utilities/TSInterfaceDeclaration"
+import { updateTSInterfaceBody } from "../node-utilities/TSInterfaceBody"
+import { updateUndefinedLiteral } from "../node-utilities/UndefinedLiteral"
+import { updateAnnotationUsage } from "../node-utilities/AnnotationUsage"
+import { updateAssignmentExpression } from "../node-utilities/AssignmentExpression"
+import { updateETSUndefinedType } from "../node-utilities/ETSUndefinedType"
+import { updateConditionalExpression } from "../node-utilities/ConditionalExpression"
+import { updateTSAsExpression } from "../node-utilities/TSAsExpression"
+import { updateThisExpression } from "../node-utilities/ThisExpression"
+import { updateTSTypeAliasDeclaration } from "../node-utilities/TSTypeAliasDeclaration"
+import { updateTSNonNullExpression } from "../node-utilities/TSNonNullExpression"
+import { updateChainExpression } from "../node-utilities/ChainExpression"
+import { updateBlockExpression } from "../node-utilities/BlockExpression"
+import { updateNullLiteral } from "../node-utilities/NullLiteral"
+import { updateETSNewClassInstanceExpression } from "../node-utilities/ETSNewClassInstanceExpression"
 
 export const factory = {
     get createIdentifier() {
         return Identifier.create2Identifier
     },
     get updateIdentifier() {
-        return updateThenAttach(
-            Identifier.update2Identifier,
-            attachModifiers
-        )
+        return updateIdentifier
     },
     get createCallExpression() {
         return CallExpression.create
     },
     get updateCallExpression() {
-        return updateThenAttach(
-            CallExpression.update,
-            attachModifiers,
-            (node: CallExpression, original: CallExpression) => !!original.trailingBlock ? node.setTralingBlock(original.trailingBlock) : node
-        )
+        return updateCallExpression
     },
     get createExpressionStatement() {
         return ExpressionStatement.create
     },
     get updateExpressionStatement() {
-        return updateThenAttach(
-            ExpressionStatement.update,
-            attachModifiers
-        )
+        return updateExpressionStatement
     },
     get createMemberExpression() {
         return MemberExpression.create
     },
     get updateMemberExpression() {
-        return updateThenAttach(
-            MemberExpression.update,
-            attachModifiers
-        )
+        return updateMemberExpression
     },
     get createEtsScript() {
         return EtsScript.createFromSource
@@ -158,335 +162,217 @@ export const factory = {
         return FunctionDeclaration.create
     },
     get updateFunctionDeclaration() {
-        return updateThenAttach(
-            FunctionDeclaration.update,
-            attachModifiers
-        )
+        return updateFunctionDeclaration
     },
     get createBlock() {
         return BlockStatement.createBlockStatement
     },
     get updateBlock() {
-        return updateThenAttach(
-            BlockStatement.updateBlockStatement,
-            attachModifiers
-        )
+        return updateBlockStatement
     },
     get createArrowFunction() {
         return ArrowFunctionExpression.create
     },
     get updateArrowFunction() {
-        return updateThenAttach(
-            ArrowFunctionExpression.update,
-            attachModifiers,
-            (node: ArrowFunctionExpression, original: ArrowFunctionExpression) => node.setAnnotations(original.annotations)
-        )
+        return updateArrowFunctionExpression
     },
     get createScriptFunction() {
         return ScriptFunction.createScriptFunction
     },
     get updateScriptFunction() {
-        return updateThenAttach(
-            ScriptFunction.updateScriptFunction,
-            (node: ScriptFunction, original: ScriptFunction) => ( !!original.id ? node.setIdent(original.id) : node ),
-            (node: ScriptFunction, original: ScriptFunction) => node.setAnnotations(original.annotations)
-        )
+        return updateScriptFunction
     },
     get createStringLiteral() {
         return StringLiteral.create1StringLiteral
     },
     get updateStringLiteral() {
-        return updateThenAttach(
-            StringLiteral.update1StringLiteral,
-            attachModifiers
-        )
+        return updateStringLiteral
     },
     get create1StringLiteral() {
         return StringLiteral.create1StringLiteral
     },
     get update1StringLiteral() {
-        return updateThenAttach(
-            StringLiteral.update1StringLiteral,
-            attachModifiers
-        )
+        return updateStringLiteral
     },
     get createNumericLiteral() {
         return NumberLiteral.create
     },
     get updateNumericLiteral() {
-        return updateThenAttach(
-            compose(NumberLiteral.create), // TODO: No UpdateNumberLiteral, need to change this
-            attachModifiers
-        )
+        return updateNumberLiteral
     },
     get createParameterDeclaration() {
         return ETSParameterExpression.create
     },
     get updateParameterDeclaration() {
-        return updateThenAttach(
-            ETSParameterExpression.update,
-            attachModifiers,
-            (node: ETSParameterExpression, original: ETSParameterExpression) => { node.annotations = original.annotations; return node; }
-        )
+        return updateETSParameterExpression
     },
     get createTypeParameter() {
         return TSTypeParameter.createTSTypeParameter
     },
     get updateTypeParameter() {
-        return updateThenAttach(
-            TSTypeParameter.updateTSTypeParameter,
-            attachModifiers
-        )
+        return updateTSTypeParameter
     },
     get createTypeParameterDeclaration() {
         return TSTypeParameterDeclaration.createTSTypeParameterDeclaration
     },
     get updateTypeParameterDeclaration() {
-        return updateThenAttach(
-            TSTypeParameterDeclaration.updateTSTypeParameterDeclaration,
-            attachModifiers
-        )
+        return updateTSTypeParameterDeclaration
     },
     get createPrimitiveType() {
         return ETSPrimitiveType.createETSPrimitiveType
     },
     get updatePrimitiveType() {
-        return updateThenAttach(
-            ETSPrimitiveType.updateETSPrimitiveType,
-            attachModifiers
-        )
+        return updateETSPrimitiveType
     },
     get createTypeReference() {
         return ETSTypeReference.createETSTypeReference
     },
     get updateTypeReference() {
-        return updateThenAttach(
-            ETSTypeReference.updateETSTypeReference,
-            attachModifiers
-        )
+        return updateETSTypeReference
     },
     get createTypeReferencePart() {
         return ETSTypeReferencePart.createETSTypeReferencePart
     },
     get updateTypeReferencePart() {
-        return updateThenAttach(
-            ETSTypeReferencePart.updateETSTypeReferencePart,
-            attachModifiers
-        )
+        return updateETSTypeReferencePart
     },
     get createImportDeclaration() {
         return ETSImportDeclaration.createETSImportDeclaration
     },
     get updateImportDeclaration() {
-        return updateThenAttach(
-            ETSImportDeclaration.updateETSImportDeclaration,
-            attachModifiers
-        )
+        return updateETSImportDeclaration
     },
     get createImportSpecifier() {
         return ImportSpecifier.createImportSpecifier
     },
     get updateImportSpecifier() {
-        return updateThenAttach(
-            ImportSpecifier.updateImportSpecifier,
-            attachModifiers
-        )
+        return updateImportSpecifier
     },
     get createVariableDeclaration() {
         return VariableDeclaration.create
     },
     get updateVariableDeclaration() {
-        return updateThenAttach(
-            VariableDeclaration.update,
-            attachModifiers
-        )
+        return updateVariableDeclaration
     },
     get createVariableDeclarator() {
         return VariableDeclarator.create
     },
     get updateVariableDeclarator() {
-        return updateThenAttach(
-            VariableDeclarator.update,
-            attachModifiers
-        )
+        return updateVariableDeclarator
     },
     get createUnionType() {
         return ETSUnionType.createETSUnionType
     },
     get updateUnionType() {
-        return updateThenAttach(
-            ETSUnionType.updateETSUnionType,
-            attachModifiers
-        )
+        return updateETSUnionType
     },
     get createReturnStatement() {
         return ReturnStatement.create1ReturnStatement
     },
     get updateReturnStatement() {
-        return updateThenAttach(
-            ReturnStatement.update1ReturnStatement,
-            attachModifiers
-        )
+        return updateReturnStatement
     },
     get createIfStatement() {
         return IfStatement.create
     },
     get updateIfStatement() {
-        return updateThenAttach(
-            IfStatement.update,
-            attachModifiers
-        )
+        return updateIfStatement
     },
     get createBinaryExpression() {
         return BinaryExpression.createBinaryExpression
     },
     get updateBinaryExpression() {
-        return updateThenAttach(
-            BinaryExpression.updateBinaryExpression,
-            attachModifiers
-        )
+        return updateBinaryExpression
     },
     get createClassDeclaration() {
         return ClassDeclaration.createClassDeclaration
     },
     get updateClassDeclaration() {
-        return updateThenAttach(
-            ClassDeclaration.updateClassDeclaration,
-            attachModifiers
-        )
+        return updateClassDeclaration
     },
     get createStructDeclaration() {
         return StructDeclaration.create
     },
     get updateStructDeclaration() {
-        return updateThenAttach(
-            StructDeclaration.update,
-            attachModifiers
-        )
+        return updateStructDeclaration
     },
     get createClassDefinition() {
         return ClassDefinition.createClassDefinition
     },
     get updateClassDefinition() {
-        return updateThenAttach(
-            ClassDefinition.updateClassDefinition,
-            (node: ClassDefinition, original: ClassDefinition) => node.setAnnotations(original.annotations)
-        )
+        return updateClassDefinition
     },
     get createClassProperty() {
         return ClassProperty.createClassProperty
     },
     get updateClassProperty() {
-        return updateThenAttach(
-            ClassProperty.updateClassProperty,
-            (node: ClassProperty, original: ClassProperty) => node.setAnnotations(original.annotations),
-            (node: ClassProperty, original: ClassProperty) => {
-                if (hasModifierFlag(original, Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL)) {
-                    return classPropertySetOptional(node, true);
-                }
-                return node;
-            }
-        )
+        return updateClassProperty
     },
     get createFunctionType() {
         return ETSFunctionType.createETSFunctionType
     },
     get updateFunctionType() {
-        return updateThenAttach(
-            ETSFunctionType.updateETSFunctionType,
-            attachModifiers,
-            (node: ETSFunctionType, original: ETSFunctionType) => node.setAnnotations(original.annotations)
-        )
+        return updateETSFunctionType
     },
     get createFunctionExpression() {
         return FunctionExpression.create
     },
     get updateFunctionExpression() {
-        return updateThenAttach(
-            FunctionExpression.update,
-            attachModifiers
-        )
+        return updateFunctionExpression
     },
     get createMethodDefinition() {
         return MethodDefinition.create
     },
     get updateMethodDefinition() {
-        return updateThenAttach(
-            MethodDefinition.update,
-            (node: MethodDefinition, original: MethodDefinition) => node.setOverloads(original.overloads)
-        )
+        return updateMethodDefinition
     },
     get createSuperExpression() {
         return SuperExpression.createSuperExpression
     },
     get updateSuperExpression() {
-        return updateThenAttach(
-            SuperExpression.updateSuperExpression,
-            attachModifiers
-        )
+        return updateSuperExpression
     },
     get createTSTypeParameterInstantiation() {
         return TSTypeParameterInstantiation.createTSTypeParameterInstantiation
     },
     get updateTSTypeParameterInstantiation() {
-        return updateThenAttach(
-            TSTypeParameterInstantiation.updateTSTypeParameterInstantiation,
-            attachModifiers
-        )
+        return updateTSTypeParameterInstantiation
     },
     get createInterfaceDeclaration() {
         return TSInterfaceDeclaration.createTSInterfaceDeclaration
     },
     get updateInterfaceDeclaration() {
-        return updateThenAttach(
-            TSInterfaceDeclaration.updateTSInterfaceDeclaration,
-            attachModifiers
-        )
+        return updateTSInterfaceDeclaration
     },
     get createInterfaceBody() {
         return TSInterfaceBody.createTSInterfaceBody
     },
     get updateInterfaceBody() {
-        return updateThenAttach(
-            TSInterfaceBody.updateTSInterfaceBody,
-            attachModifiers
-        )
+        return updateTSInterfaceBody
     },
     get createUndefinedLiteral() {
         return UndefinedLiteral.createUndefinedLiteral
     },
     get updateUndefinedLiteral() {
-        return updateThenAttach(
-            UndefinedLiteral.updateUndefinedLiteral,
-            attachModifiers
-        )
+        return updateUndefinedLiteral
     },
     get createAnnotationUsage() {
         return AnnotationUsage.createAnnotationUsage
     },
     get updateAnnotationUsage() {
-        return updateThenAttach(
-            AnnotationUsage.updateAnnotationUsage,
-            attachModifiers
-        )
+        return updateAnnotationUsage
     },
     get createAssignmentExpression() {
         return AssignmentExpression.create
     },
     get updateAssignmentExpression() {
-        return updateThenAttach(
-            AssignmentExpression.update,
-            attachModifiers
-        )
+        return updateAssignmentExpression
     },
     get createETSUndefinedType() {
         return ETSUndefinedType.createETSUndefinedType
     },
     get updateETSUndefinedType() {
-        return updateThenAttach(
-            ETSUndefinedType.updateETSUndefinedType,
-            attachModifiers
-        )
+        return updateETSUndefinedType
     },
     get createFunctionSignature() {
         return FunctionSignature.createFunctionSignature
@@ -495,68 +381,55 @@ export const factory = {
         return ConditionalExpression.createConditionalExpression
     },
     get updateConditionalExpression() {
-        return updateThenAttach(
-            ConditionalExpression.updateConditionalExpression,
-            attachModifiers
-        )
+        return updateConditionalExpression
     },
     get createTSAsExpression() {
         return TSAsExpression.createTSAsExpression
     },
     get updateTSAsExpression() {
-        return updateThenAttach(
-            TSAsExpression.updateTSAsExpression,
-            attachModifiers
-        )
+        return updateTSAsExpression
     },
     get createThisExpression() {
         return ThisExpression.createThisExpression
     },
     get updateThisExpression() {
-        return updateThenAttach(
-            ThisExpression.updateThisExpression,
-            attachModifiers
-        )
+        return updateThisExpression
     },
     get createTSTypeAliasDeclaration() {
         return TSTypeAliasDeclaration.createTSTypeAliasDeclaration
     },
     get updateTSTypeAliasDeclaration() {
-        return updateThenAttach(
-            TSTypeAliasDeclaration.updateTSTypeAliasDeclaration,
-            attachModifiers,
-            (node: TSTypeAliasDeclaration, original: TSTypeAliasDeclaration) => node.setAnnotations(original.annotations)
-        )
+        return updateTSTypeAliasDeclaration
     },
     get createTSNonNullExpression() {
         return TSNonNullExpression.createTSNonNullExpression
     },
     get updateTSNonNullExpression() {
-        return TSNonNullExpression.updateTSNonNullExpression
+        return updateTSNonNullExpression
     },
     get createChainExpression() {
         return ChainExpression.createChainExpression
     },
     get updateChainExpression() {
-        return ChainExpression.updateChainExpression
+        return updateChainExpression
     },
     get createBlockExpression() {
         return BlockExpression.createBlockExpression
     },
     get updateBlockExpression() {
-        return BlockExpression.updateBlockExpression
+        return updateBlockExpression
     },
     get createNullLiteral() {
         return NullLiteral.createNullLiteral
     },
     get updateNullLiteral() {
-        return NullLiteral.updateNullLiteral
+        return updateNullLiteral
     },
     get createETSNewClassInstanceExpression() {
         return ETSNewClassInstanceExpression.createETSNewClassInstanceExpression
     },
     get updateETSNewClassInstanceExpression() {
-        return ETSNewClassInstanceExpression.updateETSNewClassInstanceExpression
+        return updateETSNewClassInstanceExpression
     },
     get createETSStringLiteralType(){
         return ETSStringLiteralType.create;
