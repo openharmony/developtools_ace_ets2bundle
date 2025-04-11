@@ -86,19 +86,15 @@ export class CheckedTransformer extends AbstractVisitor {
         }
     }
 
-    visitEachChild(node: arkts.AstNode): arkts.AstNode {
-        if (arkts.isCallExpression(node) && isBuilderLambda(node, this.isExternal)) {
-            return node;
-        }
-        if (arkts.isMethodDefinition(node) && isBuilderLambdaMethodDecl(node, this.isExternal)) {
-            return node;
-        }
-
-        return super.visitEachChild(node);
-    }
-
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         this.enter(beforeChildren);
+        if (arkts.isCallExpression(beforeChildren) && isBuilderLambda(beforeChildren, this.isExternal)) {
+            const lambda = transformBuilderLambda(beforeChildren, this.isExternal);
+            return this.visitEachChild(lambda);
+        } else if (arkts.isMethodDefinition(beforeChildren) && isBuilderLambdaMethodDecl(beforeChildren, this.isExternal)) {
+            const lambda = transformBuilderLambdaMethodDecl(beforeChildren);
+            return this.visitEachChild(lambda);
+        }
         const node = this.visitEachChild(beforeChildren);
         if (arkts.isClassDeclaration(node) && isCustomComponentClass(node)) {
             let scope: ScopeInfo | undefined;
@@ -119,12 +115,6 @@ export class CheckedTransformer extends AbstractVisitor {
             return transformEtsGlobalClassMembers(node);
         } else if (arkts.isCallExpression(node) && isReourceNode(node)) {
             return transformResource(node, this.projectConfig);
-        } else if (arkts.isCallExpression(node) && isBuilderLambda(node, this.isExternal)) {
-            const lambda = transformBuilderLambda(node, this.isExternal);
-            return lambda;
-        } else if (arkts.isMethodDefinition(node) && isBuilderLambdaMethodDecl(node, this.isExternal)) {
-            const lambda = transformBuilderLambdaMethodDecl(node);
-            return lambda;
         }
         return node;
     }
