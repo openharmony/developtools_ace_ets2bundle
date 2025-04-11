@@ -13,8 +13,7 @@
  * limitations under the License.
  */
 
-
-import { Expression } from "../../generated"
+import { Expression } from '../../generated';
 import {
     assertValidPeer,
     AstNode,
@@ -23,13 +22,13 @@ import {
     KNativePointer,
     passNode,
     unpackNonNullableNode,
-    global
-} from "../../reexport-for-generated"
+    global,
+} from '../../reexport-for-generated';
 
 export class MemberExpression extends Expression {
     constructor(peer: KNativePointer) {
-        assertValidPeer(peer, Es2pandaAstNodeType.AST_NODE_TYPE_MEMBER_EXPRESSION)
-        super(peer)
+        assertValidPeer(peer, Es2pandaAstNodeType.AST_NODE_TYPE_MEMBER_EXPRESSION);
+        super(peer);
     }
 
     static create(
@@ -48,7 +47,7 @@ export class MemberExpression extends Expression {
                 computed,
                 optional
             )
-        )
+        );
     }
 
     static update(
@@ -69,30 +68,41 @@ export class MemberExpression extends Expression {
                 computed,
                 optional
             )
-        )
+        );
     }
 
     protected override dumpMessage(): string {
-        return ` <kind: ${this.kind}>`
+        return ` <kind: ${this.kind}>`;
     }
 
     get object(): AstNode {
-        return unpackNonNullableNode(global.generatedEs2panda._MemberExpressionObject(global.context, this.peer))
+        return unpackNonNullableNode(global.generatedEs2panda._MemberExpressionObject(global.context, this.peer));
     }
 
     get property(): AstNode {
-        return unpackNonNullableNode(global.generatedEs2panda._MemberExpressionProperty(global.context, this.peer))
+        return unpackNonNullableNode(global.generatedEs2panda._MemberExpressionProperty(global.context, this.peer));
     }
 
     get kind(): Es2pandaMemberExpressionKind {
-        return global.generatedEs2panda._MemberExpressionKindConst(global.context, this.peer)
+        return global.generatedEs2panda._MemberExpressionKindConst(global.context, this.peer);
     }
 
     get computed(): boolean {
-        return global.generatedEs2panda._MemberExpressionIsComputedConst(global.context, this.peer)
+        return global.generatedEs2panda._MemberExpressionIsComputedConst(global.context, this.peer);
     }
 
     get optional(): boolean {
-        return false // todo: no corresponding method in es2panda
+        return false; // todo: no corresponding method in es2panda
+    }
+
+    /** @deprecated */
+    setObject(object_arg?: Expression): this {
+        global.generatedEs2panda._MemberExpressionSetObject(global.context, this.peer, passNode(object_arg));
+        return this;
+    }
+    /** @deprecated */
+    setProperty(prop?: Expression): this {
+        global.generatedEs2panda._MemberExpressionSetProperty(global.context, this.peer, passNode(prop));
+        return this;
     }
 }
