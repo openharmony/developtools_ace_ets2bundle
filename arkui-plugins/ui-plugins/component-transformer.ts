@@ -31,9 +31,13 @@ import {
     hasDecorator,
     DecoratorNames,
     getStateManagementType,
-    collectPropertyDecorators,
+    collectPropertyDecorators
 } from './property-translators/utils';
-import { factory } from './ui-factory';
+import {
+    factory
+} from './ui-factory';
+import { StructMap } from '../common/program-visitor';
+import { processStructCall } from './interop';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string;
@@ -59,6 +63,9 @@ export class ComponentTransformer extends AbstractVisitor {
     private context: ComponentContext = { structMembers: new Map() };
     private isCustomComponentImported: boolean = false;
     private isEntryPointImported: boolean = false;
+    private hasLegacy = false;
+    private legacyStructMap: Map<string, StructMap> = new Map();
+    private legacyCallMap: Map<string, string> = new Map();
 
     constructor(options?: ComponentTransformerOptions) {
         const _options: ComponentTransformerOptions = options ?? {};
@@ -75,6 +82,9 @@ export class ComponentTransformer extends AbstractVisitor {
         this.context = { structMembers: new Map() };
         this.isCustomComponentImported = false;
         this.isEntryPointImported = false;
+        this.hasLegacy = false;
+        this.legacyStructMap = new Map();
+        this.legacyCallMap = new Map();
     }
 
     enter(node: arkts.AstNode) {
@@ -342,6 +352,28 @@ export class ComponentTransformer extends AbstractVisitor {
         return [originMember];
     }
 
+    registerMap(map: Map<string, StructMap>): void {
+        this.legacyStructMap = map;
+        this.hasLegacy = true;
+    }
+
+    processImport(node: arkts.ETSImportDeclaration): void {
+        const source = node.source?.str!;
+        const specifiers = node.specifiers;
+        if (this.legacyStructMap.has(source)) {
+            const structMap = this.legacyStructMap.get(source);
+            if (!structMap) {
+                return;
+            }
+            for (const specifier of specifiers) {
+                const name = specifier.local.name;
+                if (structMap[name]) {
+                    this.legacyCallMap.set(name, structMap[name]);
+                }
+            }
+        }
+    }
+
     visitor(node: arkts.AstNode): arkts.AstNode {
         this.enter(node);
         const newNode = this.visitEachChild(node);
@@ -352,6 +384,23 @@ export class ComponentTransformer extends AbstractVisitor {
             const updateNode = this.processComponent(newNode);
             this.exit(newNode);
             return updateNode;
+        }
+        if (!this.hasLegacy) {
+            return newNode;
+        }
+        if (arkts.isETSImportDeclaration(newNode)) {
+            this.processImport(newNode);
+        }
+        if (arkts.isCallExpression(newNode)) {
+            if (this.legacyCallMap.has(newNode.expression?.name)) {
+                const pathName = this.legacyCallMap.get(newNode.expression?.name)!;
+                const args = newNode.arguments;
+                if (args === undefined || args.length > 1 || !(args[0] instanceof arkts.ObjectExpression)) {
+                    return processStructCall(newNode, pathName);
+                }
+                const arg = args[0];
+                return processStructCall(newNode, pathName, arg);
+            }
         }
         return newNode;
     }
