@@ -113,6 +113,8 @@ import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
 import { ARKUI_SUBSYSTEM_CODE } from '../../../lib/hvigor_error_code/hvigor_error_info';
 import { ProjectCollections } from 'arkguard';
 
+let switchTsAst: boolean = false;
+
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
 const shouldEmitJsFlagMap: Map<string, boolean> = new Map<string, boolean>();
@@ -514,11 +516,11 @@ async function transform(code: string, id: string) {
     meta: {
       shouldEmitJs: true
     }
-  } : {
+  } : switchTsAst ? {
     meta: {
       tsAst: transformResult.transformed[0]
     }
-  };
+  } : printSourceFile(transformResult.transformed[0], eventEtsTransformForEsmodule);
 
   stopEvent(eventEtsTransformForEsmodule);
   return result;
