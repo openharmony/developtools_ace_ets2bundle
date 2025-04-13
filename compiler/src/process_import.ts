@@ -882,9 +882,10 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   }
   if (needCollection && pageInfo.pageFile && !pageInfo.setChildOnce && originFile) {
     const childFile: string = path.resolve(getRealPath(originFile) || originFile);
-    const fileHash = share?.getHashByFilePath ? share?.getHashByFilePath(childFile) : '';
+    const fileHash = share?.getHashByFilePath ? share.getHashByFilePath(childFile) : '';
     storedFileInfo.transformCacheFiles[pageInfo.pageFile].children.push({
       fileName: childFile,
+      mtimeMs: fs.existsSync(childFile) ? fs.statSync(childFile).mtimeMs : 0,
       hash: fileHash
     });
     pageInfo.setChildOnce = true;
