@@ -189,8 +189,12 @@ export function etsTransform() {
         shouldDisable = shouldDisable || storedFileInfo.shouldInvalidFiles.has(fileName) || this.share.rawfilechanged;
         if (cacheFile && cacheFile[fileName] && cacheFile[fileName].children.length) {
           for (let child of cacheFile[fileName].children) {
+            const newTimeMs: number = fs.existsSync(child.fileName) ? fs.statSync(child.fileName).mtimeMs : -1;
             const fileHash: string = this.share?.getHashByFilePath ? this.share?.getHashByFilePath(child.fileName) : '';
-            if (fileHash !== child.hash || fileHash === '') {
+            if (this.share?.getHashByFilePath && (fileHash !== child.hash || fileHash === '')) {
+              shouldDisable = true;
+              break;
+            } else if (!(this.share?.getHashByFilePath) && newTimeMs !== child.mtimeMs) {
               shouldDisable = true;
               break;
             }
