@@ -207,6 +207,24 @@ export function castFunctionExpression(value: arkts.Expression | undefined): ark
     return value as unknown as arkts.FunctionExpression;
 }
 
+/**
+ * es2panda API is weird here
+ *
+ * @deprecated
+ */
+export function castArrowFunctionExpression(value: arkts.Expression | undefined): arkts.ArrowFunctionExpression {
+    return value as unknown as arkts.ArrowFunctionExpression;
+}
+
+/**
+ * es2panda API is weird here
+ *
+ * @deprecated
+ */
+export function castOverloadsToMethods(overloads: arkts.AstNode[]): readonly arkts.MethodDefinition[] {
+    return overloads as unknown as readonly arkts.MethodDefinition[];
+}
+
 export function isStandaloneArrowFunction(node: arkts.AstNode): node is arkts.ArrowFunctionExpression {
     if (!arkts.isArrowFunctionExpression(node)) return false;
 
@@ -214,4 +232,43 @@ export function isStandaloneArrowFunction(node: arkts.AstNode): node is arkts.Ar
     if (arkts.isCallExpression(node.parent) && node.parent.expression.peer === node.peer) return true;
 
     return !arkts.isClassProperty(node.parent) && !(arkts.isCallExpression(node.parent) && node.parent.expression);
+}
+
+export function isMemoClassProperty(node: arkts.ClassProperty): boolean {
+    let isMemo = findMemoFromTypeAnnotation(node.typeAnnotation);
+    if (node.value) {
+        isMemo ||=
+            arkts.isArrowFunctionExpression(node.value) &&
+            (hasMemoAnnotation(node.value) || hasMemoIntrinsicAnnotation(node.value));
+    }
+    isMemo ||= hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node);
+    return isMemo;
+}
+
+export function isMemoMethodDefinition(node: arkts.MethodDefinition): boolean {
+    return hasMemoAnnotation(node.scriptFunction) || hasMemoIntrinsicAnnotation(node.scriptFunction);
+}
+
+export function isMemoArrowFunction(node: arkts.ArrowFunctionExpression): boolean {
+    return hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node);
+}
+
+export function isMemoTSTypeAliasDeclaration(node: arkts.TSTypeAliasDeclaration): boolean {
+    let isMemo = findMemoFromTypeAnnotation(node.typeAnnotation);
+    isMemo ||= hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node);
+    return isMemo;
+}
+
+export function findMemoFromTypeAnnotation(typeAnnotation: arkts.TypeNode | undefined): boolean {
+    if (!typeAnnotation) {
+        return false;
+    }
+    if (arkts.isETSFunctionType(typeAnnotation)) {
+        return hasMemoAnnotation(typeAnnotation) || hasMemoIntrinsicAnnotation(typeAnnotation);
+    } else if (arkts.isETSUnionType(typeAnnotation)) {
+        return typeAnnotation.types.some(
+            (type) => arkts.isETSFunctionType(type) && (hasMemoAnnotation(type) || hasMemoIntrinsicAnnotation(type))
+        );
+    }
+    return false;
 }
