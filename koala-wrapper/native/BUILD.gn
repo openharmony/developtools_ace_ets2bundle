@@ -50,6 +50,27 @@ shared_library("es2panda") {
 
   configs -= [ "//build/config/compiler:compiler" ]
 
+  if (is_mac) {
+    cflags_cc = [
+      "-std=c++17",
+      "-Wall",
+      "-Werror",
+      "-Wno-unused-variable",
+      "-fPIC",
+    ]
+
+    ldflags = [
+      "-fPIC",
+      "-Wl,-undefined,dynamic_lookup",
+      "-fuse-ld=lld",
+      "-Wl,--icf=all",
+      "-Wl,--color-diagnostics",
+      "-m64"
+    ]
+    defines += [ "KOALA_MACOS" ]
+    output_extension = "node"
+  }
+
   if (current_os == "linux") {
     cflags_cc = [
       "-std=c++17",
