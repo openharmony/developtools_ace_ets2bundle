@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -112,6 +112,7 @@ import { MemoryDefine } from '../meomry_monitor/memory_define';
 import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
 import { ARKUI_SUBSYSTEM_CODE } from '../../../lib/hvigor_error_code/hvigor_error_info';
 import { ProjectCollections } from 'arkguard';
+import parseUserIntents from '../../userIntents_parser/parseUserIntents';
 
 let switchTsAst: boolean = false;
 
@@ -219,6 +220,7 @@ export function etsTransform() {
       }
     },
     afterBuildEnd() {
+      parseUserIntents.writeUserIntentJsonFile();
       const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsTransform', 'afterBuildEnd');
       const eventEtsTransformAfterBuildEnd = createAndStartEvent(hookEventFactory, 'etsTransformafterBuildEnd');
       // Copy the cache files in the compileArkTS directory to the loader_out directory
@@ -286,6 +288,7 @@ export function etsTransform() {
       resetUtils();
       resetValidateUiSyntax();
       resetObfuscation();
+      parseUserIntents.clear();
     }
   };
 }
@@ -383,10 +386,12 @@ async function transform(code: string, id: string) {
     compilerOptions.moduleResolution = 'nodenext';
     compilerOptions.module = 'es2020';
     const newContent: string = jsBundlePreProcess(code, id, this.getModuleInfo(id).isEntry, logger, hvigorLogger);
+    const metaInfo: Object = this.getModuleInfo(id).metaInfo || {};
+    metaInfo.tsProgram = globalProgram.program;
     const result: ts.TranspileOutput = ts.transpileModule(newContent, {
       compilerOptions: compilerOptions,
       fileName: id,
-      transformers: { before: [processUISyntax(null)] }
+      transformers: { before: [processUISyntax(null, false, undefined, id, null, metaInfo)] }
     });
 
     resetCollection();
@@ -466,10 +471,11 @@ async function transform(code: string, id: string) {
     if (shouldEmitJsFlag) {
       const eventEmit = createAndStartEvent(eventTsProgramEmit, 'emit');
       const uiKitrecordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_UI_KIT);
+      metaInfo.tsProgram = tsProgram;
       tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
         {
           before: [
-            processUISyntax(null, false, eventEmit, id, this.share),
+            processUISyntax(null, false, eventEmit, id, this.share, metaInfo),
             processKitImport(id, metaInfo, eventEmit, true, lazyImportOptions),
             collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
               shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))
@@ -483,9 +489,10 @@ async function transform(code: string, id: string) {
       const eventTransformNodes = createAndStartEvent(eventTsProgramEmit, 'transformNodes');
       const emitResolver: ts.EmitResolver = globalProgram.checker.getEmitResolver(outFile(tsProgram.getCompilerOptions()) ?
         undefined : targetSourceFile, undefined);
+      metaInfo.tsProgram = tsProgram;
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
-        [processUISyntax(null, false, eventTransformNodes, id, this.share),
+        [processUISyntax(null, false, eventTransformNodes, id, this.share, metaInfo),
         processKitImport(id, metaInfo, eventTransformNodes, false, lazyImportOptions),
         collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
           shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))], false);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import ts from 'typescript';
+import ts, { TypeChecker } from 'typescript';
 import path from 'path';
 import fs from 'fs';
 
@@ -80,7 +80,8 @@ import {
   PAGE_FULL_PATH,
   LENGTH,
   PUV2_VIEW_BASE,
-  CONTEXT_STACK
+  CONTEXT_STACK,
+  COMPONENT_USER_INTENTS_DECORATOR
 } from './pre_define';
 import {
   componentInfo,
@@ -171,6 +172,7 @@ import {
   createAndStartEvent,
   stopEvent
 } from './performance';
+import parseUserIntents from './userIntents_parser/parseUserIntents';
 
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -178,7 +180,7 @@ export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
 
 export function processUISyntax(program: ts.Program, ut = false,
-  parentEvent?: CompileEvent, filePath: string = '', share: object = null): Function {
+  parentEvent?: CompileEvent, filePath: string = '', share: object = null, metaInfo: Object = {}): Function {
   let entryNodeKey: ts.Expression;
   let eventProcessUISyntax: CompileEvent = undefined;
   return (context: ts.TransformationContext) => {
@@ -408,6 +410,11 @@ export function processUISyntax(program: ts.Program, ut = false,
           });
         }
       } else if (ts.isClassDeclaration(node)) {
+        if (hasDecorator(node, COMPONENT_USER_INTENTS_DECORATOR)) {
+          const checker: TypeChecker = metaInfo.tsProgram.getTypeChecker();
+          parseUserIntents.handleIntent(node, checker, filePath, metaInfo);
+          node = parseUserIntents.removeDecorator(node);
+        }
         if (hasDecorator(node, COMPONENT_SENDABLE_DECORATOR)) {
           if (projectConfig.compileHar && !projectConfig.useTsHar) {
             let warnMessage: string = 'If you use @Sendable in js har, an exception will occur during runtime.\n' +
