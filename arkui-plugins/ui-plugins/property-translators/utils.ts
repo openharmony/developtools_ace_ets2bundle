@@ -34,6 +34,7 @@ export enum DecoratorNames {
     LOCAL_STORAGE_PROP = 'LocalStorageProp',
     LOCAL_STORAGE_LINK = 'LocalStorageLink',
     REUSABLE = 'Reusable',
+    TRACK = 'Track'
 }
 
 export function collectPropertyDecorators(property: arkts.ClassProperty): string[] {

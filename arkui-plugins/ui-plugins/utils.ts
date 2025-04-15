@@ -123,3 +123,11 @@ export function createStageManagementType(
         )
     );
 }
+
+export function getGettersFromClassDecl(definition: arkts.ClassDefinition): arkts.MethodDefinition[] {
+    return definition.body.filter(
+        (member) =>
+            arkts.isMethodDefinition(member) &&
+            arkts.hasModifierFlag(member, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_GETTER)
+    ) as arkts.MethodDefinition[];
+}
