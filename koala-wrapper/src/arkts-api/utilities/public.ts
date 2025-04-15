@@ -22,6 +22,7 @@ import { Es2pandaContextState, Es2pandaModifierFlags } from "../../generated/Es2
 import type { AstNode } from "../peers/AstNode"
 import { ClassDefinition, ClassProperty, ETSImportDeclaration, ImportSpecifier, isClassDefinition, isScriptFunction, type AnnotationUsage } from "../../generated"
 import { Program } from "../peers/Program"
+import { clearNodeCache } from "../class-by-peer"
 
 
 export function proceedToState(state: Es2pandaContextState, forceDtsEmit = false): void {
@@ -30,6 +31,7 @@ export function proceedToState(state: Es2pandaContextState, forceDtsEmit = false
         console.log("[TS WRAPPER] PROCEED TO STATE: SKIPPING");
         return
     }
+    clearNodeCache()
     try {
         global.es2panda._ProceedToState(global.context, state)
         if (global.es2panda._ContextState(global.context) === Es2pandaContextState.ES2PANDA_STATE_ERROR && !forceDtsEmit) {
