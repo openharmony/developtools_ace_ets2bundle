@@ -27,6 +27,7 @@ import {
     getTypeNameFromTypeParameter,
     getTypeParamsFromClassDecl,
     BuilderLambdaNames,
+    getGettersFromClassDecl
 } from './utils';
 import { hasDecorator, DecoratorNames } from './property-translators/utils';
 import {
@@ -50,7 +51,9 @@ import {
     builderLambdaTypeName,
 } from './builder-lambda-translators/utils';
 import { isEntryWrapperClass } from './entry-translators/utils';
-import { classifyProperty, PropertyTranslator } from './property-translators';
+import { classifyObservedTrack, classifyProperty, PropertyTranslator } from './property-translators';
+import { ObservedTrackTranslator } from './property-translators/observedTrack';
+import { nodeByType } from '@koalaui/libarkts/build/src/reexport-for-generated';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
@@ -116,8 +119,111 @@ export class CheckedTransformer extends AbstractVisitor {
         } else if (arkts.isCallExpression(node) && isReourceNode(node)) {
             return transformResource(node, this.projectConfig);
         }
+        else if (arkts.isClassDeclaration(node)) {
+            return transformObservedTracked(node);
+        }
         return node;
     }
+}
+export type ClassScopeInfo = {
+    isObserved: boolean;
+    classHasTrack: boolean;
+    getters: arkts.MethodDefinition[]
+};
+
+function transformObservedTracked(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
+    if (!node.definition) {
+        return node;
+    }
+    const isObserved: boolean = hasDecorator(node.definition, DecoratorNames.OBSERVED);
+    const classHasTrack: boolean = node.definition.body.some(
+        (member) => arkts.isClassProperty(member) && hasDecorator(member, DecoratorNames.TRACK)
+    );
+    if (!isObserved && !classHasTrack) {
+        return node;
+    }
+   
+    const updateClassDef: arkts.ClassDefinition = arkts.factory.updateClassDefinition(
+        node.definition,
+        node.definition.ident,
+        node.definition.typeParams,
+        node.definition.superTypeParams,
+        [
+            ...node.definition.implements,
+            arkts.TSClassImplements.createTSClassImplements(
+                arkts.factory.createTypeReference(
+                    arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('IObservedObject'))
+                )
+            ),
+        ],
+        undefined,
+        node.definition.super,
+        observedTrackPropertyMembers(classHasTrack, node.definition, isObserved),
+        node.definition.modifiers,
+        arkts.classDefinitionFlags(node.definition)
+    );
+    return arkts.factory.updateClassDeclaration(node, updateClassDef);
+} 
+
+function observedTrackPropertyMembers(
+    classHasTrack: boolean,
+    definition: arkts.ClassDefinition,
+    isObserved: boolean
+): arkts.AstNode[] {
+    const permissibleAddRefDepth: arkts.ClassProperty = arkts.factory.createClassProperty(
+        arkts.factory.createIdentifier('_permissibleAddRefDepth'),
+        arkts.factory.createNumericLiteral(2147483647),
+        arkts.factory.createTypeReference(
+            arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('int32'))
+        ),
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+        false
+    );
+
+    const meta: arkts.ClassProperty = arkts.factory.createClassProperty(
+        arkts.factory.createIdentifier('__meta'),
+        arkts.factory.createETSNewClassInstanceExpression(
+            arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('MutableStateMeta'))
+            ),
+            [arkts.factory.createStringLiteral('@Observe properties (no @Track)')]
+        ),
+        arkts.factory.createTypeReference(
+            arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('MutableStateMeta'))
+        ),
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+        false
+    );
+
+    const getters: arkts.MethodDefinition[] = getGettersFromClassDecl(definition);
+
+    const classScopeInfo: ClassScopeInfo = {
+        isObserved: isObserved,
+        classHasTrack: classHasTrack,
+        getters: getters,
+    };
+    
+    const propertyTranslators: ObservedTrackTranslator[] = filterDefined(
+        definition.body.map((it) => classifyObservedTrack(it, classScopeInfo))
+    );
+
+    const propertyMembers = propertyTranslators.map((translator) => translator.translateMember());
+
+    const nonClassPropertyOrGetter: arkts.AstNode[] = definition.body.filter(
+        (member) =>
+            !arkts.isClassProperty(member) &&
+            !(
+                arkts.isMethodDefinition(member) &&
+                arkts.hasModifierFlag(member, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_GETTER)
+            )
+    );
+
+    return [
+        ...(classHasTrack ? [permissibleAddRefDepth] : [permissibleAddRefDepth, meta]),
+        ...collect(...propertyMembers),
+        ...nonClassPropertyOrGetter,
+        ...classScopeInfo.getters,
+    ];
 }
 
 function tranformClassMembers(
