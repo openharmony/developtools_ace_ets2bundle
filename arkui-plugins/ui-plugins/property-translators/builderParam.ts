@@ -41,19 +41,13 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
         const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
         const mutableThis: arkts.Expression = generateThisBacking(newName);
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(mutableThis, originalName);
-        // const updateStruct: arkts.AstNode = this.generateUpdateStruct(mutableThis, originalName);
         currentStructInfo.initializeBody.push(initializeStruct);
-        // currentStructInfo.updateBody.push(updateStruct);
         arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = createOptionalClassProperty(
-            newName,
-            this.property,
-            '',
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
-        );
+        const field: arkts.ClassProperty = createOptionalClassProperty(newName, this.property, '',
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE, true);
         const thisGetValue: arkts.Expression = generateThisBacking(newName, false, true);
         const thisSetValue: arkts.Expression = generateThisBacking(newName, false, false);
         const getter: arkts.MethodDefinition = this.translateGetter(
@@ -75,7 +69,7 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
         typeAnnotation: arkts.TypeNode | undefined,
         returnValue: arkts.Expression
     ): arkts.MethodDefinition {
-        return createGetter(originalName, typeAnnotation, returnValue);
+        return createGetter(originalName, typeAnnotation, returnValue, true);
     }
 
     translateSetter(
