@@ -282,16 +282,12 @@ export function generateToRecord(newName: string, originalName: string): arkts.P
     return arkts.Property.createProperty(
         arkts.factory.createStringLiteral(originalName),
         arkts.factory.createBinaryExpression(
-            factory.createBlockStatementForOptionalExpression(
                 arkts.factory.createMemberExpression(
-                    arkts.factory.createThisExpression(),
-                    arkts.factory.createIdentifier(newName),
+                    arkts.factory.createIdentifier('paramsCasted'),
+                    arkts.factory.createIdentifier(originalName),
                     arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                     false,
                     false
-                ),
-                'get',
-                true
             ),
             arkts.ETSNewClassInstanceExpression.createETSNewClassInstanceExpression(
                 arkts.factory.createTypeReference(
