@@ -103,12 +103,15 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
             this.property.value ?? arkts.factory.createIdentifier('undefined'),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         );
-        const nonNullItem = arkts.factory.createTSNonNullExpression(
-            factory.createNonNullOrOptionalMemberExpression('initializers', originalName, false, true)
-        );
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
-            this.property.value ? binaryItem : nonNullItem,
+            this.property.value
+                ? binaryItem
+                : arkts.factory.createTSAsExpression(
+                      factory.createNonNullOrOptionalMemberExpression('initializers', originalName, false, true),
+                      this.property.typeAnnotation ? this.property.typeAnnotation.clone() : undefined,
+                      false
+                  ),
         ];
         judgeIfAddWatchFunc(args, this.property);
         const right = arkts.factory.createETSNewClassInstanceExpression(
@@ -146,14 +149,17 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
             false,
             false
         );
-        const nonNullItem = arkts.factory.createTSNonNullExpression(
-            factory.createNonNullOrOptionalMemberExpression('initializers', originalName, false, true)
-        );
         return arkts.factory.createIfStatement(
             binaryItem,
             arkts.factory.createBlock([
                 arkts.factory.createExpressionStatement(
-                    arkts.factory.createCallExpression(member, undefined, [nonNullItem])
+                    arkts.factory.createCallExpression(member, undefined, [
+                        arkts.factory.createTSAsExpression(
+                            factory.createNonNullOrOptionalMemberExpression('initializers', originalName, false, true),
+                            this.property.typeAnnotation ? this.property.typeAnnotation.clone() : undefined,
+                            false
+                        ),
+                    ])
                 ),
             ])
         );
