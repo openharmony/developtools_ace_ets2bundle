@@ -13,12 +13,33 @@
  * limitations under the License.
  */
 
-import { KNativePointer } from "@koalaui/interop"
+import { KNativePointer } from '@koalaui/interop';
 
 export abstract class ArktsObject {
     protected constructor(peer: KNativePointer) {
-        this.peer = peer
+        this.peer = peer;
     }
 
-    readonly peer: KNativePointer
+    readonly peer: KNativePointer;
+}
+
+export function isSameNativeObject<T extends ArktsObject | number | string | boolean | undefined>(
+    first: T | readonly T[],
+    second: T | readonly T[]
+): boolean {
+    if (Array.isArray(first) && Array.isArray(second)) {
+        if (first.length !== second.length) {
+            return false;
+        }
+        for (let i = 0; i < first.length; i++) {
+            if (!isSameNativeObject(first[i], second[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    if (first instanceof ArktsObject && second instanceof ArktsObject) {
+        return first?.peer === second?.peer;
+    }
+    return first === second;
 }
