@@ -347,7 +347,6 @@ export class factory {
                 this.transformBuilderLambda(statement.expression)
             );
         }
-
         if (arkts.isIfStatement(statement)) {
             return this.updateIfElseContentBodyInBuilderLambda(statement);
         }
