@@ -996,6 +996,21 @@ export function processAnimateToOrImmediately(node: ts.CallExpression): ts.CallE
 function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
   decoratorName: string): ts.FunctionDeclaration {
   const componentName: string = isExtendFunction(node, { decoratorName: '', componentName: '' }, true);
+  if (componentName && node.body && !node.body.statements.length && decoratorName === COMPONENT_EXTEND_DECORATOR) {
+    const statementArray: ts.Statement[] = [];
+    const bodynode: ts.Block = ts.visitEachChild(node.body, traverseExtendExpression, contextGlobal);
+    let extendFunctionName: string;
+    if (node.name.getText().startsWith('__' + componentName + '__')) {
+      extendFunctionName = node.name.getText();
+    } else {
+      extendFunctionName = '__' + componentName + '__' + node.name.getText();
+      collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.escapedText.toString());
+    }
+    return ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node), node.asteriskToken,
+      ts.factory.createIdentifier(extendFunctionName), node.typeParameters,
+      node.parameters, ts.factory.createToken(ts.SyntaxKind.VoidKeyword), isOriginalExtend(node.body) ?
+      ts.factory.updateBlock(node.body, statementArray) : bodynode);
+  }
   if (componentName && node.body && node.body.statements.length) {
     const statementArray: ts.Statement[] = [];
     let bodynode: ts.Block;
