@@ -47,7 +47,7 @@ export class regularPropertyTranslator extends PropertyTranslator implements Ini
         typeAnnotation: arkts.TypeNode | undefined,
         left: arkts.MemberExpression
     ): arkts.MethodDefinition {
-        const right: arkts.Identifier = arkts.factory.createIdentifier('value');
+        const right: arkts.Identifier = arkts.factory.createUndefinedLiteral();
         return createSetter(originalName, typeAnnotation, left, right);
     }
 
@@ -61,7 +61,7 @@ export class regularPropertyTranslator extends PropertyTranslator implements Ini
                 false
             ),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            this.property.value ?? arkts.factory.createIdentifier('undefined')
+            this.property.value ?? arkts.factory.createUndefinedLiteral()
         );
     }
 }
