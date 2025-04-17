@@ -56,6 +56,7 @@ export * from "../generated/peers/ETSNewClassInstanceExpression"
 export * from "../generated/peers/ObjectExpression"
 export * from "../generated/peers/Property"
 export * from "../generated/peers/BlockExpression"
+export * from "../generated/peers/BooleanLiteral"
 
 export * from "./types"
 export * from "./utilities/private"
