@@ -23,7 +23,8 @@ import {
   DISALLOWED_PARAM_ERROR,
   DYNAMIC_PARAM_ERROR,
   REQUIRED_PARAM_DISMISS_ERROR,
-  INCORRECT_PARAM_TYPE_ERROR, UNSUPPORTED_PARSE_ERROR
+  INCORRECT_PARAM_TYPE_ERROR, 
+  UNSUPPORTED_PARSE_ERROR
 } from './intentLogger';
 import path from 'path';
 import { getNormalizedOhmUrlByFilepath } from '../ark_utils';
@@ -360,20 +361,23 @@ class ParseIntent {
 
   writeUserIntentJsonFile(): void {
     if (this.intentData.length > 0) {
+      if (!projectConfig.aceModuleJsonPath) {
+        return;
+      }
       const cacheSourceMapPath: string = path.join(projectConfig.aceProfilePath, 'user_intents_library.json');
       if (!fs.existsSync(projectConfig.aceProfilePath)) {
         fs.mkdirSync(projectConfig.aceProfilePath, {recursive: true});
       }
       fs.writeFileSync(cacheSourceMapPath, JSON.stringify({'insightIntents': this.intentData}, null, 2), 'utf-8');
-    }
-    const normalizedPath: string = path.normalize(projectConfig.aceModuleJsonPath);
-    const fullPath: string = path.join(path.dirname(normalizedPath), 'module.json');
-    if (fs.existsSync(fullPath)) {
-      const rawData: string = fs.readFileSync(fullPath, 'utf8');
-      const jsonData: any = JSON.parse(rawData);
-      jsonData.hasIntent = true;
-      const updatedJson: string = JSON.stringify(jsonData, null, 2);
-      fs.writeFileSync(fullPath, updatedJson, 'utf8');
+      const normalizedPath: string = path.normalize(projectConfig.aceModuleJsonPath);
+      const fullPath: string = path.join(path.dirname(normalizedPath), 'module.json');
+      if (fs.existsSync(fullPath)) {
+        const rawData: string = fs.readFileSync(fullPath, 'utf8');
+        const jsonData: any = JSON.parse(rawData);
+        jsonData.hasIntent = true;
+        const updatedJson: string = JSON.stringify(jsonData, null, 2);
+        fs.writeFileSync(fullPath, updatedJson, 'utf8');
+      }
     }
   }
 
