@@ -91,7 +91,7 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
             [
                 insideMember,
                 arkts.factory.createStringLiteral(localStorageporpValueStr),
-                this.property.value ?? arkts.factory.createIdentifier('undefined'),
+                this.property.value ?? arkts.factory.createUndefinedLiteral(),
             ]
         );
         const call = arkts.factory.createCallExpression(
@@ -139,7 +139,7 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
                         false
                     ),
                     arkts.factory.createStringLiteral(localStorageporpValueStr),
-                    this.property.value ?? arkts.factory.createIdentifier('undefined'),
+                    this.property.value ?? arkts.factory.createUndefinedLiteral(),
                 ]
             ),
             arkts.factory.createIdentifier('value'),

@@ -92,7 +92,7 @@ export class regularPropertyTranslator extends PropertyTranslator implements Ini
                 arkts.factory.createIdentifier('initializers'),
                 originalName
             ),
-            this.property.value ?? arkts.factory.createIdentifier('undefined'),
+            this.property.value ?? arkts.factory.createUndefinedLiteral(),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         );
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
