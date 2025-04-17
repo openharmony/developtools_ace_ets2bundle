@@ -14,10 +14,15 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { Dollars } from '../utils';
+import { Dollars, isMemoAnnotation } from '../utils';
 import { CustomComponentNames } from '../utils';
+import { DecoratorNames, isDecoratorAnnotation } from '../property-translators/utils';
 
-export type ScopeInfo = {
+export type ScopeInfoCollection = {
+    customComponents: CustomComponentScopeInfo[];
+};
+
+export type CustomComponentScopeInfo = {
     name: string;
     hasInitializeStruct?: boolean;
     hasUpdateStruct?: boolean;
@@ -74,6 +79,38 @@ export function isEtsGlobalClass(node: arkts.ClassDeclaration): boolean {
 export function isReourceNode(node: arkts.CallExpression): boolean {
     if (node.expression.dumpSrc() === Dollars.DOLLAR_RESOURCE || node.expression.dumpSrc() === Dollars.DOLLAR_RAWFILE) {
         return true;
+    }
+    return false;
+}
+
+export function isMemoCall(node: arkts.AstNode): node is arkts.CallExpression {
+    if (!arkts.isCallExpression(node)) {
+        return false;
+    }
+    const expr: arkts.AstNode = node.expression;
+    const decl: arkts.AstNode | undefined = arkts.getDecl(expr);
+
+    if (!decl) {
+        return false;
+    }
+
+    if (arkts.isMethodDefinition(decl)) {
+        return decl.scriptFunction.annotations.some(
+            (anno) => isDecoratorAnnotation(anno, DecoratorNames.BUILDER) || isMemoAnnotation(anno, 'memo')
+        );
+    }
+    return false;
+}
+
+export function findCanAddMemoFromArrowFunction(node: arkts.AstNode): node is arkts.ArrowFunctionExpression {
+    if (!arkts.isArrowFunctionExpression(node)) {
+        return false;
+    }
+    const hasMemo: boolean = node.annotations.some((anno) => isMemoAnnotation(anno, 'memo'));
+    if (!hasMemo && !!node.scriptFunction.body && arkts.isBlockStatement(node.scriptFunction.body)) {
+        return node.scriptFunction.body.statements.some(
+            (st) => arkts.isExpressionStatement(st) && isMemoCall(st.expression)
+        );
     }
     return false;
 }

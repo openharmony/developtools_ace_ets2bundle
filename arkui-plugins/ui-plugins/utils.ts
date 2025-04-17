@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { annotation } from "../common/arkts-utils";
+import { annotation } from '../common/arkts-utils';
 
 export enum CustomComponentNames {
     ENTRY_ANNOTATION_NAME = 'Entry',
@@ -101,9 +101,7 @@ export function createOptionalClassProperty(
     const newProperty = arkts.factory.createClassProperty(
         arkts.factory.createIdentifier(name),
         undefined,
-        stageManagementIdent.length
-            ? createStageManagementType(stageManagementIdent, property)
-            : newType,
+        stageManagementIdent.length ? createStageManagementType(stageManagementIdent, property) : newType,
         modifiers,
         false
     );
@@ -130,4 +128,40 @@ export function getGettersFromClassDecl(definition: arkts.ClassDefinition): arkt
             arkts.isMethodDefinition(member) &&
             arkts.hasModifierFlag(member, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_GETTER)
     ) as arkts.MethodDefinition[];
+}
+
+export type MemoAstNode =
+    | arkts.ScriptFunction
+    | arkts.ETSParameterExpression
+    | arkts.ClassProperty
+    | arkts.TSTypeAliasDeclaration
+    | arkts.ETSFunctionType
+    | arkts.ArrowFunctionExpression
+    | arkts.ETSUnionType;
+
+export function isMemoAnnotation(node: arkts.AnnotationUsage, memoName: string): boolean {
+    if (!(node.expr !== undefined && arkts.isIdentifier(node.expr) && node.expr.name === memoName)) {
+        return false;
+    }
+    return true;
+}
+
+export function addMemoAnnotation<T extends MemoAstNode>(node: T, memoName: string = 'memo'): T {
+    if (arkts.isETSUnionType(node)) {
+        const functionType = node.types.find((type) => arkts.isETSFunctionType(type));
+        if (!functionType) {
+            return node;
+        }
+        addMemoAnnotation(functionType, memoName);
+        return node;
+    }
+    const newAnnotations: arkts.AnnotationUsage[] = [
+        ...node.annotations.filter((it) => !isMemoAnnotation(it, memoName)),
+        annotation(memoName),
+    ];
+    if (arkts.isEtsParameterExpression(node)) {
+        node.annotations = newAnnotations;
+        return node;
+    }
+    return node.setAnnotations(newAnnotations) as T;
 }
