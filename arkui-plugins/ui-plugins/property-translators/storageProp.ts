@@ -89,7 +89,7 @@ export class StoragePropTranslator extends PropertyTranslator implements Initial
         const args: arkts.Expression[] = [
             arkts.factory.createStringLiteral(storagePropValueStr),
             arkts.factory.create1StringLiteral(originalName),
-            this.property.value ?? arkts.factory.createIdentifier('undefined'),
+            this.property.value ?? arkts.factory.createUndefinedLiteral(),
         ];
         judgeIfAddWatchFunc(args, this.property);
 
