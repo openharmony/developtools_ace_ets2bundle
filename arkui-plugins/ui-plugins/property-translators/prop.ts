@@ -100,7 +100,7 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
                 arkts.factory.createIdentifier('initializers'),
                 originalName
             ),
-            this.property.value ?? arkts.factory.createIdentifier('undefined'),
+            this.property.value ?? arkts.factory.createUndefinedLiteral(),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         );
         const nonNullItem = arkts.factory.createTSNonNullExpression(

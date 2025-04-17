@@ -89,7 +89,7 @@ export class LocalStorageLinkTranslator extends PropertyTranslator implements In
                     false
                 ),
                 arkts.factory.createStringLiteral(localStorageLinkValueStr),
-                this.property.value ?? arkts.factory.createIdentifier('undefined'),
+                this.property.value ?? arkts.factory.createUndefinedLiteral(),
             ]
         );
 
