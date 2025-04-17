@@ -292,9 +292,7 @@ export class ObservedTrackTranslator {
     }
 
     setterIfEqualsNewValue(properyIsClass: boolean, originalName: string, newName: string): arkts.IfStatement {
-        const backingValue: arkts.MemberExpression = properyIsClass
-            ? this.genThisBackingValue(newName)
-            : this.genThisBacking(newName);
+        const backingValue = properyIsClass ? this.genThisBackingValue(newName) : this.genThisBacking(newName);
 
         const setNewValue = arkts.factory.createExpressionStatement(
             arkts.factory.createAssignmentExpression(
@@ -324,13 +322,27 @@ export class ObservedTrackTranslator {
             )
         );
 
+        const subscribingWatches = arkts.factory.createExpressionStatement(
+            arkts.factory.createCallExpression(
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createThisExpression(),
+                    arkts.factory.createIdentifier('executeOnSubscribingWatches'),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                ),
+                undefined,
+                [arkts.factory.createStringLiteral(originalName)]
+            )
+        );
+
         return arkts.factory.createIfStatement(
             arkts.factory.createBinaryExpression(
                 backingValue,
                 arkts.factory.createIdentifier('newValue'),
                 arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NOT_STRICT_EQUAL
             ),
-            arkts.factory.createBlock([setNewValue, fireChange])
+            arkts.factory.createBlock([setNewValue, fireChange, subscribingWatches])
         );
     }
 }
