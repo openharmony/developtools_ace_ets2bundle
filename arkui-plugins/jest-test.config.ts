@@ -13,7 +13,16 @@
  * limitations under the License.
  */
 
-export default {
+
+import * as path from 'path';
+
+const rootPath = path.resolve(__dirname, '../../../');
+
+const sdkPath = path.resolve(rootPath, './out/sdk/ohos-sdk/linux/ets/ets1.2');
+
+const pandaSdkPath = path.resolve(sdkPath, './build-tools/ets2panda');
+
+module.exports = {
     testEnvironment: 'node',
     transform: {
         '^.+\\.ts$': ['ts-jest', { isolatedModules: true }],
@@ -23,4 +32,8 @@ export default {
     coverageDirectory: './test/report',
     collectCoverageFrom: ['common/**', 'memo-plugins/**', 'ui-plugins/**'],
     verbose: true,
-};
+    globals: {
+        SDK_PATH: sdkPath,
+        PANDA_SDK_PATH: pandaSdkPath
+    }
+};    

@@ -11761,4 +11761,3 @@ KNativePointer impl_CreateFunctionDecl(KNativePointer context, KStringPtr& name,
     return result;
 }
 KOALA_INTEROP_3(CreateFunctionDecl, KNativePointer, KNativePointer, KStringPtr, KNativePointer);
-

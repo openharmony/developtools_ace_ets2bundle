@@ -387,3 +387,28 @@ KNativePointer impl_ETSParserGetGlobalProgramAbsName(KNativePointer contextPtr)
     return new std::string(result);
 }
 KOALA_INTEROP_1(ETSParserGetGlobalProgramAbsName, KNativePointer, KNativePointer)
+
+KNativePointer impl_AstNodeRangeConst(KNativePointer context, KNativePointer node)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _node = reinterpret_cast<es2panda_AstNode*>(node);
+    auto result = GetImpl()->AstNodeRangeConst(_context, _node);
+    return (void*)result;
+}
+KOALA_INTEROP_2(AstNodeRangeConst, KNativePointer, KNativePointer, KNativePointer)
+
+KNativePointer impl_SourceRangeStart(KNativePointer context, KNativePointer range) {
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _range = reinterpret_cast<es2panda_SourceRange*>(range);
+    auto result = GetImpl()->SourceRangeStart(_context, _range);
+    return result;
+}
+KOALA_INTEROP_2(SourceRangeStart, KNativePointer, KNativePointer, KNativePointer)
+
+KNativePointer impl_SourceRangeEnd(KNativePointer context, KNativePointer range) {
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _range = reinterpret_cast<es2panda_SourceRange*>(range);
+    auto result = GetImpl()->SourceRangeEnd(_context, _range);
+    return result;
+}
+KOALA_INTEROP_2(SourceRangeEnd, KNativePointer, KNativePointer, KNativePointer)
