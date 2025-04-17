@@ -10,7 +10,7 @@
     "local:install": "chmod 777 ./npm_preinstall.sh && ./npm_preinstall.sh --init",
     "compile:plugins": "./node_modules/.bin/babel . --out-dir lib --extensions .ts",
     "compile:clean": "rm -rf lib",
-    "test": "jest --config ./jest-test.config.ts",
+    "test": "LD_LIBRARY_PATH=$INIT_CWD/../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/lib jest --config ./jest-test.config.ts",
     "compile": "npm run compile:clean && npm run compile:plugins && cp -rf ./lib $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/"
   },
   "devDependencies": {
