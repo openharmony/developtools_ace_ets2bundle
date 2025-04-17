@@ -85,25 +85,14 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
         return arkts.factory.createAssignmentExpression(
             mutableThis,
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.createBlockStatementForOptionalExpression(
-                arkts.factory.createIdentifier('initializers'),
-                originalName
+            arkts.factory.createBinaryExpression(
+                factory.createBlockStatementForOptionalExpression(
+                    arkts.factory.createIdentifier('initializers'),
+                    originalName
+                ),
+                this.property.value ?? arkts.factory.createUndefinedLiteral(),
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
             )
-        );
-    }
-
-    generateUpdateStruct(mutableThis: arkts.Expression, originalName: string): arkts.AstNode {
-        const right: arkts.MemberExpression = arkts.factory.createMemberExpression(
-            arkts.factory.createIdentifier('initializers'),
-            arkts.factory.createIdentifier(originalName),
-            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-            false,
-            true
-        );
-        return arkts.factory.createAssignmentExpression(
-            mutableThis,
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            right
         );
     }
 }
