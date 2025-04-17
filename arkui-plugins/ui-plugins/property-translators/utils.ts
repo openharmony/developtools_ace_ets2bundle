@@ -72,10 +72,9 @@ export function getStateManagementType(node: arkts.ClassProperty): string {
         return 'StorageLinkDecoratedVariable';
     } else if (hasDecorator(node, DecoratorNames.STORAGE_PROP)) {
         return 'StoragePropDecoratedVariable';
-    } else if (
-        hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP) ||
-        hasDecorator(node, DecoratorNames.OBJECT_LINK)
-    ) {
+    } else if (hasDecorator(node, DecoratorNames.OBJECT_LINK)) {
+        return 'ObjectLinkDecoratedVariable';
+    } else if (hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP)) {
         return 'SyncedProperty';
     }
     return 'MutableState';
