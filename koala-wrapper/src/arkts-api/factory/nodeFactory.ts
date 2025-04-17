@@ -69,7 +69,8 @@ import {
     TSTypeAliasDeclaration,
     ChainExpression,
     BlockExpression,
-    ETSNewClassInstanceExpression
+    ETSNewClassInstanceExpression,
+    BooleanLiteral
 } from "../../generated"
 import {
     Es2pandaModifierFlags
@@ -433,6 +434,9 @@ export const factory = {
     },
     get createETSStringLiteralType(){
         return ETSStringLiteralType.create;
+    },
+    get createBooleanLiteral(): (value: boolean) => BooleanLiteral {
+        return BooleanLiteral.createBooleanLiteral;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {
