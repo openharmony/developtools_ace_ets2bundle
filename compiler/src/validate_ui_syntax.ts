@@ -280,7 +280,7 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
   if (result.entryCount > 1 && fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
-      message: `A page can't contain more than one '@Entry' decorator`,
+      message: `A page can't contain more than one '@Entry' decorator.`,
       fileName: fileName,
       code: '10905231'
     });

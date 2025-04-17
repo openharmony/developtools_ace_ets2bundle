@@ -2774,7 +2774,7 @@ function addComponentAttr(temp, node: ts.Identifier, lastStatement,
     if (newsupplement.isAcceleratePreview) {
       log.push({
         type: LogType.ERROR,
-        message: `Doesn't support '@Extend' function now`,
+        message: `Doesn't support '@Extend' function now.`,
         pos: temp.getStart(),
         code: '10906205'
       });
