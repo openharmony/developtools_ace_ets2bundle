@@ -233,7 +233,7 @@ export class factory {
     }
 
     /*
-     * create `this.addProvidedVar<number>(<originName>, "uuuutttt", initializers?.uuuutttt ?? 1.5, false, watch)`.
+     * create `this.addProvidedVar<number>(<originName>, <alias>, initializers?.<originalName> ?? <property.value>, <allowOverride>, watchFunc)`.
      */
     static generateAddProvideVarCall(
         originalName: string,
@@ -249,7 +249,7 @@ export class factory {
                     arkts.factory.createIdentifier('initializers'),
                     originalName
                 ),
-                property.value ?? arkts.factory.createIdentifier('undefined'),
+                property.value ?? arkts.factory.createUndefinedLiteral(),
                 arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
             ),
             arkts.factory.createBooleanLiteral(allowOverride),
@@ -269,7 +269,7 @@ export class factory {
     }
 
     /*
-     * create `this.initConsume<number>("uuuutttt", "uuuutttt", watchFunc)`.
+     * create `this.initConsume<number>(<originalName>, <alias>, watchFunc)`.
      */
     static generateInitConsumeCall(
         originalName: string,
