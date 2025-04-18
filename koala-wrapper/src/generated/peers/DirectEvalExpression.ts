@@ -34,7 +34,7 @@ import { Expression } from "./Expression"
 import { TSTypeParameterInstantiation } from "./TSTypeParameterInstantiation"
 export class DirectEvalExpression extends CallExpression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 23)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_DIRECT_EVAL)
         super(pointer)
         
     }
@@ -48,6 +48,6 @@ export class DirectEvalExpression extends CallExpression {
 export function isDirectEvalExpression(node: AstNode): node is DirectEvalExpression {
     return node instanceof DirectEvalExpression
 }
-if (!nodeByType.has(23)) {
-    nodeByType.set(23, DirectEvalExpression)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_DIRECT_EVAL)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_DIRECT_EVAL, DirectEvalExpression)
 }

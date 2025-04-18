@@ -34,7 +34,7 @@ import { Expression } from "./Expression"
 import { ScriptFunction } from "./ScriptFunction"
 export class ClassStaticBlock extends ClassElement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 18)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_STATIC_BLOCK)
         super(pointer)
         
     }
@@ -48,6 +48,6 @@ export class ClassStaticBlock extends ClassElement {
 export function isClassStaticBlock(node: AstNode): node is ClassStaticBlock {
     return node instanceof ClassStaticBlock
 }
-if (!nodeByType.has(18)) {
-    nodeByType.set(18, ClassStaticBlock)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_STATIC_BLOCK)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_STATIC_BLOCK, ClassStaticBlock)
 }

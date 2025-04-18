@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 import { Es2pandaAccessibilityOption } from "./../Es2pandaEnums"
 export class TSParameterProperty extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 122)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_PARAMETER_PROPERTY)
         super(pointer)
         
     }
@@ -62,6 +62,6 @@ export class TSParameterProperty extends Expression {
 export function isTSParameterProperty(node: AstNode): node is TSParameterProperty {
     return node instanceof TSParameterProperty
 }
-if (!nodeByType.has(122)) {
-    nodeByType.set(122, TSParameterProperty)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_PARAMETER_PROPERTY)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_PARAMETER_PROPERTY, TSParameterProperty)
 }
