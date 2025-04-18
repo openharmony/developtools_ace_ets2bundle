@@ -16,7 +16,6 @@
 import * as arkts from '@koalaui/libarkts';
 import { Dollars } from '../utils';
 import { CustomComponentNames } from '../utils';
-import { isAnnotation } from '../../common/arkts-utils';
 
 export type ScopeInfo = {
     name: string;
@@ -76,19 +75,5 @@ export function isReourceNode(node: arkts.CallExpression): boolean {
     if (node.expression.dumpSrc() === Dollars.DOLLAR_RESOURCE || node.expression.dumpSrc() === Dollars.DOLLAR_RAWFILE) {
         return true;
     }
-    return false;
-}
-
-/**
- * Determine whether it is Entry class.
- *
- * @param node class declaration node
- */
-export function isEntryClass(node: arkts.ClassDeclaration): boolean {
-    node.definition!.annotations.forEach((anno) => {
-        if (isAnnotation(anno, CustomComponentNames.ENTRY_ANNOTATION_NAME)) {
-            return true;
-        }
-    })
     return false;
 }
