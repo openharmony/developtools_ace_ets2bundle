@@ -39,7 +39,7 @@ export class factory {
         styleArg: arkts.ETSParameterExpression,
         newAnno: arkts.AnnotationUsage[],
         newName: string | undefined
-    ): arkts.AstNode {
+    ): arkts.MethodDefinition {
         const func: arkts.ScriptFunction = node.scriptFunction;
         const updateFunc = arkts.factory
             .updateScriptFunction(
@@ -384,17 +384,21 @@ export class factory {
     /**
      * transform `@ComponentBuilder` in declared methods.
      */
-    static transformBuilderLambdaMethodDecl(node: arkts.MethodDefinition): arkts.AstNode {
+    static transformBuilderLambdaMethodDecl(node: arkts.MethodDefinition): arkts.MethodDefinition {
         const func: arkts.ScriptFunction = node.scriptFunction;
         const isFunctionCall: boolean = isBuilderLambdaFunctionCall(node);
         const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node);
         const styleArg: arkts.ETSParameterExpression = this.createStyleArgInBuilderLambdaDecl(typeNode, isFunctionCall);
+        const newOverloads: arkts.MethodDefinition[] = node.overloads.map((method) =>
+            factory.transformBuilderLambdaMethodDecl(method)
+        );
+
         return this.updateBuilderLambdaMethodDecl(
             node,
             styleArg,
             removeAnnotationByName(func.annotations, BuilderLambdaNames.ANNOTATION_NAME),
             replaceBuilderLambdaDeclMethodName(node.name.name)
-        );
+        ).setOverloads(newOverloads);
     }
 
     /**
