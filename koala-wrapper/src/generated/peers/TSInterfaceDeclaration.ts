@@ -39,7 +39,7 @@ import { ClassDeclaration } from "./ClassDeclaration"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class TSInterfaceDeclaration extends TypedStatement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 131)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERFACE_DECLARATION)
         super(pointer)
         
     }
@@ -98,6 +98,6 @@ export class TSInterfaceDeclaration extends TypedStatement {
 export function isTSInterfaceDeclaration(node: AstNode): node is TSInterfaceDeclaration {
     return node instanceof TSInterfaceDeclaration
 }
-if (!nodeByType.has(131)) {
-    nodeByType.set(131, TSInterfaceDeclaration)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERFACE_DECLARATION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERFACE_DECLARATION, TSInterfaceDeclaration)
 }
