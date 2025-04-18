@@ -50,10 +50,10 @@ export class regularPropertyTranslator extends PropertyTranslator implements Ini
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            arkts.factory.createBinaryExpression(
+            arkts.factory.createAssignmentExpression(
                 thisValue,
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
                 arkts.factory.createIdentifier('value'),
-                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_EQUAL
             )
         );
         const getter: arkts.MethodDefinition = this.translateGetter(
