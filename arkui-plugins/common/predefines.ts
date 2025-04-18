@@ -89,10 +89,30 @@ export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, stri
     ['ObjectLink', ['objectLinkState', 'observableProxy', 'SyncedProperty']]
 ]);
 
-export const ARKTS_1_1: string = '1.1';
-export const ARKTS_1_2: string = '1.2';
-export const ARKUICOMPATIBLE: string = 'ArkUICompatible';
-export const ESOBJECT: string = 'ESObject';
-export const INITEMPTYOBJECT: string = 'instantiateEmptyObject';
-export const SETPROPERTYBYNAME: string = 'setPropertyByName';
-export const NUMBER: string = 'number';
+
+export enum InteroperAbilityNames {
+    ARKTS_1_1 = '1.1',
+    ARKTS_1_2 = '1.2',
+    ARKUICOMPATIBLE = 'ArkUICompatible',
+    ESOBJECT = 'ESObject',
+    ELMTID = 'elmtId',
+    INITEMPTYOBJECT = 'instantiateEmptyObject',
+    SETPROPERTY = 'setProperty',
+    NUMBER = 'number',
+    PARENT = 'parent',
+    INSTANCE = 'instance',
+    PARAM = 'param',
+    EXTRAINFO = 'extrainfo',
+    COMPONENT = 'component',
+    GETPROPERTY = 'getProperty',
+    CONSTRUCTOR = 'constructor',
+    MODULE = 'module',
+    LOAD = 'load',
+    STRUCTOBJECT = 'structObject',
+    INSTANTIATE = 'instantiate',
+    WRAP = 'wrap',
+    WRAPINT = 'wrapInt',
+    WRAPSTRING = 'wrapString',
+    PARAMSLAMBDA = 'paramsLambda',
+    INTEROPCOMPONENT = 'interopComponent',
+}

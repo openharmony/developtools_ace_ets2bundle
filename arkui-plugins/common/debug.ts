@@ -16,7 +16,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as arkts from '@koalaui/libarkts';
 
-const isDebugLog: boolean = true;
+const isDebugLog: boolean = false;
 const isDebugDump: boolean = false;
 const isPerformance: boolean = false;
 arkts.Performance.getInstance().skip(!isPerformance);

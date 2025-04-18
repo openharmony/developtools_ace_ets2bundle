@@ -18,58 +18,55 @@ import { Text, TextAttribute, Column, Component, Button, ButtonAttribute, ClickE
 import { State, Link, StateDecoratedVariable, LinkDecoratedVariable,MutableState, stateOf, observableProxy } from "@ohos.arkui.stateManagement" // should be insert by ui-plugins
 import hilog from '@ohos.hilog'
 
-@Entry
+function ArkUICompatible(init:(elmtId: number, instance: ESObject) => void, update: ((elmtId: number, instance: ESObject) => void)) {
+
+}
+
 @Component
 struct MyStateSample {
-  @State stateVar: string = "state var";
-  message: string = `click to change state variable, add **`;
+  @State stateVar: string = "Parent";
+  message: string = "var";
   changeValue() {
-    this.stateVar+="**"
+    this.stateVar+="~";
   }
   build() {
-    Column() {
-      Button("clean variable").onClick((e: ClickEvent) => { this.stateVar = "state var" })
-      Text("Hello World").fontSize(20)
-      Button(this.message).backgroundColor("#FFFF00FF")
+    Column(undefined) {
+      Button("ParentChange").backgroundColor("#FFFF00FF")
         .onClick((e: ClickEvent) => {
           hilog.info(0x0000, 'testTag', 'On Click');
-          this.changeValue()
+          this.changeValue();
         })
       Text(this.stateVar).fontSize(20)
-      Child({linkVar: this.stateVar, propVar: this.stateVar})
-    }.margin(10)
+      ChildLink({stateVar: this.stateVar, stateVar1: this.stateVar, stateVar2: ""} as __Options_ChildLink)
+    }
   }
 }
 
 @Component
-struct Child {
-  @Link linkVar: string;
-  @Prop propVar: string = "Prop";
-
-  changeValue1() {
-    this.linkVar+="!!"
+struct ChildLink {
+  @Link stateVar: string = "Child";
+  @State stateVar1: string = "Child";
+  @Link stateVar2: string = "Child";
+  changeValue() {
+    this.stateVar+="~";
   }
-
-  changeValue2() {
-    this.propVar+="~~"
-  }
-
   build() {
-    Column() {
-      Button(`click to change Link variable, add symbol !!`)
-        .backgroundColor("#4169E1")
-        .onClick((e: ClickEvent) => {
-          hilog.info(0x0000, 'testTag', 'On Click');
-          this.changeValue1()
-        })
-      Button(`click to change Prop variable, add symbol ~~`)
-        .backgroundColor("#3CB371")
-        .onClick((e: ClickEvent) => {
-          hilog.info(0x0000, 'testTag', 'On Click');
-          this.changeValue2()
-        })
-      Text(`Link variable in child: ${this.linkVar}`).fontSize(30)
-      Text(`Prop variable in child: ${this.propVar}`).fontSize(30)
+    Button("ChildChange").backgroundColor("#FFFF00FF")
+      .onClick((e: ClickEvent) => {
+        hilog.info(0x0000, 'testTag', 'On Click');
+        this.changeValue();
+      })
+    Text(this.stateVar).fontSize(50)
+  }
+}
+
+export class ComExampleTrivialApplication extends UserView {
+  getBuilder() {
+    hilog.info(0x0000, 'testTag', 'getBuilder');
+    let wrapper = @memo () => {
+      hilog.info(0x0000, 'testTag', 'MyStateSample');
+      MyStateSample(undefined);
     }
+    return wrapper;
   }
 }

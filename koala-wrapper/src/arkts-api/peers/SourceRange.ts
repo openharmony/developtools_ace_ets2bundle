@@ -12,15 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { ArktsObject } from "./ArktsObject"
-import { global } from "../static/global"
-import { KNativePointer } from "@koalaui/interop"
-import { SourcePosition } from "./SourcePosition";
+import { SourcePosition } from './SourcePosition';
+import { ArktsObject } from './ArktsObject';
+import { global } from '../static/global';
+import { KNativePointer } from '@koalaui/interop';
 
 export class SourceRange extends ArktsObject {
     constructor(peer: KNativePointer) {
-        super(peer)
+        super(peer);
     }
 
     static create(start: SourcePosition, end: SourcePosition): SourceRange {

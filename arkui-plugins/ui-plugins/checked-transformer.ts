@@ -35,7 +35,6 @@ import {
     isKnownMethodDefinition,
     isEtsGlobalClass,
     isReourceNode,
-    isEntryClass,
 } from './struct-translators/utils';
 import {
     isBuilderLambda,
@@ -52,7 +51,6 @@ import {
 } from './builder-lambda-translators/utils';
 import { isEntryWrapperClass } from './entry-translators/utils';
 import { classifyProperty, PropertyTranslator } from './property-translators';
-import { createRegisterMethod } from './router';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
@@ -117,27 +115,9 @@ export class CheckedTransformer extends AbstractVisitor {
             return transformEtsGlobalClassMembers(node);
         } else if (arkts.isCallExpression(node) && isReourceNode(node)) {
             return transformResource(node, this.projectConfig);
-        } else if (arkts.isClassDeclaration(node) && isEntryClass(node)) {
-            const newNode = addRegisterRouterMethod(node);
-            return newNode;
-        } else if (arkts.isETSImportDeclaration(node)) {
-            const specifiers = node.specifiers;
-            for (const specifier of specifiers) {
-                const decl = arkts.getDecl(specifier);
-                console.log("print import decl:" + specifier.imported?.name)
-                console.log(decl?.dumpJson());
-            }
         }
         return node;
     }
-}
-
-function addRegisterRouterMethod(
-    node: arkts.ClassDeclaration
-): arkts.ClassDeclaration {
-    const definition: arkts.ClassDefinition = node.definition!;
-    const registerMethod = createRegisterMethod()
-    return node;
 }
 
 function tranformClassMembers(
