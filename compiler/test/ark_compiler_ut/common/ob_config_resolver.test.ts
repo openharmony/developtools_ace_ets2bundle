@@ -32,6 +32,7 @@ import {
   setUnobfuscationNames,
   sourceFileDependencies,
   writeObfuscatedFile,
+  writeObfuscationCaches,
   IDENTIFIER_CACHE,
   updateIncrementalCaches,
   readProjectCaches,
@@ -47,7 +48,15 @@ import {
 import { OBFUSCATION_TOOL } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import { RELEASE } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
-import { ArkObfuscator, nameCacheMap, unobfuscationNamesObj, ProjectCollections } from 'arkguard';
+import {
+  ArkObfuscator,
+  nameCacheMap,
+  unobfuscationNamesObj,
+  ProjectCollections,
+  PerfMode,
+  TimeAndMemTimeTracker,
+  printerTimeAndMemDataConfig,
+} from 'arkguard';
 import * as arkUtils from '../../../lib/ark_utils'
 
 const OBFUSCATE_TESTDATA_DIR = path.resolve(__dirname, '../../../test/ark_compiler_ut/testdata/obfuscation');
@@ -1054,6 +1063,53 @@ mocha.describe('test obfuscate config resolver api', function () {
           .withArgs('file2.ts').returns(fileContentObj2);
         await reObfuscate(arkObfuscatorStub, harFilesRecord, printObfLogger, projectConfig);
         expect(writeArkguardObfuscatedSourceCodeStub.calledTwice).to.be.true;
+      });
+    });
+    
+    mocha.describe('10-6: writeObfuscationCaches', function () {
+      let testCacheDir: string = '';
+      let timePerformanceFilePath: string = '';
+      let memoryPerformanceFilePath: string = '';
+
+      mocha.beforeEach(function () {
+        printerTimeAndMemDataConfig.mTimeAndMemPrinter = true;
+        testCacheDir = '../../test/ark_compiler_ut/testdata/';
+        TimeAndMemTimeTracker.obfuscationCacheDir = testCacheDir;
+        timePerformanceFilePath = path.join(testCacheDir, 'timePerformanceData.json');
+        memoryPerformanceFilePath = path.join(testCacheDir, 'memoryPerformanceData.json');
+        if (!fs.existsSync(testCacheDir)) {
+          fs.mkdirSync(testCacheDir, { recursive: true });
+        }
+      });
+
+      mocha.afterEach(function () {
+        if (fs.existsSync(timePerformanceFilePath)) {
+          fs.unlinkSync(timePerformanceFilePath);
+        }
+        if (fs.existsSync(memoryPerformanceFilePath)) {
+          fs.unlinkSync(memoryPerformanceFilePath);
+        }
+        if (fs.existsSync(testCacheDir)) {
+          fs.rmdirSync(testCacheDir, { recursive: true });
+        }
+      });
+
+      mocha.it('10-6-1: should call enableTimeAndMemoryPrint when perf is ADVANCED', async function () {
+        this.rollup.share.projectConfig.perf = PerfMode.ADVANCED;
+        const sourceProjectConfig = Object.assign(this.rollup.share.arkProjectConfig, this.rollup.share.projectConfig);
+        await writeObfuscationCaches(sourceProjectConfig, undefined);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        expect(fs.existsSync(timePerformanceFilePath)).to.be.true;
+        expect(fs.existsSync(memoryPerformanceFilePath)).to.be.true;
+      });
+
+      mocha.it('10-6-2: should not call enableTimeAndMemoryPrint when perf is not ADVANCED', async function () {
+        this.rollup.share.projectConfig.perf = PerfMode.NORMAL;
+        const sourceProjectConfig = Object.assign(this.rollup.share.arkProjectConfig, this.rollup.share.projectConfig);
+        await writeObfuscationCaches(sourceProjectConfig, undefined);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        expect(fs.existsSync(timePerformanceFilePath)).to.be.false;
+        expect(fs.existsSync(memoryPerformanceFilePath)).to.be.false;
       });
     });
   });
