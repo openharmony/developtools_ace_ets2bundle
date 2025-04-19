@@ -252,7 +252,7 @@ export class ModuleMode extends CommonMode {
       }
       const isArkTSEvolution: boolean = metaInfo.language === ARKTS_1_2;
       const pkgPath: string = isArkTSEvolution ?
-        path.join(getDeclgenBridgeCodePath(metaInfo.moduleName), metaInfo.moduleName) : metaInfo.pkgPath;
+        path.join(getDeclgenBridgeCodePath(metaInfo.pkgName), metaInfo.moduleName) : metaInfo.pkgPath;
       const pkgParams = {
         pkgName: metaInfo.pkgName,
         pkgPath,
@@ -313,22 +313,21 @@ export class ModuleMode extends CommonMode {
     const eventPrepareForCompilation = createAndStartEvent(parentEvent, 'preparation for compilation');
     this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
     if (rollupObject.share.projectConfig.dependentModuleMap) {
-      this.writeDeclFilesConfigJson(rollupObject.share.projectConfig.entryModuleName);
+      this.writeDeclFilesConfigJson(rollupObject.share.projectConfig.entryPackageName);
     }
     this.removeCacheInfo(rollupObject);
     stopEvent(eventPrepareForCompilation);
   }
 
   // Write the declaration file information of the 1.1 module file to the disk of the corresponding module
-  writeDeclFilesConfigJson(moduleName: string): void {
+  writeDeclFilesConfigJson(pkgName: string): void {
     if (!arkTSModuleMap.size) {
       return;
     }
-    const arkTSEvolutionModuleInfo: ArkTSEvolutionModule = arkTSModuleMap.get(moduleName);
+    const arkTSEvolutionModuleInfo: ArkTSEvolutionModule = arkTSModuleMap.get(pkgName);
     const declFilesConfigFile: string = toUnixPath(arkTSEvolutionModuleInfo.declFilesPath);
-    const packageName: string = arkTSEvolutionModuleInfo.packageName;
     mkdirsSync(path.dirname(declFilesConfigFile));
-    fs.writeFileSync(declFilesConfigFile, JSON.stringify(pkgDeclFilesConfig[packageName], null, 2), 'utf-8');
+    fs.writeFileSync(declFilesConfigFile, JSON.stringify(pkgDeclFilesConfig[pkgName], null, 2), 'utf-8');
   }
 
   collectModuleFileList(module: Object, fileList: IterableIterator<string>): void {
@@ -528,7 +527,7 @@ export class ModuleMode extends CommonMode {
       packageName = metaInfo.pkgName;
       const isArkTSEvolution: boolean = metaInfo.language === ARKTS_1_2;
       const pkgPath: string = isArkTSEvolution ?
-        path.join(getDeclgenBridgeCodePath(metaInfo.moduleName), metaInfo.moduleName) : metaInfo.pkgPath;
+        path.join(getDeclgenBridgeCodePath(packageName), metaInfo.moduleName) : metaInfo.pkgPath;
       const pkgParams = {
         pkgName: packageName,
         pkgPath,
@@ -536,7 +535,7 @@ export class ModuleMode extends CommonMode {
       };
       recordName = getNormalizedOhmUrlByFilepath(filePath, this.projectConfig, this.logger, pkgParams, undefined);
       if (!isArkTSEvolution) {
-        addDeclFilesConfig(originalFilePath, metaInfo.moduleName, this.projectConfig, this.logger, pkgPath, packageName);
+        addDeclFilesConfig(originalFilePath, this.projectConfig, this.logger, pkgPath, packageName);
       }
     } else {
       recordName = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, moduleName);
