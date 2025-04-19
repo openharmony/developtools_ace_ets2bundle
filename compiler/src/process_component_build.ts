@@ -2648,24 +2648,31 @@ function validateIdentifierWithCustomBuilder(node: ts.Node): boolean {
 }
 
 function createArrowFunctionForDollar($$varExp: ts.Expression): ts.ArrowFunction {
-  return ts.factory.createArrowFunction(
-    undefined, undefined,
-    [ts.factory.createParameterDeclaration(
+  let varExp: ts.ConditionalExpression | ts.BinaryExpression;
+  if (ts.isConditionalExpression($$varExp)) {
+    varExp = ts.factory.updateConditionalExpression(
+      $$varExp, $$varExp.condition, ts.factory.createToken(ts.SyntaxKind.QuestionToken), $$varExp.whenTrue,
+      ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createBinaryExpression(
+        $$varExp.whenFalse, ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createIdentifier($$_NEW_VALUE))); 
+  } else {
+    varExp = ts.factory.createBinaryExpression(
+      $$varExp, ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createIdentifier($$_NEW_VALUE)
+    );
+  }
+    return ts.factory.createArrowFunction(
       undefined, undefined,
-      ts.factory.createIdentifier($$_NEW_VALUE),
-      undefined, undefined, undefined
-    )],
-    undefined,
-    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-    ts.factory.createBlock(
-      [ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
-        $$varExp,
-        ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-        ts.factory.createIdentifier($$_NEW_VALUE)
-      ))],
-      false
-    )
-  );
+      [ts.factory.createParameterDeclaration(
+        undefined, undefined,
+        ts.factory.createIdentifier($$_NEW_VALUE),
+        undefined, undefined, undefined
+      )],
+      undefined,
+      ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+      ts.factory.createBlock(
+        [ts.factory.createExpressionStatement(varExp)],
+        false
+      )
+    );
 }
 
 function updateArgumentForExclamation(argument): ts.Expression {
