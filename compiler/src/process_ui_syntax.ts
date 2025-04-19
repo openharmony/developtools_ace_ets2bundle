@@ -80,8 +80,7 @@ import {
   PAGE_FULL_PATH,
   LENGTH,
   PUV2_VIEW_BASE,
-  CONTEXT_STACK,
-  COMPONENT_USER_INTENTS_DECORATOR
+  CONTEXT_STACK
 } from './pre_define';
 import {
   componentInfo,
@@ -172,7 +171,7 @@ import {
   createAndStartEvent,
   stopEvent
 } from './performance';
-import parseUserIntents from './userIntents_parser/parseUserIntents';
+import parseIntent from './userIntents_parser/parseUserIntents';
 
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -410,11 +409,9 @@ export function processUISyntax(program: ts.Program, ut = false,
           });
         }
       } else if (ts.isClassDeclaration(node)) {
-        if (hasDecorator(node, COMPONENT_USER_INTENTS_DECORATOR)) {
-          const checker: TypeChecker = metaInfo.tsProgram.getTypeChecker();
-          parseUserIntents.handleIntent(node, checker, filePath, metaInfo);
-          node = parseUserIntents.removeDecorator(node);
-        }
+        const eventParseIntentTime: CompileEvent | undefined = createAndStartEvent(eventProcessUISyntax, 'parseIntentTime');
+        node = parseIntent.detectInsightIntent(node, metaInfo, filePath);
+        stopEvent(eventParseIntentTime);
         if (hasDecorator(node, COMPONENT_SENDABLE_DECORATOR)) {
           if (projectConfig.compileHar && !projectConfig.useTsHar) {
             let warnMessage: string = 'If you use @Sendable in js har, an exception will occur during runtime.\n' +

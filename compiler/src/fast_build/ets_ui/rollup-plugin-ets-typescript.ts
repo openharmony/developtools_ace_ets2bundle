@@ -112,7 +112,7 @@ import { MemoryDefine } from '../meomry_monitor/memory_define';
 import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
 import { ARKUI_SUBSYSTEM_CODE } from '../../../lib/hvigor_error_code/hvigor_error_info';
 import { ProjectCollections } from 'arkguard';
-import parseUserIntents from '../../userIntents_parser/parseUserIntents';
+import parseIntent from '../../userIntents_parser/parseUserIntents';
 
 let switchTsAst: boolean = false;
 
@@ -220,7 +220,10 @@ export function etsTransform() {
       }
     },
     afterBuildEnd() {
-      parseUserIntents.writeUserIntentJsonFile();
+      if (parseIntent.intentData.length > 0) {
+        parseIntent.verifyInheritanceChain();
+        parseIntent.writeUserIntentJsonFile();
+      }
       const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsTransform', 'afterBuildEnd');
       const eventEtsTransformAfterBuildEnd = createAndStartEvent(hookEventFactory, 'etsTransformafterBuildEnd');
       // Copy the cache files in the compileArkTS directory to the loader_out directory
@@ -288,7 +291,7 @@ export function etsTransform() {
       resetUtils();
       resetValidateUiSyntax();
       resetObfuscation();
-      parseUserIntents.clear();
+      parseIntent.clear();
     }
   };
 }
