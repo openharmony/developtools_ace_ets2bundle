@@ -795,12 +795,24 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
-   _ImportSpecifierIsRemovableConst(context: KNativePointer, instance: KNativePointer): KBoolean {
-          throw new Error('Not implemented');
-   }
- 
-   _ImportSpecifierSetRemovable(context: KNativePointer, instance: KNativePointer): void {
-       throw new Error('Not implemented');
+    _ImportSpecifierIsRemovableConst(context: KNativePointer, instance: KNativePointer): KBoolean {
+        throw new Error('Not implemented');
+    }
+
+    _ImportSpecifierSetRemovable(context: KNativePointer, instance: KNativePointer): void {
+        throw new Error('Not implemented');
+    }
+
+    _ClassPropertyIsDefaultAccessModifierConst(context: KNativePointer, receiver: KNativePointer): boolean {
+        throw new Error('Not implemented');
+    }
+
+    _AstNodeStartConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
+        throw new Error('Not implemented');
+    }
+
+    _AstNodeEndConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
+        throw new Error('Not implemented');
     }
 
     _AstNodeRangeConst(context: KNativePointer, node: KNativePointer): KNativePointer {
