@@ -16,9 +16,11 @@
 import { KNativePointer } from "@koalaui/interop";
 import { Context } from "../peers/Context";
 import { global } from "./global";
+import { clearNodeCache } from "../class-by-peer";
 
 export function getOrUpdateGlobalContext(peer: KNativePointer): Context {
     if (!global.compilerContext || global.context !== peer) {
+        clearNodeCache();
         global.compilerContext = new Context(peer);
     }
     return global.compilerContext;

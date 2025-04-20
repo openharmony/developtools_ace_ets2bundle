@@ -72,6 +72,10 @@ export function getStateManagementType(node: arkts.ClassProperty): string {
         return 'StorageLinkDecoratedVariable';
     } else if (hasDecorator(node, DecoratorNames.STORAGE_PROP)) {
         return 'StoragePropDecoratedVariable';
+    } else if (hasDecorator(node, DecoratorNames.PROVIDE)) {
+        return 'ProvideDecoratedVariable';
+    } else if (hasDecorator(node, DecoratorNames.CONSUME)) {
+        return 'ConsumeDecoratedVariable';
     } else if (hasDecorator(node, DecoratorNames.OBJECT_LINK)) {
         return 'ObjectLinkDecoratedVariable';
     } else if (hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP)) {
@@ -227,40 +231,57 @@ export function getValueInAnnotation(node: arkts.ClassProperty, decoratorName: D
     return undefined;
 }
 
-function getWatchValueStr(node: arkts.AstNode): string | undefined {
-    if (!arkts.isClassProperty(node) || !node.value) {
-        return undefined;
-    }
-    return arkts.isStringLiteral(node.value) ? node.value.str : undefined;
+export interface ProvideOptions {
+    alias: string;
+    allowOverride: boolean;
 }
 
-function getWatchAnnotationValue(anno: arkts.AnnotationUsage): string | undefined {
-    const isWatchAnnotation: boolean =
-        !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === DecoratorNames.WATCH;
-
-    if (isWatchAnnotation && anno.properties.length === 1) {
-        return getWatchValueStr(anno.properties.at(0)!);
-    }
-    return undefined;
-}
-
-function getWatchValueInAnnotation(node: arkts.ClassProperty): string | undefined {
+export function getValueInProvideAnnotation(node: arkts.ClassProperty): ProvideOptions | undefined {
     const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
-
     for (let i = 0; i < annotations.length; i++) {
         const anno: arkts.AnnotationUsage = annotations[i];
-        const str: string | undefined = getWatchAnnotationValue(anno);
-        if (!!str) {
-            return str;
+        const alias: string | undefined = getValueInObjectAnnotation(anno, DecoratorNames.PROVIDE, 'alias');
+        const allowOverride: boolean = getValueInObjectAnnotation(anno, DecoratorNames.PROVIDE, 'allowOverride')
+            ? true
+            : false;
+        if (!!alias) {
+            return { alias, allowOverride };
         }
     }
-
     return undefined;
+}
+
+function getValueInObjectAnnotation(anno: arkts.AnnotationUsage, decoratorName: DecoratorNames, key: string): any {
+    const isSuitableAnnotation: boolean =
+        !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName;
+    if (!isSuitableAnnotation) {
+        return undefined;
+    }
+    const keyItem: arkts.AstNode | undefined = anno.properties.find(
+        (annoProp: arkts.AstNode) =>
+            arkts.isClassProperty(annoProp) &&
+            annoProp.key &&
+            arkts.isIdentifier(annoProp.key) &&
+            annoProp.key.name === key
+    );
+    if (keyItem && arkts.isClassProperty(keyItem) && keyItem.value) {
+        return getDifferentAnnoTypeValue(keyItem.value);
+    }
+    return undefined;
+}
+
+function getDifferentAnnoTypeValue(value: arkts.Expression): string | boolean {
+    if (arkts.isBooleanLiteral(value)) {
+        return value.value;
+    } else if (arkts.isStringLiteral(value)) {
+        return value.str;
+    }
+    return value.dumpSrc();
 }
 
 export function judgeIfAddWatchFunc(args: arkts.Expression[], property: arkts.ClassProperty): void {
     if (hasDecorator(property, DecoratorNames.WATCH)) {
-        const watchStr: string | undefined = getWatchValueInAnnotation(property);
+        const watchStr: string | undefined = getValueInAnnotation(property, DecoratorNames.WATCH);
         if (watchStr) {
             args.push(factory.createWatchCallback(watchStr));
         }

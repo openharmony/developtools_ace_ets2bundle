@@ -36,7 +36,7 @@ import { Decorator } from "./Decorator"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class VariableDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 150)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATION)
         super(pointer)
         
     }
@@ -67,6 +67,6 @@ export class VariableDeclaration extends Statement {
 export function isVariableDeclaration(node: AstNode): node is VariableDeclaration {
     return node instanceof VariableDeclaration
 }
-if (!nodeByType.has(150)) {
-    nodeByType.set(150, VariableDeclaration)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATION, VariableDeclaration)
 }

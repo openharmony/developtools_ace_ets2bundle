@@ -35,7 +35,7 @@ import { TSTypeParameterInstantiation } from "./TSTypeParameterInstantiation"
 import { BlockStatement } from "./BlockStatement"
 export class CallExpression extends MaybeOptionalExpression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 10)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CALL_EXPRESSION)
         super(pointer)
         
     }
@@ -93,6 +93,6 @@ export class CallExpression extends MaybeOptionalExpression {
 export function isCallExpression(node: AstNode): node is CallExpression {
     return node instanceof CallExpression
 }
-if (!nodeByType.has(10)) {
-    nodeByType.set(10, CallExpression)
+if (!nodeByType.has( Es2pandaAstNodeType.AST_NODE_TYPE_CALL_EXPRESSION)) {
+    nodeByType.set( Es2pandaAstNodeType.AST_NODE_TYPE_CALL_EXPRESSION, CallExpression)
 }
