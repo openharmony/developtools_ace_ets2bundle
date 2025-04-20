@@ -343,7 +343,7 @@
     },
     "ExceededEntry": [
         {
-            "message": "A page can't contain more than one '@Entry' decorator",
+            "message": "A page can't contain more than one '@Entry' decorator.",
             "type": "ERROR",
             "code": "10905231"
         },
