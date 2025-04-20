@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 import { Es2pandaTokenType } from "./../Es2pandaEnums"
 export class BinaryExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 6)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_BINARY_EXPRESSION)
         super(pointer)
         
     }
@@ -91,6 +91,6 @@ export class BinaryExpression extends Expression {
 export function isBinaryExpression(node: AstNode): node is BinaryExpression {
     return node instanceof BinaryExpression
 }
-if (!nodeByType.has(6)) {
-    nodeByType.set(6, BinaryExpression)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_BINARY_EXPRESSION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_BINARY_EXPRESSION, BinaryExpression)
 }

@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 import { ETSImportDeclaration } from "./ETSImportDeclaration"
 export class ETSReExportDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 57)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_REEXPORT_STATEMENT)
         super(pointer)
         
     }
@@ -47,6 +47,6 @@ export class ETSReExportDeclaration extends Statement {
 export function isETSReExportDeclaration(node: AstNode): node is ETSReExportDeclaration {
     return node instanceof ETSReExportDeclaration
 }
-if (!nodeByType.has(57)) {
-    nodeByType.set(57, ETSReExportDeclaration)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_REEXPORT_STATEMENT)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_REEXPORT_STATEMENT, ETSReExportDeclaration)
 }

@@ -96,7 +96,7 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
                 arkts.factory.createIdentifier('initializers'),
                 originalName
             ),
-            this.property.value ?? arkts.factory.createIdentifier('undefined'),
+            this.property.value ?? arkts.factory.createUndefinedLiteral(),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         );
         const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(originalName), binaryItem];

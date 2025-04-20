@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 import { Identifier } from "./Identifier"
 export class ImportNamespaceSpecifier extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 42)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_IMPORT_NAMESPACE_SPECIFIER)
         super(pointer)
         
     }
@@ -50,6 +50,6 @@ export class ImportNamespaceSpecifier extends Statement {
 export function isImportNamespaceSpecifier(node: AstNode): node is ImportNamespaceSpecifier {
     return node instanceof ImportNamespaceSpecifier
 }
-if (!nodeByType.has(42)) {
-    nodeByType.set(42, ImportNamespaceSpecifier)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_IMPORT_NAMESPACE_SPECIFIER)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_IMPORT_NAMESPACE_SPECIFIER, ImportNamespaceSpecifier)
 }
