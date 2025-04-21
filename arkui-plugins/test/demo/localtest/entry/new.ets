@@ -18,6 +18,10 @@ import { Text, TextAttribute, Column, Component, Button, ButtonAttribute, ClickE
 import { State, Link, StateDecoratedVariable, LinkDecoratedVariable,MutableState, stateOf, observableProxy } from "@ohos.arkui.stateManagement" // should be insert by ui-plugins
 import hilog from '@ohos.hilog'
 
+function ArkUICompatible(init:(elmtId: number, instance: ESObject) => void, update: ((elmtId: number, instance: ESObject) => void)) {
+
+}
+
 @Component
 struct MyStateSample {
   @State stateVar: string = "Parent";

@@ -802,6 +802,22 @@ export class Es2pandaNativeModule {
    _ImportSpecifierSetRemovable(context: KNativePointer, instance: KNativePointer): void {
        throw new Error('Not implemented');
     }
+
+    _AstNodeRangeConst(context: KNativePointer, node: KNativePointer): KNativePointer {
+        throw new Error('CreateFunctionDecl was not overloaded by native module initialization');
+    }
+
+    _SourceRangeStart(context: KNativePointer, range: KNativePointer): KNativePointer {
+        throw new Error('CreateFunctionDecl was not overloaded by native module initialization');
+    }
+
+    _SourceRangeEnd(context: KNativePointer, range: KNativePointer): KNativePointer {
+        throw new Error('CreateFunctionDecl was not overloaded by native module initialization');
+    }
+
+    _CreateSourceRange(context: KNativePointer, start: KNativePointer, end: KNativePointer): KNativePointer {
+        throw new Error('CreateFunctionDecl was not overloaded by native module initialization');
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {

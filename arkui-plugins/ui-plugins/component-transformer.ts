@@ -257,14 +257,14 @@ export class ComponentTransformer extends AbstractVisitor {
         definition: arkts.ClassDefinition,
         newDefinitionBody: arkts.AstNode[]
     ): arkts.ClassDefinition {
-        const staticMethonBody: arkts.AstNode[] = [];
+        const staticMethodBody: arkts.AstNode[] = [];
         const hasExportFlag =
             (node.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT) ===
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
         if (hasExportFlag) {
             const buildCompatibleNode: arkts.MethodDefinition = this.createStaticMethod(definition);
             if (!!buildCompatibleNode) {
-                staticMethonBody.push(buildCompatibleNode);
+                staticMethodBody.push(buildCompatibleNode);
             }
         }
         return arkts.factory.updateClassDefinition(
@@ -291,7 +291,7 @@ export class ComponentTransformer extends AbstractVisitor {
                     ])
                 )
             ),
-            [...newDefinitionBody, ...definition.body, ...staticMethonBody],
+            [...newDefinitionBody, ...definition.body, ...staticMethodBody],
             definition.modifiers,
             arkts.classDefinitionFlags(definition) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_FINAL
         );

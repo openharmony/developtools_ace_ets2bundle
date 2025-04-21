@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor, VisitorOptions } from './abstract-visitor';
 import { matchPrefix } from './arkts-utils';
 import { debugDump, getDumpFileName } from './debug';
-import { ARKTS_1_1, ARKUI_COMPONENT_IMPORT_NAME } from './predefines';
+import { InteroperAbilityNames, ARKUI_COMPONENT_IMPORT_NAME } from './predefines';
 import { PluginContext } from './plugin-context';
 import { LegacyTransformer } from '../ui-plugins/legacy-transformer';
 import { ComponentTransformer } from '../ui-plugins/component-transformer';
@@ -121,7 +121,7 @@ export class ProgramVisitor extends AbstractVisitor {
         for (const module of moduleList) {
             const language = module.language;
             const moduleName = module.moduleName;
-            if (language !== ARKTS_1_1) {
+            if (language !== InteroperAbilityNames.ARKTS_1_1) {
                 continue;
             }
             if (!this.legacyStructMap.has(moduleName)) {
