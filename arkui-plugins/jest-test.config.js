@@ -28,7 +28,25 @@ module.exports = {
     testRegex: './test/ut/.+\\.test\\.ts$',
     moduleFileExtensions: ['ts', 'js', 'json', 'node'],
     coverageDirectory: './test/report',
-    collectCoverageFrom: ['common/**', 'memo-plugins/**', 'ui-plugins/**'],
+    collectCoverageFrom: [
+        'common/**',
+        'memo-plugins/**',
+        'ui-plugins/**'
+    ],
+    coveragePathIgnorePatterns: [
+        'common/debug.ts',
+        'common/etsglobal-remover.ts',
+        'common/print-visitor.ts',
+        'common/plugin-context.ts',
+        'memo-plugins/index.ts',
+        'memo-plugins/import-transformer.ts',
+        'memo-plugins/memo-transformer.ts',
+        'ui-plugins/index.ts',
+        'ui-plugins/printer-transformer.ts',
+        'ui-plugins/builder-lambda-translators/builder-lambda-transformer.ts',
+        'ui-plugins/entry-translators/entry-transformer.ts',
+        'ui-plugins/struct-translators/struct-transformer.ts'
+    ],
     verbose: true,
     globals: {
         SDK_PATH: sdkPath,
