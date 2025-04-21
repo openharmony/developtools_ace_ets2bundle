@@ -27,6 +27,7 @@ import {
     getTypeNameFromTypeParameter,
     getTypeParamsFromClassDecl,
     BuilderLambdaNames,
+    getGettersFromClassDecl
 } from './utils';
 import { hasDecorator, DecoratorNames } from './property-translators/utils';
 import {
@@ -50,7 +51,9 @@ import {
     builderLambdaTypeName,
 } from './builder-lambda-translators/utils';
 import { isEntryWrapperClass } from './entry-translators/utils';
-import { classifyProperty, PropertyTranslator } from './property-translators';
+import { classifyObservedTrack, classifyProperty, PropertyTranslator } from './property-translators';
+import { ObservedTrackTranslator } from './property-translators/observedTrack';
+import { nodeByType } from '@koalaui/libarkts/build/src/reexport-for-generated';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
@@ -116,8 +119,222 @@ export class CheckedTransformer extends AbstractVisitor {
         } else if (arkts.isCallExpression(node) && isReourceNode(node)) {
             return transformResource(node, this.projectConfig);
         }
+        else if (arkts.isClassDeclaration(node)) {
+            return transformObservedTracked(node);
+        }
         return node;
     }
+}
+export type ClassScopeInfo = {
+    isObserved: boolean;
+    classHasTrack: boolean;
+    getters: arkts.MethodDefinition[]
+};
+
+function transformObservedTracked(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
+    if (!node.definition) {
+        return node;
+    }
+    const isObserved: boolean = hasDecorator(node.definition, DecoratorNames.OBSERVED);
+    const classHasTrack: boolean = node.definition.body.some(
+        (member) => arkts.isClassProperty(member) && hasDecorator(member, DecoratorNames.TRACK)
+    );
+    if (!isObserved && !classHasTrack) {
+        return node;
+    }
+   
+    const updateClassDef: arkts.ClassDefinition = arkts.factory.updateClassDefinition(
+        node.definition,
+        node.definition.ident,
+        node.definition.typeParams,
+        node.definition.superTypeParams,
+        [
+            ...node.definition.implements,
+            arkts.TSClassImplements.createTSClassImplements(
+                arkts.factory.createTypeReference(
+                    arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('IObservedObject'))
+                )
+            ),
+        ],
+        undefined,
+        node.definition.super,
+        observedTrackPropertyMembers(classHasTrack, node.definition, isObserved),
+        node.definition.modifiers,
+        arkts.classDefinitionFlags(node.definition)
+    );
+    return arkts.factory.updateClassDeclaration(node, updateClassDef);
+} 
+
+function observedTrackPropertyMembers(
+    classHasTrack: boolean,
+    definition: arkts.ClassDefinition,
+    isObserved: boolean
+): arkts.AstNode[] {
+    const watchMembers: arkts.AstNode[] = createWatchMembers();
+    const permissibleAddRefDepth: arkts.ClassProperty = arkts.factory.createClassProperty(
+        arkts.factory.createIdentifier('_permissibleAddRefDepth'),
+        arkts.factory.createNumericLiteral(0),
+        arkts.factory.createTypeReference(
+            arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('int32'))
+        ),
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+        false
+    );
+
+    const meta: arkts.ClassProperty = arkts.factory.createClassProperty(
+        arkts.factory.createIdentifier('__meta'),
+        arkts.factory.createETSNewClassInstanceExpression(
+            arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('MutableStateMeta'))
+            ),
+            [arkts.factory.createStringLiteral('@Observe properties (no @Track)')]
+        ),
+        arkts.factory.createTypeReference(
+            arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('MutableStateMeta'))
+        ),
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+        false
+    );
+
+    const getters: arkts.MethodDefinition[] = getGettersFromClassDecl(definition);
+
+    const classScopeInfo: ClassScopeInfo = {
+        isObserved: isObserved,
+        classHasTrack: classHasTrack,
+        getters: getters,
+    };
+    
+    const propertyTranslators: ObservedTrackTranslator[] = filterDefined(
+        definition.body.map((it) => classifyObservedTrack(it, classScopeInfo))
+    );
+
+    const propertyMembers = propertyTranslators.map((translator) => translator.translateMember());
+
+    const nonClassPropertyOrGetter: arkts.AstNode[] = definition.body.filter(
+        (member) =>
+            !arkts.isClassProperty(member) &&
+            !(
+                arkts.isMethodDefinition(member) &&
+                arkts.hasModifierFlag(member, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_GETTER)
+            )
+    );
+
+    return [
+        ...watchMembers,
+        ...(classHasTrack ? [permissibleAddRefDepth] : [permissibleAddRefDepth, meta]),
+        ...collect(...propertyMembers),
+        ...nonClassPropertyOrGetter,
+        ...classScopeInfo.getters,
+    ];
+}
+
+function createWatchMethod(
+    methodName: string,
+    returnType: arkts.Es2pandaPrimitiveType,
+    paramName: string,
+    paramType: string,
+    isReturnStatement: boolean
+): arkts.MethodDefinition {
+    return arkts.factory.createMethodDefinition(
+        arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+        arkts.factory.createIdentifier(methodName),
+        arkts.factory.createFunctionExpression(
+            arkts.factory.createScriptFunction(
+                arkts.factory.createBlock([
+                    isReturnStatement
+                        ? arkts.factory.createReturnStatement(
+                              arkts.factory.createCallExpression(thisSubscribedWatchesMember(methodName), undefined, [
+                                  arkts.factory.createIdentifier(paramName),
+                              ])
+                          )
+                        : arkts.factory.createExpressionStatement(
+                              arkts.factory.createCallExpression(thisSubscribedWatchesMember(methodName), undefined, [
+                                  arkts.factory.createIdentifier(paramName),
+                              ])
+                          ),
+                ]),
+                arkts.factory.createFunctionSignature(
+                    undefined,
+                    [
+                        arkts.factory.createParameterDeclaration(
+                            arkts.factory.createIdentifier(
+                                paramName,
+                                arkts.factory.createTypeReference(
+                                    arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(paramType))
+                                )
+                            ),
+                            undefined
+                        ),
+                    ],
+                    arkts.factory.createPrimitiveType(returnType),
+                    false
+                ),
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+            )
+        ),
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+        false
+    );
+}
+
+function createWatchMembers(): arkts.AstNode[] {
+    const subscribedWatches: arkts.ClassProperty = arkts.factory.createClassProperty(
+        arkts.factory.createIdentifier('subscribedWatches'),
+        arkts.factory.createETSNewClassInstanceExpression(
+            arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('SubscribedWatches'))
+            ),
+            []
+        ),
+        arkts.factory.createTypeReference(
+            arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('SubscribedWatches'))
+        ),
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+        false
+    );
+
+    const addWatchSubscriber = createWatchMethod(
+        'addWatchSubscriber',
+        arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID,
+        'watchId',
+        'WatchIdType',
+        false
+      );
+    
+      const removeWatchSubscriber = createWatchMethod(
+        'removeWatchSubscriber',
+        arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_BOOLEAN,
+        'watchId',
+        'WatchIdType',
+        true
+      );
+    
+      const executeOnSubscribingWatches = createWatchMethod(
+        'executeOnSubscribingWatches',
+        arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID,
+        'propertyName',
+        'string',
+        false
+      );
+    
+    return [subscribedWatches, addWatchSubscriber, removeWatchSubscriber, executeOnSubscribingWatches];
+}
+
+function thisSubscribedWatchesMember(member: string): arkts.MemberExpression {
+    return arkts.factory.createMemberExpression(
+        arkts.factory.createMemberExpression(
+            arkts.factory.createThisExpression(),
+            arkts.factory.createIdentifier('subscribedWatches'),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
+        ),
+        arkts.factory.createIdentifier(member),
+        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+        false,
+        false
+    );
 }
 
 function tranformClassMembers(
