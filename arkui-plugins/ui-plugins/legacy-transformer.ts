@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor, VisitorOptions } from '../common/abstract-visitor';
-import { ESOBJECT } from '../common/predefines';
+import { InteroperAbilityNames } from '../common/predefines';
 
 interface LegacyTransformerOptions extends VisitorOptions {
     structList?: string[]
@@ -69,7 +69,7 @@ export class LegacyTransformer extends AbstractVisitor {
     processConstructor(node: arkts.MethodDefinition): arkts.MethodDefinition {
         const esobject = arkts.factory.createTypeReference(
             arkts.factory.createTypeReferencePart(
-                arkts.factory.createIdentifier(ESOBJECT)
+                arkts.factory.createIdentifier(InteroperAbilityNames.ESOBJECT)
             )
         );
         const script = arkts.factory.createScriptFunction(
@@ -78,11 +78,11 @@ export class LegacyTransformer extends AbstractVisitor {
                 undefined,
                 [
                     arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier('parent', esobject),
+                        arkts.factory.createIdentifier(InteroperAbilityNames.PARENT, esobject),
                         undefined,
                     ),
                     arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier('params', esobject),
+                        arkts.factory.createIdentifier(InteroperAbilityNames.PARAM, esobject),
                         undefined,
                     ),
                     arkts.factory.createParameterDeclaration(
@@ -90,15 +90,15 @@ export class LegacyTransformer extends AbstractVisitor {
                         undefined,
                     ),
                     arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier('elmtId', esobject),
+                        arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID, esobject),
                         undefined,
                     ),
                     arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier('paramsLambda', esobject),
+                        arkts.factory.createIdentifier(InteroperAbilityNames.PARAMSLAMBDA, esobject),
                         undefined,
                     ),
                     arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier('extraInfo', esobject),
+                        arkts.factory.createIdentifier(InteroperAbilityNames.EXTRAINFO, esobject),
                         undefined,
                     )
                 ], undefined, false),
