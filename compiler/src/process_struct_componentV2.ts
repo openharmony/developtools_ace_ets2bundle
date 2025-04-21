@@ -333,6 +333,9 @@ function processComponentProperty(member: ts.PropertyDeclaration, structInfo: St
   if (structInfo.staticPropertySet.has(propName)) {
     initializer = member.initializer;
   }
+  if (structInfo.paramDecoratorMap.has(propName) && structInfo.builderParamDecoratorSet.has(propName)) {
+    return processRequireBuilderParamProperty(member, decorators, initializer);
+  }
   if (structInfo.paramDecoratorMap.has(propName)) {
     return processParamProperty(member, decorators, initializer);
   }
@@ -356,6 +359,15 @@ function checkV2ComponentMemberType(node: ts.Node, propName: string, log: LogInf
 function processParamProperty(member: ts.PropertyDeclaration,
   decorators: readonly ts.Decorator[], initializer: ts.Expression): ts.PropertyDeclaration {
   const newDecorators: readonly ts.Decorator[] = removeDecorator(decorators, constantDefine.REQUIRE);
+  return ts.factory.updatePropertyDeclaration(member,
+    ts.concatenateDecoratorsAndModifiers(newDecorators, ts.getModifiers(member)),
+    member.name, member.questionToken, member.type, initializer);
+}
+
+function processRequireBuilderParamProperty(member: ts.PropertyDeclaration,
+  decorators: readonly ts.Decorator[], initializer: ts.Expression): ts.PropertyDeclaration {
+  const tempDecorators: readonly ts.Decorator[] = removeDecorator(decorators, constantDefine.REQUIRE);
+  const newDecorators: readonly ts.Decorator[] = removeDecorator(tempDecorators, constantDefine.BUILDER_PARAM);
   return ts.factory.updatePropertyDeclaration(member,
     ts.concatenateDecoratorsAndModifiers(newDecorators, ts.getModifiers(member)),
     member.name, member.questionToken, member.type, initializer);
