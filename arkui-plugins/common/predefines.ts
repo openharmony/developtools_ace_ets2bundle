@@ -52,28 +52,36 @@ export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<s
             'LocalStorageProp',
             'Watch',
             'ObjectLink',
+            'Observed',
+            'Track',
             'StateDecoratedVariable',
             'MutableState',
             'contextLocalStateOf',
             'contextLocal',
             'observableProxy',
-            'SyncedProperty',
-            'objectLinkState',
             'propState',
-            'AppStorageLinkState',
             'StorageLinkState',
+            'SyncedProperty',
             'DecoratedV1VariableBase',
             'LinkDecoratedVariable',
             'PropDecoratedVariable',
             'StorageLinkDecoratedVariable',
             'StoragePropDecoratedVariable',
+            'MutableStateMeta',
+            'BackingValue',
+            'setObservationDepth',
+            'IObservedObject',
             'ProvideDecoratedVariable',
             'ConsumeDecoratedVariable',
             'memo',
             '__memo_context_type',
             '__memo_id_type',
+            'ObjectLinkDecoratedVariable',
+            'WatchIdType', 
+            'SubscribedWatches'
         ]),
     ],
+    ['@koalaui.runtime.common', new Set(['int32'])]
 ]);
 
 export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, string[]>([
@@ -87,8 +95,10 @@ export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, stri
     ['StorageProp', ['StoragePropDecoratedVariable']],
     ['StorageLink', ['StorageLinkDecoratedVariable']],
     ['LocalStorageLink', ['StorageLinkState', 'MutableState', 'observableProxy']],
-    ['LocalStorageProp', ['StorageLinkState', 'MutableState', 'observableProxy', 'propState']],
-    ['ObjectLink', ['objectLinkState', 'observableProxy', 'SyncedProperty']]
+    ['LocalStorageProp', ['StorageLinkState', 'SyncedProperty', 'observableProxy', 'propState']],
+    ['ObjectLink', ['ObjectLinkDecoratedVariable']],
+    ['Observed', ['MutableStateMeta', 'BackingValue', 'setObservationDepth', 'IObservedObject', 'int32', 'WatchIdType', 'SubscribedWatches']],
+    ['Track', ['MutableStateMeta', 'BackingValue', 'setObservationDepth', 'IObservedObject', 'int32', 'WatchIdType', 'SubscribedWatches']],
 ]);
 
 

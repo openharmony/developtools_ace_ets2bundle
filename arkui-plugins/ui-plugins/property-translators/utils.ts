@@ -34,6 +34,7 @@ export enum DecoratorNames {
     LOCAL_STORAGE_PROP = 'LocalStorageProp',
     LOCAL_STORAGE_LINK = 'LocalStorageLink',
     REUSABLE = 'Reusable',
+    TRACK = 'Track'
 }
 
 export function collectPropertyDecorators(property: arkts.ClassProperty): string[] {
@@ -75,10 +76,9 @@ export function getStateManagementType(node: arkts.ClassProperty): string {
         return 'ProvideDecoratedVariable';
     } else if (hasDecorator(node, DecoratorNames.CONSUME)) {
         return 'ConsumeDecoratedVariable';
-    } else if (
-        hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP) ||
-        hasDecorator(node, DecoratorNames.OBJECT_LINK)
-    ) {
+    } else if (hasDecorator(node, DecoratorNames.OBJECT_LINK)) {
+        return 'ObjectLinkDecoratedVariable';
+    } else if (hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP)) {
         return 'SyncedProperty';
     }
     return 'MutableState';
