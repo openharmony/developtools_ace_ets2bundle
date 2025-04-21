@@ -131,6 +131,7 @@ class HandleUIImports {
       }
     }
 
+    this.handleImportBuilder(node);
     const result = ts.visitEachChild(node, this.visitNode.bind(this), this.context);
 
     if (ts.isIdentifier(result) && !this.shouldSkipIdentifier(result)) {
@@ -140,6 +141,15 @@ class HandleUIImports {
     }
 
     return result;
+  }
+
+  private handleImportBuilder(node: ts.Node): void {
+    ts.getAllDecorators(node)?.forEach(element => {
+      if (element?.getText() === '@Builder') {
+        this.interfacesNeedToImport.add('Builder');
+        return;
+      }
+    });
   }
 
   private AddUIImports(node: ts.SourceFile): void {
