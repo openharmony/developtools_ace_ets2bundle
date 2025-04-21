@@ -31,7 +31,12 @@ export abstract class AstNode extends ArktsObject {
     }
 
     public get originalPeer(): KNativePointer {
-        return global.generatedEs2panda._AstNodeOriginalNodeConst(global.context, this.peer)
+        const result = global.generatedEs2panda._AstNodeOriginalNodeConst(global.context, this.peer)
+        if (result === nullptr) {
+            this.originalPeer = this.peer
+            return this.peer
+        }
+        return result
     }
 
     public set originalPeer(peer: KNativePointer) {

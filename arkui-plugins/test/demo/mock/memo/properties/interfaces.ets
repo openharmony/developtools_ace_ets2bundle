@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (C) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,10 +14,21 @@
  */
 
 import { memo, __memo_context_type, __memo_id_type } from "@ohos.arkui.stateManagement"
-import { Column, UIColumnAttribute } from "arkui.component.column"
 
-class MyStateSample {
-    @memo build() {
-        Column(undefined) {}
-    }
+interface A {
+    arg: () => void
+    @memo memo_arg: () => void
+    @memo memo_optional_arg?: () => void
+    @memo memo_union_arg: (() => void) | undefined
+
+    arg_memo_type: @memo () => void
 }
+
+@memo() (() => {
+    let a: A = {
+        arg: (() => {}),
+        memo_arg: (() => {}),
+        memo_union_arg: (() => {}),
+        arg_memo_type: (() => {}),
+    };
+});

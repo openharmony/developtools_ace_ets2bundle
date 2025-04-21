@@ -18,6 +18,22 @@ import { factory } from './memo-factory';
 import { hasMemoAnnotation, hasMemoIntrinsicAnnotation } from './utils';
 import { AbstractVisitor } from '../common/abstract-visitor';
 
+function isScriptFunctionFromGetter(node: arkts.ScriptFunction): boolean {
+    return (
+        arkts.isFunctionExpression(node.parent) &&
+        arkts.isMethodDefinition(node.parent.parent) &&
+        node.parent.parent.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET
+    );
+}
+
+function isScriptFunctionFromSetter(node: arkts.ScriptFunction): boolean {
+    return (
+        arkts.isFunctionExpression(node.parent) &&
+        arkts.isMethodDefinition(node.parent.parent) &&
+        node.parent.parent.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET
+    );
+}
+
 export class SignatureTransformer extends AbstractVisitor {
     public modified = false;
 
@@ -32,17 +48,23 @@ export class SignatureTransformer extends AbstractVisitor {
             if (memo) {
                 this.modified = true;
             }
+            const isFromGetter = isScriptFunctionFromGetter(node);
+            const isFromSetter = isScriptFunctionFromSetter(node);
+            const shouldAddMemoParam = memo && !isFromGetter && !isFromSetter;
+            const shouldApplyMemoToParamExpr = memo && isFromSetter;
+            const shouldApplyMemoToReturnType = memo && isFromGetter;
+            const newParams = node.params.map((it) => this.visitor(it, shouldApplyMemoToParamExpr));
             return arkts.factory.updateScriptFunction(
                 node,
                 node.body,
                 arkts.factory.createFunctionSignature(
                     node.typeParams,
-                    [...(memo ? factory.createHiddenParameters() : []), ...node.params.map((it) => this.visitor(it))],
+                    shouldAddMemoParam ? factory.createHiddenParameterIfNotAdded(newParams) : newParams,
                     node.returnTypeAnnotation
-                        ? this.visitor(node.returnTypeAnnotation)
+                        ? this.visitor(node.returnTypeAnnotation, shouldApplyMemoToReturnType)
                         : memo
-                          ? arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
-                          : undefined,
+                        ? arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
+                        : undefined,
                     node.hasReceiver
                 ),
                 node.flags,
@@ -50,7 +72,7 @@ export class SignatureTransformer extends AbstractVisitor {
             ) as any as T;
         }
         if (arkts.isEtsParameterExpression(node)) {
-            const memo = hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node);
+            const memo = hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node) || applyMemo;
             if (!node.type) {
                 if (memo) {
                     console.error(`@memo parameter ${node.identifier.name} without type annotatation`);
@@ -66,11 +88,12 @@ export class SignatureTransformer extends AbstractVisitor {
             if (memo) {
                 this.modified = true;
             }
+            const newParams = node.params.map((it) => this.visitor(it));
             return arkts.factory.updateFunctionType(
                 node,
                 arkts.factory.createFunctionSignature(
                     undefined,
-                    [...(memo ? factory.createHiddenParameters() : []), ...node.params.map((it) => this.visitor(it))],
+                    memo ? factory.createHiddenParameterIfNotAdded(newParams) : newParams,
                     this.visitor(node.returnType!),
                     false
                 ),
@@ -86,7 +109,26 @@ export class SignatureTransformer extends AbstractVisitor {
         if (arkts.isETSUndefinedType(node)) {
             return node as any as T;
         }
+        if (arkts.isETSTypeReference(node) && applyMemo) {
+            if (!node.part || !node.part.name) {
+                console.error(`@memo parameter has no type reference`);
+                throw 'Invalid @memo usage';
+            }
+            const expr = node.part.name;
+            const decl = arkts.getDecl(expr);
+            if (!decl || !arkts.isTSTypeAliasDeclaration(decl)) {
+                console.error(`@memo parameter's type has not been declared`);
+                throw 'Invalid @memo usage';
+            }
+            const memoDecl = hasMemoAnnotation(decl) || hasMemoIntrinsicAnnotation(decl);
+            if (memoDecl) {
+                return node as any as T;
+            }
+            console.error(`@memo parameter type reference has no @memo type declaration`);
+            throw 'Invalid @memo usage';
+        }
         if (applyMemo) {
+            console.error(`@memo parameter's signature has invalid type`);
             throw 'Invalid @memo usage';
         }
         return node;

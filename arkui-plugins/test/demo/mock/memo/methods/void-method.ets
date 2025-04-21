@@ -15,7 +15,43 @@
 
 import { memo, __memo_context_type, __memo_id_type } from "@ohos.arkui.stateManagement"
 
-@memo
-function func(): void {
-  return;
+class A {
+	x: int
+	y: int
+}
+
+class Test {
+    @memo void_method(): void {
+	}
+
+    @memo a_method_with_implicit_return_type() {
+	}
+
+	@memo void_method_with_arg(arg: string) {
+	}
+
+	@memo void_method_with_return(arg: string) {
+	 	return
+	}
+
+    @memo static static_method_with_type_parameter<T>(arg: T): void {
+		return
+	}
+
+    @memo obj_arg(arg: A) {
+
+	}
+}
+
+class Use {
+    @memo test() {
+		const test = new Test()
+
+		test.void_method()
+		test.void_method_with_arg("an arg")
+		test.void_method_with_return("a value")
+		Test.static_method_with_type_parameter("I'm static")
+
+		test.obj_arg({ x: 1, y: 2 })
+	}
 }

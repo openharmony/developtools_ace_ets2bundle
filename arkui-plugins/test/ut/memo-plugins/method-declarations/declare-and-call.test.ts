@@ -20,28 +20,50 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { memoNoRecheck } from '../../../utils/plugins';
 
-const FUNCTION_DIR_PATH: string = 'memo/functions';
+const METHOD_DIR_PATH: string = 'memo/methods';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, FUNCTION_DIR_PATH, 'void-return-type.ets'),
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, METHOD_DIR_PATH, 'declare-and-call.ets'),
 ];
 
-const pluginTester = new PluginTester('test memo function', buildConfig);
+const pluginTester = new PluginTester('test memo method', buildConfig);
 
 const expectedScript: string = `
 import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"@ohos.arkui.stateManagement\";
 function main() {}
-function func(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
     }
+    new AA().x(__memo_context, ((__memo_id) + (<some_random_number>)));
+    const a: A = new AA();
+    a.x(__memo_context, ((__memo_id) + (<some_random_number>)));
     {
         __memo_scope.recache();
         return;
     }
+});
+declare abstract class A {
+    @memo() public x(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void
+    public test_signature(@memo() arg1: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void), @memo() arg2: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined, @memo() arg3: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined | ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> int) | undefined, @memo() x: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, y: ((z: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))=> void))=> void)): @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)
+    public constructor() {}
+}
+class AA extends A {
+    public x(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        if (__memo_scope.unchanged) {
+            __memo_scope.cached;
+            return;
+        }
+        {
+            __memo_scope.recache();
+            return;
+        }
+    }
+    public constructor() {}
 }
 `;
 
@@ -50,7 +72,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 }
 
 pluginTester.run(
-    'transform functions with void return type',
+    'transform declare methods and calls',
     [memoNoRecheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],

@@ -817,6 +817,14 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
+    _ClassVariableDeclaration(context: KNativePointer, classInstance: KNativePointer): KNativePointer {
+        throw new Error('Not implemented');
+    }
+ 
+    _IsMethodDefinition(node: KPtr): KBoolean {
+        throw new Error('Not implemented');
+    }
+
     _AstNodeRangeConst(context: KNativePointer, node: KNativePointer): KNativePointer {
         throw new Error('CreateFunctionDecl was not overloaded by native module initialization');
     }

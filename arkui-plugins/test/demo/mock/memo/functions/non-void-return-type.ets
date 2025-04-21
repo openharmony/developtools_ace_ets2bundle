@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (C) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,10 +14,51 @@
  */
 
 import { memo, __memo_context_type, __memo_id_type } from "@ohos.arkui.stateManagement"
-import { Column, UIColumnAttribute } from "arkui.component.column"
 
-class MyStateSample {
-    @memo build() {
-        Column(undefined) {}
+@memo
+function funcNum(): number {
+  return 1;
+}
+
+@memo
+function funcStr(): string {
+  return "1";
+}
+
+@memo
+function funcBool(): boolean {
+  return false;
+}
+
+interface A {
+    str: string;
+}
+
+@memo
+function funcA(): A {
+    return { str: "1" };
+}
+
+type B = (str: string) => void;
+
+@memo
+function funcB(): B {
+    return (str: string) => {};
+}
+
+class C {
+    str: string;
+    constructor(str: string) {
+        this.str = str;
     }
+}
+
+@memo
+function funcC(): C {
+    return new C("1");
+}
+
+@memo
+function funcD(): () => void {
+  return () => {};
 }

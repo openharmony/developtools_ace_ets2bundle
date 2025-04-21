@@ -18,46 +18,46 @@ import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
 import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { builderLambdaNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
+import { memoNoRecheck } from '../../../utils/plugins';
 
-const BUILDER_LAMBDA_DIR_PATH: string = 'builder-lambda';
+const FUNCTION_DIR_PATH: string = 'memo/functions';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, BUILDER_LAMBDA_DIR_PATH, 'simple-component.ets'),
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, FUNCTION_DIR_PATH, 'type-reference.ets'),
 ];
 
-const pluginTester = new PluginTester('test builder-lambda simple component', buildConfig);
+const pluginTester = new PluginTester('test memo function', buildConfig);
 
-function testBuilderLambdaTransformer(this: PluginTestContext): void {
-    const expectedScript: string = `
+const expectedScript: string = `
 import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"@ohos.arkui.stateManagement\";
-import { Column as Column, UIColumnAttribute as UIColumnAttribute } from \"arkui.component.column\";
 function main() {}
-class MyStateSample {
-    @memo() public build() {
-        Column(undefined, undefined, (() => {}));
+@memo() function A<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type): Attribute<T>
+function func<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type): ItemBuilder<T> {
+    const __memo_scope = __memo_context.scope<ItemBuilder<T>>(((__memo_id) + (<some_random_number>)), 0);
+    if (__memo_scope.unchanged) {
+        return __memo_scope.cached;
     }
-    public constructor() {}
+    return __memo_scope.recache(((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: Item<T>): void => {}));
 }
-`;
-    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
+@memo() type ItemBuilder<T> = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: Item<T>)=> void);
+interface Item<T> {
+    set item(item: T)
+    get item(): T
 }
-
-function testMemoTransformer(this: PluginTestContext): void {
-    const expectedScript: string = `
-import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"@ohos.arkui.stateManagement\";
-import { Column as Column, UIColumnAttribute as UIColumnAttribute } from \"arkui.component.column\";
-function main() {}
-class MyStateSample {
+interface Attribute<T> {
+    @memo() each<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() itemGenerator: ItemBuilder<T>): Attribute<T>
+}
+class B {
     public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (263357132)), 0);
+        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
-        Column(__memo_context, ((__memo_id) + (65509320)), undefined, undefined, ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
-            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (147296800)), 0);
+        A<string>(__memo_context, ((__memo_id) + (<some_random_number>))).each(__memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, ri: Item<string>): void => {
+            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+            const __memo_parameter_ri = __memo_scope.param(0, ri);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
@@ -75,14 +75,15 @@ class MyStateSample {
     public constructor() {}
 }
 `;
+
+function testMemoTransformer(this: PluginTestContext): void {
     expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
 }
 
 pluginTester.run(
-    'transform simple component',
-    [builderLambdaNoRecheck, recheck, memoNoRecheck],
+    'transform functions with type reference',
+    [memoNoRecheck],
     {
-        'checked:builder-lambda-no-recheck': [testBuilderLambdaTransformer],
         'checked:memo-no-recheck': [testMemoTransformer],
     },
     {

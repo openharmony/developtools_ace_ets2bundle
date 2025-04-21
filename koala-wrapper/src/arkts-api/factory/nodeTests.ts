@@ -28,7 +28,8 @@ import {
     StructDeclaration,
     VariableDeclaration,
     VariableDeclarator,
-    AssignmentExpression
+    AssignmentExpression,
+    NumberLiteral
 } from "../types"
 import { MemberExpression } from "../to-be-generated/MemberExpression"
 import { AstNode } from "../peers/AstNode"
@@ -46,7 +47,7 @@ export function isFunctionDeclaration(node: AstNode): node is FunctionDeclaratio
 }
 
 export function isMethodDefinition(node: AstNode): node is MethodDefinition {
-    return node instanceof MethodDefinition
+    return global.es2panda._IsMethodDefinition(node.peer);
 }
 
 export function isEtsScript(node: AstNode): node is EtsScript {
@@ -91,4 +92,8 @@ export function isVariableDeclarator(node: AstNode): node is VariableDeclarator 
 
 export function isAssignmentExpression(node: AstNode): node is AssignmentExpression {
     return node instanceof AssignmentExpression;
+}
+
+export function isNumberLiteral(node: AstNode): node is NumberLiteral {
+    return node instanceof NumberLiteral;
 }

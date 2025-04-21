@@ -793,6 +793,22 @@ export class VariableDeclaration extends AstNode {
         return new VariableDeclaration(peer);
     }
 
+    get annotations(): readonly AnnotationUsage[] {
+        return unpackNodeArray(
+            global.generatedEs2panda._VariableDeclarationAnnotationsConst(global.context, this.peer)
+        );
+    }
+    /** @deprecated */
+    setAnnotations(annotations: readonly AnnotationUsage[]): this {
+        global.generatedEs2panda._VariableDeclarationSetAnnotations(
+            global.context,
+            this.peer,
+            passNodeArray(annotations),
+            annotations.length
+        );
+        return this;
+    }
+
     readonly declarationKind: Es2pandaVariableDeclarationKind;
     readonly declarators: readonly VariableDeclarator[];
 }
