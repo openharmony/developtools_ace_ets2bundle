@@ -31,6 +31,22 @@ void impl_ClassDefinitionSetFromStructModifier(KNativePointer contextPtr, KNativ
 }
 KOALA_INTEROP_V2(ClassDefinitionSetFromStructModifier, KNativePointer, KNativePointer);
 
+KBoolean impl_ImportSpecifierIsRemovableConst(KNativePointer contextPtr, KNativePointer instancePtr)
+{
+    auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
+    auto node = reinterpret_cast<es2panda_AstNode*>(instancePtr);
+    return GetImpl()->ImportSpecifierIsRemovableConst(context, node);
+}
+KOALA_INTEROP_2(ImportSpecifierIsRemovableConst, KBoolean, KNativePointer, KNativePointer);
+
+void impl_ImportSpecifierSetRemovable(KNativePointer contextPtr, KNativePointer instancePtr)
+{
+    auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
+    auto node = reinterpret_cast<es2panda_AstNode*>(instancePtr);
+    return GetImpl()->ImportSpecifierSetRemovable(context, node, true);
+}
+KOALA_INTEROP_V2(ImportSpecifierSetRemovable, KNativePointer, KNativePointer);
+
 KNativePointer impl_AstNodeRecheck(KNativePointer contextPtr, KNativePointer nodePtr)
 {
     auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
@@ -388,4 +404,29 @@ KNativePointer impl_CreateETSImportDeclaration(KNativePointer context, KNativePo
     return result;
 }
 KOALA_INTEROP_7(CreateETSImportDeclaration, KNativePointer, KNativePointer, KNativePointer, KNativePointerArray,
-                KUInt, KInt, KNativePointer, KInt);
+                KUInt, KInt, KNativePointer, KInt)
+
+KNativePointer impl_AstNodeRangeConst(KNativePointer context, KNativePointer node)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _node = reinterpret_cast<es2panda_AstNode*>(node);
+    auto result = GetImpl()->AstNodeRangeConst(_context, _node);
+    return (void*)result;
+}
+KOALA_INTEROP_2(AstNodeRangeConst, KNativePointer, KNativePointer, KNativePointer)
+
+KNativePointer impl_SourceRangeStart(KNativePointer context, KNativePointer range) {
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _range = reinterpret_cast<es2panda_SourceRange*>(range);
+    auto result = GetImpl()->SourceRangeStart(_context, _range);
+    return result;
+}
+KOALA_INTEROP_2(SourceRangeStart, KNativePointer, KNativePointer, KNativePointer)
+
+KNativePointer impl_SourceRangeEnd(KNativePointer context, KNativePointer range) {
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _range = reinterpret_cast<es2panda_SourceRange*>(range);
+    auto result = GetImpl()->SourceRangeEnd(_context, _range);
+    return result;
+}
+KOALA_INTEROP_2(SourceRangeEnd, KNativePointer, KNativePointer, KNativePointer)

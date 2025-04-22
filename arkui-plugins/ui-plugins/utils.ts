@@ -14,6 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import { annotation } from "../common/arkts-utils";
 
 export enum CustomComponentNames {
     ENTRY_ANNOTATION_NAME = 'Entry',
@@ -90,14 +91,19 @@ export function createOptionalClassProperty(
     name: string,
     property: arkts.ClassProperty,
     stageManagementIdent: string,
-    modifiers: arkts.Es2pandaModifierFlags
+    modifiers: arkts.Es2pandaModifierFlags,
+    needMemo: boolean = false
 ): arkts.ClassProperty {
+    const newType: arkts.TypeNode | undefined = property.typeAnnotation?.clone();
+    if (needMemo) {
+        newType?.setAnnotations([annotation('memo')]);
+    }
     const newProperty = arkts.factory.createClassProperty(
         arkts.factory.createIdentifier(name),
         undefined,
         stageManagementIdent.length
             ? createStageManagementType(stageManagementIdent, property)
-            : property.typeAnnotation?.clone(),
+            : newType,
         modifiers,
         false
     );
@@ -116,4 +122,12 @@ export function createStageManagementType(
             ])
         )
     );
+}
+
+export function getGettersFromClassDecl(definition: arkts.ClassDefinition): arkts.MethodDefinition[] {
+    return definition.body.filter(
+        (member) =>
+            arkts.isMethodDefinition(member) &&
+            arkts.hasModifierFlag(member, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_GETTER)
+    ) as arkts.MethodDefinition[];
 }

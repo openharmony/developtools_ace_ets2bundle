@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class ETSNullType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 62)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_NULL_TYPE)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class ETSNullType extends TypeNode {
 export function isETSNullType(node: AstNode): node is ETSNullType {
     return node instanceof ETSNullType
 }
-if (!nodeByType.has(62)) {
-    nodeByType.set(62, ETSNullType)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_NULL_TYPE)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_NULL_TYPE, ETSNullType)
 }

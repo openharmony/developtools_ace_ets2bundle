@@ -26,7 +26,7 @@ static es2panda_Impl *impl = nullptr;
     #define LIB_SUFFIX ".dll"
 #endif
 
-#ifdef KOALA_LINUX
+#if defined(KOALA_LINUX) || defined(KOALA_MACOS)
     #include <dlfcn.h>
 
     #ifdef __x86_64__

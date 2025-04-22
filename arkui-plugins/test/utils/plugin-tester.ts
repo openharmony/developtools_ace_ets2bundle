@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-import * as arkts from '@koalaui/libarkts';
 import { ArktsConfigBuilder, BuildConfig, CompileFileInfo, MockArktsConfigBuilder, ModuleInfo } from './artkts-config';
 import { MockPluginDriver, PluginDriver, stateName } from './plugin-driver';
 import { isNumber } from './safe-types';
 import { canProceedToState, initGlobal } from './global';
 import { insertPlugin, restartCompilerUptoState } from './compile';
 import { PluginExecutor, Plugins, PluginState } from '../../common/plugin-context';
+import * as arkts from '@koalaui/libarkts';
 
 type TestParams = Parameters<typeof test>;
 
@@ -77,10 +77,6 @@ class PluginTester {
             return;
         }
         if (canProceedToState(index)) {
-            // TODO: this is a bug from compiler.
-            if (index > arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED) {
-                restartCompilerUptoState(index, true);
-            }
             arkts.proceedToState(index);
         }
         if (plugin) {
