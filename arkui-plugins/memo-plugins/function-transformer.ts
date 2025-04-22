@@ -360,10 +360,14 @@ export class FunctionTransformer extends AbstractVisitor {
     private updateCallExpression(node: arkts.CallExpression): arkts.CallExpression {
         const expr = node.expression;
         const decl = arkts.getDecl(expr);
+        if (!decl || !arkts.isMethodDefinition(decl)) {
+            return node;
+        }
         if (
-            decl &&
-            arkts.isMethodDefinition(decl) &&
-            (hasMemoAnnotation(decl.scriptFunction) || hasMemoIntrinsicAnnotation(decl.scriptFunction))
+            (decl.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET &&
+                findMemoFromTypeAnnotation(decl.scriptFunction.returnTypeAnnotation)) ||
+            hasMemoAnnotation(decl.scriptFunction) ||
+            hasMemoIntrinsicAnnotation(decl.scriptFunction)
         ) {
             return this.updateDeclaredMemoCall(node, decl);
         }

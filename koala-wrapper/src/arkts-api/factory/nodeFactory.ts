@@ -70,7 +70,9 @@ import {
     ChainExpression,
     BlockExpression,
     ETSNewClassInstanceExpression,
-    BooleanLiteral
+    BooleanLiteral,
+    ObjectExpression,
+    Property
 } from "../../generated"
 import {
     Es2pandaModifierFlags
@@ -127,6 +129,8 @@ import { updateChainExpression } from "../node-utilities/ChainExpression"
 import { updateBlockExpression } from "../node-utilities/BlockExpression"
 import { updateNullLiteral } from "../node-utilities/NullLiteral"
 import { updateETSNewClassInstanceExpression } from "../node-utilities/ETSNewClassInstanceExpression"
+import { updateObjectExpression } from "../node-utilities/ObjectExpression"
+import { updateProperty } from "../node-utilities/Property"
 
 export const factory = {
     get createIdentifier() {
@@ -432,11 +436,23 @@ export const factory = {
     get updateETSNewClassInstanceExpression() {
         return updateETSNewClassInstanceExpression
     },
-    get createETSStringLiteralType(){
+    get createETSStringLiteralType() {
         return ETSStringLiteralType.create;
     },
-    get createBooleanLiteral(): (value: boolean) => BooleanLiteral {
+    get createBooleanLiteral(): (...args: Parameters<typeof BooleanLiteral.createBooleanLiteral>) => BooleanLiteral {
         return BooleanLiteral.createBooleanLiteral;
+    },
+    get createObjectExpression(): (...args: Parameters<typeof ObjectExpression.createObjectExpression>) => ObjectExpression {
+        return ObjectExpression.createObjectExpression;
+    },
+    get updateObjectExpression(): (...args: Parameters<typeof updateObjectExpression>) => ObjectExpression {
+        return updateObjectExpression;
+    },
+    get createProperty(): (...args: Parameters<typeof Property.createProperty>) => Property {
+        return Property.createProperty;
+    },
+    get updateProperty(): (...args: Parameters<typeof updateProperty>) => Property {
+        return updateProperty;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {
