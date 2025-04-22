@@ -2308,18 +2308,6 @@ export class Es2pandaNativeModule {
     _UpdateEmptyStatement(context: KNativePointer, original: KNativePointer): KNativePointer {
         throw new Error("'UpdateEmptyStatement was not overloaded by native module initialization")
     }
-    _CreateETSLaunchExpression(context: KNativePointer, expr: KNativePointer): KNativePointer {
-        throw new Error("'CreateETSLaunchExpression was not overloaded by native module initialization")
-    }
-    _UpdateETSLaunchExpression(context: KNativePointer, original: KNativePointer, expr: KNativePointer): KNativePointer {
-        throw new Error("'UpdateETSLaunchExpression was not overloaded by native module initialization")
-    }
-    _ETSLaunchExpressionIsStaticCallConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
-        throw new Error("'ETSLaunchExpressionIsStaticCallConst was not overloaded by native module initialization")
-    }
-    _ETSLaunchExpressionCallConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'ETSLaunchExpressionCallConst was not overloaded by native module initialization")
-    }
     _CreateWhileStatement(context: KNativePointer, test: KNativePointer, body: KNativePointer): KNativePointer {
         throw new Error("'CreateWhileStatement was not overloaded by native module initialization")
     }

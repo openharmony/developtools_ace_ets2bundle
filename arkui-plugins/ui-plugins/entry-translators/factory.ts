@@ -116,6 +116,29 @@ export class factory {
         return def;
     }
 
+    static generateConstructor(): arkts.MethodDefinition {
+        const key: arkts.Identifier = arkts.factory.createIdentifier('constructor');
+        const block = arkts.factory.createBlock([]);
+        const entryScript = arkts.factory
+            .createScriptFunction(
+                block,
+                arkts.FunctionSignature.createFunctionSignature(undefined, [], undefined, false),
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR |
+                    arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_IMPLICIT_SUPER_CALL_NEEDED,
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
+                    arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR
+            )
+            .setIdent(key);
+        const def = arkts.factory.createMethodDefinition(
+            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
+            key,
+            arkts.factory.createFunctionExpression(entryScript),
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            false
+        );
+        return def;
+    }
+
     /**
      * create `entry = (): void => { <name>(); }` class property for the entry wrapper class,
      * which calls the struct within the arrow function.
@@ -166,23 +189,26 @@ export class factory {
      * @param name class/struct name that has `@Entry` annotation.
      */
     static generateEntryWrapper(name: string): arkts.ClassDeclaration {
-        const definition: arkts.ClassDefinition = arkts.factory.createClassDefinition(
-            arkts.factory.createIdentifier(EntryWrapperNames.WRAPPER_CLASS_NAME),
-            undefined,
-            undefined,
-            [],
-            undefined,
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_POINT_CLASS_NAME)
-                )
-            ),
-            [factory.generateEntryFunction(name)],
-            arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_CLASS_DECL |
-                arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_DECLARATION |
-                arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_ID_REQUIRED,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
-        );
+        const ctor = factory.generateConstructor();
+        const definition: arkts.ClassDefinition = arkts.factory
+            .createClassDefinition(
+                arkts.factory.createIdentifier(EntryWrapperNames.WRAPPER_CLASS_NAME),
+                undefined,
+                undefined,
+                [],
+                undefined,
+                arkts.factory.createTypeReference(
+                    arkts.factory.createTypeReferencePart(
+                        arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_POINT_CLASS_NAME)
+                    )
+                ),
+                [factory.generateEntryFunction(name), ctor],
+                arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_CLASS_DECL |
+                    arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_DECLARATION |
+                    arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_ID_REQUIRED,
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+            )
+            .setCtor(ctor as any);
         const newClass = arkts.factory.createClassDeclaration(definition);
         newClass.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE;
         return newClass;

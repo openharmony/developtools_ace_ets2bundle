@@ -33,7 +33,7 @@ export class factory {
     }
 
     /*
-     * create _build menthod.
+     * create _build method.
      */
     static transformBuildMethodWithOriginBuild(
         method: arkts.MethodDefinition,
@@ -92,7 +92,7 @@ export class factory {
     }
 
     /*
-     * create __initializeStruct menthod.
+     * create __initializeStruct method.
      */
     static createInitializeStruct(
         structInfo: arkts.StructInfo,
@@ -133,7 +133,7 @@ export class factory {
     }
 
     /*
-     * create __updateStruct menthod.
+     * create __updateStruct method.
      */
     static createUpdateStruct(
         structInfo: arkts.StructInfo,
@@ -175,7 +175,7 @@ export class factory {
     }
 
     /*
-     * create __toRecord menthod when the component is decorated with @Reusable.
+     * create __toRecord method when the component is decorated with @Reusable.
      */
     static toRecord(optionsTypeName: string, toRecordBody: arkts.Property[]): arkts.MethodDefinition {
         const paramsCasted = factory.generateParamsCasted(optionsTypeName);

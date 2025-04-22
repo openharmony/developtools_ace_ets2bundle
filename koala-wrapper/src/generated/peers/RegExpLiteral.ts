@@ -33,7 +33,7 @@ import { Literal } from "./Literal"
 import { Es2pandaRegExpFlags } from "./../Es2pandaEnums"
 export class RegExpLiteral extends Literal {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 56)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_REGEXP_LITERAL)
         super(pointer)
         
     }
@@ -53,6 +53,6 @@ export class RegExpLiteral extends Literal {
 export function isRegExpLiteral(node: AstNode): node is RegExpLiteral {
     return node instanceof RegExpLiteral
 }
-if (!nodeByType.has(56)) {
-    nodeByType.set(56, RegExpLiteral)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_REGEXP_LITERAL)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_REGEXP_LITERAL, RegExpLiteral)
 }
