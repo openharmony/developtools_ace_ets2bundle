@@ -13,19 +13,17 @@
  * limitations under the License.
  */
 
-
-import * as path from 'path';
+const path = require('path');
 
 const rootPath = path.resolve(__dirname, '../../../');
-
 const sdkPath = path.resolve(rootPath, './out/sdk/ohos-sdk/linux/ets/ets1.2');
-
 const pandaSdkPath = path.resolve(sdkPath, './build-tools/ets2panda');
+const apiPath = path.resolve(sdkPath, './api');
 
 module.exports = {
     testEnvironment: 'node',
     transform: {
-        '^.+\\.ts$': ['ts-jest', { isolatedModules: true }],
+        '^.+\\.ts$': ['ts-jest'],
     },
     testRegex: './test/ut/.+\\.test\\.ts$',
     moduleFileExtensions: ['ts', 'js', 'json', 'node'],
@@ -34,6 +32,7 @@ module.exports = {
     verbose: true,
     globals: {
         SDK_PATH: sdkPath,
-        PANDA_SDK_PATH: pandaSdkPath
-    }
-};    
+        PANDA_SDK_PATH: pandaSdkPath,
+        API_PATH: apiPath,
+    },
+};
