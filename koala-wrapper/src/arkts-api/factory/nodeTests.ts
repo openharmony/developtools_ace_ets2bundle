@@ -28,6 +28,7 @@ import {
     StructDeclaration,
     VariableDeclaration,
     VariableDeclarator,
+    AssignmentExpression
 } from "../types"
 import { MemberExpression } from "../to-be-generated/MemberExpression"
 import { AstNode } from "../peers/AstNode"
@@ -86,4 +87,8 @@ export function isIfStatement(node: AstNode): node is IfStatement {
 
 export function isVariableDeclarator(node: AstNode): node is VariableDeclarator {
     return node instanceof VariableDeclarator
+}
+
+export function isAssignmentExpression(node: AstNode): node is AssignmentExpression {
+    return node instanceof AssignmentExpression;
 }
