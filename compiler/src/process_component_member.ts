@@ -979,11 +979,10 @@ function manageLocalStorageComponents(node: ts.CallExpression, argumentsArray: t
 }
 
 export function isLocalStorageParameter(node: ts.CallExpression): boolean {
-  return globalProgram.checker && globalProgram.checker.getResolvedSignature &&
-    globalProgram.checker.getResolvedSignature(node) &&
-    globalProgram.checker.getResolvedSignature(node).parameters &&
-    globalProgram.checker.getResolvedSignature(node).parameters.length === 1 &&
-    globalProgram.checker.getResolvedSignature(node).parameters[0].escapedName === '##storage';
+  const resolvedSignature = globalProgram.checker?.getResolvedSignature ?
+    globalProgram.checker.getResolvedSignature(node) : undefined;
+  return resolvedSignature && resolvedSignature.parameters && resolvedSignature.parameters.length === 1 &&
+    resolvedSignature.parameters[0].escapedName === '##storage';
 }
 
 function componentParamRowAndColumn(line: number, col: number): ts.ObjectLiteralExpression {
