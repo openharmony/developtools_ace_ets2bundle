@@ -2143,9 +2143,6 @@ export class Es2pandaNativeModule {
     _UpdateETSPackageDeclaration(context: KNativePointer, original: KNativePointer, name: KNativePointer): KNativePointer {
         throw new Error("'UpdateETSPackageDeclaration was not overloaded by native module initialization")
     }
-    _CreateETSImportDeclaration(context: KNativePointer, importPath: KNativePointer, specifiers: BigUint64Array, specifiersSequenceLength: KUInt, importKind: KInt): KNativePointer {
-        throw new Error("'CreateETSImportDeclaration was not overloaded by native module initialization")
-    }
     _UpdateETSImportDeclaration(context: KNativePointer, original: KNativePointer, source: KNativePointer, specifiers: BigUint64Array, specifiersSequenceLength: KUInt, importKind: KInt): KNativePointer {
         throw new Error("'UpdateETSImportDeclaration was not overloaded by native module initialization")
     }

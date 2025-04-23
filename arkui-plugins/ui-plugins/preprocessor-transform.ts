@@ -119,12 +119,14 @@ export class PreprocessorTransformer extends AbstractVisitor {
                 this.localComponentNames.push(item.local?.name ?? importName);
             }
 
-            if (structCollection.has(importName) && this.isExternal === false) {
+            if (structCollection.has(importName)) {
                 const interfaceName: string = CustomComponentNames.COMPONENT_INTERFACE_PREFIX + importName;
                 const newImport: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
                     node.source?.clone(),
                     [factory.createAdditionalImportSpecifier(interfaceName, interfaceName)],
-                    arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE
+                    arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE,
+                    this.program!,
+                    arkts.Es2pandaImportFlags.IMPORT_FLAGS_NONE
                 );
                 this.structInterfaceImport.push(newImport);
             } else {
@@ -222,7 +224,9 @@ export class PreprocessorTransformer extends AbstractVisitor {
             const newImport: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
                 arkts.factory.create1StringLiteral(source),
                 [factory.createAdditionalImportSpecifier(item, item)],
-                arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE
+                arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE,
+                this.program!,
+                arkts.Es2pandaImportFlags.IMPORT_FLAGS_NONE
             );
             arkts.importDeclarationInsert(newImport, this.program!);
         });

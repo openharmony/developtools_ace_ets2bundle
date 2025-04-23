@@ -156,7 +156,9 @@ export class factory {
         const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
             source,
             [arkts.factory.createImportSpecifier(imported, local)],
-            importKind
+            importKind,
+            program,
+            arkts.Es2pandaImportFlags.IMPORT_FLAGS_NONE
         );
         arkts.importDeclarationInsert(importDecl, program);
         return;

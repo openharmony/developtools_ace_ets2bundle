@@ -288,11 +288,13 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
     _CreateETSImportDeclaration(
-        context: KPtr,
-        source: KPtr,
-        specifiers: KPtrArray,
-        specifiersLen: KInt,
-        importKind: KInt
+        context: KNativePointer,
+        importPath: KNativePointer,
+        specifiers: BigUint64Array,
+        specifiersSequenceLength: KInt,
+        importKind: KInt,
+        programPtr: KNativePointer,
+        flags: KInt
     ): KNativePointer {
         throw new Error('Not implemented');
     }
