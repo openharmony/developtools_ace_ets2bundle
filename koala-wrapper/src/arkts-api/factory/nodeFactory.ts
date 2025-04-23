@@ -72,7 +72,8 @@ import {
     ETSNewClassInstanceExpression,
     BooleanLiteral,
     ObjectExpression,
-    Property
+    Property,
+    TemplateLiteral
 } from "../../generated"
 import {
     Es2pandaModifierFlags
@@ -131,6 +132,7 @@ import { updateNullLiteral } from "../node-utilities/NullLiteral"
 import { updateETSNewClassInstanceExpression } from "../node-utilities/ETSNewClassInstanceExpression"
 import { updateObjectExpression } from "../node-utilities/ObjectExpression"
 import { updateProperty } from "../node-utilities/Property"
+import { updateTemplateLiteral } from "../node-utilities/TemplateLiteral"
 
 export const factory = {
     get createIdentifier() {
@@ -459,6 +461,12 @@ export const factory = {
     },
     get updateProperty(): (...args: Parameters<typeof updateProperty>) => Property {
         return updateProperty;
+    },
+    get createTemplateLiteral(): (...args: Parameters<typeof TemplateLiteral.createTemplateLiteral>) => TemplateLiteral {
+        return TemplateLiteral.createTemplateLiteral;
+    },
+    get updateTemplateLiteral(): (...args: Parameters<typeof updateTemplateLiteral>) => TemplateLiteral {
+        return updateTemplateLiteral;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {

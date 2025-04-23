@@ -49,6 +49,9 @@ export class TemplateLiteral extends Expression {
     get expressions(): readonly Expression[] {
         return unpackNodeArray(global.generatedEs2panda._TemplateLiteralExpressionsConst(global.context, this.peer))
     }
+    get multilineString(): string {
+        return unpackString(global.generatedEs2panda._TemplateLiteralGetMultilineStringConst(global.context, this.peer));
+    }
 }
 export function isTemplateLiteral(node: AstNode): node is TemplateLiteral {
     return node instanceof TemplateLiteral
