@@ -42,6 +42,7 @@ import {
     isProperty,
     Expression,
     isETSNewClassInstanceExpression,
+    isTemplateLiteral,
 } from '../generated';
 import {
     isEtsScript,
@@ -152,6 +153,7 @@ export function visitEachChild(node: AstNode, visitor: Visitor): AstNode {
     script = visitStatement(script, visitor);
     script = visitOuterExpression(script, visitor);
     script = visitInnerExpression(script, visitor);
+    script = visitLiteral(script, visitor);
     // TODO
     return visitWithoutUpdate(script, visitor);
 }
@@ -407,6 +409,22 @@ function visitDefinitionBody(node: AstNode, visitor: Visitor): AstNode {
         );
     }
     // TODO
+    return node;
+}
+
+function visitLiteral(node: AstNode, visitor: Visitor): AstNode {
+    if (updated) {
+        return node;
+    }
+    if (isTemplateLiteral(node)) {
+        updated = true;
+        return factory.updateTemplateLiteral(
+            node,
+            nodesVisitor(node.quasis, visitor),
+            nodesVisitor(node.expressions, visitor),
+            node.multilineString
+        );
+    }
     return node;
 }
 
