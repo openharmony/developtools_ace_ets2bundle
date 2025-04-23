@@ -20,6 +20,7 @@ import { BuilderLambdaNames } from '../utils';
 export type BuilderLambdaDeclInfo = {
     isFunctionCall: boolean; // isFunctionCall means it is from $_instantiate.
     params: readonly arkts.Expression[];
+    returnType: arkts.TypeNode | undefined;
 };
 
 export type BuilderLambdaAstNode = arkts.ScriptFunction | arkts.ETSParameterExpression | arkts.FunctionDeclaration;
@@ -225,15 +226,16 @@ export function isParameterPassing(prop: arkts.Property): boolean | undefined {
     );
 }
 
-export function findBuilderLambdaDeclInfo(node: arkts.CallExpression): BuilderLambdaDeclInfo | undefined {
-    const decl = findBuilderLambdaDecl(node);
+export function findBuilderLambdaDeclInfo(decl: arkts.AstNode | undefined): BuilderLambdaDeclInfo | undefined {
     if (!decl) {
         return undefined;
     }
+
     if (arkts.isMethodDefinition(decl)) {
         const params = decl.scriptFunction.params.map((p) => p.clone());
+        const returnType = decl.scriptFunction.returnTypeAnnotation?.clone();
         const isFunctionCall = isBuilderLambdaFunctionCall(decl);
-        return { isFunctionCall, params };
+        return { isFunctionCall, params, returnType };
     }
 
     return undefined;
