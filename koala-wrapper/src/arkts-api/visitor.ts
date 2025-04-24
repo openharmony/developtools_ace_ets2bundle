@@ -41,6 +41,7 @@ import {
     ObjectExpression,
     isProperty,
     Expression,
+    isETSNewClassInstanceExpression,
 } from '../generated';
 import {
     isEtsScript,
@@ -185,7 +186,14 @@ function visitOuterExpression(node: AstNode, visitor: Visitor): AstNode {
             nodeVisitor(node.right as Expression, visitor)
         );
     }
-    // TODO
+    if (isETSNewClassInstanceExpression(node)) {
+        updated = true;
+        return factory.updateETSNewClassInstanceExpression(
+            node,
+            node.getTypeRef,
+            nodesVisitor(node.getArguments, visitor)
+        );
+    }
     return node;
 }
 
