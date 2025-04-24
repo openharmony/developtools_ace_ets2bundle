@@ -543,7 +543,7 @@ function checkSinceValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNode
   }
   let minSince: string = '';
   const hasSince: boolean = currentNode.jsDoc.some((doc: ts.JSDoc) => {
-    return doc.tags.some((tag: ts.JSDocTag) => {
+    return doc.tags?.some((tag: ts.JSDocTag) => {
       if (tag.tagName.escapedText.toString() === SINCE_TAG_NAME) {
         minSince = tag.comment.toString();
         return true;
