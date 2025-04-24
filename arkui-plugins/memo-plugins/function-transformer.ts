@@ -334,15 +334,19 @@ export class FunctionTransformer extends AbstractVisitor {
         ]);
     }
 
-    private udpateAnonymousMemoCall(
+    private updateAnonymousMemoCall(
         node: arkts.CallExpression,
         expression: arkts.ArrowFunctionExpression
     ): arkts.CallExpression {
         const scope = this.scopes[this.scopes.length - 1];
-        if (!scope || !scope.isMemo || scope.name !== expression.scriptFunction.id?.name) {
+        const isValidScope = !!scope && scope.name === expression.scriptFunction.id?.name;
+        if (!isValidScope) {
             return node;
         }
         this.exitAnonymousScope();
+        if (!scope.isMemo) {
+            return node;
+        }
         this.checkMemoCallInFunction();
 
         this.enterAnonymousScope(expression.scriptFunction);
@@ -372,17 +376,21 @@ export class FunctionTransformer extends AbstractVisitor {
             return this.updateDeclaredMemoCall(node, decl);
         }
         if (isStandaloneArrowFunction(node.expression)) {
-            return this.udpateAnonymousMemoCall(node, node.expression);
+            return this.updateAnonymousMemoCall(node, node.expression);
         }
         return node;
     }
 
     private updateClassProperty(node: arkts.ClassProperty, key: arkts.Identifier): arkts.ClassProperty {
         const scope = this.scopes[this.scopes.length - 1];
-        if (!scope || !scope.isMemo || scope.name !== key.name) {
+        const isValidScope = !!scope && scope.name === key.name;
+        if (!isValidScope) {
             return node;
         }
         this.exitAnonymousScope();
+        if (!scope.isMemo) {
+            return node;
+        }
 
         let res: arkts.ScriptFunction | undefined;
         if (!!node.value && arkts.isArrowFunctionExpression(node.value)) {
@@ -409,10 +417,14 @@ export class FunctionTransformer extends AbstractVisitor {
 
     private updateTSTypeAliasDeclaration(node: arkts.TSTypeAliasDeclaration): arkts.TSTypeAliasDeclaration {
         const scope = this.scopes[this.scopes.length - 1];
-        if (!scope || !scope.isMemo || scope.name !== node.id?.name) {
+        const isValidScope = !!scope && scope.name === node.id?.name;
+        if (!isValidScope) {
             return node;
         }
         this.exitAnonymousScope();
+        if (!scope.isMemo) {
+            return node;
+        }
 
         let typeAnnotation: arkts.TypeNode | undefined;
         if (!(typeAnnotation = updateMemoTypeAnnotation(node.typeAnnotation))) {
@@ -425,10 +437,14 @@ export class FunctionTransformer extends AbstractVisitor {
 
     private updateStandaloneArrowFunction(node: arkts.ArrowFunctionExpression): arkts.ArrowFunctionExpression {
         const scope = this.scopes[this.scopes.length - 1];
-        if (!scope || !scope.isMemo || scope.name !== node.scriptFunction.id?.name) {
+        const isValidScope = !!scope && scope.name === node.scriptFunction.id?.name;
+        if (!isValidScope) {
             return node;
         }
         this.exitAnonymousScope();
+        if (!scope.isMemo) {
+            return node;
+        }
 
         this.enterAnonymousScope(node.scriptFunction);
         const res = this.updateScriptFunction(node.scriptFunction, node.scriptFunction.id?.name);
