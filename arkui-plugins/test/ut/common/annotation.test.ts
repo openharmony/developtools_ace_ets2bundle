@@ -34,17 +34,5 @@ pluginTester.run(
     },
     {
         stopAfter: 'checked',
-    },
-    {
-        beforeEach: [
-            () => {
-                jest.spyOn(console, 'warn').mockImplementation(() => {});
-            },
-        ],
-        afterEach: [
-            () => {
-                jest.spyOn(console, 'warn').mockRestore();
-            },
-        ],
     }
 );
