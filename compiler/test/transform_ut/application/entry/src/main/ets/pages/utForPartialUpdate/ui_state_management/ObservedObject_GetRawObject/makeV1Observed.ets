@@ -12,31 +12,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- // makeV1Observed test
-import { UIUtils } from '@ohos.arkui.StateManagement';
+let NextIDa: number = 1;
 @Observed
-class Decorated_Observed_Compatible_Info {
-  name: string = "Decorated_Observed_Compatible_Info";
-  age: number = 25;
-}
+class ClassB {
+  public id: number;
+  public c: number;
 
+  constructor(c: number) {
+    this.id = NextIDa++;
+    this.c = c;
+  }
+}
 @Entry
 @Component
-struct Decorated {
-  @State decorated_observed_compatible_info: Decorated_Observed_Compatible_Info = new Decorated_Observed_Compatible_Info();
+struct ValidateNonObservedClassTypeIndex {
+  @State message: ClassB = new ClassB(0)
   build() {
     Row() {
-      Decorated_Child_Full({
-        decorated_observed_compatible_info: UIUtils.makeV1Observed(this.decorated_observed_compatible_info)
-      })
+      ValidateNonObservedClassTypeChild({message: this.message})
     }
   }
 }
 
-@ComponentV2
-struct Decorated_Child_Full {
-  @Require @Param decorated_observed_compatible_info: Decorated_Observed_Compatible_Info;
+@Component
+struct ValidateNonObservedClassTypeChild {
+  @ObjectLink message: ClassB | string
   build() {
-
+    Row() {}
   }
 }

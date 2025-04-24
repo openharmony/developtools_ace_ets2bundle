@@ -93,8 +93,7 @@ import {
   createViewCreate,
   createCustomComponentNewExpression,
   isLocalStorageParameter,
-  isBasicType,
-  isObservedV2
+  isBasicType
 } from './process_component_member';
 import {
   LogType,
@@ -464,7 +463,25 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
       childParam.push(item);
     }
   }
+  if (isForbiddenAssignToComponentV1(item, itemName, info)) {
+    log.push({
+      type: LogType.ERROR,
+      message: `Property '${itemName}' in the '@Component' component '${info.childName}' is not allowed to be assigned value here.`,
+      pos: item.getStart(),
+      code: '10905322'
+    });
+  }
   logMessageCollection.checkIfAssignToStaticProps(item, itemName, info.childStructInfo.staticPropertySet, log);
+}
+
+function isForbiddenAssignToComponentV1(item: ts.PropertyAssignment, itemName: string,
+  info: ChildAndParentComponentInfo): boolean {
+  if (info.parentStructInfo.isComponentV2 && info.childStructInfo.updatePropsDecoratorsV1.includes(itemName) &&
+    isObervedProperty(item.initializer, info, false) && globalProgram.checker) {
+    const type: ts.Type = globalProgram.checker.getTypeAtLocation(item.initializer);
+    return isForbiddenTypeToComponentV1(type);
+  }
+  return false;
 }
 
 function isForbiddenTypeToComponentV1(type: ts.Type): boolean {
@@ -488,21 +505,7 @@ function isForbiddenAssignToComponentV2(item: ts.PropertyAssignment, itemName: s
   if (!info.parentStructInfo.isComponentV2 && info.updatePropsDecoratorsV2.includes(itemName) &&
     isObervedProperty(item.initializer, info) && globalProgram.strictChecker) {
     const type: ts.Type = globalProgram.strictChecker.getTypeAtLocation(item.initializer);
-    return !(isAllowedTypeToComponentV2(type) || isForbiddenTypeToComponentV1(type) || !(isObservedV2(type) || isFunctionType(type)));
-  }
-  return false;
-}
-
-// isFunctionType 
-function isFunctionType(type: ts.Type): boolean {
-  if (type.types && type.types.length) {
-    return !type.types.some((item: ts.Type) => {
-      return !isFunctionType(item);
-  });
-  }
-  const name: string = type?.getSymbol()?.getName();
-  if (name && name === 'Function') {
-    return true;
+    return !isAllowedTypeToComponentV2(type);
   }
   return false;
 }
@@ -518,7 +521,7 @@ function isObervedProperty(value: ts.Expression, info: ChildAndParentComponentIn
   return false;
 }
 
-export function isAllowedTypeToComponentV2(type: ts.Type): boolean {
+function isAllowedTypeToComponentV2(type: ts.Type): boolean {
   if (type) {
     // @ts-ignore
     if (type.types && type.types.length) {
@@ -535,7 +538,7 @@ export function isAllowedTypeToComponentV2(type: ts.Type): boolean {
   return false;
 }
 
-export function isAllowedTypeForBasic(flags: ts.TypeFlags): boolean {
+function isAllowedTypeForBasic(flags: ts.TypeFlags): boolean {
   if (isBasicType(flags) || (flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined))) {
     return true;
   }

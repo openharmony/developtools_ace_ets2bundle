@@ -75,10 +75,9 @@ import {
   RESERT,
   COMPONENT_IF_UNDEFINED,
   COMPONENT_REQUIRE_DECORATOR,
+  OBSERVED,
   TRUE,
-  FALSE,
-  MIN_OBSERVED,
-  COMPONENT_OBSERVEDV2_DECORATOR
+  FALSE
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -118,7 +117,6 @@ import {
   CUSTOM_BUILDER_METHOD,
   INNER_CUSTOM_LOCALBUILDER_METHOD
 } from './component_map';
-import { isAllowedTypeForBasic } from './process_custom_component';
 export type ControllerType = {
   hasController: boolean;
   unassignedControllerSet: Set<string>;
@@ -1231,8 +1229,7 @@ function validateNonSimpleType(propertyName: ts.Identifier, decorator: string,
 }
 
 function validateNonObservedClassType(propertyName: ts.Identifier, decorator: string,
-  log: LogInfo[], isEsmoduleAndUpdateMode: boolean = false): void {
-  if (isEsmoduleAndUpdateMode) {
+  log: LogInfo[]): void {
     log.push({
       type: projectConfig.optLazyForEach ? LogType.WARN : LogType.ERROR,
       message: `'@ObjectLink' cannot be used with this type.` +
@@ -1240,16 +1237,7 @@ function validateNonObservedClassType(propertyName: ts.Identifier, decorator: st
       pos: propertyName.getStart(),
       code: '10905307'
     });
-  } else {
-    log.push({
-      type: projectConfig.optLazyForEach ? LogType.WARN : LogType.ERROR,
-      message: `'@ObjectLink' cannot be used with this type.` +
-        ` Apply it only to classes decorated by '@Observed' or initialized using the return value of 'makeV1Observed'.`,
-      pos: propertyName.getStart(),
-      code: '10905307'
-    });
-  } 
-}
+  }
 
 function validateHasIllegalQuestionToken(propertyName: ts.Identifier, decorator: string,
   log: LogInfo[]): void {
@@ -1358,40 +1346,43 @@ function updateSynchedPropertyOneWayPU(nameIdentifier: ts.Identifier, type: ts.T
 
 function updateSynchedPropertyNesedObjectPU(nameIdentifier: ts.Identifier,
   type: ts.TypeNode, decoractor: string, log: LogInfo[]): ts.ExpressionStatement {
-  const isEsmoduleAndUpdateMode: boolean = partialUpdateConfig.partialUpdateMode && projectConfig.compileMode === 'esmodule';
-  if (isEsmoduleAndUpdateMode && checkObjectLinkType(type)) {
+  if (partialUpdateConfig.partialUpdateMode && projectConfig.compileMode === 'esmodule' && checkObjectLinkType(type)) {
     return createInitExpressionStatementForDecorator(nameIdentifier.getText(), SYNCHED_PROPERTY_NESED_OBJECT_PU,
       createPropertyAccessExpressionWithParams(nameIdentifier.getText()));
   } else if ((projectConfig.compileMode !== 'esmodule' || !partialUpdateConfig.partialUpdateMode) && isObservedClassType(type)) {
     return createInitExpressionStatementForDecorator(nameIdentifier.getText(), SYNCHED_PROPERTY_NESED_OBJECT_PU,
       createPropertyAccessExpressionWithParams(nameIdentifier.getText()));
   } else {
-    validateNonObservedClassType(nameIdentifier, decoractor, log, isEsmoduleAndUpdateMode);
+    validateNonObservedClassType(nameIdentifier, decoractor, log);
     return undefined;
   }
 }
 
-// check @ObjectLink type Non basic types and @Observedv2.
 function checkObjectLinkType(typeNode: ts.TypeNode): boolean {
   if (globalProgram.checker) {
     const type: ts.Type = globalProgram.checker.getTypeFromTypeNode(typeNode);
-    const isPropertyDeclaration: boolean = typeNode.parent && ts.isPropertyDeclaration(typeNode.parent);
-    if (isPropertyDeclaration) {
-      if (type.types && type.types.length) {
-        return checkTypes(type);
+    if (typeNode.parent && ts.isPropertyDeclaration(typeNode.parent) && isObserved(type)) {
+      return true;
+    }
+    // @ts-ignore
+    if (type.types && type.types.length) {
+      let observedNumber: number = 0;
+      for (let i = 0; i < type.types.length; i++) {
+        if (type.types[i].intrinsicName) {
+          return false;
+        }
+        if (isObserved(type.types[i])) {
+          observedNumber += 1;
+        }
+      }
+      if (observedNumber === type.types.length) {
+        return true;
       } else {
-        return !(isObservedV2(type) || isAllowedTypeForBasic(type.flags));
-      } 
+        return false;
+      }
     }
   }
   return false;
-}
-
-// check union type.
-function checkTypes(type: ts.Type): boolean {
-  return !type.types.some((item: ts.Type) => {
-    return (isAllowedTypeForBasic(item.flags) || isObservedV2(item));
-  });
 }
 
 function validateCustomDecorator(decorators: readonly ts.Decorator[], log: LogInfo[]): boolean {
@@ -1432,13 +1423,13 @@ function validatePropDecorator(decorators: readonly ts.Decorator[]): boolean {
   return false;
 }
 
-export function isObservedV2(type: ts.Type): boolean {
+function isObserved(type: ts.Type): boolean {
   if (type && type.getSymbol() && type.getSymbol().declarations) {
     return type.getSymbol().declarations.some((classDeclaration: ts.ClassDeclaration) => {
       const decorators: readonly ts.Decorator[] = ts.getAllDecorators(classDeclaration);
       if (ts.isClassDeclaration(classDeclaration) && decorators) {
         return decorators.some((decorator: ts.Decorator) => {
-          return ts.isIdentifier(decorator.expression) && decorator.expression.escapedText.toString() === MIN_OBSERVED;
+          return ts.isIdentifier(decorator.expression) && decorator.expression.escapedText.toString() === OBSERVED;
         });
       }
       return false;
