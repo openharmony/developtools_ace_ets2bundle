@@ -49,6 +49,13 @@ export const COMPONENT_LOCAL_STORAGE_PROP_DECORATOR: string = '@LocalStorageProp
 export const COMPONENT_CUSTOM_DECORATOR: string = 'COMPONENT_CUSTOM_DECORATOR';
 export const COMPONENT_REQUIRE_DECORATOR: string = '@Require';
 
+export const COMPONENTV2_LOCAL_DECORATOR: string = '@Local';
+export const COMPONENTV2_PARAM_DECORATOR: string = '@Param';
+export const COMPONENTV2_ONCE_DECORATOR: string = '@Once';
+export const COMPONENTV2_EVENT_DECORATOR: string = '@Event';
+export const COMPONENTV2_CONSUMER_DECORATOR: string = '@Consumer';
+export const COMPONENTV2_PROVIDER_DECORATOR: string = '@Provider';
+
 export const CLASS_TRACK_DECORATOR: string = 'Track';
 export const CLASS_MIN_TRACK_DECORATOR: string = 'Trace';
 export const COMPONENT_DECORATOR_COMPONENT_V2: string = '@ComponentV2';

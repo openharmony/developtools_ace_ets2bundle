@@ -55,7 +55,14 @@ import {
   COMPONENT_PARAMS_FUNCTION,
   COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION,
   NAME,
-  COMPONENT_CALL
+  COMPONENT_CALL,
+  COMPONENT_CONSUME_DECORATOR,
+  COMPONENT_STORAGE_PROP_DECORATOR,
+  COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
+  COMPONENT_LOCAL_STORAGE_LINK_DECORATOR,
+  COMPONENTV2_LOCAL_DECORATOR,
+  COMPONENTV2_CONSUMER_DECORATOR,
+  COMPONENTV2_PROVIDER_DECORATOR
 } from './pre_define';
 import {
   stateCollection,
@@ -77,7 +84,9 @@ import {
   provideInitialization,
   privateCollection,
   regularStaticCollection,
-  componentCollection
+  componentCollection,
+  localStorageLinkCollection,
+  localStoragePropCollection
 } from './validate_ui_syntax';
 import {
   PropMapManager,
@@ -413,13 +422,26 @@ function parseChildProperties(childName: string, node: ts.CallExpression,
   }
 }
 
+function getForbbidenInitPropsV2Type(itemName: string, info: ChildAndParentComponentInfo): string {
+  let typeName: string = COMPONENT_NON_DECORATOR;
+  if (info.childStructInfo.localDecoratorSet.has(itemName)) {
+    typeName = COMPONENTV2_LOCAL_DECORATOR;
+  } else if (info.childStructInfo.consumerDecoratorSet.has(itemName)) {
+    typeName = COMPONENTV2_CONSUMER_DECORATOR;
+  } else if (info.childStructInfo.providerDecoratorSet.has(itemName)) {
+    typeName = COMPONENTV2_PROVIDER_DECORATOR;
+  }
+  return typeName;
+}
+
 function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
   childParam: ts.PropertyAssignment[], log: LogInfo[], info: ChildAndParentComponentInfo): void {
   if (info.childStructInfo.isComponentV2) {
     if (info.forbiddenInitPropsV2.includes(itemName)) {
+      const propType: string = getForbbidenInitPropsV2Type(itemName, info);
       log.push({
         type: LogType.ERROR,
-        message: `Property '${itemName}' in the custom component '${info.childName}'` +
+        message: `The '${propType}' property '${itemName}' in the custom component '${info.childName}'` +
           ` cannot be initialized here (forbidden to specify).`,
         pos: item.getStart(),
         code: '10905324'
@@ -432,7 +454,7 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
     if (isForbiddenAssignToComponentV2(item, itemName, info)) {
       log.push({
         type: LogType.ERROR,
-        message: `Property '${itemName}' in the @ComponentV2 component '${info.childName}' are not allowed to be assigned values here.`,
+        message: `Property '${itemName}' in the '@ComponentV2' component '${info.childName}' is not allowed to be assigned value here.`,
         pos: item.getStart(),
         code: '10905323'
       });
@@ -536,7 +558,7 @@ function validateInitParam(childName: string, curChildProps: Set<string>,
       if (!curChildProps.has(paramName)) {
         log.push({
           type: LogType.ERROR,
-          message: `Property '${paramName}' must be initialized through the component constructor.`,
+          message: `'@Require' decorated '${paramName}' must be initialized through the component constructor.`,
           pos: node.getStart(),
           code: '10905321'
         });
@@ -545,7 +567,7 @@ function validateInitParam(childName: string, curChildProps: Set<string>,
   } else if (parentStructInfo.isComponentV2 && childStructInfo.linkDecoratorsV1.length) {
     log.push({
       type: LogType.ERROR,
-      message: 'The @ComponentV2 struct must not contain any @Component with an @Link decorated variable',
+      message: `A V2 component cannot be used with any member property decorated by '@Link' in a V1 component.`,
       pos: node.getStart(),
       code: '10905213'
     });
@@ -862,8 +884,8 @@ function updatePropertyAssignment(newProperties: ts.PropertyAssignment[],
       log.push({
         type: LogType.ERROR,
         message: 'When the two-way binding syntax is used, ' +
-          `the variable '${itemName}' must be decorated with @Param, ` +
-          `and the @Event variable '$` + `${itemName}' ` + `must be defined in the ${childStructInfo.structName}.`,
+          `the variable '${itemName}' must be decorated with '@Param', ` +
+          `and the '@Event' variable '$` + `${itemName}' ` + `must be defined in the ${childStructInfo.structName}.`,
         pos: item.getStart(),
         code: '10905319'
       });
@@ -1396,6 +1418,46 @@ function matchStartWithDollar(name: string): boolean {
   return /^\$/.test(name);
 }
 
+function getForbbiddenToInitViaParamType(customComponentName: string,
+  node: ts.Identifier): string {
+  let propType: string = COMPONENT_CONSUME_DECORATOR;
+  const propName: string = node.escapedText.toString();
+  if (getCollectionSet(customComponentName, storageLinkCollection).has(propName)) {
+    propType = COMPONENT_STORAGE_LINK_DECORATOR;
+  } else if (getCollectionSet(customComponentName, storagePropCollection)) {
+    propType = COMPONENT_STORAGE_PROP_DECORATOR;
+  } else if (ifLocalStorageLink(customComponentName, propName)) {
+    propType = COMPONENT_LOCAL_STORAGE_LINK_DECORATOR;
+  } else if (ifLocalStorageProp(customComponentName, propName)) {
+    propType = COMPONENT_LOCAL_STORAGE_PROP_DECORATOR;
+  }
+  return propType;
+}
+
+function ifLocalStorageProp(componentName: string, propName: string): boolean {
+  if (!localStoragePropCollection.get(componentName).keys) {
+    return false;
+  } else {
+    const collection: Set<string> = new Set();
+    for (const key of localStoragePropCollection.get(componentName).keys()) {
+      collection.add(key);
+    }
+    return collection.has(propName);
+  }
+}
+
+function ifLocalStorageLink(componentName: string, propName: string): boolean {
+  if (!localStorageLinkCollection.get(componentName).keys) {
+    return false;
+  } else {
+    const collection: Set<string> = new Set();
+    for (const key of localStorageLinkCollection.get(componentName).keys()) {
+      collection.add(key);
+    }
+    return collection.has(propName);
+  }
+}
+
 function validateForbiddenToInitViaParam(node: ts.ObjectLiteralElementLike,
   customComponentName: string, log: LogInfo[]): void {
   const forbiddenToInitViaParamSet: Set<string> = new Set([
@@ -1406,9 +1468,11 @@ function validateForbiddenToInitViaParam(node: ts.ObjectLiteralElementLike,
   const localStorageSet: Set<string> = new Set();
   getLocalStorageCollection(customComponentName, localStorageSet);
   if (isThisProperty(node, forbiddenToInitViaParamSet) || isThisProperty(node, localStorageSet)) {
+    const nodeIdentifier: ts.Identifier = node.name as ts.Identifier;
+    const propType: string = getForbbiddenToInitViaParamType(customComponentName, nodeIdentifier);
     log.push({
       type: LogType.ERROR,
-      message: `Property '${node.name.getText()}' in the custom component '${customComponentName}'` +
+      message: `The '${propType}' property '${node.name.getText()}' in the custom component '${customComponentName}'` +
         ` cannot be initialized here (forbidden to specify).`,
       pos: node.name.getStart(),
       code: '10905317'
@@ -1438,7 +1502,7 @@ function validateMandatoryToInitViaParam(node: ts.CallExpression, customComponen
     if (item && !curChildProps.has(item)) {
       log.push({
         type: LogType.ERROR,
-        message: `Property '${item}' in the custom component '${customComponentName}'` +
+        message: `The property '${item}' in the custom component '${customComponentName}'` +
           ` is missing (mandatory to specify).`,
         pos: node.getStart(),
         code: '10905316'
@@ -1467,7 +1531,7 @@ function validateInitDecorator(node: ts.CallExpression, customComponentName: str
     if (item && !curChildProps.has(item) && decoratorVariable && decoratorVariable.has(item)) {
       log.push({
         type: LogType.ERROR,
-        message: `Property '${item}' must be initialized through the component constructor.`,
+        message: `'@Require' decorated '${item}' must be initialized through the component constructor.`,
         pos: node.getStart(),
         code: '10905359'
       });
@@ -1497,8 +1561,8 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
   }
   PropMapManager.reserveLog(parentPropertyName, parentPropertyKind, {
     type: type,
-    message: `The ${parentPropertyKind} property '${parentPropertyName}' cannot be assigned to ` +
-      `the ${curPropertyKind} property '${propertyName}'.`,
+    message: `The '${parentPropertyKind}' property '${parentPropertyName}' cannot be assigned to ` +
+      `the '${curPropertyKind}' property '${propertyName}'.`,
     // @ts-ignore
     pos: node.initializer ? node.initializer.getStart() : node.getStart(),
     code: type === LogType.ERROR ? '10905315' : undefined

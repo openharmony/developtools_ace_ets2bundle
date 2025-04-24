@@ -366,7 +366,7 @@ function processBuilderParamProperty(member: ts.PropertyDeclaration, log: LogInf
   if (judgeBuilderParamAssignedByBuilder(member)) {
     log.push({
       type: LogType.ERROR,
-      message: 'BuilderParam property can only initialized by Builder function.',
+      message: `'@BuilderParam' property can only initialized by '@Builder' function.`,
       pos: member.getStart(),
       code: '10905107'
     });
@@ -571,17 +571,17 @@ function checkHasBuilderParamDecorator(propertyDecorator: PropertyDecorator, mem
 function checkParamDecorator(propertyDecorator: PropertyDecorator, member: ts.PropertyDeclaration, log: LogInfo[],
   sourceFileNode: ts.SourceFile, structInfo: StructInfo): void {
   if (propertyDecorator.hasParam && !member.initializer && !propertyDecorator.hasRequire) {
-    const message: string = 'When a variable decorated with @Param is not assigned a default value, ' +
-      'it must also be decorated with @Require.';
+    const message: string = 'When a variable decorated with \'@Param\' is not assigned a default value, ' +
+      'it must also be decorated with \'@Require\'.';
     addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode, { code: '10905327' });
   }
   if (propertyDecorator.hasOnce && !propertyDecorator.hasParam) {
-    const message: string = 'When a variable decorated with @Once, it must also be decorated with @Param.';
+    const message: string = 'When a variable decorated with \'@Once\', it must also be decorated with \'@Param\'.';
     addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode, { code: '10905326' });
   }
   if (propertyDecorator.hasRequire && !propertyDecorator.hasParam && !checkHasBuilderParamDecorator(propertyDecorator,
     member, sourceFileNode, structInfo)) {
-    const message: string = 'In a struct decorated with @ComponentV2, @Require can only be used with @Param.';
+    const message: string = 'In a struct decorated with \'@ComponentV2\', \'@Require\' can only be used with \'@Param\'.';
     addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode, { code: '10905325' });
   }
 }

@@ -280,7 +280,7 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
   if (result.entryCount > 1 && fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
-      message: `A page can't contain more than one '@Entry' decorator`,
+      message: `A page can't contain more than one '@Entry' decorator.`,
       fileName: fileName,
       code: '10905231'
     });
@@ -392,11 +392,11 @@ function validateStruct(hasInnerComponentDecorator: boolean, componentName: stri
       `and '@Component', '@Reusable', '@CustomDialog' at the same time.`;
     addLog(LogType.ERROR, message, component.pos, log, sourceFile, { code: '10905229' });
   } else if (structInfo.isReusableV2 && !structInfo.isComponentV2) {
-    const message: string = `@ReusableV2 is only applicable to custom components decorated by @ComponentV2.`;
+    const message: string = `'@ReusableV2' is only applicable to custom components decorated by '@ComponentV2'.`;
     addLog(LogType.ERROR, message, component.pos, log, sourceFile, { code: '10905242' });
   }
   if (structInfo.isReusable && structInfo.isReusableV2) {
-    const message: string = `The @Reusable and @ReusableV2 decoraotrs cannot be applied simultaneously.`;
+    const message: string = `The '@Reusable' and '@ReusableV2' decoraotrs cannot be applied simultaneously.`;
     addLog(LogType.ERROR, message, component.pos, log, sourceFile, { code: '10905241' });
   }
   if (BUILDIN_STYLE_NAMES.has(componentName) && !COMPONENT_SYSTEMAPI_NAMES.has(componentName)) {
@@ -415,11 +415,11 @@ function checkConcurrentDecorator(node: ts.FunctionDeclaration | ts.MethodDeclar
   sourceFile: ts.SourceFile): void {
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   if (projectConfig.compileMode === JSBUNDLE) {
-    const message: string = `@Concurrent can only be used in ESMODULE compile mode.`;
+    const message: string = `'@Concurrent' can only be used in ESMODULE compile mode.`;
     addLog(LogType.ERROR, message, decorators![0].pos, log, sourceFile);
   }
   if (ts.isMethodDeclaration(node)) {
-    const message: string = `@Concurrent can not be used on method. please use it on function declaration.`;
+    const message: string = `'@Concurrent' can not be used on method, please use it on function declaration.`;
     addLog(LogType.ERROR, message, decorators![0].pos, log, sourceFile, { code: '10905123' });
   }
   if (node.asteriskToken) {
@@ -428,7 +428,7 @@ function checkConcurrentDecorator(node: ts.FunctionDeclaration | ts.MethodDeclar
     const checkAsyncModifier = (modifier: ts.Modifier) : boolean => modifier.kind === ts.SyntaxKind.AsyncKeyword;
     modifiers && (hasAsync = modifiers.some(checkAsyncModifier));
     const funcKind: string = hasAsync ? 'Async generator' : 'Generator';
-    const message: string = `@Concurrent can not be used on ${funcKind} function declaration.`;
+    const message: string = `'@Concurrent' can not be used on '${funcKind}' function declaration.`;
     addLog(LogType.ERROR, message, decorators![0].pos, log, sourceFile, { code: '10905122' });
   }
 }
@@ -522,7 +522,7 @@ function validatePropertyInStruct(structContext: boolean, decoratorNode: ts.Iden
     }
     let message: string;
     if (isV1Decorator && classResult.hasObservedV2) {
-      message = `The type of the @${decoratorName} property can not be a class decorated with @ObservedV2.`;
+      message = `The type of the '@${decoratorName}' property can not be a class decorated with '@ObservedV2'.`;
       addLog(LogType.ERROR, message, decoratorNode.getStart(), log, sourceFileNode, { code: '10905348' });
       return;
     }
@@ -576,14 +576,14 @@ function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: 
   if (ts.isPropertyDeclaration(node) || ts.isGetAccessor(node) || ts.isMethodDeclaration(node)) {
     const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
     let innerDecoratorCount: number = 0;
-    const exludeDecorators: string[] = ['@Require', '@Once'];
+    const excludeDecorators: string[] = ['@Require', '@Once'];
     const v1MethodDecorators: string[] = ['@Builder', '@Styles'];
     const v1DecoratorMap: Map<string, number> = new Map<string, number>();
     const v2DecoratorMap: Map<string, number> = new Map<string, number>();
     let checkDecoratorCount: number = 0;
     decorators.forEach((item: ts.Decorator) => {
       const decoratorName: string = item.getText().replace(/\([^\(\)]*\)/, '');
-      if (!exludeDecorators.includes(decoratorName) && (constantDefine.DECORATOR_V2.includes(decoratorName) ||
+      if (!excludeDecorators.includes(decoratorName) && (constantDefine.DECORATOR_V2.includes(decoratorName) ||
         decoratorName === '@BuilderParam')) {
         const count: number = v2DecoratorMap.get(decoratorName) || 0;
         v2DecoratorMap.set(decoratorName, count + 1);
@@ -613,13 +613,26 @@ function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: 
       v2DecoratorMapValues.some((count: number) => count > 1);
     const v1Duplicate: boolean = v1DecoratorMapValues.length &&
       v1DecoratorMapValues.some((count: number) => count > 1);
-    const duplicateMessage: string = 'Duplicate decorators for method are not allowed.';
     if (v1Duplicate) {
+      const duplicateDecorators: string = findDuplicateDecoratorMethod(v1DecoratorMapKeys, v1DecoratorMapValues);
+      const duplicateMessage: string = `Duplicate '${duplicateDecorators}' decorators for method are not allowed.`;
       addLog(LogType.WARN, duplicateMessage, node.getStart(), log, sourceFileNode);
     } else if (v2Duplicate) {
+      const duplicateDecorators: string = findDuplicateDecoratorMethod(v2DecoratorMapKeys, v2DecoratorMapValues);
+      const duplicateMessage: string = `Duplicate '${duplicateDecorators}' decorators for method are not allowed.`;
       addLog(LogType.ERROR, duplicateMessage, node.getStart(), log, sourceFileNode, { code: '10905119' });
     }
   }
+}
+
+function findDuplicateDecoratorMethod(mapKeys: string[], mapValues: number[]): string {
+  const duplicateDecorators: string[] = [];
+  mapValues.forEach((value, index) => {
+    value > 1 && duplicateDecorators.push(mapKeys[index]);
+  });
+  const output = duplicateDecorators.length > 1 ?
+    duplicateDecorators.join(',') : duplicateDecorators[0];
+  return output;
 }
 
 export function methodDecoratorCollect(node: ts.MethodDeclaration | ts.FunctionDeclaration): void {
@@ -676,19 +689,30 @@ function validateFunction(node: ts.MethodDeclaration | ts.FunctionDeclaration,
       decoratorMap.set(decoratorName, count + 1);
     });
     const decoratorValues: number[] = Array.from(decoratorMap.values());
+    const decoratorKeys: string[] = Array.from(decoratorMap.keys());
     const hasDuplicate: boolean = decoratorValues.length &&
       decoratorValues.some((count: number) => count > 1);
     if (hasDuplicate) {
-      const message: string = 'Duplicate decorators for function are not allowed.';
+      const duplicateDecorators: string = findDuplicateDecoratorFunction(decoratorKeys, decoratorValues);
+      const message: string = `Duplicate '@${duplicateDecorators}' decorators for function are not allowed.`;
       addLog(LogType.WARN, message, node.getStart(), log, sourceFileNode);
     }
-    const decoratorKeys: string[] = Array.from(decoratorMap.keys());
     if (decoratorKeys.length > 1 || decoratorKeys.includes('LocalBuilder')) {
       const message: string = 'A function can only be decorated by one of the ' +
-        `'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.`;
+        `'@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.`;
       addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode, { code: '10905117' });
     }
   }
+}
+
+function findDuplicateDecoratorFunction(mapKeys: string[], mapValues: number[]): string {
+  const duplicateDecorators: string[] = [];
+  mapValues.forEach((value, index) => {
+    value > 1 && duplicateDecorators.push(mapKeys[index]);
+  });
+  const output = duplicateDecorators.length > 1 ?
+    duplicateDecorators.join(', @') : duplicateDecorators[0];
+  return output;
 }
 
 function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
@@ -720,7 +744,7 @@ function validateSingleDecorator(node: ts.Decorator, sourceFileNode: ts.SourceFi
   log: LogInfo[], isComponentV2: boolean): void {
   const decoratorName: string = node.getText().replace(/\([^\(\)]*\)/, '');
   if (decoratorName === constantDefine.COMPUTED_DECORATOR && node.parent && !ts.isGetAccessor(node.parent)) {
-    const message: string = `@Computed can only decorate 'GetAccessor'.`;
+    const message: string = `'@Computed' can only decorate 'GetAccessor'.`;
     addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode, { code: '10905116' });
     return;
   }
@@ -770,7 +794,7 @@ function validateClassDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifi
   isSendableClass: boolean): void {
   const isTypeFromSdk: boolean = validTypeCallback(node);
   if (!classContext && (classDecorators.includes(decoratorName) || isTypeFromSdkCallback(classContext, decoratorName, isTypeFromSdk))) {
-    const message: string = `The '@${decoratorName}' decorator can only be used in 'class'.`;
+    const message: string = `The '@${decoratorName}' decorator can decorate only member variables of a class.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905345' });
   } else if (classContext && classMemberDecorators.includes(decoratorName)) {
     validateMemberInClass(isObservedClass, decoratorName, node, log, sourceFileNode, isObservedV1Class, isSendableClass, isTypeFromSdk);
@@ -781,7 +805,8 @@ function validateMemberInClass(isObservedClass: boolean, decoratorName: string, 
   log: LogInfo[], sourceFileNode: ts.SourceFile, isObservedV1Class: boolean, isSendableClass: boolean, isTypeFromSdk: boolean): void {
   if (decoratorName === CLASS_TRACK_DECORATOR) {
     if (isObservedClass) {
-      const message: string = `The '@${decoratorName}' decorator can not be used in a 'class' decorated with ObservedV2.`;
+      const message: string = `'@${decoratorName}' cannot be used with classes decorated by '@ObservedV2.'` +
+        ` Use the '@Trace' decorator instead.`;
       addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905344' });
     }
     return;
@@ -794,7 +819,7 @@ function validateMemberInClass(isObservedClass: boolean, decoratorName: string, 
   }
   if (!isObservedClass || !isPropertyForTrace(node, decoratorName)) {
     const info: string = decoratorName === CLASS_MIN_TRACK_DECORATOR ? 'variables' : 'method';
-    const message: string = `The '@${decoratorName}' can decorate only member ${info} within a 'class' decorated with ObservedV2.`;
+    const message: string = `The '@${decoratorName}' can decorate only member '${info}' within a 'class' decorated with '@ObservedV2'.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905343' });
     return;
   }
@@ -803,11 +828,11 @@ function validateMemberInClass(isObservedClass: boolean, decoratorName: string, 
 function validType(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[], decoratorName: string,
   isObservedV1Class: boolean, isSendableClass: boolean): void {
   if (isSendableClass) {
-    const message: string = `The '@${decoratorName}' decorator can not be used in a 'class' decorated with Sendable.`;
+    const message: string = `The '@${decoratorName}' decorator can not be used in a 'class' decorated with '@Sendable'.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905342' });
   }
   if (isObservedV1Class) {
-    const message: string = `The '@${decoratorName}' decorator can not be used in a 'class' decorated with Observed.`;
+    const message: string = `The '@${decoratorName}' decorator can not be used in a 'class' decorated with '@Observed'.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905341' });
   }
   if (ts.isDecorator(node.parent?.parent) && !ts.isPropertyDeclaration(node.parent?.parent?.parent)) {
@@ -920,14 +945,12 @@ function validateInheritClassDecorator(parentNode: ts.ClassDeclaration, childCla
   childClass: ts.ClassDeclaration, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
   const parentClassResult: ClassDecoratorResult = getClassDecoratorResult(parentNode);
   if (childClassResult.hasObservedV2 && parentClassResult.hasObserved) {
-    const message: string = `Because the current class is decorated by '@ObservedV2', ` +
-      `it can not inherit a class decorated by '@Observed'.`;
+    const message: string = `A class decorated by '@ObservedV2' cannot inherit from a class decorated by '@Observed'.`;
     addLog(LogType.ERROR, message, childClass.getStart(), log, sourceFileNode, { code: '10905225' });
     return;
   }
   if (childClassResult.hasObserved && parentClassResult.hasObservedV2) {
-    const message: string = `Because the current class is decorated by '@Observed', ` +
-      `it can not inherit a class decorated by '@ObservedV2'.`;
+    const message: string = `A class decorated by '@Observed' cannot inherit from a class decorated by '@ObservedV2'.`;
     addLog(LogType.ERROR, message, childClass.getStart(), log, sourceFileNode, { code: '10905224' });
     return;
   }
@@ -957,11 +980,11 @@ function validateMethodDecorator(sourceFileNode: ts.SourceFile, node: ts.Identif
   if (ts.isMethodDeclaration(node.parent.parent) ||
     (ts.isDecorator(node.parent.parent) && ts.isMethodDeclaration(node.parent.parent.parent))) {
     if (!structContext && STRUCT_CONTEXT_METHOD_DECORATORS.has(`@${decoratorName}`)) {
-      const message: string = `The '@${decoratorName}' decorator can only be used in 'struct'.`;
+      const message: string = `Use the '@${decoratorName}' decorator only in the global scope or in a struct.`;
       addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905114' });
     }
     if (CHECK_EXTEND_DECORATORS.includes(decoratorName)) {
-      const message: string = `The '@${decoratorName}' decorator can not be a member property method of a 'class' or 'struct'.`;
+      const message: string = `Use the '@${decoratorName}' decorator only in the global scope.`;
       addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905113' });
     }
   }
@@ -1018,8 +1041,8 @@ function checkNoChildComponent(node: ts.EtsComponentExpression, sourceFileNode: 
       message = `The component '${componentName}' can't have any child.`;
       code = '10905222';
     } else {
-      message = `When the component '${componentName}' set '${isCheckType.name}' is '${isCheckType.value}'` +
-        `, can't have any child.`;
+      message = `When the component '${componentName}' set '${isCheckType.name}' as '${isCheckType.value}'` +
+        `, it can't have any child.`;
       code = '10905223';
     }
     addLog(LogType.ERROR, message, pos, log, sourceFileNode, { code });
@@ -1076,11 +1099,11 @@ function checkOneChildComponent(node: ts.EtsComponentExpression, allComponentNam
     let message: string;
     let code: string | undefined;
     if (isCheckType.name === null) {
-      message = `The component '${componentName}' can only have a single child component.`;
+      message = `The '${componentName}' component can have only one child component.`;
       code = '10905220';
     } else {
-      message = `When the component '${componentName}' set '${isCheckType.name}' is ` +
-        `'${isCheckType.value}', can only have a single child component.`;
+      message = `When the component '${componentName}' set '${isCheckType.name}' as ` +
+        `'${isCheckType.value}', it can only have a single child component.`;
       code = '10905221';
     }
     addLog(LogType.ERROR, message, pos, log, sourceFileNode, { code });
@@ -1192,9 +1215,9 @@ function checkSpecificChildComponent(node: ts.EtsComponentExpression, allCompone
     const componentName: string = (node.expression as ts.Identifier).escapedText.toString();
     const pos: number = node.expression.getStart();
     const specificChildArray: string =
-      Array.from(SPECIFIC_CHILD_COMPONENT.get(componentName)).join(' and ');
+      Array.from(SPECIFIC_CHILD_COMPONENT.get(componentName)).join(',');
     const message: string =
-      `The component '${componentName}' can only have the child component ${specificChildArray}.`;
+      `The component '${componentName}' can only have the child component '${specificChildArray}'.`;
     addLog(LogType.ERROR, message, pos, log, sourceFileNode, { code: '10905219' });
   }
 }
@@ -1442,7 +1465,7 @@ function validateAccessQualifier(node: ts.PropertyDeclaration, propertyName: str
     if (accessQualifierResult.hasPublic && FORBIDDEN_PUBLIC_ACCESS.includes(decoratorName)) {
       transformLog.errors.push({
         type: LogType.WARN,
-        message: `Property '${propertyName}' can not be decorated with both ${decoratorName} and public.`,
+        message: `Property '${propertyName}' can not be decorated with both '${decoratorName}' and public.`,
         pos: node.getStart()
       });
     }
@@ -1450,14 +1473,14 @@ function validateAccessQualifier(node: ts.PropertyDeclaration, propertyName: str
       if (FORBIDDEN_PRIVATE_ACCESS.includes(decoratorName)) {
         transformLog.errors.push({
           type: LogType.WARN,
-          message: `Property '${propertyName}' can not be decorated with both ${decoratorName} and private.`,
+          message: `Property '${propertyName}' can not be decorated with both '${decoratorName}' and private.`,
           pos: node.getStart()
         });
       }
       if (recordRequire.hasRequire && !hasValidatePrivate) {
         transformLog.errors.push({
           type: LogType.WARN,
-          message: `Property '${propertyName}' can not be decorated with both @Require and private.`,
+          message: `Property '${propertyName}' can not be decorated with both '@Require' and private.`,
           pos: node.getStart()
         });
       }
@@ -1791,7 +1814,7 @@ function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[], sourceF
   if (modifiers) {
     for (let i = 0; i < modifiers.length; i++) {
       if (modifiers[i].kind === ts.SyntaxKind.ExportKeyword) {
-        const message: string = `It's not a recommended way to export struct with @Entry decorator, ` +
+        const message: string = `It's not a recommended way to export struct with '@Entry' decorator, ` +
           `which may cause ACE Engine error in component preview mode.`;
         addLog(LogType.WARN, message, node.getStart(), log, sourceFile);
         break;
