@@ -64,11 +64,19 @@ function resetConfig(cmd: string[]): void {
 }
 
 function destroyContext(): void {
-    arkts.arktsGlobal.es2panda._DestroyContext(arkts.arktsGlobal.context);
+    try {
+        arkts.arktsGlobal.clearContext();
+    } catch (e) {
+        // Do nothing
+    }
 }
 
 function destroyConfig(): void {
-    arkts.destroyConfig(arkts.arktsGlobal.config);
+    try {
+        arkts.destroyConfig(arkts.arktsGlobal.config);
+    } catch (e) {
+        // Do nothing
+    }
 }
 
 function canProceedToState(state: arkts.Es2pandaContextState): boolean {
@@ -87,4 +95,4 @@ function canProceedToState(state: arkts.Es2pandaContextState): boolean {
     return currState < state;
 }
 
-export { initGlobal, resetContext, resetConfig, canProceedToState };
+export { initGlobal, resetContext, resetConfig, destroyContext, destroyConfig, canProceedToState };

@@ -52,10 +52,6 @@ function insertPlugin(
     }
 
     if (plugin) {
-        pluginContext.setArkTSAst(ast);
-        if (arkts.arktsGlobal.compilerContext) {
-            pluginContext.setArkTSProgram(arkts.arktsGlobal.compilerContext.program);
-        }
         plugin.handler.apply(pluginContext);
     }
     return true;
