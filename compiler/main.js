@@ -691,15 +691,20 @@ function filterWorker(workerPath) {
   if (fs.existsSync(sysResourcePath)) {
     resources.sys = require(sysResourcePath).sys;
   }
-  if (process.env.externalApiPaths) {
-    const sysResourceExtPath = path.resolve(__dirname, process.env.externalApiPaths, 'sysResource.js');
-    if (fs.existsSync(sysResourceExtPath)) {
-      Object.entries(require(sysResourceExtPath).sys).forEach(([key, value]) => {
-        if (key in resources.sys) {
-          Object.assign(resources.sys[key], value);
-        }
-      });
+  if (!process.env.externalApiPaths) {
+    return;
+  }
+  const sdkPaths = process.env.externalApiPaths.split(path.delimiter);
+  for (let i = 0; i < sdkPaths.length; i++) {
+    const sysResourceExtPath = path.resolve(__dirname, sdkPaths[i], 'sysResource.js');
+    if (!fs.existsSync(sysResourceExtPath)) {
+      continue;
     }
+    Object.entries(require(sysResourceExtPath).sys).forEach(([key, value]) => {
+      if (key in resources.sys) {
+        Object.assign(resources.sys[key], value);
+      }
+    });
   }
 })();
 
