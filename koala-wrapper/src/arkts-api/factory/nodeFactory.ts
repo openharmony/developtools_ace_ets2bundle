@@ -117,7 +117,7 @@ import { updateTSTypeParameterInstantiation } from "../node-utilities/TSTypePara
 import { updateTSInterfaceDeclaration } from "../node-utilities/TSInterfaceDeclaration"
 import { updateTSInterfaceBody } from "../node-utilities/TSInterfaceBody"
 import { updateUndefinedLiteral } from "../node-utilities/UndefinedLiteral"
-import { updateAnnotationUsage } from "../node-utilities/AnnotationUsage"
+import { updateAnnotationUsage, update1AnnotationUsage } from "../node-utilities/AnnotationUsage"
 import { updateAssignmentExpression } from "../node-utilities/AssignmentExpression"
 import { updateETSUndefinedType } from "../node-utilities/ETSUndefinedType"
 import { updateConditionalExpression } from "../node-utilities/ConditionalExpression"
@@ -366,6 +366,12 @@ export const factory = {
     },
     get updateAnnotationUsage() {
         return updateAnnotationUsage
+    },
+    get create1AnnotationUsage(): (...args: Parameters<typeof AnnotationUsage.create1AnnotationUsage>) => AnnotationUsage {
+        return AnnotationUsage.create1AnnotationUsage;
+    },
+    get update1AnnotationUsage(): (...args: Parameters<typeof update1AnnotationUsage>) => AnnotationUsage {
+        return update1AnnotationUsage;
     },
     get createAssignmentExpression() {
         return AssignmentExpression.create

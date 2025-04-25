@@ -15,6 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { annotation } from '../common/arkts-utils';
+import { DecoratorNames } from './property-translators/utils';
 
 export enum CustomComponentNames {
     ENTRY_ANNOTATION_NAME = 'Entry',
@@ -164,4 +165,14 @@ export function addMemoAnnotation<T extends MemoAstNode>(node: T, memoName: stri
         return node;
     }
     return node.setAnnotations(newAnnotations) as T;
+}
+
+export function hasPropertyInAnnotation(annotation: arkts.AnnotationUsage, propertyName: string): boolean {
+    return !!annotation.properties.find(
+        (annoProp: arkts.AstNode) =>
+            arkts.isClassProperty(annoProp) &&
+            annoProp.key &&
+            arkts.isIdentifier(annoProp.key) &&
+            annoProp.key.name === propertyName
+    );
 }

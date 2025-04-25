@@ -14,8 +14,9 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { BuilderLambdaNames, CustomComponentNames } from './utils';
+import { BuilderLambdaNames, CustomComponentNames, hasPropertyInAnnotation } from './utils';
 import { annotation } from '../common/arkts-utils';
+import { DecoratorNames } from './property-translators/utils';
 
 export class factory {
     /**
@@ -225,6 +226,47 @@ export class factory {
             updateKey,
             arkts.factory.createFunctionExpression(updateScriptFunction),
             modifiers,
+            false
+        );
+    }
+
+    /*
+     * add alias: <property.key.name> to @Provide annotation when no alias in @Provide({...}).
+     */
+    static processNoAliasProvideVariable(property: arkts.ClassProperty): void {
+        let annotations: readonly arkts.AnnotationUsage[] = property.annotations;
+        if (annotations.length === 0) {
+            return;
+        }
+        const newAnnos: arkts.AnnotationUsage[] = annotations.map((anno: arkts.AnnotationUsage) => {
+            if (
+                !!anno.expr &&
+                arkts.isIdentifier(anno.expr) &&
+                anno.expr.name === DecoratorNames.PROVIDE &&
+                !hasPropertyInAnnotation(anno, 'alias') &&
+                property.key &&
+                arkts.isIdentifier(property.key)
+            ) {
+                return arkts.factory.update1AnnotationUsage(anno, anno.expr, [
+                    ...anno.properties,
+                    factory.createAliasClassProperty(property.key),
+                ]);
+            } else {
+                return anno;
+            }
+        });
+        property.setAnnotations(newAnnos);
+    }
+
+    /*
+     * create class property : `alias: <value>`.
+     */
+    static createAliasClassProperty(value: arkts.Identifier): arkts.ClassProperty {
+        return arkts.factory.createClassProperty(
+            arkts.factory.createIdentifier('alias'),
+            arkts.factory.create1StringLiteral(value.name),
+            undefined,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             false
         );
     }
