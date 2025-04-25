@@ -14,7 +14,7 @@
  */
 
 import ts from 'typescript';
-import parseUserIntents from './parseUserIntents';
+import parseIntent from './parseUserIntents';
 import Ajv from 'ajv';
 
 const ajv = new Ajv({allErrors: true});
@@ -40,7 +40,16 @@ interface LinkIntentParamMapping {
 
 export interface IntentLinkInfo extends IntentInfo {
   uri: string;
-  paramMapping: LinkIntentParamMapping[]
+  paramMappings: LinkIntentParamMapping[]
+}
+
+export interface IntentEntryInfo extends IntentInfo {
+  abilityName: string;
+  executeMode: number[];
+}
+
+export interface IntentEntryParam {
+  description: string;
 }
 
 export class ParamChecker<T> {
@@ -109,10 +118,10 @@ IntentLinkParamsChecker.paramValidators = {
   }
 };
 export const IntentLinkInfoChecker: ParamChecker<IntentLinkInfo> = new ParamChecker<IntentLinkInfo>();
-IntentLinkInfoChecker.requiredFields = ['intentName', 'domain', 'intentVersion', 'displayName', 'llmDescription', 'uri'];
+IntentLinkInfoChecker.requiredFields = ['intentName', 'domain', 'intentVersion', 'displayName', 'uri'];
 IntentLinkInfoChecker.allowFields = new Set<keyof IntentLinkInfo>([
   'intentName', 'domain', 'intentVersion', 'displayName', 'displayDescription', 'schema', 'icon', 'keywords', 'llmDescription', 'uri',
-  'parameters', 'paramMapping'
+  'parameters', 'paramMappings'
 ]);
 
 IntentLinkInfoChecker.paramValidators = {
@@ -120,8 +129,8 @@ IntentLinkInfoChecker.paramValidators = {
     try {
       let initializer: object = {};
       if (ts.isIdentifier(v)) {
-        const symbol = parseUserIntents.checker.getSymbolAtLocation(v);
-        const declaration = symbol?.valueDeclaration;
+        const symbol: ts.Symbol | undefined = parseIntent.checker.getSymbolAtLocation(v);
+        const declaration: ts.Declaration = symbol?.valueDeclaration;
         initializer = declaration.initializer;
       } else {
         initializer = v;
@@ -136,7 +145,7 @@ IntentLinkInfoChecker.paramValidators = {
       return false;
     }
   },
-  paramMapping(v: ts.Expression): boolean {
+  paramMappings(v: ts.Expression): boolean {
     return v !== null &&
       v !== undefined && ts.isArrayLiteralExpression(v);
   },
@@ -144,8 +153,8 @@ IntentLinkInfoChecker.paramValidators = {
     if (ts.isArrayLiteralExpression(v)) {
       return v.elements.every(ele => {
         if (ts.isIdentifier(ele)) {
-          const symbol = parseUserIntents.checker.getSymbolAtLocation(ele);
-          const declaration = symbol?.valueDeclaration;
+          const symbol: ts.Symbol | undefined = parseIntent.checker.getSymbolAtLocation(ele);
+          const declaration: ts.Declaration = symbol?.valueDeclaration;
           return ts.isStringLiteral(declaration.initializer) || ts.isNoSubstitutionTemplateLiteral(declaration.initializer);
         } else {
           return ts.isStringLiteral(ele) || ts.isNoSubstitutionTemplateLiteral(ele);
@@ -183,10 +192,100 @@ IntentLinkInfoChecker.paramValidators = {
     v !== undefined && v.expression.getText() === '$r',
   llmDescription: (v: ts.Expression): boolean => v !== null &&
     v !== undefined &&
-    ts.isStringLiteral(v) &&
-    v.text.trim() !== '',
+    ts.isStringLiteral(v),
   uri: (v: ts.Expression): boolean => v !== null &&
     v !== undefined && ts.isStringLiteral(v)
 
 };
-IntentLinkInfoChecker.nestedCheckers = new Map([['paramsMapping', IntentLinkParamsChecker]]);
+IntentLinkInfoChecker.nestedCheckers = new Map([['paramMappings', IntentLinkParamsChecker]]);
+
+export const intentEntryInfoChecker: ParamChecker<IntentEntryInfo> = new ParamChecker<IntentEntryInfo>();
+intentEntryInfoChecker.requiredFields = ['abilityName', 'intentName', 'domain', 'intentVersion', 'displayName'];
+intentEntryInfoChecker.allowFields = new Set<keyof IntentEntryInfo>([
+  'intentName', 'domain', 'intentVersion', 'displayName', 'displayDescription', 'schema', 'llmDescription', 'icon', 'abilityName',
+  'executeMode', 'keywords', 'parameters'
+]);
+
+intentEntryInfoChecker.paramValidators = {
+  parameters(v: ts.Expression): boolean {
+    try {
+      let initializer: object = {};
+      if (ts.isIdentifier(v)) {
+        const symbol: ts.Symbol | undefined = parseIntent.checker.getSymbolAtLocation(v);
+        const declaration: ts.Declaration = symbol?.valueDeclaration;
+        initializer = declaration.initializer;
+      } else {
+        initializer = v;
+      }
+      if (ts.isObjectLiteralExpression(initializer)) {
+        ajv.compile(JSON.parse(initializer.getText()));
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  },
+  icon: (v: ts.Expression): boolean => ts.isCallExpression(v) && v !== null &&
+    v !== undefined && v.expression.getText() === '$r',
+  keywords(v: ts.Expression): boolean {
+    if (ts.isArrayLiteralExpression(v)) {
+      return v.elements.every(ele => {
+        if (ts.isIdentifier(ele)) {
+          const symbol: ts.Symbol | undefined = parseIntent.checker.getSymbolAtLocation(ele);
+          const declaration: ts.Declaration = symbol?.valueDeclaration;
+          return ts.isStringLiteral(declaration.initializer) || ts.isNoSubstitutionTemplateLiteral(declaration.initializer);
+        } else {
+          return ts.isStringLiteral(ele) || ts.isNoSubstitutionTemplateLiteral(ele);
+        }
+      });
+    } else {
+      return false;
+    }
+  },
+  schema: (v: ts.Expression): boolean => v !== null &&
+    v !== undefined &&
+    ts.isStringLiteral(v) &&
+    v.text.trim() !== '',
+  abilityName(v: ts.Expression): boolean {
+    return v !== null && v !== undefined && ts.isStringLiteral(v) && v.text.trim() !== '';
+  },
+  displayDescription(v: ts.Expression): boolean {
+    return v !== null && v !== undefined && ts.isStringLiteral(v) && v.text.trim() !== '';
+  },
+  displayName(v: ts.Expression): boolean {
+    return v !== null && v !== undefined && ts.isStringLiteral(v) && v.text.trim() !== '';
+  },
+  domain(v: ts.Expression): boolean {
+    return v !== null && v !== undefined && ts.isStringLiteral(v) && v.text.trim() !== '';
+  },
+  executeMode(v: ts.Expression): boolean {
+    return ts.isArrayLiteralExpression(v) &&
+      v.elements.every(e =>
+        ts.isNumericLiteral(e) &&
+        [0, 1, 2, 3].includes(Number(e.text))
+      );
+  },
+  intentName(v: ts.Expression): boolean {
+    return v !== null && v !== undefined && ts.isStringLiteral(v) && v.text.trim() !== '';
+  },
+  intentVersion(v: ts.Expression): boolean {
+    return v !== null && v !== undefined && ts.isStringLiteral(v) && v.text.trim() !== '';
+  },
+  llmDescription(v: ts.Expression): boolean {
+    return v !== null && v !== undefined && ts.isStringLiteral(v);
+  }
+};
+
+export const intentEntryParamChecker: ParamChecker<IntentEntryParam> = new ParamChecker<IntentEntryParam>();
+intentEntryParamChecker.requiredFields = ['description'];
+intentEntryParamChecker.allowFields = new Set<keyof IntentEntryParam>([
+  'description'
+]);
+intentEntryParamChecker.paramValidators = {
+  description: (v: ts.Expression): boolean => v !== null &&
+    v !== undefined &&
+    ts.isStringLiteral(v) &&
+    v.text.trim() !== ''
+};
