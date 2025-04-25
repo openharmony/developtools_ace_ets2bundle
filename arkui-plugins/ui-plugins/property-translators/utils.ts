@@ -240,11 +240,11 @@ export function getValueInProvideAnnotation(node: arkts.ClassProperty): ProvideO
     const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
     for (let i = 0; i < annotations.length; i++) {
         const anno: arkts.AnnotationUsage = annotations[i];
-        const alias: string | undefined = getValueInObjectAnnotation(anno, DecoratorNames.PROVIDE, 'alias');
-        const allowOverride: boolean = getValueInObjectAnnotation(anno, DecoratorNames.PROVIDE, 'allowOverride')
-            ? true
-            : false;
-        if (!!alias) {
+        if (anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === DecoratorNames.PROVIDE) {
+            const alias: string = getValueInObjectAnnotation(anno, DecoratorNames.PROVIDE, 'alias');
+            const allowOverride: boolean = getValueInObjectAnnotation(anno, DecoratorNames.PROVIDE, 'allowOverride')
+                ? true
+                : false;
             return { alias, allowOverride };
         }
     }
