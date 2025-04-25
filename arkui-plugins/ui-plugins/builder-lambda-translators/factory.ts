@@ -254,7 +254,11 @@ export class factory {
             arkts.isIdentifier(prop.value.property)
         ) {
             const structVariableMetadata = currentStructInfo.metadata[prop.key.name];
-            if (structVariableMetadata.properties.includes(DecoratorNames.LINK)) {
+            if (
+                structVariableMetadata &&
+                structVariableMetadata.properties.length &&
+                structVariableMetadata.properties.includes(DecoratorNames.LINK)
+            ) {
                 properties[index] = arkts.Property.updateProperty(
                     prop,
                     arkts.factory.createIdentifier(backingField(prop.key.name)),
