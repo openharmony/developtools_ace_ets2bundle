@@ -160,7 +160,7 @@ function loadEntryObj(projectConfig) {
     setStageTestRunnerFile(projectConfig);
     loadNavigationConfig(aceBuildJson);
   }
-  if (projectConfig.mixCompile) {
+  if (projectConfig.mixCompile && projectConfig.isRemoteModule) {
     return;
   }
   if (staticPreviewPage) {
@@ -1172,6 +1172,7 @@ function initMixCompileHar(projectConfig) {
   projectConfig.mixCompile = process.env.mixCompile === 'true';
   if (projectConfig.isRemoteModule && projectConfig.mixCompile) {
     projectConfig.compileHar = true;
+    process.env.compileMode = 'moduleJson';
     getPackageJsonEntryPath();
   }
 }
