@@ -87,7 +87,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.compileHar = false;
   projectConfig.compileShared = false;
   projectConfig.splitCommon = false;
-  projectConfig.allowEtsAnnotations = false;
+  projectConfig.allowEtsAnnotations = true;
   projectConfig.checkEntry = projectConfig.checkEntry || process.env.checkEntry;
   projectConfig.obfuscateHarType = projectConfig.obfuscateHarType || process.env.obfuscate;
   projectConfig.packageDir = 'node_modules';
