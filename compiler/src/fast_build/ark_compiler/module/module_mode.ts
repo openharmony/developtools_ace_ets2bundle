@@ -122,6 +122,7 @@ import {
   processExternalEvents,
   stopEvent
  } from '../../../performance';
+import { BytecodeObfuscator } from '../bytecode_obfuscator';
 
 export class ModuleInfo {
   filePath: string;
@@ -554,7 +555,8 @@ export class ModuleMode extends CommonMode {
     if (this.projectConfig.compatibleSdkVersionStage) {
       this.cmdArgs.push(`"--target-api-sub-version=${this.projectConfig.compatibleSdkVersionStage}"`);
     }
-    if (this.arkConfig.isBranchElimination) {
+    // when enable branch elimination and bytecode obfuscation will crash
+    if (this.arkConfig.isBranchElimination && !BytecodeObfuscator.enable) {
       this.cmdArgs.push('--branch-elimination');
     }
     if (this.projectConfig.transformLib) {
@@ -683,8 +685,9 @@ export class ModuleMode extends CommonMode {
       child.on('close', (code: any) => {
         if (code === SUCCESS) {
           stopEvent(eventGenAbc, true);
-          this.triggerEndSignal();
           this.processAotIfNeeded();
+          BytecodeObfuscator.enable && BytecodeObfuscator.getInstance().execute(this.moduleInfos);
+          this.triggerEndSignal();
           processExternalEvents(this.projectConfig, ExternalEventType.ES2ABC, { parentEvent: eventGenAbc, filePath: this.perfReportPath });
           return;
         }
