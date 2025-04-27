@@ -184,17 +184,19 @@ export class ObservedTrackTranslator {
     propertyIsClassField(newName: string): arkts.ClassProperty {
         return arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(newName),
-            arkts.factory.createETSNewClassInstanceExpression(
-                arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(
-                        arkts.factory.createIdentifier('BackingValue'),
-                        arkts.factory.createTSTypeParameterInstantiation(
-                            this.property.typeAnnotation ? [this.property.typeAnnotation] : []
-                        )
-                    )
-                ),
-                [arkts.factory.createETSNewClassInstanceExpression(this.property.typeAnnotation, [])]
-            ),
+            this.property.value
+                ? arkts.factory.createETSNewClassInstanceExpression(
+                      arkts.factory.createTypeReference(
+                          arkts.factory.createTypeReferencePart(
+                              arkts.factory.createIdentifier('BackingValue'),
+                              arkts.factory.createTSTypeParameterInstantiation(
+                                  this.property.typeAnnotation ? [this.property.typeAnnotation] : []
+                              )
+                          )
+                      ),
+                      [this.property.value]
+                  )
+                : undefined,
             arkts.factory.createTypeReference(
                 arkts.factory.createTypeReferencePart(
                     arkts.factory.createIdentifier('BackingValue'),
