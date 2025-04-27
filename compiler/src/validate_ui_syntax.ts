@@ -526,6 +526,11 @@ function validatePropertyInStruct(structContext: boolean, decoratorNode: ts.Iden
       addLog(LogType.ERROR, message, decoratorNode.getStart(), log, sourceFileNode, { code: '10905348' });
       return;
     }
+    if (isV2Decorator && classResult.hasObserved) {
+      message = `The type of the '@${decoratorName}' property can not be a class decorated with '@Observed'.`;
+      addLog(LogType.ERROR, message, decoratorNode.getStart(), log, sourceFileNode, { code: '10905347' });
+      return;
+    }
   }
 }
 

@@ -179,8 +179,6 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   'ui_state_management/others/@observed_@objectLink/@observed_@objectLink',
   'ui_state_management/others/@watch/@watch',
   'ui_state_management/others/decoratorKeyCheck/decoratorKeyCheck',
-  'ui_state_management/ObservedObject_GetRawObject/enableV2Compatibility',
-  'ui_state_management/ObservedObject_GetRawObject/makeV1Observed',
 
   'v2_component_decorator/event/event_base',
   'v2_component_decorator/event/event_parent',
@@ -277,6 +275,8 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/process_ui_syntax/UnknownSrcType',
 
   'Decorators/v1AndV2ComponentDecorators/property_observe_validate',
+  'Decorators/v1AndV2ComponentDecorators/v1ToV2Component',
+  'Decorators/v1AndV2ComponentDecorators/v1ToV2ComponentValidate',
   'Decorators/v1AndV2ComponentDecorators/v2ToV1ComponentValidate',
   'Decorators/v1AndV2ComponentDecorators/v2ToV1Link',
 
