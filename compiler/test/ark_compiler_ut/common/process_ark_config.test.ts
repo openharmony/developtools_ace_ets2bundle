@@ -51,7 +51,10 @@ import {
   MAC_JS2ABC_PATH,
   MAC_AOTCOMPILER_PATH,
   ARKROOT_PATH,
-  ARKCONFIG_TS2ABC_PATH
+  ARKCONFIG_TS2ABC_PATH,
+  WIN_BC_OBFUSCATOR_PATH,
+  BC_OBFUSCATOR_PATH,
+  MAC_BC_OBFUSCATOR_PATH
 } from '../mock/rollup_mock/path_config';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import {
@@ -558,11 +561,13 @@ mocha.describe('test process_ark_config file api', function () {
     const expectMergeAbcPath = path.join(ARKROOT_PATH, WIN_MERGERABC_PATH);
     const expectJs2abcPath = path.join(ARKROOT_PATH, WIN_JS2ABC_PATH);
     const expectAotCompilerPath = path.join(ARKROOT_PATH, WIN_AOTCOMPILER_PATH);
+    const expectBcObfuscatorPath = path.join(ARKROOT_PATH, WIN_BC_OBFUSCATOR_PATH);
     expect(arkConfig.es2abcPath === expectEs2abcPath).to.be.true;
     expect(arkConfig.ts2abcPath === expectTs2abcPath).to.be.true;
     expect(arkConfig.mergeAbcPath === expectMergeAbcPath).to.be.true;
     expect(arkConfig.js2abcPath === expectJs2abcPath).to.be.true;
     expect(arkConfig.aotCompilerPath === expectAotCompilerPath).to.be.true;
+    expect(arkConfig.bcObfuscatorPath === expectBcObfuscatorPath).to.be.true;
     stub.restore();
   });
 
@@ -575,11 +580,13 @@ mocha.describe('test process_ark_config file api', function () {
     const expectMergeAbcPath = path.join(ARKROOT_PATH, MERGERABC_PATH);
     const expectJs2abcPath = path.join(ARKROOT_PATH, JS2ABC_PATH);
     const expectAotCompilerPath = path.join(ARKROOT_PATH, AOTCOMPILER_PATH);
+    const expectBcObfuscatorPath = path.join(ARKROOT_PATH, BC_OBFUSCATOR_PATH);
     expect(arkConfig.es2abcPath === expectEs2abcPath).to.be.true;
     expect(arkConfig.ts2abcPath === expectTs2abcPath).to.be.true;
     expect(arkConfig.mergeAbcPath === expectMergeAbcPath).to.be.true;
     expect(arkConfig.js2abcPath === expectJs2abcPath).to.be.true;
     expect(arkConfig.aotCompilerPath === expectAotCompilerPath).to.be.true;
+    expect(arkConfig.bcObfuscatorPath === expectBcObfuscatorPath).to.be.true;
     stub.restore();
   });
 
@@ -592,11 +599,13 @@ mocha.describe('test process_ark_config file api', function () {
     const expectMergeAbcPath = path.join(ARKROOT_PATH, MAC_MERGERABC_PATH);
     const expectJs2abcPath = path.join(ARKROOT_PATH, MAC_JS2ABC_PATH);
     const expectAotCompilerPath = path.join(ARKROOT_PATH, MAC_AOTCOMPILER_PATH);
+    const expectBcObfuscatorPath = path.join(ARKROOT_PATH, MAC_BC_OBFUSCATOR_PATH);
     expect(arkConfig.es2abcPath === expectEs2abcPath).to.be.true;
     expect(arkConfig.ts2abcPath === expectTs2abcPath).to.be.true;
     expect(arkConfig.mergeAbcPath === expectMergeAbcPath).to.be.true;
     expect(arkConfig.js2abcPath === expectJs2abcPath).to.be.true;
     expect(arkConfig.aotCompilerPath === expectAotCompilerPath).to.be.true;
+    expect(arkConfig.bcObfuscatorPath === expectBcObfuscatorPath).to.be.true;
     stub.restore();
   });
 

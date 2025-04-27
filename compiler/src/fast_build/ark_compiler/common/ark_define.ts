@@ -91,6 +91,7 @@ export const SCRIPT: string = 'script';
 export const SRC_MAIN: string = 'src/main';
 export const GEN_ABC_PLUGIN_NAME: string = 'Gen_Abc_Plugin';
 export const OBFUSCATION_TOOL: string = 'Obfuscation_Tool';
+export const BYTECODE_OBFUSCATOR_INIT = 'Bytecode_obfuscator_init';
 
 export const SUCCESS: number = 0;
 export const FAIL: number = 1;
@@ -121,3 +122,24 @@ export const USE_SHARED_COMMENT: string = '// "use shared"';
 export const SEPARATOR_BITWISE_AND: string = '&';
 export const SEPARATOR_AT: string = '@';
 export const SEPARATOR_SLASH: string = '/';
+
+export const ES_ANNOTATIONS = [
+  '_ESConcurrentModuleRequestsAnnotation',
+  '_ESSlotNumberAnnotation',
+  '_ESAnnotation'
+];
+
+export const DECORATOR_WHITE_LIST = [
+  'Monitor',
+  'Track',
+  'Trace',
+];
+
+export const BYTECODE_OBFUSCATION_PROPERTY_WHITE_LIST = [
+  'componentClass',
+  'getReuseId',
+  'resetStateVarsOnReuse'
+];
+
+export const IDENTIFIER_CACHE = 'IdentifierCache';
+export const MEMBER_METHOD_CACHE = 'MemberMethodCache';

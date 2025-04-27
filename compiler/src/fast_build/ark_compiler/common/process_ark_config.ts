@@ -54,6 +54,7 @@ import type { ReseverdSetForArkguard } from 'arkguard';
 import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../../meomry_monitor/memory_define';
 import { initObfLogger, printObfLogger } from './ob_config_resolver';
+import { BytecodeObfuscator } from '../bytecode_obfuscator';
 
 type ArkConfig = {
   arkRootPath: string;
@@ -62,6 +63,7 @@ type ArkConfig = {
   mergeAbcPath: string;
   es2abcPath: string;
   aotCompilerPath: string;
+  bcObfuscatorPath: string;
   nodePath: string;
   isDebug: boolean;
   isBranchElimination: boolean;
@@ -80,6 +82,7 @@ export function initArkConfig(projectConfig: Object): ArkConfig {
     mergeAbcPath: '',
     es2abcPath: '',
     aotCompilerPath: '',
+    bcObfuscatorPath: '',
     nodePath: '',
     isDebug: false,
     isBranchElimination: false,
@@ -193,6 +196,7 @@ export function initArkProjectConfig(share: Object): Object {
     initObfLogger(share);
     initObfuscationConfig(projectConfig, arkProjectConfig, printObfLogger);
     endFilesEvent(EventList.OBFUSCATION_INITIALIZATION, performancePrinter.timeSumPrinter);
+    BytecodeObfuscator.init(share, arkProjectConfig);
   } else {
     // Set performance printer to undefined in case we cannot disable it without obfuscation initialization
     blockPrinter();
@@ -246,12 +250,20 @@ function initTerserConfig(projectConfig: any, logger: any, mergedObConfig: Merge
 }
 
 // Scan the source code of project and libraries to collect whitelists.
-export function readProjectAndLibsSource(allFiles: Set<string>, mergedObConfig: MergedConfig, arkObfuscator: ArkObfuscator, isHarCompiled: boolean,
-  keepFilesAndDependencies: Set<string>): void {
+export function readProjectAndLibsSource(
+  allFiles: Set<string>,
+  mergedObConfig: MergedConfig,
+  arkObfuscator: ArkObfuscator,
+  isHarCompiled: boolean,
+  keepFilesAndDependencies: Set<string>
+): void {
   if (mergedObConfig?.options === undefined || mergedObConfig.options.disableObfuscation || allFiles.size === 0) {
     return;
   }
+
   const obfOptions = mergedObConfig.options;
+  const enableDecoratorScan =
+    BytecodeObfuscator.enable && !BytecodeObfuscator.getInstance().isDecoratorObfuscationEnabled();
   let projectAndLibs: ReseverdSetForArkguard = readProjectPropertiesByCollectedPaths(allFiles,
     {
       mNameObfuscation: {
@@ -266,7 +278,8 @@ export function readProjectAndLibsSource(allFiles: Set<string>, mergedObConfig: 
         mKeepSourceOfPaths: new Set(),
         mkeepFilesAndDependencies: keepFilesAndDependencies,
       }
-    }, isHarCompiled);
+    }, isHarCompiled,
+    enableDecoratorScan);
   if (obfOptions.enablePropertyObfuscation) {
     arkObfuscator.addReservedSetForPropertyObf(projectAndLibs);
   }
@@ -287,6 +300,7 @@ function processPlatformInfo(arkConfig: ArkConfig): void {
     arkConfig.mergeAbcPath = path.join(arkPlatformPath, 'bin', 'merge_abc.exe');
     arkConfig.js2abcPath = path.join(arkPlatformPath, 'bin', 'js2abc.exe');
     arkConfig.aotCompilerPath = path.join(arkPlatformPath, 'bin', 'ark_aot_compiler.exe');
+    arkConfig.bcObfuscatorPath = path.join(arkPlatformPath, 'bin', 'panda_guard.exe');
     return;
   }
   if (isLinux() || isMac()) {
@@ -295,6 +309,7 @@ function processPlatformInfo(arkConfig: ArkConfig): void {
     arkConfig.mergeAbcPath = path.join(arkPlatformPath, 'bin', 'merge_abc');
     arkConfig.js2abcPath = path.join(arkPlatformPath, 'bin', 'js2abc');
     arkConfig.aotCompilerPath = path.join(arkPlatformPath, 'bin', 'ark_aot_compiler');
+    arkConfig.bcObfuscatorPath = path.join(arkPlatformPath, 'bin', 'panda_guard');
     return;
   }
   if (isHarmonyOs()) {

@@ -36,16 +36,19 @@ export const TS2ABC_PATH: string = '/build/src/index.js';
 export const MERGERABC_PATH: string = '/build/bin/merge_abc';
 export const JS2ABC_PATH: string = '/build/bin/js2abc';
 export const AOTCOMPILER_PATH: string = '/build/bin/ark_aot_compiler';
+export const BC_OBFUSCATOR_PATH: string = '/build/bin/panda_guard';
 export const WIN_ES2ABC_PATH: string = '/build-win/bin/es2abc.exe';
 export const WIN_TS2ABC_PATH: string = '/build-win/src/index.js';
 export const WIN_MERGERABC_PATH: string = '/build-win/bin/merge_abc.exe';
 export const WIN_JS2ABC_PATH: string = '/build-win/bin/js2abc.exe';
 export const WIN_AOTCOMPILER_PATH: string = '/build-win/bin/ark_aot_compiler.exe';
+export const WIN_BC_OBFUSCATOR_PATH: string = '/build-win/bin/panda_guard.exe';
 export const MAC_ES2ABC_PATH: string = '/build-mac/bin/es2abc';
 export const MAC_TS2ABC_PATH: string = '/build-mac/src/index.js';
 export const MAC_MERGERABC_PATH: string = '/build-mac/bin/merge_abc';
 export const MAC_JS2ABC_PATH: string = '/build-mac/bin/js2abc';
 export const MAC_AOTCOMPILER_PATH: string = '/build-mac/bin/ark_aot_compiler';
+export const MAC_BC_OBFUSCATOR_PATH: string = '/build-mac/bin/panda_guard';
 export const ARKROOT_PATH: string = path.resolve(__dirname, '../../../../bin/ark')
 export const MODULE_TEST_PATH: string = `${PROJECT_ROOT}/testTsModuleRequest/src/main/ets/`;
 export const TEST_TS: string = 'src/main/ets/pages/test.ts';
@@ -87,3 +90,5 @@ export const MOCK_CONFIG_PATH: string = "openharmony/mockconfig";
 
 export const OBFUSCATION_RULE_TEMPLATE_PATH: string = `${PROJECT_ROOT}/obfuscation/keepDts/obfuscation-template.txt`;
 export const OBFUSCATION_RULE_PATH: string = `${PROJECT_ROOT}/obfuscation/obfuscation.txt`;
+
+export const OBFUSCATE_RULE_BYTECODE_OBFUSCATION_ENABLE_PATH: string = `${PROJECT_ROOT}/bytecode_obfuscation/byte_obfuscation_enable.txt`;

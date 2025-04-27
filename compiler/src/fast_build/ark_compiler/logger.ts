@@ -136,6 +136,32 @@ export class LogDataFactory {
     }
     return undefined;
   }
+
+  static newInstanceFromBytecodeObfuscation(cerr: string, status: number): LogData | undefined {
+    if (cerr === '') {
+      return LogDataFactory.newInstance(
+        ErrorCode.BYTECODE_OBFUSCATION_COMMON_ERROR,
+        'bytecode program was terminated abnormally',
+        `The status code returned is ${status}`
+      );
+    }
+
+    const parsedErrors = new Map<string, string>();
+    cerr.toString().split('\n').forEach(line => {
+      const [key, value] = line.split(':').map(part => part.trim());
+      if (key && value) {
+        parsedErrors.set(key, value);
+      }
+    });
+
+    return LogDataFactory.newInstance(
+      parsedErrors.get('[ErrorCode]'),
+      parsedErrors.get('[Description]'),
+      parsedErrors.get('[Cause]') || '',
+      parsedErrors.get('[Position]') || '',
+      parsedErrors.get('[Solutions]') ? parsedErrors.get('[Solutions]')!.split(',') : []
+    );
+  }
 }
 
 export class LogData {
