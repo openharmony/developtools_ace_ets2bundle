@@ -331,8 +331,7 @@ ohos_copy("ohos_declaration_ets_ark") {
   outputs = [ target_out_dir + "/../api" ]
 }
 
-ohos_copy("ets_loader_ark_hap") {
-  sources = common_api_src
+group("ets_loader_ark_hap") {
   deps = [
     ":ets_loader_ark",
     ":ets_loader_ark_codegen",
@@ -343,8 +342,6 @@ ohos_copy("ets_loader_ark_hap") {
     ":ets_loader_ark_server",
     ":ohos_declaration_ets_ark",
   ]
-  outputs = [ target_out_dir + "/../../developtools/api/{{source_file_part}}" ]
-  module_install_name = ""
 }
 
 typescript_dir = get_label_info("//third_party/typescript:build_typescript",
