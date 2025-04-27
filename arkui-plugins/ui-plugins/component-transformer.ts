@@ -317,6 +317,9 @@ export class ComponentTransformer extends AbstractVisitor {
         }
         node.definition.body.map((it) => {
             if (arkts.isClassProperty(it)) {
+                if (hasDecorator(it, DecoratorNames.PROVIDE)) {
+                    factory.processNoAliasProvideVariable(it);
+                }
                 this.context.structMembers.get(className)!.push(...this.createInterfaceInnerMember(it, structInfo));
             }
         });
