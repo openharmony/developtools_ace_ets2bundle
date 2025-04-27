@@ -26,7 +26,6 @@ import {
     getCustomComponentOptionsName,
     getTypeNameFromTypeParameter,
     getTypeParamsFromClassDecl,
-    BuilderLambdaNames,
     getGettersFromClassDecl,
     addMemoAnnotation,
 } from './utils';
@@ -114,13 +113,20 @@ export class CheckedTransformer extends AbstractVisitor {
             return transformResource(node, this.projectConfig);
         } else if (findCanAddMemoFromArrowFunction(node)) {
             return addMemoAnnotation(node);
-        }
-        else if (arkts.isClassDeclaration(node)) {
+        } else if (arkts.isClassDeclaration(node)) {
             return transformObservedTracked(node);
+        } else if (
+            this.externalSourceName === 'arkui.component.common' &&
+            arkts.isTSInterfaceDeclaration(node) &&
+            !!node.id &&
+            node.id.name === 'UICommonMethod'
+        ) {
+            return structFactory.modifyExternalComponentCommon(node);
         }
         return node;
     }
 }
+
 export type ClassScopeInfo = {
     isObserved: boolean;
     classHasTrack: boolean;
@@ -468,3 +474,4 @@ function transformResource(
     ];
     return structFactory.generateTransformedResource(resourceNode, newArgs);
 }
+
