@@ -86,9 +86,13 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
             mutableThis,
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
             arkts.factory.createBinaryExpression(
-                factory.createBlockStatementForOptionalExpression(
-                    arkts.factory.createIdentifier('initializers'),
-                    originalName
+                arkts.factory.createBinaryExpression(
+                    factory.createBlockStatementForOptionalExpression(
+                        arkts.factory.createIdentifier('initializers'),
+                        originalName
+                    ),
+                    arkts.factory.createIdentifier('content'),
+                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
                 ),
                 this.property.value ?? arkts.factory.createUndefinedLiteral(),
                 arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
