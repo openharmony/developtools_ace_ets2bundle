@@ -23,6 +23,7 @@ import type { AstNode } from "../peers/AstNode"
 import { ClassDefinition, ClassProperty, ETSImportDeclaration, ImportSpecifier, isClassDefinition, isScriptFunction, type AnnotationUsage } from "../../generated"
 import { Program } from "../peers/Program"
 import { clearNodeCache } from "../class-by-peer"
+import { SourcePosition } from "../peers/SourcePosition"
 
 
 export function proceedToState(state: Es2pandaContextState, forceDtsEmit = false): void {
@@ -168,4 +169,16 @@ export function setAllParents(ast: AstNode) {
 
 export function generateTsDeclarationsFromContext(outputDeclEts: string, outputEts: string, exportAll: boolean): KInt {
     return global.es2panda._GenerateTsDeclarationsFromContext(global.context, passString(outputDeclEts), passString(outputEts), exportAll)
+}
+
+export function isDefaultAccessModifierClassProperty(property: ClassProperty): boolean {
+    return global.es2panda._ClassPropertyIsDefaultAccessModifierConst(global.context, property.peer);
+}
+
+export function getStartPosition(node: AstNode): SourcePosition {
+    return new SourcePosition(global.es2panda._AstNodeStartConst(global.context, node.peer));
+}
+
+export function getEndPosition(node: AstNode): SourcePosition {
+    return new SourcePosition(global.es2panda._AstNodeEndConst(global.context, node.peer));
 }
