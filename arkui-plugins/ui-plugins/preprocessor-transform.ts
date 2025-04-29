@@ -66,8 +66,14 @@ export class PreprocessorTransformer extends AbstractVisitor {
     }
 
     transformComponentCall(node: arkts.CallExpression): arkts.TSAsExpression | arkts.CallExpression {
-        if (arkts.isObjectExpression(node.arguments[0])) {
-            const componentName: string = `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${node.expression.dumpSrc()}`;
+        if (node.arguments.length === 0 && node.trailingBlock) {
+            return arkts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
+                arkts.factory.createUndefinedLiteral(),
+            ]);
+        } else if (arkts.isObjectExpression(node.arguments[0])) {
+            const componentName: string = `${
+                CustomComponentNames.COMPONENT_INTERFACE_PREFIX
+            }${node.expression.dumpSrc()}`;
             const newArg = arkts.factory.createTSAsExpression(
                 node.arguments[0].clone(),
                 arkts.factory.createTypeReference(
@@ -75,9 +81,10 @@ export class PreprocessorTransformer extends AbstractVisitor {
                 ),
                 true
             );
-            return arkts.factory
-                .updateCallExpression(node, node.expression, node.typeArguments, [newArg, ...node.arguments.slice(1)])
-                .setTralingBlock(node.trailingBlock);
+            return arkts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
+                newArg,
+                ...node.arguments.slice(1),
+            ]);
         } else {
             return node;
         }
