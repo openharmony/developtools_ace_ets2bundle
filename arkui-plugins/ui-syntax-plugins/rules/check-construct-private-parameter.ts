@@ -17,9 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { getClassPropertyName, isPrivateClassProperty } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 
-let privateMap: Map<string, string[]> = new Map();
-
-function addProperty(item: arkts.AstNode, structName: string): void {
+function addProperty(item: arkts.AstNode, structName: string, privateMap: Map<string, string[]>): void {
   if (!arkts.isClassProperty(item) || !isPrivateClassProperty(item)) {
     return;
   }
@@ -33,7 +31,11 @@ function addProperty(item: arkts.AstNode, structName: string): void {
   }
 }
 
-function checkPrivateVariables(node: arkts.AstNode, context: UISyntaxRuleContext): void {
+function checkPrivateVariables(
+  node: arkts.AstNode,
+  context: UISyntaxRuleContext,
+  privateMap: Map<string, string[]>
+): void {
   // Check if the current node is the root node
   if (arkts.nodeType(node) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
     node.getChildren().forEach((member) => {
@@ -42,7 +44,7 @@ function checkPrivateVariables(node: arkts.AstNode, context: UISyntaxRuleContext
       }
       const structName: string = member.definition.ident?.name ?? '';
       member.definition?.body?.forEach((item) => {
-        addProperty(item, structName);
+        addProperty(item, structName, privateMap);
       });
     });
   }
@@ -79,9 +81,10 @@ const rule: UISyntaxRule = {
     cannotInitializePrivateVariables: `Property '{{propertyName}}' is private and can not be initialized through the component constructor.`,
   },
   setup(context) {
+    let privateMap: Map<string, string[]> = new Map();
     return {
       parsed: (node): void => {
-        checkPrivateVariables(node, context);
+        checkPrivateVariables(node, context, privateMap);
       },
     };
   },

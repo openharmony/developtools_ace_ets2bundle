@@ -13,18 +13,26 @@
  * limitations under the License.
  */
 
-
 import { UISyntaxRule } from './ui-syntax-rule';
 import BuildRootNode from './build-root-node';
 import CheckConstructPrivateParameter from './check-construct-private-parameter';
+import CheckDecoratedPropertyType from './check-decorated-property-type';
+import ComponentComponentV2MixUseCheck from './component-componentV2-mix-use-check';
 import ComponentV2MixCheck from './componentV2-mix-check';
 import ConsumerProviderDecoratorCheck from './consumer-provider-decorator-check';
+import ComponentV2StateUsageValidation from './componentV2-state-usage-validation';
+import ConstructParameterLiteral from './construct-parameter-literal';
 import CustomDialogMissingController from './custom-dialog-missing-controller';
 import DecoratorsInUIComponentOnly from './decorators-in-ui-component-only';
 import EntryLoacalStorageCheck from './entry-localstorage-check';
 import EntryStructNoExport from './entry-struct-no-export';
 import LocalBuilderCheck from './local-builder-check';
+import MonitorDecoratorCheck from './monitor-decorator-check';
+import NestedRelationship from './nested-relationship';
+import NoChildInButton from './no-child-in-button';
 import NoDuplicateDecorators from './no-duplicate-decorators';
+import NoDuplicateEntry from './no-duplicate-entry';
+import NoDuplicatePreview from './no-duplicate-preview';
 import NoDuplicateStateManager from './no-duplicate-state-manager';
 import NoPropLinkObjectlinkInEntry from './no-prop-link-objectlink-in-entry';
 import NoSameAsBuiltInAttribute from './no-same-as-built-in-attribute';
@@ -39,18 +47,33 @@ import VariableInitializationViaComponentCons from './variable-initialization-vi
 import WatchDecoratorFunction from './watch-decorator-function';
 import WatchDecoratorRegular from './watch-decorator-regular';
 import WrapBuilderCheck from './wrap-builder-check';
+import ObservedHeritageCompatibleCheck from './observed-heritage-compatible-check';
+import ObservedObservedV2 from './observed-observedV2-check';
+import ObservedV2TraceUsageValidation from './observedV2-trace-usage-validation';
+import OnceDecoratorCheck from './once-decorator-check';
+import OneDecoratorOnFunctionMethod from './one-decorator-on-function-method';
+import OldNewDecoratorMixUseCheck from './old-new-decorator-mix-use-check';
 
 const rules: UISyntaxRule[] = [
   BuildRootNode,
   CheckConstructPrivateParameter,
+  CheckDecoratedPropertyType,
+  ComponentComponentV2MixUseCheck,
   ComponentV2MixCheck,
   ConsumerProviderDecoratorCheck,
+  ComponentV2StateUsageValidation,
+  ConstructParameterLiteral,
   CustomDialogMissingController,
   DecoratorsInUIComponentOnly,
   EntryLoacalStorageCheck,
   EntryStructNoExport,
   LocalBuilderCheck,
+  MonitorDecoratorCheck,
+  NestedRelationship,
+  NoChildInButton,
   NoDuplicateDecorators,
+  NoDuplicateEntry,
+  NoDuplicatePreview,
   NoDuplicateStateManager,
   NoPropLinkObjectlinkInEntry,
   NoSameAsBuiltInAttribute,
@@ -65,6 +88,12 @@ const rules: UISyntaxRule[] = [
   WatchDecoratorFunction,
   WatchDecoratorRegular,
   WrapBuilderCheck,
+  ObservedHeritageCompatibleCheck,
+  ObservedObservedV2,
+  ObservedV2TraceUsageValidation,
+  OnceDecoratorCheck,
+  OneDecoratorOnFunctionMethod,
+  OldNewDecoratorMixUseCheck,
 ];
 
 export default rules;
