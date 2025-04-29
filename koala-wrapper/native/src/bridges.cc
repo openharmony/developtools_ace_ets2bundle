@@ -415,7 +415,8 @@ KNativePointer impl_AstNodeRangeConst(KNativePointer context, KNativePointer nod
 }
 KOALA_INTEROP_2(AstNodeRangeConst, KNativePointer, KNativePointer, KNativePointer)
 
-KNativePointer impl_SourceRangeStart(KNativePointer context, KNativePointer range) {
+KNativePointer impl_SourceRangeStart(KNativePointer context, KNativePointer range)
+{
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
     const auto _range = reinterpret_cast<es2panda_SourceRange*>(range);
     auto result = GetImpl()->SourceRangeStart(_context, _range);
@@ -423,10 +424,34 @@ KNativePointer impl_SourceRangeStart(KNativePointer context, KNativePointer rang
 }
 KOALA_INTEROP_2(SourceRangeStart, KNativePointer, KNativePointer, KNativePointer)
 
-KNativePointer impl_SourceRangeEnd(KNativePointer context, KNativePointer range) {
+KNativePointer impl_SourceRangeEnd(KNativePointer context, KNativePointer range)
+{
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
     const auto _range = reinterpret_cast<es2panda_SourceRange*>(range);
     auto result = GetImpl()->SourceRangeEnd(_context, _range);
     return result;
 }
 KOALA_INTEROP_2(SourceRangeEnd, KNativePointer, KNativePointer, KNativePointer)
+bool impl_ClassPropertyIsDefaultAccessModifierConst(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    return GetImpl()->ClassPropertyIsDefaultAccessModifierConst(_context, _receiver);
+}
+KOALA_INTEROP_2(ClassPropertyIsDefaultAccessModifierConst, KBoolean, KNativePointer, KNativePointer);
+
+KNativePointer impl_AstNodeStartConst(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    return const_cast<es2panda_SourcePosition *>(GetImpl()->AstNodeStartConst(_context, _receiver));
+}
+KOALA_INTEROP_2(AstNodeStartConst, KNativePointer, KNativePointer, KNativePointer);
+
+KNativePointer impl_AstNodeEndConst(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    return const_cast<es2panda_SourcePosition *>(GetImpl()->AstNodeEndConst(_context, _receiver));
+}
+KOALA_INTEROP_2(AstNodeEndConst, KNativePointer, KNativePointer, KNativePointer);

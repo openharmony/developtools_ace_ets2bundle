@@ -22,6 +22,7 @@
         "./common/**/*.ts",
         "./memo-plugins/**/*.ts",
         "./ui-plugins/**/*.ts",
+        "./ui-syntax-plugins/**/*.ts",
         "./interop-plugins/**/*.ts",
         "./path.ts",
         "./test/ut/**/*.ts",
