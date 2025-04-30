@@ -94,6 +94,9 @@ export const COMPONENT_CONCURRENT_DECORATOR: string = '@Concurrent';
 export const COMPONENT_SENDABLE_DECORATOR: string = '@Sendable';
 export const COMPONENT_USER_INTENTS_DECORATOR: string = '@InsightIntentLink';
 export const COMPONENT_USER_INTENTS_DECORATOR_ENTRY: string = '@InsightIntentEntry';
+export const COMPONENT_USER_INTENTS_DECORATOR_FUNCTION: string = '@InsightIntentFunction';
+export const COMPONENT_USER_INTENTS_DECORATOR_METHOD: string = '@InsightIntentFunctionMethod';
+export const COMPONENT_USER_INTENTS_DECORATOR_PAGE: string = '@InsightIntentPage';
 export const CHECK_COMPONENT_EXTEND_DECORATOR: string = 'Extend';
 export const STRUCT_CONTEXT_METHOD_DECORATORS: Set<string> = new Set([COMPONENT_BUILDER_DECORATOR,
   COMPONENT_STYLES_DECORATOR, COMPONENT_LOCAL_BUILDER_DECORATOR]);

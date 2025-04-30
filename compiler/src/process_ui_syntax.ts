@@ -300,6 +300,9 @@ export function processUISyntax(program: ts.Program, ut = false,
         processImport(node, pagesDir, transformLog.errors);
       }
       if (ts.isStructDeclaration(node)) {
+        const eventParseIntentTime: CompileEvent | undefined = createAndStartEvent(eventProcessUISyntax, 'pageParseIntentTime');
+        node = parseIntent.detectInsightIntent(node, metaInfo, filePath);
+        stopEvent(eventParseIntentTime);
         hasStruct = true;
         componentCollection.currentClassName = node.name.getText();
         componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);

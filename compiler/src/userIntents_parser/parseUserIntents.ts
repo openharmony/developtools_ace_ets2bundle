@@ -14,8 +14,18 @@
  */
 
 import ts, { CatchClause, Declaration, Expression, TypeChecker, VariableDeclarationList } from 'typescript';
-import { intentEntryInfoChecker, IntentLinkInfoChecker, ParamChecker } from './intentType';
 import {
+  IntentEntryInfo,
+  intentEntryInfoChecker,
+  IntentLinkInfo,
+  IntentLinkInfoChecker, intentMethodInfoChecker,
+  LinkIntentParamMapping,
+  IntentPageInfoChecker,
+  ParamChecker
+} from './intentType';
+import {
+  DECORATOR_DUPLICATE_INTENTNAME,
+  DECORATOR_ILLEGAL_USE,
   DECORATOR_STATEMENT_ERROR,
   DISALLOWED_PARAM_ERROR,
   DYNAMIC_PARAM_ERROR,
@@ -23,25 +33,37 @@ import {
   INCORRECT_PARAM_TYPE_ERROR,
   IntentLogger,
   INTERNAL_ERROR,
+  INVALID_BASE_CLASS_ERROR, INVALID_PAGEPATH_ERROR,
+  PARAM_CIRCULAR_REFERENCE_ERROR,
   REQUIRED_PARAM_DISMISS_ERROR,
-  SCHEMA_VALIDATE_REQUIRED_ERROR,
-  UNSUPPORTED_PARSE_ERROR,
-  SCHEMA_VALIDATE_TYPE_ERROR,
+  SCHEMA_ROOT_TYPE_MISMATCH_ERROR,
   SCHEMA_VALIDATE_ANY_OF_ERROR,
   SCHEMA_VALIDATE_ONE_OF_ERROR,
-  SCHEMA_ROOT_TYPE_MISMATCH_ERROR,
-  INVALID_BASE_CLASS_ERROR,
-  PARAM_CIRCULAR_REFERENCE_ERROR
+  SCHEMA_VALIDATE_REQUIRED_ERROR,
+  SCHEMA_VALIDATE_TYPE_ERROR,
+  UNSUPPORTED_PARSE_ERROR
 } from './intentLogger';
 import path from 'path';
 import { getNormalizedOhmUrlByFilepath } from '../ark_utils';
-import { projectConfig, globalModulePaths } from '../../main';
+import { globalModulePaths, projectConfig } from '../../main';
 import fs from 'fs';
 import { ProjectCollections } from 'arkguard';
-import { COMPONENT_USER_INTENTS_DECORATOR, COMPONENT_USER_INTENTS_DECORATOR_ENTRY } from '../pre_define';
+import {
+  COMPONENT_USER_INTENTS_DECORATOR,
+  COMPONENT_USER_INTENTS_DECORATOR_ENTRY,
+  COMPONENT_USER_INTENTS_DECORATOR_FUNCTION,
+  COMPONENT_USER_INTENTS_DECORATOR_METHOD,
+  COMPONENT_USER_INTENTS_DECORATOR_PAGE
+} from '../pre_define';
 import { hasDecorator } from '../utils';
 
 type StaticValue = string | number | boolean | null | undefined | StaticValue[] | { [key: string]: StaticValue };
+
+interface methodParametersInfo {
+  functionName: string;
+  parameters: Record<string, string>,
+  args: ts.NodeArray<ts.Expression>;
+}
 
 class ParseIntent {
   constructor() {
@@ -49,20 +71,47 @@ class ParseIntent {
     this.currentFilePath = '';
     this.heritageClassSet = new Set<string>();
     this.heritageClassSet.add('IntentEntity_sdk');
+    this.updatePageIntentObj = new Map();
   }
 
   checker: ts.TypeChecker;
-  intentData: any[];
+  intentData: object[];
   currentFilePath: string;
   heritageClassSet: Set<string>;
+  updatePageIntentObj: Map<string, object[]>;
+  isUpdateCompile: boolean = false;
+  isInitCache : boolean = false;
 
   detectInsightIntent(node: ts.ClassDeclaration, metaInfo: object, filePath: string): ts.Node {
-    if (hasDecorator(node, COMPONENT_USER_INTENTS_DECORATOR) || hasDecorator(node, COMPONENT_USER_INTENTS_DECORATOR_ENTRY
-    )) {
-      const checker: TypeChecker = metaInfo.tsProgram.getTypeChecker();
+    if (!this.isInitCache && projectConfig.cachePath) {
+      const cacheSourceMapPath: string = path.join(projectConfig.cachePath, 'insight_compile_cache.json');
+      this.isUpdateCompile = fs.existsSync(cacheSourceMapPath);
+      this.isInitCache = true;
+    }
+    if (this.isUpdateCompile) {
+      const pkgParams: object = {
+        pkgName: metaInfo.pkgName,
+        pkgPath: metaInfo.pkgPath
+      };
+      const Logger: IntentLogger = IntentLogger.getInstance();
+      const recordName: string = getNormalizedOhmUrlByFilepath(filePath, projectConfig, Logger, pkgParams, null);
+      if (!this.updatePageIntentObj.has(`@normalized:${recordName}`)) {
+        this.updatePageIntentObj.set(`@normalized:${recordName}`, []);
+      }
+    }
+    if (hasDecorator(node, COMPONENT_USER_INTENTS_DECORATOR) || hasDecorator(node, COMPONENT_USER_INTENTS_DECORATOR_ENTRY) ||
+      hasDecorator(node, COMPONENT_USER_INTENTS_DECORATOR_FUNCTION) || hasDecorator(node, COMPONENT_USER_INTENTS_DECORATOR_PAGE)) {
+      const checker: TypeChecker = metaInfo.checker;
       this.handleIntent(node, checker, filePath, metaInfo);
-      node = this.removeDecorator(node, [COMPONENT_USER_INTENTS_DECORATOR, COMPONENT_USER_INTENTS_DECORATOR_ENTRY]);
-      return node;
+      node = this.removeDecorator(node, [COMPONENT_USER_INTENTS_DECORATOR, COMPONENT_USER_INTENTS_DECORATOR_ENTRY,
+        COMPONENT_USER_INTENTS_DECORATOR_FUNCTION, COMPONENT_USER_INTENTS_DECORATOR_PAGE, COMPONENT_USER_INTENTS_DECORATOR_METHOD]);
+    } else {
+      node.members.forEach((member) => {
+        if (ts.isMethodDeclaration(member) && this.hasModifier(member, ts.SyntaxKind.StaticKeyword) &&
+          hasDecorator(member, COMPONENT_USER_INTENTS_DECORATOR_METHOD)) {
+          throw Error(`${DECORATOR_ILLEGAL_USE.toString()}, invalidDecoratorPath: ${this.currentFilePath}`);
+        }
+      });
     }
     return node;
   }
@@ -107,21 +156,86 @@ class ParseIntent {
         this.handleLinkDecorator(intentObj, node, decorator);
       } else if (originalDecorator === COMPONENT_USER_INTENTS_DECORATOR_ENTRY) {
         this.handleEntryDecorator(intentObj, node, decorator, pkgParams);
+      } else if (originalDecorator === COMPONENT_USER_INTENTS_DECORATOR_FUNCTION) {
+        this.handleMethodDecorator(intentObj, node, decorator);
+      } else if (originalDecorator === COMPONENT_USER_INTENTS_DECORATOR_PAGE) {
+        this.handlePageDecorator(intentObj, node, decorator, pkgParams);
       }
     });
+  }
+
+  handlePageDecorator(intentObj: object, node: ts.Node, decorator: ts.Decorator, pkgParams: object): void {
+    const expr: ts.Expression = decorator.expression;
+    if (ts.isCallExpression(expr)) {
+      const args: ts.NodeArray<ts.Expression> = expr.arguments;
+      Object.assign(intentObj, {
+        'bundleName': projectConfig.bundleName,
+        'moduleName': projectConfig.moduleName,
+        'decoratorType': COMPONENT_USER_INTENTS_DECORATOR_PAGE
+      });
+      this.analyzeDecoratorArgs(args, intentObj, IntentPageInfoChecker);
+      const properties: Record<string, string> = this.parsePageProperties(node);
+      this.schemaValidateSync(properties, intentObj.parameters);
+      this.createObfuscation(node);
+      this.transformPagePath(intentObj, pkgParams);
+      if (this.isUpdateCompile) {
+        this.updatePageIntentObj.get(intentObj.decoratorFile).push(intentObj);
+      }
+      this.intentData.push(intentObj);
+    } else {
+      throw Error(`${DECORATOR_STATEMENT_ERROR.toString()}, invalidDecoratorPath: ${this.currentFilePath}`);
+    }
+  }
+
+  handleMethodDecorator(intentObj: object, node: ts.Node, decorator: ts.Decorator): void {
+    const expr: ts.Expression = decorator.expression;
+    if (ts.isCallExpression(expr)) {
+      Object.assign(intentObj, {
+        'bundleName': projectConfig.bundleName,
+        'moduleName': projectConfig.moduleName,
+        'decoratorType': COMPONENT_USER_INTENTS_DECORATOR_METHOD,
+        'intentType': 'function'
+      });
+
+      interface methodParametersInfo {
+        functionName: string,
+        parameters: Record<string, string>,
+        args: ts.NodeArray<ts.Expression>,
+      }
+
+      const methodParameters: methodParametersInfo[] = this.parseClassMethods(node, COMPONENT_USER_INTENTS_DECORATOR_METHOD);
+      methodParameters.forEach(methodDecorator => {
+        const functionName: string = methodDecorator.functionName;
+        const methodArgs: ts.NodeArray<ts.Expression> = methodDecorator.args;
+        const properties: Record<string, string> = methodDecorator.parameters;
+        const methodObj: object = Object.assign({}, intentObj, {functionName});
+        this.analyzeDecoratorArgs(methodArgs, methodObj, intentMethodInfoChecker);
+        this.schemaValidateSync(properties, methodObj.parameters);
+        if (this.isUpdateCompile) {
+          this.updatePageIntentObj.get(methodObj.decoratorFile).push(methodObj);
+        }
+        this.intentData.push(methodObj);
+      });
+      this.createObfuscation(node);
+    } else {
+      throw Error(`${DECORATOR_STATEMENT_ERROR.toString()}, invalidDecoratorPath: ${this.currentFilePath}`);
+    }
   }
 
   handleLinkDecorator(intentObj: object, node: ts.Node, decorator: ts.Decorator): void {
     const expr: ts.Expression = decorator.expression;
     if (ts.isCallExpression(expr)) {
       const args: ts.NodeArray<ts.Expression> = expr.arguments;
-      this.analyzeDecoratorArgs(args, intentObj, IntentLinkInfoChecker);
+      this.analyzeDecoratorArgs<IntentLinkInfo>(args, intentObj, IntentLinkInfoChecker);
       Object.assign(intentObj, {
         'bundleName': projectConfig.bundleName,
         'moduleName': projectConfig.moduleName,
         'decoratorType': COMPONENT_USER_INTENTS_DECORATOR
       });
       this.createObfuscation(node);
+      if (this.isUpdateCompile) {
+        this.updatePageIntentObj.get(intentObj.decoratorFile).push(intentObj);
+      }
       this.intentData.push(intentObj);
     } else {
       throw Error(`${DECORATOR_STATEMENT_ERROR.toString()}, invalidDecoratorPath: ${this.currentFilePath}`);
@@ -137,15 +251,45 @@ class ParseIntent {
         'moduleName': projectConfig.moduleName,
         'decoratorType': COMPONENT_USER_INTENTS_DECORATOR_ENTRY
       });
-      this.analyzeDecoratorArgs(args, intentObj, intentEntryInfoChecker);
+      this.analyzeDecoratorArgs<IntentEntryInfo>(args, intentObj, intentEntryInfoChecker);
       const properties: Record<string, string> = this.parseClassNode(node);
-      this.schemaValidateSync(properties, intentObj);
+      this.schemaValidateSync(properties, intentObj.parameters);
       this.analyzeBaseClass(node, pkgParams, intentObj);
       this.createObfuscation(node);
+      this.processExecuteModeParam(intentObj);
+      if (this.isUpdateCompile) {
+        this.updatePageIntentObj.get(intentObj.decoratorFile).push(intentObj);
+      }
       this.intentData.push(intentObj);
     } else {
       throw Error(`${DECORATOR_STATEMENT_ERROR.toString()}, invalidDecoratorPath: ${this.currentFilePath}`);
     }
+  }
+
+  transformPagePath(intentObj: object, pkgParams: object): void {
+    if (pkgParams.pkgPath) {
+      const normalPagePath: string = path.join(pkgParams.pkgPath, 'src/main', intentObj.pagePath + '.ets');
+      if (!fs.existsSync(normalPagePath)) {
+        throw Error(`${INVALID_PAGEPATH_ERROR.toString()}, ${normalPagePath} does not exist, invalidDecoratorPath: ${this.currentFilePath}`);
+      } else {
+        const Logger: IntentLogger = IntentLogger.getInstance();
+        intentObj.pagePath = '@normalized:' + getNormalizedOhmUrlByFilepath(normalPagePath, projectConfig, Logger, pkgParams, null);
+      }
+    }
+  }
+
+  parsePageProperties(node: ts.Node): Record<string, string> {
+    const mergeObject: Record<string, string> = {};
+    node.members.forEach(member => {
+      if (ts.isPropertyDeclaration(member)) {
+        const symbol = this.checker.getSymbolAtLocation(member.name);
+        if (symbol) {
+          const objItem: Record<string, string> = this.processProperty(symbol);
+          Object.assign(mergeObject, objItem);
+        }
+      }
+    });
+    return mergeObject;
   }
 
   analyzeBaseClass(node: ts.ClassDeclaration, pkgParams: object, intentObj: object): void {
@@ -161,6 +305,41 @@ class ParseIntent {
         this.analyzeClassHeritage(parentNode, node, pkgParams, intentObj);
       }
     }
+  }
+
+  hasModifier(node: ts.Node, modifier: ts.SyntaxKind): boolean {
+    return (node.modifiers || []).some(m => m.kind === modifier);
+  }
+
+  parseClassMethods(classNode: ts.ClassDeclaration, decoratorType: string): methodParametersInfo[] {
+    const methodsArr: methodParametersInfo[] = [];
+    for (const member of classNode.members) {
+      if (!ts.isMethodDeclaration(member) || !this.hasModifier(member, ts.SyntaxKind.StaticKeyword)) {
+        continue;
+      }
+      const decorator: boolean = member.modifiers?.find(m => {
+        const text = m.getText();
+        return text.replace(/\(.*\)$/, '').trim() === decoratorType;
+      });
+      if (decorator && ts.isCallExpression(decorator.expression)) {
+        const parameters: Record<string, string> = {};
+        member.parameters.forEach(param => {
+          const paramName: string = param.name.getText();
+          parameters[paramName] = this.checker.typeToString(
+            this.checker.getTypeAtLocation(param),
+            param,
+            ts.TypeFormatFlags.NoTruncation
+          );
+        });
+        const obj: methodParametersInfo = {
+          functionName: member.name.getText(),
+          parameters: parameters,
+          args: decorator.expression.arguments
+        };
+        methodsArr.push(obj);
+      }
+    }
+    return methodsArr;
   }
 
   analyzeClassHeritage(
@@ -306,9 +485,31 @@ class ParseIntent {
   }
 
   removeDecorator(node: ts.ClassDeclaration, decoratorNames: string[]): ts.ClassDeclaration {
-    const filteredModifiers: ts.ClassDeclaration = node.modifiers.filter(decorator => {
+    const filteredModifiers: ts.ModifierLike[] = node.modifiers.filter(decorator => {
       const originalDecortor: string = decorator.getText().replace(/\(.*\)$/, '').trim();
       return !decoratorNames.includes(originalDecortor);
+    });
+    const updatedMembers: ts.ClassElement[] = node.members.map(member => {
+      if (ts.isMethodDeclaration(member) && this.hasModifier(member, ts.SyntaxKind.StaticKeyword)) {
+        const memberModifiers: ts.ModifierLike[] = (member.modifiers ?? []).filter(decorator => {
+          const originalDecorator = decorator.getText().replace(/\(.*\)$/, '').trim();
+          return originalDecorator !== COMPONENT_USER_INTENTS_DECORATOR_METHOD;
+        });
+        if (memberModifiers.length !== (member.modifiers?.length ?? 0)) {
+          return ts.factory.updateMethodDeclaration(
+            member,
+            memberModifiers,
+            member.asteriskToken,
+            member.name,
+            member.questionToken,
+            member.typeParameters,
+            member.parameters,
+            member.type,
+            member.body!
+          );
+        }
+      }
+      return member;
     });
     return ts.factory.updateClassDeclaration(
       node,
@@ -316,7 +517,7 @@ class ParseIntent {
       node.name,
       node.typeParameters,
       node.heritageClauses,
-      node.members
+      ts.factory.createNodeArray(updatedMembers)
     );
   }
 
@@ -384,7 +585,7 @@ class ParseIntent {
   ): void {
     const existingParams: Set<keyof T> = new Set<keyof T>();
     const requiredFields: (keyof T)[] = paramCheckFields.requiredFields;
-    const nestedCheckers: Map<string, ParamChecker<any>> = paramCheckFields.nestedCheckers;
+    const nestedCheckers: Map<string, ParamChecker<LinkIntentParamMapping>> = paramCheckFields.nestedCheckers;
     const allowedFields: Set<keyof T> = paramCheckFields.allowFields;
     const paramValidators: Record<keyof T, (v: ts.Expression) => boolean> = paramCheckFields.paramValidators;
     for (const prop of node.properties) {
@@ -400,24 +601,24 @@ class ParseIntent {
     }
   }
 
-  validateSelfParamFields(prop: ts.Node, nestedCheckers: Map<string, ParamChecker<any>>): void {
-    const checker: ParamChecker<any> = nestedCheckers.get(prop.name.text);
+  validateSelfParamFields(prop: ts.Node, nestedCheckers: Map<string, ParamChecker<LinkIntentParamMapping>>): void {
+    const checker: ParamChecker<LinkIntentParamMapping> = nestedCheckers.get(prop.name.text);
     if (ts.isArrayLiteralExpression(prop.initializer)) {
       prop.initializer.elements.every(elem => {
         if (ts.isIdentifier(elem)) {
           const symbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(elem);
           const declaration: ts.Declaration = symbol?.valueDeclaration;
-          this.validateRequiredIntentLinkInfo<typeof checker>(declaration.initializer, checker);
+          this.validateRequiredIntentLinkInfo<LinkIntentParamMapping>(declaration.initializer, checker);
         } else {
-          this.validateRequiredIntentLinkInfo<typeof checker>(elem.initializer, checker);
+          this.validateRequiredIntentLinkInfo<LinkIntentParamMapping>(elem.initializer, checker);
         }
       });
     } else if (ts.isIdentifier(prop)) {
       const symbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(prop);
       const declaration: ts.Declaration = symbol?.valueDeclaration;
-      this.validateRequiredIntentLinkInfo<typeof checker>(declaration.initializer, checker);
+      this.validateRequiredIntentLinkInfo<LinkIntentParamMapping>(declaration.initializer, checker);
     } else {
-      this.validateRequiredIntentLinkInfo<typeof checker>(prop.initializer, checker);
+      this.validateRequiredIntentLinkInfo<LinkIntentParamMapping>(prop.initializer, checker);
     }
   }
 
@@ -444,14 +645,14 @@ class ParseIntent {
     }
   }
 
-  analyzeDecoratorArgs(args: ts.NodeArray<ts.Expression>, intentObj: object, paramChecker: ParamChecker<any>): void {
+  analyzeDecoratorArgs<T>(args: ts.NodeArray<ts.Expression>, intentObj: object, paramChecker: ParamChecker<T>): void {
     args.forEach(arg => {
       if (ts.isIdentifier(arg)) {
         const symbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(arg);
         const declaration: ts.Declaration = symbol?.valueDeclaration;
-        this.validateRequiredIntentLinkInfo(declaration.initializer, paramChecker);
+        this.validateRequiredIntentLinkInfo<T>(declaration.initializer, paramChecker);
       } else {
-        this.validateRequiredIntentLinkInfo(arg, paramChecker);
+        this.validateRequiredIntentLinkInfo<T>(arg, paramChecker);
       }
       const res: StaticValue = this.parseStaticObject(arg);
       Object.assign(intentObj, res);
@@ -497,7 +698,6 @@ class ParseIntent {
     if (node.kind === ts.SyntaxKind.UndefinedKeyword) {
       return undefined;
     }
-
     if (ts.isIdentifier(node)) {
       const isStatic: boolean = this.isConstantExpression(node);
       if (isStatic) {
@@ -506,15 +706,12 @@ class ParseIntent {
         return this.parseStaticObject(declaration.initializer, visited);
       }
     }
-
     if (ts.isArrayLiteralExpression(node)) {
       return this.processArrayElements(node.elements);
     }
-
     if (ts.isObjectLiteralExpression(node)) {
       return this.processObjectElements(node);
     }
-
     if (ts.isCallExpression(node) && node.expression.getText() === '$r') {
       const isStatic: boolean = this.isConstantExpression(node);
       if (!isStatic) {
@@ -522,8 +719,24 @@ class ParseIntent {
       }
       return node.getText();
     }
-
+    if (ts.isPropertyAccessExpression(node)) {
+      return this.processEnumElement(node);
+    }
     throw Error(`${UNSUPPORTED_PARSE_ERROR.toString()}, cause param: '${node.text}', invalidDecoratorPath: ${this.currentFilePath}`);
+  }
+
+  processEnumElement(node: ts.PropertyAccessExpression): number {
+    const enumValue: string = node.getText();
+    const executeModeEnum: Map<string, number> = new Map();
+    executeModeEnum.set('insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND', 0);
+    executeModeEnum.set('insightIntent.ExecuteMode.UI_ABILITY_BACKGROUND', 1);
+    executeModeEnum.set('insightIntent.ExecuteMode.UI_EXTENSION_ABILITY', 2);
+    executeModeEnum.set('insightIntent.ExecuteMode.SERVICE_EXTENSION_ABILITY', 3);
+    if (executeModeEnum.has(enumValue)) {
+      return executeModeEnum.get(enumValue);
+    } else {
+      throw Error(`${UNSUPPORTED_PARSE_ERROR.toString()}, cause param: '${node.text}', invalidDecoratorPath: ${this.currentFilePath}`);
+    }
   }
 
   processObjectElements(elements: ts.ObjectLiteralExpression): { [key: string]: StaticValue } {
@@ -576,6 +789,25 @@ class ParseIntent {
     return undefined;
   }
 
+  processExecuteModeParam(intentObj: object): void {
+    if (intentObj.executeMode) {
+      intentObj.executeMode.forEach((item: number, index: number) => {
+        if (item === 0) {
+          intentObj.executeMode[index] = 'foreground';
+        }
+        if (item === 1) {
+          intentObj.executeMode[index] = 'background';
+        }
+        if (item === 2) {
+          intentObj.executeMode[index] = 'insightIntent.ExecuteMode.UI_EXTENSION_ABILITY';
+        }
+        if (item === 3) {
+          intentObj.executeMode[index] = 'insightIntent.ExecuteMode.SERVICE_EXTENSION_ABILITY';
+        }
+      });
+    }
+  }
+
   collectSchemaInfo(intentObj: object): void {
     if (intentObj.schema) {
       const schemaPath: string = path.join(
@@ -589,11 +821,11 @@ class ParseIntent {
         }
         if (intentObj.keywords) {
           throw Error(`${DISALLOWED_PARAM_ERROR.toString()}` +
-          `, the standard user intents  does not allow passing the parameter 'keywords', invalidDecoratorPath: ${this.currentFilePath}`);
+            `, the standard user intents  does not allow passing the parameter 'keywords', invalidDecoratorPath: ${this.currentFilePath}`);
         }
         if (intentObj.llmDescription) {
           throw Error(`${DISALLOWED_PARAM_ERROR.toString()}` +
-          `, the standard user intents  does not allow passing the parameter 'llmDescription', invalidDecoratorPath: ${this.currentFilePath}`);
+            `, the standard user intents  does not allow passing the parameter 'llmDescription', invalidDecoratorPath: ${this.currentFilePath}`);
         }
         const schemaContent: string = fs.readFileSync(schemaPath, 'utf-8');
         const schemaObj: object = JSON.parse(schemaContent);
@@ -649,8 +881,8 @@ class ParseIntent {
   private schemaValidateRules(schemaData: Record<string, string>, schemaObj: object): void {
     const schemaKeys: string[] = Object.keys(schemaData);
     if (schemaObj.oneOf) {
-      const requiredOne: string[][] = schemaObj.oneOf.map(item => item.required);
       let count: number = 0;
+      const requiredOne: string[][] = schemaObj.oneOf.map(item => item.required);
       requiredOne.forEach(val => {
         const isContain: boolean = val.every((item): boolean => {
           return schemaKeys.includes(item);
@@ -680,10 +912,12 @@ class ParseIntent {
     }
   }
 
-  schemaValidateSync(schemaData: Record<string, string>, intentObj: object): void {
-    const schemaObj: object = intentObj.parameters;
+  schemaValidateSync(schemaData: Record<string, string>, schemaObj: object): void {
     if (!schemaObj) {
       return;
+    }
+    if (schemaObj.items && schemaObj.items.type === 'array') {
+      this.schemaValidateSync(schemaData, schemaObj.items.items);
     }
     if (schemaObj.type !== 'object') {
       throw Error(`${SCHEMA_ROOT_TYPE_MISMATCH_ERROR.toString()}, invalidDecoratorPath: ${this.currentFilePath}`);
@@ -702,21 +936,50 @@ class ParseIntent {
       throw Error(`${INTERNAL_ERROR.toString()}, aceProfilePath not found, invalidDecoratorPath: ${this.currentFilePath}`);
     }
     const cacheSourceMapPath: string = path.join(projectConfig.aceProfilePath, 'extract_insight_intent.json');
+    const cachePath: string = path.join(projectConfig.cachePath, 'insight_compile_cache.json');
     if (!fs.existsSync(projectConfig.aceProfilePath)) {
       fs.mkdirSync(projectConfig.aceProfilePath, {recursive: true});
     }
-    fs.writeFileSync(cacheSourceMapPath, JSON.stringify({'insightIntents': this.intentData}, null, 2), 'utf-8');
+    if (this.isUpdateCompile) {
+      const cacheData: string = fs.readFileSync(cachePath, 'utf8');
+      const cacheDataObj: object = JSON.parse(cacheData);
+      const insightIntents: object[] = cacheDataObj.insightIntents.filter(insightIntent => {
+        return !this.updatePageIntentObj.has(insightIntent.decoratorFile);
+      });
+      this.updatePageIntentObj.forEach(insightIntent => {
+        insightIntents.push(...insightIntent);
+      });
+      this.intentData = insightIntents;
+    }
+    this.validateIntentIntentName();
+    if (this.intentData.length > 0) {
+      fs.writeFileSync(cacheSourceMapPath, JSON.stringify({'insightIntents': this.intentData}, null, 2), 'utf-8');
+      fs.writeFileSync(cachePath, JSON.stringify({'insightIntents': this.intentData}, null, 2), 'utf-8');
+    } else if (fs.existsSync(cacheSourceMapPath)) {
+      fs.unlinkSync(cacheSourceMapPath);
+    }
     const normalizedPath: string = path.normalize(projectConfig.aceProfilePath);
     const fullPath: string = path.join(normalizedPath, '../../../module.json');
     if (fs.existsSync(fullPath)) {
       const rawData: string = fs.readFileSync(fullPath, 'utf8');
-      const jsonData: any = JSON.parse(rawData);
+      const jsonData: object = JSON.parse(rawData);
       if (jsonData?.module) {
-        jsonData.module.hasInsightIntent = true;
+        jsonData.module.hasInsightIntent = this.intentData.length > 0 ? true : undefined;
       }
       const updatedJson: string = JSON.stringify(jsonData, null, 2);
       fs.writeFileSync(fullPath, updatedJson, 'utf8');
     }
+  }
+
+  validateIntentIntentName(): void {
+    const duplicates = new Set<string>();
+    this.intentData.forEach(item => {
+      if (duplicates.has(item.intentName)) {
+        throw Error(`${DECORATOR_DUPLICATE_INTENTNAME.toString()}, value : ${item.intentName}, invalidDecoratorPath: ${this.currentFilePath}`);
+      } else {
+        duplicates.add(item.intentName);
+      }
+    });
   }
 
   clear(): void {
@@ -725,7 +988,12 @@ class ParseIntent {
     this.currentFilePath = '';
     IntentLinkInfoChecker.clean();
     intentEntryInfoChecker.clean();
+    intentMethodInfoChecker.clean();
+    intentMethodInfoChecker.clean();
     this.heritageClassSet = new Set<string>();
+    this.isInitCache = false;
+    this.isUpdateCompile = false;
+    this.updatePageIntentObj = new Map();
   }
 }
 
