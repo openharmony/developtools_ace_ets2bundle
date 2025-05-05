@@ -3363,7 +3363,8 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
 
 function isCustomComponentAttributes(node: ts.ExpressionStatement, log: LogInfo[]): void {
   if (node.expression && ts.isCallExpression(node.expression) && ts.isPropertyAccessExpression(node.expression.expression) &&
-    ts.isIdentifier(node.expression.expression.name) && !COMMON_ATTRS.has(node.expression.expression.name.escapedText.toString())) {
+    !ts.isIdentifier(node.expression.expression.expression) && ts.isIdentifier(node.expression.expression.name) &&
+    !COMMON_ATTRS.has(node.expression.expression.name.escapedText.toString())) {
       log.push({
         type: LogType.ERROR,
         message: `'${node.getText()}' does not meet UI component syntax.`,
