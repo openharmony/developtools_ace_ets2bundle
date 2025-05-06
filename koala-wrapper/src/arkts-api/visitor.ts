@@ -43,6 +43,8 @@ import {
     Expression,
     isETSNewClassInstanceExpression,
     isTemplateLiteral,
+    isBlockExpression,
+    isReturnStatement,
 } from '../generated';
 import {
     isEtsScript,
@@ -161,6 +163,10 @@ export function visitEachChild(node: AstNode, visitor: Visitor): AstNode {
 function visitOuterExpression(node: AstNode, visitor: Visitor): AstNode {
     if (updated) {
         return node;
+    }
+    if (isBlockExpression(node)) {
+        updated = true;
+        return factory.updateBlockExpression(node, nodesVisitor(node.statements, visitor));
     }
     if (isCallExpression(node)) {
         updated = true;
@@ -362,6 +368,10 @@ function visitStatement(node: AstNode, visitor: Visitor): AstNode {
             nodeVisitor(node.consequent, visitor),
             nodeVisitor(node.alternate, visitor)
         );
+    }
+    if (isReturnStatement(node)) {
+        updated = true;
+        return factory.updateReturnStatement(node, nodeVisitor(node.argument, visitor));
     }
     // TODO
     return node;

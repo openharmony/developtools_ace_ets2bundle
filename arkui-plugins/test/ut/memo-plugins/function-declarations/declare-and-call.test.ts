@@ -24,7 +24,7 @@ const FUNCTION_DIR_PATH: string = 'memo/functions';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, FUNCTION_DIR_PATH, 'void-return-type.ets'),
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, FUNCTION_DIR_PATH, 'declare-and-call.ets'),
 ];
 
 const pluginTester = new PluginTester('test memo function', buildConfig);
@@ -32,16 +32,45 @@ const pluginTester = new PluginTester('test memo function', buildConfig);
 const expectedScript: string = `
 import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"@ohos.arkui.stateManagement\";
 function main() {}
-function func(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
     }
+    funcA(__memo_context, ((__memo_id) + (<some_random_number>)));
     {
         __memo_scope.recache();
         return;
     }
+});
+@memo() function funcA(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void
+function funcB(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+    if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+    }
+    funcA(__memo_context, ((__memo_id) + (<some_random_number>)));
+    {
+        __memo_scope.recache();
+        return;
+    }
+}
+class A {
+    public foo(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        if (__memo_scope.unchanged) {
+            __memo_scope.cached;
+            return;
+        }
+        funcA(__memo_context, ((__memo_id) + (<some_random_number>)));
+        {
+            __memo_scope.recache();
+            return;
+        }
+    }
+    public constructor() {}
 }
 `;
 
@@ -50,7 +79,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 }
 
 pluginTester.run(
-    'transform functions with void return type',
+    'transform declare functions and calls',
     [memoNoRecheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],
