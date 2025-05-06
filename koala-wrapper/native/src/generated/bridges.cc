@@ -1713,15 +1713,6 @@ void impl_NamedTypeSetTypeParams(KNativePointer context, KNativePointer receiver
 }
 KOALA_INTEROP_V3(NamedTypeSetTypeParams, KNativePointer, KNativePointer, KNativePointer);
 
-KNativePointer impl_NumberLiteralStrConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->NumberLiteralStrConst(_context, _receiver);
-    return new std::string(result);
-}
-KOALA_INTEROP_2(NumberLiteralStrConst, KNativePointer, KNativePointer, KNativePointer);
-
 KNativePointer impl_CreateTSFunctionType(KNativePointer context, KNativePointer signature)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
