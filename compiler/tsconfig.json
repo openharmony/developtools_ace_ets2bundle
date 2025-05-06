@@ -293,7 +293,8 @@
         "ArcScrollBar",
         "ArcAlphabetIndexer",
         "HdsNavigation",
-        "HdsNavDestination"
+        "HdsNavDestination",
+        "HdsListItemCard"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -582,6 +583,11 @@
             "name": "HdsNavDestination",
             "type": "HdsNavDestinationAttribute",
             "instance": "HdsNavDestinationInstance"
+          },
+          {
+            "name": "HdsListItemCard",
+            "type": "HdsListItemCardAttribute",
+            "instance": "HdsListItemCardInstance"
           },
           {
             "name": "NavRouter",
