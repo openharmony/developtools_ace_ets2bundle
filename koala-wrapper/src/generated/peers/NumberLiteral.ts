@@ -36,9 +36,6 @@ export class NumberLiteral extends Literal {
         super(pointer)
         
     }
-    get str(): string {
-        return unpackString(global.generatedEs2panda._NumberLiteralStrConst(global.context, this.peer))
-    }
 }
 export function isNumberLiteral(node: AstNode): node is NumberLiteral {
     return node instanceof NumberLiteral
