@@ -388,6 +388,32 @@ KNativePointer impl_ETSParserGetGlobalProgramAbsName(KNativePointer contextPtr)
 }
 KOALA_INTEROP_1(ETSParserGetGlobalProgramAbsName, KNativePointer, KNativePointer)
 
+KNativePointer impl_ClassVariableDeclaration(KNativePointer context, KNativePointer classInstance)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _classInstance = reinterpret_cast<es2panda_AstNode*>(classInstance);
+    auto _typedTsType = GetImpl()->TypedTsType(_context, _classInstance);
+    if (_typedTsType == nullptr) {
+        return nullptr;
+    }
+    const auto _instanceType = reinterpret_cast<es2panda_Type*>(_typedTsType);
+    auto _typeVar = GetImpl()->TypeVariable(_context, _instanceType);
+    if (_typeVar == nullptr) {
+        return nullptr;
+    }
+    const auto result = reinterpret_cast<es2panda_Declaration*>(GetImpl()->VariableDeclaration(_context, _typeVar));
+    const auto declNode = GetImpl()->DeclNode(_context, result);
+    return declNode;
+}
+KOALA_INTEROP_2(ClassVariableDeclaration, KNativePointer, KNativePointer, KNativePointer)
+
+KBoolean impl_IsMethodDefinition(KNativePointer nodePtr)
+{
+    auto node = reinterpret_cast<es2panda_AstNode*>(nodePtr);
+    return GetImpl()->IsMethodDefinition(node);
+}
+KOALA_INTEROP_1(IsMethodDefinition, KBoolean, KNativePointer)
+
 KNativePointer impl_CreateETSImportDeclaration(KNativePointer context, KNativePointer source,
                                                KNativePointerArray specifiers, KUInt specifiersSequenceLength,
                                                KInt importKind, KNativePointer programPtr, KInt flags)

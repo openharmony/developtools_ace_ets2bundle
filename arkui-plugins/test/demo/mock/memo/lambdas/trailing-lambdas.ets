@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (C) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,10 +14,31 @@
  */
 
 import { memo, __memo_context_type, __memo_id_type } from "@ohos.arkui.stateManagement"
-import { Column, UIColumnAttribute } from "arkui.component.column"
 
-class MyStateSample {
-    @memo build() {
-        Column(undefined) {}
-    }
+class A {
+    @memo foo(p?: ()=>void): void {}
+
+    goo(@memo p?: ()=>void): void {}
+
+    @memo koo(@memo p?: ()=>void): void {}
+}
+
+@memo
+function bar(f?: ()=>void): void {}
+
+function par(f?: @memo ()=>void): void {}
+
+@memo
+function kar(@memo f?: ()=>void): void {}
+
+@memo
+() => {
+    let a = new A();
+    a.foo() { console.log(); }
+    a.goo() { console.log(); }
+    a.koo() { console.log(); }
+
+    bar() { console.log(); }
+    par() { console.log(); }
+    kar() { console.log(); }
 }
