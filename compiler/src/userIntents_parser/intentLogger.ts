@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import {getLogger} from 'log4js';
+import { getLogger } from 'log4js';
 
 type ErrorCode = string;
 type ErrorDescription = string;
@@ -80,7 +80,7 @@ export class IntentLogger {
   }
 
   printErrorAndExit(error: LogData | string): never {
-    const message = typeof error === 'string' ? error : error.toString();
+    const message: string = typeof error === 'string' ? error : error.toString();
     throw new Error(message);
   }
 }
@@ -89,7 +89,16 @@ export const ENTRYPATH_ERROR: LogData = LogDataFactory.newInstance('1001', '[Ins
 export const DECORATOR_STATEMENT_ERROR: LogData = LogDataFactory.newInstance('1002', '[InsightIntent] decorator is not CallExpression');
 export const DYNAMIC_PARAM_ERROR: LogData = LogDataFactory.newInstance('1003', '[InsightIntent] Dynamic variable cannot be resolved');
 export const DISALLOWED_PARAM_ERROR: LogData = LogDataFactory.newInstance('1004', '[InsightIntent] param is disallowed');
-export const UNSUPPORTED_PARSE_ERROR: LogData = LogDataFactory.newInstance('1005', '[InsightIntent] unsupported parameter type cannot be parsing');
+export const UNSUPPORTED_PARSE_ERROR: LogData = LogDataFactory.newInstance('1005', '[InsightIntent] unsupported parameter type cannot be parsed');
 export const INCORRECT_PARAM_TYPE_ERROR: LogData = LogDataFactory.newInstance('1006', '[InsightIntent] param parsing occurs error param type');
 export const REQUIRED_PARAM_DISMISS_ERROR: LogData = LogDataFactory.newInstance('1007', '[InsightIntent] decorator args missing required param');
 export const INTERNAL_ERROR: LogData = LogDataFactory.newInstance('1008', '[InsightIntent] internal error');
+export const SCHEMA_VALIDATE_ONE_OF_ERROR: LogData = LogDataFactory.newInstance('1009', '[InsightIntent] Not meeting the one of schema verification rules');
+export const SCHEMA_VALIDATE_ANY_OF_ERROR: LogData = LogDataFactory.newInstance('1010', '[InsightIntent] Not meeting the any of schema verification rules');
+export const SCHEMA_VALIDATE_TYPE_ERROR: LogData = LogDataFactory.newInstance('1011', '[InsightIntent] schema verification parameter type error');
+export const SCHEMA_VALIDATE_REQUIRED_ERROR: LogData = LogDataFactory.newInstance('1012', '[InsightIntent] schema verification parameter does not exist');
+export const SCHEMA_ROOT_TYPE_MISMATCH_ERROR: LogData = LogDataFactory.newInstance('1013', '[InsightIntent] Schema root type must be \'object\'');
+export const INVALID_BASE_CLASS_ERROR: LogData = LogDataFactory.newInstance('1014',
+  '[InsightIntent] decorated with @InsightIntentEntry has an invalid inheritance hierarchy.');
+export const PARAM_CIRCULAR_REFERENCE_ERROR: LogData = LogDataFactory.newInstance('1015',
+  '[InsightIntent] Circular reference detected in param');

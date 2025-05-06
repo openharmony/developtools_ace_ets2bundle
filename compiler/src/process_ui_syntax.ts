@@ -80,8 +80,7 @@ import {
   PAGE_FULL_PATH,
   LENGTH,
   PUV2_VIEW_BASE,
-  CONTEXT_STACK,
-  COMPONENT_USER_INTENTS_DECORATOR
+  CONTEXT_STACK
 } from './pre_define';
 import {
   componentInfo,
@@ -170,11 +169,11 @@ import {
   routerModuleType,
   routerBundleOrModule
 } from './process_module_package';
-import parseUserIntents from './userIntents_parser/parseUserIntents';
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
+import parseIntent from './userIntents_parser/parseUserIntents';
 
 export function processUISyntax(program: ts.Program, ut = false,
   compilationTime: CompilationTimeStatistics = null, filePath: string = '', metaInfo: Object = {}): Function {
@@ -404,11 +403,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           });
         }
       } else if (ts.isClassDeclaration(node)) {
-        if (hasDecorator(node, COMPONENT_USER_INTENTS_DECORATOR)) {
-          const checker: TypeChecker = metaInfo.tsProgram.getTypeChecker();
-          parseUserIntents.handleIntent(node, checker, filePath, metaInfo);
-          node = parseUserIntents.removeDecorator(node);
-        }
+        node = parseIntent.detectInsightIntent(node, metaInfo, filePath);
         if (hasDecorator(node, COMPONENT_SENDABLE_DECORATOR)) {
           if (projectConfig.compileHar && !projectConfig.useTsHar) {
             let warnMessage: string = 'If you use @Sendable in js har, an exception will occur during runtime.\n' +
