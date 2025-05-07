@@ -54,6 +54,7 @@ export enum StructDecoratorNames {
     RESUABLE = 'Reusable',
     RESUABLE_V2 = 'ReusableV2',
     CUSTOM_LAYOUT = 'CustomLayout',
+    CUSTOMDIALOG = 'CustomDialog',
 }
 
 export enum DecoratorNames {
