@@ -26,6 +26,7 @@ import {
     findBuilderLambdaDeclInfo,
     isBuilderLambda,
     isBuilderLambdaFunctionCall,
+    isSafeType,
     replaceBuilderLambdaDeclMethodName,
 } from './utils';
 import { DecoratorNames } from '../property-translators/utils';
@@ -112,9 +113,9 @@ export class factory {
         if (!lambdaBody) {
             return arkts.factory.createUndefinedLiteral();
         }
-
+        const safeType: arkts.TypeNode | undefined = isSafeType(typeNode) ? typeNode : undefined;
         const styleLambdaParam: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
-            arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME, typeNode),
+            arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME, safeType),
             undefined
         );
 
@@ -442,6 +443,6 @@ export class factory {
         }
 
         const args: (arkts.AstNode | undefined)[] = this.generateArgsInBuilderLambda(leaf, lambdaBody!, declInfo);
-        return arkts.factory.updateCallExpression(node, replace, undefined, filterDefined(args));
+        return arkts.factory.updateCallExpression(node, replace, leaf.typeArguments, filterDefined(args));
     }
 }
