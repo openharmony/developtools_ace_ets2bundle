@@ -91,7 +91,6 @@ import {
   checkHasKeepTs,
   resetKitImportLog
 } from '../../process_kit_import';
-import parseUserIntents from '../../userIntents_parser/parseUserIntents';
 import { resetProcessComponentMember } from '../../process_component_member';
 import {
   collectReservedNameForObf,
@@ -110,6 +109,7 @@ import { MemoryDefine } from '../meomry_monitor/memory_define';
 import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
 import { ARKUI_SUBSYSTEM_CODE } from '../../../lib/hvigor_error_code/hvigor_error_info';
 import { ProjectCollections } from 'arkguard';
+import parseIntent from '../../userIntents_parser/parseUserIntents';
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -211,7 +211,10 @@ export function etsTransform() {
       }
     },
     afterBuildEnd() {
-      parseUserIntents.writeUserIntentJsonFile();
+      if (parseIntent.intentData.length > 0) {
+        parseIntent.verifyInheritanceChain();
+        parseIntent.writeUserIntentJsonFile();
+      }
       // Copy the cache files in the compileArkTS directory to the loader_out directory
       if (projectConfig.compileHar && !projectConfig.byteCodeHar) {
         for (let moduleInfoId of allModuleIds.keys()) {
@@ -276,7 +279,7 @@ export function etsTransform() {
       resetUtils();
       resetValidateUiSyntax();
       resetObfuscation();
-      parseUserIntents.clear();
+      parseIntent.clear();
     }
   };
 }
