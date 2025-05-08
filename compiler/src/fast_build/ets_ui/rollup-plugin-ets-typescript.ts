@@ -220,7 +220,7 @@ export function etsTransform() {
       }
     },
     afterBuildEnd() {
-      if (parseIntent.intentData.length > 0) {
+      if (parseIntent.intentData.length > 0 || parseIntent.isUpdateCompile) {
         parseIntent.verifyInheritanceChain();
         parseIntent.writeUserIntentJsonFile();
       }
@@ -390,7 +390,7 @@ async function transform(code: string, id: string) {
     compilerOptions.module = 'es2020';
     const newContent: string = jsBundlePreProcess(code, id, this.getModuleInfo(id).isEntry, logger, hvigorLogger);
     const metaInfo: Object = this.getModuleInfo(id).metaInfo || {};
-    metaInfo.tsProgram = globalProgram.program;
+    metaInfo.checker = globalProgram.program.getTypeChecker();
     const result: ts.TranspileOutput = ts.transpileModule(newContent, {
       compilerOptions: compilerOptions,
       fileName: id,
@@ -474,7 +474,7 @@ async function transform(code: string, id: string) {
     if (shouldEmitJsFlag) {
       const eventEmit = createAndStartEvent(eventTsProgramEmit, 'emit');
       const uiKitrecordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_UI_KIT);
-      metaInfo.tsProgram = tsProgram;
+      metaInfo.checker = tsProgram.getTypeChecker();
       tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
         {
           before: [
@@ -492,7 +492,7 @@ async function transform(code: string, id: string) {
       const eventTransformNodes = createAndStartEvent(eventTsProgramEmit, 'transformNodes');
       const emitResolver: ts.EmitResolver = globalProgram.checker.getEmitResolver(outFile(tsProgram.getCompilerOptions()) ?
         undefined : targetSourceFile, undefined);
-      metaInfo.tsProgram = tsProgram;
+      metaInfo.checker = tsProgram.getTypeChecker();
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
         [processUISyntax(null, false, eventTransformNodes, id, this.share, metaInfo),
