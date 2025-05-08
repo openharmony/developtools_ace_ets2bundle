@@ -96,9 +96,16 @@ export const INTERNAL_ERROR: LogData = LogDataFactory.newInstance('1008', '[Insi
 export const SCHEMA_VALIDATE_ONE_OF_ERROR: LogData = LogDataFactory.newInstance('1009', '[InsightIntent] Not meeting the one of schema verification rules');
 export const SCHEMA_VALIDATE_ANY_OF_ERROR: LogData = LogDataFactory.newInstance('1010', '[InsightIntent] Not meeting the any of schema verification rules');
 export const SCHEMA_VALIDATE_TYPE_ERROR: LogData = LogDataFactory.newInstance('1011', '[InsightIntent] schema verification parameter type error');
-export const SCHEMA_VALIDATE_REQUIRED_ERROR: LogData = LogDataFactory.newInstance('1012', '[InsightIntent] schema verification parameter does not exist');
+export const SCHEMA_VALIDATE_REQUIRED_ERROR: LogData = LogDataFactory.newInstance('1012',
+  '[InsightIntent] schema verification required parameter does not exist');
 export const SCHEMA_ROOT_TYPE_MISMATCH_ERROR: LogData = LogDataFactory.newInstance('1013', '[InsightIntent] Schema root type must be \'object\'');
 export const INVALID_BASE_CLASS_ERROR: LogData = LogDataFactory.newInstance('1014',
   '[InsightIntent] decorated with @InsightIntentEntry has an invalid inheritance hierarchy.');
 export const PARAM_CIRCULAR_REFERENCE_ERROR: LogData = LogDataFactory.newInstance('1015',
   '[InsightIntent] Circular reference detected in param');
+export const INVALID_PAGEPATH_ERROR: LogData = LogDataFactory.newInstance('1016',
+  '[InsightIntent] @InsightIntentPage Resolved \'pagePath\' path not found in project directory');
+export const DECORATOR_ILLEGAL_USE: LogData = LogDataFactory.newInstance('1017',
+  '[InsightIntent] @InsightIntentFunctionMethod must be declared under the @InsightIntentFunction decorator');
+export const DECORATOR_DUPLICATE_INTENTNAME: LogData = LogDataFactory.newInstance('1018',
+  '[InsightIntent] user intents has duplicate intentName param');
