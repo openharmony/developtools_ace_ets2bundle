@@ -211,7 +211,7 @@ export function etsTransform() {
       }
     },
     afterBuildEnd() {
-      if (parseIntent.intentData.length > 0) {
+      if (parseIntent.intentData.length > 0 || parseIntent.isUpdateCompile) {
         parseIntent.verifyInheritanceChain();
         parseIntent.writeUserIntentJsonFile();
       }
@@ -377,7 +377,7 @@ async function transform(code: string, id: string) {
     compilerOptions.module = 'es2020';
     const newContent: string = jsBundlePreProcess(code, id, this.getModuleInfo(id).isEntry, logger, hvigorLogger);
     const metaInfo: Object = this.getModuleInfo(id).metaInfo || {};
-    metaInfo.tsProgram = globalProgram.program;
+    metaInfo.checker = globalProgram.program.getTypeChecker();
     const result: ts.TranspileOutput = ts.transpileModule(newContent, {
       compilerOptions: compilerOptions,
       fileName: id,
@@ -452,7 +452,7 @@ async function transform(code: string, id: string) {
   try {
     startTimeStatisticsLocation(compilationTime ? compilationTime.tsProgramEmitTime : undefined);
     const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_UI_KIT);
-    metaInfo.tsProgram = tsProgram;
+    metaInfo.checker = tsProgram.getTypeChecker();
     if (projectConfig.useArkoala) {
       tsProgram = getArkoalaTsProgram(tsProgram);
       targetSourceFile = tsProgram.getSourceFile(id);
@@ -477,7 +477,7 @@ async function transform(code: string, id: string) {
       startTimeStatisticsLocation(compilationTime ? compilationTime.transformNodesTime : undefined);
       const emitResolver: ts.EmitResolver = globalProgram.checker.getEmitResolver(outFile(tsProgram.getCompilerOptions()) ?
         undefined : targetSourceFile, undefined);
-      metaInfo.tsProgram = tsProgram;
+      metaInfo.checker = tsProgram.getTypeChecker();
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
         [processUISyntax(null, false, compilationTime, id, metaInfo),
