@@ -15,13 +15,17 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { isAnnotation } from '../../common/arkts-utils';
-import { BuilderLambdaNames } from '../utils';
+import { BuilderLambdaNames, Dollars } from '../utils';
 
 export type BuilderLambdaDeclInfo = {
     isFunctionCall: boolean; // isFunctionCall means it is from $_instantiate.
     params: readonly arkts.Expression[];
     returnType: arkts.TypeNode | undefined;
 };
+
+export enum BindableDecl {
+    BINDABLE = 'Bindable',
+}
 
 export type BuilderLambdaAstNode = arkts.ScriptFunction | arkts.ETSParameterExpression | arkts.FunctionDeclaration;
 
@@ -306,6 +310,101 @@ export function builderLambdaFunctionName(node: arkts.CallExpression): string | 
         node.expression.property.name === BuilderLambdaNames.ORIGIN_METHOD_NAME
     ) {
         return BuilderLambdaNames.TRANSFORM_METHOD_NAME;
+    }
+    return undefined;
+}
+
+/**
+ * Determine whether the node `<type>` is `<bindableDecl>` bindable property.
+ *
+ * @param type type node
+ * @param bindableDecl bindable decalaration name
+ */
+export function hasBindableProperty(type: arkts.AstNode, bindableDecl: BindableDecl): boolean {
+    let res: boolean = false;
+    if (arkts.isETSUnionType(type)) {
+        type.types.forEach((item: arkts.TypeNode) => {
+            res = res || hasBindableProperty(item, bindableDecl);
+        });
+    }
+    if (arkts.isETSTypeReference(type)) {
+        res =
+            res ||
+            (!!type.part &&
+                !!type.part.name &&
+                arkts.isIdentifier(type.part.name) &&
+                type.part.name.name === bindableDecl);
+    }
+
+    return res;
+}
+
+/**
+ * Determine whether `<value>` is `$$()` call expression node.
+ *
+ * @param value expression node
+ */
+export function isDoubleDollarCall(value: arkts.Expression): boolean {
+    if (
+        arkts.isCallExpression(value) &&
+        value.expression &&
+        arkts.isIdentifier(value.expression) &&
+        value.expression.name
+    ) {
+        return value.expression.name === Dollars.DOLLAR_DOLLAR;
+    }
+    return false;
+}
+
+/**
+ * get declaration type from `{xxx: <value>}` or `fun(<value>)`.
+ *
+ * @param value type node
+ */
+export function getDecalTypeFromValue(value: arkts.Expression): arkts.TypeNode {
+    const decl: arkts.AstNode | undefined = arkts.getDecl(value);
+    if (!decl || !arkts.isClassProperty(decl)) {
+        throw new Error('cannot get declaration');
+    }
+    if (isArrayType(decl.typeAnnotation!)) {
+        return getElementTypeFromArray(decl.typeAnnotation!)!;
+    }
+    return decl.typeAnnotation!;
+}
+
+/**
+ * Determine whether `<type>` is array type, e.g. `xxx[]` or `Array<xxx>`.
+ *
+ * @param type type node
+ */
+export function isArrayType(type: arkts.TypeNode): boolean {
+    return (
+        arkts.isTSArrayType(type) ||
+        (arkts.isETSTypeReference(type) &&
+            !!type.part &&
+            arkts.isETSTypeReferencePart(type.part) &&
+            !!type.part.name &&
+            arkts.isIdentifier(type.part.name) &&
+            type.part.name.name === 'Array')
+    );
+}
+
+/**
+ * get element type from array type node `<arrayType>`.
+ *
+ * @param arrayType array type node
+ */
+export function getElementTypeFromArray(arrayType: arkts.TypeNode): arkts.TypeNode | undefined {
+    if (arkts.isTSArrayType(arrayType)) {
+        return arrayType.elementType?.clone();
+    } else if (
+        arkts.isETSTypeReference(arrayType) &&
+        !!arrayType.part &&
+        arkts.isETSTypeReferencePart(arrayType.part) &&
+        !!arrayType.part.typeParams &&
+        arrayType.part.typeParams.params.length
+    ) {
+        return arrayType.part.typeParams.params[0].clone();
     }
     return undefined;
 }
