@@ -165,6 +165,9 @@ export function initArkProjectConfig(share: Object): Object {
     }
   }
 
+  // pass allowEtsAnnotations to arkProjectConfig
+  arkProjectConfig.allowEtsAnnotations = mainProjectConfig.allowEtsAnnotations;
+
   // Hotreload attributes are initialized by arkui in main.js, just copy them.
   arkProjectConfig.hotReload = mainProjectConfig.hotReload;
   arkProjectConfig.coldReload = mainProjectConfig.coldReload;
