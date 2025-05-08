@@ -32,7 +32,7 @@ export interface IntentInfo {
   parameters: object;
 }
 
-interface LinkIntentParamMapping {
+export interface LinkIntentParamMapping {
   paramName: string;
   paramMappingName: string;
   paramCategory: string;
@@ -48,15 +48,21 @@ export interface IntentEntryInfo extends IntentInfo {
   executeMode: number[];
 }
 
-export interface IntentEntryParam {
-  description: string;
+export interface IntentFunctionInfo extends IntentInfo {
+}
+
+export interface IntentPageInfo extends IntentInfo {
+  uiAbility: string;
+  pagePath: string;
+  navigationId: string;
+  navDestinationName: string;
 }
 
 export class ParamChecker<T> {
   private _requiredFields: (keyof T)[];
   private _allowFields: Set<keyof T>;
   private _paramValidators: Record<keyof T, (v: ts.Expression) => boolean>;
-  private _nestedCheckers: Map<string, ParamChecker<any>>;
+  private _nestedCheckers: Map<string, ParamChecker<LinkIntentParamMapping>>;
 
   get requiredFields(): (keyof T)[] {
     return this._requiredFields;
@@ -70,11 +76,11 @@ export class ParamChecker<T> {
     return this._paramValidators;
   }
 
-  get nestedCheckers(): Map<string, ParamChecker<any>> {
+  get nestedCheckers(): Map<string, ParamChecker<LinkIntentParamMapping>> {
     return this._nestedCheckers;
   }
 
-  set nestedCheckers(value: Map<string, ParamChecker<any>>) {
+  set nestedCheckers(value: Map<string, ParamChecker<LinkIntentParamMapping>>) {
     this._nestedCheckers = value;
   }
 
@@ -97,9 +103,47 @@ export class ParamChecker<T> {
 
     this._paramValidators = {} as Record<keyof T, (v: ts.Expression) => boolean>;
 
-    this._nestedCheckers = new Map<string, ParamChecker<any>>();
+    this._nestedCheckers = new Map<string, ParamChecker<LinkIntentParamMapping>>();
   }
 }
+
+function validateRequiredString(v: ts.Expression): boolean {
+  return v !== null && ts.isStringLiteral(v) && v.text.trim() !== '';
+}
+
+function validateOptionalString(v: ts.Expression): boolean {
+  return v !== null && ts.isStringLiteral(v);
+}
+
+function validateIcon(v: ts.Expression): boolean {
+  return ts.isCallExpression(v) && v.expression.getText() === '$r';
+}
+
+function validateParameters(v: ts.Expression): boolean {
+  try {
+    const initializer = ts.isIdentifier(v) ?
+      parseIntent.checker.getSymbolAtLocation(v)?.valueDeclaration?.initializer :
+      v;
+    return ts.isObjectLiteralExpression(initializer) && ajv.compile(JSON.parse(initializer.getText()));
+  } catch {
+    return false;
+  }
+}
+
+function validateKeywords(v: ts.Expression): boolean {
+  if (!ts.isArrayLiteralExpression(v)) {
+    return false;
+  }
+  return v.elements.every(ele => {
+    const element = ts.isIdentifier(ele) ?
+      parseIntent.checker.getSymbolAtLocation(ele)?.valueDeclaration?.initializer :
+      ele;
+    return ts.isStringLiteral(element) || ts.isNoSubstitutionTemplateLiteral(element);
+  });
+}
+
+const BASE_REQUIRED = ['intentName', 'domain', 'intentVersion', 'displayName'];
+const BASE_ALLOW = ['displayDescription', 'schema', 'icon', 'llmDescription', 'keywords', 'parameters', ...BASE_REQUIRED];
 
 const IntentLinkParamsChecker: ParamChecker<LinkIntentParamMapping> = new ParamChecker<LinkIntentParamMapping>();
 IntentLinkParamsChecker.requiredFields = ['paramName'];
@@ -107,185 +151,105 @@ IntentLinkParamsChecker.allowFields = new Set<keyof LinkIntentParamMapping>([
   'paramName', 'paramMappingName', 'paramCategory'
 ]);
 IntentLinkParamsChecker.paramValidators = {
-  paramCategory(v: ts.Expression): boolean {
-    return v !== null && v !== undefined && ts.isStringLiteral(v);
-  },
-  paramMappingName(v: ts.Expression): boolean {
-    return v !== null && v !== undefined && ts.isStringLiteral(v);
-  },
-  paramName(v: ts.Expression): boolean {
-    return v !== null && v !== undefined && ts.isStringLiteral(v) && v.text.trim() !== '';
-  }
+  paramCategory: validateOptionalString,
+  paramMappingName: validateOptionalString,
+  paramName: validateRequiredString
 };
+
 export const IntentLinkInfoChecker: ParamChecker<IntentLinkInfo> = new ParamChecker<IntentLinkInfo>();
-IntentLinkInfoChecker.requiredFields = ['intentName', 'domain', 'intentVersion', 'displayName', 'uri'];
+IntentLinkInfoChecker.requiredFields = [...BASE_REQUIRED as Array<keyof IntentLinkInfo>, 'uri'];
 IntentLinkInfoChecker.allowFields = new Set<keyof IntentLinkInfo>([
-  'intentName', 'domain', 'intentVersion', 'displayName', 'displayDescription', 'schema', 'icon', 'keywords', 'llmDescription', 'uri',
-  'parameters', 'paramMappings'
+  ...BASE_ALLOW as Array<keyof IntentLinkInfo>,
+  'uri',
+  'paramMappings'
 ]);
-
 IntentLinkInfoChecker.paramValidators = {
-  parameters(v: ts.Expression): boolean {
-    try {
-      let initializer: object = {};
-      if (ts.isIdentifier(v)) {
-        const symbol: ts.Symbol | undefined = parseIntent.checker.getSymbolAtLocation(v);
-        const declaration: ts.Declaration = symbol?.valueDeclaration;
-        initializer = declaration.initializer;
-      } else {
-        initializer = v;
-      }
-      if (ts.isObjectLiteralExpression(initializer)) {
-        ajv.compile(JSON.parse(initializer.getText()));
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
-  },
-  paramMappings(v: ts.Expression): boolean {
-    return v !== null &&
-      v !== undefined && ts.isArrayLiteralExpression(v);
-  },
-  keywords(v: ts.Expression): boolean {
-    if (ts.isArrayLiteralExpression(v)) {
-      return v.elements.every(ele => {
-        if (ts.isIdentifier(ele)) {
-          const symbol: ts.Symbol | undefined = parseIntent.checker.getSymbolAtLocation(ele);
-          const declaration: ts.Declaration = symbol?.valueDeclaration;
-          return ts.isStringLiteral(declaration.initializer) || ts.isNoSubstitutionTemplateLiteral(declaration.initializer);
-        } else {
-          return ts.isStringLiteral(ele) || ts.isNoSubstitutionTemplateLiteral(ele);
-        }
-      });
-    } else {
-      return false;
-    }
-  },
-  intentName: (v: ts.Expression): boolean =>
-    v !== null &&
-    v !== undefined &&
-    ts.isStringLiteral(v) &&
-    v.text.trim() !== '',
-  domain: (v: ts.Expression): boolean => v !== null &&
-    v !== undefined &&
-    ts.isStringLiteral(v) &&
-    v.text.trim() !== '',
-  intentVersion: (v: ts.Expression): boolean => v !== null &&
-    v !== undefined &&
-    ts.isStringLiteral(v) &&
-    v.text.trim() !== '',
-  displayName: (v: ts.Expression): boolean => v !== null &&
-    v !== undefined &&
-    ts.isStringLiteral(v) &&
-    v.text.trim() !== '',
-  displayDescription: (v: ts.Expression): boolean => v !== null &&
-    v !== undefined &&
-    ts.isStringLiteral(v),
-  schema: (v: ts.Expression): boolean => v !== null &&
-    v !== undefined &&
-    ts.isStringLiteral(v) &&
-    v.text.trim() !== '',
-  icon: (v: ts.Expression): boolean => ts.isCallExpression(v) && v !== null &&
-    v !== undefined && v.expression.getText() === '$r',
-  llmDescription: (v: ts.Expression): boolean => v !== null &&
-    v !== undefined &&
-    ts.isStringLiteral(v),
-  uri: (v: ts.Expression): boolean => v !== null &&
-    v !== undefined && ts.isStringLiteral(v)
-
+  parameters: validateParameters,
+  paramMappings: validateOptionalString,
+  keywords: validateKeywords,
+  intentName: validateRequiredString,
+  domain: validateRequiredString,
+  intentVersion: validateRequiredString,
+  displayName: validateRequiredString,
+  displayDescription: validateOptionalString,
+  schema: validateRequiredString,
+  icon: validateIcon,
+  llmDescription: validateOptionalString,
+  uri: validateRequiredString
 };
 IntentLinkInfoChecker.nestedCheckers = new Map([['paramMappings', IntentLinkParamsChecker]]);
 
 export const intentEntryInfoChecker: ParamChecker<IntentEntryInfo> = new ParamChecker<IntentEntryInfo>();
-intentEntryInfoChecker.requiredFields = ['abilityName', 'intentName', 'domain', 'intentVersion', 'displayName'];
-intentEntryInfoChecker.allowFields = new Set<keyof IntentEntryInfo>([
-  'intentName', 'domain', 'intentVersion', 'displayName', 'displayDescription', 'schema', 'llmDescription', 'icon', 'abilityName',
-  'executeMode', 'keywords'
-]);
-
+intentEntryInfoChecker.requiredFields = [...BASE_REQUIRED as Array<keyof IntentEntryInfo>, 'abilityName'];
+intentEntryInfoChecker.allowFields = new Set<keyof IntentEntryInfo>([...BASE_ALLOW as Array<keyof IntentEntryInfo>, 'abilityName', 'executeMode']);
 intentEntryInfoChecker.paramValidators = {
-  parameters(v: ts.Expression): boolean {
-    try {
-      let initializer: object = {};
-      if (ts.isIdentifier(v)) {
-        const symbol: ts.Symbol | undefined = parseIntent.checker.getSymbolAtLocation(v);
-        const declaration: ts.Declaration = symbol?.valueDeclaration;
-        initializer = declaration.initializer;
-      } else {
-        initializer = v;
-      }
-      if (ts.isObjectLiteralExpression(initializer)) {
-        ajv.compile(JSON.parse(initializer.getText()));
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
-  },
-  icon: (v: ts.Expression): boolean => ts.isCallExpression(v) && v !== null &&
-    v !== undefined && v.expression.getText() === '$r',
-  keywords(v: ts.Expression): boolean {
-    if (ts.isArrayLiteralExpression(v)) {
-      return v.elements.every(ele => {
-        if (ts.isIdentifier(ele)) {
-          const symbol: ts.Symbol | undefined = parseIntent.checker.getSymbolAtLocation(ele);
-          const declaration: ts.Declaration = symbol?.valueDeclaration;
-          return ts.isStringLiteral(declaration.initializer) || ts.isNoSubstitutionTemplateLiteral(declaration.initializer);
-        } else {
-          return ts.isStringLiteral(ele) || ts.isNoSubstitutionTemplateLiteral(ele);
-        }
-      });
-    } else {
-      return false;
-    }
-  },
-  schema: (v: ts.Expression): boolean => v !== null &&
-    v !== undefined &&
-    ts.isStringLiteral(v) &&
-    v.text.trim() !== '',
-  abilityName(v: ts.Expression): boolean {
-    return v !== null && v !== undefined && ts.isStringLiteral(v) && v.text.trim() !== '';
-  },
-  displayDescription(v: ts.Expression): boolean {
-    return v !== null && v !== undefined && ts.isStringLiteral(v) && v.text.trim() !== '';
-  },
-  displayName(v: ts.Expression): boolean {
-    return v !== null && v !== undefined && ts.isStringLiteral(v) && v.text.trim() !== '';
-  },
-  domain(v: ts.Expression): boolean {
-    return v !== null && v !== undefined && ts.isStringLiteral(v) && v.text.trim() !== '';
-  },
+  parameters: validateParameters,
+  icon: validateIcon,
+  keywords: validateKeywords,
+  schema: validateRequiredString,
+  abilityName: validateRequiredString,
+  displayDescription: validateRequiredString,
+  displayName: validateRequiredString,
+  domain: validateRequiredString,
   executeMode(v: ts.Expression): boolean {
     return ts.isArrayLiteralExpression(v) &&
-      v.elements.every(e =>
-        ts.isNumericLiteral(e) &&
-        [0, 1, 2, 3].includes(Number(e.text))
-      );
+      v.elements.every(e => {
+        const validModes = [
+          'insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND',
+          'insightIntent.ExecuteMode.UI_ABILITY_BACKGROUND',
+          'insightIntent.ExecuteMode.UI_EXTENSION_ABILITY',
+          'insightIntent.ExecuteMode.SERVICE_EXTENSION_ABILITY'
+        ];
+        return (ts.isNumericLiteral(e) && [0, 1, 2, 3].includes(Number(e.text))) || validModes.includes(e.getText());
+      });
   },
-  intentName(v: ts.Expression): boolean {
-    return v !== null && v !== undefined && ts.isStringLiteral(v) && v.text.trim() !== '';
-  },
-  intentVersion(v: ts.Expression): boolean {
-    return v !== null && v !== undefined && ts.isStringLiteral(v) && v.text.trim() !== '';
-  },
-  llmDescription(v: ts.Expression): boolean {
-    return v !== null && v !== undefined && ts.isStringLiteral(v);
-  }
+  intentName: validateRequiredString,
+  intentVersion: validateRequiredString,
+  llmDescription: validateOptionalString
+};
+// todo 把下面的几个checker换成上面的格式！
+export const intentMethodInfoChecker: ParamChecker<IntentFunctionInfo> = new ParamChecker<IntentFunctionInfo>();
+intentMethodInfoChecker.requiredFields = [...BASE_REQUIRED as Array<keyof IntentFunctionInfo>];
+intentMethodInfoChecker.allowFields = new Set<keyof IntentFunctionInfo>([
+  ...BASE_ALLOW as Array<keyof IntentFunctionInfo>
+]);
+
+intentMethodInfoChecker.paramValidators = {
+  parameters: validateParameters,
+  icon: validateIcon,
+  keywords: validateKeywords,
+  schema: validateRequiredString,
+  intentName: validateRequiredString,
+  domain: validateRequiredString,
+  intentVersion: validateRequiredString,
+  displayName: validateRequiredString,
+  displayDescription: validateOptionalString,
+  llmDescription: validateOptionalString
 };
 
-export const intentEntryParamChecker: ParamChecker<IntentEntryParam> = new ParamChecker<IntentEntryParam>();
-intentEntryParamChecker.requiredFields = ['description'];
-intentEntryParamChecker.allowFields = new Set<keyof IntentEntryParam>([
-  'description'
+export const IntentPageInfoChecker: ParamChecker<IntentPageInfo> = new ParamChecker<IntentPageInfo>();
+IntentPageInfoChecker.requiredFields = [...BASE_REQUIRED as Array<keyof IntentPageInfo>, 'pagePath'];
+IntentPageInfoChecker.allowFields = new Set<keyof IntentPageInfo>([
+  ...BASE_ALLOW as Array<keyof IntentPageInfo>,
+  'uiAbility',
+  'pagePath',
+  'navigationId',
+  'navDestinationName'
 ]);
-intentEntryParamChecker.paramValidators = {
-  description: (v: ts.Expression): boolean => v !== null &&
-    v !== undefined &&
-    ts.isStringLiteral(v) &&
-    v.text.trim() !== ''
+
+IntentPageInfoChecker.paramValidators = {
+  parameters: validateParameters,
+  icon: validateIcon,
+  keywords: validateKeywords,
+  schema: validateRequiredString,
+  intentName: validateRequiredString,
+  domain: validateRequiredString,
+  intentVersion: validateRequiredString,
+  displayName: validateRequiredString,
+  displayDescription: validateOptionalString,
+  llmDescription: validateOptionalString,
+  uiAbility: validateOptionalString,
+  pagePath: validateRequiredString,
+  navigationId: validateOptionalString,
+  navDestinationName: validateOptionalString
 };

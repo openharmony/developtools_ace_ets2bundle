@@ -294,6 +294,7 @@ export function processUISyntax(program: ts.Program, ut = false,
         processImport(node, pagesDir, transformLog.errors);
       }
       if (ts.isStructDeclaration(node)) {
+        node = parseIntent.detectInsightIntent(node, metaInfo, filePath);
         hasStruct = true;
         componentCollection.currentClassName = node.name.getText();
         componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);
