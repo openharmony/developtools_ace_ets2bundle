@@ -38,7 +38,7 @@ export const EXTERNAL_SOURCE_ALLOWED_IMPORT_INSERT_NAMES: string[] = [
 ];
 
 export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<string>>([
-    ['@ohos.arkui.component', new Set(['$r', '$rawfile', '_r', '_rawfile'])],
+    ['@ohos.arkui.component', new Set(['$r', '$rawfile', '_r', '_rawfile', 'Bindable'])],
     [
         '@ohos.arkui.stateManagement',
         new Set([
@@ -99,6 +99,7 @@ export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, stri
     ['ObjectLink', ['ObjectLinkDecoratedVariable']],
     ['Observed', ['MutableStateMeta', 'BackingValue', 'setObservationDepth', 'IObservedObject', 'int32', 'WatchIdType', 'SubscribedWatches']],
     ['Track', ['MutableStateMeta', 'BackingValue', 'setObservationDepth', 'IObservedObject', 'int32', 'WatchIdType', 'SubscribedWatches']],
+    ['$$', ['Bindable']],
 ]);
 
 
