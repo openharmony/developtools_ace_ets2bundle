@@ -67,9 +67,9 @@ export class LegacyTransformer extends AbstractVisitor {
     }
 
     processConstructor(node: arkts.MethodDefinition): arkts.MethodDefinition {
-        const esobject = arkts.factory.createTypeReference(
+        const esvalue = arkts.factory.createTypeReference(
             arkts.factory.createTypeReferencePart(
-                arkts.factory.createIdentifier(InteroperAbilityNames.ESOBJECT)
+                arkts.factory.createIdentifier(InteroperAbilityNames.ESVALUE)
             )
         );
         const script = arkts.factory.createScriptFunction(
@@ -78,27 +78,27 @@ export class LegacyTransformer extends AbstractVisitor {
                 undefined,
                 [
                     arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier(InteroperAbilityNames.PARENT, esobject),
+                        arkts.factory.createIdentifier(InteroperAbilityNames.PARENT, esvalue),
                         undefined,
                     ),
                     arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier(InteroperAbilityNames.PARAM, esobject),
+                        arkts.factory.createIdentifier(InteroperAbilityNames.PARAM, esvalue),
                         undefined,
                     ),
                     arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier('localStorage', esobject),
+                        arkts.factory.createIdentifier('localStorage', esvalue),
                         undefined,
                     ),
                     arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID, esobject),
+                        arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID, esvalue),
                         undefined,
                     ),
                     arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier(InteroperAbilityNames.PARAMSLAMBDA, esobject),
+                        arkts.factory.createIdentifier(InteroperAbilityNames.PARAMSLAMBDA, esvalue),
                         undefined,
                     ),
                     arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier(InteroperAbilityNames.EXTRAINFO, esobject),
+                        arkts.factory.createIdentifier(InteroperAbilityNames.EXTRAINFO, esvalue),
                         undefined,
                     )
                 ], undefined, false),

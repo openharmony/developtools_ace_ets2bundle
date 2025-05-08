@@ -106,7 +106,7 @@ export enum InteroperAbilityNames {
     ARKTS_1_1 = '1.1',
     ARKTS_1_2 = '1.2',
     ARKUICOMPATIBLE = 'ArkUICompatible',
-    ESOBJECT = 'ESObject',
+    ESVALUE = 'ESValue',
     ELMTID = 'elmtId',
     INITEMPTYOBJECT = 'instantiateEmptyObject',
     SETPROPERTY = 'setProperty',
@@ -114,7 +114,7 @@ export enum InteroperAbilityNames {
     PARENT = 'parent',
     INSTANCE = 'instance',
     PARAM = 'param',
-    EXTRAINFO = 'extrainfo',
+    EXTRAINFO = 'extraInfo',
     COMPONENT = 'component',
     GETPROPERTY = 'getProperty',
     CONSTRUCTOR = 'constructor',
@@ -127,4 +127,5 @@ export enum InteroperAbilityNames {
     WRAPSTRING = 'wrapString',
     PARAMSLAMBDA = 'paramsLambda',
     INTEROPCOMPONENT = 'interopComponent',
+    OHMURL = '@normalized:N&entry&com.example.Interop2use1&har1/src/main/ets/components/MainPage&1.0.0',
 }

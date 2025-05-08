@@ -46,6 +46,7 @@ import { isEntryWrapperClass } from './entry-translators/utils';
 import { classifyObservedTrack, classifyProperty, PropertyTranslator } from './property-translators';
 import { ObservedTrackTranslator } from './property-translators/observedTrack';
 import { nodeByType } from '@koalaui/libarkts/build/src/reexport-for-generated';
+import { updateStateVar } from './interop';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scopeInfoCollection: ScopeInfoCollection;
@@ -117,6 +118,8 @@ export class CheckedTransformer extends AbstractVisitor {
         }
         else if (arkts.isClassDeclaration(node)) {
             return transformObservedTracked(node);
+        } else if (arkts.isCallExpression(node)) {
+            return updateStateVar(node);
         }
         return node;
     }
