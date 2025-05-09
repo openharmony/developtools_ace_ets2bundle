@@ -20,6 +20,7 @@ import ts from 'typescript';
 import {
   EXTNAME_ETS,
   EXTNAME_D_ETS,
+  ARKTS_1_0,
   ARKTS_1_1,
   ARKTS_1_2
 } from './pre_define';
@@ -98,23 +99,22 @@ export function getArkTSEvoDeclFilePath(resolvedFileInfo: ResolvedFileInfo): str
   for (const [pkgName, arkTSEvolutionModuleInfo] of arkTSEvolutionModuleMap) {
     const declgenV1OutPath: string = toUnixPath(arkTSEvolutionModuleInfo.declgenV1OutPath);
     const modulePath: string = toUnixPath(arkTSEvolutionModuleInfo.modulePath);
-    const moduleName: string = arkTSEvolutionModuleInfo.moduleName;
     const declgenBridgeCodePath: string = toUnixPath(arkTSEvolutionModuleInfo.declgenBridgeCodePath);
     if (resolvedFileName && resolvedFileName.startsWith(modulePath + '/') &&
       !resolvedFileName.startsWith(declgenBridgeCodePath + '/')) {
       arktsEvoDeclFilePath = resolvedFileName
-        .replace(modulePath, toUnixPath(path.join(declgenV1OutPath, moduleName)))
+        .replace(modulePath, toUnixPath(path.join(declgenV1OutPath, pkgName)))
         .replace(EXTNAME_ETS, EXTNAME_D_ETS);
       break;
     }
-    if (moduleRequest === moduleName) {
-      arktsEvoDeclFilePath = path.join(declgenV1OutPath, moduleName, 'Index.d.ets');
+    if (moduleRequest === pkgName) {
+      arktsEvoDeclFilePath = path.join(declgenV1OutPath, pkgName, 'Index.d.ets');
       break;
     }
-    if (moduleRequest.startsWith(moduleName + '/')) {
+    if (moduleRequest.startsWith(pkgName + '/')) {
       arktsEvoDeclFilePath = moduleRequest.replace(
-        moduleName,
-        toUnixPath(path.join(declgenV1OutPath, moduleName, 'src/main/ets'))
+        pkgName,
+        toUnixPath(path.join(declgenV1OutPath, pkgName, 'src/main/ets'))
       ) + EXTNAME_D_ETS;
       break;
     }
@@ -139,7 +139,7 @@ export function collectArkTSEvolutionModuleInfo(share: Object): void {
         share.throwArkTsCompilerError(red, 'ArkTS:INTERNAL ERROR: Failed to collect arkTs evolution module info.\n' +
           `Error Message: Failed to collect arkTs evolution module "${pkgName}" info from rollup.`, reset);
       }
-    } else if (dependentModuleInfo.language === ARKTS_1_1) {
+    } else if (dependentModuleInfo.language === ARKTS_1_1 || dependentModuleInfo.language === ARKTS_1_0) {
       if (dependentModuleInfo.declgenV2OutPath && dependentModuleInfo.declFilesPath) {
         arkTSModuleMap.set(pkgName, dependentModuleInfo);
       } else {
