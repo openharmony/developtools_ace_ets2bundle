@@ -638,8 +638,9 @@ function readWorkerFile() {
     aceBuildJson.workers.forEach(worker => {
       if (!/\.(ts|js|ets)$/.test(worker)) {
         throw Error(
-          '\u001b[31mArkTS:ERROR: File: ' + worker + '.' + '\n' +
-          "  The worker file can only be an '.ets', '.ts', or '.js' file.\u001b[39m"
+          '\u001b[31m10906402 ArkTS Compiler Error' + '\n' +
+          'Error Message: ' + 'File: ' + worker + '.' + '\n' +
+          "The worker file can only be an '.ets', '.ts', or '.js' file.\u001b[39m"
         ).message;
       }
       const relativePath = path.relative(projectConfig.projectPath, worker);
@@ -647,7 +648,8 @@ function readWorkerFile() {
         const workerKey = relativePath.replace(/\.(ts|js)$/, '').replace(/\\/g, '/');
         if (workerFileEntry[workerKey]) {
           throw Error(
-            '\u001b[31m ERROR: The worker file cannot use the same file name: \n' +
+            '\u001b[31m10905407 ArkTS Compiler Error' + '\n' +
+            'Error Message: ' + 'The worker file cannot use the same file name: \n' +
             workerFileEntry[workerKey] + '\n' + worker + '\u001b[39m'
           ).message;
         } else {
