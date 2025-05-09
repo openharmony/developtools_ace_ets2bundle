@@ -34,9 +34,6 @@ import {
   resourcesRawfile,
   differenceResourcesRawfile,
   CacheFile,
-  startTimeStatisticsLocation,
-  stopTimeStatisticsLocation,
-  CompilationTimeStatistics,
   genLoaderOutPathOfHar,
   harFilesRecord,
   resetUtils,
@@ -91,6 +88,12 @@ import {
   checkHasKeepTs,
   resetKitImportLog
 } from '../../process_kit_import';
+import {
+  CompileEvent,
+  createAndStartEvent,
+  stopEvent,
+  getHookEventFactory
+} from '../../performance';
 import { resetProcessComponentMember } from '../../process_component_member';
 import {
   collectReservedNameForObf,
@@ -110,6 +113,8 @@ import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
 import { ARKUI_SUBSYSTEM_CODE } from '../../../lib/hvigor_error_code/hvigor_error_info';
 import { ProjectCollections } from 'arkguard';
 import parseIntent from '../../userIntents_parser/parseUserIntents';
+
+let switchTsAst: boolean = true;
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -144,8 +149,8 @@ export function etsTransform() {
       }
     },
     buildStart() {
-      const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsTransform', 'buildStart');
-      startTimeStatisticsLocation(compilationTime ? compilationTime.etsTransformBuildStartTime : undefined);
+      const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsTransform', 'buildStart');
+      const eventEtsTransformBuildStart = createAndStartEvent(hookEventFactory, 'etsTransformBuildStart');
       judgeCacheShouldDisabled.call(this);
       if (process.env.compileMode === 'moduleJson') {
         cacheFile = this.cache.get('transformCacheFiles');
@@ -162,12 +167,12 @@ export function etsTransform() {
       if (!!this.cache.get('enableDebugLine') !== projectConfig.enableDebugLine) {
         ShouldEnableDebugLine.enableDebugLine = true;
       }
-      stopTimeStatisticsLocation(compilationTime ? compilationTime.etsTransformBuildStartTime : undefined);
+      stopEvent(eventEtsTransformBuildStart);
     },
     load(id: string) {
       let fileCacheInfo: fileInfo;
-      const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsTransform', 'load');
-      startTimeStatisticsLocation(compilationTime ? compilationTime.etsTransformLoadTime : undefined);
+      const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsTransform', 'load');
+      const eventEtsTransformLoad = createAndStartEvent(hookEventFactory, 'etsTransformLoad');
       if (this.cache.get('fileCacheInfo')) {
         fileCacheInfo = this.cache.get('fileCacheInfo')[path.resolve(id)];
       }
@@ -178,7 +183,7 @@ export function etsTransform() {
       }
       storedFileInfo.addFileCacheInfo(path.resolve(id), fileCacheInfo);
       storedFileInfo.setCurrentArkTsFile();
-      stopTimeStatisticsLocation(compilationTime ? compilationTime.etsTransformLoadTime : undefined);
+      stopEvent(eventEtsTransformLoad);
     },
     shouldInvalidCache(options) {
       const fileName: string = path.resolve(options.id);
@@ -188,7 +193,11 @@ export function etsTransform() {
         if (cacheFile && cacheFile[fileName] && cacheFile[fileName].children.length) {
           for (let child of cacheFile[fileName].children) {
             const newTimeMs: number = fs.existsSync(child.fileName) ? fs.statSync(child.fileName).mtimeMs : -1;
-            if (newTimeMs !== child.mtimeMs) {
+            const fileHash: string = this.share?.getHashByFilePath ? this.share?.getHashByFilePath(child.fileName) : '';
+            if (this.share?.getHashByFilePath && (fileHash !== child.hash || fileHash === '')) {
+              shouldDisable = true;
+              break;
+            } else if (!(this.share?.getHashByFilePath) && newTimeMs !== child.mtimeMs) {
               shouldDisable = true;
               break;
             }
@@ -211,6 +220,8 @@ export function etsTransform() {
       }
     },
     afterBuildEnd() {
+      const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsTransform', 'afterBuildEnd');
+      const eventEtsTransformAfterBuildEnd = createAndStartEvent(hookEventFactory, 'etsTransformafterBuildEnd');
       if (parseIntent.intentData.length > 0 || parseIntent.isUpdateCompile) {
         parseIntent.verifyInheritanceChain();
         parseIntent.writeUserIntentJsonFile();
@@ -240,7 +251,7 @@ export function etsTransform() {
               process.env.cachePath, projectConfig, metaInfo);
             const buildFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
               projectConfig.buildPath, projectConfig, metaInfo, true);
-			const recordInfo = MemoryMonitor.recordStage(MemoryDefine.SET_INCREMENTAL_FILE_IN_HAR);
+            const recordInfo = MemoryMonitor.recordStage(MemoryDefine.SET_INCREMENTAL_FILE_IN_HAR);
             if (filePath.match(/\.e?ts$/)) {
               setIncrementalFileInHar(cacheFilePath, buildFilePath, allFilesInHar);
             } else {
@@ -268,6 +279,7 @@ export function etsTransform() {
       }
       storedFileInfo.clearCollectedInfo(this.cache);
       this.cache.set('transformCacheFiles', storedFileInfo.transformCacheFiles);
+      stopEvent(eventEtsTransformAfterBuildEnd);
     },
     cleanUp(): void {
       resetMain();
@@ -360,7 +372,7 @@ function getArkoalaTsProgram(program: ts.Program): ts.Program {
 }
 
 async function transform(code: string, id: string) {
-  const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsTransform', 'transform');
+  const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsTransform', 'transform');
   if (!filter(id)) {
     return null;
   }
@@ -371,6 +383,7 @@ async function transform(code: string, id: string) {
   const hvigorLogger = this.share.getHvigorConsoleLogger?.(ARKUI_SUBSYSTEM_CODE);
 
   if (projectConfig.compileMode !== 'esmodule') {
+    const eventEtsTransformForJsbundle = createAndStartEvent(hookEventFactory, 'transform for jsbundle');
     const compilerOptions = ts.readConfigFile(
       path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
     compilerOptions.moduleResolution = 'nodenext';
@@ -390,12 +403,14 @@ async function transform(code: string, id: string) {
       resetLog();
     }
 
+    stopEvent(eventEtsTransformForJsbundle);
     return {
       code: result.outputText,
       map: result.sourceMapText ? JSON.parse(result.sourceMapText) : new MagicString(code).generateMap()
     };
   }
 
+  const eventEtsTransformForEsmodule = createAndStartEvent(hookEventFactory, 'transform for esmodule');
   let tsProgram: ts.Program = globalProgram.program;
   let targetSourceFile: ts.SourceFile | undefined = tsProgram.getSourceFile(id);
 
@@ -404,7 +419,7 @@ async function transform(code: string, id: string) {
   // 1. .ets/.ts imported by .js file with tsc's `allowJS` option is false.
   // 2. .ets/.ts imported by .js file with same name '.d.ts' file which is prior to .js by tsc default resolving
   if (!targetSourceFile) {
-    await processNoTargetSourceFile(id, code, compilationTime);
+    await processNoTargetSourceFile(id, code, eventEtsTransformForEsmodule);
 	const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_GET_CHECKER);
     // init TypeChecker to run binding
     globalProgram.checker = tsProgram.getTypeChecker();
@@ -423,9 +438,9 @@ async function transform(code: string, id: string) {
     storedFileInfo.reUseProgram = true;
   }
   setPkgNameForFile(this.getModuleInfo(id));
-  startTimeStatisticsLocation(compilationTime ? compilationTime.validateEtsTime : undefined);
+  const eventValidateEts = createAndStartEvent(eventEtsTransformForEsmodule, 'validateEts');
   validateEts(code, id, this.getModuleInfo(id).isEntry, logger, targetSourceFile, hvigorLogger);
-  stopTimeStatisticsLocation(compilationTime ? compilationTime.validateEtsTime : undefined);
+  stopEvent(eventValidateEts);
   const emitResult: EmitResult = { outputText: '', sourceMapText: '' };
   const writeFile: ts.WriteFileCallback = (fileName: string, data: string) => {
     if (/.map$/.test(fileName)) {
@@ -443,14 +458,14 @@ async function transform(code: string, id: string) {
     reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? reExportNoCheckMode
   };
   // use `try finally` to restore `noEmit` when error thrown by `processUISyntax` in preview mode
-  startTimeStatisticsLocation(compilationTime ? compilationTime.shouldEmitJsTime : undefined);
+  const eventShouldEmitJs = createAndStartEvent(eventEtsTransformForEsmodule, 'shouldEmitJs');
   const shouldEmitJsFlag: boolean = getShouldEmitJs(projectConfig.shouldEmitJs, targetSourceFile, id);
   shouldEmitJsFlagMap.set(id, shouldEmitJsFlag);
-  stopTimeStatisticsLocation(compilationTime ? compilationTime.shouldEmitJsTime : undefined);
+  stopEvent(eventShouldEmitJs);
   let transformResult: ts.TransformationResult<ts.SourceFile> = null;
   ProjectCollections.projectWhiteListManager?.setCurrentCollector(id);
   try {
-    startTimeStatisticsLocation(compilationTime ? compilationTime.tsProgramEmitTime : undefined);
+    const eventTsProgramEmit = createAndStartEvent(eventEtsTransformForEsmodule, 'tsProgramEmit');
     const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_UI_KIT);
     metaInfo.checker = tsProgram.getTypeChecker();
     if (projectConfig.useArkoala) {
@@ -458,36 +473,36 @@ async function transform(code: string, id: string) {
       targetSourceFile = tsProgram.getSourceFile(id);
     }
     if (shouldEmitJsFlag) {
-      startTimeStatisticsLocation(compilationTime ? compilationTime.emitTime : undefined);
+      const eventEmit = createAndStartEvent(eventTsProgramEmit, 'emit');
       const uiKitrecordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_UI_KIT);
       tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
         {
           before: [
-            processUISyntax(null, false, compilationTime, id, metaInfo),
-            processKitImport(id, metaInfo, compilationTime, true, lazyImportOptions),
+            processUISyntax(null, false, eventEmit, id, this.share, metaInfo),
+            processKitImport(id, metaInfo, eventEmit, true, lazyImportOptions),
             collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
               shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))
           ]
         }
       );
       MemoryMonitor.stopRecordStage(uiKitrecordInfo);
-      stopTimeStatisticsLocation(compilationTime ? compilationTime.emitTime : undefined);
+      stopEvent(eventEmit);
     } else {
-	  const uiKitrecordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_UI_KIT);
-      startTimeStatisticsLocation(compilationTime ? compilationTime.transformNodesTime : undefined);
+      const uiKitrecordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_UI_KIT);
+      const eventTransformNodes = createAndStartEvent(eventTsProgramEmit, 'transformNodes');
       const emitResolver: ts.EmitResolver = globalProgram.checker.getEmitResolver(outFile(tsProgram.getCompilerOptions()) ?
         undefined : targetSourceFile, undefined);
       metaInfo.checker = tsProgram.getTypeChecker();
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
-        [processUISyntax(null, false, compilationTime, id, metaInfo),
-        processKitImport(id, metaInfo, compilationTime, false, lazyImportOptions),
+        [processUISyntax(null, false, eventTransformNodes, id, this.share, metaInfo),
+        processKitImport(id, metaInfo, eventTransformNodes, false, lazyImportOptions),
         collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
           shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))], false);
-      stopTimeStatisticsLocation(compilationTime ? compilationTime.transformNodesTime : undefined);
+      stopEvent(eventTransformNodes);
       MemoryMonitor.stopRecordStage(uiKitrecordInfo);
     }
-    stopTimeStatisticsLocation(compilationTime ? compilationTime.tsProgramEmitTime : undefined);
+    stopEvent(eventTsProgramEmit);
     MemoryMonitor.stopRecordStage(recordInfo);
   } finally {
     // restore `noEmit` to prevent tsc's watchService emitting automatically.
@@ -504,18 +519,25 @@ async function transform(code: string, id: string) {
     resetKitImportLog();
   }
 
-  return shouldEmitJsFlag ? {
+  const result = shouldEmitJsFlag ? {
     code: emitResult.outputText,
     // Use magicString to generate sourceMap because of Typescript do not emit sourceMap in some cases
     map: emitResult.sourceMapText ? JSON.parse(emitResult.sourceMapText) : new MagicString(code).generateMap(),
     meta: {
       shouldEmitJs: true
     }
-  } : printSourceFile(transformResult.transformed[0], compilationTime);
+  } : switchTsAst ? {
+    meta: {
+      tsAst: transformResult.transformed[0]
+    }
+  } : printSourceFile(transformResult.transformed[0], eventEtsTransformForEsmodule);
+
+  stopEvent(eventEtsTransformForEsmodule);
+  return result;
 }
 
-async function processNoTargetSourceFile(id: string, code: string, compilationTime?: CompilationTimeStatistics): Promise<void> {
-  startTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
+async function processNoTargetSourceFile(id: string, code: string, parentEvent?: CompileEvent): Promise<void> {
+  const eventNoSourceFileRebuildProgram = createAndStartEvent(parentEvent, 'noSourceFileRebuildProgram');
   if (storedFileInfo.isFirstBuild && storedFileInfo.changeFiles.length) {
     storedFileInfo.newTsProgram = ts.createProgram(storedFileInfo.changeFiles, etsCheckerCompilerOptions, compilerHost);
     storedFileInfo.isFirstBuild = false;
@@ -545,15 +567,15 @@ async function processNoTargetSourceFile(id: string, code: string, compilationTi
     });
   }
   globalProgram.program.refreshTypeChecker();
-  stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
+  stopEvent(eventNoSourceFileRebuildProgram);
 }
 
-function printSourceFile(sourceFile: ts.SourceFile, compilationTime: CompilationTimeStatistics): string | null {
+function printSourceFile(sourceFile: ts.SourceFile, parentEvent: CompileEvent): string | null {
   if (sourceFile) {
-    startTimeStatisticsLocation(compilationTime ? compilationTime.printNodeTime : undefined);
+    const eventPrintNode = createAndStartEvent(parentEvent, 'printNode');
     const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
     const sourceCode: string = printer.printNode(ts.EmitHint.Unspecified, sourceFile, sourceFile);
-    stopTimeStatisticsLocation(compilationTime ? compilationTime.printNodeTime : undefined);
+    stopEvent(eventPrintNode);
     return sourceCode;
   }
   return null;
