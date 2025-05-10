@@ -465,6 +465,36 @@ export class factory {
     }
 
     /**
+     * transform `.animation(...)` to `.animationStart(...) and .animationStop(...)`
+     */
+    static updateAnimation(instanceCalls: arkts.CallExpression[]): void {
+        let lastAniIdx = 0;
+        let curIdx = 0;
+
+        while (curIdx < instanceCalls.length) {
+            const property: arkts.Identifier = instanceCalls[curIdx].expression as arkts.Identifier;
+            if (property.name === BuilderLambdaNames.ANIMATION_NAME) {
+                const aniStart: arkts.CallExpression = arkts.factory.createCallExpression(
+                    arkts.factory.createIdentifier(BuilderLambdaNames.ANIMATION_START),
+                    undefined,
+                    instanceCalls[curIdx].arguments
+                );
+                const aniStop: arkts.CallExpression = arkts.factory.createCallExpression(
+                    arkts.factory.createIdentifier(BuilderLambdaNames.ANIMATION_STOP),
+                    undefined,
+                    instanceCalls[curIdx].arguments.map((arg)=>arg.clone())
+                );
+                instanceCalls.splice(lastAniIdx, 0, aniStart);
+                instanceCalls[curIdx + 1] = aniStop;
+                curIdx += 2;
+                lastAniIdx = curIdx;
+            } else {
+                curIdx++;
+            }
+        }
+    }
+
+    /**
      * transform `@ComponentBuilder` in non-declared calls.
      */
     static transformBuilderLambda(node: arkts.CallExpression): arkts.AstNode {
@@ -494,6 +524,7 @@ export class factory {
         let lambdaBody: arkts.Identifier | arkts.CallExpression | undefined;
         if (instanceCalls.length > 0) {
             instanceCalls = instanceCalls.reverse();
+            this.updateAnimation(instanceCalls);
             lambdaBody = arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME);
             instanceCalls.forEach((call) => {
                 lambdaBody = this.createStyleLambdaBody(lambdaBody!, call);

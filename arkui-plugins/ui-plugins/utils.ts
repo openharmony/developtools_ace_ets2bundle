@@ -42,6 +42,9 @@ export enum BuilderLambdaNames {
     STYLE_PARAM_NAME = 'style',
     STYLE_ARROW_PARAM_NAME = 'instance',
     CONTENT_PARAM_NAME = 'content',
+    ANIMATION_NAME = 'animation',
+    ANIMATION_START = 'animationStart',
+    ANIMATION_STOP = 'animationStop',
 }
 
 export enum Dollars {
