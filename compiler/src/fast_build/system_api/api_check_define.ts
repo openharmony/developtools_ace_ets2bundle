@@ -23,6 +23,7 @@ export const SYSCAP_TAG_CHECK_NAME: string = 'syscap';
 export const SYSCAP_TAG_CHECK_WARNING: string = "The system capacity of this api '{0}' is not supported on all devices";
 export const SYSCAP_TAG_CONDITION_CHECK_WARNING: string = 'The API is not supported on all devices. Use the canIUse condition to determine whether the API is supported.';
 export const CANIUSE_FUNCTION_NAME: string = 'canIUse';
+export const VERSION_CHECK_FUNCTION_NAME: string = 'isApiVersionGreaterOrEqual';
 export const RUNTIME_OS_OH: string = 'OpenHarmony';
 export const FORM_TAG_CHECK_NAME: string = 'form';
 export const FORM_TAG_CHECK_ERROR: string = "'{0}' can't support form application.";
