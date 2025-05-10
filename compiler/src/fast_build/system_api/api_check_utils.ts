@@ -68,7 +68,8 @@ import {
   CONSTANT_STEP_3,
   GLOBAL_DECLARE_WHITE_LIST,
   SINCE_TAG_NAME,
-  SINCE_TAG_CHECK_ERROER
+  SINCE_TAG_CHECK_ERROER,
+  VERSION_CHECK_FUNCTION_NAME
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 
@@ -88,6 +89,10 @@ export interface CheckValidCallbackInterface {
 
 export interface CheckJsDocSpecialValidCallbackInterface {
   (jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean;
+}
+
+export interface checkConditionValidCallbackInterface {
+  (node: ts.CallExpression, specifyFuncName: string, importSymbol: string, jsDocs?: ts.JSDoc[]): boolean;
 }
 
 interface HasJSDocNode extends ts.Node {
@@ -260,14 +265,16 @@ export function checkTypeReference(node: ts.TypeReferenceNode, transformLog: IFi
  * @param {string} message - error message
  * @param {ts.DiagnosticCategory} type - error type
  * @param {boolean} tagNameShouldExisted - tag is required
- * @param {CheckValidCallbackInterface} [checkValidCallback]
- * @param {CheckJsDocSpecialValidCallbackInterface} [checkJsDocSpecialValidCallback]
+ * @param {CheckValidCallbackInterface} checkValidCallback
+ * @param {CheckJsDocSpecialValidCallbackInterface} checkJsDocSpecialValidCallback
+ * @param {checkConditionValidCallbackInterface} checkConditionValidCallback
  * @returns  {ts.JsDocNodeCheckConfigItem}
  */
 function getJsDocNodeCheckConfigItem(tagName: string[], message: string, needConditionCheck: boolean,
   type: ts.DiagnosticCategory, specifyCheckConditionFuncName: string,
   tagNameShouldExisted: boolean, checkValidCallback?: CheckValidCallbackInterface,
-  checkJsDocSpecialValidCallback?: CheckJsDocSpecialValidCallbackInterface): ts.JsDocNodeCheckConfigItem {
+  checkJsDocSpecialValidCallback?: CheckJsDocSpecialValidCallbackInterface,
+  checkConditionValidCallback?: checkConditionValidCallbackInterface): ts.JsDocNodeCheckConfigItem {
   return {
     tagName: tagName,
     message: message,
@@ -276,7 +283,8 @@ function getJsDocNodeCheckConfigItem(tagName: string[], message: string, needCon
     specifyCheckConditionFuncName: specifyCheckConditionFuncName,
     tagNameShouldExisted: tagNameShouldExisted,
     checkValidCallback: checkValidCallback,
-    checkJsDocSpecialValidCallback: checkJsDocSpecialValidCallback
+    checkJsDocSpecialValidCallback: checkJsDocSpecialValidCallback,
+    checkConditionValidCallback: checkConditionValidCallback
   };
 }
 
@@ -331,8 +339,8 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSTEM_API_TAG_CHECK_NAME], SYSTEM_API_TAG_CHECK_WARNING, false,
       ts.DiagnosticCategory.Warning, '', false));
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SINCE_TAG_NAME],
-      SINCE_TAG_CHECK_ERROER, false, ts.DiagnosticCategory.Warning,
-      '', false, undefined, checkSinceValue));
+      SINCE_TAG_CHECK_ERROER, true, ts.DiagnosticCategory.Warning,
+      VERSION_CHECK_FUNCTION_NAME, false, undefined, checkSinceValue, checkVersionConditionValidCallback));
     // TODO: the third param is to be opened
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSCAP_TAG_CHECK_NAME],
       SYSCAP_TAG_CHECK_WARNING, false, ts.DiagnosticCategory.Warning,
@@ -541,18 +549,11 @@ function checkSinceValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNode
   if (!currentNode.jsDoc) {
     return false;
   }
-  let minSince: string = '';
-  const hasSince: boolean = currentNode.jsDoc.some((doc: ts.JSDoc) => {
-    return doc.tags.some((tag: ts.JSDocTag) => {
-      if (tag.tagName.escapedText.toString() === SINCE_TAG_NAME) {
-        minSince = tag.comment.toString();
-        return true;
-      }
-      return false;
-    });
-  });
-  const compatibleSdkVersion: string = projectConfig.compatibleSdkVersion;
-  if (hasSince && Number(minSince) > Number(compatibleSdkVersion)) {
+  const minSince: string = getMinVersion(currentNode.jsDoc);
+  const hasSince: boolean = minSince !== '';
+
+  const compatibleSdkVersion: string = String(projectConfig.compatibleSdkVersion);
+  if (hasSince && comparePointVersion(compatibleSdkVersion.toString(), minSince) === -1) {
     config.message = SINCE_TAG_CHECK_ERROER.replace('$SINCE1', minSince).replace('$SINCE2', compatibleSdkVersion);
     return true;
   }
@@ -633,11 +634,29 @@ export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: 
 /**
  * custom condition check
  * @param { ts.FileCheckModuleInfo } jsDocFileCheckedInfo
- * @param { ts.JsDocTagInfo[] } jsDocs
+ * @param { ts.JsDocTagInfo[] } jsDocTagInfos
+ * @param { ?ts.JSDoc[] } jsDocs
  * @returns
  */
-export function getJsDocNodeConditionCheckResult(jsDocFileCheckedInfo: ts.FileCheckModuleInfo, jsDocs: ts.JsDocTagInfo[]):
+export function getJsDocNodeConditionCheckResult(jsDocFileCheckedInfo: ts.FileCheckModuleInfo, jsDocTagInfos: ts.JsDocTagInfo[], jsDocs?: ts.JSDoc[]):
   ts.ConditionCheckResult {
+  let result: ts.ConditionCheckResult = {
+    valid: true
+  };
+  if (jsDocFileCheckedInfo.tagName.includes(SYSCAP_TAG_CHECK_NAME)) {
+    result = checkSyscapCondition(jsDocTagInfos);
+  } else if (jsDocFileCheckedInfo.tagName.includes(SINCE_TAG_NAME) && jsDocs) {
+    result = checkSinceCondition(jsDocs);
+  }
+  return result;
+}
+
+/**
+ * syscap condition check
+ * @param { ts.JSDoc[] } jsDocs
+ * @returns { ts.ConditionCheckResult }
+ */
+function checkSyscapCondition(jsDocs: ts.JsDocTagInfo[]): ts.ConditionCheckResult {
   const result: ts.ConditionCheckResult = {
     valid: true
   };
@@ -663,4 +682,93 @@ export function getJsDocNodeConditionCheckResult(jsDocFileCheckedInfo: ts.FileCh
     result.message = SYSCAP_TAG_CHECK_WARNING.replace('$DT', projectConfig.deviceTypesMessage);
   }
   return result;
+}
+
+/**
+ * version condition check
+ * @param { ts.JSDoc[] } jsDocs
+ * @returns { ts.ConditionCheckResult }
+ */
+function checkSinceCondition(jsDocs: ts.JSDoc[]): ts.ConditionCheckResult {
+  const result: ts.ConditionCheckResult = {
+    valid: true
+  };
+  if (!jsDocs || !jsDocs[0]) {
+    return result;
+  }
+  const minVersion: string = getMinVersion(jsDocs);
+  const hasSince: boolean = minVersion !== '';
+
+  const compatibleSdkVersion: string = projectConfig.compatibleSdkVersion.toString();
+
+  if (hasSince && comparePointVersion(compatibleSdkVersion, minVersion) === -1) {
+    result.valid = false;
+    result.type = ts.DiagnosticCategory.Warning;
+    result.message = SINCE_TAG_CHECK_ERROER.replace('$SINCE1', minVersion).replace('$SINCE2', compatibleSdkVersion);
+  }
+  return result;
+}
+
+/**
+ * version condition check, print error message
+ * @param { ts.CallExpression } node
+ * @param { string } specifyFuncName
+ * @param { string } targetVersion
+ * @param { ?ts.JSDoc[] } jsDocs
+ * @returns { boolean }
+ */
+function checkVersionConditionValidCallback(node: ts.CallExpression, specifyFuncName: string, targetVersion: string, jsDocs?: ts.JSDoc[]): boolean {
+  if (ts.isIdentifier(node.expression) && node.arguments.length === 1 && node.expression.escapedText.toString() === specifyFuncName) {
+    const expression = node.arguments[0];
+    if (ts.isStringLiteral(expression) && jsDocs && comparePointVersion(expression.text.toString(), getMinVersion(jsDocs)) !== -1) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+/**
+ * get minversion
+ * @param { ts.JSDoc[] } jsDocs 
+ * @returns string
+ */
+function getMinVersion(jsDocs: ts.JSDoc[]): string {
+  if (!jsDocs || !jsDocs[0]) {
+    return '';
+  }
+  let minVersion: string = '';
+  jsDocs.some((doc: ts.JSDoc) => {
+    return doc.tags?.some((tag: ts.JSDocTag) => {
+      if (tag.tagName.escapedText.toString() === SINCE_TAG_NAME) {
+        minVersion = tag.comment.toString();
+        return true;
+      }
+      return false;
+    });
+  });
+  return minVersion;
+}
+
+/**
+ * compare point version
+ * @param { string } firstVersion 
+ * @param { string } secondVersion 
+ * @returns { number }
+ */
+function comparePointVersion(firstVersion: string, secondVersion: string): number {
+  const firstPointVersion = firstVersion.split('.');
+  const secondPointVersion = secondVersion.split('.');
+  for (let i = 0; i < 3; i++) {
+    const part1 = parseInt(firstPointVersion[i] || '0', 10);
+    const part2 = parseInt(secondPointVersion[i] || '0', 10);
+
+    if (part1 < part2) {
+      return -1;
+    }
+    if (part1 > part2) {
+      return 1;
+    }
+  }
+  return 0;
 }
