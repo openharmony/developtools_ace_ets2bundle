@@ -18,6 +18,7 @@ import { UISyntaxRule } from './ui-syntax-rule';
 import BuildRootNode from './build-root-node';
 import CheckConstructPrivateParameter from './check-construct-private-parameter';
 import ComponentV2MixCheck from './componentV2-mix-check';
+import ConsumerProviderDecoratorCheck from './consumer-provider-decorator-check';
 import CustomDialogMissingController from './custom-dialog-missing-controller';
 import DecoratorsInUIComponentOnly from './decorators-in-ui-component-only';
 import EntryLoacalStorageCheck from './entry-localstorage-check';
@@ -27,11 +28,23 @@ import NoDuplicateDecorators from './no-duplicate-decorators';
 import NoDuplicateStateManager from './no-duplicate-state-manager';
 import NoPropLinkObjectlinkInEntry from './no-prop-link-objectlink-in-entry';
 import NoSameAsBuiltInAttribute from './no-same-as-built-in-attribute';
+import ReuseAttributeCheck from './reuse-attribute-check';
+import StructMissingDecorator from './struct-missing-decorator';
+import StructPropertyDecorator from './struct-property-decorator';
+import StructVariableInitialization from './struct-variable-initialization';
+import TrackDecoratorCheck from './track-decorator-check';
+import TypeDecoratorCheck from './type-decorator-check';
+import ValidateBuildInStruct from './validate-build-in-struct';
+import VariableInitializationViaComponentCons from './variable-initialization-via-component-cons';
+import WatchDecoratorFunction from './watch-decorator-function';
+import WatchDecoratorRegular from './watch-decorator-regular';
+import WrapBuilderCheck from './wrap-builder-check';
 
 const rules: UISyntaxRule[] = [
   BuildRootNode,
   CheckConstructPrivateParameter,
   ComponentV2MixCheck,
+  ConsumerProviderDecoratorCheck,
   CustomDialogMissingController,
   DecoratorsInUIComponentOnly,
   EntryLoacalStorageCheck,
@@ -41,6 +54,17 @@ const rules: UISyntaxRule[] = [
   NoDuplicateStateManager,
   NoPropLinkObjectlinkInEntry,
   NoSameAsBuiltInAttribute,
+  ReuseAttributeCheck,
+  StructMissingDecorator,
+  StructPropertyDecorator,
+  StructVariableInitialization,
+  TrackDecoratorCheck,
+  TypeDecoratorCheck,
+  ValidateBuildInStruct,
+  VariableInitializationViaComponentCons,
+  WatchDecoratorFunction,
+  WatchDecoratorRegular,
+  WrapBuilderCheck,
 ];
 
 export default rules;
