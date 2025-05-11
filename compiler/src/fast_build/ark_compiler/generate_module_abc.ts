@@ -20,18 +20,19 @@ import { ModuleHotfixMode } from './module/module_hotfix_mode';
 import { ModuleHotreloadMode } from './module/module_hotreload_mode';
 import { ModulePreviewMode } from './module/module_preview_mode';
 import { ModuleSourceFile } from './module/module_source_file';
+import type { ModuleMode } from './module/module_mode';
+import { SourceMapGenerator } from './generate_sourcemap';
 import {
+  CompileEvent,
   getHookEventFactory,
   createAndStartEvent,
   stopEvent
-} from '../../ark_utils';
-import type { ModuleMode } from './module/module_mode';
-import { SourceMapGenerator } from './generate_sourcemap';
+} from '../../performance';
 
 let moduleMode: ModuleMode = null;
 
 export async function generateModuleAbc(error) {
-  const hookEventFactory = getHookEventFactory(this.share, 'genAbc', 'buildEnd');
+  const hookEventFactory: CompileEvent | undefined = getHookEventFactory(this.share, 'genAbc', 'buildEnd');
   if (error) {
     // When error thrown in previous plugins, rollup will catch and call buildEnd plugin.
     // Stop generate abc if error exists
@@ -56,7 +57,7 @@ export async function generateModuleAbc(error) {
   }
 }
 
-function generateAbc(rollupObject: Object, parentEvent: Object): void {
+function generateAbc(rollupObject: Object, parentEvent: CompileEvent | undefined): void {
   const eventGenerateAbc = createAndStartEvent(parentEvent, 'generate abc');
   if (rollupObject.share.projectConfig.watchMode !== 'true') {
     if (rollupObject.share.arkProjectConfig.coldReload) {

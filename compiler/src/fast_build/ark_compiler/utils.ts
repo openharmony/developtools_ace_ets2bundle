@@ -43,9 +43,6 @@ import {
 import {
   tryMangleFileName,
   writeObfuscatedSourceCode,
-  cleanUpUtilsObjects,
-  createAndStartEvent,
-  stopEvent
 } from '../../ark_utils';
 import { AOT_FULL, AOT_PARTIAL, AOT_TYPE } from '../../pre_define';
 import { SourceMapGenerator } from './generate_sourcemap';
@@ -55,6 +52,11 @@ import {
   enableObfuscatedFilePathConfig,
   getRelativeSourcePath
 } from './common/ob_config_resolver';
+import {
+  CompileEvent,
+  createAndStartEvent,
+  stopEvent
+} from '../../performance';
 
 export let hasTsNoCheckOrTsIgnoreFiles: string[] = [];
 export let compilingEtsOrTsFiles: string[] = [];
@@ -150,7 +152,7 @@ function updateCacheFilePathIfEnableObuscatedFilePath(filePath: string, cacheFil
 }
 
 export async function writeFileContentToTempDir(id: string, content: string, projectConfig: Object,
-  logger: Object, parentEvent: Object, metaInfo: Object): Promise<void> {
+  logger: Object, parentEvent: CompileEvent, metaInfo: Object): Promise<void> {
   if (isCommonJsPluginVirtualFile(id)) {
     return;
   }
