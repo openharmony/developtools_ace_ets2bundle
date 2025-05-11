@@ -38,11 +38,6 @@ import {
   writeFileContentToTempDir
 } from '../utils';
 import { toUnixPath } from '../../../utils';
-import {
-  createAndStartEvent,
-  getHookEventFactory,
-  stopEvent
-} from '../../../ark_utils';
 import { SourceMapGenerator } from '../generate_sourcemap';
 import {
   printObfLogger,
@@ -77,6 +72,11 @@ import {
   ErrorCode
 } from '../error_code';
 import { checkIfJsImportingArkts } from '../check_import_module';
+import {
+  CompileEvent,
+  createAndStartEvent,
+  stopEvent
+} from '../../../performance';
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
 const ROLLUP_EXPORTALL_NODE: string = 'ExportAllDeclaration';
@@ -319,11 +319,9 @@ export class ModuleSourceFile {
     return ModuleSourceFile.sourceFiles;
   }
 
-  static async processSingleModuleSourceFile(rollupObject: Object, moduleId: string): Promise<void> {
+  static async processSingleModuleSourceFile(rollupObject: Object, moduleId: string, parentEvent: CompileEvent| undefined): Promise<void> {
     if (!ModuleSourceFile.isEnvInitialized) {
       this.initPluginEnv(rollupObject);
-      
-      ModuleSourceFile.hookEventFactory = getHookEventFactory(rollupObject.share, 'genAbc', 'moduleParsed');
       ModuleSourceFile.setProcessMock(rollupObject);
       if (ModuleSourceFile.needProcessMock) {
         ModuleSourceFile.collectMockConfigInfo(rollupObject);
@@ -343,17 +341,17 @@ export class ModuleSourceFile {
 
       if (!rollupObject.share.projectConfig.compileHar || ModuleSourceFile.projectConfig.byteCodeHar) {
         //compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
-        const eventBuildModuleSourceFile = createAndStartEvent(ModuleSourceFile.hookEventFactory, 'build module source files');
+        const eventBuildModuleSourceFile = createAndStartEvent(parentEvent, 'build module source files');
         await moduleSourceFile.processModuleRequest(rollupObject, eventBuildModuleSourceFile);
         stopEvent(eventBuildModuleSourceFile);
       }
-      const eventWriteSourceFile = createAndStartEvent(ModuleSourceFile.hookEventFactory, 'write source file');
+      const eventWriteSourceFile = createAndStartEvent(parentEvent, 'write source file');
       await moduleSourceFile.writeSourceFile(eventWriteSourceFile);
       stopEvent(eventWriteSourceFile);
     }
   }  
 
-  static async processModuleSourceFiles(rollupObject: Object, parentEvent: Object): Promise<void> {
+  static async processModuleSourceFiles(rollupObject: Object, parentEvent: CompileEvent | undefined): Promise<void> {
     this.initPluginEnv(rollupObject);
 
     // collect mockConfigInfo
@@ -409,7 +407,7 @@ export class ModuleSourceFile {
     return this.moduleId;
   }
 
-  private async writeSourceFile(parentEvent: Object): Promise<void> {
+  private async writeSourceFile(parentEvent: CompileEvent): Promise<void> {
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
       await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo,
         this.moduleId, parentEvent, printObfLogger);
@@ -650,7 +648,7 @@ export class ModuleSourceFile {
   // Replace each module request in source file to a unique representation which is called 'ohmUrl'.
   // This 'ohmUrl' will be the same as the record name for each file, to make sure runtime can find the corresponding
   // record based on each module request.
-  async processModuleRequest(rollupObject: Object, parentEvent: Object): Promise<void> {
+  async processModuleRequest(rollupObject: Object, parentEvent: CompileEvent): Promise<void> {
     if (isJsonSourceFile(this.moduleId)) {
       return;
     }
@@ -696,7 +694,6 @@ export class ModuleSourceFile {
     ModuleSourceFile.needProcessMock = false;
     ModuleSourceFile.moduleIdMap = new Map();
     ModuleSourceFile.isEnvInitialized = false;
-    ModuleSourceFile.hookEventFactory = undefined;
   }
 }
 
