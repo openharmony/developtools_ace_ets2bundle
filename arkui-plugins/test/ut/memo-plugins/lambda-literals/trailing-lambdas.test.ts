@@ -98,7 +98,7 @@ function main() {}
         return;
     }
 });
-function bar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, f?: (()=> void)): void {
+@functions.OptionalParametersAnnotation({minArgCount:0}) function bar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, f?: (()=> void)): void {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
     const __memo_parameter_f = __memo_scope.param(0, f);
     if (__memo_scope.unchanged) {
@@ -110,8 +110,8 @@ function bar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, f?:
         return;
     }
 }
-function par(f?: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
-function kar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() f?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+@functions.OptionalParametersAnnotation({minArgCount:0}) function par(f?: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
+@functions.OptionalParametersAnnotation({minArgCount:0}) function kar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() f?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
     const __memo_parameter_f = __memo_scope.param(0, f);
     if (__memo_scope.unchanged) {
@@ -124,7 +124,7 @@ function kar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @me
     }
 }
 class A {
-    public foo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, p?: (()=> void)): void {
+    @functions.OptionalParametersAnnotation({minArgCount:0}) public foo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, p?: (()=> void)): void {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_p = __memo_scope.param(0, p);
         if (__memo_scope.unchanged) {
@@ -136,8 +136,8 @@ class A {
             return;
         }
     }
-    public goo(@memo() p?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
-    public koo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() p?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+    @functions.OptionalParametersAnnotation({minArgCount:0}) public goo(@memo() p?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
+    @functions.OptionalParametersAnnotation({minArgCount:0}) public koo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() p?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_p = __memo_scope.param(0, p);
         if (__memo_scope.unchanged) {

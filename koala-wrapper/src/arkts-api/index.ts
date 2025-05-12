@@ -59,6 +59,7 @@ export * from "../generated/peers/BlockExpression"
 export * from "../generated/peers/TSClassImplements"
 export * from "../generated/peers/BooleanLiteral"
 export * from "../generated/peers/TSArrayType"
+export * from "../generated/peers/ArrayExpression";
 
 export * from "./types"
 export * from "./utilities/private"

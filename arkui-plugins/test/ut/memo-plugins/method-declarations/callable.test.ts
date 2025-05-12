@@ -74,7 +74,7 @@ class A {
     public constructor() {}
 }
 class B {
-    public static $_invoke(@memo() p?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
+    @functions.OptionalParametersAnnotation({minArgCount:0}) public static $_invoke(@memo() p?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
     public constructor() {}
 }
 class C {
@@ -89,7 +89,7 @@ class C {
     public constructor() {}
 }
 class D {
-    public static $_instantiate(factory: (()=> D), @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): D {
+    @functions.OptionalParametersAnnotation({minArgCount:1}) public static $_instantiate(factory: (()=> D), @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): D {
         return factory();
     }
     public constructor() {}
