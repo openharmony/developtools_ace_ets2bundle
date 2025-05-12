@@ -210,7 +210,7 @@ export class LogData {
     description: string,
     cause: string = '',
     position: string = '',
-    solutions: string[] = [ArkTSInternalErrorSolution]
+    solutions: string[] = []
   ) {
     this.code = code;
     this.description = description;
