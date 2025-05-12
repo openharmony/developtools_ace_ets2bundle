@@ -32,6 +32,7 @@ import {
   cleanUpAsyncEvents,
   CompileEvent
 } from '../../performance';
+import { BytecodeObfuscator } from './bytecode_obfuscator';
 
 export function genAbc() {
   return {
@@ -80,6 +81,7 @@ export function genAbc() {
       cleanSharedModuleSet();
       CommonLogger.destroyInstance();
       cleanUpAsyncEvents();
+      BytecodeObfuscator.cleanBcObfuscatorObject();
     }
   };
 }
