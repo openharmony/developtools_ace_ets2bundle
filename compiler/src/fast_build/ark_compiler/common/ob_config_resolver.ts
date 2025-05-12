@@ -70,6 +70,7 @@ import {
   createAndStartEvent,
   stopEvent
 } from '../../../performance';
+import { BytecodeObfuscator } from '../bytecode_obfuscator';
 
 export {
   collectResevedFileNameInIDEConfig, // For running unit test.
@@ -193,6 +194,9 @@ export function handleKeepFilesAndGetDependencies(mergedObConfig: MergedConfig, 
   const excludePaths = mergedObConfig.excludePathSet;
   let allKeepFiles: Set<string> = collectAllKeepFiles(keepPaths, excludePaths);
   arkObfuscator.setKeepSourceOfPaths(allKeepFiles);
+  if (BytecodeObfuscator.enable) {
+    BytecodeObfuscator.getInstance().setKeepSourceOfPaths(allKeepFiles);
+  }
   const keepFilesAndDependencies: Set<string> = getFileNamesForScanningWhitelist(mergedObConfig, allKeepFiles, projectConfig);
   sourceFileDependencies.clear();
   return keepFilesAndDependencies;
@@ -380,6 +384,9 @@ export function obfuscationPreprocess(
     );
 
     updateIncrementalCaches(sourceProjectConfig.arkObfuscator);
+    if (BytecodeObfuscator.enable) {
+      BytecodeObfuscator.getInstance().removeStructProp();
+    }
     ProjectCollections.clearProjectWhiteListManager();
   }
 }
