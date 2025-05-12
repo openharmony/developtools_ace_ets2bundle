@@ -40,6 +40,7 @@ const expectedScript: string = `
 import { __memo_id_type as __memo_id_type } from "@ohos.arkui.stateManagement";
 import { __memo_context_type as __memo_context_type } from "@ohos.arkui.stateManagement";
 import { memo as memo } from "@ohos.arkui.stateManagement";
+import { UIImageAnimatorAttribute as UIImageAnimatorAttribute } from "@ohos.arkui.component";
 import { UISelectAttribute as UISelectAttribute } from "@ohos.arkui.component";
 import { UITextInputAttribute as UITextInputAttribute } from "@ohos.arkui.component";
 import { UIImageAttribute as UIImageAttribute } from "@ohos.arkui.component";
@@ -48,7 +49,7 @@ import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
 import { _rawfile as _rawfile } from "@ohos.arkui.component";
 import { _r as _r } from "@ohos.arkui.component";
 import { CustomComponent as CustomComponent } from "@ohos.arkui.component";
-import { Component as Component, $r as $r, $rawfile as $rawfile, Column as Column, Text as Text, Image as Image, TextInput as TextInput, Select as Select, SelectOption as SelectOption, Margin as Margin } from "@ohos.arkui.component";
+import { Component as Component, $r as $r, $rawfile as $rawfile, Column as Column, Text as Text, Image as Image, TextInput as TextInput, Select as Select, SelectOption as SelectOption, Margin as Margin, ImageAnimator as ImageAnimator } from "@ohos.arkui.component";
 
 function main() {}
 
@@ -104,6 +105,14 @@ function main() {}
         } as Margin));
         return;
       }), _r("", "", "app.media.app_icon"), undefined, undefined);
+      ImageAnimator(@memo() ((instance: UIImageAnimatorAttribute): void => {
+        instance.images([{
+          src: _r("", "", "app.media.aaa"),
+        }, {
+          src: _r("", "", "app.media.bbb"),
+        }]);
+        return;
+      }), undefined);
     }));
   }
   public constructor() {}

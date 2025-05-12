@@ -30,7 +30,7 @@ const pluginTester = new PluginTester('test memo function', buildConfig);
 const expectedScript: string = `
 import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"@ohos.arkui.stateManagement\";
 function main() {}
-function memo_arg_call(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1: number, arg2: ((x: number)=> number), @memo() arg3: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, x: number)=> number), arg4?: ((x: number)=> number), @memo() arg5?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, x: number)=> number)): void {
+@functions.OptionalParametersAnnotation({minArgCount:3}) function memo_arg_call(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1: number, arg2: ((x: number)=> number), @memo() arg3: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, x: number)=> number), arg4?: ((x: number)=> number), @memo() arg5?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, x: number)=> number)): void {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 5);
     const __memo_parameter_arg1 = __memo_scope.param(0, arg1), __memo_parameter_arg2 = __memo_scope.param(1, arg2), __memo_parameter_arg3 = __memo_scope.param(2, arg3), __memo_parameter_arg4 = __memo_scope.param(3, arg4), __memo_parameter_arg5 = __memo_scope.param(4, arg5);
     if (__memo_scope.unchanged) {
@@ -48,7 +48,7 @@ function memo_arg_call(__memo_context: __memo_context_type, __memo_id: __memo_id
         return;
     }
 }
-function memo_arg_call_with_lowering(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1: number, arg4?: ((x: number)=> number), @memo() arg5?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, x: number)=> number)): void {
+@functions.OptionalParametersAnnotation({minArgCount:1}) function memo_arg_call_with_lowering(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1: number, arg4?: ((x: number)=> number), @memo() arg5?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, x: number)=> number)): void {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 3);
     const __memo_parameter_arg1 = __memo_scope.param(0, arg1), __memo_parameter_arg4 = __memo_scope.param(1, arg4), __memo_parameter_arg5 = __memo_scope.param(2, arg5);
     if (__memo_scope.unchanged) {
@@ -68,7 +68,7 @@ function memo_arg_call_with_lowering(__memo_context: __memo_context_type, __memo
         return;
     }
 }
-function args_with_default_values(__memo_context: __memo_context_type, __memo_id: __memo_id_type, gensym%%_<some_random_number>?: int, @memo() gensym%%_<some_random_number>?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> int), gensym%%_<some_random_number>?: int, arg4?: int): void {
+@functions.OptionalParametersAnnotation({minArgCount:0}) function args_with_default_values(__memo_context: __memo_context_type, __memo_id: __memo_id_type, gensym%%_<some_random_number>?: int, @memo() gensym%%_<some_random_number>?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> int), gensym%%_<some_random_number>?: int, arg4?: int): void {
     let arg1: int = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : (10 as int));
     let arg2: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> int) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : (((__memo_context: __memo_context_type, __memo_id: __memo_id_type): int => {
         const __memo_scope = __memo_context.scope<int>(((__memo_id) + (<some_random_number>)), 0);
