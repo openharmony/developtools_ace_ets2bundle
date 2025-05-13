@@ -66,7 +66,7 @@ export function getHookEventFactory(share: Object, pluginName: string, hookName:
 
 export function createAndStartEvent(eventOrEventFactory: CompileEvent | undefined, eventName: string,
   isAsyncEvent = false): CompileEvent | undefined {
-  if (eventOrEventFactory === undefined) {
+  if (eventOrEventFactory === undefined || eventOrEventFactory === null) {
     return undefined;
   }
   let event: CompileEvent;
@@ -88,7 +88,7 @@ function isSubEvent(event: CompileEvent): boolean {
 }
 
 export function stopEvent(event: CompileEvent | undefined, isAsyncEvent: boolean = false): void {
-  if (event === undefined) {
+  if (event === undefined || event === null) {
     return;
   }
   if (isAsyncEvent) {
