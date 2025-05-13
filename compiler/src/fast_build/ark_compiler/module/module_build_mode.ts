@@ -39,6 +39,7 @@ export class ModuleBuildMode extends ModuleMode {
   }
 
   generateAbc(rollupObject: Object, parentEvent: CompileEvent): void {
+    this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
     this.prepareForCompilation(rollupObject, parentEvent);
     SourceMapGenerator.getInstance().buildModuleSourceMapInfo(parentEvent);
     this.executeArkCompiler(parentEvent);
