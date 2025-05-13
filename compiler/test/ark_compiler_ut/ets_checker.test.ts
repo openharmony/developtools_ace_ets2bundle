@@ -274,9 +274,9 @@ mocha.describe('test ets_checker file api', function () {
 
     mocha.it('2-3: test resolveModuleNames parse the 1.2 module declaration file that the 1.1 module depends on', function () {
         const moduleNames: string[] = ['testhar/src/main/ets/test'];
-        arkTSEvolutionModuleMap.set('har', {
+        arkTSEvolutionModuleMap.set('testharPkg', {
             language: '1.2',
-            packageName: 'testhar',
+            packageName: 'testharPkg',
             moduleName: 'testhar',
             modulePath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/testhar`,
             declgenV1OutPath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/testhar/build/default/intermediates/declgen/default/declgenV1`,
@@ -284,7 +284,7 @@ mocha.describe('test ets_checker file api', function () {
         })
         const filePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/${DEFAULT_ENTRY}/src/main/entryability/test.ets`;
         const arktsEvoTestFilePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/testhar/src/main/ets/test.ets`;
-        const arktsEvoTestDeclFilePath: string = `${arkTSEvolutionModuleMap.get('har').declgenV1OutPath}/testhar/src/main/ets/test.d.ets`;
+        const arktsEvoTestDeclFilePath: string = `${arkTSEvolutionModuleMap.get('testharPkg').declgenV1OutPath}/testharPkg/src/main/ets/test.d.ets`;
         const resolveModuleNameStub = sinon.stub(ts, 'resolveModuleName').returns({
             resolvedModule: {
                 resolvedFileName: arktsEvoTestFilePath,
