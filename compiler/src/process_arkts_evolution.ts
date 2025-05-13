@@ -20,6 +20,7 @@ import ts from 'typescript';
 import {
   EXTNAME_ETS,
   EXTNAME_D_ETS,
+  ARKTS_1_0,
   ARKTS_1_1,
   ARKTS_1_2
 } from './pre_define';
@@ -139,7 +140,7 @@ export function collectArkTSEvolutionModuleInfo(share: Object): void {
         share.throwArkTsCompilerError(red, 'ArkTS:INTERNAL ERROR: Failed to collect arkTs evolution module info.\n' +
           `Error Message: Failed to collect arkTs evolution module "${pkgName}" info from rollup.`, reset);
       }
-    } else if (dependentModuleInfo.language === ARKTS_1_1) {
+    } else if (dependentModuleInfo.language === ARKTS_1_1 || dependentModuleInfo.language === ARKTS_1_0) {
       if (dependentModuleInfo.declgenV2OutPath && dependentModuleInfo.declFilesPath) {
         arkTSModuleMap.set(pkgName, dependentModuleInfo);
       } else {

@@ -41,8 +41,8 @@ import {
  * @returns erro.toString()
  */
 export function run(cachePathList: string[], targetCachePath: string, aceModuleBuild: string): void {
-  if (!cachePathList || cachePathList.length == 0) {
-    return
+  if (!cachePathList || cachePathList.length === 0) {
+    return;
   }
   mergeCacheData(cachePathList, targetCachePath, FILESINFO_TXT);
   mergeCacheData(cachePathList, targetCachePath, MODULES_CACHE);
@@ -57,20 +57,27 @@ export function run(cachePathList: string[], targetCachePath: string, aceModuleB
 export function mergeCacheData(cachePathList: string[], targetCachePath: string, fileName: string): void {
   const dataSet: Set<string> = new Set<string>();
   cachePathList.forEach(cachePath => {
-    const inputFilePath: string = path.join(cachePath, fileName);
-    if (fs.existsSync(inputFilePath)) {
-      const fileData: string = fs.readFileSync(inputFilePath).toString();
-      fileData.split('\n').forEach(data => {
-        //eat blank line
-        if (data) {
-          dataSet.add(data);
-        }
-      });
-    }
+    processCachePath(cachePath, fileName, dataSet);
   });
 
   const outputFilePath: string = path.join(targetCachePath, fileName);
   fs.writeFileSync(outputFilePath, Array.from(dataSet).join('\n'));
+}
+
+function processCachePath(cachePath: string, fileName: string, dataSet: Set<string>): void {
+  const inputFilePath = path.join(cachePath, fileName);
+  if (!fs.existsSync(inputFilePath)) {
+    return;
+  }
+
+  const fileData = fs.readFileSync(inputFilePath).toString();
+  const lines = fileData.split('\n');
+
+  for (const data of lines) {
+    if (data) {
+      dataSet.add(data);
+    }
+  }
 }
 
 function execCmd(cmd: string[]): string {
@@ -85,9 +92,9 @@ function execCmd(cmd: string[]): string {
   }
 }
 
-export function updateCmd(cmd: string[], targetCachePath: string, aceModuleBuild: string) {
+export function updateCmd(cmd: string[], targetCachePath: string, aceModuleBuild: string): void {
   for (let i = 0; i < cmd.length; i++) {
-    if (cmd[i].indexOf("filesInfo.txt") != -1) {
+    if (cmd[i].indexOf('filesInfo.txt') !== -1) {
       const filesInfoPath: string = path.join(targetCachePath, FILESINFO_TXT);
       cmd[i] = `"@${filesInfoPath}"`;
       continue;
@@ -126,7 +133,7 @@ function deepMerge(target: Object, source: Object): Object {
   return target;
 }
 
-export function mergeCompileContextInfo(cachePathList: string[], targetCachePath: string) {
+export function mergeCompileContextInfo(cachePathList: string[], targetCachePath: string): void {
   const mergedData = {
     hspPkgNames: [],
     compileEntries: [],
@@ -150,7 +157,7 @@ export function mergeCompileContextInfo(cachePathList: string[], targetCachePath
   fs.writeFileSync(targetPath, JSON.stringify(mergedData, null, 2));
 }
 
-export function mergeSourceMap(cachePathList: string[], targetCachePath: string) {
+export function mergeSourceMap(cachePathList: string[], targetCachePath: string): void {
   const mergedMap: Record<string, any> = {};
   cachePathList.forEach((item) => {
     /**

@@ -29,7 +29,7 @@ import {
   emitBuildInfo,
   runArkTSLinter,
   targetESVersionChanged,
-  collectFileToIgnoreDiagnostics
+  collectFileToIgnoreDiagnostics,
   TSC_SYSTEM_CODE,
   traverseProgramSourceFiles,
   arkTsEvolutionModuleMap,

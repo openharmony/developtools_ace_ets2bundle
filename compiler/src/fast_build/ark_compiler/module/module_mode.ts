@@ -109,7 +109,8 @@ import {
   addDeclFilesConfig,
   ArkTSEvolutionModule,
   getDeclgenBridgeCodePath,
-  pkgDeclFilesConfig
+  pkgDeclFilesConfig,
+  arkTSModuleMap
 } from '../../../process_arkts_evolution';
 import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../../meomry_monitor/memory_define';
@@ -528,7 +529,7 @@ export class ModuleMode extends CommonMode {
 
     let moduleName: string = metaInfo.moduleName;
     let recordName: string = '';
-    let cacheFilePath: string =  metaInfo.language === ARKTS_1_2 ? originalFilePath :
+    let cacheFilePath: string = metaInfo.language === ARKTS_1_2 ? originalFilePath :
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath, metaInfo);
     let packageName: string = '';
 

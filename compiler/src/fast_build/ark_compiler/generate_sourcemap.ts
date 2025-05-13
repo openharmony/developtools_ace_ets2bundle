@@ -72,6 +72,7 @@ export class SourceMapGenerator {
   private sourceMapPath: string;
   private sourceMapPathTmp: string;
   private cacheSourceMapPath: string;
+  private sourceMapForMergePath: string;
   private triggerAsync: Object;
   private triggerEndSignal: Object;
   private sourceMaps: Object = {};
@@ -91,6 +92,7 @@ export class SourceMapGenerator {
     this.sourceMapPath = this.getSourceMapSavePath();
     this.sourceMapPathTmp = path.join(this.projectConfig.cachePath, SOURCEMAPS_JSON + '.tmp');
     this.cacheSourceMapPath = path.join(this.projectConfig.cachePath, SOURCEMAPS_JSON);
+    this.sourceMapForMergePath = this.cacheSourceMapPath + '.merge';
     this.triggerAsync = rollupObject.async;
     this.triggerEndSignal = rollupObject.signal;
     this.logger = CommonLogger.getInstance(rollupObject);
@@ -340,6 +342,12 @@ export class SourceMapGenerator {
       this.writeTemp('');
     }
     this.closeFd();
+    if (fs.existsSync(this.sourceMapForMergePath)) {
+      fs.unlinkSync(this.sourceMapForMergePath);
+    }
+    if (fs.existsSync(this.sourceMapPath)) {
+      fs.copyFileSync(this.sourceMapPath, this.sourceMapForMergePath);
+    }
     if (fs.existsSync(this.cacheSourceMapPath)) {
       fs.unlinkSync(this.cacheSourceMapPath);
     }
@@ -438,6 +446,12 @@ export class SourceMapGenerator {
           this.logger.printErrorAndExit(errInfo);
         }
         fs.copyFileSync(this.sourceMapPath, this.cacheSourceMapPath);
+        if (fs.existsSync(this.sourceMapForMergePath)) {
+          fs.unlinkSync(this.sourceMapForMergePath);
+        }
+        if (fs.existsSync(this.sourceMapPath)) {
+          fs.copyFileSync(this.sourceMapPath, this.sourceMapForMergePath);
+        }
         stopEvent(eventWriteFile, true);
         this.triggerEndSignal();
       });

@@ -283,7 +283,7 @@ function getPackageJsonEntryPath() {
   const rootPackageJsonPath =
     candidatePaths.find(fs.existsSync) ??
     (() => {
-      throw new Error('package.json not found in ../../../ or ../../');
+      throw new Error('package.json not found');
     })();
   if (fs.existsSync(rootPackageJsonPath)) {
     let rootPackageJsonContent;
