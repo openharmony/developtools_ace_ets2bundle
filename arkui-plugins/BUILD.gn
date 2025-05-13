@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
+import("//build/config/components/ets_frontend/ets2abc_config.gni")
 
 npm_path = "//prebuilts/build-tools/common/nodejs/current/bin/npm"
 
@@ -38,6 +39,14 @@ ohos_copy("ui_plugin") {
   outputs = [ target_out_dir + "/$target_name" ]
   module_source_dir = target_out_dir + "/$target_name"
   module_install_name = ""
+  subsystem_name = "developtools"
+  part_name = "ace_ets2bundle"
+}
+
+ohos_copy("ohos_ets_ui_plugins") {
+  deps = [ ":gen_ui_plugins" ]
+  sources = [ rebase_path("$target_gen_dir") ]
+  outputs = [ ohos_ets_ui_plugins_path ]
   subsystem_name = "developtools"
   part_name = "ace_ets2bundle"
 }
