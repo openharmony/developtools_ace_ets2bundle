@@ -35,7 +35,10 @@ import {
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
-  setChecker
+  setChecker,
+  startTimeStatisticsLocation,
+  stopTimeStatisticsLocation,
+  CompilationTimeStatistics
 } from '../../utils';
 import {
   configureSyscapInfo,
@@ -43,14 +46,6 @@ import {
 } from '../system_api/api_check_utils';
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../meomry_monitor/memory_define';
-import {
-  CompileEvent,
-  createAndStartEvent,
-  stopEvent,
-  getHookEventFactory,
-  processExternalEvents,
-  ExternalEventType
-} from '../../performance';
 import { LINTER_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info';
 import { ErrorCodeModule } from '../../hvigor_error_code/const/error_code_module';
 
@@ -63,8 +58,7 @@ export function etsChecker() {
     name: 'etsChecker',
     buildStart() {
       const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ROLLUP_PLUGIN_BUILD_START);
-      const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsChecker', 'buildStart');
-      const eventServiceChecker = createAndStartEvent(hookEventFactory, 'serviceChecker');
+      const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsChecker', 'buildStart');
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
         tsWatchEndPromise = new Promise<void>(resolve => {
@@ -108,8 +102,8 @@ export function etsChecker() {
         resolveModulePaths.push(...this.share.projectConfig.resolveModulePaths);
       }
       if (process.env.watchMode === 'true') {
-        !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker, this.share);
-        ts.PerformanceDotting.startAdvanced('diagnostic');
+        !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, compilationTime, this.share);
+        startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
         if (executedOnce) {
           const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
           timePrinterInstance.setArkTSTimePrintSwitch(false);
@@ -129,7 +123,7 @@ export function etsChecker() {
         const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
           .getSyntacticDiagnostics()
           .concat(globalProgram.builderProgram.getSemanticDiagnostics());
-        ts.PerformanceDotting.stopAdvanced('diagnostic');
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
         emitBuildInfo();
         let errorCodeLogger: Object | undefined = this.share?.getHvigorConsoleLogger ?
           this.share?.getHvigorConsoleLogger(TSC_SYSTEM_CODE) : undefined;
@@ -140,12 +134,10 @@ export function etsChecker() {
         fastBuildLogger.debug(TS_WATCH_END_MSG);
         tsWatchEmitter.emit(TS_WATCH_END_MSG);
       } else {
-        serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker, this.share);
+        serviceChecker(rootFileNames, logger, resolveModulePaths, compilationTime, this.share);
       }
       setChecker();
       MemoryMonitor.stopRecordStage(recordInfo);
-      processExternalEvents(projectConfig, ExternalEventType.TSC, {parentEvent: eventServiceChecker, filePath: ''});
-      stopEvent(eventServiceChecker);
     },
     shouldInvalidCache(): boolean {
       // The generated js file might be different in some cases when we change the targetESVersion,
