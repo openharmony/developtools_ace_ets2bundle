@@ -91,6 +91,9 @@ import {
   getPossibleBuilderTypeParameter,
   storedFileInfo,
   ExtendResult,
+  startTimeStatisticsLocation,
+  stopTimeStatisticsLocation,
+  CompilationTimeStatistics,
   getStoredFileInfo,
   ProcessFileInfo,
   RouterInfo,
@@ -166,12 +169,6 @@ import {
   routerModuleType,
   routerBundleOrModule
 } from './process_module_package';
-import {
-  CompileEvent,
-  createAndStartEvent,
-  stopEvent
-} from './performance';
-
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
@@ -179,9 +176,8 @@ export const builderTypeParameter: { params: string[] } = { params: [] };
 import parseIntent from './userIntents_parser/parseUserIntents';
 
 export function processUISyntax(program: ts.Program, ut = false,
-  parentEvent?: CompileEvent, filePath: string = '', share: object = null, metaInfo: Object = {}): Function {
+  compilationTime: CompilationTimeStatistics = null, filePath: string = '', metaInfo: Object = {}): Function {
   let entryNodeKey: ts.Expression;
-  let eventProcessUISyntax: CompileEvent = undefined;
   return (context: ts.TransformationContext) => {
     contextGlobal = context;
     let pagesDir: string;
@@ -190,15 +186,13 @@ export function processUISyntax(program: ts.Program, ut = false,
     let hasStruct: boolean = false;
     let StateManagementV2: { hasReusableV2: boolean } = { hasReusableV2: false };
     return (node: ts.SourceFile) => {
-      eventProcessUISyntax = createAndStartEvent(parentEvent, 'processUISyntax');
+      startTimeStatisticsLocation(compilationTime ? compilationTime.processUISyntaxTime : undefined);
       pagesDir = path.resolve(path.dirname(node.fileName));
       resourceFileName = path.resolve(node.fileName);
       pageFile = path.resolve(filePath !== '' ? filePath : node.fileName);
       if (process.env.compiler === BUILD_ON || process.env.compileTool === 'rollup') {
-        const fileHash = share?.getHashByFilePath ? share?.getHashByFilePath(pageFile) : '';
         storedFileInfo.transformCacheFiles[pageFile] = {
           mtimeMs: fs.existsSync(pageFile) ? fs.statSync(pageFile).mtimeMs : 0,
-          hash: fileHash,
           children: []
         };
         transformLog.sourceFile = node;
@@ -216,7 +210,7 @@ export function processUISyntax(program: ts.Program, ut = false,
             }
           }
           const visitEachChildNode: ts.SourceFile = ts.visitEachChild(node, visitor, context);
-          stopEvent(eventProcessUISyntax);
+          stopTimeStatisticsLocation(compilationTime ? compilationTime.processUISyntaxTime : undefined);
           return visitEachChildNode;
         }
         const id: number = ++componentInfo.id;
@@ -256,10 +250,10 @@ export function processUISyntax(program: ts.Program, ut = false,
           }
         }
         const visitEachChildNode: ts.SourceFile = ts.visitEachChild(node, visitor, context);
-        stopEvent(eventProcessUISyntax);
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.processUISyntaxTime : undefined);
         return visitEachChildNode;
       } else {
-        stopEvent(eventProcessUISyntax);
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.processUISyntaxTime : undefined);
         return node;
       }
     };
@@ -291,9 +285,9 @@ export function processUISyntax(program: ts.Program, ut = false,
     function processAllNodes(node: ts.Node): ts.Node {
       if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
         ts.isImportDeclaration(node)) {
-        const eventProcessImport = createAndStartEvent(eventProcessUISyntax, 'processImport');
-        processImportModule(node, pageFile, transformLog.errors, share);
-        stopEvent(eventProcessImport);
+        startTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
+        processImportModule(node, pageFile, transformLog.errors);
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
       } else if ((projectConfig.compileMode !== 'esmodule' || process.env.compileTool !== 'rollup') &&
         (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
         ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier))) {
@@ -304,11 +298,11 @@ export function processUISyntax(program: ts.Program, ut = false,
         hasStruct = true;
         componentCollection.currentClassName = node.name.getText();
         componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);
-        const eventProcessComponentClass = createAndStartEvent(eventProcessUISyntax, 'processComponentClass');
+        startTimeStatisticsLocation(compilationTime ? compilationTime.processComponentClassTime : undefined);
         node = processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName).isComponentV2 ?
           processStructComponentV2.processStructComponentV2(node, transformLog.errors, context, StateManagementV2) :
           processComponentClass(node, context, transformLog.errors, program);
-        stopEvent(eventProcessComponentClass);
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.processComponentClassTime : undefined);
         componentCollection.currentClassName = null;
         INNER_STYLE_FUNCTION.forEach((block, styleName) => {
           BUILDIN_STYLE_NAMES.delete(styleName);

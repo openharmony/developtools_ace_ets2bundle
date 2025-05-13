@@ -19,7 +19,10 @@ import path from 'path';
 
 import {
   IFileLog,
-  LogType
+  LogType,
+  startTimeStatisticsLocation,
+  stopTimeStatisticsLocation,
+  CompilationTimeStatistics
 } from './utils';
 import { projectConfig } from '../main';
 import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source_file';
@@ -35,11 +38,6 @@ import {
 import createAstNodeUtils from './create_ast_node_utils';
 import { MemoryMonitor } from './fast_build/meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from './fast_build/meomry_monitor/memory_define';
-import {
-  CompileEvent,
-  createAndStartEvent,
-  stopEvent
-} from './performance';
 import { 
   ArkTSErrorDescription, 
   ErrorCode
@@ -75,7 +73,7 @@ const KEEPTS = '// @keepTs';
 *      import ErrorCode from '@ohos.ability.errorCode'
 *    ```
 */
-export function processKitImport(id: string, metaInfo: Object, parentEvent: CompileEvent,
+export function processKitImport(id: string, metaInfo: Object, compilationTime: CompilationTimeStatistics,
   shouldReturnOriginalNode: boolean = true,
   lazyImportOptions: LazyImportOptions = { autoLazyImport: false, reExportCheckMode: reExportNoCheckMode }): Function {
   const { autoLazyImport, reExportCheckMode } = lazyImportOptions;
@@ -113,7 +111,7 @@ export function processKitImport(id: string, metaInfo: Object, parentEvent: Comp
     };
 
     return (node: ts.SourceFile) => {
-      const eventProcessKitImport = createAndStartEvent(parentEvent, 'processKitImport');
+      startTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
       const newSourceFileRecordInfo = MemoryMonitor.recordStage(MemoryDefine.NEW_SOURCE_FILE);
       compilingEtsOrTsFiles.push(path.normalize(node.fileName));
 
@@ -134,7 +132,7 @@ export function processKitImport(id: string, metaInfo: Object, parentEvent: Comp
           const processedNode: ts.SourceFile =
             ts.visitEachChild(node, visitor, context); // this node used for [writeFile]
           MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);
-          stopEvent(eventProcessKitImport);
+          stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
           // this processNode is used to convert ets/ts to js intermediate products
           return processedNode;
         }
@@ -147,13 +145,13 @@ export function processKitImport(id: string, metaInfo: Object, parentEvent: Comp
         lazyImportReExportCheck(processedNode, reExportCheckMode);
         ModuleSourceFile.newSourceFile(id, processedNode, metaInfo, projectConfig.singleFileEmit);
         MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);
-        stopEvent(eventProcessKitImport);
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
         return shouldReturnOriginalNode ? node : processedNode; // this node not used for [writeFile]
       }
       // process KitImport transforming
       const processedNode: ts.SourceFile = ts.visitEachChild(node, visitor, context);
       MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);
-      stopEvent(eventProcessKitImport);
+      stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
       return processedNode;
     };
   };
