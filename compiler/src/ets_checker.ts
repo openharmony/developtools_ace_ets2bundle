@@ -1140,7 +1140,7 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           // When result has a value and the path parsed is the source code file path of module 1.2,
           // the parsing result needs to be modified to the glue code path of module 1.2
           let arktsEvoDeclFilePathExist: boolean = false;
-          const resolvedFileName: string  = toUnixPath(result.resolvedModule.resolvedFileName);
+          const resolvedFileName: string = toUnixPath(result.resolvedModule.resolvedFileName);
           const resultDETSPath: string = getArkTSEvoDeclFilePath({ moduleRequest: '', resolvedFileName });
           if (ts.sys.fileExists(resultDETSPath)) {
             resolvedModules.push(getResolveModule(resultDETSPath, EXTNAME_D_ETS));
@@ -1900,7 +1900,7 @@ export function resetEtsCheck(): void {
   maxMemoryInServiceChecker = 0;
 }
 
-export function generateDeclarationFileForSTS(rootFileNames: string[]) {
+export function generateDeclarationFileForSTS(rootFileNames: string[]): void {
   if (!(projectConfig.compileHar || projectConfig.compileShared)) {
     return;
   }
@@ -1932,5 +1932,4 @@ export function generateDeclarationFileForSTS(rootFileNames: string[]) {
   }
   fs.mkdirSync(config.outDir, { recursive: true });
   generateInteropDecls(config);
-  processInteropUI(projectConfig.dependentModuleMap?.get(projectConfig.entryPackageName)?.declgenV2OutPath);
 }

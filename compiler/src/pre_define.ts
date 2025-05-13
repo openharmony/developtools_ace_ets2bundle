@@ -669,3 +669,4 @@ export const INTEGRATED_HSP: string = 'integratedHsp';
 
 export const ARKTS_1_2: string = '1.2';
 export const ARKTS_1_1: string = '1.1';
+export const ARKTS_1_0: string = '1.0';
