@@ -39,7 +39,7 @@ import {
 	resetGlobalProgram, 
 	resetMain, 
 	resources 
-} from '../../../../../yzhmaster/developtools_ace_ets2bundle/compiler/main';
+} from '../../main';
 import { 
 	etsChecker 
 } from '../../lib/fast_build/ets_ui/rollup-plugin-ets-checker';
@@ -49,11 +49,11 @@ import {
 import processStructComponentV2 from '../../lib/process_struct_componentV2';
 import { 
 	RollUpPluginMock 
-} from '../../../../../yzhmaster/developtools_ace_ets2bundle/compiler/test/transform_ut/helpers/mockRollupContext';
+} from './helpers/mockRollupContext';
 import { 
 	PartialUpdateConfig, 
 	ProjectConfig 
-} from '../../../../../yzhmaster/developtools_ace_ets2bundle/compiler/test/transform_ut/helpers/projectConfig';
+} from './helpers/projectConfig';
 import { 
 	CACHE_PATH,
 	UT_PAGES 
@@ -61,7 +61,7 @@ import {
 import { 
 	parseCode, 
 	sourceReplace 
-} from '../../../../../yzhmaster/developtools_ace_ets2bundle/compiler/test/transform_ut/helpers/parser';
+} from './helpers/parser';
 
 const PROJECT_ROOT: string = path.resolve(__dirname, '../../test/transform_ut');
 const DEFAULT_PROJECT: string = 'application';
