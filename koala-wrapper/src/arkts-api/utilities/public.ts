@@ -45,13 +45,20 @@ import { MemberExpression } from '../to-be-generated/MemberExpression';
 
 export function proceedToState(state: Es2pandaContextState, forceDtsEmit = false): void {
     console.log('[TS WRAPPER] PROCEED TO STATE: ', getEnumName(Es2pandaContextState, state));
+    if (global.es2panda._ContextState(global.context) === Es2pandaContextState.ES2PANDA_STATE_ERROR) {
+        processErrorState(state, forceDtsEmit);
+    }
     if (state <= global.es2panda._ContextState(global.context)) {
         console.log('[TS WRAPPER] PROCEED TO STATE: SKIPPING');
         return;
     }
     clearNodeCache();
+    global.es2panda._ProceedToState(global.context, state);
+    processErrorState(state, forceDtsEmit);
+}
+
+function processErrorState(state: Es2pandaContextState, forceDtsEmit = false): void {
     try {
-        global.es2panda._ProceedToState(global.context, state);
         if (
             global.es2panda._ContextState(global.context) === Es2pandaContextState.ES2PANDA_STATE_ERROR &&
             !forceDtsEmit
