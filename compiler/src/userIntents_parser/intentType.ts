@@ -108,15 +108,15 @@ export class ParamChecker<T> {
 }
 
 function validateRequiredString(v: ts.Expression): boolean {
-  return v !== null && ts.isStringLiteral(v) && v.text.trim() !== '';
+  return v !== undefined && v !== null && ts.isStringLiteral(v) && v.text.trim() !== '';
 }
 
 function validateOptionalString(v: ts.Expression): boolean {
-  return v !== null && ts.isStringLiteral(v);
+  return v !== undefined && v !== null && ts.isStringLiteral(v);
 }
 
 function validateIcon(v: ts.Expression): boolean {
-  return ts.isCallExpression(v) && v.expression.getText() === '$r';
+  return v !== undefined && v !== null && ((ts.isCallExpression(v) && v.expression.getText() === '$r') || ts.isStringLiteral(v));
 }
 
 function validateParameters(v: ts.Expression): boolean {
@@ -131,6 +131,9 @@ function validateParameters(v: ts.Expression): boolean {
 }
 
 function validateKeywords(v: ts.Expression): boolean {
+  if (v === undefined || v === null) {
+    return false;
+  }
   if (!ts.isArrayLiteralExpression(v)) {
     return false;
   }
@@ -138,7 +141,7 @@ function validateKeywords(v: ts.Expression): boolean {
     const element = ts.isIdentifier(ele) ?
       parseIntent.checker.getSymbolAtLocation(ele)?.valueDeclaration?.initializer :
       ele;
-    return ts.isStringLiteral(element) || ts.isNoSubstitutionTemplateLiteral(element);
+    return element !== undefined && (ts.isStringLiteral(element) || ts.isNoSubstitutionTemplateLiteral(element));
   });
 }
 
@@ -165,7 +168,27 @@ IntentLinkInfoChecker.allowFields = new Set<keyof IntentLinkInfo>([
 ]);
 IntentLinkInfoChecker.paramValidators = {
   parameters: validateParameters,
-  paramMappings: validateOptionalString,
+  paramMappings: (v: ts.Expression): boolean => {
+    if (v === null || v === undefined) {
+      return false;
+    }
+    if (!ts.isArrayLiteralExpression(v)) {
+      return false;
+    }
+    return v.elements.every(element => {
+      if (element.kind === ts.SyntaxKind.NullKeyword) {
+        return false;
+      }
+      if (element.kind === ts.SyntaxKind.UndefinedKeyword) {
+        return false;
+      }
+      if (ts.isIdentifier(element) && element.text === 'undefined') {
+        return false;
+      }
+      return true;
+    }
+    );
+  },
   keywords: validateKeywords,
   intentName: validateRequiredString,
   domain: validateRequiredString,
@@ -192,7 +215,7 @@ intentEntryInfoChecker.paramValidators = {
   displayName: validateRequiredString,
   domain: validateRequiredString,
   executeMode(v: ts.Expression): boolean {
-    return ts.isArrayLiteralExpression(v) &&
+    return v !== undefined && v !== null && ts.isArrayLiteralExpression(v) &&
       v.elements.every(e => {
         const validModes = [
           'insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND',
@@ -207,7 +230,7 @@ intentEntryInfoChecker.paramValidators = {
   intentVersion: validateRequiredString,
   llmDescription: validateOptionalString
 };
-// todo 把下面的几个checker换成上面的格式！
+
 export const intentMethodInfoChecker: ParamChecker<IntentFunctionInfo> = new ParamChecker<IntentFunctionInfo>();
 intentMethodInfoChecker.requiredFields = [...BASE_REQUIRED as Array<keyof IntentFunctionInfo>];
 intentMethodInfoChecker.allowFields = new Set<keyof IntentFunctionInfo>([
