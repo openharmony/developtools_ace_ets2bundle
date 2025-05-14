@@ -1176,6 +1176,10 @@ function initMain() {
   abilityConfig.abilityType = process.env.abilityType || 'page';
 }
 
+/**
+ * due to some oh_modules is different with the original arkTs module.
+ * Some branches were not reached, causing some information to be uninitialized.
+ */
 function initMixCompileHar(projectConfig) {
   projectConfig.isRemoteModule = process.env.isRemoteModule === 'true';
   projectConfig.mixCompile = process.env.mixCompile === 'true';
@@ -1183,6 +1187,13 @@ function initMixCompileHar(projectConfig) {
     projectConfig.compileHar = true;
     process.env.compileMode = 'moduleJson';
     getPackageJsonEntryPath();
+    /**
+     * ets-loader will generate decl file from projectConfig.intentEntry which init in setIntentEntryPages.
+     * aceModuleJsonPath->ark_modules.json
+     * when compile oh_module with ets-loader, aceModuleJsonPath will be undefined.
+     * so projectConfig.intentEntry is empty.
+     */
+    setIntentEntryPages(projectConfig);
   }
 }
 
