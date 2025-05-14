@@ -94,6 +94,7 @@ export class ModuleHotreloadMode extends ModuleMode {
   }
 
   private compileAllFiles(rollupObject: Object, parentEvent: CompileEvent): void {
+    this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
     this.prepareForCompilation(rollupObject, parentEvent);
     SourceMapGenerator.getInstance().buildModuleSourceMapInfo(parentEvent);
     this.generateAbcByEs2abc(parentEvent, !!this.projectConfig.byteCodeHarInfo);
