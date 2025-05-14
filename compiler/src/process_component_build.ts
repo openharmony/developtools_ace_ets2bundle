@@ -2151,6 +2151,9 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   isStylesAttr: boolean = false, newImmutableStatements: ts.Statement[] = null,
   isStyleFunction: boolean = false, componentAttrInfo: ComponentAttrInfo = null,
   isReusableV2NodeAttr: boolean = false): void {
+  if (!node) {
+    return;
+  }
   const isStylesUIComponent: boolean = validateStylesUIComponent(node, isStylesAttr);
   let temp = node.expression;
   const statements: ts.Statement[] = [];
