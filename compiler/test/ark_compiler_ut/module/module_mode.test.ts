@@ -1023,7 +1023,7 @@ mocha.describe('test module_mode file api', function () {
     this.rollup.build();
     SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleMode(this.rollup);
-    moduleMode.prepareForCompilation(this.rollup);
+    moduleMode.collectModuleFileList(this.rollup, this.rollup.getModuleIds());
     this.rollup.share.allFiles.add(jsonFilePath);
     moduleMode.generateCompileFilesInfo(false);
 
@@ -1035,6 +1035,7 @@ mocha.describe('test module_mode file api', function () {
     expect(filesInfoLines[3].endsWith('ets')).to.be.true;
 
     SourceMapGenerator.cleanSourceMapObject();
+    this.rollup.share.allFiles.delete(jsonFilePath);
     fs.unlinkSync(jsonFilePath);
   });
 

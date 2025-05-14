@@ -307,7 +307,6 @@ export class ModuleMode extends CommonMode {
 
   prepareForCompilation(rollupObject: Object, parentEvent: CompileEvent): void {
     const eventPrepareForCompilation = createAndStartEvent(parentEvent, 'preparation for compilation');
-    this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
     this.removeCacheInfo(rollupObject);
     stopEvent(eventPrepareForCompilation);
   }
