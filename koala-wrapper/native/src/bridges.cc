@@ -304,6 +304,13 @@ KInt impl_GenerateTsDeclarationsFromContext(KNativePointer contextPtr, KStringPt
 }
 KOALA_INTEROP_4(GenerateTsDeclarationsFromContext, KInt, KNativePointer, KStringPtr, KStringPtr, KBoolean)
 
+KInt impl_GenerateStaticDeclarationsFromContext(KNativePointer contextPtr, KStringPtr &outputPath)
+{
+    auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
+    return GetImpl()->GenerateStaticDeclarationsFromContext(context, outputPath.data());
+}
+KOALA_INTEROP_2(GenerateStaticDeclarationsFromContext, KInt, KNativePointer, KStringPtr)
+
 void impl_InsertETSImportDeclarationAndParse(KNativePointer context, KNativePointer program,
                                              KNativePointer importDeclaration)
 {
