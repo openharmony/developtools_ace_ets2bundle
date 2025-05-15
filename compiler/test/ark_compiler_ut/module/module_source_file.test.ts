@@ -967,16 +967,7 @@ mocha.describe('test module_source_file file api', function () {
     expect(ModuleSourceFile.newMockConfigInfo).to.deep.equal(EXPECT_NEW_MOCK_INFO);
   });
 
-
-  mocha.it('5-5: test isMockFile under LocalTest mode', function () {
-    ModuleSourceFile.needProcessMock = true;
-    ModuleSourceFile.mockFiles = ["src/mock/ohos/I18nMock.ts"];
-    let file = this.rollup.share.projectConfig.aceModuleRoot +'/mock/ohos/I18nMock.ts';
-    expect(ModuleSourceFile.isMockFile(file, this.rollup)).to.be.true;
-    ModuleSourceFile.needProcessMock = false;
-  });
-
-  mocha.it('5-6: test generateMockConfigFile under LocalTest mode', function () {
+  mocha.it('5-5: test generateMockConfigFile under LocalTest mode', function () {
     this.rollup.share.projectConfig.isLocalTest = true;
     ModuleSourceFile.newMockConfigInfo = {
       "@ohos:i18n": {
@@ -1009,6 +1000,79 @@ mocha.describe('test module_source_file file api', function () {
     expect(EXPECT_MOCK_CONFIG_CONTENT).to.equal(ACTUAL_MOCK_CONFIG_CONTENT);
     fs.unlinkSync(this.rollup.share.projectConfig.cachePath + '/mock-config.json');
     fs.unlinkSync(this.rollup.share.projectConfig.cachePath + '/mock-config.json5');
+  });
+
+  mocha.it('5-6: test generateNewMockInfo under LocalTest mode (useNormalizedOHMUrl is true)', function () {
+    this.rollup.share.projectConfig.isLocalTest = true;
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    ModuleSourceFile.projectConfig.pkgContextInfo = {
+      'entry': {
+        'packageName': 'entry',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    ModuleSourceFile.mockConfigInfo = {
+      "@ohos.utils": {
+        "source": "src/mock/utilsMock.ts"
+      },
+    }
+    let originKey = "@ohos.utils";
+    let transKey = "@ohos:utils";
+    ModuleSourceFile.generateNewMockInfo(originKey, transKey, this.rollup, '');
+    let expectOHMUrl: string = "@normalized:N&&&entry/src/mock/utilsMock&";
+    expect(ModuleSourceFile.newMockConfigInfo[transKey].source === expectOHMUrl).to.be.true;
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
+    ModuleSourceFile.projectConfig.pkgContextInfo = {};
+  });
+
+  mocha.it('5-7: test generateNewMockInfo under LocalTest mode (has source2ModuleIdMap)', function () {
+    this.rollup.share.projectConfig.isLocalTest = true;
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    const mockFilePath = `${this.rollup.share.projectConfig.modulePath}/src/mock/utilsMock.ts`;
+    const moduleInfo = {
+      mockFilePath: {
+        meta: {
+          pkgName: 'entry',
+          pkgPath: this.rollup.share.projectConfig.modulePath
+        }
+      }
+    };
+    this.rollup.moduleInfos.push(moduleInfo);
+    this.rollup.share.projectConfig.mockParams = {
+      decorator: "@MockSetup",
+      packageName: "@ohos/hamock",
+      etsSourceRootPath: "src/main",
+      mockConfigPath: this.rollup.share.projectConfig.aceModuleRoot + '/mock/mock-config.json5',
+      source2ModuleIdMap: {
+        "src/mock/utilsMock.ts": mockFilePath
+      }
+    }
+    ModuleSourceFile.projectConfig.pkgContextInfo = {
+      'entry': {
+        'packageName': 'entry',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    ModuleSourceFile.mockConfigInfo = {
+      "@ohos.utils": {
+        "source": "src/mock/utilsMock.ts"
+      },
+    }
+    let originKey = "@ohos.utils";
+    let transKey = "@ohos:utils";
+    ModuleSourceFile.generateNewMockInfo(originKey, transKey, this.rollup, '');
+    let expectOHMUrl: string = "@normalized:N&&&entry/src/mock/utilsMock&";
+    expect(ModuleSourceFile.newMockConfigInfo[transKey].source === expectOHMUrl).to.be.true;
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
+    ModuleSourceFile.projectConfig.pkgContextInfo = {};
   });
 
   mocha.it('6-1: test removePotentialMockConfigCache delete mock-config', function () {
@@ -1065,5 +1129,13 @@ mocha.describe('test module_source_file file api', function () {
     CommonLogger.destroyInstance();
     this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
     stub.restore();
+  });
+
+  mocha.it('8-1: test isMockFile under LocalTest mode', function () {
+    ModuleSourceFile.needProcessMock = true;
+    ModuleSourceFile.mockFiles = ["src/mock/ohos/I18nMock.ts"];
+    let file = this.rollup.share.projectConfig.aceModuleRoot +'/mock/ohos/I18nMock.ts';
+    expect(ModuleSourceFile.isMockFile(file, this.rollup)).to.be.true;
+    ModuleSourceFile.needProcessMock = false;
   });
 });
