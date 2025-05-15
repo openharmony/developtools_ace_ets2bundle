@@ -263,15 +263,15 @@ export function callIsGoodForBuilderLambda(leaf: arkts.CallExpression): boolean 
     return arkts.isIdentifier(node) || arkts.isMemberExpression(node);
 }
 
-export function builderLambdaType(leaf: arkts.CallExpression): arkts.TypeNode | undefined {
-    const name: string | undefined = builderLambdaTypeName(leaf);
-    if (!name) {
-        return undefined;
+export function isSafeType(type: arkts.TypeNode | undefined): boolean {
+    if (!type) {
+        return false;
     }
-    // TODO: it should be the return type of the function annotated with the @BuilderLambda
-    return arkts.factory.createTypeReference(
-        arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(`${name}Attribute`))
-    );
+    // type can be generic (not safe) if includes any type params in a type reference.
+    if (arkts.isETSTypeReference(type) && !!type.part && !!type.part.typeParams) {
+        return false;
+    }
+    return true;
 }
 
 export function builderLambdaMethodDeclType(method: arkts.MethodDefinition): arkts.TypeNode | undefined {
