@@ -967,6 +967,33 @@ mocha.describe('test module_source_file file api', function () {
     expect(ModuleSourceFile.newMockConfigInfo).to.deep.equal(EXPECT_NEW_MOCK_INFO);
   });
 
+  mocha.it('5-5: test generateNewMockInfo under LocalTest mode (useNormalizedOHMUrl is true)', function () {
+    this.rollup.share.projectConfig.isLocalTest = true;
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    ModuleSourceFile.projectConfig.pkgContextInfo = {
+      'entry': {
+        'packageName': 'entry',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    ModuleSourceFile.mockConfigInfo = {
+      "@ohos.utils": {
+        "source": "src/mock/utilsMock.ts"
+      },
+    }
+    let originKey = "@ohos.utils";
+    let transKey = "@ohos:utils";
+    ModuleSourceFile.generateNewMockInfo(originKey, transKey, this.rollup, '');
+    let expectOHMUrl: string = "@normalized:N&&&entry/src/mock/utilsMock&";
+    expect(ModuleSourceFile.newMockConfigInfo[transKey].source === expectOHMUrl).to.be.true;
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
+    ModuleSourceFile.projectConfig.pkgContextInfo = {};
+  });
+
 
   mocha.it('5-5: test isMockFile under LocalTest mode', function () {
     ModuleSourceFile.needProcessMock = true;
