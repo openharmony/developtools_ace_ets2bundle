@@ -252,6 +252,13 @@ export function generateTsDeclarationsFromContext(outputDeclEts: string, outputE
     );
 }
 
+export function generateStaticDeclarationsFromContext(outputPath: string): KInt {
+    return global.es2panda._GenerateStaticDeclarationsFromContext(
+        global.context,
+        passString(outputPath)
+    );
+}
+
 export function isDefaultAccessModifierClassProperty(property: ClassProperty): boolean {
     return global.es2panda._ClassPropertyIsDefaultAccessModifierConst(global.context, property.peer);
 }
