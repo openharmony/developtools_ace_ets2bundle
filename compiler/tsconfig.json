@@ -292,9 +292,6 @@
         "ArcSwiper",
         "ArcScrollBar",
         "ArcAlphabetIndexer",
-        "HdsNavigation",
-        "HdsNavDestination",
-        "HdsListItemCard"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -580,16 +577,6 @@
             "instance": "NavDestinationInstance"
           },
           {
-            "name": "HdsNavDestination",
-            "type": "HdsNavDestinationAttribute",
-            "instance": "HdsNavDestinationInstance"
-          },
-          {
-            "name": "HdsListItemCard",
-            "type": "HdsListItemCardAttribute",
-            "instance": "HdsListItemCardInstance"
-          },
-          {
             "name": "NavRouter",
             "type": "NavRouterAttribute",
             "instance": "NavRouterInstance"
@@ -598,11 +585,6 @@
             "name": "Navigation",
             "type": "NavigationAttribute",
             "instance": "NavigationInstance"
-          },
-          {
-            "name": "HdsNavigation",
-            "type": "HdsNavigationAttribute",
-            "instance": "HdsNavigationInstance"
           },
           {
             "name": "Navigator",
