@@ -101,7 +101,7 @@ class Test {
             if (__memo_scope.unchanged) {
                 return __memo_scope.cached;
             }
-            return __memo_scope.recache(((123) + (x)));
+            return __memo_scope.recache(((123) + (__memo_parameter_x.value)));
         });
         const h = @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): number => {
             const __memo_scope = __memo_context.scope<number>(((__memo_id) + (<some_random_number>)), 0);
