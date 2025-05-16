@@ -84,7 +84,7 @@ export class CheckedTransformer extends AbstractVisitor {
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         this.enter(beforeChildren);
         if (arkts.isCallExpression(beforeChildren) && isBuilderLambda(beforeChildren)) {
-            const lambda = builderLambdaFactory.transformBuilderLambda(beforeChildren);
+            const lambda = builderLambdaFactory.transformBuilderLambda(beforeChildren, this.projectConfig);
             return this.visitEachChild(lambda);
         } else if (arkts.isMethodDefinition(beforeChildren) && isBuilderLambdaMethodDecl(beforeChildren)) {
             const lambda = builderLambdaFactory.transformBuilderLambdaMethodDecl(beforeChildren);
@@ -115,13 +115,8 @@ export class CheckedTransformer extends AbstractVisitor {
             return addMemoAnnotation(node);
         } else if (arkts.isClassDeclaration(node)) {
             return transformObservedTracked(node);
-        } else if (
-            this.externalSourceName === 'arkui.component.common' &&
-            arkts.isTSInterfaceDeclaration(node) &&
-            !!node.id &&
-            node.id.name === 'UICommonMethod'
-        ) {
-            return structFactory.modifyExternalComponentCommon(node);
+        } else if (this.externalSourceName) {
+            return structFactory.transformExternalSource(this.externalSourceName, node);
         }
         return node;
     }
