@@ -378,8 +378,8 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
         currentFileName: containFilePath
       };
     },
-    getJsDocNodeConditionCheckedResult: (jsDocFileCheckedInfo: ts.FileCheckModuleInfo, jsDocs: ts.JsDocTagInfo[]) => {
-      return getJsDocNodeConditionCheckResult(jsDocFileCheckedInfo, jsDocs);
+    getJsDocNodeConditionCheckedResult: (jsDocFileCheckedInfo: ts.FileCheckModuleInfo, jsDocInfos: ts.JsDocTagInfo[], jsDocs?: ts.JSDoc[]) => {
+      return getJsDocNodeConditionCheckResult(jsDocFileCheckedInfo, jsDocInfos, jsDocs);
     },
     uiProps: new Set(),
     clearProps: function() {
