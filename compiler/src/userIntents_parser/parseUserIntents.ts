@@ -55,7 +55,6 @@ import {
   COMPONENT_USER_INTENTS_DECORATOR_METHOD,
   COMPONENT_USER_INTENTS_DECORATOR_PAGE
 } from '../pre_define';
-import { hasDecorator } from '../utils';
 
 type StaticValue = string | number | boolean | null | undefined | StaticValue[] | { [key: string]: StaticValue };
 
@@ -70,7 +69,7 @@ class ParseIntent {
     this.intentData = [];
     this.currentFilePath = '';
     this.heritageClassSet = new Set<string>();
-    this.heritageClassSet.add('IntentEntity_sdk');
+    this.heritageClassSet.add('InsightIntentEntryExecutor_sdk');
     this.updatePageIntentObj = new Map();
   }
 
@@ -81,6 +80,22 @@ class ParseIntent {
   updatePageIntentObj: Map<string, object[]>;
   isUpdateCompile: boolean = false;
   isInitCache : boolean = false;
+
+  hasDecorator(node: ts.Node, decorators: string[]): boolean {
+    if (!node.modifiers) {
+      return false;
+    }
+    return node.modifiers.some(decorator => {
+      if (!ts.isDecorator(decorator)) {
+        return false;
+      }
+      let decoratorName: string | undefined;
+      if (ts.isCallExpression(decorator.expression)) {
+        decoratorName = '@' + decorator.expression.expression.getText();
+      }
+      return decoratorName !== undefined && decorators.includes(decoratorName);
+    });
+  }
 
   detectInsightIntent(node: ts.ClassDeclaration, metaInfo: object, filePath: string): ts.Node {
     if (!this.isInitCache && projectConfig.cachePath) {
@@ -99,19 +114,20 @@ class ParseIntent {
         this.updatePageIntentObj.set(`@normalized:${recordName}`, []);
       }
     }
-    if (hasDecorator(node, COMPONENT_USER_INTENTS_DECORATOR) || hasDecorator(node, COMPONENT_USER_INTENTS_DECORATOR_ENTRY) ||
-      hasDecorator(node, COMPONENT_USER_INTENTS_DECORATOR_FUNCTION) || hasDecorator(node, COMPONENT_USER_INTENTS_DECORATOR_PAGE)) {
-      const checker: TypeChecker = metaInfo.checker;
-      this.handleIntent(node, checker, filePath, metaInfo);
-      node = this.removeDecorator(node, [COMPONENT_USER_INTENTS_DECORATOR, COMPONENT_USER_INTENTS_DECORATOR_ENTRY,
-        COMPONENT_USER_INTENTS_DECORATOR_FUNCTION, COMPONENT_USER_INTENTS_DECORATOR_PAGE, COMPONENT_USER_INTENTS_DECORATOR_METHOD]);
-    } else {
+    const definedDecorators: string[] = [COMPONENT_USER_INTENTS_DECORATOR, COMPONENT_USER_INTENTS_DECORATOR_ENTRY,
+      COMPONENT_USER_INTENTS_DECORATOR_FUNCTION, COMPONENT_USER_INTENTS_DECORATOR_PAGE];
+    if (ts.isClassDeclaration(node) && !this.hasDecorator(node, [COMPONENT_USER_INTENTS_DECORATOR_FUNCTION])) {
       node.members.forEach((member) => {
         if (ts.isMethodDeclaration(member) && this.hasModifier(member, ts.SyntaxKind.StaticKeyword) &&
-          hasDecorator(member, COMPONENT_USER_INTENTS_DECORATOR_METHOD)) {
-          throw Error(`${DECORATOR_ILLEGAL_USE.toString()}, invalidDecoratorPath: ${this.currentFilePath}`);
+          this.hasDecorator(member, [COMPONENT_USER_INTENTS_DECORATOR_METHOD])) {
+          throw Error(`${DECORATOR_ILLEGAL_USE.toString()}, className: ${node.name.getText()}`);
         }
       });
+    }
+    if (this.hasDecorator(node, definedDecorators)) {
+      const checker: TypeChecker = metaInfo.checker;
+      this.handleIntent(node, checker, filePath, metaInfo);
+      node = this.removeDecorator(node, definedDecorators.concat(COMPONENT_USER_INTENTS_DECORATOR_METHOD));
     }
     return node;
   }
@@ -129,6 +145,10 @@ class ParseIntent {
     node.modifiers.forEach(decorator => {
       const expr: ts.Expression = decorator.expression;
       if (!expr || !ts.isCallExpression(expr)) {
+        return;
+      }
+      const argumentKind: ts.SyntaxKin | undefined = expr.arguments[0]?.kind;
+      if (argumentKind && argumentKind === ts.SyntaxKind.NullKeyword || argumentKind && argumentKind === ts.SyntaxKind.UndefinedKeyword) {
         return;
       }
       const symbol: ts.Symbol = checker.getTypeAtLocation(decorator.expression.expression)?.getSymbol();
@@ -151,7 +171,7 @@ class ParseIntent {
         'decoratorFile': `@normalized:${recordName}`,
         'decoratorClass': node.name.text
       };
-      const originalDecorator: string = decorator.getText().replace(/\(.*\)$/, '').trim();
+      const originalDecorator: string = '@' + decorator.expression.expression.getText();
       if (originalDecorator === COMPONENT_USER_INTENTS_DECORATOR) {
         this.handleLinkDecorator(intentObj, node, decorator);
       } else if (originalDecorator === COMPONENT_USER_INTENTS_DECORATOR_ENTRY) {
@@ -174,8 +194,6 @@ class ParseIntent {
         'decoratorType': COMPONENT_USER_INTENTS_DECORATOR_PAGE
       });
       this.analyzeDecoratorArgs(args, intentObj, IntentPageInfoChecker);
-      const properties: Record<string, string> = this.parsePageProperties(node);
-      this.schemaValidateSync(properties, intentObj.parameters);
       this.createObfuscation(node);
       this.transformPagePath(intentObj, pkgParams);
       if (this.isUpdateCompile) {
@@ -208,9 +226,9 @@ class ParseIntent {
         const functionName: string = methodDecorator.functionName;
         const methodArgs: ts.NodeArray<ts.Expression> = methodDecorator.args;
         const properties: Record<string, string> = methodDecorator.parameters;
-        const methodObj: object = Object.assign({}, intentObj, {functionName});
+        const functionParamList: Array<string> = Object.keys(properties);
+        const methodObj: object = Object.assign({}, intentObj, {functionName, 'functionParamList': functionParamList});
         this.analyzeDecoratorArgs(methodArgs, methodObj, intentMethodInfoChecker);
-        this.schemaValidateSync(properties, methodObj.parameters);
         if (this.isUpdateCompile) {
           this.updatePageIntentObj.get(methodObj.decoratorFile).push(methodObj);
         }
@@ -278,20 +296,6 @@ class ParseIntent {
     }
   }
 
-  parsePageProperties(node: ts.Node): Record<string, string> {
-    const mergeObject: Record<string, string> = {};
-    node.members.forEach(member => {
-      if (ts.isPropertyDeclaration(member)) {
-        const symbol = this.checker.getSymbolAtLocation(member.name);
-        if (symbol) {
-          const objItem: Record<string, string> = this.processProperty(symbol);
-          Object.assign(mergeObject, objItem);
-        }
-      }
-    });
-    return mergeObject;
-  }
-
   analyzeBaseClass(node: ts.ClassDeclaration, pkgParams: object, intentObj: object): void {
     const interfaces: ts.ExpressionWithTypeArguments[] = [];
     node.heritageClauses?.forEach(clause => {
@@ -304,6 +308,9 @@ class ParseIntent {
       if (parentNode) {
         this.analyzeClassHeritage(parentNode, node, pkgParams, intentObj);
       }
+    } else {
+      throw Error(`${INVALID_BASE_CLASS_ERROR.toString()},
+         The custom intent must be ultimately inherited to InsightIntentEntryExecutor, invalidDecoratorPath: ${this.currentFilePath}`);
     }
   }
 
@@ -318,8 +325,14 @@ class ParseIntent {
         continue;
       }
       const decorator: boolean = member.modifiers?.find(m => {
-        const text = m.getText();
-        return text.replace(/\(.*\)$/, '').trim() === decoratorType;
+        if (!ts.isDecorator(m)) {
+          return false;
+        }
+        let decoratorName: string | undefined;
+        if (ts.isCallExpression(m.expression)) {
+          decoratorName = '@' + m.expression.expression.getText();
+        }
+        return decoratorName === decoratorType;
       });
       if (decorator && ts.isCallExpression(decorator.expression)) {
         const parameters: Record<string, string> = {};
@@ -346,7 +359,14 @@ class ParseIntent {
     parentNode: ts.ExpressionWithTypeArguments, node: ts.ClassDeclaration, pkgParams: object, intentObj: object
   ): void {
     const parentSymbol: ts.Symbol = this.checker.getTypeAtLocation(parentNode).getSymbol();
-    const parentClassName: string = parentSymbol.getName();
+    let parentClassName: string;
+    node.heritageClauses.forEach(clause => {
+      if (clause.token === ts.SyntaxKind.ExtendsKeyword) {
+        parentClassName = parentNode.expression.getText();
+      } else if (clause.token === ts.SyntaxKind.ImplementsKeyword) {
+        parentClassName = parentSymbol.getName();
+      }
+    });
     const parentFilePath: string = parentSymbol.getDeclarations()?.[0].getSourceFile().fileName;
     const logger: IntentLogger = IntentLogger.getInstance();
     const parentRecordName: string = getNormalizedOhmUrlByFilepath(parentFilePath, projectConfig, logger, pkgParams, null);
@@ -360,8 +380,9 @@ class ParseIntent {
     });
     const recordPath: string = isGlobalPath ? `sdk` : `@normalized:${parentRecordName}`;
     if (isGlobalPath) {
-      if (parentClassName !== 'IntentEntity') {
-        throw Error(`${INVALID_BASE_CLASS_ERROR.toString()}, invalidDecoratorPath: ${this.currentFilePath}`);
+      if (parentClassName !== 'InsightIntentEntryExecutor') {
+        throw Error(`${INVALID_BASE_CLASS_ERROR.toString()},
+         The custom intent must be ultimately inherited to InsightIntentEntryExecutor, invalidDecoratorPath: ${this.currentFilePath}`);
       }
     }
     this.heritageClassSet.add(baseClassName + '_' + `@normalized:${baseRecordName}`);
@@ -391,10 +412,12 @@ class ParseIntent {
     const genericType: ts.Type = this.checker.getTypeAtLocation(arg);
     let genericName: string;
     let genericSource: string | undefined;
+    let recordGenericSource : string;
     const genericSymbol: ts.Symbol | undefined = genericType.getSymbol();
     if (genericSymbol) {
       genericName = genericSymbol.getName();
       genericSource = genericSymbol.declarations?.[0]?.getSourceFile().fileName;
+      recordGenericSource = path.relative(projectConfig.moduleName, genericSource).replace(/\\/g, '/');
     } else {
       genericName = this.checker.typeToString(genericType);
       const parentTypeNode: ts.Node = arg.parent;
@@ -404,13 +427,13 @@ class ParseIntent {
         genericSource = symbol?.declarations?.[0]?.getSourceFile().fileName;
       }
       if (!genericSource && this.isPrimitiveType(genericType)) {
-        genericSource = 'lib.es5.d.ts';
+        recordGenericSource = 'lib.es5.d.ts';
       }
     }
     Object.assign(generic,
       {
         'typeName': genericName,
-        'definitionFilePath': genericSource
+        'definitionFilePath': recordGenericSource
       });
     ClassInheritanceInfo.generics.push(generic);
   }
@@ -424,16 +447,18 @@ class ParseIntent {
   }
 
   parseClassNode(node: ts.ClassDeclaration): Record<string, string> {
-    const type: ts.Type = this.checker.getTypeAtLocation(node);
     const mergedObject: Record<string, string> = {};
-    this.checker.getPropertiesOfType(type)
-      .filter(prop => {
-        const declarations: Declaration[] | undefined = prop.getDeclarations();
-        return declarations?.some(decl =>
-          ts.isPropertyDeclaration(decl)
-        );
-      }).forEach(prop => {
-        const objItem: Record<string, string> = this.processProperty(prop);
+    node.members
+      .filter((member): member is ts.PropertyDeclaration => {
+        return ts.isPropertyDeclaration(member) &&
+          member.parent === node;
+      })
+      .forEach(propertyNode => {
+        const propSymbol = this.checker.getSymbolAtLocation(propertyNode.name);
+        if (!propSymbol) {
+          return;
+        }
+        const objItem: Record<string, string> = this.processProperty(propSymbol);
         Object.assign(mergedObject, objItem);
       });
     return mergedObject;
@@ -486,14 +511,26 @@ class ParseIntent {
 
   removeDecorator(node: ts.ClassDeclaration, decoratorNames: string[]): ts.ClassDeclaration {
     const filteredModifiers: ts.ModifierLike[] = node.modifiers.filter(decorator => {
-      const originalDecortor: string = decorator.getText().replace(/\(.*\)$/, '').trim();
-      return !decoratorNames.includes(originalDecortor);
+      if (!ts.isDecorator(decorator)) {
+        return true;
+      }
+      let decoratorName: string | undefined;
+      if (ts.isCallExpression(decorator.expression)) {
+        decoratorName = '@' + decorator.expression.expression.getText();
+      }
+      return !decoratorNames.includes(decoratorName);
     });
     const updatedMembers: ts.ClassElement[] = node.members.map(member => {
       if (ts.isMethodDeclaration(member) && this.hasModifier(member, ts.SyntaxKind.StaticKeyword)) {
         const memberModifiers: ts.ModifierLike[] = (member.modifiers ?? []).filter(decorator => {
-          const originalDecorator = decorator.getText().replace(/\(.*\)$/, '').trim();
-          return originalDecorator !== COMPONENT_USER_INTENTS_DECORATOR_METHOD;
+          if (!ts.isDecorator(decorator)) {
+            return true;
+          }
+          let decoratorName: string | undefined;
+          if (ts.isCallExpression(decorator.expression)) {
+            decoratorName = '@' + decorator.expression.expression.getText();
+          }
+          return decoratorName !== COMPONENT_USER_INTENTS_DECORATOR_METHOD;
         });
         if (memberModifiers.length !== (member.modifiers?.length ?? 0)) {
           return ts.factory.updateMethodDeclaration(
@@ -610,7 +647,7 @@ class ParseIntent {
           const declaration: ts.Declaration = symbol?.valueDeclaration;
           this.validateRequiredIntentLinkInfo<LinkIntentParamMapping>(declaration.initializer, checker);
         } else {
-          this.validateRequiredIntentLinkInfo<LinkIntentParamMapping>(elem.initializer, checker);
+          this.validateRequiredIntentLinkInfo<LinkIntentParamMapping>(elem, checker);
         }
       });
     } else if (ts.isIdentifier(prop)) {
@@ -618,7 +655,7 @@ class ParseIntent {
       const declaration: ts.Declaration = symbol?.valueDeclaration;
       this.validateRequiredIntentLinkInfo<LinkIntentParamMapping>(declaration.initializer, checker);
     } else {
-      this.validateRequiredIntentLinkInfo<LinkIntentParamMapping>(prop.initializer, checker);
+      this.validateRequiredIntentLinkInfo<LinkIntentParamMapping>(prop, checker);
     }
   }
 
@@ -634,7 +671,7 @@ class ParseIntent {
       if (ts.isIdentifier(prop.initializer)) {
         const symbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(prop.initializer);
         const declaration: ts.Declaration = symbol?.valueDeclaration;
-        if (validator && !validator(declaration.initializer)) {
+        if (validator && !validator(declaration?.initializer)) {
           throw Error(`${INCORRECT_PARAM_TYPE_ERROR.toString()}, cause param: '${paramName.toString()}', invalidDecoratorPath: ${this.currentFilePath}`);
         }
       } else {
@@ -815,27 +852,12 @@ class ParseIntent {
         `${intentObj.schema}_${intentObj.intentVersion}.json`
       );
       if (fs.existsSync(schemaPath)) {
-        if (intentObj.parameters) {
-          throw Error(`${DISALLOWED_PARAM_ERROR.toString()}` +
-            `, the standard user intents  does not allow passing the parameter 'parameter', invalidDecoratorPath: ${this.currentFilePath}`);
-        }
-        if (intentObj.keywords) {
-          throw Error(`${DISALLOWED_PARAM_ERROR.toString()}` +
-            `, the standard user intents  does not allow passing the parameter 'keywords', invalidDecoratorPath: ${this.currentFilePath}`);
-        }
-        if (intentObj.llmDescription) {
-          throw Error(`${DISALLOWED_PARAM_ERROR.toString()}` +
-            `, the standard user intents  does not allow passing the parameter 'llmDescription', invalidDecoratorPath: ${this.currentFilePath}`);
-        }
         const schemaContent: string = fs.readFileSync(schemaPath, 'utf-8');
         const schemaObj: object = JSON.parse(schemaContent);
         intentObj.parameters = schemaObj.params;
-        if (schemaObj.llmDescription) {
-          intentObj.llmDescription = schemaObj.llmDescription;
-        }
-        if (schemaObj.keywords) {
-          intentObj.keywords = schemaObj.keywords;
-        }
+        intentObj.llmDescription = schemaObj.llmDescription;
+        intentObj.keywords = schemaObj.keywords;
+        intentObj.intentName = schemaObj.intentName;
       }
     }
   }
@@ -916,6 +938,9 @@ class ParseIntent {
     if (!schemaObj) {
       return;
     }
+    if (schemaObj.additionalProperties === false) {
+      this.schemaAdditionalPropertiesValidation(schemaData, schemaObj.properties);
+    }
     if (schemaObj.items && schemaObj.items.type === 'array') {
       this.schemaValidateSync(schemaData, schemaObj.items.items);
     }
@@ -923,7 +948,12 @@ class ParseIntent {
       throw Error(`${SCHEMA_ROOT_TYPE_MISMATCH_ERROR.toString()}, invalidDecoratorPath: ${this.currentFilePath}`);
     }
     if (schemaObj.properties) {
-      this.schemaPropertiesValidation(schemaData, schemaObj);
+      const items: string[] = Object.keys(schemaObj.properties);
+      if (items.length === 1 && items[0].type === 'array') {
+        this.schemaValidateSync(schemaData, items[0].items);
+      } else {
+        this.schemaPropertiesValidation(schemaData, schemaObj);
+      }
     }
     if (schemaObj.required) {
       this.schemaValidationRequiredRule(schemaData, schemaObj);
@@ -931,7 +961,15 @@ class ParseIntent {
     this.schemaValidateRules(schemaData, schemaObj);
   }
 
-  writeUserIntentJsonFile(): void {
+  schemaAdditionalPropertiesValidation(schemaData, schemaProps): void {
+    for (const key of Object.keys(schemaData)) {
+      if (!schemaProps[key]) {
+        throw Error(`${SCHEMA_VALIDATE_TYPE_ERROR.toString()}, invalidDecoratorPath: ${this.currentFilePath}`);
+      }
+    }
+  }
+
+ writeUserIntentJsonFile(): void {
     if (!projectConfig.aceProfilePath) {
       throw Error(`${INTERNAL_ERROR.toString()}, aceProfilePath not found, invalidDecoratorPath: ${this.currentFilePath}`);
     }
@@ -975,7 +1013,7 @@ class ParseIntent {
     const duplicates = new Set<string>();
     this.intentData.forEach(item => {
       if (duplicates.has(item.intentName)) {
-        throw Error(`${DECORATOR_DUPLICATE_INTENTNAME.toString()}, value : ${item.intentName}, invalidDecoratorPath: ${this.currentFilePath}`);
+        throw Error(`${DECORATOR_DUPLICATE_INTENTNAME.toString()}, value : ${item.intentName}`);
       } else {
         duplicates.add(item.intentName);
       }
