@@ -245,11 +245,12 @@ export class BytecodeObfuscator {
 
   public convertAbstractPathToRecordName(moduleInfos: Map<String, ModuleInfo>): void {
     if (this.bytecodeObfuscateConfig.obfuscationRules.keepOptions &&
-      this.bytecodeObfuscateConfig.obfuscationRules.keepOptions.keepPaths.length > 0) {
+      this.bytecodeObfuscateConfig.obfuscationRules.keepOptions.keepPaths.size > 0) {
       const convertedPath: Set<string> = new Set<string>();
       this.bytecodeObfuscateConfig.obfuscationRules.keepOptions.keepPaths.forEach(path => {
         if (moduleInfos.get(path)) {
           convertedPath.add(moduleInfos.get(path).recordName);
+          this.bytecodeObfuscateConfig.removeKeepPaths(path);
         }
       });
       this.bytecodeObfuscateConfig.addKeepPaths(convertedPath);
@@ -524,7 +525,6 @@ export class BytecodeObfuscationConfig {
         universalReservedToplevelNames: new Set(
           universalReservedGlobalNames?.map(regexp => regexp.toString()) || []
         )
-
       },
       fileNameObfuscation: {
         enable: options.enableFileNameObfuscation,
@@ -568,6 +568,21 @@ export class BytecodeObfuscationConfig {
 
   addKeepPaths(values: string | string[] | Set<string>): void {
     this.addToSet(this.obfuscationRules.keepOptions.keepPaths, values);
+  }
+
+  removeKeepPaths(values: string | string[] | Set<string>): void {
+    this.removeFromSet(this.obfuscationRules.keepOptions.keepPaths, values);
+  }
+
+  removeFromSet(
+    set: Set<string>,
+    values: string | string[] | Set<string>
+  ): void {
+    if (typeof values === 'string') {
+      set.delete(values);
+    } else {
+      values.forEach((value) => set.delete(value));
+    }
   }
 }
 
