@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Component, $r, $rawfile, Column, Text, Image, TextInput, Select, SelectOption, Margin } from "@ohos.arkui.component"
+import { Component, $r, $rawfile, Column, Text, Image, TextInput, Select, SelectOption, Margin, ImageAnimator } from "@ohos.arkui.component"
 
 @Component
 struct ResourceComponent {
@@ -37,6 +37,14 @@ struct ResourceComponent {
           top: $r('app.float.elements_margin_horizontal_m'),
           bottom: $r('app.float.elements_margin_horizontal_l')
         } as Margin)
+      ImageAnimator().images([
+        {
+          src: $r('app.media.aaa')
+        },
+        {
+          src: $r('app.media.bbb')
+        },
+      ])
     }
   }
 }

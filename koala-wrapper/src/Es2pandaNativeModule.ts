@@ -840,6 +840,10 @@ export class Es2pandaNativeModule {
     _CreateSourceRange(context: KNativePointer, start: KNativePointer, end: KNativePointer): KNativePointer {
         throw new Error('CreateFunctionDecl was not overloaded by native module initialization');
     }
+
+    _IsArrayExpression(node: KPtr): KBoolean {
+        throw new Error('Not implemented');
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {

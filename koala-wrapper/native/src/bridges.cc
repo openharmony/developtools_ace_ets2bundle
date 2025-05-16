@@ -481,3 +481,10 @@ KNativePointer impl_AstNodeEndConst(KNativePointer context, KNativePointer recei
     return const_cast<es2panda_SourcePosition *>(GetImpl()->AstNodeEndConst(_context, _receiver));
 }
 KOALA_INTEROP_2(AstNodeEndConst, KNativePointer, KNativePointer, KNativePointer);
+
+KBoolean impl_IsArrayExpression(KNativePointer nodePtr)
+{
+    auto node = reinterpret_cast<es2panda_AstNode*>(nodePtr);
+    return GetImpl()->IsArrayExpression(node);
+}
+KOALA_INTEROP_1(IsArrayExpression, KBoolean, KNativePointer)
