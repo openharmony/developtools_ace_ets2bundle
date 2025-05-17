@@ -132,6 +132,9 @@ function parseOhmBundle(modulePath: string): BundleInfo {
  * @returns {boolean}
  */
 function checkBundleVersion(bundleVersion: string): boolean {
+  if (!projectConfig.compatibleSdkVersion) {
+    return true;
+  }
   const compatibleSdkVersion: string = projectConfig.compatibleSdkVersion;
   let bundleVersionNumber: number = 0;
   const bundleVersionArr = bundleVersion.match(/(?<=\().*(?=\))/g);
@@ -542,7 +545,7 @@ function collectExternalSyscapInfos(
  * @returns 
  */
 function checkSinceValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
-  if (!jsDocTags[0]?.parent?.parent) {
+  if (!jsDocTags[0]?.parent?.parent || !projectConfig.compatibleSdkVersion) {
     return false;
   }
   const currentNode: HasJSDocNode = jsDocTags[0].parent.parent as HasJSDocNode;
@@ -552,7 +555,7 @@ function checkSinceValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNode
   const minSince: string = getMinVersion(currentNode.jsDoc);
   const hasSince: boolean = minSince !== '';
 
-  const compatibleSdkVersion: string = String(projectConfig.compatibleSdkVersion);
+  const compatibleSdkVersion: string = projectConfig.compatibleSdkVersion.toString();
   if (hasSince && comparePointVersion(compatibleSdkVersion.toString(), minSince) === -1) {
     config.message = SINCE_TAG_CHECK_ERROER.replace('$SINCE1', minSince).replace('$SINCE2', compatibleSdkVersion);
     return true;
@@ -693,7 +696,7 @@ function checkSinceCondition(jsDocs: ts.JSDoc[]): ts.ConditionCheckResult {
   const result: ts.ConditionCheckResult = {
     valid: true
   };
-  if (!jsDocs || !jsDocs[0]) {
+  if (!jsDocs || !jsDocs[0] || !projectConfig.compatibleSdkVersion) {
     return result;
   }
   const minVersion: string = getMinVersion(jsDocs);
