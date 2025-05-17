@@ -342,8 +342,8 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSTEM_API_TAG_CHECK_NAME], SYSTEM_API_TAG_CHECK_WARNING, false,
       ts.DiagnosticCategory.Warning, '', false));
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SINCE_TAG_NAME],
-      SINCE_TAG_CHECK_ERROER, true, ts.DiagnosticCategory.Warning,
-      VERSION_CHECK_FUNCTION_NAME, false, undefined, checkSinceValue, checkVersionConditionValidCallback));
+      SINCE_TAG_CHECK_ERROER, false, ts.DiagnosticCategory.Warning,
+      VERSION_CHECK_FUNCTION_NAME, false, undefined, checkSinceValue));
     // TODO: the third param is to be opened
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSCAP_TAG_CHECK_NAME],
       SYSCAP_TAG_CHECK_WARNING, false, ts.DiagnosticCategory.Warning,
