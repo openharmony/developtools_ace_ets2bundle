@@ -65,8 +65,8 @@ export function doArkTSLinter(arkTSVersion: ArkTSVersion, arkTSMode: ArkTSLinter
   }
 
   let diagnostics: ts.Diagnostic[] = [];
-
-  if (arkTSVersion === ArkTSVersion.ArkTS_1_0) {
+  const isOldVersion = arkTSVersion === ArkTSVersion.ArkTS_1_0;
+  if (isOldVersion) {
     diagnostics = ts.ArkTSLinter_1_0.runArkTSLinter(builderProgram, /*srcFile*/ undefined, buildInfoWriteFile,
       getArkTSVersionString(arkTSVersion));
   } else {
@@ -82,7 +82,7 @@ export function doArkTSLinter(arkTSVersion: ArkTSVersion, arkTSMode: ArkTSLinter
   if (arkTSMode === ArkTSLinterMode.COMPATIBLE_MODE) {
     processArkTSLinterReportAsWarning(diagnostics, printDiagnostic, shouldWriteFile);
   } else {
-    processArkTSLinterReportAsError(diagnostics, printDiagnostic, errorCodeLogger);
+    processArkTSLinterReportAsError(diagnostics, printDiagnostic, isOldVersion ? undefined : errorCodeLogger);
   }
 
   return diagnostics;
