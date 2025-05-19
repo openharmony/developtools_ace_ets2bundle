@@ -95,16 +95,6 @@ export class ParamChecker<T> {
   set paramValidators(value: Record<keyof T, (v: ts.Expression) => boolean>) {
     this._paramValidators = value;
   }
-
-  clean(): void {
-    this._requiredFields = [];
-
-    this._allowFields = new Set<keyof T>();
-
-    this._paramValidators = {} as Record<keyof T, (v: ts.Expression) => boolean>;
-
-    this._nestedCheckers = new Map<string, ParamChecker<LinkIntentParamMapping>>();
-  }
 }
 
 function validateRequiredString(v: ts.Expression): boolean {
