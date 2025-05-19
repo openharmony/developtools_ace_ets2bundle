@@ -19,7 +19,7 @@ import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import { RELEASE } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import { BytecodeObfuscator } from '../../../lib/fast_build/ark_compiler/bytecode_obfuscator';
 import { OBFUSCATE_RULE_BYTECODE_OBFUSCATION_ENABLE_PATH } from '../mock/rollup_mock/path_config';
-
+import { ModuleInfo } from '../../../lib/fast_build/ark_compiler/module/module_mode';
 
 mocha.describe('test bytecodeObfuscator file api', function () {
   mocha.before(function () {
@@ -159,6 +159,36 @@ mocha.describe('test bytecodeObfuscator file api', function () {
     expect(BytecodeObfuscator.getInstance().cmdArgs.includes('--debug-file')).to.be.true;
     expect(BytecodeObfuscator.getInstance().cmdArgs.includes('debug.log')).to.be.true;
     expect(BytecodeObfuscator.getInstance().cmdArgs.includes('config.json')).to.be.true;
+    BytecodeObfuscator.cleanBcObfuscatorObject();
+  });
+
+    mocha.it("4-1: test convertAbstractPathToRecordName successfully and remove originPath",function () {
+    this.rollup.share.arkProjectConfig.isArkguardEnabled = false;
+    this.rollup.share.arkProjectConfig.isBytecodeObfEnabled = true;
+    this.rollup.share.arkProjectConfig.obfuscationMergedObConfig.options.bytecodeObf.debugging = true;
+    const originPath = 'ProblemReproduction/oh_modules/.ohpm/reflect-metadata@0.2.1/oh_modules/reflect-metadata/Reflect.js';
+    const recordName = '&reflect-meatadata|0.2.1|Reflect.js';
+    this.rollup.share.arkProjectConfig.obfuscationMergedObConfig.keepSourceOfPaths = [originPath];
+    BytecodeObfuscator.initForTest(this.rollup.share);
+    let moduleInfos: Map<String, ModuleInfo> = new Map();
+    moduleInfos.set(
+      originPath,
+      new ModuleInfo(
+        originPath,
+        'oh_modules/reflect-metadata/Reflect.js',
+        true,
+        '&reflect-meatadata|0.2.1|Reflect.js',
+        'Reflect.js',
+        'reflect-metadata',
+        'js'
+      )
+    );
+    BytecodeObfuscator.getInstance().convertAbstractPathToRecordName(moduleInfos);
+    const keepPaths =
+      BytecodeObfuscator.getInstance().bytecodeObfuscateConfig.obfuscationRules
+        .keepOptions.keepPaths;
+    expect(keepPaths.has(recordName)).to.be.true;
+    expect(keepPaths.has(originPath)).to.be.false;
     BytecodeObfuscator.cleanBcObfuscatorObject();
   });
 });
