@@ -39,6 +39,7 @@ import {
 
 import { projectConfig } from '../main.js';
 import { genETS } from '../codegen/codegen_ets.js';
+import { concatenateEtsOptions, getExternalComponentPaths } from './external_component_map';
 
 const visualMap: Map<number, number> = new Map();
 const slotMap: Map<number, number> = new Map();
@@ -46,10 +47,17 @@ const slotMap: Map<number, number> = new Map();
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 
-const compilerOptions = ts.readConfigFile(
-  path.resolve(__dirname, '../tsconfig.json'),
-  ts.sys.readFile
-).config.compilerOptions;
+let compilerOptions = ts.readConfigFile(
+  path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
+const componentPaths: string[] | undefined = getExternalComponentPaths();
+if (componentPaths) {
+  for (const componentPath of componentPaths) {
+    const externalCompilerOptions: ts.CompilerOptions = ts.readConfigFile(
+      path.resolve(componentPath, 'externalconfig.json'), ts.sys.readFile
+    ).config.compilerOptions;
+    concatenateEtsOptions(compilerOptions, externalCompilerOptions);
+  }
+}
 compilerOptions.sourceMap = false;
 
 export function visualTransform(code: string, id: string, logger: any) {
