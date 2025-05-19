@@ -55,6 +55,11 @@ import {
   COMPONENT_USER_INTENTS_DECORATOR_METHOD,
   COMPONENT_USER_INTENTS_DECORATOR_PAGE
 } from '../pre_define';
+import {
+  CompileEvent,
+  createAndStartEvent,
+  stopEvent
+} from '../performance';
 
 type StaticValue = string | number | boolean | null | undefined | StaticValue[] | { [key: string]: StaticValue };
 
@@ -97,7 +102,8 @@ class ParseIntent {
     });
   }
 
-  detectInsightIntent(node: ts.ClassDeclaration, metaInfo: object, filePath: string): ts.Node {
+  detectInsightIntent(node: ts.ClassDeclaration, metaInfo: object, filePath: string, eventOrEventFactory: CompileEvent | undefined): ts.Node {
+    const eventParseIntentTime: CompileEvent | undefined = createAndStartEvent(eventOrEventFactory, 'parseIntentTime');
     if (!this.isInitCache && projectConfig.cachePath) {
       const cacheSourceMapPath: string = path.join(projectConfig.cachePath, 'insight_compile_cache.json');
       this.isUpdateCompile = fs.existsSync(cacheSourceMapPath);
@@ -129,6 +135,7 @@ class ParseIntent {
       this.handleIntent(node, checker, filePath, metaInfo);
       node = this.removeDecorator(node, definedDecorators.concat(COMPONENT_USER_INTENTS_DECORATOR_METHOD));
     }
+    stopEvent(eventParseIntentTime);
     return node;
   }
 
@@ -521,32 +528,7 @@ class ParseIntent {
       return !decoratorNames.includes(decoratorName);
     });
     const updatedMembers: ts.ClassElement[] = node.members.map(member => {
-      if (ts.isMethodDeclaration(member) && this.hasModifier(member, ts.SyntaxKind.StaticKeyword)) {
-        const memberModifiers: ts.ModifierLike[] = (member.modifiers ?? []).filter(decorator => {
-          if (!ts.isDecorator(decorator)) {
-            return true;
-          }
-          let decoratorName: string | undefined;
-          if (ts.isCallExpression(decorator.expression)) {
-            decoratorName = '@' + decorator.expression.expression.getText();
-          }
-          return decoratorName !== COMPONENT_USER_INTENTS_DECORATOR_METHOD;
-        });
-        if (memberModifiers.length !== (member.modifiers?.length ?? 0)) {
-          return ts.factory.updateMethodDeclaration(
-            member,
-            memberModifiers,
-            member.asteriskToken,
-            member.name,
-            member.questionToken,
-            member.typeParameters,
-            member.parameters,
-            member.type,
-            member.body!
-          );
-        }
-      }
-      return member;
+      return this.reduceMembers(member);
     });
     return ts.factory.updateClassDeclaration(
       node,
@@ -556,6 +538,35 @@ class ParseIntent {
       node.heritageClauses,
       ts.factory.createNodeArray(updatedMembers)
     );
+  }
+
+  reduceMembers(member : ts.ClassElement): ts.ClassElement {
+    if (ts.isMethodDeclaration(member) && this.hasModifier(member, ts.SyntaxKind.StaticKeyword)) {
+      const memberModifiers: ts.ModifierLike[] = (member.modifiers ?? []).filter(decorator => {
+        if (!ts.isDecorator(decorator)) {
+          return true;
+        }
+        let decoratorName: string | undefined;
+        if (ts.isCallExpression(decorator.expression)) {
+          decoratorName = '@' + decorator.expression.expression.getText();
+        }
+        return decoratorName !== COMPONENT_USER_INTENTS_DECORATOR_METHOD;
+      });
+      if (memberModifiers.length !== (member.modifiers?.length ?? 0)) {
+        return ts.factory.updateMethodDeclaration(
+          member,
+          memberModifiers,
+          member.asteriskToken,
+          member.name,
+          member.questionToken,
+          member.typeParameters,
+          member.parameters,
+          member.type,
+          member.body!
+        );
+      }
+    }
+    return member;
   }
 
   isSymbolConstant(symbol: ts.Symbol): boolean {
@@ -836,10 +847,10 @@ class ParseIntent {
           intentObj.executeMode[index] = 'background';
         }
         if (item === 2) {
-          intentObj.executeMode[index] = 'insightIntent.ExecuteMode.UI_EXTENSION_ABILITY';
+          intentObj.executeMode[index] = 'uiextension';
         }
         if (item === 3) {
-          intentObj.executeMode[index] = 'insightIntent.ExecuteMode.SERVICE_EXTENSION_ABILITY';
+          intentObj.executeMode[index] = 'serviceextension';
         }
       });
     }
@@ -969,11 +980,11 @@ class ParseIntent {
     }
   }
 
- writeUserIntentJsonFile(): void {
+  writeUserIntentJsonFile(): void {
     if (!projectConfig.aceProfilePath) {
       throw Error(`${INTERNAL_ERROR.toString()}, aceProfilePath not found, invalidDecoratorPath: ${this.currentFilePath}`);
     }
-    const cacheSourceMapPath: string = path.join(projectConfig.aceProfilePath, 'extract_insight_intent.json');
+    const cacheSourceMapPath: string = path.join(projectConfig.aceProfilePath, 'insight_intent.json');
     const cachePath: string = path.join(projectConfig.cachePath, 'insight_compile_cache.json');
     if (!fs.existsSync(projectConfig.aceProfilePath)) {
       fs.mkdirSync(projectConfig.aceProfilePath, {recursive: true});
@@ -981,7 +992,7 @@ class ParseIntent {
     if (this.isUpdateCompile) {
       const cacheData: string = fs.readFileSync(cachePath, 'utf8');
       const cacheDataObj: object = JSON.parse(cacheData);
-      const insightIntents: object[] = cacheDataObj.insightIntents.filter(insightIntent => {
+      const insightIntents: object[] = cacheDataObj.extractInsightIntents.filter(insightIntent => {
         return !this.updatePageIntentObj.has(insightIntent.decoratorFile);
       });
       this.updatePageIntentObj.forEach(insightIntent => {
@@ -989,10 +1000,23 @@ class ParseIntent {
       });
       this.intentData = insightIntents;
     }
-    this.validateIntentIntentName();
+    let writeJsonData: object = {};
+    if (fs.existsSync(cacheSourceMapPath)) {
+      const originIntents: string = fs.readFileSync(cacheSourceMapPath, 'utf8');
+      const jsonData: object = JSON.parse(originIntents);
+      Object.assign(jsonData, {
+        'extractInsightIntents': this.intentData
+      });
+      writeJsonData = jsonData;
+    } else {
+      Object.assign(writeJsonData, {
+        'extractInsightIntents': this.intentData
+      });
+    }
+    this.validateIntentIntentName(writeJsonData);
     if (this.intentData.length > 0) {
-      fs.writeFileSync(cacheSourceMapPath, JSON.stringify({'insightIntents': this.intentData}, null, 2), 'utf-8');
-      fs.writeFileSync(cachePath, JSON.stringify({'insightIntents': this.intentData}, null, 2), 'utf-8');
+      fs.writeFileSync(cacheSourceMapPath, JSON.stringify(writeJsonData, null, 2), 'utf-8');
+      fs.writeFileSync(cachePath, JSON.stringify({'extractInsightIntents': this.intentData}, null, 2), 'utf-8');
     } else if (fs.existsSync(cacheSourceMapPath)) {
       fs.unlinkSync(cacheSourceMapPath);
     }
@@ -1009,9 +1033,12 @@ class ParseIntent {
     }
   }
 
-  validateIntentIntentName(): void {
+  validateIntentIntentName(writeJsonData: object): void {
     const duplicates = new Set<string>();
-    this.intentData.forEach(item => {
+    writeJsonData.insightIntents?.forEach(insightIntent => {
+      duplicates.add(insightIntent.intentName);
+    });
+    writeJsonData.extractInsightIntents.forEach(item => {
       if (duplicates.has(item.intentName)) {
         throw Error(`${DECORATOR_DUPLICATE_INTENTNAME.toString()}, value : ${item.intentName}`);
       } else {
@@ -1024,11 +1051,8 @@ class ParseIntent {
     this.intentData = [];
     this.checker = null;
     this.currentFilePath = '';
-    IntentLinkInfoChecker.clean();
-    intentEntryInfoChecker.clean();
-    intentMethodInfoChecker.clean();
-    intentMethodInfoChecker.clean();
     this.heritageClassSet = new Set<string>();
+    this.heritageClassSet.add('InsightIntentEntryExecutor_sdk');
     this.isInitCache = false;
     this.isUpdateCompile = false;
     this.updatePageIntentObj = new Map();
