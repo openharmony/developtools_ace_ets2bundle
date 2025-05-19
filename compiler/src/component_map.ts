@@ -16,15 +16,22 @@
 const fs = require('fs');
 const path = require('path');
 import ts from 'typescript';
-
+import {
+  WHITELISTNEW,
+  readExternalComponents
+} from './external_component_map';
 const COMPONENTS = 'components';
 const FORM_COMPONENTS = 'form_components';
 export const COMPONENT_MAP: any = {};
 export const FORM_MAP: any = {};
 
+let EXTERNAL_COMPONENT_MAP: undefined | object = {};
+export let EXT_WHITE_LIST: Array<string> = [];
 export let COMMON_ATTRS: Set<string> = new Set([]);
 
 (function readComponents(): void {
+  EXTERNAL_COMPONENT_MAP = readExternalComponents();
+  EXT_WHITE_LIST = WHITELISTNEW;
   const componentPath: Map<string, string> = new Map([
     [`${COMPONENTS}`, `../${COMPONENTS}`],
     [`${FORM_COMPONENTS}`, `../${FORM_COMPONENTS}`]
@@ -53,7 +60,28 @@ export let COMMON_ATTRS: Set<string> = new Set([]);
       }
     });
   }
+  addExternalComponents();
 })();
+
+function addExternalComponents(): void {
+  const componentMapKeys = new Set(Object.keys(COMPONENT_MAP));
+  const extComponentSet: Set<string> = new Set(EXTERNAL_COMPONENT_MAP ?
+    Object.keys(EXTERNAL_COMPONENT_MAP) : []);
+  const extComponentKeys: Array<string> = Array.from(extComponentSet);
+  if (!extComponentKeys.length) {
+    return;
+  }
+  extComponentKeys.forEach((extCompName: string) => {
+    if (componentMapKeys.has(extCompName) && COMPONENT_MAP[extCompName].parents &&
+      EXTERNAL_COMPONENT_MAP[extCompName].parents) {
+      const newParents: Array<string> = Array.from(new Set([...COMPONENT_MAP[extCompName].parents,
+      ...EXTERNAL_COMPONENT_MAP[extCompName].parents]));
+      COMPONENT_MAP[extCompName].parents = newParents;
+    } else {
+      COMPONENT_MAP[extCompName] = EXTERNAL_COMPONENT_MAP[extCompName];
+    }
+  })
+}
 
 const TRANSITION_COMMON_ATTRS: Set<string> = new Set([
   'slide', 'translate', 'scale', 'opacity'
@@ -165,4 +193,8 @@ export function resetComponentMap(): void {
   ID_ATTRS.clear();
   EXTEND_ATTRIBUTE.clear();
   STYLES_ATTRIBUTE.clear();
+}
+
+export function resetExtContent(): void {
+  EXT_WHITE_LIST = [];
 }

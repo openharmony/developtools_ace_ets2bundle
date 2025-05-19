@@ -196,6 +196,10 @@ import { regularCollection, getSymbolIfAliased } from './validate_ui_syntax';
 import { contextStackPushOrPop } from './process_component_class';
 import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
 import logMessageCollection from './log_message_collection';
+import {
+  concatenateEtsOptions,
+  getExternalComponentPaths
+} from './external_component_map';
 
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
@@ -450,8 +454,17 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
   isInRepeatTemplate: boolean = false): void {
   if (supplement.isAcceleratePreview) {
     newsupplement = supplement;
-    const compilerOptions = ts.readConfigFile(
+    let compilerOptions = ts.readConfigFile(
       path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
+    const componentPaths: string[] | undefined = getExternalComponentPaths();
+    if (componentPaths) {
+      for (const componentPath of componentPaths) {
+        const externalCompilerOptions: ts.CompilerOptions = ts.readConfigFile(
+          path.resolve(componentPath, 'externalconfig.json'), ts.sys.readFile
+        ).config.compilerOptions;
+        concatenateEtsOptions(compilerOptions, externalCompilerOptions);
+      }
+    }
     Object.assign(compilerOptions, {
       'sourceMap': false
     });
