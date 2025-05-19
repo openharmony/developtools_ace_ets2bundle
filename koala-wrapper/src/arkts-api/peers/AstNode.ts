@@ -20,6 +20,7 @@ import { throwError } from '../../utils';
 import { Es2pandaModifierFlags } from '../../generated/Es2pandaEnums';
 import { ArktsObject } from './ArktsObject';
 import { Es2pandaAstNodeType } from '../../Es2pandaEnums';
+import { SourcePosition } from './SourcePosition';
 
 export abstract class AstNode extends ArktsObject {
     protected constructor(peer: KNativePointer) {
@@ -127,6 +128,22 @@ export abstract class AstNode extends ArktsObject {
 
     public get isStatic(): boolean {
         return global.generatedEs2panda._AstNodeIsStaticConst(global.context, this.peer);
+    }
+
+    public get startPosition(): SourcePosition {
+        return new SourcePosition(global.es2panda._AstNodeStartConst(global.context, this.peer));
+    }
+
+    public set startPosition(start: SourcePosition) {
+        global.es2panda._AstNodeSetStart(global.context, this.peer, start.peer);
+    }
+
+    public get endPosition(): SourcePosition {
+        return new SourcePosition(global.es2panda._AstNodeEndConst(global.context, this.peer));
+    }
+
+    public set endPosition(end: SourcePosition) {
+        global.es2panda._AstNodeSetEnd(global.context, this.peer, end.peer);
     }
 }
 

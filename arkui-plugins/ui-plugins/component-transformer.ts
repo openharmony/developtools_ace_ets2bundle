@@ -242,8 +242,11 @@ export class ComponentTransformer extends AbstractVisitor {
         );
 
         if (arkts.isStructDeclaration(node)) {
+            arkts.classDefinitionSetFromStructModifier(newDefinition);
             const _node = arkts.factory.createClassDeclaration(newDefinition);
             _node.modifiers = node.modifiers;
+            _node.startPosition = node.startPosition;
+            _node.endPosition = node.endPosition;
             return _node;
         } else {
             return arkts.factory.updateClassDeclaration(node, newDefinition);
