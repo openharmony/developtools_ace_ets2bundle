@@ -102,6 +102,7 @@ import {
 } from './hvigor_error_code/hvigor_error_info';
 import { ErrorCodeModule } from './hvigor_error_code/const/error_code_module';
 import { buildErrorInfoFromDiagnostic } from './hvigor_error_code/utils';
+import { concatenateEtsOptions, getExternalComponentPaths } from './external_component_map';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -141,8 +142,17 @@ const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data: string
 // The collection records the file name and the corresponding version, where the version is the hash value of the text in last compilation.
 const filesBuildInfo: Map<string, string> = new Map();
 
-export const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
+export let compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
+const componentPaths: string[] | undefined = getExternalComponentPaths();
+if (componentPaths) {
+  for (const componentPath of componentPaths) {
+    const externalCompilerOptions: ts.CompilerOptions = ts.readConfigFile(
+      path.resolve(componentPath, 'externalconfig.json'), ts.sys.readFile
+    ).config.compilerOptions;
+    concatenateEtsOptions(compilerOptions, externalCompilerOptions);
+  }
+}
 function setCompilerOptions(resolveModulePaths: string[]): void {
   const allPath: Array<string> = ['*'];
   const basePath: string = path.resolve(projectConfig.projectPath);

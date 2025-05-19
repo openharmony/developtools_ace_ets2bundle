@@ -80,7 +80,8 @@ import {
   INNER_CUSTOM_BUILDER_METHOD,
   resetComponentMap,
   INNER_CUSTOM_LOCALBUILDER_METHOD,
-  EXTEND_ATTRIBUTE
+  EXTEND_ATTRIBUTE,
+  resetExtContent
 } from '../../component_map';
 import {
   kitTransformLog,
@@ -113,6 +114,7 @@ import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
 import { ARKUI_SUBSYSTEM_CODE } from '../../../lib/hvigor_error_code/hvigor_error_info';
 import { ProjectCollections } from 'arkguard';
 import parseIntent from '../../userIntents_parser/parseUserIntents';
+import { concatenateEtsOptions, getExternalComponentPaths } from '../../external_component_map';
 
 let switchTsAst: boolean = true;
 
@@ -292,6 +294,7 @@ export function etsTransform() {
       resetValidateUiSyntax();
       resetObfuscation();
       parseIntent.clear();
+      resetExtContent();
     }
   };
 }
@@ -384,8 +387,17 @@ async function transform(code: string, id: string) {
 
   if (projectConfig.compileMode !== 'esmodule') {
     const eventEtsTransformForJsbundle = createAndStartEvent(hookEventFactory, 'transform for jsbundle');
-    const compilerOptions = ts.readConfigFile(
+    let compilerOptions = ts.readConfigFile(
       path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
+    const componentPaths: string[] | undefined = getExternalComponentPaths();
+    if (componentPaths) {
+      for (const componentPath of componentPaths) {
+        const externalCompilerOptions: ts.CompilerOptions = ts.readConfigFile(
+          path.resolve(componentPath, 'externalconfig.json'), ts.sys.readFile
+        ).config.compilerOptions;
+        concatenateEtsOptions(compilerOptions, externalCompilerOptions);
+      }
+    }
     compilerOptions.moduleResolution = 'nodenext';
     compilerOptions.module = 'es2020';
     const newContent: string = jsBundlePreProcess(code, id, this.getModuleInfo(id).isEntry, logger, hvigorLogger);
