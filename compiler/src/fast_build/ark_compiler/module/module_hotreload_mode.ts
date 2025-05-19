@@ -129,6 +129,15 @@ export class ModuleHotreloadMode extends ModuleMode {
       return;
     }
 
+    // The process of '--remove-redundant-file' use filesInfos.txt and compileContextInfo.json to get compile list.
+    // In non first build hot reload, filesInfos.txt only contian modified files, could cause loss of compile list.
+    // When useNormalizedOHMUrl is true, project could import from bytecode har, it will cause crash.
+    // So recreate the entry list for compileContextInfo.json in non first build.
+    if (this.useNormalizedOHMUrl) {
+      this.projectConfig.entryObj = changedFileListInAbsolutePath;
+      this.compileContextInfoPath = this.generateCompileContextInfo(rollupObject);
+    }
+
     const eventCollectModuleFileList = createAndStartEvent(parentEvent, 'collect module file list');
     this.collectModuleFileList(rollupObject, changedFileListInAbsolutePath[Symbol.iterator]());
     stopEvent(eventCollectModuleFileList);
