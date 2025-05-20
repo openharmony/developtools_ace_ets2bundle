@@ -15,7 +15,7 @@
 
 import ts from 'typescript';
 import path from 'path';
-
+import fs from 'fs';
 import {
   COMPONENT_RENDER_FUNCTION,
   COMPONENT_CREATE_FUNCTION,
