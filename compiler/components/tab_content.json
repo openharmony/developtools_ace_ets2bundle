@@ -1,6 +1,6 @@
 {
   "name": "TabContent",
-  "parents": ["Tabs"],
+  "parents": ["Tabs", "HdsTabs"],
   "attrs": [
     "tabBar",
     "onWillShow",
