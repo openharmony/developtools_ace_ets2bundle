@@ -392,6 +392,9 @@ async function transform(code: string, id: string) {
     const componentPaths: string[] | undefined = getExternalComponentPaths();
     if (componentPaths) {
       for (const componentPath of componentPaths) {
+        if (!fs.existsSync(componentPath)) {
+          continue;
+        }
         const externalCompilerOptions: ts.CompilerOptions = ts.readConfigFile(
           path.resolve(componentPath, 'externalconfig.json'), ts.sys.readFile
         ).config.compilerOptions;
