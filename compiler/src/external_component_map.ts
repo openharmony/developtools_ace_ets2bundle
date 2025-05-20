@@ -31,6 +31,9 @@ export function readExternalComponents(): object | undefined {
         return EXT_COMPONENT_MAP;
     }
     for (const componentPath of componentPaths) {
+        if(!fs.existsSync(componentPath)){
+            continue;
+        }
         const files: string[] = fs.readdirSync(componentPath);
         files.forEach(function (item) {
             const fPath: string = path.join(componentPath, item);
