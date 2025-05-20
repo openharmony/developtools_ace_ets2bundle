@@ -34,11 +34,11 @@ exports.expectResult = `let __generate__Id: number = 0;
 function generateId(): string {
     return "annotationApplication4_" + ++__generate__Id;
 }
-@interface Anno {
+@interface __$$ETS_ANNOTATION$$__Anno {
     a: string;
     b: number;
 }
-@interface Anno2 {
+@interface __$$ETS_ANNOTATION$$__Anno2 {
     a: string;
 }
 @__$$ETS_ANNOTATION$$__Anno({ a: "a", b: 10 })

@@ -40,7 +40,7 @@ function generateId(): string {
 }
 const a = true;
 const b = false;
-@interface Anno {
+@interface __$$ETS_ANNOTATION$$__Anno {
     d: boolean = false;
     r: boolean = false;
     s: boolean = true;
