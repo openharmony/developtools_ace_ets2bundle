@@ -178,7 +178,9 @@ import {
   LogType,
   LogInfo,
   componentInfo,
-  storedFileInfo
+  storedFileInfo,
+  findNonNullType,
+  CurrentProcessFile
 } from './utils';
 import {
   globalProgram,
@@ -335,7 +337,7 @@ function visitComponent(node: ts.Node): void {
         return;
       }
       if (ts.isIdentifier(child)) {
-        const symbol: ts.Symbol = globalProgram.checker.getSymbolAtLocation(child);
+        const symbol: ts.Symbol = CurrentProcessFile.getChecker()?.getSymbolAtLocation(child);
         if (symbol && symbol.valueDeclaration === storedFileInfo.lazyForEachInfo.forEachParameters) {
           storedFileInfo.lazyForEachInfo.isDependItem = true;
           return;
@@ -2324,11 +2326,22 @@ function isBuilderChangeNode(argument: ts.Node, identifierNode: ts.Identifier, p
 }
 
 export function isWrappedBuilder(node: ts.PropertyAccessExpression): boolean {
-  const typeAtLocation = globalProgram.checker.getTypeAtLocation(node.expression);
-  if (projectConfig.minAPIVersion >= 11 && ts.isPropertyAccessExpression(node) &&
-    node.name && ts.isIdentifier(node.name) && node.name.escapedText.toString() === WRAPBUILDER_BUILDERPROP &&
-    typeAtLocation && typeAtLocation.symbol && typeAtLocation.symbol.escapedName === WRAPPEDBUILDER_CLASS) {
-    return true;
+  if (!(
+    projectConfig.minAPIVersion >= 11 && 
+    ts.isPropertyAccessExpression(node) &&
+    node.name && ts.isIdentifier(node.name) && 
+    node.name.escapedText.toString() === WRAPBUILDER_BUILDERPROP
+  )) {
+    return false;
+  }
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (checker) {
+    const type: ts.Type | ts.Type[] = 
+      findNonNullType(checker.getTypeAtLocation(node.expression));
+    if (Array.isArray(type)) {
+      return false;
+    }
+    return type.symbol && type.symbol.escapedName === WRAPPEDBUILDER_CLASS;
   }
   return false;
 }
@@ -2910,8 +2923,9 @@ function isRegularAttrNode(node: ts.Expression): boolean {
     if (enumCollection.has(node.expression.escapedText.toString())) {
       return true;
     }
-    if (globalProgram.checker) {
-      const type: ts.Type = globalProgram.checker.getTypeAtLocation(node);
+    const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+    if (checker) {
+      const type: ts.Type = checker.getTypeAtLocation(node);
       /* Enum */
       if (type.flags & (32 | 1024)) {
         return true;
@@ -3414,7 +3428,7 @@ function isWrappedBuilderExpression(node: ts.ExpressionStatement): boolean {
 function judgeBuilderType(node: ts.ExpressionStatement): boolean {
   let checker: ts.TypeChecker;
   if (globalProgram.program) {
-    checker = globalProgram.program.getTypeChecker();
+    checker = CurrentProcessFile.getChecker(globalProgram.program);
   } else if (globalProgram.watchProgram) {
     checker = globalProgram.watchProgram.getCurrentProgram().getProgram().getTypeChecker();
   }
