@@ -284,6 +284,9 @@
         "ArcSwiper",
         "ArcScrollBar",
         "ArcAlphabetIndexer",
+        "HdsTabs",
+        "AudioWave",
+        "HdsVisualComponent",
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -907,6 +910,21 @@
             "name": "ArcAlphabetIndexer",
             "type": "ArcAlphabetIndexerAttribute",
             "instance": "ArcAlphabetIndexerInstance"
+          },
+          {
+            "name": "HdsTabs",
+            "type": "HdsTabsAttribute",
+            "instance": "HdsTabsInstance"
+          },
+          {
+            "name": "AudioWave",
+            "type": "AudioWaveAttribute",
+            "instance": "AudioWaveInstance"
+          },
+          {
+            "name": "HdsVisualComponent",
+            "type": "HdsVisualComponentAttribute",
+            "instance": "HdsVisualComponentInstance"
           }
         ]
       },
