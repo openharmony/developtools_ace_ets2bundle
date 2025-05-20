@@ -243,13 +243,19 @@ export function setAllParents(ast: AstNode) {
     global.es2panda._AstNodeUpdateAll(global.context, ast.peer);
 }
 
-export function generateTsDeclarationsFromContext(outputDeclEts: string, outputEts: string, exportAll: boolean): KInt {
-    return global.es2panda._GenerateTsDeclarationsFromContext(
-        global.context,
-        passString(outputDeclEts),
-        passString(outputEts),
-        exportAll
-    );
+export function generateTsDeclarationsFromContext(
+  outputDeclEts: string,
+  outputEts: string,
+  exportAll: boolean,
+  isolated: boolean
+): KInt {
+  return global.es2panda._GenerateTsDeclarationsFromContext(
+    global.context,
+    passString(outputDeclEts),
+    passString(outputEts),
+    exportAll,
+    isolated
+  );
 }
 
 export function isDefaultAccessModifierClassProperty(property: ClassProperty): boolean {
