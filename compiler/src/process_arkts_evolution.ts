@@ -17,24 +17,40 @@ import fs from 'fs';
 import path from 'path';
 import ts from 'typescript';
 
+import { getResolveModule } from '../../../ets_checker';
 import {
-  EXTNAME_ETS,
-  EXTNAME_D_ETS,
   ARKTS_1_0,
   ARKTS_1_1,
   ARKTS_1_2,
-  ARKTS_HYBRID,
-  SUPER_ARGS
+  ARKTS_HYBRID
 } from './pre_define';
 import {
-  toUnixPath,
-  mkdirsSync
-} from './utils';
+  IFileLog,
+  LogType,
+  mkdirsSync,
+  toUnixPath
+} from '../../../utils';
+import { getPkgInfo } from '../../../ark_utils';
+import {
+  EXTNAME_D_ETS,
+  EXTNAME_ETS,
+  EXTNAME_TS,
+  SUPER_ARGS
+} from '../../../pre_define';
+import {
+  CommonLogger,
+  LogData,
+  LogDataFactory
+} from '../logger';
+import {
+  ArkTSErrorDescription,
+  ErrorCode
+} from '../error_code';
+import createAstNodeUtils from '../../../create_ast_node_utils';
 import {
   red,
   reset
-} from './fast_build/ark_compiler/common/ark_define';
-import { getPkgInfo } from './ark_utils';
+} from '../common/ark_define';
 
 interface DeclFileConfig {
   declPath: string;
@@ -50,7 +66,7 @@ interface DeclFilesConfig {
 
 export interface ArkTSEvolutionModule {
   language: string; // "1.1" | "1.2"
-  pkgName: string;
+  packageName: string;
   moduleName: string;
   modulePath: string;
   declgenV1OutPath?: string;
@@ -64,6 +80,8 @@ interface ResolvedFileInfo {
   resolvedFileName: string;
 }
 
+export const interopTransformLog: IFileLog = new createAstNodeUtils.FileLog();
+
 export let pkgDeclFilesConfig: { [pkgName: string]: DeclFilesConfig } = {};
 
 export let arkTSModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
@@ -71,6 +89,10 @@ export let arkTSModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
 export let arkTSEvolutionModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
 
 export let arkTSHybridModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
+
+let arkTSEvoFileOHMUrlMap: Map<string, string> = new Map();
+
+let declaredClassVars: Set<string> = new Set();
 
 export function addDeclFilesConfig(filePath: string, projectConfig: Object, logger: Object,
   pkgPath: string, pkgName: string): void {
@@ -102,23 +124,35 @@ export function getArkTSEvoDeclFilePath(resolvedFileInfo: ResolvedFileInfo): str
   for (const [pkgName, arkTSEvolutionModuleInfo] of combinedMap) {
     const declgenV1OutPath: string = toUnixPath(arkTSEvolutionModuleInfo.declgenV1OutPath);
     const modulePath: string = toUnixPath(arkTSEvolutionModuleInfo.modulePath);
-    const moduleName: string = arkTSEvolutionModuleInfo.moduleName;
     const declgenBridgeCodePath: string = toUnixPath(arkTSEvolutionModuleInfo.declgenBridgeCodePath);
     if (resolvedFileName && resolvedFileName.startsWith(modulePath + '/') &&
       !resolvedFileName.startsWith(declgenBridgeCodePath + '/')) {
       arktsEvoDeclFilePath = resolvedFileName
-        .replace(modulePath, toUnixPath(path.join(declgenV1OutPath, moduleName)))
+        .replace(modulePath, toUnixPath(path.join(declgenV1OutPath, pkgName)))
         .replace(EXTNAME_ETS, EXTNAME_D_ETS);
       break;
     }
-    if (moduleRequest === moduleName) {
-      arktsEvoDeclFilePath = path.join(declgenV1OutPath, moduleName, 'Index.d.ets');
+    if (moduleRequest === pkgName) {
+      arktsEvoDeclFilePath = path.join(declgenV1OutPath, pkgName, 'Index.d.ets');
       break;
     }
-    if (moduleRequest.startsWith(moduleName + '/')) {
+    if (moduleRequest.startsWith(pkgName + '/')) {
       arktsEvoDeclFilePath = moduleRequest.replace(
-        moduleName,
-        toUnixPath(path.join(declgenV1OutPath, moduleName, 'src/main/ets'))
+        pkgName,
+        toUnixPath(path.join(declgenV1OutPath, pkgName, 'src/main/ets'))
+      ) + EXTNAME_D_ETS;
+      
+      if (fs.existsSync(arktsEvoDeclFilePath)) {
+        break;
+      }
+      /**
+       * If the import is exported via the package name, for example:
+       *   import { xxx } from 'src/main/ets/xxx/xxx/...'
+       * there is no need to additionally concatenate 'src/main/ets'
+       */
+      arktsEvoDeclFilePath = moduleRequest.replace(
+        pkgName,
+        toUnixPath(path.join(declgenV1OutPath, pkgName))
       ) + EXTNAME_D_ETS;
       break;
     }
@@ -127,10 +161,19 @@ export function getArkTSEvoDeclFilePath(resolvedFileInfo: ResolvedFileInfo): str
 }
 
 export function collectArkTSEvolutionModuleInfo(share: Object): void {
+  if (!share.projectConfig.dependentModuleMap) {
+    return;
+  }
   if (!share.projectConfig.useNormalizedOHMUrl) {
-    share.throwArkTsCompilerError(red, 'ArkTS:ERROR: Failed to compile mixed project.\n' +
-          'Error Message: Failed to compile mixed project because useNormalizedOHMUrl is false.\n' +
-          'Solutions: > Check whether useNormalizedOHMUrl is true.', reset);
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_COLLECT_INTEROP_INFO_FAILED,
+      ArkTSErrorDescription,
+      'Failed to compile mixed project.',
+      `Failed to compile mixed project because useNormalizedOHMUrl is false.`,
+      ['Please check whether useNormalizedOHMUrl is true.']
+    );
+    CommonLogger.getInstance(share).printErrorAndExit(errInfo);
+    
   }
   // dependentModuleMap Contents eg.
   // 1.2 hap -> 1.1 har: It contains the information of 1.1 har
@@ -174,16 +217,30 @@ export function cleanUpProcessArkTSEvolutionObj(): void {
   arkTSEvolutionModuleMap = new Map();
   arkTSHybridModuleMap = new Map();
   pkgDeclFilesConfig = {};
+  arkTSEvoFileOHMUrlMap = new Map();
+  interopTransformLog.cleanUp();
+  declaredClassVars = new Set();
 }
 
-export async function writeBridgeCodeFileSyncByNode(node: ts.SourceFile, moduleId: string): Promise<void> {
+export async function writeBridgeCodeFileSyncByNode(node: ts.SourceFile, moduleId: string,
+  metaInfo: Object): Promise<void> {
   const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   const writer: ts.EmitTextWriter = ts.createTextWriter(
     // @ts-ignore
     ts.getNewLineCharacter({ newLine: ts.NewLineKind.LineFeed, removeComments: false }));
     printer.writeFile(node, writer, undefined);
-  mkdirsSync(path.dirname(moduleId));
-  fs.writeFileSync(moduleId, writer.getText());
+  const cacheFilePath: string = genCachePathForBridgeCode(moduleId, metaInfo);
+  mkdirsSync(path.dirname(cacheFilePath));
+  fs.writeFileSync(cacheFilePath, writer.getText());
+}
+
+export function genCachePathForBridgeCode(moduleId: string, metaInfo: Object, cachePath?: string): string {
+  const bridgeCodePath: string = getDeclgenBridgeCodePath(metaInfo.pkgName);
+  const filePath: string = toUnixPath(moduleId);
+  const relativeFilePath: string = filePath.replace(
+    toUnixPath(path.join(bridgeCodePath, metaInfo.pkgName)), metaInfo.moduleName);
+  const cacheFilePath: string = path.join(cachePath ? cachePath : process.env.cachePath, relativeFilePath);
+  return cacheFilePath;
 }
 
 export function getDeclgenBridgeCodePath(pkgName: string): string {
@@ -222,7 +279,12 @@ export function isArkTSEvolutionFile(filePath: string, metaInfo: Object): boolea
     const normalizedFilePath = toUnixPath(filePath);
     const staticFileList = hybridModule.staticFiles || [];
     
-    return new Set(staticFileList.map(toUnixPath)).has(normalizedFilePath);
+    // Concatenate the corresponding source code path based on the bridge code path.
+    const declgenCodeBrigdePath = path.join(toUnixPath(hybridModule.declgenBridgeCodePath), metaInfo.pkgName);
+    let moduleId = normalizedFilePath.replace(toUnixPath(declgenCodeBrigdePath), toUnixPath(metaInfo.pkgPath));
+    const arktsEvolutionFile = moduleId.replace(new RegExp(`\\${EXTNAME_TS}$`), EXTNAME_ETS);
+
+    return new Set(staticFileList.map(toUnixPath)).has(arktsEvolutionFile);
   }
 
   return false;
@@ -236,11 +298,14 @@ export function interopTransform(program: ts.Program, id: string, mixCompile: bo
   const typeChecker: ts.TypeChecker = program.getTypeChecker();
   return (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
     const scopeUsedNames: WeakMap<ts.Node, Set<string>> = new WeakMap<ts.Node, Set<string>>();
+    const fullNameToTmpVar: Map<string, string> = new Map();
+    const globalDeclarations: Map<string, ts.Statement> = new Map();
     return (rootNode: ts.SourceFile) => {
       interopTransformLog.sourceFile = rootNode;
       const classToInterfacesMap: Map<ts.ClassDeclaration, Set<string>> = collectInterfacesMap(rootNode, typeChecker);
       // Support for creating 1.2 type object literals in 1.1 modules
-      const visitor: ts.Visitor = createObjectLiteralVisitor(context, typeChecker, scopeUsedNames);
+      const visitor: ts.Visitor =
+        createObjectLiteralVisitor(rootNode, context, typeChecker, scopeUsedNames, fullNameToTmpVar, globalDeclarations);
       const processNode: ts.SourceFile = ts.visitEachChild(rootNode, visitor, context);
       // Support 1.1 classes to implement 1.2 interfaces
       const withHeritage: ts.SourceFile = classToInterfacesMap.size > 0 ?
@@ -280,8 +345,9 @@ function isFromArkTSEvolutionModule(node: ts.Node): boolean {
   return false;
 }
 
-function createObjectLiteralVisitor(context: ts.TransformationContext, typeChecker: ts.TypeChecker,
-  scopeUsedNames: WeakMap<ts.Node, Set<string>>): ts.Visitor {
+function createObjectLiteralVisitor(rootNode: ts.SourceFile, context: ts.TransformationContext, typeChecker: ts.TypeChecker,
+  scopeUsedNames: WeakMap<ts.Node, Set<string>>, fullNameToTmpVar: Map<string, string>,
+  globalDeclarations: Map<string, ts.Statement>): ts.Visitor {
   return function visitor(node: ts.SourceFile): ts.SourceFile {
     if (!ts.isObjectLiteralExpression(node)) {
       return ts.visitEachChild(node, visitor, context);
@@ -292,10 +358,12 @@ function createObjectLiteralVisitor(context: ts.TransformationContext, typeCheck
       return ts.visitEachChild(node, visitor, context);
     }
     const isRecordType: boolean = contextualType.aliasSymbol?.escapedName === 'Record' &&
-      (typeof ts.isStaticRecord === 'function' && ts.isStaticRecord(contextualType));
+      (typeof typeChecker.isStaticRecord === 'function' && typeChecker.isStaticRecord(contextualType));
     const finalType: ts.Type = unwrapType(node, contextualType);
     const decl : ts.Declaration = (finalType.symbol?.declarations || finalType.aliasSymbol?.declarations)?.[0];
+    
     let className: string;
+    let tmpObjName: string;
     if (!isRecordType) {
       if (!decl || !isFromArkTSEvolutionModule(decl)) {
         return ts.visitEachChild(node, visitor, context);
@@ -308,29 +376,23 @@ function createObjectLiteralVisitor(context: ts.TransformationContext, typeCheck
       if (ts.isClassDeclaration(decl) && !hasZeroArgConstructor(decl, className)) {
         return ts.visitEachChild(node, visitor, context);
       }
+      tmpObjName = getUniqueName(rootNode, 'tmpObj', scopeUsedNames);
+      declareGlobalTemp(tmpObjName, globalDeclarations);
     }
-
-    const scope: ts.Node = getScope(node);
-    const tmpObjName: string = getUniqueName(scope, 'tmpObj', scopeUsedNames);
+    
     const fullName: string = buildFullClassName(decl, finalType, className, isRecordType);
     const getCtorExpr: ts.Expression = buildGetConstructorCall(fullName, isRecordType);
     let tmpClassName: string;
     if (fullNameToTmpVar.has(fullName)) {
       tmpClassName = fullNameToTmpVar.get(fullName)!;
     } else {
-      tmpClassName = getUniqueName(scope, isRecordType ? 'tmpRecord' : 'tmpClass', scopeUsedNames);
+      tmpClassName = getUniqueName(rootNode, isRecordType ? 'tmpRecord' : 'tmpClass', scopeUsedNames);
       fullNameToTmpVar.set(fullName, tmpClassName);
-      declareGlobalTemp(tmpClassName, getCtorExpr);
+      declareGlobalTemp(tmpClassName, globalDeclarations, getCtorExpr);
     }
-    declareGlobalTemp(tmpObjName);
 
-    const assignments: ts.Expression[] = buildPropertyAssignments(node, tmpObjName, !isRecordType);
-    return ts.factory.createParenthesizedExpression(ts.factory.createCommaListExpression([
-      ts.factory.createAssignment(ts.factory.createIdentifier(tmpObjName),
-        ts.factory.createNewExpression(ts.factory.createIdentifier(tmpClassName), undefined, [])),
-      ...assignments,
-      ts.factory.createIdentifier(tmpObjName)
-    ]));
+    return ts.factory.createParenthesizedExpression(
+      ts.factory.createCommaListExpression(buildCommaExpressions(node, isRecordType, tmpObjName, tmpClassName)));
   };
 }
 
@@ -407,19 +469,18 @@ function hasZeroArgConstructor(decl: ts.ClassDeclaration, className: string): bo
 
 function buildFullClassName(decl: ts.Declaration, finalType: ts.Type, className: string, isRecordType: boolean): string {
   if (isRecordType) {
-    return 'Lescompat/Record';
+    return 'Lescompat/Record;';
   }
   const basePath: string = getArkTSEvoFileOHMUrl(finalType);
   return ts.isInterfaceDeclaration(decl) ? 
-    `L${basePath}/${className}$ObjectLiteral` :
-    `L${basePath}/${className}`;
+    `L${basePath}/${basePath.split('/').join('$')}$${className}$ObjectLiteral;` :
+    `L${basePath}/${className};`;
 }
 
 function buildGetConstructorCall(fullName: string, isRecord: boolean): ts.Expression {
   return ts.factory.createCallExpression(
-    ts.factory.createPropertyAccessExpression(
-      ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('globalThis'), 'gtest'),
-      isRecord ? 'etsVM.getInstance' : 'etsVM.getClass'),
+    ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('globalThis'),
+      isRecord ? 'Panda.getInstance' : 'Panda.getClass'),
     undefined,
     [ts.factory.createStringLiteral(fullName)]
   );
@@ -440,6 +501,25 @@ function buildPropertyAssignments(node: ts.ObjectLiteralExpression, tmpObjName: 
   }).filter(Boolean) as ts.Expression[];
 }
 
+function buildCommaExpressions(node: ts.ObjectLiteralExpression, isRecordType: boolean,
+  tmpObjName: string, tmpClassName: string): ts.Expression[] {
+  const assignments: ts.Expression[] =
+    buildPropertyAssignments(node, isRecordType ? tmpClassName : tmpObjName, !isRecordType);
+
+  if (isRecordType) {
+    return [...assignments, ts.factory.createIdentifier(tmpClassName)];
+  }
+
+  return [
+    ts.factory.createAssignment(
+      ts.factory.createIdentifier(tmpObjName),
+      ts.factory.createNewExpression(ts.factory.createIdentifier(tmpClassName), undefined, [])
+    ),
+    ...assignments,
+    ts.factory.createIdentifier(tmpObjName)
+  ];
+}
+
 function getArkTSEvoFileOHMUrl(contextualType: ts.Type): string {
   const decl: ts.Declaration = (contextualType.symbol?.declarations || contextualType.aliasSymbol?.declarations)?.[0];
   if (!decl) {
@@ -447,14 +527,6 @@ function getArkTSEvoFileOHMUrl(contextualType: ts.Type): string {
   }
   const sourceFilePath: string = toUnixPath(decl.getSourceFile().fileName);
   return arkTSEvoFileOHMUrlMap.get(sourceFilePath);
-}
-
-function getScope(node: ts.Node): ts.Node {
-  let current: ts.Node | undefined = node;
-  while (current && !ts.isBlock(current) && !ts.isSourceFile(current)) {
-    current = current.parent;
-  }
-  return current ?? node.getSourceFile();
 }
 
 function getUniqueName(scope: ts.Node, base: string, usedNames: WeakMap<ts.Node, Set<string>>): string {
@@ -471,7 +543,7 @@ function getUniqueName(scope: ts.Node, base: string, usedNames: WeakMap<ts.Node,
   return name;
 }
 
-function declareGlobalTemp(name: string, initializer?: ts.Expression): ts.Statement {
+function declareGlobalTemp(name: string, globalDeclarations: Map<string, ts.Statement>, initializer?: ts.Expression): ts.Statement {
   if (initializer && declaredClassVars.has(name)) {
     return globalDeclarations.get(name)!;
   }
@@ -611,4 +683,13 @@ function addSuper(needSuper: boolean, injectStatement: ts.ExpressionStatement[],
         undefined)
     );
   }
+}
+
+export function redirectToDeclFileForInterop(resolvedFileName: string): ts.ResolvedModuleFull {
+  const filePath: string = toUnixPath(resolvedFileName);
+  const resultDETSPath: string = getArkTSEvoDeclFilePath({ moduleRequest: '', resolvedFileName: filePath });
+  if (ts.sys.fileExists(resultDETSPath)) {
+    return getResolveModule(resultDETSPath, EXTNAME_D_ETS);
+  }
+  return undefined;
 }
