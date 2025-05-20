@@ -59,7 +59,7 @@ const enum E {
     A = 0,
     B = 1
 }
-@interface Anno {
+@interface __$$ETS_ANNOTATION$$__Anno {
     a: number = 0;
     b: number = 0;
     c: number = -1;

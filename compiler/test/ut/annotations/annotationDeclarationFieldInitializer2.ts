@@ -36,7 +36,7 @@ exports.expectResult = `let __generate__Id: number = 0;
 function generateId(): string {
     return "annotationDeclarationFieldInitializer2_" + ++__generate__Id;
 }
-@interface Anno {
+@interface __$$ETS_ANNOTATION$$__Anno {
     d: boolean = false;
     q: string = "ab";
     r: string = "b";

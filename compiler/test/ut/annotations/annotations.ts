@@ -25,7 +25,7 @@ exports.expectResult = `let __generate__Id: number = 0;
 function generateId(): string {
     return "annotations_" + ++__generate__Id;
 }
-@interface MyAnno {
+@interface __$$ETS_ANNOTATION$$__MyAnno {
     x: number = 2;
 }
 `

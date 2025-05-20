@@ -52,7 +52,7 @@ function generateId(): string {
 }
 const a = 1;
 const b = 2;
-@interface Anno {
+@interface __$$ETS_ANNOTATION$$__Anno {
     d: boolean = false;
     e: number = 3;
     f: number = 0;
