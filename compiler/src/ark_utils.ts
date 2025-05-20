@@ -130,7 +130,7 @@ export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: O
       'Failed to resolve OhmUrl. ' +
       `Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}".`,
       '',
-      [`Check whether the "${pkgName}" module which ${filePath} belongs to is correctly configured.`, 
+      [`Check whether the "${pkgName}" module which ${filePath} belongs to is correctly configured.`,
        'Check the corresponding file name is correct(including case-sensitivity).']
     );
     logger.printError(errInfo);
@@ -230,7 +230,7 @@ function processPackageDir(params: Object): string {
         'Failed to resolve OhmUrl. ' +
         `Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}".`,
         '',
-        [`Check whether the module which ${originalFilePath} belongs to is correctly configured.`, 
+        [`Check whether the module which ${originalFilePath} belongs to is correctly configured.`,
          'Check the corresponding file name is correct(including case-sensitivity).']
       );
       logger.printError(errInfo);
@@ -269,7 +269,7 @@ function processPackageDir(params: Object): string {
     'Failed to resolve OhmUrl. ' +
     `Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}".`,
     '',
-    [`Check whether the module which ${originalFilePath} belongs to is correctly configured.`, 
+    [`Check whether the module which ${originalFilePath} belongs to is correctly configured.`,
      'Check the corresponding file name is correct(including case-sensitivity).']
   );
   logger.printError(errInfo);
@@ -306,7 +306,7 @@ export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string, config?:
   if (REG_LIB_SO.test(moduleRequest.trim())) {
     if (useNormalizedOHMUrl) {
       const pkgInfo = config.pkgContextInfo[moduleRequest];
-      if (pkgInfo === undefined) {
+      if (!pkgInfo) {
         const errInfo: LogData = LogDataFactory.newInstance(
           ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_PKG_CONTENT_INFO,
           ArkTSInternalErrorDescription,
@@ -314,6 +314,7 @@ export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string, config?:
           `which being imported by '${importerFile}'`
         );
         logger?.printError(errInfo);
+        return moduleRequest;
       }
       const isSo = pkgInfo.isSO ? 'Y' : 'N';
       return `@normalized:${isSo}&${pkgInfo.moduleName}&${pkgInfo.bundleName}&${moduleRequest}&${pkgInfo.version}`;
@@ -392,6 +393,25 @@ function removeSuffix(filePath: string): string {
   return filePath.split(path.sep).join('/').replace(SUFFIX_REG, '');
 }
 
+export function getNormalizedOhmUrlByModuleRequest(moduleInfoByModuleRequest: Object, projectConfig: Object,
+  logger?: Object): string {
+  const normalizedPath = moduleInfoByModuleRequest.normalizedPath;
+  const pkgName = moduleInfoByModuleRequest.packageName;
+  const pkgInfo: Object = projectConfig.pkgContextInfo[pkgName];
+  if (!normalizedPath || !pkgName || !pkgInfo) {
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_PACKAGE_NOT_FOUND_IN_CONTEXT_INFO,
+      ArkTSInternalErrorDescription,
+      `Failed to find package '${pkgName}'. ` +
+      `Failed to obtain package '${pkgName}' from the package context information.`
+    );
+    logger?.printError(errInfo);
+    return normalizedPath;
+  }
+  const isSo = pkgInfo.isSO ? 'Y' : 'N';
+  return `@normalized:${isSo}&${pkgInfo.moduleName}&${pkgInfo.bundleName}&${toUnixPath(normalizedPath)}&${pkgInfo.version}`;
+}
+
 export function getNormalizedOhmUrlByAliasName(aliasName: string, projectConfig: Object,
   logger?: Object, filePath?: string): string {
   let pkgName: string = aliasName;
@@ -430,9 +450,13 @@ export function getNormalizedOhmUrlByAliasName(aliasName: string, projectConfig:
   return `@normalized:${isSo}&${pkgInfo.moduleName}&${pkgInfo.bundleName}&${normalizedPath}&${pkgInfo.version}`;
 }
 
-export function getOhmUrlByByteCodeHar(moduleRequest: string, projectConfig: Object, logger?: Object):
+export function getOhmUrlByByteCodeHar(moduleRequest: string, projectConfig: Object, rollupObject: Object, logger?: Object):
   string | undefined {
   if (projectConfig.byteCodeHarInfo) {
+    const moduleInfoByModuleRequest: Object = rollupObject.share?.importResolver?.(moduleRequest);
+    if (moduleInfoByModuleRequest) {
+       return getNormalizedOhmUrlByModuleRequest(moduleInfoByModuleRequest, projectConfig, logger);
+    }
     let aliasName: string = getAliasNameFromPackageMap(projectConfig.byteCodeHarInfo, moduleRequest);
     if (aliasName) {
       return getNormalizedOhmUrlByAliasName(aliasName, projectConfig, logger);
@@ -467,11 +491,15 @@ function getAliasNameFromPackageMap(externalPkgMap: Object, moduleRequest: strin
   return undefined;
 }
 
-export function getOhmUrlByExternalPackage(moduleRequest: string, projectConfig: Object, logger?: Object,
+export function getOhmUrlByExternalPackage(moduleRequest: string, projectConfig: Object, rollupObject?: Object, logger?: Object,
   useNormalizedOHMUrl: boolean = false): string | undefined {
   // The externalPkgMap store the ohmurl with the alias of hsp package and the hars depended on bytecode har.
   let externalPkgMap: Object = Object.assign({}, projectConfig.hspNameOhmMap, projectConfig.harNameOhmMap);
   if (Object.keys(externalPkgMap).length !== 0) {
+    const moduleInfoByModuleRequest: Object = rollupObject?.share?.importResolver?.(moduleRequest);
+    if (useNormalizedOHMUrl && moduleInfoByModuleRequest) {
+       return getNormalizedOhmUrlByModuleRequest(moduleInfoByModuleRequest, projectConfig, logger);
+    }
     let aliasName: string = getAliasNameFromPackageMap(externalPkgMap, moduleRequest);
     if (aliasName) {
       if (useNormalizedOHMUrl) {
