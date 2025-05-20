@@ -62,12 +62,12 @@ import {
 } from 'arkguard';
 import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../../meomry_monitor/memory_define';
-import { 
+import {
   CommonLogger,
   LogData,
   LogDataFactory
 } from '../logger';
-import { 
+import {
   ArkTSInternalErrorDescription,
   ErrorCode
 } from '../error_code';
@@ -161,7 +161,7 @@ export class ModuleSourceFile {
     if (!!rollupObject.share.projectConfig.useNormalizedOHMUrl) {
       useNormalizedOHMUrl = rollupObject.share.projectConfig.useNormalizedOHMUrl;
     }
-    let transformedMockTarget: string | undefined = getOhmUrlByExternalPackage(originKey, ModuleSourceFile.projectConfig,
+    let transformedMockTarget: string | undefined = getOhmUrlByExternalPackage(originKey, ModuleSourceFile.projectConfig, rollupObject,
                                                                        ModuleSourceFile.logger, useNormalizedOHMUrl);
     if (transformedMockTarget !== undefined) {
       ModuleSourceFile.addMockConfig(ModuleSourceFile.transformedHarOrHspMockConfigInfo, transformedMockTarget, src);
@@ -330,7 +330,7 @@ export class ModuleSourceFile {
       }
       ModuleSourceFile.isEnvInitialized = true;
     }
-    
+
     if (ModuleSourceFile.moduleIdMap.has(moduleId)) {
       let moduleSourceFile = ModuleSourceFile.moduleIdMap.get(moduleId);
       ModuleSourceFile.moduleIdMap.delete(moduleId);
@@ -349,7 +349,7 @@ export class ModuleSourceFile {
       await moduleSourceFile.writeSourceFile(eventWriteSourceFile);
       stopEvent(eventWriteSourceFile);
     }
-  }  
+  }
 
   static async processModuleSourceFiles(rollupObject: Object, parentEvent: CompileEvent | undefined): Promise<void> {
     this.initPluginEnv(rollupObject);
@@ -432,14 +432,14 @@ export class ModuleSourceFile {
       return systemOrLibOhmUrl;
     }
     const externalPkgOhmurl: string | undefined = getOhmUrlByExternalPackage(moduleRequest,
-      ModuleSourceFile.projectConfig, ModuleSourceFile.logger, useNormalizedOHMUrl);
+      ModuleSourceFile.projectConfig, rollupObject, ModuleSourceFile.logger, useNormalizedOHMUrl);
     if (externalPkgOhmurl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
         ModuleSourceFile.generateNewMockInfo(moduleRequest, externalPkgOhmurl, rollupObject, importerFile);
       }
       return externalPkgOhmurl;
     }
-    const byteCodeHarOhmurl: string | undefined = getOhmUrlByByteCodeHar(moduleRequest, ModuleSourceFile.projectConfig,
+    const byteCodeHarOhmurl: string | undefined = getOhmUrlByByteCodeHar(moduleRequest, ModuleSourceFile.projectConfig, rollupObject,
       ModuleSourceFile.logger);
     if (byteCodeHarOhmurl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
