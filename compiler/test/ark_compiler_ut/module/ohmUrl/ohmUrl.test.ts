@@ -22,8 +22,7 @@ import {
   getOhmUrlByExternalPackage,
   getOhmUrlBySystemApiOrLibRequest,
   getNormalizedOhmUrlByFilepath,
-  getNormalizedOhmUrlByAliasName,
-  getNormalizedOhmUrlByModuleRequest
+  getNormalizedOhmUrlByAliasName
 } from '../../../../lib/ark_utils';
 import { PACKAGES } from '../../../../lib/pre_define';
 import projectConfig from '../../utils/processProjectConfig';
@@ -119,32 +118,22 @@ mocha.describe('generate ohmUrl', function () {
   });
 
   mocha.it('shared library', function () {
-    this.rollup.build();
     const sharedLibraryPackageName: string = "@ohos/sharedLibrary";
     const sharedLibraryPackageNameSlashes: string = "@ohos/library///";
     const sharedLibraryPage: string = "@ohos/sharedLibrary/src/main/ets/pages/page1";
     const errorSharedLibrary: string = "@ohos/staticLibrary";
-    const sharedLibraryModuleRequest = "@ohos/library////\\\\/";
-    const sharedLibraryModuleRequestByPath = "@ohos/library/src/main/ets////";
-    const sharedLibraryPackageNameOhmUrl: string = getOhmUrlByExternalPackage(sharedLibraryPackageName, projectConfig, this.rollup);
-    const sharedLibraryPackageNameSlashesOhmUrl: string = getOhmUrlByExternalPackage(sharedLibraryPackageNameSlashes, projectConfig, this.rollup, ModuleSourceFile.logger, true);
-    const sharedLibraryPageOhmUrl: string = getOhmUrlByExternalPackage(sharedLibraryPage, projectConfig, this.rollup);
-    const errorSharedLibraryOhmUrl = getOhmUrlByExternalPackage(errorSharedLibrary, projectConfig, this.rollup);
-    const sharedLibraryModuleRequestOhmUrl = getOhmUrlByExternalPackage(sharedLibraryModuleRequest, projectConfig, this.rollup, ModuleSourceFile.logger, true);
-    const sharedLibraryModuleRequestByPathOhmUrl = getOhmUrlByExternalPackage(sharedLibraryModuleRequestByPath, projectConfig, this.rollup, ModuleSourceFile.logger, true);
+    const sharedLibraryPackageNameOhmUrl: string = getOhmUrlByExternalPackage(sharedLibraryPackageName, projectConfig);
+    const sharedLibraryPackageNameSlashesOhmUrl: string = getOhmUrlByExternalPackage(sharedLibraryPackageNameSlashes, projectConfig, ModuleSourceFile.logger, true);
+    const sharedLibraryPageOhmUrl: string = getOhmUrlByExternalPackage(sharedLibraryPage, projectConfig);
+    const errorSharedLibraryOhmUrl = getOhmUrlByExternalPackage(errorSharedLibrary, projectConfig);
     const expectedSharedLibraryOhmUrl: string = "@bundle:UtTestApplication/sharedLibrary/ets/index";
     const expectedSharedLibrarySlashesOhmUrl: string = "@normalized:N&&&@ohos/library/Index&1.0.0";
     const expectedSharedLibraryPageOhmUrl: string = "@bundle:UtTestApplication/sharedLibrary/ets/pages/page1";
     const expectedErrorSharedLibraryOhmUrl = undefined;
-    const expectsharedLibraryModuleRequestOhmUrl = "@normalized:N&&&@ohos/library/Index&1.0.0";
-    const expectsharedLibraryModuleRequestByPathOhmUrl = "@normalized:N&&&@ohos/library/src/main/ets/Index&1.0.0";
     expect(sharedLibraryPackageNameOhmUrl == expectedSharedLibraryOhmUrl).to.be.true;
     expect(sharedLibraryPackageNameSlashesOhmUrl == expectedSharedLibrarySlashesOhmUrl).to.be.true;
     expect(sharedLibraryPageOhmUrl == expectedSharedLibraryPageOhmUrl).to.be.true;
     expect(errorSharedLibraryOhmUrl == expectedErrorSharedLibraryOhmUrl).to.be.true;
-    expect(sharedLibraryModuleRequestOhmUrl == expectsharedLibraryModuleRequestOhmUrl).to.be.true;
-    expect(sharedLibraryModuleRequestByPathOhmUrl == expectsharedLibraryModuleRequestByPathOhmUrl).to.be.true;
-
   });
 
   mocha.it('project module', function () {
@@ -248,7 +237,7 @@ mocha.describe('generate ohmUrl', function () {
     const errInfo: LogData = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_EXTERNAL_FAILED_TO_RESOLVE_OHM_URL,
       ArkTSErrorDescription,
-      'Failed to resolve OhmUrl. Failed to get a resolved OhmUrl for ' +
+      'Failed to resolve OhmUrl. Failed to get a resolved OhmUrl for ' + 
       '"/testProjectRootPath/entry/oh_modules/json5/dist/index.js" imported by "importTest.ts".',
       '',
       ['Check whether the module which /testProjectRootPath/entry/oh_modules/json5/dist/index.js belongs to is correctly configured.',
@@ -272,7 +261,7 @@ mocha.describe('generate ohmUrl', function () {
     const errInfo: LogData = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_EXTERNAL_FAILED_TO_RESOLVE_OHM_URL,
       ArkTSErrorDescription,
-      'Failed to resolve OhmUrl. Failed to get a resolved OhmUrl for ' +
+      'Failed to resolve OhmUrl. Failed to get a resolved OhmUrl for ' + 
       '"/testProjectRootPath/entry/oh_modules/json5/dist/index.js" imported by "importTest.ts".',
       '',
       ['Check whether the module which /testProjectRootPath/entry/oh_modules/json5/dist/index.js belongs to is correctly configured.',
@@ -506,7 +495,7 @@ mocha.describe('generate ohmUrl', function () {
     const etsBasedAbsolutePath: string = 'ets/utils/Calc';
     const standardImportPath: string = 'pkghar/src/main/ets/utils/Calc';
     const moduleSourceFile: string = new ModuleSourceFile();
-    ModuleSourceFile.initPluginEnv(this.rollup);
+    ModuleSourceFile.initPluginEnv(this.rollup); 
     const relativePathOhmUrl: string = moduleSourceFile.getOhmUrl(this.rollup, relativePath, filePath, importerFile);
     const etsBasedAbsolutePathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, etsBasedAbsolutePath, filePath,
       importerFile);
@@ -584,7 +573,7 @@ mocha.describe('generate ohmUrl', function () {
     const etsBasedAbsolutePath: string = 'ets/utils/Calc';
     const standardImportPath: string = 'pkghar/src/main/ets/utils/Calc';
     const moduleSourceFile: string = new ModuleSourceFile();
-    ModuleSourceFile.initPluginEnv(this.rollup);
+    ModuleSourceFile.initPluginEnv(this.rollup); 
     const relativePathOhmUrl: string = moduleSourceFile.getOhmUrl(this.rollup, relativePath, filePath, importerFile);
     const etsBasedAbsolutePathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, etsBasedAbsolutePath, filePath,
       importerFile);
@@ -663,7 +652,7 @@ mocha.describe('generate ohmUrl', function () {
     const etsBasedAbsolutePath: string = 'ets/utils/Calc';
     const standardImportPath: string = 'pkghar/src/main/ets/utils/Calc';
     const moduleSourceFile: string = new ModuleSourceFile();
-    ModuleSourceFile.initPluginEnv(this.rollup);
+    ModuleSourceFile.initPluginEnv(this.rollup); 
     const relativePathOhmUrl: string = moduleSourceFile.getOhmUrl(this.rollup, relativePath, filePath, importerFile);
     const etsBasedAbsolutePathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, etsBasedAbsolutePath, filePath,
       importerFile);
@@ -741,7 +730,7 @@ mocha.describe('generate ohmUrl', function () {
     const etsBasedAbsolutePath: string = 'ets/utils/Calc';
     const standardImportPath: string = 'pkghar/src/main/ets/utils/Calc';
     const moduleSourceFile: string = new ModuleSourceFile();
-    ModuleSourceFile.initPluginEnv(this.rollup);
+    ModuleSourceFile.initPluginEnv(this.rollup); 
     const relativePathOhmUrl: string = moduleSourceFile.getOhmUrl(this.rollup, relativePath, filePath, importerFile);
     const etsBasedAbsolutePathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, etsBasedAbsolutePath, filePath,
       importerFile);
@@ -1124,7 +1113,7 @@ mocha.describe('generate ohmUrl', function () {
       mockConfigPath: `${projectConfig.projectRootPath}/entry/src/mock/mock-config.json5`
     }
     this.rollup.share.projectConfig.entryModuleName = 'entry';
-
+    
     const importerFile: string = `${projectConfig.projectRootPath}/entry/src/main/ets/pages/index.ets`;
     const moduleInfo = {
       id: importerFile,
@@ -1135,7 +1124,7 @@ mocha.describe('generate ohmUrl', function () {
       }
     }
     this.rollup.moduleInfos.push(moduleInfo);
-
+    
     for (let moduleRequest in PRVIEW_MOCK_CONFIG) {
       let mockPath = PRVIEW_MOCK_CONFIG[moduleRequest]
       let filePath: string;
@@ -1208,14 +1197,13 @@ mocha.describe('generate ohmUrl', function () {
       }
     }
     const filePath: string = 'bytecode_alias/src/main/ets/utils/Calc';
-    const indexFilePath: string = 'bytecode_alias';
+    const indexFilePath: string = 'bytecode_alias'; 
 
     const importerFile: string = '/testHap/entry/src/main/ets/pages/index.ets'
     const importByPkgName = 'bytecode_alias';
     const standardImportPath: string = 'bytecode_alias/src/main/ets/utils/Calc';
     const importByPkgNameSlashes = 'bytecode_alias///';
     const importByPkgNameSlashesOh = 'bytecode_alias_oh///';
-    const importModuleRequets = 'bytecode_alias_oh///\\\/'
     const moduleSourceFile: string = new ModuleSourceFile();
     ModuleSourceFile.initPluginEnv(this.rollup);
     const importByPkgNameOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, importByPkgName, indexFilePath, importerFile);
@@ -1223,17 +1211,14 @@ mocha.describe('generate ohmUrl', function () {
       importerFile);
     const importByPkgNameOhmUrlSlashes = moduleSourceFile.getOhmUrl(this.rollup, importByPkgNameSlashes, indexFilePath, importerFile);
     const importByPkgNameOhmUrlSlashesOh = moduleSourceFile.getOhmUrl(this.rollup, importByPkgNameSlashesOh, indexFilePath, importerFile);
-    const importModuleRequetsOhmUrlSlashesOh = moduleSourceFile.getOhmUrl(this.rollup, importModuleRequets, indexFilePath, importerFile);
     const importByPkgNameNormalizedOhmUrl: string = '@normalized:N&&&bytecode_har/Index&1.0.0';
     const standardImportPathNormalizedOhmUrl: string = '@normalized:N&&&bytecode_har/src/main/ets/utils/Calc&1.0.0';
     const importByPkgNameNormalizedOhmUrlSlashes: string = '@normalized:N&&&bytecode_har/Index&1.0.0';
     const importByPkgNameNormalizedOhmUrlSlashesOh: string = '@normalized:N&&&bytecode_alias_oh/Index&1.0.0';
-    const importModuleRequetsNormalizedOhmUrlSlashesOh: string = '@normalized:N&&&bytecode_alias_oh/Index&1.0.0';
     expect(importByPkgNameOhmUrl == importByPkgNameNormalizedOhmUrl).to.be.true;
     expect(standardImportPathOhmUrl == standardImportPathNormalizedOhmUrl).to.be.true;
     expect(importByPkgNameOhmUrlSlashes == importByPkgNameNormalizedOhmUrlSlashes).to.be.true;
     expect(importByPkgNameOhmUrlSlashesOh == importByPkgNameNormalizedOhmUrlSlashesOh).to.be.true;
-    expect(importModuleRequetsOhmUrlSlashesOh == importModuleRequetsNormalizedOhmUrlSlashesOh).to.be.true;
   });
 
   mocha.it('useNormalizedOHMUrl app builtins error message', function () {
@@ -1289,40 +1274,6 @@ mocha.describe('generate ohmUrl', function () {
     loggerStub.restore();
   });
 
-  mocha.it('the error message of getNormalizedOhmUrlByModuleRequest', function () {
-    const moduleInfoByModuleRequets = {
-      normalizedPath: "bytecode_module/Index",
-      packageName: "bytecode_module"
-    };
-    this.rollup.build();
-    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
-    this.rollup.share.projectConfig.pkgContextInfo = {
-      'bytecode_module1': {
-        'packageName': 'bytecode_module1',
-        'bundleName': '',
-        'moduleName': '',
-        'version': '1.0.0',
-        'entryPath': 'Index.ets',
-        'isSO': false
-      }
-    }
-    const errInfo: LogData = LogDataFactory.newInstance(
-      ErrorCode.ETS2BUNDLE_INTERNAL_PACKAGE_NOT_FOUND_IN_CONTEXT_INFO,
-      ArkTSInternalErrorDescription,
-      "Failed to find package 'bytecode_module'. Failed to obtain package 'bytecode_module' " +
-      "from the package context information."
-    );
-    const logger = CommonLogger.getInstance(this.rollup);
-    const loggerStub = sinon.stub(logger.getLoggerFromErrorCode(errInfo.code), 'printError');
-    try {
-      delete this.rollup.share.projectConfig.pkgContextInfo['bytecode_module'];
-      getNormalizedOhmUrlByModuleRequest(moduleInfoByModuleRequets, this.rollup.share.projectConfig, logger);
-    } catch (e) {
-    }
-    expect(loggerStub.getCall(0).calledWithMatch(errInfo)).to.be.true;
-    loggerStub.restore();
-  });
-
   mocha.it('the error message of getNormalizedOhmUrlByAliasName', function () {
     this.rollup.build();
     this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
@@ -1370,7 +1321,7 @@ mocha.describe('generate ohmUrl', function () {
     const errInfo1: LogData = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_INTERNAL_PACKAGE_NOT_FOUND_IN_CONTEXT_INFO,
       ArkTSInternalErrorDescription,
-      "Failed to find package 'bytecode_har'. Failed to obtain package 'bytecode_har' " +
+      "Failed to find package 'bytecode_har'. Failed to obtain package 'bytecode_har' " + 
       "from the package context information."
     );
     expect(loggerStub.getCall(1).calledWithMatch(errInfo1)).to.be.true;
@@ -1428,7 +1379,7 @@ mocha.describe('generate ohmUrl', function () {
     const errInfo1: LogData = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_INTERNAL_PACKAGE_NOT_FOUND_IN_CONTEXT_INFO,
       ArkTSInternalErrorDescription,
-      "Failed to find package 'bytecode_har'. Failed to obtain package 'bytecode_har' " +
+      "Failed to find package 'bytecode_har'. Failed to obtain package 'bytecode_har' " + 
       "from the package context information."
     );
     expect(loggerStub.getCall(1).calledWithMatch(errInfo1.toString())).to.be.true;
