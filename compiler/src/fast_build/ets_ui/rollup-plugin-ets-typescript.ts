@@ -118,6 +118,10 @@ import { ProjectCollections } from 'arkguard';
 import parseIntent from '../../userIntents_parser/parseUserIntents';
 import { concatenateEtsOptions, getExternalComponentPaths } from '../../external_component_map';
 import { expandAllImportPaths } from '../../import_path_expand';
+import {
+  interopTransformLog,
+  interopTransform
+} from '../../process_arkts_evolution';
 
 let switchTsAst: boolean = true;
 
@@ -480,6 +484,7 @@ async function transform(code: string, id: string) {
     autoLazyImport: this.share.projectConfig?.autoLazyImport ?? false,
     reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? reExportNoCheckMode
   };
+  const mixCompile: boolean = this.share.projectConfig?.mixCompile ?? false;
   // use `try finally` to restore `noEmit` when error thrown by `processUISyntax` in preview mode
   const eventShouldEmitJs = createAndStartEvent(eventEtsTransformForEsmodule, 'shouldEmitJs');
   const shouldEmitJsFlag: boolean = getShouldEmitJs(projectConfig.shouldEmitJs, targetSourceFile, id);
@@ -501,9 +506,18 @@ async function transform(code: string, id: string) {
       tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
         {
           before: [
+<<<<<<< HEAD
             processUISyntax(null, false, eventEmit, id, this.share, metaInfo),
             expandAllImportPaths(tsProgram.getTypeChecker(), this),
             processKitImport(id, metaInfo, eventEmit, true, lazyImportOptions),
+=======
+            // interopTransform：The hybrid compilation scenario provides the following two capabilities:
+            // 1. Support for creating 1.2 type object literals in 1.1 modules
+            // 2. Support 1.1 classes to implement 1.2 interfaces
+            interopTransform(tsProgram, id, mixCompile),
+            processUISyntax(null, false, compilationTime, id),
+            processKitImport(id, metaInfo, compilationTime, true, lazyImportOptions),
+>>>>>>> 240882a5... Add interop Transform in mixed compilation
             collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
               shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))
           ]
@@ -519,9 +533,18 @@ async function transform(code: string, id: string) {
       metaInfo.checker = tsProgram.getTypeChecker();
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
+<<<<<<< HEAD
         [processUISyntax(null, false, eventTransformNodes, id, this.share, metaInfo),
         expandAllImportPaths(tsProgram.getTypeChecker(), this),
         processKitImport(id, metaInfo, eventTransformNodes, false, lazyImportOptions),
+=======
+        // interopTransform：The hybrid compilation scenario provides the following two capabilities:
+        // 1. Support for creating 1.2 type object literals in 1.1 modules
+        // 2. Support 1.1 classes to implement 1.2 interfaces
+        [interopTransform(tsProgram, id, mixCompile),
+        processUISyntax(null, false, compilationTime, id),
+        processKitImport(id, metaInfo, compilationTime, false, lazyImportOptions),
+>>>>>>> 240882a5... Add interop Transform in mixed compilation
         collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
           shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))], false);
       stopEvent(eventTransformNodes);
@@ -539,6 +562,7 @@ async function transform(code: string, id: string) {
   processStructComponentV2.resetStructMapInEts();
   if (((transformLog && transformLog.errors.length) || (kitTransformLog && kitTransformLog.errors.length)) &&
     !projectConfig.ignoreWarning) {
+    emitLogInfo(logger, getTransformLog(interopTransformLog), true, id);
     emitLogInfo(logger, getTransformLog(kitTransformLog), true, id);
     emitLogInfo(logger, getTransformLog(transformLog), true, id, hvigorLogger);
     resetLog();
