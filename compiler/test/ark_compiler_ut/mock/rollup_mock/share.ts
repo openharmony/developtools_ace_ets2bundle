@@ -183,6 +183,27 @@ class Share {
     return logger;
   }
 
+  public importResolver (moduleRequest: string): Object | undefined {
+    if (moduleRequest === "@ohos/library////\\\\/") {
+      return {
+        normalizedPath: "@ohos/library/Index",
+        packageName: "@ohos/library"
+      }
+    }
+    if (moduleRequest === "@ohos/library/src/main/ets////") {
+      return {
+        normalizedPath: "@ohos/library/src/main/ets/Index",
+        packageName: "@ohos/library"
+      }
+    }
+    if (moduleRequest === "bytecode_alias_oh///\\\/") {
+      return {
+        normalizedPath: "bytecode_alias_oh/Index",
+        packageName: "bytecode_alias_oh"
+      }
+    }
+    return undefined;
+  }
   public scan(testcase: string) {
     if (!testcase) {
       return;

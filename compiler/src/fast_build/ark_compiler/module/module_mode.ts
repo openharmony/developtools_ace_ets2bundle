@@ -105,7 +105,7 @@ import {
 import { SourceMapGenerator } from '../generate_sourcemap';
 import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../../meomry_monitor/memory_define';
-import { 
+import {
   ArkTSInternalErrorDescription,
   ArkTSErrorDescription,
   ErrorCode
@@ -234,7 +234,7 @@ export class ModuleMode extends CommonMode {
         const errInfo: LogData = LogDataFactory.newInstance(
           ErrorCode.ETS2BUNDLE_INTERNAL_MODULE_INFO_NOT_FOUND,
           ArkTSInternalErrorDescription,
-          'Failed to find module info. ' + 
+          'Failed to find module info. ' +
           `Failed to find module info with '${moduleId}' from the context information.`
         );
         this.logger.printErrorAndExit(errInfo);
@@ -244,7 +244,7 @@ export class ModuleMode extends CommonMode {
         const errInfo: LogData = LogDataFactory.newInstance(
           ErrorCode.ETS2BUNDLE_INTERNAL_META_INFO_NOT_FOUND,
           ArkTSInternalErrorDescription,
-          'Failed to find meta info. ' + 
+          'Failed to find meta info. ' +
           `Failed to find meta info with '${moduleId}' from the module info.`
         );
         this.logger.printErrorAndExit(errInfo);
@@ -357,7 +357,7 @@ export class ModuleMode extends CommonMode {
           this.updatePkgEntryInfos(pkgEntryInfos, pkgName, ohmurl);
           continue;
         }
-        let hspOhmurl: string | undefined = getOhmUrlByExternalPackage(pkgName, this.projectConfig, this.logger,
+        let hspOhmurl: string | undefined = getOhmUrlByExternalPackage(pkgName, this.projectConfig, undefined, this.logger,
           this.useNormalizedOHMUrl);
         if (hspOhmurl !== undefined) {
           hspOhmurl = hspOhmurl.replace(/^@(\w+):(.*)/, '@$1.$2');
@@ -652,7 +652,7 @@ export class ModuleMode extends CommonMode {
   // Generate cache file path for bytecode har
   private genAbcCacheFilePath(abcPath: string): string {
     /**
-     * The projectTopDir is the path of the main project, the projectRootPath is the project path to which it belongs, 
+     * The projectTopDir is the path of the main project, the projectRootPath is the project path to which it belongs,
      * and the path of bytecode har is within the main project. Therefore, the projectTopDir is used to intercept the
      * relative path of bytecodehar.
      */
@@ -978,7 +978,7 @@ export class ModuleMode extends CommonMode {
       const errInfo: LogData = LogDataFactory.newInstance(
         ErrorCode.ETS2BUNDLE_INTERNAL_INVALID_COMPILE_MODE,
         ArkTSInternalErrorDescription,
-        'Invalid compilation mode. ' + 
+        'Invalid compilation mode. ' +
         `ProjectConfig.pandaMode should be either ${TS2ABC} or ${ES2ABC}.`
       );
       this.logger.printErrorAndExit(errInfo);
