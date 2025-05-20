@@ -600,6 +600,9 @@ export class ModuleMode extends CommonMode {
     if (this.projectConfig.allowEtsAnnotations) {
       this.cmdArgs.push('--enable-annotations');
     }
+    if (this.projectConfig.mixCompile) {
+      this.cmdArgs.push('--enable-ets-implements');
+    }
   }
 
   addCacheFileArgs() {

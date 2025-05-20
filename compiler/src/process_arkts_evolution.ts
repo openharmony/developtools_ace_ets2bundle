@@ -22,17 +22,29 @@ import {
   EXTNAME_D_ETS,
   ARKTS_1_0,
   ARKTS_1_1,
-  ARKTS_1_2
+  ARKTS_1_2,
+  SUPER_ARGS
 } from './pre_define';
 import {
   toUnixPath,
-  mkdirsSync
+  mkdirsSync,
+  IFileLog,
+  LogType
 } from './utils';
 import {
   red,
   reset
 } from './fast_build/ark_compiler/common/ark_define';
 import { getPkgInfo } from './ark_utils';
+import createAstNodeUtils from './create_ast_node_utils';
+import {
+  LogData,
+  LogDataFactory
+} from './fast_build/ark_compiler/logger';
+import {
+  ArkTSErrorDescription,
+  ErrorCode
+} from './fast_build/ark_compiler/error_code';
 
 interface DeclFileConfig {
   declPath: string;
@@ -62,6 +74,8 @@ interface ResolvedFileInfo {
   resolvedFileName: string;
 }
 
+export const interopTransformLog: IFileLog = new createAstNodeUtils.FileLog();
+
 export let pkgDeclFilesConfig: { [pkgName: string]: DeclFilesConfig } = {};
 
 export let arkTSModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
@@ -69,6 +83,14 @@ export let arkTSModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
 export let arkTSEvolutionModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
 
 export let arkTSHybridModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
+
+let arkTSEvoFileOHMUrlMap: Map<string, string> = new Map();
+
+let globalDeclarations: Map<string, ts.Statement> = new Map();
+
+let declaredClassVars: Set<string> = new Set();
+
+let fullNameToTmpVar: Map<string, string> = new Map();
 
 export function addDeclFilesConfig(filePath: string, projectConfig: Object, logger: Object,
   pkgPath: string, pkgName: string): void {
@@ -157,6 +179,11 @@ export function cleanUpProcessArkTSEvolutionObj(): void {
   arkTSEvolutionModuleMap = new Map();
   arkTSHybridModuleMap = new Map();
   pkgDeclFilesConfig = {};
+  arkTSEvoFileOHMUrlMap = new Map();
+  interopTransformLog.cleanUp();
+  globalDeclarations = new Map();
+  declaredClassVars = new Set();
+  fullNameToTmpVar = new Map();
 }
 
 export async function writeBridgeCodeFileSyncByNode(node: ts.SourceFile, moduleId: string): Promise<void> {
@@ -185,3 +212,386 @@ function getDeclgenV2OutPath(pkgName: string): string {
   return '';
 }
 
+export function interopTransform(program: ts.Program, id: string, mixCompile: boolean): ts.TransformerFactory<ts.SourceFile> {
+  if (!mixCompile || /\.ts$/.test(id)) {
+    return () => sourceFile => sourceFile;
+  }
+  // For specific scenarios, please refer to the test file process_arkts_evolution.test.ts
+  const typeChecker: ts.TypeChecker = program.getTypeChecker();
+  return (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
+    const scopeUsedNames: WeakMap<ts.Node, Set<string>> = new WeakMap<ts.Node, Set<string>>();
+    return (rootNode: ts.SourceFile) => {
+      interopTransformLog.sourceFile = rootNode;
+      const classToInterfacesMap: Map<ts.ClassDeclaration, Set<string>> = collectInterfacesMap(rootNode, typeChecker);
+      // Support for creating 1.2 type object literals in 1.1 modules
+      const visitor: ts.Visitor = createObjectLiteralVisitor(context, typeChecker, scopeUsedNames);
+      const processNode: ts.SourceFile = ts.visitEachChild(rootNode, visitor, context);
+      // Support 1.1 classes to implement 1.2 interfaces
+      const withHeritage: ts.SourceFile = classToInterfacesMap.size > 0 ?
+        ts.visitEachChild(processNode, transformHeritage(context, classToInterfacesMap), context) : processNode;
+
+      const importStmts: ts.ImportDeclaration[] = withHeritage.statements.filter(stmt => ts.isImportDeclaration(stmt));
+      const otherStmts: ts.Statement[] = withHeritage.statements.filter(stmt => !ts.isImportDeclaration(stmt));
+      const globalStmts: ts.Statement[] = Array.from(globalDeclarations.values());
+
+      return ts.factory.updateSourceFile(
+        withHeritage,
+        [...importStmts, ...globalStmts, ...otherStmts],
+        withHeritage.isDeclarationFile,
+        withHeritage.referencedFiles,
+        withHeritage.typeReferenceDirectives,
+        withHeritage.hasNoDefaultLib,
+        withHeritage.libReferenceDirectives
+      );
+    };
+  };
+}
+
+function isFromArkTSEvolutionModule(node: ts.Node): boolean {
+  const sourceFile: ts.SourceFile = node.getSourceFile();
+  const filePath: string = toUnixPath(sourceFile.fileName);
+  for (const arkTSEvolutionModuleInfo of arkTSEvolutionModuleMap.values()) {
+    const declgenV1OutPath: string = toUnixPath(arkTSEvolutionModuleInfo.declgenV1OutPath);
+    if (filePath.startsWith(declgenV1OutPath + '/')) {
+      const relative: string = filePath.replace(declgenV1OutPath + '/', '').replace(/\.d\.ets$/, '');
+      if (!arkTSEvoFileOHMUrlMap.has(filePath)) {
+        arkTSEvoFileOHMUrlMap.set(filePath, relative);
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
+function createObjectLiteralVisitor(context: ts.TransformationContext, typeChecker: ts.TypeChecker,
+  scopeUsedNames: WeakMap<ts.Node, Set<string>>): ts.Visitor {
+  return function visitor(node: ts.SourceFile): ts.SourceFile {
+    if (!ts.isObjectLiteralExpression(node)) {
+      return ts.visitEachChild(node, visitor, context);
+    }
+
+    const contextualType: ts.Type | undefined = typeChecker.getContextualType(node);
+    if (!contextualType) {
+      return ts.visitEachChild(node, visitor, context);
+    }
+    const isRecordType: boolean = contextualType.aliasSymbol?.escapedName === 'Record' &&
+      (typeof ts.isStaticRecord === 'function' && ts.isStaticRecord(contextualType));
+    const finalType: ts.Type = unwrapType(node, contextualType);
+    const decl : ts.Declaration = (finalType.symbol?.declarations || finalType.aliasSymbol?.declarations)?.[0];
+    let className: string;
+    if (!isRecordType) {
+      if (!decl || !isFromArkTSEvolutionModule(decl)) {
+        return ts.visitEachChild(node, visitor, context);
+      }
+      className = finalType.symbol?.name || finalType.aliasSymbol?.name;
+      if (!className) {
+        return ts.visitEachChild(node, visitor, context);
+      }
+
+      if (ts.isClassDeclaration(decl) && !hasZeroArgConstructor(decl, className)) {
+        return ts.visitEachChild(node, visitor, context);
+      }
+    }
+
+    const scope: ts.Node = getScope(node);
+    const tmpObjName: string = getUniqueName(scope, 'tmpObj', scopeUsedNames);
+    const fullName: string = buildFullClassName(decl, finalType, className, isRecordType);
+    const getCtorExpr: ts.Expression = buildGetConstructorCall(fullName, isRecordType);
+    let tmpClassName: string;
+    if (fullNameToTmpVar.has(fullName)) {
+      tmpClassName = fullNameToTmpVar.get(fullName)!;
+    } else {
+      tmpClassName = getUniqueName(scope, isRecordType ? 'tmpRecord' : 'tmpClass', scopeUsedNames);
+      fullNameToTmpVar.set(fullName, tmpClassName);
+      declareGlobalTemp(tmpClassName, getCtorExpr);
+    }
+    declareGlobalTemp(tmpObjName);
+
+    const assignments: ts.Expression[] = buildPropertyAssignments(node, tmpObjName, !isRecordType);
+    return ts.factory.createParenthesizedExpression(ts.factory.createCommaListExpression([
+      ts.factory.createAssignment(ts.factory.createIdentifier(tmpObjName),
+        ts.factory.createNewExpression(ts.factory.createIdentifier(tmpClassName), undefined, [])),
+      ...assignments,
+      ts.factory.createIdentifier(tmpObjName)
+    ]));
+  };
+}
+
+function unwrapType(node: ts.SourceFile, type: ts.Type): ts.Type {
+  // Unwrap parenthesized types recursively
+  if ((type.flags & ts.TypeFlags.Parenthesized) && 'type' in type) {
+    return unwrapType(node, (type as ts.ParenthesizedType).type);
+  }
+
+  // If union, pick the unique viable type
+  if (type.isUnion()) {
+    const arkTSEvolutionTypes: ts.Type[] = [];
+
+    for (const tpye of type.types) {
+      const symbol: ts.Symbol = tpye.aliasSymbol || tpye.getSymbol();
+      const decls: ts.Declaration[] = symbol?.declarations;
+      if (!decls || decls.length === 0) {
+        continue;
+      }
+
+      const isArkTSEvolution: boolean = decls.some(decl => isFromArkTSEvolutionModule(decl));
+      if (isArkTSEvolution) {
+        arkTSEvolutionTypes.push(tpye);
+      }
+    }
+    if (arkTSEvolutionTypes.length === 0) {
+      return type;
+    }
+    if (arkTSEvolutionTypes.length !== 1 || type.types.length > 1) {
+      const candidates: string = arkTSEvolutionTypes.map(tpye => tpye.symbol?.name || '(anonymous)').join(', ');
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_EXTERNAL_UNION_TYPE_AMBIGUITY,
+        ArkTSErrorDescription,
+        `Ambiguous union type: multiple valid ArkTSEvolution types found: [${candidates}].`,
+        '',
+        ['Please use type assertion as to disambiguate.']
+      );
+      interopTransformLog.errors.push({
+        type: LogType.ERROR,
+        message: errInfo.toString(),
+        pos: node.getStart()
+      });
+      return type;
+    }
+    return unwrapType(node, arkTSEvolutionTypes[0]);
+  }
+  return type;
+}
+
+function hasZeroArgConstructor(decl: ts.ClassDeclaration, className: string): boolean {
+  const ctors = decl.members.filter(member =>
+    ts.isConstructorDeclaration(member) || ts.isConstructSignatureDeclaration(member));
+  const hasZeroArgCtor: boolean = ctors.length === 0 || ctors.some(ctor => ctor.parameters.length === 0);
+  if (!hasZeroArgCtor) {
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_CLASS_HAS_NO_CONSTRUCTOR_WITHOUT_ARGS,
+      ArkTSErrorDescription,
+      `The class "${className}" does not has no no-argument constructor.`,
+      '',
+      [
+        'Please confirm whether there is a no-argument constructor ' +
+        `in the ArkTS Evolution class "${className}" type in the object literal.`
+      ]
+    );
+    interopTransformLog.errors.push({
+      type: LogType.ERROR,
+      message: errInfo.toString(),
+      pos: decl.name?.getStart() ?? decl.getStart()
+    });
+    return false;
+  }
+  return hasZeroArgCtor;
+}
+
+function buildFullClassName(decl: ts.Declaration, finalType: ts.Type, className: string, isRecordType: boolean): string {
+  if (isRecordType) {
+    return 'Lescompat/Record';
+  }
+  const basePath: string = getArkTSEvoFileOHMUrl(finalType);
+  return ts.isInterfaceDeclaration(decl) ? 
+    `L${basePath}/${className}$ObjectLiteral` :
+    `L${basePath}/${className}`;
+}
+
+function buildGetConstructorCall(fullName: string, isRecord: boolean): ts.Expression {
+  return ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('globalThis'), 'gtest'),
+      isRecord ? 'etsVM.getInstance' : 'etsVM.getClass'),
+    undefined,
+    [ts.factory.createStringLiteral(fullName)]
+  );
+}
+
+function buildPropertyAssignments(node: ts.ObjectLiteralExpression, tmpObjName: string,
+  usePropertyAccess: boolean = true): ts.Expression[] {
+  return node.properties.map(property => {
+    if (!ts.isPropertyAssignment(property)) { 
+      return undefined;
+    }
+    const key = property.name;
+    const target = usePropertyAccess && ts.isIdentifier(key) ?
+      ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(tmpObjName), key) :
+      ts.factory.createElementAccessExpression(ts.factory.createIdentifier(tmpObjName),
+        ts.isIdentifier(key) ? ts.factory.createStringLiteral(key.text) : key);
+    return ts.factory.createAssignment(target, property.initializer);
+  }).filter(Boolean) as ts.Expression[];
+}
+
+function getArkTSEvoFileOHMUrl(contextualType: ts.Type): string {
+  const decl: ts.Declaration = (contextualType.symbol?.declarations || contextualType.aliasSymbol?.declarations)?.[0];
+  if (!decl) {
+    return '';
+  }
+  const sourceFilePath: string = toUnixPath(decl.getSourceFile().fileName);
+  return arkTSEvoFileOHMUrlMap.get(sourceFilePath);
+}
+
+function getScope(node: ts.Node): ts.Node {
+  let current: ts.Node | undefined = node;
+  while (current && !ts.isBlock(current) && !ts.isSourceFile(current)) {
+    current = current.parent;
+  }
+  return current ?? node.getSourceFile();
+}
+
+function getUniqueName(scope: ts.Node, base: string, usedNames: WeakMap<ts.Node, Set<string>>): string {
+  if (!usedNames.has(scope)) {
+    usedNames.set(scope, new Set());
+  }
+  const used: Set<string> = usedNames.get(scope)!;
+  let name: string = base;
+  let counter: number = 1;
+  while (used.has(name)) {
+    name = `${base}_${counter++}`;
+  }
+  used.add(name);
+  return name;
+}
+
+function declareGlobalTemp(name: string, initializer?: ts.Expression): ts.Statement {
+  if (initializer && declaredClassVars.has(name)) {
+    return globalDeclarations.get(name)!;
+  }
+
+  if (!globalDeclarations.has(name)) {
+    const decl = ts.factory.createVariableStatement(undefined,
+      ts.factory.createVariableDeclarationList(
+        [ts.factory.createVariableDeclaration(name, undefined, undefined, initializer)], ts.NodeFlags.Let));
+    globalDeclarations.set(name, decl);
+    if (initializer) {
+      declaredClassVars.add(name);
+    }
+  }
+
+  return globalDeclarations.get(name)!;
+}
+
+function collectInterfacesMap(rootNode: ts.Node, checker: ts.TypeChecker): Map<ts.ClassDeclaration, Set<string>> {
+  const classToInterfacesMap = new Map<ts.ClassDeclaration, Set<string>>();
+  ts.forEachChild(rootNode, function visit(node) {
+    if (ts.isClassDeclaration(node)) {
+      const interfaces = new Set<string>();
+      const visited = new Set<ts.Type>();
+      collectDeepInheritedInterfaces(node, checker, visited, interfaces);
+      if (interfaces.size > 0) {
+        classToInterfacesMap.set(node, interfaces);
+      }
+    }
+    ts.forEachChild(node, visit);
+  });
+  return classToInterfacesMap;
+}
+
+function collectDeepInheritedInterfaces(node: ts.ClassDeclaration | ts.InterfaceDeclaration,
+  checker: ts.TypeChecker, visited: Set<ts.Type>, interfaces: Set<string>): void {
+  const heritageClauses = node.heritageClauses;
+  if (!heritageClauses) {
+    return;
+  }
+
+  for (const clause of heritageClauses) {
+    for (const exprWithTypeArgs of clause.types) {
+      const type = checker.getTypeAtLocation(exprWithTypeArgs.expression);
+      collectDeepInheritedInterfacesFromType(type, checker, visited, interfaces);
+    }
+  }
+}
+
+function collectDeepInheritedInterfacesFromType(type: ts.Type, checker: ts.TypeChecker,
+  visited: Set<ts.Type>, interfaces: Set<string>): void {
+  if (visited.has(type)) {
+    return;
+  }
+  visited.add(type);
+  const decls: ts.Declaration[] = type.symbol?.declarations;
+  const isArkTSEvolution: boolean = decls?.some(decl => isFromArkTSEvolutionModule(decl));
+  if (isArkTSEvolution) {
+    const ifacePath: string = getArkTSEvoFileOHMUrl(type);
+    interfaces.add(`L${ifacePath}/${type.symbol.name};`);
+  }
+  const baseTypes: ts.BaseType[] = checker.getBaseTypes(type as ts.InterfaceType) ?? [];
+  for (const baseType of baseTypes) {
+    collectDeepInheritedInterfacesFromType(baseType, checker, visited, interfaces);
+  }
+
+  if (decls) {
+    for (const decl of decls) {
+      if (ts.isClassDeclaration(decl) || ts.isInterfaceDeclaration(decl)) {
+        collectDeepInheritedInterfaces(decl, checker, visited, interfaces);
+      }
+    }
+  }
+}
+
+function transformHeritage(context: ts.TransformationContext,
+  classToInterfacesMap: Map<ts.ClassDeclaration, Set<string>>): ts.Visitor {
+  return function visitor(node: ts.SourceFile): ts.SourceFile {
+    if (ts.isClassDeclaration(node) && classToInterfacesMap.has(node)) {
+      const interfaceNames = classToInterfacesMap.get(node)!;
+      const updatedMembers = injectImplementsInConstructor(node, interfaceNames);
+      return ts.factory.updateClassDeclaration(node, node.modifiers, node.name, node.typeParameters,
+        node.heritageClauses, updatedMembers);
+    }
+    return ts.visitEachChild(node, visitor, context);
+  };
+}
+
+function injectImplementsInConstructor(node: ts.ClassDeclaration, interfaceNames: Set<string>): ts.ClassElement[] {
+  const members: ts.ClassElement[] = [...node.members];
+  const params: ts.ParameterDeclaration[] = [];
+  const needSuper: boolean =
+      node.heritageClauses?.some(clause => clause.token === ts.SyntaxKind.ExtendsKeyword) || false;
+  const injectStatement: ts.ExpressionStatement[] = [
+    ts.factory.createExpressionStatement(
+      ts.factory.createStringLiteral(`implements static:${(Array.from(interfaceNames)).join(',')}`)
+    )
+  ];
+  const ctorDecl: ts.ConstructorDeclaration | undefined =
+    members.find(element => ts.isConstructorDeclaration(element)) as ts.ConstructorDeclaration | undefined;
+  if (ctorDecl) {
+    const newCtorDecl: ts.ConstructorDeclaration = ts.factory.updateConstructorDeclaration(
+      ctorDecl, ctorDecl.modifiers, ctorDecl.parameters,
+      ts.factory.updateBlock(
+        ctorDecl.body ?? ts.factory.createBlock([], true),
+        [...injectStatement, ...(ctorDecl.body?.statements ?? [])]
+      )
+    );
+    const index: number = members.indexOf(ctorDecl);
+    members.splice(index, 1, newCtorDecl);
+  } else {
+    addSuper(needSuper, injectStatement, params);
+    const newCtorDecl: ts.ConstructorDeclaration = ts.factory.createConstructorDeclaration(
+      undefined, params,
+      ts.factory.createBlock([...injectStatement], true)
+    );
+    members.push(newCtorDecl);
+  }
+  return members;
+}
+
+function addSuper(needSuper: boolean, injectStatement: ts.ExpressionStatement[],
+  params: ts.ParameterDeclaration[]): void {
+  if (needSuper) {
+    injectStatement.push(
+          ts.factory.createExpressionStatement(
+            ts.factory.createCallExpression(
+              ts.factory.createSuper(), undefined, [ts.factory.createSpreadElement(ts.factory.createIdentifier(SUPER_ARGS))])
+          )
+        );
+    params.push(
+      ts.factory.createParameterDeclaration(
+        undefined,
+        ts.factory.createToken(ts.SyntaxKind.DotDotDotToken),
+        ts.factory.createIdentifier(SUPER_ARGS),
+        undefined,
+        undefined,
+        undefined)
+    );
+  }
+}
