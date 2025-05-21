@@ -91,8 +91,7 @@ import {
   addLog,
   hasDecorator,
   storedFileInfo,
-  ExtendResult,
-  CurrentProcessFile
+  ExtendResult
 } from './utils';
 import { globalProgram, projectConfig, abilityPagesFullPath } from '../main';
 import {
@@ -518,8 +517,7 @@ function validatePropertyInStruct(structContext: boolean, decoratorNode: ts.Iden
     }
     const classResult: ClassDecoratorResult = new ClassDecoratorResult();
     const propertyNode: ts.PropertyDeclaration = getPropertyNodeByDecorator(decoratorNode);
-    const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
-    if (propertyNode && propertyNode.type && checker) {
+    if (propertyNode && propertyNode.type && globalProgram.checker) {
       validatePropertyType(propertyNode.type, classResult);
     }
     let message: string;
@@ -549,8 +547,7 @@ function validatePropertyType(node: ts.TypeNode, classResult: ClassDecoratorResu
     });
   }
   if (ts.isTypeReferenceNode(node) && node.typeName) {
-    const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
-    const typeNode: ts.Type = checker?.getTypeAtLocation(node.typeName);
+    const typeNode: ts.Type = globalProgram.checker.getTypeAtLocation(node.typeName);
     parsePropertyType(typeNode, classResult);
   }
 }
@@ -777,8 +774,7 @@ const classMemberDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_
 
 function validTypeCallback(node: ts.Identifier): boolean {
   let isSdkPath: boolean = true;
-  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
-  if (checker && process.env.compileTool === 'rollup') {
+  if (globalProgram.checker && process.env.compileTool === 'rollup') {
     const symbolObj: ts.Symbol = getSymbolIfAliased(node);
     const fileName: string = symbolObj?.valueDeclaration?.getSourceFile()?.fileName;
     isSdkPath = /@ohos.arkui.*/.test(fileName);
@@ -900,8 +896,7 @@ function validateMutilObserved(node: ts.ClassDeclaration, classResult: ClassDeco
 
 function parseInheritClass(node: ts.ClassDeclaration, childClassResult: ClassDecoratorResult,
   sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-    const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
-    if (checker && process.env.compileTool === 'rollup' && node.heritageClauses) {
+  if (globalProgram.checker && process.env.compileTool === 'rollup' && node.heritageClauses) {
     for (const heritageClause of node.heritageClauses) {
       if (heritageClause.token === ts.SyntaxKind.ExtendsKeyword && heritageClause.types &&
         heritageClause.types.length) {
@@ -932,18 +927,16 @@ function getClassNode(parentType: ts.Node, childClassResult: ClassDecoratorResul
 
 function parseShorthandPropertyForClass(node: ts.ShorthandPropertyAssignment, childClassResult: ClassDecoratorResult,
   childClass: ts.ClassDeclaration, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
-  const shortSymbol: ts.Symbol = checker?.getShorthandAssignmentValueSymbol(node);
+  const shortSymbol: ts.Symbol = globalProgram.checker.getShorthandAssignmentValueSymbol(node);
   if (shortSymbol && shortSymbol.valueDeclaration && ts.isClassDeclaration(shortSymbol.valueDeclaration)) {
     validateInheritClassDecorator(shortSymbol.valueDeclaration, childClassResult, childClass, sourceFileNode, log);
   }
 }
 
 export function getSymbolIfAliased(node: ts.Node): ts.Symbol {
-  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
-  const symbol: ts.Symbol = checker?.getSymbolAtLocation(node);
+  const symbol: ts.Symbol = globalProgram.checker.getSymbolAtLocation(node);
   if (symbol && (symbol.getFlags() & ts.SymbolFlags.Alias) !== 0) {
-    return checker?.getAliasedSymbol(symbol);
+    return globalProgram.checker.getAliasedSymbol(symbol);
   }
   return symbol;
 }
