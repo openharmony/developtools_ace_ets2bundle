@@ -110,7 +110,7 @@ function testAnimationTransformer(this: PluginTestContext): void {
 }
 
 pluginTester.run(
-    'test observed only transform',
+    'test basic animation transform',
     [animationTransform, uiNoRecheck],
     {
         checked: [testAnimationTransformer],
