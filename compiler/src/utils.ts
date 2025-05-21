@@ -102,7 +102,7 @@ export function emitLogInfo(loader: any, infos: LogInfo[], fastBuild: boolean = 
 }
 
 export function addLog(type: LogType, message: string, pos: number, log: LogInfo[],
-  sourceFile: ts.SourceFile) {
+  sourceFile: ts.SourceFile): void {
   const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(pos);
   log.push({
     type: type,
@@ -153,13 +153,13 @@ class ComponentInfo {
   public set id(id: number) {
     this._id = id;
   }
-  public get id() {
+  public get id(): number {
     return this._id;
   }
   public set componentNames(componentNames: Set<string>) {
     this._componentNames = componentNames;
   }
-  public get componentNames() {
+  public get componentNames(): Set<string> {
     return this._componentNames;
   }
 }

@@ -24,7 +24,7 @@ export const FORM_MAP: any = {};
 
 export let COMMON_ATTRS: Set<string> = new Set([]);
 
-(function readComponents() {
+(function readComponents(): void {
   const componentPath: Map<string, string> = new Map([
     [`${COMPONENTS}`, `../${COMPONENTS}`],
     [`${FORM_COMPONENTS}`, `../${FORM_COMPONENTS}`]
