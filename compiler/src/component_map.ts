@@ -25,7 +25,7 @@ const FORM_COMPONENTS = 'form_components';
 export const COMPONENT_MAP: any = {};
 export const FORM_MAP: any = {};
 
-let EXTERNAL_COMPONENT_MAP: undefined | object = {};
+let EXTERNAL_COMPONENT_MAP: object = {};
 export let EXT_WHITE_LIST: Array<string> = [];
 export let COMMON_ATTRS: Set<string> = new Set([]);
 

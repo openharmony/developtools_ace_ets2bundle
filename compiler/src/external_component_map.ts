@@ -24,8 +24,8 @@ export let WHITELISTNEW: Array<string> = [];
 
 const COMPONENT_PATH = './build-tools/ets-loader/components';
 
-export function readExternalComponents(): object | undefined {
-    const EXT_COMPONENT_MAP: object | undefined = {};
+export function readExternalComponents(): object {
+    const EXT_COMPONENT_MAP: object = {};
     const componentPaths: string[] | undefined = getExternalComponentPaths();
     if (!componentPaths) {
         return EXT_COMPONENT_MAP;
@@ -45,7 +45,7 @@ export function readExternalComponents(): object | undefined {
                     delete json.name;
                     EXT_COMPONENT_MAP[compName] = json;
                 } else {
-                    WHITELISTNEW = Array.from(new Set(json.extWhiteList));
+                    WHITELISTNEW = Array.from(new Set(json.extWhiteList ? json.extWhiteList : []));
                 }
             }
         });
