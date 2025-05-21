@@ -29,8 +29,7 @@ import {
 import {
   LogType,
   LogInfo,
-  IFileLog,
-  CurrentProcessFile
+  IFileLog
 } from '../../utils';
 import { type ResolveModuleInfo } from '../../ets_checker';
 import {
@@ -226,7 +225,7 @@ export function checkTypeReference(node: ts.TypeReferenceNode, transformLog: IFi
   const fileName: string = transformLog.sourceFile.fileName;
   const currentTypeName: string = node.getText();
   if (/(?<!\.d)\.ts$/g.test(fileName)) {
-    const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+    const checker: ts.TypeChecker = globalProgram.checker;
     if (!checker) {
       return;
     }

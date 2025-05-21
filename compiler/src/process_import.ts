@@ -63,7 +63,6 @@ import {
   regularStaticCollection
 } from './validate_ui_syntax';
 import {
-  CurrentProcessFile,
   getExtensionIfUnfullySpecifiedFilepath,
   hasDecorator,
   LogInfo,
@@ -790,10 +789,9 @@ export function processImportModule(node: ts.ImportDeclaration, pageFile: string
 
 function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNode: ts.Node,
   usedNode: ts.Identifier, pageInfo: PageInfo, share: object = null): void {
-  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
-  importSymbol = checker?.getSymbolAtLocation(usedNode);
+  importSymbol = globalProgram.checker.getSymbolAtLocation(usedNode);
   if (importSymbol) {
-    realSymbol = checker?.getAliasedSymbol(importSymbol);
+    realSymbol = globalProgram.checker.getAliasedSymbol(importSymbol);
   } else {
     realSymbol = null;
   }
@@ -819,7 +817,7 @@ function getIntegrationNodeInfo(originNode: ts.Node, usedNode: ts.Identifier, ex
   pageInfo: PageInfo, share: object = null): void {
   for (const usedSymbol of exportsMap) {
     try {
-      originNode = CurrentProcessFile.getChecker()?.getAliasedSymbol(usedSymbol[1]).declarations[0];
+      originNode = globalProgram.checker.getAliasedSymbol(usedSymbol[1]).declarations[0];
     } catch (e) {
       if (usedSymbol[1] && usedSymbol[1].declarations) {
         for (let i = 0; i < usedSymbol[1].declarations.length; i++) {
@@ -836,8 +834,7 @@ function getIntegrationNodeInfo(originNode: ts.Node, usedNode: ts.Identifier, ex
 function exportAllManage(originNode: ts.Node, usedNode: ts.Identifier, pageInfo: PageInfo, share: object = null): void {
   let exportOriginNode: ts.Node;
   if (!originNode.exportClause && originNode.moduleSpecifier && ts.isStringLiteral(originNode.moduleSpecifier)) {
-    const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
-    const exportSymbol: ts.Symbol = checker?.getSymbolAtLocation(originNode.moduleSpecifier);
+    const exportSymbol: ts.Symbol = globalProgram.checker.getSymbolAtLocation(originNode.moduleSpecifier);
     if (exportSymbol && exportSymbol.declarations) {
       exportOriginNode = exportSymbol.declarations[0];
     } else {
