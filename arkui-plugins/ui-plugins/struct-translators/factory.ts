@@ -333,4 +333,55 @@ export class factory {
             false
         );
     }
+
+    /*
+     * generate XComponent(..., packageInfo: string, ...)
+     */
+    static modifyXcomponent(node: arkts.ScriptFunction): arkts.ScriptFunction {
+        const info = arkts.factory.createParameterDeclaration(
+            arkts.factory.createIdentifier(
+                'packageInfo',
+                arkts.factory.createTypeReference(
+                    arkts.factory.createTypeReferencePart(
+                        arkts.factory.createIdentifier('string')
+                    )
+                )
+            ),
+            undefined
+        );
+        return arkts.factory.updateScriptFunction(
+            node,
+            node.body,
+            arkts.factory.createFunctionSignature(
+                node.typeParams,
+                [...node.params.slice(0, 2), info, ...node.params.slice(2)],
+                node.returnTypeAnnotation,
+                false
+            ),
+            node.flags,
+            node.modifiers
+        );
+    }
+
+    /*
+     * transform ExternalSource headers
+     */
+    static transformExternalSource(externalSourceName: string, node: arkts.AstNode): arkts.AstNode {
+        if (
+            externalSourceName === 'arkui.component.common' &&
+            arkts.isTSInterfaceDeclaration(node) &&
+            !!node.id &&
+            node.id.name === 'UICommonMethod'
+        ) {
+            return factory.modifyExternalComponentCommon(node);
+        } else if (
+            externalSourceName === 'arkui.component.xcomponent' &&
+            arkts.isScriptFunction(node) &&
+            !!node.id &&
+            node.id.name === 'XComponent'
+        ) {
+            return factory.modifyXcomponent(node);
+        }
+        return node;
+    }
 }
