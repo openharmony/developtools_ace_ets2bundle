@@ -173,17 +173,17 @@ export class UpdateResult {
   private decoratorName: string;
   private stateVarsParams: ts.Statement;
 
-  public setProperity(updateItem: ts.PropertyDeclaration) {
+  public setProperity(updateItem: ts.PropertyDeclaration): void {
     this.itemUpdate = true;
     this.properity = updateItem;
   }
 
-  public setCtor(updateCtor: ts.ConstructorDeclaration) {
+  public setCtor(updateCtor: ts.ConstructorDeclaration): void {
     this.ctorUpdate = true;
     this.ctor = updateCtor;
   }
 
-  public setControllerSet(updateControllerSet: ts.MethodDeclaration) {
+  public setControllerSet(updateControllerSet: ts.MethodDeclaration): void {
     this.controllerSet = updateControllerSet;
   }
 
@@ -191,31 +191,31 @@ export class UpdateResult {
     return this.controllerSet;
   }
 
-  public setVariableGet(updateVariableGet: ts.GetAccessorDeclaration) {
+  public setVariableGet(updateVariableGet: ts.GetAccessorDeclaration): void {
     this.variableGet = updateVariableGet;
   }
 
-  public setVariableSet(updateVariableSet: ts.SetAccessorDeclaration) {
+  public setVariableSet(updateVariableSet: ts.SetAccessorDeclaration): void {
     this.variableSet = updateVariableSet;
   }
 
-  public setUpdateParams(updateParams: ts.Statement) {
+  public setUpdateParams(updateParams: ts.Statement): void {
     this.updateParams = updateParams;
   }
 
-  public setStateVarsParams(stateVarsParams: ts.Statement) {
+  public setStateVarsParams(stateVarsParams: ts.Statement): void {
     this.stateVarsParams = stateVarsParams;
   }
 
-  public setDeleteParams(deleteParams: boolean) {
+  public setDeleteParams(deleteParams: boolean): void {
     this.deleteParams = deleteParams;
   }
 
-  public setPurgeVariableDepStatement(purgeVariableDepStatement: ts.Statement) {
+  public setPurgeVariableDepStatement(purgeVariableDepStatement: ts.Statement): void {
     this.purgeVariableDepStatement = purgeVariableDepStatement;
   }
 
-  public setDecoratorName(decoratorName: string) {
+  public setDecoratorName(decoratorName: string): void {
     this.decoratorName = decoratorName;
   }
 

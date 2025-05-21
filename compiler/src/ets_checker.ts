@@ -543,7 +543,7 @@ function isJsonString(cacheFile: string): [boolean, WholeCache | undefined] {
   if (fs.existsSync(cacheFile)) {
     try {
       return [true, JSON.parse(fs.readFileSync(cacheFile).toString())];
-    } catch(e) {
+    } catch (e) {
       return [false, undefined];
     }
   } else {
@@ -575,7 +575,7 @@ export function collectTscFiles(program: ts.Program): void {
   });
 }
 
-export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollupObject: Object) {
+export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollupObject: Object): void {
   for (const moduleId of rollupFileList) {
     if (fs.existsSync(moduleId)) {
       allSourceFilePaths.add(toUnixPath(moduleId));

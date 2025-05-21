@@ -62,6 +62,6 @@ function processDeclarationFile(filePath: string): void {
   }
 }
 
-export function cleanSharedModuleSet() {
+export function cleanSharedModuleSet(): void {
   sharedModuleSet.clear();
 }
