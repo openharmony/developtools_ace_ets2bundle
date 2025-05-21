@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { factory } from './memo-factory';
-import { hasMemoAnnotation, hasMemoIntrinsicAnnotation } from './utils';
+import { hasMemoAnnotation, hasMemoIntrinsicAnnotation, parametrizedNodeHasReceiver } from './utils';
 import { AbstractVisitor } from '../common/abstract-visitor';
 
 function isScriptFunctionFromGetter(node: arkts.ScriptFunction): boolean {
@@ -59,7 +59,9 @@ export class SignatureTransformer extends AbstractVisitor {
                 node.body,
                 arkts.factory.createFunctionSignature(
                     node.typeParams,
-                    shouldAddMemoParam ? factory.createHiddenParameterIfNotAdded(newParams) : newParams,
+                    shouldAddMemoParam
+                        ? factory.createHiddenParameterIfNotAdded(newParams, parametrizedNodeHasReceiver(node))
+                        : newParams,
                     node.returnTypeAnnotation
                         ? this.visitor(node.returnTypeAnnotation, shouldApplyMemoToReturnType)
                         : memo

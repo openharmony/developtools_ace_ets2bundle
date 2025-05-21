@@ -31,7 +31,10 @@ import {
     BindableDecl,
     getDecalTypeFromValue,
     hasBindableProperty,
-    isDoubleDollarCall
+    isDoubleDollarCall,
+    InstanceCallInfo,
+    isStyleChainedCall,
+    isStyleWithReceiverCall,
 } from './utils';
 import { DecoratorNames } from '../property-translators/utils';
 import { factory as PropertyFactory } from '../property-translators/factory';
@@ -106,34 +109,37 @@ export class factory {
             [factory.generateValueProperty(bindableArg), factory.generateOnChangeArrowFunc(bindableArg, valueType)],
             false
         );
-        return arkts.factory.createTSAsExpression(
-            objExp,
-            factory.createBindableType(valueType),
-            false
-        );
+        return arkts.factory.createTSAsExpression(objExp, factory.createBindableType(valueType), false);
     }
 
     /*
      * create style instance call, e.g. `instance.margin(10)`.
      */
-    static createStyleLambdaBody(lambdaBody: arkts.AstNode, call: arkts.CallExpression, projectConfig: ProjectConfig | undefined): arkts.CallExpression {
-        const newArgs: arkts.Expression[] = factory.getTransformedStyle(call);
-        return arkts.factory.createCallExpression(
-            arkts.factory.createMemberExpression(
+    static createStyleLambdaBody(lambdaBody: arkts.AstNode, callInfo: InstanceCallInfo, projectConfig: ProjectConfig | undefined): arkts.CallExpression {
+        if (!callInfo.isReceiver) {
+            const newArgs: arkts.Expression[] = factory.getTransformedStyle(callInfo.call);
+            return arkts.factory.createCallExpression(
+                arkts.factory.createMemberExpression(
+                    lambdaBody,
+                    callInfo.call.expression,
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                ),
+                undefined,
+                newArgs.map((arg) => {
+                    if (arkts.isArrowFunctionExpression(arg)) {
+                        return this.processArgArrowFunction(arg, projectConfig);
+                    }
+                    return arg;
+                })
+            );
+        } else {
+            return arkts.factory.createCallExpression(callInfo.call.expression, callInfo.call.typeArguments, [
                 lambdaBody,
-                call.expression,
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
-            undefined,
-            newArgs.map((arg) => {
-                if (arkts.isArrowFunctionExpression(arg)) {
-                    return this.processArgArrowFunction(arg, projectConfig);
-                }
-                return arg;
-            })
-        );
+                ...callInfo.call.arguments.slice(1),
+            ]);
+        }
     }
 
     /*
@@ -474,25 +480,29 @@ export class factory {
     /**
      * transform `.animation(...)` to `.animationStart(...) and .animationStop(...)`
      */
-    static updateAnimation(instanceCalls: arkts.CallExpression[]): void {
+    static updateAnimation(instanceCalls: InstanceCallInfo[]): void {
         let lastAniIdx = 0;
         let curIdx = 0;
 
         while (curIdx < instanceCalls.length) {
-            const property: arkts.Identifier = instanceCalls[curIdx].expression as arkts.Identifier;
+            if (instanceCalls[curIdx].isReceiver) {
+                curIdx++;
+                continue;
+            }
+            const property: arkts.Identifier = instanceCalls[curIdx].call.expression as arkts.Identifier;
             if (property.name === BuilderLambdaNames.ANIMATION_NAME) {
                 const aniStart: arkts.CallExpression = arkts.factory.createCallExpression(
                     arkts.factory.createIdentifier(BuilderLambdaNames.ANIMATION_START),
                     undefined,
-                    instanceCalls[curIdx].arguments
+                    instanceCalls[curIdx].call.arguments
                 );
                 const aniStop: arkts.CallExpression = arkts.factory.createCallExpression(
                     arkts.factory.createIdentifier(BuilderLambdaNames.ANIMATION_STOP),
                     undefined,
-                    instanceCalls[curIdx].arguments.map((arg)=>arg.clone())
+                    instanceCalls[curIdx].call.arguments.map((arg) => arg.clone())
                 );
-                instanceCalls.splice(lastAniIdx, 0, aniStart);
-                instanceCalls[curIdx + 1] = aniStop;
+                instanceCalls.splice(lastAniIdx, 0, { isReceiver: false, call: aniStart });
+                instanceCalls[curIdx + 1] = { isReceiver: false, call: aniStop };
                 curIdx += 2;
                 lastAniIdx = curIdx;
             } else {
@@ -505,16 +515,29 @@ export class factory {
      * transform `@ComponentBuilder` in non-declared calls.
      */
     static transformBuilderLambda(node: arkts.CallExpression, projectConfig: ProjectConfig | undefined): arkts.AstNode {
-        let instanceCalls: arkts.CallExpression[] = [];
+        let instanceCalls: InstanceCallInfo[] = [];
         let leaf: arkts.CallExpression = node;
 
-        while (
-            arkts.isMemberExpression(leaf.expression) &&
-            arkts.isIdentifier(leaf.expression.property) &&
-            arkts.isCallExpression(leaf.expression.object)
-        ) {
-            instanceCalls.push(arkts.factory.createCallExpression(leaf.expression.property, undefined, leaf.arguments));
-            leaf = leaf.expression.object;
+        while (isStyleChainedCall(leaf) || isStyleWithReceiverCall(leaf)) {
+            if (isStyleChainedCall(leaf)) {
+                instanceCalls.push({
+                    isReceiver: false,
+                    call: arkts.factory.createCallExpression(
+                        (leaf.expression as arkts.MemberExpression).property,
+                        leaf.typeArguments,
+                        leaf.arguments
+                    ),
+                });
+                leaf = (leaf.expression as arkts.MemberExpression).object as arkts.CallExpression;
+            }
+
+            if (isStyleWithReceiverCall(leaf)) {
+                instanceCalls.push({
+                    isReceiver: true,
+                    call: arkts.factory.createCallExpression(leaf.expression, leaf.typeArguments, leaf.arguments),
+                });
+                leaf = leaf.arguments[0] as arkts.CallExpression;
+            }
         }
 
         const decl: arkts.AstNode | undefined = findBuilderLambdaDecl(leaf);
@@ -533,8 +556,8 @@ export class factory {
             instanceCalls = instanceCalls.reverse();
             this.updateAnimation(instanceCalls);
             lambdaBody = arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME);
-            instanceCalls.forEach((call) => {
-                lambdaBody = this.createStyleLambdaBody(lambdaBody!, call, projectConfig);
+            instanceCalls.forEach((callInfo) => {
+                lambdaBody = this.createStyleLambdaBody(lambdaBody!, callInfo, projectConfig);
             });
         }
 
