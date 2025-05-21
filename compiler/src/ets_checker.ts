@@ -110,6 +110,7 @@ import {
 } from '../node_modules/declgen/build/src/generateInteropDecls';
 import {
   arkTSEvolutionModuleMap,
+  arkTSHybridModuleMap,
   getArkTSEvoDeclFilePath
 } from './process_arkts_evolution';
 import { processInteropUI } from './process_interop_ui';
@@ -571,9 +572,6 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     const processBuildHaprrecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP);
     processBuildHap(cacheFile, rootFileNames, compilationTime, rollupShareObject);
     MemoryMonitor.stopRecordStage(processBuildHaprrecordInfo);
-  }
-  if (rollupShareObject?.projectConfig.mixCompile) {
-    generateDeclarationFileForSTS(rootFileNames);
   }
   if (globalProgram.program &&
     (process.env.watchMode !== 'true' && !projectConfig.isPreview &&
@@ -1093,7 +1091,7 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
             resolvedModules.push(result.resolvedModule);
           }
         } else if (result.resolvedModule.resolvedFileName && /\.ets$/.test(result.resolvedModule.resolvedFileName) &&
-          !/\.d\.ets$/.test(result.resolvedModule.resolvedFileName) && arkTSEvolutionModuleMap.size !== 0) {
+          !/\.d\.ets$/.test(result.resolvedModule.resolvedFileName) && (arkTSEvolutionModuleMap.size !== 0 || arkTSHybridModuleMap.size !== 0)) {
           // When result has a value and the path parsed is the source code file path of module 1.2,
           // the parsing result needs to be modified to the glue code path of module 1.2
           let arktsEvoDeclFilePathExist: boolean = false;
@@ -1315,7 +1313,7 @@ export function instanceInsteadThis(content: string, fileName: string, extendFun
   return content;
 }
 
-function getResolveModule(modulePath: string, type): ts.ResolvedModuleFull {
+export function getResolveModule(modulePath: string, type): ts.ResolvedModuleFull {
   return {
     resolvedFileName: modulePath,
     isExternalLibraryImport: false,

@@ -53,6 +53,7 @@ import {
 import { ORIGIN_EXTENTION } from '../process_mock';
 import {
   ARKTS_1_2,
+  ARKTS_HYBRID,
   ESMODULE,
   TRANSFORMED_MOCK_CONFIG,
   USER_DEFINE_MOCK_CONFIG
@@ -81,7 +82,8 @@ import {
 import { checkIfJsImportingArkts } from '../check_import_module';
 import {
   getDeclgenBridgeCodePath,
-  writeBridgeCodeFileSyncByNode
+  writeBridgeCodeFileSyncByNode,
+  isArkTSEvolutionFile
 } from '../../../process_arkts_evolution';
 
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
@@ -117,7 +119,7 @@ export class ModuleSourceFile {
     if (typeof this.source !== 'string') {
       this.isSourceNode = true;
     }
-    if (metaInfo?.language === ARKTS_1_2) {
+    if (metaInfo?.language === ARKTS_1_2 || (metaInfo && isArkTSEvolutionFile(moduleId, metaInfo))) {
       this.isArkTSEvolution = true;
     }
   }
@@ -508,9 +510,9 @@ export class ModuleSourceFile {
   }
 
   private static spliceNormalizedOhmurl(moduleInfo: Object, filePath: string, importerFile?: string): string {
-    const isArkTSEvolution: boolean = moduleInfo.meta.language === ARKTS_1_2;
+    const isArkTSEvolution: boolean = isArkTSEvolutionFile(filePath, moduleInfo.meta);
     const pkgPath: string = isArkTSEvolution ?
-      path.join(getDeclgenBridgeCodePath(moduleInfo.meta.pkgName), moduleInfo.meta.moduleName) : moduleInfo.meta.pkgPath;
+      path.join(getDeclgenBridgeCodePath(moduleInfo.meta.pkgName), moduleInfo.meta.pkgName) : moduleInfo.meta.pkgPath;
     const pkgParams = {
       pkgName: moduleInfo.meta.pkgName,
       pkgPath,

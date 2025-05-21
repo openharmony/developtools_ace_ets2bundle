@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+import * as ts from 'typescript';
+
 export interface ArkTSEvolutionModule {
   language: string;
   packageName: string;
@@ -26,6 +28,7 @@ export interface ArkTSEvolutionModule {
   staticFiles: string[];
   cachePath: string;
   byteCodeHarInfo?: Object;
+  packageVersion: string;
 }
 
 export const ARKTS_1_2: string = '1.2';
@@ -39,14 +42,14 @@ export interface Params {
   tasks: taskInfo[];
 }
 
-interface ProjectConfig {
+export interface ProjectConfig {
   cachePath: string;
   bundleName: string;
   mainModuleName: string;
   projectRootPath: string;
 };
 
-enum BuildType {
+export enum BuildType {
   DECLGEN = 'declgen',
   BYTE_CODE_HAR = 'byteCodeHar',
   INTEROP_CONTEXT = 'interopContext'
@@ -55,6 +58,7 @@ enum BuildType {
 interface taskInfo {
   packageName: string;
   buildTask: BuildType;
+  mainModuleName?: string;
 }
 
 export interface AliasConfig {
@@ -66,4 +70,27 @@ export interface FileInfo {
   recordName: string;
   baseUrl: string;
   absolutePath: string;
+  abstractPath: string;
+}
+
+export interface RunnerParms {
+  inputDirs: string[];
+  inputFiles: string[];
+  outDir: string;
+  rootDir: string;
+  customResolveModuleNames?: (moduleName: string[], containingFile: string) => ts.ResolvedModuleFull[];
+  customCompilerOptions?: ts.CompilerOptions;
+  includePaths?: string[];
+}
+
+export interface DeclFilesConfig {
+  packageName: string;
+  files: {
+    [filePath: string]: DeclFileConfig;
+  }
+}
+
+interface DeclFileConfig {
+  declPath: string;
+  ohmUrl: string;
 }
