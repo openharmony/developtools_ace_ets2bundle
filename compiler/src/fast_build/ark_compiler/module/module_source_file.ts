@@ -206,9 +206,9 @@ export class ModuleSourceFile {
     let mockFilePath: string = `${toUnixPath(rollupObject.share.projectConfig.modulePath)}/${mockFile}`;
     let mockFileOhmUrl: string = '';
     if (useNormalizedOHMUrl) {
-      // For file A that imports file B, the mock file of file B will be located in the same package of file A. So the
-      // moduleInfo for mock file should be the same with file A.
-      const targetModuleInfo: Object = rollupObject.getModuleInfo(importerFile);
+      // When using mock for related compilation in module A, only the mock file under module A can be used,
+      // so the moduleInfo of the mock file is the moduleInfo of module A (that is, the main moduleInfo in the compilation process)
+      const targetModuleInfo: Object = ModuleSourceFile.generateModuleInfoOfMockFile(rollupObject);
       mockFileOhmUrl = ModuleSourceFile.spliceNormalizedOhmurl(targetModuleInfo, mockFilePath, importerFile);
     } else {
       mockFileOhmUrl = getOhmUrlByFilepath(mockFilePath,
@@ -221,6 +221,15 @@ export class ModuleSourceFile {
 
     // record mock target mapping for incremental compilation
     ModuleSourceFile.addMockConfig(ModuleSourceFile.newMockConfigInfo, transKey, mockFileOhmUrl);
+  }
+
+  static generateModuleInfoOfMockFile(rollupObject: Object): Object {
+    return {
+      meta: {
+        pkgName: rollupObject.share.projectConfig.entryPackageName,
+        pkgPath: rollupObject.share.projectConfig.modulePath
+      }
+    }
   }
 
   static isMockFile(file: string, rollupObject: Object): boolean {
