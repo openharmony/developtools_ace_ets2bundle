@@ -366,8 +366,10 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     }
     if (projectConfig.isCrossplatform) {
       needCheckResult = true;
+      const logType: ts.DiagnosticCategory = !projectConfig.ignoreCrossplatformCheck ? ts.DiagnosticCategory.Error :
+        ts.DiagnosticCategory.Warning;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROER,
-        false, ts.DiagnosticCategory.Error, '', true));
+        false, logType, '', true));
     }
     if (process.env.compileMode === STAGE_COMPILE_MODE) {
       needCheckResult = true;
