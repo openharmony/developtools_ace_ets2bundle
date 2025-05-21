@@ -426,7 +426,7 @@ function setAbilityPages(projectConfig) {
   if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
     const moduleJson = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());
     abilityPages = readAbilityEntrance(moduleJson);
-    setAbilityFile(projectConfig, abilityPages);
+    setAbilityFile(projectConfig, abilityPages, moduleJson.module?.codeLanguage);
     setBundleModuleInfo(projectConfig, moduleJson);
   }
 }
@@ -493,13 +493,16 @@ function setBundleModuleInfo(projectConfig, moduleJson) {
   }
 }
 
-function setAbilityFile(projectConfig, abilityPages) {
+function setAbilityFile(projectConfig, abilityPages, codeLanguage) {
   abilityPages.forEach(abilityPath => {
     const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
     if (path.isAbsolute(abilityPath)) {
       abilityPath = '.' + abilityPath.slice(projectConfig.projectPath.length);
     }
     const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '').replace(/\.ets$/, '');
+    if (codeLanguage === '1.2') {
+      return;
+    }
     if (fs.existsSync(projectAbilityPath)) {
       abilityConfig.projectAbilityPath.push(projectAbilityPath);
       projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';

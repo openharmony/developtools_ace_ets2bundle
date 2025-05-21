@@ -99,6 +99,7 @@ import {
 } from '../../../gen_aot';
 import {
   ARKTS_1_2,
+  ARKTS_HYBRID,
   NATIVE_MODULE
 } from '../../../pre_define';
 import {
@@ -132,6 +133,13 @@ import {
   stopEvent
  } from '../../../performance';
 import { BytecodeObfuscator } from '../bytecode_obfuscator';
+  addDeclFilesConfig,
+  ArkTSEvolutionModule,
+  getDeclgenBridgeCodePath,
+  pkgDeclFilesConfig,
+  arkTSModuleMap,
+  isArkTSEvolutionFile
+} from '../../../process_arkts_evolution';
 
 export class ModuleInfo {
   filePath: string;
@@ -260,9 +268,9 @@ export class ModuleMode extends CommonMode {
         );
         this.logger.printErrorAndExit(errInfo);
       }
-      const isArkTSEvolution: boolean = metaInfo.language === ARKTS_1_2;
+      const isArkTSEvolution: boolean = isArkTSEvolutionFile(moduleId, metaInfo);
       const pkgPath: string = isArkTSEvolution ?
-        path.join(getDeclgenBridgeCodePath(metaInfo.pkgName), metaInfo.moduleName) : metaInfo.pkgPath;
+        path.join(getDeclgenBridgeCodePath(metaInfo.pkgName), metaInfo.pkgName) : metaInfo.pkgPath;
       const pkgParams = {
         pkgName: metaInfo.pkgName,
         pkgPath,
@@ -529,15 +537,15 @@ export class ModuleMode extends CommonMode {
 
     let moduleName: string = metaInfo.moduleName;
     let recordName: string = '';
-    let cacheFilePath: string = metaInfo.language === ARKTS_1_2 ? originalFilePath :
+    let cacheFilePath: string = isArkTSEvolutionFile(filePath, metaInfo) ? originalFilePath :
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath, metaInfo);
     let packageName: string = '';
 
     if (this.useNormalizedOHMUrl) {
       packageName = metaInfo.pkgName;
-      const isArkTSEvolution: boolean = metaInfo.language === ARKTS_1_2;
+      const isArkTSEvolution: boolean = isArkTSEvolutionFile(filePath, metaInfo);
       const pkgPath: string = isArkTSEvolution ?
-        path.join(getDeclgenBridgeCodePath(packageName), metaInfo.moduleName) : metaInfo.pkgPath;
+        path.join(getDeclgenBridgeCodePath(packageName), metaInfo.pkgName) : metaInfo.pkgPath;
       const pkgParams = {
         pkgName: packageName,
         pkgPath,

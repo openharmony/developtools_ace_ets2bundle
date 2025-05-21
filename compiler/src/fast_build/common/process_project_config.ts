@@ -38,7 +38,11 @@ export function getEntryObj() {
   }
   projectConfig.entryObj = Object.keys(projectConfig.entryObj).reduce((newEntry, key) => {
     const newKey: string = key.replace(/^\.\//, '');
-    newEntry[newKey] = projectConfig.entryObj[key].replace('?entry', '');
+    const filePath = projectConfig.entryObj[key].replace('?entry', '');
+    const firstLine = fs.readFileSync(filePath, 'utf-8').split('\n')[0];
+    if (!firstLine.includes('use static')) {
+      newEntry[newKey] = filePath;
+    }
     return newEntry;
   }, {});
 }
