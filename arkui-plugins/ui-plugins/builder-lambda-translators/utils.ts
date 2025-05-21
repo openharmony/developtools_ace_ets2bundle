@@ -29,6 +29,11 @@ export enum BindableDecl {
 
 export type BuilderLambdaAstNode = arkts.ScriptFunction | arkts.ETSParameterExpression | arkts.FunctionDeclaration;
 
+export type InstanceCallInfo = {
+    isReceiver: boolean;
+    call: arkts.CallExpression;
+};
+
 /**
  * Used in finding "XXX" in BuilderLambda("XXX")
  * @deprecated
@@ -56,7 +61,62 @@ export function builderLambdaArgumentName(annotation: arkts.AnnotationUsage): st
  */
 export function isBuilderLambda(node: arkts.AstNode, isExternal?: boolean): boolean {
     const builderLambdaCall: arkts.AstNode | undefined = getDeclForBuilderLambda(node);
+    if (!builderLambdaCall) {
+        return arkts.isCallExpression(node) && node.arguments.length > 0 && isBuilderLambda(node.arguments[0]);
+    }
     return !!builderLambdaCall;
+}
+
+/**
+ * Determine whether it is a function with receiver method definition.
+ *
+ * @param node method definition node
+ */
+export function isFunctionWithReceiver(node: arkts.MethodDefinition): boolean {
+    if (node.scriptFunction && arkts.isScriptFunction(node.scriptFunction)) {
+        return node.scriptFunction.hasReceiver;
+    }
+    return false;
+}
+
+/**
+ * Determine whether it is a function with receiver call.
+ *
+ * @param node identifier node
+ */
+export function isFunctionWithReceiverCall(node: arkts.Identifier): boolean {
+    const decl: arkts.AstNode | undefined = arkts.getDecl(node);
+    if (decl && arkts.isMethodDefinition(decl)) {
+        return isFunctionWithReceiver(decl);
+    }
+    return false;
+}
+
+/**
+ * Determine whether it is a style chained call.
+ *
+ * @param node call expression node
+ */
+export function isStyleChainedCall(node: arkts.CallExpression): boolean {
+    return (
+        arkts.isMemberExpression(node.expression) &&
+        arkts.isIdentifier(node.expression.property) &&
+        arkts.isCallExpression(node.expression.object)
+    );
+}
+
+/**
+ * Determine whether it is a style function with receiver call.
+ *
+ * @param node call expression node
+ */
+export function isStyleWithReceiverCall(node: arkts.CallExpression): boolean {
+    return (
+        arkts.isIdentifier(node.expression) &&
+        isFunctionWithReceiverCall(node.expression) &&
+        !!node.arguments.length &&
+        arkts.isCallExpression(node.arguments[0])
+    );
 }
 
 /**
@@ -134,6 +194,13 @@ export function isBuilderLambdaCall(node: arkts.CallExpression | arkts.Identifie
     }
 
     if (arkts.isMethodDefinition(decl)) {
+        if (isFunctionWithReceiver(decl)) {
+            return (
+                arkts.isCallExpression(node) &&
+                node.arguments.length > 0 &&
+                !!getDeclForBuilderLambda(node.arguments[0])
+            );
+        }
         return isBuilderLambdaMethod(decl);
     }
     if (arkts.isFunctionExpression(decl)) {

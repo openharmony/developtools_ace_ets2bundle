@@ -40,6 +40,7 @@ export enum RuntimeNames {
     SCOPE = '__memo_scope',
     THIS = 'this',
     VALUE = 'value',
+    EQUAL_T = '=t'
 }
 
 export interface ReturnTypeInfo {
@@ -556,4 +557,22 @@ export function buildeParamInfos(parameters: readonly arkts.ETSParameterExpressi
             return { ident: it.identifier, param: it };
         }),
     ];
+}
+
+export function parametersBlockHasReceiver(params: readonly arkts.Expression[]): boolean {
+    return params.length > 0 && arkts.isEtsParameterExpression(params[0]) && isThisParam(params[0]);
+}
+
+export function parametrizedNodeHasReceiver(node: arkts.ScriptFunction | arkts.ETSFunctionType | undefined): boolean {
+    if (node === undefined) {
+        return false;
+    }
+    return parametersBlockHasReceiver(node.params);
+}
+
+function isThisParam(node: arkts.Expression | undefined): boolean {
+    if (node === undefined || !arkts.isEtsParameterExpression(node)) {
+        return false;
+    }
+    return node.identifier?.isReceiver ?? false;
 }
