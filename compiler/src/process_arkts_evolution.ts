@@ -23,6 +23,7 @@ import {
   ARKTS_1_0,
   ARKTS_1_1,
   ARKTS_1_2,
+  ARKTS_HYBRID,
   SUPER_ARGS
 } from './pre_define';
 import {
@@ -118,7 +119,8 @@ export function addDeclFilesConfig(filePath: string, projectConfig: Object, logg
 export function getArkTSEvoDeclFilePath(resolvedFileInfo: ResolvedFileInfo): string {
   const { moduleRequest, resolvedFileName } = resolvedFileInfo;
   let arktsEvoDeclFilePath: string = moduleRequest;
-  for (const [pkgName, arkTSEvolutionModuleInfo] of arkTSEvolutionModuleMap) {
+  const combinedMap = new Map([...arkTSEvolutionModuleMap, ...arkTSHybridModuleMap]);
+  for (const [pkgName, arkTSEvolutionModuleInfo] of combinedMap) {
     const declgenV1OutPath: string = toUnixPath(arkTSEvolutionModuleInfo.declgenV1OutPath);
     const modulePath: string = toUnixPath(arkTSEvolutionModuleInfo.modulePath);
     const declgenBridgeCodePath: string = toUnixPath(arkTSEvolutionModuleInfo.declgenBridgeCodePath);
@@ -153,23 +155,36 @@ export function collectArkTSEvolutionModuleInfo(share: Object): void {
   // dependentModuleMap Contents eg.
   // 1.2 hap -> 1.1 har: It contains the information of 1.1 har
   // 1.1 hap -> 1.2 har -> 1.1 har : There is information about 3 modules.
+
+  const throwCollectionError = (pkgName: string): void => {
+    share.throwArkTsCompilerError(red, 'ArkTS:INTERNAL ERROR: Failed to collect arkTs evolution module info.\n' +
+      `Error Message: Failed to collect arkTs evolution module "${pkgName}" info from rollup.`, reset);
+  };
+
   for (const [pkgName, dependentModuleInfo] of share.projectConfig.dependentModuleMap) {
-    if (dependentModuleInfo.language === ARKTS_1_2) {
-      if (dependentModuleInfo.declgenV1OutPath && dependentModuleInfo.declgenBridgeCodePath) {
-        arkTSEvolutionModuleMap.set(pkgName, dependentModuleInfo);
-      } else {
-        share.throwArkTsCompilerError(red, 'ArkTS:INTERNAL ERROR: Failed to collect arkTs evolution module info.\n' +
-          `Error Message: Failed to collect arkTs evolution module "${pkgName}" info from rollup.`, reset);
-      }
-    } else if (dependentModuleInfo.language === ARKTS_1_1 || dependentModuleInfo.language === ARKTS_1_0) {
-      if (dependentModuleInfo.declgenV2OutPath && dependentModuleInfo.declFilesPath) {
-        arkTSModuleMap.set(pkgName, dependentModuleInfo);
-      } else {
-        share.throwArkTsCompilerError(red, 'ArkTS:INTERNAL ERROR: Failed to collect arkTs evolution module info.\n' +
-          `Error Message: Failed to collect arkTs evolution module "${pkgName}" info from rollup.`, reset);
-      }
-    } else {
-      arkTSHybridModuleMap.set(pkgName, dependentModuleInfo);
+    switch (dependentModuleInfo.language) {
+      case ARKTS_1_2:
+        if (dependentModuleInfo.declgenV1OutPath && dependentModuleInfo.declgenBridgeCodePath) {
+          arkTSEvolutionModuleMap.set(pkgName, dependentModuleInfo);
+        } else {
+          throwCollectionError(pkgName);
+        }
+        break;
+      case ARKTS_HYBRID:
+        if (dependentModuleInfo.declgenV2OutPath && dependentModuleInfo.declFilesPath && dependentModuleInfo.declgenBridgeCodePath) {
+          arkTSHybridModuleMap.set(pkgName, dependentModuleInfo);
+        } else {
+          throwCollectionError(pkgName);
+        }
+        break;
+      case ARKTS_1_1:
+      case ARKTS_1_0:
+        if (dependentModuleInfo.declgenV2OutPath && dependentModuleInfo.declFilesPath) {
+          arkTSModuleMap.set(pkgName, dependentModuleInfo);
+        } else {
+          throwCollectionError(pkgName);
+        }
+        break;
     }
   }
 }
@@ -197,19 +212,45 @@ export async function writeBridgeCodeFileSyncByNode(node: ts.SourceFile, moduleI
 }
 
 export function getDeclgenBridgeCodePath(pkgName: string): string {
-  if (arkTSEvolutionModuleMap.size && arkTSEvolutionModuleMap.get(pkgName)) {
-    const arkTSEvolutionModuleInfo: ArkTSEvolutionModule = arkTSEvolutionModuleMap.get(pkgName);
+  const combinedMap = new Map([...arkTSEvolutionModuleMap, ...arkTSHybridModuleMap]);
+  if (combinedMap.size && combinedMap.get(pkgName)) {
+    const arkTSEvolutionModuleInfo: ArkTSEvolutionModule = combinedMap.get(pkgName);
     return arkTSEvolutionModuleInfo.declgenBridgeCodePath;
   }
   return '';
 }
 
 function getDeclgenV2OutPath(pkgName: string): string {
-  if (arkTSModuleMap.size && arkTSModuleMap.get(pkgName)) {
-    const arkTsModuleInfo: ArkTSEvolutionModule = arkTSModuleMap.get(pkgName);
+  const combinedMap = new Map([...arkTSModuleMap, ...arkTSHybridModuleMap]);
+  if (combinedMap.size && combinedMap.get(pkgName)) {
+    const arkTsModuleInfo: ArkTSEvolutionModule = combinedMap.get(pkgName);
     return arkTsModuleInfo.declgenV2OutPath;
   }
   return '';
+}
+
+export function isArkTSEvolutionFile(filePath: string, metaInfo: Object): boolean {
+  if (metaInfo.language === ARKTS_1_0 || metaInfo.language === ARKTS_1_1) {
+    return false;
+  }
+
+  if (metaInfo.language === ARKTS_1_2) {
+    return true;
+  }
+
+  if (metaInfo.language === ARKTS_HYBRID || arkTSHybridModuleMap.has(metaInfo.pkgName)) {
+    const hybridModule = arkTSHybridModuleMap.get(metaInfo.pkgName);
+    if (!hybridModule) {
+      return false;
+    }
+
+    const normalizedFilePath = toUnixPath(filePath);
+    const staticFileList = hybridModule.staticFiles || [];
+    
+    return new Set(staticFileList.map(toUnixPath)).has(normalizedFilePath);
+  }
+
+  return false;
 }
 
 export function interopTransform(program: ts.Program, id: string, mixCompile: boolean): ts.TransformerFactory<ts.SourceFile> {
@@ -250,7 +291,8 @@ export function interopTransform(program: ts.Program, id: string, mixCompile: bo
 function isFromArkTSEvolutionModule(node: ts.Node): boolean {
   const sourceFile: ts.SourceFile = node.getSourceFile();
   const filePath: string = toUnixPath(sourceFile.fileName);
-  for (const arkTSEvolutionModuleInfo of arkTSEvolutionModuleMap.values()) {
+  const combinedMap = new Map([...arkTSEvolutionModuleMap, ...arkTSHybridModuleMap]);
+  for (const arkTSEvolutionModuleInfo of combinedMap.values()) {
     const declgenV1OutPath: string = toUnixPath(arkTSEvolutionModuleInfo.declgenV1OutPath);
     if (filePath.startsWith(declgenV1OutPath + '/')) {
       const relative: string = filePath.replace(declgenV1OutPath + '/', '').replace(/\.d\.ets$/, '');
