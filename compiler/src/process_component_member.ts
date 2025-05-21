@@ -95,9 +95,7 @@ import {
   LogType,
   LogInfo,
   componentInfo,
-  storedFileInfo,
-  findNonNullType,
-  CurrentProcessFile
+  storedFileInfo
 } from './utils';
 import {
   createReference,
@@ -981,9 +979,8 @@ function manageLocalStorageComponents(node: ts.CallExpression, argumentsArray: t
 }
 
 export function isLocalStorageParameter(node: ts.CallExpression): boolean {
-  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
-  const resolvedSignature = checker?.getResolvedSignature ?
-    checker.getResolvedSignature(node) : undefined;
+  const resolvedSignature = globalProgram.checker?.getResolvedSignature ?
+    globalProgram.checker.getResolvedSignature(node) : undefined;
   return resolvedSignature && resolvedSignature.parameters && resolvedSignature.parameters.length === 1 &&
     resolvedSignature.parameters[0].escapedName === '##storage';
 }
@@ -1104,11 +1101,11 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
   typeNode = typeNode || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
   let checker: ts.TypeChecker;
   if (globalProgram.program) {
-    checker = CurrentProcessFile.getChecker(globalProgram.program);
+    checker = globalProgram.program.getTypeChecker();
   } else if (globalProgram.watchProgram) {
     checker = globalProgram.watchProgram.getCurrentProgram().getProgram().getTypeChecker();
   } else if (program) {
-    checker = CurrentProcessFile.getChecker(program);
+    checker = program.getTypeChecker();
   }
   return getDeclarationType(typeNode, checker, log);
 }
@@ -1378,18 +1375,11 @@ function updateSynchedPropertyNesedObjectPU(nameIdentifier: ts.Identifier,
 
 // check @ObjectLink type Non basic types and @Observedv2.
 function checkObjectLinkType(typeNode: ts.TypeNode): boolean {
-  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
-  if (checker) {
-    const type: ts.Type | ts.Type[] = findNonNullType(checker.getTypeFromTypeNode(typeNode));
+  if (globalProgram.checker) {
+    const type: ts.Type = globalProgram.checker.getTypeFromTypeNode(typeNode);
     const isPropertyDeclaration: boolean = typeNode.parent && ts.isPropertyDeclaration(typeNode.parent);
     if (isPropertyDeclaration) {
-      if (Array.isArray(type)) {
-        let res = true;
-        for (let i = 0; i < type.length; i++) {
-          res = res && checkTypes(type[i]);
-        }
-        return res;
-      } else if (type.types && type.types.length) {
+      if (type.types && type.types.length) {
         return checkTypes(type);
       } else {
         return !(isObservedV2(type) || isAllowedTypeForBasic(type.flags) || isFunctionType(type));
