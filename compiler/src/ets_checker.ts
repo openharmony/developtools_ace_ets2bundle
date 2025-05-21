@@ -110,14 +110,11 @@ import {
 } from '../node_modules/declgen/build/src/generateInteropDecls';
 import {
   arkTSEvolutionModuleMap,
+  arkTSHybridModuleMap,
   getArkTSEvoDeclFilePath
 } from './process_arkts_evolution';
-<<<<<<< HEAD
-=======
-import { processInteropUI } from './process_interop_ui';
 import { FileManager } from './fast_build/ark_compiler/interop/interop_manager';
 import { ARKTS_1_2 } from './pre_define';
->>>>>>> abdcc92b... provide fileManager for interop
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -420,16 +417,13 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     hasInvalidatedResolutions: (filePath: string): boolean => {
       return reuseLanguageServiceForDepChange && needReCheckForChangedDepUsers;
     },
-<<<<<<< HEAD
     clearFileCache: function() {
       fileCache.clear();
-    }
-=======
+    },
     isStaticSourceFile: (fileName: string): boolean => {
       const languageVersion = FileManager.getInstance().getLanguageVersionByFilePath(fileName);
       return languageVersion?.languageVersion === ARKTS_1_2;
     },
->>>>>>> abdcc92b... provide fileManager for interop
   };
   ts.PerformanceDotting?.setPerformanceSwitch(projectConfig?.perf);
 
@@ -623,6 +617,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     processBuildHap(cacheFile, rootFileNames, parentEvent, rollupShareObject);
     MemoryMonitor.stopRecordStage(processBuildHaprrecordInfo);
   }
+<<<<<<< HEAD
 
   if (rollupShareObject?.projectConfig.mixCompile) {
     generateDeclarationFileForSTS(rootFileNames);
@@ -640,6 +635,16 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     if (allowGC) {
       global.gc();
     }
+=======
+  if (globalProgram.program &&
+    (process.env.watchMode !== 'true' && !projectConfig.isPreview &&
+      !projectConfig.hotReload && !projectConfig.coldReload)) {
+        globalProgram.program.releaseTypeChecker();
+        const allowGC: boolean = global && global.gc && typeof global.gc === 'function';
+        if (allowGC) {
+          global.gc();
+        }
+>>>>>>> 85c78cd9... File-based hybrid compilation
   }
 }
 
@@ -1169,7 +1174,7 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
             resolvedModules.push(result.resolvedModule);
           }
         } else if (result.resolvedModule.resolvedFileName && /\.ets$/.test(result.resolvedModule.resolvedFileName) &&
-          !/\.d\.ets$/.test(result.resolvedModule.resolvedFileName) && arkTSEvolutionModuleMap.size !== 0) {
+          !/\.d\.ets$/.test(result.resolvedModule.resolvedFileName) && (arkTSEvolutionModuleMap.size !== 0 || arkTSHybridModuleMap.size !== 0)) {
           // When result has a value and the path parsed is the source code file path of module 1.2,
           // the parsing result needs to be modified to the glue code path of module 1.2
           let arktsEvoDeclFilePathExist: boolean = false;
@@ -1391,7 +1396,7 @@ export function instanceInsteadThis(content: string, fileName: string, extendFun
   return content;
 }
 
-function getResolveModule(modulePath: string, type): ts.ResolvedModuleFull {
+export function getResolveModule(modulePath: string, type): ts.ResolvedModuleFull {
   return {
     resolvedFileName: modulePath,
     isExternalLibraryImport: false,
