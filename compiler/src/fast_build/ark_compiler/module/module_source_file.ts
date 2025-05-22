@@ -356,7 +356,6 @@ export class ModuleSourceFile {
       }
       const eventWriteSourceFile = createAndStartEvent(parentEvent, 'write source file');
       await moduleSourceFile.writeSourceFile(eventWriteSourceFile);
-      SourceMapGenerator.getInstance().buildModuleSourceMapInfoSingle(eventWriteSourceFile);
       stopEvent(eventWriteSourceFile);
     }
   }
