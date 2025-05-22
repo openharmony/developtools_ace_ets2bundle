@@ -21,6 +21,7 @@ import {
   EXTNAME_TS,
   EXTNAME_MJS,
   EXTNAME_CJS,
+  GEN_ABC_PLUGIN_NAME,
   SOURCEMAPS,
   SOURCEMAPS_JSON,
   yellow,
@@ -45,7 +46,7 @@ import {
 } from './common/ob_config_resolver';
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../meomry_monitor/memory_define';
-import {
+import { 
   ArkTSInternalErrorDescription,
   ErrorCode
 } from './error_code';
@@ -60,9 +61,6 @@ import {
   stopEvent
 } from '../../performance';
 import { BytecodeObfuscator } from './bytecode_obfuscator';
-import { createInterface } from 'readline';
-
-let isShouldSourceMap: boolean = true;
 
 export class SourceMapGenerator {
   private static instance: SourceMapGenerator | undefined = undefined;
@@ -70,26 +68,19 @@ export class SourceMapGenerator {
 
   private projectConfig: Object;
   private sourceMapPath: string;
-  private sourceMapPathTmp: string;
   private cacheSourceMapPath: string;
   private triggerAsync: Object;
   private triggerEndSignal: Object;
   private sourceMaps: Object = {};
-  private sourceMapKeys: Set<string> = new Set([]);
   private isNewSourceMap: boolean = true;
   private keyCache: Map<string, string> = new Map();
   private logger: CommonLogger;
-  private isFirstAppend: boolean = true;
-  private isCompileSingle: boolean = false;
-  private originFd: number;
-  private tempFd: number;
 
   public sourceMapKeyMappingForObf: Map<string, string> = new Map();
 
   constructor(rollupObject: Object) {
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
     this.sourceMapPath = this.getSourceMapSavePath();
-    this.sourceMapPathTmp = path.join(this.projectConfig.cachePath, SOURCEMAPS_JSON + '.tmp');
     this.cacheSourceMapPath = path.join(this.projectConfig.cachePath, SOURCEMAPS_JSON);
     this.triggerAsync = rollupObject.async;
     this.triggerEndSignal = rollupObject.signal;
@@ -103,40 +94,7 @@ export class SourceMapGenerator {
     // adapt compatibility with hvigor
     if (!SourceMapGenerator.instance.projectConfig.entryPackageName ||
       !SourceMapGenerator.instance.projectConfig.entryModuleVersion) {
-      SourceMapGenerator.instance.isNewSourceMap = false;
-    }
-
-    if ((SourceMapGenerator.instance.projectConfig.hotReload &&
-      SourceMapGenerator.instance.projectConfig.watchMode !== 'true') ||
-      (SourceMapGenerator.instance.projectConfig.coldReload)) {
-      isShouldSourceMap = this.projectConfig.isFirstBuild;
-    }
-
-    SourceMapGenerator.instance.isCompileSingle = SourceMapGenerator.instance.isNewSourceMap &&
-      SourceMapGenerator.instance.projectConfig.singleFileEmit && isShouldSourceMap;
-
-    if (isShouldSourceMap && SourceMapGenerator.instance.isNewSourceMap) {
-      if (fs.existsSync(SourceMapGenerator.instance.sourceMapPath)) {
-        fs.unlinkSync(SourceMapGenerator.instance.sourceMapPath);
-      }
-      if (fs.existsSync(SourceMapGenerator.instance.sourceMapPathTmp)) {
-        fs.unlinkSync(SourceMapGenerator.instance.sourceMapPathTmp);
-      }
-
-      const sourceMapPathDir: string = path.dirname(SourceMapGenerator.instance.sourceMapPath);
-      if (!fs.existsSync(sourceMapPathDir)) {
-        fs.mkdirSync(sourceMapPathDir, { recursive: true });
-      }
-      SourceMapGenerator.instance.originFd = fs.openSync(SourceMapGenerator.instance.sourceMapPath, 'a');
-      const sourceMapPathTmpDir: string = path.dirname(SourceMapGenerator.instance.sourceMapPathTmp);
-      if (!fs.existsSync(sourceMapPathTmpDir)) {
-        fs.mkdirSync(sourceMapPathTmpDir, { recursive: true });
-      }
-      SourceMapGenerator.instance.tempFd = fs.openSync(SourceMapGenerator.instance.sourceMapPathTmp, 'a');
-    }
-
-    if (SourceMapGenerator.instance.projectConfig.hotReload) {
-      isShouldSourceMap = false;
+        SourceMapGenerator.instance.isNewSourceMap = false;
     }
   }
 
@@ -237,148 +195,7 @@ export class SourceMapGenerator {
       path.join(this.projectConfig.cachePath, SOURCEMAPS);
   }
 
-  async *readLines(filePath: string): AsyncGenerator<string> {
-    const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
-    const rl = createInterface({
-      input: fileStream,
-      crlfDelay: Infinity
-    });
-
-    try {
-      for await (const line of rl) {
-        yield line;
-      }
-    } finally {
-      rl.close();
-      fileStream.close();
-    }
-  }
-
-  public formatOrigin(key: string, val: object): string {
-    return `  "${key}": ${JSON.stringify(val, null, 2).replaceAll('\n', '\n  ')}`;
-  }
-
-  public formatTemp(key: string, val: object): string {
-    return `{"key": "${key}", "val": ${JSON.stringify(val)}}`;
-  }
-
-  public writeOrigin(content: string): void {
-    fs.appendFileSync(this.originFd, content, { encoding: 'utf8' });
-  }
-
-  public writetTemp(content: string): void {
-    fs.appendFileSync(this.tempFd, content, { encoding: 'utf8' });
-  }
-
-  public closeFd(): void {
-    if (this.originFd) {
-      fs.closeSync(this.originFd);
-      this.originFd = undefined;
-    }
-    if (this.tempFd) {
-      fs.closeSync(this.tempFd);
-      this.tempFd = undefined;
-    }
-  }
-
-  public convertSourceMapToCache(maps: Object): string {
-    let isFirstLine: boolean = true;
-    let cacheContent: string = '';
-    Object.keys(maps).forEach(key => {
-      let contentTmp: string = this.formatTemp(key, maps[key]);
-      if (isFirstLine) {
-        isFirstLine = false;
-        cacheContent = contentTmp;
-      } else {
-        cacheContent += `\n${contentTmp}`;
-      }
-    });
-    return cacheContent;
-  }
-
-  public writeModifiedSourceMapToFile(parentEvent: CompileEvent | undefined): void {
-    const eventWriteCachedSourceMaps = createAndStartEvent(parentEvent, 'write source maps');
-    Object.keys(this.sourceMaps).forEach(key => {
-      let keyChanged: string = '';
-      if (this.sourceMapKeyMappingForObf.has(key)) {
-        keyChanged = this.sourceMapKeyMappingForObf.get(key);
-      } else {
-        keyChanged = key;
-      }
-      this.sourceMapKeys.add(keyChanged);
-
-      let contentJson: string = this.formatOrigin(keyChanged, this.sourceMaps[key]);
-      let contentTmp: string = this.formatTemp(keyChanged, this.sourceMaps[key]);
-      if (this.isFirstAppend) {
-        this.isFirstAppend = false;
-        this.writeOrigin(`{\n${contentJson}`);
-        this.writetTemp(`${contentTmp}`);
-      } else {
-        this.writeOrigin(`,\n${contentJson}`);
-        this.writetTemp(`\n${contentTmp}`);
-      }
-    });
-    this.sourceMaps = {};
-    this.sourceMapKeyMappingForObf.clear();
-    stopEvent(eventWriteCachedSourceMaps);
-  }
-
-  public async writeUsedAndUnmodifiedSourceMapToFile(parentEvent: CompileEvent | undefined): Promise<void> {
-    const eventMergeCachedSourceMaps = createAndStartEvent(parentEvent, 'merge cached source maps');
-    let cacheSourceMapInfo: Object = this.getCacheSourceMapInfo();
-    if (!cacheSourceMapInfo.exist) {
-      if (!this.isFirstAppend) {
-        this.writeOrigin('\n}');
-      }
-      this.closeFd();
-      fs.renameSync(this.sourceMapPathTmp, this.cacheSourceMapPath);
-      stopEvent(eventMergeCachedSourceMaps);
-      return;
-    }
-
-    await (async (): Promise<void> => {
-      let compileFileList: Set<string> = this.getCompileFileList();
-      for await (const line of this.readLines(cacheSourceMapInfo.path)) {
-        if (line.trim() === '') {
-          continue;
-        }
-        let smObj: Object = JSON.parse(line.trim());
-        if (!compileFileList.has(smObj.key) || this.sourceMapKeys.has(smObj.key)) {
-          // skip unuse or uncompile in cache
-          continue;
-        }
-        this.writeOrigin(`,\n${this.formatOrigin(smObj.key, smObj.val)}`);
-        this.writetTemp(`\n${this.formatTemp(smObj.key, smObj.val)}`);
-      }
-      if (!this.isFirstAppend) {
-        this.writeOrigin('\n}');
-      }
-      this.closeFd();
-      fs.unlinkSync(this.cacheSourceMapPath);
-      fs.renameSync(this.sourceMapPathTmp, this.cacheSourceMapPath);
-    })();
-    stopEvent(eventMergeCachedSourceMaps);
-  }
-
-  public buildModuleSourceMapInfoSingle(parentEvent: CompileEvent | undefined): void {
-    if (!this.isCompileSingle) {
-      return;
-    }
-    if (Object.keys(this.sourceMaps).length === 0) {
-      return;
-    }
-    this.writeModifiedSourceMapToFile(parentEvent);
-  }
-
   public buildModuleSourceMapInfo(parentEvent: CompileEvent | undefined): void {
-    if (this.isCompileSingle) {
-      this.writeUsedAndUnmodifiedSourceMapToFile(parentEvent);
-    } else {
-      this.buildModuleSourceMapInfoAll(parentEvent);
-    }
-  }
-
-  public buildModuleSourceMapInfoAll(parentEvent: CompileEvent | undefined): void {
     if (this.projectConfig.widgetCompile) {
       return;
     }
@@ -398,13 +215,6 @@ export class SourceMapGenerator {
         }
       });
     }
-
-    if (this.isNewSourceMap) {
-      this.writeModifiedSourceMapToFile(parentEvent);
-      this.writeUsedAndUnmodifiedSourceMapToFile(parentEvent);
-      return;
-    }
-
     const updateSourceRecordInfo = MemoryMonitor.recordStage(MemoryDefine.UPDATE_SOURCE_MAPS);
     const cacheSourceMapObject: Object = this.updateCachedSourceMaps();
     MemoryMonitor.stopRecordStage(updateSourceRecordInfo);
@@ -429,52 +239,57 @@ export class SourceMapGenerator {
     });
   }
 
-  public isEmptyFile(filePath: string): boolean {
-    const stats = fs.statSync(filePath);
-    return stats.size === 0;
-  }
-
-  public getCacheSourceMapInfo(): Object {
-    let existCacheSourceMap: boolean = false;
-    let cacheSourceMapPath: string = '';
-    let cacheSourceMapPathTmp: string = '';
-    /**
-     * bytecode obfuscation requires that the input sourceMap must be unobfuscated,
-     * the sourceMap will be saved in the cache directory before the first bytecode obfuscation,
-     * and it will as the input for merging sourceMap during incremental compilation.
-     */
-    if (BytecodeObfuscator.enable) {
-      cacheSourceMapPathTmp = BytecodeObfuscator.getInstance().getBackupSourceMapPath();
-      if (fs.existsSync(cacheSourceMapPathTmp) && !this.isEmptyFile(cacheSourceMapPathTmp)) {
-        existCacheSourceMap = true;
-        cacheSourceMapPath = cacheSourceMapPathTmp;
-      }
-    }
-
-    cacheSourceMapPathTmp = this.cacheSourceMapPath;
-    if (!existCacheSourceMap && fs.existsSync(cacheSourceMapPathTmp) && !this.isEmptyFile(cacheSourceMapPathTmp)) {
-      existCacheSourceMap = true;
-      cacheSourceMapPath = cacheSourceMapPathTmp;
-    }
-
-    return { exist: existCacheSourceMap, path: cacheSourceMapPath };
-  }
-
   //update cache sourcemap object
   public updateCachedSourceMaps(): Object {
     if (!this.isNewSourceMap) {
       this.modifySourceMapKeyToCachePath(this.sourceMaps);
     }
 
-    let cacheSourceMapObject: Object = null;
-    let cacheSourceMapInfo: Object = this.getCacheSourceMapInfo();
-    if (!cacheSourceMapInfo.exist) {
+    let cacheSourceMapObject: Object;
+    if (!fs.existsSync(this.cacheSourceMapPath)) {
       cacheSourceMapObject = this.sourceMaps;
     } else {
-      cacheSourceMapObject = JSON.parse(fs.readFileSync(cacheSourceMapInfo.path).toString().trim());
+      /**
+       * bytecode obfuscation requires that the input sourceMap must be unobfuscated,
+       * the sourceMap will be saved in the cache directory before the first bytecode obfuscation,
+       * and it will as the input for merging sourceMap during incremental compilation.
+       */
+      if (BytecodeObfuscator.enable && fs.existsSync(BytecodeObfuscator.getInstance().getBackupSourceMapPath())) {
+        cacheSourceMapObject = JSON.parse(fs.readFileSync(BytecodeObfuscator.getInstance().getBackupSourceMapPath()).toString());
+      } else {
+        cacheSourceMapObject = JSON.parse(fs.readFileSync(this.cacheSourceMapPath).toString());
+      }
       // remove unused source files's sourceMap
       let unusedFiles = [];
-      let compileFileList: Set<string> = this.getCompileFileList();
+      let compileFileList: Set<string> = new Set();
+      for (let moduleId of SourceMapGenerator.rollupObject.getModuleIds()) {
+        // exclude .dts|.d.ets file
+        if (isCommonJsPluginVirtualFile(moduleId) || !isCurrentProjectFiles(moduleId, this.projectConfig)) {
+          continue;
+        }
+
+        if (this.isNewSourceMap) {
+          const isPackageModules = isPackageModulesFile(moduleId, this.projectConfig);
+          if (enableObfuscateFileName(isPackageModules, this.projectConfig)){
+            compileFileList.add(this.genKey(moduleId, true));
+          } else {
+            compileFileList.add(this.genKey(moduleId));
+          }
+          continue;
+        }
+
+        // adapt compatibilty with hvigor
+        const projectRootPath = getProjectRootPath(moduleId, this.projectConfig, this.projectConfig?.rootPathSet);
+        let cacheModuleId = this.getIntermediateModuleId(toUnixPath(moduleId))
+          .replace(toUnixPath(projectRootPath), toUnixPath(this.projectConfig.cachePath));
+
+        const isPackageModules = isPackageModulesFile(moduleId, this.projectConfig);
+        if (enableObfuscateFileName(isPackageModules, this.projectConfig)) {
+          compileFileList.add(mangleFilePath(cacheModuleId));
+        } else {
+          compileFileList.add(cacheModuleId);
+        }
+      }
 
       Object.keys(cacheSourceMapObject).forEach(key => {
         let newkeyOrOldCachePath = key;
@@ -499,39 +314,6 @@ export class SourceMapGenerator {
       this.updateSourceMapKeyWithObf(cacheSourceMapObject, key, newKey);
     }
     return cacheSourceMapObject;
-  }
-
-  public getCompileFileList(): Set<string> {
-    let compileFileList: Set<string> = new Set();
-    for (let moduleId of SourceMapGenerator.rollupObject.getModuleIds()) {
-      // exclude .dts|.d.ets file
-      if (isCommonJsPluginVirtualFile(moduleId) || !isCurrentProjectFiles(moduleId, this.projectConfig)) {
-        continue;
-      }
-
-      if (this.isNewSourceMap) {
-        const isPackageModules = isPackageModulesFile(moduleId, this.projectConfig);
-        if (enableObfuscateFileName(isPackageModules, this.projectConfig)) {
-          compileFileList.add(this.genKey(moduleId, true));
-        } else {
-          compileFileList.add(this.genKey(moduleId));
-        }
-        continue;
-      }
-
-      // adapt compatibilty with hvigor
-      const projectRootPath = getProjectRootPath(moduleId, this.projectConfig, this.projectConfig?.rootPathSet);
-      let cacheModuleId = this.getIntermediateModuleId(toUnixPath(moduleId))
-        .replace(toUnixPath(projectRootPath), toUnixPath(this.projectConfig.cachePath));
-
-      const isPackageModules = isPackageModulesFile(moduleId, this.projectConfig);
-      if (enableObfuscateFileName(isPackageModules, this.projectConfig)) {
-        compileFileList.add(mangleFilePath(cacheModuleId));
-      } else {
-        compileFileList.add(cacheModuleId);
-      }
-    }
-    return compileFileList;
   }
 
   public getSourceMaps(): Object {
@@ -628,7 +410,6 @@ export class SourceMapGenerator {
 
   public static cleanSourceMapObject(): void {
     if (this.instance) {
-      this.instance.closeFd();
       this.instance.keyCache.clear();
       this.instance.sourceMaps = undefined;
       this.instance = undefined;
