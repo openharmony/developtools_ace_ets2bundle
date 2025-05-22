@@ -72,7 +72,8 @@ import {
   resetEtsCheck,
   collectAllFiles,
   allModuleIds,
-  resetEtsCheckTypeScript
+  resetEtsCheckTypeScript,
+  maxMemoryInServiceChecker
 } from '../../ets_checker';
 import {
   CUSTOM_BUILDER_METHOD,
@@ -169,6 +170,10 @@ export function etsTransform() {
       if (!!this.cache.get('enableDebugLine') !== projectConfig.enableDebugLine) {
         ShouldEnableDebugLine.enableDebugLine = true;
       }
+      // Initialize the baseline of trggering GC by the maxMemory at the end of serviceChecker. 
+      // In etsTransform plugin, if the memory after transforming a file exceeds the baseline,
+      // trigger GC and update a new baseline.
+      ts.MemoryUtils.initializeBaseMemory(maxMemoryInServiceChecker);
       stopEvent(eventEtsTransformBuildStart);
     },
     load(id: string) {
@@ -524,6 +529,7 @@ async function transform(code: string, id: string) {
     tsProgram.getCompilerOptions().noEmit = true;
   }
 
+  ts.MemoryUtils.tryGC();
   resetCollection();
   processStructComponentV2.resetStructMapInEts();
   if (((transformLog && transformLog.errors.length) || (kitTransformLog && kitTransformLog.errors.length)) &&
