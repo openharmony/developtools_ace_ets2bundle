@@ -111,6 +111,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.updateVersionInfo = undefined;
   projectConfig.allowEmptyBundleName = false;
   projectConfig.uiTransformOptimization = false;
+  projectConfig.ignoreCrossplatformCheck = false;
 }
 
 function initProjectPathConfig(projectConfig) {
@@ -1124,6 +1125,7 @@ function resetProjectConfig() {
   projectConfig.removeChangedFileListInSdk = false;
   projectConfig.allowEmptyBundleName = false;
   projectConfig.uiTransformOptimization = false;
+  projectConfig.ignoreCrossplatformCheck = false;
   const props = ['projectPath', 'buildPath', 'aceModuleBuild', 'manifestFilePath', 'aceProfilePath',
     'aceModuleJsonPath', 'aceSuperVisualPath', 'hashProjectPath', 'aceBuildJson', 'cachePath',
     'aceSoPath', 'localPropertiesPath', 'projectProfilePath', 'isPreview', 'compileMode', 'runtimeOS',
