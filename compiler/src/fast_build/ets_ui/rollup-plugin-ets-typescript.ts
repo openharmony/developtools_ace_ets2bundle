@@ -548,7 +548,7 @@ function setPkgNameForFile(moduleInfo: Object): void {
   }
 }
 
-function validateEts(code: string, id: string, isEntry: boolean, logger: any, sourceFile: ts.SourceFile) {
+function validateEts(code: string, id: string, isEntry: boolean, logger: any, sourceFile: ts.SourceFile): void {
   if (/\.ets$/.test(id)) {
     clearCollection();
     const fileQuery: string = isEntry && !abilityPagesFullPath.has(path.resolve(id).toLowerCase()) ? '?entry' : '';
