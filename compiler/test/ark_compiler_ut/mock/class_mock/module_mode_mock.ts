@@ -260,14 +260,30 @@ class ModuleModeMock extends ModuleMode {
   }
 
   checkModuleSourceMapInfoMock(): boolean {
-    const readSourceMap = fs.readFileSync(this.sourceMapPath, 'utf-8');
-    const readCacheSourceMap = fs.readFileSync(this.cacheSourceMapPath, 'utf-8');
+    let readSourceMap: string = '';
+    if (fs.existsSync(this.sourceMapPath)) {
+      readSourceMap = fs.readFileSync(this.sourceMapPath, 'utf-8');
+    }
+    let readCacheSourceMap: string = '';
+    if (fs.existsSync(this.cacheSourceMapPath)) {
+      readCacheSourceMap = fs.readFileSync(this.cacheSourceMapPath, 'utf-8');
+    }
+
     if (readSourceMap.length == 0 && readCacheSourceMap.length == 0) {
       return true;
-    } else if (readSourceMap === readCacheSourceMap) {
-      return true;
     } else {
-      return false;
+      const sourcemapObj: Object = JSON.parse(readSourceMap);
+      const cacheArrayStr: string = '[' + readCacheSourceMap.replace(/\n/g, ',') + ']';
+      const cacheArray: Array<Object> = JSON.parse(cacheArrayStr);
+      for (const item of cacheArray) {
+        if (!sourcemapObj.hasOwnProperty(item.key)) {
+          return false;
+        }
+        if (JSON.stringify(sourcemapObj[item.key]) != JSON.stringify(item.val)) {
+          return false;
+        }
+      }
+      return true;
     }
   }
 
