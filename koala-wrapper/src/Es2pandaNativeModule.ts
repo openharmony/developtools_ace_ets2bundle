@@ -24,6 +24,7 @@ import {
 } from '@koalaui/interop';
 import { Es2pandaNativeModule as GeneratedEs2pandaNativeModule } from './generated/Es2pandaNativeModule';
 import * as path from 'path';
+import { PluginDiagnosticType } from './arkts-api/peers/DiagnosticKind';
 
 // TODO: this type should be in interop
 export type KPtrArray = BigUint64Array;
@@ -820,7 +821,7 @@ export class Es2pandaNativeModule {
     _ClassVariableDeclaration(context: KNativePointer, classInstance: KNativePointer): KNativePointer {
         throw new Error('Not implemented');
     }
- 
+
     _IsMethodDefinition(node: KPtr): KBoolean {
         throw new Error('Not implemented');
     }
@@ -842,6 +843,27 @@ export class Es2pandaNativeModule {
     }
 
     _IsArrayExpression(node: KPtr): KBoolean {
+        throw new Error('Not implemented');
+    }
+    _CreateDiagnosticKind(context: KNativePointer, message: string, type: PluginDiagnosticType): KNativePointer {
+        throw new Error('Not implemented');
+    }
+
+    _CreateDiagnosticInfo(context: KNativePointer, kind: KNativePointer, args: string[], argc: number): KNativePointer {
+        throw new Error('Not implemented');
+    }
+
+    _CreateSuggestionInfo(context: KNativePointer, kind: KNativePointer, args: string[],
+        argc: number, substitutionCode: string): KNativePointer {
+        throw new Error('Not implemented');
+    }
+
+    _LogDiagnostic(context: KNativePointer, kind: KNativePointer, argv: string[], argc: number, pos: KNativePointer): void {
+        throw new Error('Not implemented');
+    }
+
+    _LogDiagnosticWithSuggestion(context: KNativePointer, diagnosticInfo: KNativePointer,
+        suggestionInfo?: KNativePointer, range?: KNativePointer): void {
         throw new Error('Not implemented');
     }
 }

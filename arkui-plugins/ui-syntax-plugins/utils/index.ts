@@ -16,6 +16,8 @@
 import * as arkts from '@koalaui/libarkts';
 import * as fs from 'fs';
 import * as path from 'path';
+import { UISyntaxRuleComponents } from 'ui-syntax-plugins/processor';
+import { UISyntaxRuleContext } from 'ui-syntax-plugins/rules/ui-syntax-rule';
 
 export const PresetDecorators = {
   BUILDER_PARAM: 'BuilderParam',
@@ -174,11 +176,19 @@ interface ComponentJson {
   name: string;
   atomic?: boolean;
   attrs: string[];
+  single?: boolean;
+  parents?: string[];
+  children?: string[];
 }
 
-export function getContainerComponents(dirPath: string): Set<string> {
-  const resultSet = new Set<string>();
+export function getUIComponents(dirPath: string): UISyntaxRuleComponents {
   const absolutePath = path.resolve(__dirname, dirPath);
+  let builtInAttributes: string[] = [];
+  let containerComponents: string[] = [];
+  let atomicComponents: string[] = [];
+  let singleChildComponents: string[] = [];
+  let validParentComponent: Map<string, string[]> = new Map();
+  let validChildComponent: Map<string, string[]> = new Map();
 
   if (!fs.existsSync(absolutePath)) {
     throw new Error(`Directory does not exist: ${absolutePath}`);
@@ -191,10 +201,59 @@ export function getContainerComponents(dirPath: string): Set<string> {
       const filePath = path.join(absolutePath, file);
       const fileContent = fs.readFileSync(filePath, 'utf-8');
       const componentJson: ComponentJson = JSON.parse(fileContent);
+      // Record the container component name
       if ((!componentJson.atomic || componentJson.atomic !== true) && (componentJson.name)) {
-        resultSet.add(componentJson.name);
+        containerComponents.push(componentJson.name);
       }
+      // Record the atomic component name
+      if (componentJson.atomic && componentJson.atomic === true && componentJson.name) {
+        atomicComponents.push(componentJson.name);
+      }
+      // Record the name of a single subcomponent component name
+      if (componentJson.single && componentJson.single === true && componentJson.name) {
+        singleChildComponents.push(componentJson.name);
+      }
+      // Record a valid parent component name
+      if (componentJson.parents && componentJson.name) {
+        validParentComponent.set(componentJson.name, componentJson.parents);
+      }
+      // Record a valid children component name
+      if (componentJson.children && componentJson.name) {
+        validChildComponent.set(componentJson.name, componentJson.children);
+      }
+      // Document all built-in attributes
+      componentJson.attrs?.filter(attr => !builtInAttributes.includes(attr))
+        .forEach(attr => builtInAttributes.push(attr));
     }
   });
-  return resultSet;
+  const componentsInfo: UISyntaxRuleComponents = {
+    builtInAttributes,
+    containerComponents,
+    atomicComponents,
+    singleChildComponents,
+    validParentComponent,
+    validChildComponent,
+  };
+
+  return componentsInfo;
+}
+
+export function isBuiltInAttribute(context: UISyntaxRuleContext, attributeName: string): boolean {
+  return context.componentsInfo.builtInAttributes.includes(attributeName);
+}
+export function isBuildInComponent(context: UISyntaxRuleContext, componentName: string): boolean {
+  return context.componentsInfo.containerComponents.includes(componentName) ||
+    context.componentsInfo.atomicComponents.includes(componentName);
+}
+
+export function isAtomicComponent(context: UISyntaxRuleContext, componentName: string): boolean {
+  return context.componentsInfo.atomicComponents.includes(componentName);
+}
+
+export function isContainerComponent(context: UISyntaxRuleContext, componentName: string): boolean {
+  return context.componentsInfo.containerComponents.includes(componentName);
+}
+
+export function isSingleChildComponent(context: UISyntaxRuleContext, componentName: string): boolean {
+  return context.componentsInfo.singleChildComponents.includes(componentName);
 }
