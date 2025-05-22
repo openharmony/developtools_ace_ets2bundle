@@ -160,7 +160,8 @@ import {
   SPECIFIC_PARENT_COMPONENT,
   STYLES_ATTRIBUTE,
   INNER_CUSTOM_LOCALBUILDER_METHOD,
-  COMMON_ATTRS
+  COMMON_ATTRS,
+  EXT_WHITE_LIST
 } from './component_map';
 import {
   componentCollection,
@@ -1496,15 +1497,18 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
       false, parent, undefined, isGlobalBuilder, false, builderParamsResult, isInRepeatTemplate);
     const navDestinationCallback: (ts.ArrowFunction | ts.NewExpression | ts.ObjectLiteralExpression)[] =
       [ts.factory.createArrowFunction(undefined, undefined, [], undefined,
-      ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-      ts.factory.createBlock([...newTabContentChildren], true))];
+        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+        ts.factory.createBlock([...newTabContentChildren], true))];
     if (name === NAV_DESTINATION) {
       navDestinationCallback.push(...navigationCreateParam(NAV_DESTINATION, COMPONENT_CREATE_FUNCTION, undefined, true));
+    }
+    if (equalToHiddenNavDes(name)) {
+      navDestinationCallback.push(...navigationCreateParam(EXT_WHITE_LIST[1], COMPONENT_CREATE_FUNCTION, undefined, true));
     }
     tabContentCreation = ts.factory.createExpressionStatement(
       ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
         ts.factory.createIdentifier(name), ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)),
-      undefined, navDestinationCallback));
+        undefined, navDestinationCallback));
     bindComponentAttr(node, ts.factory.createIdentifier(name), tabAttrs, log, true, false, immutableStatements);
     processInnerCompStatements(
       innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder, false,
@@ -1514,7 +1518,8 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
     tabContentCreation = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(name),
         ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined,
-        name === NAV_DESTINATION ? navigationCreateParam(NAV_DESTINATION, COMPONENT_CREATE_FUNCTION) : []));
+      name === NAV_DESTINATION ? navigationCreateParam(NAV_DESTINATION, COMPONENT_CREATE_FUNCTION) :
+        (equalToHiddenNavDes(name) ? navigationCreateParam(EXT_WHITE_LIST[1], COMPONENT_CREATE_FUNCTION) : [])));
     bindComponentAttr(node, ts.factory.createIdentifier(name), tabAttrs, log, true, false, immutableStatements);
     processInnerCompStatements(
       innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder, false,
@@ -3581,7 +3586,8 @@ export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
     if (checkCreateArgumentBuilder(node, attrNode)) {
       argumentsArr = transformBuilder(argumentsArr);
     }
-    if (compName === NAVIGATION && type === COMPONENT_CREATE_FUNCTION && partialUpdateConfig.partialUpdateMode) {
+    if (((compName === NAVIGATION) || equalToHiddenNav(compName)) &&
+      type === COMPONENT_CREATE_FUNCTION && partialUpdateConfig.partialUpdateMode) {
       // @ts-ignore
       argumentsArr = navigationCreateParam(compName, type, argumentsArr);
     }
@@ -3621,12 +3627,13 @@ function navigationCreateParam(compName: string, type: string,
     // @ts-ignore
     navigationOrNavDestination.push(...argumentsArr);
   } else if (partialUpdateMode && isCreate) {
-    if (compName === NAVIGATION) {
+    if ((compName === NAVIGATION) || equalToHiddenNav(compName)) {
       isHaveParam = false;
       navigationOrNavDestination.push(ts.factory.createNewExpression(
         ts.factory.createIdentifier(NAV_PATH_STACK), undefined, []
       ));
-    } else if (compName === NAV_DESTINATION && !isNavDestinationCallback) {
+    } else if (((compName === NAV_DESTINATION) || equalToHiddenNavDes(compName)) &&
+      !isNavDestinationCallback) {
       navigationOrNavDestination.push(ts.factory.createArrowFunction(
         undefined, undefined, [], undefined,
         ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
@@ -3635,7 +3642,7 @@ function navigationCreateParam(compName: string, type: string,
           false
         )
       ));
-    } 
+    }
   }
   if (CREATE_ROUTER_COMPONENT_COLLECT.has(compName) && isCreate && partialUpdateMode) {
     navigationOrNavDestination.push(ts.factory.createObjectLiteralExpression(
@@ -3658,8 +3665,8 @@ function navigationOrNavDestinationCreateContent(compName: string, isHaveParam: 
         projectConfig.compileHar ? '' :
           path.relative(projectConfig.projectRootPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
       )
-  ));
-  if (compName === NAVIGATION) {
+    ));
+  if ((compName === NAVIGATION) || equalToHiddenNav(compName)) {
     navigationOrNavDestinationContent.push(ts.factory.createPropertyAssignment(
       ts.factory.createIdentifier(IS_USER_CREATE_STACK),
       isHaveParam ? ts.factory.createTrue() : ts.factory.createFalse()
@@ -3707,4 +3714,12 @@ function checkNonspecificParents(node: ts.ExpressionStatement, name: string, sav
       });
     }
   }
+}
+
+function equalToHiddenNav(componentName: string): boolean {
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[0]);
+}
+
+function equalToHiddenNavDes(componentName: string): boolean {
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[1]);
 }
