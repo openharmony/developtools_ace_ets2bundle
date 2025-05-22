@@ -410,7 +410,7 @@ type NameResult = {
   node?: ts.Node
 };
 
-function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpression, result?: NameResult) {
+function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpression, result?: NameResult): boolean {
   let childNode: ts.Node = node;
   result.name = null;
   while (ts.isCallExpression(childNode) && childNode.expression &&
