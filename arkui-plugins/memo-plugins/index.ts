@@ -27,77 +27,78 @@ import { SignatureTransformer } from './signature-transformer';
 export function unmemoizeTransform(): Plugins {
     return {
         name: 'memo-plugin',
-        checked(this: PluginContext) {
-            console.log('[MEMO PLUGIN] AFTER CHECKED ENTER');
-            const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
-            if (!!contextPtr) {
-                let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-                let script = program.astNode;
-
-                debugLog('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
-                const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
-                debugDump(
-                    script.dumpSrc(),
-                    getDumpFileName(0, 'SRC', 5, 'MEMO_AfterCheck_Begin'),
-                    true,
-                    cachePath,
-                    program.fileNameWithExtension
-                );
-
-                arkts.Performance.getInstance().createEvent('memo-checked');
-
-                const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
-                const parameterTransformer = new ParameterTransformer({
-                    positionalIdTracker,
-                });
-                const returnTransformer = new ReturnTransformer();
-                const signatureTransformer = new SignatureTransformer();
-                const functionTransformer = new FunctionTransformer({
-                    positionalIdTracker,
-                    parameterTransformer,
-                    returnTransformer,
-                    signatureTransformer,
-                });
-
-                const programVisitor = new ProgramVisitor({
-                    pluginName: unmemoizeTransform.name,
-                    state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
-                    visitors: [functionTransformer],
-                    skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
-                    pluginContext: this,
-                });
-
-                program = programVisitor.programVisitor(program);
-                script = program.astNode;
-
-                arkts.Performance.getInstance().stopEvent('memo-checked', false);
-
-                debugLog('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
-                debugDump(
-                    script.dumpSrc(),
-                    getDumpFileName(0, 'SRC', 6, 'MEMO_AfterCheck_End'),
-                    true,
-                    cachePath,
-                    program.fileNameWithExtension
-                );
-
-                arkts.Performance.getInstance().createEvent('memo-recheck');
-                arkts.recheckSubtree(script);
-                arkts.Performance.getInstance().stopEvent('memo-recheck', false);
-
-                arkts.Performance.getInstance().clearAllEvents(true);
-                arkts.Performance.getInstance().visualizeEvents(true);
-                arkts.Performance.getInstance().clearHistory();
-                arkts.Performance.getInstance().clearTotalDuration();
-
-                this.setArkTSAst(script);
-                console.log('[MEMO PLUGIN] AFTER CHECKED EXIT');
-                return script;
-            }
-            console.log('[MEMO PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
-        },
+        checked: checkedTransform,
         clean() {
             arkts.arktsGlobal.clearContext();
         },
     };
+}
+
+function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
+    console.log('[MEMO PLUGIN] AFTER CHECKED ENTER');
+    const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
+    if (!!contextPtr) {
+        let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+        let script = program.astNode;
+        debugLog('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
+        const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
+        debugDump(
+            script.dumpSrc(),
+            getDumpFileName(0, 'SRC', 5, 'MEMO_AfterCheck_Begin'),
+            true,
+            cachePath,
+            program.fileNameWithExtension
+        );
+        arkts.Performance.getInstance().createEvent('memo-checked');
+        program = checkedProgramVisit(program, this);
+        script = program.astNode;
+        arkts.Performance.getInstance().stopEvent('memo-checked', false);
+        debugLog('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
+        debugDump(
+            script.dumpSrc(),
+            getDumpFileName(0, 'SRC', 6, 'MEMO_AfterCheck_End'),
+            true,
+            cachePath,
+            program.fileNameWithExtension
+        );
+        arkts.Performance.getInstance().createEvent('memo-recheck');
+        arkts.recheckSubtree(script);
+        arkts.Performance.getInstance().stopEvent('memo-recheck', false);
+        arkts.Performance.getInstance().clearAllEvents(false);
+        arkts.Performance.getInstance().visualizeEvents(true);
+        arkts.Performance.getInstance().clearHistory();
+        arkts.Performance.getInstance().clearTotalDuration();
+        this.setArkTSAst(script);
+        console.log('[MEMO PLUGIN] AFTER CHECKED EXIT');
+        return script;
+    }
+    console.log('[MEMO PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
+    return undefined;
+}
+
+function checkedProgramVisit(program: arkts.Program, context: PluginContext): arkts.Program {
+    if (program.canSkipPhases()) {
+        debugLog('[SKIP PHASE] phase: memo-checked, moduleName: ', program.moduleName);
+    } else {
+        debugLog('[CANT SKIP PHASE] phase: memo-checked, moduleName: ', program.moduleName);
+        const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
+        const parameterTransformer = new ParameterTransformer({ positionalIdTracker });
+        const returnTransformer = new ReturnTransformer();
+        const signatureTransformer = new SignatureTransformer();
+        const functionTransformer = new FunctionTransformer({
+            positionalIdTracker,
+            parameterTransformer,
+            returnTransformer,
+            signatureTransformer,
+        });
+        const programVisitor = new ProgramVisitor({
+            pluginName: unmemoizeTransform.name,
+            state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
+            visitors: [functionTransformer],
+            skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+            pluginContext: context,
+        });
+        program = programVisitor.programVisitor(program);
+    }
+    return program;
 }
