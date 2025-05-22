@@ -64,7 +64,6 @@ import {
   FileKeepInfo,
   FileReservedInfo
 } from 'arkguard/lib/utils/ProjectCollections';
-import { SourceMapGenerator } from './generate_sourcemap';
 
 const FILE_NAME_CACHE: string = 'FileNameCache';
 const OBF_NAME_MAP: string = 'ObfNameMap';
@@ -309,7 +308,7 @@ export class BytecodeObfuscator {
     const nameMapping: Map<string, string> = generateMapping(nameCache);
     const sourceMapUpdated: Object = updateSourceMap(sourceMap, nameMapping);
     fs.writeFileSync(sourceMapPath, JSON.stringify(sourceMapUpdated, null, 2));
-    fs.writeFileSync(souceMapJsonPath, SourceMapGenerator.getInstance().convertSourceMapToCache(sourceMapUpdated));
+    fs.writeFileSync(souceMapJsonPath, JSON.stringify(sourceMapUpdated, null, 2));
     const nameCacheUpdated: Object = this.bytecodeObfuscateConfig.obfuscationRules.compact ?
       nameCache : processNameCache(nameCache, sourceMap);
     fs.writeFileSync(this.nameCachePath, JSON.stringify(nameCacheUpdated, null, 2));
@@ -376,9 +375,9 @@ export class BytecodeObfuscator {
     if (rules.enableDecoratorObfuscation) {
       const reservedNames = this.bytecodeObfuscateConfig.getReservedNames();
       structProperties = new Set(
-        Array.from(structProperties || []).filter(item => reservedNames?.has(item))
+          Array.from(structProperties || []).filter(item => reservedNames?.has(item))
       );
-    }
+  }
 
     const arrayProperties = [
       keepSymbol?.propertyNames,
