@@ -750,6 +750,10 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
+    _ProgramCanSkipPhases(context: KNativePointer, program: KNativePointer): boolean {
+        throw new Error('Not implemented');
+    }
+
     _GenerateTsDeclarationsFromContext(
         config: KPtr,
         outputDeclEts: String,
