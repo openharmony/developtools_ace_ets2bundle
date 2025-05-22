@@ -488,3 +488,95 @@ KBoolean impl_IsArrayExpression(KNativePointer nodePtr)
     return GetImpl()->IsArrayExpression(node);
 }
 KOALA_INTEROP_1(IsArrayExpression, KBoolean, KNativePointer)
+
+KNativePointer impl_CreateDiagnosticKind(KNativePointer context, KStringPtr& message, KInt type)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _message = getStringCopy(message);
+    const auto _type = static_cast<es2panda_PluginDiagnosticType>(type);
+    return const_cast<es2panda_DiagnosticKind *>(GetImpl()->CreateDiagnosticKind(_context, _message, _type));
+}
+KOALA_INTEROP_3(CreateDiagnosticKind, KNativePointer, KNativePointer, KStringPtr, KInt);
+
+inline KUInt unpackUInt(const KByte* bytes)
+{
+    const KUInt BYTE_0 = 0;
+    const KUInt BYTE_1 = 1;
+    const KUInt BYTE_2 = 2;
+    const KUInt BYTE_3 = 3;
+
+    const KUInt BYTE_1_SHIFT = 8;
+    const KUInt BYTE_2_SHIFT = 16;
+    const KUInt BYTE_3_SHIFT = 24;
+    return (bytes[BYTE_0] | (bytes[BYTE_1] << BYTE_1_SHIFT)
+        | (bytes[BYTE_2] << BYTE_2_SHIFT) | (bytes[BYTE_3] << BYTE_3_SHIFT)
+    );
+}
+
+KNativePointer impl_CreateDiagnosticInfo(KNativePointer context, KNativePointer kind, KStringArray argsPtr, KInt argc)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _kind = reinterpret_cast<es2panda_DiagnosticKind*>(kind);
+    const std::size_t headerLen = 4;
+    const char** _args = new const char*[argc];
+    std::size_t position = headerLen;
+    std::size_t strLen;
+    for (std::size_t i = 0; i < static_cast<std::size_t>(argc); ++i) {
+        strLen = unpackUInt(argsPtr + position);
+        position += headerLen;
+        _args[i] = strdup(std::string(reinterpret_cast<const char*>(argsPtr + position), strLen).c_str());
+        position += strLen;
+    }
+    return GetImpl()->CreateDiagnosticInfo(_context, _kind, _args, argc);
+}
+KOALA_INTEROP_4(CreateDiagnosticInfo, KNativePointer, KNativePointer, KNativePointer, KStringArray, KInt);
+
+KNativePointer impl_CreateSuggestionInfo(KNativePointer context, KNativePointer kind, KStringArray argsPtr,
+                                         KInt argc, KStringPtr& substitutionCode)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _kind = reinterpret_cast<es2panda_DiagnosticKind *>(kind);
+    const std::size_t headerLen = 4;
+    const char** _args = new const char*[argc];
+    std::size_t position = headerLen;
+    std::size_t strLen;
+    for (std::size_t i = 0; i < static_cast<std::size_t>(argc); ++i) {
+        strLen = unpackUInt(argsPtr + position);
+        position += headerLen;
+        _args[i] = strdup(std::string(reinterpret_cast<const char*>(argsPtr + position), strLen).c_str());
+        position += strLen;
+    }
+    const auto _substitutionCode = getStringCopy(substitutionCode);
+    return GetImpl()->CreateSuggestionInfo(_context, _kind, _args, argc, _substitutionCode);
+}
+KOALA_INTEROP_5(CreateSuggestionInfo, KNativePointer, KNativePointer, KNativePointer,
+                KStringArray, KInt, KStringPtr);
+void impl_LogDiagnostic(KNativePointer context, KNativePointer kind, KStringArray argvPtr,
+                        KInt argc, KNativePointer pos)
+{
+    auto&& _context_ = reinterpret_cast<es2panda_Context *>(context);
+    auto&& _kind_ = reinterpret_cast<es2panda_DiagnosticKind *>(kind);
+    auto&& _pos_ = reinterpret_cast<es2panda_SourcePosition *>(pos);
+    const std::size_t headerLen = 4;
+    const char** argv = new const char*[argc];
+    std::size_t position = headerLen;
+    std::size_t strLen;
+    for (std::size_t i = 0; i < static_cast<std::size_t>(argc); ++i) {
+        strLen = unpackUInt(argvPtr + position);
+        position += headerLen;
+        argv[i] = strdup(std::string(reinterpret_cast<const char*>(argvPtr + position), strLen).c_str());
+        position += strLen;
+    }
+    GetImpl()->LogDiagnostic(_context_, _kind_, argv, argc, _pos_);
+}
+KOALA_INTEROP_V5(LogDiagnostic, KNativePointer, KNativePointer, KStringArray, KInt, KNativePointer);
+void impl_LogDiagnosticWithSuggestion(KNativePointer context, KNativePointer diagnosticInfo,
+                                      KNativePointer suggestionInfo, KNativePointer range)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _diagnosticInfo = reinterpret_cast<es2panda_DiagnosticInfo*>(diagnosticInfo);
+    const auto _suggestionInfo = reinterpret_cast<es2panda_SuggestionInfo*>(suggestionInfo);
+    const auto _range = reinterpret_cast<es2panda_SourceRange*>(range);
+    GetImpl()->LogDiagnosticWithSuggestion(_context, _diagnosticInfo, _suggestionInfo, _range);
+}
+KOALA_INTEROP_V4(LogDiagnosticWithSuggestion, KNativePointer, KNativePointer, KNativePointer, KNativePointer);
