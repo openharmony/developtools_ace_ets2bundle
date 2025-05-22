@@ -184,7 +184,6 @@
         "DataPanel",
         "DatePicker",
         "Divider",
-        "DotMatrix",
         "EffectComponent",
         "Ellipse",
         "EmbeddedComponent",
@@ -213,7 +212,6 @@
         "Menu",
         "MenuItem",
         "MenuItemGroup",
-        "Metaball",
         "MovingPhotoView",
         "NavDestination",
         "NavRouter",
@@ -293,9 +291,6 @@
         "ArcSwiper",
         "ArcScrollBar",
         "ArcAlphabetIndexer",
-        "HdsTabs",
-        "AudioWave",
-        "HdsVisualComponent",
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -419,11 +414,6 @@
             "name": "Divider",
             "type": "DividerAttribute",
             "instance": "DividerInstance"
-          },
-          {
-            "name": "DotMatrix",
-            "type": "DotMatrixAttribute",
-            "instance": "DotMatrixInstance"
           },
           {
             "name": "EffectComponent",
@@ -564,11 +554,6 @@
             "name": "MenuItemGroup",
             "type": "MenuItemGroupAttribute",
             "instance": "MenuItemGroupInstance"
-          },
-          {
-            "name": "Metaball",
-            "type": "MetaballAttribute",
-            "instance": "MetaballInstance"
           },
           {
             "name": "MovingPhotoView",
@@ -960,21 +945,6 @@
             "type": "ArcAlphabetIndexerAttribute",
             "instance": "ArcAlphabetIndexerInstance"
           },
-          {
-            "name": "HdsTabs",
-            "type": "HdsTabsAttribute",
-            "instance": "HdsTabsInstance"
-          },
-          {
-            "name": "AudioWave",
-            "type": "AudioWaveAttribute",
-            "instance": "AudioWaveInstance"
-          },
-          {
-            "name": "HdsVisualComponent",
-            "type": "HdsVisualComponentAttribute",
-            "instance": "HdsVisualComponentInstance"
-          }
         ]
       },
       "styles": {
