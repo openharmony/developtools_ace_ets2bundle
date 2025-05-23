@@ -1416,6 +1416,7 @@ mocha.describe('test module_mode file api', function () {
     const moduleMode = new ModuleModeMock(this.rollup);
     const stub = sinon.stub(sourceMapGenerator.logger.getLoggerFromErrorCode(errInfo.code), 'printErrorAndExit');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
+    sourceMapGenerator.setNewSoureMaps(false);
     sourceMapGenerator.setSourceMapPath('');
     moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
@@ -1440,6 +1441,7 @@ mocha.describe('test module_mode file api', function () {
     const moduleMode = new ModuleModeMock(this.rollup);
     const stub = sinon.stub(sourceMapGenerator.logger, 'throwArkTsCompilerError');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
+    sourceMapGenerator.setNewSoureMaps(false);
     sourceMapGenerator.setSourceMapPath('');
     moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
@@ -1462,6 +1464,7 @@ mocha.describe('test module_mode file api', function () {
     const moduleMode = new ModuleModeMock(this.rollup);
     const stub = sinon.stub(sourceMapGenerator.logger.getLoggerFromErrorCode(errInfo.code), 'printErrorAndExit');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
+    sourceMapGenerator.setNewSoureMaps(false);
     sourceMapGenerator.setSourceMapPath('');
     moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
@@ -1486,6 +1489,7 @@ mocha.describe('test module_mode file api', function () {
     const moduleMode = new ModuleModeMock(this.rollup);
     const stub = sinon.stub(sourceMapGenerator.logger, 'throwArkTsCompilerError');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
+    sourceMapGenerator.setNewSoureMaps(false);
     sourceMapGenerator.setSourceMapPath('');
     moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
@@ -1508,6 +1512,7 @@ mocha.describe('test module_mode file api', function () {
     const moduleMode = new ModuleModeMock(this.rollup);
     const stub = sinon.stub(sourceMapGenerator.logger.getLoggerFromErrorCode(errInfo.code), 'printErrorAndExit');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
+    sourceMapGenerator.setNewSoureMaps(false);
     sourceMapGenerator.setSourceMapPath('');
     moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
@@ -1532,6 +1537,7 @@ mocha.describe('test module_mode file api', function () {
     const moduleMode = new ModuleModeMock(this.rollup);
     const stub = sinon.stub(sourceMapGenerator.logger, 'throwArkTsCompilerError');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
+    sourceMapGenerator.setNewSoureMaps(false);
     sourceMapGenerator.setSourceMapPath('');
     moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
@@ -1554,6 +1560,7 @@ mocha.describe('test module_mode file api', function () {
     const moduleMode = new ModuleModeMock(this.rollup);
     const stub = sinon.stub(sourceMapGenerator.logger.getLoggerFromErrorCode(errInfo.code), 'printErrorAndExit');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
+    sourceMapGenerator.setNewSoureMaps(false);
     sourceMapGenerator.setSourceMapPath('');
     moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
@@ -1578,6 +1585,7 @@ mocha.describe('test module_mode file api', function () {
     const moduleMode = new ModuleModeMock(this.rollup);
     const stub = sinon.stub(sourceMapGenerator.logger, 'throwArkTsCompilerError');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
+    sourceMapGenerator.setNewSoureMaps(false);
     sourceMapGenerator.setSourceMapPath('');
     moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
