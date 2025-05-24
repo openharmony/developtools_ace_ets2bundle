@@ -17,21 +17,7 @@ let __generate__Id = 0;
 function generateId() {
   return "@InsightIntentEntry_" + ++__generate__Id;
 }
-import { InsightIntentEntry } from "@ohos.app.ability.InsightIntentDecorator";
-const validDataEntry2 = {
-  abilityName: "EntryAbility",
-  intentName: "Heeloeqasd155",
-  keywords: ['123234345', '12345654321'],
-  domain: "music",
-  intentVersion: "100000",
-  displayName: "Home",
-  icon: $r('app.media.startIcon'),
-  llmDescription: '123111321',
-  schema: "work",
-};
-class aaaa {
-  constructor() {
-    this.entityId = "";
-  }
+import { InsightIntentEntryExecutor, InsightIntentEntry } from '@ohos.app.ability.InsightIntentDecorator';
+export default class PlayMusicDemo extends InsightIntentEntryExecutor {
 }
 //# sourceMappingURL=@InsightIntentEntry.js.map
