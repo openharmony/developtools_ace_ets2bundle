@@ -112,6 +112,12 @@ import {
   arkTSEvolutionModuleMap,
   getArkTSEvoDeclFilePath
 } from './process_arkts_evolution';
+<<<<<<< HEAD
+=======
+import { processInteropUI } from './process_interop_ui';
+import { FileManager } from './fast_build/ark_compiler/interop/interop_manager';
+import { ARKTS_1_2 } from './pre_define';
+>>>>>>> abdcc92b... provide fileManager for interop
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -414,9 +420,16 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     hasInvalidatedResolutions: (filePath: string): boolean => {
       return reuseLanguageServiceForDepChange && needReCheckForChangedDepUsers;
     },
+<<<<<<< HEAD
     clearFileCache: function() {
       fileCache.clear();
     }
+=======
+    isStaticSourceFile: (fileName: string): boolean => {
+      const languageVersion = FileManager.getInstance().getLanguageVersionByFilePath(fileName);
+      return languageVersion?.languageVersion === ARKTS_1_2;
+    },
+>>>>>>> abdcc92b... provide fileManager for interop
   };
   ts.PerformanceDotting?.setPerformanceSwitch(projectConfig?.perf);
 

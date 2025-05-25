@@ -1,0 +1,196 @@
+/*
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use rollupObject file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { expect } from 'chai';
+import mocha from 'mocha';
+import { FileManager } from '../../../lib/fast_build/ark_compiler/interop/interop_manager';
+import { ARKTS_1_1, ARKTS_1_2, HYBRID } from '../../../lib/fast_build/ark_compiler/interop/type';
+
+export interface ArkTSEvolutionModule {
+  language: string;
+  packageName: string;
+  moduleName: string;
+  modulePath: string;
+  declgenV1OutPath?: string;
+  declgenV2OutPath?: string;
+  declgenBridgeCodePath?: string;
+  declFilesPath?: string;
+  dynamicFiles: string[];
+  staticFiles: string[];
+  cachePath: string;
+  byteCodeHarInfo?: Object;
+}
+
+mocha.describe('test interop_manager file api', function () {
+  mocha.before(function () {
+    const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
+    const dynamicSDKPath: Set<string> = new Set([
+      '/sdk/default/openharmony/ets/ets1.1/api',
+      '/sdk/default/openharmony/ets/ets1.1/arkts',
+      '/sdk/default/openharmony/ets/ets1.1/kits',
+      '/sdk/default/openharmony/ets/ets1.1/build-tools/ets-loader/declarations',
+      '/sdk/default/openharmony/ets/ets1.1/build-tools/ets-loader/component',
+      '/sdk/default/openharmony/ets/ets1.1/build-tools/components'
+    ]);
+    const staticSDKDeclPath: Set<string> = new Set([
+      '/sdk/default/openharmony/ets/ets1.2interop/declarations/kit',
+      '/sdk/default/openharmony/ets/ets1.2interop/declarations/api',
+      '/sdk/default/openharmony/ets/ets1.2interop/declarations/arkts'
+    ]);
+    const staticSDKGlueCodePath: Set<string> = new Set([
+      '/sdk/default/openharmony/ets/ets1.2interop/bridge/kit',
+      '/sdk/default/openharmony/ets/ets1.2interop/bridge/api',
+      '/sdk/default/openharmony/ets/ets1.2interop/bridge/arkts'
+    ]);
+    dependentModuleMap.set('application', {
+      language: ARKTS_1_1,
+      packageName: 'application',
+      moduleName: 'application',
+      modulePath: '/MyApplication16/application',
+      declgenV1OutPath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenV1',
+      declgenV2OutPath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenV2',
+      declgenBridgeCodePath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenBridgeCode',
+      declFilesPath: '/MyApplication16/application/build/default/intermediates/declgen/default/decl-fileInfo.json',
+      dynamicFiles: [],
+      staticFiles: [],
+      cachePath: '/MyApplication16/application/build/cache',
+      byteCodeHarInfo: {}
+    });
+
+    dependentModuleMap.set('harv2', {
+      language: ARKTS_1_2,
+      packageName: 'harv2',
+      moduleName: 'harv2',
+      modulePath: '/MyApplication16/harv2',
+      declgenV1OutPath: '/MyApplication16/harv2/build/default/intermediates/declgen/default/declgenV1',
+      declgenV2OutPath: '/MyApplication16/harv2/build/default/intermediates/declgen/default/declgenV2',
+      declgenBridgeCodePath: '/MyApplication16/harv2/build/default/intermediates/declgen/default/declgenBridgeCode',
+      declFilesPath: '/MyApplication16/harv2/build/default/intermediates/declgen/default/decl-fileInfo.json',
+      dynamicFiles: [],
+      staticFiles: [],
+      cachePath: '/MyApplication16/harv2/build/cache',
+      byteCodeHarInfo: {}
+    });
+
+    dependentModuleMap.set('dynamic1', {
+      language: ARKTS_1_1,
+      packageName: 'dynamic1',
+      moduleName: 'dynamic1',
+      modulePath: '/MyApplication16/dynamic1',
+      declgenV1OutPath: '/MyApplication16/dynamic1/build/default/intermediates/declgen/default/declgenV1',
+      declgenV2OutPath: '/MyApplication16/dynamic1/build/default/intermediates/declgen/default/declgenV2',
+      declgenBridgeCodePath: '/MyApplication16/dynamic1/build/default/intermediates/declgen/default/declgenBridgeCode',
+      declFilesPath: '/MyApplication16/dynamic1/build/default/intermediates/declgen/default/decl-fileInfo.json',
+      dynamicFiles: [],
+      staticFiles: [],
+      cachePath: '/MyApplication16/dynamic1/build/cache',
+      byteCodeHarInfo: {}
+    });
+
+    dependentModuleMap.set('hybrid', {
+      language: HYBRID,
+      packageName: 'hybrid',
+      moduleName: 'hybrid',
+      modulePath: '/MyApplication16/hybrid',
+      declgenV1OutPath: '/MyApplication16/hybrid/build/default/intermediates/declgen/default/declgenV1',
+      declgenV2OutPath: '/MyApplication16/hybrid/build/default/intermediates/declgen/default/declgenV2',
+      declgenBridgeCodePath: '/MyApplication16/hybrid/build/default/intermediates/declgen/default/declgenBridgeCode',
+      declFilesPath: '/MyApplication16/hybrid/build/default/intermediates/declgen/default/decl-fileInfo.json',
+      dynamicFiles: ['/MyApplication16/hybrid/fileV1.ets'],
+      staticFiles: ['/MyApplication16/hybrid/fileV2.ets'],
+      cachePath: '/MyApplication16/hybrid/build/cache',
+      byteCodeHarInfo: {}
+    });
+    FileManager.cleanFileManagerObject();
+    FileManager.init(
+      dependentModuleMap,
+      dynamicSDKPath,
+      staticSDKDeclPath,
+      staticSDKGlueCodePath);
+  });
+
+  mocha.after(() => {
+  });
+
+  mocha.it('1-1: test SDK path', function() {
+    const filePath = '/sdk/default/openharmony/ets/ets1.1/api/TestAPI.ets';
+    const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
+    expect(result?.languageVersion).to.equal(ARKTS_1_1);
+    expect(result?.pkgName).to.equal('SDK');
+  });
+
+  mocha.it('1-2: test ets-loader/declarations path', function() {
+    const filePath = '/sdk/default/openharmony/ets/ets1.1/build-tools/ets-loader/declarations/TestAPI.ets';
+    const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
+    expect(result?.languageVersion).to.equal(ARKTS_1_1);
+    expect(result?.pkgName).to.equal('SDK');
+  });
+  
+  mocha.it('1-3: test ets-loader/component path', function() {
+    const filePath = '/sdk/default/openharmony/ets/ets1.1/build-tools/ets-loader/component/TestAPI.d.ts';
+    const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
+    expect(result?.languageVersion).to.equal(ARKTS_1_1);
+    expect(result?.pkgName).to.equal('SDK');
+  });
+  
+  mocha.it('1-4: test SDK glue code path', function() {
+    const filePath = '/sdk/default/openharmony/ets/ets1.2interop/bridge/arkts/TestAPI.d.ts';
+    const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
+    expect(result?.languageVersion).to.equal(ARKTS_1_2);
+    expect(result?.pkgName).to.equal('SDK');
+  });
+
+  mocha.it('1-5: test SDK interop decl path', function() {
+    const filePath = '/sdk/default/openharmony/ets/ets1.2interop/declarations/kit/TestAPI.d.ts';
+    const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
+    expect(result?.languageVersion).to.equal(ARKTS_1_2);
+    expect(result?.pkgName).to.equal('SDK');
+  });
+
+  mocha.it('1-6: test source code from 1.1 module', function() {
+    const filePath = '/MyApplication16/application/sourceCode.ets';
+    const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
+    expect(result?.languageVersion).to.equal(ARKTS_1_1);
+    expect(result?.pkgName).to.equal('application');
+  });
+
+  mocha.it('1-7: test glue code file from 1.2 module', function() {
+    const filePath = '/MyApplication16/harv2/build/default/intermediates/declgen/default/declgenBridgeCode/sourceCode.ets';
+    const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
+    expect(result?.languageVersion).to.equal(ARKTS_1_2);
+    expect(result?.pkgName).to.equal('harv2');
+  });
+
+  mocha.it('1-8: test decl file from 1.2 module', function() {
+    const filePath = '/MyApplication16/harv2/build/default/intermediates/declgen/default/declgenV1/sourceCode.ets';
+    const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
+    expect(result?.languageVersion).to.equal(ARKTS_1_2);
+    expect(result?.pkgName).to.equal('harv2');
+  });
+
+  mocha.it('1-8: test source code file from hybrid module', function() {
+    const filePath = '/MyApplication16/hybrid/fileV1.ets';
+    const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
+    expect(result?.languageVersion).to.equal(ARKTS_1_1);
+    expect(result?.pkgName).to.equal('hybrid');
+  });
+
+  mocha.it('1-8: test source code file from hybrid module', function() {
+    const filePath = '/MyApplication16/hybrid/build/default/intermediates/declgen/default/declgenV1/file1';
+    const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
+    expect(result?.languageVersion).to.equal(ARKTS_1_2);
+    expect(result?.pkgName).to.equal('hybrid');
+  });
+});
