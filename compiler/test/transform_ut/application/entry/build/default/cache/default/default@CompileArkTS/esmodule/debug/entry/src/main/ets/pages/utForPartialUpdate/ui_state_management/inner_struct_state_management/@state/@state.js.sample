@@ -23,6 +23,7 @@ class StatePage extends ViewPU {
             this.paramsGenerator_ = paramsLambda;
         }
         this.__counter = new ObservedPropertySimplePU(0, this, "counter");
+        this.__counterEx = new ObservedPropertyObjectPU(0, this, "counterEx");
         this.setInitiallyProvidedValue(params);
         this.finalizeConstruction();
     }
@@ -30,14 +31,19 @@ class StatePage extends ViewPU {
         if (params.counter !== undefined) {
             this.counter = params.counter;
         }
+        if (params.counterEx !== undefined) {
+            this.counterEx = params.counterEx;
+        }
     }
     updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__counter.purgeDependencyOnElmtId(rmElmtId);
+        this.__counterEx.purgeDependencyOnElmtId(rmElmtId);
     }
     aboutToBeDeleted() {
         this.__counter.aboutToBeDeleted();
+        this.__counterEx.aboutToBeDeleted();
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
@@ -47,12 +53,22 @@ class StatePage extends ViewPU {
     set counter(newValue) {
         this.__counter.set(newValue);
     }
+    get counterEx() {
+        return this.__counterEx.get();
+    }
+    set counterEx(newValue) {
+        this.__counterEx.set(newValue);
+    }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("counter:" + this.counter);
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create("counterEx:" + this.counterEx);
         }, Text);
         Text.pop();
         Column.pop();
