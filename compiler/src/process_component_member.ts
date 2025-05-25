@@ -95,7 +95,9 @@ import {
   LogType,
   LogInfo,
   componentInfo,
-  storedFileInfo
+  storedFileInfo,
+  findNonNullType,
+  CurrentProcessFile
 } from './utils';
 import {
   createReference,
@@ -979,8 +981,9 @@ function manageLocalStorageComponents(node: ts.CallExpression, argumentsArray: t
 }
 
 export function isLocalStorageParameter(node: ts.CallExpression): boolean {
-  const resolvedSignature = globalProgram.checker?.getResolvedSignature ?
-    globalProgram.checker.getResolvedSignature(node) : undefined;
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  const resolvedSignature = checker?.getResolvedSignature ?
+    checker.getResolvedSignature(node) : undefined;
   return resolvedSignature && resolvedSignature.parameters && resolvedSignature.parameters.length === 1 &&
     resolvedSignature.parameters[0].escapedName === '##storage';
 }
@@ -1101,11 +1104,11 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
   typeNode = typeNode || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
   let checker: ts.TypeChecker;
   if (globalProgram.program) {
-    checker = globalProgram.program.getTypeChecker();
+    checker = CurrentProcessFile.getChecker(globalProgram.program);
   } else if (globalProgram.watchProgram) {
     checker = globalProgram.watchProgram.getCurrentProgram().getProgram().getTypeChecker();
   } else if (program) {
-    checker = program.getTypeChecker();
+    checker = CurrentProcessFile.getChecker(program);
   }
   return getDeclarationType(typeNode, checker, log);
 }
@@ -1118,28 +1121,42 @@ function getDeclarationType(typeNode: ts.TypeNode, checker: ts.TypeChecker, log:
     enumCollection.has(typeNode.typeName.escapedText.toString())) {
     return true;
   }
-  if (checker) {
-    const type: ts.Type = checker.getTypeFromTypeNode(typeNode);
+  if (!checker) {
+    return false;
+  }
+  const type: ts.Type | ts.Type[] = findNonNullType(checker.getTypeFromTypeNode(typeNode));
+  if (!Array.isArray(type)) {
     /* Enum */
     if (type.flags & (32 | 1024)) {
       return true;
     }
-    // @ts-ignore
     if (type.types && type.types.length) {
-      // @ts-ignore
       const types = type.types;
       let referenceType: boolean = false;
       for (let i = 0; i < types.length; i++) {
-        if (!isBasicType(types[i].flags)) {
-          referenceType = true;
-        }
+        referenceType = referenceType || !isBasicType(types[i].flags);
+      }
+      return !referenceType;
+    }
+    return false;
+  }
+  for (let i = 0; i < type.length; i++) {
+    if (isBasicType(type[i].flags)) {
+      continue;
+    }
+    if (type[i].types && type[i].types.length) {
+      const types = type[i].types;
+      let referenceType: boolean = false;
+      for (let j = 0; j < types.length; j++) {
+        referenceType = referenceType || !isBasicType(types[j].flags);
       }
       if (!referenceType) {
-        return true;
+        continue;
       }
     }
+    return false;
   }
-  return false;
+  return true;
 }
 
 export function isBasicType(flags: number): boolean {
@@ -1375,18 +1392,31 @@ function updateSynchedPropertyNesedObjectPU(nameIdentifier: ts.Identifier,
 
 // check @ObjectLink type Non basic types and @Observedv2.
 function checkObjectLinkType(typeNode: ts.TypeNode): boolean {
-  if (globalProgram.checker) {
-    const type: ts.Type = globalProgram.checker.getTypeFromTypeNode(typeNode);
-    const isPropertyDeclaration: boolean = typeNode.parent && ts.isPropertyDeclaration(typeNode.parent);
-    if (isPropertyDeclaration) {
-      if (type.types && type.types.length) {
-        return checkTypes(type);
-      } else {
-        return !(isObservedV2(type) || isAllowedTypeForBasic(type.flags) || isFunctionType(type));
-      } 
-    }
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!checker) {
+    return false;
   }
-  return false;
+  const isPropertyDeclaration: boolean = typeNode.parent && ts.isPropertyDeclaration(typeNode.parent);
+  if (!isPropertyDeclaration) {
+    return false;
+  }
+  const type: ts.Type | ts.Type[] = findNonNullType(checker.getTypeFromTypeNode(typeNode));
+  if (Array.isArray(type)) {
+    let res = true;
+    for (let i = 0; i < type.length; i++) {
+      if (type[i].types && type[i].types.length) {
+        res = res && checkTypes(type[i]);
+      } else {
+        res = res && (!(isObservedV2(type[i]) || isAllowedTypeForBasic(type[i].flags) || isFunctionType(type[i])));
+      }
+    }
+    return res;
+  }
+  if (type.types && type.types.length) {
+    return checkTypes(type);
+  } else {
+    return !(isObservedV2(type) || isAllowedTypeForBasic(type.flags) || isFunctionType(type));
+  }
 }
 
 // check union type.
