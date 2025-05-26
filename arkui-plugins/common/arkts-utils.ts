@@ -97,3 +97,10 @@ export function updateStructMetadata(
     structInfo.metadata = metadata;
     return structInfo;
 }
+
+export function moveToFront<T>(arr: T[], idx: number): T[] {
+    if (idx >= arr.length) {
+        throw new Error(`Invalid argument, size of array: ${arr.length}, index: ${idx}`);
+    }
+    return [arr[idx], ...arr.slice(0, idx), ...arr.slice(idx + 1)];
+}

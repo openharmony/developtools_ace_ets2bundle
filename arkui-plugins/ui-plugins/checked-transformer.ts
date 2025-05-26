@@ -125,7 +125,7 @@ export class CheckedTransformer extends AbstractVisitor {
 export type ClassScopeInfo = {
     isObserved: boolean;
     classHasTrack: boolean;
-    getters: arkts.MethodDefinition[]
+    getters: arkts.MethodDefinition[];
 };
 
 function transformObservedTracked(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
@@ -139,7 +139,7 @@ function transformObservedTracked(node: arkts.ClassDeclaration): arkts.ClassDecl
     if (!isObserved && !classHasTrack) {
         return node;
     }
-   
+
     const updateClassDef: arkts.ClassDefinition = arkts.factory.updateClassDefinition(
         node.definition,
         node.definition.ident,
@@ -160,7 +160,7 @@ function transformObservedTracked(node: arkts.ClassDeclaration): arkts.ClassDecl
         arkts.classDefinitionFlags(node.definition)
     );
     return arkts.factory.updateClassDeclaration(node, updateClassDef);
-} 
+}
 
 function observedTrackPropertyMembers(
     classHasTrack: boolean,
@@ -469,4 +469,3 @@ function transformResource(
     ];
     return structFactory.generateTransformedResource(resourceNode, newArgs);
 }
-

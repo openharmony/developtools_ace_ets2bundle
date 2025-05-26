@@ -48,10 +48,12 @@ import {
     isStandaloneArrowFunction,
     isThisAttributeAssignment,
     removeMemoAnnotation,
+    parametrizedNodeHasReceiver
 } from './utils';
 import { ParameterTransformer } from './parameter-transformer';
 import { ReturnTransformer } from './return-transformer';
 import { SignatureTransformer } from './signature-transformer';
+import { moveToFront } from '../common/arkts-utils';
 
 interface ScopeInfo extends MemoInfo {
     regardAsSameScope?: boolean;
@@ -317,6 +319,13 @@ export class FunctionTransformer extends AbstractVisitor {
                 ...factory.createHiddenArguments(this.positionalIdTracker.id(decl.name.name)),
                 ...updatedArguments,
             ];
+        }
+        const isMemo =
+            hasMemoAnnotation(decl.scriptFunction) ||
+            hasMemoIntrinsicAnnotation(decl.scriptFunction) ||
+            hasMemoEntryAnnotation(decl.scriptFunction);
+        if (parametrizedNodeHasReceiver(decl.scriptFunction) && isMemo) {
+            updatedArguments = moveToFront(updatedArguments, 2);
         }
         return arkts.factory.updateCallExpression(node, node.expression, node.typeArguments, updatedArguments);
     }
