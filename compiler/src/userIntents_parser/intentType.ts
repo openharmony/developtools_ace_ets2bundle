@@ -30,6 +30,8 @@ export interface IntentInfo {
   llmDescription: string;
   keywords: string[];
   parameters: object;
+  result: object;
+  example: string;
 }
 
 export interface LinkIntentParamMapping {
@@ -136,7 +138,7 @@ function validateKeywords(v: ts.Expression): boolean {
 }
 
 const BASE_REQUIRED = ['intentName', 'domain', 'intentVersion', 'displayName'];
-const BASE_ALLOW = ['displayDescription', 'schema', 'icon', 'llmDescription', 'keywords', 'parameters', ...BASE_REQUIRED];
+const BASE_ALLOW = ['displayDescription', 'schema', 'icon', 'llmDescription', 'keywords', 'parameters', 'result', 'example', ...BASE_REQUIRED];
 
 const IntentLinkParamsChecker: ParamChecker<LinkIntentParamMapping> = new ParamChecker<LinkIntentParamMapping>();
 IntentLinkParamsChecker.requiredFields = ['paramName'];
@@ -144,7 +146,11 @@ IntentLinkParamsChecker.allowFields = new Set<keyof LinkIntentParamMapping>([
   'paramName', 'paramMappingName', 'paramCategory'
 ]);
 IntentLinkParamsChecker.paramValidators = {
-  paramCategory: validateOptionalString,
+  paramCategory(v: ts.Expression): boolean {
+    const enumValue: string = v?.getText().split('.').pop();
+    const allowedEnumFields: string[] = ['link', 'want', 'LINK', 'WANT'];
+    return (allowedEnumFields.includes(enumValue));
+  },
   paramMappingName: validateOptionalString,
   paramName: validateRequiredString
 };
@@ -157,6 +163,8 @@ IntentLinkInfoChecker.allowFields = new Set<keyof IntentLinkInfo>([
   'paramMappings'
 ]);
 IntentLinkInfoChecker.paramValidators = {
+  example: validateOptionalString,
+  result: validateParameters,
   parameters: validateParameters,
   paramMappings: (v: ts.Expression): boolean => {
     if (v === null || v === undefined) {
@@ -193,9 +201,11 @@ IntentLinkInfoChecker.paramValidators = {
 IntentLinkInfoChecker.nestedCheckers = new Map([['paramMappings', IntentLinkParamsChecker]]);
 
 export const intentEntryInfoChecker: ParamChecker<IntentEntryInfo> = new ParamChecker<IntentEntryInfo>();
-intentEntryInfoChecker.requiredFields = [...BASE_REQUIRED as Array<keyof IntentEntryInfo>, 'abilityName'];
+intentEntryInfoChecker.requiredFields = [...BASE_REQUIRED as Array<keyof IntentEntryInfo>, 'abilityName', 'executeMode'];
 intentEntryInfoChecker.allowFields = new Set<keyof IntentEntryInfo>([...BASE_ALLOW as Array<keyof IntentEntryInfo>, 'abilityName', 'executeMode']);
 intentEntryInfoChecker.paramValidators = {
+  example: validateOptionalString,
+  result: validateParameters,
   parameters: validateParameters,
   icon: validateIcon,
   keywords: validateKeywords,
@@ -228,6 +238,8 @@ intentMethodInfoChecker.allowFields = new Set<keyof IntentFunctionInfo>([
 ]);
 
 intentMethodInfoChecker.paramValidators = {
+  example: validateOptionalString,
+  result: validateParameters,
   parameters: validateParameters,
   icon: validateIcon,
   keywords: validateKeywords,
@@ -251,6 +263,8 @@ IntentPageInfoChecker.allowFields = new Set<keyof IntentPageInfo>([
 ]);
 
 IntentPageInfoChecker.paramValidators = {
+  example: validateOptionalString,
+  result: validateParameters,
   parameters: validateParameters,
   icon: validateIcon,
   keywords: validateKeywords,
