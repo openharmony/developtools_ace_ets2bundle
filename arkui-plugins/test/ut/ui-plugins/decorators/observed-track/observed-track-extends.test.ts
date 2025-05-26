@@ -96,7 +96,7 @@ function main() {}
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta.addRef();
     }
-    return (this).__backing_propA!;
+    return (this).__backing_propA;
   }
   
   public set propA(newValue: number) {
@@ -111,7 +111,7 @@ function main() {}
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta.addRef();
     }
-    return (this).__backing_trackA!;
+    return (this).__backing_trackA;
   }
   
   public set trackA(newValue: number) {
@@ -158,7 +158,7 @@ class G extends A {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta_propG.addRef();
     }
-    return (this).__backing_propG!;
+    return (this).__backing_propG;
   }
   
   public set propG(newValue: number) {

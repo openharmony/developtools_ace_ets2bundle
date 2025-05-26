@@ -96,7 +96,7 @@ class C implements IObservedObject {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta_trackC.addRef();
     }
-    return (this).__backing_trackC!;
+    return (this).__backing_trackC;
   }
   
   public set trackC(newValue: number) {
