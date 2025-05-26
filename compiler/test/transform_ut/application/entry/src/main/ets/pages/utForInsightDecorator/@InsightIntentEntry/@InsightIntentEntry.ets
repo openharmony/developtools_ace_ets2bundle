@@ -13,22 +13,20 @@
  * limitations under the License.
  */
 
-import { EntryIntentDecoratorInfo,InsightIntentEntry } from "@ohos.app.ability.InsightIntentDecorator";
-import { insightIntent } from "@kit.AbilityKit";
+import { InsightIntentEntryExecutor,InsightIntentEntry } from '@ohos.app.ability.InsightIntentDecorator';
 
-const validDataEntry2: EntryIntentDecoratorInfo = {
-  abilityName : "EntryAbility",
-  intentName: "Heeloeqasd155",
-  keywords: ['123234345', '12345654321'],
-  domain: "music",
-  intentVersion: "100000",
-  displayName: "Home",
-  icon: $r('app.media.startIcon'),
-  llmDescription: '123111321',
-  schema: "work",
-};
+@InsightIntentEntry({
+  intentName: 'PlayMusic',
+  domain: 'MusicDomain',
+  intentVersion: '1.0.1',
+  displayName: '播放歌曲',
+  displayDescription: '播放音乐意图',
+  icon: $r("app.media.app_icon"),
+  llmDescription: '支持传递歌曲名称，播放音乐',
+  keywords: ['音乐播放', '播放歌曲', 'PlayMusic'],
+  abilityName: "EntryAbility",
+  executeMode: [1],
+})
 
-@InsightIntentEntry(validDataEntry2)
-class aaaa implements insightIntent.IntentEntity{
-  entityId: string = "";
+export default class PlayMusicDemo extends InsightIntentEntryExecutor<string> {
 }

@@ -218,8 +218,7 @@ class ParseIntent {
       Object.assign(intentObj, {
         'bundleName': projectConfig.bundleName,
         'moduleName': projectConfig.moduleName,
-        'decoratorType': COMPONENT_USER_INTENTS_DECORATOR_METHOD,
-        'intentType': 'function'
+        'decoratorType': COMPONENT_USER_INTENTS_DECORATOR_METHOD
       });
 
       interface methodParametersInfo {
@@ -773,15 +772,20 @@ class ParseIntent {
     throw Error(`${UNSUPPORTED_PARSE_ERROR.toString()}, cause param: '${node.text}', invalidDecoratorPath: ${this.currentFilePath}`);
   }
 
-  processEnumElement(node: ts.PropertyAccessExpression): number {
-    const enumValue: string = node.getText();
-    const executeModeEnum: Map<string, number> = new Map();
-    executeModeEnum.set('insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND', 0);
-    executeModeEnum.set('insightIntent.ExecuteMode.UI_ABILITY_BACKGROUND', 1);
-    executeModeEnum.set('insightIntent.ExecuteMode.UI_EXTENSION_ABILITY', 2);
-    executeModeEnum.set('insightIntent.ExecuteMode.SERVICE_EXTENSION_ABILITY', 3);
+  processEnumElement(node: ts.PropertyAccessExpression): string {
+    const enumValue: string = node?.getText().split('.').pop();
+    const executeModeEnum: Map<string, string> = new Map();
+    executeModeEnum.set('UI_ABILITY_FOREGROUND', '0');
+    executeModeEnum.set('UI_ABILITY_BACKGROUND', '1');
+    executeModeEnum.set('UI_EXTENSION_ABILITY', '2');
+    executeModeEnum.set('SERVICE_EXTENSION_ABILITY', '3');
+    const paramCategoryEnum: Map<string, string> = new Map();
+    paramCategoryEnum.set('LINK', 'link');
+    paramCategoryEnum.set('WANT', 'want');
     if (executeModeEnum.has(enumValue)) {
       return executeModeEnum.get(enumValue);
+    } else if (paramCategoryEnum.has(enumValue)) {
+      return paramCategoryEnum.get(enumValue);
     } else {
       throw Error(`${UNSUPPORTED_PARSE_ERROR.toString()}, cause param: '${node.text}', invalidDecoratorPath: ${this.currentFilePath}`);
     }
@@ -839,17 +843,17 @@ class ParseIntent {
 
   processExecuteModeParam(intentObj: object): void {
     if (intentObj.executeMode) {
-      intentObj.executeMode.forEach((item: number, index: number) => {
-        if (item === 0) {
+      intentObj.executeMode.forEach((item: string, index: number) => {
+        if (item === '0') {
           intentObj.executeMode[index] = 'foreground';
         }
-        if (item === 1) {
+        if (item === '1') {
           intentObj.executeMode[index] = 'background';
         }
-        if (item === 2) {
+        if (item === '2') {
           intentObj.executeMode[index] = 'uiextension';
         }
-        if (item === 3) {
+        if (item === '3') {
           intentObj.executeMode[index] = 'serviceextension';
         }
       });
