@@ -2542,7 +2542,8 @@ function processConditionalBuilder(initializer: ts.ConditionalExpression, identi
   if (isBuilderChangeNode(initializer.whenFalse, identifierNode, propertyName)) {
     whenFalse = parseBuilderNode(initializer.whenFalse, propertyName);
   }
-  return ts.factory.createConditionalExpression(
+  return ts.factory.updateConditionalExpression(
+    initializer,
     initializer.condition,
     initializer.questionToken,
     whenTrue,
