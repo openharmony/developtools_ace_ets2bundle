@@ -102,7 +102,7 @@ class E implements IObservedObject {
       (this).__meta_trackE.addRef();
     }
     setObservationDepth((this).__backing_trackE.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_trackE.value!;
+    return (this).__backing_trackE.value;
   }
   
   public set trackE(newValue: Info) {
@@ -145,7 +145,7 @@ class E implements IObservedObject {
       (this).__meta.addRef();
     }
     setObservationDepth((this).__backing_propE1.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_propE1.value!;
+    return (this).__backing_propE1.value;
   }
   
   public set propE1(newValue: Info) {
@@ -161,7 +161,7 @@ class E implements IObservedObject {
       (this).__meta.addRef();
     }
     setObservationDepth((this).__backing_trackE1.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_trackE1.value!;
+    return (this).__backing_trackE1.value;
   }
   
   public set trackE1(newValue: Info) {
