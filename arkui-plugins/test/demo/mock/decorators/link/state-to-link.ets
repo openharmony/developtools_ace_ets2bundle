@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Component, Entry, Column, Button, DatePicker } from "@ohos.arkui.component"
+import { Component, Entry, Column, Button, DatePicker, ClickEvent } from "@ohos.arkui.component"
 import { Link, State } from "@ohos.arkui.stateManagement"
 
 @Component
@@ -23,12 +23,12 @@ struct DateComponent {
   build() {
     Column() {
       Button('child increase the year by 1')
-      .onClick(() => {
+      .onClick((e: ClickEvent) => {
         this.selectedDate.setFullYear(this.selectedDate.getFullYear() + 1);
       })
       Button('child update the new date')
         .margin(10)
-        .onClick(() => {
+        .onClick((e: ClickEvent) => {
           this.selectedDate = new Date('2023-09-09');
         })
       DatePicker({
@@ -50,12 +50,12 @@ struct ParentComponent {
     Column() {
       Button('parent increase the month by 1')
         .margin(10)
-        .onClick(() => {
+        .onClick((e: ClickEvent) => {
           this.parentSelectedDate.setMonth(this.parentSelectedDate.getMonth() + 1);
         })
       Button('parent update the new date')
         .margin(10)
-        .onClick(() => {
+        .onClick((e: ClickEvent) => {
           this.parentSelectedDate = new Date('2023-07-07');
         })
       DatePicker({
