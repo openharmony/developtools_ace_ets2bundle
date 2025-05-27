@@ -88,6 +88,7 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   'inner_component_transform/$$_component/$$_componentCheck7',
   'inner_component_transform/$$_component/$$_componentCheck8',
   'inner_component_transform/$$_component/$$_componentCheck9',
+  'inner_component_transform/attrs/bindSheet',
   'inner_component_transform/$$_component/$$_if_elseIf_else',
   'inner_component_transform/custom_component/component_object',
   'inner_component_transform/custom_component/custom_component',
