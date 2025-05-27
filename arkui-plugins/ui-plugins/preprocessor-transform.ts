@@ -17,7 +17,13 @@ import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor, VisitorOptions } from '../common/abstract-visitor';
 import { CustomComponentNames } from './utils';
 import { factory } from './ui-factory';
-import { ARKUI_COMPONENT_IMPORT_NAME, IMPORT_SOURCE_MAP, OUTPUT_DEPENDENCY_MAP } from '../common/predefines';
+import {
+    ARKUI_COMPONENT_IMPORT_NAME,
+    IMPORT_SOURCE_MAP,
+    OUTPUT_DEPENDENCY_MAP,
+    ARKUI_STATEMANAGEMENT_IMPORT_NAME,
+    KIT_ARKUI_NAME,
+} from '../common/predefines';
 import { NameCollector } from './name-collector';
 
 interface MemoImportCollection {
@@ -49,6 +55,8 @@ export class PreprocessorTransformer extends AbstractVisitor {
         this.memoImportCollection = {};
         this.localComponentNames = [];
         this.isMemoImportOnce = false;
+        IMPORT_SOURCE_MAP.clear();
+        IMPORT_SOURCE_MAP.set('arkui.stateManagement.runtime', new Set(['memo', '__memo_context_type', '__memo_id_type']));
     }
 
     isCustomConponentDecl(node: arkts.CallExpression): boolean {
@@ -188,9 +196,20 @@ export class PreprocessorTransformer extends AbstractVisitor {
         // Handling component imports
         const importName: string = node.imported.name;
         const sourceName: string = source.str;
-        if (this.nameCollector.getComponents().includes(importName) && sourceName === ARKUI_COMPONENT_IMPORT_NAME) {
+        if (
+            this.nameCollector.getComponents().includes(importName) &&
+            (sourceName === ARKUI_COMPONENT_IMPORT_NAME || sourceName === KIT_ARKUI_NAME)
+        ) {
             const newDependencies = [`UI${importName}Attribute`];
             this.updateOutDependencyMap(importName, newDependencies);
+            this.updateSourceDependencyMap(sourceName, newDependencies);
+        } else if (
+            OUTPUT_DEPENDENCY_MAP.get(importName) &&
+            (sourceName === ARKUI_COMPONENT_IMPORT_NAME ||
+                sourceName === ARKUI_STATEMANAGEMENT_IMPORT_NAME ||
+                sourceName === KIT_ARKUI_NAME)
+        ) {
+            const newDependencies: string[] = OUTPUT_DEPENDENCY_MAP.get(importName) ?? [];
             this.updateSourceDependencyMap(sourceName, newDependencies);
         }
     }

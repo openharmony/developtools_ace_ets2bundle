@@ -37,17 +37,17 @@ const storageLinkTransform: Plugins = {
 const pluginTester = new PluginTester('test storagelink primitive type transform', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "@ohos.arkui.stateManagement";
+import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
 
-import { __memo_context_type as __memo_context_type } from "@ohos.arkui.stateManagement";
+import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
 
-import { memo as memo } from "@ohos.arkui.stateManagement";
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { StorageLinkDecoratedVariable as StorageLinkDecoratedVariable } from "@ohos.arkui.stateManagement";
 
-import { EntryPoint as EntryPoint } from "@ohos.arkui.component";
+import { EntryPoint as EntryPoint } from "arkui.UserView";
 
-import { CustomComponent as CustomComponent } from "@ohos.arkui.component";
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
 

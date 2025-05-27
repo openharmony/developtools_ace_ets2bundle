@@ -99,8 +99,11 @@ export function updateStructMetadata(
 }
 
 export function moveToFront<T>(arr: T[], idx: number): T[] {
-    if (idx >= arr.length) {
-        throw new Error(`Invalid argument, size of array: ${arr.length}, index: ${idx}`);
+    if (idx < 0 || idx >= arr.length) {
+        throw new Error(`Index ${idx} is out of bounds for array of length ${arr.length}`);
     }
-    return [arr[idx], ...arr.slice(0, idx), ...arr.slice(idx + 1)];
+
+    const copy = [...arr];
+    const [item] = copy.splice(idx, 1);
+    return [item, ...copy];
 }
