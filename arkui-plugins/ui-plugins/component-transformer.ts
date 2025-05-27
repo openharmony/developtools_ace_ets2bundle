@@ -31,11 +31,9 @@ import {
     hasDecorator,
     DecoratorNames,
     getStateManagementType,
-    collectPropertyDecorators
+    collectPropertyDecorators,
 } from './property-translators/utils';
-import {
-    factory
-} from './ui-factory';
+import { factory } from './ui-factory';
 import { StructMap } from '../common/program-visitor';
 import { generateTempCallFunction } from './interop';
 import { stringify } from 'querystring';
@@ -300,7 +298,11 @@ export class ComponentTransformer extends AbstractVisitor {
                     ])
                 )
             ),
-            [...newDefinitionBody, ...definition.body, ...staticMethodBody],
+            [
+                ...newDefinitionBody,
+                ...definition.body.map((st: arkts.AstNode) => factory.PreprocessClassPropertyModifier(st)),
+                ...staticMethodBody,
+            ],
             definition.modifiers,
             arkts.classDefinitionFlags(definition) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_FINAL
         );

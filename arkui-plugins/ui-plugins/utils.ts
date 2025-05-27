@@ -179,3 +179,21 @@ export function hasPropertyInAnnotation(annotation: arkts.AnnotationUsage, prope
             annoProp.key.name === propertyName
     );
 }
+
+/**
+ * Determine whether the type node includes null or undefined type.
+ *
+ * @param type type node
+ */
+export function hasNullOrUndefinedType(type: arkts.TypeNode): boolean {
+    let res: boolean = false;
+    if (arkts.isETSUnionType(type)) {
+        type.types.forEach((item: arkts.TypeNode) => {
+            res = res || hasNullOrUndefinedType(item);
+        });
+    }
+    if (arkts.isETSUndefinedType(type) || arkts.isETSNullType(type)) {
+        res = true;
+    }
+    return res;
+}
