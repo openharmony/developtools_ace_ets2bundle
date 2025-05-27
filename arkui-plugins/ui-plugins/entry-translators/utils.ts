@@ -23,7 +23,7 @@ export enum EntryWrapperNames {
     WRAPPER_CLASS_NAME = '__EntryWrapper',
     ENTRY_STORAGE_ANNOTATION_KEY = 'storage',
     ENTRY_STORAGE_LOCAL_STORAGE_PROPERTY_NAME = '_entry_local_storage_',
-    ENTRY_DEFAULT_IMPORT = '@ohos.arkui.component',
+    ENTRY_DEFAULT_IMPORT = 'arkui.UserView',
     ENTRY_POINT_CLASS_NAME = 'EntryPoint',
 }
 

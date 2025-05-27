@@ -37,11 +37,11 @@ const watchTransform: Plugins = {
 const pluginTester = new PluginTester('test basic watch transform', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "@ohos.arkui.stateManagement";
+import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
 
-import { __memo_context_type as __memo_context_type } from "@ohos.arkui.stateManagement";
+import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
 
-import { memo as memo } from "@ohos.arkui.stateManagement";
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { ConsumeDecoratedVariable as ConsumeDecoratedVariable } from "@ohos.arkui.stateManagement";
 
@@ -51,7 +51,7 @@ import { SubscribedWatches as SubscribedWatches } from "@ohos.arkui.stateManagem
 
 import { WatchIdType as WatchIdType } from "@ohos.arkui.stateManagement";
 
-import { int32 as int32 } from "@koalaui.runtime.common";
+import { int32 as int32 } from "@ohos.arkui.stateManagement";
 
 import { IObservedObject as IObservedObject } from "@ohos.arkui.stateManagement";
 
@@ -75,9 +75,9 @@ import { PropDecoratedVariable as PropDecoratedVariable } from "@ohos.arkui.stat
 
 import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
 
-import { EntryPoint as EntryPoint } from "@ohos.arkui.component";
+import { EntryPoint as EntryPoint } from "arkui.UserView";
 
-import { CustomComponent as CustomComponent } from "@ohos.arkui.component";
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
 
