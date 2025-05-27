@@ -83,7 +83,7 @@ function addExternalComponents(): void {
   })
 }
 
-const TRANSITION_COMMON_ATTRS: Set<string> = new Set([
+export const TRANSITION_COMMON_ATTRS: Set<string> = new Set([
   'slide', 'translate', 'scale', 'opacity'
 ]);
 export const GESTURE_ATTRS: Set<string> = new Set([
@@ -101,7 +101,7 @@ export const forbiddenUseStateType: Set<string> = new Set(['Scroller', 'SwiperSc
   'ArcSwiperController'
 ]);
 
-const FOREACH_ATTRIBUTE = ['onMove'];
+export const FOREACH_ATTRIBUTE = ['onMove'];
 export const INNER_COMPONENT_NAMES: Set<string> = new Set();
 export const NO_DEBUG_LINE_COMPONENT: Set<string> = new Set();
 export const BUILDIN_CONTAINER_COMPONENT: Set<string> = new Set();

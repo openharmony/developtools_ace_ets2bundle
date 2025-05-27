@@ -82,7 +82,12 @@ import {
   GLOBAL_CUSTOM_BUILDER_METHOD,
   INNER_CUSTOM_BUILDER_METHOD,
   INNER_STYLE_FUNCTION,
-  INNER_CUSTOM_LOCALBUILDER_METHOD
+  INNER_CUSTOM_LOCALBUILDER_METHOD,
+  COMPONENT_MAP,
+  COMMON_ATTRS,
+  GESTURE_ATTRS,
+  TRANSITION_COMMON_ATTRS,
+  FOREACH_ATTRIBUTE
 } from './component_map';
 import {
   LogType,
@@ -665,6 +670,25 @@ export function methodDecoratorCollect(node: ts.MethodDeclaration | ts.FunctionD
   }
 }
 
+/**
+ * Checker whether the function's name is the same with common attributes 
+ * or the component's private attributes 
+ * @param {string} componentName the component extended by the function
+ * @param {string} attributeName the name of the extend function
+ * @return {*}  {boolean} whether the function's name is the same with common
+ * attributes or the component's private attributes
+ */
+function checkComponentAttrs(componentName: string, attributeName: string): boolean {
+  if (COMPONENT_MAP[componentName] && COMPONENT_MAP[componentName].attrs) {
+    // read the private attributes of the extend component
+    const compSet: Set<string> = new Set(COMPONENT_MAP[componentName].attrs);
+    const checkSet: Set<string> = new Set([...compSet, ...COMMON_ATTRS,
+      ...GESTURE_ATTRS, ...TRANSITION_COMMON_ATTRS, ...FOREACH_ATTRIBUTE]);
+    return checkSet.has(attributeName);
+  }
+  return false;
+}
+
 function collectStyles(node: ts.FunctionLikeDeclarationBase): void {
   if (ts.isBlock(node.body) && node.body.statements) {
     if (ts.isFunctionDeclaration(node)) {
@@ -682,6 +706,7 @@ function validateFunction(node: ts.MethodDeclaration | ts.FunctionDeclaration,
   if (ts.isFunctionDeclaration(node)) {
     const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
     const decoratorMap: Map<string, number> = new Map<string, number>();
+    const extendResult: ExtendResult = { decoratorName: '', componentName: '' };
     decorators.forEach((item: ts.Decorator) => {
       const decoratorName: string = item.getText().replace(/\([^\(\)]*\)/, '')
         .replace(/^@/, '').trim();
@@ -702,6 +727,16 @@ function validateFunction(node: ts.MethodDeclaration | ts.FunctionDeclaration,
         `'@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.`;
       addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode, { code: '10905117' });
     }
+    if (isExtendFunction(node, extendResult) &&
+      (extendResult.decoratorName === CHECK_COMPONENT_EXTEND_DECORATOR) &&
+      checkComponentAttrs(extendResult.componentName, node.name.getText())) {
+      const message: string = `The '@Extend' function cannot have the same name as` +
+        ` the built-in style attribute '${node.name.getText()}'` +
+        ` of the component '${extendResult.componentName}'.`;
+      checkNameAttrCalled(node) ?
+        addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode, { code: '10905360' }) :
+        addLog(LogType.WARN, message, node.getStart(), log, sourceFileNode);
+    }
   }
 }
 
@@ -713,6 +748,45 @@ function findDuplicateDecoratorFunction(mapKeys: string[], mapValues: number[]):
   const output = duplicateDecorators.length > 1 ?
     duplicateDecorators.join(', @') : duplicateDecorators[0];
   return output;
+}
+
+
+/**
+ * check whether the extend decorated function is called by itself
+ * @param {ts.FunctionDeclaration} node
+ * @return {*}  {boolean} if the extend decorated functio is called by itself
+ */
+function checkNameAttrCalled(node: ts.FunctionDeclaration): boolean {
+  const functionName: string = node.name.getText();
+  if (!node.body.statements.length) {
+    return false;
+  }
+  const startExpression: ts.Node = node.body.statements[0];
+  if (ts.isExpressionStatement(startExpression) &&
+    ts.isCallExpression(startExpression.expression)) {
+    const attrsNames: Set<string> = new Set();
+    collectAttrsNames(startExpression.expression, attrsNames);
+    return attrsNames.has(functionName);
+  }
+  return false;
+}
+
+
+/**
+ * collect the attributes called in an extend decorated function
+ * @param {ts.CallExpression} node
+ * @param {Set<string>} attrsNames a set used to collect attributes
+ * @return {*}  {void}
+ */
+function collectAttrsNames(node: ts.CallExpression, attrsNames: Set<string>): void {
+  if (!ts.isPropertyAccessExpression(node.expression)) {
+    return;
+  }
+  const newNode: ts.PropertyAccessExpression = node.expression;
+  attrsNames.add(newNode.name.getText());
+  if (ts.isCallExpression(newNode.expression)) {
+    collectAttrsNames(newNode.expression, attrsNames);
+  }
 }
 
 function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
