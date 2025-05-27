@@ -37,11 +37,11 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "@ohos.arkui.stateManagement";
-import { __memo_context_type as __memo_context_type } from "@ohos.arkui.stateManagement";
+import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
 import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
 import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
-import { CustomComponent as CustomComponent } from "@ohos.arkui.component";
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { memo as memo } from "@ohos.arkui.stateManagement";
 import { Text as Text, UITextAttribute as UITextAttribute, Column as Column, Component as Component } from "@ohos.arkui.component";
 import hilog from "@ohos.hilog";

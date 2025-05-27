@@ -23,7 +23,7 @@ export enum CustomComponentNames {
     RESUABLE_ANNOTATION_NAME = 'Reusable',
     COMPONENT_BUILD_ORI = 'build',
     COMPONENT_CONSTRUCTOR_ORI = 'constructor',
-    COMPONENT_DEFAULT_IMPORT = '@ohos.arkui.component',
+    COMPONENT_DEFAULT_IMPORT = 'arkui.component.customComponent',
     COMPONENT_CLASS_NAME = 'CustomComponent',
     COMPONENT_INTERFACE_PREFIX = '__Options_',
     COMPONENT_INITIALIZE_STRUCT = '__initializeStruct',
