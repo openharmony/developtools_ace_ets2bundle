@@ -354,6 +354,31 @@
             "solutions": ["Please make sure that the splash page has one and only one '@Entry' decorator."]
         }
     ],
+    "extendAttributeDuplicate": [
+        {
+            "message": "The '@Extend' function cannot have the same name as the built-in style attribute 'toolbarConfiguration' of the component 'Navigation'.",
+            "type": "WARN"
+        },
+        {
+            "message": "Duplicate '@Styles' decorators for function are not allowed.",
+            "type": "WARN"
+        }
+    ],
+    "extendAttributeDuplicate2": [
+        {
+            "message": "The '@Extend' function cannot have the same name as the built-in style attribute 'toolbarConfiguration' of the component 'Navigation'.",
+            "type": "ERROR",
+            "code": "10905360"
+        },
+        {
+            "message": "Duplicate '@Styles' decorators for function are not allowed.",
+            "type": "WARN"
+        }
+    ],
+    "animatableExtendAttributeDuplicate": {
+        "message": "Duplicate '@Styles' decorators for function are not allowed.",
+        "type": "WARN"
+    },
     "OneEntry": {
         "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
         "type": "ERROR",
