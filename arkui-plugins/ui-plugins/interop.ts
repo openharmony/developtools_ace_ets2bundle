@@ -19,6 +19,13 @@ import * as arkts from '@koalaui/libarkts';
 import { InteroperAbilityNames } from '../common/predefines';
 import { getCustomComponentOptionsName } from './utils';
 import { InteropContext } from './component-transformer';
+import { annotation, backingField, isAnnotation } from '../common/arkts-utils';
+import { hasLink, processLink, processNormal } from './initstatevar';
+
+interface propertyInfo {
+    decorators: string[],
+    type: arkts.TypeNode,
+}
 
 export function createEmptyESValue(name: string): arkts.VariableDeclaration {
     return arkts.factory.createVariableDeclaration(
@@ -44,18 +51,11 @@ export function createEmptyESValue(name: string): arkts.VariableDeclaration {
     );
 }
 
-export function getWrapValue(value: arkts.AstNode, type?: string): arkts.AstNode {
-    let wrapMethod = InteroperAbilityNames.WRAP;
-    if (!!type && value instanceof arkts.StringLiteral) {
-        wrapMethod = InteroperAbilityNames.WRAPSTRING;
-    } else if (!!type && value instanceof arkts.NumberLiteral) {
-        wrapMethod = InteroperAbilityNames.WRAPINT;
-    }
-
+export function getWrapValue(value: arkts.AstNode): arkts.AstNode {
     return arkts.factory.createCallExpression(
         arkts.factory.createMemberExpression(
             arkts.factory.createIdentifier(InteroperAbilityNames.ESVALUE),
-            arkts.factory.createIdentifier(wrapMethod),
+            arkts.factory.createIdentifier(InteroperAbilityNames.WRAP),
             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
             false,
             false
@@ -65,7 +65,7 @@ export function getWrapValue(value: arkts.AstNode, type?: string): arkts.AstNode
     );
 }
 
-export function setPropertyESValue(name: string, key: arkts.StringLiteral, wrapValue: arkts.AstNode): arkts.ExpressionStatement {
+export function setPropertyESValue(name: string, key: string, wrapValue: arkts.AstNode): arkts.ExpressionStatement {
     return arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
@@ -77,7 +77,7 @@ export function setPropertyESValue(name: string, key: arkts.StringLiteral, wrapV
             ),
             undefined,
             [
-                key,
+                arkts.factory.createStringLiteral(key),
                 wrapValue
             ]
         )
@@ -108,28 +108,33 @@ export function getPropertyESValue(result: string, object: string, key: string):
     );
 }
 
-function initialArgs(name: string, context: InteropContext): arkts.Statement[] {
-    const args = context.arguments;
-    const stateVarMap = context.stateVarMap;
-    if (!args) {
-        return [];
-    }
-    const result: arkts.Statement[] = [];
+function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, propertyInfo>): arkts.Statement[] {
+    const result: arkts.Statement[] = [
+        createEmptyESValue(InteroperAbilityNames.PARAM),
+        getPropertyESValue('createState', 'global', 'createStateVariable')
+    ];
+
+    const proxySet = new Set<string>();
 
     for (const property of args.properties) {
         if (!(property instanceof arkts.Property)) {
             continue;
         }
         const key = property.key;
-        if (!(key instanceof arkts.Identifier)){
+        const value = property.value;
+        if (!(key instanceof arkts.Identifier)) {
             throw Error('Error arguments in Legacy Component');
         }
-        const value = property.value!;
-        const type = stateVarMap.get(key.name);
-        const key_string = arkts.factory.createStringLiteral(key.name);
-        const wrapValue = getWrapValue(value, type);
-        const setProperty = setPropertyESValue(name, key_string, wrapValue);
-        result.push(setProperty);
+        const name = key.name;
+        const decorators = varMap.get(name)?.decorators;
+        const type = varMap.get(name)?.type!;
+        if (decorators !== undefined && hasLink(decorators)) {
+            const initParam = processLink(key.name, value!, type, proxySet);
+            result.push(...initParam);
+        } else {
+            const initParam = processNormal(key.name, value!);
+            result.push(...initParam);
+        }
     }
     return result;
 }
@@ -225,10 +230,10 @@ function createExtraInfo(properties: string[], value: string[]): arkts.Statement
         const val = value[index];
         body.push(setPropertyESValue(
             InteroperAbilityNames.EXTRAINFO,
-            arkts.factory.createStringLiteral(prop),
+            prop,
             arkts.factory.createStringLiteral(val))
         );
-    })
+    });
     return body;
 }
 
@@ -284,7 +289,7 @@ function createESBlank(): arkts.Statement[] {
                 )
             )
         ]
-    )
+    );
     body.push(blank);
     const asExpression = arkts.factory.createTSAsExpression(
         arkts.factory.createIdentifier('blank'),
@@ -305,14 +310,13 @@ function createESBlank(): arkts.Statement[] {
                 getWrapValue(asExpression)
             )
         ]
-    )
+    );
     body.push(esblank);
     return body;
 }
 
-function createELMTID(): arkts.Statement[] {
-    const body: arkts.Statement[] = [];
-    const global = arkts.factory.createVariableDeclaration(
+function createGlobal(): arkts.Statement {
+    return arkts.factory.createVariableDeclaration(
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
         [arkts.factory.createVariableDeclarator(
@@ -331,7 +335,10 @@ function createELMTID(): arkts.Statement[] {
             )
         )]
     );
-    body.push(global);
+}
+
+function createELMTID(): arkts.Statement[] {
+    const body: arkts.Statement[] = [];
     const viewStackProcessor = getPropertyESValue('viewStackProcessor', 'global', 'ViewStackProcessor');
     body.push(viewStackProcessor);
     const createId = getPropertyESValue('createId', 'viewStackProcessor', 'AllocateNewElmetIdForNextComponent');
@@ -394,12 +401,12 @@ function createComponent(moduleName: string, className: string): arkts.Statement
             arkts.factory.createIdentifier('esblank'),
             arkts.factory.createIdentifier(InteroperAbilityNames.EXTRAINFO)
         ]
-    )
+    );
     body.push(component);
     return body;
 }
 
-function invokeViewPUCreate(): arkts.Statement[]  {
+function invokeViewPUCreate(): arkts.Statement[] {
     const body: arkts.Statement[] = [];
     const createMethod = getPropertyESValue('create', 'structObject', 'create');
     body.push(createMethod);
@@ -417,12 +424,12 @@ function invokeViewPUCreate(): arkts.Statement[]  {
                 arkts.factory.createIdentifier('component')
             ]
         )
-    )
+    );
     body.push(viewPUCreate);
     return body;
 }
 
-function createWrapperBlock(context: InteropContext): arkts.BlockStatement {
+function createWrapperBlock(context: InteropContext, varMap: Map<string, propertyInfo>): arkts.BlockStatement {
     const className = context.className;
     const path = context.path;
     const args = context.arguments;
@@ -431,13 +438,12 @@ function createWrapperBlock(context: InteropContext): arkts.BlockStatement {
         throw new Error('Error path of Legacy Component.');
     }
     const moduleName = path.substring(0, index);
-    const initialArgsStatement = initialArgs(InteroperAbilityNames.PARAM, context);
+    const initialArgsStatement = args ? initialArgs(args, varMap) : [];
     return arkts.factory.createBlock(
         [
-            createEmptyESValue(InteroperAbilityNames.PARAM),
+            createGlobal(),
             ...initialArgsStatement,
             ...createExtraInfo(['page'], [path]),
-            // createESParent(),
             createESUndefined(),
             ...createESBlank(),
             ...createELMTID(),
@@ -446,7 +452,7 @@ function createWrapperBlock(context: InteropContext): arkts.BlockStatement {
             // ...paramsLambdaDeclaration(className, args),
             // setPropertyESValue(
             //     'component', 
-            //     arkts.factory.create1StringLiteral('paramsGenerator_'), 
+            //     'paramsGenerator_', 
             //     arkts.factory.createIdentifier(InteroperAbilityNames.PARAMSLAMBDA)
             // ),
             createInitReturn(className)
@@ -454,24 +460,14 @@ function createWrapperBlock(context: InteropContext): arkts.BlockStatement {
     );
 }
 
-function createInitializer(context: InteropContext): arkts.ArrowFunctionExpression {
-    const block = createWrapperBlock(context);
-    const builderNode = arkts.factory.createTypeReference(
-        arkts.factory.createTypeReferencePart(
-            arkts.factory.createIdentifier('BuilderNode')
-        )
-    )
+function createInitializer(context: InteropContext, varMap: Map<string, propertyInfo>): arkts.ArrowFunctionExpression {
+    const block = createWrapperBlock(context, varMap);
     return arkts.factory.createArrowFunction(
         arkts.factory.createScriptFunction(
             block,
             arkts.factory.createFunctionSignature(
                 undefined,
-                [
-                    // arkts.factory.createParameterDeclaration(
-                    //     arkts.factory.createIdentifier(InteroperAbilityNames.PARENT, builderNode),
-                    //     undefined,
-                    // ),
-                ],
+                [],
                 undefined,
                 false,
             ),
@@ -481,7 +477,7 @@ function createInitializer(context: InteropContext): arkts.ArrowFunctionExpressi
     );
 }
 
-function createUpdater(number: arkts.ETSTypeReference, esvalue: arkts.ETSTypeReference): arkts.ArrowFunctionExpression {
+function createUpdater(esvalue: arkts.ETSTypeReference, varMap: Map<string, propertyInfo>): arkts.ArrowFunctionExpression {
     return arkts.factory.createArrowFunction(
         arkts.factory.createScriptFunction(
             arkts.factory.createBlock(
@@ -492,10 +488,6 @@ function createUpdater(number: arkts.ETSTypeReference, esvalue: arkts.ETSTypeRef
             arkts.factory.createFunctionSignature(
                 undefined,
                 [
-                    arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID, number),
-                        undefined,
-                    ),
                     arkts.factory.createParameterDeclaration(
                         arkts.factory.createIdentifier(InteroperAbilityNames.INSTANCE, esvalue),
                         undefined,
@@ -510,21 +502,54 @@ function createUpdater(number: arkts.ETSTypeReference, esvalue: arkts.ETSTypeRef
     );
 }
 
-export function processStructCall(context: InteropContext): arkts.CallExpression {
-    const number = arkts.factory.createTypeReference(
-        arkts.factory.createTypeReferencePart(
-            arkts.factory.createIdentifier(InteroperAbilityNames.NUMBER)
-        )
-    );
+function generateVarMap(node: arkts.Identifier): Map<string, propertyInfo> {
+    const decl = arkts.getDecl(node);
+    if (!(decl instanceof arkts.ClassDefinition)) {
+        throw Error("can't find legacy class declaration");
+    }
+    const result = new Map<string, propertyInfo>();
+    const definition = decl;
+    const body = definition.body;
+    body.forEach(node => {
+        if (node instanceof arkts.ClassProperty && node.key instanceof arkts.Identifier) {
+            const key = node.key.name;
+            const annotations = node.annotations;
+            const decorators: string[] = annotations.map(annotation => {
+                return (annotation.expr as arkts.Identifier).name;
+            });
+            const type: arkts.TypeNode = node.typeAnnotation!;
+            result.set(key, {decorators: decorators, type: type});
+        }
+    });
+    return result;
+}
+
+export function updateArkUICompatible(node: arkts.CallExpression): arkts.CallExpression {
+    const classInterop = (node.expression as arkts.MemberExpression).object as arkts.Identifier;
+    const className = classInterop.name;
+    const args = node.arguments;
+    const path = (args[0] as arkts.StringLiteral).str;
+    const line = args[1] instanceof arkts.UndefinedLiteral ? undefined : (args[1] as arkts.NumberLiteral).value;
+    const col = args[2] instanceof arkts.UndefinedLiteral ? undefined : (args[2] as arkts.NumberLiteral).value;
+    const options = args[3] instanceof arkts.UndefinedLiteral ? undefined : args[3] as arkts.ObjectExpression;
+    const context: InteropContext = {
+        className: className,
+        path: path,
+        line: line,
+        col: col,
+        arguments: options
+    };
+
+    const varMap: Map<string, propertyInfo> = generateVarMap(classInterop);
     const esvalue = arkts.factory.createTypeReference(
         arkts.factory.createTypeReferencePart(
             arkts.factory.createIdentifier(InteroperAbilityNames.ESVALUE)
         )
     );
-    const initializer = createInitializer(context);
-    // console.log('print intt:'+ initializer.dumpSrc());
-    const updater = createUpdater(number, esvalue);
-    return arkts.factory.createCallExpression(
+    const initializer = createInitializer(context, varMap);
+    const updater = createUpdater(esvalue, varMap);
+    return arkts.factory.updateCallExpression(
+        node,
         arkts.factory.createIdentifier(InteroperAbilityNames.ARKUICOMPATIBLE),
         undefined,
         [
@@ -534,74 +559,37 @@ export function processStructCall(context: InteropContext): arkts.CallExpression
     );
 }
 
-export function updateStateVar(node: arkts.CallExpression): arkts.CallExpression {
-    const ident = node.expression;
-    if (!(ident instanceof arkts.Identifier)) {
-        return node;
+
+function generateStructInfo(context: InteropContext): arkts.AstNode[] {
+    const result: arkts.AstNode[] = [
+        arkts.factory.createStringLiteral(context.path),
+        context.line ? arkts.factory.createIdentifier(context.line.toString()) : arkts.factory.createUndefinedLiteral(),
+        context.col ? arkts.factory.createIdentifier(context.col.toString()) : arkts.factory.createUndefinedLiteral(),
+        context.arguments ?? arkts.factory.createUndefinedLiteral()
+    ];
+    return result;
+
+}
+
+export function generateTempCallFunction(context: InteropContext): arkts.CallExpression {
+    return arkts.factory.createCallExpression(
+        arkts.factory.createMemberExpression(
+            arkts.factory.createIdentifier(context.className),
+            arkts.factory.createIdentifier('instantiate_Interop'),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
+        ),
+        undefined,
+        generateStructInfo(context)
+    );
+}
+
+export function isArkUICompatible(node: arkts.AstNode): boolean {
+    if (node instanceof arkts.CallExpression && node.expression instanceof arkts.MemberExpression &&
+        node.expression.property instanceof arkts.Identifier &&
+        node.expression.property.name === 'instantiate_Interop') {
+        return true;
     }
-    const name = ident.name;
-    if (name !== 'ArkUICompatible') {
-        return node;
-    }
-    const init = node.arguments[0] as arkts.ArrowFunctionExpression;
-    const script = init.scriptFunction;
-    const body = script.body as arkts.BlockStatement;
-    const statements = body.statements;
-    const varStatement = statements[1].expression as arkts.CallExpression;
-    const params = varStatement.arguments;
-    const wrapVar = params[1] as arkts.CallExpression;
-    const stateVar = wrapVar.arguments[0] as arkts.MemberExpression;
-    const newStateVar = arkts.factory.updateMemberExpression(
-        stateVar,
-        stateVar.object,
-        arkts.factory.createIdentifier('__backing_' + stateVar.property.name),
-        stateVar.kind,
-        stateVar.computed,
-        stateVar.optional
-    );
-    const newWrapVar = arkts.factory.updateCallExpression(
-        wrapVar,
-        wrapVar.expression,
-        wrapVar.typeArguments,
-        [newStateVar],
-    );
-    const newVarStatement = arkts.factory.updateCallExpression(
-        varStatement,
-        varStatement.expression,
-        varStatement.typeArguments,
-        [params[0], newWrapVar]
-    );
-    const newBody = arkts.factory.updateBlock(
-        body,
-        [
-            statements[0],
-            newVarStatement,
-            ...statements.slice(2)
-        ]
-    );
-    const newInit = arkts.factory.updateArrowFunction(
-        init,
-        arkts.factory.updateScriptFunction(
-            script,
-            newBody,
-            arkts.factory.createFunctionSignature(
-                script.typeParams,
-                script.params,
-                script.returnTypeAnnotation,
-                script.hasReceiver,
-            ),
-            script.flags,
-            script.modifiers
-        )
-    );
-    const newNode = arkts.factory.updateCallExpression(
-        node,
-        node.expression,
-        node.typeArguments,
-        [
-            newInit,
-            node.arguments[1]
-        ],
-    );
-    return newNode;
+    return false;
 }
