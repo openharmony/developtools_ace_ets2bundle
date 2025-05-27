@@ -37,7 +37,7 @@ import {
     factory
 } from './ui-factory';
 import { StructMap } from '../common/program-visitor';
-import { processStructCall } from './interop';
+import { generateTempCallFunction } from './interop';
 import { stringify } from 'querystring';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
@@ -58,7 +58,8 @@ interface ComponentContext {
 export interface InteropContext {
     className: string;
     path: string;
-    stateVarMap: Map<string, string>;
+    line?: number;
+    col?: number;
     arguments?: arkts.ObjectExpression;
 }
 
@@ -74,7 +75,6 @@ export class ComponentTransformer extends AbstractVisitor {
     private hasLegacy = false;
     private legacyStructMap: Map<string, StructMap> = new Map();
     private legacyCallMap: Map<string, string> = new Map();
-    private stateVarMap: Map<string, string> = new Map();
 
     constructor(options?: ComponentTransformerOptions) {
         const _options: ComponentTransformerOptions = options ?? {};
@@ -94,7 +94,6 @@ export class ComponentTransformer extends AbstractVisitor {
         this.hasLegacy = false;
         this.legacyStructMap = new Map();
         this.legacyCallMap = new Map();
-        this.stateVarMap = new Map();
     }
 
     enter(node: arkts.AstNode) {
@@ -351,12 +350,10 @@ export class ComponentTransformer extends AbstractVisitor {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
         );
         if (member.annotations.length > 0 && !hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
-            const type = getStateManagementType(member);
-            this.stateVarMap.set(originalName, type);
             const newMember: arkts.ClassProperty = createOptionalClassProperty(
                 newName,
                 member,
-                type,
+                getStateManagementType(member),
                 arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
             );
             return [originMember, newMember];
@@ -387,7 +384,6 @@ export class ComponentTransformer extends AbstractVisitor {
                 }
             }
         }
-        this.legacyCallMap.set('Child1', 'har1/src/main/ets/components/MainPage');
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {
@@ -420,12 +416,11 @@ export class ComponentTransformer extends AbstractVisitor {
                 const context: InteropContext = {
                     className: className,
                     path: path,
-                    stateVarMap: this.stateVarMap,
                     arguments: args && args.length === 1 && args[0] instanceof arkts.ObjectExpression 
                       ? args[0] 
                       : undefined
                 };
-                return processStructCall(context);
+                return generateTempCallFunction(context);
             }
         }
         return newNode;
