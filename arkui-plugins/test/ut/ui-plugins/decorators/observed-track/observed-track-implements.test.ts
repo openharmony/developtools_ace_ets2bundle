@@ -118,7 +118,7 @@ interface trackInterface {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta.addRef();
     }
-    return (this).__backing_propF!;
+    return (this).__backing_propF;
   }
   
   public set trackF(newValue: number) {
@@ -133,23 +133,7 @@ interface trackInterface {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta.addRef();
     }
-    return (this).__backing_trackF!;
-  }
-  
-  public set propF(newValue: number) {
-    if ((((this).__backing_propF) !== (newValue))) {
-      (this).__backing_propF = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("propF");
-    }
-  }
-  
-  public set trackF(newValue: number) {
-    if ((((this).__backing_trackF) !== (newValue))) {
-      (this).__backing_trackF = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("trackF");
-    }
+    return (this).__backing_trackF;
   }
   
 }
