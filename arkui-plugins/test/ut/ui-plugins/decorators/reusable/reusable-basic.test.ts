@@ -38,8 +38,8 @@ const reusableTransform: Plugins = {
 const pluginTester = new PluginTester('test basic reusable', buildConfig);
 
 const expectedScript: string = `
-import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
-import { PropDecoratedVariable as PropDecoratedVariable } from "@ohos.arkui.stateManagement";
+import { StateDecoratedVariable as StateDecoratedVariable } from "arkui.stateManagement.decorators.decoratorState";
+import { PropDecoratedVariable as PropDecoratedVariable } from "arkui.stateManagement.decorators.decoratorProp";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Reusable as Reusable } from "@ohos.arkui.component";

@@ -26,7 +26,8 @@ import { CustomComponentScopeInfo, findCanAddMemoFromArrowFunction, isResourceNo
 import { factory } from './factory';
 import { isEntryWrapperClass } from '../entry-translators/utils';
 import { factory as entryFactory } from '../entry-translators/factory';
-import { ImportCollector } from '../import-collector';
+import { ImportCollector } from '../../common/import-collector';
+import { DeclarationCollector } from '../../common/declaration-collector';
 import { PropertyCache } from '../property-translators/utils';
 
 export class StructTransformer extends AbstractVisitor {
@@ -44,6 +45,7 @@ export class StructTransformer extends AbstractVisitor {
         this.scope = { customComponents: [] };
         PropertyCache.getInstance().reset();
         ImportCollector.getInstance().reset();
+        DeclarationCollector.getInstance().reset();
     }
 
     enter(node: arkts.AstNode): void {
@@ -58,7 +60,6 @@ export class StructTransformer extends AbstractVisitor {
             const scopeInfo = this.scope.customComponents.pop()!;
             scopeInfo.hasInitializeStruct ||= name === CustomComponentNames.COMPONENT_INITIALIZE_STRUCT;
             scopeInfo.hasUpdateStruct ||= name === CustomComponentNames.COMPONENT_UPDATE_STRUCT;
-            scopeInfo.hasReusableRebind ||= name === CustomComponentNames.REUSABLE_COMPONENT_REBIND_STATE;
             this.scope.customComponents.push(scopeInfo);
         }
     }

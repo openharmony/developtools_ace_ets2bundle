@@ -28,77 +28,145 @@ export const EXTERNAL_SOURCE_PREFIX_NAMES: (string | RegExp)[] = [
     /ability\..*/,
 ];
 
-export const ARKUI_IMPORT_PREFIX_NAMES: (string | RegExp)[] = [/@ohos\..*/, /arkui\..*/];
+export const ARKUI_IMPORT_PREFIX_NAMES: (string | RegExp)[] = [/arkui\..*/, /@ohos\..*/, /@kit\..*/];
 
-export const ARKUI_COMPONENT_IMPORT_NAME: string = '@ohos.arkui.component';
-export const ARKUI_STATEMANAGEMENT_IMPORT_NAME: string = '@ohos.arkui.stateManagement';
-export const KIT_ARKUI_NAME: string = '@kit.ArkUI';
+export const MEMO_IMPORT_SOURCE_NAME: string = 'arkui.stateManagement.runtime';
+export const CUSTOM_COMPONENT_IMPORT_SOURCE_NAME: string = 'arkui.component.customComponent';
+export const ENTRY_POINT_IMPORT_SOURCE_NAME: string = 'arkui.UserView';
+export const ARKUI_COMPONENT_COMMON_SOURCE_NAME: string = 'arkui.component.common';
 
-export const KOALAUI_COMMON_IMPORT_NAME: string = '@koalaui.runtime.common';
+export enum Dollars {
+    DOLLAR_RESOURCE = '$r',
+    DOLLAR_RAWFILE = '$rawfile',
+    DOLLAR_DOLLAR = '$$',
+    TRANSFORM_DOLLAR_RESOURCE = '_r',
+    TRANSFORM_DOLLAR_RAWFILE = '_rawfile',
+}
 
-export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<string>>([
-    ['arkui.stateManagement.runtime', new Set(['memo', '__memo_context_type', '__memo_id_type'])]
+export enum BindableDecl {
+    BINDABLE = 'Bindable',
+}
+
+export enum StructDecoratorNames {
+    ENTRY = 'Entry',
+    COMPONENT = 'Component',
+    RESUABLE = 'Reusable',
+}
+
+export enum DecoratorNames {
+    STATE = 'State',
+    STORAGE_LINK = 'StorageLink',
+    STORAGE_PROP = 'StorageProp',
+    LINK = 'Link',
+    PROP = 'Prop',
+    PROVIDE = 'Provide',
+    CONSUME = 'Consume',
+    OBJECT_LINK = 'ObjectLink',
+    OBSERVED = 'Observed',
+    WATCH = 'Watch',
+    BUILDER_PARAM = 'BuilderParam',
+    BUILDER = 'Builder',
+    CUSTOM_DIALOG = 'CustomDialog',
+    LOCAL_STORAGE_PROP = 'LocalStorageProp',
+    LOCAL_STORAGE_LINK = 'LocalStorageLink',
+    REUSABLE = 'Reusable',
+    TRACK = 'Track',
+}
+
+export enum DecoratorIntrinsicNames {
+    LINK = '__Link_intrinsic',
+}
+
+export enum StateManagementTypes {
+    STATE_DECORATED = 'StateDecoratedVariable',
+    LINK_DECORATED = 'LinkDecoratedVariable',
+    STORAGE_LINK_DECORATED = 'StorageLinkDecoratedVariable',
+    STORAGE_PROP_DECORATED = 'StoragePropDecoratedVariable',
+    DECORATED_V1 = 'DecoratedV1VariableBase',
+    PROP_DECORATED = 'PropDecoratedVariable',
+    MUTABLE_STATE = 'MutableState',
+    MUTABLE_STATE_META = 'MutableStateMeta',
+    SYNCED_PROPERTY = 'SyncedProperty',
+    PROVIDE_DECORATED = 'ProvideDecoratedVariable',
+    CONSUME_DECORATED = 'ConsumeDecoratedVariable',
+    OBJECT_LINK_DECORATED = 'ObjectLinkDecoratedVariable',
+    BACKING_VALUE = 'BackingValue',
+    SET_OBSERVATION_DEPTH = 'setObservationDepth',
+    OBSERVED_OBJECT = 'IObservedObject',
+    WATCH_ID_TYPE = 'WatchIdType',
+    SUBSCRIBED_WATCHES = 'SubscribedWatches',
+    STORAGE_LINK_STATE = 'StorageLinkState',
+    OBSERVABLE_PROXY = 'observableProxy',
+    PROP_STATE = 'propState',
+    INT_32 = 'int32',
+}
+
+export const DECORATOR_TYPE_MAP = new Map<DecoratorNames, StateManagementTypes>([
+    [DecoratorNames.STATE, StateManagementTypes.STATE_DECORATED],
+    [DecoratorNames.LINK, StateManagementTypes.DECORATED_V1],
+    [DecoratorNames.PROP, StateManagementTypes.PROP_DECORATED],
+    [DecoratorNames.STORAGE_LINK, StateManagementTypes.STORAGE_LINK_DECORATED],
+    [DecoratorNames.STORAGE_PROP, StateManagementTypes.STORAGE_PROP_DECORATED],
+    [DecoratorNames.LOCAL_STORAGE_PROP, StateManagementTypes.SYNCED_PROPERTY],
+    [DecoratorNames.LOCAL_STORAGE_LINK, StateManagementTypes.MUTABLE_STATE],
+    [DecoratorNames.OBJECT_LINK, StateManagementTypes.OBJECT_LINK_DECORATED],
+    [DecoratorNames.PROVIDE, StateManagementTypes.PROVIDE_DECORATED],
+    [DecoratorNames.CONSUME, StateManagementTypes.CONSUME_DECORATED],
 ]);
 
-export const IMPORT_SOURCE_MAP_V2: Map<string, string> = new Map<string, string>([
-    ['$r', ARKUI_COMPONENT_IMPORT_NAME],
-    ['$rawfile', ARKUI_COMPONENT_IMPORT_NAME],
-    ['_r', ARKUI_COMPONENT_IMPORT_NAME],
-    ['_rawfile', ARKUI_COMPONENT_IMPORT_NAME],
-    ['Bindable', ARKUI_COMPONENT_IMPORT_NAME],
-    ['State', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['Prop', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['Provide', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['Consume', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['StorageLink', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['StorageProp', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['LocalStorageLink', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['LocalStorageProp', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['Watch', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['ObjectLink', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['StateDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['MutableState', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['contextLocalStateOf', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['contextLocal', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['observableProxy', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['SyncedProperty', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['objectLinkState', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['propState', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['AppStorageLinkState', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['StorageLinkState', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['DecoratedV1VariableBase', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['LinkDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['PropDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['StorageLinkDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['StoragePropDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['ProvideDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['ConsumeDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['ObjectLinkDecoratedVariable', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['MutableStateMeta', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['BackingValue', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['setObservationDepth', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['IObservedObject', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['WatchIdType', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['SubscribedWatches', ARKUI_STATEMANAGEMENT_IMPORT_NAME],
-    ['int32', KOALAUI_COMMON_IMPORT_NAME],
-]);
-
-export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, string[]>([
-    ['$r', []],
-    ['$rawfile', []],
-    ['State', []],
-    ['Link', []],
-    ['Prop', []],
-    ['Provide', []],
-    ['Consume', []],
-    ['StorageProp', []],
-    ['StorageLink', []],
-    ['LocalStorageLink', []],
-    ['LocalStorageProp', []],
-    ['ObjectLink', []],
-    ['Observed', []],
-    ['Track', []],
-    ['$$', []],
+export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string, string[]>([
+    [Dollars.DOLLAR_RESOURCE, [Dollars.TRANSFORM_DOLLAR_RESOURCE]],
+    [Dollars.DOLLAR_RAWFILE, [Dollars.TRANSFORM_DOLLAR_RAWFILE]],
+    [Dollars.DOLLAR_DOLLAR, [BindableDecl.BINDABLE]],
+    [DecoratorNames.STATE, [StateManagementTypes.STATE_DECORATED]],
+    [DecoratorNames.LINK, [StateManagementTypes.LINK_DECORATED, StateManagementTypes.DECORATED_V1]],
+    [DecoratorNames.PROP, [StateManagementTypes.PROP_DECORATED]],
+    [DecoratorNames.PROVIDE, [StateManagementTypes.PROVIDE_DECORATED]],
+    [DecoratorNames.CONSUME, [StateManagementTypes.CONSUME_DECORATED]],
+    [DecoratorNames.STORAGE_PROP, [StateManagementTypes.STORAGE_PROP_DECORATED]],
+    [DecoratorNames.STORAGE_LINK, [StateManagementTypes.STORAGE_LINK_DECORATED]],
+    [DecoratorNames.OBJECT_LINK, [StateManagementTypes.OBJECT_LINK_DECORATED]],
+    [
+        DecoratorNames.LOCAL_STORAGE_LINK,
+        [
+            StateManagementTypes.STORAGE_LINK_STATE,
+            StateManagementTypes.MUTABLE_STATE,
+            StateManagementTypes.OBSERVABLE_PROXY,
+        ],
+    ],
+    [
+        DecoratorNames.LOCAL_STORAGE_PROP,
+        [
+            StateManagementTypes.STORAGE_LINK_STATE,
+            StateManagementTypes.SYNCED_PROPERTY,
+            StateManagementTypes.OBSERVABLE_PROXY,
+            StateManagementTypes.PROP_STATE,
+        ],
+    ],
+    [
+        DecoratorNames.OBSERVED,
+        [
+            StateManagementTypes.MUTABLE_STATE_META,
+            StateManagementTypes.BACKING_VALUE,
+            StateManagementTypes.SET_OBSERVATION_DEPTH,
+            StateManagementTypes.OBSERVED_OBJECT,
+            StateManagementTypes.INT_32,
+            StateManagementTypes.WATCH_ID_TYPE,
+            StateManagementTypes.SUBSCRIBED_WATCHES,
+        ],
+    ],
+    [
+        DecoratorNames.TRACK,
+        [
+            StateManagementTypes.MUTABLE_STATE_META,
+            StateManagementTypes.BACKING_VALUE,
+            StateManagementTypes.SET_OBSERVATION_DEPTH,
+            StateManagementTypes.OBSERVED_OBJECT,
+            StateManagementTypes.INT_32,
+            StateManagementTypes.WATCH_ID_TYPE,
+            StateManagementTypes.SUBSCRIBED_WATCHES,
+        ],
+    ],
 ]);
 
 export enum InteroperAbilityNames {
@@ -128,3 +196,32 @@ export enum InteroperAbilityNames {
     INTEROPCOMPONENT = 'interopComponent',
     OHMURL = '@normalized:N&entry&com.example.Interop2use1&har1/src/main/ets/components/MainPage&1.0.0',
 }
+
+/**
+ * @deprecated
+ */
+export const IMPORT_SOURCE_MAP_V2: Map<string, string> = new Map<string, string>([
+    [Dollars.TRANSFORM_DOLLAR_RESOURCE, 'arkui.component.resources'],
+    [Dollars.TRANSFORM_DOLLAR_RAWFILE, 'arkui.component.resources'],
+    [StateManagementTypes.STATE_DECORATED, 'arkui.stateManagement.decorators.decoratorState'],
+    [StateManagementTypes.LINK_DECORATED, 'arkui.stateManagement.decorators.decoratorLink'],
+    [StateManagementTypes.STORAGE_LINK_DECORATED, 'arkui.stateManagement.decorators.decoratorStorageLink'],
+    [StateManagementTypes.STORAGE_PROP_DECORATED, 'arkui.stateManagement.decorators.decoratorStorageProp'],
+    [StateManagementTypes.DECORATED_V1, 'arkui.stateManagement.base.decoratorBase'],
+    [StateManagementTypes.PROP_DECORATED, 'arkui.stateManagement.decorators.decoratorProp'],
+    [StateManagementTypes.MUTABLE_STATE, 'arkui.stateManagement.runtime'],
+    [StateManagementTypes.MUTABLE_STATE_META, 'arkui.stateManagement.base.mutableStateMeta'],
+    [StateManagementTypes.SYNCED_PROPERTY, 'arkui.stateManagement.runtime'],
+    [StateManagementTypes.PROVIDE_DECORATED, 'arkui.stateManagement.decorators.decoratorProvide'],
+    [StateManagementTypes.CONSUME_DECORATED, 'arkui.stateManagement.decorators.decoratorConsume'],
+    [StateManagementTypes.OBJECT_LINK_DECORATED, 'arkui.stateManagement.decorators.decoratorObjectLink'],
+    [StateManagementTypes.BACKING_VALUE, 'arkui.stateManagement.base.backingValue'],
+    [StateManagementTypes.SET_OBSERVATION_DEPTH, 'arkui.stateManagement.base.iObservedObject'],
+    [StateManagementTypes.OBSERVED_OBJECT, 'arkui.stateManagement.base.iObservedObject'],
+    [StateManagementTypes.WATCH_ID_TYPE, 'arkui.stateManagement.decorators.decoratorWatch'],
+    [StateManagementTypes.SUBSCRIBED_WATCHES, 'arkui.stateManagement.decorators.decoratorWatch'],
+    [StateManagementTypes.STORAGE_LINK_STATE, 'arkui.stateManagement.runtime'],
+    [StateManagementTypes.OBSERVABLE_PROXY, 'arkui.stateManagement.runtime'],
+    [StateManagementTypes.PROP_STATE, 'arkui.stateManagement.runtime'],
+    [StateManagementTypes.INT_32, '@koalaui.runtime.common'],
+]);

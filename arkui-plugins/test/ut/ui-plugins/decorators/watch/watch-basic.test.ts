@@ -39,16 +39,16 @@ const pluginTester = new PluginTester('test basic watch transform', buildConfig)
 
 const expectedScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { ProvideDecoratedVariable as ProvideDecoratedVariable } from "@ohos.arkui.stateManagement";
-import { StoragePropDecoratedVariable as StoragePropDecoratedVariable } from "@ohos.arkui.stateManagement";
-import { StorageLinkDecoratedVariable as StorageLinkDecoratedVariable } from "@ohos.arkui.stateManagement";
-import { PropDecoratedVariable as PropDecoratedVariable } from "@ohos.arkui.stateManagement";
-import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
-import { IObservedObject as IObservedObject } from "@ohos.arkui.stateManagement";
-import { MutableStateMeta as MutableStateMeta } from "@ohos.arkui.stateManagement";
+import { ProvideDecoratedVariable as ProvideDecoratedVariable } from "arkui.stateManagement.decorators.decoratorProvide";
+import { StoragePropDecoratedVariable as StoragePropDecoratedVariable } from "arkui.stateManagement.decorators.decoratorStorageProp";
+import { StorageLinkDecoratedVariable as StorageLinkDecoratedVariable } from "arkui.stateManagement.decorators.decoratorStorageLink";
+import { PropDecoratedVariable as PropDecoratedVariable } from "arkui.stateManagement.decorators.decoratorProp";
+import { StateDecoratedVariable as StateDecoratedVariable } from "arkui.stateManagement.decorators.decoratorState";
+import { IObservedObject as IObservedObject } from "arkui.stateManagement.base.iObservedObject";
+import { MutableStateMeta as MutableStateMeta } from "arkui.stateManagement.base.mutableStateMeta";
 import { int32 as int32 } from "@koalaui.runtime.common";
-import { WatchIdType as WatchIdType } from "@ohos.arkui.stateManagement";
-import { SubscribedWatches as SubscribedWatches } from "@ohos.arkui.stateManagement";
+import { WatchIdType as WatchIdType } from "arkui.stateManagement.decorators.decoratorWatch";
+import { SubscribedWatches as SubscribedWatches } from "arkui.stateManagement.decorators.decoratorWatch";
 import { EntryPoint as EntryPoint } from "arkui.UserView";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Entry as Entry } from "@ohos.arkui.component";

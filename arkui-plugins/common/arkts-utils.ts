@@ -15,6 +15,28 @@
 
 import * as arkts from '@koalaui/libarkts';
 
+
+/**
+ * create and insert `import { <imported> as <local> } from <source>` to the top of script's statements.
+ */
+export function createAndInsertImportDeclaration(
+    source: arkts.StringLiteral,
+    imported: arkts.Identifier,
+    local: arkts.Identifier,
+    importKind: arkts.Es2pandaImportKinds,
+    program: arkts.Program
+): void {
+    const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
+        source,
+        [arkts.factory.createImportSpecifier(imported, local)],
+        importKind,
+        program,
+        arkts.Es2pandaImportFlags.IMPORT_FLAGS_NONE
+    );
+    arkts.importDeclarationInsert(importDecl, program);
+    return;
+}
+
 export function annotation(name: string): arkts.AnnotationUsage {
     const ident: arkts.Identifier = arkts.factory.createIdentifier(name).setAnnotationUsage();
     const annotation: arkts.AnnotationUsage = arkts.factory.createAnnotationUsage(ident);

@@ -15,6 +15,9 @@
 
 import * as arkts from '@koalaui/libarkts';
 
+import { backingField, expectName } from '../../common/arkts-utils';
+import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
+import { CustomComponentNames } from '../utils';
 import {
     generateToRecord,
     createGetter,
@@ -22,20 +25,12 @@ import {
     generateThisBacking,
     generateGetOrSetCall,
     hasDecorator,
-    DecoratorNames,
-    removeDecorator,
-    decoratorTypeMap,
-    StateManagementTypes,
     collectStateManagementTypeImport,
-    collectStateManagementTypeSource,
     PropertyCache,
 } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
-import { backingField, expectName } from '../../common/arkts-utils';
-import { CustomComponentNames } from '../utils';
 import { factory } from './factory';
-import { factory as uiFactory } from '../ui-factory';
 
 export class StateTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
@@ -107,7 +102,6 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
         );
         const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(originalName), binaryItem];
         factory.judgeIfAddWatchFunc(args, this.property);
-        collectStateManagementTypeSource(StateManagementTypes.STATE_DECORATED);
         collectStateManagementTypeImport(StateManagementTypes.STATE_DECORATED);
         const right = arkts.factory.createETSNewClassInstanceExpression(
             arkts.factory.createTypeReference(

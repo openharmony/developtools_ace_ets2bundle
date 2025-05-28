@@ -38,11 +38,11 @@ const reusableTransform: Plugins = {
 const pluginTester = new PluginTester('test complex reusable', buildConfig);
 
 const expectedScript: string = `
-import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
-import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
+import { UITextAttribute as UITextAttribute } from "arkui.component.text";
+import { StateDecoratedVariable as StateDecoratedVariable } from "arkui.stateManagement.decorators.decoratorState";
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { UIButtonAttribute as UIButtonAttribute } from "@ohos.arkui.component";
-import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
+import { UIButtonAttribute as UIButtonAttribute } from "arkui.component.button";
+import { UIColumnAttribute as UIColumnAttribute } from "arkui.component.column";
 import { EntryPoint as EntryPoint } from "arkui.UserView";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Entry as Entry, Reusable as Reusable, Column as Column, Text as Text, Button as Button, ClickEvent as ClickEvent, FontWeight as FontWeight } from "@ohos.arkui.component";

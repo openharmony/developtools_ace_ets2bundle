@@ -26,20 +26,27 @@ import {
     collectCustomComponentScopeInfo,
     isComponentStruct,
 } from './utils';
-import { backingField, expectName, annotation, filterDefined, collect } from '../common/arkts-utils';
+import {
+    backingField,
+    expectName,
+    annotation,
+    filterDefined,
+    collect,
+    createAndInsertImportDeclaration,
+} from '../common/arkts-utils';
 import { EntryWrapperNames, findEntryWithStorageInClassAnnotations } from './entry-translators/utils';
 import { factory as entryFactory } from './entry-translators/factory';
-import {
-    hasDecoratorName,
-    DecoratorNames,
-    findDecoratorInfos,
-    isDecoratorAnnotation,
-    decoratorTypeMap,
-    DecoratorIntrinsicNames,
-} from './property-translators/utils';
+import { hasDecoratorName, findDecoratorInfos, isDecoratorAnnotation } from './property-translators/utils';
 import { factory } from './ui-factory';
 import { factory as propertyFactory } from './property-translators/factory';
 import { StructMap } from '../common/program-visitor';
+import {
+    CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
+    DecoratorIntrinsicNames,
+    DecoratorNames,
+    DECORATOR_TYPE_MAP,
+    ENTRY_POINT_IMPORT_SOURCE_NAME,
+} from '../common/predefines';
 import { generateTempCallFunction } from './interop';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
@@ -60,7 +67,6 @@ export class ComponentTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
     private componentInterfaceCollection: arkts.TSInterfaceDeclaration[] = [];
     private entryNames: string[] = [];
-    private readonly arkui?: string;
     private structMembersMap: Map<string, arkts.AstNode[]> = new Map();
     private isCustomComponentImported: boolean = false;
     private isEntryPointImported: boolean = false;
@@ -72,7 +78,6 @@ export class ComponentTransformer extends AbstractVisitor {
     constructor(options?: ComponentTransformerOptions) {
         const _options: ComponentTransformerOptions = options ?? {};
         super(_options);
-        this.arkui = _options.arkui;
     }
 
     reset(): void {
@@ -99,14 +104,14 @@ export class ComponentTransformer extends AbstractVisitor {
         if (arkts.isETSImportDeclaration(node) && !this.isCustomComponentImported) {
             this.isCustomComponentImported = !!findLocalImport(
                 node,
-                CustomComponentNames.COMPONENT_DEFAULT_IMPORT,
+                CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
                 CustomComponentNames.COMPONENT_CLASS_NAME
             );
         }
         if (arkts.isETSImportDeclaration(node) && !this.isEntryPointImported) {
             this.isEntryPointImported = !!findLocalImport(
                 node,
-                EntryWrapperNames.ENTRY_DEFAULT_IMPORT,
+                ENTRY_POINT_IMPORT_SOURCE_NAME,
                 EntryWrapperNames.ENTRY_POINT_CLASS_NAME
             );
         }
@@ -122,15 +127,13 @@ export class ComponentTransformer extends AbstractVisitor {
     }
 
     createImportDeclaration(): void {
-        const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(
-            this.arkui ?? CustomComponentNames.COMPONENT_DEFAULT_IMPORT
-        );
+        const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME);
         const imported: arkts.Identifier = arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CLASS_NAME);
         // Insert this import at the top of the script's statements.
         if (!this.program) {
             throw Error('Failed to insert import: Transformer has no program');
         }
-        factory.createAndInsertImportDeclaration(
+        createAndInsertImportDeclaration(
             source,
             imported,
             imported,
@@ -347,7 +350,7 @@ export class ComponentTransformer extends AbstractVisitor {
             originMember.setAnnotations([buildParamInfo.annotation.clone()]);
             return [originMember];
         }
-        const targetInfo = infos.find((it) => decoratorTypeMap.has(it.name));
+        const targetInfo = infos.find((it) => DECORATOR_TYPE_MAP.has(it.name));
         if (!!targetInfo) {
             const newName: string = backingField(originalName);
             const newMember: arkts.ClassProperty = propertyFactory

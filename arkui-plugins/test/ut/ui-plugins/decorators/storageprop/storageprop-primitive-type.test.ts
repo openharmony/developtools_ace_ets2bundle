@@ -40,7 +40,7 @@ const pluginTester = new PluginTester('test storageprop primitive type transform
 const expectedScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { StoragePropDecoratedVariable as StoragePropDecoratedVariable } from "@ohos.arkui.stateManagement";
+import { StoragePropDecoratedVariable as StoragePropDecoratedVariable } from "arkui.stateManagement.decorators.decoratorStorageProp";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
 

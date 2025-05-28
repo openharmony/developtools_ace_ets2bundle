@@ -15,8 +15,9 @@
 
 import * as arkts from '@koalaui/libarkts';
 
+import { DecoratorNames } from '../../common/predefines';
 import { InterfacePropertyTranslator, PropertyTranslator } from './base';
-import { DecoratorNames, hasDecorator } from './utils';
+import { hasDecorator } from './utils';
 import { StateInterfaceTranslator, StateTranslator } from './state';
 import { PropInterfaceTranslator, PropTranslator } from './prop';
 import { StorageLinkInterfaceTranslator, StorageLinkTranslator } from './storagelink';
