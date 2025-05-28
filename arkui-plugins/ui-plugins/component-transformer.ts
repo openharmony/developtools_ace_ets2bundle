@@ -37,7 +37,8 @@ import {
     factory
 } from './ui-factory';
 import { StructMap } from '../common/program-visitor';
-import { processStructCall } from './interop';
+import { generateTempCallFunction } from './interop';
+import { stringify } from 'querystring';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string;
@@ -52,6 +53,14 @@ type ScopeInfo = {
 
 interface ComponentContext {
     structMembers: Map<string, arkts.AstNode[]>;
+}
+
+export interface InteropContext {
+    className: string;
+    path: string;
+    line?: number;
+    col?: number;
+    arguments?: arkts.ObjectExpression;
 }
 
 export class ComponentTransformer extends AbstractVisitor {
@@ -395,14 +404,23 @@ export class ComponentTransformer extends AbstractVisitor {
             this.processImport(newNode);
         }
         if (arkts.isCallExpression(newNode)) {
-            if (this.legacyCallMap.has(newNode.expression?.name)) {
-                const pathName = this.legacyCallMap.get(newNode.expression?.name)!;
+            const ident = newNode.expression;
+            if (!(ident instanceof arkts.Identifier)) {
+                return newNode;
+            }
+            const className = ident.name;
+            if (this.legacyCallMap.has(className)) {
+                const path = this.legacyCallMap.get(className)!;
+                // const pathName = 'path/har1';
                 const args = newNode.arguments;
-                if (args === undefined || args.length > 1 || !(args[0] instanceof arkts.ObjectExpression)) {
-                    return processStructCall(newNode, pathName);
-                }
-                const arg = args[0];
-                return processStructCall(newNode, pathName, arg);
+                const context: InteropContext = {
+                    className: className,
+                    path: path,
+                    arguments: args && args.length === 1 && args[0] instanceof arkts.ObjectExpression 
+                      ? args[0] 
+                      : undefined
+                };
+                return generateTempCallFunction(context);
             }
         }
         return newNode;
