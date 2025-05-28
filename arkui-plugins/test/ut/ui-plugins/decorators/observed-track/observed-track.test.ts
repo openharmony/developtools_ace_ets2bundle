@@ -96,7 +96,7 @@ function main() {}
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta_trackB.addRef();
     }
-    return (this).__backing_trackB!;
+    return (this).__backing_trackB;
   }
   
   public set trackB(newValue: number) {

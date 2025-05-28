@@ -158,23 +158,27 @@ export class ObservedTrackTranslator {
                 const originSetter: arkts.MethodDefinition = originGetter.overloads[0];
                 const updateGetter: arkts.MethodDefinition = arkts.factory.updateMethodDefinition(
                     originGetter,
-                    newGetter.kind,
+                    originGetter.kind,
                     newGetter.name,
-                    arkts.factory.createFunctionExpression(newGetter.scriptFunction),
+                    arkts.factory.createFunctionExpression(
+                        newGetter.scriptFunction.addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD)
+                    ),
                     originGetter.modifiers,
                     false
                 );
-                const updateSetter: arkts.MethodDefinition = arkts.factory.updateMethodDefinition(
+                arkts.factory.updateMethodDefinition(
                     originSetter,
-                    newSetter.kind,
+                    originSetter.kind,
                     newSetter.name,
-                    arkts.factory.createFunctionExpression(newSetter.scriptFunction),
+                    arkts.factory.createFunctionExpression(
+                        newSetter.scriptFunction
+                            .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_OVERLOAD)
+                            .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD)
+                    ),
                     originSetter.modifiers,
                     false
                 );
-                // updateGetter.setOverloads([updateSetter])
                 this.classScopeInfo.getters[idx] = updateGetter;
-                this.classScopeInfo.getters.push(updateSetter);
             }
         } else {
             this.classScopeInfo.getters.push(...[newGetter, newSetter]);
@@ -287,9 +291,7 @@ export class ObservedTrackTranslator {
 
     getterReturnMember(properyIsClass: boolean, newName: string): arkts.ReturnStatement {
         return arkts.factory.createReturnStatement(
-            arkts.factory.createTSNonNullExpression(
-                properyIsClass ? this.genThisBackingValue(newName) : this.genThisBacking(newName)
-            )
+            properyIsClass ? this.genThisBackingValue(newName) : this.genThisBacking(newName)
         );
     }
 

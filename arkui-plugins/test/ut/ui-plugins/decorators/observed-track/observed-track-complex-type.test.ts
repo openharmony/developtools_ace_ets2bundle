@@ -231,7 +231,7 @@ final class Status extends BaseEnum<int> {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta_numA.addRef();
     }
-    return (this).__backing_numA!;
+    return (this).__backing_numA;
   }
   
   public set numA(newValue: number) {
@@ -246,7 +246,7 @@ final class Status extends BaseEnum<int> {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta_stringA.addRef();
     }
-    return (this).__backing_stringA!;
+    return (this).__backing_stringA;
   }
   
   public set stringA(newValue: string) {
@@ -261,7 +261,7 @@ final class Status extends BaseEnum<int> {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta_booleanA.addRef();
     }
-    return (this).__backing_booleanA!;
+    return (this).__backing_booleanA;
   }
   
   public set booleanA(newValue: boolean) {
@@ -277,7 +277,7 @@ final class Status extends BaseEnum<int> {
       (this).__meta_arrayA.addRef();
     }
     setObservationDepth((this).__backing_arrayA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_arrayA.value!;
+    return (this).__backing_arrayA.value;
   }
   
   public set arrayA(newValue: Array<number>) {
@@ -293,7 +293,7 @@ final class Status extends BaseEnum<int> {
       (this).__meta_objectA.addRef();
     }
     setObservationDepth((this).__backing_objectA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_objectA.value!;
+    return (this).__backing_objectA.value;
   }
   
   public set objectA(newValue: Object) {
@@ -309,7 +309,7 @@ final class Status extends BaseEnum<int> {
       (this).__meta_dateA.addRef();
     }
     setObservationDepth((this).__backing_dateA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_dateA.value!;
+    return (this).__backing_dateA.value;
   }
   
   public set dateA(newValue: Date) {
@@ -325,7 +325,7 @@ final class Status extends BaseEnum<int> {
       (this).__meta_setA.addRef();
     }
     setObservationDepth((this).__backing_setA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_setA.value!;
+    return (this).__backing_setA.value;
   }
   
   public set setA(newValue: Set<number>) {
@@ -341,7 +341,7 @@ final class Status extends BaseEnum<int> {
       (this).__meta_mapA.addRef();
     }
     setObservationDepth((this).__backing_mapA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_mapA.value!;
+    return (this).__backing_mapA.value;
   }
   
   public set mapA(newValue: Map<number, string>) {
@@ -356,7 +356,7 @@ final class Status extends BaseEnum<int> {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta_unionA.addRef();
     }
-    return (this).__backing_unionA!;
+    return (this).__backing_unionA;
   }
   
   public set unionA(newValue: string | undefined) {
@@ -372,7 +372,7 @@ final class Status extends BaseEnum<int> {
       (this).__meta_classA.addRef();
     }
     setObservationDepth((this).__backing_classA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_classA.value!;
+    return (this).__backing_classA.value;
   }
   
   public set classA(newValue: Person) {
@@ -388,7 +388,7 @@ final class Status extends BaseEnum<int> {
       (this).__meta_enumA.addRef();
     }
     setObservationDepth((this).__backing_enumA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_enumA.value!;
+    return (this).__backing_enumA.value;
   }
   
   public set enumA(newValue: Status) {
@@ -448,7 +448,7 @@ final class Status extends BaseEnum<int> {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta.addRef();
     }
-    return (this).__backing_numA!;
+    return (this).__backing_numA;
   }
   
   public set numA(newValue: number) {
@@ -463,7 +463,7 @@ final class Status extends BaseEnum<int> {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta.addRef();
     }
-    return (this).__backing_stringA!;
+    return (this).__backing_stringA;
   }
   
   public set stringA(newValue: string) {
@@ -478,7 +478,7 @@ final class Status extends BaseEnum<int> {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta.addRef();
     }
-    return (this).__backing_booleanA!;
+    return (this).__backing_booleanA;
   }
   
   public set booleanA(newValue: boolean) {
@@ -494,7 +494,7 @@ final class Status extends BaseEnum<int> {
       (this).__meta.addRef();
     }
     setObservationDepth((this).__backing_arrayA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_arrayA.value!;
+    return (this).__backing_arrayA.value;
   }
   
   public set arrayA(newValue: Array<number>) {
@@ -510,7 +510,7 @@ final class Status extends BaseEnum<int> {
       (this).__meta.addRef();
     }
     setObservationDepth((this).__backing_objectA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_objectA.value!;
+    return (this).__backing_objectA.value;
   }
   
   public set objectA(newValue: Object) {
@@ -526,7 +526,7 @@ final class Status extends BaseEnum<int> {
       (this).__meta.addRef();
     }
     setObservationDepth((this).__backing_dateA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_dateA.value!;
+    return (this).__backing_dateA.value;
   }
   
   public set dateA(newValue: Date) {
@@ -542,7 +542,7 @@ final class Status extends BaseEnum<int> {
       (this).__meta.addRef();
     }
     setObservationDepth((this).__backing_setA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_setA.value!;
+    return (this).__backing_setA.value;
   }
   
   public set setA(newValue: Set<number>) {
@@ -558,7 +558,7 @@ final class Status extends BaseEnum<int> {
       (this).__meta.addRef();
     }
     setObservationDepth((this).__backing_mapA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_mapA.value!;
+    return (this).__backing_mapA.value;
   }
   
   public set mapA(newValue: Map<number, string>) {
@@ -573,7 +573,7 @@ final class Status extends BaseEnum<int> {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta.addRef();
     }
-    return (this).__backing_unionA!;
+    return (this).__backing_unionA;
   }
   
   public set unionA(newValue: string | undefined) {
@@ -589,7 +589,7 @@ final class Status extends BaseEnum<int> {
       (this).__meta.addRef();
     }
     setObservationDepth((this).__backing_classA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_classA.value!;
+    return (this).__backing_classA.value;
   }
   
   public set classA(newValue: Person) {
@@ -605,7 +605,7 @@ final class Status extends BaseEnum<int> {
       (this).__meta.addRef();
     }
     setObservationDepth((this).__backing_enumA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_enumA.value!;
+    return (this).__backing_enumA.value;
   }
   
   public set enumA(newValue: Status) {
@@ -685,7 +685,7 @@ class mixed3 implements IObservedObject {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta_numA.addRef();
     }
-    return (this).__backing_numA!;
+    return (this).__backing_numA;
   }
   
   public set numA(newValue: number) {
@@ -700,7 +700,7 @@ class mixed3 implements IObservedObject {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta_stringA.addRef();
     }
-    return (this).__backing_stringA!;
+    return (this).__backing_stringA;
   }
   
   public set stringA(newValue: string) {
@@ -715,7 +715,7 @@ class mixed3 implements IObservedObject {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta_booleanA.addRef();
     }
-    return (this).__backing_booleanA!;
+    return (this).__backing_booleanA;
   }
   
   public set booleanA(newValue: boolean) {
@@ -731,7 +731,7 @@ class mixed3 implements IObservedObject {
       (this).__meta_arrayA.addRef();
     }
     setObservationDepth((this).__backing_arrayA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_arrayA.value!;
+    return (this).__backing_arrayA.value;
   }
   
   public set arrayA(newValue: Array<number>) {
@@ -747,7 +747,7 @@ class mixed3 implements IObservedObject {
       (this).__meta_objectA.addRef();
     }
     setObservationDepth((this).__backing_objectA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_objectA.value!;
+    return (this).__backing_objectA.value;
   }
   
   public set objectA(newValue: Object) {
@@ -763,7 +763,7 @@ class mixed3 implements IObservedObject {
       (this).__meta_dateA.addRef();
     }
     setObservationDepth((this).__backing_dateA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_dateA.value!;
+    return (this).__backing_dateA.value;
   }
   
   public set dateA(newValue: Date) {
@@ -779,7 +779,7 @@ class mixed3 implements IObservedObject {
       (this).__meta_setA.addRef();
     }
     setObservationDepth((this).__backing_setA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_setA.value!;
+    return (this).__backing_setA.value;
   }
   
   public set setA(newValue: Set<number>) {
@@ -795,7 +795,7 @@ class mixed3 implements IObservedObject {
       (this).__meta_mapA.addRef();
     }
     setObservationDepth((this).__backing_mapA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_mapA.value!;
+    return (this).__backing_mapA.value;
   }
   
   public set mapA(newValue: Map<number, string>) {
@@ -810,7 +810,7 @@ class mixed3 implements IObservedObject {
     if ((((this)._permissibleAddRefDepth) > (0))) {
       (this).__meta_unionA.addRef();
     }
-    return (this).__backing_unionA!;
+    return (this).__backing_unionA;
   }
   
   public set unionA(newValue: string | undefined) {
@@ -826,7 +826,7 @@ class mixed3 implements IObservedObject {
       (this).__meta_classA.addRef();
     }
     setObservationDepth((this).__backing_classA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_classA.value!;
+    return (this).__backing_classA.value;
   }
   
   public set classA(newValue: Person) {
@@ -842,7 +842,7 @@ class mixed3 implements IObservedObject {
       (this).__meta_enumA.addRef();
     }
     setObservationDepth((this).__backing_enumA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_enumA.value!;
+    return (this).__backing_enumA.value;
   }
   
   public set enumA(newValue: Status) {
