@@ -16,6 +16,7 @@
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
+// @AnimatableExtend base use case
 function animatablePoints(points, elmtId, isInitialRender, parent) {
     if (isInitialRender) {
         Polyline.createAnimatableProperty("animatablePoints", points, (points) => {
@@ -33,6 +34,8 @@ function animatablePoints(points, elmtId, isInitialRender, parent) {
         Polyline.updateAnimatableProperty("animatablePoints", points);
     }
 }
+function animatablePointsEmpty(points, elmtId, isInitialRender, parent) {
+}
 function attributeExtend(elmtId, isInitialRender, parent) {
     if (isInitialRender) {
         Text.createAnimatableProperty("attributeExtend", () => {
@@ -47,6 +50,8 @@ function attributeExtend(elmtId, isInitialRender, parent) {
     else {
         Text.updateAnimatableProperty("attributeExtend");
     }
+}
+function attributeExtendEmpty(elmtId, isInitialRender, parent) {
 }
 class HomeComponent extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
@@ -78,6 +83,7 @@ class HomeComponent extends ViewPU {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Polyline.create();
             animatablePoints(this.points, elmtId, isInitialRender, this);
+            animatablePointsEmpty(this.points, elmtId, isInitialRender, this);
             Polyline.strokeWidth(3);
             Polyline.height(100);
             Polyline.width(100);
@@ -85,6 +91,7 @@ class HomeComponent extends ViewPU {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("hello");
             attributeExtend(elmtId, isInitialRender, this);
+            attributeExtendEmpty(elmtId, isInitialRender, this);
         }, Text);
         Text.pop();
         Column.pop();

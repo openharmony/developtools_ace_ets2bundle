@@ -1015,12 +1015,12 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
       node.parameters, ts.factory.createToken(ts.SyntaxKind.VoidKeyword), isOriginalExtend(node.body) ?
       ts.factory.updateBlock(node.body, statementArray) : bodynode);
   }
-  if (componentName && node.body && node.body.statements.length) {
+  if (componentName && node.body) {
     const statementArray: ts.Statement[] = [];
     let bodynode: ts.Block;
     if (decoratorName === COMPONENT_EXTEND_DECORATOR) {
-      const attrSet: ts.CallExpression = node.body.statements[0].expression;
-      if (isOriginalExtend(node.body)) {
+      if (isOriginalExtend(node.body) && node.body.statements.length) {
+        const attrSet: ts.CallExpression = node.body.statements[0].expression;
         const changeCompName: ts.ExpressionStatement = ts.factory.createExpressionStatement(processExtendBody(attrSet));
         bindComponentAttr(changeCompName as ts.ExpressionStatement,
           ts.factory.createIdentifier(componentName), statementArray, log);
@@ -1040,15 +1040,10 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
           ts.factory.updateBlock(node.body, statementArray) : bodynode);
     }
     if (decoratorName === COMPONENT_ANIMATABLE_EXTEND_DECORATOR) {
-      bindComponentAttr(node.body.statements[0],
-        ts.factory.createIdentifier(componentName), statementArray, log);
-      return ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node), node.asteriskToken,
-        node.name, node.typeParameters,
-        [...node.parameters, ...createAnimatableParameterNode()], ts.factory.createToken(ts.SyntaxKind.VoidKeyword),
-        ts.factory.updateBlock(node.body, createAnimatableBody(componentName, node.name,
-          node.parameters, statementArray)));
+      return processAnimatableExtend(node, statementArray, componentName, log);
     }
   }
+
   function traverseExtendExpression(node: ts.Node): ts.Node {
     if (ts.isExpressionStatement(node) && isDollarNode(node, componentName)) {
       const changeCompName: ts.ExpressionStatement =
@@ -1060,6 +1055,21 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
     return ts.visitEachChild(node, traverseExtendExpression, contextGlobal);
   }
   return undefined;
+}
+
+// builder AnimatableExtend function content. 
+function processAnimatableExtend(node: ts.FunctionDeclaration, statementArray: ts.Statement[], componentName: string, log: LogInfo[]): ts.FunctionDeclaration {
+    if (node.body.statements.length) {
+      bindComponentAttr(node.body.statements[0],
+        ts.factory.createIdentifier(componentName), statementArray, log);
+    }
+    return ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node), node.asteriskToken,
+      node.name, node.typeParameters,
+      [...node.parameters, ...createAnimatableParameterNode()],
+      ts.factory.createToken(ts.SyntaxKind.VoidKeyword),
+      ts.factory.updateBlock(node.body,
+        node.body.statements.length ? createAnimatableBody(componentName, node.name, node.parameters, statementArray) : []
+      ));
 }
 
 function createAnimatableParameterNode(): ts.ParameterDeclaration[] {
