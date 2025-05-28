@@ -29,8 +29,8 @@ export const EXTERNAL_SOURCE_PREFIX_NAMES: (string | RegExp)[] = [
 ];
 
 export const ARKUI_COMPONENT_IMPORT_NAME: string = '@ohos.arkui.component';
-
 export const ARKUI_STATEMANAGEMENT_IMPORT_NAME: string = '@ohos.arkui.stateManagement';
+export const KIT_ARKUI_NAME: string = '@kit.ArkUI';
 
 export const EXTERNAL_SOURCE_ALLOWED_IMPORT_INSERT_NAMES: string[] = [
     ARKUI_COMPONENT_IMPORT_NAME,
@@ -38,50 +38,7 @@ export const EXTERNAL_SOURCE_ALLOWED_IMPORT_INSERT_NAMES: string[] = [
 ];
 
 export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<string>>([
-    ['@ohos.arkui.component', new Set(['$r', '$rawfile', '_r', '_rawfile'])],
-    [
-        '@ohos.arkui.stateManagement',
-        new Set([
-            'State',
-            'Prop',
-            'Provide',
-            'Consume',
-            'StorageLink',
-            'StorageProp',
-            'LocalStorageLink',
-            'LocalStorageProp',
-            'Watch',
-            'ObjectLink',
-            'Observed',
-            'Track',
-            'StateDecoratedVariable',
-            'MutableState',
-            'contextLocalStateOf',
-            'contextLocal',
-            'observableProxy',
-            'propState',
-            'StorageLinkState',
-            'SyncedProperty',
-            'DecoratedV1VariableBase',
-            'LinkDecoratedVariable',
-            'PropDecoratedVariable',
-            'StorageLinkDecoratedVariable',
-            'StoragePropDecoratedVariable',
-            'MutableStateMeta',
-            'BackingValue',
-            'setObservationDepth',
-            'IObservedObject',
-            'ProvideDecoratedVariable',
-            'ConsumeDecoratedVariable',
-            'memo',
-            '__memo_context_type',
-            '__memo_id_type',
-            'ObjectLinkDecoratedVariable',
-            'WatchIdType', 
-            'SubscribedWatches'
-        ]),
-    ],
-    ['@koalaui.runtime.common', new Set(['int32'])]
+    ['arkui.stateManagement.runtime', new Set(['memo', '__memo_context_type', '__memo_id_type'])]
 ]);
 
 export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, string[]>([
@@ -99,6 +56,7 @@ export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, stri
     ['ObjectLink', ['ObjectLinkDecoratedVariable']],
     ['Observed', ['MutableStateMeta', 'BackingValue', 'setObservationDepth', 'IObservedObject', 'int32', 'WatchIdType', 'SubscribedWatches']],
     ['Track', ['MutableStateMeta', 'BackingValue', 'setObservationDepth', 'IObservedObject', 'int32', 'WatchIdType', 'SubscribedWatches']],
+    ['$$', ['Bindable']],
 ]);
 
 

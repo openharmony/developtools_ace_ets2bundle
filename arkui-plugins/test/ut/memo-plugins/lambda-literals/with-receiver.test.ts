@@ -94,11 +94,11 @@ function main() {}
         return;
     }
 });
-function fullName(this: Person, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+@functions.OptionalParametersAnnotation({minArgCount:1}) function fullName(this: Person, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
     return;
 }
-function foo(this: A, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
-function goo(a: A, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
+@functions.OptionalParametersAnnotation({minArgCount:1}) function foo(this: A, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
+@functions.OptionalParametersAnnotation({minArgCount:1}) function goo(a: A, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
 class Person {
     public constructor() {}
 }

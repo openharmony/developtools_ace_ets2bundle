@@ -48,6 +48,7 @@ import { nodeByType } from './class-by-peer';
 import { MemberExpression } from './to-be-generated/MemberExpression';
 import {
     AnnotationUsage,
+    ArrayExpression,
     BlockStatement,
     ClassDefinition,
     ETSTypeReference,
@@ -915,5 +916,6 @@ const pairs: [Es2pandaAstNodeType, { new (peer: KNativePointer): AstNode }][] = 
     [Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TYPE_REFERENCE, ETSTypeReference],
     [Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TYPE_REFERENCE_PART, ETSTypeReferencePart],
     [Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION, ObjectExpression],
+    [Es2pandaAstNodeType.AST_NODE_TYPE_ARRAY_EXPRESSION, ArrayExpression],
 ];
 pairs.forEach(([nodeType, astNode]) => nodeByType.set(nodeType, astNode));

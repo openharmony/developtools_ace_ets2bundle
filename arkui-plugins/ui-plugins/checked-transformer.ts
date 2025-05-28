@@ -26,7 +26,6 @@ import {
     getCustomComponentOptionsName,
     getTypeNameFromTypeParameter,
     getTypeParamsFromClassDecl,
-    BuilderLambdaNames,
     getGettersFromClassDecl,
     addMemoAnnotation,
 } from './utils';
@@ -86,7 +85,7 @@ export class CheckedTransformer extends AbstractVisitor {
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         this.enter(beforeChildren);
         if (arkts.isCallExpression(beforeChildren) && isBuilderLambda(beforeChildren)) {
-            const lambda = builderLambdaFactory.transformBuilderLambda(beforeChildren);
+            const lambda = builderLambdaFactory.transformBuilderLambda(beforeChildren, this.projectConfig);
             return this.visitEachChild(lambda);
         } else if (arkts.isMethodDefinition(beforeChildren) && isBuilderLambdaMethodDecl(beforeChildren)) {
             const lambda = builderLambdaFactory.transformBuilderLambdaMethodDecl(beforeChildren);
@@ -115,19 +114,21 @@ export class CheckedTransformer extends AbstractVisitor {
             return transformResource(node, this.projectConfig);
         } else if (findCanAddMemoFromArrowFunction(node)) {
             return addMemoAnnotation(node);
-        }
-        else if (arkts.isClassDeclaration(node)) {
+        } else if (arkts.isClassDeclaration(node)) {
             return transformObservedTracked(node);
         } else if (isArkUICompatible(node)) {
             return updateArkUICompatible(node as arkts.CallExpression);
+        } else if (this.externalSourceName) {
+            return structFactory.transformExternalSource(this.externalSourceName, node);
         }
         return node;
     }
 }
+
 export type ClassScopeInfo = {
     isObserved: boolean;
     classHasTrack: boolean;
-    getters: arkts.MethodDefinition[]
+    getters: arkts.MethodDefinition[];
 };
 
 function transformObservedTracked(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
@@ -141,7 +142,7 @@ function transformObservedTracked(node: arkts.ClassDeclaration): arkts.ClassDecl
     if (!isObserved && !classHasTrack) {
         return node;
     }
-   
+
     const updateClassDef: arkts.ClassDefinition = arkts.factory.updateClassDefinition(
         node.definition,
         node.definition.ident,
@@ -162,7 +163,7 @@ function transformObservedTracked(node: arkts.ClassDeclaration): arkts.ClassDecl
         arkts.classDefinitionFlags(node.definition)
     );
     return arkts.factory.updateClassDeclaration(node, updateClassDef);
-} 
+}
 
 function observedTrackPropertyMembers(
     classHasTrack: boolean,
