@@ -45,6 +45,7 @@ import {
     isTemplateLiteral,
     isBlockExpression,
     isReturnStatement,
+    isArrayExpression,
 } from '../generated';
 import {
     isEtsScript,
@@ -200,6 +201,13 @@ function visitOuterExpression(node: AstNode, visitor: Visitor): AstNode {
             node,
             node.getTypeRef,
             nodesVisitor(node.getArguments, visitor)
+        );
+    }
+    if (isArrayExpression(node)) {
+        updated = true;
+        return factory.updateArrayExpression(
+            node,
+            nodesVisitor(node.elements, visitor)
         );
     }
     return node;

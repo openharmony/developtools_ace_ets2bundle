@@ -22,7 +22,9 @@ import {
     ParamInfo,
     ReturnTypeInfo,
     RuntimeNames,
+    parametrizedNodeHasReceiver
 } from './utils';
+import { moveToFront } from '../common/arkts-utils';
 
 export class factory {
     // Importing
@@ -82,12 +84,19 @@ export class factory {
     static createHiddenParameters(): arkts.ETSParameterExpression[] {
         return [factory.createContextParameter(), factory.createIdParameter()];
     }
-    static createHiddenParameterIfNotAdded(params?: readonly arkts.Expression[]): readonly arkts.Expression[] {
+    static createHiddenParameterIfNotAdded(
+        params: readonly arkts.Expression[],
+        hasReceiver: boolean = false
+    ): readonly arkts.Expression[] {
         const _params = params ?? [];
         if (isUnmemoizedInFunction(_params)) {
             return _params;
         }
-        return [...factory.createHiddenParameters(), ..._params];
+        let newParams: arkts.Expression[] = [...factory.createHiddenParameters(), ..._params];
+        if (hasReceiver) {
+            newParams = moveToFront(newParams, 2);
+        }
+        return newParams;
     }
     static updateFunctionTypeWithMemoParameters(type: arkts.ETSFunctionType): arkts.ETSFunctionType {
         return arkts.factory.updateFunctionType(
@@ -111,7 +120,7 @@ export class factory {
             newBody ?? func.body,
             arkts.factory.createFunctionSignature(
                 func.typeParams,
-                factory.createHiddenParameterIfNotAdded(func.params),
+                factory.createHiddenParameterIfNotAdded(func.params, parametrizedNodeHasReceiver(func)),
                 returnType ?? func.returnTypeAnnotation,
                 func.hasReceiver
             ),
@@ -137,9 +146,16 @@ export class factory {
 
     // Memo parameters
     static createMemoParameterIdentifier(name: string): arkts.Identifier {
+        if (name === RuntimeNames.EQUAL_T) {
+            return arkts.factory.createIdentifier(`${RuntimeNames.PARAMETER}_${RuntimeNames.THIS}`, undefined);
+        }
         return arkts.factory.createIdentifier(`${RuntimeNames.PARAMETER}_${name}`);
     }
     static createMemoParameterDeclarator(id: number, name: string): arkts.VariableDeclarator {
+        const originalIdent =
+            name === RuntimeNames.THIS || name === RuntimeNames.EQUAL_T
+                ? arkts.factory.createThisExpression()
+                : arkts.factory.createIdentifier(name, undefined);
         return arkts.factory.createVariableDeclarator(
             arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_CONST,
             factory.createMemoParameterIdentifier(name),
@@ -152,7 +168,7 @@ export class factory {
                     false
                 ),
                 undefined,
-                [arkts.factory.createNumericLiteral(id), arkts.factory.createIdentifier(name)]
+                [arkts.factory.createNumericLiteral(id), originalIdent]
             )
         );
     }

@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { CustomComponentNames, Dollars } from '../utils';
+import { BuilderLambdaNames, CustomComponentNames, Dollars } from '../utils';
 import { factory as uiFactory } from '../ui-factory';
 import { annotation } from '../../common/arkts-utils';
 
@@ -273,5 +273,115 @@ export class factory {
             definition.modifiers,
             arkts.classDefinitionFlags(definition)
         );
+    }
+
+    /*
+     * add headers for animation in UICommonMethod
+     */
+    static modifyExternalComponentCommon(node: arkts.TSInterfaceDeclaration): arkts.AstNode {
+        const animationStart = factory.createAnimationMethod(BuilderLambdaNames.ANIMATION_START);
+        const animationStop = factory.createAnimationMethod(BuilderLambdaNames.ANIMATION_STOP);
+        const updatedBody = arkts.factory.updateInterfaceBody(node.body!, [
+            animationStart,
+            animationStop,
+            ...node.body!.body,
+        ]);
+        return arkts.factory.updateInterfaceDeclaration(
+            node,
+            node.extends,
+            node.id,
+            node.typeParams,
+            updatedBody,
+            node.isStatic,
+            node.isFromExternal
+        );
+    }
+
+    /*
+     * generate animationStart(...) and animationStop(...)
+     */
+    static createAnimationMethod(key: string): arkts.MethodDefinition {
+        const aniparams: arkts.Expression[] = [
+            arkts.factory.createParameterDeclaration(
+                arkts.factory.createIdentifier(
+                    'value',
+                    arkts.factory.createUnionType(
+                        [
+                            arkts.factory.createTypeReference(
+                                arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('AnimateParam'))
+                            ),
+                            arkts.factory.createETSUndefinedType()
+                        ]
+                    )
+                ),
+                undefined
+            ),
+        ];
+        const aniFuncExpr = arkts.factory.createFunctionExpression(
+            arkts.factory.createScriptFunction(
+                undefined,
+                arkts.factory.createFunctionSignature(undefined, aniparams, arkts.TSThisType.createTSThisType(), false),
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+            )
+        );
+        return arkts.factory.createMethodDefinition(
+            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+            arkts.factory.createIdentifier(key),
+            aniFuncExpr,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            false
+        );
+    }
+
+    /*
+     * generate XComponent(..., packageInfo: string, ...)
+     */
+    static modifyXcomponent(node: arkts.ScriptFunction): arkts.ScriptFunction {
+        const info = arkts.factory.createParameterDeclaration(
+            arkts.factory.createIdentifier(
+                'packageInfo',
+                arkts.factory.createTypeReference(
+                    arkts.factory.createTypeReferencePart(
+                        arkts.factory.createIdentifier('string')
+                    )
+                )
+            ),
+            undefined
+        );
+        return arkts.factory.updateScriptFunction(
+            node,
+            node.body,
+            arkts.factory.createFunctionSignature(
+                node.typeParams,
+                [...node.params.slice(0, 2), info, ...node.params.slice(2)],
+                node.returnTypeAnnotation,
+                false
+            ),
+            node.flags,
+            node.modifiers
+        );
+    }
+
+    /*
+     * transform ExternalSource headers
+     */
+    static transformExternalSource(externalSourceName: string, node: arkts.AstNode): arkts.AstNode {
+        if (
+            externalSourceName === 'arkui.component.common' &&
+            arkts.isTSInterfaceDeclaration(node) &&
+            !!node.id &&
+            node.id.name === 'UICommonMethod'
+        ) {
+            return factory.modifyExternalComponentCommon(node);
+        } else if (
+            externalSourceName === 'arkui.component.xcomponent' &&
+            arkts.isScriptFunction(node) &&
+            !!node.id &&
+            node.id.name === 'XComponent'
+        ) {
+            return factory.modifyXcomponent(node);
+        }
+        return node;
     }
 }

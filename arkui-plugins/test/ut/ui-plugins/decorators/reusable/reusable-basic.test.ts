@@ -37,11 +37,11 @@ const reusableTransform: Plugins = {
 const pluginTester = new PluginTester('test basic reusable', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "@ohos.arkui.stateManagement";
+import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
 
-import { __memo_context_type as __memo_context_type } from "@ohos.arkui.stateManagement";
+import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
 
-import { memo as memo } from "@ohos.arkui.stateManagement";
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { DecoratedV1VariableBase as DecoratedV1VariableBase } from "@ohos.arkui.stateManagement";
 
@@ -49,7 +49,7 @@ import { LinkDecoratedVariable as LinkDecoratedVariable } from "@ohos.arkui.stat
 
 import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
 
-import { CustomComponent as CustomComponent } from "@ohos.arkui.component";
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Reusable as Reusable } from "@ohos.arkui.component";
 

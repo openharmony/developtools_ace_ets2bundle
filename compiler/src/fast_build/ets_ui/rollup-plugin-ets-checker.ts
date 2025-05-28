@@ -29,7 +29,8 @@ import {
   emitBuildInfo,
   runArkTSLinter,
   targetESVersionChanged,
-  collectFileToIgnoreDiagnostics
+  collectFileToIgnoreDiagnostics,
+  TSC_SYSTEM_CODE
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
