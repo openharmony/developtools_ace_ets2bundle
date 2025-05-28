@@ -113,6 +113,8 @@ import {
   getArkTSEvoDeclFilePath
 } from './process_arkts_evolution';
 import { processInteropUI } from './process_interop_ui';
+import { FileManager } from './fast_build/ark_compiler/interop/interop_manager';
+import { ARKTS_1_2 } from './pre_define';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -381,7 +383,11 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     // TSC will re-do resolution if this callback return true.
     hasInvalidatedResolutions: (filePath: string): boolean => {
       return reuseLanguageServiceForDepChange && needReCheckForChangedDepUsers;
-    }
+    },
+    isStaticSourceFile: (fileName: string): boolean => {
+      const languageVersion = FileManager.getInstance().getLanguageVersionByFilePath(fileName);
+      return languageVersion?.languageVersion === ARKTS_1_2;
+    },
   };
 
   if (process.env.watchMode === 'true') {
