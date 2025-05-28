@@ -15,22 +15,21 @@
 
 import * as arkts from '@koalaui/libarkts';
 
+import { backingField, expectName } from '../../common/arkts-utils';
+import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
 import {
     createGetter,
     generateToRecord,
-    StateManagementTypes,
     createSetter2,
     generateThisBacking,
     generateGetOrSetCall,
     getValueInProvideAnnotation,
     ProvideOptions,
     hasDecorator,
-    DecoratorNames,
     PropertyCache,
 } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
-import { backingField, expectName } from '../../common/arkts-utils';
 import { factory } from './factory';
 
 export class ProvideTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {

@@ -15,18 +15,16 @@
 
 import * as arkts from '@koalaui/libarkts';
 
+import { backingField, expectName } from '../../common/arkts-utils';
+import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
 import {
     collectStateManagementTypeImport,
-    collectStateManagementTypeSource,
-    DecoratorNames,
     generateToRecord,
     hasDecorator,
     PropertyCache,
-    StateManagementTypes,
 } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
-import { backingField, expectName } from '../../common/arkts-utils';
 import { factory } from './factory';
 
 function getLocalStorageporpValueStr(node: arkts.AstNode): string | undefined {
@@ -137,7 +135,6 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
                 this.property.value ?? arkts.factory.createUndefinedLiteral(),
             ]
         );
-        collectStateManagementTypeSource(StateManagementTypes.STORAGE_LINK_STATE);
         collectStateManagementTypeImport(StateManagementTypes.STORAGE_LINK_STATE);
         const call = arkts.factory.createCallExpression(
             arkts.factory.createIdentifier(StateManagementTypes.PROP_STATE),
@@ -152,7 +149,6 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
                 ),
             ]
         );
-        collectStateManagementTypeSource(StateManagementTypes.PROP_STATE);
         collectStateManagementTypeImport(StateManagementTypes.PROP_STATE);
         return arkts.factory.createAssignmentExpression(
             arkts.factory.createMemberExpression(
@@ -173,7 +169,6 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
             throw new Error('StorageLink required only one value!!');
         }
         const StorageLinkStateValue = factory.createStorageLinkStateValue(this.property, localStorageporpValueStr);
-        collectStateManagementTypeSource(StateManagementTypes.STORAGE_LINK_STATE);
         collectStateManagementTypeImport(StateManagementTypes.STORAGE_LINK_STATE);
         const test = arkts.factory.createMemberExpression(
             arkts.factory.createThisExpression(),

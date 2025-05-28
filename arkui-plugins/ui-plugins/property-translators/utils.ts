@@ -15,96 +15,20 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { DeclarationCollector } from '../../common/declaration-collector';
-import { ImportCollector } from '../import-collector';
-import { ARKUI_COMPONENT_IMPORT_NAME, ARKUI_STATEMANAGEMENT_IMPORT_NAME } from '../../common/predefines';
+import { ImportCollector } from '../../common/import-collector';
+import { matchPrefix } from '../../common/arkts-utils';
 import {
-    addMemoAnnotation,
-    findCanAddMemoFromParamExpression,
-    findCanAddMemoFromTypeAnnotation,
-    findImportSource,
-} from '../utils';
-
-export enum DecoratorNames {
-    STATE = 'State',
-    STORAGE_LINK = 'StorageLink',
-    STORAGE_PROP = 'StorageProp',
-    LINK = 'Link',
-    PROP = 'Prop',
-    PROVIDE = 'Provide',
-    CONSUME = 'Consume',
-    OBJECT_LINK = 'ObjectLink',
-    OBSERVED = 'Observed',
-    WATCH = 'Watch',
-    BUILDER_PARAM = 'BuilderParam',
-    BUILDER = 'Builder',
-    CUSTOM_DIALOG = 'CustomDialog',
-    LOCAL_STORAGE_PROP = 'LocalStorageProp',
-    LOCAL_STORAGE_LINK = 'LocalStorageLink',
-    REUSABLE = 'Reusable',
-    TRACK = 'Track',
-}
-
-export enum DecoratorIntrinsicNames {
-    LINK = '__Link_intrinsic',
-}
-
-export enum DecoratorDeclarationNames {
-    STMT_COMMON = 'arkui.stateManagement.common',
-    COMP_COMMON = 'arkui.component.common',
-    CUSTOM_COMP = 'arkui.component.customComponent',
-}
-
-export enum StateManagementTypes {
-    STATE_DECORATED = 'StateDecoratedVariable',
-    LINK_DECORATED = 'LinkDecoratedVariable',
-    STORAGE_LINK_DECORATED = 'StorageLinkDecoratedVariable',
-    STORAGE_PROP_DECORATED = 'StoragePropDecoratedVariable',
-    DECORATED_V1 = 'DecoratedV1VariableBase',
-    PROP_DECORATED = 'PropDecoratedVariable',
-    MUTABLE_STATE = 'MutableState',
-    MUTABLE_STATE_META = 'MutableStateMeta',
-    SYNCED_PROPERTY = 'SyncedProperty',
-    PROVIDE_DECORATED = 'ProvideDecoratedVariable',
-    CONSUME_DECORATED = 'ConsumeDecoratedVariable',
-    OBJECT_LINK_DECORATED = 'ObjectLinkDecoratedVariable',
-    BACKING_VALUE = 'BackingValue',
-    SET_OBSERVATION_DEPTH = 'setObservationDepth',
-    OBSERVED_OBJECT = 'IObservedObject',
-    WATCH_ID_TYPE = 'WatchIdType',
-    SUBSCRIBED_WATCHES = 'SubscribedWatches',
-    STORAGE_LINK_STATE = 'StorageLinkState',
-    OBSERVABLE_PROXY = 'observableProxy',
-    PROP_STATE = 'propState',
-    INT_32 = 'int32',
-}
+    ARKUI_IMPORT_PREFIX_NAMES,
+    DecoratorIntrinsicNames,
+    DecoratorNames,
+    DECORATOR_TYPE_MAP,
+    StateManagementTypes,
+} from '../../common/predefines';
+import { addMemoAnnotation, findCanAddMemoFromParamExpression, findCanAddMemoFromTypeAnnotation } from '../utils';
 
 export interface DecoratorInfo {
     annotation: arkts.AnnotationUsage;
     name: DecoratorNames;
-}
-
-export const decoratorTypeMap = new Map<DecoratorNames, StateManagementTypes>([
-    [DecoratorNames.STATE, StateManagementTypes.STATE_DECORATED],
-    [DecoratorNames.LINK, StateManagementTypes.DECORATED_V1],
-    [DecoratorNames.PROP, StateManagementTypes.PROP_DECORATED],
-    [DecoratorNames.STORAGE_LINK, StateManagementTypes.STORAGE_LINK_DECORATED],
-    [DecoratorNames.STORAGE_PROP, StateManagementTypes.STORAGE_PROP_DECORATED],
-    [DecoratorNames.LOCAL_STORAGE_PROP, StateManagementTypes.SYNCED_PROPERTY],
-    [DecoratorNames.LOCAL_STORAGE_LINK, StateManagementTypes.MUTABLE_STATE],
-    [DecoratorNames.OBJECT_LINK, StateManagementTypes.OBJECT_LINK_DECORATED],
-    [DecoratorNames.PROVIDE, StateManagementTypes.PROVIDE_DECORATED],
-    [DecoratorNames.CONSUME, StateManagementTypes.CONSUME_DECORATED],
-]);
-
-export function isFromDecoratorDeclaration(value: any): value is DecoratorDeclarationNames {
-    return Object.values(DecoratorDeclarationNames).includes(value);
-}
-
-export function getImportSourceFromDeclarationName(name: DecoratorDeclarationNames): string {
-    if (name === DecoratorDeclarationNames.STMT_COMMON) {
-        return ARKUI_STATEMANAGEMENT_IMPORT_NAME;
-    }
-    return ARKUI_COMPONENT_IMPORT_NAME;
 }
 
 export function isDecoratorIntrinsicAnnotation(
@@ -128,10 +52,9 @@ export function isDecoratorAnnotation(
             return false;
         }
         const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
-        if (!isFromDecoratorDeclaration(moduleName)) {
+        if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
             return false;
         }
-        ImportCollector.getInstance().collectSource(decoratorName, getImportSourceFromDeclarationName(moduleName));
         DeclarationCollector.getInstance().collect(decl);
     }
     return true;
@@ -230,7 +153,7 @@ export function findDecoratorInfos(
 
 export function getStateManagementType(decoratorInfo: DecoratorInfo): StateManagementTypes {
     const decoratorName = decoratorInfo.name;
-    const typeName = decoratorTypeMap.get(decoratorName);
+    const typeName = DECORATOR_TYPE_MAP.get(decoratorName);
     if (!!typeName) {
         return typeName;
     }
@@ -239,11 +162,6 @@ export function getStateManagementType(decoratorInfo: DecoratorInfo): StateManag
 
 export function collectStateManagementTypeImport(type: StateManagementTypes): void {
     ImportCollector.getInstance().collectImport(type);
-}
-
-export function collectStateManagementTypeSource(type: StateManagementTypes): void {
-    const source = findImportSource(type);
-    ImportCollector.getInstance().collectSource(type, source);
 }
 
 export function createGetter(

@@ -33,7 +33,8 @@ import {
 } from './struct-translators/utils';
 import { isBuilderLambda, isBuilderLambdaMethodDecl } from './builder-lambda-translators/utils';
 import { isEntryWrapperClass } from './entry-translators/utils';
-import { ImportCollector } from './import-collector';
+import { ImportCollector } from '../common/import-collector';
+import { DeclarationCollector } from '../common/declaration-collector';
 import { PropertyCache } from './property-translators/utils';
 import { isArkUICompatible, updateArkUICompatible } from './interop';
 
@@ -52,6 +53,7 @@ export class CheckedTransformer extends AbstractVisitor {
         this.scope = { customComponents: [] };
         PropertyCache.getInstance().reset();
         ImportCollector.getInstance().reset();
+        DeclarationCollector.getInstance().reset();
     }
 
     enter(node: arkts.AstNode): void {
@@ -66,7 +68,6 @@ export class CheckedTransformer extends AbstractVisitor {
             const scopeInfo = this.scope.customComponents.pop()!;
             scopeInfo.hasInitializeStruct ||= name === CustomComponentNames.COMPONENT_INITIALIZE_STRUCT;
             scopeInfo.hasUpdateStruct ||= name === CustomComponentNames.COMPONENT_UPDATE_STRUCT;
-            scopeInfo.hasReusableRebind ||= name === CustomComponentNames.REUSABLE_COMPONENT_REBIND_STATE;
             this.scope.customComponents.push(scopeInfo);
         }
     }

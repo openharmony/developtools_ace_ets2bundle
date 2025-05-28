@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 
 const expectedScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { PropDecoratedVariable as PropDecoratedVariable } from "@ohos.arkui.stateManagement";
+import { PropDecoratedVariable as PropDecoratedVariable } from "arkui.stateManagement.decorators.decoratorProp";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component } from "@ohos.arkui.component";
 import { Prop as Prop } from "@ohos.arkui.stateManagement";

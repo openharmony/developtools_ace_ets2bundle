@@ -16,16 +16,14 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
+import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import {
     collectStateManagementTypeImport,
-    collectStateManagementTypeSource,
-    DecoratorNames,
     generateToRecord,
     hasDecorator,
     PropertyCache,
-    StateManagementTypes,
 } from './utils';
 import { factory } from './factory';
 
@@ -135,7 +133,6 @@ export class LocalStorageLinkTranslator extends PropertyTranslator implements In
                 this.property.value ?? arkts.factory.createUndefinedLiteral(),
             ]
         );
-        collectStateManagementTypeSource(StateManagementTypes.STORAGE_LINK_STATE);
         collectStateManagementTypeImport(StateManagementTypes.STORAGE_LINK_STATE);
 
         return arkts.factory.createAssignmentExpression(

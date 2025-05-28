@@ -14,12 +14,9 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getInteropPath } from '../../path';
-const interop = require(getInteropPath());
-const nullptr = interop.nullptr;
 import { EntryWrapperNames } from './utils';
-import { annotation } from '../../common/arkts-utils';
-import { factory as uiFactory } from '../ui-factory';
+import { annotation, createAndInsertImportDeclaration } from '../../common/arkts-utils';
+import { ENTRY_POINT_IMPORT_SOURCE_NAME } from '../../common/predefines';
 
 export class factory {
     /**
@@ -270,13 +267,13 @@ export class factory {
      * to the top of script's statements.
      */
     static createAndInsertEntryPointImport(program?: arkts.Program) {
-        const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(EntryWrapperNames.ENTRY_DEFAULT_IMPORT);
+        const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(ENTRY_POINT_IMPORT_SOURCE_NAME);
         const imported: arkts.Identifier = arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_POINT_CLASS_NAME);
         // Insert this import at the top of the script's statements.
         if (!program) {
             throw Error('Failed to insert import: Transformer has no program');
         }
-        uiFactory.createAndInsertImportDeclaration(
+        createAndInsertImportDeclaration(
             source,
             imported,
             imported,

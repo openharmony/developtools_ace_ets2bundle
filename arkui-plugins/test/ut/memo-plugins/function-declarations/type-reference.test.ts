@@ -34,7 +34,7 @@ const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
-@memo() function A<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type): Attribute<T>
+@memo() export function A<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type): Attribute<T>
 function func<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type): ItemBuilder<T> {
     const __memo_scope = __memo_context.scope<ItemBuilder<T>>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {

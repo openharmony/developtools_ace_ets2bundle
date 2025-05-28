@@ -32,8 +32,8 @@ const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
 import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
 function main() {}
-function __context(): __memo_context_type
-function __id(): __memo_id_type
+export function __context(): __memo_context_type
+export function __id(): __memo_id_type
 type MemoType = @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
 class Test {
     public void_method(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
@@ -120,7 +120,7 @@ class Test {
             return;
         }
     }
-    @functions.OptionalParametersAnnotation({minArgCount:0}) public args_with_default_values(__memo_context: __memo_context_type, __memo_id: __memo_id_type, gensym%%_1?: int, gensym%%_2?: (()=> int), gensym%%_3?: int, arg4?: int): void {
+    public args_with_default_values(__memo_context: __memo_context_type, __memo_id: __memo_id_type, gensym%%_1?: int, gensym%%_2?: (()=> int), gensym%%_3?: int, arg4?: int): void {
         let arg1: int = (((gensym%%_1) !== (undefined)) ? gensym%%_1 : (10 as int));
         let arg2: (()=> int) = (((gensym%%_2) !== (undefined)) ? gensym%%_2 : ((() => {
             return 20;
@@ -139,7 +139,7 @@ class Test {
             return;
         }
     }
-    @functions.OptionalParametersAnnotation({minArgCount:0}) public optional_args(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1?: int, arg2?: (()=> int)): void {
+    public optional_args(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1?: int, arg2?: (()=> int)): void {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
         const __memo_parameter_arg1 = __memo_scope.param(0, arg1), __memo_parameter_arg2 = __memo_scope.param(1, arg2);
         if (__memo_scope.unchanged) {

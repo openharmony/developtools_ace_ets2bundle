@@ -39,13 +39,13 @@ const pluginTester = new PluginTester('test observed track transform with class 
 
 const expectedScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { IObservedObject as IObservedObject } from "@ohos.arkui.stateManagement";
-import { setObservationDepth as setObservationDepth } from "@ohos.arkui.stateManagement";
-import { BackingValue as BackingValue } from "@ohos.arkui.stateManagement";
-import { MutableStateMeta as MutableStateMeta } from "@ohos.arkui.stateManagement";
+import { IObservedObject as IObservedObject } from "arkui.stateManagement.base.iObservedObject";
+import { setObservationDepth as setObservationDepth } from "arkui.stateManagement.base.iObservedObject";
+import { BackingValue as BackingValue } from "arkui.stateManagement.base.backingValue";
+import { MutableStateMeta as MutableStateMeta } from "arkui.stateManagement.base.mutableStateMeta";
 import { int32 as int32 } from "@koalaui.runtime.common";
-import { WatchIdType as WatchIdType } from "@ohos.arkui.stateManagement";
-import { SubscribedWatches as SubscribedWatches } from "@ohos.arkui.stateManagement";
+import { WatchIdType as WatchIdType } from "arkui.stateManagement.decorators.decoratorWatch";
+import { SubscribedWatches as SubscribedWatches } from "arkui.stateManagement.decorators.decoratorWatch";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component } from "@ohos.arkui.component";
 import { Observed as Observed, Track as Track } from "@ohos.arkui.stateManagement";

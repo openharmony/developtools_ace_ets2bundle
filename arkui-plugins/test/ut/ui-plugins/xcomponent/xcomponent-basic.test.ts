@@ -39,7 +39,7 @@ const pluginTester = new PluginTester('test basic XComponent transform', buildCo
 
 const expectedScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { UIFlexAttribute as UIFlexAttribute } from "@ohos.arkui.component";
+import { UIFlexAttribute as UIFlexAttribute } from "arkui.component.flex";
 import { EntryPoint as EntryPoint } from "arkui.UserView";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Flex as Flex, XComponent as XComponent, FlexDirection as FlexDirection, XComponentType as XComponentType, Entry as Entry, XComponentController as XComponentController, ItemAlign as ItemAlign, FlexAlign as FlexAlign, XComponentParameter as XComponentParameter } from "@ohos.arkui.component";
