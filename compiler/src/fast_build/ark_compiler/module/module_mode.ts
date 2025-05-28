@@ -142,7 +142,7 @@ export class ModuleInfo {
     this.isCommonJs = isCommonJs;
     this.sourceFile = sourceFile;
     this.packageName = packageName;
-    this.originSourceLang = originSourceLang
+    this.originSourceLang = originSourceLang;
   }
 }
 
@@ -482,7 +482,7 @@ export class ModuleMode extends CommonMode {
   }
 
   private addModuleInfoItem(originalFilePath: string, isCommonJs: boolean, extName: string,
-    metaInfo: Object, moduleInfos: Map<String, ModuleInfo>, originSourceLang: string = ""): void {
+    metaInfo: Object, moduleInfos: Map<String, ModuleInfo>, originSourceLang: string = ''): void {
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.getInstance();
     const isPackageModules = isPackageModulesFile(originalFilePath, this.projectConfig);
     let filePath: string = originalFilePath;
