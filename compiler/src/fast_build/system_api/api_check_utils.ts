@@ -558,12 +558,32 @@ function checkSinceValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNode
   const hasSince: boolean = minSince !== '';
 
   const compatibleSdkVersion: string = projectConfig.compatibleSdkVersion.toString();
+  if (!isCompliantSince(minSince) || !isCompliantSince(compatibleSdkVersion)) {
+    return false;
+  }
   if (hasSince && comparePointVersion(compatibleSdkVersion.toString(), minSince) === -1) {
     config.message = SINCE_TAG_CHECK_ERROER.replace('$SINCE1', minSince).replace('$SINCE2', compatibleSdkVersion);
     return true;
   }
   return false;
 }
+
+/**
+ * Confirm compliance since
+ * Only major version can be passed in, such as "19";
+ * major and minor version can be passed in, such as "19.1"; major minor and patch
+ * patch version can be passed in, such as "19.1.2"
+ * the major version be from 1-999
+ * the minor version be from 0-999
+ * the patch version be from 0-999
+ * 
+ * @param {string} since
+ * @return {boolean}
+ */
+function isCompliantSince(since: string): boolean {
+  return /^(?!0\d)[1-9]\d{0,2}(?:\.[1-9]\d{0,2}|\.0){0,2}$\d{0,2}$/.test(since);
+}
+
 /**
  * Determine the necessity of syscap check.
  * @param jsDocTags 
