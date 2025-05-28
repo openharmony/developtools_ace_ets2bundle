@@ -48,6 +48,10 @@ import { MemoryDefine } from '../meomry_monitor/memory_define';
 import { LINTER_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info';
 import { ErrorCodeModule } from '../../hvigor_error_code/const/error_code_module';
 import { collectArkTSEvolutionModuleInfo } from '../../process_arkts_evolution';
+import {
+  initFileManagerInRollup,
+  FileManager
+} from '../ark_compiler/interop/interop_manager';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -61,6 +65,7 @@ export function etsChecker() {
       if (this.share.projectConfig.dependentModuleMap) {
         collectArkTSEvolutionModuleInfo(this.share);
       }
+      initFileManagerInRollup(this.share);
       const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsChecker', 'buildStart');
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
@@ -145,6 +150,9 @@ export function etsChecker() {
       // The generated js file might be different in some cases when we change the targetESVersion,
       // so we need to regenerate them all when targetESVersion is changed.
       return targetESVersionChanged;
+    },
+    cleanUp(): void {
+      FileManager.cleanFileManagerObject();
     }
   };
 }
