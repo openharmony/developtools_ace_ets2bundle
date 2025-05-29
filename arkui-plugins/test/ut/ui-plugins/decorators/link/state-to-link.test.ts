@@ -37,18 +37,18 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "@ohos.arkui.stateManagement";
-import { __memo_context_type as __memo_context_type } from "@ohos.arkui.stateManagement";
-import { memo as memo } from "@ohos.arkui.stateManagement";
+import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
+import { memo as memo } from "arkui.stateManagement.runtime";
 import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
 import { DecoratedV1VariableBase as DecoratedV1VariableBase } from "@ohos.arkui.stateManagement";
 import { LinkDecoratedVariable as LinkDecoratedVariable } from "@ohos.arkui.stateManagement";
-import { DatePickerAttribute as DatePickerAttribute } from "@ohos.arkui.component";
-import { ButtonAttribute as ButtonAttribute } from "@ohos.arkui.component";
-import { ColumnAttribute as ColumnAttribute } from "@ohos.arkui.component";
-import { EntryPoint as EntryPoint } from "@ohos.arkui.component";
-import { CustomComponent as CustomComponent } from "@ohos.arkui.component";
-import { Component as Component, Entry as Entry, Column as Column, Button as Button, DatePicker as DatePicker } from "@ohos.arkui.component";
+import { UIDatePickerAttribute as UIDatePickerAttribute } from "@ohos.arkui.component";
+import { UIButtonAttribute as UIButtonAttribute } from "@ohos.arkui.component";
+import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
+import { EntryPoint as EntryPoint } from "arkui.UserView";
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+import { Component as Component, Entry as Entry, Column as Column, Button as Button, DatePicker as DatePicker, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 import { Link as Link, State as State } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -57,35 +57,35 @@ function main() {}
   public __initializeStruct(initializers: __Options_DateComponent | undefined, @memo() content: (()=> void) | undefined): void {
     if (({let gensym___164314175 = initializers;
     (((gensym___164314175) == (null)) ? undefined : gensym___164314175.__backing_selectedDate)})) {
-      (this).__backing_selectedDate = new LinkDecoratedVariable<Date>("selectedDate", initializers!.__backing_selectedDate!);
+      this.__backing_selectedDate = new LinkDecoratedVariable<Date>("selectedDate", initializers!.__backing_selectedDate!);
     };
   }
   public __updateStruct(initializers: __Options_DateComponent | undefined): void {}
   private __backing_selectedDate?: LinkDecoratedVariable<Date>;
   public get selectedDate(): Date {
-    return (this).__backing_selectedDate!.get();
+    return this.__backing_selectedDate!.get();
   }
   public set selectedDate(value: Date) {
-    (this).__backing_selectedDate!.set(value);
+    this.__backing_selectedDate!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: DateComponent)=> DateComponent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_DateComponent | undefined): void {
     Column(undefined, undefined, (() => {
-      Button(((instance: ButtonAttribute): void => {
-        instance.onClick((() => {
-          (this).selectedDate.setFullYear((((this).selectedDate.getFullYear()) + (1)));
+      Button(@memo() ((instance: UIButtonAttribute): void => {
+        instance.onClick(((e: ClickEvent) => {
+          this.selectedDate.setFullYear(((this.selectedDate.getFullYear()) + (1)));
         }));
         return;
       }), "child increase the year by 1", undefined, undefined);
-      Button(((instance: ButtonAttribute): void => {
-        instance.margin(10).onClick((() => {
-          (this).selectedDate = new Date("2023-09-09");
+      Button(@memo() ((instance: UIButtonAttribute): void => {
+        instance.margin(10).onClick(((e: ClickEvent) => {
+          this.selectedDate = new Date("2023-09-09");
         }));
         return;
       }), "child update the new date", undefined, undefined);
       DatePicker(undefined, {
         start: new Date("1970-1-1"),
         end: new Date("2100-1-1"),
-        selected: (this).selectedDate,
+        selected: this.selectedDate,
       }, undefined);
     }));
   }
@@ -95,40 +95,40 @@ function main() {}
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> {
   public __initializeStruct(initializers: __Options_ParentComponent | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_parentSelectedDate = new StateDecoratedVariable<Date>("parentSelectedDate", ((({let gensym___80922148 = initializers;
+    this.__backing_parentSelectedDate = new StateDecoratedVariable<Date>("parentSelectedDate", ((({let gensym___80922148 = initializers;
     (((gensym___80922148) == (null)) ? undefined : gensym___80922148.parentSelectedDate)})) ?? (new Date("2021-08-08"))));
   }
   public __updateStruct(initializers: __Options_ParentComponent | undefined): void {}
   private __backing_parentSelectedDate?: StateDecoratedVariable<Date>;
   public get parentSelectedDate(): Date {
-    return (this).__backing_parentSelectedDate!.get();
+    return this.__backing_parentSelectedDate!.get();
   }
   public set parentSelectedDate(value: Date) {
-    (this).__backing_parentSelectedDate!.set(value);
+    this.__backing_parentSelectedDate!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: ParentComponent)=> ParentComponent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_ParentComponent | undefined): void {
     Column(undefined, undefined, (() => {
-      Button(((instance: ButtonAttribute): void => {
-        instance.margin(10).onClick((() => {
-          (this).parentSelectedDate.setMonth((((this).parentSelectedDate.getMonth()) + (1)));
+      Button(@memo() ((instance: UIButtonAttribute): void => {
+        instance.margin(10).onClick(((e: ClickEvent) => {
+          this.parentSelectedDate.setMonth(((this.parentSelectedDate.getMonth()) + (1)));
         }));
         return;
       }), "parent increase the month by 1", undefined, undefined);
-      Button(((instance: ButtonAttribute): void => {
-        instance.margin(10).onClick((() => {
-          (this).parentSelectedDate = new Date("2023-07-07");
+      Button(@memo() ((instance: UIButtonAttribute): void => {
+        instance.margin(10).onClick(((e: ClickEvent) => {
+          this.parentSelectedDate = new Date("2023-07-07");
         }));
         return;
       }), "parent update the new date", undefined, undefined);
       DatePicker(undefined, {
         start: new Date("1970-1-1"),
         end: new Date("2100-1-1"),
-        selected: (this).parentSelectedDate,
+        selected: this.parentSelectedDate,
       }, undefined);
       DateComponent._instantiateImpl(undefined, (() => {
         return new DateComponent();
       }), ({
-        __backing_selectedDate: (this).__backing_parentSelectedDate,
+        __backing_selectedDate: this.__backing_parentSelectedDate,
       } as __Options_DateComponent), undefined, undefined);
     }));
   }
@@ -136,17 +136,17 @@ function main() {}
 }
 
 interface __Options_DateComponent {
-  abstract set selectedDate(selectedDate: Date | undefined)
-  abstract get selectedDate(): Date | undefined
-  abstract set __backing_selectedDate(__backing_selectedDate: DecoratedV1VariableBase<Date> | undefined)
-  abstract get __backing_selectedDate(): DecoratedV1VariableBase<Date> | undefined
+  set selectedDate(selectedDate: Date | undefined)
+  get selectedDate(): Date | undefined
+  set __backing_selectedDate(__backing_selectedDate: DecoratedV1VariableBase<Date> | undefined)
+  get __backing_selectedDate(): DecoratedV1VariableBase<Date> | undefined
 }
 
 interface __Options_ParentComponent {
-  abstract set parentSelectedDate(parentSelectedDate: Date | undefined)
-  abstract get parentSelectedDate(): Date | undefined
-  abstract set __backing_parentSelectedDate(__backing_parentSelectedDate: StateDecoratedVariable<Date> | undefined)
-  abstract get __backing_parentSelectedDate(): StateDecoratedVariable<Date> | undefined
+  set parentSelectedDate(parentSelectedDate: Date | undefined)
+  get parentSelectedDate(): Date | undefined
+  set __backing_parentSelectedDate(__backing_parentSelectedDate: StateDecoratedVariable<Date> | undefined)
+  get __backing_parentSelectedDate(): StateDecoratedVariable<Date> | undefined
 }
 
 class __EntryWrapper extends EntryPoint {

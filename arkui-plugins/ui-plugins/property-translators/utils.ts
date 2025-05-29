@@ -34,7 +34,7 @@ export enum DecoratorNames {
     LOCAL_STORAGE_PROP = 'LocalStorageProp',
     LOCAL_STORAGE_LINK = 'LocalStorageLink',
     REUSABLE = 'Reusable',
-    TRACK = 'Track'
+    TRACK = 'Track',
 }
 
 export function collectPropertyDecorators(property: arkts.ClassProperty): string[] {
@@ -59,6 +59,20 @@ export function hasDecorator(
         return property.scriptFunction.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName));
     }
     return property.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName));
+}
+
+/**
+ * Determine whether the node `<st>` is decorated by decorators that need initializing without assignment.
+ *
+ * @param st class property node
+ */
+export function needDefiniteOrOptionalModifier(st: arkts.ClassProperty): boolean {
+    return (
+        hasDecorator(st, DecoratorNames.LINK) ||
+        hasDecorator(st, DecoratorNames.CONSUME) ||
+        hasDecorator(st, DecoratorNames.OBJECT_LINK) ||
+        (hasDecorator(st, DecoratorNames.PROP) && !st.value)
+    );
 }
 
 export function getStateManagementType(node: arkts.ClassProperty): string {
@@ -307,12 +321,12 @@ export function generateToRecord(newName: string, originalName: string): arkts.P
     return arkts.Property.createProperty(
         arkts.factory.createStringLiteral(originalName),
         arkts.factory.createBinaryExpression(
-                arkts.factory.createMemberExpression(
-                    arkts.factory.createIdentifier('paramsCasted'),
-                    arkts.factory.createIdentifier(originalName),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
+            arkts.factory.createMemberExpression(
+                arkts.factory.createIdentifier('paramsCasted'),
+                arkts.factory.createIdentifier(originalName),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
             ),
             arkts.ETSNewClassInstanceExpression.createETSNewClassInstanceExpression(
                 arkts.factory.createTypeReference(
