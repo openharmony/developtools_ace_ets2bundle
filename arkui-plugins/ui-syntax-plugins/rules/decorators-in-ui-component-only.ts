@@ -17,56 +17,84 @@ import * as arkts from '@koalaui/libarkts';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 import { PresetDecorators } from '../utils/index';
 
-// Helper function to find the '@Component' decorator in a ClassDeclaration and report errors.
-function findComponentDecorator(context: UISyntaxRuleContext, node: arkts.ClassDeclaration): void {
-  const componentDecorator = node.definition?.annotations?.find(
-    (annotation) =>
-      annotation.expr &&
-      arkts.isIdentifier(annotation.expr) &&
-      annotation.expr.name === PresetDecorators.COMPONENT_V1
-  );
-  if (componentDecorator) {
-    reportDecoratorError(context, componentDecorator, rule.messages.invalidComponentDecorator);
+// Constants for allowed decorators on struct and within struct using PresetDecorators
+const DECORATORS_ALLOWED_ON_STRUCT = [
+  PresetDecorators.COMPONENT_V1,
+  PresetDecorators.ENTRY,
+  PresetDecorators.PREVIEW,
+  PresetDecorators.CUSTOM_DIALOG,
+  PresetDecorators.REUSABLE_V2,
+];
+
+const DECORATORS_ALLOWED_IN_STRUCT = [
+  PresetDecorators.STATE,
+  PresetDecorators.PROP,
+  PresetDecorators.LINK,
+  PresetDecorators.PROVIDE,
+  PresetDecorators.CONSUME,
+  PresetDecorators.OBJECT_LINK,
+  PresetDecorators.STORAGE_LINK,
+  PresetDecorators.STORAGE_PROP,
+  PresetDecorators.LOCAL_STORAGE_LINK,
+  PresetDecorators.LOCAL_STORAGE_PROP,
+  PresetDecorators.WATCH,
+  PresetDecorators.BUILDER_PARAM,
+];
+
+// Helper function to find the decorator in a ClassDeclaration and report errors.
+function findInvalidDecorator(context: UISyntaxRuleContext, node: arkts.ClassDeclaration): void {
+  node.definition!.annotations?.forEach(annotation => {
+    if (annotation.expr && arkts.isIdentifier(annotation.expr) &&
+      DECORATORS_ALLOWED_ON_STRUCT.includes(annotation.expr.name)) {
+      reportDecoratorError(context, annotation, rule.messages.invalidDecoratorOnStruct);
+    }
+  });
+}
+
+// Rule 2: Check for 'decorator' on MethodDefinition
+function checkinvalidDecoratorInStruct(context: UISyntaxRuleContext, node: arkts.MethodDefinition): void {
+  node.scriptFunction.annotations?.forEach(annotation => {
+    if (annotation.expr && arkts.isIdentifier(annotation.expr) &&
+      DECORATORS_ALLOWED_IN_STRUCT.includes(annotation.expr.name)) {
+      reportDecoratorError(context, annotation, rule.messages.invalidDecoratorInStruct);
+    }
+  });
+};
+
+// Rule 3: Check for 'decorator' on ClassProperty within a ClassDeclaration
+function checkDecoratorOnClassProperty(context: UISyntaxRuleContext, node: arkts.ClassProperty,
+  currentNode: arkts.AstNode): void {
+  node.annotations?.forEach(annotation => {
+    if (annotation.expr && arkts.isIdentifier(annotation.expr) &&
+      DECORATORS_ALLOWED_IN_STRUCT.includes(annotation.expr.name)) {
+      reportIfDecoratorInClassDeclaration(context, annotation, currentNode);
+    }
+  });
+};
+
+function reportIfDecoratorInClassDeclaration(context: UISyntaxRuleContext, annotation: arkts.AnnotationUsage,
+  currentNode: arkts.AstNode): void {
+  while (arkts.nodeType(currentNode) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
+    currentNode = currentNode.parent;
+    if (annotation && arkts.isClassDeclaration(currentNode)) {
+      reportDecoratorError(context, annotation, rule.messages.invalidDecoratorInStruct);
+    }
   }
 }
 
-// Helper function to find the '@Prop' decorator in a MethodDefinition or ClassProperty.
-const findPropDecorator = (node: arkts.MethodDefinition | arkts.ClassProperty): arkts.AnnotationUsage | undefined => {
-  const annotations = 'scriptFunction' in node ? node.scriptFunction.annotations : node.annotations;
-  return annotations?.find(
-    (annotation) =>
-      annotation.expr && annotation.expr.dumpSrc() === PresetDecorators.PROP
-  );
-};
-
-// Rule 2: Check for '@Prop' on MethodDefinition
-function checkPropOnMethod(context: UISyntaxRuleContext, node: arkts.MethodDefinition): void {
-  const propDecorator = findPropDecorator(node);
-  if (propDecorator) {
-    reportDecoratorError(context, propDecorator, rule.messages.propOnMethod);
-  }
-};
-
-// Rule 3: Check for '@Prop' on ClassProperty within a ClassDeclaration
-function checkPropOnClassProperty(context: UISyntaxRuleContext, node: arkts.ClassProperty, currentNode: arkts.AstNode)
-  : void {
-  const propDecorator = findPropDecorator(node);
-  while (arkts.nodeType(currentNode) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
-    currentNode = currentNode.parent;
-    if (propDecorator && arkts.isClassDeclaration(currentNode)) {
-      reportDecoratorError(context, propDecorator, rule.messages.propOnMethod);
-    }
-  }
-};
-
-function reportDecoratorError(context: UISyntaxRuleContext, Decorator: arkts.AnnotationUsage, message: string
+function reportDecoratorError(context: UISyntaxRuleContext, decorator: arkts.AnnotationUsage, message: string
 ): void {
+  if (!decorator.expr || !arkts.isIdentifier(decorator.expr)) {
+    return;
+  }
+  const decoratorName = decorator.expr.name;
   context.report({
-    node: Decorator,
+    node: decorator,
     message: message,
+    data: { decoratorName },
     fix: () => {
-      const startPosition = arkts.getStartPosition(Decorator);
-      const endPosition = arkts.getEndPosition(Decorator);
+      const startPosition = decorator.startPosition;
+      const endPosition = decorator.endPosition;
       return {
         range: [startPosition, endPosition],
         code: '',
@@ -75,24 +103,40 @@ function reportDecoratorError(context: UISyntaxRuleContext, Decorator: arkts.Ann
   });
 }
 
+function checkDecoratorWithFunctionDeclaration(node: arkts.FunctionDeclaration, context: UISyntaxRuleContext): void {
+  node.annotations?.forEach(annotation => {
+    if (annotation.expr && arkts.isIdentifier(annotation.expr) &&
+      DECORATORS_ALLOWED_ON_STRUCT.includes(annotation.expr.name)) {
+      reportDecoratorError(context, annotation, rule.messages.invalidDecoratorOnStruct);
+    }
+    if (annotation.expr && arkts.isIdentifier(annotation.expr) &&
+      DECORATORS_ALLOWED_IN_STRUCT.includes(annotation.expr.name)) {
+      reportDecoratorError(context, annotation, rule.messages.invalidDecoratorInStruct);
+    }
+  });
+}
+
 const rule: UISyntaxRule = {
-  name: 'no-prop-on-method',
+  name: 'decorators-in-ui-component-only',
   messages: {
-    invalidComponentDecorator: `'@Component' can decorate only custom components.`,
-    propOnMethod: `'@Prop' can decorate only member variables of custom components.`,
+    invalidDecoratorOnStruct: `The '@{{decoratorName}}' decorator can only be used with 'struct'.`,
+    invalidDecoratorInStruct: `'@{{decoratorName}}' can not decorate the method.`,
   },
   setup(context) {
     return {
       parsed: (node: arkts.AstNode): void => {
+        if (arkts.isFunctionDeclaration(node)) {
+          checkDecoratorWithFunctionDeclaration(node, context);
+        }
         if (arkts.isClassDeclaration(node)) {
-          findComponentDecorator(context, node);
+          findInvalidDecorator(context, node);
         }
         if (arkts.isMethodDefinition(node)) {
-          checkPropOnMethod(context, node);
+          checkinvalidDecoratorInStruct(context, node);
         }
         let currentNode = node;
         if (arkts.isClassProperty(node)) {
-          checkPropOnClassProperty(context, node, currentNode);
+          checkDecoratorOnClassProperty(context, node, currentNode);
         }
       },
     };

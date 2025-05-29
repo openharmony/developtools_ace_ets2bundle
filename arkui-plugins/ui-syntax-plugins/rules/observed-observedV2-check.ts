@@ -29,9 +29,11 @@ const rule: UISyntaxRule = {
           return;
         }
         const hasObservedDecorator = node.definition?.annotations?.find(annotations => annotations.expr &&
-          annotations.expr.dumpSrc() === PresetDecorators.OBSERVED_V1);
+          arkts.isIdentifier(annotations.expr) &&
+          annotations.expr.name === PresetDecorators.OBSERVED_V1);
         const hasObservedV2Decorator = node.definition?.annotations?.find(annotations => annotations.expr &&
-          annotations.expr.dumpSrc() === PresetDecorators.OBSERVED_V2);
+          arkts.isIdentifier(annotations.expr) &&
+          annotations.expr.name === PresetDecorators.OBSERVED_V2);
         // If the current class is decorated by @Observed and @ObservedV2, an error is reported
         if (hasObservedDecorator && hasObservedV2Decorator) {
           context.report({
