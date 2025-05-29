@@ -49,52 +49,52 @@ function main() {}
 
 @Component({freezeWhenInactive:false}) final class PropParent extends CustomComponent<PropParent, __Options_PropParent> {
   public __initializeStruct(initializers: __Options_PropParent | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_provideVar1 = (this).addProvidedVar<string>("provideVar1", "provideVar1", ((({let gensym___181030638 = initializers;
+    this.__backing_provideVar1 = this.addProvidedVar<string>("provideVar1", "provideVar1", ((({let gensym___181030638 = initializers;
     (((gensym___181030638) == (null)) ? undefined : gensym___181030638.provideVar1)})) ?? ("propVar1")), false);
-    (this).__backing_provideVar2 = (this).addProvidedVar<number>("provideVar2", "provideVar2", ((({let gensym___143944235 = initializers;
+    this.__backing_provideVar2 = this.addProvidedVar<number>("provideVar2", "provideVar2", ((({let gensym___143944235 = initializers;
     (((gensym___143944235) == (null)) ? undefined : gensym___143944235.provideVar2)})) ?? (50)), false);
-    (this).__backing_provideVar3 = (this).addProvidedVar<boolean>("provideVar3", "provideVar3", ((({let gensym___262195977 = initializers;
+    this.__backing_provideVar3 = this.addProvidedVar<boolean>("provideVar3", "provideVar3", ((({let gensym___262195977 = initializers;
     (((gensym___262195977) == (null)) ? undefined : gensym___262195977.provideVar3)})) ?? (true)), false);
-    (this).__backing_provideVar4 = (this).addProvidedVar<undefined>("provideVar4", "provideVar4", ((({let gensym___85711435 = initializers;
+    this.__backing_provideVar4 = this.addProvidedVar<undefined>("provideVar4", "provideVar4", ((({let gensym___85711435 = initializers;
     (((gensym___85711435) == (null)) ? undefined : gensym___85711435.provideVar4)})) ?? (undefined)), false);
-    (this).__backing_provideVar5 = (this).addProvidedVar<null>("provideVar5", "provideVar5", ((({let gensym___139253630 = initializers;
+    this.__backing_provideVar5 = this.addProvidedVar<null>("provideVar5", "provideVar5", ((({let gensym___139253630 = initializers;
     (((gensym___139253630) == (null)) ? undefined : gensym___139253630.provideVar5)})) ?? (null)), false);
   }
   public __updateStruct(initializers: __Options_PropParent | undefined): void {}
   private __backing_provideVar1?: ProvideDecoratedVariable<string>;
   public get provideVar1(): string {
-    return (this).__backing_provideVar1!.get();
+    return this.__backing_provideVar1!.get();
   }
   public set provideVar1(value: string) {
-    (this).__backing_provideVar1!.set(value);
+    this.__backing_provideVar1!.set(value);
   }
   private __backing_provideVar2?: ProvideDecoratedVariable<number>;
   public get provideVar2(): number {
-    return (this).__backing_provideVar2!.get();
+    return this.__backing_provideVar2!.get();
   }
   public set provideVar2(value: number) {
-    (this).__backing_provideVar2!.set(value);
+    this.__backing_provideVar2!.set(value);
   }
   private __backing_provideVar3?: ProvideDecoratedVariable<boolean>;
   public get provideVar3(): boolean {
-    return (this).__backing_provideVar3!.get();
+    return this.__backing_provideVar3!.get();
   }
   public set provideVar3(value: boolean) {
-    (this).__backing_provideVar3!.set(value);
+    this.__backing_provideVar3!.set(value);
   }
   private __backing_provideVar4?: ProvideDecoratedVariable<undefined>;
   public get provideVar4(): undefined {
-    return (this).__backing_provideVar4!.get();
+    return this.__backing_provideVar4!.get();
   }
   public set provideVar4(value: undefined) {
-    (this).__backing_provideVar4!.set(value);
+    this.__backing_provideVar4!.set(value);
   }
   private __backing_provideVar5?: ProvideDecoratedVariable<null>;
   public get provideVar5(): null {
-    return (this).__backing_provideVar5!.get();
+    return this.__backing_provideVar5!.get();
   }
   public set provideVar5(value: null) {
-    (this).__backing_provideVar5!.set(value);
+    this.__backing_provideVar5!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: PropParent)=> PropParent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_PropParent | undefined): void {}
   public constructor() {}

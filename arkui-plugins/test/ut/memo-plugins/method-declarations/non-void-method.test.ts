@@ -66,7 +66,7 @@ class Test {
         return 0;
     }
     public intrinsic_method_with_this(): int {
-        (this).void_method(__memo_context, ((__memo_id) + (<some_random_number>)));
+        this.void_method(__memo_context, ((__memo_id) + (<some_random_number>)));
         return 0;
     }
     public memoEntry<R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() entry: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> R)): R {

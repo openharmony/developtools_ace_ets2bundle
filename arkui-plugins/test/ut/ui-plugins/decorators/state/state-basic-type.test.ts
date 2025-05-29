@@ -49,52 +49,52 @@ function main() {}
 
 @Component({freezeWhenInactive:false}) final class Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_stateVar1 = new StateDecoratedVariable<string>("stateVar1", ((({let gensym___213853607 = initializers;
+    this.__backing_stateVar1 = new StateDecoratedVariable<string>("stateVar1", ((({let gensym___213853607 = initializers;
     (((gensym___213853607) == (null)) ? undefined : gensym___213853607.stateVar1)})) ?? ("stateVar1")));
-    (this).__backing_stateVar2 = new StateDecoratedVariable<number>("stateVar2", ((({let gensym___113574154 = initializers;
+    this.__backing_stateVar2 = new StateDecoratedVariable<number>("stateVar2", ((({let gensym___113574154 = initializers;
     (((gensym___113574154) == (null)) ? undefined : gensym___113574154.stateVar2)})) ?? (50)));
-    (this).__backing_stateVar3 = new StateDecoratedVariable<boolean>("stateVar3", ((({let gensym___166994972 = initializers;
+    this.__backing_stateVar3 = new StateDecoratedVariable<boolean>("stateVar3", ((({let gensym___166994972 = initializers;
     (((gensym___166994972) == (null)) ? undefined : gensym___166994972.stateVar3)})) ?? (true)));
-    (this).__backing_stateVar4 = new StateDecoratedVariable<undefined>("stateVar4", ((({let gensym___148024261 = initializers;
+    this.__backing_stateVar4 = new StateDecoratedVariable<undefined>("stateVar4", ((({let gensym___148024261 = initializers;
     (((gensym___148024261) == (null)) ? undefined : gensym___148024261.stateVar4)})) ?? (undefined)));
-    (this).__backing_stateVar5 = new StateDecoratedVariable<null>("stateVar5", ((({let gensym___99384342 = initializers;
+    this.__backing_stateVar5 = new StateDecoratedVariable<null>("stateVar5", ((({let gensym___99384342 = initializers;
     (((gensym___99384342) == (null)) ? undefined : gensym___99384342.stateVar5)})) ?? (null)));
   }
   public __updateStruct(initializers: __Options_Parent | undefined): void {}
   private __backing_stateVar1?: StateDecoratedVariable<string>;
   public get stateVar1(): string {
-    return (this).__backing_stateVar1!.get();
+    return this.__backing_stateVar1!.get();
   }
   public set stateVar1(value: string) {
-    (this).__backing_stateVar1!.set(value);
+    this.__backing_stateVar1!.set(value);
   }
   private __backing_stateVar2?: StateDecoratedVariable<number>;
   public get stateVar2(): number {
-    return (this).__backing_stateVar2!.get();
+    return this.__backing_stateVar2!.get();
   }
   public set stateVar2(value: number) {
-    (this).__backing_stateVar2!.set(value);
+    this.__backing_stateVar2!.set(value);
   }
   private __backing_stateVar3?: StateDecoratedVariable<boolean>;
   public get stateVar3(): boolean {
-    return (this).__backing_stateVar3!.get();
+    return this.__backing_stateVar3!.get();
   }
   public set stateVar3(value: boolean) {
-    (this).__backing_stateVar3!.set(value);
+    this.__backing_stateVar3!.set(value);
   }
   private __backing_stateVar4?: StateDecoratedVariable<undefined>;
   public get stateVar4(): undefined {
-    return (this).__backing_stateVar4!.get();
+    return this.__backing_stateVar4!.get();
   }
   public set stateVar4(value: undefined) {
-    (this).__backing_stateVar4!.set(value);
+    this.__backing_stateVar4!.set(value);
   }
   private __backing_stateVar5?: StateDecoratedVariable<null>;
   public get stateVar5(): null {
-    return (this).__backing_stateVar5!.get();
+    return this.__backing_stateVar5!.get();
   }
   public set stateVar5(value: null) {
-    (this).__backing_stateVar5!.set(value);
+    this.__backing_stateVar5!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: Parent)=> Parent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Parent | undefined): void {}
   public constructor() {}

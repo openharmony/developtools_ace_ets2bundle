@@ -47,31 +47,31 @@ function main() {}
 
 @Component({freezeWhenInactive:false}) final class Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_customBuilderParam = ((((({let gensym___169376706 = initializers;
-    (((gensym___169376706) == (null)) ? undefined : gensym___169376706.customBuilderParam)})) ?? (content))) ?? ((this).doNothingBuilder))
-    (this).__backing_customBuilderParam2 = ((((({let gensym___14041256 = initializers;
-    (((gensym___14041256) == (null)) ? undefined : gensym___14041256.customBuilderParam2)})) ?? (content))) ?? ((this).doNothingBuilder2))
+    this.__backing_customBuilderParam = ((((({let gensym___169376706 = initializers;
+    (((gensym___169376706) == (null)) ? undefined : gensym___169376706.customBuilderParam)})) ?? (content))) ?? (this.doNothingBuilder))
+    this.__backing_customBuilderParam2 = ((((({let gensym___14041256 = initializers;
+    (((gensym___14041256) == (null)) ? undefined : gensym___14041256.customBuilderParam2)})) ?? (content))) ?? (this.doNothingBuilder2))
   }
   public __updateStruct(initializers: __Options_Child | undefined): void {}
   private __backing_customBuilderParam?: @memo() (()=> void);
   public get customBuilderParam(): @memo() (()=> void) {
-    return (this).__backing_customBuilderParam!;
+    return this.__backing_customBuilderParam!;
   }
   public set customBuilderParam(@memo() value: (()=> void)) {
-    (this).__backing_customBuilderParam = value;
+    this.__backing_customBuilderParam = value;
   }
   private __backing_customBuilderParam2?: @memo() ((str: string)=> void);
   public get customBuilderParam2(): @memo() ((str: string)=> void) {
-    return (this).__backing_customBuilderParam2!;
+    return this.__backing_customBuilderParam2!;
   }
   public set customBuilderParam2(@memo() value: ((str: string)=> void)) {
-    (this).__backing_customBuilderParam2 = value;
+    this.__backing_customBuilderParam2 = value;
   }
   @memo() public doNothingBuilder() {}
   @memo() public doNothingBuilder2(str: string) {}
   @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {
-    (this).customBuilderParam();
-    (this).customBuilderParam2("hello");
+    this.customBuilderParam();
+    this.customBuilderParam2("hello");
   }
   public constructor() {}
 }

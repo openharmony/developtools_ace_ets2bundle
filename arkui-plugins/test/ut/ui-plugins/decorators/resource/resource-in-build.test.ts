@@ -55,25 +55,25 @@ function main() {}
 
 @Component({freezeWhenInactive:false}) final class ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
   public __initializeStruct(initializers: __Options_ResourceComponent | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_str1 = ((({let gensym___147578113 = initializers;
+    this.__backing_str1 = ((({let gensym___147578113 = initializers;
     (((gensym___147578113) == (null)) ? undefined : gensym___147578113.str1)})) ?? ("app.media.ri"));
-    (this).__backing_str2 = ((({let gensym___220149772 = initializers;
+    this.__backing_str2 = ((({let gensym___220149772 = initializers;
     (((gensym___220149772) == (null)) ? undefined : gensym___220149772.str2)})) ?? ("app.photo2.png"));
   }
   public __updateStruct(initializers: __Options_ResourceComponent | undefined): void {}
   private __backing_str1?: string;
   public get str1(): string {
-    return ((this).__backing_str1 as string);
+    return (this.__backing_str1 as string);
   }
   public set str1(value: string) {
-    (this).__backing_str1 = value;
+    this.__backing_str1 = value;
   }
   private __backing_str2?: string;
   public get str2(): string {
-    return ((this).__backing_str2 as string);
+    return (this.__backing_str2 as string);
   }
   public set str2(value: string) {
-    (this).__backing_str2 = value;
+    this.__backing_str2 = value;
   }
   
   @memo() public _build(@memo() style: ((instance: ResourceComponent)=> ResourceComponent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_ResourceComponent | undefined): void {
@@ -83,8 +83,8 @@ function main() {}
       TextInput(undefined, {
         text: _r("", "", "app.string.input_content"),
       }, undefined);
-      Text(undefined, _r("", "", (this).str1), undefined, undefined);
-      Text(undefined, _r("", "", (this).str2), undefined, undefined);
+      Text(undefined, _r("", "", this.str1), undefined, undefined);
+      Text(undefined, _r("", "", this.str2), undefined, undefined);
       Select(undefined, new Array<SelectOption>({
         value: "aaa",
         icon: _r("", "", "app.media.selection"),

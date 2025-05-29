@@ -71,15 +71,15 @@ class C implements IObservedObject {
   private subscribedWatches: SubscribedWatches = new SubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
-    (this).subscribedWatches.addWatchSubscriber(watchId);
+    this.subscribedWatches.addWatchSubscriber(watchId);
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return (this).subscribedWatches.removeWatchSubscriber(watchId);
+    return this.subscribedWatches.removeWatchSubscriber(watchId);
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    (this).subscribedWatches.executeOnSubscribingWatches(propertyName);
+    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
   public _permissibleAddRefDepth: int32 = 0;
@@ -93,17 +93,17 @@ class C implements IObservedObject {
   public constructor() {}
   
   public get trackC(): number {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_trackC.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_trackC.addRef();
     }
-    return (this).__backing_trackC;
+    return this.__backing_trackC;
   }
   
   public set trackC(newValue: number) {
-    if ((((this).__backing_trackC) !== (newValue))) {
-      (this).__backing_trackC = newValue;
-    (this).__meta_trackC.fireChange();
-    (this).executeOnSubscribingWatches("trackC");
+    if (((this.__backing_trackC) !== (newValue))) {
+      this.__backing_trackC = newValue;
+    this.__meta_trackC.fireChange();
+    this.executeOnSubscribingWatches("trackC");
     }
   }
   

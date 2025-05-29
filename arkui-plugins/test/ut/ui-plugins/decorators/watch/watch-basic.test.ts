@@ -91,15 +91,15 @@ function main() {}
   private subscribedWatches: SubscribedWatches = new SubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
-    (this).subscribedWatches.addWatchSubscriber(watchId);
+    this.subscribedWatches.addWatchSubscriber(watchId);
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return (this).subscribedWatches.removeWatchSubscriber(watchId);
+    return this.subscribedWatches.removeWatchSubscriber(watchId);
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    (this).subscribedWatches.executeOnSubscribingWatches(propertyName);
+    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
   public _permissibleAddRefDepth: int32 = 0;
@@ -113,17 +113,17 @@ function main() {}
   public constructor() {}
   
   public get trackA(): string {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_trackA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_trackA.addRef();
     }
-    return (this).__backing_trackA;
+    return this.__backing_trackA;
   }
   
   public set trackA(newValue: string) {
-    if ((((this).__backing_trackA) !== (newValue))) {
-      (this).__backing_trackA = newValue;
-    (this).__meta_trackA.fireChange();
-    (this).executeOnSubscribingWatches("trackA");
+    if (((this.__backing_trackA) !== (newValue))) {
+      this.__backing_trackA = newValue;
+    this.__meta_trackA.fireChange();
+    this.executeOnSubscribingWatches("trackA");
     }
   }
   
@@ -131,81 +131,81 @@ function main() {}
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_statevar = new StateDecoratedVariable<string>("statevar", ((({let gensym___76198660 = initializers;
+    this.__backing_statevar = new StateDecoratedVariable<string>("statevar", ((({let gensym___76198660 = initializers;
     (((gensym___76198660) == (null)) ? undefined : gensym___76198660.statevar)})) ?? ("Hello World")), ((_: string): void => {
-      (this).stateOnChange(_);
+      this.stateOnChange(_);
     }));
-    (this).__backing_propvar = new PropDecoratedVariable<string>("propvar", ((({let gensym___241486692 = initializers;
+    this.__backing_propvar = new PropDecoratedVariable<string>("propvar", ((({let gensym___241486692 = initializers;
     (((gensym___241486692) == (null)) ? undefined : gensym___241486692.propvar)})) ?? ("Hello World")), ((_: string): void => {
-      (this).propOnChange(_);
+      this.propOnChange(_);
     }));
-    (this).__backing_storagelinkvar = new StorageLinkDecoratedVariable<string>("prop1", "storagelinkvar", "Hello World", ((_: string): void => {
-      (this).storageLinkOnChange(_);
+    this.__backing_storagelinkvar = new StorageLinkDecoratedVariable<string>("prop1", "storagelinkvar", "Hello World", ((_: string): void => {
+      this.storageLinkOnChange(_);
     }))
-    (this).__backing_storagepropvar = new StoragePropDecoratedVariable<string>("prop2", "storagepropvar", "Hello World", ((_: string): void => {
-      (this).storagePropOnChange(_);
+    this.__backing_storagepropvar = new StoragePropDecoratedVariable<string>("prop2", "storagepropvar", "Hello World", ((_: string): void => {
+      this.storagePropOnChange(_);
     }))
-    (this).__backing_providevar = (this).addProvidedVar<string>("providevar", "providevar", ((({let gensym___194235814 = initializers;
+    this.__backing_providevar = this.addProvidedVar<string>("providevar", "providevar", ((({let gensym___194235814 = initializers;
     (((gensym___194235814) == (null)) ? undefined : gensym___194235814.providevar)})) ?? ("Hello World")), false, ((_: string): void => {
-      (this).ProvideOnChange(_);
+      this.ProvideOnChange(_);
     }));
   }
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {
     if (((({let gensym___220608839 = initializers;
     (((gensym___220608839) == (null)) ? undefined : gensym___220608839.propvar)})) !== (undefined))) {
-      (this).__backing_propvar!.update((initializers!.propvar as string));
+      this.__backing_propvar!.update((initializers!.propvar as string));
     }
   }
   
   private __backing_statevar?: StateDecoratedVariable<string>;
   
   public get statevar(): string {
-    return (this).__backing_statevar!.get();
+    return this.__backing_statevar!.get();
   }
   
   public set statevar(value: string) {
-    (this).__backing_statevar!.set(value);
+    this.__backing_statevar!.set(value);
   }
   
   private __backing_propvar?: PropDecoratedVariable<string>;
   
   public get propvar(): string {
-    return (this).__backing_propvar!.get();
+    return this.__backing_propvar!.get();
   }
   
   public set propvar(value: string) {
-    (this).__backing_propvar!.set(value);
+    this.__backing_propvar!.set(value);
   }
   
   private __backing_storagelinkvar?: StorageLinkDecoratedVariable<string>;
   
   public get storagelinkvar(): string {
-    return (this).__backing_storagelinkvar!.get();
+    return this.__backing_storagelinkvar!.get();
   }
   
   public set storagelinkvar(value: string) {
-    (this).__backing_storagelinkvar!.set(value);
+    this.__backing_storagelinkvar!.set(value);
   }
   
   private __backing_storagepropvar?: StoragePropDecoratedVariable<string>;
   
   public get storagepropvar(): string {
-    return (this).__backing_storagepropvar!.get();
+    return this.__backing_storagepropvar!.get();
   }
   
   public set storagepropvar(value: string) {
-    (this).__backing_storagepropvar!.set(value);
+    this.__backing_storagepropvar!.set(value);
   }
   
   private __backing_providevar?: ProvideDecoratedVariable<string>;
   
   public get providevar(): string {
-    return (this).__backing_providevar!.get();
+    return this.__backing_providevar!.get();
   }
   
   public set providevar(value: string) {
-    (this).__backing_providevar!.set(value);
+    this.__backing_providevar!.set(value);
   }
   
   public stateOnChange(propName: string) {}

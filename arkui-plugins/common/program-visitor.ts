@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor, VisitorOptions } from './abstract-visitor';
 import { matchPrefix } from './arkts-utils';
 import { debugDump, getDumpFileName } from './debug';
-import { InteroperAbilityNames, ARKUI_COMPONENT_IMPORT_NAME } from './predefines';
+import { InteroperAbilityNames, ARKUI_COMPONENT_IMPORT_NAME, KIT_ARKUI_NAME } from './predefines';
 import { PluginContext } from './plugin-context';
 import { LegacyTransformer } from '../ui-plugins/legacy-transformer';
 import { ComponentTransformer } from '../ui-plugins/component-transformer';
@@ -61,7 +61,7 @@ function flattenVisitorsInHooks(
 
 function sortExternalSources(externalSources: arkts.ExternalSource[]): arkts.ExternalSource[] {
     return externalSources.sort((a, b) => {
-        const prefix = ARKUI_COMPONENT_IMPORT_NAME;
+        const prefix = ARKUI_COMPONENT_IMPORT_NAME || KIT_ARKUI_NAME;
         const hasPrefixA = a.getName().startsWith(prefix);
         const hasPrefixB = b.getName().startsWith(prefix);
 

@@ -76,15 +76,15 @@ class E implements IObservedObject {
   private subscribedWatches: SubscribedWatches = new SubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
-    (this).subscribedWatches.addWatchSubscriber(watchId);
+    this.subscribedWatches.addWatchSubscriber(watchId);
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return (this).subscribedWatches.removeWatchSubscriber(watchId);
+    return this.subscribedWatches.removeWatchSubscriber(watchId);
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    (this).subscribedWatches.executeOnSubscribingWatches(propertyName);
+    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
   public _permissibleAddRefDepth: int32 = 0;
@@ -98,18 +98,18 @@ class E implements IObservedObject {
   public constructor() {}
   
   public get trackE(): Info {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_trackE.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_trackE.addRef();
     }
-    setObservationDepth((this).__backing_trackE.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_trackE.value;
+    setObservationDepth(this.__backing_trackE.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_trackE.value;
   }
   
   public set trackE(newValue: Info) {
-    if ((((this).__backing_trackE.value) !== (newValue))) {
-      (this).__backing_trackE.value = newValue;
-    (this).__meta_trackE.fireChange();
-    (this).executeOnSubscribingWatches("trackE");
+    if (((this.__backing_trackE.value) !== (newValue))) {
+      this.__backing_trackE.value = newValue;
+    this.__meta_trackE.fireChange();
+    this.executeOnSubscribingWatches("trackE");
     }
   }
   
@@ -119,15 +119,15 @@ class E implements IObservedObject {
   private subscribedWatches: SubscribedWatches = new SubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
-    (this).subscribedWatches.addWatchSubscriber(watchId);
+    this.subscribedWatches.addWatchSubscriber(watchId);
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return (this).subscribedWatches.removeWatchSubscriber(watchId);
+    return this.subscribedWatches.removeWatchSubscriber(watchId);
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    (this).subscribedWatches.executeOnSubscribingWatches(propertyName);
+    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
   public _permissibleAddRefDepth: int32 = 0;
@@ -141,34 +141,34 @@ class E implements IObservedObject {
   public constructor() {}
   
   public get propE1(): Info {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    setObservationDepth((this).__backing_propE1.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_propE1.value;
+    setObservationDepth(this.__backing_propE1.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_propE1.value;
   }
   
   public set propE1(newValue: Info) {
-    if ((((this).__backing_propE1.value) !== (newValue))) {
-      (this).__backing_propE1.value = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("propE1");
+    if (((this.__backing_propE1.value) !== (newValue))) {
+      this.__backing_propE1.value = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("propE1");
     }
   }
   
   public get trackE1(): Info {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    setObservationDepth((this).__backing_trackE1.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_trackE1.value;
+    setObservationDepth(this.__backing_trackE1.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_trackE1.value;
   }
   
   public set trackE1(newValue: Info) {
-    if ((((this).__backing_trackE1.value) !== (newValue))) {
-      (this).__backing_trackE1.value = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("trackE1");
+    if (((this.__backing_trackE1.value) !== (newValue))) {
+      this.__backing_trackE1.value = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("trackE1");
     }
   }
   
