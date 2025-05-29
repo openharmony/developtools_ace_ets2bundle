@@ -17,6 +17,46 @@ import * as arkts from '@koalaui/libarkts';
 import * as fs from 'fs';
 import * as path from 'path';
 
+export const SINGLE_CHILD_COMPONENT: number = 1;
+export const MAX_ENTRY_DECORATOR_COUNT: number = 1;
+export const MAX_PREVIEW_DECORATOR_COUNT: number = 10;
+
+export const COMPONENT_REPEAT: string = 'Repeat';
+export const TEMPLATE: string = 'template';
+
+export const PresetType = {
+  STRING: 'string',
+  NUMBER: 'number',
+  BOOLEAN: 'boolean',
+  BIGINT: 'bigint'
+};
+
+export const forbiddenUseStateType: string[] = [
+  'Scroller',
+  'SwiperScroller',
+  'VideoController',
+  'WebController',
+  'CustomDialogController',
+  'SwiperController',
+  'TabsController',
+  'CalendarController',
+  'AbilityController',
+  'XComponentController',
+  'CanvasRenderingContext2D',
+  'CanvasGradient',
+  'ImageBitmap',
+  'ImageData',
+  'Path2D',
+  'RenderingContextSettings',
+  'OffscreenCanvasRenderingContext2D',
+  'PatternLockController',
+  'TextAreaController',
+  'TextInputController',
+  'TextTimerController',
+  'SearchController',
+  'RichEditorController',
+];
+
 export const PresetDecorators = {
   BUILDER_PARAM: 'BuilderParam',
   COMPONENT_V1: 'Component',
@@ -53,6 +93,9 @@ export const PresetDecorators = {
   ONCE: 'Once',
   MONITOR: 'Monitor',
   LOCAL_BUILDER: 'LocalBuilder',
+  REGULAR: 'regular',
+  VARIABLE: 'variable',
+  PARAMETER: 'parameter',
 };
 
 const PUBLIC_PROPERTY_MODIFIERS: Number = 4;
@@ -132,6 +175,10 @@ export function isPrivateClassProperty(property: arkts.ClassProperty): boolean {
 export function isProtectedlassProperty(property: arkts.ClassProperty): boolean {
   // todo 使用接口实现
   return property.modifiers === PROTECTED_PROPERTY_MODIFIERS;
+}
+
+export function listToString(strList: string[]): string {
+  return strList.length > 1 ? `${strList.slice(0, -1).join(', ')} and ${strList.slice(-1)}` : strList.join('');
 }
 
 export class MultiMap<K, V> {
