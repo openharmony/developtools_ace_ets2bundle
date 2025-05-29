@@ -49,8 +49,8 @@ class A {
     });
     public arg_memo_type: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
     public constructor() {
-        (this).arg = (() => {});
-        (this).memo_arg = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+        this.arg = (() => {});
+        this.memo_arg = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
             const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -61,7 +61,7 @@ class A {
                 return;
             }
         });
-        (this).arg_memo_type = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+        this.arg_memo_type = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
             const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -79,9 +79,9 @@ class A {
             __memo_scope.cached;
             return;
         }
-        (this).arg();
-        (this).memo_arg(__memo_context, ((__memo_id) + (<some_random_number>)));
-        (this).arg_memo_type(__memo_context, ((__memo_id) + (<some_random_number>)));
+        this.arg();
+        this.memo_arg(__memo_context, ((__memo_id) + (<some_random_number>)));
+        this.arg_memo_type(__memo_context, ((__memo_id) + (<some_random_number>)));
         {
             __memo_scope.recache();
             return;

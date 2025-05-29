@@ -67,14 +67,14 @@ class Message {
   public value: string | undefined;
   
   public constructor(value: string) {
-    (this).value = value;
+    this.value = value;
   }
   
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class Index extends CustomComponent<Index, __Options_Index> {
   public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_display = new StateDecoratedVariable<boolean>("display", ((({let gensym___83835842 = initializers;
+    this.__backing_display = new StateDecoratedVariable<boolean>("display", ((({let gensym___83835842 = initializers;
     (((gensym___83835842) == (null)) ? undefined : gensym___83835842.display)})) ?? (true)));
   }
   
@@ -83,11 +83,11 @@ class Message {
   private __backing_display?: StateDecoratedVariable<boolean>;
   
   public get display(): boolean {
-    return (this).__backing_display!.get();
+    return this.__backing_display!.get();
   }
   
   public set display(value: boolean) {
-    (this).__backing_display!.set(value);
+    this.__backing_display!.set(value);
   }
   
   @memo() public _build(@memo() style: ((instance: Index)=> Index) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Index | undefined): void {
@@ -97,11 +97,11 @@ class Message {
     }), undefined, (() => {
       Button(@memo() ((instance: UIButtonAttribute): void => {
         instance.fontSize(30).fontWeight(FontWeight.Bold).onClick(((e: ClickEvent) => {
-          (this).display = !((this).display);
+          this.display = !(this.display);
         }));
         return;
       }), "Hello", undefined, undefined);
-      if ((this).display) {
+      if (this.display) {
         Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), ({
@@ -117,7 +117,7 @@ class Message {
 
 @Reusable() @Component({freezeWhenInactive:false}) final class Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_message = new StateDecoratedVariable<Message>("message", ((({let gensym___91869411 = initializers;
+    this.__backing_message = new StateDecoratedVariable<Message>("message", ((({let gensym___91869411 = initializers;
     (((gensym___91869411) == (null)) ? undefined : gensym___91869411.message)})) ?? (new Message("AboutToReuse"))));
   }
   
@@ -133,11 +133,11 @@ class Message {
   private __backing_message?: StateDecoratedVariable<Message>;
   
   public get message(): Message {
-    return (this).__backing_message!.get();
+    return this.__backing_message!.get();
   }
   
   public set message(value: Message) {
-    (this).__backing_message!.set(value);
+    this.__backing_message!.set(value);
   }
   
   public aboutToReuse(params: Record<string, ESObject>) {
@@ -152,7 +152,7 @@ class Message {
       Text(@memo() ((instance: UITextAttribute): void => {
         instance.fontSize(30);
         return;
-      }), (this).message.value, undefined, undefined);
+      }), this.message.value, undefined, undefined);
     }));
   }
   

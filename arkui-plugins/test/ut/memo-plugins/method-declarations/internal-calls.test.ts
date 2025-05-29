@@ -51,7 +51,7 @@ class Test {
             __memo_scope.cached;
             return;
         }
-        (this).void_method(__memo_context, ((__memo_id) + (<some_random_number>)));
+        this.void_method(__memo_context, ((__memo_id) + (<some_random_number>)));
         {
             __memo_scope.recache();
             return;

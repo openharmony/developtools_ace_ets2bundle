@@ -71,7 +71,7 @@ final class Status extends BaseEnum<int> {
   
   public constructor(ordinal: int, value: int) {
     super(value);
-    (this).#ordinal = ordinal;
+    this.#ordinal = ordinal;
   }
   
   public static readonly Success: Status = new Status(0, 200);
@@ -89,7 +89,7 @@ final class Status extends BaseEnum<int> {
   private static readonly #ItemsArray: Status[] = [Status.Success, Status.NotFound, Status.ServerError];
   
   public getName(): String {
-    return Status.#NamesArray[(this).#ordinal];
+    return Status.#NamesArray[this.#ordinal];
   }
   
   public static getValueOf(name: String): Status {
@@ -111,11 +111,11 @@ final class Status extends BaseEnum<int> {
   }
   
   public valueOf(): int {
-    return Status.#ValuesArray[(this).#ordinal];
+    return Status.#ValuesArray[this.#ordinal];
   }
   
   public toString(): String {
-    return Status.#StringValuesArray[(this).#ordinal];
+    return Status.#StringValuesArray[this.#ordinal];
   }
   
   public static values(): Status[] {
@@ -123,7 +123,7 @@ final class Status extends BaseEnum<int> {
   }
   
   public getOrdinal(): int {
-    return (this).#ordinal;
+    return this.#ordinal;
   }
   
   public static $_get(e: Status): String {
@@ -134,14 +134,14 @@ final class Status extends BaseEnum<int> {
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_arrayB = new StoragePropDecoratedVariable<Array<number>>("Prop1", "arrayB", [1, 2, 3])
-    (this).__backing_objectB = new StoragePropDecoratedVariable<Object>("Prop2", "objectB", {})
-    (this).__backing_dateB = new StoragePropDecoratedVariable<Date>("Prop3", "dateB", new Date("2021-09-09"))
-    (this).__backing_setB = new StoragePropDecoratedVariable<Set<number>>("Prop4", "setB", new Set<number>())
-    (this).__backing_mapB = new StoragePropDecoratedVariable<Map<number, string>>("Prop5", "mapB", new Map<number, string>())
-    (this).__backing_unionB = new StoragePropDecoratedVariable<string | undefined>("Prop6", "unionB", "")
-    (this).__backing_classB = new StoragePropDecoratedVariable<Person>("Prop7", "classB", new Person("Kevin"))
-    (this).__backing_enumB = new StoragePropDecoratedVariable<Status>("Prop8", "enumB", Status.NotFound)
+    this.__backing_arrayB = new StoragePropDecoratedVariable<Array<number>>("Prop1", "arrayB", [1, 2, 3])
+    this.__backing_objectB = new StoragePropDecoratedVariable<Object>("Prop2", "objectB", {})
+    this.__backing_dateB = new StoragePropDecoratedVariable<Date>("Prop3", "dateB", new Date("2021-09-09"))
+    this.__backing_setB = new StoragePropDecoratedVariable<Set<number>>("Prop4", "setB", new Set<number>())
+    this.__backing_mapB = new StoragePropDecoratedVariable<Map<number, string>>("Prop5", "mapB", new Map<number, string>())
+    this.__backing_unionB = new StoragePropDecoratedVariable<string | undefined>("Prop6", "unionB", "")
+    this.__backing_classB = new StoragePropDecoratedVariable<Person>("Prop7", "classB", new Person("Kevin"))
+    this.__backing_enumB = new StoragePropDecoratedVariable<Status>("Prop8", "enumB", Status.NotFound)
   }
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
@@ -149,81 +149,81 @@ final class Status extends BaseEnum<int> {
   private __backing_arrayB?: StoragePropDecoratedVariable<Array<number>>;
   
   public get arrayB(): Array<number> {
-    return (this).__backing_arrayB!.get();
+    return this.__backing_arrayB!.get();
   }
   
   public set arrayB(value: Array<number>) {
-    (this).__backing_arrayB!.set(value);
+    this.__backing_arrayB!.set(value);
   }
   
   private __backing_objectB?: StoragePropDecoratedVariable<Object>;
   
   public get objectB(): Object {
-    return (this).__backing_objectB!.get();
+    return this.__backing_objectB!.get();
   }
   
   public set objectB(value: Object) {
-    (this).__backing_objectB!.set(value);
+    this.__backing_objectB!.set(value);
   }
   
   private __backing_dateB?: StoragePropDecoratedVariable<Date>;
   
   public get dateB(): Date {
-    return (this).__backing_dateB!.get();
+    return this.__backing_dateB!.get();
   }
   
   public set dateB(value: Date) {
-    (this).__backing_dateB!.set(value);
+    this.__backing_dateB!.set(value);
   }
   
   private __backing_setB?: StoragePropDecoratedVariable<Set<number>>;
   
   public get setB(): Set<number> {
-    return (this).__backing_setB!.get();
+    return this.__backing_setB!.get();
   }
   
   public set setB(value: Set<number>) {
-    (this).__backing_setB!.set(value);
+    this.__backing_setB!.set(value);
   }
   
   private __backing_mapB?: StoragePropDecoratedVariable<Map<number, string>>;
   
   public get mapB(): Map<number, string> {
-    return (this).__backing_mapB!.get();
+    return this.__backing_mapB!.get();
   }
   
   public set mapB(value: Map<number, string>) {
-    (this).__backing_mapB!.set(value);
+    this.__backing_mapB!.set(value);
   }
   
   private __backing_unionB?: StoragePropDecoratedVariable<string | undefined>;
   
   public get unionB(): string | undefined {
-    return (this).__backing_unionB!.get();
+    return this.__backing_unionB!.get();
   }
   
   public set unionB(value: string | undefined) {
-    (this).__backing_unionB!.set(value);
+    this.__backing_unionB!.set(value);
   }
   
   private __backing_classB?: StoragePropDecoratedVariable<Person>;
   
   public get classB(): Person {
-    return (this).__backing_classB!.get();
+    return this.__backing_classB!.get();
   }
   
   public set classB(value: Person) {
-    (this).__backing_classB!.set(value);
+    this.__backing_classB!.set(value);
   }
   
   private __backing_enumB?: StoragePropDecoratedVariable<Status>;
   
   public get enumB(): Status {
-    return (this).__backing_enumB!.get();
+    return this.__backing_enumB!.get();
   }
   
   public set enumB(value: Status) {
-    (this).__backing_enumB!.set(value);
+    this.__backing_enumB!.set(value);
   }
   
   @memo() public _build(@memo() style: ((instance: MyStateSample)=> MyStateSample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MyStateSample | undefined): void {}

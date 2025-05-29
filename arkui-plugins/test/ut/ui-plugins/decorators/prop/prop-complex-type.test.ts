@@ -50,7 +50,7 @@ function main() {}
 class Per {
   public num: number;
   public constructor(num: number) {
-    (this).num = num;
+    this.num = num;
   }
 }
 
@@ -59,7 +59,7 @@ final class PropType extends BaseEnum<int> {
   private static <cctor>() {}
   public constructor(ordinal: int, value: int) {
     super(value);
-    (this).#ordinal = ordinal;
+    this.#ordinal = ordinal;
   }
   public static readonly TYPE1: PropType = new PropType(0, 0);
   public static readonly TYPE2: PropType = new PropType(1, 1);
@@ -69,7 +69,7 @@ final class PropType extends BaseEnum<int> {
   private static readonly #StringValuesArray: String[] = ["0", "1", "3"];
   private static readonly #ItemsArray: PropType[] = [PropType.TYPE1, PropType.TYPE2, PropType.TYPE3];
   public getName(): String {
-    return PropType.#NamesArray[(this).#ordinal];
+    return PropType.#NamesArray[this.#ordinal];
   }
   public static getValueOf(name: String): PropType {
     for (let i = 0;((i) < (PropType.#NamesArray.length));(++i)) {
@@ -88,16 +88,16 @@ final class PropType extends BaseEnum<int> {
     throw new Error((("No enum PropType with value ") + (value)));
   }
   public valueOf(): int {
-    return PropType.#ValuesArray[(this).#ordinal];
+    return PropType.#ValuesArray[this.#ordinal];
   }
   public toString(): String {
-    return PropType.#StringValuesArray[(this).#ordinal];
+    return PropType.#StringValuesArray[this.#ordinal];
   }
   public static values(): PropType[] {
     return PropType.#ItemsArray;
   }
   public getOrdinal(): int {
-    return (this).#ordinal;
+    return this.#ordinal;
   }
   public static $_get(e: PropType): String {
     return e.getName();
@@ -106,164 +106,164 @@ final class PropType extends BaseEnum<int> {
 
 @Component({freezeWhenInactive:false}) final class Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_propVar1 = new PropDecoratedVariable<Per>("propVar1", ((({let gensym___95172135 = initializers;
+    this.__backing_propVar1 = new PropDecoratedVariable<Per>("propVar1", ((({let gensym___95172135 = initializers;
     (((gensym___95172135) == (null)) ? undefined : gensym___95172135.propVar1)})) ?? (new Per(6))));
-    (this).__backing_propVar2 = new PropDecoratedVariable<Array<number>>("propVar2", ((({let gensym___222490386 = initializers;
+    this.__backing_propVar2 = new PropDecoratedVariable<Array<number>>("propVar2", ((({let gensym___222490386 = initializers;
     (((gensym___222490386) == (null)) ? undefined : gensym___222490386.propVar2)})) ?? (new Array<number>(3, 6, 8))));
-    (this).__backing_propVar3 = new PropDecoratedVariable<PropType>("propVar3", ((({let gensym___201781257 = initializers;
+    this.__backing_propVar3 = new PropDecoratedVariable<PropType>("propVar3", ((({let gensym___201781257 = initializers;
     (((gensym___201781257) == (null)) ? undefined : gensym___201781257.propVar3)})) ?? (PropType.TYPE3)));
-    (this).__backing_propVar4 = new PropDecoratedVariable<Set<string>>("propVar4", ((({let gensym___22028950 = initializers;
+    this.__backing_propVar4 = new PropDecoratedVariable<Set<string>>("propVar4", ((({let gensym___22028950 = initializers;
     (((gensym___22028950) == (null)) ? undefined : gensym___22028950.propVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
-    (this).__backing_propVar5 = new PropDecoratedVariable<Array<boolean>>("propVar5", ((({let gensym___54872258 = initializers;
+    this.__backing_propVar5 = new PropDecoratedVariable<Array<boolean>>("propVar5", ((({let gensym___54872258 = initializers;
     (((gensym___54872258) == (null)) ? undefined : gensym___54872258.propVar5)})) ?? ([true, false])));
-    (this).__backing_propVar6 = new PropDecoratedVariable<Array<Per>>("propVar6", ((({let gensym___128760941 = initializers;
+    this.__backing_propVar6 = new PropDecoratedVariable<Array<Per>>("propVar6", ((({let gensym___128760941 = initializers;
     (((gensym___128760941) == (null)) ? undefined : gensym___128760941.propVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))));
-    (this).__backing_propVar7 = new PropDecoratedVariable<Array<Per>>("propVar7", ((({let gensym___30534085 = initializers;
+    this.__backing_propVar7 = new PropDecoratedVariable<Array<Per>>("propVar7", ((({let gensym___30534085 = initializers;
     (((gensym___30534085) == (null)) ? undefined : gensym___30534085.propVar7)})) ?? ([new Per(7), new Per(11)])));
-    (this).__backing_propVar8 = new PropDecoratedVariable<((sr: string)=> void)>("propVar8", ((({let gensym___12471776 = initializers;
+    this.__backing_propVar8 = new PropDecoratedVariable<((sr: string)=> void)>("propVar8", ((({let gensym___12471776 = initializers;
     (((gensym___12471776) == (null)) ? undefined : gensym___12471776.propVar8)})) ?? (((sr: string) => {}))));
-    (this).__backing_propVar9 = new PropDecoratedVariable<Date>("propVar9", ((({let gensym___123472108 = initializers;
+    this.__backing_propVar9 = new PropDecoratedVariable<Date>("propVar9", ((({let gensym___123472108 = initializers;
     (((gensym___123472108) == (null)) ? undefined : gensym___123472108.propVar9)})) ?? (new Date("2025-4-23"))));
-    (this).__backing_propVar10 = new PropDecoratedVariable<Map<number, Per>>("propVar10", ((({let gensym___147847012 = initializers;
+    this.__backing_propVar10 = new PropDecoratedVariable<Map<number, Per>>("propVar10", ((({let gensym___147847012 = initializers;
     (((gensym___147847012) == (null)) ? undefined : gensym___147847012.propVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
-    (this).__backing_propVar11 = new PropDecoratedVariable<string | number>("propVar11", ((({let gensym___117026760 = initializers;
+    this.__backing_propVar11 = new PropDecoratedVariable<string | number>("propVar11", ((({let gensym___117026760 = initializers;
     (((gensym___117026760) == (null)) ? undefined : gensym___117026760.propVar11)})) ?? (0.0)));
-    (this).__backing_propVar12 = new PropDecoratedVariable<Set<string> | Per>("propVar12", ((({let gensym___220245132 = initializers;
+    this.__backing_propVar12 = new PropDecoratedVariable<Set<string> | Per>("propVar12", ((({let gensym___220245132 = initializers;
     (((gensym___220245132) == (null)) ? undefined : gensym___220245132.propVar12)})) ?? (new Per(6))));
   }
   public __updateStruct(initializers: __Options_Parent | undefined): void {
     if (((({let gensym___67969738 = initializers;
     (((gensym___67969738) == (null)) ? undefined : gensym___67969738.propVar1)})) !== (undefined))) {
-      (this).__backing_propVar1!.update((initializers!.propVar1 as Per));
+      this.__backing_propVar1!.update((initializers!.propVar1 as Per));
     }
     if (((({let gensym___52350476 = initializers;
     (((gensym___52350476) == (null)) ? undefined : gensym___52350476.propVar2)})) !== (undefined))) {
-      (this).__backing_propVar2!.update((initializers!.propVar2 as Array<number>));
+      this.__backing_propVar2!.update((initializers!.propVar2 as Array<number>));
     }
     if (((({let gensym___103864283 = initializers;
     (((gensym___103864283) == (null)) ? undefined : gensym___103864283.propVar3)})) !== (undefined))) {
-      (this).__backing_propVar3!.update((initializers!.propVar3 as PropType));
+      this.__backing_propVar3!.update((initializers!.propVar3 as PropType));
     }
     if (((({let gensym___175155715 = initializers;
     (((gensym___175155715) == (null)) ? undefined : gensym___175155715.propVar4)})) !== (undefined))) {
-      (this).__backing_propVar4!.update((initializers!.propVar4 as Set<string>));
+      this.__backing_propVar4!.update((initializers!.propVar4 as Set<string>));
     }
     if (((({let gensym___134530703 = initializers;
     (((gensym___134530703) == (null)) ? undefined : gensym___134530703.propVar5)})) !== (undefined))) {
-      (this).__backing_propVar5!.update((initializers!.propVar5 as Array<boolean>));
+      this.__backing_propVar5!.update((initializers!.propVar5 as Array<boolean>));
     }
     if (((({let gensym___211600890 = initializers;
     (((gensym___211600890) == (null)) ? undefined : gensym___211600890.propVar6)})) !== (undefined))) {
-      (this).__backing_propVar6!.update((initializers!.propVar6 as Array<Per>));
+      this.__backing_propVar6!.update((initializers!.propVar6 as Array<Per>));
     }
     if (((({let gensym___124229427 = initializers;
     (((gensym___124229427) == (null)) ? undefined : gensym___124229427.propVar7)})) !== (undefined))) {
-      (this).__backing_propVar7!.update((initializers!.propVar7 as Array<Per>));
+      this.__backing_propVar7!.update((initializers!.propVar7 as Array<Per>));
     }
     if (((({let gensym___248056380 = initializers;
     (((gensym___248056380) == (null)) ? undefined : gensym___248056380.propVar8)})) !== (undefined))) {
-      (this).__backing_propVar8!.update((initializers!.propVar8 as ((sr: string)=> void)));
+      this.__backing_propVar8!.update((initializers!.propVar8 as ((sr: string)=> void)));
     }
     if (((({let gensym___55399278 = initializers;
     (((gensym___55399278) == (null)) ? undefined : gensym___55399278.propVar9)})) !== (undefined))) {
-      (this).__backing_propVar9!.update((initializers!.propVar9 as Date));
+      this.__backing_propVar9!.update((initializers!.propVar9 as Date));
     }
     if (((({let gensym___125042885 = initializers;
     (((gensym___125042885) == (null)) ? undefined : gensym___125042885.propVar10)})) !== (undefined))) {
-      (this).__backing_propVar10!.update((initializers!.propVar10 as Map<number, Per>));
+      this.__backing_propVar10!.update((initializers!.propVar10 as Map<number, Per>));
     }
     if (((({let gensym___2015283 = initializers;
     (((gensym___2015283) == (null)) ? undefined : gensym___2015283.propVar11)})) !== (undefined))) {
-      (this).__backing_propVar11!.update((initializers!.propVar11 as string | number));
+      this.__backing_propVar11!.update((initializers!.propVar11 as string | number));
     }
     if (((({let gensym___39009414 = initializers;
     (((gensym___39009414) == (null)) ? undefined : gensym___39009414.propVar12)})) !== (undefined))) {
-      (this).__backing_propVar12!.update((initializers!.propVar12 as Set<string> | Per));
+      this.__backing_propVar12!.update((initializers!.propVar12 as Set<string> | Per));
     }
   }
   private __backing_propVar1?: PropDecoratedVariable<Per>;
   public get propVar1(): Per {
-    return (this).__backing_propVar1!.get();
+    return this.__backing_propVar1!.get();
   }
   public set propVar1(value: Per) {
-    (this).__backing_propVar1!.set(value);
+    this.__backing_propVar1!.set(value);
   }
   private __backing_propVar2?: PropDecoratedVariable<Array<number>>;
   public get propVar2(): Array<number> {
-    return (this).__backing_propVar2!.get();
+    return this.__backing_propVar2!.get();
   }
   public set propVar2(value: Array<number>) {
-    (this).__backing_propVar2!.set(value);
+    this.__backing_propVar2!.set(value);
   }
   private __backing_propVar3?: PropDecoratedVariable<PropType>;
   public get propVar3(): PropType {
-    return (this).__backing_propVar3!.get();
+    return this.__backing_propVar3!.get();
   }
   public set propVar3(value: PropType) {
-    (this).__backing_propVar3!.set(value);
+    this.__backing_propVar3!.set(value);
   }
   private __backing_propVar4?: PropDecoratedVariable<Set<string>>;
   public get propVar4(): Set<string> {
-    return (this).__backing_propVar4!.get();
+    return this.__backing_propVar4!.get();
   }
   public set propVar4(value: Set<string>) {
-    (this).__backing_propVar4!.set(value);
+    this.__backing_propVar4!.set(value);
   }
   private __backing_propVar5?: PropDecoratedVariable<Array<boolean>>;
   public get propVar5(): Array<boolean> {
-    return (this).__backing_propVar5!.get();
+    return this.__backing_propVar5!.get();
   }
   public set propVar5(value: Array<boolean>) {
-    (this).__backing_propVar5!.set(value);
+    this.__backing_propVar5!.set(value);
   }
   private __backing_propVar6?: PropDecoratedVariable<Array<Per>>;
   public get propVar6(): Array<Per> {
-    return (this).__backing_propVar6!.get();
+    return this.__backing_propVar6!.get();
   }
   public set propVar6(value: Array<Per>) {
-    (this).__backing_propVar6!.set(value);
+    this.__backing_propVar6!.set(value);
   }
   private __backing_propVar7?: PropDecoratedVariable<Array<Per>>;
   public get propVar7(): Array<Per> {
-    return (this).__backing_propVar7!.get();
+    return this.__backing_propVar7!.get();
   }
   public set propVar7(value: Array<Per>) {
-    (this).__backing_propVar7!.set(value);
+    this.__backing_propVar7!.set(value);
   }
   private __backing_propVar8?: PropDecoratedVariable<((sr: string)=> void)>;
   public get propVar8(): ((sr: string)=> void) {
-    return (this).__backing_propVar8!.get();
+    return this.__backing_propVar8!.get();
   }
   public set propVar8(value: ((sr: string)=> void)) {
-    (this).__backing_propVar8!.set(value);
+    this.__backing_propVar8!.set(value);
   }
   private __backing_propVar9?: PropDecoratedVariable<Date>;
   public get propVar9(): Date {
-    return (this).__backing_propVar9!.get();
+    return this.__backing_propVar9!.get();
   }
   public set propVar9(value: Date) {
-    (this).__backing_propVar9!.set(value);
+    this.__backing_propVar9!.set(value);
   }
   private __backing_propVar10?: PropDecoratedVariable<Map<number, Per>>;
   public get propVar10(): Map<number, Per> {
-    return (this).__backing_propVar10!.get();
+    return this.__backing_propVar10!.get();
   }
   public set propVar10(value: Map<number, Per>) {
-    (this).__backing_propVar10!.set(value);
+    this.__backing_propVar10!.set(value);
   }
   private __backing_propVar11?: PropDecoratedVariable<string | number>;
   public get propVar11(): string | number {
-    return (this).__backing_propVar11!.get();
+    return this.__backing_propVar11!.get();
   }
   public set propVar11(value: string | number) {
-    (this).__backing_propVar11!.set(value);
+    this.__backing_propVar11!.set(value);
   }
   private __backing_propVar12?: PropDecoratedVariable<Set<string> | Per>;
   public get propVar12(): Set<string> | Per {
-    return (this).__backing_propVar12!.get();
+    return this.__backing_propVar12!.get();
   }
   public set propVar12(value: Set<string> | Per) {
-    (this).__backing_propVar12!.set(value);
+    this.__backing_propVar12!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: Parent)=> Parent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Parent | undefined): void {}
   public constructor() {}

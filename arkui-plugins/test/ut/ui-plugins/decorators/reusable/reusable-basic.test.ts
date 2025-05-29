@@ -80,9 +80,9 @@ function main() {}
   public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
     if (({let gensym___98468840 = initializers;
     (((gensym___98468840) == (null)) ? undefined : gensym___98468840.__backing_num)})) {
-      (this).__backing_num = new LinkDecoratedVariable<number>("num", initializers!.__backing_num!);
+      this.__backing_num = new LinkDecoratedVariable<number>("num", initializers!.__backing_num!);
     };
-    (this).__backing_num1 = new StateDecoratedVariable<number>("num1", ((({let gensym___33833641 = initializers;
+    this.__backing_num1 = new StateDecoratedVariable<number>("num1", ((({let gensym___33833641 = initializers;
     (((gensym___33833641) == (null)) ? undefined : gensym___33833641.num1)})) ?? (2)));
   }
   
@@ -99,21 +99,21 @@ function main() {}
   private __backing_num?: LinkDecoratedVariable<number>;
   
   public get num(): number {
-    return (this).__backing_num!.get();
+    return this.__backing_num!.get();
   }
   
   public set num(value: number) {
-    (this).__backing_num!.set(value);
+    this.__backing_num!.set(value);
   }
   
   private __backing_num1?: StateDecoratedVariable<number>;
   
   public get num1(): number {
-    return (this).__backing_num1!.get();
+    return this.__backing_num1!.get();
   }
   
   public set num1(value: number) {
-    (this).__backing_num1!.set(value);
+    this.__backing_num1!.set(value);
   }
   
   @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {}
