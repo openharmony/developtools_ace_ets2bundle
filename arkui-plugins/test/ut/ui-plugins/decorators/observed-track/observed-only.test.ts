@@ -71,15 +71,15 @@ function main() {}
   private subscribedWatches: SubscribedWatches = new SubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
-    (this).subscribedWatches.addWatchSubscriber(watchId);
+    this.subscribedWatches.addWatchSubscriber(watchId);
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return (this).subscribedWatches.removeWatchSubscriber(watchId);
+    return this.subscribedWatches.removeWatchSubscriber(watchId);
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    (this).subscribedWatches.executeOnSubscribingWatches(propertyName);
+    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
   public _permissibleAddRefDepth: int32 = 0;
@@ -93,32 +93,32 @@ function main() {}
   public constructor() {}
   
   public get propA(): number {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    return (this).__backing_propA;
+    return this.__backing_propA;
   }
   
   public set propA(newValue: number) {
-    if ((((this).__backing_propA) !== (newValue))) {
-      (this).__backing_propA = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("propA");
+    if (((this.__backing_propA) !== (newValue))) {
+      this.__backing_propA = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("propA");
     }
   }
   
   public get trackA(): number {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    return (this).__backing_trackA;
+    return this.__backing_trackA;
   }
   
   public set trackA(newValue: number) {
-    if ((((this).__backing_trackA) !== (newValue))) {
-      (this).__backing_trackA = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("trackA");
+    if (((this.__backing_trackA) !== (newValue))) {
+      this.__backing_trackA = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("trackA");
     }
   }
   

@@ -121,7 +121,7 @@ export class PreprocessorTransformer extends AbstractVisitor {
     addDependencesImport(node: arkts.ETSImportDeclaration): void {
         if (!node.source) return;
 
-        const isFromCompImport: boolean = node.source.str === ARKUI_COMPONENT_IMPORT_NAME;
+        const isFromCompImport: boolean = node.source.str === ARKUI_COMPONENT_IMPORT_NAME || node.source.str === KIT_ARKUI_NAME;
         const structCollection: Set<string> = arkts.GlobalInfo.getInfoInstance().getStructCollection();
         node.specifiers.forEach((item: arkts.AstNode) => {
             if (!arkts.isImportSpecifier(item) || !item.imported?.name) return;

@@ -45,7 +45,7 @@ function main() {}
 
 function foo1(this: B, __memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string): void {
   const __memo_scope = __memo_context.scope<void>(((__memo_id) + (38567515)), 2);
-  const __memo_parameter_this = __memo_scope.param(0, (this)), __memo_parameter_str = __memo_scope.param(1, str);
+  const __memo_parameter_this = __memo_scope.param(0, this), __memo_parameter_str = __memo_scope.param(1, str);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
   return;
@@ -59,7 +59,7 @@ function foo1(this: B, __memo_context: __memo_context_type, __memo_id: __memo_id
 
 function foo2(this: B, __memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string): B {
   const __memo_scope = __memo_context.scope<B>(((__memo_id) + (167482260)), 2);
-  const __memo_parameter_this = __memo_scope.param(0, (this)), __memo_parameter_str = __memo_scope.param(1, str);
+  const __memo_parameter_this = __memo_scope.param(0, this), __memo_parameter_str = __memo_scope.param(1, str);
   if (__memo_scope.unchanged) {
     return __memo_scope.cached;
   }
@@ -73,8 +73,8 @@ class B {
     if (__memo_scope.unchanged) {
       return __memo_scope.cached;
     }
-    foo1((this), __memo_context, ((__memo_id) + (119664703)), "morning");
-    return __memo_scope.recache(foo2((this), __memo_context, ((__memo_id) + (181969214)), "afternoon"));
+    foo1(this, __memo_context, ((__memo_id) + (119664703)), "morning");
+    return __memo_scope.recache(foo2(this, __memo_context, ((__memo_id) + (181969214)), "afternoon"));
   }
   
   public constructor() {}

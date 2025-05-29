@@ -91,7 +91,7 @@ type B = ((str: string)=> void);
 class C {
     public str: string;
     public constructor(str: string) {
-        (this).str = str;
+        this.str = str;
     }
 }
 `;
