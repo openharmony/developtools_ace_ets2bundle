@@ -289,10 +289,6 @@ export function readProjectAndLibsSource(
   if (obfOptions.enableExportObfuscation) {
     arkObfuscator.addReservedSetForDefaultObf(projectAndLibs);
   }
-  if (obfOptions.enableAtKeep) {
-    // emit atKeep names and consumer configs
-    arkObfuscator.obfConfigResolver.emitConsumerConfigFiles();
-  }
 }
 
 function processPlatformInfo(arkConfig: ArkConfig): void {
