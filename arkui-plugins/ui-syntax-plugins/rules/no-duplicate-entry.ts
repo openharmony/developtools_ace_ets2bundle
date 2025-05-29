@@ -14,56 +14,69 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getAnnotationUsage, PresetDecorators } from '../utils';
+import { getAnnotationUsage, MAX_ENTRY_DECORATOR_COUNT, PresetDecorators } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 
-const MAX_ENTRY_DECORATOR_COUNT = 1;
-function checkDuplicateEntry(node: arkts.AstNode, context: UISyntaxRuleContext): void {
-  if (arkts.nodeType(node) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
+function checkDuplicateEntry(
+  node: arkts.AstNode,
+  context: UISyntaxRuleContext,
+  entryDecoratorUsages: arkts.AnnotationUsage[],
+  entryData: { count: number }
+): void {
+  if (!arkts.isStructDeclaration(node)) {
     return;
   }
-  let entryDecoratorUsages: arkts.AnnotationUsage[] = [];
-  node.getChildren().forEach((child) => {
-    if (!arkts.isStructDeclaration(child)) {
-      return;
-    }
-    const entryDecoratorUsage = getAnnotationUsage(
-      child,
-      PresetDecorators.ENTRY,
-    );
-    if (entryDecoratorUsage) {
-      entryDecoratorUsages.push(entryDecoratorUsage);
-    }
-  });
+  const entryDecoratorUsage = getAnnotationUsage(
+    node,
+    PresetDecorators.ENTRY,
+  );
+  if (entryDecoratorUsage) {
+    entryDecoratorUsages.push(entryDecoratorUsage);
+  }
   // If more than one entry decorator is recorded, an error is reported
   if (entryDecoratorUsages.length <= MAX_ENTRY_DECORATOR_COUNT) {
     return;
   }
-  entryDecoratorUsages.forEach((entryDocoratorUsage) => {
+  if (entryData.count === MAX_ENTRY_DECORATOR_COUNT) {
     context.report({
-      node: entryDocoratorUsage,
+      node: entryDecoratorUsages.at(0)!,
       message: rule.messages.duplicateEntry,
       fix: (entryDocoratorUsage) => {
-        const startPosition = arkts.getStartPosition(entryDocoratorUsage);
-        const endPosition = arkts.getEndPosition(entryDocoratorUsage);
+        const startPosition = entryDocoratorUsage.startPosition;
+        const endPosition = entryDocoratorUsage.endPosition;
         return {
           range: [startPosition, endPosition],
           code: '',
         };
       }
     });
+  }
+  context.report({
+    node: entryDecoratorUsages.at(entryData.count)!,
+    message: rule.messages.duplicateEntry,
+    fix: (entryDocoratorUsage) => {
+      const startPosition = entryDocoratorUsage.startPosition;
+      const endPosition = entryDocoratorUsage.endPosition;
+      return {
+        range: [startPosition, endPosition],
+        code: '',
+      };
+    }
   });
+  entryData.count++;
 }
 
 const rule: UISyntaxRule = {
   name: 'no-duplicate-entry',
   messages: {
-    duplicateEntry: `An ArkTS file can contain only one '@Entry' decorator.`,
+    duplicateEntry: `A page can't contain more then one '@Entry' decorator.`,
   },
   setup(context) {
+    let entryDecoratorUsages: arkts.AnnotationUsage[] = [];
+    let entryData = { count: 1 };
     return {
       parsed: (node): void => {
-        checkDuplicateEntry(node, context);
+        checkDuplicateEntry(node, context, entryDecoratorUsages, entryData);
       },
     };
   },
