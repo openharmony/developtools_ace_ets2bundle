@@ -367,7 +367,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     }
     if (projectConfig.isCrossplatform) {
       needCheckResult = true;
-      const logType: ts.DiagnosticCategory = !projectConfig.ignoreCrossplatformCheck ? ts.DiagnosticCategory.Error :
+      const logType: ts.DiagnosticCategory = projectConfig.ignoreCrossplatformCheck !== true ? ts.DiagnosticCategory.Error :
         ts.DiagnosticCategory.Warning;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROER,
         false, logType, '', true));
