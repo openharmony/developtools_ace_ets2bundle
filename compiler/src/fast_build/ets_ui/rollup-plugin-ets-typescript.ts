@@ -39,7 +39,8 @@ import {
   resetUtils,
   getResolveModules,
   toUnixPath,
-  getBelongModuleInfo
+  getBelongModuleInfo,
+  CurrentProcessFile
 } from '../../utils';
 import {
   preprocessExtend,
@@ -380,6 +381,7 @@ function getArkoalaTsProgram(program: ts.Program): ts.Program {
 }
 
 async function transform(code: string, id: string) {
+  CurrentProcessFile.setIsProcessingFileETS(id);
   const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsTransform', 'transform');
   if (!filter(id)) {
     return null;
@@ -510,7 +512,7 @@ async function transform(code: string, id: string) {
     } else {
       const uiKitrecordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_UI_KIT);
       const eventTransformNodes = createAndStartEvent(eventTsProgramEmit, 'transformNodes');
-      const emitResolver: ts.EmitResolver = globalProgram.checker.getEmitResolver(outFile(tsProgram.getCompilerOptions()) ?
+      const emitResolver: ts.EmitResolver | undefined = CurrentProcessFile.getChecker()?.getEmitResolver(outFile(tsProgram.getCompilerOptions()) ?
         undefined : targetSourceFile, undefined);
       metaInfo.checker = tsProgram.getTypeChecker();
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,

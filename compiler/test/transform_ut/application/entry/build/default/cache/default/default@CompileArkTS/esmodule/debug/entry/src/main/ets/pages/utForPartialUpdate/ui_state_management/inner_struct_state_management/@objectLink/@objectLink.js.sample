@@ -34,6 +34,17 @@ let Model = class Model {
 Model = __decorate([
     Observed
 ], Model);
+let ModelEx = class ModelEx {
+    constructor(t, c) {
+        this.text = '';
+        this.color = '#00ff00';
+        this.text = t;
+        this.color = c;
+    }
+};
+ModelEx = __decorate([
+    Observed
+], ModelEx);
 class CustomText extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -41,25 +52,33 @@ class CustomText extends ViewPU {
             this.paramsGenerator_ = paramsLambda;
         }
         this.__model = new SynchedPropertyNesedObjectPU(params.model, this, "model");
+        this.__modelEx = new SynchedPropertyNesedObjectPU(params.modelEx, this, "modelEx");
         this.setInitiallyProvidedValue(params);
         this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         this.__model.set(params.model);
+        this.__modelEx.set(params.modelEx);
     }
     updateStateVars(params) {
         this.__model.set(params.model);
+        this.__modelEx.set(params.modelEx);
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__model.purgeDependencyOnElmtId(rmElmtId);
+        this.__modelEx.purgeDependencyOnElmtId(rmElmtId);
     }
     aboutToBeDeleted() {
         this.__model.aboutToBeDeleted();
+        this.__modelEx.aboutToBeDeleted();
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
     get model() {
         return this.__model.get();
+    }
+    get modelEx() {
+        return this.__modelEx.get();
     }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -67,6 +86,10 @@ class CustomText extends ViewPU {
         }, Row);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.model.text);
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create(this.modelEx.text);
         }, Text);
         Text.pop();
         Row.pop();
@@ -121,7 +144,7 @@ class Parent extends ViewPU {
                 {
                     this.observeComponentCreation2((elmtId, isInitialRender) => {
                         if (isInitialRender) {
-                            let componentCall = new CustomText(this, { model: item }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/inner_struct_state_management/@objectLink/@objectLink.ets", line: 44, col: 11 });
+                            let componentCall = new CustomText(this, { model: item }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/inner_struct_state_management/@objectLink/@objectLink.ets", line: 56, col: 11 });
                             ViewPU.create(componentCall);
                             let paramsLambda = () => {
                                 return {

@@ -16,9 +16,11 @@
 @Component
 struct StatePage {
   @State counter: number = 0;
+  @State counterEx: number | undefined | null = 0;
   build() {
     Column() {
       Text("counter:" + this.counter)
+      Text("counterEx:" + this.counterEx)
     }
   }
 }

@@ -100,7 +100,8 @@ import {
   LogType,
   LogInfo,
   componentInfo,
-  storedFileInfo
+  storedFileInfo,
+  CurrentProcessFile
 } from './utils';
 import {
   bindComponentAttr,
@@ -485,9 +486,10 @@ function isForbiddenTypeToComponentV1(type: ts.Type): boolean {
 
 function isForbiddenAssignToComponentV2(item: ts.PropertyAssignment, itemName: string,
   info: ChildAndParentComponentInfo): boolean {
+    const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
   if (!info.parentStructInfo.isComponentV2 && info.updatePropsDecoratorsV2.includes(itemName) &&
-    isObervedProperty(item.initializer, info) && globalProgram.strictChecker) {
-    const type: ts.Type = globalProgram.strictChecker.getTypeAtLocation(item.initializer);
+    isObervedProperty(item.initializer, info) && checker) {
+    const type: ts.Type = checker.getTypeAtLocation(item.initializer);
     return !(isAllowedTypeToComponentV2(type) || isForbiddenTypeToComponentV1(type) || !(isObservedV2(type) || isFunctionType(type)));
   }
   return false;

@@ -1333,3 +1333,55 @@ export function getBelongModuleInfo(filePath: string, modulePathMap: Object, pro
     belongModulePath: projectRootPath
   };
 }
+
+/**
+ * Eliminate null in type
+ * 
+ * @param { ts.Type } type
+ * @returns { ts.Type | ts.Type[] }
+ */
+export function findNonNullType(type: ts.Type): ts.Type | ts.Type[] {
+  if (!type.isUnion() || !(type.types && type.types.length)) {
+    return type;
+  }
+  const filteredTypes: ts.Type[] = type.types.filter((t) => {
+    return t.flags && !(t.flags & ts.TypeFlags.Nullable);
+  });
+  if (filteredTypes.length === 1) {
+    return filteredTypes[0];
+  }
+  return filteredTypes;
+}
+
+/**
+ * Manage File type and checker
+ */
+export class CurrentProcessFile {
+  private static isProcessingFileETS: boolean = false;
+
+  /**
+   * Get checker according to file type
+   * 
+   * @param { ts.Program? } program
+   * @returns { ts.TypeChecker | undefined }
+   */
+  static getChecker(program?: ts.Program): ts.TypeChecker | undefined {
+    if (CurrentProcessFile.isProcessingFileETS) {
+      return (program ?? globalProgram.program)?.getLinterTypeChecker();
+    }
+    return (program ?? globalProgram.program)?.getTypeChecker();
+  }
+
+  /**
+   * Record current file type
+   * 
+   * @param { string } id
+   */
+  static setIsProcessingFileETS(id: string): void {
+    CurrentProcessFile.isProcessingFileETS = CurrentProcessFile.isETSFile(id);
+  }
+
+  private static isETSFile(id: string): boolean {
+    return !!(path.extname(id)?.endsWith('ets'));
+  }
+}
