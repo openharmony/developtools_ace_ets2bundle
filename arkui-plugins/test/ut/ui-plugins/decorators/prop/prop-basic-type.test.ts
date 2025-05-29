@@ -49,73 +49,73 @@ function main() {}
 
 @Component({freezeWhenInactive:false}) final class PropParent extends CustomComponent<PropParent, __Options_PropParent> {
   public __initializeStruct(initializers: __Options_PropParent | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_propVar1 = new PropDecoratedVariable<string>("propVar1", ((({let gensym___95172135 = initializers;
+    this.__backing_propVar1 = new PropDecoratedVariable<string>("propVar1", ((({let gensym___95172135 = initializers;
     (((gensym___95172135) == (null)) ? undefined : gensym___95172135.propVar1)})) ?? ("propVar1")));
-    (this).__backing_propVar2 = new PropDecoratedVariable<number>("propVar2", ((({let gensym___222490386 = initializers;
+    this.__backing_propVar2 = new PropDecoratedVariable<number>("propVar2", ((({let gensym___222490386 = initializers;
     (((gensym___222490386) == (null)) ? undefined : gensym___222490386.propVar2)})) ?? (50)));
-    (this).__backing_propVar3 = new PropDecoratedVariable<boolean>("propVar3", ((({let gensym___201781257 = initializers;
+    this.__backing_propVar3 = new PropDecoratedVariable<boolean>("propVar3", ((({let gensym___201781257 = initializers;
     (((gensym___201781257) == (null)) ? undefined : gensym___201781257.propVar3)})) ?? (true)));
-    (this).__backing_propVar4 = new PropDecoratedVariable<undefined>("propVar4", ((({let gensym___22028950 = initializers;
+    this.__backing_propVar4 = new PropDecoratedVariable<undefined>("propVar4", ((({let gensym___22028950 = initializers;
     (((gensym___22028950) == (null)) ? undefined : gensym___22028950.propVar4)})) ?? (undefined)));
-    (this).__backing_propVar5 = new PropDecoratedVariable<null>("propVar5", ((({let gensym___54872258 = initializers;
+    this.__backing_propVar5 = new PropDecoratedVariable<null>("propVar5", ((({let gensym___54872258 = initializers;
     (((gensym___54872258) == (null)) ? undefined : gensym___54872258.propVar5)})) ?? (null)));
   }
   public __updateStruct(initializers: __Options_PropParent | undefined): void {
     if (((({let gensym___67969738 = initializers;
     (((gensym___67969738) == (null)) ? undefined : gensym___67969738.propVar1)})) !== (undefined))) {
-      (this).__backing_propVar1!.update((initializers!.propVar1 as string));
+      this.__backing_propVar1!.update((initializers!.propVar1 as string));
     }
     if (((({let gensym___52350476 = initializers;
     (((gensym___52350476) == (null)) ? undefined : gensym___52350476.propVar2)})) !== (undefined))) {
-      (this).__backing_propVar2!.update((initializers!.propVar2 as number));
+      this.__backing_propVar2!.update((initializers!.propVar2 as number));
     }
     if (((({let gensym___103864283 = initializers;
     (((gensym___103864283) == (null)) ? undefined : gensym___103864283.propVar3)})) !== (undefined))) {
-      (this).__backing_propVar3!.update((initializers!.propVar3 as boolean));
+      this.__backing_propVar3!.update((initializers!.propVar3 as boolean));
     }
     if (((({let gensym___175155715 = initializers;
     (((gensym___175155715) == (null)) ? undefined : gensym___175155715.propVar4)})) !== (undefined))) {
-      (this).__backing_propVar4!.update((initializers!.propVar4 as undefined));
+      this.__backing_propVar4!.update((initializers!.propVar4 as undefined));
     }
     if (((({let gensym___134530703 = initializers;
     (((gensym___134530703) == (null)) ? undefined : gensym___134530703.propVar5)})) !== (undefined))) {
-      (this).__backing_propVar5!.update((initializers!.propVar5 as null));
+      this.__backing_propVar5!.update((initializers!.propVar5 as null));
     }
   }
   private __backing_propVar1?: PropDecoratedVariable<string>;
   public get propVar1(): string {
-    return (this).__backing_propVar1!.get();
+    return this.__backing_propVar1!.get();
   }
   public set propVar1(value: string) {
-    (this).__backing_propVar1!.set(value);
+    this.__backing_propVar1!.set(value);
   }
   private __backing_propVar2?: PropDecoratedVariable<number>;
   public get propVar2(): number {
-    return (this).__backing_propVar2!.get();
+    return this.__backing_propVar2!.get();
   }
   public set propVar2(value: number) {
-    (this).__backing_propVar2!.set(value);
+    this.__backing_propVar2!.set(value);
   }
   private __backing_propVar3?: PropDecoratedVariable<boolean>;
   public get propVar3(): boolean {
-    return (this).__backing_propVar3!.get();
+    return this.__backing_propVar3!.get();
   }
   public set propVar3(value: boolean) {
-    (this).__backing_propVar3!.set(value);
+    this.__backing_propVar3!.set(value);
   }
   private __backing_propVar4?: PropDecoratedVariable<undefined>;
   public get propVar4(): undefined {
-    return (this).__backing_propVar4!.get();
+    return this.__backing_propVar4!.get();
   }
   public set propVar4(value: undefined) {
-    (this).__backing_propVar4!.set(value);
+    this.__backing_propVar4!.set(value);
   }
   private __backing_propVar5?: PropDecoratedVariable<null>;
   public get propVar5(): null {
-    return (this).__backing_propVar5!.get();
+    return this.__backing_propVar5!.get();
   }
   public set propVar5(value: null) {
-    (this).__backing_propVar5!.set(value);
+    this.__backing_propVar5!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: PropParent)=> PropParent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_PropParent | undefined): void {}
   public constructor() {}

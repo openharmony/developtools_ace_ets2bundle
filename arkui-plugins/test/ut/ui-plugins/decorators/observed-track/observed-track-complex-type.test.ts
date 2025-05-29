@@ -81,7 +81,7 @@ final class Status extends BaseEnum<int> {
   
   public constructor(ordinal: int, value: int) {
     super(value);
-    (this).#ordinal = ordinal;
+    this.#ordinal = ordinal;
   }
   
   public static readonly Success: Status = new Status(0, 200);
@@ -99,7 +99,7 @@ final class Status extends BaseEnum<int> {
   private static readonly #ItemsArray: Status[] = [Status.Success, Status.NotFound, Status.ServerError];
   
   public getName(): String {
-    return Status.#NamesArray[(this).#ordinal];
+    return Status.#NamesArray[this.#ordinal];
   }
   
   public static getValueOf(name: String): Status {
@@ -121,11 +121,11 @@ final class Status extends BaseEnum<int> {
   }
   
   public valueOf(): int {
-    return Status.#ValuesArray[(this).#ordinal];
+    return Status.#ValuesArray[this.#ordinal];
   }
   
   public toString(): String {
-    return Status.#StringValuesArray[(this).#ordinal];
+    return Status.#StringValuesArray[this.#ordinal];
   }
   
   public static values(): Status[] {
@@ -133,7 +133,7 @@ final class Status extends BaseEnum<int> {
   }
   
   public getOrdinal(): int {
-    return (this).#ordinal;
+    return this.#ordinal;
   }
   
   public static $_get(e: Status): String {
@@ -146,15 +146,15 @@ final class Status extends BaseEnum<int> {
   private subscribedWatches: SubscribedWatches = new SubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
-    (this).subscribedWatches.addWatchSubscriber(watchId);
+    this.subscribedWatches.addWatchSubscriber(watchId);
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return (this).subscribedWatches.removeWatchSubscriber(watchId);
+    return this.subscribedWatches.removeWatchSubscriber(watchId);
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    (this).subscribedWatches.executeOnSubscribingWatches(propertyName);
+    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
   public _permissibleAddRefDepth: int32 = 0;
@@ -228,174 +228,174 @@ final class Status extends BaseEnum<int> {
   public constructor() {}
   
   public get numA(): number {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_numA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_numA.addRef();
     }
-    return (this).__backing_numA;
+    return this.__backing_numA;
   }
   
   public set numA(newValue: number) {
-    if ((((this).__backing_numA) !== (newValue))) {
-      (this).__backing_numA = newValue;
-    (this).__meta_numA.fireChange();
-    (this).executeOnSubscribingWatches("numA");
+    if (((this.__backing_numA) !== (newValue))) {
+      this.__backing_numA = newValue;
+    this.__meta_numA.fireChange();
+    this.executeOnSubscribingWatches("numA");
     }
   }
   
   public get stringA(): string {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_stringA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_stringA.addRef();
     }
-    return (this).__backing_stringA;
+    return this.__backing_stringA;
   }
   
   public set stringA(newValue: string) {
-    if ((((this).__backing_stringA) !== (newValue))) {
-      (this).__backing_stringA = newValue;
-    (this).__meta_stringA.fireChange();
-    (this).executeOnSubscribingWatches("stringA");
+    if (((this.__backing_stringA) !== (newValue))) {
+      this.__backing_stringA = newValue;
+    this.__meta_stringA.fireChange();
+    this.executeOnSubscribingWatches("stringA");
     }
   }
   
   public get booleanA(): boolean {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_booleanA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_booleanA.addRef();
     }
-    return (this).__backing_booleanA;
+    return this.__backing_booleanA;
   }
   
   public set booleanA(newValue: boolean) {
-    if ((((this).__backing_booleanA) !== (newValue))) {
-      (this).__backing_booleanA = newValue;
-    (this).__meta_booleanA.fireChange();
-    (this).executeOnSubscribingWatches("booleanA");
+    if (((this.__backing_booleanA) !== (newValue))) {
+      this.__backing_booleanA = newValue;
+    this.__meta_booleanA.fireChange();
+    this.executeOnSubscribingWatches("booleanA");
     }
   }
   
   public get arrayA(): Array<number> {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_arrayA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_arrayA.addRef();
     }
-    setObservationDepth((this).__backing_arrayA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_arrayA.value;
+    setObservationDepth(this.__backing_arrayA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_arrayA.value;
   }
   
   public set arrayA(newValue: Array<number>) {
-    if ((((this).__backing_arrayA.value) !== (newValue))) {
-      (this).__backing_arrayA.value = newValue;
-    (this).__meta_arrayA.fireChange();
-    (this).executeOnSubscribingWatches("arrayA");
+    if (((this.__backing_arrayA.value) !== (newValue))) {
+      this.__backing_arrayA.value = newValue;
+    this.__meta_arrayA.fireChange();
+    this.executeOnSubscribingWatches("arrayA");
     }
   }
   
   public get objectA(): Object {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_objectA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_objectA.addRef();
     }
-    setObservationDepth((this).__backing_objectA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_objectA.value;
+    setObservationDepth(this.__backing_objectA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_objectA.value;
   }
   
   public set objectA(newValue: Object) {
-    if ((((this).__backing_objectA.value) !== (newValue))) {
-      (this).__backing_objectA.value = newValue;
-    (this).__meta_objectA.fireChange();
-    (this).executeOnSubscribingWatches("objectA");
+    if (((this.__backing_objectA.value) !== (newValue))) {
+      this.__backing_objectA.value = newValue;
+    this.__meta_objectA.fireChange();
+    this.executeOnSubscribingWatches("objectA");
     }
   }
   
   public get dateA(): Date {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_dateA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_dateA.addRef();
     }
-    setObservationDepth((this).__backing_dateA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_dateA.value;
+    setObservationDepth(this.__backing_dateA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_dateA.value;
   }
   
   public set dateA(newValue: Date) {
-    if ((((this).__backing_dateA.value) !== (newValue))) {
-      (this).__backing_dateA.value = newValue;
-    (this).__meta_dateA.fireChange();
-    (this).executeOnSubscribingWatches("dateA");
+    if (((this.__backing_dateA.value) !== (newValue))) {
+      this.__backing_dateA.value = newValue;
+    this.__meta_dateA.fireChange();
+    this.executeOnSubscribingWatches("dateA");
     }
   }
   
   public get setA(): Set<number> {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_setA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_setA.addRef();
     }
-    setObservationDepth((this).__backing_setA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_setA.value;
+    setObservationDepth(this.__backing_setA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_setA.value;
   }
   
   public set setA(newValue: Set<number>) {
-    if ((((this).__backing_setA.value) !== (newValue))) {
-      (this).__backing_setA.value = newValue;
-    (this).__meta_setA.fireChange();
-    (this).executeOnSubscribingWatches("setA");
+    if (((this.__backing_setA.value) !== (newValue))) {
+      this.__backing_setA.value = newValue;
+    this.__meta_setA.fireChange();
+    this.executeOnSubscribingWatches("setA");
     }
   }
   
   public get mapA(): Map<number, string> {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_mapA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_mapA.addRef();
     }
-    setObservationDepth((this).__backing_mapA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_mapA.value;
+    setObservationDepth(this.__backing_mapA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_mapA.value;
   }
   
   public set mapA(newValue: Map<number, string>) {
-    if ((((this).__backing_mapA.value) !== (newValue))) {
-      (this).__backing_mapA.value = newValue;
-    (this).__meta_mapA.fireChange();
-    (this).executeOnSubscribingWatches("mapA");
+    if (((this.__backing_mapA.value) !== (newValue))) {
+      this.__backing_mapA.value = newValue;
+    this.__meta_mapA.fireChange();
+    this.executeOnSubscribingWatches("mapA");
     }
   }
   
   public get unionA(): string | undefined {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_unionA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_unionA.addRef();
     }
-    return (this).__backing_unionA;
+    return this.__backing_unionA;
   }
   
   public set unionA(newValue: string | undefined) {
-    if ((((this).__backing_unionA) !== (newValue))) {
-      (this).__backing_unionA = newValue;
-    (this).__meta_unionA.fireChange();
-    (this).executeOnSubscribingWatches("unionA");
+    if (((this.__backing_unionA) !== (newValue))) {
+      this.__backing_unionA = newValue;
+    this.__meta_unionA.fireChange();
+    this.executeOnSubscribingWatches("unionA");
     }
   }
   
   public get classA(): Person {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_classA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_classA.addRef();
     }
-    setObservationDepth((this).__backing_classA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_classA.value;
+    setObservationDepth(this.__backing_classA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_classA.value;
   }
   
   public set classA(newValue: Person) {
-    if ((((this).__backing_classA.value) !== (newValue))) {
-      (this).__backing_classA.value = newValue;
-    (this).__meta_classA.fireChange();
-    (this).executeOnSubscribingWatches("classA");
+    if (((this.__backing_classA.value) !== (newValue))) {
+      this.__backing_classA.value = newValue;
+    this.__meta_classA.fireChange();
+    this.executeOnSubscribingWatches("classA");
     }
   }
   
   public get enumA(): Status {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_enumA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_enumA.addRef();
     }
-    setObservationDepth((this).__backing_enumA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_enumA.value;
+    setObservationDepth(this.__backing_enumA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_enumA.value;
   }
   
   public set enumA(newValue: Status) {
-    if ((((this).__backing_enumA.value) !== (newValue))) {
-      (this).__backing_enumA.value = newValue;
-    (this).__meta_enumA.fireChange();
-    (this).executeOnSubscribingWatches("enumA");
+    if (((this.__backing_enumA.value) !== (newValue))) {
+      this.__backing_enumA.value = newValue;
+    this.__meta_enumA.fireChange();
+    this.executeOnSubscribingWatches("enumA");
     }
   }
   
@@ -405,15 +405,15 @@ final class Status extends BaseEnum<int> {
   private subscribedWatches: SubscribedWatches = new SubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
-    (this).subscribedWatches.addWatchSubscriber(watchId);
+    this.subscribedWatches.addWatchSubscriber(watchId);
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return (this).subscribedWatches.removeWatchSubscriber(watchId);
+    return this.subscribedWatches.removeWatchSubscriber(watchId);
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    (this).subscribedWatches.executeOnSubscribingWatches(propertyName);
+    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
   public _permissibleAddRefDepth: int32 = 0;
@@ -445,174 +445,174 @@ final class Status extends BaseEnum<int> {
   public constructor() {}
   
   public get numA(): number {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    return (this).__backing_numA;
+    return this.__backing_numA;
   }
   
   public set numA(newValue: number) {
-    if ((((this).__backing_numA) !== (newValue))) {
-      (this).__backing_numA = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("numA");
+    if (((this.__backing_numA) !== (newValue))) {
+      this.__backing_numA = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("numA");
     }
   }
   
   public get stringA(): string {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    return (this).__backing_stringA;
+    return this.__backing_stringA;
   }
   
   public set stringA(newValue: string) {
-    if ((((this).__backing_stringA) !== (newValue))) {
-      (this).__backing_stringA = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("stringA");
+    if (((this.__backing_stringA) !== (newValue))) {
+      this.__backing_stringA = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("stringA");
     }
   }
   
   public get booleanA(): boolean {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    return (this).__backing_booleanA;
+    return this.__backing_booleanA;
   }
   
   public set booleanA(newValue: boolean) {
-    if ((((this).__backing_booleanA) !== (newValue))) {
-      (this).__backing_booleanA = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("booleanA");
+    if (((this.__backing_booleanA) !== (newValue))) {
+      this.__backing_booleanA = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("booleanA");
     }
   }
   
   public get arrayA(): Array<number> {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    setObservationDepth((this).__backing_arrayA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_arrayA.value;
+    setObservationDepth(this.__backing_arrayA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_arrayA.value;
   }
   
   public set arrayA(newValue: Array<number>) {
-    if ((((this).__backing_arrayA.value) !== (newValue))) {
-      (this).__backing_arrayA.value = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("arrayA");
+    if (((this.__backing_arrayA.value) !== (newValue))) {
+      this.__backing_arrayA.value = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("arrayA");
     }
   }
   
   public get objectA(): Object {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    setObservationDepth((this).__backing_objectA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_objectA.value;
+    setObservationDepth(this.__backing_objectA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_objectA.value;
   }
   
   public set objectA(newValue: Object) {
-    if ((((this).__backing_objectA.value) !== (newValue))) {
-      (this).__backing_objectA.value = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("objectA");
+    if (((this.__backing_objectA.value) !== (newValue))) {
+      this.__backing_objectA.value = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("objectA");
     }
   }
   
   public get dateA(): Date {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    setObservationDepth((this).__backing_dateA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_dateA.value;
+    setObservationDepth(this.__backing_dateA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_dateA.value;
   }
   
   public set dateA(newValue: Date) {
-    if ((((this).__backing_dateA.value) !== (newValue))) {
-      (this).__backing_dateA.value = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("dateA");
+    if (((this.__backing_dateA.value) !== (newValue))) {
+      this.__backing_dateA.value = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("dateA");
     }
   }
   
   public get setA(): Set<number> {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    setObservationDepth((this).__backing_setA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_setA.value;
+    setObservationDepth(this.__backing_setA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_setA.value;
   }
   
   public set setA(newValue: Set<number>) {
-    if ((((this).__backing_setA.value) !== (newValue))) {
-      (this).__backing_setA.value = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("setA");
+    if (((this.__backing_setA.value) !== (newValue))) {
+      this.__backing_setA.value = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("setA");
     }
   }
   
   public get mapA(): Map<number, string> {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    setObservationDepth((this).__backing_mapA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_mapA.value;
+    setObservationDepth(this.__backing_mapA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_mapA.value;
   }
   
   public set mapA(newValue: Map<number, string>) {
-    if ((((this).__backing_mapA.value) !== (newValue))) {
-      (this).__backing_mapA.value = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("mapA");
+    if (((this.__backing_mapA.value) !== (newValue))) {
+      this.__backing_mapA.value = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("mapA");
     }
   }
   
   public get unionA(): string | undefined {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    return (this).__backing_unionA;
+    return this.__backing_unionA;
   }
   
   public set unionA(newValue: string | undefined) {
-    if ((((this).__backing_unionA) !== (newValue))) {
-      (this).__backing_unionA = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("unionA");
+    if (((this.__backing_unionA) !== (newValue))) {
+      this.__backing_unionA = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("unionA");
     }
   }
   
   public get classA(): Person {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    setObservationDepth((this).__backing_classA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_classA.value;
+    setObservationDepth(this.__backing_classA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_classA.value;
   }
   
   public set classA(newValue: Person) {
-    if ((((this).__backing_classA.value) !== (newValue))) {
-      (this).__backing_classA.value = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("classA");
+    if (((this.__backing_classA.value) !== (newValue))) {
+      this.__backing_classA.value = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("classA");
     }
   }
   
   public get enumA(): Status {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    setObservationDepth((this).__backing_enumA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_enumA.value;
+    setObservationDepth(this.__backing_enumA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_enumA.value;
   }
   
   public set enumA(newValue: Status) {
-    if ((((this).__backing_enumA.value) !== (newValue))) {
-      (this).__backing_enumA.value = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("enumA");
+    if (((this.__backing_enumA.value) !== (newValue))) {
+      this.__backing_enumA.value = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("enumA");
     }
   }
   
@@ -622,15 +622,15 @@ class mixed3 implements IObservedObject {
   private subscribedWatches: SubscribedWatches = new SubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
-    (this).subscribedWatches.addWatchSubscriber(watchId);
+    this.subscribedWatches.addWatchSubscriber(watchId);
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return (this).subscribedWatches.removeWatchSubscriber(watchId);
+    return this.subscribedWatches.removeWatchSubscriber(watchId);
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    (this).subscribedWatches.executeOnSubscribingWatches(propertyName);
+    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
   public _permissibleAddRefDepth: int32 = 0;
@@ -682,174 +682,174 @@ class mixed3 implements IObservedObject {
   public constructor() {}
   
   public get numA(): number {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_numA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_numA.addRef();
     }
-    return (this).__backing_numA;
+    return this.__backing_numA;
   }
   
   public set numA(newValue: number) {
-    if ((((this).__backing_numA) !== (newValue))) {
-      (this).__backing_numA = newValue;
-    (this).__meta_numA.fireChange();
-    (this).executeOnSubscribingWatches("numA");
+    if (((this.__backing_numA) !== (newValue))) {
+      this.__backing_numA = newValue;
+    this.__meta_numA.fireChange();
+    this.executeOnSubscribingWatches("numA");
     }
   }
   
   public get stringA(): string {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_stringA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_stringA.addRef();
     }
-    return (this).__backing_stringA;
+    return this.__backing_stringA;
   }
   
   public set stringA(newValue: string) {
-    if ((((this).__backing_stringA) !== (newValue))) {
-      (this).__backing_stringA = newValue;
-    (this).__meta_stringA.fireChange();
-    (this).executeOnSubscribingWatches("stringA");
+    if (((this.__backing_stringA) !== (newValue))) {
+      this.__backing_stringA = newValue;
+    this.__meta_stringA.fireChange();
+    this.executeOnSubscribingWatches("stringA");
     }
   }
   
   public get booleanA(): boolean {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_booleanA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_booleanA.addRef();
     }
-    return (this).__backing_booleanA;
+    return this.__backing_booleanA;
   }
   
   public set booleanA(newValue: boolean) {
-    if ((((this).__backing_booleanA) !== (newValue))) {
-      (this).__backing_booleanA = newValue;
-    (this).__meta_booleanA.fireChange();
-    (this).executeOnSubscribingWatches("booleanA");
+    if (((this.__backing_booleanA) !== (newValue))) {
+      this.__backing_booleanA = newValue;
+    this.__meta_booleanA.fireChange();
+    this.executeOnSubscribingWatches("booleanA");
     }
   }
   
   public get arrayA(): Array<number> {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_arrayA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_arrayA.addRef();
     }
-    setObservationDepth((this).__backing_arrayA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_arrayA.value;
+    setObservationDepth(this.__backing_arrayA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_arrayA.value;
   }
   
   public set arrayA(newValue: Array<number>) {
-    if ((((this).__backing_arrayA.value) !== (newValue))) {
-      (this).__backing_arrayA.value = newValue;
-    (this).__meta_arrayA.fireChange();
-    (this).executeOnSubscribingWatches("arrayA");
+    if (((this.__backing_arrayA.value) !== (newValue))) {
+      this.__backing_arrayA.value = newValue;
+    this.__meta_arrayA.fireChange();
+    this.executeOnSubscribingWatches("arrayA");
     }
   }
   
   public get objectA(): Object {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_objectA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_objectA.addRef();
     }
-    setObservationDepth((this).__backing_objectA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_objectA.value;
+    setObservationDepth(this.__backing_objectA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_objectA.value;
   }
   
   public set objectA(newValue: Object) {
-    if ((((this).__backing_objectA.value) !== (newValue))) {
-      (this).__backing_objectA.value = newValue;
-    (this).__meta_objectA.fireChange();
-    (this).executeOnSubscribingWatches("objectA");
+    if (((this.__backing_objectA.value) !== (newValue))) {
+      this.__backing_objectA.value = newValue;
+    this.__meta_objectA.fireChange();
+    this.executeOnSubscribingWatches("objectA");
     }
   }
   
   public get dateA(): Date {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_dateA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_dateA.addRef();
     }
-    setObservationDepth((this).__backing_dateA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_dateA.value;
+    setObservationDepth(this.__backing_dateA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_dateA.value;
   }
   
   public set dateA(newValue: Date) {
-    if ((((this).__backing_dateA.value) !== (newValue))) {
-      (this).__backing_dateA.value = newValue;
-    (this).__meta_dateA.fireChange();
-    (this).executeOnSubscribingWatches("dateA");
+    if (((this.__backing_dateA.value) !== (newValue))) {
+      this.__backing_dateA.value = newValue;
+    this.__meta_dateA.fireChange();
+    this.executeOnSubscribingWatches("dateA");
     }
   }
   
   public get setA(): Set<number> {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_setA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_setA.addRef();
     }
-    setObservationDepth((this).__backing_setA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_setA.value;
+    setObservationDepth(this.__backing_setA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_setA.value;
   }
   
   public set setA(newValue: Set<number>) {
-    if ((((this).__backing_setA.value) !== (newValue))) {
-      (this).__backing_setA.value = newValue;
-    (this).__meta_setA.fireChange();
-    (this).executeOnSubscribingWatches("setA");
+    if (((this.__backing_setA.value) !== (newValue))) {
+      this.__backing_setA.value = newValue;
+    this.__meta_setA.fireChange();
+    this.executeOnSubscribingWatches("setA");
     }
   }
   
   public get mapA(): Map<number, string> {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_mapA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_mapA.addRef();
     }
-    setObservationDepth((this).__backing_mapA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_mapA.value;
+    setObservationDepth(this.__backing_mapA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_mapA.value;
   }
   
   public set mapA(newValue: Map<number, string>) {
-    if ((((this).__backing_mapA.value) !== (newValue))) {
-      (this).__backing_mapA.value = newValue;
-    (this).__meta_mapA.fireChange();
-    (this).executeOnSubscribingWatches("mapA");
+    if (((this.__backing_mapA.value) !== (newValue))) {
+      this.__backing_mapA.value = newValue;
+    this.__meta_mapA.fireChange();
+    this.executeOnSubscribingWatches("mapA");
     }
   }
   
   public get unionA(): string | undefined {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_unionA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_unionA.addRef();
     }
-    return (this).__backing_unionA;
+    return this.__backing_unionA;
   }
   
   public set unionA(newValue: string | undefined) {
-    if ((((this).__backing_unionA) !== (newValue))) {
-      (this).__backing_unionA = newValue;
-    (this).__meta_unionA.fireChange();
-    (this).executeOnSubscribingWatches("unionA");
+    if (((this.__backing_unionA) !== (newValue))) {
+      this.__backing_unionA = newValue;
+    this.__meta_unionA.fireChange();
+    this.executeOnSubscribingWatches("unionA");
     }
   }
   
   public get classA(): Person {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_classA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_classA.addRef();
     }
-    setObservationDepth((this).__backing_classA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_classA.value;
+    setObservationDepth(this.__backing_classA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_classA.value;
   }
   
   public set classA(newValue: Person) {
-    if ((((this).__backing_classA.value) !== (newValue))) {
-      (this).__backing_classA.value = newValue;
-    (this).__meta_classA.fireChange();
-    (this).executeOnSubscribingWatches("classA");
+    if (((this.__backing_classA.value) !== (newValue))) {
+      this.__backing_classA.value = newValue;
+    this.__meta_classA.fireChange();
+    this.executeOnSubscribingWatches("classA");
     }
   }
   
   public get enumA(): Status {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_enumA.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_enumA.addRef();
     }
-    setObservationDepth((this).__backing_enumA.value, (((this)._permissibleAddRefDepth) - (1)));
-    return (this).__backing_enumA.value;
+    setObservationDepth(this.__backing_enumA.value, ((this._permissibleAddRefDepth) - (1)));
+    return this.__backing_enumA.value;
   }
   
   public set enumA(newValue: Status) {
-    if ((((this).__backing_enumA.value) !== (newValue))) {
-      (this).__backing_enumA.value = newValue;
-    (this).__meta_enumA.fireChange();
-    (this).executeOnSubscribingWatches("enumA");
+    if (((this.__backing_enumA.value) !== (newValue))) {
+      this.__backing_enumA.value = newValue;
+    this.__meta_enumA.fireChange();
+    this.executeOnSubscribingWatches("enumA");
     }
   }
   

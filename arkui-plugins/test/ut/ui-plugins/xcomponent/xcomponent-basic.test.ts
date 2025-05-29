@@ -59,7 +59,7 @@ function main() {}
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class Index extends CustomComponent<Index, __Options_Index> {
   public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_myXComponentController = ((({let gensym___221905990 = initializers;
+    this.__backing_myXComponentController = ((({let gensym___221905990 = initializers;
     (((gensym___221905990) == (null)) ? undefined : gensym___221905990.myXComponentController)})) ?? (new XComponentController()));
   }
   
@@ -68,11 +68,11 @@ function main() {}
   private __backing_myXComponentController?: XComponentController;
   
   public get myXComponentController(): XComponentController {
-    return ((this).__backing_myXComponentController as XComponentController);
+    return (this.__backing_myXComponentController as XComponentController);
   }
   
   public set myXComponentController(value: XComponentController) {
-    (this).__backing_myXComponentController = value;
+    this.__backing_myXComponentController = value;
   }
   
   @memo() public _build(@memo() style: ((instance: Index)=> Index) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Index | undefined): void {
@@ -88,7 +88,7 @@ function main() {}
         id: "xComponentId",
         type: XComponentType.TEXTURE,
         libraryname: "nativerender",
-        controller: (this).myXComponentController,
+        controller: this.myXComponentController,
       } as XComponentParameter), "", undefined);
     }));
   }

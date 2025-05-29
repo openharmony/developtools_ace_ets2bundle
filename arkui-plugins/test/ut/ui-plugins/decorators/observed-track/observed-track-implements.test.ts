@@ -85,15 +85,15 @@ interface trackInterface {
   private subscribedWatches: SubscribedWatches = new SubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
-    (this).subscribedWatches.addWatchSubscriber(watchId);
+    this.subscribedWatches.addWatchSubscriber(watchId);
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return (this).subscribedWatches.removeWatchSubscriber(watchId);
+    return this.subscribedWatches.removeWatchSubscriber(watchId);
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    (this).subscribedWatches.executeOnSubscribingWatches(propertyName);
+    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
   public _permissibleAddRefDepth: int32 = 0;
@@ -107,33 +107,33 @@ interface trackInterface {
   public constructor() {}
   
   public set propF(newValue: number) {
-    if ((((this).__backing_propF) !== (newValue))) {
-      (this).__backing_propF = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("propF");
+    if (((this.__backing_propF) !== (newValue))) {
+      this.__backing_propF = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("propF");
     }
   }
   
   public get propF(): number {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    return (this).__backing_propF;
+    return this.__backing_propF;
   }
   
   public set trackF(newValue: number) {
-    if ((((this).__backing_trackF) !== (newValue))) {
-      (this).__backing_trackF = newValue;
-    (this).__meta.fireChange();
-    (this).executeOnSubscribingWatches("trackF");
+    if (((this.__backing_trackF) !== (newValue))) {
+      this.__backing_trackF = newValue;
+    this.__meta.fireChange();
+    this.executeOnSubscribingWatches("trackF");
     }
   }
   
   public get trackF(): number {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta.addRef();
     }
-    return (this).__backing_trackF;
+    return this.__backing_trackF;
   }
   
 }

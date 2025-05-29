@@ -66,15 +66,15 @@ class Data {
   public code: number;
   
   public constructor(code: number) {
-    (this).code = code;
+    this.code = code;
   }
   
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class Index extends CustomComponent<Index, __Options_Index> {
   public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_storageProp = new StoragePropDecoratedVariable<number>("PropA", "storageProp", 1)
-    (this).__backing_storagePropObject = new StoragePropDecoratedVariable<Data>("PropB", "storagePropObject", new Data(1))
+    this.__backing_storageProp = new StoragePropDecoratedVariable<number>("PropA", "storageProp", 1)
+    this.__backing_storagePropObject = new StoragePropDecoratedVariable<Data>("PropB", "storagePropObject", new Data(1))
   }
   
   public __updateStruct(initializers: __Options_Index | undefined): void {}
@@ -82,37 +82,37 @@ class Data {
   private __backing_storageProp?: StoragePropDecoratedVariable<number>;
   
   public get storageProp(): number {
-    return (this).__backing_storageProp!.get();
+    return this.__backing_storageProp!.get();
   }
   
   public set storageProp(value: number) {
-    (this).__backing_storageProp!.set(value);
+    this.__backing_storageProp!.set(value);
   }
   
   private __backing_storagePropObject?: StoragePropDecoratedVariable<Data>;
   
   public get storagePropObject(): Data {
-    return (this).__backing_storagePropObject!.get();
+    return this.__backing_storagePropObject!.get();
   }
   
   public set storagePropObject(value: Data) {
-    (this).__backing_storagePropObject!.set(value);
+    this.__backing_storagePropObject!.set(value);
   }
   
   @memo() public _build(@memo() style: ((instance: Index)=> Index) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Index | undefined): void {
     Column(undefined, undefined, (() => {
       Text(@memo() ((instance: UITextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
-          (this).storageProp += 1;
+          this.storageProp += 1;
         }));
         return;
-      }), \`From AppStorage \${(this).storageProp}\`, undefined, undefined);
+      }), \`From AppStorage \${this.storageProp}\`, undefined, undefined);
       Text(@memo() ((instance: UITextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
-          (this).storagePropObject.code += 1;
+          this.storagePropObject.code += 1;
         }));
         return;
-      }), \`From AppStorage \${(this).storagePropObject.code}\`, undefined, undefined);
+      }), \`From AppStorage \${this.storagePropObject.code}\`, undefined, undefined);
     }));
   }
   

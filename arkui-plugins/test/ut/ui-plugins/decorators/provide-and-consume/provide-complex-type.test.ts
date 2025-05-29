@@ -50,7 +50,7 @@ function main() {}
 class Per {
   public num: number;
   public constructor(num: number) {
-    (this).num = num;
+    this.num = num;
   }
 }
 
@@ -59,7 +59,7 @@ final class PropType extends BaseEnum<int> {
   private static <cctor>() {}
   public constructor(ordinal: int, value: int) {
     super(value);
-    (this).#ordinal = ordinal;
+    this.#ordinal = ordinal;
   }
   public static readonly TYPE1: PropType = new PropType(0, 0);
   public static readonly TYPE2: PropType = new PropType(1, 1);
@@ -69,7 +69,7 @@ final class PropType extends BaseEnum<int> {
   private static readonly #StringValuesArray: String[] = ["0", "1", "3"];
   private static readonly #ItemsArray: PropType[] = [PropType.TYPE1, PropType.TYPE2, PropType.TYPE3];
   public getName(): String {
-    return PropType.#NamesArray[(this).#ordinal];
+    return PropType.#NamesArray[this.#ordinal];
   }
   public static getValueOf(name: String): PropType {
     for (let i = 0;((i) < (PropType.#NamesArray.length));(++i)) {
@@ -88,16 +88,16 @@ final class PropType extends BaseEnum<int> {
     throw new Error((("No enum PropType with value ") + (value)));
   }
   public valueOf(): int {
-    return PropType.#ValuesArray[(this).#ordinal];
+    return PropType.#ValuesArray[this.#ordinal];
   }
   public toString(): String {
-    return PropType.#StringValuesArray[(this).#ordinal];
+    return PropType.#StringValuesArray[this.#ordinal];
   }
   public static values(): PropType[] {
     return PropType.#ItemsArray;
   }
   public getOrdinal(): int {
-    return (this).#ordinal;
+    return this.#ordinal;
   }
   public static $_get(e: PropType): String {
     return e.getName();
@@ -106,115 +106,115 @@ final class PropType extends BaseEnum<int> {
 
 @Component({freezeWhenInactive:false}) final class Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_provideVar1 = (this).addProvidedVar<Per>("provideVar1", "provideVar1", ((({let gensym___181030638 = initializers;
+    this.__backing_provideVar1 = this.addProvidedVar<Per>("provideVar1", "provideVar1", ((({let gensym___181030638 = initializers;
     (((gensym___181030638) == (null)) ? undefined : gensym___181030638.provideVar1)})) ?? (new Per(6))), false);
-    (this).__backing_provideVar2 = (this).addProvidedVar<Array<number>>("provideVar2", "provideVar2", ((({let gensym___143944235 = initializers;
+    this.__backing_provideVar2 = this.addProvidedVar<Array<number>>("provideVar2", "provideVar2", ((({let gensym___143944235 = initializers;
     (((gensym___143944235) == (null)) ? undefined : gensym___143944235.provideVar2)})) ?? (new Array<number>(3, 6, 8))), false);
-    (this).__backing_provideVar3 = (this).addProvidedVar<PropType>("provideVar3", "provideVar3", ((({let gensym___262195977 = initializers;
+    this.__backing_provideVar3 = this.addProvidedVar<PropType>("provideVar3", "provideVar3", ((({let gensym___262195977 = initializers;
     (((gensym___262195977) == (null)) ? undefined : gensym___262195977.provideVar3)})) ?? (PropType.TYPE3)), false);
-    (this).__backing_provideVar4 = (this).addProvidedVar<Set<string>>("provideVar4", "provideVar4", ((({let gensym___85711435 = initializers;
+    this.__backing_provideVar4 = this.addProvidedVar<Set<string>>("provideVar4", "provideVar4", ((({let gensym___85711435 = initializers;
     (((gensym___85711435) == (null)) ? undefined : gensym___85711435.provideVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))), false);
-    (this).__backing_provideVar5 = (this).addProvidedVar<Array<boolean>>("provideVar5", "provideVar5", ((({let gensym___139253630 = initializers;
+    this.__backing_provideVar5 = this.addProvidedVar<Array<boolean>>("provideVar5", "provideVar5", ((({let gensym___139253630 = initializers;
     (((gensym___139253630) == (null)) ? undefined : gensym___139253630.provideVar5)})) ?? ([true, false])), false);
-    (this).__backing_provideVar6 = (this).addProvidedVar<Array<Per>>("provideVar6", "provideVar6", ((({let gensym___146872112 = initializers;
+    this.__backing_provideVar6 = this.addProvidedVar<Array<Per>>("provideVar6", "provideVar6", ((({let gensym___146872112 = initializers;
     (((gensym___146872112) == (null)) ? undefined : gensym___146872112.provideVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))), false);
-    (this).__backing_provideVar7 = (this).addProvidedVar<Array<Per>>("provideVar7", "provideVar7", ((({let gensym___174412117 = initializers;
+    this.__backing_provideVar7 = this.addProvidedVar<Array<Per>>("provideVar7", "provideVar7", ((({let gensym___174412117 = initializers;
     (((gensym___174412117) == (null)) ? undefined : gensym___174412117.provideVar7)})) ?? ([new Per(7), new Per(11)])), false);
-    (this).__backing_provideVar8 = (this).addProvidedVar<((sr: string)=> void)>("provideVar8", "provideVar8", ((({let gensym___253467853 = initializers;
+    this.__backing_provideVar8 = this.addProvidedVar<((sr: string)=> void)>("provideVar8", "provideVar8", ((({let gensym___253467853 = initializers;
     (((gensym___253467853) == (null)) ? undefined : gensym___253467853.provideVar8)})) ?? (((sr: string) => {}))), false);
-    (this).__backing_provideVar9 = (this).addProvidedVar<Date>("provideVar9", "provideVar9", ((({let gensym___179115605 = initializers;
+    this.__backing_provideVar9 = this.addProvidedVar<Date>("provideVar9", "provideVar9", ((({let gensym___179115605 = initializers;
     (((gensym___179115605) == (null)) ? undefined : gensym___179115605.provideVar9)})) ?? (new Date("2025-4-23"))), false);
-    (this).__backing_provideVar10 = (this).addProvidedVar<Map<number, Per>>("provideVar10", "provideVar10", ((({let gensym___209671248 = initializers;
+    this.__backing_provideVar10 = this.addProvidedVar<Map<number, Per>>("provideVar10", "provideVar10", ((({let gensym___209671248 = initializers;
     (((gensym___209671248) == (null)) ? undefined : gensym___209671248.provideVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))), false);
-    (this).__backing_provideVar11 = (this).addProvidedVar<string | number>("provideVar11", "provideVar11", ((({let gensym___150211849 = initializers;
+    this.__backing_provideVar11 = this.addProvidedVar<string | number>("provideVar11", "provideVar11", ((({let gensym___150211849 = initializers;
     (((gensym___150211849) == (null)) ? undefined : gensym___150211849.provideVar11)})) ?? (0.0)), false);
-    (this).__backing_provideVar12 = (this).addProvidedVar<Set<string> | Per>("provideVar12", "provideVar12", ((({let gensym___256025818 = initializers;
+    this.__backing_provideVar12 = this.addProvidedVar<Set<string> | Per>("provideVar12", "provideVar12", ((({let gensym___256025818 = initializers;
     (((gensym___256025818) == (null)) ? undefined : gensym___256025818.provideVar12)})) ?? (new Per(6))), false);
   }
   public __updateStruct(initializers: __Options_Parent | undefined): void {}
   private __backing_provideVar1?: ProvideDecoratedVariable<Per>;
   public get provideVar1(): Per {
-    return (this).__backing_provideVar1!.get();
+    return this.__backing_provideVar1!.get();
   }
   public set provideVar1(value: Per) {
-    (this).__backing_provideVar1!.set(value);
+    this.__backing_provideVar1!.set(value);
   }
   private __backing_provideVar2?: ProvideDecoratedVariable<Array<number>>;
   public get provideVar2(): Array<number> {
-    return (this).__backing_provideVar2!.get();
+    return this.__backing_provideVar2!.get();
   }
   public set provideVar2(value: Array<number>) {
-    (this).__backing_provideVar2!.set(value);
+    this.__backing_provideVar2!.set(value);
   }
   private __backing_provideVar3?: ProvideDecoratedVariable<PropType>;
   public get provideVar3(): PropType {
-    return (this).__backing_provideVar3!.get();
+    return this.__backing_provideVar3!.get();
   }
   public set provideVar3(value: PropType) {
-    (this).__backing_provideVar3!.set(value);
+    this.__backing_provideVar3!.set(value);
   }
   private __backing_provideVar4?: ProvideDecoratedVariable<Set<string>>;
   public get provideVar4(): Set<string> {
-    return (this).__backing_provideVar4!.get();
+    return this.__backing_provideVar4!.get();
   }
   public set provideVar4(value: Set<string>) {
-    (this).__backing_provideVar4!.set(value);
+    this.__backing_provideVar4!.set(value);
   }
   private __backing_provideVar5?: ProvideDecoratedVariable<Array<boolean>>;
   public get provideVar5(): Array<boolean> {
-    return (this).__backing_provideVar5!.get();
+    return this.__backing_provideVar5!.get();
   }
   public set provideVar5(value: Array<boolean>) {
-    (this).__backing_provideVar5!.set(value);
+    this.__backing_provideVar5!.set(value);
   }
   private __backing_provideVar6?: ProvideDecoratedVariable<Array<Per>>;
   public get provideVar6(): Array<Per> {
-    return (this).__backing_provideVar6!.get();
+    return this.__backing_provideVar6!.get();
   }
   public set provideVar6(value: Array<Per>) {
-    (this).__backing_provideVar6!.set(value);
+    this.__backing_provideVar6!.set(value);
   }
   private __backing_provideVar7?: ProvideDecoratedVariable<Array<Per>>;
   public get provideVar7(): Array<Per> {
-    return (this).__backing_provideVar7!.get();
+    return this.__backing_provideVar7!.get();
   }
   public set provideVar7(value: Array<Per>) {
-    (this).__backing_provideVar7!.set(value);
+    this.__backing_provideVar7!.set(value);
   }
   private __backing_provideVar8?: ProvideDecoratedVariable<((sr: string)=> void)>;
   public get provideVar8(): ((sr: string)=> void) {
-    return (this).__backing_provideVar8!.get();
+    return this.__backing_provideVar8!.get();
   }
   public set provideVar8(value: ((sr: string)=> void)) {
-    (this).__backing_provideVar8!.set(value);
+    this.__backing_provideVar8!.set(value);
   }
   private __backing_provideVar9?: ProvideDecoratedVariable<Date>;
   public get provideVar9(): Date {
-    return (this).__backing_provideVar9!.get();
+    return this.__backing_provideVar9!.get();
   }
   public set provideVar9(value: Date) {
-    (this).__backing_provideVar9!.set(value);
+    this.__backing_provideVar9!.set(value);
   }
   private __backing_provideVar10?: ProvideDecoratedVariable<Map<number, Per>>;
   public get provideVar10(): Map<number, Per> {
-    return (this).__backing_provideVar10!.get();
+    return this.__backing_provideVar10!.get();
   }
   public set provideVar10(value: Map<number, Per>) {
-    (this).__backing_provideVar10!.set(value);
+    this.__backing_provideVar10!.set(value);
   }
   private __backing_provideVar11?: ProvideDecoratedVariable<string | number>;
   public get provideVar11(): string | number {
-    return (this).__backing_provideVar11!.get();
+    return this.__backing_provideVar11!.get();
   }
   public set provideVar11(value: string | number) {
-    (this).__backing_provideVar11!.set(value);
+    this.__backing_provideVar11!.set(value);
   }
   private __backing_provideVar12?: ProvideDecoratedVariable<Set<string> | Per>;
   public get provideVar12(): Set<string> | Per {
-    return (this).__backing_provideVar12!.get();
+    return this.__backing_provideVar12!.get();
   }
   public set provideVar12(value: Set<string> | Per) {
-    (this).__backing_provideVar12!.set(value);
+    this.__backing_provideVar12!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: Parent)=> Parent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Parent | undefined): void {}
   public constructor() {}

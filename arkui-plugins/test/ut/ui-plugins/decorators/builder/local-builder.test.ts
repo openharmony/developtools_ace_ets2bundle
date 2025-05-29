@@ -64,8 +64,8 @@ function main() {}
   }
   @memo() public _build(@memo() style: ((instance: BuilderDemo)=> BuilderDemo) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_BuilderDemo | undefined): void {
     Column(undefined, undefined, @memo() (() => {
-      (this).showTextBuilder();
-      (this).showTextValueBuilder("Hello @Builder");
+      this.showTextBuilder();
+      this.showTextValueBuilder("Hello @Builder");
     }));
   }
   public constructor() {}

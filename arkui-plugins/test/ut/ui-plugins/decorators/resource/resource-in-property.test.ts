@@ -54,31 +54,31 @@ i = _r("", "", "app.string.app_name");
 
 @Component({freezeWhenInactive:false}) final class ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
   public __initializeStruct(initializers: __Options_ResourceComponent | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_str = ((({let gensym___42103502 = initializers;
+    this.__backing_str = ((({let gensym___42103502 = initializers;
     (((gensym___42103502) == (null)) ? undefined : gensym___42103502.str)})) ?? (_r("", "", "app.string.app_name")));
-    (this).__backing_icon = ((({let gensym___38135554 = initializers;
+    this.__backing_icon = ((({let gensym___38135554 = initializers;
     (((gensym___38135554) == (null)) ? undefined : gensym___38135554.icon)})) ?? (_rawfile("", "", "app.photo.png")));
   }
   public __updateStruct(initializers: __Options_ResourceComponent | undefined): void {}
   private __backing_str?: Resource;
   public get str(): Resource {
-    return ((this).__backing_str as Resource);
+    return (this.__backing_str as Resource);
   }
   public set str(value: Resource) {
-    (this).__backing_str = value;
+    this.__backing_str = value;
   }
   private __backing_icon?: Resource;
   public get icon(): Resource {
-    return ((this).__backing_icon as Resource);
+    return (this.__backing_icon as Resource);
   }
   public set icon(value: Resource) {
-    (this).__backing_icon = value;
+    this.__backing_icon = value;
   }
   @memo() public _build(@memo() style: ((instance: ResourceComponent)=> ResourceComponent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_ResourceComponent | undefined): void {
     Column(undefined, undefined, (() => {
-      Text(undefined, (this).str, undefined, undefined);
+      Text(undefined, this.str, undefined, undefined);
       Text(undefined, i, undefined, undefined);
-      Image(undefined, (this).icon, undefined, undefined);
+      Image(undefined, this.icon, undefined, undefined);
     }));
   }
   public constructor() {}

@@ -66,15 +66,15 @@ class Data {
   public code: number;
   
   public constructor(code: number) {
-    (this).code = code;
+    this.code = code;
   }
   
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class Index extends CustomComponent<Index, __Options_Index> {
   public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_storageLink = new StorageLinkDecoratedVariable<number>("PropA", "storageLink", 1)
-    (this).__backing_storageLinkObject = new StorageLinkDecoratedVariable<Data>("PropB", "storageLinkObject", new Data(1))
+    this.__backing_storageLink = new StorageLinkDecoratedVariable<number>("PropA", "storageLink", 1)
+    this.__backing_storageLinkObject = new StorageLinkDecoratedVariable<Data>("PropB", "storageLinkObject", new Data(1))
   }
   
   public __updateStruct(initializers: __Options_Index | undefined): void {}
@@ -82,37 +82,37 @@ class Data {
   private __backing_storageLink?: StorageLinkDecoratedVariable<number>;
   
   public get storageLink(): number {
-    return (this).__backing_storageLink!.get();
+    return this.__backing_storageLink!.get();
   }
   
   public set storageLink(value: number) {
-    (this).__backing_storageLink!.set(value);
+    this.__backing_storageLink!.set(value);
   }
   
   private __backing_storageLinkObject?: StorageLinkDecoratedVariable<Data>;
   
   public get storageLinkObject(): Data {
-    return (this).__backing_storageLinkObject!.get();
+    return this.__backing_storageLinkObject!.get();
   }
   
   public set storageLinkObject(value: Data) {
-    (this).__backing_storageLinkObject!.set(value);
+    this.__backing_storageLinkObject!.set(value);
   }
   
   @memo() public _build(@memo() style: ((instance: Index)=> Index) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Index | undefined): void {
     Column(undefined, undefined, (() => {
       Text(@memo() ((instance: UITextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
-          (this).storageLink += 1;
+          this.storageLink += 1;
         }));
         return;
-      }), \`From AppStorage \${(this).storageLink}\`, undefined, undefined);
+      }), \`From AppStorage \${this.storageLink}\`, undefined, undefined);
       Text(@memo() ((instance: UITextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
-          (this).storageLinkObject.code += 1;
+          this.storageLinkObject.code += 1;
         }));
         return;
-      }), \`From AppStorage \${(this).storageLinkObject.code}\`, undefined, undefined);
+      }), \`From AppStorage \${this.storageLinkObject.code}\`, undefined, undefined);
     }));
   }
   

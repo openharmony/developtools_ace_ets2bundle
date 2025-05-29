@@ -59,9 +59,9 @@ function main() {}
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_numA = new StorageLinkDecoratedVariable<number>("Prop1", "numA", 33)
-    (this).__backing_stringA = new StorageLinkDecoratedVariable<string>("Prop2", "stringA", "AA")
-    (this).__backing_booleanA = new StorageLinkDecoratedVariable<boolean>("Prop3", "booleanA", true)
+    this.__backing_numA = new StorageLinkDecoratedVariable<number>("Prop1", "numA", 33)
+    this.__backing_stringA = new StorageLinkDecoratedVariable<string>("Prop2", "stringA", "AA")
+    this.__backing_booleanA = new StorageLinkDecoratedVariable<boolean>("Prop3", "booleanA", true)
   }
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
@@ -69,31 +69,31 @@ function main() {}
   private __backing_numA?: StorageLinkDecoratedVariable<number>;
   
   public get numA(): number {
-    return (this).__backing_numA!.get();
+    return this.__backing_numA!.get();
   }
   
   public set numA(value: number) {
-    (this).__backing_numA!.set(value);
+    this.__backing_numA!.set(value);
   }
   
   private __backing_stringA?: StorageLinkDecoratedVariable<string>;
   
   public get stringA(): string {
-    return (this).__backing_stringA!.get();
+    return this.__backing_stringA!.get();
   }
   
   public set stringA(value: string) {
-    (this).__backing_stringA!.set(value);
+    this.__backing_stringA!.set(value);
   }
   
   private __backing_booleanA?: StorageLinkDecoratedVariable<boolean>;
   
   public get booleanA(): boolean {
-    return (this).__backing_booleanA!.get();
+    return this.__backing_booleanA!.get();
   }
   
   public set booleanA(value: boolean) {
-    (this).__backing_booleanA!.set(value);
+    this.__backing_booleanA!.set(value);
   }
   
   @memo() public _build(@memo() style: ((instance: MyStateSample)=> MyStateSample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MyStateSample | undefined): void {}

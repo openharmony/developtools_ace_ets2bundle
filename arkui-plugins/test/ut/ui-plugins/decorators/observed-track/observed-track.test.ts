@@ -71,15 +71,15 @@ function main() {}
   private subscribedWatches: SubscribedWatches = new SubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
-    (this).subscribedWatches.addWatchSubscriber(watchId);
+    this.subscribedWatches.addWatchSubscriber(watchId);
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return (this).subscribedWatches.removeWatchSubscriber(watchId);
+    return this.subscribedWatches.removeWatchSubscriber(watchId);
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    (this).subscribedWatches.executeOnSubscribingWatches(propertyName);
+    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
   public _permissibleAddRefDepth: int32 = 0;
@@ -93,17 +93,17 @@ function main() {}
   public constructor() {}
   
   public get trackB(): number {
-    if ((((this)._permissibleAddRefDepth) > (0))) {
-      (this).__meta_trackB.addRef();
+    if (((this._permissibleAddRefDepth) > (0))) {
+      this.__meta_trackB.addRef();
     }
-    return (this).__backing_trackB;
+    return this.__backing_trackB;
   }
   
   public set trackB(newValue: number) {
-    if ((((this).__backing_trackB) !== (newValue))) {
-      (this).__backing_trackB = newValue;
-    (this).__meta_trackB.fireChange();
-    (this).executeOnSubscribingWatches("trackB");
+    if (((this.__backing_trackB) !== (newValue))) {
+      this.__backing_trackB = newValue;
+    this.__meta_trackB.fireChange();
+    this.executeOnSubscribingWatches("trackB");
     }
   }
   
