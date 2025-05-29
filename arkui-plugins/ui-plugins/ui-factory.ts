@@ -14,9 +14,9 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { BuilderLambdaNames, CustomComponentNames, hasPropertyInAnnotation } from './utils';
+import { BuilderLambdaNames, CustomComponentNames, hasPropertyInAnnotation, hasNullOrUndefinedType } from './utils';
 import { annotation } from '../common/arkts-utils';
-import { DecoratorNames } from './property-translators/utils';
+import { DecoratorNames, needDefiniteOrOptionalModifier } from './property-translators/utils';
 
 export class factory {
     /**
@@ -269,5 +269,19 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             false
         );
+    }
+
+    /*
+     * add optional or definite modifier for class property needs initializing without assignment.
+     */
+    static PreprocessClassPropertyModifier(st: arkts.AstNode): arkts.AstNode {
+        if (arkts.isClassProperty(st) && needDefiniteOrOptionalModifier(st)) {
+            if (st.typeAnnotation && hasNullOrUndefinedType(st.typeAnnotation)) {
+                st.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL;
+            } else {
+                st.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFINITE;
+            }
+        }
+        return st;
     }
 }
