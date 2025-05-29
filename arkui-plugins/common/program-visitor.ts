@@ -19,7 +19,7 @@ import { matchPrefix } from './arkts-utils';
 import { debugDump, getDumpFileName } from './debug';
 import { InteroperAbilityNames } from './predefines';
 import { PluginContext } from './plugin-context';
-import { LegacyTransformer } from '../ui-plugins/legacy-transformer';
+import { LegacyTransformer } from '../ui-plugins/interop/legacy-transformer';
 import { ComponentTransformer } from '../ui-plugins/component-transformer';
 
 export interface ProgramVisitorOptions extends VisitorOptions {

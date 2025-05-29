@@ -24,14 +24,14 @@ import { Child1 } from 'har1'
 
 @Component 
 struct MyStateSample {
-    @State stateVar: MyText = new MyText();
+    @Provide stateVar: MyText = new MyText();
     build() {
         Column() {
             Button(this.stateVar.text)
                 .onClick((e: ClickEvent) => {
                     this.stateVar.text += '~';
                 })
-            Child1({stateVar: this.stateVar, text: this.stateVar})
+            Child1()
         }
     }
 }
@@ -46,21 +46,17 @@ import { MyText } from 'har2/src/main/ets/components/MainPage'
 
 @Component
 export struct Child1{
-    @Link stateVar: MyText;
-    @Link text: MyText;
+    @Consume stateVar: MyText;
     build() {
         Column() {
             Button(this.stateVar.text)
                 .onClick(() => {
                     this.stateVar.text += '~';
                 })
-            Button(this.text.text)
-                .onClick(() => {
-                    this.text.text = 'ArkTS1.1';
-                })
         }
     }
 }
+
 
 
 //transform 1.1struct 'Child1' to ArkUICompatible
@@ -69,21 +65,26 @@ ArkUICompatible(__memo_context, ((__memo_id) + (252133223)), (() => {
     let global = ESValue.getGlobal();
     let param = ESValue.instantiateEmptyObject();
     let createState = global.getProperty("createStateVariable");
-    let stateVar_SetSource = ((value: B) => {
-        (this).stateVar = value;
+    let setFindProvideInterop = global.getProperty("setFindProvideInterop");
+    let findProvideInterop = ((providedPropName: string): Object => {
+        let provide = (this).findProvide<Object>(providedPropName);
+        if (((provide!?.getProxy()) === (undefined))) {
+        let setSource = ((value: Object) => {
+        provide!.set(value);
+        });
+        let proxyState = createState.invoke(ESValue.wrap(provide!.get()), ESValue.wrap(setSource));
+        let setProxy = ((value: Object) => {
+        proxyState.invokeMethod("set", ESValue.wrap(value));
+        });
+        let notifyCallback = ((propertyName: string) => {
+        proxyState.invokeMethod("notifyPropertyHasChangedPU");
+        });
+        configureState(provide!, proxyState, setProxy, notifyCallback);
+        }
+        let proxy = provide!.getProxy();
+        return (proxy as ESValue).unwrap()!;
     });
-    let stateVar_ProxyState = createState.invoke(ESValue.wrap((this).stateVar), ESValue.wrap(stateVar_SetSource));
-    (this).__backing_stateVar!.setProxy(stateVar_ProxyState);
-    let stateVar_SetProxy = ((value: B) => {
-        stateVar_ProxyState.invokeMethod("set", ESValue.wrap(value));
-    });
-    (this).__backing_stateVar!.setProxyValue = stateVar_SetProxy;
-    let stateVar_NotifyCallback = ((propertyName: string) => {
-        stateVar_ProxyState.invokeMethod("notifyPropertyHasChangedPU");
-    });
-    (this).__backing_stateVar!.setNotifyCallback(stateVar_NotifyCallback);
-    param.setProperty("stateVar", stateVar_ProxyState);
-    param.setProperty("text", stateVar_ProxyState);
+    setFindProvideInterop.invoke(findProvideInterop);
     let extraInfo = ESValue.instantiateEmptyObject();
     extraInfo.setProperty("page", "har1/src/main/ets/components/MainPage");
     let esundefined = ESValue.wrap(undefined);
@@ -97,8 +98,9 @@ ArkUICompatible(__memo_context, ((__memo_id) + (252133223)), (() => {
     let component = structObject.instantiate(esundefined, param, esundefined, elmtId, esblank, extraInfo);
     let create = structObject.getProperty("create");
     create.invoke(component);
+    structObject.invokeMethod("resetFindInterop")
     return {
         component: component,
         name: "Child1",
     };
-}), ((instance: ESValue) => {}));
+    }), ((instance: ESValue) => {}));

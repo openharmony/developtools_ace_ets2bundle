@@ -36,7 +36,7 @@ import { isEntryWrapperClass } from './entry-translators/utils';
 import { ImportCollector } from '../common/import-collector';
 import { DeclarationCollector } from '../common/declaration-collector';
 import { PropertyCache } from './property-translators/utils';
-import { isArkUICompatible, updateArkUICompatible } from './interop';
+import { isArkUICompatible, generateArkUICompatible } from './interop/interop';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
@@ -109,7 +109,7 @@ export class CheckedTransformer extends AbstractVisitor {
         } else if (arkts.isCallExpression(node) && isResourceNode(node)) {
             return structFactory.transformResource(node, this.projectConfig);
         } else if (isArkUICompatible(node)) {
-            return updateArkUICompatible(node as arkts.CallExpression);
+            return generateArkUICompatible(node as arkts.CallExpression);
         } else if (arkts.isTSInterfaceDeclaration(node)) {
             return structFactory.tranformInterfaceMembers(node, this.externalSourceName);
         } else if (findCanAddMemoFromArrowFunction(node)) {
