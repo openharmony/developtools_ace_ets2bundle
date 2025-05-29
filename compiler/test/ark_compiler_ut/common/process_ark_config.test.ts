@@ -535,6 +535,7 @@ mocha.describe('test process_ark_config file api', function () {
       arkObfuscator.obfConfigResolver = obConfigResolver;
       mergedObConfig.options.enableAtKeep = true;
       readProjectAndLibsSource(allFiles, mergedObConfig, arkObfuscator, false, keepFilesAndDependencies);
+      obConfigResolver.emitConsumerConfigFiles();
       expect(AtKeepCollections.keepSymbol.globalNames.has('foo2')).to.be.true;
       expect(AtKeepCollections.keepSymbol.propertyNames.has('foo2')).to.be.true;
       expect(AtKeepCollections.keepSymbol.propertyNames.has('prop21')).to.be.true;
