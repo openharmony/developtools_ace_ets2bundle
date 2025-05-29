@@ -23,12 +23,24 @@ class Model {
   }
 }
 
+@Observed
+class ModelEx {
+  text : string = '';
+  color: string = '#00ff00';
+  constructor(t: string, c: string) {
+    this.text = t;
+    this.color = c;
+  }
+}
+
 @Component
 struct CustomText {
   @ObjectLink model: Model;
+  @ObjectLink modelEx: Model | ModelEx | undefined | null;
   build() {
     Row() {
       Text(this.model.text)
+      Text(this.modelEx.text)
     }
   }
 }
