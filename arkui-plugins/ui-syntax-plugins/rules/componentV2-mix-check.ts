@@ -28,6 +28,9 @@ const rule: UISyntaxRule = {
         if (!arkts.isStructDeclaration(node)) {
           return;
         }
+        if (!node.definition) {
+          return;
+        }
         const structName = node.definition.ident?.name ?? '';
         const structNameNode = node.definition.ident;
         if (!structNameNode) {

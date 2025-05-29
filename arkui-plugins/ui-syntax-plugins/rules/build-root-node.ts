@@ -21,12 +21,29 @@ const BUILD_NAME: string = 'build';
 const BUILD_ROOT_NUM: number = 1;
 const STATEMENT_LENGTH: number = 1;
 
-function isBuildOneRoot(statements: readonly arkts.Statement[], buildNode: arkts.Identifier,
+function isBuildOneRoot(
+  entryDecoratorUsage: arkts.AnnotationUsage | undefined,
+  statements: readonly arkts.Statement[],
+  buildNode: arkts.Identifier | undefined,
   context: UISyntaxRuleContext): void {
   if (statements.length > STATEMENT_LENGTH && buildNode) {
     context.report({
       node: buildNode,
-      message: rule.messages.invalidBuildRootCount,
+      message: entryDecoratorUsage ? rule.messages.invalidBuildRoot : rule.messages.invalidBuildRootNode
+    });
+  }
+}
+
+function reportvalidBuildRoot(
+  entryDecoratorUsage: arkts.AnnotationUsage | undefined,
+  isContainer: boolean,
+  buildNode: arkts.Identifier | undefined,
+  context: UISyntaxRuleContext
+): void {
+  if (entryDecoratorUsage && !isContainer && buildNode) {
+    context.report({
+      node: buildNode,
+      message: rule.messages.invalidBuildRoot,
     });
   }
 }
@@ -38,7 +55,6 @@ function checkBuildRootNode(node: arkts.AstNode, context: UISyntaxRuleContext): 
   }
   const entryDecoratorUsage = getAnnotationUsage(node, PresetDecorators.ENTRY);
   node.definition.body.forEach(member => {
-    // Determine the number of root node
     if (!arkts.isMethodDefinition(member) || getIdentifierName(member.name) !== BUILD_NAME) {
       return;
     }
@@ -48,14 +64,13 @@ function checkBuildRootNode(node: arkts.AstNode, context: UISyntaxRuleContext): 
     }
     const buildNode = member.scriptFunction.id;
     const statements = blockStatement.statements;
-    // rule1: The 'build' method cannot have more than one root node.
     if (buildNode) {
-      isBuildOneRoot(statements, buildNode, context);
+      // rule1: The 'build' method cannot have more than one root node.
+      isBuildOneRoot(entryDecoratorUsage, statements, buildNode, context);
     }
     if (statements.length !== BUILD_ROOT_NUM) {
       return;
     }
-    // Determine whether it is a container component
     const expressionStatement = statements[0];
     if (!arkts.isExpressionStatement(expressionStatement)) {
       return;
@@ -64,29 +79,31 @@ function checkBuildRootNode(node: arkts.AstNode, context: UISyntaxRuleContext): 
     if (!arkts.isCallExpression(callExpression)) {
       return;
     }
-    const componentName = callExpression.expression.dumpSrc();
-    let isContainer: boolean = false;
-    loadedContainerComponents?.forEach(container => {
-      if (componentName.includes(container)) {
-        isContainer = true;
-      }
-    });
-    // rule2: If the component is decorated by '@Entry', 
-    // its 'build' function can have only one root node, which must be a container component.
-    if (entryDecoratorUsage && !isContainer && buildNode) {
-      context.report({
-        node: buildNode,
-        message: rule.messages.invalidBuildRoot,
-      });
+    let componentName: string = '';
+    if (arkts.isMemberExpression(callExpression.expression) &&
+      arkts.isCallExpression(callExpression.expression.object) &&
+      arkts.isIdentifier(callExpression.expression.object.expression)) {
+      componentName = getIdentifierName(callExpression.expression.object.expression);
+    } else if (arkts.isIdentifier(callExpression.expression)) {
+      componentName = getIdentifierName(callExpression.expression);
     }
+    let isContainer: boolean = false;
+    if (!loadedContainerComponents) {
+      return;
+    }
+    isContainer = componentName
+      ? loadedContainerComponents.has(componentName)
+      : false;
+    // rule2: its 'build' function can have only one root node, which must be a container component.
+    reportvalidBuildRoot(entryDecoratorUsage, isContainer, buildNode, context);
   });
 }
 
 const rule: UISyntaxRule = {
   name: 'build-root-node',
   messages: {
-    invalidBuildRootCount: `The 'build' method cannot have more than one root node.`,
-    invalidBuildRoot: `If the component is decorated by '@Entry', its 'build' function can have only one root node, which must be a container component.`
+    invalidBuildRoot: `In an '@Entry' decorated component, the 'build' function can have only one root node, which must be a container component.`,
+    invalidBuildRootNode: `The 'build' function can have only one root node.`
   },
   setup(context) {
     return {
