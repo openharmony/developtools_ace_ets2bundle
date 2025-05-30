@@ -12,15 +12,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// @AnimatableExtend base use case
 @AnimatableExtend(Polyline)
 function animatablePoints(points: number) {
   .strokeOpacity(points)
   .backgroundColor(Color.Red)
 }
 
+@AnimatableExtend(Polyline)
+function animatablePointsEmpty(points: number) {
+
+}
+
 @AnimatableExtend(Text)
 function attributeExtend() {
   .fontSize(50)
+}
+
+@AnimatableExtend(Text)
+function attributeExtendEmpty() {
+  
 }
 
 @Entry
@@ -32,11 +44,13 @@ struct HomeComponent {
     Column() {
       Polyline()
         .animatablePoints(this.points)
+        .animatablePointsEmpty(this.points)
         .strokeWidth(3)
         .height(100)
         .width(100)
       Text("hello")
         .attributeExtend()
+        .attributeExtendEmpty()
     }
   }
 }
