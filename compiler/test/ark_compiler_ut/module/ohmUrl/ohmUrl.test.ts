@@ -202,7 +202,7 @@ mocha.describe('generate ohmUrl', function () {
       'Failed to get a resolved OhmUrl for "/testProjectRootPath/entry/oh_modules/json5/dist/index.js" imported by "importTest.ts".',
       '',
       ['Check whether the module which /testProjectRootPath/entry/oh_modules/json5/dist/index.js belongs to is correctly configured.',
-       'Check the corresponding file name is correct(including case-sensitivity).']
+       'Check if the corresponding file name "/testProjectRootPath/entry/oh_modules/json5/dist/index.js" is correct(including case-sensitivity).']
     );
     const logger = CommonLogger.getInstance(this.rollup);
     const stub = sinon.stub(logger.getLoggerFromErrorCode(errInfo.code), 'printError');
@@ -224,7 +224,7 @@ mocha.describe('generate ohmUrl', function () {
       'Failed to get a resolved OhmUrl for "/testProjectRootPath/entry/oh_modules/json5/dist/index.js" imported by "importTest.ts".',
       '',
       ['Check whether the module which /testProjectRootPath/entry/oh_modules/json5/dist/index.js belongs to is correctly configured.',
-       'Check the corresponding file name is correct(including case-sensitivity).']
+       'Check if the corresponding file name "/testProjectRootPath/entry/oh_modules/json5/dist/index.js" is correct(including case-sensitivity).']
     );
     CommonLogger.destroyInstance();
     const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
@@ -252,7 +252,7 @@ mocha.describe('generate ohmUrl', function () {
       '"/testProjectRootPath/entry/oh_modules/json5/dist/index.js" imported by "importTest.ts".',
       '',
       ['Check whether the module which /testProjectRootPath/entry/oh_modules/json5/dist/index.js belongs to is correctly configured.',
-       'Check the corresponding file name is correct(including case-sensitivity).']
+       'Check if the corresponding file name "/testProjectRootPath/entry/oh_modules/json5/dist/index.js" is correct(including case-sensitivity).']
     );
     const logger = CommonLogger.getInstance(this.rollup);
     const stub = sinon.stub(logger.getLoggerFromErrorCode(errInfo.code), 'printError');
@@ -276,7 +276,7 @@ mocha.describe('generate ohmUrl', function () {
       '"/testProjectRootPath/entry/oh_modules/json5/dist/index.js" imported by "importTest.ts".',
       '',
       ['Check whether the module which /testProjectRootPath/entry/oh_modules/json5/dist/index.js belongs to is correctly configured.',
-       'Check the corresponding file name is correct(including case-sensitivity).']
+       'Check if the corresponding file name "/testProjectRootPath/entry/oh_modules/json5/dist/index.js" is correct(including case-sensitivity).']
     );
     CommonLogger.destroyInstance();
     const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
@@ -983,7 +983,7 @@ mocha.describe('generate ohmUrl', function () {
       'Failed to get a resolved OhmUrl for "/testProjectRootPath/entry/oh_modules/json5/dist/index.js" imported by "importTest.ts".',
       '',
       ['Check whether the "json5" module which /testProjectRootPath/entry/oh_modules/json5/dist/index.js belongs to is correctly configured.',
-       'Check the corresponding file name is correct(including case-sensitivity).']
+       'Check if the corresponding file name "/testProjectRootPath/entry/oh_modules/json5/dist/index.js" is correct(including case-sensitivity).']
     );
     const logger = CommonLogger.getInstance(this.rollup);
     const stub = sinon.stub(logger.getLoggerFromErrorCode(errInfo.code), 'printError');
@@ -1015,7 +1015,7 @@ mocha.describe('generate ohmUrl', function () {
       'Failed to get a resolved OhmUrl for "/testProjectRootPath/entry/oh_modules/json5/dist/index.js" imported by "importTest.ts".',
       '',
       ['Check whether the "json5" module which /testProjectRootPath/entry/oh_modules/json5/dist/index.js belongs to is correctly configured.',
-       'Check the corresponding file name is correct(including case-sensitivity).']
+       'Check if the corresponding file name "/testProjectRootPath/entry/oh_modules/json5/dist/index.js" is correct(including case-sensitivity).']
     );
     CommonLogger.destroyInstance();
     const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;

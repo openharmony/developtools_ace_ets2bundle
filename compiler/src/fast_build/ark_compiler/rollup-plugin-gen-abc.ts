@@ -47,11 +47,17 @@ export function genAbc() {
     shouldInvalidCache: shouldInvalidCache,
     transform: transformForModule,
     moduleParsed(moduleInfo: moduleInfoType): void {
-      // process single ModuleSourceFile
-      if (this.share.projectConfig.singleFileEmit) {
-        const hookEventFactory: CompileEvent | undefined = getHookEventFactory(this.share, 'genAbc', 'moduleParsed');
-        ModuleSourceFile.processSingleModuleSourceFile(this, moduleInfo.id, hookEventFactory);
+      // Process single ModuleSourceFile
+      if (!this.share.projectConfig.singleFileEmit) {
+        return;
       }
+      // Skip processing if a module outside the project is referenced but not configured in build_config.json;
+      // Hvigor will report the error at beforeBuildEnd.
+      if (moduleInfo?.meta?.outsideModuleImports && Array.isArray(moduleInfo.meta.outsideModuleImports)) {
+        return;
+      }
+      const hookEventFactory: CompileEvent | undefined = getHookEventFactory(this.share, 'genAbc', 'moduleParsed');
+      ModuleSourceFile.processSingleModuleSourceFile(this, moduleInfo.id, hookEventFactory);    
     },
     beforeBuildEnd: {
       // [pre] means this handler running in first at the stage of beforeBuildEnd.
