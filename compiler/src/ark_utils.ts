@@ -131,7 +131,7 @@ export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: O
       `Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}".`,
       '',
       [`Check whether the "${pkgName}" module which ${filePath} belongs to is correctly configured.`,
-       'Check the corresponding file name is correct(including case-sensitivity).']
+       `Check if the corresponding file name "${filePath}" is correct(including case-sensitivity).`]
     );
     logger.printError(errInfo);
     return filePath;
@@ -231,7 +231,7 @@ function processPackageDir(params: Object): string {
         `Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}".`,
         '',
         [`Check whether the module which ${originalFilePath} belongs to is correctly configured.`,
-         'Check the corresponding file name is correct(including case-sensitivity).']
+         `Check if the corresponding file name "${originalFilePath}" is correct(including case-sensitivity).`]
       );
       logger.printError(errInfo);
       return originalFilePath;
@@ -270,7 +270,7 @@ function processPackageDir(params: Object): string {
     `Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}".`,
     '',
     [`Check whether the module which ${originalFilePath} belongs to is correctly configured.`,
-     'Check the corresponding file name is correct(including case-sensitivity).']
+     `Check if the corresponding file name "${originalFilePath}" is correct(including case-sensitivity).`]
   );
   logger.printError(errInfo);
   return originalFilePath;
