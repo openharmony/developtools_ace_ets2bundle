@@ -12,6 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// @Extend base use case
 @Extend Text.fancy(color:string){
   .backgroundColor(color)
 }
@@ -21,7 +23,7 @@
   .fancy(Color.Red)
 }
 
-@Extend(Button) function fancybut(color:string|Color){
+@Extend(Button) function fancybutParam(color:string|Color){
   .backgroundColor(color)
   .height(100)
   .stateStyles({
@@ -29,6 +31,24 @@
         .width(200)
       }
   })
+}
+
+@Extend(Button) function fancybut(){
+  .backgroundColor('red')
+  .height(100)
+  .stateStyles({
+      normal: {
+        .width(200)
+      }
+  })
+}
+
+@Extend(Button) function fancybutParamEmpty(color:string|Color){
+  
+}
+
+@Extend(Button) function fancybutEmpty(){
+  
 }
 
 @Entry
@@ -39,18 +59,40 @@ struct FancyUse {
       Row() {
         Text("Just Fancy").fancy(Color.Yellow)
         Text("Super Fancy Text").superFancy(24)
-        Button("Fancy Button").fancybut(Color.Green)
+        Button("Fancy Button")
+        .fancybutParam(Color.Green)
+        .fancybut()
+        .fancybutParamEmpty(Color.Green)
+        .fancybutEmpty()
+
       }
       Row({ space: 10 }) {
         Text("Fancy")
-          .fancytext(24)
+          .fancytextParam(24)
+          .fancytextParamEmpty(24)
+          .fancytext()
+          .fancytextEmpty()
       }
     }
   }
 }
 
-@Extend(Text) function fancytext(fontSize: number) {
+@Extend(Text) function fancytextParam(fontSize: number) {
   .fontColor(Color.Red)
   .fontSize(fontSize)
   .fontStyle(FontStyle.Italic)
+}
+
+@Extend(Text) function fancytextParamEmpty(fontSize: number) {
+
+}
+
+@Extend(Text) function fancytext() {
+  .fontColor(Color.Red)
+  .fontSize(30)
+  .fontStyle(FontStyle.Italic)
+}
+
+@Extend(Text) function fancytextEmpty() {
+
 }

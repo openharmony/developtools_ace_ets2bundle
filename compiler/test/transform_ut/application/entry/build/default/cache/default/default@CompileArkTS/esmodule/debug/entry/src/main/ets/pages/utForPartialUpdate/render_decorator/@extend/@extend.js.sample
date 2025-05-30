@@ -16,6 +16,7 @@
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
+// @Extend base use case
 function __Text__fancy(color) {
     Text.backgroundColor(color);
 }
@@ -23,12 +24,23 @@ function __Text__superFancy(size) {
     Text.fontSize(size);
     __Text__fancy(Color.Red);
 }
-function __Button__fancybut(color) {
+function __Button__fancybutParam(color) {
     Button.backgroundColor(color);
     Button.height(100);
     ViewStackProcessor.visualState("normal");
     Button.width(200);
     ViewStackProcessor.visualState();
+}
+function __Button__fancybut() {
+    Button.backgroundColor('red');
+    Button.height(100);
+    ViewStackProcessor.visualState("normal");
+    Button.width(200);
+    ViewStackProcessor.visualState();
+}
+function __Button__fancybutParamEmpty(color) {
+}
+function __Button__fancybutEmpty() {
 }
 class FancyUse extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
@@ -68,7 +80,10 @@ class FancyUse extends ViewPU {
         Text.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel("Fancy Button");
-            __Button__fancybut(Color.Green);
+            __Button__fancybutParam(Color.Green);
+            __Button__fancybut();
+            __Button__fancybutParamEmpty(Color.Green);
+            __Button__fancybutEmpty();
         }, Button);
         Button.pop();
         Row.pop();
@@ -77,7 +92,10 @@ class FancyUse extends ViewPU {
         }, Row);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("Fancy");
-            __Text__fancytext(24);
+            __Text__fancytextParam(24);
+            __Text__fancytextParamEmpty(24);
+            __Text__fancytext();
+            __Text__fancytextEmpty();
         }, Text);
         Text.pop();
         Row.pop();
@@ -90,10 +108,20 @@ class FancyUse extends ViewPU {
         return "FancyUse";
     }
 }
-function __Text__fancytext(fontSize) {
+function __Text__fancytextParam(fontSize) {
     Text.fontColor(Color.Red);
     Text.fontSize(fontSize);
     Text.fontStyle(FontStyle.Italic);
 }
+function __Text__fancytextParamEmpty(fontSize) {
+}
+function __Text__fancytext() {
+    Text.fontColor(Color.Red);
+    Text.fontSize(30);
+    Text.fontStyle(FontStyle.Italic);
+}
+function __Text__fancytextEmpty() {
+}
+
 registerNamedRoute(() => new FancyUse(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@extend/@extend", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@extend/@extend", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@extend.js.map
