@@ -86,11 +86,7 @@ export let arkTSHybridModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
 
 let arkTSEvoFileOHMUrlMap: Map<string, string> = new Map();
 
-let globalDeclarations: Map<string, ts.Statement> = new Map();
-
 let declaredClassVars: Set<string> = new Set();
-
-let fullNameToTmpVar: Map<string, string> = new Map();
 
 export function addDeclFilesConfig(filePath: string, projectConfig: Object, logger: Object,
   pkgPath: string, pkgName: string): void {
@@ -181,9 +177,7 @@ export function cleanUpProcessArkTSEvolutionObj(): void {
   pkgDeclFilesConfig = {};
   arkTSEvoFileOHMUrlMap = new Map();
   interopTransformLog.cleanUp();
-  globalDeclarations = new Map();
   declaredClassVars = new Set();
-  fullNameToTmpVar = new Map();
 }
 
 export async function writeBridgeCodeFileSyncByNode(node: ts.SourceFile, moduleId: string,
@@ -231,11 +225,14 @@ export function interopTransform(program: ts.Program, id: string, mixCompile: bo
   const typeChecker: ts.TypeChecker = program.getTypeChecker();
   return (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
     const scopeUsedNames: WeakMap<ts.Node, Set<string>> = new WeakMap<ts.Node, Set<string>>();
+    const fullNameToTmpVar: Map<string, string> = new Map();
+    const globalDeclarations: Map<string, ts.Statement> = new Map();
     return (rootNode: ts.SourceFile) => {
       interopTransformLog.sourceFile = rootNode;
       const classToInterfacesMap: Map<ts.ClassDeclaration, Set<string>> = collectInterfacesMap(rootNode, typeChecker);
       // Support for creating 1.2 type object literals in 1.1 modules
-      const visitor: ts.Visitor = createObjectLiteralVisitor(context, typeChecker, scopeUsedNames);
+      const visitor: ts.Visitor =
+        createObjectLiteralVisitor(rootNode, context, typeChecker, scopeUsedNames, fullNameToTmpVar, globalDeclarations);
       const processNode: ts.SourceFile = ts.visitEachChild(rootNode, visitor, context);
       // Support 1.1 classes to implement 1.2 interfaces
       const withHeritage: ts.SourceFile = classToInterfacesMap.size > 0 ?
@@ -274,8 +271,9 @@ function isFromArkTSEvolutionModule(node: ts.Node): boolean {
   return false;
 }
 
-function createObjectLiteralVisitor(context: ts.TransformationContext, typeChecker: ts.TypeChecker,
-  scopeUsedNames: WeakMap<ts.Node, Set<string>>): ts.Visitor {
+function createObjectLiteralVisitor(rootNode: ts.SourceFile, context: ts.TransformationContext, typeChecker: ts.TypeChecker,
+  scopeUsedNames: WeakMap<ts.Node, Set<string>>, fullNameToTmpVar: Map<string, string>,
+  globalDeclarations: Map<string, ts.Statement>): ts.Visitor {
   return function visitor(node: ts.SourceFile): ts.SourceFile {
     if (!ts.isObjectLiteralExpression(node)) {
       return ts.visitEachChild(node, visitor, context);
@@ -286,10 +284,12 @@ function createObjectLiteralVisitor(context: ts.TransformationContext, typeCheck
       return ts.visitEachChild(node, visitor, context);
     }
     const isRecordType: boolean = contextualType.aliasSymbol?.escapedName === 'Record' &&
-      (typeof ts.isStaticRecord === 'function' && ts.isStaticRecord(contextualType));
+      (typeof typeChecker.isStaticRecord === 'function' && typeChecker.isStaticRecord(contextualType));
     const finalType: ts.Type = unwrapType(node, contextualType);
     const decl : ts.Declaration = (finalType.symbol?.declarations || finalType.aliasSymbol?.declarations)?.[0];
+    
     let className: string;
+    let tmpObjName: string;
     if (!isRecordType) {
       if (!decl || !isFromArkTSEvolutionModule(decl)) {
         return ts.visitEachChild(node, visitor, context);
@@ -302,29 +302,23 @@ function createObjectLiteralVisitor(context: ts.TransformationContext, typeCheck
       if (ts.isClassDeclaration(decl) && !hasZeroArgConstructor(decl, className)) {
         return ts.visitEachChild(node, visitor, context);
       }
+      tmpObjName = getUniqueName(rootNode, 'tmpObj', scopeUsedNames);
+      declareGlobalTemp(tmpObjName, globalDeclarations);
     }
-
-    const scope: ts.Node = getScope(node);
-    const tmpObjName: string = getUniqueName(scope, 'tmpObj', scopeUsedNames);
+    
     const fullName: string = buildFullClassName(decl, finalType, className, isRecordType);
     const getCtorExpr: ts.Expression = buildGetConstructorCall(fullName, isRecordType);
     let tmpClassName: string;
     if (fullNameToTmpVar.has(fullName)) {
       tmpClassName = fullNameToTmpVar.get(fullName)!;
     } else {
-      tmpClassName = getUniqueName(scope, isRecordType ? 'tmpRecord' : 'tmpClass', scopeUsedNames);
+      tmpClassName = getUniqueName(rootNode, isRecordType ? 'tmpRecord' : 'tmpClass', scopeUsedNames);
       fullNameToTmpVar.set(fullName, tmpClassName);
-      declareGlobalTemp(tmpClassName, getCtorExpr);
+      declareGlobalTemp(tmpClassName, globalDeclarations, getCtorExpr);
     }
-    declareGlobalTemp(tmpObjName);
 
-    const assignments: ts.Expression[] = buildPropertyAssignments(node, tmpObjName, !isRecordType);
-    return ts.factory.createParenthesizedExpression(ts.factory.createCommaListExpression([
-      ts.factory.createAssignment(ts.factory.createIdentifier(tmpObjName),
-        ts.factory.createNewExpression(ts.factory.createIdentifier(tmpClassName), undefined, [])),
-      ...assignments,
-      ts.factory.createIdentifier(tmpObjName)
-    ]));
+    return ts.factory.createParenthesizedExpression(
+      ts.factory.createCommaListExpression(buildCommaExpressions(node, isRecordType, tmpObjName, tmpClassName)));
   };
 }
 
@@ -401,19 +395,18 @@ function hasZeroArgConstructor(decl: ts.ClassDeclaration, className: string): bo
 
 function buildFullClassName(decl: ts.Declaration, finalType: ts.Type, className: string, isRecordType: boolean): string {
   if (isRecordType) {
-    return 'Lescompat/Record';
+    return 'Lescompat/Record;';
   }
   const basePath: string = getArkTSEvoFileOHMUrl(finalType);
   return ts.isInterfaceDeclaration(decl) ? 
-    `L${basePath}/${className}$ObjectLiteral` :
-    `L${basePath}/${className}`;
+    `L${basePath}/${basePath.split('/').join('$')}$${className}$ObjectLiteral;` :
+    `L${basePath}/${className};`;
 }
 
 function buildGetConstructorCall(fullName: string, isRecord: boolean): ts.Expression {
   return ts.factory.createCallExpression(
-    ts.factory.createPropertyAccessExpression(
-      ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('globalThis'), 'gtest'),
-      isRecord ? 'etsVM.getInstance' : 'etsVM.getClass'),
+    ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('globalThis'),
+      isRecord ? 'Panda.getInstance' : 'Panda.getClass'),
     undefined,
     [ts.factory.createStringLiteral(fullName)]
   );
@@ -434,6 +427,25 @@ function buildPropertyAssignments(node: ts.ObjectLiteralExpression, tmpObjName: 
   }).filter(Boolean) as ts.Expression[];
 }
 
+function buildCommaExpressions(node: ts.ObjectLiteralExpression, isRecordType: boolean,
+  tmpObjName: string, tmpClassName: string): ts.Expression[] {
+  const assignments: ts.Expression[] =
+    buildPropertyAssignments(node, isRecordType ? tmpClassName : tmpObjName, !isRecordType);
+
+  if (isRecordType) {
+    return [...assignments, ts.factory.createIdentifier(tmpClassName)];
+  }
+
+  return [
+    ts.factory.createAssignment(
+      ts.factory.createIdentifier(tmpObjName),
+      ts.factory.createNewExpression(ts.factory.createIdentifier(tmpClassName), undefined, [])
+    ),
+    ...assignments,
+    ts.factory.createIdentifier(tmpObjName)
+  ];
+}
+
 function getArkTSEvoFileOHMUrl(contextualType: ts.Type): string {
   const decl: ts.Declaration = (contextualType.symbol?.declarations || contextualType.aliasSymbol?.declarations)?.[0];
   if (!decl) {
@@ -441,14 +453,6 @@ function getArkTSEvoFileOHMUrl(contextualType: ts.Type): string {
   }
   const sourceFilePath: string = toUnixPath(decl.getSourceFile().fileName);
   return arkTSEvoFileOHMUrlMap.get(sourceFilePath);
-}
-
-function getScope(node: ts.Node): ts.Node {
-  let current: ts.Node | undefined = node;
-  while (current && !ts.isBlock(current) && !ts.isSourceFile(current)) {
-    current = current.parent;
-  }
-  return current ?? node.getSourceFile();
 }
 
 function getUniqueName(scope: ts.Node, base: string, usedNames: WeakMap<ts.Node, Set<string>>): string {
@@ -465,7 +469,7 @@ function getUniqueName(scope: ts.Node, base: string, usedNames: WeakMap<ts.Node,
   return name;
 }
 
-function declareGlobalTemp(name: string, initializer?: ts.Expression): ts.Statement {
+function declareGlobalTemp(name: string, globalDeclarations: Map<string, ts.Statement>, initializer?: ts.Expression): ts.Statement {
   if (initializer && declaredClassVars.has(name)) {
     return globalDeclarations.get(name)!;
   }
