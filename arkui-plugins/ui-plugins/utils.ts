@@ -15,12 +15,14 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { annotation } from '../common/arkts-utils';
-import { DecoratorNames } from './property-translators/utils';
+import { ImportCollector } from './import-collector';
+import { ARKUI_STATEMANAGEMENT_IMPORT_NAME, IMPORT_SOURCE_MAP_V2 } from '../common/predefines';
+import { DeclarationCollector } from '../common/declaration-collector';
 
 export enum CustomComponentNames {
-    ENTRY_ANNOTATION_NAME = 'Entry',
-    COMPONENT_ANNOTATION_NAME = 'Component',
-    RESUABLE_ANNOTATION_NAME = 'Reusable',
+    ENTRY_ANNOTATION = 'Entry',
+    COMPONENT_ANNOTATION = 'Component',
+    RESUABLE_ANNOTATION = 'Reusable',
     COMPONENT_BUILD_ORI = 'build',
     COMPONENT_CONSTRUCTOR_ORI = 'constructor',
     COMPONENT_DEFAULT_IMPORT = 'arkui.component.customComponent',
@@ -51,6 +53,21 @@ export enum Dollars {
     DOLLAR_RESOURCE = '$r',
     DOLLAR_RAWFILE = '$rawfile',
     DOLLAR_DOLLAR = '$$',
+    TRANSFORM_DOLLAR_RESOURCE = '_r',
+    TRANSFORM_DOLLAR_RAWFILE = '_rawfile',
+}
+
+export enum MemoNames {
+    MEMO = 'memo',
+}
+
+// IMPORT
+export function findImportSource(importName: string): string {
+    const source = IMPORT_SOURCE_MAP_V2.get(importName);
+    if (!source) {
+        throw new Error(`cannot find "${importName}" in the import source map.`);
+    }
+    return source;
 }
 
 export function findLocalImport(
@@ -67,117 +84,9 @@ export function findLocalImport(
     return importSpecifier?.local ?? importSpecifier?.imported;
 }
 
-// TODO: currently, we forcely assume initializerOptions is named in pattern __Options_xxx
-export function getCustomComponentNameFromInitializerOptions(name: string): string | undefined {
-    const prefix: string = CustomComponentNames.COMPONENT_INTERFACE_PREFIX;
-    if (name.startsWith(prefix)) {
-        return name.substring(prefix.length);
-    }
-}
-
-export function getCustomComponentOptionsName(className: string): string {
-    return `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${className}`;
-}
-
+// AST NODE
 export function isStatic(node: arkts.AstNode): boolean {
     return node.isStatic;
-}
-
-export function getTypeParamsFromClassDecl(node: arkts.ClassDeclaration | undefined): readonly arkts.TSTypeParameter[] {
-    return node?.definition?.typeParams?.params ?? [];
-}
-
-export function getTypeNameFromTypeParameter(node: arkts.TSTypeParameter | undefined): string | undefined {
-    return node?.name?.name;
-}
-
-export function createOptionalClassProperty(
-    name: string,
-    property: arkts.ClassProperty,
-    stageManagementIdent: string,
-    modifiers: arkts.Es2pandaModifierFlags,
-    needMemo: boolean = false
-): arkts.ClassProperty {
-    const newType: arkts.TypeNode | undefined = property.typeAnnotation?.clone();
-    if (needMemo) {
-        newType?.setAnnotations([annotation('memo')]);
-    }
-    const newProperty = arkts.factory.createClassProperty(
-        arkts.factory.createIdentifier(name),
-        undefined,
-        stageManagementIdent.length ? createStageManagementType(stageManagementIdent, property) : newType,
-        modifiers,
-        false
-    );
-    return arkts.classPropertySetOptional(newProperty, true);
-}
-
-export function createStageManagementType(
-    stageManagementIdent: string,
-    property: arkts.ClassProperty
-): arkts.ETSTypeReference {
-    return arkts.factory.createTypeReference(
-        arkts.factory.createTypeReferencePart(
-            arkts.factory.createIdentifier(stageManagementIdent),
-            arkts.factory.createTSTypeParameterInstantiation([
-                property.typeAnnotation ? property.typeAnnotation.clone() : arkts.factory.createETSUndefinedType(),
-            ])
-        )
-    );
-}
-
-export function getGettersFromClassDecl(definition: arkts.ClassDefinition): arkts.MethodDefinition[] {
-    return definition.body.filter(
-        (member) =>
-            arkts.isMethodDefinition(member) &&
-            arkts.hasModifierFlag(member, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_GETTER)
-    ) as arkts.MethodDefinition[];
-}
-
-export type MemoAstNode =
-    | arkts.ScriptFunction
-    | arkts.ETSParameterExpression
-    | arkts.ClassProperty
-    | arkts.TSTypeAliasDeclaration
-    | arkts.ETSFunctionType
-    | arkts.ArrowFunctionExpression
-    | arkts.ETSUnionType;
-
-export function isMemoAnnotation(node: arkts.AnnotationUsage, memoName: string): boolean {
-    if (!(node.expr !== undefined && arkts.isIdentifier(node.expr) && node.expr.name === memoName)) {
-        return false;
-    }
-    return true;
-}
-
-export function addMemoAnnotation<T extends MemoAstNode>(node: T, memoName: string = 'memo'): T {
-    if (arkts.isETSUnionType(node)) {
-        const functionType = node.types.find((type) => arkts.isETSFunctionType(type));
-        if (!functionType) {
-            return node;
-        }
-        addMemoAnnotation(functionType, memoName);
-        return node;
-    }
-    const newAnnotations: arkts.AnnotationUsage[] = [
-        ...node.annotations.filter((it) => !isMemoAnnotation(it, memoName)),
-        annotation(memoName),
-    ];
-    if (arkts.isEtsParameterExpression(node)) {
-        node.annotations = newAnnotations;
-        return node;
-    }
-    return node.setAnnotations(newAnnotations) as T;
-}
-
-export function hasPropertyInAnnotation(annotation: arkts.AnnotationUsage, propertyName: string): boolean {
-    return !!annotation.properties.find(
-        (annoProp: arkts.AstNode) =>
-            arkts.isClassProperty(annoProp) &&
-            annoProp.key &&
-            arkts.isIdentifier(annoProp.key) &&
-            annoProp.key.name === propertyName
-    );
 }
 
 /**
@@ -196,4 +105,228 @@ export function hasNullOrUndefinedType(type: arkts.TypeNode): boolean {
         res = true;
     }
     return res;
+}
+
+// TYPE PARAMETER
+export function getTypeParamsFromClassDecl(node: arkts.ClassDeclaration | undefined): readonly arkts.TSTypeParameter[] {
+    return node?.definition?.typeParams?.params ?? [];
+}
+
+export function getTypeNameFromTypeParameter(node: arkts.TSTypeParameter | undefined): string | undefined {
+    return node?.name?.name;
+}
+
+// GETTER
+export function getGettersFromClassDecl(definition: arkts.ClassDefinition): arkts.MethodDefinition[] {
+    return definition.body.filter(
+        (member) =>
+            arkts.isMethodDefinition(member) &&
+            arkts.hasModifierFlag(member, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_GETTER)
+    ) as arkts.MethodDefinition[];
+}
+
+// ANNOTATION
+export function hasPropertyInAnnotation(annotation: arkts.AnnotationUsage, propertyName: string): boolean {
+    return !!annotation.properties.find(
+        (annoProp: arkts.AstNode) =>
+            arkts.isClassProperty(annoProp) &&
+            annoProp.key &&
+            arkts.isIdentifier(annoProp.key) &&
+            annoProp.key.name === propertyName
+    );
+}
+
+// CUSTOM COMPONENT
+export type CustomComponentInfo = {
+    name: string;
+    isDecl: boolean;
+    annotations: CustomComponentAnontations;
+};
+
+export type CustomComponentAnontations = {
+    component?: arkts.AnnotationUsage;
+    entry?: arkts.AnnotationUsage;
+    reusable?: arkts.AnnotationUsage;
+};
+
+export function isCustomComponentAnnotation(
+    anno: arkts.AnnotationUsage,
+    decoratorName: CustomComponentNames,
+    ignoreDecl?: boolean
+): boolean {
+    if (!(!!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName)) {
+        return false;
+    }
+    if (!ignoreDecl) {
+        const decl = arkts.getDecl(anno.expr);
+        if (!decl) {
+            return false;
+        }
+        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        if (!moduleName) {
+            return false;
+        }
+        DeclarationCollector.getInstance().collect(decl);
+    }
+    return true;
+}
+
+export function collectCustomComponentScopeInfo(
+    node: arkts.ClassDeclaration | arkts.StructDeclaration
+): CustomComponentInfo | undefined {
+    const definition: arkts.ClassDefinition | undefined = node.definition;
+    if (!definition || !definition?.ident?.name) {
+        return undefined;
+    }
+    const isStruct = arkts.isStructDeclaration(node);
+    const isDecl: boolean = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
+    const isCustomComponentClassDecl = !isStruct && isDecl;
+    const shouldIgnoreDecl = isStruct || isDecl;
+    if (isCustomComponentClassDecl && definition.ident.name !== CustomComponentNames.COMPONENT_CLASS_NAME) {
+        return undefined;
+    }
+    let annotations: CustomComponentAnontations = {};
+    if (!isCustomComponentClassDecl) {
+        let isCustomComponent: boolean = false;
+        for (const anno of definition.annotations) {
+            const isComponent = isCustomComponentAnnotation(
+                anno,
+                CustomComponentNames.COMPONENT_ANNOTATION,
+                shouldIgnoreDecl
+            );
+            const isEntry = isCustomComponentAnnotation(anno, CustomComponentNames.ENTRY_ANNOTATION, shouldIgnoreDecl);
+            const isReusable = isCustomComponentAnnotation(
+                anno,
+                CustomComponentNames.RESUABLE_ANNOTATION,
+                shouldIgnoreDecl
+            );
+            isCustomComponent ||= isComponent;
+            annotations = {
+                ...annotations,
+                ...(isComponent && !annotations?.component && { component: anno }),
+                ...(isEntry && !annotations?.entry && { entry: anno }),
+                ...(isReusable && !annotations?.reusable && { reusable: anno }),
+            };
+        }
+        if (!isCustomComponent) {
+            return undefined;
+        }
+    }
+    return {
+        name: definition.ident.name,
+        isDecl,
+        annotations: annotations as CustomComponentAnontations,
+    };
+}
+
+export function isComponentStruct(node: arkts.StructDeclaration, scopeInfo: CustomComponentInfo): boolean {
+    return scopeInfo.name === node.definition.ident?.name;
+}
+
+/**
+ * Determine whether it is a custom component.
+ *
+ * @param node class declaration node
+ */
+export function isCustomComponentClass(node: arkts.ClassDeclaration, scopeInfo: CustomComponentInfo): boolean {
+    if (!node.definition?.ident?.name) {
+        return false;
+    }
+    const name: string = node.definition.ident.name;
+    if (scopeInfo.isDecl) {
+        return name === CustomComponentNames.COMPONENT_CLASS_NAME;
+    }
+    return name === scopeInfo.name;
+}
+
+export function isCustomComponentInterface(node: arkts.TSInterfaceDeclaration): boolean {
+    const checkPrefix = !!node.id?.name.startsWith(CustomComponentNames.COMPONENT_INTERFACE_PREFIX);
+    const checkComponent = node.annotations.some((anno) =>
+        isCustomComponentAnnotation(anno, CustomComponentNames.COMPONENT_ANNOTATION)
+    );
+    return checkPrefix && checkComponent;
+}
+
+export function getCustomComponentOptionsName(className: string): string {
+    return `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${className}`;
+}
+
+// MEMO
+export type MemoAstNode =
+    | arkts.ScriptFunction
+    | arkts.ETSParameterExpression
+    | arkts.ClassProperty
+    | arkts.TSTypeAliasDeclaration
+    | arkts.ETSFunctionType
+    | arkts.ArrowFunctionExpression
+    | arkts.ETSUnionType;
+
+export function hasMemoAnnotation<T extends MemoAstNode>(node: T): boolean {
+    return node.annotations.some((it) => isMemoAnnotation(it, MemoNames.MEMO));
+}
+
+export function collectMemoAnnotationImport(memoName: MemoNames = MemoNames.MEMO): void {
+    ImportCollector.getInstance().collectImport(memoName);
+}
+
+export function collectMemoAnnotationSource(memoName: MemoNames = MemoNames.MEMO): void {
+    if (memoName === MemoNames.MEMO) {
+        ImportCollector.getInstance().collectSource(memoName, 'arkui.stateManagement.runtime');
+    }
+}
+
+export function findCanAddMemoFromTypeAnnotation(
+    typeAnnotation: arkts.AstNode | undefined
+): typeAnnotation is arkts.ETSFunctionType {
+    if (!typeAnnotation) {
+        return false;
+    }
+    if (arkts.isETSFunctionType(typeAnnotation)) {
+        return true;
+    } else if (arkts.isETSUnionType(typeAnnotation)) {
+        return typeAnnotation.types.some((type) => arkts.isETSFunctionType(type));
+    }
+    return false;
+}
+
+export function findCanAddMemoFromParamExpression(
+    param: arkts.AstNode | undefined
+): param is arkts.ETSParameterExpression {
+    if (!param) {
+        return false;
+    }
+    if (!arkts.isEtsParameterExpression(param)) {
+        return false;
+    }
+    const type = param.type;
+    return findCanAddMemoFromTypeAnnotation(type);
+}
+
+export function isMemoAnnotation(node: arkts.AnnotationUsage, memoName: MemoNames): boolean {
+    if (!(node.expr !== undefined && arkts.isIdentifier(node.expr) && node.expr.name === memoName)) {
+        return false;
+    }
+    return true;
+}
+
+export function addMemoAnnotation<T extends MemoAstNode>(node: T, memoName: MemoNames = MemoNames.MEMO): T {
+    collectMemoAnnotationSource(memoName);
+    if (arkts.isETSUnionType(node)) {
+        const functionType = node.types.find((type) => arkts.isETSFunctionType(type));
+        if (!functionType) {
+            return node;
+        }
+        addMemoAnnotation(functionType, memoName);
+        return node;
+    }
+    const newAnnotations: arkts.AnnotationUsage[] = [
+        ...node.annotations.filter((it) => !isMemoAnnotation(it, memoName)),
+        annotation(memoName),
+    ];
+    collectMemoAnnotationImport(memoName);
+    if (arkts.isEtsParameterExpression(node)) {
+        node.annotations = newAnnotations;
+        return node;
+    }
+    return node.setAnnotations(newAnnotations) as T;
 }

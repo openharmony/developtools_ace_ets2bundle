@@ -21,12 +21,16 @@ import {
     createSetter2,
     generateGetOrSetCall,
     generateThisBacking,
-    judgeIfAddWatchFunc,
+    StateManagementTypes,
+    collectStateManagementTypeSource,
+    collectStateManagementTypeImport,
+    hasDecorator,
+    DecoratorNames,
+    PropertyCache,
 } from './utils';
-import { PropertyTranslator } from './base';
+import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName } from '../../common/arkts-utils';
-import { createOptionalClassProperty } from '../utils';
 import { factory } from './factory';
 
 export class PropTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
@@ -34,29 +38,27 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
 
-        this.cacheTranslatedInitializer(newName, originalName); // TODO: need to release cache after some point...
+        this.cacheTranslatedInitializer(newName, originalName);
         return this.translateWithoutInitializer(newName, originalName);
     }
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
-        const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
         const mutableThis: arkts.Expression = generateThisBacking(newName);
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
+        PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
         const updateStruct: arkts.AstNode = this.generateUpdateStruct(mutableThis, originalName);
-        currentStructInfo.initializeBody.push(initializeStruct);
-        currentStructInfo.updateBody.push(updateStruct);
-        if (currentStructInfo.isReusable) {
+        PropertyCache.getInstance().collectUpdateStruct(this.structInfo.name, [updateStruct]);
+        if (!!this.structInfo.annotations?.reusable) {
             const toRecord = generateToRecord(newName, originalName);
-            currentStructInfo.toRecordBody.push(toRecord);
+            PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);
         }
-        arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = createOptionalClassProperty(
+        const field: arkts.ClassProperty = factory.createOptionalClassProperty(
             newName,
             this.property,
-            'PropDecoratedVariable',
+            StateManagementTypes.PROP_DECORATED,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
@@ -113,11 +115,13 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
                       false
                   ),
         ];
-        judgeIfAddWatchFunc(args, this.property);
+        factory.judgeIfAddWatchFunc(args, this.property);
+        collectStateManagementTypeSource(StateManagementTypes.PROP_DECORATED);
+        collectStateManagementTypeImport(StateManagementTypes.PROP_DECORATED);
         const right = arkts.factory.createETSNewClassInstanceExpression(
             arkts.factory.createTypeReference(
                 arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier('PropDecoratedVariable'),
+                    arkts.factory.createIdentifier(StateManagementTypes.PROP_DECORATED),
                     arkts.factory.createTSTypeParameterInstantiation(
                         this.property.typeAnnotation ? [this.property.typeAnnotation] : []
                     )
@@ -163,5 +167,47 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
                 ),
             ])
         );
+    }
+}
+
+export class PropInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+    translateProperty(): T {
+        if (arkts.isMethodDefinition(this.property)) {
+            this.modified = true;
+            return this.updateStateMethodInInterface(this.property) as T;
+        } else if (arkts.isClassProperty(this.property)) {
+            this.modified = true;
+            return this.updateStatePropertyInInterface(this.property) as T;
+        }
+        return this.property;
+    }
+
+    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+        if (arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.PROP)) {
+            return true;
+        } else if (arkts.isClassProperty(node) && hasDecorator(node, DecoratorNames.PROP)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
+     * to `PropDecoratedVariable<T> | undefined`.
+     *
+     * @param method expecting getter with `@Prop` and a setter with `@Prop` in the overloads.
+     */
+    private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.PROP);
+    }
+
+    /**
+     * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
+     * to `PropDecoratedVariable<T> | undefined`.
+     *
+     * @param property expecting property with `@Prop`.
+     */
+    private updateStatePropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
+        return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.PROP);
     }
 }

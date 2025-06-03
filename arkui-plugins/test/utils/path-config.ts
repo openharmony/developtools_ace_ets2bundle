@@ -16,24 +16,25 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-export const ARKTS_CONFIG_FILE_PATH: string = 'arktsconfig.json';
-export const PANDA_SDK_PATH: string = 'node_modules/@panda/sdk';
+export const ARKTS_CONFIG_FILE_PATH: string = 'arktsconfig.json';;
 export const PANDA_SDK_STDLIB_PATH: string = 'lib';
 export const STDLIB_PATH: string = 'stdlib';
 export const STDLIB_STD_PATH: string = 'stdlib/std';
 export const STDLIB_ESCOMPAT_PATH: string = 'stdlib/escompat';
-export const RUNTIME_API_PATH: string = 'demo/runtime-api';
 export const MOCK_ENTRY_DIR_PATH: string = 'demo/mock';
 export const MOCK_ENTRY_FILE_NAME: string = 'entry.ets';
 export const MOCK_OUTPUT_CACHE_PATH: string = 'generated/cache';
 export const MOCK_OUTPUT_DIR_PATH: string = 'generated/abc';
 export const MOCK_OUTPUT_FILE_NAME: string = 'entry.abc';
-export const MOCK_LOCAL_SDK_DIR_PATH: string = 'local';
+export const MOCK_DEP_ANALYZER_PATH: string = 'bin/dependency_analyzer';
+export const MOCK_FILE_DEP_FILE_NAME: string = 'file_dependencies.json';
+export const MOCK_DEP_INPUT_FILE_NAME: string = 'depInput.txt';
 export const ETS_SUFFIX: string = '.ets';
 export const ABC_SUFFIX: string = '.abc';
+export const DECL_ETS_SUFFIX: string = '.d.ets';
 
 function getRootPath(): string {
-    return path.resolve(__dirname, '..');
+    return path.resolve(__dirname, '..', '..', 'test');
 }
 
 function changeFileExtension(file: string, targetExt: string, originExt = ''): string {

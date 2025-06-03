@@ -14,34 +14,30 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
 const FUNCTION_DIR_PATH: string = 'decorators/builder';
 
 const buildConfig: BuildConfig = mockBuildConfig();
-buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, FUNCTION_DIR_PATH, 'local-builder.ets'),
-];
+buildConfig.compileFiles = [path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, FUNCTION_DIR_PATH, 'local-builder.ets')];
 
 const pluginTester = new PluginTester('test local builder', buildConfig);
 
 const parsedTransform: Plugins = {
     name: 'local-builder',
-    parsed: uiTransform().parsed
+    parsed: uiTransform().parsed,
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
-import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Column as Column, Builder as Builder, Text as Text } from "@ohos.arkui.component";
 
@@ -54,24 +50,24 @@ function main() {}
     Text(@memo() ((instance: UITextAttribute): void => {
       instance.fontSize(30);
       return;
-    }), "Hello World", undefined, undefined);
+    }), "Hello World");
   }
   @memo() public showTextValueBuilder(param: string) {
     Text(@memo() ((instance: UITextAttribute): void => {
       instance.fontSize(30);
       return;
-    }), param, undefined, undefined);
+    }), param);
   }
   @memo() public _build(@memo() style: ((instance: BuilderDemo)=> BuilderDemo) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_BuilderDemo | undefined): void {
-    Column(undefined, undefined, @memo() (() => {
+    Column(undefined, @memo() (() => {
       this.showTextBuilder();
       this.showTextValueBuilder("Hello @Builder");
     }));
   }
-  public constructor() {}
+  private constructor() {}
 }
 
-interface __Options_BuilderDemo {
+@Component({freezeWhenInactive:false}) export interface __Options_BuilderDemo {
   
 }
 `;
@@ -82,7 +78,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'local builder',
-    [parsedTransform, uiNoRecheck],
+    [parsedTransform, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

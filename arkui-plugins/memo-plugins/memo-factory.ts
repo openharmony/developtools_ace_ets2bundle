@@ -40,9 +40,8 @@ export class factory {
             arkts.factory.createIdentifier(RuntimeNames.ID_TYPE)
         );
     }
-    // TODO: Currently, import declaration can only be inserted at after-parsed stage.
     static createContextTypesImportDeclaration(program?: arkts.Program): void {
-        const source: arkts.StringLiteral = arkts.factory.createStringLiteral(RuntimeNames.CONTEXT_TYPE_DEFAULT_IMPORT);
+        const source: arkts.StringLiteral = arkts.factory.createStringLiteral(RuntimeNames.MEMO_IMPORT_NAME);
         const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
             source,
             [factory.createContextTypeImportSpecifier(), factory.createIdTypeImportSpecifier()],

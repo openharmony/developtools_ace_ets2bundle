@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { memoNoRecheck } from '../../../utils/plugins';
+import { memoNoRecheck, recheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { Plugins } from '../../../../common/plugin-context';
 import { uiTransform } from '../../../../ui-plugins';
 
@@ -31,15 +32,14 @@ buildConfig.compileFiles = [
 
 const parsedTransform: Plugins = {
     name: 'state-complex-type',
-    parsed: uiTransform().parsed
+    parsed: uiTransform().parsed,
 };
 
 const pluginTester = new PluginTester('test memo lambda', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
-import { memo as memo } from "@ohos.arkui.stateManagement";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 function main() {}
 
@@ -87,7 +87,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'transform lambdas about function with receiver feature',
-    [parsedTransform, memoNoRecheck],
+    [parsedTransform, memoNoRecheck, recheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],
     },

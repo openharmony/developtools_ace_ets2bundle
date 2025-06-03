@@ -14,9 +14,42 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { BuilderLambdaNames, CustomComponentNames, hasPropertyInAnnotation, hasNullOrUndefinedType } from './utils';
-import { annotation } from '../common/arkts-utils';
+import {
+    addMemoAnnotation,
+    BuilderLambdaNames,
+    CustomComponentNames,
+    findCanAddMemoFromParamExpression,
+    hasNullOrUndefinedType,
+    hasPropertyInAnnotation,
+} from './utils';
+import { PartialExcept, PartialNested, PartialNestedExcept, PickNested } from '../common/safe-types';
 import { DecoratorNames, needDefiniteOrOptionalModifier } from './property-translators/utils';
+
+export interface ScriptFunctionConfiguration {
+    key: arkts.Identifier | undefined;
+    body: arkts.AstNode | undefined;
+    typeParams: arkts.TSTypeParameterDeclaration | undefined;
+    params: readonly arkts.Expression[];
+    returnTypeAnnotation: arkts.TypeNode | undefined;
+    hasReceiver: boolean;
+    flags: arkts.Es2pandaScriptFunctionFlags;
+    modifiers: arkts.Es2pandaModifierFlags;
+    annotations: arkts.AnnotationUsage[];
+}
+
+export interface MethodDefinitionConfiguration {
+    key: arkts.Identifier;
+    kind: arkts.Es2pandaMethodDefinitionKind;
+    function: ScriptFunctionConfiguration;
+    overloads: arkts.MethodDefinition[];
+    modifiers: arkts.Es2pandaModifierFlags;
+    isComputed: boolean;
+}
+
+export interface IntrinsicAnnotationDeclarationConfiguration {
+    expr: arkts.Identifier;
+    properties: arkts.AstNode[];
+}
 
 export class factory {
     /**
@@ -69,8 +102,10 @@ export class factory {
      */
     static createStyleParameter(typeName: string): arkts.ETSParameterExpression {
         const styleParam: arkts.Identifier = factory.createStyleIdentifier(typeName);
-        const param = arkts.factory.createParameterDeclaration(styleParam, undefined);
-        param.annotations = [annotation('memo')];
+        const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(styleParam, undefined);
+        if (findCanAddMemoFromParamExpression(param)) {
+            addMemoAnnotation(param);
+        }
         return param;
     }
 
@@ -112,8 +147,10 @@ export class factory {
      */
     static createContentParameter(): arkts.ETSParameterExpression {
         const contentParam: arkts.Identifier = factory.createContentIdentifier();
-        const param = arkts.factory.createParameterDeclaration(contentParam, undefined);
-        param.annotations = [annotation('memo')];
+        const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(contentParam, undefined);
+        if (findCanAddMemoFromParamExpression(param)) {
+            addMemoAnnotation(param);
+        }
         return param;
     }
 
@@ -165,7 +202,7 @@ export class factory {
         return;
     }
 
-    /*
+    /**
      * create `import { <imported> as <local> } ...`.
      */
     static createAdditionalImportSpecifier(imported: string, local: string): arkts.ImportSpecifier {
@@ -175,59 +212,128 @@ export class factory {
         );
     }
 
-    /*
-     * create `constructor() {}`.
+    /**
+     * update ScriptFunction with configurations.
      */
-    static createConstructorMethod(member: arkts.MethodDefinition): arkts.MethodDefinition {
-        return arkts.factory.createMethodDefinition(
-            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
-            member.name,
-            arkts.factory.createFunctionExpression(member.scriptFunction),
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
-            false
+    static updateScriptFunction(
+        original: arkts.ScriptFunction,
+        config: Partial<ScriptFunctionConfiguration>
+    ): arkts.ScriptFunction {
+        const newFunc: arkts.ScriptFunction = arkts.factory.updateScriptFunction(
+            original,
+            config.body ?? original.body,
+            arkts.factory.createFunctionSignature(
+                config.typeParams ?? original.typeParams,
+                config.params ?? original.params,
+                config.returnTypeAnnotation ?? original.returnTypeAnnotation,
+                config.hasReceiver ?? original.hasReceiver
+            ),
+            config.flags ?? original.flags,
+            config.modifiers ?? original.modifiers
         );
+        if (!!config.key) {
+            newFunc.setIdent(config.key);
+        }
+        if (!!config.annotations) {
+            newFunc.setAnnotations(config.annotations);
+        }
+        return newFunc;
     }
 
-    /*
-     * create `@memo() _build(<>)`.
+    /**
+     * create ScriptFunction with configurations.
      */
-    static transformBuildMethodWithOriginBuild(
-        method: arkts.MethodDefinition,
-        typeName: string,
-        optionsName: string,
-        isDecl?: boolean
-    ): arkts.MethodDefinition {
-        const updateKey: arkts.Identifier = arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_BUILD);
+    static createScriptFunction(config: Partial<ScriptFunctionConfiguration>): arkts.ScriptFunction {
+        const newFunc: arkts.ScriptFunction = arkts.factory.createScriptFunction(
+            config.body ?? undefined,
+            arkts.factory.createFunctionSignature(
+                config.typeParams ?? undefined,
+                config.params ?? [],
+                config.returnTypeAnnotation ?? undefined,
+                config.hasReceiver ?? false
+            ),
+            config.flags ?? arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_NONE,
+            config.modifiers ?? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+        );
+        if (!!config.key) {
+            newFunc.setIdent(config.key);
+        }
+        if (!!config.annotations) {
+            newFunc.setAnnotations(config.annotations);
+        }
+        return newFunc;
+    }
 
-        const scriptFunction: arkts.ScriptFunction = method.scriptFunction;
-        const updateScriptFunction = arkts.factory
-            .createScriptFunction(
-                scriptFunction.body,
-                arkts.FunctionSignature.createFunctionSignature(
-                    scriptFunction.typeParams,
-                    [
-                        factory.createStyleParameter(typeName),
-                        factory.createContentParameter(),
-                        factory.createInitializersOptionsParameter(optionsName),
-                    ],
-                    arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+    /**
+     * update MethodDefinition with configurations.
+     */
+    static updateMethodDefinition(
+        original: arkts.MethodDefinition,
+        config: PartialNested<MethodDefinitionConfiguration>
+    ): arkts.MethodDefinition {
+        const key: arkts.Identifier = config.key ?? original.name;
+        const newFunc: arkts.ScriptFunction = factory.updateScriptFunction(original.scriptFunction, {
+            ...config.function,
+            key,
+        });
+        const newMethod: arkts.MethodDefinition = arkts.factory.updateMethodDefinition(
+            original,
+            config.kind ?? original.kind,
+            key,
+            newFunc,
+            config.modifiers ?? original.modifiers,
+            config.isComputed ?? false
+        );
+        if (!!config.overloads) {
+            newMethod.setOverloads(config.overloads);
+        }
+        return newMethod;
+    }
+
+    /**
+     * create MethodDefinition with configurations.
+     */
+    static createMethodDefinition(
+        config: PartialNestedExcept<MethodDefinitionConfiguration, 'key'>
+    ): arkts.MethodDefinition {
+        const newFunc: arkts.ScriptFunction = factory.createScriptFunction({
+            ...config.function,
+            key: config.key,
+        });
+        const newMethod: arkts.MethodDefinition = arkts.factory.createMethodDefinition(
+            config.kind ?? arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_NONE,
+            config.key,
+            newFunc,
+            config.modifiers ?? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            config.isComputed ?? false
+        );
+        if (!!config.overloads) {
+            newMethod.setOverloads(config.overloads);
+        }
+        return newMethod;
+    }
+
+    /**
+     * create intrinsic `@Retention({policy:"SOURCE"})` AnnotationDeclaration with configurations.
+     */
+    static createIntrinsicAnnotationDeclaration(
+        config: PartialExcept<IntrinsicAnnotationDeclarationConfiguration, 'expr'>
+    ): arkts.AnnotationDeclaration {
+        const intrinsicAnnotations: arkts.AnnotationUsage[] = [
+            arkts.factory.create1AnnotationUsage(arkts.factory.createIdentifier('Retention'), [
+                arkts.factory.createClassProperty(
+                    arkts.factory.createIdentifier('policy'),
+                    arkts.factory.createStringLiteral('SOURCE'),
+                    undefined,
+                    arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
                     false
                 ),
-                scriptFunction.flags,
-                scriptFunction.modifiers
-            )
-            .setAnnotations([annotation('memo')]);
-
-        const modifiers: arkts.Es2pandaModifierFlags = isDecl
-            ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_ABSTRACT
-            : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
-        return arkts.factory.createMethodDefinition(
-            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
-            updateKey,
-            arkts.factory.createFunctionExpression(updateScriptFunction),
-            modifiers,
-            false
-        );
+            ]),
+        ];
+        const newAnnotationDecl: arkts.AnnotationDeclaration = arkts.factory
+            .createAnnotationDeclaration(config.expr, config.properties ?? [])
+            .setAnnotations(intrinsicAnnotations);
+        return newAnnotationDecl;
     }
 
     /*
@@ -277,9 +383,9 @@ export class factory {
     static PreprocessClassPropertyModifier(st: arkts.AstNode): arkts.AstNode {
         if (arkts.isClassProperty(st) && needDefiniteOrOptionalModifier(st)) {
             if (st.typeAnnotation && hasNullOrUndefinedType(st.typeAnnotation)) {
-                st.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL;
+                st.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL;
             } else {
-                st.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFINITE;
+                st.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFINITE;
             }
         }
         return st;

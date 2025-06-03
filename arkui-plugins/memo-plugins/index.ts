@@ -29,7 +29,7 @@ export function unmemoizeTransform(): Plugins {
         name: 'memo-plugin',
         checked(this: PluginContext) {
             console.log('[MEMO PLUGIN] AFTER CHECKED ENTER');
-            const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+            const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
             if (!!contextPtr) {
                 let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
                 let script = program.astNode;
@@ -41,7 +41,7 @@ export function unmemoizeTransform(): Plugins {
                     getDumpFileName(0, 'SRC', 5, 'MEMO_AfterCheck_Begin'),
                     true,
                     cachePath,
-                    program.programFileNameWithExtension
+                    program.fileNameWithExtension
                 );
 
                 arkts.Performance.getInstance().createEvent('memo-checked');
@@ -70,7 +70,7 @@ export function unmemoizeTransform(): Plugins {
                 program = programVisitor.programVisitor(program);
                 script = program.astNode;
 
-                arkts.Performance.getInstance().stopEvent('memo-checked', true);
+                arkts.Performance.getInstance().stopEvent('memo-checked', false);
 
                 debugLog('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
                 debugDump(
@@ -78,14 +78,17 @@ export function unmemoizeTransform(): Plugins {
                     getDumpFileName(0, 'SRC', 6, 'MEMO_AfterCheck_End'),
                     true,
                     cachePath,
-                    program.programFileNameWithExtension
+                    program.fileNameWithExtension
                 );
 
                 arkts.Performance.getInstance().createEvent('memo-recheck');
                 arkts.recheckSubtree(script);
-                arkts.Performance.getInstance().stopEvent('memo-recheck', true);
+                arkts.Performance.getInstance().stopEvent('memo-recheck', false);
 
-                arkts.Performance.getInstance().clearAllEvents();
+                arkts.Performance.getInstance().clearAllEvents(true);
+                arkts.Performance.getInstance().visualizeEvents(true);
+                arkts.Performance.getInstance().clearHistory();
+                arkts.Performance.getInstance().clearTotalDuration();
 
                 this.setArkTSAst(script);
                 console.log('[MEMO PLUGIN] AFTER CHECKED EXIT');

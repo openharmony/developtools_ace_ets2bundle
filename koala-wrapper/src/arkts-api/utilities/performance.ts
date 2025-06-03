@@ -34,15 +34,22 @@ function pad(value: number, length: number): string {
     return value.toString().padStart(length, '0');
 }
 
+function round(value: number, index: number = 2): number {
+    const factor = Math.pow(10, index);
+    return Math.round(value * factor) / factor;
+}
+
 export class Performance {
     private static instance: Performance;
     private events: Map<string, Event>;
+    private historyEvents = new Map<string | null, Event[]>();
     private scopes: string[];
     private shouldSkip: boolean;
     private totalDuration: number;
 
     private constructor() {
         this.events = new Map();
+        this.historyEvents = new Map();
         this.scopes = [];
         this.shouldSkip = true;
         this.totalDuration = 0;
@@ -60,7 +67,9 @@ export class Performance {
     }
 
     createEvent(name: string): Event {
-        if (this.shouldSkip) return { name: '', startTime: 0 };
+        if (this.shouldSkip) {
+            return { name: '', startTime: 0 };
+        }
         const startTime: number = performance.now();
         const newEvent: Event = { name, startTime };
         this.events.set(name, newEvent);
@@ -69,7 +78,9 @@ export class Performance {
     }
 
     stopEvent(name: string, shouldLog: boolean = false): Event {
-        if (this.shouldSkip) return { name: '', startTime: 0 };
+        if (this.shouldSkip) {
+            return { name: '', startTime: 0 };
+        }
         if (!this.events.has(name) || this.scopes.length === 0) {
             throw new Error(`Event ${name} is not created.`);
         }
@@ -82,19 +93,26 @@ export class Performance {
         const endTime: number = performance.now();
         const parentEvent: string = this.scopes[this.scopes.length - 1];
         const duration: number = endTime - event.startTime;
-        this.totalDuration += duration;
+        if (!parentEvent) {
+            this.totalDuration += duration;
+        }
 
         if (shouldLog) {
             console.log(
-                `[PERFORMANCE] name: ${event.name}, parent: ${parentEvent}, duration: ${formatTime(duration)}, total: ${formatTime(this.totalDuration)}`
+                `[PERFORMANCE] name: ${event.name}, parent: ${parentEvent}, duration: ${formatTime(duration)}(${round(duration)}), total: ${formatTime(this.totalDuration)}(${round(this.totalDuration)})`
             );
         }
 
-        return { ...event, endTime, parentEvent, duration };
+        const newEvent = { ...event, endTime, parentEvent, duration };
+        const history = this.historyEvents.get(parentEvent ?? null) || [];
+        this.historyEvents.set(parentEvent ?? null, [...history, newEvent]);
+        return newEvent;
     }
 
     stopLastEvent(shouldLog: boolean = false): Event {
-        if (this.shouldSkip) return { name: '', startTime: 0 };
+        if (this.shouldSkip) {
+            return { name: '', startTime: 0 };
+        }
         if (this.scopes.length === 0) {
             throw new Error("No last event");
         }
@@ -107,19 +125,26 @@ export class Performance {
         const endTime: number = performance.now();
         const parentEvent: string = this.scopes[this.scopes.length - 1];
         const duration: number = endTime - event.startTime;
-        this.totalDuration += duration;
+        if (!parentEvent) {
+            this.totalDuration += duration;
+        }
 
         if (shouldLog) {
             console.log(
-                `[PERFORMANCE] name: ${event.name}, parent: ${parentEvent}, duration: ${formatTime(duration)}, total: ${formatTime(this.totalDuration)}`
+                `[PERFORMANCE] name: ${event.name}, parent: ${parentEvent}, duration: ${formatTime(duration)}(${round(duration)}), total: ${formatTime(this.totalDuration)}(${round(this.totalDuration)})`
             );
         }
 
-        return { ...event, endTime, parentEvent, duration };
+        const newEvent = { ...event, endTime, parentEvent, duration };
+        const history = this.historyEvents.get(parentEvent ?? null) || [];
+        this.historyEvents.set(parentEvent ?? null, [...history, newEvent]);
+        return newEvent;
     }
 
     clearAllEvents(shouldLog: boolean = false): void {
-        if (this.shouldSkip) return;
+        if (this.shouldSkip) {
+            return;
+        }
         for (let i = 0; i < this.scopes.length; i ++) {
             this.stopLastEvent(shouldLog);
         }
@@ -128,5 +153,38 @@ export class Performance {
 
     clearTotalDuration(): void {
         this.totalDuration = 0;
+    }
+
+    clearHistory(): void {
+        this.historyEvents = new Map();
+    }
+
+    visualizeEvents(shouldLog: boolean = false): void {
+        if (this.shouldSkip) {
+            return;
+        }
+        const that = this;
+        function buildVisualization(parentKey: string | null, indentLevel: number): [string, number] {
+            const children = that.historyEvents.get(parentKey) || [];
+            let result = '';
+    
+            children.forEach(child => {
+                const indent = '  '.repeat(indentLevel);
+                const duration = child.duration ?? 0;
+                const [_result, count] = buildVisualization(child.name, indentLevel + 1);
+                result += `${indent}- ${child.name}: ${formatTime(duration)}(${round(duration)}), ${count}\n`;
+                result += _result;
+            });
+    
+            return [result, children.length];
+        }
+
+        const [finalResult, _] = buildVisualization(null, 0);
+        if (shouldLog) {
+          console.log(`[PERFORMANCE] ===== FINAL RESULT ====`);
+          console.log(`TOTAL: ${formatTime(this.totalDuration)}(${round(this.totalDuration)})`);
+          console.log(finalResult.trimEnd());
+          console.log(`[PERFORMANCE] ===== FINAL RESULT ====`);
+        }
     }
 }
