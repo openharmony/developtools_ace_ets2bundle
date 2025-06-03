@@ -20,7 +20,7 @@ import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 function checkLocalStorageLink(node: arkts.StructDeclaration, context: UISyntaxRuleContext): void {
   // Check if @Entry decorator exists with parameter
   const entryDecorator = getAnnotationUsage(node, PresetDecorators.ENTRY);
-  const isStorageUsed = entryDecorator && node.definition?.annotations[0].properties[0];
+  const isStorageUsed = entryDecorator && node.definition.annotations[0].properties[0];
   // Check if @LocalStorageLink exists
   let localStorageLinkUsed = false;
   node.definition.body.forEach(body => {
@@ -29,14 +29,15 @@ function checkLocalStorageLink(node: arkts.StructDeclaration, context: UISyntaxR
     }
     const propertyDecorators = getClassPropertyAnnotationNames(body);
     localStorageLinkUsed = propertyDecorators.some(
-      decorator => decorator === PresetDecorators.LOCAL_STORAGE_LINK);
+      decorator => decorator === PresetDecorators.LOCAL_STORAGE_LINK ||
+        decorator === PresetDecorators.LOCAL_STORAGE_PROP);
   });
 
   // If @LocalStorageLink is used but @Entry(storage) is missing, report error
   if (entryDecorator && localStorageLinkUsed && !isStorageUsed) {
     context.report({
       node: entryDecorator,
-      message: rule.messages.invalidUsage
+      message: rule.messages.entryLocalStorageCheck
     });
   }
 }
@@ -44,7 +45,7 @@ function checkLocalStorageLink(node: arkts.StructDeclaration, context: UISyntaxR
 const rule: UISyntaxRule = {
   name: 'entry-localstorage-check',
   messages: {
-    invalidUsage: `@LocalStorageLink requires @Entry(storage) on the struct.`,
+    entryLocalStorageCheck: `'@Entry' should have a parameter, like '@Entry ({ storage: "__get_local_storage__" })'.`,
   },
   setup(context) {
     return {
