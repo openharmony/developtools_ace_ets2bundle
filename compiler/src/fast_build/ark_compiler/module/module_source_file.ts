@@ -87,6 +87,8 @@ import {
   isArkTSEvolutionFile
 } from '../../../process_arkts_evolution';
 import { PreloadFileModules } from './module_preload_file_utils';
+import { FileManager } from '../interop/interop_manager';
+import { FileInfo } from '../interop/type';
 
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
@@ -465,8 +467,19 @@ export class ModuleSourceFile {
     }
     const metaModuleInfo: Object = rollupObject.getModuleInfo(this.moduleId);
     const isNeedPreloadSo = metaModuleInfo?.meta?.needPreloadSo ? metaModuleInfo?.meta?.needPreloadSo : false;
+    let queryResult = undefined;
+    let staticOhmUrl: string | undefined = undefined;
+
+    if (rollupObject.share.projectConfig.mixCompile) {
+      queryResult = FileManager.getInstance().queryOriginApiName(moduleRequest, this.moduleId);
+      staticOhmUrl = this.tryBuildStaticOhmUrl(queryResult, moduleRequest);
+    }
+    if (staticOhmUrl) {
+      return staticOhmUrl;
+    }
+    const api = (queryResult && !queryResult.isStatic) ? queryResult.originalAPIName : moduleRequest;
     const params: OhmUrlParams = {
-      moduleRequest,
+      moduleRequest:api,
       moduleId: this.moduleId,
       config: ModuleSourceFile.projectConfig,
       logger: ModuleSourceFile.logger,
@@ -529,13 +542,20 @@ export class ModuleSourceFile {
         ModuleSourceFile.generateNewMockInfo(moduleRequest, res, rollupObject, importerFile);
         // processing cases of user-defined mock targets
         let mockedTarget: string = toUnixPath(filePath).
-            replace(toUnixPath(rollupObject.share.projectConfig.modulePath), '').
-            replace(`/${rollupObject.share.projectConfig.mockParams.etsSourceRootPath}/`, '');
+          replace(toUnixPath(rollupObject.share.projectConfig.modulePath), '').
+          replace(`/${rollupObject.share.projectConfig.mockParams.etsSourceRootPath}/`, '');
         ModuleSourceFile.generateNewMockInfo(mockedTarget, res, rollupObject, importerFile);
       }
       return res;
     }
     return undefined;
+  }
+
+  private static generateNormalizedOhmulrForSDkInterop(project: Object, projectFilePath: string): string {
+    const packageName = project.entryPackageName;
+    const bundleName = project.pkgContextInfo[packageName].bundleName;
+    const version = project.pkgContextInfo[packageName].version;
+    return `${bundleName}&${packageName}/${projectFilePath}&${version}`;
   }
 
   private static spliceNormalizedOhmurl(moduleInfo: Object, filePath: string, importerFile?: string): string {
@@ -732,6 +752,40 @@ export class ModuleSourceFile {
   public static sortSourceFilesByModuleId(): void {
     ModuleSourceFile.sourceFiles.sort((a, b) => a.moduleId.localeCompare(b.moduleId));
   }
+
+  private tryBuildStaticOhmUrl(queryResult: any, moduleRequest: string): string | undefined {
+    if (!queryResult || !queryResult.isStatic) {
+      return undefined;
+    }
+
+    const { originalAPIName } = queryResult;
+    const recordName = ModuleSourceFile.generateNormalizedOhmulrForSDkInterop(
+      ModuleSourceFile.projectConfig,
+      originalAPIName
+    );
+    const moduleName = ModuleSourceFile.projectConfig.
+      pkgContextInfo[ModuleSourceFile.projectConfig.entryPackageName].moduleName;
+    const ohmUrl = `N&${moduleName}&${recordName}`;
+    const glueCodeInfo = FileManager.getInstance().getGlueCodePathByModuleRequest(originalAPIName);
+
+    if (!glueCodeInfo) {
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_FAILED_TO_FIND_GLUD_CODE,
+        ArkTSInternalErrorDescription,
+        `Failed to find glue code for: ${moduleRequest}`
+      );
+      ModuleSourceFile.logger.printErrorAndExit(errInfo);
+    }
+
+    FileManager.glueCodeFileInfos.set(originalAPIName, {
+      recordName: recordName,
+      baseUrl: glueCodeInfo.basePath,
+      abstractPath: glueCodeInfo.fullPath
+    } as FileInfo);
+
+    return `@normalized:${ohmUrl}`;
+  }
+
 
   public static cleanUpObjects(): void {
     ModuleSourceFile.sourceFiles = [];

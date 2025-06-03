@@ -114,8 +114,9 @@ mocha.describe('test interop_manager file api', function () {
       byteCodeHarInfo: {}
     });
     FileManager.cleanFileManagerObject();
-    FileManager.init(
+    FileManager.initForTest(
       dependentModuleMap,
+      undefined,
       dynamicSDKPath,
       staticSDKDeclPath,
       staticSDKGlueCodePath);
@@ -127,6 +128,7 @@ mocha.describe('test interop_manager file api', function () {
   mocha.it('1-1: test SDK path', function() {
     const filePath = '/sdk/default/openharmony/ets/ets1.1/api/TestAPI.ets';
     const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
+    console.log('222222',FileManager)
     expect(result?.languageVersion).to.equal(ARKTS_1_1);
     expect(result?.pkgName).to.equal('SDK');
   });

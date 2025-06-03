@@ -116,9 +116,8 @@ ArkTSRecordFunc({a: 1});
 `;
 
 const IMPORT_ARKTS_EVO_RECORD_CODE_EXPECT: string = `import { ArkTSRecordFunc } from "arkTSEvo";
-let tmpRecord = globalThis.gtest.etsVM.getInstance("Lescompat/Record");
-let tmpObj;
-ArkTSRecordFunc((tmpObj = new tmpRecord(), tmpObj["a"] = 1, tmpObj));
+let tmpRecord = globalThis.Panda.getInstance("Lescompat/Record;");
+ArkTSRecordFunc((tmpRecord["a"] = 1, tmpRecord));
 `;
 
 const IMPORT_ARKTS_EVO_CLASS_CODE_1: string = `import { ArkTSClass } from "arkTSEvo";
@@ -126,8 +125,8 @@ let a: ArkTSClass = {a: 1};
 `;
 
 const IMPORT_ARKTS_EVO_CLASS_CODE_1_EXPECT: string = `import { ArkTSClass } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass;");
 let a: ArkTSClass = (tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj);
 `;
 
@@ -137,8 +136,8 @@ an = {a: 1};
 `;
 
 const IMPORT_ARKTS_EVO_CLASS_CODE_2_EXPECT: string = `import { ArkTSClass } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass;");
 let an = new ArkTSClass();
 an = (tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj);
 `;
@@ -148,8 +147,8 @@ let aas = {a: 1} as ArkTSClass;
 `;
 
 const IMPORT_ARKTS_EVO_CLASS_CODE_3_EXPECT: string = `import { ArkTSClass } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass;");
 let aas = (tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj) as ArkTSClass;
 `;
 
@@ -160,8 +159,8 @@ class A {
 `;
 
 const IMPORT_ARKTS_EVO_CLASS_CODE_4_EXPECT: string = `import { ArkTSClass } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass;");
 class A {
     a: ArkTSClass = (tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj);
 }
@@ -178,8 +177,8 @@ let aa = new AA({a: 1})
 `;
 
 const IMPORT_ARKTS_EVO_CLASS_CODE_5_EXPECT: string = `import { ArkTSClass } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass;");
 class AA {
     a: ArkTSClass;
     constructor(a: ArkTSClass) {
@@ -197,8 +196,8 @@ let aaa: AAA = {a: {a: 1}}
 `;
 
 const IMPORT_ARKTS_EVO_CLASS_CODE_6_EXPECT: string = `import { ArkTSClass } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass;");
 class AAA {
     a: ArkTSClass = new ArkTSClass();
 }
@@ -210,8 +209,8 @@ function foo(a: ArkTSClass = {a:1}) {}
 `;
 
 const IMPORT_ARKTS_EVO_CLASS_CODE_7_EXPECT: string = `import { ArkTSClass } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass;");
 function foo(a: ArkTSClass = (tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj)) { }
 `;
 
@@ -221,8 +220,8 @@ bar({a: 1})
 `;
 
 const IMPORT_ARKTS_EVO_CLASS_CODE_8_EXPECT: string = `import { ArkTSClass } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass;");
 function bar(a: ArkTSClass) { }
 bar((tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj));
 `;
@@ -232,8 +231,8 @@ let aaa: () => ArkTSClass = () => ({a: 1})
 `;
 
 const IMPORT_ARKTS_EVO_CLASS_CODE_9_EXPECT: string = `import { ArkTSClass } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass;");
 let aaa: () => ArkTSClass = () => ((tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj));
 `;
 
@@ -244,8 +243,8 @@ function fooa(): ArkTSClass {
 `;
 
 const IMPORT_ARKTS_EVO_CLASS_CODE_10_EXPECT: string = `import { ArkTSClass } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass;");
 function fooa(): ArkTSClass {
     return (tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj);
 }
@@ -256,8 +255,8 @@ let a: ArkTSInterface = {a: 1};
 `;
 
 const IMPORT_ARKTS_EVO_INTERFACE_CODE_1_EXPECT: string = `import { ArkTSInterface } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSInterface$ObjectLiteral");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/arkTSEvo$src$main$ets$decl$ArkTSInterface$ObjectLiteral;");
 let a: ArkTSInterface = (tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj);
 `;
 
@@ -266,8 +265,8 @@ let aas = {a: 1} as ArkTSInterface;
 `;
 
 const IMPORT_ARKTS_EVO_INTERFACE_CODE_2_EXPECT: string = `import { ArkTSInterface } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSInterface$ObjectLiteral");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/arkTSEvo$src$main$ets$decl$ArkTSInterface$ObjectLiteral;");
 let aas = (tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj) as ArkTSInterface;
 `;
 
@@ -278,8 +277,8 @@ class A {
 `;
 
 const IMPORT_ARKTS_EVO_INTERFACE_CODE_3_EXPECT: string = `import { ArkTSInterface } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSInterface$ObjectLiteral");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/arkTSEvo$src$main$ets$decl$ArkTSInterface$ObjectLiteral;");
 class A {
     a: ArkTSInterface = (tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj);
 }
@@ -296,8 +295,8 @@ let aa = new AA({a: 1})
 `;
 
 const IMPORT_ARKTS_EVO_INTERFACE_CODE_4_EXPECT: string = `import { ArkTSInterface } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSInterface$ObjectLiteral");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/arkTSEvo$src$main$ets$decl$ArkTSInterface$ObjectLiteral;");
 class AA {
     a: ArkTSInterface;
     constructor(a: ArkTSInterface) {
@@ -312,8 +311,8 @@ function foo(a: ArkTSInterface = {a:1}) {}
 `;
 
 const IMPORT_ARKTS_EVO_INTERFACE_CODE_5_EXPECT: string = `import { ArkTSInterface } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSInterface$ObjectLiteral");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/arkTSEvo$src$main$ets$decl$ArkTSInterface$ObjectLiteral;");
 function foo(a: ArkTSInterface = (tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj)) { }
 `;
 
@@ -323,8 +322,8 @@ bar({a: 1})
 `;
 
 const IMPORT_ARKTS_EVO_INTERFACE_CODE_6_EXPECT: string = `import { ArkTSInterface } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSInterface$ObjectLiteral");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/arkTSEvo$src$main$ets$decl$ArkTSInterface$ObjectLiteral;");
 function bar(a: ArkTSInterface) { }
 bar((tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj));
 `;
@@ -334,8 +333,8 @@ let aaa: () => ArkTSInterface = () => ({a: 1})
 `;
 
 const IMPORT_ARKTS_EVO_INTERFACE_CODE_7_EXPECT: string = `import { ArkTSInterface } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSInterface$ObjectLiteral");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/arkTSEvo$src$main$ets$decl$ArkTSInterface$ObjectLiteral;");
 let aaa: () => ArkTSInterface = () => ((tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj));
 `;
 
@@ -346,8 +345,8 @@ function fooa(): ArkTSInterface {
 `;
 
 const IMPORT_ARKTS_EVO_INTERFACE_CODE_8_EXPECT: string = `import { ArkTSInterface } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSInterface$ObjectLiteral");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/arkTSEvo$src$main$ets$decl$ArkTSInterface$ObjectLiteral;");
 function fooa(): ArkTSInterface {
     return (tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj);
 }
@@ -362,10 +361,10 @@ ArkTSFuncInterface({a: 1});
 `;
 
 const IMPORT_ARKTS_EVO_FUNCTION_CODE_EXPECT: string = `import { ArkTSFuncClass, ArkTSFuncInterface } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass");
 let tmpObj;
-let tmpClass_1 = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSInterface$ObjectLiteral");
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass;");
 let tmpObj_1;
+let tmpClass_1 = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/arkTSEvo$src$main$ets$decl$ArkTSInterface$ObjectLiteral;");
 ArkTSFuncClass((tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj));
 ArkTSFuncInterface((tmpObj_1 = new tmpClass_1(), tmpObj_1.a = 1, tmpObj_1));
 `;
@@ -375,8 +374,8 @@ let a: ArkTSClass | undefined = {a: 1};
 `;
 
 const UNION_NO_AMBIGUITY_CODE_EXPECT: string = `import { ArkTSClass } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass;");
 let a: ArkTSClass | undefined = (tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj);
 `;
 
@@ -412,8 +411,8 @@ let a: (ArkTSClass) = {a: 1};
 `;
 
 const PARENTHESIZED_CODE_EXPECT: string = `import { ArkTSClass } from "arkTSEvo";
-let tmpClass = globalThis.gtest.etsVM.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass");
 let tmpObj;
+let tmpClass = globalThis.Panda.getClass("LarkTSEvo/src/main/ets/decl/ArkTSClass;");
 let a: (ArkTSClass) = (tmpObj = new tmpClass(), tmpObj.a = 1, tmpObj);
 `;
 
@@ -581,7 +580,7 @@ mocha.describe('process arkts evolution tests', function () {
     mocha.it('3-1-1: test mixCompile is false', function () {
       const sourceFile: ts.SourceFile = ts.createSourceFile('a.ts', 'let x = 1;', ts.ScriptTarget.ESNext);
       const program: ts.Program = ts.createProgram({ rootNames: ['a.ts'], options: {}, host: ts.createCompilerHost({}) });
-      const result: ts.SourceFile = interopTransform(program, testFileName, false, false)()(sourceFile);
+      const result: ts.SourceFile = interopTransform(program, testFileName, false)()(sourceFile);
       expect(result === sourceFile).to.be.true;
     });
 
@@ -597,7 +596,7 @@ mocha.describe('process arkts evolution tests', function () {
           'in the ArkTS Evolution class "ArkTSClassNoCtor" type in the object literal.'
         ]
       );
-      ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]);
+      ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]);
       const hasError = interopTransformLog.errors.some(error =>
         error.message.includes(errInfo.toString())
       );
@@ -607,14 +606,12 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-3: test import ArkTS evoluion Record in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_RECORD_CODE);
-      const isStaticRecord = () => (true);
-      const mockedTs = {
-            ...require('typescript'),
-            isStaticRecord
-        };
-      let interopTransform;
-      ({ interopTransform } = proxyquire('../../../lib/process_arkts_evolution', { 'typescript': mockedTs }));
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const originalChecker = program.getTypeChecker();
+      const mockedTypeChecker = Object.create(originalChecker);
+      mockedTypeChecker.isStaticRecord = () => true;
+      const mockedProgram = Object.create(program);
+      mockedProgram.getTypeChecker =  () => mockedTypeChecker;
+      const result = ts.transform(testSourceFile, [interopTransform(mockedProgram, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_RECORD_CODE_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -622,7 +619,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-4-1: test import ArkTS evoluion class (variable init) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_CLASS_CODE_1);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_CLASS_CODE_1_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -630,7 +627,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-4-2: test import ArkTS evoluion class (object assignment) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_CLASS_CODE_2);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_CLASS_CODE_2_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -638,7 +635,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-4-3: test import ArkTS evoluion class (type assertions) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_CLASS_CODE_3);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_CLASS_CODE_3_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -646,7 +643,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-4-4: test import ArkTS evoluion class (property init) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_CLASS_CODE_4);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_CLASS_CODE_4_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -654,7 +651,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-4-5: test import ArkTS evoluion class (contr function call) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_CLASS_CODE_5);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_CLASS_CODE_5_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -662,7 +659,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-4-6: test import ArkTS evoluion class (multi-layer object assignment) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_CLASS_CODE_6);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_CLASS_CODE_6_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -670,7 +667,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-4-7: test import ArkTS evoluion class (parameter initp) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_CLASS_CODE_7);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_CLASS_CODE_7_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -678,7 +675,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-4-8: test import ArkTS evoluion class (function call) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_CLASS_CODE_8);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_CLASS_CODE_8_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -686,7 +683,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-4-9: test import ArkTS evoluion class (arrow function return value) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_CLASS_CODE_9);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_CLASS_CODE_9_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -694,7 +691,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-4-10: test import ArkTS evoluion class (function return value) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_CLASS_CODE_10);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_CLASS_CODE_10_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -702,7 +699,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-5-1: test import ArkTS evoluion interface (variable init) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_INTERFACE_CODE_1);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_INTERFACE_CODE_1_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -710,7 +707,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-5-2: test import ArkTS evoluion interface (type assertions) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_INTERFACE_CODE_2);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_INTERFACE_CODE_2_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -718,7 +715,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-5-3: test import ArkTS evoluion interface (property init) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_INTERFACE_CODE_3);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_INTERFACE_CODE_3_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -726,7 +723,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-5-4: test import ArkTS evoluion interface (contr function call) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_INTERFACE_CODE_4);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_INTERFACE_CODE_4_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -734,7 +731,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-5-5: test import ArkTS evoluion interface (parameter initp) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_INTERFACE_CODE_5);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_INTERFACE_CODE_5_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -742,7 +739,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-5-6: test import ArkTS evoluion interface (function call) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_INTERFACE_CODE_6);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_INTERFACE_CODE_6_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -750,7 +747,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-5-7: test import ArkTS evoluion interface (arrow function return value) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_INTERFACE_CODE_7);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_INTERFACE_CODE_7_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -758,7 +755,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-5-8: test import ArkTS evoluion interface (function return value) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_INTERFACE_CODE_8);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_INTERFACE_CODE_8_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -766,7 +763,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-6: test import ArkTS evoluion function in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(IMPORT_ARKTS_EVO_FUNCTION_CODE);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === IMPORT_ARKTS_EVO_FUNCTION_CODE_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -774,7 +771,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-7: test union type (no ambiguity) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(UNION_NO_AMBIGUITY_CODE);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === UNION_NO_AMBIGUITY_CODE_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -782,7 +779,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-8: test union type (ambiguity) in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(UNION_AMBIGUITY_CODE);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       const errInfo: LogData = LogDataFactory.newInstance(
         ErrorCode.ETS2BUNDLE_EXTERNAL_UNION_TYPE_AMBIGUITY,
@@ -801,7 +798,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-1-9: test parenthesized type in object literal', function () {
       const { program, testSourceFile } = createDualSourceProgram(PARENTHESIZED_CODE);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, false)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === PARENTHESIZED_CODE_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();
@@ -809,7 +806,7 @@ mocha.describe('process arkts evolution tests', function () {
 
     mocha.it('3-2-1: test class extends arkTS evolution class or implement arkTS evolution interface', function () {
       const { program, testSourceFile } = createDualSourceProgram(CLASS_IMPLEMENTS_ARKTS_EVO_CLASS_OR_INTERFACE_CODE);
-      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true, true)]).transformed[0];
+      const result = ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]).transformed[0];
       const resultCode = ts.createPrinter().printFile(result);
       expect(resultCode === CLASS_IMPLEMENTS_ARKTS_EVO_CLASS_OR_INTERFACE_CODE_EXPECT).to.be.true;
       cleanUpProcessArkTSEvolutionObj();

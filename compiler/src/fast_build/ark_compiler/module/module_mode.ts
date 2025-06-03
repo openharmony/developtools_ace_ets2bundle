@@ -140,6 +140,7 @@ import { BytecodeObfuscator } from '../bytecode_obfuscator';
   arkTSModuleMap,
   isArkTSEvolutionFile
 } from '../../../process_arkts_evolution';
+import { FileManager } from '../interop/interop_manager';
 
 export class ModuleInfo {
   filePath: string;
@@ -660,6 +661,10 @@ export class ModuleMode extends CommonMode {
       });
     }
 
+    for (const [pkgName, fileInfo] of FileManager.glueCodeFileInfos) {
+      filesInfo += `${fileInfo.abstractPath};${fileInfo.recordName};${ESM};${fileInfo.abstractPath};${this.projectConfig.entryPackageName};` +
+      `${false};ts\n`;
+    }
     fs.writeFileSync(this.filesInfoPath, filesInfo, 'utf-8');
   }
 
