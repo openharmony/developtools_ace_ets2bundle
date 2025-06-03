@@ -275,10 +275,12 @@ function createObjectLiteralVisitor(context: ts.TransformationContext, typeCheck
       return ts.visitEachChild(node, visitor, context);
     }
     const isRecordType: boolean = contextualType.aliasSymbol?.escapedName === 'Record' &&
-      (typeof ts.isStaticRecord === 'function' && ts.isStaticRecord(contextualType));
+      (typeof typeChecker.isStaticRecord === 'function' && typeChecker.isStaticRecord(contextualType));
     const finalType: ts.Type = unwrapType(node, contextualType);
     const decl : ts.Declaration = (finalType.symbol?.declarations || finalType.aliasSymbol?.declarations)?.[0];
+    const scope: ts.Node = getScope(node);
     let className: string;
+    let tmpObjName: string;
     if (!isRecordType) {
       if (!decl || !isFromArkTSEvolutionModule(decl)) {
         return ts.visitEachChild(node, visitor, context);
@@ -291,10 +293,10 @@ function createObjectLiteralVisitor(context: ts.TransformationContext, typeCheck
       if (ts.isClassDeclaration(decl) && !hasZeroArgConstructor(decl, className)) {
         return ts.visitEachChild(node, visitor, context);
       }
+      tmpObjName = getUniqueName(scope, 'tmpObj', scopeUsedNames);
+      declareGlobalTemp(tmpObjName);
     }
-
-    const scope: ts.Node = getScope(node);
-    const tmpObjName: string = getUniqueName(scope, 'tmpObj', scopeUsedNames);
+    
     const fullName: string = buildFullClassName(decl, finalType, className, isRecordType);
     const getCtorExpr: ts.Expression = buildGetConstructorCall(fullName, isRecordType);
     let tmpClassName: string;
@@ -305,15 +307,9 @@ function createObjectLiteralVisitor(context: ts.TransformationContext, typeCheck
       fullNameToTmpVar.set(fullName, tmpClassName);
       declareGlobalTemp(tmpClassName, getCtorExpr);
     }
-    declareGlobalTemp(tmpObjName);
 
-    const assignments: ts.Expression[] = buildPropertyAssignments(node, tmpObjName, !isRecordType);
-    return ts.factory.createParenthesizedExpression(ts.factory.createCommaListExpression([
-      ts.factory.createAssignment(ts.factory.createIdentifier(tmpObjName),
-        ts.factory.createNewExpression(ts.factory.createIdentifier(tmpClassName), undefined, [])),
-      ...assignments,
-      ts.factory.createIdentifier(tmpObjName)
-    ]));
+    return ts.factory.createParenthesizedExpression(
+      ts.factory.createCommaListExpression(buildCommaExpressions(node, isRecordType, tmpObjName, tmpClassName)));
   };
 }
 
@@ -390,19 +386,18 @@ function hasZeroArgConstructor(decl: ts.ClassDeclaration, className: string): bo
 
 function buildFullClassName(decl: ts.Declaration, finalType: ts.Type, className: string, isRecordType: boolean): string {
   if (isRecordType) {
-    return 'Lescompat/Record';
+    return 'Lescompat/Record;';
   }
   const basePath: string = getArkTSEvoFileOHMUrl(finalType);
   return ts.isInterfaceDeclaration(decl) ? 
-    `L${basePath}/${className}$ObjectLiteral` :
-    `L${basePath}/${className}`;
+    `L${basePath}/${basePath.split('/').join('$')}$${className}$ObjectLiteral;` :
+    `L${basePath}/${className};`;
 }
 
 function buildGetConstructorCall(fullName: string, isRecord: boolean): ts.Expression {
   return ts.factory.createCallExpression(
-    ts.factory.createPropertyAccessExpression(
-      ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('globalThis'), 'gtest'),
-      isRecord ? 'etsVM.getInstance' : 'etsVM.getClass'),
+    ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier('globalThis'),
+      isRecord ? 'Panda.getInstance' : 'Panda.getClass'),
     undefined,
     [ts.factory.createStringLiteral(fullName)]
   );
@@ -421,6 +416,25 @@ function buildPropertyAssignments(node: ts.ObjectLiteralExpression, tmpObjName: 
         ts.isIdentifier(key) ? ts.factory.createStringLiteral(key.text) : key);
     return ts.factory.createAssignment(target, property.initializer);
   }).filter(Boolean) as ts.Expression[];
+}
+
+function buildCommaExpressions(node: ts.ObjectLiteralExpression, isRecordType: boolean,
+  tmpObjName: string, tmpClassName: string): ts.Expression[] {
+  const assignments: ts.Expression[] =
+    buildPropertyAssignments(node, isRecordType ? tmpClassName : tmpObjName, !isRecordType);
+
+  if (isRecordType) {
+    return [...assignments, ts.factory.createIdentifier(tmpClassName)];
+  }
+
+  return [
+    ts.factory.createAssignment(
+      ts.factory.createIdentifier(tmpObjName),
+      ts.factory.createNewExpression(ts.factory.createIdentifier(tmpClassName), undefined, [])
+    ),
+    ...assignments,
+    ts.factory.createIdentifier(tmpObjName)
+  ];
 }
 
 function getArkTSEvoFileOHMUrl(contextualType: ts.Type): string {
