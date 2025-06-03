@@ -17,52 +17,52 @@ import * as arkts from '@koalaui/libarkts';
 import { getClassPropertyName, isPrivateClassProperty } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 
-function addProperty(item: arkts.AstNode, structName: string, privateMap: Map<string, string[]>): void {
+function addProperty(item: arkts.AstNode, structName: string, privatePropertyMap: Map<string, string[]>): void {
   if (!arkts.isClassProperty(item) || !isPrivateClassProperty(item)) {
     return;
   }
   // Check if structName already exists in privateMap
-  if (privateMap.has(structName)) {
+  if (privatePropertyMap.has(structName)) {
     // If it exists, retrieve the current string[] and append the new content
-    privateMap.get(structName)?.push(getClassPropertyName(item));
+    privatePropertyMap.get(structName)?.push(getClassPropertyName(item));
   } else {
     // If it doesn't exist, create a new string[] and add the content
-    privateMap.set(structName, [getClassPropertyName(item)]);
+    privatePropertyMap.set(structName, [getClassPropertyName(item)]);
   }
 }
 
 function checkPrivateVariables(
   node: arkts.AstNode,
   context: UISyntaxRuleContext,
-  privateMap: Map<string, string[]>
+  privatePropertyMap: Map<string, string[]>
 ): void {
   // Check if the current node is the root node
   if (arkts.nodeType(node) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
     node.getChildren().forEach((member) => {
-      if (!arkts.isStructDeclaration(member)) {
+      if (!arkts.isStructDeclaration(member) || !member.definition.ident || !member.definition.ident.name) {
         return;
       }
-      const structName: string = member.definition.ident?.name ?? '';
-      member.definition?.body?.forEach((item) => {
-        addProperty(item, structName, privateMap);
+      const structName: string = member.definition.ident.name;
+      member.definition.body.forEach((item) => {
+        addProperty(item, structName, privatePropertyMap);
       });
     });
   }
-  if (!arkts.isCallExpression(node)) {
+  if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.expression)) {
     return;
   }
-  const componentName = node.expression.dumpSrc();
+  const componentName = node.expression.name;
   // If the initialization is for a component with private properties
-  if (!privateMap.has(componentName)) {
+  if (!privatePropertyMap.has(componentName)) {
     return;
   }
-  node.arguments?.forEach((member) => {
+  node.arguments.forEach((member) => {
     member.getChildren().forEach((property) => {
-      if (!arkts.isProperty(property)) {
+      if (!arkts.isProperty(property) || !property.key || !arkts.isIdentifier(property.key)) {
         return;
       }
-      const propertyName: string = property.key?.dumpSrc() ?? '';
-      if (privateMap.get(componentName)!.includes(propertyName)) {
+      const propertyName: string = property.key.name;
+      if (privatePropertyMap.get(componentName)!.includes(propertyName)) {
         context.report({
           node: property,
           message: rule.messages.cannotInitializePrivateVariables,
@@ -81,10 +81,10 @@ const rule: UISyntaxRule = {
     cannotInitializePrivateVariables: `Property '{{propertyName}}' is private and can not be initialized through the component constructor.`,
   },
   setup(context) {
-    let privateMap: Map<string, string[]> = new Map();
+    let privatePropertyMap: Map<string, string[]> = new Map();
     return {
       parsed: (node): void => {
-        checkPrivateVariables(node, context, privateMap);
+        checkPrivateVariables(node, context, privatePropertyMap);
       },
     };
   },

@@ -22,8 +22,12 @@ const rule: UISyntaxRule = {
   messages: {
     observedV2DecoratorError: `The '@ObservedV2' decorator can only be used in 'class'.`,
     traceDecoratorError: `The '@Trace' decorator can only be used in 'class'.`,
-    traceInObservedV2Error: `The '@Trace' decorator can only be used in a 'class' decorated with '@ObservedV2'.`,
     traceMemberVariableError: `The '@Trace' decorator can only decorate member variables within a 'class' decorated with '@ObservedV2'.`,
+    //The repair logic is different, if there is v1, update to v2
+    traceMustUsedWithObservedV2: `The '@Trace' decorator can only be used within a 'class' decorated with 'ObservedV2'.`,
+    traceMustUsedWithObservedV2Update: `The '@Trace' decorator can only be used within a 'class' decorated with 'ObservedV2'.`,
+
+
   },
   setup(context) {
     return {
@@ -34,14 +38,19 @@ const rule: UISyntaxRule = {
   },
 };
 
+function getObservedDecorator(node: arkts.ClassDeclaration): arkts.AnnotationUsage | undefined {
+  return node.definition?.annotations.find(annotation =>
+    annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name === PresetDecorators.OBSERVED_V1);
+}
+
 function reportObservedV2DecoratorError(context: UISyntaxRuleContext, hasObservedV2Decorator: arkts.AnnotationUsage)
   : void {
   context.report({
     node: hasObservedV2Decorator,
     message: rule.messages.observedV2DecoratorError,
     fix: (hasObservedV2Decorator) => {
-      const startPosition = arkts.getStartPosition(hasObservedV2Decorator);
-      const endPosition = arkts.getEndPosition(hasObservedV2Decorator);
+      const startPosition = hasObservedV2Decorator.startPosition;
+      const endPosition = hasObservedV2Decorator.endPosition;
       return {
         range: [startPosition, endPosition],
         code: '',
@@ -50,14 +59,14 @@ function reportObservedV2DecoratorError(context: UISyntaxRuleContext, hasObserve
   });
 }
 
-function reportTraceMemberVariableError(context: UISyntaxRuleContext, hasTraceDecorator: arkts.AnnotationUsage)
+function reportTraceMemberVariableError(context: UISyntaxRuleContext, traceDecorator: arkts.AnnotationUsage)
   : void {
   context.report({
-    node: hasTraceDecorator,
+    node: traceDecorator,
     message: rule.messages.traceMemberVariableError,
-    fix: (hasTraceDecorator) => {
-      const startPosition = arkts.getStartPosition(hasTraceDecorator);
-      const endPosition = arkts.getEndPosition(hasTraceDecorator);
+    fix: (traceDecorator) => {
+      const startPosition = traceDecorator.startPosition;
+      const endPosition = traceDecorator.endPosition;
       return {
         range: [startPosition, endPosition],
         code: '',
@@ -69,26 +78,32 @@ function reportTraceMemberVariableError(context: UISyntaxRuleContext, hasTraceDe
 function tracePerportyRule(
   context: UISyntaxRuleContext,
   currentNode: arkts.AstNode,
-  hasTraceDecorator: arkts.AnnotationUsage): void {
+  traceDecorator: arkts.AnnotationUsage): void {
   if (arkts.isStructDeclaration(currentNode)) {
-    reportTraceDecoratorError(context, hasTraceDecorator);
-  } else if (arkts.isClassDeclaration(currentNode)) {
-    // The '@Trace' decorator can only be used in a 'class' decorated with '@ObservedV2'
-    if (!currentNode.definition?.annotations?.some((annotation: any) => annotation.expr.name ===
-      PresetDecorators.OBSERVED_V2)) {
-      reportTraceInObservedV2Error(context, hasTraceDecorator, currentNode);
+    reportTraceDecoratorError(context, traceDecorator);
+  } else if (arkts.isClassDeclaration(currentNode) && currentNode.definition) {
+    const observedDecorator = getObservedDecorator(currentNode);
+    const observedV2 = currentNode.definition.annotations.some(annotation => {
+      annotation.expr &&
+        arkts.isIdentifier(annotation.expr) &&
+        annotation.expr.name === PresetDecorators.OBSERVED_V2;
+    });
+    if (!observedV2 && !observedDecorator) {
+      reportTraceMustUsedWithObservedV2(context, traceDecorator, currentNode);
+    } else if (!observedV2 && observedDecorator) {
+      reportTraceMustUsedWithObservedV2Update(context, traceDecorator, observedDecorator);
     }
   }
 }
 
-function reportTraceDecoratorError(context: UISyntaxRuleContext, hasTraceDecorator: arkts.AnnotationUsage)
+function reportTraceDecoratorError(context: UISyntaxRuleContext, traceDecorator: arkts.AnnotationUsage)
   : void {
   context.report({
-    node: hasTraceDecorator,
+    node: traceDecorator,
     message: rule.messages.traceDecoratorError,
-    fix: (hasTraceDecorator) => {
-      const startPosition = arkts.getStartPosition(hasTraceDecorator);
-      const endPosition = arkts.getEndPosition(hasTraceDecorator);
+    fix: (traceDecorator) => {
+      const startPosition = traceDecorator.startPosition;
+      const endPosition = traceDecorator.endPosition;
       return {
         range: [startPosition, endPosition],
         code: '',
@@ -97,16 +112,32 @@ function reportTraceDecoratorError(context: UISyntaxRuleContext, hasTraceDecorat
   });
 }
 
-function reportTraceInObservedV2Error(context: UISyntaxRuleContext, hasTraceDecorator: arkts.AnnotationUsage,
+function reportTraceMustUsedWithObservedV2(context: UISyntaxRuleContext, traceDecorator: arkts.AnnotationUsage,
   currentNode: arkts.ClassDeclaration): void {
   context.report({
-    node: hasTraceDecorator,
-    message: rule.messages.traceInObservedV2Error,
+    node: traceDecorator,
+    message: rule.messages.traceMustUsedWithObservedV2,
     fix: () => {
-      const startPosition = arkts.getStartPosition(currentNode);
+      const startPosition = currentNode.startPosition;
       return {
         range: [startPosition, startPosition],
         code: `@${PresetDecorators.OBSERVED_V2}\n`,
+      };
+    },
+  });
+}
+
+function reportTraceMustUsedWithObservedV2Update(context: UISyntaxRuleContext, traceDecorator: arkts.AnnotationUsage,
+  observedDecorator: arkts.AnnotationUsage): void {
+  context.report({
+    node: traceDecorator,
+    message: rule.messages.traceMustUsedWithObservedV2Update,
+    fix: () => {
+      const startPosition = observedDecorator.startPosition;
+      const endPosition = observedDecorator.endPosition;
+      return {
+        range: [startPosition, endPosition],
+        code: `@${PresetDecorators.OBSERVED_V2}`,
       };
     },
   });
@@ -122,23 +153,23 @@ function validateTraceDecoratorUsage(node: arkts.AstNode, context: UISyntaxRuleC
     }
   }
   if (arkts.isClassProperty(node)) {
-    const hasTraceDecorator = node.annotations?.find(annotation =>
-      annotation.expr && annotation.expr.dumpSrc() === PresetDecorators.TRACE);
-    if (hasTraceDecorator) {
+    const traceDecorator = node.annotations?.find(annotation =>
+      annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name === PresetDecorators.TRACE);
+    if (traceDecorator) {
       // Iterate up the parent node to check whether it is a class or a custom component
       while (!arkts.isStructDeclaration(currentNode) && !arkts.isClassDeclaration(currentNode)) {
         currentNode = currentNode.parent;
       }
       // The '@Trace' decorator can only be used in 'class'
-      tracePerportyRule(context, currentNode, hasTraceDecorator);
+      tracePerportyRule(context, currentNode, traceDecorator);
     }
   }
   if (arkts.isMethodDefinition(node)) {
     // Check that @Trace is in the correct location
-    const hasTraceDecorator = node.scriptFunction.annotations?.find(annotation =>
-      annotation.expr && annotation.expr.dumpSrc() === PresetDecorators.TRACE);
-    if (hasTraceDecorator) {
-      reportTraceMemberVariableError(context, hasTraceDecorator);
+    const traceDecorator = node.scriptFunction.annotations?.find(annotation =>
+      annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name === PresetDecorators.TRACE);
+    if (traceDecorator) {
+      reportTraceMemberVariableError(context, traceDecorator);
     }
   }
 }
