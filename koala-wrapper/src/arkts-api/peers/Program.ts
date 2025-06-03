@@ -35,16 +35,31 @@ export class Program extends ArktsObject {
         );
     }
 
-    get programFileName(): string {
+    get directExternalSources(): ExternalSource[] {
+        return acceptNativeObjectArrayResult<ExternalSource>(
+            global.es2panda._ProgramDirectExternalSources(global.context, this.peer),
+            (instance: KNativePointer) => new ExternalSource(instance)
+        );
+    }
+
+    get fileName(): string {
         return unpackString(global.es2panda._ProgramFileNameConst(global.context, this.peer));
     }
 
-    get programFileNameWithExtension(): string {
+    get fileNameWithExtension(): string {
         return unpackString(global.es2panda._ProgramFileNameWithExtensionConst(global.context, this.peer));
     }
 
-    get programGlobalAbsName(): string {
+    get globalAbsName(): string {
         return unpackString(global.es2panda._ETSParserGetGlobalProgramAbsName(global.context));
+    }
+
+    get moduleName(): string {
+        return unpackString(global.es2panda._ProgramModuleNameConst(global.context, this.peer));
+    }
+
+    isASTLowered(): boolean {
+        return global.es2panda._ProgramIsASTLoweredConst(global.context, this.peer);
     }
 }
 

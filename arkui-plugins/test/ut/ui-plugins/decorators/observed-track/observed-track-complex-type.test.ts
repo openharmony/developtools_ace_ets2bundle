@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,32 +38,17 @@ const observedTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test observed track transform with complex type', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
-
-import { SubscribedWatches as SubscribedWatches } from "@ohos.arkui.stateManagement";
-
-import { WatchIdType as WatchIdType } from "@ohos.arkui.stateManagement";
-
-import { int32 as int32 } from "@ohos.arkui.stateManagement";
-
 import { IObservedObject as IObservedObject } from "@ohos.arkui.stateManagement";
-
 import { setObservationDepth as setObservationDepth } from "@ohos.arkui.stateManagement";
-
 import { BackingValue as BackingValue } from "@ohos.arkui.stateManagement";
-
 import { MutableStateMeta as MutableStateMeta } from "@ohos.arkui.stateManagement";
-
+import { int32 as int32 } from "@koalaui.runtime.common";
+import { WatchIdType as WatchIdType } from "@ohos.arkui.stateManagement";
+import { SubscribedWatches as SubscribedWatches } from "@ohos.arkui.stateManagement";
 import { EntryPoint as EntryPoint } from "arkui.UserView";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
 import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
-
 import { Observed as Observed, Track as Track } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -862,11 +848,11 @@ class mixed3 implements IObservedObject {
   
   @memo() public _build(@memo() style: ((instance: MyStateSample)=> MyStateSample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MyStateSample | undefined): void {}
   
-  public constructor() {}
+  private constructor() {}
   
 }
 
-interface __Options_MyStateSample {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) export interface __Options_MyStateSample {
   
 }
 
@@ -874,7 +860,7 @@ class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     MyStateSample._instantiateImpl(undefined, (() => {
       return new MyStateSample();
-    }), undefined, undefined, undefined);
+    }));
   }
   
   public constructor() {}
@@ -888,9 +874,9 @@ function testObservedOnlyTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test observed track transform with complex type',
-    [observedTrackTransform, uiNoRecheck],
+    [observedTrackTransform, uiNoRecheck, recheck],
     {
-        checked: [testObservedOnlyTransformer],
+        'checked:ui-no-recheck': [testObservedOnlyTransformer],
     },
     {
         stopAfter: 'checked',

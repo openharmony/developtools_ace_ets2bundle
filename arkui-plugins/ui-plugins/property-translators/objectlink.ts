@@ -22,39 +22,35 @@ import {
     generateThisBacking,
     generateToRecord,
     hasDecorator,
-    judgeIfAddWatchFunc,
+    PropertyCache,
+    StateManagementTypes,
 } from './utils';
-import { PropertyTranslator } from './base';
+import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName } from '../../common/arkts-utils';
 import { factory } from './factory';
-import { createOptionalClassProperty } from '../utils';
 
 export class ObjectLinkTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
         if (!this.ifObservedDecoratedClass()) {
-            throw new Error('@ObjectLink decorated property only accepts @Observed decorated class instance'); // TODO: replace this with proper error message.
+            throw new Error('@ObjectLink decorated property only accepts @Observed decorated class instance');
         }
 
-        this.cacheTranslatedInitializer(newName, originalName); // TODO: need to release cache after some point...
+        this.cacheTranslatedInitializer(newName, originalName);
         return this.translateWithoutInitializer(newName, originalName);
     }
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
-        const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
+        PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
         const updateStruct: arkts.AstNode = this.generateUpdateStruct(newName, originalName);
-        currentStructInfo.initializeBody.push(initializeStruct);
-        currentStructInfo.updateBody.push(updateStruct);
-
-        if (currentStructInfo.isReusable) {
+        PropertyCache.getInstance().collectUpdateStruct(this.structInfo.name, [updateStruct]);
+        if (!!this.structInfo.annotations?.reusable) {
             const toRecord = generateToRecord(newName, originalName);
-            currentStructInfo.toRecordBody.push(toRecord);
+            PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);
         }
-
-        arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
@@ -66,7 +62,7 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
         );
 
         const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(originalName), initializers];
-        judgeIfAddWatchFunc(args, this.property);
+        factory.judgeIfAddWatchFunc(args, this.property);
 
         const newClass = arkts.factory.createETSNewClassInstanceExpression(
             arkts.factory.createTypeReference(
@@ -117,10 +113,10 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = createOptionalClassProperty(
+        const field: arkts.ClassProperty = factory.createOptionalClassProperty(
             newName,
             this.property,
-            'ObjectLinkDecoratedVariable',
+            StateManagementTypes.OBJECT_LINK_DECORATED,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
@@ -149,5 +145,47 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
             }
         }
         return false;
+    }
+}
+
+export class ObjectLinkInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+    translateProperty(): T {
+        if (arkts.isMethodDefinition(this.property)) {
+            this.modified = true;
+            return this.updateStateMethodInInterface(this.property) as T;
+        } else if (arkts.isClassProperty(this.property)) {
+            this.modified = true;
+            return this.updateStatePropertyInInterface(this.property) as T;
+        }
+        return this.property;
+    }
+
+    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+        if (arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.OBJECT_LINK)) {
+            return true;
+        } else if (arkts.isClassProperty(node) && hasDecorator(node, DecoratorNames.OBJECT_LINK)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
+     * to `ObjectLinkDecoratedVariable<T> | undefined`.
+     *
+     * @param method expecting getter with `@ObjectLink` and a setter with `@ObjectLink` in the overloads.
+     */
+    private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.OBJECT_LINK);
+    }
+
+    /**
+     * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
+     * to `ObjectLinkDecoratedVariable<T> | undefined`.
+     *
+     * @param property expecting property with `@ObjectLink`.
+     */
+    private updateStatePropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
+        return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.OBJECT_LINK);
     }
 }

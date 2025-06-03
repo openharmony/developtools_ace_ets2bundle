@@ -16,7 +16,17 @@
 import * as arkts from '@koalaui/libarkts';
 import { GenSymGenerator } from '../../common/gensym-generator';
 import { factory as UIFactory } from '../ui-factory';
-import { judgeIfAddWatchFunc } from './utils';
+import {
+    collectStateManagementTypeImport,
+    collectStateManagementTypeSource,
+    DecoratorNames,
+    decoratorTypeMap,
+    getValueInAnnotation,
+    hasDecorator,
+    removeDecorator,
+    StateManagementTypes,
+} from './utils';
+import { addMemoAnnotation, findCanAddMemoFromTypeAnnotation } from '../utils';
 
 export class factory {
     /**
@@ -254,7 +264,7 @@ export class factory {
             ),
             arkts.factory.createBooleanLiteral(allowOverride),
         ];
-        judgeIfAddWatchFunc(args, property);
+        factory.judgeIfAddWatchFunc(args, property);
         return arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
                 arkts.factory.createThisExpression(),
@@ -280,7 +290,7 @@ export class factory {
             arkts.factory.create1StringLiteral(originalName),
             arkts.factory.create1StringLiteral(alias),
         ];
-        judgeIfAddWatchFunc(args, property);
+        factory.judgeIfAddWatchFunc(args, property);
         return arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
                 arkts.factory.createThisExpression(),
@@ -292,5 +302,338 @@ export class factory {
             property.typeAnnotation ? [property.typeAnnotation.clone()] : undefined,
             args
         );
+    }
+
+    static judgeIfAddWatchFunc(args: arkts.Expression[], property: arkts.ClassProperty): void {
+        if (hasDecorator(property, DecoratorNames.WATCH)) {
+            const watchStr: string | undefined = getValueInAnnotation(property, DecoratorNames.WATCH);
+            if (watchStr) {
+                args.push(factory.createWatchCallback(watchStr));
+            }
+        }
+    }
+
+    static createOptionalClassProperty(
+        name: string,
+        property: arkts.ClassProperty,
+        stageManagementType: StateManagementTypes | undefined,
+        modifiers: arkts.Es2pandaModifierFlags,
+        needMemo: boolean = false
+    ): arkts.ClassProperty {
+        const newType: arkts.TypeNode | undefined = property.typeAnnotation?.clone();
+        if (needMemo && findCanAddMemoFromTypeAnnotation(newType)) {
+            addMemoAnnotation(newType);
+        }
+        const newProperty = arkts.factory.createClassProperty(
+            arkts.factory.createIdentifier(name),
+            undefined,
+            !!stageManagementType ? factory.createStageManagementType(stageManagementType, property) : newType,
+            modifiers,
+            false
+        );
+        return arkts.classPropertySetOptional(newProperty, true);
+    }
+
+    static createStageManagementType(
+        stageManagementType: StateManagementTypes,
+        property: arkts.ClassProperty
+    ): arkts.ETSTypeReference {
+        collectStateManagementTypeSource(stageManagementType);
+        collectStateManagementTypeImport(stageManagementType);
+        return arkts.factory.createTypeReference(
+            arkts.factory.createTypeReferencePart(
+                arkts.factory.createIdentifier(stageManagementType),
+                arkts.factory.createTSTypeParameterInstantiation([
+                    property.typeAnnotation ? property.typeAnnotation.clone() : arkts.factory.createETSUndefinedType(),
+                ])
+            )
+        );
+    }
+
+    static createWatchMembers(): arkts.AstNode[] {
+        const subscribedWatches: arkts.ClassProperty = arkts.factory.createClassProperty(
+            arkts.factory.createIdentifier('subscribedWatches'),
+            arkts.factory.createETSNewClassInstanceExpression(
+                arkts.factory.createTypeReference(
+                    arkts.factory.createTypeReferencePart(
+                        arkts.factory.createIdentifier(StateManagementTypes.SUBSCRIBED_WATCHES)
+                    )
+                ),
+                []
+            ),
+            arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier(StateManagementTypes.SUBSCRIBED_WATCHES)
+                )
+            ),
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+            false
+        );
+        collectStateManagementTypeSource(StateManagementTypes.SUBSCRIBED_WATCHES);
+        collectStateManagementTypeImport(StateManagementTypes.SUBSCRIBED_WATCHES);
+
+        const addWatchSubscriber = factory.createWatchMethod(
+            'addWatchSubscriber',
+            arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID,
+            'watchId',
+            StateManagementTypes.WATCH_ID_TYPE,
+            false
+        );
+        const removeWatchSubscriber = factory.createWatchMethod(
+            'removeWatchSubscriber',
+            arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_BOOLEAN,
+            'watchId',
+            StateManagementTypes.WATCH_ID_TYPE,
+            true
+        );
+        collectStateManagementTypeSource(StateManagementTypes.WATCH_ID_TYPE);
+        collectStateManagementTypeImport(StateManagementTypes.WATCH_ID_TYPE);
+
+        const executeOnSubscribingWatches = factory.createWatchMethod(
+            'executeOnSubscribingWatches',
+            arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID,
+            'propertyName',
+            'string',
+            false
+        );
+
+        return [subscribedWatches, addWatchSubscriber, removeWatchSubscriber, executeOnSubscribingWatches];
+    }
+
+    static createWatchMethod(
+        methodName: string,
+        returnType: arkts.Es2pandaPrimitiveType,
+        paramName: string,
+        paramType: string,
+        isReturnStatement: boolean
+    ): arkts.MethodDefinition {
+        return arkts.factory.createMethodDefinition(
+            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+            arkts.factory.createIdentifier(methodName),
+            arkts.factory.createScriptFunction(
+                arkts.factory.createBlock([
+                    isReturnStatement
+                        ? arkts.factory.createReturnStatement(
+                              arkts.factory.createCallExpression(
+                                  factory.thisSubscribedWatchesMember(methodName),
+                                  undefined,
+                                  [arkts.factory.createIdentifier(paramName)]
+                              )
+                          )
+                        : arkts.factory.createExpressionStatement(
+                              arkts.factory.createCallExpression(
+                                  factory.thisSubscribedWatchesMember(methodName),
+                                  undefined,
+                                  [arkts.factory.createIdentifier(paramName)]
+                              )
+                          ),
+                ]),
+                arkts.factory.createFunctionSignature(
+                    undefined,
+                    [
+                        arkts.factory.createParameterDeclaration(
+                            arkts.factory.createIdentifier(
+                                paramName,
+                                arkts.factory.createTypeReference(
+                                    arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(paramType))
+                                )
+                            ),
+                            undefined
+                        ),
+                    ],
+                    arkts.factory.createPrimitiveType(returnType),
+                    false
+                ),
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+            ),
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            false
+        );
+    }
+
+    static thisSubscribedWatchesMember(member: string): arkts.MemberExpression {
+        return arkts.factory.createMemberExpression(
+            arkts.factory.createMemberExpression(
+                arkts.factory.createThisExpression(),
+                arkts.factory.createIdentifier('subscribedWatches'),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
+            ),
+            arkts.factory.createIdentifier(member),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
+        );
+    }
+
+    /**
+     * add `@memo` to the `@Builder` methods in class.
+     */
+    static addMemoToBuilderClassMethod(method: arkts.MethodDefinition): arkts.MethodDefinition {
+        if (hasDecorator(method, DecoratorNames.BUILDER)) {
+            removeDecorator(method, DecoratorNames.BUILDER);
+            addMemoAnnotation(method.scriptFunction);
+        }
+        return method;
+    }
+
+    static createStorageLinkStateValue(
+        property: arkts.ClassProperty,
+        localStorageporpValueStr: string
+    ): arkts.MemberExpression {
+        return arkts.factory.createMemberExpression(
+            arkts.factory.createCallExpression(
+                arkts.factory.createIdentifier(StateManagementTypes.STORAGE_LINK_STATE),
+                property.typeAnnotation ? [property.typeAnnotation] : [],
+                [
+                    arkts.factory.createMemberExpression(
+                        arkts.factory.createThisExpression(),
+                        arkts.factory.createIdentifier('_entry_local_storage_'),
+                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                        false,
+                        false
+                    ),
+                    arkts.factory.createStringLiteral(localStorageporpValueStr),
+                    property.value ?? arkts.factory.createUndefinedLiteral(),
+                ]
+            ),
+            arkts.factory.createIdentifier('value'),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
+        );
+    }
+
+    /**
+     * wrap interface non-undefined property type `T` to `<wrapTypeName><T>`.
+     */
+    static wrapInterfacePropertyType(type: arkts.TypeNode, wrapTypeName: StateManagementTypes): arkts.TypeNode {
+        if (arkts.isETSUnionType(type)) {
+            return arkts.factory.updateUnionType(
+                type,
+                type.types.map((t) => factory.wrapInterfacePropertyType(t, wrapTypeName))
+            );
+        } else if (!arkts.isETSUndefinedType(type)) {
+            return arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier(wrapTypeName),
+                    arkts.factory.createTSTypeParameterInstantiation([(type as arkts.TypeNode).clone()])
+                )
+            );
+        }
+        return type;
+    }
+
+    /**
+     * wrap interface property parameter that has non-undefined type `T` to `<wrapTypeName><T>`.
+     */
+    static wrapInterfacePropertyParamExpr(
+        param: arkts.Expression,
+        wrapTypeName: StateManagementTypes
+    ): arkts.Expression {
+        if (!arkts.isEtsParameterExpression(param)) {
+            return param;
+        }
+        if (!param.type || !arkts.isETSUnionType(param.type)) {
+            return param;
+        }
+        return arkts.factory.updateParameterDeclaration(
+            param,
+            arkts.factory.createIdentifier(
+                param.identifier.name,
+                factory.wrapInterfacePropertyType(param.type, wrapTypeName)
+            ),
+            param.initializer
+        );
+    }
+
+    static wrapStateManagementTypeToType(
+        type: arkts.TypeNode | undefined,
+        decoratorName: DecoratorNames
+    ): arkts.TypeNode | undefined {
+        let newType: arkts.TypeNode | undefined;
+        let wrapTypeName: StateManagementTypes | undefined;
+        if (!!type && !!(wrapTypeName = decoratorTypeMap.get(decoratorName))) {
+            collectStateManagementTypeSource(wrapTypeName);
+            newType = factory.wrapInterfacePropertyType(type, wrapTypeName);
+            collectStateManagementTypeImport(wrapTypeName);
+        }
+        return newType;
+    }
+
+    static wrapStateManagementTypeToParam(
+        param: arkts.Expression | undefined,
+        decoratorName: DecoratorNames
+    ): arkts.Expression | undefined {
+        let newParam: arkts.Expression | undefined;
+        let wrapTypeName: StateManagementTypes | undefined;
+        if (!!param && !!(wrapTypeName = decoratorTypeMap.get(decoratorName))) {
+            collectStateManagementTypeSource(wrapTypeName);
+            newParam = factory.wrapInterfacePropertyParamExpr(param, wrapTypeName);
+            collectStateManagementTypeImport(wrapTypeName);
+        }
+        return newParam;
+    }
+
+    /**
+     * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
+     * to `<wrapTypeName><T> | undefined`, where `<wrapTypeName>` is getting from `DecoratorName`;
+     *
+     * @param method expecting getter with decorator annotation and a setter with decorator annotation in the overloads.
+     */
+    static wrapStateManagementTypeToMethodInInterface(
+        method: arkts.MethodDefinition,
+        decorator: DecoratorNames
+    ): arkts.MethodDefinition {
+        if (method.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
+            const newType: arkts.TypeNode | undefined = factory.wrapStateManagementTypeToType(
+                method.scriptFunction.returnTypeAnnotation,
+                decorator
+            );
+            const newOverLoads = method.overloads.map((overload) => {
+                if (arkts.isMethodDefinition(overload)) {
+                    return factory.wrapStateManagementTypeToMethodInInterface(overload, decorator);
+                }
+                return overload;
+            });
+            method.setOverloads(newOverLoads);
+            removeDecorator(method, decorator);
+            if (!!newType) {
+                method.scriptFunction.setReturnTypeAnnotation(newType);
+            }
+        } else if (method.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {
+            const newParam: arkts.Expression | undefined = factory.wrapStateManagementTypeToParam(
+                method.scriptFunction.params.at(0),
+                decorator
+            );
+            removeDecorator(method, decorator);
+            if (!!newParam) {
+                return UIFactory.updateMethodDefinition(method, { function: { params: [newParam] } });
+            }
+        }
+        return method;
+    }
+
+    /**
+     * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
+     * to `<wrapTypeName><T> | undefined`, where `<wrapTypeName>` is getting from `DecoratorName`;
+     *
+     * @param property expecting property with decorator annotation.
+     */
+    static wrapStateManagementTypeToPropertyInInterface(
+        property: arkts.ClassProperty,
+        decorator: DecoratorNames
+    ): arkts.ClassProperty {
+        const newType: arkts.TypeNode | undefined = factory.wrapStateManagementTypeToType(
+            property.typeAnnotation,
+            decorator
+        );
+        removeDecorator(property, decorator);
+        if (!!newType) {
+            property.setTypeAnnotation(newType);
+        }
+        return property;
     }
 }

@@ -73,7 +73,7 @@ export function isEntryWrapperClass(node: arkts.AstNode): node is arkts.ClassDec
  */
 export function findEntryWithStorageInClassAnnotations(node: arkts.ClassDefinition): arkts.ClassProperty | undefined {
     const annotation = node.annotations.find((anno) => {
-        if (!isAnnotation(anno, CustomComponentNames.ENTRY_ANNOTATION_NAME)) return false;
+        if (!isAnnotation(anno, CustomComponentNames.ENTRY_ANNOTATION)) return false;
         const property = anno.properties?.at(0);
         if (!property || !arkts.isClassProperty(property)) return false;
         if (!property.key || !arkts.isIdentifier(property.key)) return false;

@@ -80,24 +80,6 @@ export function matchPrefix(prefixCollection: (string | RegExp)[], name: string)
     return false;
 }
 
-export function updateStructMetadata(
-    structInfo: arkts.StructInfo,
-    propertyName: string,
-    properties: string[],
-    modifiers: arkts.Es2pandaModifierFlags,
-    hasStateManagementType?: boolean
-): arkts.StructInfo {
-    const metadata: Record<string, arkts.StructVariableMetadata> = structInfo.metadata ?? {};
-    metadata[propertyName] = {
-        name: propertyName,
-        properties,
-        modifiers,
-        hasStateManagementType,
-    };
-    structInfo.metadata = metadata;
-    return structInfo;
-}
-
 export function moveToFront<T>(arr: T[], idx: number): T[] {
     if (idx < 0 || idx >= arr.length) {
         throw new Error(`Index ${idx} is out of bounds for array of length ${arr.length}`);

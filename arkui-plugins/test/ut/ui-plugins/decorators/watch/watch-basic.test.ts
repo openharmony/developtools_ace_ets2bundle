@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,50 +38,20 @@ const watchTransform: Plugins = {
 const pluginTester = new PluginTester('test basic watch transform', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
-
-import { ConsumeDecoratedVariable as ConsumeDecoratedVariable } from "@ohos.arkui.stateManagement";
-
 import { ProvideDecoratedVariable as ProvideDecoratedVariable } from "@ohos.arkui.stateManagement";
-
-import { SubscribedWatches as SubscribedWatches } from "@ohos.arkui.stateManagement";
-
-import { WatchIdType as WatchIdType } from "@ohos.arkui.stateManagement";
-
-import { int32 as int32 } from "@ohos.arkui.stateManagement";
-
-import { IObservedObject as IObservedObject } from "@ohos.arkui.stateManagement";
-
-import { setObservationDepth as setObservationDepth } from "@ohos.arkui.stateManagement";
-
-import { BackingValue as BackingValue } from "@ohos.arkui.stateManagement";
-
-import { MutableStateMeta as MutableStateMeta } from "@ohos.arkui.stateManagement";
-
-import { ObjectLinkDecoratedVariable as ObjectLinkDecoratedVariable } from "@ohos.arkui.stateManagement";
-
-import { DecoratedV1VariableBase as DecoratedV1VariableBase } from "@ohos.arkui.stateManagement";
-
-import { LinkDecoratedVariable as LinkDecoratedVariable } from "@ohos.arkui.stateManagement";
-
 import { StoragePropDecoratedVariable as StoragePropDecoratedVariable } from "@ohos.arkui.stateManagement";
-
 import { StorageLinkDecoratedVariable as StorageLinkDecoratedVariable } from "@ohos.arkui.stateManagement";
-
 import { PropDecoratedVariable as PropDecoratedVariable } from "@ohos.arkui.stateManagement";
-
 import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
-
+import { IObservedObject as IObservedObject } from "@ohos.arkui.stateManagement";
+import { MutableStateMeta as MutableStateMeta } from "@ohos.arkui.stateManagement";
+import { int32 as int32 } from "@koalaui.runtime.common";
+import { WatchIdType as WatchIdType } from "@ohos.arkui.stateManagement";
+import { SubscribedWatches as SubscribedWatches } from "@ohos.arkui.stateManagement";
 import { EntryPoint as EntryPoint } from "arkui.UserView";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
 import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
-
 import { State as State, Prop as Prop, StorageLink as StorageLink, StorageProp as StorageProp, Link as Link, Watch as Watch, ObjectLink as ObjectLink, Observed as Observed, Track as Track, Provide as Provide, Consume as Consume } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -221,10 +192,10 @@ function main() {}
   @memo() public _build(@memo() style: ((instance: MyStateSample)=> MyStateSample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MyStateSample | undefined): void {
     Child._instantiateImpl(undefined, (() => {
       return new Child();
-    }), undefined, undefined, undefined);
+    }));
   }
   
-  public constructor() {}
+  private constructor() {}
   
 }
 
@@ -235,11 +206,11 @@ function main() {}
   
   @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {}
   
-  public constructor() {}
+  private constructor() {}
   
 }
 
-interface __Options_MyStateSample {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) export interface __Options_MyStateSample {
   set statevar(statevar: string | undefined)
   
   get statevar(): string | undefined
@@ -273,7 +244,7 @@ interface __Options_MyStateSample {
   
 }
 
-interface __Options_Child {
+@Component({freezeWhenInactive:false}) export interface __Options_Child {
   
 }
 
@@ -281,7 +252,7 @@ class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     MyStateSample._instantiateImpl(undefined, (() => {
       return new MyStateSample();
-    }), undefined, undefined, undefined);
+    }));
   }
   
   public constructor() {}
@@ -296,9 +267,9 @@ function testWatchTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic watch transform',
-    [watchTransform, uiNoRecheck],
+    [watchTransform, uiNoRecheck, recheck],
     {
-        checked: [testWatchTransformer],
+        'checked:ui-no-recheck': [testWatchTransformer],
     },
     {
         stopAfter: 'checked',

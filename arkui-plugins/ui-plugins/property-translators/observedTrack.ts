@@ -15,14 +15,27 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { backingField, expectName } from '../../common/arkts-utils';
-import { DecoratorNames, hasDecorator } from './utils';
-import { ClassScopeInfo } from 'ui-plugins/checked-transformer';
+import {
+    collectStateManagementTypeImport,
+    collectStateManagementTypeSource,
+    DecoratorNames,
+    hasDecorator,
+    StateManagementTypes,
+} from './utils';
+import { ClassScopeInfo } from './types';
 
 export class ObservedTrackTranslator {
-    constructor(protected property: arkts.ClassProperty, protected classScopeInfo: ClassScopeInfo) {}
+    protected property: arkts.ClassProperty;
+    protected classScopeInfo: ClassScopeInfo;
+    private hasImplement: boolean;
+    private isTracked: boolean;
 
-    private hasImplement: boolean = expectName(this.property.key).startsWith('<property>');
-    private isTracked: boolean = hasDecorator(this.property, DecoratorNames.TRACK);
+    constructor(property: arkts.ClassProperty, classScopeInfo: ClassScopeInfo) {
+        this.property = property;
+        this.classScopeInfo = classScopeInfo;
+        this.hasImplement = expectName(this.property.key).startsWith('<property>');
+        this.isTracked = hasDecorator(this.property, DecoratorNames.TRACK);
+    }
 
     translateMember(): arkts.AstNode[] {
         if (!this.isTracked && (this.classScopeInfo.classHasTrack || !this.classScopeInfo.isObserved)) {
@@ -67,11 +80,9 @@ export class ObservedTrackTranslator {
     createGetter(originalName: string, newName: string, properyIsClass: boolean): arkts.MethodDefinition {
         const ifRefDepth: arkts.IfStatement = this.getterIfRefDepth(originalName);
         const returnMember: arkts.ReturnStatement = this.getterReturnMember(properyIsClass, newName);
-        const setObservationDepth = this.getterSetObservationDepth(newName);
-
         const body = arkts.factory.createBlock([
             ifRefDepth,
-            ...(properyIsClass ? [setObservationDepth] : []),
+            ...(properyIsClass ? [this.getterSetObservationDepth(newName)] : []),
             returnMember,
         ]);
 
@@ -85,7 +96,7 @@ export class ObservedTrackTranslator {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET,
             arkts.factory.createIdentifier(originalName),
-            arkts.factory.createFunctionExpression(scriptFunction),
+            scriptFunction,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
             false
         );
@@ -109,7 +120,7 @@ export class ObservedTrackTranslator {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET,
             arkts.factory.createIdentifier(originalName),
-            arkts.factory.createFunctionExpression(scriptFunction),
+            scriptFunction,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
             false
         );
@@ -160,9 +171,7 @@ export class ObservedTrackTranslator {
                     originGetter,
                     originGetter.kind,
                     newGetter.name,
-                    arkts.factory.createFunctionExpression(
-                        newGetter.scriptFunction.addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD)
-                    ),
+                    newGetter.scriptFunction.addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD),
                     originGetter.modifiers,
                     false
                 );
@@ -170,11 +179,9 @@ export class ObservedTrackTranslator {
                     originSetter,
                     originSetter.kind,
                     newSetter.name,
-                    arkts.factory.createFunctionExpression(
-                        newSetter.scriptFunction
-                            .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_OVERLOAD)
-                            .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD)
-                    ),
+                    newSetter.scriptFunction
+                        .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_OVERLOAD)
+                        .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD),
                     originSetter.modifiers,
                     false
                 );
@@ -186,13 +193,15 @@ export class ObservedTrackTranslator {
     }
 
     propertyIsClassField(newName: string): arkts.ClassProperty {
+        collectStateManagementTypeSource(StateManagementTypes.BACKING_VALUE);
+        collectStateManagementTypeImport(StateManagementTypes.BACKING_VALUE);
         return arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(newName),
             this.property.value
                 ? arkts.factory.createETSNewClassInstanceExpression(
                       arkts.factory.createTypeReference(
                           arkts.factory.createTypeReferencePart(
-                              arkts.factory.createIdentifier('BackingValue'),
+                              arkts.factory.createIdentifier(StateManagementTypes.BACKING_VALUE),
                               arkts.factory.createTSTypeParameterInstantiation(
                                   this.property.typeAnnotation ? [this.property.typeAnnotation] : []
                               )
@@ -203,7 +212,7 @@ export class ObservedTrackTranslator {
                 : undefined,
             arkts.factory.createTypeReference(
                 arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier('BackingValue'),
+                    arkts.factory.createIdentifier(StateManagementTypes.BACKING_VALUE),
                     arkts.factory.createTSTypeParameterInstantiation(
                         this.property.typeAnnotation ? [this.property.typeAnnotation] : []
                     )
@@ -215,16 +224,22 @@ export class ObservedTrackTranslator {
     }
 
     metaField(originalName: string): arkts.ClassProperty {
+        collectStateManagementTypeSource(StateManagementTypes.MUTABLE_STATE_META);
+        collectStateManagementTypeImport(StateManagementTypes.MUTABLE_STATE_META);
         return arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(`__meta_${originalName}`),
             arkts.factory.createETSNewClassInstanceExpression(
                 arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('MutableStateMeta'))
+                    arkts.factory.createTypeReferencePart(
+                        arkts.factory.createIdentifier(StateManagementTypes.MUTABLE_STATE_META)
+                    )
                 ),
                 [arkts.factory.createStringLiteral('@Track')]
             ),
             arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('MutableStateMeta'))
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier(StateManagementTypes.MUTABLE_STATE_META)
+                )
             ),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
@@ -271,21 +286,27 @@ export class ObservedTrackTranslator {
     }
 
     getterSetObservationDepth(newName: string): arkts.ExpressionStatement {
+        collectStateManagementTypeSource(StateManagementTypes.SET_OBSERVATION_DEPTH);
+        collectStateManagementTypeImport(StateManagementTypes.SET_OBSERVATION_DEPTH);
         return arkts.factory.createExpressionStatement(
-            arkts.factory.createCallExpression(arkts.factory.createIdentifier('setObservationDepth'), undefined, [
-                this.genThisBackingValue(newName),
-                arkts.factory.createBinaryExpression(
-                    arkts.factory.createMemberExpression(
-                        arkts.factory.createThisExpression(),
-                        arkts.factory.createIdentifier('_permissibleAddRefDepth'),
-                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                        false,
-                        false
+            arkts.factory.createCallExpression(
+                arkts.factory.createIdentifier(StateManagementTypes.SET_OBSERVATION_DEPTH),
+                undefined,
+                [
+                    this.genThisBackingValue(newName),
+                    arkts.factory.createBinaryExpression(
+                        arkts.factory.createMemberExpression(
+                            arkts.factory.createThisExpression(),
+                            arkts.factory.createIdentifier('_permissibleAddRefDepth'),
+                            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                            false,
+                            false
+                        ),
+                        arkts.factory.createNumericLiteral(1),
+                        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_MINUS
                     ),
-                    arkts.factory.createNumericLiteral(1),
-                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_MINUS
-                ),
-            ])
+                ]
+            )
         );
     }
 

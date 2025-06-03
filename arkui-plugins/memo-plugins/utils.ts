@@ -24,10 +24,11 @@ export enum RuntimeNames {
     ANNOTATION_ENTRY = 'memo_entry',
     ANNOTATION_INTRINSIC = 'memo_intrinsic',
     ANNOTATION_STABLE = 'memo_stable',
+    ANNOTATION_SKIP = 'memo_skip',
     COMPUTE = 'compute',
     CONTEXT = '__memo_context',
     CONTEXT_TYPE = '__memo_context_type',
-    CONTEXT_TYPE_DEFAULT_IMPORT = '@ohos.arkui.StateManagement.runtime',
+    MEMO_IMPORT_NAME = 'arkui.stateManagement.runtime',
     GENSYM = 'gensym%%_',
     ID = '__memo_id',
     ID_TYPE = '__memo_id_type',
@@ -126,18 +127,16 @@ export function hasMemoEntryAnnotation<T extends MemoAstNode>(node: T): boolean 
 }
 
 export function hasMemoStableAnnotation(node: arkts.ClassDefinition): boolean {
-    return node.annotations.some(
-        (it) => it.expr !== undefined && arkts.isIdentifier(it.expr) && it.expr.name === RuntimeNames.ANNOTATION_STABLE
-    );
+    return node.annotations.some((it) => isMemoAnnotation(it, RuntimeNames.ANNOTATION_STABLE));
+}
+
+export function hasMemoSkipAnnotation(node: arkts.ETSParameterExpression): boolean {
+    return node.annotations.some((it) => isMemoAnnotation(it, RuntimeNames.ANNOTATION_SKIP));
 }
 
 export function removeMemoAnnotation<T extends MemoAstNode>(node: T): T {
     const newAnnotations: arkts.AnnotationUsage[] = node.annotations.filter(
-        (it) =>
-            !isMemoAnnotation(it, RuntimeNames.ANNOTATION) &&
-            !isMemoAnnotation(it, RuntimeNames.ANNOTATION_INTRINSIC) &&
-            !isMemoAnnotation(it, RuntimeNames.ANNOTATION_ENTRY) &&
-            !isMemoAnnotation(it, RuntimeNames.ANNOTATION_STABLE)
+        (it) => !isMemoAnnotation(it, RuntimeNames.ANNOTATION) && !isMemoAnnotation(it, RuntimeNames.ANNOTATION_STABLE)
     );
     if (arkts.isEtsParameterExpression(node)) {
         node.annotations = newAnnotations;
@@ -266,9 +265,12 @@ export function isStandaloneArrowFunction(node: arkts.AstNode): node is arkts.Ar
     if (!arkts.isArrowFunctionExpression(node)) return false;
 
     // handling anonymous arrow function call
-    if (arkts.isCallExpression(node.parent) && node.parent.expression.peer === node.peer) return true;
+    if (!!node.parent && arkts.isCallExpression(node.parent) && node.parent.expression.peer === node.peer) {
+        return true;
+    }
 
     return (
+        !!node.parent &&
         !arkts.isVariableDeclarator(node.parent) &&
         !arkts.isClassProperty(node.parent) &&
         !(arkts.isCallExpression(node.parent) && node.parent.expression)
@@ -388,7 +390,7 @@ export function isMemoVariableDeclarator(node: arkts.VariableDeclarator): boolea
     if (!!node.initializer && arkts.isArrowFunctionExpression(node.initializer)) {
         isMemo ||= isMemoArrowFunction(node.initializer);
     }
-    if (arkts.isVariableDeclaration(node.parent)) {
+    if (!!node.parent && arkts.isVariableDeclaration(node.parent)) {
         isMemo ||= isMemoVariableDeclaration(node.parent);
     }
     return isMemo;
@@ -416,7 +418,7 @@ export function isMemoDeclaredMethod(decl: arkts.MethodDefinition): boolean {
     ) {
         return true;
     }
-    return isMemoMethodDefinition(decl);
+    return !hasMemoEntryAnnotation(decl.scriptFunction) && isMemoMethodDefinition(decl);
 }
 
 export function isDeclaredMethodWithMemoParams(decl: arkts.MethodDefinition): boolean {
@@ -432,7 +434,7 @@ export function isMemoDeclaredIdentifier(decl: arkts.Identifier): boolean {
     if (findMemoFromTypeAnnotation(decl.typeAnnotation)) {
         return true;
     }
-    if (arkts.isVariableDeclarator(decl.parent)) {
+    if (!!decl.parent && arkts.isVariableDeclarator(decl.parent)) {
         return isMemoVariableDeclarator(decl.parent);
     }
     return false;
@@ -485,7 +487,7 @@ export function findReturnTypeFromTypeAnnotation(
 
 export function getDeclResolveAlias(node: arkts.AstNode): arkts.AstNode | undefined {
     const decl = arkts.getDecl(node);
-    if (!!decl && arkts.isIdentifier(decl) && arkts.isVariableDeclarator(decl.parent)) {
+    if (!!decl && !!decl.parent && arkts.isIdentifier(decl) && arkts.isVariableDeclarator(decl.parent)) {
         if (!!decl.parent.initializer && arkts.isIdentifier(decl.parent.initializer)) {
             return getDeclResolveAlias(decl.parent.initializer);
         }
@@ -553,9 +555,11 @@ export function buildReturnTypeInfo(
 
 export function buildeParamInfos(parameters: readonly arkts.ETSParameterExpression[]): ParamInfo[] {
     return [
-        ...parameters.map((it) => {
-            return { ident: it.identifier, param: it };
-        }),
+        ...parameters
+            .filter((it) => !hasMemoSkipAnnotation(it))
+            .map((it) => {
+                return { ident: it.identifier, param: it };
+            }),
     ];
 }
 

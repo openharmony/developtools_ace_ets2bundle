@@ -16,44 +16,45 @@
 import * as arkts from '@koalaui/libarkts';
 
 import {
-    generateToRecord,
     createGetter,
+    generateToRecord,
+    StateManagementTypes,
     createSetter2,
     generateThisBacking,
     generateGetOrSetCall,
     getValueInProvideAnnotation,
     ProvideOptions,
+    hasDecorator,
+    DecoratorNames,
+    PropertyCache,
 } from './utils';
-import { PropertyTranslator } from './base';
+import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName } from '../../common/arkts-utils';
-import { createOptionalClassProperty } from '../utils';
 import { factory } from './factory';
 
 export class ProvideTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
-        this.cacheTranslatedInitializer(newName, originalName); // TODO: need to release cache after some point...
+        this.cacheTranslatedInitializer(newName, originalName);
         return this.translateWithoutInitializer(newName, originalName);
     }
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
-        const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(originalName, newName);
-        currentStructInfo.initializeBody.push(initializeStruct);
-        if (currentStructInfo.isReusable) {
+        PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
+        if (!!this.structInfo.annotations?.reusable) {
             const toRecord = generateToRecord(newName, originalName);
-            currentStructInfo.toRecordBody.push(toRecord);
+            PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);
         }
-        arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = createOptionalClassProperty(
+        const field: arkts.ClassProperty = factory.createOptionalClassProperty(
             newName,
             this.property,
-            'ProvideDecoratedVariable',
+            StateManagementTypes.PROVIDE_DECORATED,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
@@ -101,5 +102,47 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
             factory.generateAddProvideVarCall(originalName, this.property, alias, allowOverride)
         );
         return arkts.factory.createExpressionStatement(assign);
+    }
+}
+
+export class ProvideInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+    translateProperty(): T {
+        if (arkts.isMethodDefinition(this.property)) {
+            this.modified = true;
+            return this.updateStateMethodInInterface(this.property) as T;
+        } else if (arkts.isClassProperty(this.property)) {
+            this.modified = true;
+            return this.updateStatePropertyInInterface(this.property) as T;
+        }
+        return this.property;
+    }
+
+    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+        if (arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.PROVIDE)) {
+            return true;
+        } else if (arkts.isClassProperty(node) && hasDecorator(node, DecoratorNames.PROVIDE)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
+     * to `ProvideDecoratedVariable<T> | undefined`.
+     *
+     * @param method expecting getter with `@Provide` and a setter with `@Provide` in the overloads.
+     */
+    private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.PROVIDE);
+    }
+
+    /**
+     * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
+     * to `ProvideDecoratedVariable<T> | undefined`.
+     *
+     * @param property expecting property with `@Provide`.
+     */
+    private updateStatePropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
+        return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.PROVIDE);
     }
 }

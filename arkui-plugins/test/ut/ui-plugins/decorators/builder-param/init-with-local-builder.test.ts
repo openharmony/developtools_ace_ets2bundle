@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,8 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
@@ -73,13 +72,13 @@ function main() {}
     this.customBuilderParam();
     this.customBuilderParam2("hello");
   }
-  public constructor() {}
+  private constructor() {}
 }
 
-interface __Options_Child {
-  set customBuilderParam(customBuilderParam: @memo() (()=> void) | undefined)
+@Component({freezeWhenInactive:false}) export interface __Options_Child {
+  set customBuilderParam(@memo() customBuilderParam: (()=> void) | undefined)
   get customBuilderParam(): @memo() (()=> void) | undefined
-  set customBuilderParam2(customBuilderParam2: @memo() ((str: string)=> void) | undefined)
+  set customBuilderParam2(@memo() customBuilderParam2: ((str: string)=> void) | undefined)
   get customBuilderParam2(): @memo() ((str: string)=> void) | undefined
 }
 `;
@@ -90,7 +89,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test builder param init with local builder',
-    [parsedTransform, uiNoRecheck],
+    [parsedTransform, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

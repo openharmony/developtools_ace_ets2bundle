@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { structNoRecheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,8 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { ProvideDecoratedVariable as ProvideDecoratedVariable } from "@ohos.arkui.stateManagement";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
@@ -124,42 +123,42 @@ function main() {}
     this.__backing_count7!.set(value);
   }
   @memo() public _build(@memo() style: ((instance: Ancestors)=> Ancestors) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Ancestors | undefined): void {}
-  public constructor() {}
+  private constructor() {}
 }
 
-interface __Options_Ancestors {
+@Component({freezeWhenInactive:false}) export interface __Options_Ancestors {
   set count(count: string | undefined | undefined)
   get count(): string | undefined | undefined
-  set __backing_count(__backing_count: ProvideDecoratedVariable<string | undefined> | undefined)
-  get __backing_count(): ProvideDecoratedVariable<string | undefined> | undefined
+  set __backing_count(__backing_count: ProvideDecoratedVariable<string> | undefined | undefined)
+  get __backing_count(): ProvideDecoratedVariable<string> | undefined | undefined
   set count1(count1: string | undefined | undefined)
   get count1(): string | undefined | undefined
-  set __backing_count1(__backing_count1: ProvideDecoratedVariable<string | undefined> | undefined)
-  get __backing_count1(): ProvideDecoratedVariable<string | undefined> | undefined
+  set __backing_count1(__backing_count1: ProvideDecoratedVariable<string> | undefined | undefined)
+  get __backing_count1(): ProvideDecoratedVariable<string> | undefined | undefined
   set count2(count2: string | undefined | undefined)
   get count2(): string | undefined | undefined
-  set __backing_count2(__backing_count2: ProvideDecoratedVariable<string | undefined> | undefined)
-  get __backing_count2(): ProvideDecoratedVariable<string | undefined> | undefined
+  set __backing_count2(__backing_count2: ProvideDecoratedVariable<string> | undefined | undefined)
+  get __backing_count2(): ProvideDecoratedVariable<string> | undefined | undefined
   set count3(count3: string | undefined | undefined)
   get count3(): string | undefined | undefined
-  set __backing_count3(__backing_count3: ProvideDecoratedVariable<string | undefined> | undefined)
-  get __backing_count3(): ProvideDecoratedVariable<string | undefined> | undefined
+  set __backing_count3(__backing_count3: ProvideDecoratedVariable<string> | undefined | undefined)
+  get __backing_count3(): ProvideDecoratedVariable<string> | undefined | undefined
   set count4(count4: string | undefined | undefined)
   get count4(): string | undefined | undefined
-  set __backing_count4(__backing_count4: ProvideDecoratedVariable<string | undefined> | undefined)
-  get __backing_count4(): ProvideDecoratedVariable<string | undefined> | undefined
+  set __backing_count4(__backing_count4: ProvideDecoratedVariable<string> | undefined | undefined)
+  get __backing_count4(): ProvideDecoratedVariable<string> | undefined | undefined
   set count5(count5: string | undefined | undefined)
   get count5(): string | undefined | undefined
-  set __backing_count5(__backing_count5: ProvideDecoratedVariable<string | undefined> | undefined)
-  get __backing_count5(): ProvideDecoratedVariable<string | undefined> | undefined
+  set __backing_count5(__backing_count5: ProvideDecoratedVariable<string> | undefined | undefined)
+  get __backing_count5(): ProvideDecoratedVariable<string> | undefined | undefined
   set count6(count6: string | undefined | undefined)
   get count6(): string | undefined | undefined
-  set __backing_count6(__backing_count6: ProvideDecoratedVariable<string | undefined> | undefined)
-  get __backing_count6(): ProvideDecoratedVariable<string | undefined> | undefined
+  set __backing_count6(__backing_count6: ProvideDecoratedVariable<string> | undefined | undefined)
+  get __backing_count6(): ProvideDecoratedVariable<string> | undefined | undefined
   set count7(count7: string | undefined | undefined)
   get count7(): string | undefined | undefined
-  set __backing_count7(__backing_count7: ProvideDecoratedVariable<string | undefined> | undefined)
-  get __backing_count7(): ProvideDecoratedVariable<string | undefined> | undefined
+  set __backing_count7(__backing_count7: ProvideDecoratedVariable<string> | undefined | undefined)
+  get __backing_count7(): ProvideDecoratedVariable<string> | undefined | undefined
 }
 `;
 
@@ -169,9 +168,9 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test different @Provide annotation usage transformation',
-    [parsedTransform, structNoRecheck],
+    [parsedTransform, structNoRecheck, recheck],
     {
-        checked: [testParsedAndCheckedTransformer],
+        'checked:struct-no-recheck': [testParsedAndCheckedTransformer],
     },
     {
         stopAfter: 'checked',

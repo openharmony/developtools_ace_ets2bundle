@@ -26,7 +26,7 @@ export const structNoRecheck: Plugins = {
     name: 'struct-no-recheck',
     checked(this: PluginContext): arkts.EtsScript | undefined {
         let script: arkts.EtsScript | undefined;
-        const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+        const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
             script = program.astNode;
@@ -40,7 +40,6 @@ export const structNoRecheck: Plugins = {
             });
             program = programVisitor.programVisitor(program);
             script = program.astNode;
-            arkts.GlobalInfo.getInfoInstance().reset();
             return script;
         }
         return script;

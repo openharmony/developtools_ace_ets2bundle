@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -33,24 +34,20 @@ const pluginTester = new PluginTester('test builder param variable passing', bui
 
 const parsedTransform: Plugins = {
     name: 'builder-param-passing',
-    parsed: uiTransform().parsed
+    parsed: uiTransform().parsed,
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "@ohos.arkui.stateManagement";
-import { __memo_context_type as __memo_context_type } from "@ohos.arkui.stateManagement";
-import { memo as memo } from "@ohos.arkui.stateManagement";
-import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
-import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
-import { CustomComponent as CustomComponent } from "@ohos.arkui.component";
+import { memo as memo } from "arkui.stateManagement.runtime";
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Entry as Entry, Builder as Builder, BuilderParam as BuilderParam, Column as Column, Text as Text } from "@ohos.arkui.component";
 
 function main() {}
 
 @Component({freezeWhenInactive:false}) final class Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
-    (this).__backing_customBuilderParam = ((((({let gensym___169376706 = initializers;
-    (((gensym___169376706) == (null)) ? undefined : gensym___169376706.customBuilderParam)})) ?? (content))) ?? ((this).customBuilder))
+    this.__backing_customBuilderParam = ((((({let gensym___169376706 = initializers;
+    (((gensym___169376706) == (null)) ? undefined : gensym___169376706.customBuilderParam)})) ?? (content))) ?? (this.customBuilder))
   }
   
   public __updateStruct(initializers: __Options_Child | undefined): void {}
@@ -58,20 +55,20 @@ function main() {}
   private __backing_customBuilderParam?: @memo() (()=> void);
   
   public get customBuilderParam(): @memo() (()=> void) {
-    return (this).__backing_customBuilderParam!;
+    return this.__backing_customBuilderParam!;
   }
   
   public set customBuilderParam(@memo() value: (()=> void)) {
-    (this).__backing_customBuilderParam = value;
+    this.__backing_customBuilderParam = value;
   }
   
   @memo() public customBuilder() {}
   
   @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {
-    (this).customBuilderParam();
+    this.customBuilderParam();
   }
   
-  public constructor() {}
+  private constructor() {}
   
 }
 
@@ -81,39 +78,39 @@ function main() {}
   public __updateStruct(initializers: __Options_Parent | undefined): void {}
   
   @memo() public componentBuilder() {
-    Text(undefined, "Parent builder", undefined, undefined);
+    Text(undefined, "Parent builder");
   }
   
   @memo() public _build(@memo() style: ((instance: Parent)=> Parent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Parent | undefined): void {
-    Column(undefined, undefined, (() => {
+    Column(undefined, (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), ({
-        customBuilderParam: (this).componentBuilder,
-      } as __Options_Child), undefined, undefined);
+        customBuilderParam: this.componentBuilder,
+      } as __Options_Child));
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), ({
         customBuilderParam: @memo() (() => {
-          (this).componentBuilder();
+          this.componentBuilder();
         }),
-      } as __Options_Child), undefined, undefined);
+      } as __Options_Child));
       Child._instantiateImpl(undefined, (() => {
         return new Child();
-      }), undefined, (() => {
-        Text(undefined, "Parent builder", undefined, undefined);
-      }), undefined);
+      }), (() => {
+        Text(undefined, "Parent builder");
+      }));
     }));
   }
-  public constructor() {}
+  private constructor() {}
 }
 
-interface __Options_Child {
-  set customBuilderParam(customBuilderParam: @memo() (()=> void) | undefined)
+@Component({freezeWhenInactive:false}) export interface __Options_Child {
+  set customBuilderParam(@memo() customBuilderParam: (()=> void) | undefined)
   get customBuilderParam(): @memo() (()=> void) | undefined
 }
 
-interface __Options_Parent {
+@Component({freezeWhenInactive:false}) export interface __Options_Parent {
 }
 `;
 
@@ -123,7 +120,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test builder param variable passing',
-    [parsedTransform, uiNoRecheck],
+    [parsedTransform, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

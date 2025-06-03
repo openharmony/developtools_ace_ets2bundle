@@ -15,6 +15,7 @@
 
 export * from "../Es2pandaEnums"
 export * from "../generated/Es2pandaEnums"
+export * from "../generated/peers/AnnotationDeclaration"
 export * from "../generated/peers/AnnotationUsage"
 export * from "../generated/peers/BlockStatement"
 export * from "../generated/peers/ETSPrimitiveType"
@@ -59,8 +60,9 @@ export * from "../generated/peers/BlockExpression"
 export * from "../generated/peers/TSClassImplements"
 export * from "../generated/peers/BooleanLiteral"
 export * from "../generated/peers/TSArrayType"
-export * from "../generated/peers/ArrayExpression";
-export * from "../generated/peers/ETSNullType";
+export * from "../generated/peers/ArrayExpression"
+export * from "../generated/peers/TryStatement"
+export * from "../generated/peers/ETSNullType"
 
 export * from "./types"
 export * from "./utilities/private"
@@ -80,4 +82,4 @@ export * from "./peers/SourcePosition"
 export * from "./peers/SourceRange"
 export * from "./to-be-generated/MemberExpression"
 export * from "./static/globalUtils"
-export { global as arktsGlobal } from "./static/global";
+export { global as arktsGlobal } from "./static/global"
