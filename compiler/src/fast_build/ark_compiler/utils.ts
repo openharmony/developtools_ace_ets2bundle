@@ -312,3 +312,12 @@ export function hasArkDecorator(node: ts.MethodDeclaration | ts.FunctionDeclarat
 export const utUtils = {
   writeFileContent
 };
+
+export function hasExistingPaths(paths: Set<string>): boolean {
+  for (const p of paths) {
+    if (fs.existsSync(toUnixPath(p))) {
+      return true;
+    }
+  }
+  return false;
+}

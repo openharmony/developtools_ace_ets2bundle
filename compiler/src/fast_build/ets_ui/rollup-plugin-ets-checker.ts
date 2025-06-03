@@ -163,9 +163,6 @@ export function etsChecker() {
       // The generated js file might be different in some cases when we change the targetESVersion,
       // so we need to regenerate them all when targetESVersion is changed.
       return targetESVersionChanged;
-    },
-    cleanUp(): void {
-      FileManager.cleanFileManagerObject();
     }
   };
 }

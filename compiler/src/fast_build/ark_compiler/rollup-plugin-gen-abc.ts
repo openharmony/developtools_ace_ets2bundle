@@ -35,6 +35,7 @@ import {
 } from '../../performance';
 import { BytecodeObfuscator } from './bytecode_obfuscator';
 import { PreloadFileModules } from './module/module_preload_file_utils';
+import { FileManager } from './interop/interop_manager';
 
 export function genAbc() {
   return {
@@ -89,6 +90,7 @@ export function genAbc() {
       BytecodeObfuscator.cleanBcObfuscatorObject();
       cleanUpProcessArkTSEvolutionObj();
       PreloadFileModules.cleanUpPreloadSoObjects();
+      FileManager.cleanFileManagerObject();
     }
   };
 }
