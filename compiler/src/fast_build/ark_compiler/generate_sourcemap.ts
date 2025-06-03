@@ -109,7 +109,7 @@ export class SourceMapGenerator {
     if ((SourceMapGenerator.instance.projectConfig.hotReload &&
       SourceMapGenerator.instance.projectConfig.watchMode !== 'true') ||
       (SourceMapGenerator.instance.projectConfig.coldReload)) {
-      isShouldSourceMap = this.projectConfig.isFirstBuild;
+      isShouldSourceMap = SourceMapGenerator.instance.projectConfig.isFirstBuild;
     }
 
     SourceMapGenerator.instance.isCompileSingle = SourceMapGenerator.instance.isNewSourceMap &&
@@ -352,8 +352,14 @@ export class SourceMapGenerator {
           // skip unuse or uncompile in cache
           continue;
         }
-        this.writeOrigin(`,\n${this.formatOrigin(smObj.key, smObj.val)}`);
-        this.writeTemp(`\n${this.formatTemp(smObj.key, smObj.val)}`);
+        if (this.isFirstAppend) {
+          this.isFirstAppend = false;
+          this.writeOrigin(`{\n${this.formatOrigin(smObj.key, smObj.val)}`);
+          this.writeTemp(`${this.formatTemp(smObj.key, smObj.val)}`);
+        } else {
+          this.writeOrigin(`,\n${this.formatOrigin(smObj.key, smObj.val)}`);
+          this.writeTemp(`\n${this.formatTemp(smObj.key, smObj.val)}`);
+        }
       }
       if (!this.isFirstAppend) {
         this.writeOrigin('\n}');
