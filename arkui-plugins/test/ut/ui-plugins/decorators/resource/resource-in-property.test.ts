@@ -39,8 +39,8 @@ const parsedTransform: Plugins = {
 
 const expectedScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { _rawfile as _rawfile } from "@ohos.arkui.component";
-import { _r as _r } from "@ohos.arkui.component";
+import { _rawfile as _rawfile } from "arkui.component.resources";
+import { _r as _r } from "arkui.component.resources";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, $r as $r, $rawfile as $rawfile, Column as Column, Text as Text, Image as Image, Resource as Resource } from "@ohos.arkui.component";
 

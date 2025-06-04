@@ -14,9 +14,11 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { CustomComponentInfo, Dollars, isMemoAnnotation, MemoNames } from '../utils';
-import { CustomComponentNames } from '../utils';
-import { DecoratorNames, isDecoratorAnnotation } from '../property-translators/utils';
+import { CustomComponentInfo, isMemoAnnotation, MemoNames } from '../utils';
+import { isDecoratorAnnotation } from '../property-translators/utils';
+import { matchPrefix } from '../../common/arkts-utils';
+import { ARKUI_IMPORT_PREFIX_NAMES, DecoratorNames, Dollars } from '../../common/predefines';
+import { DeclarationCollector } from '../../common/declaration-collector';
 
 export type ScopeInfoCollection = {
     customComponents: CustomComponentScopeInfo[];
@@ -61,11 +63,27 @@ export function isEtsGlobalClass(node: arkts.ClassDeclaration): boolean {
  *
  * @param node call expression node
  */
-export function isResourceNode(node: arkts.CallExpression): boolean {
-    return (
-        arkts.isIdentifier(node.expression) &&
-        (node.expression.name === Dollars.DOLLAR_RESOURCE || node.expression.name === Dollars.DOLLAR_RAWFILE)
-    );
+export function isResourceNode(node: arkts.CallExpression, ignoreDecl: boolean = false): boolean {
+    if (
+        !(
+            arkts.isIdentifier(node.expression) &&
+            (node.expression.name === Dollars.DOLLAR_RESOURCE || node.expression.name === Dollars.DOLLAR_RAWFILE)
+        )
+    ) {
+        return false;
+    }
+    if (!ignoreDecl) {
+        const decl = arkts.getDecl(node.expression);
+        if (!decl) {
+            return false;
+        }
+        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
+            return false;
+        }
+        DeclarationCollector.getInstance().collect(decl);
+    }
+    return true;
 }
 
 export function isMemoCall(node: arkts.AstNode): node is arkts.CallExpression {

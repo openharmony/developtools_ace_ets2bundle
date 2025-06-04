@@ -18,8 +18,6 @@ import {
     BuilderLambdaNames,
     addMemoAnnotation,
     CustomComponentNames,
-    Dollars,
-    findImportSource,
     getCustomComponentOptionsName,
     getGettersFromClassDecl,
     getTypeNameFromTypeParameter,
@@ -38,20 +36,17 @@ import {
     PropertyTranslator,
 } from '../property-translators';
 import { CustomComponentScopeInfo, isEtsGlobalClass, isKnownMethodDefinition } from './utils';
-import {
-    collectStateManagementTypeImport,
-    collectStateManagementTypeSource,
-    DecoratorDeclarationNames,
-    DecoratorNames,
-    hasDecorator,
-    PropertyCache,
-    removeDecorator,
-    StateManagementTypes,
-} from '../property-translators/utils';
+import { collectStateManagementTypeImport, hasDecorator, PropertyCache } from '../property-translators/utils';
 import { ProjectConfig } from '../../common/plugin-context';
 import { DeclarationCollector } from '../../common/declaration-collector';
-import { ObservedTrackTranslator } from '../../ui-plugins/property-translators/observedTrack';
-import { ImportCollector } from '../../ui-plugins/import-collector';
+import { ImportCollector } from '../../common/import-collector';
+import {
+    ARKUI_COMPONENT_COMMON_SOURCE_NAME,
+    DecoratorNames,
+    Dollars,
+    StateManagementTypes,
+} from '../../common/predefines';
+import { ObservedTrackTranslator } from '../property-translators/observedTrack';
 
 export class factory {
     /*
@@ -115,8 +110,6 @@ export class factory {
     ): arkts.CallExpression {
         const transformedKey: string =
             key.name === Dollars.DOLLAR_RESOURCE ? Dollars.TRANSFORM_DOLLAR_RESOURCE : Dollars.TRANSFORM_DOLLAR_RAWFILE;
-        const source = findImportSource(transformedKey);
-        ImportCollector.getInstance().collectSource(transformedKey, source);
         ImportCollector.getInstance().collectImport(transformedKey);
         return arkts.factory.updateCallExpression(
             resourceNode,
@@ -460,12 +453,9 @@ export class factory {
         resourceNode: arkts.CallExpression,
         projectConfig: ProjectConfig | undefined
     ): arkts.CallExpression {
-        let decl: arkts.AstNode | undefined;
-        if (!arkts.isIdentifier(resourceNode.expression) || !(decl = arkts.getDecl(resourceNode.expression))) {
+        if (!arkts.isIdentifier(resourceNode.expression)) {
             return resourceNode;
         }
-        DeclarationCollector.getInstance().collect(decl);
-
         const newArgs: arkts.AstNode[] = [
             arkts.factory.create1StringLiteral(projectConfig?.bundleName ? projectConfig.bundleName : ''),
             arkts.factory.create1StringLiteral(projectConfig?.moduleName ? projectConfig.moduleName : ''),
@@ -484,7 +474,7 @@ export class factory {
         if (!node.id || !node.body) {
             return node;
         }
-        if (externalSourceName === DecoratorDeclarationNames.COMP_COMMON && node.id.name === 'UICommonMethod') {
+        if (externalSourceName === ARKUI_COMPONENT_COMMON_SOURCE_NAME && node.id.name === 'UICommonMethod') {
             return factory.modifyExternalComponentCommon(node);
         }
         if (isCustomComponentInterface(node)) {
@@ -567,7 +557,6 @@ export class factory {
             node.modifiers,
             arkts.classDefinitionFlags(node)
         );
-        collectStateManagementTypeSource(StateManagementTypes.OBSERVED_OBJECT);
         collectStateManagementTypeImport(StateManagementTypes.OBSERVED_OBJECT);
         return updateClassDef;
     }
@@ -612,10 +601,8 @@ export class factory {
     ): arkts.AstNode[] {
         const watchMembers: arkts.AstNode[] = propertyFactory.createWatchMembers();
         const permissibleAddRefDepth: arkts.ClassProperty = factory.createPermissibleAddRefDepthInObservedClass();
-        collectStateManagementTypeSource(StateManagementTypes.INT_32);
         collectStateManagementTypeImport(StateManagementTypes.INT_32);
         const meta: arkts.ClassProperty = factory.createMutableStateMetaInObservedClass();
-        collectStateManagementTypeSource(StateManagementTypes.MUTABLE_STATE_META);
         collectStateManagementTypeImport(StateManagementTypes.MUTABLE_STATE_META);
         const getters: arkts.MethodDefinition[] = getGettersFromClassDecl(definition);
         const classScopeInfo: ClassScopeInfo = {

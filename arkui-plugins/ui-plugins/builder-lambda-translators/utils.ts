@@ -14,21 +14,18 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { isAnnotation } from '../../common/arkts-utils';
-import { BuilderLambdaNames, Dollars } from '../utils';
-import { ImportCollector } from '../import-collector';
+import { isAnnotation, matchPrefix } from '../../common/arkts-utils';
+import { BuilderLambdaNames } from '../utils';
 import { DeclarationCollector } from '../../common/declaration-collector';
-import { ARKUI_COMPONENT_IMPORT_NAME } from '../../common/predefines';
+import { ARKUI_IMPORT_PREFIX_NAMES, BindableDecl, Dollars } from '../../common/predefines';
+import { ImportCollector } from '../../common/import-collector';
 
 export type BuilderLambdaDeclInfo = {
     isFunctionCall: boolean; // isFunctionCall means it is from $_instantiate.
     params: readonly arkts.Expression[];
     returnType: arkts.TypeNode | undefined;
+    moduleName: string;
 };
-
-export enum BindableDecl {
-    BINDABLE = 'Bindable',
-}
 
 export type BuilderLambdaAstNode = arkts.ScriptFunction | arkts.ETSParameterExpression | arkts.FunctionDeclaration;
 
@@ -273,6 +270,10 @@ export function findBuilderLambdaDecl(node: arkts.CallExpression | arkts.Identif
     if (!decl) {
         return undefined;
     }
+    const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+    if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
+        return undefined;
+    }
     DeclarationCollector.getInstance().collect(decl);
     return decl;
 }
@@ -297,12 +298,15 @@ export function findBuilderLambdaDeclInfo(decl: arkts.AstNode | undefined): Buil
     if (!decl) {
         return undefined;
     }
-
+    const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+    if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
+        return undefined;
+    }
     if (arkts.isMethodDefinition(decl)) {
         const params = decl.scriptFunction.params.map((p) => p.clone());
         const returnType = decl.scriptFunction.returnTypeAnnotation?.clone();
         const isFunctionCall = isBuilderLambdaFunctionCall(decl);
-        return { isFunctionCall, params, returnType };
+        return { isFunctionCall, params, returnType, moduleName };
     }
 
     return undefined;
@@ -407,16 +411,30 @@ export function hasBindableProperty(type: arkts.AstNode, bindableDecl: BindableD
  *
  * @param value expression node
  */
-export function isDoubleDollarCall(value: arkts.Expression): value is arkts.CallExpression {
-    if (
-        arkts.isCallExpression(value) &&
-        value.expression &&
-        arkts.isIdentifier(value.expression) &&
-        value.expression.name
-    ) {
-        return value.expression.name === Dollars.DOLLAR_DOLLAR;
+export function isDoubleDollarCall(
+    value: arkts.Expression,
+    ignoreDecl: boolean = false
+): value is arkts.CallExpression {
+    if (!arkts.isCallExpression(value)) {
+        return false;
     }
-    return false;
+    if (
+        !(!!value.expression && arkts.isIdentifier(value.expression) && value.expression.name === Dollars.DOLLAR_DOLLAR)
+    ) {
+        return false;
+    }
+    if (!ignoreDecl) {
+        const decl = arkts.getDecl(value);
+        if (!decl) {
+            return false;
+        }
+        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
+            return false;
+        }
+        DeclarationCollector.getInstance().collect(decl);
+    }
+    return true;
 }
 
 /**
@@ -472,7 +490,7 @@ export function getElementTypeFromArray(arrayType: arkts.TypeNode): arkts.TypeNo
     return undefined;
 }
 
-export function collectComponentAttributeImport(type: arkts.TypeNode | undefined): void {
+export function collectComponentAttributeImport(type: arkts.TypeNode | undefined, moduleName: string): void {
     if (
         !type ||
         !arkts.isETSTypeReference(type) ||
@@ -488,7 +506,7 @@ export function collectComponentAttributeImport(type: arkts.TypeNode | undefined
     const match: RegExpExecArray | null = regex.exec(name);
     const attributeName: string | undefined = match?.groups?.source;
     if (!!attributeName) {
-        ImportCollector.getInstance().collectSource(attributeName, ARKUI_COMPONENT_IMPORT_NAME);
+        ImportCollector.getInstance().collectSource(attributeName, moduleName);
         ImportCollector.getInstance().collectImport(attributeName);
     }
 }

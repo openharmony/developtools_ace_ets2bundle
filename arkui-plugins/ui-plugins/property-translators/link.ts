@@ -15,22 +15,20 @@
 
 import * as arkts from '@koalaui/libarkts';
 
+import { backingField, expectName } from '../../common/arkts-utils';
+import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
 import {
     generateToRecord,
     createGetter,
     createSetter2,
     generateThisBacking,
     generateGetOrSetCall,
-    StateManagementTypes,
-    collectStateManagementTypeSource,
     collectStateManagementTypeImport,
     hasDecorator,
-    DecoratorNames,
     PropertyCache,
 } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
-import { backingField, expectName } from '../../common/arkts-utils';
 import { factory } from './factory';
 
 export class LinkTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
@@ -64,7 +62,6 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
             ),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
-        collectStateManagementTypeSource(StateManagementTypes.LINK_DECORATED);
         collectStateManagementTypeImport(StateManagementTypes.LINK_DECORATED);
         const consequent = arkts.BlockStatement.createBlockStatement([
             arkts.factory.createExpressionStatement(

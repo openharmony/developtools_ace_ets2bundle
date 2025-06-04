@@ -16,17 +16,15 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
+import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import {
-    DecoratorNames,
     generateToRecord,
     createGetter,
     createSetter2,
     generateThisBacking,
     generateGetOrSetCall,
-    StateManagementTypes,
-    collectStateManagementTypeSource,
     collectStateManagementTypeImport,
     hasDecorator,
     PropertyCache,
@@ -92,7 +90,6 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
             this.property.value ?? arkts.factory.createUndefinedLiteral(),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
-        collectStateManagementTypeSource(StateManagementTypes.STORAGE_LINK_DECORATED);
         collectStateManagementTypeImport(StateManagementTypes.STORAGE_LINK_DECORATED);
         const newClass = arkts.factory.createETSNewClassInstanceExpression(
             arkts.factory.createTypeReference(

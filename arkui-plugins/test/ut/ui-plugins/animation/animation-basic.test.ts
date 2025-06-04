@@ -39,7 +39,7 @@ const pluginTester = new PluginTester('test basic animation transform', buildCon
 
 const expectedScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
+import { UITextAttribute as UITextAttribute } from "arkui.component.text";
 import { EntryPoint as EntryPoint } from "arkui.UserView";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Text as Text, Column as Column, Component as Component, Color as Color, Curve as Curve } from "@ohos.arkui.component";

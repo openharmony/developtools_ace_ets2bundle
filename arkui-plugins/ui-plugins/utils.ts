@@ -14,24 +14,19 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { annotation } from '../common/arkts-utils';
-import { ImportCollector } from './import-collector';
-import { ARKUI_STATEMANAGEMENT_IMPORT_NAME, IMPORT_SOURCE_MAP_V2 } from '../common/predefines';
+import { annotation, matchPrefix } from '../common/arkts-utils';
+import { ARKUI_IMPORT_PREFIX_NAMES, MEMO_IMPORT_SOURCE_NAME, StructDecoratorNames } from '../common/predefines';
 import { DeclarationCollector } from '../common/declaration-collector';
+import { ImportCollector } from '../common/import-collector';
 
 export enum CustomComponentNames {
-    ENTRY_ANNOTATION = 'Entry',
-    COMPONENT_ANNOTATION = 'Component',
-    RESUABLE_ANNOTATION = 'Reusable',
     COMPONENT_BUILD_ORI = 'build',
     COMPONENT_CONSTRUCTOR_ORI = 'constructor',
-    COMPONENT_DEFAULT_IMPORT = 'arkui.component.customComponent',
     COMPONENT_CLASS_NAME = 'CustomComponent',
     COMPONENT_INTERFACE_PREFIX = '__Options_',
     COMPONENT_INITIALIZE_STRUCT = '__initializeStruct',
     COMPONENT_UPDATE_STRUCT = '__updateStruct',
     COMPONENT_BUILD = '_build',
-    REUSABLE_COMPONENT_REBIND_STATE = '__rebindStates',
     COMPONENT_INITIALIZERS_NAME = 'initializers',
     BUILDCOMPATIBLENODE = '_buildCompatibleNode',
     OPTIONS = 'options',
@@ -49,23 +44,23 @@ export enum BuilderLambdaNames {
     ANIMATION_STOP = 'animationStop',
 }
 
-export enum Dollars {
-    DOLLAR_RESOURCE = '$r',
-    DOLLAR_RAWFILE = '$rawfile',
-    DOLLAR_DOLLAR = '$$',
-    TRANSFORM_DOLLAR_RESOURCE = '_r',
-    TRANSFORM_DOLLAR_RAWFILE = '_rawfile',
-}
-
 export enum MemoNames {
     MEMO = 'memo',
 }
 
 // IMPORT
-export function findImportSource(importName: string): string {
-    const source = IMPORT_SOURCE_MAP_V2.get(importName);
+export function findImportSourceByName(importName: string): string {
+    const source = DeclarationCollector.getInstance().findExternalSourceFromName(importName);
     if (!source) {
-        throw new Error(`cannot find "${importName}" in the import source map.`);
+        throw new Error(`cannot find import source by name: "${importName}".`);
+    }
+    return source;
+}
+
+export function findImportSourceByNode(declNode: arkts.AstNode): string {
+    const source = DeclarationCollector.getInstance().findExternalSourceFromNode(declNode);
+    if (!source) {
+        throw new Error(`cannot find import source by peer.`);
     }
     return source;
 }
@@ -151,7 +146,7 @@ export type CustomComponentAnontations = {
 
 export function isCustomComponentAnnotation(
     anno: arkts.AnnotationUsage,
-    decoratorName: CustomComponentNames,
+    decoratorName: StructDecoratorNames,
     ignoreDecl?: boolean
 ): boolean {
     if (!(!!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName)) {
@@ -163,7 +158,7 @@ export function isCustomComponentAnnotation(
             return false;
         }
         const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
-        if (!moduleName) {
+        if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
             return false;
         }
         DeclarationCollector.getInstance().collect(decl);
@@ -189,17 +184,9 @@ export function collectCustomComponentScopeInfo(
     if (!isCustomComponentClassDecl) {
         let isCustomComponent: boolean = false;
         for (const anno of definition.annotations) {
-            const isComponent = isCustomComponentAnnotation(
-                anno,
-                CustomComponentNames.COMPONENT_ANNOTATION,
-                shouldIgnoreDecl
-            );
-            const isEntry = isCustomComponentAnnotation(anno, CustomComponentNames.ENTRY_ANNOTATION, shouldIgnoreDecl);
-            const isReusable = isCustomComponentAnnotation(
-                anno,
-                CustomComponentNames.RESUABLE_ANNOTATION,
-                shouldIgnoreDecl
-            );
+            const isComponent = isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT, shouldIgnoreDecl);
+            const isEntry = isCustomComponentAnnotation(anno, StructDecoratorNames.ENTRY, shouldIgnoreDecl);
+            const isReusable = isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE, shouldIgnoreDecl);
             isCustomComponent ||= isComponent;
             annotations = {
                 ...annotations,
@@ -242,7 +229,7 @@ export function isCustomComponentClass(node: arkts.ClassDeclaration, scopeInfo: 
 export function isCustomComponentInterface(node: arkts.TSInterfaceDeclaration): boolean {
     const checkPrefix = !!node.id?.name.startsWith(CustomComponentNames.COMPONENT_INTERFACE_PREFIX);
     const checkComponent = node.annotations.some((anno) =>
-        isCustomComponentAnnotation(anno, CustomComponentNames.COMPONENT_ANNOTATION)
+        isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT)
     );
     return checkPrefix && checkComponent;
 }
@@ -270,9 +257,7 @@ export function collectMemoAnnotationImport(memoName: MemoNames = MemoNames.MEMO
 }
 
 export function collectMemoAnnotationSource(memoName: MemoNames = MemoNames.MEMO): void {
-    if (memoName === MemoNames.MEMO) {
-        ImportCollector.getInstance().collectSource(memoName, 'arkui.stateManagement.runtime');
-    }
+    ImportCollector.getInstance().collectSource(memoName, MEMO_IMPORT_SOURCE_NAME);
 }
 
 export function findCanAddMemoFromTypeAnnotation(

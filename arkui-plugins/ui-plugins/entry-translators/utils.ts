@@ -16,14 +16,13 @@
 import * as arkts from '@koalaui/libarkts';
 import { factory } from './factory';
 import { isAnnotation } from '../../common/arkts-utils';
-import { CustomComponentNames } from '../utils';
+import { StructDecoratorNames } from '../../common/predefines';
 
 export enum EntryWrapperNames {
     ENTRY_FUNC = 'entry',
     WRAPPER_CLASS_NAME = '__EntryWrapper',
     ENTRY_STORAGE_ANNOTATION_KEY = 'storage',
     ENTRY_STORAGE_LOCAL_STORAGE_PROPERTY_NAME = '_entry_local_storage_',
-    ENTRY_DEFAULT_IMPORT = 'arkui.UserView',
     ENTRY_POINT_CLASS_NAME = 'EntryPoint',
 }
 
@@ -73,7 +72,7 @@ export function isEntryWrapperClass(node: arkts.AstNode): node is arkts.ClassDec
  */
 export function findEntryWithStorageInClassAnnotations(node: arkts.ClassDefinition): arkts.ClassProperty | undefined {
     const annotation = node.annotations.find((anno) => {
-        if (!isAnnotation(anno, CustomComponentNames.ENTRY_ANNOTATION)) return false;
+        if (!isAnnotation(anno, StructDecoratorNames.ENTRY)) return false;
         const property = anno.properties?.at(0);
         if (!property || !arkts.isClassProperty(property)) return false;
         if (!property.key || !arkts.isIdentifier(property.key)) return false;

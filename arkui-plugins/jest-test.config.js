@@ -19,6 +19,7 @@ const rootPath = path.resolve(__dirname, '../../../');
 const sdkPath = path.resolve(rootPath, './out/sdk/ohos-sdk/linux/ets/ets1.2');
 const pandaSdkPath = path.resolve(sdkPath, './build-tools/ets2panda');
 const apiPath = path.resolve(sdkPath, './api');
+const kitPath = path.resolve(sdkPath, './kits');
 
 module.exports = {
     testEnvironment: 'node',
@@ -52,5 +53,6 @@ module.exports = {
         SDK_PATH: sdkPath,
         PANDA_SDK_PATH: pandaSdkPath,
         API_PATH: apiPath,
+        KIT_PATH: kitPath
     },
 };

@@ -64,7 +64,8 @@ export interface ArktsConfigBuilder {
     outputDir: string;
     cacheDir: string;
     pandaSdkPath: string;
-    buildSdkPath: string;
+    apiPath: string;
+    kitsPath: string;
     packageName: string;
     sourceRoots: string[];
     moduleRootPath: string;
@@ -151,7 +152,8 @@ function mockBuildConfig(): BuildConfig {
         loaderOutPath: path.resolve(getRootPath(), MOCK_OUTPUT_DIR_PATH),
         cachePath: path.resolve(getRootPath(), MOCK_OUTPUT_CACHE_PATH),
         pandaSdkPath: global.PANDA_SDK_PATH,
-        buildSdkPath: global.API_PATH,
+        apiPath: global.API_PATH,
+        kitsPath: global.KIT_PATH,
         depAnalyzerPath: path.resolve(global.PANDA_SDK_PATH, MOCK_DEP_ANALYZER_PATH),
         sourceRoots: [getRootPath()],
         moduleRootPath: path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH),
@@ -167,7 +169,8 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
     outputDir: string;
     cacheDir: string;
     pandaSdkPath: string;
-    buildSdkPath: string;
+    apiPath: string;
+    kitsPath: string;
     packageName: string;
     sourceRoots: string[];
     moduleRootPath: string;
@@ -185,7 +188,8 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
         this.outputDir = _buildConfig.loaderOutPath as string;
         this.cacheDir = _buildConfig.cachePath as string;
         this.pandaSdkPath = path.resolve(_buildConfig.pandaSdkPath as string);
-        this.buildSdkPath = path.resolve(_buildConfig.buildSdkPath as string);
+        this.apiPath = path.resolve(_buildConfig.apiPath as string);
+        this.kitsPath = path.resolve(_buildConfig.kitsPath as string);
         this.packageName = _buildConfig.packageName as string;
         this.sourceRoots = _buildConfig.sourceRoots as string[];
         this.moduleRootPath = path.resolve(_buildConfig.moduleRootPath as string);
@@ -276,7 +280,8 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
         const pathSection: Record<string, string[]> = {};
         pathSection['std'] = [path.resolve(this.pandaSdkPath, PANDA_SDK_STDLIB_PATH, STDLIB_STD_PATH)];
         pathSection['escompat'] = [path.resolve(this.pandaSdkPath, PANDA_SDK_STDLIB_PATH, STDLIB_ESCOMPAT_PATH)];
-        traverseSDK(this.buildSdkPath, pathSection);
+        traverseSDK(this.apiPath, pathSection);
+        traverseSDK(this.kitsPath, pathSection);
 
         this.moduleInfos.forEach((moduleInfo: ModuleInfo, moduleRootPath: string) => {
             pathSection[moduleInfo.packageName] = [path.resolve(moduleRootPath, moduleInfo.sourceRoots[0])];

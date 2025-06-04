@@ -55,7 +55,8 @@ export interface BuildConfig {
     loaderOutPath: string;
     cachePath: string;
     pandaSdkPath: string;
-    buildSdkPath: string;
+    apiPath: string;
+    kitsPath: string;
     depAnalyzerPath: string;
     sourceRoots: string[];
     moduleRootPath: string;
