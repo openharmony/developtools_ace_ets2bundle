@@ -758,6 +758,13 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
+    _GenerateStaticDeclarationsFromContext(
+        config: KPtr,
+        outputPath: String
+    ): KPtr {
+        throw new Error('Not implemented');
+    }
+
     _InsertETSImportDeclarationAndParse(
         context: KNativePointer,
         program: KNativePointer,
