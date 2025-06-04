@@ -15,17 +15,9 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { GenSymGenerator } from '../../common/gensym-generator';
+import { DecoratorNames, DECORATOR_TYPE_MAP, StateManagementTypes } from '../../common/predefines';
 import { factory as UIFactory } from '../ui-factory';
-import {
-    collectStateManagementTypeImport,
-    collectStateManagementTypeSource,
-    DecoratorNames,
-    decoratorTypeMap,
-    getValueInAnnotation,
-    hasDecorator,
-    removeDecorator,
-    StateManagementTypes,
-} from './utils';
+import { collectStateManagementTypeImport, getValueInAnnotation, hasDecorator, removeDecorator } from './utils';
 import { addMemoAnnotation, findCanAddMemoFromTypeAnnotation } from '../utils';
 
 export class factory {
@@ -338,7 +330,6 @@ export class factory {
         stageManagementType: StateManagementTypes,
         property: arkts.ClassProperty
     ): arkts.ETSTypeReference {
-        collectStateManagementTypeSource(stageManagementType);
         collectStateManagementTypeImport(stageManagementType);
         return arkts.factory.createTypeReference(
             arkts.factory.createTypeReferencePart(
@@ -369,7 +360,6 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
         );
-        collectStateManagementTypeSource(StateManagementTypes.SUBSCRIBED_WATCHES);
         collectStateManagementTypeImport(StateManagementTypes.SUBSCRIBED_WATCHES);
 
         const addWatchSubscriber = factory.createWatchMethod(
@@ -386,7 +376,6 @@ export class factory {
             StateManagementTypes.WATCH_ID_TYPE,
             true
         );
-        collectStateManagementTypeSource(StateManagementTypes.WATCH_ID_TYPE);
         collectStateManagementTypeImport(StateManagementTypes.WATCH_ID_TYPE);
 
         const executeOnSubscribingWatches = factory.createWatchMethod(
@@ -555,8 +544,7 @@ export class factory {
     ): arkts.TypeNode | undefined {
         let newType: arkts.TypeNode | undefined;
         let wrapTypeName: StateManagementTypes | undefined;
-        if (!!type && !!(wrapTypeName = decoratorTypeMap.get(decoratorName))) {
-            collectStateManagementTypeSource(wrapTypeName);
+        if (!!type && !!(wrapTypeName = DECORATOR_TYPE_MAP.get(decoratorName))) {
             newType = factory.wrapInterfacePropertyType(type, wrapTypeName);
             collectStateManagementTypeImport(wrapTypeName);
         }
@@ -569,8 +557,7 @@ export class factory {
     ): arkts.Expression | undefined {
         let newParam: arkts.Expression | undefined;
         let wrapTypeName: StateManagementTypes | undefined;
-        if (!!param && !!(wrapTypeName = decoratorTypeMap.get(decoratorName))) {
-            collectStateManagementTypeSource(wrapTypeName);
+        if (!!param && !!(wrapTypeName = DECORATOR_TYPE_MAP.get(decoratorName))) {
             newParam = factory.wrapInterfacePropertyParamExpr(param, wrapTypeName);
             collectStateManagementTypeImport(wrapTypeName);
         }

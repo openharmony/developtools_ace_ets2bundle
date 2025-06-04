@@ -38,11 +38,11 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { DecoratedV1VariableBase as DecoratedV1VariableBase } from "@ohos.arkui.stateManagement";
-import { PropDecoratedVariable as PropDecoratedVariable } from "@ohos.arkui.stateManagement";
-import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
+import { DecoratedV1VariableBase as DecoratedV1VariableBase } from "arkui.stateManagement.base.decoratorBase";
+import { PropDecoratedVariable as PropDecoratedVariable } from "arkui.stateManagement.decorators.decoratorProp";
+import { StateDecoratedVariable as StateDecoratedVariable } from "arkui.stateManagement.decorators.decoratorState";
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { LinkDecoratedVariable as LinkDecoratedVariable } from "@ohos.arkui.stateManagement";
+import { LinkDecoratedVariable as LinkDecoratedVariable } from "arkui.stateManagement.decorators.decoratorLink";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Column as Column, TextInput as TextInput } from "@ohos.arkui.component";
 import { Link as Link, State as State, Prop as Prop } from "@ohos.arkui.stateManagement";

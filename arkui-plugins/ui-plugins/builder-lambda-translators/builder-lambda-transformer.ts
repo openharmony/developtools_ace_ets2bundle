@@ -14,9 +14,9 @@
  */
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor } from '../../common/abstract-visitor';
+import { ImportCollector } from '../../common/import-collector';
 import { isBuilderLambda, isBuilderLambdaMethodDecl } from './utils';
 import { factory } from './factory';
-import { ImportCollector } from '../import-collector';
 import { ProjectConfig } from '../../common/plugin-context';
 
 export class BuilderLambdaTransformer extends AbstractVisitor {

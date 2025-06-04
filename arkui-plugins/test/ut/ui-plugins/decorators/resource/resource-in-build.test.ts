@@ -39,10 +39,10 @@ const parsedTransform: Plugins = {
 
 const expectedScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { _rawfile as _rawfile } from "@ohos.arkui.component";
-import { _r as _r } from "@ohos.arkui.component";
-import { UIImageAnimatorAttribute as UIImageAnimatorAttribute } from "@ohos.arkui.component";
-import { UIImageAttribute as UIImageAttribute } from "@ohos.arkui.component";
+import { _rawfile as _rawfile } from "arkui.component.resources";
+import { _r as _r } from "arkui.component.resources";
+import { UIImageAnimatorAttribute as UIImageAnimatorAttribute } from "arkui.component.imageAnimator";
+import { UIImageAttribute as UIImageAttribute } from "arkui.component.image";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, $r as $r, $rawfile as $rawfile, Column as Column, Text as Text, Image as Image, TextInput as TextInput, Select as Select, SelectOption as SelectOption, Margin as Margin, ImageAnimator as ImageAnimator } from "@ohos.arkui.component";
 

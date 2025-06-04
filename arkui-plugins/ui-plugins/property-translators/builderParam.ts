@@ -15,18 +15,18 @@
 
 import * as arkts from '@koalaui/libarkts';
 
+import { backingField, expectName } from '../../common/arkts-utils';
+import { DecoratorNames } from '../../common/predefines';
 import {
     createGetter,
     createSetter,
     generateThisBacking,
-    DecoratorNames,
     hasDecorator,
     removeDecorator,
     PropertyCache,
 } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
-import { backingField, expectName } from '../../common/arkts-utils';
 import { addMemoAnnotation, findCanAddMemoFromParamExpression, findCanAddMemoFromTypeAnnotation } from '../utils';
 import { factory } from './factory';
 

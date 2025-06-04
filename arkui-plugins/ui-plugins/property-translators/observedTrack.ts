@@ -15,12 +15,10 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { backingField, expectName } from '../../common/arkts-utils';
+import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
 import {
     collectStateManagementTypeImport,
-    collectStateManagementTypeSource,
-    DecoratorNames,
     hasDecorator,
-    StateManagementTypes,
 } from './utils';
 import { ClassScopeInfo } from './types';
 
@@ -193,7 +191,6 @@ export class ObservedTrackTranslator {
     }
 
     propertyIsClassField(newName: string): arkts.ClassProperty {
-        collectStateManagementTypeSource(StateManagementTypes.BACKING_VALUE);
         collectStateManagementTypeImport(StateManagementTypes.BACKING_VALUE);
         return arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(newName),
@@ -224,7 +221,6 @@ export class ObservedTrackTranslator {
     }
 
     metaField(originalName: string): arkts.ClassProperty {
-        collectStateManagementTypeSource(StateManagementTypes.MUTABLE_STATE_META);
         collectStateManagementTypeImport(StateManagementTypes.MUTABLE_STATE_META);
         return arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(`__meta_${originalName}`),
@@ -286,7 +282,6 @@ export class ObservedTrackTranslator {
     }
 
     getterSetObservationDepth(newName: string): arkts.ExpressionStatement {
-        collectStateManagementTypeSource(StateManagementTypes.SET_OBSERVATION_DEPTH);
         collectStateManagementTypeImport(StateManagementTypes.SET_OBSERVATION_DEPTH);
         return arkts.factory.createExpressionStatement(
             arkts.factory.createCallExpression(

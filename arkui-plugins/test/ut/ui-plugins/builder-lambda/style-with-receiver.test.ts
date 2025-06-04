@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 
 const expectedScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
+import { UITextAttribute as UITextAttribute } from "arkui.component.text";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { memo as memo } from "@ohos.arkui.stateManagement";
 import { Text as Text, UITextAttribute as UITextAttribute, Column as Column, Component as Component } from "@ohos.arkui.component";

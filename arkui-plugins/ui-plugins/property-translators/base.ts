@@ -16,12 +16,11 @@
 import * as arkts from '@koalaui/libarkts';
 import {
     collectStateManagementTypeImport,
-    collectStateManagementTypeSource,
     createGetter,
     createSetter,
-    StateManagementTypes,
 } from './utils';
 import { CustomComponentInfo } from '../utils';
+import { StateManagementTypes } from '../../common/predefines';
 
 export interface PropertyTranslatorOptions {
     property: arkts.ClassProperty;
@@ -57,7 +56,6 @@ export abstract class PropertyTranslator {
             undefined,
             [arkts.factory.createIdentifier('value')]
         );
-        collectStateManagementTypeSource(StateManagementTypes.OBSERVABLE_PROXY);
         collectStateManagementTypeImport(StateManagementTypes.OBSERVABLE_PROXY);
         return createSetter(originalName, typeAnnotation, left, right);
     }

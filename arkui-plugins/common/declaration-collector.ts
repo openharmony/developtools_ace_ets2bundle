@@ -13,13 +13,17 @@
  * limitations under the License.
  */
 import * as arkts from '@koalaui/libarkts';
+import { IMPORT_SOURCE_MAP_V2, INTERMEDIATE_IMPORT_SOURCE } from './predefines';
+import { ImportCollector } from './import-collector';
 
 export class DeclarationCollector {
-    public fromExternalSourceNames: Set<string>;
+    private fromExternalSourceNameMap: Map<string, string>;
+    private fromExternalSourceNodePeerMap: Map<unknown, string>;
     static instance: DeclarationCollector;
 
     private constructor() {
-        this.fromExternalSourceNames = new Set();
+        this.fromExternalSourceNameMap = new Map();
+        this.fromExternalSourceNodePeerMap = new Map();
     }
 
     static getInstance(): DeclarationCollector {
@@ -29,15 +33,54 @@ export class DeclarationCollector {
         return this.instance;
     }
 
+    private collectIntermediateImportSource(symbol: string, declSourceName: string): void {
+        let sourceName: string;
+        if (IMPORT_SOURCE_MAP_V2.has(symbol)) {
+            sourceName = IMPORT_SOURCE_MAP_V2.get(symbol)!;
+        } else {
+            sourceName = declSourceName;
+        }
+        ImportCollector.getInstance().collectSource(symbol, sourceName);
+    }
+
     collect(decl: arkts.AstNode | undefined): void {
         if (!decl) {
             return;
         }
-        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
-        this.fromExternalSourceNames.add(moduleName);
+        let declName: string | undefined;
+        if (arkts.isAnnotationDeclaration(decl) && !!decl.expr && arkts.isIdentifier(decl.expr)) {
+            declName = decl.expr.name;
+        } else if (arkts.isMethodDefinition(decl)) {
+            declName = decl.name.name;
+        } else if (arkts.isIdentifier(decl)) {
+            declName = decl.name;
+        } else if (arkts.isClassProperty(decl) && !!decl.key && arkts.isIdentifier(decl.key)) {
+            declName = decl.key.name;
+        } else if (arkts.isEtsParameterExpression(decl)) {
+            declName = decl.identifier.name;
+        }
+        if (!declName) {
+            return;
+        }
+        let sourceName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        this.fromExternalSourceNameMap.set(declName, sourceName);
+        this.fromExternalSourceNodePeerMap.set(decl.peer, sourceName);
+
+        INTERMEDIATE_IMPORT_SOURCE.get(declName)?.forEach((symbol) => {
+            this.collectIntermediateImportSource(symbol, sourceName);
+        });
+    }
+
+    findExternalSourceFromName(declName: string): string | undefined {
+        return this.fromExternalSourceNameMap.get(declName);
+    }
+
+    findExternalSourceFromNode(decl: arkts.AstNode): string | undefined {
+        return this.fromExternalSourceNodePeerMap.get(decl.peer);
     }
 
     reset(): void {
-        this.fromExternalSourceNames.clear();
+        this.fromExternalSourceNameMap.clear();
+        this.fromExternalSourceNodePeerMap.clear();
     }
 }

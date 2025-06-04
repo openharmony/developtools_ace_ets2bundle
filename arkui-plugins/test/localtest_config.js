@@ -16,6 +16,10 @@
 const fs = require('fs');
 const path = require('path');
 
+function changePathToAbsPath(p) {
+  return path.resolve(p);
+}
+
 // 获取当前目录
 const currentDirectory = process.cwd();
 let workSpace = currentDirectory;
@@ -42,6 +46,36 @@ try {
     }
     if (jsonData.plugins.memo_plugin) {
       jsonData.plugins.memo_plugin = jsonData.plugins.memo_plugin.replace(/workspace/g, workSpace);
+    }
+
+    // compileFiles
+    if (jsonData.compileFiles) {
+      jsonData.compileFiles = jsonData.compileFiles.map((file) => changePathToAbsPath(file));
+    }
+
+    // entryFiles
+    if (jsonData.entryFiles) {
+      jsonData.entryFiles = jsonData.entryFiles.map((file) => changePathToAbsPath(file));
+    }
+
+    // moduleRootPath
+    if (jsonData.moduleRootPath) {
+      jsonData.moduleRootPath = changePathToAbsPath(jsonData.moduleRootPath);
+    }
+
+    // sourceRoots
+    if (jsonData.sourceRoots) {
+      jsonData.sourceRoots = jsonData.sourceRoots.map((file) => changePathToAbsPath(file));
+    }
+
+    // loaderOutPath
+    if (jsonData.loaderOutPath) {
+      jsonData.loaderOutPath = changePathToAbsPath(jsonData.loaderOutPath);
+    }
+
+    // loaderOutPath
+    if (jsonData.cachePath) {
+      jsonData.cachePath = changePathToAbsPath(jsonData.cachePath);
     }
 
     // 将修改后的内容写回 JSON 文件

@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { factory } from './ui-factory';
+import { createAndInsertImportDeclaration } from './arkts-utils';
 
 interface ImportInfo {
     imported: string;
@@ -31,7 +31,7 @@ function insertImport(importInfo: ImportInfo, program?: arkts.Program): void {
     if (!program) {
         throw Error('Failed to insert import: Transformer has no program');
     }
-    factory.createAndInsertImportDeclaration(source, imported, local, importInfo.kind, program);
+    createAndInsertImportDeclaration(source, imported, local, importInfo.kind, program);
 }
 
 export class ImportCollector {

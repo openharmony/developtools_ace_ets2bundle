@@ -15,22 +15,20 @@
 
 import * as arkts from '@koalaui/libarkts';
 
+import { backingField, expectName } from '../../common/arkts-utils';
+import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
 import {
     generateToRecord,
     createGetter,
     createSetter2,
     generateGetOrSetCall,
     generateThisBacking,
-    StateManagementTypes,
-    collectStateManagementTypeSource,
     collectStateManagementTypeImport,
     hasDecorator,
-    DecoratorNames,
     PropertyCache,
 } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
-import { backingField, expectName } from '../../common/arkts-utils';
 import { factory } from './factory';
 
 export class PropTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
@@ -116,7 +114,6 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
                   ),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
-        collectStateManagementTypeSource(StateManagementTypes.PROP_DECORATED);
         collectStateManagementTypeImport(StateManagementTypes.PROP_DECORATED);
         const right = arkts.factory.createETSNewClassInstanceExpression(
             arkts.factory.createTypeReference(

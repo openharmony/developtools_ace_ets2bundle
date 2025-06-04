@@ -32,8 +32,8 @@ const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
 import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
 function main() {}
-function __context(): __memo_context_type
-function __id(): __memo_id_type
+export function __context(): __memo_context_type
+export function __id(): __memo_id_type
 @Retention({policy:"SOURCE"}) @interface memo_intrinsic {}
 @Retention({policy:"SOURCE"}) @interface memo_entry {}
 class Test {

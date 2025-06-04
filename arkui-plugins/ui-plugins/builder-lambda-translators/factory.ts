@@ -19,11 +19,9 @@ import {
     BuilderLambdaNames,
     CustomComponentNames,
     findCanAddMemoFromParamExpression,
-    findImportSource,
-    getCustomComponentOptionsName,
     isCustomComponentAnnotation,
 } from '../utils';
-import { annotation, backingField, filterDefined, removeAnnotationByName } from '../../common/arkts-utils';
+import { backingField, filterDefined, removeAnnotationByName } from '../../common/arkts-utils';
 import {
     BuilderLambdaDeclInfo,
     builderLambdaFunctionName,
@@ -36,7 +34,6 @@ import {
     isBuilderLambdaFunctionCall,
     isSafeType,
     replaceBuilderLambdaDeclMethodName,
-    BindableDecl,
     getDecalTypeFromValue,
     hasBindableProperty,
     isDoubleDollarCall,
@@ -45,10 +42,11 @@ import {
     isStyleWithReceiverCall,
     builderLambdaType,
 } from './utils';
-import { DecoratorIntrinsicNames, DecoratorNames, isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
+import { isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { ProjectConfig } from '../../common/plugin-context';
-import { ImportCollector } from '../import-collector';
+import { BindableDecl, DecoratorIntrinsicNames, StructDecoratorNames } from '../../common/predefines';
+import { ImportCollector } from '../../common/import-collector';
 
 export class factory {
     /**
@@ -217,12 +215,13 @@ export class factory {
      */
     static createStyleArgInBuilderLambda(
         lambdaBody: arkts.Expression | undefined,
-        typeNode: arkts.TypeNode | undefined
+        typeNode: arkts.TypeNode | undefined,
+        moduleName: string
     ): arkts.UndefinedLiteral | arkts.ArrowFunctionExpression {
         if (!lambdaBody) {
             return arkts.factory.createUndefinedLiteral();
         }
-        collectComponentAttributeImport(typeNode);
+        collectComponentAttributeImport(typeNode, moduleName);
         const safeType: arkts.TypeNode | undefined = isSafeType(typeNode) ? typeNode : undefined;
 
         const styleLambdaParam: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
@@ -407,7 +406,7 @@ export class factory {
         declInfo: BuilderLambdaDeclInfo,
         projectConfig: ProjectConfig | undefined
     ): (arkts.AstNode | undefined)[] {
-        const { isFunctionCall, params, returnType } = declInfo;
+        const { isFunctionCall, params, returnType, moduleName } = declInfo;
         const type: arkts.Identifier | undefined = builderLambdaType(leaf);
         let isReusable: boolean | undefined;
         let reuseId: arkts.StringLiteral | undefined;
@@ -417,11 +416,11 @@ export class factory {
                 !!customComponentDecl &&
                 arkts.isClassDefinition(customComponentDecl) &&
                 customComponentDecl.annotations.some((anno) =>
-                    isCustomComponentAnnotation(anno, CustomComponentNames.RESUABLE_ANNOTATION)
+                    isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE)
                 );
             reuseId = isReusable ? arkts.factory.createStringLiteral(type.name) : undefined;
         }
-        const args: (arkts.AstNode | undefined)[] = [this.createStyleArgInBuilderLambda(lambdaBody, returnType)];
+        const args: (arkts.AstNode | undefined)[] = [this.createStyleArgInBuilderLambda(lambdaBody, returnType, moduleName)];
         let index = 0;
         while (index < params.length) {
             if (isReusable && index === params.length - 1) {
@@ -724,8 +723,6 @@ export class factory {
      */
     static createBindableType(valueType: arkts.TypeNode): arkts.ETSTypeReference {
         const transformedKey = BindableDecl.BINDABLE;
-        const source = findImportSource(transformedKey);
-        ImportCollector.getInstance().collectSource(transformedKey, source);
         ImportCollector.getInstance().collectImport(transformedKey);
         return arkts.factory.createTypeReference(
             arkts.factory.createTypeReferencePart(
