@@ -17,9 +17,15 @@ import * as arkts from '@koalaui/libarkts';
 import { getAnnotationUsage, PresetDecorators } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 
+const invalidDecorators = [PresetDecorators.PROP, PresetDecorators.LINK, PresetDecorators.OBJECT_LINK];
+
 function checkNoPropLinkOrObjectLinkInEntry(context: UISyntaxRuleContext, node: arkts.StructDeclaration): void {
   // Check if the struct has the @Entry decorator
   const isEntryComponent = !!getAnnotationUsage(node, PresetDecorators.ENTRY);
+  if (!node.definition.ident || !arkts.isIdentifier(node.definition.ident)) {
+    return;
+  }
+  const componentName = node.definition.ident.name;
   if (!isEntryComponent) {
     return;
   }
@@ -27,25 +33,32 @@ function checkNoPropLinkOrObjectLinkInEntry(context: UISyntaxRuleContext, node: 
     if (!arkts.isClassProperty(body)) {
       return;
     }
-    const invalidDecorators = [PresetDecorators.PROP, PresetDecorators.LINK, PresetDecorators.OBJECT_LINK];
+    if (!body.key || !arkts.isIdentifier(body.key)) {
+      return;
+    }
+    const propertyName = body.key.name;
     // Check if any invalid decorators are applied to the class property
     body.annotations?.forEach(annotation => {
-      reportInvalidDecorator(context, annotation, invalidDecorators);
+      reportInvalidDecorator(context, annotation, invalidDecorators, componentName, propertyName);
     });
   });
 }
 
 function reportInvalidDecorator(context: UISyntaxRuleContext, annotation: arkts.AnnotationUsage,
-  invalidDecorators: string[],): void {
-  if (annotation.expr && invalidDecorators.includes(annotation.expr.dumpSrc())) {
-    const decorator = annotation.expr.dumpSrc();
+  invalidDecorators: string[], componentName: string, propertyName: string): void {
+  if (annotation.expr && arkts.isIdentifier(annotation.expr) && invalidDecorators.includes(annotation.expr.name)) {
+    const decoratorName = annotation.expr.name;
     context.report({
       node: annotation,
-      message: rule.messages.invalidUsage,
-      data: { decorator },
+      message: rule.messages.disallowDecoratorInEntry,
+      data: {
+        componentName,
+        decoratorName,
+        propertyName,
+      },
       fix: (annotation) => {
-        const startPosition = arkts.getStartPosition(annotation);
-        const endPosition = arkts.getEndPosition(annotation);
+        const startPosition = annotation.startPosition;
+        const endPosition = annotation.endPosition;
         return {
           range: [startPosition, endPosition],
           code: '',
@@ -58,7 +71,7 @@ function reportInvalidDecorator(context: UISyntaxRuleContext, annotation: arkts.
 const rule: UISyntaxRule = {
   name: 'no-prop-link-objectlink-in-entry',
   messages: {
-    invalidUsage: `@{{decorator}} decorator cannot be used for '@Entry' decorated components.`,
+    disallowDecoratorInEntry: `The '@Entry' component '{{componentName}}' cannot have the '@{{decoratorName}}' property '{{propertyName}}'.`,
   },
   setup(context) {
     return {
