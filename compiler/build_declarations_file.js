@@ -36,8 +36,8 @@ const addTSAttributeSet = ['AlphabetIndexer', 'Animator', 'Badge', 'Blank', 'But
 generateTargetFile(process.argv[2], process.argv[3]);
 function generateTargetFile(filePath, output) {
   const files = [];
-  const globalTsFile = path.resolve(filePath, '../../ets/global.d.ts');
-  const featureAbilityPath = path.resolve(filePath, '../../../common/full/featureability.d.ts');
+  const globalTsFile = path.resolve(filePath, '../ets_internal_api/global.d.ts');
+  const featureAbilityPath = path.resolve(filePath, '../internal_full/featureability.d.ts');
   const middleTsFile = path.resolve(filePath, 'middle_class.d.ts');
   if (fs.existsSync(globalTsFile)) {
     files.push(globalTsFile);
