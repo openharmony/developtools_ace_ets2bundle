@@ -23,10 +23,11 @@ import {
     getTypeNameFromTypeParameter,
     getTypeParamsFromClassDecl,
     isCustomComponentInterface,
+    MemoNames,
 } from '../utils';
 import { factory as uiFactory } from '../ui-factory';
 import { factory as propertyFactory } from '../property-translators/factory';
-import { collect, filterDefined } from '../../common/arkts-utils';
+import { collect, filterDefined, annotation } from '../../common/arkts-utils';
 import {
     classifyObservedTrack,
     classifyProperty,
@@ -526,6 +527,13 @@ export class factory {
         }
         const newClassDef = factory.updateObservedTrackClassDef(node.definition);
         return arkts.factory.updateClassDeclaration(node, newClassDef);
+    }
+
+    static transformTSTypeAlias(node: arkts.TSTypeAliasDeclaration): arkts.TSTypeAliasDeclaration {
+        if (arkts.isETSFunctionType(node.typeAnnotation) && hasDecorator(node.typeAnnotation, DecoratorNames.BUILDER)) {
+            node.typeAnnotation.setAnnotations([annotation(MemoNames.MEMO)]);
+        } 
+        return node;
     }
 
     static updateObservedTrackClassDef(node: arkts.ClassDefinition): arkts.ClassDefinition {
