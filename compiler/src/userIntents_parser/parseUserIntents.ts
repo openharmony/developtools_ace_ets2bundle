@@ -105,7 +105,7 @@ class ParseIntent {
   detectInsightIntent(node: ts.ClassDeclaration, metaInfo: object, filePath: string, eventOrEventFactory: CompileEvent | undefined): ts.Node {
     const eventParseIntentTime: CompileEvent | undefined = createAndStartEvent(eventOrEventFactory, 'parseIntentTime');
     if (!this.isInitCache && projectConfig.cachePath) {
-      const cacheSourceMapPath: string = path.join(projectConfig.cachePath, 'insight_compile_cache.json');
+      const cacheSourceMapPath: string = path.join(projectConfig.cachePath, 'insight_compile_cache.json'); // The user's intents configuration file
       this.isUpdateCompile = fs.existsSync(cacheSourceMapPath);
       this.isInitCache = true;
     }
@@ -316,7 +316,7 @@ class ParseIntent {
       }
     } else {
       throw Error(`${INVALID_BASE_CLASS_ERROR.toString()},
-         The custom intent must be ultimately inherited to InsightIntentEntryExecutor, invalidDecoratorPath: ${this.currentFilePath}`);
+          The user's custom intents must be ultimately inherited to InsightIntentEntryExecutor, invalidDecoratorPath: ${this.currentFilePath}`);
     }
   }
 
@@ -388,7 +388,7 @@ class ParseIntent {
     if (isGlobalPath) {
       if (parentClassName !== 'InsightIntentEntryExecutor') {
         throw Error(`${INVALID_BASE_CLASS_ERROR.toString()},
-         The custom intent must be ultimately inherited to InsightIntentEntryExecutor, invalidDecoratorPath: ${this.currentFilePath}`);
+         The user's custom intents must be ultimately inherited to InsightIntentEntryExecutor, invalidDecoratorPath: ${this.currentFilePath}`);
       }
     }
     this.heritageClassSet.add(baseClassName + '_' + `@normalized:${baseRecordName}`);
@@ -985,11 +985,38 @@ class ParseIntent {
   }
 
   writeUserIntentJsonFile(): void {
+    const writeJsonData: object = this.processIntentData();
+    const cacheSourceMapPath: string = path.join(projectConfig.aceProfilePath, 'insight_intent.json'); // The user's intents configuration file
+    const cachePath: string = path.join(projectConfig.cachePath, 'insight_compile_cache.json'); // Compiled cache file
+    try {
+      if (this.intentData.length > 0) {
+        fs.writeFileSync(cacheSourceMapPath, JSON.stringify(writeJsonData, null, 2), 'utf-8');
+        fs.writeFileSync(cachePath, JSON.stringify({'extractInsightIntents': this.intentData}, null, 2), 'utf-8');
+      } else if (fs.existsSync(cacheSourceMapPath)) {
+        fs.unlinkSync(cacheSourceMapPath);
+      }
+      const normalizedPath: string = path.normalize(projectConfig.aceProfilePath);
+      const fullPath: string = path.join(normalizedPath, '../../../module.json');
+      if (fs.existsSync(fullPath)) {
+        const rawData: string = fs.readFileSync(fullPath, 'utf8');
+        const jsonData: object = JSON.parse(rawData);
+        if (jsonData?.module) {
+          jsonData.module.hasInsightIntent = this.intentData.length > 0 ? true : undefined;
+        }
+        const updatedJson: string = JSON.stringify(jsonData, null, 2);
+        fs.writeFileSync(fullPath, updatedJson, 'utf8');
+      }
+    } catch (e) {
+      throw Error(`${INTERNAL_ERROR}, writeFile failed: ${e}`);
+    }
+  }
+
+  processIntentData(): object {
     if (!projectConfig.aceProfilePath) {
       throw Error(`${INTERNAL_ERROR.toString()}, aceProfilePath not found, invalidDecoratorPath: ${this.currentFilePath}`);
     }
-    const cacheSourceMapPath: string = path.join(projectConfig.aceProfilePath, 'insight_intent.json');
-    const cachePath: string = path.join(projectConfig.cachePath, 'insight_compile_cache.json');
+    const cacheSourceMapPath: string = path.join(projectConfig.aceProfilePath, 'insight_intent.json'); // The user's intents configuration file
+    const cachePath: string = path.join(projectConfig.cachePath, 'insight_compile_cache.json'); // Compiled cache file
     if (!fs.existsSync(projectConfig.aceProfilePath)) {
       fs.mkdirSync(projectConfig.aceProfilePath, {recursive: true});
     }
@@ -1018,23 +1045,7 @@ class ParseIntent {
       });
     }
     this.validateIntentIntentName(writeJsonData);
-    if (this.intentData.length > 0) {
-      fs.writeFileSync(cacheSourceMapPath, JSON.stringify(writeJsonData, null, 2), 'utf-8');
-      fs.writeFileSync(cachePath, JSON.stringify({'extractInsightIntents': this.intentData}, null, 2), 'utf-8');
-    } else if (fs.existsSync(cacheSourceMapPath)) {
-      fs.unlinkSync(cacheSourceMapPath);
-    }
-    const normalizedPath: string = path.normalize(projectConfig.aceProfilePath);
-    const fullPath: string = path.join(normalizedPath, '../../../module.json');
-    if (fs.existsSync(fullPath)) {
-      const rawData: string = fs.readFileSync(fullPath, 'utf8');
-      const jsonData: object = JSON.parse(rawData);
-      if (jsonData?.module) {
-        jsonData.module.hasInsightIntent = this.intentData.length > 0 ? true : undefined;
-      }
-      const updatedJson: string = JSON.stringify(jsonData, null, 2);
-      fs.writeFileSync(fullPath, updatedJson, 'utf8');
-    }
+    return writeJsonData;
   }
 
   validateIntentIntentName(writeJsonData: object): void {
