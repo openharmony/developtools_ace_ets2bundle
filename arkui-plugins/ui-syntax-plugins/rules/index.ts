@@ -53,6 +53,14 @@ import ObservedV2TraceUsageValidation from './observedV2-trace-usage-validation'
 import OnceDecoratorCheck from './once-decorator-check';
 import OneDecoratorOnFunctionMethod from './one-decorator-on-function-method';
 import OldNewDecoratorMixUseCheck from './old-new-decorator-mix-use-check';
+import ComputedDecoratorCheck from './computed-decorator-check';
+import ReusableV2DecoratorCheck from './reusableV2-decorator-check';
+import RequireDecoratorRegular from './require-decorator-regular';
+import ReusableComponentInV2Check from './reusable-component-in-V2-check';
+import VariableInitializationViaComponentConstructor from './variable-initialization-via-component-constructor';
+import ComponentComponentV2InitCheck from './component-componentV2-init-check';
+import SpecificComponentChildren from './specific-component-children';
+import StructNoExtends from './struct-no-extends';
 
 const rules: UISyntaxRule[] = [
   BuildRootNode,
@@ -94,6 +102,14 @@ const rules: UISyntaxRule[] = [
   OnceDecoratorCheck,
   OneDecoratorOnFunctionMethod,
   OldNewDecoratorMixUseCheck,
+  ComputedDecoratorCheck,
+  ReusableV2DecoratorCheck,
+  RequireDecoratorRegular,
+  ReusableComponentInV2Check,
+  VariableInitializationViaComponentConstructor,
+  ComponentComponentV2InitCheck,
+  SpecificComponentChildren,
+  StructNoExtends,
 ];
 
 export default rules;
