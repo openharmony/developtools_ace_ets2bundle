@@ -15,16 +15,25 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { UISyntaxRule, UISyntaxRuleContext } from '../rules/ui-syntax-rule';
-import { getContainerComponents } from '../utils';
+import { getUIComponents } from '../utils';
 
 export type UISyntaxRuleProcessor = {
   parsed(node: arkts.AstNode): void;
 };
 
+export interface UISyntaxRuleComponents {
+  builtInAttributes: string[];
+  containerComponents: string[];
+  atomicComponents: string[];
+  singleChildComponents: string[];
+  validParentComponent: Map<string, string[]>;
+  validChildComponent: Map<string, string[]>;
+}
+
 export function createUISyntaxRuleProcessor(
   rules: UISyntaxRule[],
 ): UISyntaxRuleProcessor {
-  const containerComponents = getContainerComponents('../../components/');
+  const componentsInfo: UISyntaxRuleComponents = getUIComponents('../../components/');
   const context: UISyntaxRuleContext = {
     report(options) {
       const position = arkts.getStartPosition(options.node);
@@ -39,17 +48,33 @@ export function createUISyntaxRuleProcessor(
           options.message,
         );
       }
+
+      let args: string[] = [];
+      const kind: arkts.DiagnosticKind =
+        arkts.DiagnosticKind.create(message, arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_ERROR);
+      if (options.fix) {
+        const diagnosticInfo: arkts.DiagnosticInfo = arkts.DiagnosticInfo.create(kind, ...args);
+        const suggestionInfo: arkts.SuggestionInfo =
+          arkts.SuggestionInfo.create(kind, options.fix(options.node).code, ...args);
+        const startPosition = arkts.getStartPosition(options.node);
+        const endPosition = arkts.getEndPosition(options.node);
+        const sourceRange: arkts.SourceRange = arkts.SourceRange.create(startPosition, endPosition);
+        arkts.Diagnostic.logDiagnosticWithSuggestion(diagnosticInfo, suggestionInfo, sourceRange);
+      } else {
+        arkts.Diagnostic.logDiagnostic(kind, arkts.getStartPosition(options.node));
+      }
+
       // todo
       if (options.fix) {
         const suggestion = options.fix(options.node);
-        console.log(`error: ${message}`);
+        console.log(`syntax-error: ${message}`);
         console.log(`range: (${suggestion.range[0].index()}, ${suggestion.range[0].line()}) - (${suggestion.range[1].index()}, ${suggestion.range[1].line()})`,
           `code: ${suggestion.code}`);
       } else {
         console.log(`syntax-error: ${message}  (${position.index()},${position.line()})`);
       }
     },
-    containerComponents: containerComponents,
+    componentsInfo: componentsInfo
   };
 
   const instances = rules.map((rule) => rule.setup(context));
