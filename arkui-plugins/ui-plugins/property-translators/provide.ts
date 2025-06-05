@@ -16,7 +16,8 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
-import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
+import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
+import { CustomComponentNames } from '../utils';
 import {
     createGetter,
     generateToRecord,
@@ -57,9 +58,9 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, 'get');
+        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            generateGetOrSetCall(thisValue, 'set')
+            generateGetOrSetCall(thisValue, GetSetTypes.SET)
         );
         const getter: arkts.MethodDefinition = this.translateGetter(
             originalName,
@@ -95,10 +96,29 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
         const options: undefined | ProvideOptions = getValueInProvideAnnotation(this.property);
         const alias: string = options?.alias ?? originalName;
         const allowOverride: boolean = options?.allowOverride ?? false;
+        const args: arkts.Expression[] = [
+            arkts.factory.create1StringLiteral(originalName),
+            arkts.factory.create1StringLiteral(alias),
+            arkts.factory.createBinaryExpression(
+                factory.createBlockStatementForOptionalExpression(
+                    arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
+                    originalName
+                ),
+                this.property.value ?? arkts.factory.createUndefinedLiteral(),
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+            ),
+            arkts.factory.createBooleanLiteral(allowOverride),
+        ];
+        factory.judgeIfAddWatchFunc(args, this.property);
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateAddProvideVarCall(originalName, this.property, alias, allowOverride)
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_PROVIDE,
+                this.property.typeAnnotation,
+                args,
+                true
+            )
         );
         return arkts.factory.createExpressionStatement(assign);
     }

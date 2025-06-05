@@ -550,6 +550,13 @@ export class factory {
                         )
                     )
                 ),
+                arkts.TSClassImplements.createTSClassImplements(
+                    arkts.factory.createTypeReference(
+                        arkts.factory.createTypeReferencePart(
+                            arkts.factory.createIdentifier(StateManagementTypes.SUBSCRIBED_WATCHES)
+                        )
+                    )
+                ),
             ],
             undefined,
             node.super,
@@ -561,49 +568,14 @@ export class factory {
         return updateClassDef;
     }
 
-    static createPermissibleAddRefDepthInObservedClass(): arkts.ClassProperty {
-        return arkts.factory.createClassProperty(
-            arkts.factory.createIdentifier('_permissibleAddRefDepth'),
-            arkts.factory.createNumericLiteral(0),
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(StateManagementTypes.INT_32))
-            ),
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
-            false
-        );
-    }
-
-    static createMutableStateMetaInObservedClass(): arkts.ClassProperty {
-        return arkts.factory.createClassProperty(
-            arkts.factory.createIdentifier('__meta'),
-            arkts.factory.createETSNewClassInstanceExpression(
-                arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(
-                        arkts.factory.createIdentifier(StateManagementTypes.MUTABLE_STATE_META)
-                    )
-                ),
-                [arkts.factory.createStringLiteral('@Observe properties (no @Track)')]
-            ),
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier(StateManagementTypes.MUTABLE_STATE_META)
-                )
-            ),
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
-            false
-        );
-    }
-
     static observedTrackPropertyMembers(
         classHasTrack: boolean,
         definition: arkts.ClassDefinition,
         isObserved: boolean
     ): arkts.AstNode[] {
         const watchMembers: arkts.AstNode[] = propertyFactory.createWatchMembers();
-        const permissibleAddRefDepth: arkts.ClassProperty = factory.createPermissibleAddRefDepthInObservedClass();
-        collectStateManagementTypeImport(StateManagementTypes.INT_32);
-        const meta: arkts.ClassProperty = factory.createMutableStateMetaInObservedClass();
-        collectStateManagementTypeImport(StateManagementTypes.MUTABLE_STATE_META);
+        const v1RenderIdMembers: arkts.AstNode[] = propertyFactory.createV1RenderIdMembers();
+        const conditionalAddRef: arkts.MethodDefinition = propertyFactory.conditionalAddRef();
         const getters: arkts.MethodDefinition[] = getGettersFromClassDecl(definition);
         const classScopeInfo: ClassScopeInfo = {
             isObserved: isObserved,
@@ -623,8 +595,8 @@ export class factory {
                 )
         );
         return [
-            ...watchMembers,
-            ...(classHasTrack ? [permissibleAddRefDepth] : [permissibleAddRefDepth, meta]),
+            ...[...watchMembers, ...v1RenderIdMembers, conditionalAddRef],
+            ...(classHasTrack ? [] : [propertyFactory.createMetaInObservedClass()]),
             ...collect(...propertyMembers),
             ...nonClassPropertyOrGetter,
             ...classScopeInfo.getters,

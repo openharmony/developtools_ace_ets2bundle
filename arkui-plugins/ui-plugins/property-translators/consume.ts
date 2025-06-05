@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
-import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
+import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
 import {
     generateToRecord,
     createGetter,
@@ -56,9 +56,9 @@ export class ConsumeTranslator extends PropertyTranslator implements Initializer
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, 'get');
+        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            generateGetOrSetCall(thisValue, 'set')
+            generateGetOrSetCall(thisValue, GetSetTypes.SET)
         );
         const getter: arkts.MethodDefinition = this.translateGetter(
             originalName,
@@ -91,11 +91,22 @@ export class ConsumeTranslator extends PropertyTranslator implements Initializer
     }
 
     generateInitializeStruct(originalName: string, newName: string): arkts.AstNode {
-        const alias = getValueInAnnotation(this.property, DecoratorNames.CONSUME);
+        const args: arkts.Expression[] = [
+            arkts.factory.create1StringLiteral(originalName),
+            arkts.factory.create1StringLiteral(
+                getValueInAnnotation(this.property, DecoratorNames.CONSUME) ?? originalName
+            ),
+        ];
+        factory.judgeIfAddWatchFunc(args, this.property);
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateInitConsumeCall(originalName, this.property, alias ?? originalName)
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_CONSUME,
+                this.property.typeAnnotation,
+                args,
+                true
+            )
         );
         return arkts.factory.createExpressionStatement(assign);
     }
