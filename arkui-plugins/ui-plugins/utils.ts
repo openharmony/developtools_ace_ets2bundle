@@ -38,10 +38,7 @@ export enum BuilderLambdaNames {
     TRANSFORM_METHOD_NAME = '_instantiateImpl',
     STYLE_PARAM_NAME = 'style',
     STYLE_ARROW_PARAM_NAME = 'instance',
-    CONTENT_PARAM_NAME = 'content',
-    ANIMATION_NAME = 'animation',
-    ANIMATION_START = 'animationStart',
-    ANIMATION_STOP = 'animationStop',
+    CONTENT_PARAM_NAME = 'content'
 }
 
 export enum MemoNames {
