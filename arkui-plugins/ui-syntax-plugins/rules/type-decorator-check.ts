@@ -20,23 +20,23 @@ import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 function findTypeDecorator(
   annotations: readonly arkts.AnnotationUsage[]
 ): arkts.AnnotationUsage | undefined {
-  let hasTypeDecorator = annotations?.find(annotation =>
-    annotation.expr &&
-    annotation.expr.dumpSrc() === PresetDecorators.TYPE
+  let typeDecorator = annotations?.find(annotation =>
+    annotation.expr && arkts.isIdentifier(annotation.expr) &&
+    annotation.expr.name === PresetDecorators.TYPE
   );
-  return hasTypeDecorator;
+  return typeDecorator;
 }
 
-function hasDecoratorType(
+function getTypeDecorator(
   node: arkts.ClassDeclaration,
 ): arkts.AnnotationUsage | undefined {
-  let hasTypeDecorator: arkts.AnnotationUsage | undefined;
+  let typeDecorator: arkts.AnnotationUsage | undefined;
   node.definition?.body.forEach(member => {
     if (arkts.isClassProperty(member) && member.annotations) {
-      hasTypeDecorator = findTypeDecorator(member.annotations);
+      typeDecorator = findTypeDecorator(member.annotations);
     }
   });
-  return hasTypeDecorator;
+  return typeDecorator;
 }
 
 // rule1: @Type can only be used for class
@@ -44,28 +44,28 @@ function checkTypeInStruct(
   node: arkts.StructDeclaration,
   context: UISyntaxRuleContext,
 ): void {
-  let hasTypeDecorator: arkts.AnnotationUsage | undefined;
-  node.definition?.body.forEach(member => {
+  let typeDecorator: arkts.AnnotationUsage | undefined;
+  node.definition.body.forEach(member => {
     if (arkts.isClassProperty(member) && member.annotations) {
-      hasTypeDecorator = findTypeDecorator(member.annotations);
-      reportInvalidTypeUsageInStruct(hasTypeDecorator, context);
+      typeDecorator = findTypeDecorator(member.annotations);
+      reportInvalidTypeUsageInStruct(typeDecorator, context);
     }
   });
 }
 
 function reportInvalidTypeUsageInStruct(
-  hasTypeDecorator: arkts.AnnotationUsage | undefined,
+  typeDecorator: arkts.AnnotationUsage | undefined,
   context: UISyntaxRuleContext
 ): void {
-  if (!hasTypeDecorator) {
+  if (!typeDecorator) {
     return;
   }
   context.report({
-    node: hasTypeDecorator,
+    node: typeDecorator,
     message: rule.messages.invalidType,
-    fix: (hasTypeDecorator) => {
-      const startPosition = arkts.getStartPosition(hasTypeDecorator);
-      const endPosition = arkts.getEndPosition(hasTypeDecorator);
+    fix: (typeDecorator) => {
+      const startPosition = typeDecorator.startPosition;
+      const endPosition = typeDecorator.endPosition;
       return {
         range: [startPosition, endPosition],
         code: ''
@@ -79,29 +79,29 @@ function checkObservedAndTypeConflict(
   node: arkts.ClassDeclaration,
   context: UISyntaxRuleContext
 ): void {
-  let hasTypeDecorator: arkts.AnnotationUsage | undefined;
+  let typeDecorator: arkts.AnnotationUsage | undefined;
   node.definition?.annotations.forEach(member => {
     const annotation = getAnnotationName(member);
-    hasTypeDecorator = hasDecoratorType(node);
-    if (annotation === PresetDecorators.OBSERVED_V1) {
-      reportObservedAndTypeDecoratorConflict(hasTypeDecorator, context);
+    typeDecorator = getTypeDecorator(node);
+    if (annotation !== PresetDecorators.OBSERVED_V2) {
+      reportObservedAndTypeDecoratorConflict(typeDecorator, context);
     }
   });
 }
 
 function reportObservedAndTypeDecoratorConflict(
-  hasTypeDecorator: arkts.AnnotationUsage | undefined,
+  typeDecorator: arkts.AnnotationUsage | undefined,
   context: UISyntaxRuleContext
 ): void {
-  if (!hasTypeDecorator) {
+  if (!typeDecorator) {
     return;
   }
   context.report({
-    node: hasTypeDecorator,
+    node: typeDecorator,
     message: rule.messages.invalidDecoratorWith,
     fix: () => {
-      const startPosition = arkts.getStartPosition(hasTypeDecorator);
-      const endPosition = arkts.getEndPosition(hasTypeDecorator);
+      const startPosition = typeDecorator.startPosition;
+      const endPosition = typeDecorator.endPosition;
       return {
         range: [startPosition, endPosition],
         code: ''
@@ -115,23 +115,23 @@ function validateScriptFunctionForTypeDecorator(
   node: arkts.ScriptFunction,
   context: UISyntaxRuleContext
 ): void {
-  const hasTypeDecorator = findTypeDecorator(node.annotations);
-  reportInvalidTypeDecorator(hasTypeDecorator, context);
+  const typeDecorator = findTypeDecorator(node.annotations);
+  reportInvalidTypeDecorator(typeDecorator, context);
 }
 
 function reportInvalidTypeDecorator(
-  hasTypeDecorator: arkts.AnnotationUsage | undefined,
+  typeDecorator: arkts.AnnotationUsage | undefined,
   context: UISyntaxRuleContext
 ): void {
-  if (!hasTypeDecorator) {
+  if (!typeDecorator) {
     return;
   }
   context.report({
-    node: hasTypeDecorator,
+    node: typeDecorator,
     message: rule.messages.invalidTypeMember,
-    fix: (hasTypeDecorator) => {
-      const startPosition = arkts.getStartPosition(hasTypeDecorator);
-      const endPosition = arkts.getEndPosition(hasTypeDecorator);
+    fix: (typeDecorator) => {
+      const startPosition = typeDecorator.startPosition;
+      const endPosition = typeDecorator.endPosition;
       return {
         range: [startPosition, endPosition],
         code: ''
@@ -143,9 +143,9 @@ function reportInvalidTypeDecorator(
 const rule: UISyntaxRule = {
   name: 'type-decorator-check',
   messages: {
-    invalidType: `The @Type decorator can only be used in 'class'.`,
+    invalidType: `The @Type decorator is not allowed here. It must be used in a class.`,
     invalidDecoratorWith: `The @Type decorator can not be used within a 'class' decorated with @Observed.`,
-    invalidTypeMember: `The @Type can decorate only member variables in a 'class'.`
+    invalidTypeMember: `The @Type decorator is not allowed here. It can only decorate properties of a class.`
   },
   setup(context) {
     return {

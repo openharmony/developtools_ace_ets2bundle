@@ -20,6 +20,7 @@ import { UISyntaxRuleComponents } from 'ui-syntax-plugins/processor';
 import { UISyntaxRuleContext } from 'ui-syntax-plugins/rules/ui-syntax-rule';
 
 export const PresetDecorators = {
+  TOGGLE: 'Toggle',
   BUILDER_PARAM: 'BuilderParam',
   COMPONENT_V1: 'Component',
   COMPONENT_V2: 'ComponentV2',
@@ -55,6 +56,15 @@ export const PresetDecorators = {
   ONCE: 'Once',
   MONITOR: 'Monitor',
   LOCAL_BUILDER: 'LocalBuilder',
+};
+
+export const TOGGLE_TYPE: string = 'ToggleType';
+export const TYPE: string = 'type';
+export const WRAP_BUILDER: string = 'wrapBuilder';
+
+export const ToggleType = {
+  CHECKBOX: 'Checkbox',
+  BUTTON: 'Button'
 };
 
 const PUBLIC_PROPERTY_MODIFIERS: Number = 4;
