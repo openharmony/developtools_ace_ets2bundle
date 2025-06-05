@@ -1,0 +1,17 @@
+{
+  "name": "arkui-plugins-test",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "compile:ohos": "node $INIT_CWD/../../../../arkcompiler/ets_frontend/ets2panda/driver/build-system/dist/entry.js ./demo/hello_world/build_config.json",
+    "compile:gdb": "gdb --args node $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/driver/build-system/dist/entry.js ./demo/hello_world/build_config.json",
+    "compile:plugins": "npm run compile --prefix .. ",
+    "localtest": "rm -rf dist && node localtest_config.js && npm run compile:plugins && LD_LIBRARY_PATH=$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/lib node $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/driver/build-system/dist/entry.js ./demo/localtest/build_config.json",
+    "localtest_gdb": "LD_LIBRARY_PATH=$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/lib gdb --args node $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/driver/build-system/dist/entry.js ./demo/localtest/build_config.json",
+    "localtest_decl": "rm -rf dist && node localtest_decl_config.js && npm run compile:plugins && LD_LIBRARY_PATH=$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/lib node $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/driver/build-system/dist/entry.js ./demo/localtest/build_decl_config.json",
+    "localtest_all": "npm run localtest_decl && npm run localtest",
+    "es2panda:compile": "node ./arktsconfig_gen.js && $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/bin/es2panda --arktsconfig=./dist/cache/arktsconfig.json",
+    "es2panda:test": "$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/bin/es2panda ./demo/localtest/entry/test.ets --output=test.abc"
+  }
+}
