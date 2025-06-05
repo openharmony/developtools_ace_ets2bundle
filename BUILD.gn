@@ -44,9 +44,9 @@ action("build_ets_loader_library") {
     ":form_components",
     ":install_arkguard_tsc",
     ":server",
-    "//interface/sdk-js:ets_component",
-    "//interface/sdk-js:bundle_kits",
     "//interface/sdk-js:bundle_arkts",
+    "//interface/sdk-js:bundle_kits",
+    "//interface/sdk-js:ets_component",
     "//interface/sdk-js:ets_internal_api",
   ]
   script = "build_ets_loader_library.py"
@@ -68,7 +68,8 @@ action("build_ets_loader_library") {
   }
   _declarations_file_dir = ets_component_out_dir + "/${sdk_type}/ets_component"
   _kit_configs_file_dir = ets_component_out_dir + "/${sdk_type}/bundle_kits"
-  _kit_apis_file_dir =  root_out_dir + "/ohos_declaration/${sdk_type}/ohos_declaration_ets"
+  _kit_apis_file_dir =
+      root_out_dir + "/ohos_declaration/${sdk_type}/ohos_declaration_ets"
   _arkts_apis_file_dir = ets_component_out_dir + "/${sdk_type}/bundle_arkts"
 
   _babel_js = _ace_config_dir + "/node_modules/@babel/cli/bin/babel.js"
