@@ -35,6 +35,25 @@ export const CUSTOM_COMPONENT_IMPORT_SOURCE_NAME: string = 'arkui.component.cust
 export const ENTRY_POINT_IMPORT_SOURCE_NAME: string = 'arkui.UserView';
 export const ARKUI_COMPONENT_COMMON_SOURCE_NAME: string = 'arkui.component.common';
 
+export enum ModuleType {
+    HAR = 'har',
+    ENTRY = 'entry',
+    FEATURE = 'feature',
+    SHARED = 'shared',
+}
+
+export enum DefaultConfiguration {
+    HAR_DEFAULT_MODULE_NAME = '__harDefaultModuleName__',
+    HAR_DEFAULT_BUNDLE_NAME = '__harDefaultBundleName__',
+    DYNAMIC_MODULE_NAME = '__MODULE_NAME__',
+    DYNAMIC_BUNDLE_NAME = '__BUNDLE_NAME__',
+}
+
+export enum LogType {
+    ERROR = 'ERROR',
+    WARN = 'WARN',
+}
+
 export enum Dollars {
     DOLLAR_RESOURCE = '$r',
     DOLLAR_RAWFILE = '$rawfile',
@@ -126,6 +145,21 @@ export enum AnimationNames {
     ANIMATION_START = 'animationStart',
     ANIMATION_STOP = 'animationStop',
 }
+
+export const RESOURCE_TYPE: Record<string, number> = {
+    color: 10001,
+    float: 10002,
+    string: 10003,
+    plural: 10004,
+    boolean: 10005,
+    intarray: 10006,
+    integer: 10007,
+    pattern: 10008,
+    strarray: 10009,
+    media: 20000,
+    rawfile: 30000,
+    symbol: 40000,
+};
 
 export const DECORATOR_TYPE_MAP = new Map<DecoratorNames, StateManagementTypes>([
     [DecoratorNames.STATE, StateManagementTypes.STATE_DECORATED],

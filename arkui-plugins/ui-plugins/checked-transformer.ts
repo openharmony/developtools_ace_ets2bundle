@@ -30,6 +30,10 @@ import {
     ScopeInfoCollection,
     findCanAddMemoFromArrowFunction,
     isResourceNode,
+    LoaderJson,
+    ResourceInfo,
+    loadBuildJson,
+    initResourceInfo
 } from './struct-translators/utils';
 import { isBuilderLambda, isBuilderLambdaMethodDecl } from './builder-lambda-translators/utils';
 import { isEntryWrapperClass } from './entry-translators/utils';
@@ -37,15 +41,20 @@ import { ImportCollector } from '../common/import-collector';
 import { DeclarationCollector } from '../common/declaration-collector';
 import { PropertyCache } from './property-translators/utils';
 import { isArkUICompatible, generateArkUICompatible } from './interop/interop';
+import { LogCollector } from '../common/log-collector';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
     projectConfig: ProjectConfig | undefined;
+    aceBuildJson: LoaderJson;
+    resourceInfo: ResourceInfo;
 
     constructor(projectConfig: ProjectConfig | undefined) {
         super();
         this.projectConfig = projectConfig;
         this.scope = { customComponents: [] };
+        this.aceBuildJson = loadBuildJson(this.projectConfig);
+        this.resourceInfo = initResourceInfo(this.projectConfig, this.aceBuildJson);
     }
 
     reset(): void {
@@ -54,6 +63,7 @@ export class CheckedTransformer extends AbstractVisitor {
         PropertyCache.getInstance().reset();
         ImportCollector.getInstance().reset();
         DeclarationCollector.getInstance().reset();
+        LogCollector.getInstance().reset();
     }
 
     enter(node: arkts.AstNode): void {
@@ -107,7 +117,7 @@ export class CheckedTransformer extends AbstractVisitor {
         } else if (arkts.isClassDeclaration(node)) {
             return structFactory.transformNormalClass(node);
         } else if (arkts.isCallExpression(node) && isResourceNode(node)) {
-            return structFactory.transformResource(node, this.projectConfig);
+            return structFactory.transformResource(node, this.projectConfig, this.resourceInfo);
         } else if (isArkUICompatible(node)) {
             return generateArkUICompatible(node as arkts.CallExpression);
         } else if (arkts.isTSInterfaceDeclaration(node)) {
@@ -116,6 +126,7 @@ export class CheckedTransformer extends AbstractVisitor {
             return addMemoAnnotation(node);
         } else if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
             ImportCollector.getInstance().insertCurrentImports(this.program);
+            LogCollector.getInstance().emitLogInfo();
         } else if (arkts.isTSTypeAliasDeclaration(node)) {
             return structFactory.transformTSTypeAlias(node);
         }

@@ -91,6 +91,16 @@ export interface ProjectConfig {
     moduleName: string;
     cachePath: string;
     dependentModuleList: DependentModuleConfig[];
+    appResource: string;
+    rawFileResource: string;
+    buildLoaderJson: string;
+    hspResourcesMap: boolean;
+    compileHar: boolean;
+    byteCodeHar: boolean;
+    uiTransformOptimization: boolean;
+    resetBundleName: boolean;
+    allowEmptyBundleName: boolean;
+    moduleType: string;
 }
 
 export type PluginHandlerFunction = () => void;

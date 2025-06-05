@@ -36,7 +36,18 @@ import {
     InterfacePropertyTranslator,
     PropertyTranslator,
 } from '../property-translators';
-import { CustomComponentScopeInfo, isEtsGlobalClass } from './utils';
+import {
+    CustomComponentScopeInfo,
+    isEtsGlobalClass,
+    ResourceInfo,
+    checkRawfileResource,
+    generateResourceModuleName,
+    generateResourceBundleName,
+    isDynamicName,
+    preCheckResourceData,
+    ResourceParameter,
+    getResourceParams,
+} from './utils';
 import { collectStateManagementTypeImport, hasDecorator, PropertyCache } from '../property-translators/utils';
 import { ProjectConfig } from '../../common/plugin-context';
 import { DeclarationCollector } from '../../common/declaration-collector';
@@ -46,7 +57,9 @@ import {
     ARKUI_COMPONENT_COMMON_SOURCE_NAME,
     DecoratorNames,
     Dollars,
+    ModuleType,
     StateManagementTypes,
+    RESOURCE_TYPE,
 } from '../../common/predefines';
 import { ObservedTrackTranslator } from '../property-translators/observedTrack';
 
@@ -59,25 +72,6 @@ export class factory {
         member.modifiers &= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PROTECTED;
         member.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
         return member;
-    }
-
-    /*
-     * generate _r(<newArgs>) or _rawfile(<newArgs>).
-     */
-    static generateTransformedResource(
-        resourceNode: arkts.CallExpression,
-        key: arkts.Identifier,
-        newArgs: arkts.AstNode[]
-    ): arkts.CallExpression {
-        const transformedKey: string =
-            key.name === Dollars.DOLLAR_RESOURCE ? Dollars.TRANSFORM_DOLLAR_RESOURCE : Dollars.TRANSFORM_DOLLAR_RAWFILE;
-        ImportCollector.getInstance().collectImport(transformedKey);
-        return arkts.factory.updateCallExpression(
-            resourceNode,
-            arkts.factory.createIdentifier(transformedKey),
-            resourceNode.typeArguments,
-            newArgs
-        );
     }
 
     /*
@@ -457,17 +451,146 @@ export class factory {
      */
     static transformResource(
         resourceNode: arkts.CallExpression,
-        projectConfig: ProjectConfig | undefined
+        projectConfig: ProjectConfig | undefined,
+        resourceInfo: ResourceInfo
     ): arkts.CallExpression {
-        if (!arkts.isIdentifier(resourceNode.expression)) {
+        if (!arkts.isIdentifier(resourceNode.expression) || !projectConfig) {
             return resourceNode;
         }
-        const newArgs: arkts.AstNode[] = [
-            arkts.factory.create1StringLiteral(projectConfig?.bundleName ? projectConfig.bundleName : ''),
-            arkts.factory.create1StringLiteral(projectConfig?.moduleName ? projectConfig.moduleName : ''),
-            ...resourceNode.arguments,
+        const resourceKind: Dollars = resourceNode.expression.name as Dollars;
+        if (arkts.isStringLiteral(resourceNode.arguments[0])) {
+            return factory.processStringLiteralResourceNode(
+                resourceNode,
+                resourceInfo,
+                projectConfig,
+                resourceKind,
+                resourceNode.arguments[0]
+            );
+        } else if (resourceNode.arguments && resourceNode.arguments.length) {
+            return factory.generateTransformedResourceCall(
+                resourceNode,
+                getResourceParams(
+                    -1,
+                    resourceKind === Dollars.DOLLAR_RAWFILE ? RESOURCE_TYPE.rawfile : -1,
+                    Array.from(resourceNode.arguments)
+                ),
+                '',
+                false,
+                projectConfig,
+                resourceKind
+            );
+        }
+        return resourceNode;
+    }
+
+    /*
+     * Process string Literal type arguments for resource node.
+     */
+    static processStringLiteralResourceNode(
+        resourceNode: arkts.CallExpression,
+        resourceInfo: ResourceInfo,
+        projectConfig: ProjectConfig,
+        resourceKind: Dollars,
+        literalArg: arkts.StringLiteral
+    ): arkts.CallExpression {
+        const resourceData: string[] = literalArg.str.trim().split('.');
+        const fromOtherModule: boolean = !!resourceData.length && /^\[.*\]$/g.test(resourceData[0]);
+        if (resourceKind === Dollars.DOLLAR_RAWFILE) {
+            checkRawfileResource(resourceNode, literalArg, fromOtherModule, resourceInfo.rawfile);
+            let resourceId: number = projectConfig.moduleType === ModuleType.HAR ? -1 : 0;
+            let resourceModuleName: string = '';
+            if (resourceData && resourceData[0] && fromOtherModule) {
+                resourceId = -1;
+                resourceModuleName = resourceData[0];
+            }
+            return factory.generateTransformedResourceCall(
+                resourceNode,
+                getResourceParams(resourceId, RESOURCE_TYPE.rawfile, [literalArg]),
+                resourceModuleName,
+                fromOtherModule,
+                projectConfig,
+                Dollars.DOLLAR_RAWFILE
+            );
+        } else {
+            return factory.processStringLiteralDollarResourceNode(
+                resourceNode,
+                resourceInfo,
+                projectConfig,
+                resourceData,
+                fromOtherModule
+            );
+        }
+    }
+
+    /*
+     * Process string Literal type arguments for $r node.
+     */
+    static processStringLiteralDollarResourceNode(
+        resourceNode: arkts.CallExpression,
+        resourceInfo: ResourceInfo,
+        projectConfig: ProjectConfig,
+        resourceData: string[],
+        fromOtherModule: boolean
+    ): arkts.CallExpression {
+        if (
+            preCheckResourceData(resourceNode, resourceData, resourceInfo.resourcesList, fromOtherModule, projectConfig)
+        ) {
+            const resourceId: number =
+                projectConfig.moduleType === ModuleType.HAR ||
+                fromOtherModule ||
+                !resourceInfo.resourcesList[resourceData[0]]
+                    ? -1
+                    : resourceInfo.resourcesList[resourceData[0]].get(resourceData[1])![resourceData[2]];
+            return factory.generateTransformedResourceCall(
+                resourceNode,
+                getResourceParams(
+                    resourceId,
+                    RESOURCE_TYPE[resourceData[1].trim()],
+                    projectConfig.moduleType === ModuleType.HAR || fromOtherModule
+                        ? Array.from(resourceNode.arguments)
+                        : Array.from(resourceNode.arguments.slice(1))
+                ),
+                resourceData.length ? resourceData[0] : '',
+                fromOtherModule,
+                projectConfig,
+                Dollars.DOLLAR_RESOURCE
+            );
+        }
+        return resourceNode;
+    }
+
+    /*
+     * generate tramsformed resource node, e.g. {id, type, params, bundleName, moduleName}.
+     */
+    static generateTransformedResourceCall(
+        resourceNode: arkts.CallExpression,
+        resourceParams: ResourceParameter,
+        resourceModuleName: string,
+        fromOtherModule: boolean,
+        projectConfig: ProjectConfig,
+        resourceKind: Dollars
+    ): arkts.CallExpression {
+        const transformedKey: string =
+            resourceKind === Dollars.DOLLAR_RESOURCE
+                ? Dollars.TRANSFORM_DOLLAR_RESOURCE
+                : Dollars.TRANSFORM_DOLLAR_RAWFILE;
+        ImportCollector.getInstance().collectImport(transformedKey);
+        const isDynamicBundleOrModule: boolean = isDynamicName(projectConfig);
+        const args: arkts.AstNode[] = [
+            arkts.factory.createNumericLiteral(resourceParams.id),
+            arkts.factory.createNumericLiteral(resourceParams.type),
+            arkts.factory.createStringLiteral(generateResourceBundleName(projectConfig, isDynamicBundleOrModule)),
+            arkts.factory.createStringLiteral(
+                generateResourceModuleName(projectConfig, isDynamicBundleOrModule, resourceModuleName, fromOtherModule)
+            ),
+            ...resourceParams.params,
         ];
-        return this.generateTransformedResource(resourceNode, resourceNode.expression, newArgs);
+        return arkts.factory.updateCallExpression(
+            resourceNode,
+            arkts.factory.createIdentifier(transformedKey),
+            undefined,
+            args
+        );
     }
 
     /**
