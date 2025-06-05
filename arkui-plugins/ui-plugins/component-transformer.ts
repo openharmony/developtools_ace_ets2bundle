@@ -47,7 +47,7 @@ import {
     DECORATOR_TYPE_MAP,
     ENTRY_POINT_IMPORT_SOURCE_NAME,
 } from '../common/predefines';
-import { generateTempCallFunction } from './interop';
+import { generateInstantiateInterop } from './interop/interop';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string;
@@ -375,7 +375,7 @@ export class ComponentTransformer extends AbstractVisitor {
         this.hasLegacy = true;
     }
 
-    processImport(node: arkts.ETSImportDeclaration): void {
+    processInteropImport(node: arkts.ETSImportDeclaration): void {
         const source = node.source?.str!;
         const specifiers = node.specifiers as arkts.ImportSpecifier[];
         if (this.legacyStructMap.has(source)) {
@@ -384,12 +384,33 @@ export class ComponentTransformer extends AbstractVisitor {
                 return;
             }
             for (const specifier of specifiers) {
-                const name = specifier.local?.name;
-                if (!!name && structMap[name]) {
+                const name = (specifier as arkts.ImportSpecifier)!.local!.name;
+                if (structMap[name]) {
                     this.legacyCallMap.set(name, structMap[name]);
                 }
             }
         }
+    }
+
+    processInteropCall(node: arkts.CallExpression): arkts.CallExpression {
+        const ident = node.expression;
+        if (!(ident instanceof arkts.Identifier)) {
+            return node;
+        }
+        const className = ident.name;
+        if (this.legacyCallMap.has(className)) {
+            const path = this.legacyCallMap.get(className)!;
+            const args = node.arguments;
+            const context: InteropContext = {
+                className: className,
+                path: path,
+                arguments: args && args.length === 1 && args[0] instanceof arkts.ObjectExpression
+                    ? args[0]
+                    : undefined
+            };
+            return generateInstantiateInterop(context);
+        }
+        return node;
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {
@@ -407,25 +428,15 @@ export class ComponentTransformer extends AbstractVisitor {
             this.exit(newNode);
             return updateNode;
         }
+        // process interop code
         if (!this.hasLegacy) {
             return newNode;
         }
         if (arkts.isETSImportDeclaration(newNode)) {
-            this.processImport(newNode);
+            this.processInteropImport(newNode);
         }
-        if (arkts.isCallExpression(newNode) && arkts.isIdentifier(newNode.expression)) {
-            const className = newNode.expression.name;
-            if (this.legacyCallMap.has(className)) {
-                const path = this.legacyCallMap.get(className)!;
-                const args = newNode.arguments;
-                const context: InteropContext = {
-                    className: className,
-                    path: path,
-                    arguments:
-                        args && args.length === 1 && args[0] instanceof arkts.ObjectExpression ? args[0] : undefined,
-                };
-                return generateTempCallFunction(context);
-            }
+        if (arkts.isCallExpression(newNode)) {
+            return this.processInteropCall(newNode);
         }
         return newNode;
     }

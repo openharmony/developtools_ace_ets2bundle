@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,21 +13,32 @@
  * limitations under the License.
  */
 
+
+
 import * as arkts from '@koalaui/libarkts';
-import { getInteropPath } from '../path';
+import { getInteropPath } from '../../path';
 const interop = require(getInteropPath());
 const nullptr = interop.nullptr;
-import { AbstractVisitor, VisitorOptions } from '../common/abstract-visitor';
-import { InteroperAbilityNames } from '../common/predefines';
-import { getCustomComponentOptionsName } from './utils';
+import { AbstractVisitor, VisitorOptions } from '../../common/abstract-visitor';
+import { InteroperAbilityNames } from '../../common/predefines';
+import { getCustomComponentOptionsName } from '../utils';
+import { annotation } from 'common/arkts-utils';
 
 interface LegacyTransformerOptions extends VisitorOptions {
     structList?: string[]
 }
 
+type ScopeInfo = {
+    name: string;
+    isEntry?: boolean;
+    isComponent?: boolean;
+    isReusable?: boolean;
+};
+
 export class LegacyTransformer extends AbstractVisitor {
     private structList: string[] = [];
     private componentInterfaceCollection: arkts.TSInterfaceDeclaration[] = [];
+    private scopeInfos: ScopeInfo[] = [];
 
     constructor(options?: LegacyTransformerOptions) {
         const _options: LegacyTransformerOptions = options ?? {};
@@ -35,9 +46,12 @@ export class LegacyTransformer extends AbstractVisitor {
         this.structList = _options.structList ?? [];
     }
 
+    // TODO: check reset
     reset(): void {
         super.reset();
+        this.structList = [];
         this.componentInterfaceCollection = [];
+        this.scopeInfos = [];
     }
 
     getList(): string[] {
@@ -145,10 +159,6 @@ export class LegacyTransformer extends AbstractVisitor {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
         );
 
-        console.log('print legacyclass definition' + newDefinition.dumpSrc());
-
-
-        //TODO: need check
         if (arkts.isStructDeclaration(node)) {
             const _node = arkts.factory.createClassDeclaration(newDefinition);
             _node.modifiers = node.modifiers;
@@ -230,19 +240,44 @@ export class LegacyTransformer extends AbstractVisitor {
         return node;
     }
 
+    enter(node: arkts.AstNode): void {
+        if (arkts.isStructDeclaration(node) && !!node.definition.ident) {
+            const scopeInfo: ScopeInfo = { name: node.definition.ident.name };
+            this.scopeInfos.push(scopeInfo);
+        }
+    }
+
+    exit(node: arkts.AstNode): void {
+        if (arkts.isStructDeclaration(node) || arkts.isClassDeclaration(node)) {
+            if (!node.definition || !node.definition.ident || this.scopeInfos.length === 0) {
+                return;
+            }
+            if (this.scopeInfos[this.scopeInfos.length - 1]?.name === node.definition.ident.name) {
+                this.scopeInfos.pop();
+            }
+        }
+    }
+
     visitor(node: arkts.AstNode): arkts.AstNode {
+        this.enter(node);
         const newNode = this.visitEachChild(node);
         if (arkts.isEtsScript(newNode)) {
             return this.processEtsScript(newNode);
         }
         if (arkts.isStructDeclaration(newNode)) {
-            const className = node.definition?.ident?.name;
-            const memberMap = this.collectComponentMembers(node as arkts.StructDeclaration, className);
+            const definition = newNode.definition!;
+            const annotations = definition.annotations;
+            if (annotations.some(annotation => annotation instanceof arkts.Identifier && annotation.name === 'Component')) {
+                return newNode;
+            }
+            const className = newNode.definition?.ident?.name!;
+            const memberMap = this.collectComponentMembers(newNode as arkts.StructDeclaration, className);
             this.componentInterfaceCollection.push(this.generateComponentInterface(className, node.modifiers, memberMap));
             const updateNode = this.processComponent(newNode);
+            this.exit(newNode);
             return updateNode;
         }
-        if (arkts.isMethodDefinition(newNode)) {
+        if (this.scopeInfos.length > 0 && arkts.isMethodDefinition(newNode)) {
             const kind = newNode.kind;
             if (kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR) {
                 const updateNode = this.processConstructor(newNode);
