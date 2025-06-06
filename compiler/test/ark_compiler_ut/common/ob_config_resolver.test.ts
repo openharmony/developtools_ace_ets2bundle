@@ -845,8 +845,12 @@ mocha.describe('test obfuscate config resolver api', function () {
     let filePathManagerStub;
     let fileContentManagerStub;
     let projectWhiteListManagerStub;
+    let obfConfigResolverStub;
 
     mocha.beforeEach(function () {
+      obfConfigResolverStub = {
+        emitConsumerConfigFiles: sinon.stub(),
+      };
       filePathManagerStub = {
         getDeletedSourceFilePaths: sinon.stub(),
         createOrUpdateSourceFilePaths: sinon.stub(),
@@ -868,6 +872,7 @@ mocha.describe('test obfuscate config resolver api', function () {
         fileContentManager: fileContentManagerStub,
         shouldReObfuscate: false,
         isIncremental: false,
+        obfConfigResolver: obfConfigResolverStub,
       };
       ProjectCollections.initProjectWhiteListManager('', false, false);
       sinon.stub(ProjectCollections, 'projectWhiteListManager').value(projectWhiteListManagerStub);
@@ -971,6 +976,7 @@ mocha.describe('test obfuscate config resolver api', function () {
 
         expect(filePathManagerStub.createOrUpdateSourceFilePaths.calledWith(allSourceFilePaths)).to.be.true;
         expect(projectWhiteListManagerStub.createOrUpdateWhiteListCaches.called).to.be.true;
+        expect(arkObfuscatorStub.obfConfigResolver.emitConsumerConfigFiles.called).to.be.true;
         expect(ProjectCollections.projectWhiteListManager).to.be.undefined;
       });
 
