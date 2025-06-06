@@ -105,7 +105,7 @@ export function processExternalEvents(projectConfig: Object, eventType: number, 
   const isTsc: boolean = isTscEvents(eventType);
   const { parentEvent, filePath } = externalEventsInfo;
   let events: Event[] = isTsc ? ts.PerformanceDotting.getEventData() :
-    (fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, 'utf-8')): []);
+    (fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, 'utf-8')) : []);
   if (events && events.length) {
     events = events.sort((a, b) => a.startTime - b.startTime);
     asyncEvents.set(isTsc ? events[0].parentId : events[0].parentEvent, parentEvent);
@@ -127,7 +127,7 @@ function setTotalTime(event: Event, isTsc: boolean): void {
     subEvent.start();
     subEvent.stop();
     subEvent.setTotalTime(event.duration);
-    asyncEvents.set(isTsc ? event.id : event.name, subEvent)
+    asyncEvents.set(isTsc ? event.id : event.name, subEvent);
   }
 }
 

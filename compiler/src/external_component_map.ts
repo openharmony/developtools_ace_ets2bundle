@@ -31,7 +31,7 @@ export function readExternalComponents(): object {
         return EXT_COMPONENT_MAP;
     }
     for (const componentPath of componentPaths) {
-        if(!fs.existsSync(componentPath)){
+        if (!fs.existsSync(componentPath)) {
             continue;
         }
         const files: string[] = fs.readdirSync(componentPath);
