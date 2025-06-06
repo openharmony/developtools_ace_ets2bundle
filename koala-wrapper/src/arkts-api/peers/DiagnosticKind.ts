@@ -20,6 +20,7 @@ import { KNativePointer } from '@koalaui/interop';
 export enum PluginDiagnosticType {
   ES2PANDA_PLUGIN_WARNING = 0,
   ES2PANDA_PLUGIN_ERROR,
+  ES2PANDA_PLUGIN_SUGGESTION,
 };
 
 export class DiagnosticKind extends ArktsObject {
