@@ -1,0 +1,2797 @@
+{
+  "compilerOptions": {
+    "package": "entry",
+    "baseUrl": "workspace/developtools/ace_ets2bundle/arkui-plugins/test/dist/cache/",
+    "include": [
+      "./0_SRC_Memo_2_FunctionTransformer.ets"
+    ],
+    "paths": {
+      "std": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/lib/stdlib/std"
+      ],
+      "escompat": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/lib/stdlib/escompat"
+      ],
+      "@ohos.InputMethodExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.InputMethodExtensionAbility"
+      ],
+      "@ohos.InputMethodExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.InputMethodExtensionContext"
+      ],
+      "@ohos.InputMethodSubtype": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.InputMethodSubtype"
+      ],
+      "@ohos.PiPWindow": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.PiPWindow"
+      ],
+      "@ohos.UiTest": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.UiTest"
+      ],
+      "@ohos.WallpaperExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.WallpaperExtensionAbility"
+      ],
+      "@ohos.WorkSchedulerExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.WorkSchedulerExtensionAbility"
+      ],
+      "@ohos.ability.ability": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.ability.ability"
+      ],
+      "@ohos.ability.dataUriUtils": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.ability.dataUriUtils"
+      ],
+      "@ohos.ability.errorCode": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.ability.errorCode"
+      ],
+      "@ohos.ability.featureAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.ability.featureAbility"
+      ],
+      "@ohos.ability.particleAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.ability.particleAbility"
+      ],
+      "@ohos.ability.screenLockFileManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.ability.screenLockFileManager"
+      ],
+      "@ohos.ability.wantConstant": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.ability.wantConstant"
+      ],
+      "@ohos.abilityAccessCtrl": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.abilityAccessCtrl"
+      ],
+      "@ohos.accessibility.GesturePath": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.accessibility.GesturePath"
+      ],
+      "@ohos.accessibility.GesturePoint": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.accessibility.GesturePoint"
+      ],
+      "@ohos.accessibility.config": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.accessibility.config"
+      ],
+      "@ohos.accessibility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.accessibility"
+      ],
+      "@ohos.account.appAccount": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.account.appAccount"
+      ],
+      "@ohos.account.distributedAccount": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.account.distributedAccount"
+      ],
+      "@ohos.account.osAccount": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.account.osAccount"
+      ],
+      "@ohos.advertising.AdComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.advertising.AdComponent"
+      ],
+      "@ohos.advertising.AdsServiceExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.advertising.AdsServiceExtensionAbility"
+      ],
+      "@ohos.advertising.AutoAdComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.advertising.AutoAdComponent"
+      ],
+      "@ohos.advertising": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.advertising"
+      ],
+      "@ohos.ai.intelligentVoice": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.ai.intelligentVoice"
+      ],
+      "@ohos.ai.mindSporeLite": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.ai.mindSporeLite"
+      ],
+      "@ohos.animation.windowAnimationManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.animation.windowAnimationManager"
+      ],
+      "@ohos.animator": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.animator"
+      ],
+      "@ohos.app.ability.Ability": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.Ability"
+      ],
+      "@ohos.app.ability.AbilityConstant": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.AbilityConstant"
+      ],
+      "@ohos.app.ability.AbilityLifecycleCallback": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.AbilityLifecycleCallback"
+      ],
+      "@ohos.app.ability.AbilityStage": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.AbilityStage"
+      ],
+      "@ohos.app.ability.ActionExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.ActionExtensionAbility"
+      ],
+      "@ohos.app.ability.ApplicationStateChangeCallback": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.ApplicationStateChangeCallback"
+      ],
+      "@ohos.app.ability.AtomicServiceOptions": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.AtomicServiceOptions"
+      ],
+      "@ohos.app.ability.AutoFillExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.AutoFillExtensionAbility"
+      ],
+      "@ohos.app.ability.ChildProcess": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.ChildProcess"
+      ],
+      "@ohos.app.ability.ChildProcessArgs": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.ChildProcessArgs"
+      ],
+      "@ohos.app.ability.ChildProcessOptions": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.ChildProcessOptions"
+      ],
+      "@ohos.app.ability.Configuration": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.Configuration"
+      ],
+      "@ohos.app.ability.ConfigurationConstant": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.ConfigurationConstant"
+      ],
+      "@ohos.app.ability.DriverExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.DriverExtensionAbility"
+      ],
+      "@ohos.app.ability.EmbeddableUIAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.EmbeddableUIAbility"
+      ],
+      "@ohos.app.ability.EmbeddedUIExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.EmbeddedUIExtensionAbility"
+      ],
+      "@ohos.app.ability.EnvironmentCallback": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.EnvironmentCallback"
+      ],
+      "@ohos.app.ability.ExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.ExtensionAbility"
+      ],
+      "@ohos.app.ability.FenceExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.FenceExtensionAbility"
+      ],
+      "@ohos.app.ability.FenceExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.FenceExtensionContext"
+      ],
+      "@ohos.app.ability.InsightIntentContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.InsightIntentContext"
+      ],
+      "@ohos.app.ability.InsightIntentExecutor": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.InsightIntentExecutor"
+      ],
+      "@ohos.app.ability.MediaControlExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.MediaControlExtensionAbility"
+      ],
+      "@ohos.app.ability.OpenLinkOptions": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.OpenLinkOptions"
+      ],
+      "@ohos.app.ability.PhotoEditorExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.PhotoEditorExtensionAbility"
+      ],
+      "@ohos.app.ability.PrintExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.PrintExtensionAbility"
+      ],
+      "@ohos.app.ability.ServiceExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.ServiceExtensionAbility"
+      ],
+      "@ohos.app.ability.ShareExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.ShareExtensionAbility"
+      ],
+      "@ohos.app.ability.StartOptions": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.StartOptions"
+      ],
+      "@ohos.app.ability.UIAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.UIAbility"
+      ],
+      "@ohos.app.ability.UIExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.UIExtensionAbility"
+      ],
+      "@ohos.app.ability.UIExtensionContentSession": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.UIExtensionContentSession"
+      ],
+      "@ohos.app.ability.UIServiceExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.UIServiceExtensionAbility"
+      ],
+      "@ohos.app.ability.UserAuthExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.UserAuthExtensionAbility"
+      ],
+      "@ohos.app.ability.VpnExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.VpnExtensionAbility"
+      ],
+      "@ohos.app.ability.Want": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.Want"
+      ],
+      "@ohos.app.ability.abilityDelegatorRegistry": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.abilityDelegatorRegistry"
+      ],
+      "@ohos.app.ability.abilityManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.abilityManager"
+      ],
+      "@ohos.app.ability.appManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.appManager"
+      ],
+      "@ohos.app.ability.appRecovery": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.appRecovery"
+      ],
+      "@ohos.app.ability.application": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.application"
+      ],
+      "@ohos.app.ability.autoFillManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.autoFillManager"
+      ],
+      "@ohos.app.ability.autoStartupManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.autoStartupManager"
+      ],
+      "@ohos.app.ability.childProcessManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.childProcessManager"
+      ],
+      "@ohos.app.ability.common": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.common"
+      ],
+      "@ohos.app.ability.contextConstant": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.contextConstant"
+      ],
+      "@ohos.app.ability.dataUriUtils": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.dataUriUtils"
+      ],
+      "@ohos.app.ability.dialogRequest": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.dialogRequest"
+      ],
+      "@ohos.app.ability.dialogSession": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.dialogSession"
+      ],
+      "@ohos.app.ability.errorManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.errorManager"
+      ],
+      "@ohos.app.ability.insightIntent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.insightIntent"
+      ],
+      "@ohos.app.ability.insightIntentDriver": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.insightIntentDriver"
+      ],
+      "@ohos.app.ability.missionManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.missionManager"
+      ],
+      "@ohos.app.ability.quickFixManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.quickFixManager"
+      ],
+      "@ohos.app.ability.sendableContextManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.sendableContextManager"
+      ],
+      "@ohos.app.ability.wantAgent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.wantAgent"
+      ],
+      "@ohos.app.ability.wantConstant": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.ability.wantConstant"
+      ],
+      "@ohos.app.appstartup.StartupConfig": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.appstartup.StartupConfig"
+      ],
+      "@ohos.app.appstartup.StartupConfigEntry": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.appstartup.StartupConfigEntry"
+      ],
+      "@ohos.app.appstartup.StartupListener": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.appstartup.StartupListener"
+      ],
+      "@ohos.app.appstartup.StartupTask": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.appstartup.StartupTask"
+      ],
+      "@ohos.app.appstartup.startupManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.appstartup.startupManager"
+      ],
+      "@ohos.app.businessAbilityRouter": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.businessAbilityRouter"
+      ],
+      "@ohos.app.form.FormExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.form.FormExtensionAbility"
+      ],
+      "@ohos.app.form.formAgent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.form.formAgent"
+      ],
+      "@ohos.app.form.formBindingData": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.form.formBindingData"
+      ],
+      "@ohos.app.form.formHost": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.form.formHost"
+      ],
+      "@ohos.app.form.formInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.form.formInfo"
+      ],
+      "@ohos.app.form.formObserver": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.form.formObserver"
+      ],
+      "@ohos.app.form.formProvider": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.app.form.formProvider"
+      ],
+      "@ohos.application.AccessibilityExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.AccessibilityExtensionAbility"
+      ],
+      "@ohos.application.BackupExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.BackupExtensionAbility"
+      ],
+      "@ohos.application.Configuration": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.Configuration"
+      ],
+      "@ohos.application.ConfigurationConstant": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.ConfigurationConstant"
+      ],
+      "@ohos.application.DataShareExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.DataShareExtensionAbility"
+      ],
+      "@ohos.application.StaticSubscriberExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.StaticSubscriberExtensionAbility"
+      ],
+      "@ohos.application.StaticSubscriberExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.StaticSubscriberExtensionContext"
+      ],
+      "@ohos.application.Want": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.Want"
+      ],
+      "@ohos.application.WindowExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.WindowExtensionAbility"
+      ],
+      "@ohos.application.abilityDelegatorRegistry": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.abilityDelegatorRegistry"
+      ],
+      "@ohos.application.abilityManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.abilityManager"
+      ],
+      "@ohos.application.appManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.appManager"
+      ],
+      "@ohos.application.formBindingData": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.formBindingData"
+      ],
+      "@ohos.application.formError": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.formError"
+      ],
+      "@ohos.application.formHost": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.formHost"
+      ],
+      "@ohos.application.formInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.formInfo"
+      ],
+      "@ohos.application.formProvider": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.formProvider"
+      ],
+      "@ohos.application.missionManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.missionManager"
+      ],
+      "@ohos.application.testRunner": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.testRunner"
+      ],
+      "@ohos.application.uriPermissionManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.application.uriPermissionManager"
+      ],
+      "@ohos.arkui.Prefetcher": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.Prefetcher"
+      ],
+      "@ohos.arkui.StateManagement": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.StateManagement"
+      ],
+      "@ohos.arkui.StateManagement.runtime": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.StateManagement.runtime"
+      ],
+      "@ohos.arkui.UIContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.UIContext"
+      ],
+      "@ohos.arkui.advanced.Chip": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.Chip"
+      ],
+      "@ohos.arkui.advanced.ChipGroup": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.ChipGroup"
+      ],
+      "@ohos.arkui.advanced.ComposeListItem": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.ComposeListItem"
+      ],
+      "@ohos.arkui.advanced.ComposeTitleBar": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.ComposeTitleBar"
+      ],
+      "@ohos.arkui.advanced.Counter": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.Counter"
+      ],
+      "@ohos.arkui.advanced.Dialog": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.Dialog"
+      ],
+      "@ohos.arkui.advanced.DownloadFileButton": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.DownloadFileButton"
+      ],
+      "@ohos.arkui.advanced.EditableTitleBar": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.EditableTitleBar"
+      ],
+      "@ohos.arkui.advanced.ExceptionPrompt": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.ExceptionPrompt"
+      ],
+      "@ohos.arkui.advanced.Filter": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.Filter"
+      ],
+      "@ohos.arkui.advanced.FoldSplitContainer": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.FoldSplitContainer"
+      ],
+      "@ohos.arkui.advanced.FormMenu": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.FormMenu"
+      ],
+      "@ohos.arkui.advanced.FullScreenLaunchComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.FullScreenLaunchComponent"
+      ],
+      "@ohos.arkui.advanced.GridObjectSortComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.GridObjectSortComponent"
+      ],
+      "@ohos.arkui.advanced.InnerFullScreenLaunchComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.InnerFullScreenLaunchComponent"
+      ],
+      "@ohos.arkui.advanced.Popup": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.Popup"
+      ],
+      "@ohos.arkui.advanced.ProgressButton": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.ProgressButton"
+      ],
+      "@ohos.arkui.advanced.SegmentButton": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.SegmentButton"
+      ],
+      "@ohos.arkui.advanced.SelectTitleBar": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.SelectTitleBar"
+      ],
+      "@ohos.arkui.advanced.SelectionMenu": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.SelectionMenu"
+      ],
+      "@ohos.arkui.advanced.SplitLayout": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.SplitLayout"
+      ],
+      "@ohos.arkui.advanced.SubHeader": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.SubHeader"
+      ],
+      "@ohos.arkui.advanced.SwipeRefresher": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.SwipeRefresher"
+      ],
+      "@ohos.arkui.advanced.TabTitleBar": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.TabTitleBar"
+      ],
+      "@ohos.arkui.advanced.ToolBar": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.ToolBar"
+      ],
+      "@ohos.arkui.advanced.TreeView": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.advanced.TreeView"
+      ],
+      "@ohos.arkui.component.AbilityComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.AbilityComponent"
+      ],
+      "@ohos.arkui.component.ActionSheet": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.ActionSheet"
+      ],
+      "@ohos.arkui.component.AlertDialog": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.AlertDialog"
+      ],
+      "@ohos.arkui.component.AlphabetIndexer": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.AlphabetIndexer"
+      ],
+      "@ohos.arkui.component.Animator": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Animator"
+      ],
+      "@ohos.arkui.component.Badge": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Badge"
+      ],
+      "@ohos.arkui.component.Blank": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Blank"
+      ],
+      "@ohos.arkui.component.Button": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Button"
+      ],
+      "@ohos.arkui.component.Calendar": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Calendar"
+      ],
+      "@ohos.arkui.component.CalendarPicker": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.CalendarPicker"
+      ],
+      "@ohos.arkui.component.Canvas": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Canvas"
+      ],
+      "@ohos.arkui.component.Checkbox": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Checkbox"
+      ],
+      "@ohos.arkui.component.CheckboxGroup": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.CheckboxGroup"
+      ],
+      "@ohos.arkui.component.Circle": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Circle"
+      ],
+      "@ohos.arkui.component.Column": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Column"
+      ],
+      "@ohos.arkui.component.ColumnSplit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.ColumnSplit"
+      ],
+      "@ohos.arkui.component.Common": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Common"
+      ],
+      "@ohos.arkui.component.CommonTsEtsApi": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.CommonTsEtsApi"
+      ],
+      "@ohos.arkui.component.Component3d": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Component3d"
+      ],
+      "@ohos.arkui.component.ContainerSpan": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.ContainerSpan"
+      ],
+      "@ohos.arkui.component.ContentSlot": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.ContentSlot"
+      ],
+      "@ohos.arkui.component.ContextMenu": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.ContextMenu"
+      ],
+      "@ohos.arkui.component.Counter": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Counter"
+      ],
+      "@ohos.arkui.component.CustomDialogController": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.CustomDialogController"
+      ],
+      "@ohos.arkui.component.DataPanel": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.DataPanel"
+      ],
+      "@ohos.arkui.component.DatePicker": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.DatePicker"
+      ],
+      "@ohos.arkui.component.Divider": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Divider"
+      ],
+      "@ohos.arkui.component.EffectComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.EffectComponent"
+      ],
+      "@ohos.arkui.component.Ellipse": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Ellipse"
+      ],
+      "@ohos.arkui.component.EmbeddedComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.EmbeddedComponent"
+      ],
+      "@ohos.arkui.component.Enums": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Enums"
+      ],
+      "@ohos.arkui.component.Flex": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Flex"
+      ],
+      "@ohos.arkui.component.FlowItem": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.FlowItem"
+      ],
+      "@ohos.arkui.component.Focus": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Focus"
+      ],
+      "@ohos.arkui.component.FolderStack": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.FolderStack"
+      ],
+      "@ohos.arkui.component.ForEach": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.ForEach"
+      ],
+      "@ohos.arkui.component.FormComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.FormComponent"
+      ],
+      "@ohos.arkui.component.FormLink": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.FormLink"
+      ],
+      "@ohos.arkui.component.Gauge": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Gauge"
+      ],
+      "@ohos.arkui.component.Gesture": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Gesture"
+      ],
+      "@ohos.arkui.component.Grid": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Grid"
+      ],
+      "@ohos.arkui.component.GridCol": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.GridCol"
+      ],
+      "@ohos.arkui.component.GridContainer": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.GridContainer"
+      ],
+      "@ohos.arkui.component.GridItem": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.GridItem"
+      ],
+      "@ohos.arkui.component.GridRow": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.GridRow"
+      ],
+      "@ohos.arkui.component.Hyperlink": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Hyperlink"
+      ],
+      "@ohos.arkui.component.Image": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Image"
+      ],
+      "@ohos.arkui.component.ImageAnimator": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.ImageAnimator"
+      ],
+      "@ohos.arkui.component.ImageCommon": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.ImageCommon"
+      ],
+      "@ohos.arkui.component.ImageSpan": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.ImageSpan"
+      ],
+      "@ohos.arkui.component.IndicatorComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.IndicatorComponent"
+      ],
+      "@ohos.arkui.component.Inspector": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Inspector"
+      ],
+      "@ohos.arkui.component.IsolatedComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.IsolatedComponent"
+      ],
+      "@ohos.arkui.component.LazyForEach": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.LazyForEach"
+      ],
+      "@ohos.arkui.component.Line": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Line"
+      ],
+      "@ohos.arkui.component.Linearindicator": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Linearindicator"
+      ],
+      "@ohos.arkui.component.List": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.List"
+      ],
+      "@ohos.arkui.component.ListItem": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.ListItem"
+      ],
+      "@ohos.arkui.component.ListItemGroup": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.ListItemGroup"
+      ],
+      "@ohos.arkui.component.LoadingProgress": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.LoadingProgress"
+      ],
+      "@ohos.arkui.component.Marquee": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Marquee"
+      ],
+      "@ohos.arkui.component.Matrix2d": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Matrix2d"
+      ],
+      "@ohos.arkui.component.MediaCachedImage": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.MediaCachedImage"
+      ],
+      "@ohos.arkui.component.Menu": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Menu"
+      ],
+      "@ohos.arkui.component.MenuItem": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.MenuItem"
+      ],
+      "@ohos.arkui.component.MenuItemGroup": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.MenuItemGroup"
+      ],
+      "@ohos.arkui.component.NavDestination": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.NavDestination"
+      ],
+      "@ohos.arkui.component.NavRouter": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.NavRouter"
+      ],
+      "@ohos.arkui.component.Navigation": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Navigation"
+      ],
+      "@ohos.arkui.component.Navigator": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Navigator"
+      ],
+      "@ohos.arkui.component.NodeContainer": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.NodeContainer"
+      ],
+      "@ohos.arkui.component.PageTransition": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.PageTransition"
+      ],
+      "@ohos.arkui.component.Panel": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Panel"
+      ],
+      "@ohos.arkui.component.Particle": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Particle"
+      ],
+      "@ohos.arkui.component.Path": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Path"
+      ],
+      "@ohos.arkui.component.PatternLock": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.PatternLock"
+      ],
+      "@ohos.arkui.component.Polygon": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Polygon"
+      ],
+      "@ohos.arkui.component.Polyline": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Polyline"
+      ],
+      "@ohos.arkui.component.Progress": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Progress"
+      ],
+      "@ohos.arkui.component.QRCode": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.QRCode"
+      ],
+      "@ohos.arkui.component.Radio": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Radio"
+      ],
+      "@ohos.arkui.component.Rating": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Rating"
+      ],
+      "@ohos.arkui.component.Rect": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Rect"
+      ],
+      "@ohos.arkui.component.Refresh": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Refresh"
+      ],
+      "@ohos.arkui.component.RelativeContainer": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.RelativeContainer"
+      ],
+      "@ohos.arkui.component.RichEditor": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.RichEditor"
+      ],
+      "@ohos.arkui.component.RichText": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.RichText"
+      ],
+      "@ohos.arkui.component.Row": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Row"
+      ],
+      "@ohos.arkui.component.RowSplit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.RowSplit"
+      ],
+      "@ohos.arkui.component.Scroll": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Scroll"
+      ],
+      "@ohos.arkui.component.ScrollBar": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.ScrollBar"
+      ],
+      "@ohos.arkui.component.Search": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Search"
+      ],
+      "@ohos.arkui.component.Select": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Select"
+      ],
+      "@ohos.arkui.component.Shape": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Shape"
+      ],
+      "@ohos.arkui.component.Sidebar": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Sidebar"
+      ],
+      "@ohos.arkui.component.Slider": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Slider"
+      ],
+      "@ohos.arkui.component.Span": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Span"
+      ],
+      "@ohos.arkui.component.Stack": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Stack"
+      ],
+      "@ohos.arkui.component.StateManagement": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.StateManagement"
+      ],
+      "@ohos.arkui.component.StepperItem": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.StepperItem"
+      ],
+      "@ohos.arkui.component.StyledString": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.StyledString"
+      ],
+      "@ohos.arkui.component.Swiper": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Swiper"
+      ],
+      "@ohos.arkui.component.SymbolGlyph": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.SymbolGlyph"
+      ],
+      "@ohos.arkui.component.SymbolSpan": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.SymbolSpan"
+      ],
+      "@ohos.arkui.component.TabContent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.TabContent"
+      ],
+      "@ohos.arkui.component.Tabs": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Tabs"
+      ],
+      "@ohos.arkui.component.Text": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Text"
+      ],
+      "@ohos.arkui.component.TextArea": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.TextArea"
+      ],
+      "@ohos.arkui.component.TextClock": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.TextClock"
+      ],
+      "@ohos.arkui.component.TextCommon": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.TextCommon"
+      ],
+      "@ohos.arkui.component.TextInput": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.TextInput"
+      ],
+      "@ohos.arkui.component.TextPicker": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.TextPicker"
+      ],
+      "@ohos.arkui.component.TextTimer": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.TextTimer"
+      ],
+      "@ohos.arkui.component.TimePicker": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.TimePicker"
+      ],
+      "@ohos.arkui.component.Toggle": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Toggle"
+      ],
+      "@ohos.arkui.component.Units": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Units"
+      ],
+      "@ohos.arkui.component.Video": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.Video"
+      ],
+      "@ohos.arkui.component.WaterFlow": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.WaterFlow"
+      ],
+      "@ohos.arkui.component.WithTheme": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.WithTheme"
+      ],
+      "@ohos.arkui.component.XComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component.XComponent"
+      ],
+      "@ohos.arkui.component": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.component"
+      ],
+      "@ohos.arkui.componentSnapshot": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.componentSnapshot"
+      ],
+      "@ohos.arkui.componentUtils": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.componentUtils"
+      ],
+      "@ohos.arkui.dragController": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.dragController"
+      ],
+      "@ohos.arkui.drawableDescriptor": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.drawableDescriptor"
+      ],
+      "@ohos.arkui.inspector": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.inspector"
+      ],
+      "@ohos.arkui.modifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.modifier"
+      ],
+      "@ohos.arkui.node": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.node"
+      ],
+      "@ohos.arkui.observer": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.observer"
+      ],
+      "@ohos.arkui.performanceMonitor": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.performanceMonitor"
+      ],
+      "@ohos.arkui.shape": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.shape"
+      ],
+      "@ohos.arkui.stateManagement": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.stateManagement"
+      ],
+      "@ohos.arkui.theme": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.theme"
+      ],
+      "@ohos.arkui.uiExtension": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.arkui.uiExtension"
+      ],
+      "@ohos.atomicservice.AtomicServiceNavigation": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.atomicservice.AtomicServiceNavigation"
+      ],
+      "@ohos.atomicservice.AtomicServiceTabs": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.atomicservice.AtomicServiceTabs"
+      ],
+      "@ohos.atomicservice.AtomicServiceWeb": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.atomicservice.AtomicServiceWeb"
+      ],
+      "@ohos.atomicservice.InterstitialDialogAction": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.atomicservice.InterstitialDialogAction"
+      ],
+      "@ohos.atomicservice.NavPushPathHelper": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.atomicservice.NavPushPathHelper"
+      ],
+      "@ohos.backgroundTaskManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.backgroundTaskManager"
+      ],
+      "@ohos.base": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.base"
+      ],
+      "@ohos.batteryInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.batteryInfo"
+      ],
+      "@ohos.batteryStatistics": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.batteryStatistics"
+      ],
+      "@ohos.bluetooth.a2dp": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bluetooth.a2dp"
+      ],
+      "@ohos.bluetooth.access": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bluetooth.access"
+      ],
+      "@ohos.bluetooth.baseProfile": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bluetooth.baseProfile"
+      ],
+      "@ohos.bluetooth.ble": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bluetooth.ble"
+      ],
+      "@ohos.bluetooth.connection": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bluetooth.connection"
+      ],
+      "@ohos.bluetooth.constant": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bluetooth.constant"
+      ],
+      "@ohos.bluetooth": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bluetooth"
+      ],
+      "@ohos.bluetooth.hfp": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bluetooth.hfp"
+      ],
+      "@ohos.bluetooth.hid": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bluetooth.hid"
+      ],
+      "@ohos.bluetooth.map": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bluetooth.map"
+      ],
+      "@ohos.bluetooth.pan": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bluetooth.pan"
+      ],
+      "@ohos.bluetooth.pbap": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bluetooth.pbap"
+      ],
+      "@ohos.bluetooth.socket": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bluetooth.socket"
+      ],
+      "@ohos.bluetooth.wearDetection": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bluetooth.wearDetection"
+      ],
+      "@ohos.bluetoothManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bluetoothManager"
+      ],
+      "@ohos.brightness": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.brightness"
+      ],
+      "@ohos.buffer": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.buffer"
+      ],
+      "@ohos.bundle.appControl": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bundle.appControl"
+      ],
+      "@ohos.bundle.appDomainVerify": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bundle.appDomainVerify"
+      ],
+      "@ohos.bundle.bundleManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bundle.bundleManager"
+      ],
+      "@ohos.bundle.bundleMonitor": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bundle.bundleMonitor"
+      ],
+      "@ohos.bundle.bundleResourceManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bundle.bundleResourceManager"
+      ],
+      "@ohos.bundle": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bundle"
+      ],
+      "@ohos.bundle.defaultAppManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bundle.defaultAppManager"
+      ],
+      "@ohos.bundle.distributedBundleManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bundle.distributedBundleManager"
+      ],
+      "@ohos.bundle.freeInstall": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bundle.freeInstall"
+      ],
+      "@ohos.bundle.innerBundleManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bundle.innerBundleManager"
+      ],
+      "@ohos.bundle.installer": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bundle.installer"
+      ],
+      "@ohos.bundle.launcherBundleManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bundle.launcherBundleManager"
+      ],
+      "@ohos.bundle.overlay": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bundle.overlay"
+      ],
+      "@ohos.bundle.shortcutManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bundle.shortcutManager"
+      ],
+      "@ohos.bundleState": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bundleState"
+      ],
+      "@ohos.bytrace": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.bytrace"
+      ],
+      "@ohos.calendarManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.calendarManager"
+      ],
+      "@ohos.charger": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.charger"
+      ],
+      "@ohos.commonEvent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.commonEvent"
+      ],
+      "@ohos.commonEventManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.commonEventManager"
+      ],
+      "@ohos.configPolicy": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.configPolicy"
+      ],
+      "@ohos.connectedTag": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.connectedTag"
+      ],
+      "@ohos.contact": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.contact"
+      ],
+      "@ohos.continuation.continuationManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.continuation.continuationManager"
+      ],
+      "@ohos.cooperate": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.cooperate"
+      ],
+      "@ohos.curves": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.curves"
+      ],
+      "@ohos.customization.customConfig": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.customization.customConfig"
+      ],
+      "@ohos.data.DataShareResultSet": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.DataShareResultSet"
+      ],
+      "@ohos.data.ValuesBucket": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.ValuesBucket"
+      ],
+      "@ohos.data.cloudData": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.cloudData"
+      ],
+      "@ohos.data.cloudExtension": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.cloudExtension"
+      ],
+      "@ohos.data.commonType": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.commonType"
+      ],
+      "@ohos.data.dataAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.dataAbility"
+      ],
+      "@ohos.data.dataShare": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.dataShare"
+      ],
+      "@ohos.data.dataSharePredicates": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.dataSharePredicates"
+      ],
+      "@ohos.data.distributedData": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.distributedData"
+      ],
+      "@ohos.data.distributedDataObject": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.distributedDataObject"
+      ],
+      "@ohos.data.distributedKVStore": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.distributedKVStore"
+      ],
+      "@ohos.data.preferences": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.preferences"
+      ],
+      "@ohos.data.rdb": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.rdb"
+      ],
+      "@ohos.data.relationalStore": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.relationalStore"
+      ],
+      "@ohos.data.sendablePreferences": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.sendablePreferences"
+      ],
+      "@ohos.data.sendableRelationalStore": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.sendableRelationalStore"
+      ],
+      "@ohos.data.storage": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.storage"
+      ],
+      "@ohos.data.unifiedDataChannel": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.unifiedDataChannel"
+      ],
+      "@ohos.data.uniformDataStruct": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.uniformDataStruct"
+      ],
+      "@ohos.data.uniformTypeDescriptor": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.data.uniformTypeDescriptor"
+      ],
+      "@ohos.deviceAttest": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.deviceAttest"
+      ],
+      "@ohos.deviceInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.deviceInfo"
+      ],
+      "@ohos.deviceStatus.dragInteraction": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.deviceStatus.dragInteraction"
+      ],
+      "@ohos.display": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.display"
+      ],
+      "@ohos.distributedBundle": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.distributedBundle"
+      ],
+      "@ohos.distributedDeviceManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.distributedDeviceManager"
+      ],
+      "@ohos.distributedHardware.deviceManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.distributedHardware.deviceManager"
+      ],
+      "@ohos.distributedHardware.hardwareManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.distributedHardware.hardwareManager"
+      ],
+      "@ohos.distributedMissionManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.distributedMissionManager"
+      ],
+      "@ohos.dlpPermission": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.dlpPermission"
+      ],
+      "@ohos.document": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.document"
+      ],
+      "@ohos.driver.deviceManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.driver.deviceManager"
+      ],
+      "@ohos.effectKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.effectKit"
+      ],
+      "@ohos.enterprise.EnterpriseAdminExtensionAbility": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.EnterpriseAdminExtensionAbility"
+      ],
+      "@ohos.enterprise.accountManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.accountManager"
+      ],
+      "@ohos.enterprise.adminManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.adminManager"
+      ],
+      "@ohos.enterprise.applicationManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.applicationManager"
+      ],
+      "@ohos.enterprise.bluetoothManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.bluetoothManager"
+      ],
+      "@ohos.enterprise.browser": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.browser"
+      ],
+      "@ohos.enterprise.bundleManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.bundleManager"
+      ],
+      "@ohos.enterprise.dateTimeManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.dateTimeManager"
+      ],
+      "@ohos.enterprise.deviceControl": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.deviceControl"
+      ],
+      "@ohos.enterprise.deviceInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.deviceInfo"
+      ],
+      "@ohos.enterprise.deviceSettings": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.deviceSettings"
+      ],
+      "@ohos.enterprise.locationManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.locationManager"
+      ],
+      "@ohos.enterprise.networkManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.networkManager"
+      ],
+      "@ohos.enterprise.restrictions": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.restrictions"
+      ],
+      "@ohos.enterprise.securityManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.securityManager"
+      ],
+      "@ohos.enterprise.systemManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.systemManager"
+      ],
+      "@ohos.enterprise.usbManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.usbManager"
+      ],
+      "@ohos.enterprise.wifiManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.enterprise.wifiManager"
+      ],
+      "@ohos.events.emitter": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.events.emitter"
+      ],
+      "@ohos.faultLogger": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.faultLogger"
+      ],
+      "@ohos.file.AlbumPickerComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.AlbumPickerComponent"
+      ],
+      "@ohos.file.BackupExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.BackupExtensionContext"
+      ],
+      "@ohos.file.PhotoPickerComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.PhotoPickerComponent"
+      ],
+      "@ohos.file.RecentPhotoComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.RecentPhotoComponent"
+      ],
+      "@ohos.file.backup": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.backup"
+      ],
+      "@ohos.file.cloudSync": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.cloudSync"
+      ],
+      "@ohos.file.cloudSyncManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.cloudSyncManager"
+      ],
+      "@ohos.file.environment": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.environment"
+      ],
+      "@ohos.file.fileAccess": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.fileAccess"
+      ],
+      "@ohos.file.fileExtensionInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.fileExtensionInfo"
+      ],
+      "@ohos.file.fileuri": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.fileuri"
+      ],
+      "@ohos.file.fs": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.fs"
+      ],
+      "@ohos.file.hash": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.hash"
+      ],
+      "@ohos.file.photoAccessHelper": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.photoAccessHelper"
+      ],
+      "@ohos.file.picker": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.picker"
+      ],
+      "@ohos.file.recent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.recent"
+      ],
+      "@ohos.file.securityLabel": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.securityLabel"
+      ],
+      "@ohos.file.sendablePhotoAccessHelper": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.sendablePhotoAccessHelper"
+      ],
+      "@ohos.file.statvfs": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.statvfs"
+      ],
+      "@ohos.file.storageStatistics": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.storageStatistics"
+      ],
+      "@ohos.file.trash": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.trash"
+      ],
+      "@ohos.file.volumeManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.file.volumeManager"
+      ],
+      "@ohos.fileio": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.fileio"
+      ],
+      "@ohos.filemanagement.userFileManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.filemanagement.userFileManager"
+      ],
+      "@ohos.fileshare": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.fileshare"
+      ],
+      "@ohos.font": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.font"
+      ],
+      "@ohos.geoLocationManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.geoLocationManager"
+      ],
+      "@ohos.geolocation": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.geolocation"
+      ],
+      "@ohos.graphics.colorSpaceManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.graphics.colorSpaceManager"
+      ],
+      "@ohos.graphics.common2D": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.graphics.common2D"
+      ],
+      "@ohos.graphics.displaySync": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.graphics.displaySync"
+      ],
+      "@ohos.graphics.drawing": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.graphics.drawing"
+      ],
+      "@ohos.graphics.hdrCapability": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.graphics.hdrCapability"
+      ],
+      "@ohos.graphics.scene": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.graphics.scene"
+      ],
+      "@ohos.graphics.sendableColorSpaceManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.graphics.sendableColorSpaceManager"
+      ],
+      "@ohos.graphics.text": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.graphics.text"
+      ],
+      "@ohos.graphics.uiEffect": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.graphics.uiEffect"
+      ],
+      "@ohos.hiAppEvent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.hiAppEvent"
+      ],
+      "@ohos.hiSysEvent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.hiSysEvent"
+      ],
+      "@ohos.hiTraceChain": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.hiTraceChain"
+      ],
+      "@ohos.hiTraceMeter": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.hiTraceMeter"
+      ],
+      "@ohos.hichecker": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.hichecker"
+      ],
+      "@ohos.hidebug": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.hidebug"
+      ],
+      "@ohos.hilog": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.hilog"
+      ],
+      "@ohos.hiviewdfx.hiAppEvent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.hiviewdfx.hiAppEvent"
+      ],
+      "@ohos.hiviewdfx.jsLeakWatcher": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.hiviewdfx.jsLeakWatcher"
+      ],
+      "@ohos.i18n": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.i18n"
+      ],
+      "@ohos.identifier.oaid": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.identifier.oaid"
+      ],
+      "@ohos.inputMethod.Panel": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.inputMethod.Panel"
+      ],
+      "@ohos.inputMethod": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.inputMethod"
+      ],
+      "@ohos.inputMethodEngine": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.inputMethodEngine"
+      ],
+      "@ohos.inputMethodList": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.inputMethodList"
+      ],
+      "@ohos.intl": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.intl"
+      ],
+      "@ohos.logLibrary": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.logLibrary"
+      ],
+      "@ohos.matrix4": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.matrix4"
+      ],
+      "@ohos.measure": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.measure"
+      ],
+      "@ohos.mediaquery": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.mediaquery"
+      ],
+      "@ohos.multimedia.audio": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimedia.audio"
+      ],
+      "@ohos.multimedia.audioHaptic": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimedia.audioHaptic"
+      ],
+      "@ohos.multimedia.avCastPicker": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimedia.avCastPicker"
+      ],
+      "@ohos.multimedia.avCastPickerParam": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimedia.avCastPickerParam"
+      ],
+      "@ohos.multimedia.avVolumePanel": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimedia.avVolumePanel"
+      ],
+      "@ohos.multimedia.avsession": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimedia.avsession"
+      ],
+      "@ohos.multimedia.camera": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimedia.camera"
+      ],
+      "@ohos.multimedia.cameraPicker": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimedia.cameraPicker"
+      ],
+      "@ohos.multimedia.drm": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimedia.drm"
+      ],
+      "@ohos.multimedia.image": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimedia.image"
+      ],
+      "@ohos.multimedia.media": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimedia.media"
+      ],
+      "@ohos.multimedia.movingphotoview": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimedia.movingphotoview"
+      ],
+      "@ohos.multimedia.sendableImage": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimedia.sendableImage"
+      ],
+      "@ohos.multimedia.systemSoundManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimedia.systemSoundManager"
+      ],
+      "@ohos.multimodalInput.gestureEvent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimodalInput.gestureEvent"
+      ],
+      "@ohos.multimodalInput.infraredEmitter": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimodalInput.infraredEmitter"
+      ],
+      "@ohos.multimodalInput.inputConsumer": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimodalInput.inputConsumer"
+      ],
+      "@ohos.multimodalInput.inputDevice": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimodalInput.inputDevice"
+      ],
+      "@ohos.multimodalInput.inputDeviceCooperate": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimodalInput.inputDeviceCooperate"
+      ],
+      "@ohos.multimodalInput.inputEvent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimodalInput.inputEvent"
+      ],
+      "@ohos.multimodalInput.inputEventClient": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimodalInput.inputEventClient"
+      ],
+      "@ohos.multimodalInput.inputMonitor": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimodalInput.inputMonitor"
+      ],
+      "@ohos.multimodalInput.intentionCode": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimodalInput.intentionCode"
+      ],
+      "@ohos.multimodalInput.keyCode": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimodalInput.keyCode"
+      ],
+      "@ohos.multimodalInput.keyEvent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimodalInput.keyEvent"
+      ],
+      "@ohos.multimodalInput.mouseEvent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimodalInput.mouseEvent"
+      ],
+      "@ohos.multimodalInput.pointer": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimodalInput.pointer"
+      ],
+      "@ohos.multimodalInput.shortKey": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimodalInput.shortKey"
+      ],
+      "@ohos.multimodalInput.touchEvent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.multimodalInput.touchEvent"
+      ],
+      "@ohos.net.connection": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.net.connection"
+      ],
+      "@ohos.net.ethernet": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.net.ethernet"
+      ],
+      "@ohos.net.http": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.net.http"
+      ],
+      "@ohos.net.mdns": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.net.mdns"
+      ],
+      "@ohos.net.netFirewall": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.net.netFirewall"
+      ],
+      "@ohos.net.networkSecurity": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.net.networkSecurity"
+      ],
+      "@ohos.net.policy": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.net.policy"
+      ],
+      "@ohos.net.sharing": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.net.sharing"
+      ],
+      "@ohos.net.socket": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.net.socket"
+      ],
+      "@ohos.net.statistics": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.net.statistics"
+      ],
+      "@ohos.net.vpn": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.net.vpn"
+      ],
+      "@ohos.net.vpnExtension": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.net.vpnExtension"
+      ],
+      "@ohos.net.webSocket": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.net.webSocket"
+      ],
+      "@ohos.nfc.cardEmulation": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.nfc.cardEmulation"
+      ],
+      "@ohos.nfc.controller": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.nfc.controller"
+      ],
+      "@ohos.nfc.tag": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.nfc.tag"
+      ],
+      "@ohos.notification": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.notification"
+      ],
+      "@ohos.notificationManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.notificationManager"
+      ],
+      "@ohos.notificationSubscribe": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.notificationSubscribe"
+      ],
+      "@ohos.pasteboard": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.pasteboard"
+      ],
+      "@ohos.pluginComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.pluginComponent"
+      ],
+      "@ohos.power": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.power"
+      ],
+      "@ohos.print": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.print"
+      ],
+      "@ohos.privacyManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.privacyManager"
+      ],
+      "@ohos.prompt": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.prompt"
+      ],
+      "@ohos.promptAction": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.promptAction"
+      ],
+      "@ohos.reminderAgent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.reminderAgent"
+      ],
+      "@ohos.reminderAgentManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.reminderAgentManager"
+      ],
+      "@ohos.request": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.request"
+      ],
+      "@ohos.resourceManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.resourceManager"
+      ],
+      "@ohos.resourceschedule.backgroundTaskManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.resourceschedule.backgroundTaskManager"
+      ],
+      "@ohos.resourceschedule.deviceStandby": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.resourceschedule.deviceStandby"
+      ],
+      "@ohos.resourceschedule.systemload": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.resourceschedule.systemload"
+      ],
+      "@ohos.resourceschedule.usageStatistics": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.resourceschedule.usageStatistics"
+      ],
+      "@ohos.resourceschedule.workScheduler": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.resourceschedule.workScheduler"
+      ],
+      "@ohos.router": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.router"
+      ],
+      "@ohos.rpc": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.rpc"
+      ],
+      "@ohos.runningLock": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.runningLock"
+      ],
+      "@ohos.screen": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.screen"
+      ],
+      "@ohos.screenLock": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.screenLock"
+      ],
+      "@ohos.screenshot": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.screenshot"
+      ],
+      "@ohos.secureElement": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.secureElement"
+      ],
+      "@ohos.security.asset": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.security.asset"
+      ],
+      "@ohos.security.cert": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.security.cert"
+      ],
+      "@ohos.security.certManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.security.certManager"
+      ],
+      "@ohos.security.certManagerDialog": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.security.certManagerDialog"
+      ],
+      "@ohos.security.cryptoFramework": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.security.cryptoFramework"
+      ],
+      "@ohos.security.huks": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.security.huks"
+      ],
+      "@ohos.security.securityGuard": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.security.securityGuard"
+      ],
+      "@ohos.sendableResourceManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.sendableResourceManager"
+      ],
+      "@ohos.sensor": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.sensor"
+      ],
+      "@ohos.settings": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.settings"
+      ],
+      "@ohos.statfs": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.statfs"
+      ],
+      "@ohos.stationary": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.stationary"
+      ],
+      "@ohos.systemCapability": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.systemCapability"
+      ],
+      "@ohos.systemDateTime": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.systemDateTime"
+      ],
+      "@ohos.systemParameterEnhance": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.systemParameterEnhance"
+      ],
+      "@ohos.systemTime": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.systemTime"
+      ],
+      "@ohos.systemTimer": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.systemTimer"
+      ],
+      "@ohos.systemparameter": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.systemparameter"
+      ],
+      "@ohos.telephony.call": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.telephony.call"
+      ],
+      "@ohos.telephony.data": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.telephony.data"
+      ],
+      "@ohos.telephony.observer": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.telephony.observer"
+      ],
+      "@ohos.telephony.radio": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.telephony.radio"
+      ],
+      "@ohos.telephony.sim": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.telephony.sim"
+      ],
+      "@ohos.telephony.sms": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.telephony.sms"
+      ],
+      "@ohos.telephony.vcard": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.telephony.vcard"
+      ],
+      "@ohos.thermal": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.thermal"
+      ],
+      "@ohos.uiAppearance": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.uiAppearance"
+      ],
+      "@ohos.uiExtensionHost": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.uiExtensionHost"
+      ],
+      "@ohos.update": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.update"
+      ],
+      "@ohos.uri": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.uri"
+      ],
+      "@ohos.url": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.url"
+      ],
+      "@ohos.usb": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.usb"
+      ],
+      "@ohos.usbManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.usbManager"
+      ],
+      "@ohos.userIAM.faceAuth": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.userIAM.faceAuth"
+      ],
+      "@ohos.userIAM.userAuth": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.userIAM.userAuth"
+      ],
+      "@ohos.userIAM.userAuthIcon": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.userIAM.userAuthIcon"
+      ],
+      "@ohos.util.ArrayList": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util.ArrayList"
+      ],
+      "@ohos.util.Deque": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util.Deque"
+      ],
+      "@ohos.util.HashMap": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util.HashMap"
+      ],
+      "@ohos.util.HashSet": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util.HashSet"
+      ],
+      "@ohos.util.LightWeightMap": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util.LightWeightMap"
+      ],
+      "@ohos.util.LightWeightSet": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util.LightWeightSet"
+      ],
+      "@ohos.util.LinkedList": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util.LinkedList"
+      ],
+      "@ohos.util.List": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util.List"
+      ],
+      "@ohos.util.PlainArray": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util.PlainArray"
+      ],
+      "@ohos.util.Queue": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util.Queue"
+      ],
+      "@ohos.util.Stack": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util.Stack"
+      ],
+      "@ohos.util.TreeMap": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util.TreeMap"
+      ],
+      "@ohos.util.TreeSet": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util.TreeSet"
+      ],
+      "@ohos.util": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util"
+      ],
+      "@ohos.util.json": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util.json"
+      ],
+      "@ohos.util.stream": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.util.stream"
+      ],
+      "@ohos.vibrator": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.vibrator"
+      ],
+      "@ohos.wallpaper": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.wallpaper"
+      ],
+      "@ohos.wantAgent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.wantAgent"
+      ],
+      "@ohos.web.netErrorList": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.web.netErrorList"
+      ],
+      "@ohos.web.webview": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.web.webview"
+      ],
+      "@ohos.wifi": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.wifi"
+      ],
+      "@ohos.wifiManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.wifiManager"
+      ],
+      "@ohos.wifiManagerExt": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.wifiManagerExt"
+      ],
+      "@ohos.wifiext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.wifiext"
+      ],
+      "@ohos.window": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.window"
+      ],
+      "@ohos.worker": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.worker"
+      ],
+      "@ohos.zlib": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@ohos.zlib"
+      ],
+      "@ohos.@system.app": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.app"
+      ],
+      "@ohos.@system.battery": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.battery"
+      ],
+      "@ohos.@system.bluetooth": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.bluetooth"
+      ],
+      "@ohos.@system.brightness": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.brightness"
+      ],
+      "@ohos.@system.cipher": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.cipher"
+      ],
+      "@ohos.@system.configuration": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.configuration"
+      ],
+      "@ohos.@system.device": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.device"
+      ],
+      "@ohos.@system.fetch": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.fetch"
+      ],
+      "@ohos.@system.file": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.file"
+      ],
+      "@ohos.@system.geolocation": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.geolocation"
+      ],
+      "@ohos.@system.mediaquery": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.mediaquery"
+      ],
+      "@ohos.@system.network": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.network"
+      ],
+      "@ohos.@system.notification": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.notification"
+      ],
+      "@ohos.@system.package": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.package"
+      ],
+      "@ohos.@system.prompt": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.prompt"
+      ],
+      "@ohos.@system.request": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.request"
+      ],
+      "@ohos.@system.router": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.router"
+      ],
+      "@ohos.@system.sensor": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.sensor"
+      ],
+      "@ohos.@system.storage": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.storage"
+      ],
+      "@ohos.@system.vibrator": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/@system.vibrator"
+      ],
+      "@ohos.ability.abilityResult": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/ability/abilityResult"
+      ],
+      "@ohos.ability.connectOptions": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/ability/connectOptions"
+      ],
+      "@ohos.ability.dataAbilityHelper": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/ability/dataAbilityHelper"
+      ],
+      "@ohos.ability.dataAbilityOperation": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/ability/dataAbilityOperation"
+      ],
+      "@ohos.ability.dataAbilityResult": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/ability/dataAbilityResult"
+      ],
+      "@ohos.ability.startAbilityParameter": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/ability/startAbilityParameter"
+      ],
+      "@ohos.ability.want": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/ability/want"
+      ],
+      "@ohos.advertising.advertisement": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/advertising/advertisement"
+      ],
+      "@ohos.app.appVersionInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/app/appVersionInfo"
+      ],
+      "@ohos.app.context": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/app/context"
+      ],
+      "@ohos.app.processInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/app/processInfo"
+      ],
+      "@ohos.application.AbilityDelegator": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AbilityDelegator"
+      ],
+      "@ohos.application.AbilityFirstFrameStateData": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AbilityFirstFrameStateData"
+      ],
+      "@ohos.application.AbilityFirstFrameStateObserver": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AbilityFirstFrameStateObserver"
+      ],
+      "@ohos.application.AbilityForegroundStateObserver": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AbilityForegroundStateObserver"
+      ],
+      "@ohos.application.AbilityMonitor": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AbilityMonitor"
+      ],
+      "@ohos.application.AbilityRunningInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AbilityRunningInfo"
+      ],
+      "@ohos.application.AbilityStageContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AbilityStageContext"
+      ],
+      "@ohos.application.AbilityStageMonitor": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AbilityStageMonitor"
+      ],
+      "@ohos.application.AbilityStartCallback": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AbilityStartCallback"
+      ],
+      "@ohos.application.AbilityStateData": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AbilityStateData"
+      ],
+      "@ohos.application.AccessibilityExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AccessibilityExtensionContext"
+      ],
+      "@ohos.application.AppForegroundStateObserver": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AppForegroundStateObserver"
+      ],
+      "@ohos.application.AppStateData": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AppStateData"
+      ],
+      "@ohos.application.ApplicationContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/ApplicationContext"
+      ],
+      "@ohos.application.ApplicationStateObserver": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/ApplicationStateObserver"
+      ],
+      "@ohos.application.AutoFillExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AutoFillExtensionContext"
+      ],
+      "@ohos.application.AutoFillPopupConfig": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AutoFillPopupConfig"
+      ],
+      "@ohos.application.AutoFillRect": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AutoFillRect"
+      ],
+      "@ohos.application.AutoFillRequest": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AutoFillRequest"
+      ],
+      "@ohos.application.AutoFillType": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AutoFillType"
+      ],
+      "@ohos.application.AutoStartupCallback": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AutoStartupCallback"
+      ],
+      "@ohos.application.AutoStartupInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/AutoStartupInfo"
+      ],
+      "@ohos.application.BaseContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/BaseContext"
+      ],
+      "@ohos.application.BusinessAbilityInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/BusinessAbilityInfo"
+      ],
+      "@ohos.application.Context": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/Context"
+      ],
+      "@ohos.application.ContinuableInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/ContinuableInfo"
+      ],
+      "@ohos.application.ContinueCallback": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/ContinueCallback"
+      ],
+      "@ohos.application.ContinueDeviceInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/ContinueDeviceInfo"
+      ],
+      "@ohos.application.ContinueMissionInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/ContinueMissionInfo"
+      ],
+      "@ohos.application.CustomData": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/CustomData"
+      ],
+      "@ohos.application.DriverExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/DriverExtensionContext"
+      ],
+      "@ohos.application.EmbeddableUIAbilityContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/EmbeddableUIAbilityContext"
+      ],
+      "@ohos.application.ErrorObserver": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/ErrorObserver"
+      ],
+      "@ohos.application.EventHub": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/EventHub"
+      ],
+      "@ohos.application.ExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/ExtensionContext"
+      ],
+      "@ohos.application.ExtensionRunningInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/ExtensionRunningInfo"
+      ],
+      "@ohos.application.FormExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/FormExtensionContext"
+      ],
+      "@ohos.application.LoopObserver": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/LoopObserver"
+      ],
+      "@ohos.application.MediaControlExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/MediaControlExtensionContext"
+      ],
+      "@ohos.application.MissionCallbacks": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/MissionCallbacks"
+      ],
+      "@ohos.application.MissionDeviceInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/MissionDeviceInfo"
+      ],
+      "@ohos.application.MissionInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/MissionInfo"
+      ],
+      "@ohos.application.MissionListener": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/MissionListener"
+      ],
+      "@ohos.application.MissionParameter": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/MissionParameter"
+      ],
+      "@ohos.application.MissionSnapshot": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/MissionSnapshot"
+      ],
+      "@ohos.application.MultiAppMode": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/MultiAppMode"
+      ],
+      "@ohos.application.PageNodeInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/PageNodeInfo"
+      ],
+      "@ohos.application.PhotoEditorExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/PhotoEditorExtensionContext"
+      ],
+      "@ohos.application.ProcessData": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/ProcessData"
+      ],
+      "@ohos.application.ProcessInformation": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/ProcessInformation"
+      ],
+      "@ohos.application.ProcessRunningInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/ProcessRunningInfo"
+      ],
+      "@ohos.application.RunningAppClone": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/RunningAppClone"
+      ],
+      "@ohos.application.RunningMultiAppInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/RunningMultiAppInfo"
+      ],
+      "@ohos.application.RunningMultiInstanceInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/RunningMultiInstanceInfo"
+      ],
+      "@ohos.application.SendableContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/SendableContext"
+      ],
+      "@ohos.application.ServiceExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/ServiceExtensionContext"
+      ],
+      "@ohos.application.UIAbilityContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/UIAbilityContext"
+      ],
+      "@ohos.application.UIExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/UIExtensionContext"
+      ],
+      "@ohos.application.UIServiceExtensionConnectCallback": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/UIServiceExtensionConnectCallback"
+      ],
+      "@ohos.application.UIServiceExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/UIServiceExtensionContext"
+      ],
+      "@ohos.application.UIServiceHostProxy": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/UIServiceHostProxy"
+      ],
+      "@ohos.application.UIServiceProxy": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/UIServiceProxy"
+      ],
+      "@ohos.application.ViewData": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/ViewData"
+      ],
+      "@ohos.application.VpnExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/VpnExtensionContext"
+      ],
+      "@ohos.application.WindowExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/WindowExtensionContext"
+      ],
+      "@ohos.application.WorkSchedulerExtensionContext": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/WorkSchedulerExtensionContext"
+      ],
+      "@ohos.application.abilityDelegatorArgs": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/abilityDelegatorArgs"
+      ],
+      "@ohos.application.shellCmdResult": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/application/shellCmdResult"
+      ],
+      "@ohos.arkui.AlphabetIndexerModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/AlphabetIndexerModifier"
+      ],
+      "@ohos.arkui.AttributeUpdater": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/AttributeUpdater"
+      ],
+      "@ohos.arkui.BlankModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/BlankModifier"
+      ],
+      "@ohos.arkui.BuilderNode": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/BuilderNode"
+      ],
+      "@ohos.arkui.ButtonModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ButtonModifier"
+      ],
+      "@ohos.arkui.CalendarPickerModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/CalendarPickerModifier"
+      ],
+      "@ohos.arkui.CheckboxGroupModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/CheckboxGroupModifier"
+      ],
+      "@ohos.arkui.CheckboxModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/CheckboxModifier"
+      ],
+      "@ohos.arkui.ColumnModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ColumnModifier"
+      ],
+      "@ohos.arkui.ColumnSplitModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ColumnSplitModifier"
+      ],
+      "@ohos.arkui.CommonModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/CommonModifier"
+      ],
+      "@ohos.arkui.ComponentContent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ComponentContent"
+      ],
+      "@ohos.arkui.ContainerSpanModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ContainerSpanModifier"
+      ],
+      "@ohos.arkui.Content": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/Content"
+      ],
+      "@ohos.arkui.CounterModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/CounterModifier"
+      ],
+      "@ohos.arkui.DataPanelModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/DataPanelModifier"
+      ],
+      "@ohos.arkui.DatePickerModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/DatePickerModifier"
+      ],
+      "@ohos.arkui.DividerModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/DividerModifier"
+      ],
+      "@ohos.arkui.FormComponentModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/FormComponentModifier"
+      ],
+      "@ohos.arkui.FrameNode": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/FrameNode"
+      ],
+      "@ohos.arkui.GaugeModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/GaugeModifier"
+      ],
+      "@ohos.arkui.Graphics": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/Graphics"
+      ],
+      "@ohos.arkui.GridColModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/GridColModifier"
+      ],
+      "@ohos.arkui.GridItemModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/GridItemModifier"
+      ],
+      "@ohos.arkui.GridModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/GridModifier"
+      ],
+      "@ohos.arkui.GridRowModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/GridRowModifier"
+      ],
+      "@ohos.arkui.HyperlinkModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/HyperlinkModifier"
+      ],
+      "@ohos.arkui.ImageAnimatorModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ImageAnimatorModifier"
+      ],
+      "@ohos.arkui.ImageModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ImageModifier"
+      ],
+      "@ohos.arkui.ImageSpanModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ImageSpanModifier"
+      ],
+      "@ohos.arkui.LineModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/LineModifier"
+      ],
+      "@ohos.arkui.ListItemGroupModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ListItemGroupModifier"
+      ],
+      "@ohos.arkui.ListItemModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ListItemModifier"
+      ],
+      "@ohos.arkui.ListModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ListModifier"
+      ],
+      "@ohos.arkui.LoadingProgressModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/LoadingProgressModifier"
+      ],
+      "@ohos.arkui.MarqueeModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/MarqueeModifier"
+      ],
+      "@ohos.arkui.MenuItemModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/MenuItemModifier"
+      ],
+      "@ohos.arkui.MenuModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/MenuModifier"
+      ],
+      "@ohos.arkui.NavDestinationModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/NavDestinationModifier"
+      ],
+      "@ohos.arkui.NavRouterModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/NavRouterModifier"
+      ],
+      "@ohos.arkui.NavigationModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/NavigationModifier"
+      ],
+      "@ohos.arkui.NavigatorModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/NavigatorModifier"
+      ],
+      "@ohos.arkui.NodeContent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/NodeContent"
+      ],
+      "@ohos.arkui.NodeController": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/NodeController"
+      ],
+      "@ohos.arkui.PanelModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/PanelModifier"
+      ],
+      "@ohos.arkui.ParticleModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ParticleModifier"
+      ],
+      "@ohos.arkui.PathModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/PathModifier"
+      ],
+      "@ohos.arkui.PatternLockModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/PatternLockModifier"
+      ],
+      "@ohos.arkui.PolygonModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/PolygonModifier"
+      ],
+      "@ohos.arkui.PolylineModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/PolylineModifier"
+      ],
+      "@ohos.arkui.ProgressModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ProgressModifier"
+      ],
+      "@ohos.arkui.QRCodeModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/QRCodeModifier"
+      ],
+      "@ohos.arkui.RadioModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/RadioModifier"
+      ],
+      "@ohos.arkui.RatingModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/RatingModifier"
+      ],
+      "@ohos.arkui.RectModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/RectModifier"
+      ],
+      "@ohos.arkui.RefreshModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/RefreshModifier"
+      ],
+      "@ohos.arkui.RenderNode": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/RenderNode"
+      ],
+      "@ohos.arkui.RichEditorModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/RichEditorModifier"
+      ],
+      "@ohos.arkui.RowModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/RowModifier"
+      ],
+      "@ohos.arkui.RowSplitModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/RowSplitModifier"
+      ],
+      "@ohos.arkui.ScrollModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ScrollModifier"
+      ],
+      "@ohos.arkui.SearchModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/SearchModifier"
+      ],
+      "@ohos.arkui.SelectModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/SelectModifier"
+      ],
+      "@ohos.arkui.ShapeModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ShapeModifier"
+      ],
+      "@ohos.arkui.SideBarContainerModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/SideBarContainerModifier"
+      ],
+      "@ohos.arkui.SliderModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/SliderModifier"
+      ],
+      "@ohos.arkui.SpanModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/SpanModifier"
+      ],
+      "@ohos.arkui.StackModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/StackModifier"
+      ],
+      "@ohos.arkui.StepperItemModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/StepperItemModifier"
+      ],
+      "@ohos.arkui.SwiperModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/SwiperModifier"
+      ],
+      "@ohos.arkui.SymbolGlyphModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/SymbolGlyphModifier"
+      ],
+      "@ohos.arkui.SymbolSpanModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/SymbolSpanModifier"
+      ],
+      "@ohos.arkui.TabsModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/TabsModifier"
+      ],
+      "@ohos.arkui.TextAreaModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/TextAreaModifier"
+      ],
+      "@ohos.arkui.TextClockModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/TextClockModifier"
+      ],
+      "@ohos.arkui.TextInputModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/TextInputModifier"
+      ],
+      "@ohos.arkui.TextModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/TextModifier"
+      ],
+      "@ohos.arkui.TextPickerModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/TextPickerModifier"
+      ],
+      "@ohos.arkui.TextTimerModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/TextTimerModifier"
+      ],
+      "@ohos.arkui.TimePickerModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/TimePickerModifier"
+      ],
+      "@ohos.arkui.ToggleModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/ToggleModifier"
+      ],
+      "@ohos.arkui.VideoModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/VideoModifier"
+      ],
+      "@ohos.arkui.WaterFlowModifier": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/WaterFlowModifier"
+      ],
+      "@ohos.arkui.XComponentNode": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/XComponentNode"
+      ],
+      "@ohos.arkui.component.column": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/component/column"
+      ],
+      "@ohos.arkui.component.common": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/component/common"
+      ],
+      "@ohos.arkui.component.customComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/component/customComponent"
+      ],
+      "@ohos.arkui.component.enums": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/component/enums"
+      ],
+      "@ohos.arkui.component.styledString": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/component/styledString"
+      ],
+      "@ohos.arkui.component.text": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/component/text"
+      ],
+      "@ohos.arkui.component.units": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/component/units"
+      ],
+      "@ohos.arkui.external.resource": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/external/resource"
+      ],
+      "@koalaui.arkts-arkui.Button": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.arkts-arkui.Button"
+      ],
+      "@koalaui.arkts-arkui.Column": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.arkts-arkui.Column"
+      ],
+      "@koalaui.arkts-arkui.Common": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.arkts-arkui.Common"
+      ],
+      "@koalaui.arkts-arkui.StructBase": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.arkts-arkui.StructBase"
+      ],
+      "@koalaui.arkts-arkui.Text": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.arkts-arkui.Text"
+      ],
+      "@koalaui.arkts-arkui.UserView": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.arkts-arkui.UserView"
+      ],
+      "@koalaui.runtime.annotations": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.annotations"
+      ],
+      "@koalaui.runtime.common": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.common"
+      ],
+      "@koalaui.runtime.internals": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.internals"
+      ],
+      "@koalaui.runtime.memo.bind": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.memo.bind"
+      ],
+      "@koalaui.runtime.memo.changeListener": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.memo.changeListener"
+      ],
+      "@koalaui.runtime.memo.contextLocal": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.memo.contextLocal"
+      ],
+      "@koalaui.runtime.memo.entry": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.memo.entry"
+      ],
+      "@koalaui.runtime.memo.node": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.memo.node"
+      ],
+      "@koalaui.runtime.memo.remember": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.memo.remember"
+      ],
+      "@koalaui.runtime.memo.repeat": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.memo.repeat"
+      ],
+      "@koalaui.runtime.memo.testing": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.memo.testing"
+      ],
+      "@koalaui.runtime.states.Disposable": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.states.Disposable"
+      ],
+      "@koalaui.runtime.states.GlobalStateManager": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.states.GlobalStateManager"
+      ],
+      "@koalaui.runtime.states.State": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.states.State"
+      ],
+      "@koalaui.runtime.tree.IncrementalNode": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.tree.IncrementalNode"
+      ],
+      "@koalaui.runtime.tree.PrimeNumbers": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.tree.PrimeNumbers"
+      ],
+      "@koalaui.runtime.tree.ReadonlyTreeNode": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.tree.ReadonlyTreeNode"
+      ],
+      "@koalaui.runtime.tree.TreeNode": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.tree.TreeNode"
+      ],
+      "@koalaui.runtime.tree.TreePath": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/runtime-api/@koalaui.runtime.tree.TreePath"
+      ],
+      "@ohos.arkui.stateManagement.common": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/stateManagement/common"
+      ],
+      "@ohos.arkui.stateManagement.runtime": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/stateManagement/runtime"
+      ],
+      "@ohos.arkui.stateManagement.storage": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/arkui/stateManagement/storage"
+      ],
+      "@ohos.bundle.PermissionDef": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundle/PermissionDef"
+      ],
+      "@ohos.bundle.abilityInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundle/abilityInfo"
+      ],
+      "@ohos.bundle.applicationInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundle/applicationInfo"
+      ],
+      "@ohos.bundle.bundleInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundle/bundleInfo"
+      ],
+      "@ohos.bundle.bundleInstaller": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundle/bundleInstaller"
+      ],
+      "@ohos.bundle.bundleStatusCallback": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundle/bundleStatusCallback"
+      ],
+      "@ohos.bundle.customizeData": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundle/customizeData"
+      ],
+      "@ohos.bundle.elementName": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundle/elementName"
+      ],
+      "@ohos.bundle.hapModuleInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundle/hapModuleInfo"
+      ],
+      "@ohos.bundle.launcherAbilityInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundle/launcherAbilityInfo"
+      ],
+      "@ohos.bundle.moduleInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundle/moduleInfo"
+      ],
+      "@ohos.bundle.remoteAbilityInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundle/remoteAbilityInfo"
+      ],
+      "@ohos.bundle.shortcutInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundle/shortcutInfo"
+      ],
+      "@ohos.bundleManager.AbilityInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/AbilityInfo"
+      ],
+      "@ohos.bundleManager.AppProvisionInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/AppProvisionInfo"
+      ],
+      "@ohos.bundleManager.ApplicationInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/ApplicationInfo"
+      ],
+      "@ohos.bundleManager.BundleInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/BundleInfo"
+      ],
+      "@ohos.bundleManager.BundlePackInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/BundlePackInfo"
+      ],
+      "@ohos.bundleManager.BundleResourceInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/BundleResourceInfo"
+      ],
+      "@ohos.bundleManager.DispatchInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/DispatchInfo"
+      ],
+      "@ohos.bundleManager.ElementName": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/ElementName"
+      ],
+      "@ohos.bundleManager.ExtensionAbilityInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/ExtensionAbilityInfo"
+      ],
+      "@ohos.bundleManager.HapModuleInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/HapModuleInfo"
+      ],
+      "@ohos.bundleManager.LauncherAbilityInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/LauncherAbilityInfo"
+      ],
+      "@ohos.bundleManager.LauncherAbilityResourceInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/LauncherAbilityResourceInfo"
+      ],
+      "@ohos.bundleManager.Metadata": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/Metadata"
+      ],
+      "@ohos.bundleManager.OverlayModuleInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/OverlayModuleInfo"
+      ],
+      "@ohos.bundleManager.PermissionDef": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/PermissionDef"
+      ],
+      "@ohos.bundleManager.RecoverableApplicationInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/RecoverableApplicationInfo"
+      ],
+      "@ohos.bundleManager.RemoteAbilityInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/RemoteAbilityInfo"
+      ],
+      "@ohos.bundleManager.SharedBundleInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/SharedBundleInfo"
+      ],
+      "@ohos.bundleManager.ShortcutInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/ShortcutInfo"
+      ],
+      "@ohos.bundleManager.Skill": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/bundleManager/Skill"
+      ],
+      "@ohos.commonEvent.commonEventData": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/commonEvent/commonEventData"
+      ],
+      "@ohos.commonEvent.commonEventPublishData": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/commonEvent/commonEventPublishData"
+      ],
+      "@ohos.commonEvent.commonEventSubscribeInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/commonEvent/commonEventSubscribeInfo"
+      ],
+      "@ohos.commonEvent.commonEventSubscriber": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/commonEvent/commonEventSubscriber"
+      ],
+      "@ohos.continuation.continuationExtraParams": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/continuation/continuationExtraParams"
+      ],
+      "@ohos.continuation.continuationResult": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/continuation/continuationResult"
+      ],
+      "@ohos.data.rdb.resultSet": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/data/rdb/resultSet"
+      ],
+      "@ohos.device-define.default.json": [
+        ""
+      ],
+      "@ohos.device-define.liteWearable.json": [
+        ""
+      ],
+      "@ohos.device-define.tablet.json": [
+        ""
+      ],
+      "@ohos.device-define.wearable.json": [
+        ""
+      ],
+      "@ohos.global.rawFileDescriptor": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/global/rawFileDescriptor"
+      ],
+      "@ohos.global.resource": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/global/resource"
+      ],
+      "@ohos.global.sendableResource": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/global/sendableResource"
+      ],
+      "@ohos.graphics3d.Scene": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/graphics3d/Scene"
+      ],
+      "@ohos.graphics3d.SceneNodes": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/graphics3d/SceneNodes"
+      ],
+      "@ohos.graphics3d.ScenePostProcessSettings": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/graphics3d/ScenePostProcessSettings"
+      ],
+      "@ohos.graphics3d.SceneResources": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/graphics3d/SceneResources"
+      ],
+      "@ohos.graphics3d.SceneTypes": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/graphics3d/SceneTypes"
+      ],
+      "@ohos.multimedia.ringtonePlayer": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/multimedia/ringtonePlayer"
+      ],
+      "@ohos.multimedia.soundPool": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/multimedia/soundPool"
+      ],
+      "@ohos.multimedia.systemTonePlayer": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/multimedia/systemTonePlayer"
+      ],
+      "@ohos.notification.NotificationCommonDef": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/notification/NotificationCommonDef"
+      ],
+      "@ohos.notification.notificationActionButton": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/notification/notificationActionButton"
+      ],
+      "@ohos.notification.notificationContent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/notification/notificationContent"
+      ],
+      "@ohos.notification.notificationFlags": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/notification/notificationFlags"
+      ],
+      "@ohos.notification.notificationRequest": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/notification/notificationRequest"
+      ],
+      "@ohos.notification.notificationSlot": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/notification/notificationSlot"
+      ],
+      "@ohos.notification.notificationSorting": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/notification/notificationSorting"
+      ],
+      "@ohos.notification.notificationSortingMap": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/notification/notificationSortingMap"
+      ],
+      "@ohos.notification.notificationSubscribeInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/notification/notificationSubscribeInfo"
+      ],
+      "@ohos.notification.notificationSubscriber": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/notification/notificationSubscriber"
+      ],
+      "@ohos.notification.notificationTemplate": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/notification/notificationTemplate"
+      ],
+      "@ohos.notification.notificationUserInput": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/notification/notificationUserInput"
+      ],
+      "@ohos.permissions": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/permissions"
+      ],
+      "@ohos.security.PermissionRequestResult": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/security/PermissionRequestResult"
+      ],
+      "@ohos.tag.nfctech": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/tag/nfctech"
+      ],
+      "@ohos.tag.tagSession": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/tag/tagSession"
+      ],
+      "@ohos.wantAgent.triggerInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/wantAgent/triggerInfo"
+      ],
+      "@ohos.wantAgent.wantAgentInfo": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/api/wantAgent/wantAgentInfo"
+      ],
+      "@ohos.@arkts.collections": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/arkts/@arkts.collections"
+      ],
+      "@ohos.@arkts.lang": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/arkts/@arkts.lang"
+      ],
+      "@ohos.@arkts.math.Decimal": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/arkts/@arkts.math.Decimal"
+      ],
+      "@ohos.@arkts.utils": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/arkts/@arkts.utils"
+      ],
+      "@ohos.@kit.AVSessionKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.AVSessionKit"
+      ],
+      "@ohos.@kit.AbilityKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.AbilityKit"
+      ],
+      "@ohos.@kit.AccessibilityKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.AccessibilityKit"
+      ],
+      "@ohos.@kit.AdsKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.AdsKit"
+      ],
+      "@ohos.@kit.ArkData": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.ArkData"
+      ],
+      "@ohos.@kit.ArkGraphics2D": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.ArkGraphics2D"
+      ],
+      "@ohos.@kit.ArkGraphics3D": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.ArkGraphics3D"
+      ],
+      "@ohos.@kit.ArkTS": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.ArkTS"
+      ],
+      "@ohos.@kit.ArkUI": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.ArkUI"
+      ],
+      "@ohos.@kit.ArkWeb": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.ArkWeb"
+      ],
+      "@ohos.@kit.AssetStoreKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.AssetStoreKit"
+      ],
+      "@ohos.@kit.AudioKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.AudioKit"
+      ],
+      "@ohos.@kit.BackgroundTasksKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.BackgroundTasksKit"
+      ],
+      "@ohos.@kit.BasicServicesKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.BasicServicesKit"
+      ],
+      "@ohos.@kit.CalendarKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.CalendarKit"
+      ],
+      "@ohos.@kit.CameraKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.CameraKit"
+      ],
+      "@ohos.@kit.ConnectivityKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.ConnectivityKit"
+      ],
+      "@ohos.@kit.ContactsKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.ContactsKit"
+      ],
+      "@ohos.@kit.CoreFileKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.CoreFileKit"
+      ],
+      "@ohos.@kit.CryptoArchitectureKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.CryptoArchitectureKit"
+      ],
+      "@ohos.@kit.DataLossPreventionKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.DataLossPreventionKit"
+      ],
+      "@ohos.@kit.DataProtectionKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.DataProtectionKit"
+      ],
+      "@ohos.@kit.DeviceCertificateKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.DeviceCertificateKit"
+      ],
+      "@ohos.@kit.DistributedServiceKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.DistributedServiceKit"
+      ],
+      "@ohos.@kit.DriverDevelopmentKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.DriverDevelopmentKit"
+      ],
+      "@ohos.@kit.DrmKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.DrmKit"
+      ],
+      "@ohos.@kit.FormKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.FormKit"
+      ],
+      "@ohos.@kit.IMEKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.IMEKit"
+      ],
+      "@ohos.@kit.IPCKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.IPCKit"
+      ],
+      "@ohos.@kit.ImageKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.ImageKit"
+      ],
+      "@ohos.@kit.InputKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.InputKit"
+      ],
+      "@ohos.@kit.LocalizationKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.LocalizationKit"
+      ],
+      "@ohos.@kit.LocationKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.LocationKit"
+      ],
+      "@ohos.@kit.MDMKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.MDMKit"
+      ],
+      "@ohos.@kit.MediaKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.MediaKit"
+      ],
+      "@ohos.@kit.MediaLibraryKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.MediaLibraryKit"
+      ],
+      "@ohos.@kit.MindSporeLiteKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.MindSporeLiteKit"
+      ],
+      "@ohos.@kit.MultimodalAwarenessKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.MultimodalAwarenessKit"
+      ],
+      "@ohos.@kit.NetworkKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.NetworkKit"
+      ],
+      "@ohos.@kit.NotificationKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.NotificationKit"
+      ],
+      "@ohos.@kit.PerformanceAnalysisKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.PerformanceAnalysisKit"
+      ],
+      "@ohos.@kit.SecurityGuardKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.SecurityGuardKit"
+      ],
+      "@ohos.@kit.SensorServiceKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.SensorServiceKit"
+      ],
+      "@ohos.@kit.TelephonyKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.TelephonyKit"
+      ],
+      "@ohos.@kit.TestKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.TestKit"
+      ],
+      "@ohos.@kit.UniversalKeystoreKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.UniversalKeystoreKit"
+      ],
+      "@ohos.@kit.UserAuthenticationKit": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.UserAuthenticationKit"
+      ],
+      "@ohos.@kit.network": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/kits/@kit.network"
+      ]
+    },
+    "entry": "",
+    "dynamicPaths": {}
+  }
+}

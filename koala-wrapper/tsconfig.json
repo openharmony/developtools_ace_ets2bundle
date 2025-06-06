@@ -1,0 +1,38 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "lib": ["ESNext", "ESNext.WeakRef", "DOM"],
+        "moduleResolution": "node",
+        "composite": true,
+        "incremental": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "declaration": true,
+        "noEmitOnError": true,
+        "strict": true,
+        "skipLibCheck": true,
+        "removeComments": false,
+        "outDir": "build",
+        "baseUrl": ".",
+        "rootDir": ".",
+        "module": "CommonJS",
+        "paths": {
+            "@koalaui/interop": [
+                "./koalaui/interop/dist/lib/src/interop/"
+            ],
+            "@koalaui/common": [
+                "./koalaui/common/dist/lib/src/"
+            ],
+            "@koalaui/compat": [
+                "./koalaui/compat/dist/src/"
+            ]
+        }
+    },
+    "include": [
+        "./src/**/*.ts",
+    ],
+    "exclude": [
+        "./src/ts-api/**/*.ts",
+        "./koalaui"
+    ]
+}
