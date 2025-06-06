@@ -46,8 +46,8 @@ import { MyText } from 'har2/src/main/ets/components/MainPage'
 
 @Component
 export struct Child1{
-    @Link stateVar: MyText;
-    @Link text: MyText;
+    @Prop stateVar: MyText;
+    @Prop text: MyText;
     build() {
         Column() {
             Button(this.stateVar.text)
@@ -69,21 +69,8 @@ ArkUICompatible(__memo_context, ((__memo_id) + (252133223)), (() => {
     let global = ESValue.getGlobal();
     let param = ESValue.instantiateEmptyObject();
     let createState = global.getProperty("createStateVariable");
-    let stateVar_SetSource = ((value: B) => {
-        (this).stateVar = value;
-    });
-    let stateVar_ProxyState = createState.invoke(ESValue.wrap((this).stateVar), ESValue.wrap(stateVar_SetSource));
-    (this).__backing_stateVar!.setProxy(stateVar_ProxyState);
-    let stateVar_SetProxy = ((value: B) => {
-        stateVar_ProxyState.invokeMethod("set", ESValue.wrap(value));
-    });
-    (this).__backing_stateVar!.setProxyValue = stateVar_SetProxy;
-    let stateVar_NotifyCallback = ((propertyName: string) => {
-        stateVar_ProxyState.invokeMethod("notifyPropertyHasChangedPU");
-    });
-    (this).__backing_stateVar!.setNotifyCallback(stateVar_NotifyCallback);
-    param.setProperty("stateVar", stateVar_ProxyState);
-    param.setProperty("text", stateVar_ProxyState);
+    param.setProperty("stateVar", (this).stateVar);
+    param.setProperty("text", (this).stateVar);
     let extraInfo = ESValue.instantiateEmptyObject();
     extraInfo.setProperty("page", "har1/src/main/ets/components/MainPage");
     let esundefined = ESValue.wrap(undefined);
@@ -101,4 +88,6 @@ ArkUICompatible(__memo_context, ((__memo_id) + (252133223)), (() => {
         component: component,
         name: "Child1",
     };
-}), ((instance: ESValue) => {}));
+}), ((instance: ESValue) => {
+    instance.invokeMethod("updateStateVars", ESValue.wrap({stateVar: this.stateVar, text: this.stateVar}));
+}));
