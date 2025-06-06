@@ -384,6 +384,7 @@ export function obfuscationPreprocess(
     );
 
     updateIncrementalCaches(sourceProjectConfig.arkObfuscator);
+    sourceProjectConfig.arkObfuscator.obfConfigResolver?.emitConsumerConfigFiles();
     if (BytecodeObfuscator.enable) {
       BytecodeObfuscator.getInstance().removeStructProp();
     }
