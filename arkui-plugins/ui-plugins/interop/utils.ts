@@ -16,7 +16,7 @@
 
 
 import * as arkts from '@koalaui/libarkts';
-import { InteroperAbilityNames } from '../../common/predefines';
+import { ESValueMethodNames, InteroperAbilityNames } from './predefines';
 
 
 /**
@@ -34,8 +34,8 @@ export function createEmptyESValue(result: string): arkts.VariableDeclaration {
                 arkts.factory.createIdentifier(result),
                 arkts.factory.createCallExpression(
                     arkts.factory.createMemberExpression(
-                        arkts.factory.createIdentifier(InteroperAbilityNames.ESVALUE),
-                        arkts.factory.createIdentifier(InteroperAbilityNames.INITEMPTYOBJECT),
+                        arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE),
+                        arkts.factory.createIdentifier(ESValueMethodNames.INITEMPTYOBJECT),
                         arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                         false,
                         false
@@ -56,8 +56,8 @@ export function createEmptyESValue(result: string): arkts.VariableDeclaration {
 export function getWrapValue(value: arkts.AstNode): arkts.AstNode {
     return arkts.factory.createCallExpression(
         arkts.factory.createMemberExpression(
-            arkts.factory.createIdentifier(InteroperAbilityNames.ESVALUE),
-            arkts.factory.createIdentifier(InteroperAbilityNames.WRAP),
+            arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE),
+            arkts.factory.createIdentifier(ESValueMethodNames.WRAP),
             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
             false,
             false
@@ -79,7 +79,7 @@ export function setPropertyESValue(object: string, key: string, value: arkts.Ast
         arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
                 arkts.factory.createIdentifier(object),
-                arkts.factory.createIdentifier(InteroperAbilityNames.SETPROPERTY),
+                arkts.factory.createIdentifier(ESValueMethodNames.SETPROPERTY),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
                 false
@@ -96,11 +96,11 @@ export function setPropertyESValue(object: string, key: string, value: arkts.Ast
 /**
  * 
  * @param result 
- * @param object 
+ * @param obj 
  * @param key 
  * @returns let result = object.getProperty(key)
  */
-export function getPropertyESValue(result: string, object: string, key: string): arkts.VariableDeclaration {
+export function getPropertyESValue(result: string, obj: string, key: string): arkts.VariableDeclaration {
     return arkts.factory.createVariableDeclaration(
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
@@ -110,8 +110,8 @@ export function getPropertyESValue(result: string, object: string, key: string):
                 arkts.factory.createIdentifier(result),
                 arkts.factory.createCallExpression(
                     arkts.factory.createMemberExpression(
-                        arkts.factory.createIdentifier(object),
-                        arkts.factory.createIdentifier(InteroperAbilityNames.GETPROPERTY),
+                        arkts.factory.createIdentifier(obj),
+                        arkts.factory.createIdentifier(ESValueMethodNames.GETPROPERTY),
                         arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                         false,
                         false
@@ -126,23 +126,19 @@ export function getPropertyESValue(result: string, object: string, key: string):
 
 /**
  * 
- * @param stateName 
+ * @param stateVar 
  * @param block 
- * @returns if (stateName.getProxy() === undefined) { block }
+ * @returns if (getCompatibleState(stateVar) === undefined) { block }
  */
 export function ifStateHasProxy(stateVar: () => arkts.Expression, block: arkts.BlockStatement): arkts.Statement {
     return arkts.factory.createIfStatement(
         arkts.factory.createBinaryExpression(
             arkts.factory.createCallExpression(
-                arkts.factory.createMemberExpression(
-                    stateVar(),
-                    arkts.factory.createIdentifier('getProxy'),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    true
-                ),
+                arkts.factory.createIdentifier(InteroperAbilityNames.GETPROXY),
                 undefined,
-                undefined,
+                [
+                    stateVar()
+                ]
             ),
             arkts.factory.createUndefinedLiteral(),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_STRICT_EQUAL
@@ -152,9 +148,9 @@ export function ifStateHasProxy(stateVar: () => arkts.Expression, block: arkts.B
 }
 
 /**
- * 
- * @param decorators 
- * @returns 判断是否包含Link装饰器
+ * Checks if an array of decorator names contains the 'Link' decorator.
+ * @param {string[]} decorators - Array of decorator names applied to a property.
+ * @returns {boolean} True if the 'Link' decorator is present, otherwise false.
  */
 export function hasLink(decorators: string[]): boolean {
     return decorators.some(decorator => decorator === 'Link');
@@ -173,10 +169,9 @@ export function hasProvide(decorators: string[]): boolean {
 }
 
 /**
- * 
- * @param stateVarName 
- * @param name 
- * @returns 带有状态变量标识的变量命名
+ * Generates a state proxy variable name by appending "_State_Proxy" suffix.
+ * @param {string} stateVarName - Original state variable name to be proxied.
+ * @returns {string} Proxied variable name in the format: "{stateVarName}_State_Proxy".
  */
 export function stateProxy(stateVarName: string): string {
     return `${stateVarName}_State_Proxy`;
