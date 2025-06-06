@@ -80,7 +80,7 @@ function addExternalComponents(): void {
     } else {
       COMPONENT_MAP[extCompName] = EXTERNAL_COMPONENT_MAP[extCompName];
     }
-  })
+  });
 }
 
 export const TRANSITION_COMMON_ATTRS: Set<string> = new Set([
@@ -153,7 +153,7 @@ export const CUSTOM_BUILDER_PROPERTIES: Set<string> = new Set(['background', 'bi
 export const CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY: Set<string> = new Set(['showUnit', 'create']);
 export const CUSTOM_BUILDER_CONSTRUCTORS: Set<string> = new Set(['MenuItem', 'MenuItemGroup', 'Refresh', 'WaterFlow', 'Radio', 'Checkbox']);
 
-(function initComponent() {
+(function initComponent(): void {
   Object.keys(COMPONENT_MAP).forEach((componentName) => {
     INNER_COMPONENT_NAMES.add(componentName);
     JS_BIND_COMPONENTS.add(componentName);
