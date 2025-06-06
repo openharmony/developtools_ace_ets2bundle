@@ -14,15 +14,15 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getClassPropertyAnnotationNames } from '../utils';
+import { getClassPropertyAnnotationNames, getIdentifierName, PresetDecorators, getAnnotationUsage } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 
 export const stateManagementDecorator = {
-  STATE: 'State',
-  PROP: 'Prop',
-  LINK: 'Link',
-  PROVIDE: 'Provide',
-  CONSUME: 'Consume'
+  STATE: PresetDecorators.STATE,
+  PROP: PresetDecorators.PROP,
+  LINK: PresetDecorators.LINK,
+  PROVIDE: PresetDecorators.PROVIDER,
+  CONSUME: PresetDecorators.CONSUME
 };
 
 const CLASS_PROPERTY_ANNOTATION_ONE: number = 1;
@@ -38,8 +38,13 @@ function duplicateState(
       const stateDecorators = propertyDecorators.filter(decorator =>
         Object.values(stateManagementDecorator).includes(decorator)
       );
+
+      // Check if Require is included
       const propertyNameNode = body.key;
-      const attributeName = body.key?.dumpSrc();
+      let attributeName: string = '';
+      if (propertyNameNode && arkts.isIdentifier(propertyNameNode)) {
+        attributeName = getIdentifierName(propertyNameNode);
+      }
       if (!propertyNameNode || !attributeName) {
         return;
       }
@@ -57,12 +62,16 @@ function duplicateState(
 const rule: UISyntaxRule = {
   name: 'no-duplicate-state-manager',
   messages: {
-    duplicateState: `This attribute '{{attributeName}}' cannot have mutilate state management decorators. <ArkTSCheck>`,
+    duplicateState: `This property '{{attributeName}}' cannot have mutilate state management decorators.`,
   },
   setup(context) {
     return {
       parsed: (node): void => {
         if (!arkts.isStructDeclaration(node)) {
+          return;
+        }
+        const hasComponentV2 = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
+        if (hasComponentV2) {
           return;
         }
         duplicateState(node, context);

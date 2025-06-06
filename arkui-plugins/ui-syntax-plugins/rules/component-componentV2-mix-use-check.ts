@@ -14,22 +14,46 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { PresetDecorators } from '../utils';
+import { PresetDecorators, getIdentifierName } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+
+const v1ComponentDecorators: string[] = [
+  PresetDecorators.STATE,
+  PresetDecorators.PROP,
+  PresetDecorators.LINK,
+  PresetDecorators.PROVIDE,
+  PresetDecorators.CONSUME,
+  PresetDecorators.STORAGE_LINK,
+  PresetDecorators.STORAGE_PROP,
+  PresetDecorators.LOCAL_STORAGE_LINK,
+  PresetDecorators.LOCAL_STORAGE_PROP,
+];
+const v2ComponentDecorators: string[] = [
+  PresetDecorators.LOCAL,
+  PresetDecorators.PARAM,
+  PresetDecorators.EVENT,
+  PresetDecorators.PROVIDER,
+  PresetDecorators.CONSUMER,
+];
 
 // Report an Observed version violation error
 function reportObservedConflict(
   node: arkts.ClassProperty,
   context: UISyntaxRuleContext,
+  componentDecorators: string[],
   message: string
 ): void {
   node.annotations.forEach((anno) => {
-    if (anno.expr?.dumpSrc()) {
+    if (!anno.expr) {
+      return;
+    }
+    const annotationName = getIdentifierName(anno.expr);
+    if (annotationName && componentDecorators.includes(annotationName)) {
       context.report({
         node: anno,
         message: message,
         data: {
-          annotation: anno.expr?.dumpSrc(),
+          annotation: annotationName,
         }
       });
     }
@@ -47,12 +71,12 @@ function processNode(
   while (queue.length > 0) {
     const currentNode: arkts.AstNode = queue.shift() as arkts.AstNode;
     if (arkts.isIdentifier(currentNode)) {
-      if (observedV1Name.has(currentNode.dumpSrc()) && annotationName === PresetDecorators.COMPONENT_V2) {
-        reportObservedConflict(node, context, rule.messages.observedv1_v2);
+      if (observedV1Name.has(getIdentifierName(currentNode)) && annotationName === PresetDecorators.COMPONENT_V2) {
+        reportObservedConflict(node, context, v2ComponentDecorators, rule.messages.observedv1_v2);
         break;
       }
-      if (observedV2Name.has(currentNode.dumpSrc()) && annotationName === PresetDecorators.COMPONENT_V1) {
-        reportObservedConflict(node, context, rule.messages.observedv2_v1);
+      if (observedV2Name.has(getIdentifierName(currentNode)) && annotationName === PresetDecorators.COMPONENT_V1) {
+        reportObservedConflict(node, context, v1ComponentDecorators, rule.messages.observedv2_v1);
         break;
       }
     }
@@ -82,11 +106,15 @@ function traverseTree(
 function findAllObserved(node: arkts.AstNode, observedV1Name: Set<string>, observedV2Name: Set<string>): void {
   if (arkts.isClassDeclaration(node)) {
     node.definition?.annotations.forEach((anno) => {
-      if (anno.expr?.dumpSrc() === PresetDecorators.OBSERVED_V1) {
+      if (!anno.expr) {
+        return;
+      }
+      const annotationName = getIdentifierName(anno.expr);
+      if (annotationName === PresetDecorators.OBSERVED_V1) {
         const componentV1Name = node?.definition?.ident?.name;
         componentV1Name ? observedV1Name.add(componentV1Name) : null;
       }
-      if (anno.expr?.dumpSrc() === PresetDecorators.OBSERVED_V2) {
+      if (annotationName === PresetDecorators.OBSERVED_V2) {
         const componentV2Name = node?.definition?.ident?.name;
         componentV2Name ? observedV2Name.add(componentV2Name) : null;
       }
@@ -106,7 +134,7 @@ function findAllTSTypeAliasDeclaration(
   if (arkts.nodeType(node) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_ALIAS_DECLARATION) {
     node.getChildren().forEach((child) => {
       if (arkts.isIdentifier(child)) {
-        const typeName = child.dumpSrc();
+        const typeName = getIdentifierName(child);
         findAllObservedType(node, typeName, observedV1Name, observedV2Name);
       }
     });
@@ -123,10 +151,10 @@ function findAllObservedType(
   observedV1Name: Set<string>,
   observedV2Name: Set<string>
 ): void {
-  if (arkts.isIdentifier(node) && observedV1Name.has(node.dumpSrc())) {
+  if (arkts.isIdentifier(node) && observedV1Name.has(getIdentifierName(node))) {
     observedV1Name.add(typeName);
   }
-  if (arkts.isIdentifier(node) && observedV2Name.has(node.dumpSrc())) {
+  if (arkts.isIdentifier(node) && observedV2Name.has(getIdentifierName(node))) {
     observedV2Name.add(typeName);
   }
   const children = node.getChildren();
@@ -141,11 +169,15 @@ function processComponentAnnotations(
   observedV2Name: Set<string>,
   context: UISyntaxRuleContext
 ): void {
-  node?.definition?.annotations.forEach((anno) => {
-    if (anno.expr?.dumpSrc() === PresetDecorators.COMPONENT_V2) {
+  node.definition.annotations.forEach((anno) => {
+    if (!anno.expr) {
+      return;
+    }
+    const annotationName = getIdentifierName(anno.expr);
+    if (annotationName === PresetDecorators.COMPONENT_V2) {
       traverseTree(node, PresetDecorators.COMPONENT_V2, observedV1Name, observedV2Name, context);
     }
-    if (anno.expr?.dumpSrc() === PresetDecorators.COMPONENT_V1) {
+    if (annotationName === PresetDecorators.COMPONENT_V1) {
       traverseTree(node, PresetDecorators.COMPONENT_V1, observedV1Name, observedV2Name, context);
     }
   });
@@ -154,8 +186,8 @@ function processComponentAnnotations(
 const rule: UISyntaxRule = {
   name: 'component-componentV2-mix-use-check',
   messages: {
-    observedv1_v2: `The type of the @{{annotation}} Decorator property can not be a class decorated with @Observed.`,
-    observedv2_v1: `The type of the @{{annotation}} Decorator property can not be a class decorated with @ObservedV2.`
+    observedv1_v2: `The type of the @{{annotation}} property cannot be a class decorated with '@Observed'.`,
+    observedv2_v1: `The type of the @{{annotation}} property cannot be a class decorated with '@ObservedV2'.`
   },
   setup(context) {
     let observedV1Name: Set<string> = new Set();

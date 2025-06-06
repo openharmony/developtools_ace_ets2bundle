@@ -14,23 +14,33 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { PresetDecorators } from '../utils';
+import { getClassPropertyAnnotationNames, PresetDecorators } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+
+const MONITOR_COUNT_LIMIT = 1;
 
 // Function declarations moved to the top with explicit return types
 function getLocalMonitorUsed(body: arkts.MethodDefinition): arkts.AnnotationUsage | undefined {
   const localMonitorUsed = body.scriptFunction.annotations?.find(
-    annotation => annotation.expr &&
-      annotation.expr.dumpSrc() === PresetDecorators.MONITOR
+    annotation => annotation.expr && arkts.isIdentifier(annotation.expr) &&
+      annotation.expr.name === PresetDecorators.MONITOR
   );
   return localMonitorUsed;
+}
+
+function getMonitor(body: arkts.MethodDefinition): arkts.AnnotationUsage[] {
+  const monitor = body.scriptFunction.annotations?.filter(
+    annotation => annotation.expr && arkts.isIdentifier(annotation.expr) &&
+      annotation.expr.name === PresetDecorators.MONITOR
+  );
+  return monitor;
 }
 
 function checkConflictingDecorators(context: UISyntaxRuleContext, body: arkts.MethodDefinition,
   localMonitorUsed: arkts.AnnotationUsage): boolean {
   const conflictingDecorators = body.scriptFunction.annotations?.filter(
-    annotation => annotation.expr &&
-      annotation.expr.dumpSrc() !== PresetDecorators.MONITOR
+    annotation => annotation.expr && arkts.isIdentifier(annotation.expr) &&
+      annotation.expr.name !== PresetDecorators.MONITOR
   );
   if (conflictingDecorators?.length > 0) {
     reportConflictingDecorators(context, localMonitorUsed, conflictingDecorators);
@@ -43,11 +53,11 @@ function reportConflictingDecorators(context: UISyntaxRuleContext, localMonitorU
   conflictingDecorators: arkts.AnnotationUsage[]): void {
   context.report({
     node: localMonitorUsed,
-    message: rule.messages.invalidUsage1,
+    message: rule.messages.monitorUsedAlone,
     fix: () => {
       const startPositions = conflictingDecorators.map(annotation =>
-        arkts.getStartPosition(annotation));
-      const endPositions = conflictingDecorators.map(annotation => arkts.getEndPosition(annotation));
+        annotation.startPosition);
+      const endPositions = conflictingDecorators.map(annotation => annotation.endPosition);
       const startPosition = startPositions[0];
       const endPosition = endPositions[endPositions.length - 1];
       return {
@@ -60,19 +70,21 @@ function reportConflictingDecorators(context: UISyntaxRuleContext, localMonitorU
 
 function checkIfClassIsObservedV2(node: arkts.ClassDeclaration): boolean {
   return node.definition?.annotations?.some(
-    observedV2 => observedV2.expr?.dumpSrc() === PresetDecorators.OBSERVED_V2
+    observedV2 => observedV2.expr && arkts.isIdentifier(observedV2.expr) &&
+      observedV2.expr?.name === PresetDecorators.OBSERVED_V2
   ) ?? false;
 }
 
 function checkIfStructIsComponentV2(node: arkts.StructDeclaration): boolean {
-  return node.definition?.annotations?.some(
-    componentV2 => componentV2.expr?.dumpSrc() === PresetDecorators.COMPONENT_V2
+  return node.definition.annotations?.some(
+    componentV2 => componentV2.expr && arkts.isIdentifier(componentV2.expr) &&
+      componentV2.expr?.name === PresetDecorators.COMPONENT_V2
   ) ?? false;
 }
 
 function reportInvalidUsage(context: UISyntaxRuleContext, node: arkts.AstNode, message: string, fixCode: string)
   : void {
-  const startPosition = arkts.getStartPosition(node);
+  const startPosition = node.startPosition;
   context.report({
     node,
     message,
@@ -91,7 +103,11 @@ function checkMultipleDecorators(
   let monitorUsed: boolean = false;
   node.definition?.body.forEach(body => {
     if (arkts.isMethodDefinition(body)) {
+      const duplicatedMonitor = getMonitor(body);
       const localMonitorUsed = getLocalMonitorUsed(body);
+      if (duplicatedMonitor.length > MONITOR_COUNT_LIMIT && localMonitorUsed) {
+        reportDuplicatedMonitor(context, localMonitorUsed);
+      }
       if (localMonitorUsed) {
         monitorUsed = true;
         checkConflictingDecorators(context, body, localMonitorUsed);
@@ -100,6 +116,21 @@ function checkMultipleDecorators(
     }
   });
   return monitorUsed;
+}
+
+function reportDuplicatedMonitor(context: UISyntaxRuleContext, localMonitorUsed: arkts.AstNode,): void {
+  context.report({
+    node: localMonitorUsed,
+    message: rule.messages.duplicatedMonitor,
+    fix: () => {
+      const startPosition = localMonitorUsed.startPosition;
+      const endPosition = localMonitorUsed.endPosition;
+      return {
+        range: [startPosition, endPosition],
+        code: ''
+      };
+    }
+  });
 }
 
 function checkDecorateMethod(
@@ -112,16 +143,17 @@ function checkDecorateMethod(
       return;
     }
     const monitorDecorator = body.annotations?.find(
-      annotation => annotation.expr?.dumpSrc() === PresetDecorators.MONITOR);
+      annotation => annotation.expr && arkts.isIdentifier(annotation.expr) &&
+        annotation.expr.name === PresetDecorators.MONITOR);
     if (monitorDecorator === undefined) {
       return;
     }
     context.report({
       node: monitorDecorator,
-      message: rule.messages.invalidUsage4,
+      message: rule.messages.monitorDecorateMethod,
       fix: () => {
-        const startPosition = arkts.getStartPosition(monitorDecorator);
-        const endPosition = arkts.getEndPosition(monitorDecorator);
+        const startPosition = monitorDecorator.startPosition;
+        const endPosition = monitorDecorator.endPosition;
         return {
           range: [startPosition, endPosition],
           code: '',
@@ -135,14 +167,15 @@ function checkDecorateMethod(
 const rule: UISyntaxRule = {
   name: 'monitor-decorator-check',
   messages: {
-    invalidUsage1:
+    monitorUsedAlone:
       `The member property or method can not be decorated by multiple built-in decorators.`,
-    invalidUsage2:
+    monitorUsedInObservedV2Class:
       `The '@Monitor' can decorate only member method within a 'class' decorated with @ObservedV2.`,
-    invalidUsage3:
+    monitorUsedInComponentV2Struct:
       `The '@Monitor' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`,
-    invalidUsage4:
-      `@Monitor can only decorate method`,
+    monitorDecorateMethod:
+      `@Monitor can only decorate method.`,
+    duplicatedMonitor: `Duplicate decorators for method are not allowed.`,
   },
   setup(context) {
     return {
@@ -159,10 +192,10 @@ const rule: UISyntaxRule = {
 
         // Check for errors related to @Monitor usage
         if (monitorUsed && !isObservedV2 && arkts.isClassDeclaration(node)) {
-          reportInvalidUsage(context, node, rule.messages.invalidUsage2, `@${PresetDecorators.OBSERVED_V2}\n`);
+          reportInvalidUsage(context, node, rule.messages.monitorUsedInObservedV2Class, `@${PresetDecorators.OBSERVED_V2}`);
         }
         if (monitorUsed && !isComponentV2 && arkts.isStructDeclaration(node)) {
-          reportInvalidUsage(context, node, rule.messages.invalidUsage3, `@${PresetDecorators.COMPONENT_V2}\n`);
+          reportInvalidUsage(context, node, rule.messages.monitorUsedInComponentV2Struct, `@${PresetDecorators.COMPONENT_V2}\n`);
         }
 
         checkDecorateMethod(node, context);
