@@ -328,15 +328,29 @@ export class SourceMapGenerator {
     stopEvent(eventWriteCachedSourceMaps);
   }
 
+  public checkAndWriteEnd(): void {
+    if (!this.isFirstAppend) {
+      this.writeOrigin('\n}');
+    }
+    //no collect sourcemap
+    if (!fs.existsSync(this.sourceMapPath)) {
+      this.writeOrigin('{}');
+    }
+    if (!fs.existsSync(this.sourceMapPathTmp)) {
+      this.writeTemp('');
+    }
+    this.closeFd();
+    if (fs.existsSync(this.cacheSourceMapPath)) {
+      fs.unlinkSync(this.cacheSourceMapPath);
+    }
+    fs.renameSync(this.sourceMapPathTmp, this.cacheSourceMapPath);
+  }
+
   public async writeUsedAndUnmodifiedSourceMapToFile(parentEvent: CompileEvent | undefined): Promise<void> {
     const eventMergeCachedSourceMaps = createAndStartEvent(parentEvent, 'merge cached source maps');
     let cacheSourceMapInfo: Object = this.getCacheSourceMapInfo();
     if (!cacheSourceMapInfo.exist) {
-      if (!this.isFirstAppend) {
-        this.writeOrigin('\n}');
-      }
-      this.closeFd();
-      fs.renameSync(this.sourceMapPathTmp, this.cacheSourceMapPath);
+      this.checkAndWriteEnd();
       stopEvent(eventMergeCachedSourceMaps);
       return;
     }
@@ -361,17 +375,15 @@ export class SourceMapGenerator {
           this.writeTemp(`\n${this.formatTemp(smObj.key, smObj.val)}`);
         }
       }
-      if (!this.isFirstAppend) {
-        this.writeOrigin('\n}');
-      }
-      this.closeFd();
-      fs.unlinkSync(this.cacheSourceMapPath);
-      fs.renameSync(this.sourceMapPathTmp, this.cacheSourceMapPath);
+      this.checkAndWriteEnd();
     })();
     stopEvent(eventMergeCachedSourceMaps);
   }
 
   public buildModuleSourceMapInfoSingle(parentEvent: CompileEvent | undefined): void {
+    if (this.projectConfig.widgetCompile) {
+      return;
+    }
     if (!this.isCompileSingle) {
       return;
     }
@@ -382,14 +394,6 @@ export class SourceMapGenerator {
   }
 
   public buildModuleSourceMapInfo(parentEvent: CompileEvent | undefined): void {
-    if (this.isCompileSingle) {
-      this.writeUsedAndUnmodifiedSourceMapToFile(parentEvent);
-    } else {
-      this.buildModuleSourceMapInfoAll(parentEvent);
-    }
-  }
-
-  public buildModuleSourceMapInfoAll(parentEvent: CompileEvent | undefined): void {
     if (this.projectConfig.widgetCompile) {
       return;
     }
