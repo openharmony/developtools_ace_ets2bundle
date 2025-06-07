@@ -667,7 +667,7 @@ export class ModuleMode extends CommonMode {
       this.generateNpmEntriesInfo();
     }
     this.generateAbcCacheFilesInfo();
-    stopEvent(eventEenDescriptionsForMergedEs2abc)
+    stopEvent(eventEenDescriptionsForMergedEs2abc);
   }
 
   generateMergedAbcOfEs2Abc(parentEvent: CompileEvent): void {

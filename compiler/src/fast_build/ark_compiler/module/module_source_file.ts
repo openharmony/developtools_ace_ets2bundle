@@ -229,7 +229,7 @@ export class ModuleSourceFile {
         pkgName: rollupObject.share.projectConfig.entryPackageName,
         pkgPath: rollupObject.share.projectConfig.modulePath
       }
-    }
+    };
   }
 
   static isMockFile(file: string, rollupObject: Object): boolean {
@@ -328,7 +328,7 @@ export class ModuleSourceFile {
     return ModuleSourceFile.sourceFiles;
   }
 
-  static async processSingleModuleSourceFile(rollupObject: Object, moduleId: string, parentEvent: CompileEvent| undefined): Promise<void> {
+  static async processSingleModuleSourceFile(rollupObject: Object, moduleId: string, parentEvent: CompileEvent | undefined): Promise<void> {
     if (!ModuleSourceFile.isEnvInitialized) {
       this.initPluginEnv(rollupObject);
       ModuleSourceFile.setProcessMock(rollupObject);
