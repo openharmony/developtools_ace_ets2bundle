@@ -44,8 +44,8 @@ function reportBuildParamNotAllowed(
     node: param,
     message: rule.messages.invalidComponet,
     fix: (param) => {
-      const startPosition = arkts.getStartPosition(param);
-      const endPosition = arkts.getEndPosition(param);
+      const startPosition = param.startPosition;
+      const endPosition = param.endPosition;
       return {
         range: [startPosition, endPosition],
         code: ''
@@ -83,8 +83,11 @@ function reportMissingBuildInStruct(
   context.report({
     node: structName,
     message: rule.messages.invalidBuild,
+    data: {
+      structName: getIdentifierName(structName),
+    },
     fix: (structName) => {
-      const startPosition = arkts.getStartPosition(blockStatement);
+      const startPosition = blockStatement.startPosition;
       const endPosition = startPosition;
       return {
         range: [startPosition, endPosition],
@@ -101,7 +104,7 @@ function validateBuild(
 ): void {
   node.definition.body.forEach((member) => {
     // Check if the member is defined for the method and the method name is 'build'
-    if (arkts.isMethodDefinition(member) && getIdentifierName(member.name) === BUILD_NAME) {
+    if (arkts.isMethodDefinition(member) && arkts.isIdentifier(member.name) && getIdentifierName(member.name) === BUILD_NAME) {
       buildFunctionCount++;
       validateBuildFunctionParameters(member, context);
     }
@@ -116,8 +119,8 @@ function validateBuild(
 const rule: UISyntaxRule = {
   name: 'validate-build-in-struct',
   messages: {
-    invalidComponet: `A custom component can have only one 'build' function, which does not require parameters.`,
-    invalidBuild: `This rule validates the use of the 'build' function`,
+    invalidComponet: `The 'build' method can not have arguments.`,
+    invalidBuild: `The struct '{{structName}}' must have at least and at most one 'build' method.`,
   },
   setup(context) {
     return {
