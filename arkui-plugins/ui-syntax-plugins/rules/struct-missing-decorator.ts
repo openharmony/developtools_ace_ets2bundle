@@ -20,9 +20,7 @@ import { UISyntaxRule } from './ui-syntax-rule';
 const rule: UISyntaxRule = {
   name: 'struct-missing-decorator',
   messages: {
-    missingComponentDecorator: `struct '{{structName}}' is missing '@Component' or '@CustomDialog' decorators`,
-    misusedPreview: `struct '{{structName}}' misused '@Preview' decorator. it should be decorated by '@Component' or '@CustomDialog'`,
-    misusedObserved: `struct '{{structName}}' misused '@Observed' decorator. it should be decorated by '@Component' or '@CustomDialog'`,
+    missingComponentDecorator: `Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct '{{structName}}'.`
   },
   setup(context) {
     function hasDecorator(node: arkts.StructDeclaration, decorator: string): boolean {
@@ -34,35 +32,23 @@ const rule: UISyntaxRule = {
         if (!arkts.isStructDeclaration(node)) {
           return;
         }
+        if (!node.definition) {
+          return;
+        }
+        if (!arkts.isClassDefinition(node.definition)) {
+          return;
+        }
         // Check for the presence of specific decorators on the struct
         const structName = node.definition.ident?.name ?? '';
         const structNode = node.definition.ident;
         const hasComponent = hasDecorator(node, PresetDecorators.COMPONENT_V1);
         const hasComponentV2 = hasDecorator(node, PresetDecorators.COMPONENT_V2);
         const hasCustomDialog = hasDecorator(node, PresetDecorators.CUSTOM_DIALOG);
-        const hasPreview = getAnnotationUsage(node, PresetDecorators.PREVIEW);
-        const hasObserved = getAnnotationUsage(node, PresetDecorators.OBSERVED_V1);
         // If no valid component decorators (@Component or @CustomDialog) are found
         if (!hasComponent && !hasComponentV2 && !hasCustomDialog && structNode) {
           context.report({
             node: structNode,
             message: rule.messages.missingComponentDecorator,
-            data: { structName },
-          });
-        }
-        // If the @Preview decorator is used but the struct is not decorated with @Component or @CustomDialog
-        if (hasPreview && !hasComponent && !hasComponentV2 && !hasCustomDialog && structNode) {
-          context.report({
-            node: structNode,
-            message: rule.messages.misusedPreview,
-            data: { structName },
-          });
-        }
-        // If the @Observed decorator is used but the struct is not decorated with @Component or @CustomDialog
-        if (hasObserved && !hasComponent && !hasComponentV2 && !hasCustomDialog && structNode) {
-          context.report({
-            node: structNode,
-            message: rule.messages.misusedObserved,
             data: { structName },
           });
         }

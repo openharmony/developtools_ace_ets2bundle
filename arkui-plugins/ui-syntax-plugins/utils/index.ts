@@ -172,6 +172,12 @@ export class MultiMap<K, V> {
   }
 }
 
+export function hasAnnotation(annoArray: readonly arkts.AnnotationUsage[], annotationName: string): boolean {
+  return (annoArray || []).some(anno =>
+    anno.expr && getIdentifierName(anno.expr) === annotationName
+  );
+}
+
 interface ComponentJson {
   name: string;
   atomic?: boolean;
