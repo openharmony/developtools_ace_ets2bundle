@@ -14,14 +14,17 @@
  */
 
 import { UISyntaxRule } from './ui-syntax-rule';
+import AttributeNoInvoke from './attribute-no-invoke';
+import BuilderparamDecoratorCheck from './builderparam-decorator-check.ts';
 import BuildRootNode from './build-root-node';
 import CheckConstructPrivateParameter from './check-construct-private-parameter';
 import CheckDecoratedPropertyType from './check-decorated-property-type';
 import ComponentComponentV2MixUseCheck from './component-componentV2-mix-use-check';
 import ComponentV2MixCheck from './componentV2-mix-check';
+import ConstructParameterLiteral from './construct-parameter-literal';
+import ConstructParameter from './construct-parameter';
 import ConsumerProviderDecoratorCheck from './consumer-provider-decorator-check';
 import ComponentV2StateUsageValidation from './componentV2-state-usage-validation';
-import ConstructParameterLiteral from './construct-parameter-literal';
 import CustomDialogMissingController from './custom-dialog-missing-controller';
 import DecoratorsInUIComponentOnly from './decorators-in-ui-component-only';
 import EntryLoacalStorageCheck from './entry-localstorage-check';
@@ -32,6 +35,7 @@ import NestedRelationship from './nested-relationship';
 import NoChildInButton from './no-child-in-button';
 import NoDuplicateDecorators from './no-duplicate-decorators';
 import NoDuplicateEntry from './no-duplicate-entry';
+import NoDuplicateId from './no-duplicate-id';
 import NoDuplicatePreview from './no-duplicate-preview';
 import NoDuplicateStateManager from './no-duplicate-state-manager';
 import NoPropLinkObjectlinkInEntry from './no-prop-link-objectlink-in-entry';
@@ -55,14 +59,17 @@ import OneDecoratorOnFunctionMethod from './one-decorator-on-function-method';
 import OldNewDecoratorMixUseCheck from './old-new-decorator-mix-use-check';
 
 const rules: UISyntaxRule[] = [
+  AttributeNoInvoke,
+  BuilderparamDecoratorCheck,
   BuildRootNode,
   CheckConstructPrivateParameter,
   CheckDecoratedPropertyType,
   ComponentComponentV2MixUseCheck,
   ComponentV2MixCheck,
+  ConstructParameterLiteral,
+  ConstructParameter,
   ConsumerProviderDecoratorCheck,
   ComponentV2StateUsageValidation,
-  ConstructParameterLiteral,
   CustomDialogMissingController,
   DecoratorsInUIComponentOnly,
   EntryLoacalStorageCheck,
@@ -73,6 +80,7 @@ const rules: UISyntaxRule[] = [
   NoChildInButton,
   NoDuplicateDecorators,
   NoDuplicateEntry,
+  NoDuplicateId,
   NoDuplicatePreview,
   NoDuplicateStateManager,
   NoPropLinkObjectlinkInEntry,
