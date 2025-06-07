@@ -15,14 +15,17 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
-import { PresetDecorators } from '../utils';
+import { getIdentifierName, PresetDecorators } from '../utils';
 
 function recordStructWithLinkDecorators(item: arkts.AstNode, structName: string, linkMap: Map<string, string>): void {
   if (!arkts.isClassProperty(item)) {
     return;
   }
   item.annotations?.forEach((annotation) => {
-    const annotationName: string = annotation.expr?.dumpSrc() ?? '';
+    if (!annotation.expr) {
+      return;
+    }
+    const annotationName: string = getIdentifierName(annotation.expr);
     if (annotationName === '') {
       return;
     }
@@ -39,10 +42,13 @@ function initMap(node: arkts.AstNode, linkMap: Map<string, string>): void {
     return;
   }
   node.getChildren().forEach((member) => {
-    if (!arkts.isStructDeclaration(member)) {
+    if (!(arkts.isStructDeclaration(member))) {
       return;
     }
-    const structName: string = member.definition.ident?.name ?? '';
+    if (!member.definition || !member.definition.ident || !arkts.isIdentifier(member.definition.ident)) {
+      return;
+    }
+    const structName: string = member.definition.ident.name;
     if (structName === '') {
       return;
     }
@@ -55,40 +61,41 @@ function initMap(node: arkts.AstNode, linkMap: Map<string, string>): void {
 function checkInitializeWithLiteral(node: arkts.AstNode, context: UISyntaxRuleContext,
   linkMap: Map<string, string>
 ): void {
-  if (!arkts.isCallExpression(node)) {
+  if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.expression)) {
     return;
   }
-  const componentName = node.expression.dumpSrc();
+  const componentName = node.expression.name;
   // Only assignments to properties decorated with Link or ObjectLink trigger rule checks
   if (!linkMap.has(componentName)) {
     return;
   }
   node.arguments.forEach((member) => {
     member.getChildren().forEach((property) => {
-      if (!arkts.isProperty(property)) {
+      if (!arkts.isProperty(property) || !property.key || !property.value) {
         return;
       }
-      if (property.value === undefined) {
-        return;
-      }
-      const propertyType: arkts.Es2pandaAstNodeType = arkts.nodeType(property.value);
-      const key: string = property.key?.dumpSrc() ?? '';
+      const key: string = getIdentifierName(property.key);
       if (key === '') {
         return;
       }
-      const value = property.value?.dumpSrc() ? property.value.dumpSrc() : '';
-      // If the assignment statement is not of type MemberExpression, throw an error
-      if (propertyType !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_MEMBER_EXPRESSION) {
-        context.report({
-          node: property,
-          message: rule.messages.cannotInitializeWithLiteral,
-          data: {
-            value: value,
-            annotationName: linkMap.get(componentName)!,
-            key: key,
-          },
-        });
+      // If the assignment statement is of type MemberExpression or Identifier, it is not judged
+      if (arkts.isMemberExpression(property.value) && arkts.isThisExpression(property.value.object)) {
+        return;
       }
+      if (arkts.isIdentifier(property.value)) {
+        return;
+      }
+      const initializerName = property.value.dumpSrc().replace(/\(this\)/g, 'this');
+      const parameter: string = linkMap.get(componentName)!;
+      context.report({
+        node: property,
+        message: rule.messages.initializerIsLiteral,
+        data: {
+          initializerName: initializerName,
+          parameter: `@${parameter}`,
+          parameterName: key,
+        },
+      });
     });
   });
 }
@@ -96,7 +103,7 @@ function checkInitializeWithLiteral(node: arkts.AstNode, context: UISyntaxRuleCo
 const rule: UISyntaxRule = {
   name: 'construct-parameter-literal',
   messages: {
-    cannotInitializeWithLiteral: `Assigning the attribute'{{value}}' to the '@{{annotationName}}' decorated attribute '{{key}}' is not allowed.`,
+    initializerIsLiteral: `The 'regular' property '{{initializerName}}' cannot be assigned to the '{{parameter}}' property '{{parameterName}}'.`,
   },
   setup(context) {
     let linkMap: Map<string, string> = new Map();

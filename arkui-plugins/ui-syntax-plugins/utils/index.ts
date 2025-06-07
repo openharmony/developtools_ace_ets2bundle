@@ -19,6 +19,8 @@ import * as path from 'path';
 import { UISyntaxRuleComponents } from 'ui-syntax-plugins/processor';
 import { UISyntaxRuleContext } from 'ui-syntax-plugins/rules/ui-syntax-rule';
 
+export const BUILD_NAME: string = 'build';
+
 export const SINGLE_CHILD_COMPONENT: number = 1;
 export const MAX_ENTRY_DECORATOR_COUNT: number = 1;
 export const MAX_PREVIEW_DECORATOR_COUNT: number = 10;
