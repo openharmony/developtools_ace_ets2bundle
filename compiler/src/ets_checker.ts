@@ -623,10 +623,6 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     MemoryMonitor.stopRecordStage(processBuildHaprrecordInfo);
   }
 
-  if (rollupShareObject?.projectConfig.mixCompile) {
-    generateDeclarationFileForSTS(rootFileNames);
-  }
-
   maxMemoryInServiceChecker = process.memoryUsage().heapUsed;
   // Release the typeChecker early and perform GC in the following scenarios:
   // In memory-priority mode or default mode, when the preview mode is disabled in a full compilation scenario, 
