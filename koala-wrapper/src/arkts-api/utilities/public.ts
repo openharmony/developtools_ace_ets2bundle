@@ -66,7 +66,11 @@ function processErrorState(state: Es2pandaContextState, context: KNativePointer,
             if (errorMessage === undefined) {
                 throwError(`Could not get ContextErrorMessage`);
             }
-            throwError([`Failed to proceed to ${Es2pandaContextState[state]}`, errorMessage].join(`\n`));
+            const allErrorMessages = withStringResult(global.es2panda._GetAllErrorMessages(context));
+            if (allErrorMessages === undefined) {
+                throwError(`Could not get AllErrorMessages`);
+            }
+            throwError([`Failed to proceed to ${Es2pandaContextState[state]}`, errorMessage, allErrorMessages].join(`\n`));
         }
     } catch (e) {
         global.es2panda._DestroyContext(context);
