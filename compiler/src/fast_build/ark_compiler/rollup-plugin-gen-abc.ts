@@ -28,6 +28,7 @@ import { cleanUpKitImportObjects } from '../../process_kit_import';
 import { cleanUpFilesList } from './utils';
 import { CommonLogger } from './logger';
 import { cleanUpProcessArkTSEvolutionObj } from '../../process_arkts_evolution';
+import { FileManager } from './interop/interop_manager';
 
 export function genAbc() {
   return {
@@ -75,6 +76,7 @@ export function genAbc() {
       cleanSharedModuleSet();
       CommonLogger.destroyInstance();
       cleanUpProcessArkTSEvolutionObj();
+      FileManager.cleanFileManagerObject();
     }
   };
 }
