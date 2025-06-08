@@ -93,7 +93,7 @@ export function genAbc() {
       BytecodeObfuscator.cleanBcObfuscatorObject();
       PreloadFileModules.cleanUpPreloadSoObjects();
       isMixCompile() && cleanUpProcessArkTSEvolutionObj();
-      isMixCompile() &&FileManager.cleanFileManagerObject();
+      isMixCompile() && FileManager.cleanFileManagerObject();
     }
   };
 }

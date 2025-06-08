@@ -15,7 +15,6 @@
 
 import { FileManager } from './interop_manager';
 import { ResolveModuleInfo, getResolveModule, readDeaclareFiles } from '../../../ets_checker';
-import { processInteropUI } from '../../../process_interop_ui';
 import {
     mkdirsSync,
     readFile,
@@ -164,7 +163,6 @@ class DeclfileProductor {
         }
         fs.mkdirSync(config.outDir, { recursive: true });
         generateInteropDecls(config);
-        processInteropUI(FileManager.arkTSModuleMap.get(moduleInfo.packageName)?.declgenV2OutPath);
         const newCache = {
             ...existingCache,
             ...hashMap

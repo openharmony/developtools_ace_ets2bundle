@@ -142,7 +142,7 @@ export class ModuleInfo {
   filePath: string;
   cacheFilePath: string;
   recordName: string;
-  isCommonJs: boolean;1
+  isCommonJs: boolean;
   sourceFile: string;
   packageName: string;
   originSourceLang: string;
