@@ -88,6 +88,7 @@ export interface DeclFilesConfig {
 interface DeclFileConfig {
   declPath: string;
   ohmUrl: string;
+  isNative?: boolean
 }
 
 export interface Params {
