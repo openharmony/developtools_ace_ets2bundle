@@ -604,9 +604,11 @@ function collectDeepInheritedInterfacesFromType(type: ts.Type, checker: ts.TypeC
     const ifacePath: string = getArkTSEvoFileOHMUrl(type);
     interfaces.add(`L${ifacePath}/${type.symbol.name};`);
   }
-  const baseTypes: ts.BaseType[] = checker.getBaseTypes(type as ts.InterfaceType) ?? [];
-  for (const baseType of baseTypes) {
-    collectDeepInheritedInterfacesFromType(baseType, checker, visited, interfaces);
+  if (hasResolvedBaseTypes(type)) {
+    const baseTypes: ts.BaseType[] = checker.getBaseTypes(type) ?? [];
+    for (const baseType of baseTypes) {
+      collectDeepInheritedInterfacesFromType(baseType, checker, visited, interfaces);
+    }
   }
 
   if (decls) {
@@ -616,6 +618,14 @@ function collectDeepInheritedInterfacesFromType(type: ts.Type, checker: ts.TypeC
       }
     }
   }
+}
+
+function hasResolvedBaseTypes(type: ts.Type): type is ts.InterfaceType {
+  return (
+    (type.flags & ts.TypeFlags.Object) !== 0 &&
+    ((type as ts.ObjectType).objectFlags & (ts.ObjectFlags.Class | ts.ObjectFlags.Interface)) !== 0 &&
+    'resolvedBaseTypes' in type
+  );
 }
 
 function transformHeritage(context: ts.TransformationContext,
