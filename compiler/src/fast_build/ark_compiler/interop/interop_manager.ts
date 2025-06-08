@@ -144,7 +144,7 @@ export class FileManager {
     }
   }
 
-  private static parseAliasJson(pkgName: string, jsonData: any): Map<string, AliasConfig> {
+  private static parseAliasJson(pkgName: string, jsonData: Object): Map<string, AliasConfig> {
     const map = new Map<string, AliasConfig>();
 
     for (const [aliasKey, config] of Object.entries(jsonData)) {
@@ -169,7 +169,7 @@ export class FileManager {
     return map;
   }
 
-  private static isValidAliasConfig(config: any): config is AliasConfig {
+  private static isValidAliasConfig(config: Object): config is AliasConfig {
     return typeof config === 'object' &&
       config !== null &&
       'originalAPIName' in config &&

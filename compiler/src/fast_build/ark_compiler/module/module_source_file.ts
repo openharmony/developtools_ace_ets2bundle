@@ -88,7 +88,7 @@ import {
   FileManager,
   isMixCompile
 } from '../interop/interop_manager';
-import { FileInfo } from '../interop/type';
+import { AliasConfig, FileInfo } from '../interop/type';
 import { ARKTS_1_2 } from '../interop/pre_define';
 
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
@@ -755,7 +755,7 @@ export class ModuleSourceFile {
     ModuleSourceFile.sourceFiles.sort((a, b) => a.moduleId.localeCompare(b.moduleId));
   }
 
-  private tryBuildStaticOhmUrl(queryResult: any, moduleRequest: string): string | undefined {
+  private tryBuildStaticOhmUrl(queryResult: AliasConfig, moduleRequest: string): string | undefined {
     if (!queryResult || !queryResult.isStatic) {
       return undefined;
     }
