@@ -917,6 +917,10 @@ export class Es2pandaNativeModule {
         suggestionInfo?: KNativePointer, range?: KNativePointer): void {
         throw new Error('Not implemented');
     }
+
+    _SetUpSoPath(soPath: string): void {
+        throw new Error('Not implemented');
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {
