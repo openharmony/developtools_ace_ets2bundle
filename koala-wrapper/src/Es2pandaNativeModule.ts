@@ -78,6 +78,9 @@ export class Es2pandaNativeModule {
     _ContextErrorMessage(context: KPtr): KPtr {
         throw new Error('Not implemented');
     }
+    _GetAllErrorMessages(context: KPtr): KPtr {
+        throw new Error('Not implemented');
+    }
     _AstNodeChildren(context: KPtr, node: KPtr): KPtr {
         throw new Error('Not implemented');
     }
