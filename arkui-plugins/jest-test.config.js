@@ -30,6 +30,7 @@ module.exports = {
     moduleFileExtensions: ['ts', 'js', 'json', 'node'],
     coverageDirectory: './test/report',
     collectCoverageFrom: [
+        'collectors/**',
         'common/**',
         'memo-plugins/**',
         'ui-plugins/**'
@@ -46,13 +47,13 @@ module.exports = {
         'ui-plugins/printer-transformer.ts',
         'ui-plugins/builder-lambda-translators/builder-lambda-transformer.ts',
         'ui-plugins/entry-translators/entry-transformer.ts',
-        'ui-plugins/struct-translators/struct-transformer.ts'
+        'ui-plugins/struct-translators/struct-transformer.ts',
     ],
     verbose: true,
     globals: {
         SDK_PATH: sdkPath,
         PANDA_SDK_PATH: pandaSdkPath,
         API_PATH: apiPath,
-        KIT_PATH: kitPath
+        KIT_PATH: kitPath,
     },
 };

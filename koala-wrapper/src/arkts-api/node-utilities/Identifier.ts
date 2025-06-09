@@ -15,6 +15,7 @@
 
 import { Identifier, TypeNode } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
+import { NodeCache } from '../utilities/nodeCache';
 import { attachModifiers, updateThenAttach } from '../utilities/private';
 
 export function updateIdentifier(original: Identifier, name: string, typeAnnotation?: TypeNode): Identifier {
@@ -23,5 +24,9 @@ export function updateIdentifier(original: Identifier, name: string, typeAnnotat
     }
 
     const update = updateThenAttach(Identifier.update2Identifier, attachModifiers);
-    return update(original, name, typeAnnotation);
+    const newNode = update(original, name, typeAnnotation);
+    if (NodeCache.getInstance().has(original)) {
+        NodeCache.getInstance().refresh(original, newNode);
+    }
+    return newNode;
 }

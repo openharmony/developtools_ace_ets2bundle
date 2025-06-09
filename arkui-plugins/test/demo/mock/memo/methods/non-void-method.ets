@@ -17,6 +17,7 @@ import { memo, __memo_context_type, __memo_id_type } from "arkui.stateManagement
 
 @Retention({policy:"SOURCE"}) @interface memo_intrinsic {}
 @Retention({policy:"SOURCE"}) @interface memo_entry {}
+@Retention({policy:"SOURCE"}) @interface memo_skip {}
 
 export declare function __context(): __memo_context_type
 export declare function __id(): __memo_id_type
@@ -55,6 +56,12 @@ class Test {
  			return entry()
  		}
  	}
+
+	@memo memo_skip_args(arg1: number, @memo_skip arg2: string, @memo_skip arg3: @memo () => void): string {
+		let a = arg1;
+		arg3();
+		return arg2;
+	}
 }
 
 class Use {

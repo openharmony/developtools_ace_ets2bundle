@@ -39,11 +39,11 @@ const parsedTransform: Plugins = {
 
 const expectedScript: string = `
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { GridItemAttribute as GridItemAttribute } from "arkui.component.gridItem";
 
@@ -98,9 +98,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   @memo() public build() {
-    Column(undefined, (() => {
-      Grid(undefined, (() => {
-        GridItem(((instance: GridItemAttribute): void => {
+    Column(undefined, undefined, @memo() (() => {
+      Grid(undefined, undefined, undefined, @memo() (() => {
+        GridItem(@memo() ((instance: GridItemAttribute): void => {
           instance.selected(({
             value: this.boo,
             onChange: ((value: boolean) => {
@@ -108,10 +108,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
             }),
           } as Bindable<boolean>));
           return;
-        }), (() => {
-          Text(undefined, "nihao");
+        }), undefined, @memo() (() => {
+          Text(undefined, "nihao", undefined, undefined);
         }));
-        GridItem(((instance: GridItemAttribute): void => {
+        GridItem(@memo() ((instance: GridItemAttribute): void => {
           instance.selected(({
             value: c,
             onChange: ((value: boolean) => {
@@ -119,8 +119,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
             }),
           } as Bindable<boolean>));
           return;
-        }), (() => {
-          Text(undefined, "nihao");
+        }), undefined, @memo() (() => {
+          Text(undefined, "nihao", undefined, undefined);
         }));
       }));
     }));
@@ -144,7 +144,7 @@ class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     MyStateSample._instantiateImpl(undefined, (() => {
       return new MyStateSample();
-    }));
+    }), undefined, undefined, undefined);
   }
   
   public constructor() {}

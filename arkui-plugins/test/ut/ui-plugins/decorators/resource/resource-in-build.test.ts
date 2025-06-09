@@ -38,15 +38,24 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
 import { _rawfile as _rawfile } from "arkui.component.resources";
+
 import { ImageAnimatorAttribute as ImageAnimatorAttribute } from "arkui.component.imageAnimator";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { ImageAttribute as ImageAttribute } from "arkui.component.image";
+
 import { _r as _r } from "arkui.component.resources";
+
 import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component, $r as $r, $rawfile as $rawfile, Column as Column, Text as Text, Image as Image, TextInput as TextInput, Select as Select, SelectOption as SelectOption, Margin as Margin, ImageAnimator as ImageAnimator, Resource as Resource } from "@ohos.arkui.component";
+
 function main() {}
 
 @Component() final struct ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
@@ -100,14 +109,14 @@ function main() {}
   }
   
   @memo() public build() {
-    Column(undefined, (() => {
-      Text(undefined, _r(16777216, 10003, "com.example.mock", "entry"));
-      Image(undefined, _rawfile(0, 30000, "com.example.mock", "entry", "app.mock.txt"));
+    Column(undefined, undefined, @memo() (() => {
+      Text(undefined, _r(16777216, 10003, "com.example.mock", "entry"), undefined, undefined);
+      Image(undefined, _rawfile(0, 30000, "com.example.mock", "entry", "app.mock.txt"), undefined, undefined);
       TextInput(undefined, {
         text: _r(16777220, 10003, "com.example.mock", "entry"),
-      });
-      Text(undefined, _r(-1, -1, "com.example.mock", "entry", this.str1));
-      Text(undefined, _r(-1, -1, "com.example.mock", "entry", this.str2));
+      }, undefined);
+      Text(undefined, _r(-1, -1, "com.example.mock", "entry", this.str1), undefined, undefined);
+      Text(undefined, _r(-1, -1, "com.example.mock", "entry", this.str2), undefined, undefined);
       Select(undefined, new Array<SelectOption>({
         value: "aaa",
         icon: _r(16777223, 20000, "com.example.mock", "entry"),
@@ -120,15 +129,15 @@ function main() {}
       }, {
         value: "ddd",
         icon: _r(16777223, 20000, "com.example.mock", "entry"),
-      }));
-      Image(((instance: ImageAttribute): void => {
+      }), undefined);
+      Image(@memo() ((instance: ImageAttribute): void => {
         instance.margin(({
           top: _r(16777222, 10002, "com.example.mock", "entry"),
           bottom: _r(16777222, 10002, "com.example.mock", "entry"),
         } as Margin));
         return;
-      }), _r(16777217, 20000, "com.example.mock", "entry"));
-      ImageAnimator(((instance: ImageAnimatorAttribute): void => {
+      }), _r(16777217, 20000, "com.example.mock", "entry"), undefined, undefined);
+      ImageAnimator(@memo() ((instance: ImageAnimatorAttribute): void => {
         instance.images([{
           src: _r(16777217, 20000, "com.example.mock", "entry"),
         }, {

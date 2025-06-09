@@ -73,11 +73,12 @@ i = _r(16777216, 10003, "com.example.mock", "entry");
   public set icon(value: Resource) {
     this.__backing_icon = value;
   }
+  
   @memo() public build() {
-    Column(undefined, (() => {
-      Text(undefined, this.str);
-      Text(undefined, i);
-      Image(undefined, this.icon);
+    Column(undefined, undefined, @memo() (() => {
+      Text(undefined, this.str, undefined, undefined);
+      Text(undefined, i, undefined, undefined);
+      Image(undefined, this.icon, undefined, undefined);
     }));
   }
   private constructor() {}

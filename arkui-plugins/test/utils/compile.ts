@@ -25,7 +25,7 @@ import {
 } from './shared-types';
 import { MockPluginDriver, stateName } from './plugin-driver';
 import {
-    createContextFromString,
+    createContextGenerateAbcForExternalSourceFiles,
     createCacheContextFromFile,
     destroyContext,
     resetConfig,
@@ -202,7 +202,7 @@ function createContextForExternalCompilation(jobInfo: JobInfo): arkts.Context {
 function compileAbcWithExternal(emitter: EventEmitter<ProcessEvent>, jobInfo: JobInfo, tracing: TraceOptions): void {
     MockPluginDriver.getInstance().initPlugins(jobInfo.plugins ?? []);
     MockPluginDriver.getInstance().getPluginContext().setProjectConfig(jobInfo.projectConfig!);
-    const context = createContextFromString(jobInfo.filePaths!);
+    const context = createContextGenerateAbcForExternalSourceFiles(jobInfo.filePaths!);
     MockPluginDriver.getInstance().getPluginContext().setContextPtr(context.peer);
     const stopAfter = jobInfo.stopAfter!;
     let shouldStop = false;

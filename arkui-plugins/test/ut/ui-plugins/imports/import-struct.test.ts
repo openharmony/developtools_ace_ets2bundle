@@ -97,16 +97,16 @@ function main() {}
   @memo() public build() {
     SimpleStruct._instantiateImpl(undefined, (() => {
       return new SimpleStruct();
-    }));
+    }), undefined, undefined, undefined);
     SimpleStruct._instantiateImpl(undefined, (() => {
       return new SimpleStruct();
     }), {
       message: "str1",
-    });
+    }, undefined, undefined);
     SimpleStruct._instantiateImpl(undefined, (() => {
       return new SimpleStruct();
-    }), (() => {
-      Text(undefined, "a");
+    }), undefined, undefined, @memo() (() => {
+      Text(undefined, "a", undefined, undefined);
     }));
   }
   

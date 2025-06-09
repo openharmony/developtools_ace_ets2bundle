@@ -67,7 +67,7 @@ function main() {}
     return this.__backing_customBuilderParam!;
   }
   
-  public set customBuilderParam(@memo() value: (()=> void)) {
+  public set customBuilderParam(value: @memo() (()=> void)) {
     this.__backing_customBuilderParam = value;
   }
   
@@ -87,27 +87,27 @@ function main() {}
   public __updateStruct(initializers: __Options_Parent | undefined): void {}
   
   @memo() public componentBuilder() {
-    Text(undefined, "Parent builder");
+    Text(undefined, "Parent builder", undefined, undefined);
   }
   
   @memo() public build() {
-    Column(undefined, (() => {
+    Column(undefined, undefined, @memo() (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {
         customBuilderParam: this.componentBuilder,
-      });
+      }, undefined, undefined);
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {
         customBuilderParam: @memo() (() => {
           this.componentBuilder();
         }),
-      });
+      }, undefined, undefined);
       Child._instantiateImpl(undefined, (() => {
         return new Child();
-      }), (() => {
-        Text(undefined, "Parent builder");
+      }), undefined, undefined, @memo() (() => {
+        Text(undefined, "Parent builder", undefined, undefined);
       }));
     }));
   }
@@ -117,7 +117,7 @@ function main() {}
 }
 
 @Component() export interface __Options_Child {
-  set customBuilderParam(@memo() customBuilderParam: (()=> void) | undefined)
+  set customBuilderParam(customBuilderParam: @memo() (()=> void) | undefined)
   
   get customBuilderParam(): @memo() (()=> void) | undefined
   

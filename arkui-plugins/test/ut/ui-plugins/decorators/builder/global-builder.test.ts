@@ -51,12 +51,12 @@ function main() {}
 
 
 @memo() function showTextBuilder() {
-  Text(undefined, "Hello World");
+  Text(undefined, "Hello World", undefined, undefined);
 }
 
 @memo() function overBuilder(params: Tmp) {
-  Row(undefined, (() => {
-    Text(undefined, (("UseStateVarByReference: ") + (params.paramA1)));
+  Row(undefined, undefined, @memo() (() => {
+    Text(undefined, (("UseStateVarByReference: ") + (params.paramA1)), undefined, undefined);
   }));
 }
 
@@ -74,7 +74,7 @@ class Tmp {
   public __updateStruct(initializers: __Options_BuilderDemo | undefined): void {}
   
   @memo() public build() {
-    Row(undefined, @memo() (() => {
+    Row(undefined, undefined, @memo() (() => {
       showTextBuilder();
       overBuilder({
         paramA1: "Hello",

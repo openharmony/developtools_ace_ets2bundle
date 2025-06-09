@@ -51,6 +51,9 @@ import {
     isForInStatement,
     isForUpdateStatement,
     isForOfStatement,
+    isTSTypeAliasDeclaration,
+    isETSParameterExpression,
+    isETSFunctionType,
 } from '../generated';
 import {
     isEtsScript,
@@ -66,6 +69,7 @@ import {
     isVariableDeclarator,
     isArrowFunctionExpression,
     isAssignmentExpression,
+    isEtsParameterExpression,
 } from './factory/nodeTests';
 import { classDefinitionFlags } from './utilities/public';
 import { Es2pandaAstNodeType } from '../Es2pandaEnums';
@@ -224,8 +228,7 @@ function visitTrivialExpression(node: AstNode, visitor: Visitor): AstNode {
 function visitDeclaration(node: AstNode, visitor: Visitor): AstNode {
     if (updated) {
         return node;
-    }
-    if (isFunctionDeclaration(node)) {
+    } else if (isFunctionDeclaration(node)) {
         updated = true;
         return factory.updateFunctionDeclaration(
             node,
@@ -233,16 +236,13 @@ function visitDeclaration(node: AstNode, visitor: Visitor): AstNode {
             node.isAnon,
             node.annotations
         );
-    }
-    if (isClassDeclaration(node)) {
+    } else if (isClassDeclaration(node)) {
         updated = true;
         return factory.updateClassDeclaration(node, nodeVisitor(node.definition, visitor));
-    }
-    if (isStructDeclaration(node)) {
+    } else if (isStructDeclaration(node)) {
         updated = true;
         return factory.updateStructDeclaration(node, nodeVisitor(node.definition, visitor));
-    }
-    if (isTSInterfaceDeclaration(node)) {
+    } else if (isTSInterfaceDeclaration(node)) {
         updated = true;
         return factory.updateInterfaceDeclaration(
             node,
@@ -254,14 +254,21 @@ function visitDeclaration(node: AstNode, visitor: Visitor): AstNode {
             // TODO: how do I get it?
             true
         );
-    }
-    if (isVariableDeclaration(node)) {
+    } else if (isVariableDeclaration(node)) {
         updated = true;
         return factory.updateVariableDeclaration(
             node,
             0,
             node.declarationKind,
             nodesVisitor(node.declarators, visitor)
+        );
+    } else if (isTSTypeAliasDeclaration(node)) {
+        updated = true;
+        return factory.updateTSTypeAliasDeclaration(
+            node,
+            node.id,
+            nodeVisitor(node.typeParams, visitor),
+            nodeVisitor(node.typeAnnotation, visitor)
         );
     }
     // TODO
@@ -458,6 +465,12 @@ function visitWithoutUpdate<T extends AstNode>(node: T, visitor: Visitor): T {
     }
     if (isImportDeclaration(node)) {
         nodesVisitor(node.specifiers, visitor);
+    }
+    if (isETSFunctionType(node)) {
+        nodesVisitor(node.params, visitor);
+    }
+    if (isEtsParameterExpression(node)) {
+        nodeVisitor(node.type, visitor);
     }
     return node;
 }

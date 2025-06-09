@@ -18,7 +18,8 @@ import { GenSymGenerator } from '../../common/gensym-generator';
 import { DecoratorNames, DECORATOR_TYPE_MAP, StateManagementTypes } from '../../common/predefines';
 import { factory as UIFactory } from '../ui-factory';
 import { collectStateManagementTypeImport, getValueInAnnotation, hasDecorator, removeDecorator } from './utils';
-import { addMemoAnnotation, findCanAddMemoFromTypeAnnotation, CustomComponentNames } from '../utils';
+import { CustomComponentNames } from '../utils';
+import { addMemoAnnotation, findCanAddMemoFromTypeAnnotation } from '../../collectors/memo-collectors/utils';
 import { annotation } from '../../common/arkts-utils';
 
 export class factory {

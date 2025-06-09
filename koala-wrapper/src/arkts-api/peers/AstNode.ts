@@ -15,7 +15,7 @@
 
 import { isNullPtr, KInt, KNativePointer as KPtr, KNativePointer, nullptr } from '@koalaui/interop';
 import { global } from '../static/global';
-import { allFlags, nodeType, unpackNode, unpackNodeArray, unpackNonNullableNode, unpackString } from '../utilities/private';
+import { allFlags, unpackNode, unpackNodeArray, unpackNonNullableNode, unpackString } from '../utilities/private';
 import { throwError } from '../../utils';
 import { Es2pandaModifierFlags } from '../../generated/Es2pandaEnums';
 import { ArktsObject } from './ArktsObject';

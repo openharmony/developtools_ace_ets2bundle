@@ -129,7 +129,7 @@ function main() {}
     return this.__backing_closer!;
   }
   
-  public set closer(@memo() value: (()=> void)) {
+  public set closer(value: @memo() (()=> void)) {
     this.__backing_closer = value;
   }
   
@@ -147,25 +147,25 @@ function main() {}
   public __updateStruct(initializers: __Options_CustomContainerUser | undefined): void {}
   
   @memo() public build() {
-    Column(undefined, (() => {
+    Column(undefined, undefined, @memo() (() => {
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
-      }), (() => {
-        Column(undefined, (() => {
-          Text(undefined, "hello");
+      }), undefined, undefined, @memo() (() => {
+        Column(undefined, undefined, @memo() (() => {
+          Text(undefined, "hello", undefined, undefined);
         }));
       }));
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
-      }), {}, (() => {
-        Column(undefined, (() => {}));
+      }), {}, undefined, @memo() (() => {
+        Column(undefined, undefined, @memo() (() => {}));
       }));
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
-      }), undefined, (() => {}));
+      }), undefined, undefined, @memo() (() => {}));
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
-      }));
+      }), undefined, undefined, undefined);
     }));
   }
   
@@ -174,7 +174,7 @@ function main() {}
 }
 
 @Component() export interface __Options_CustomContainer {
-  set closer(@memo() closer: (()=> void) | undefined)
+  set closer(closer: @memo() (()=> void) | undefined)
   
   get closer(): @memo() (()=> void) | undefined
   

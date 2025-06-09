@@ -14,18 +14,20 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { DeclarationCollector } from '../../common/declaration-collector';
 import { ImportCollector } from '../../common/import-collector';
-import { matchPrefix } from '../../common/arkts-utils';
+import { isDecoratorAnnotation } from '../../common/arkts-utils';
 import {
-    ARKUI_IMPORT_PREFIX_NAMES,
     DecoratorIntrinsicNames,
     DecoratorNames,
     DECORATOR_TYPE_MAP,
     StateManagementTypes,
     GetSetTypes,
 } from '../../common/predefines';
-import { addMemoAnnotation, findCanAddMemoFromParamExpression, findCanAddMemoFromTypeAnnotation } from '../utils';
+import {
+    addMemoAnnotation,
+    findCanAddMemoFromParameter,
+    findCanAddMemoFromTypeAnnotation,
+} from '../../collectors/memo-collectors/utils';
 
 export interface DecoratorInfo {
     annotation: arkts.AnnotationUsage;
@@ -37,28 +39,6 @@ export function isDecoratorIntrinsicAnnotation(
     decoratorName: DecoratorIntrinsicNames
 ): boolean {
     return !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName;
-}
-
-export function isDecoratorAnnotation(
-    anno: arkts.AnnotationUsage,
-    decoratorName: DecoratorNames,
-    ignoreDecl?: boolean
-): boolean {
-    if (!(!!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName)) {
-        return false;
-    }
-    if (!ignoreDecl) {
-        const decl = arkts.getDecl(anno.expr);
-        if (!decl) {
-            return false;
-        }
-        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
-        if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
-            return false;
-        }
-        DeclarationCollector.getInstance().collect(decl);
-    }
-    return true;
 }
 
 export function removeDecorator(
@@ -216,7 +196,7 @@ export function createSetter(
         arkts.factory.createIdentifier('value', type?.clone()),
         undefined
     );
-    if (needMemo && findCanAddMemoFromParamExpression(param)) {
+    if (needMemo && findCanAddMemoFromParameter(param)) {
         addMemoAnnotation(param);
     }
     const scriptFunction = arkts.factory.createScriptFunction(
