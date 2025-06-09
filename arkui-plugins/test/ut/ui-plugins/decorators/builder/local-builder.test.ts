@@ -59,21 +59,21 @@ function main() {}
   public __updateStruct(initializers: __Options_BuilderDemo | undefined): void {}
   
   @memo() public showTextBuilder() {
-    Text(((instance: TextAttribute): void => {
+    Text(@memo() ((instance: TextAttribute): void => {
       instance.fontSize(30);
       return;
-    }), "Hello World");
+    }), "Hello World", undefined, undefined);
   }
   
   @memo() public showTextValueBuilder(param: string) {
-    Text(((instance: TextAttribute): void => {
+    Text(@memo() ((instance: TextAttribute): void => {
       instance.fontSize(30);
       return;
-    }), param);
+    }), param, undefined, undefined);
   }
   
   @memo() public build() {
-    Column(undefined, @memo() (() => {
+    Column(undefined, undefined, @memo() (() => {
       this.showTextBuilder();
       this.showTextValueBuilder("Hello @Builder");
     }));

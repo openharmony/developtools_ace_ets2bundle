@@ -41,13 +41,13 @@ const expectedScript: string = `
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { LinkSourceType as LinkSourceType } from "arkui.stateManagement.decorator";
 
 import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
@@ -98,24 +98,24 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   @memo() public build() {
-    Column(undefined, (() => {
-      Button(((instance: ButtonAttribute): void => {
+    Column(undefined, undefined, @memo() (() => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.selectedDate.setFullYear(((this.selectedDate.getFullYear()) + (1)));
         }));
         return;
-      }), "child increase the year by 1");
-      Button(((instance: ButtonAttribute): void => {
+      }), "child increase the year by 1", undefined, undefined);
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.margin(10).onClick(((e: ClickEvent) => {
           this.selectedDate = new Date("2023-09-09");
         }));
         return;
-      }), "child update the new date");
+      }), "child update the new date", undefined, undefined);
       DatePicker(undefined, {
         start: new Date("1970-1-1"),
         end: new Date("2100-1-1"),
         selected: this.selectedDate,
-      });
+      }, undefined);
     }));
   }
   
@@ -142,29 +142,29 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   @memo() public build() {
-    Column(undefined, (() => {
-      Button(((instance: ButtonAttribute): void => {
+    Column(undefined, undefined, @memo() (() => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.margin(10).onClick(((e: ClickEvent) => {
           this.parentSelectedDate.setMonth(((this.parentSelectedDate.getMonth()) + (1)));
         }));
         return;
-      }), "parent increase the month by 1");
-      Button(((instance: ButtonAttribute): void => {
+      }), "parent increase the month by 1", undefined, undefined);
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.margin(10).onClick(((e: ClickEvent) => {
           this.parentSelectedDate = new Date("2023-07-07");
         }));
         return;
-      }), "parent update the new date");
+      }), "parent update the new date", undefined, undefined);
       DatePicker(undefined, {
         start: new Date("1970-1-1"),
         end: new Date("2100-1-1"),
         selected: this.parentSelectedDate,
-      });
+      }, undefined);
       DateComponent._instantiateImpl(undefined, (() => {
         return new DateComponent();
       }), {
         __backing_selectedDate: this.__backing_parentSelectedDate,
-      });
+      }, undefined, undefined);
     }));
   }
   
@@ -198,7 +198,7 @@ class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     ParentComponent._instantiateImpl(undefined, (() => {
       return new ParentComponent();
-    }));
+    }), undefined, undefined, undefined);
   }
   
   public constructor() {}

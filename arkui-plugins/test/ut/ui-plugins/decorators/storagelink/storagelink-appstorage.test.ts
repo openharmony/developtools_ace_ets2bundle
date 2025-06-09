@@ -39,11 +39,11 @@ const pluginTester = new PluginTester('test storagelink with appstorage', buildC
 
 const expectedScript: string = `
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -114,19 +114,19 @@ class Data {
   }
   
   @memo() public build() {
-    Column(undefined, (() => {
-      Text(((instance: TextAttribute): void => {
+    Column(undefined, undefined, @memo() (() => {
+      Text(@memo() ((instance: TextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.storageLink += 1;
         }));
         return;
-      }), \`From AppStorage \${this.storageLink}\`);
-      Text(((instance: TextAttribute): void => {
+      }), \`From AppStorage \${this.storageLink}\`, undefined, undefined);
+      Text(@memo() ((instance: TextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.storageLinkObject.code += 1;
         }));
         return;
-      }), \`From AppStorage \${this.storageLinkObject.code}\`);
+      }), \`From AppStorage \${this.storageLinkObject.code}\`, undefined, undefined);
     }));
   }
   
@@ -154,7 +154,7 @@ class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     Index._instantiateImpl(undefined, (() => {
       return new Index();
-    }));
+    }), undefined, undefined, undefined);
   }
   
   public constructor() {}

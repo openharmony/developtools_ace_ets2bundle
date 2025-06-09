@@ -142,7 +142,7 @@ class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     MyStateSample._instantiateImpl(undefined, (() => {
       return new MyStateSample();
-    }));
+    }), undefined, undefined, undefined);
   }
   
   public constructor() {}

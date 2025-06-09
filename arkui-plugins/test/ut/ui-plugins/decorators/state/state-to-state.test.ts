@@ -39,11 +39,11 @@ const parsedTransform: Plugins = {
 
 const expectedScript: string = `
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
 
@@ -87,12 +87,12 @@ class Per {
   }
   
   @memo() public build() {
-    Column(undefined, (() => {
+    Column(undefined, undefined, @memo() (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {
         childVar1: this.parentVar1,
-      });
+      }, undefined, undefined);
     }));
   }
   
@@ -119,7 +119,7 @@ class Per {
   }
   
   @memo() public build() {
-    Text(undefined, this.childVar1.str);
+    Text(undefined, this.childVar1.str, undefined, undefined);
   }
   
   private constructor() {}

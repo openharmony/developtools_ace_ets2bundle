@@ -15,19 +15,17 @@
 
 import * as arkts from '@koalaui/libarkts';
 import {
-    addMemoAnnotation,
     CustomComponentNames,
     getCustomComponentOptionsName,
     getGettersFromClassDecl,
     getTypeNameFromTypeParameter,
     getTypeParamsFromClassDecl,
     isCustomComponentInterface,
-    MemoNames,
-    isKnownMethodDefinition,
+    isKnownMethodDefinition
 } from '../utils';
 import { factory as uiFactory } from '../ui-factory';
 import { factory as propertyFactory } from '../property-translators/factory';
-import { collect, filterDefined, annotation } from '../../common/arkts-utils';
+import { collect, filterDefined } from '../../common/arkts-utils';
 import {
     classifyObservedTrack,
     classifyProperty,
@@ -50,7 +48,6 @@ import {
 } from './utils';
 import { collectStateManagementTypeImport, hasDecorator, PropertyCache } from '../property-translators/utils';
 import { ProjectConfig } from '../../common/plugin-context';
-import { DeclarationCollector } from '../../common/declaration-collector';
 import { ImportCollector } from '../../common/import-collector';
 import {
     AnimationNames,
@@ -62,9 +59,10 @@ import {
     RESOURCE_TYPE,
 } from '../../common/predefines';
 import { ObservedTrackTranslator } from '../property-translators/observedTrack';
+import { addMemoAnnotation } from '../../collectors/memo-collectors/utils';
 
 export class factory {
-    /*
+    /**
      * update class `constructor` to private.
      */
     static setStructConstructorToPrivate(member: arkts.MethodDefinition): arkts.MethodDefinition {
@@ -74,7 +72,7 @@ export class factory {
         return member;
     }
 
-    /*
+    /**
      * create __initializeStruct method.
      */
     static createInitializeStruct(optionsTypeName: string, scope: CustomComponentScopeInfo): arkts.MethodDefinition {
@@ -111,7 +109,7 @@ export class factory {
         );
     }
 
-    /*
+    /**
      * create __updateStruct method.
      */
     static createUpdateStruct(optionsTypeName: string, scope: CustomComponentScopeInfo): arkts.MethodDefinition {
@@ -149,7 +147,7 @@ export class factory {
         );
     }
 
-    /*
+    /**
      * create __toRecord method when the component is decorated with @Reusable.
      */
     static createToRecord(optionsTypeName: string, scope: CustomComponentScopeInfo): arkts.MethodDefinition {
@@ -184,7 +182,7 @@ export class factory {
         );
     }
 
-    /*
+    /**
      * generate `const paramsCasted = (params as <optionsTypeName>)`.
      */
     static generateParamsCasted(optionsTypeName: string): arkts.VariableDeclaration {
@@ -205,7 +203,7 @@ export class factory {
         );
     }
 
-    /*
+    /**
      * generate Record<string, Object> type.
      */
     static generateTypeRecord(): arkts.ETSTypeReference {
@@ -220,7 +218,7 @@ export class factory {
         );
     }
 
-    /*
+    /**
      * create type reference with type name, e.g. number.
      */
     static generateTypeReferenceWithTypeName(typeName: string): arkts.ETSTypeReference {
@@ -229,7 +227,7 @@ export class factory {
         );
     }
 
-    /*
+    /**
      * create type reference with type name, e.g. number.
      */
     static updateCustomComponentClass(
@@ -250,7 +248,7 @@ export class factory {
         );
     }
 
-    /*
+    /**
      * add headers for animation & @AnimatableExtend in CommonMethod
      */
     static modifyExternalComponentCommon(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
@@ -274,7 +272,7 @@ export class factory {
         );
     }
 
-    /*
+    /**
      * helper to create value parameter for AnimatableExtend methods
      */
     static createAniExtendValueParam(): arkts.ETSParameterExpression {
@@ -294,7 +292,7 @@ export class factory {
         );
     }
 
-    /*
+    /**
      * generate __createOrSetAnimatableProperty(...) for AnimatableExtend
      */
     static createOrSetAniProperty(): arkts.MethodDefinition {
@@ -337,7 +335,7 @@ export class factory {
         );
     }
 
-    /*
+    /**
      * generate animationStart(...) and animationStop(...)
      */
     static createAnimationMethod(key: string): arkts.MethodDefinition {
@@ -697,17 +695,6 @@ export class factory {
         }
         const newClassDef = factory.updateObservedTrackClassDef(node.definition);
         return arkts.factory.updateClassDeclaration(node, newClassDef);
-    }
-
-    static transformTSTypeAlias(node: arkts.TSTypeAliasDeclaration): arkts.TSTypeAliasDeclaration {
-        if (
-            node.typeAnnotation &&
-            arkts.isETSFunctionType(node.typeAnnotation) &&
-            hasDecorator(node.typeAnnotation, DecoratorNames.BUILDER)
-        ) {
-            node.typeAnnotation.setAnnotations([annotation(MemoNames.MEMO)]);
-        }
-        return node;
     }
 
     static updateObservedTrackClassDef(node: arkts.ClassDefinition): arkts.ClassDefinition {

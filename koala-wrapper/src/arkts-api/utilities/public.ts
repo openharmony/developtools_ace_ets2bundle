@@ -39,9 +39,10 @@ import {
     type AnnotationUsage,
 } from '../../generated';
 import { Program } from '../peers/Program';
-import { clearNodeCache, nodeByType } from '../class-by-peer';
+import { clearNodeCache } from '../class-by-peer';
 import { SourcePosition } from '../peers/SourcePosition';
 import { MemberExpression } from '../to-be-generated/MemberExpression';
+import { Es2pandaAstNodeType } from '../../Es2pandaEnums';
 
 export function proceedToState(state: Es2pandaContextState, context: KNativePointer, forceDtsEmit = false): void {
     console.log('[TS WRAPPER] PROCEED TO STATE: ', getEnumName(Es2pandaContextState, state));
@@ -71,6 +72,10 @@ function processErrorState(state: Es2pandaContextState, context: KNativePointer,
         global.es2panda._DestroyContext(context);
         throw e;
     }
+}
+
+export function nodeType(node: AstNode): Es2pandaAstNodeType {
+    return global.generatedEs2panda._AstNodeTypeConst(global.context, passNode(node));
 }
 
 export function startChecker(): boolean {
@@ -314,12 +319,4 @@ export function CreateCacheContextFromFile(
     isExternal: Boolean
 ): KNativePointer {
     return global.es2panda._CreateCacheContextFromFile(configPtr, passString(filename), globalContext, isExternal);
-}
-
-export function insertGlobalStructInfo(structName: string): void {
-    global.es2panda._InsertGlobalStructInfo(global.context, passString(structName));
-}
-
-export function hasGlobalStructInfo(structName: string): boolean {
-    return global.es2panda._HasGlobalStructInfo(global.context, passString(structName));
 }

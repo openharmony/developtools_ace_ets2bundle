@@ -62,7 +62,7 @@ class PluginTester {
     constructor(describe: string, buildConfig?: BuildConfig, projectConfig?: ProjectConfig) {
         this.describe = describe;
         this.hashId = HashGenerator.getInstance().dynamicSha1Id(describe, 13);
-        this.configBuilder = new MockArktsConfigBuilder(this.hashId, buildConfig);
+        this.configBuilder = new MockArktsConfigBuilder(this.hashId, buildConfig, projectConfig);
     }
 
     private clear(): void {

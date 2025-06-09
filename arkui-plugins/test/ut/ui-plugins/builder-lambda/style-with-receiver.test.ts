@@ -76,15 +76,15 @@ function main() {}
   public __updateStruct(initializers: __Options_MM | undefined): void {}
   
   @memo() public build() {
-    Column(undefined, (() => {
-      Text(((instance: TextAttribute): void => {
+    Column(undefined, undefined, @memo() (() => {
+      Text(@memo() ((instance: TextAttribute): void => {
         style22(cardStyle(instance.height(200).fontColor("#000000"), 600, "#eeeeee").fontSize(60).fontWeight(400)).width(900);
         return;
-      }), "hello world");
+      }), "hello world", undefined, undefined);
       Text(@memo() ((instance: TextAttribute): void => {
         cardStyle(instance, 600, "#eeeeee");
         return;
-      }), "hello world");
+      }), "hello world", undefined, undefined);
     }));
   }
   

@@ -22,8 +22,7 @@ import {
     findReturnTypeFromTypeAnnotation,
     isMemoETSParameterExpression,
     isMemoParametersDeclaration,
-    isUnmemoizedInFunction,
-    isVoidType,
+    isUnmemoizedInFunctionParams,
     MemoInfo,
     ParamInfo,
     PositionalIdTracker,
@@ -140,7 +139,7 @@ export class ParameterTransformer extends AbstractVisitor {
         if (!scriptFunction.body || !arkts.isBlockStatement(scriptFunction.body)) {
             return initializer;
         }
-        if (isUnmemoizedInFunction(scriptFunction.params)) {
+        if (isUnmemoizedInFunctionParams(scriptFunction.params)) {
             return initializer;
         }
         const returnTypeInfo: ReturnTypeInfo = buildReturnTypeInfo(

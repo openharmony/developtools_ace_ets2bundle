@@ -910,13 +910,6 @@ export class Es2pandaNativeModule {
         throw new Error('CreateCacheContextFromFile was not overloaded by native module initialization');
     }
 
-    _InsertGlobalStructInfo(context: KNativePointer, str: String): void {
-        throw new Error('InsertGlobalStructInfo was not overloaded by native module initialization');
-    }
-
-    _HasGlobalStructInfo(context: KNativePointer, str: String): KBoolean {
-        throw new Error('HasGlobalStructInfo was not overloaded by native module initialization');
-    }
     _CreateDiagnosticKind(context: KNativePointer, message: string, type: PluginDiagnosticType): KNativePointer {
         throw new Error('Not implemented');
     }
@@ -944,14 +937,18 @@ export class Es2pandaNativeModule {
     }
 
     _MemoryTrackerReset(context: KNativePointer): void {
-        throw new Error('CallExpressionIsTrailingCallConst was not overloaded by native module initialization');
+        throw new Error('MemoryTrackerReset was not overloaded by native module initialization');
     }
 
     _MemoryTrackerGetDelta(context: KNativePointer): void {
-        throw new Error('CallExpressionIsTrailingCallConst was not overloaded by native module initialization');
+        throw new Error('MemoryTrackerGetDelta was not overloaded by native module initialization');
     }
 
     _MemoryTrackerPrintCurrent(context: KNativePointer): void {
+        throw new Error('MemoryTrackerPrintCurrent was not overloaded by native module initialization');
+    }
+
+    _CallExpressionIsTrailingCallConst(context: KNativePointer, node: KNativePointer): boolean {
         throw new Error('CallExpressionIsTrailingCallConst was not overloaded by native module initialization');
     }
 }

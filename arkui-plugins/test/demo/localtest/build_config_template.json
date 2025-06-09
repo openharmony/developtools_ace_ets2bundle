@@ -44,5 +44,6 @@
       "colour": "green"
     },
     "isBuildConfigModified": false,
-    "aceModuleJsonPath": "./demo/localtest/entry/src/main/module.json5"
+    "aceModuleJsonPath": "./demo/localtest/entry/src/main/module.json5",
+    "es2pandaMode": 2
 }

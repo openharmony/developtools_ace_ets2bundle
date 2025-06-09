@@ -275,7 +275,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   @memo() public build() {
     Child._instantiateImpl(undefined, (() => {
       return new Child();
-    }));
+    }), undefined, undefined, undefined);
   }
   
   private constructor() {}
@@ -371,7 +371,7 @@ class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     MyStateSample._instantiateImpl(undefined, (() => {
       return new MyStateSample();
-    }));
+    }), undefined, undefined, undefined);
   }
   
   public constructor() {}
