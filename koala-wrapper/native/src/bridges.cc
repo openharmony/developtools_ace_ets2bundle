@@ -530,6 +530,16 @@ KNativePointer impl_AstNodeStartConst(KNativePointer context, KNativePointer rec
 }
 KOALA_INTEROP_2(AstNodeStartConst, KNativePointer, KNativePointer, KNativePointer);
 
+void impl_AstNodeSetStart(KNativePointer context, KNativePointer receiver, KNativePointer start)
+{
+    auto _context = reinterpret_cast<es2panda_Context*>(context);
+    auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    auto _start = reinterpret_cast<es2panda_SourcePosition*>(start);
+    GetImpl()->AstNodeSetStart(_context, _receiver, _start);
+    return;
+}
+KOALA_INTEROP_V3(AstNodeSetStart, KNativePointer, KNativePointer, KNativePointer)
+
 KNativePointer impl_AstNodeEndConst(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -537,6 +547,16 @@ KNativePointer impl_AstNodeEndConst(KNativePointer context, KNativePointer recei
     return const_cast<es2panda_SourcePosition *>(GetImpl()->AstNodeEndConst(_context, _receiver));
 }
 KOALA_INTEROP_2(AstNodeEndConst, KNativePointer, KNativePointer, KNativePointer);
+
+void impl_AstNodeSetEnd(KNativePointer context, KNativePointer receiver, KNativePointer end)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    const auto _end = reinterpret_cast<es2panda_SourcePosition*>(end);
+    GetImpl()->AstNodeSetEnd(_context, _receiver, _end);
+    return;
+}
+KOALA_INTEROP_V3(AstNodeSetEnd, KNativePointer, KNativePointer, KNativePointer);
 
 KBoolean impl_IsArrayExpression(KNativePointer nodePtr)
 {

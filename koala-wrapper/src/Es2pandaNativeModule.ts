@@ -831,7 +831,15 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
+    _AstNodeSetStart(context: KNativePointer, receiver: KNativePointer, start: KNativePointer): void {
+        throw new Error('Not implemented');
+    }
+
     _AstNodeEndConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
+        throw new Error('Not implemented');
+    }
+
+    _AstNodeSetEnd(context: KNativePointer, receiver: KNativePointer, end: KNativePointer): void {
         throw new Error('Not implemented');
     }
 
