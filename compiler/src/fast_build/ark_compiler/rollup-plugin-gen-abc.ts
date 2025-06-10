@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,6 +34,7 @@ import {
   CompileEvent
 } from '../../performance';
 import { BytecodeObfuscator } from './bytecode_obfuscator';
+import { PreloadFileModules } from './module/module_preload_file_utils';
 
 export function genAbc() {
   return {
@@ -44,6 +45,8 @@ export function genAbc() {
       //Because calling the method of SourceMapGenerator may not retrieve the rollupObject
       //it is necessary to assign the rollupObject to SourceMapGenerator in the early stages of build
       SourceMapGenerator.init(this);
+      // Check proload path exist or not, initialize preloadBack path
+      PreloadFileModules.initialize(this);
     },
     shouldInvalidCache: shouldInvalidCache,
     transform: transformForModule,
@@ -85,6 +88,7 @@ export function genAbc() {
       cleanUpAsyncEvents();
       BytecodeObfuscator.cleanBcObfuscatorObject();
       cleanUpProcessArkTSEvolutionObj();
+      PreloadFileModules.cleanUpPreloadSoObjects();
     }
   };
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,6 +28,7 @@ import {
   createAndStartEvent,
   stopEvent
 } from '../../performance';
+import { PreloadFileModules } from './module/module_preload_file_utils';
 
 let moduleMode: ModuleMode = null;
 
@@ -53,6 +54,7 @@ export async function generateModuleAbc(error) {
         return;
       }
     }
+    PreloadFileModules.finalizeWritePreloadSoList();
     generateAbc(this, hookEventFactory);
   }
 }
