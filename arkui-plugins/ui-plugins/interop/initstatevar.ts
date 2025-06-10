@@ -18,8 +18,61 @@
 import * as arkts from '@koalaui/libarkts';
 import { ESValueMethodNames, InteroperAbilityNames } from './predefines';
 import { annotation, backingField, isAnnotation } from '../../common/arkts-utils';
-import { stateProxy, getPropertyESValue, getWrapValue, ifStateHasProxy, setPropertyESValue, hasLink, hasState, hasProvide, hasProp } from './utils';
+import { stateProxy, getPropertyESValue, getWrapValue, ifStateHasProxy, setPropertyESValue } from './utils';
+import { hasDecorator } from '../property-translators/utils';
+import { DecoratorNames } from '../../common/predefines';
 
+
+export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, arkts.ClassProperty>, updateProp: arkts.Property[]): arkts.Statement[] {
+    const result: arkts.Statement[] = [];
+    const proxySet = new Set<string>();
+
+
+    for (const property of args.properties) {
+        if (!(property instanceof arkts.Property)) {
+            continue;
+        }   
+        const key = property.key;
+        const value = property.value!;
+        if (!(key instanceof arkts.Identifier)) {
+            throw Error('Error arguments in Legacy Component');
+        }
+        const keyName = key.name;
+        const keyProperty = varMap.get(keyName);
+        if (keyProperty === undefined) {
+            throw Error('Error arguments in Legacy Component');
+        }
+        const keyType = keyProperty.typeAnnotation!;
+        const decorators = keyProperty.decorators;
+        if (decorators.length === 0) {
+            const valueProperty = arkts.getDecl(value);
+            if (valueProperty instanceof arkts.ClassProperty && (hasDecorator(valueProperty, DecoratorNames.PROVIDE) ||
+                hasDecorator(valueProperty, DecoratorNames.CONSUME))) {
+                throw Error('Cannot assign @Provide or @Consume decorated data to regular property.');
+            }
+            const initParam = processNormal(keyName, value);
+            result.push(...initParam);
+        }
+        if (hasDecorator(keyProperty, DecoratorNames.LINK)) {
+            const initParam = processLink(keyName, value, keyType, proxySet);
+            result.push(...initParam);
+        } else if (hasDecorator(keyProperty, DecoratorNames.CONSUME)) {
+            throw Error ('The @Consume property cannot be assigned.');
+        } else if (hasDecorator(keyProperty, DecoratorNames.PROP)) {
+            updateProp.push(property);
+            const initParam = processNormal(keyName, value);
+            result.push(...initParam);
+        } else if (hasDecorator(keyProperty, DecoratorNames.STATE) || hasDecorator(keyProperty, DecoratorNames.PROVIDE)) {
+            const initParam = processNormal(keyName, value);
+            result.push(...initParam);
+        } else if (hasDecorator(keyProperty, DecoratorNames.CONSUME)) {
+            throw Error ('The @Consume property cannot be assigned.');
+        } else {
+            throw Error ('Unsupported decorators.');
+        }
+    }
+    return result;
+}
 
 export function createVariableLet(varName: string, expression: arkts.AstNode): arkts.VariableDeclaration {
     return arkts.factory.createVariableDeclaration(
@@ -291,18 +344,14 @@ export function processLink(keyName: string, value: arkts.Expression, type: arkt
     const valueDecl = arkts.getDecl(value);
     const result: arkts.Statement[] = [];
     if (valueDecl instanceof arkts.ClassProperty) {
-        const annotations = valueDecl.annotations;
-        const decorators: string[] = annotations.map(annotation => {
-            return (annotation.expr as arkts.Identifier).name;
-        });
-
         let varName: string;
         let stateVar: () => arkts.Expression;
 
-        if (hasState(decorators) || hasProvide(decorators) || hasProp(decorators)) {
+        if (hasDecorator(valueDecl, DecoratorNames.STATE) || hasDecorator(valueDecl, DecoratorNames.PROP) ||
+            hasDecorator(valueDecl, DecoratorNames.PROVIDE)) {
             varName = ((value as arkts.MemberExpression).property as arkts.Identifier).name;
             stateVar = (): arkts.TSNonNullExpression => createBackingFieldExpression(varName);
-        } else if (hasLink(decorators)) {
+        } else if (hasDecorator(valueDecl, DecoratorNames.LINK) || hasDecorator(valueDecl, DecoratorNames.CONSUME)) {
             varName = ((value as arkts.MemberExpression).property as arkts.Identifier).name;
             const stateName = `${varName}_State`;
             const getSource = linkGetSource(varName, proxySet);
@@ -324,7 +373,7 @@ export function processLink(keyName: string, value: arkts.Expression, type: arkt
         );
         result.push(setParam);
     } else {
-        throw Error('unsupported value for Link');
+        throw Error('unsupported data for Link');
     }
     return result;
 }

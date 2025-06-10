@@ -19,50 +19,9 @@ import * as arkts from '@koalaui/libarkts';
 import { ESValueMethodNames, InteroperAbilityNames } from './predefines';
 import { getCustomComponentOptionsName } from '../utils';
 import { InteropContext } from '../component-transformer';
-import { annotation, backingField, isAnnotation } from '../../common/arkts-utils';
-import { processLink, processNormal } from './initstatevar';
+import { initialArgs} from './initstatevar';
 import { createProvideInterop, setAndResetFindProvide } from './provide';
-import { getPropertyESValue, getWrapValue, setPropertyESValue, hasLink, createEmptyESValue, hasProp } from './utils';
-
-interface propertyInfo {
-    decorators: string[],
-    type: arkts.TypeNode,
-}
-
-function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, propertyInfo>, updateProp: arkts.Property[]): arkts.Statement[] {
-    const result: arkts.Statement[] = [];
-    const proxySet = new Set<string>();
-
-    for (const property of args.properties) {
-        if (!(property instanceof arkts.Property)) {
-            continue;
-        }
-        const key = property.key;
-        const value = property.value;
-        if (!(key instanceof arkts.Identifier)) {
-            throw Error('Error arguments in Legacy Component');
-        }
-        const keyName = key.name;
-        const keyDecorators = varMap.get(keyName)?.decorators;
-        const keyType = varMap.get(keyName)?.type!;
-        if (value instanceof arkts.MemberExpression && value.object instanceof arkts.ThisExpression) {
-            const declResult = arkts.getDecl(value);
-        }
-
-        if (keyDecorators === undefined) {
-            const initParam = processNormal(keyName, value!);
-            result.push(...initParam);
-        } else if (hasLink(keyDecorators)) {
-            const initParam = processLink(keyName, value!, keyType, proxySet);
-            result.push(...initParam);
-        } else if (hasProp(keyDecorators)) {
-            updateProp.push(property);
-            const initParam = processNormal(keyName, value!);
-            result.push(...initParam);
-        }
-    }
-    return result;
-}
+import { getPropertyESValue, getWrapValue, setPropertyESValue, createEmptyESValue } from './utils';
 
 function instantiateComponent(params: arkts.AstNode[]): arkts.VariableDeclaration {
     return arkts.factory.createVariableDeclaration(
@@ -206,7 +165,7 @@ function createESBlank(): arkts.Statement[] {
         arkts.factory.createIdentifier('blank'),
         arkts.factory.createTypeReference(
             arkts.factory.createTypeReferencePart(
-                arkts.factory.createIdentifier('object')
+                arkts.factory.createIdentifier('Object')
             )
         ),
         false
@@ -340,7 +299,7 @@ function invokeViewPUCreate(): arkts.Statement[] {
     return body;
 }
 
-function createWrapperBlock(context: InteropContext, varMap: Map<string, propertyInfo>,
+function createWrapperBlock(context: InteropContext, varMap: Map<string, arkts.ClassProperty>,
     updateProp: arkts.Property[]): arkts.BlockStatement {
     const className: string = context.className;
     const path: string = context.path;
@@ -379,7 +338,7 @@ function createWrapperBlock(context: InteropContext, varMap: Map<string, propert
     );
 }
 
-function createInitializer(context: InteropContext, varMap: Map<string, propertyInfo>,
+function createInitializer(context: InteropContext, varMap: Map<string, arkts.ClassProperty>,
     updateProp: arkts.Property[]): arkts.ArrowFunctionExpression {
     const block = createWrapperBlock(context, varMap, updateProp);
     return arkts.factory.createArrowFunction(
@@ -397,13 +356,13 @@ function createInitializer(context: InteropContext, varMap: Map<string, property
     );
 }
 
-function updateStateVars(updateProp: arkts.Property[]): arkts.Statement {
+function updateStateVars(updateProp: arkts.Property[]): arkts.Statement[] {
     const obj = arkts.factory.createObjectExpression(
         arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
         updateProp,
         false
     );
-    return arkts.factory.createCallExpression(
+    return [arkts.factory.createCallExpression(
         arkts.factory.createMemberExpression(
             arkts.factory.createIdentifier(InteroperAbilityNames.INSTANCE),
             arkts.factory.createIdentifier(ESValueMethodNames.INVOKEMETHOD),
@@ -416,16 +375,16 @@ function updateStateVars(updateProp: arkts.Property[]): arkts.Statement {
             arkts.factory.createStringLiteral('updateStateVars'),
             getWrapValue(obj)
         ]
-    );
+    )];
 }
 
 function createUpdater(updateProp: arkts.Property[]): arkts.ArrowFunctionExpression {
-    const updateState = updateStateVars(updateProp); 
+    const updateState = (updateProp.length !== 0) ? updateStateVars(updateProp) : []
     return arkts.factory.createArrowFunction(
         arkts.factory.createScriptFunction(
             arkts.factory.createBlock(
                 [
-                    updateState
+                    ...updateState
                 ]
             ),
             arkts.factory.createFunctionSignature(
@@ -451,23 +410,18 @@ function createUpdater(updateProp: arkts.Property[]): arkts.ArrowFunctionExpress
     );
 }
 
-function generateVarMap(node: arkts.Identifier): Map<string, propertyInfo> {
+function generateVarMap(node: arkts.Identifier): Map<string, arkts.ClassProperty> {
     const decl = arkts.getDecl(node);
     if (!(decl instanceof arkts.ClassDefinition)) {
         throw Error("can't find legacy class declaration");
     }
-    const result = new Map<string, propertyInfo>();
+    const result = new Map<string, arkts.ClassProperty>();
     const definition = decl;
     const body = definition.body;
     body.forEach(node => {
         if (node instanceof arkts.ClassProperty && node.key instanceof arkts.Identifier) {
             const key = node.key.name;
-            const annotations = node.annotations;
-            const decorators: string[] = annotations.map(annotation => {
-                return (annotation.expr as arkts.Identifier).name;
-            });
-            const type: arkts.TypeNode = node.typeAnnotation!;
-            result.set(key, {decorators: decorators, type: type});
+            result.set(key, node);
         }
     });
     return result;
@@ -544,7 +498,7 @@ export function generateArkUICompatible(node: arkts.CallExpression): arkts.CallE
         arguments: options
     };
 
-    const varMap: Map<string, propertyInfo> = generateVarMap(classInterop);
+    const varMap: Map<string, arkts.ClassProperty> = generateVarMap(classInterop);
     const updateProp:arkts.Property[] = [];
     const initializer = createInitializer(context, varMap, updateProp);
     const updater = createUpdater(updateProp);
