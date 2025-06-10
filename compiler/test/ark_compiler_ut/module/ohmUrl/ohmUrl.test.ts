@@ -1323,6 +1323,44 @@ mocha.describe('generate ohmUrl', function () {
     loggerStub.restore();
   });
 
+  mocha.it('the error message of processPackageDir when useNormalizedOHMUrl is false', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
+    this.rollup.share.projectConfig.byteCodeHarInfo = {};
+    const indexFilePath: string = 'Hsp/////';
+    const importerFile: string = '/testHap/entry/src/main/ets/pages/index.ets';
+    const importByPkgName = 'Hsp/////';
+    for (let file of [indexFilePath]) {
+      const moduleInfo = {
+        id: file,
+        meta: {
+          hostDependencyName: 'Hsp/////',
+          hostModuleName: 'entry'
+        }
+      }
+      this.rollup.moduleInfos.push(moduleInfo);
+    }
+
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_FAILED_TO_RESOLVE_OHM_URL,
+      ArkTSErrorDescription,
+      'Failed to resolve OhmUrl. ' +
+      `Failed to get a resolved OhmUrl for "${indexFilePath}" imported by "${importerFile}".`,
+      '',
+      [`Check whether the module which ${indexFilePath} belongs to is correctly configured.`,
+      `Check if the corresponding file name "${indexFilePath}" is correct(including case-sensitivity).`]
+    );
+    const logger = CommonLogger.getInstance(this.rollup);
+    const loggerStub = sinon.stub(logger.getLoggerFromErrorCode(errInfo.code), 'printError');
+
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    moduleSourceFile.getOhmUrl(this.rollup, importByPkgName, indexFilePath, importerFile);
+
+    expect(loggerStub.getCall(0).calledWithMatch(errInfo)).to.be.true;
+    loggerStub.restore();
+  });
+
   mocha.it('the error message of getNormalizedOhmUrlByAliasName', function () {
     this.rollup.build();
     this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
