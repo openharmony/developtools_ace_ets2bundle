@@ -16,7 +16,8 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
-import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
+import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
+import { CustomComponentNames } from '../utils';
 import {
     generateToRecord,
     createGetter,
@@ -51,27 +52,34 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
 
     generateInitializeStruct(newName: string, originalName: string) {
         const test = factory.createBlockStatementForOptionalExpression(
-            arkts.factory.createIdentifier('initializers'),
+            arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
             newName
         );
 
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
             arkts.factory.createTSNonNullExpression(
-                factory.createNonNullOrOptionalMemberExpression('initializers', newName, false, true)
+                factory.createNonNullOrOptionalMemberExpression(
+                    CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
+                    newName,
+                    false,
+                    true
+                )
             ),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         collectStateManagementTypeImport(StateManagementTypes.LINK_DECORATED);
+        collectStateManagementTypeImport(StateManagementTypes.LINK_SOURCE_TYPE);
         const consequent = arkts.BlockStatement.createBlockStatement([
             arkts.factory.createExpressionStatement(
                 arkts.factory.createAssignmentExpression(
                     generateThisBacking(newName, false, false),
                     arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                    factory.createNewDecoratedInstantiate(
-                        StateManagementTypes.LINK_DECORATED,
+                    factory.generateStateMgmtFactoryCall(
+                        StateManagementTypes.MAKE_LINK,
                         this.property.typeAnnotation,
-                        args
+                        args,
+                        true
                     )
                 )
             ),
@@ -88,9 +96,9 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, 'get');
+        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            generateGetOrSetCall(thisValue, 'set')
+            generateGetOrSetCall(thisValue, GetSetTypes.SET)
         );
         const getter: arkts.MethodDefinition = this.translateGetter(
             originalName,
