@@ -14,57 +14,65 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getAnnotationUsage, PresetDecorators } from '../utils';
+import { getAnnotationUsage, MAX_PREVIEW_DECORATOR_COUNT, PresetDecorators } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 
-const MAX_PREVIEW_DECORATOR_COUNT = 10;
-
-function checkDuplicatePreview(node: arkts.AstNode, context: UISyntaxRuleContext): void {
-  if (arkts.nodeType(node) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
-    return;
-  }
-  let previewDecoratorUsages: arkts.AnnotationUsage[] = [];
-  node.getChildren().forEach((child) => {
-    if (!arkts.isStructDeclaration(child)) {
-      return;
-    }
-    const previewDecoratorUsage = getAnnotationUsage(
-      child,
-      PresetDecorators.PREVIEW,
-    );
-    if (previewDecoratorUsage) {
-      previewDecoratorUsages.push(previewDecoratorUsage);
+function reportError(context: UISyntaxRuleContext, errorNode: arkts.AnnotationUsage): void {
+  context.report({
+    node: errorNode,
+    message: rule.messages.duplicateEntry,
+    fix: (previewDecoratorUsage) => {
+      const startPosition = previewDecoratorUsage.startPosition;
+      const endPosition = previewDecoratorUsage.endPosition;
+      return {
+        range: [startPosition, endPosition],
+        code: '',
+      };
     }
   });
-  // If the number of preview decorators is greater than 10, an error is reported
+}
+
+function checkDuplicatePreview(
+  node: arkts.AstNode,
+  context: UISyntaxRuleContext,
+  previewDecoratorUsages: arkts.AnnotationUsage[],
+  previewData: { count: number },
+): void {
+  if (!arkts.isStructDeclaration(node)) {
+    return;
+  }
+  const previewDecoratorUsage = getAnnotationUsage(
+    node,
+    PresetDecorators.PREVIEW,
+  );
+  if (previewDecoratorUsage) {
+    previewDecoratorUsages.push(previewDecoratorUsage);
+  }
+  // If the number of preview decorators is less than 10, no error is reported
   if (previewDecoratorUsages.length <= MAX_PREVIEW_DECORATOR_COUNT) {
     return;
   }
-  previewDecoratorUsages.forEach((previewDecoratorUsage) => {
-    context.report({
-      node: previewDecoratorUsage,
-      message: rule.messages.duplicateEntry,
-      fix: (previewDecoratorUsage) => {
-        const startPosition = arkts.getStartPosition(previewDecoratorUsage);
-        const endPosition = arkts.getEndPosition(previewDecoratorUsage);
-        return {
-          range: [startPosition, endPosition],
-          code: '',
-        };
-      }
+  if (previewData.count === MAX_PREVIEW_DECORATOR_COUNT) {
+    previewDecoratorUsages.forEach((previewDecoratorUsage) => {
+      reportError(context, previewDecoratorUsage);
     });
-  });
+  } else {
+    reportError(context, previewDecoratorUsages.at(previewData.count)!);
+  }
+  previewData.count++;
 }
 
 const rule: UISyntaxRule = {
   name: 'no-duplicate-preview',
   messages: {
-    duplicateEntry: `An ArkTS file con contain at most 10 '@Preview' decorators.`,
+    duplicateEntry: `A page can contain at most 10 '@Preview' decorators.`,
   },
   setup(context) {
+    let previewDecoratorUsages: arkts.AnnotationUsage[] = [];
+    let previewData = { count: 10 };
     return {
       parsed: (node): void => {
-        checkDuplicatePreview(node, context);
+        checkDuplicatePreview(node, context, previewDecoratorUsages, previewData);
       },
     };
   },
