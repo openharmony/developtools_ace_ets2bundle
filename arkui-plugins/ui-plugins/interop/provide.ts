@@ -71,26 +71,34 @@ function getProvideProxy(): arkts.Statement {
 
 function returnProvide(): arkts.Statement {
     return arkts.factory.createReturnStatement(
-        arkts.factory.createTSNonNullExpression(
-            arkts.factory.createCallExpression(
-                arkts.factory.createMemberExpression(
-                    arkts.factory.createTSAsExpression(
-                        arkts.factory.createIdentifier('proxy'),
-                        arkts.factory.createTypeReference(
-                            arkts.factory.createTypeReferencePart(
-                                arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE)
-                            )
+        arkts.factory.createTSAsExpression(
+            arkts.factory.createTSNonNullExpression(
+                arkts.factory.createCallExpression(
+                    arkts.factory.createMemberExpression(
+                        arkts.factory.createTSAsExpression(
+                            arkts.factory.createIdentifier('proxy'),
+                            arkts.factory.createTypeReference(
+                                arkts.factory.createTypeReferencePart(
+                                    arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE)
+                                )
+                            ),
+                            false
                         ),
+                        arkts.factory.createIdentifier(ESValueMethodNames.UNWRAP),
+                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                        false,
                         false
                     ),
-                    arkts.factory.createIdentifier(ESValueMethodNames.UNWRAP),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
-                ),
-                undefined,
-                undefined
-            )
+                    undefined,
+                    undefined
+                )
+            ),
+            arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier('Object')
+                )
+            ),
+            false
         )
     );
 }

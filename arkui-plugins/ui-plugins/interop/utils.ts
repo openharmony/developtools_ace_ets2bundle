@@ -148,27 +148,6 @@ export function ifStateHasProxy(stateVar: () => arkts.Expression, block: arkts.B
 }
 
 /**
- * Checks if an array of decorator names contains the 'Link' decorator.
- * @param {string[]} decorators - Array of decorator names applied to a property.
- * @returns {boolean} True if the 'Link' decorator is present, otherwise false.
- */
-export function hasLink(decorators: string[]): boolean {
-    return decorators.some(decorator => decorator === 'Link');
-}
-
-export function hasState(decorators: string[]): boolean {
-    return decorators.some(decorator => decorator === 'State');
-}
-
-export function hasProp(decorators: string[]): boolean {
-    return decorators.some(decorator => decorator === 'Prop');
-}
-
-export function hasProvide(decorators: string[]): boolean {
-    return decorators.some(decorator => decorator === 'Provide');
-}
-
-/**
  * Generates a state proxy variable name by appending "_State_Proxy" suffix.
  * @param {string} stateVarName - Original state variable name to be proxied.
  * @returns {string} Proxied variable name in the format: "{stateVarName}_State_Proxy".

@@ -17,7 +17,7 @@
 export enum InteroperAbilityNames {
     ARKTS_1_1 = '1.1',
     ARKTS_1_2 = '1.2',
-    ARKUICOMPATIBLE = 'ArkUICompatible',
+    ARKUICOMPATIBLE = 'compatibleComponent',
     ELMTID = 'elmtId',
     NUMBER = 'number',
     PARENT = 'parent',
