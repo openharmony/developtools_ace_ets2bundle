@@ -147,7 +147,7 @@ export const requireCanReleaseMandatoryDecorators: Set<string> =
     ...observedPropertyDecorators]);
 
 export const forbiddenSpecifyDefaultValueDecorators: Set<string> =
-  new Set([COMPONENT_LINK_DECORATOR, COMPONENT_CONSUME_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR]);
+  new Set([COMPONENT_LINK_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR]);
 
 export const mandatoryToInitViaParamDecorators: Set<string> =
   new Set([...propAndLinkDecorators, COMPONENT_OBJECT_LINK_DECORATOR]);
@@ -872,12 +872,19 @@ function updateConsumeProperty(node: ts.PropertyDeclaration,
   } else {
     propertyOrAliasName = name;
   }
+  // '4' means that the property has aliasName and '2' represents the argument node
+  const callExpressionArgs: readonly ts.Expression[] | undefined =
+    node.initializer ? [
+      propertyAndStringKey.length === 0 ? ts.factory.createStringLiteral(propertyOrAliasName) :
+        propertyAndStringKey.length === 4 && propertyAndStringKey[2] as ts.Expression, ts.factory.createStringLiteral(name),
+      node.initializer] :
+      [
+        propertyAndStringKey.length === 0 ? ts.factory.createStringLiteral(propertyOrAliasName) :
+          propertyAndStringKey.length === 4 && propertyAndStringKey[2] as ts.Expression, ts.factory.createStringLiteral(name)];
   return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
     createPropertyAccessExpressionWithThis(`__${name}`),
     ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createCallExpression(
-      createPropertyAccessExpressionWithThis(INITIALIZE_CONSUME_FUNCTION), undefined, [
-        propertyAndStringKey.length === 0 ? ts.factory.createStringLiteral(propertyOrAliasName) :
-          propertyAndStringKey.length === 4 && propertyAndStringKey[2] as ts.Expression, ts.factory.createStringLiteral(name)])));
+      createPropertyAccessExpressionWithThis(INITIALIZE_CONSUME_FUNCTION), undefined, callExpressionArgs)));
 }
 
 function updateBuilderParamProperty(node: ts.PropertyDeclaration,
