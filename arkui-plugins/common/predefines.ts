@@ -181,34 +181,6 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
     ],
 ]);
 
-export enum InteroperAbilityNames {
-    ARKTS_1_1 = '1.1',
-    ARKTS_1_2 = '1.2',
-    ARKUICOMPATIBLE = 'ArkUICompatible',
-    ESVALUE = 'ESValue',
-    ELMTID = 'elmtId',
-    INITEMPTYOBJECT = 'instantiateEmptyObject',
-    SETPROPERTY = 'setProperty',
-    NUMBER = 'number',
-    PARENT = 'parent',
-    INSTANCE = 'instance',
-    PARAM = 'param',
-    EXTRAINFO = 'extraInfo',
-    COMPONENT = 'component',
-    GETPROPERTY = 'getProperty',
-    CONSTRUCTOR = 'constructor',
-    MODULE = 'module',
-    LOAD = 'load',
-    STRUCTOBJECT = 'structObject',
-    INSTANTIATE = 'instantiate',
-    WRAP = 'wrap',
-    WRAPINT = 'wrapInt',
-    WRAPSTRING = 'wrapString',
-    PARAMSLAMBDA = 'paramsLambda',
-    INTEROPCOMPONENT = 'interopComponent',
-    OHMURL = '@normalized:N&entry&com.example.Interop2use1&har1/src/main/ets/components/MainPage&1.0.0',
-}
-
 /**
  * @deprecated
  */

@@ -20,7 +20,7 @@ import { getInteropPath } from '../../path';
 const interop = require(getInteropPath());
 const nullptr = interop.nullptr;
 import { AbstractVisitor, VisitorOptions } from '../../common/abstract-visitor';
-import { InteroperAbilityNames } from '../../common/predefines';
+import { ESValueMethodNames, InteroperAbilityNames } from './predefines';
 import { getCustomComponentOptionsName } from '../utils';
 import { annotation } from 'common/arkts-utils';
 
@@ -171,7 +171,7 @@ export class LegacyTransformer extends AbstractVisitor {
     processConstructor(node: arkts.MethodDefinition): arkts.MethodDefinition {
         const esvalue = arkts.factory.createTypeReference(
             arkts.factory.createTypeReferencePart(
-                arkts.factory.createIdentifier(InteroperAbilityNames.ESVALUE)
+                arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE)
             )
         );
         const script = arkts.factory.createScriptFunction(
