@@ -23,6 +23,7 @@ import {
     DecoratorNames,
     DECORATOR_TYPE_MAP,
     StateManagementTypes,
+    GetSetTypes
 } from '../../common/predefines';
 import { addMemoAnnotation, findCanAddMemoFromParamExpression, findCanAddMemoFromTypeAnnotation } from '../utils';
 
@@ -359,7 +360,7 @@ function getDifferentAnnoTypeValue(value: arkts.Expression): string | boolean {
     return value.dumpSrc();
 }
 
-export function generateGetOrSetCall(beforCall: arkts.AstNode, type: string) {
+export function generateGetOrSetCall(beforCall: arkts.AstNode, type: GetSetTypes) {
     return arkts.factory.createCallExpression(
         arkts.factory.createMemberExpression(
             beforCall,

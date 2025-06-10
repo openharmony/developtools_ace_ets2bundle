@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
-import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
+import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import {
@@ -91,28 +91,16 @@ export class StoragePropTranslator extends PropertyTranslator implements Initial
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         collectStateManagementTypeImport(StateManagementTypes.STORAGE_PROP_DECORATED);
-        const newClass = arkts.factory.createETSNewClassInstanceExpression(
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier(StateManagementTypes.STORAGE_PROP_DECORATED),
-                    arkts.factory.createTSTypeParameterInstantiation(
-                        this.property.typeAnnotation ? [this.property.typeAnnotation] : []
-                    )
-                )
-            ),
-            args
-        );
 
         return arkts.factory.createAssignmentExpression(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createThisExpression(),
-                arkts.factory.createIdentifier(newName),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
+            generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            newClass
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_STORAGE_PROP,
+                this.property.typeAnnotation,
+                args,
+                true
+            )
         );
     }
 
@@ -124,9 +112,9 @@ export class StoragePropTranslator extends PropertyTranslator implements Initial
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, 'get');
+        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            generateGetOrSetCall(thisValue, 'set')
+            generateGetOrSetCall(thisValue, GetSetTypes.SET)
         );
         const getter: arkts.MethodDefinition = this.translateGetter(
             originalName,

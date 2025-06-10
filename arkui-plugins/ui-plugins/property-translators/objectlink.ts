@@ -16,7 +16,8 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
-import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
+import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
+import { CustomComponentNames } from '../utils';
 import {
     createGetter,
     generateGetOrSetCall,
@@ -55,60 +56,42 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
         const initializers = arkts.factory.createTSNonNullExpression(
             factory.createBlockStatementForOptionalExpression(
-                arkts.factory.createIdentifier('initializers'),
+                arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
                 originalName
             )
         );
-
         const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(originalName), initializers];
         factory.judgeIfAddWatchFunc(args, this.property);
-
-        const newClass = arkts.factory.createETSNewClassInstanceExpression(
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier('ObjectLinkDecoratedVariable'),
-                    arkts.factory.createTSTypeParameterInstantiation(
-                        this.property.typeAnnotation ? [this.property.typeAnnotation] : []
-                    )
-                )
-            ),
-            args
-        );
 
         return arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            newClass
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_OBJECT_LINK,
+                this.property.typeAnnotation,
+                args,
+                true
+            )
         );
     }
 
     generateUpdateStruct(newName: string, originalName: string): arkts.AstNode {
-        const binaryItem = arkts.factory.createBinaryExpression(
-            factory.createBlockStatementForOptionalExpression(
-                arkts.factory.createIdentifier('initializers'),
-                originalName
-            ),
-            arkts.factory.createUndefinedLiteral(),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NOT_STRICT_EQUAL
-        );
         const member: arkts.MemberExpression = arkts.factory.createMemberExpression(
             generateThisBacking(newName, false, true),
-            arkts.factory.createIdentifier('update'),
+            arkts.factory.createIdentifier(StateManagementTypes.UPDATE),
             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
             false,
             false
         );
         const nonNullItem = arkts.factory.createTSNonNullExpression(
-            factory.createNonNullOrOptionalMemberExpression('initializers', originalName, false, true)
+            factory.createNonNullOrOptionalMemberExpression(
+                CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
+                originalName,
+                false,
+                true
+            )
         );
-        return arkts.factory.createIfStatement(
-            binaryItem,
-            arkts.factory.createBlock([
-                arkts.factory.createExpressionStatement(
-                    arkts.factory.createCallExpression(member, undefined, [nonNullItem])
-                ),
-            ])
-        );
+        return factory.createIfInUpdateStruct(originalName, member, [nonNullItem]);
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
@@ -119,7 +102,7 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, 'get');
+        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
         const getter: arkts.MethodDefinition = this.translateGetter(
             originalName,
             this.property.typeAnnotation,

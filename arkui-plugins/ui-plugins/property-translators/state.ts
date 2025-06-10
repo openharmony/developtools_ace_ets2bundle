@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
-import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
+import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
 import { CustomComponentNames } from '../utils';
 import {
     generateToRecord,
@@ -57,9 +57,9 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, 'get');
+        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            generateGetOrSetCall(thisValue, 'set')
+            generateGetOrSetCall(thisValue, GetSetTypes.SET)
         );
         const getter: arkts.MethodDefinition = this.translateGetter(
             originalName,
@@ -103,21 +103,15 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
         const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(originalName), binaryItem];
         factory.judgeIfAddWatchFunc(args, this.property);
         collectStateManagementTypeImport(StateManagementTypes.STATE_DECORATED);
-        const right = arkts.factory.createETSNewClassInstanceExpression(
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier(StateManagementTypes.STATE_DECORATED),
-                    arkts.factory.createTSTypeParameterInstantiation(
-                        this.property.typeAnnotation ? [this.property.typeAnnotation] : []
-                    )
-                )
-            ),
-            args
-        );
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            right
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_STATE,
+                this.property.typeAnnotation,
+                args,
+                true
+            )
         );
         return arkts.factory.createExpressionStatement(assign);
     }

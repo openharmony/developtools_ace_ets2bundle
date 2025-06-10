@@ -16,7 +16,8 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
-import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
+import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
+import { CustomComponentNames } from '../utils';
 import {
     generateToRecord,
     createGetter,
@@ -60,9 +61,9 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, 'get');
+        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            generateGetOrSetCall(thisValue, 'set')
+            generateGetOrSetCall(thisValue, GetSetTypes.SET)
         );
         const getter: arkts.MethodDefinition = this.translateGetter(
             originalName,
@@ -97,7 +98,7 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
         const binaryItem = arkts.factory.createBinaryExpression(
             factory.createBlockStatementForOptionalExpression(
-                arkts.factory.createIdentifier('initializers'),
+                arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
                 originalName
             ),
             this.property.value ?? arkts.factory.createUndefinedLiteral(),
@@ -108,62 +109,51 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
             this.property.value
                 ? binaryItem
                 : arkts.factory.createTSAsExpression(
-                      factory.createNonNullOrOptionalMemberExpression('initializers', originalName, false, true),
+                      factory.createNonNullOrOptionalMemberExpression(
+                          CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
+                          originalName,
+                          false,
+                          true
+                      ),
                       this.property.typeAnnotation ? this.property.typeAnnotation.clone() : undefined,
                       false
                   ),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         collectStateManagementTypeImport(StateManagementTypes.PROP_DECORATED);
-        const right = arkts.factory.createETSNewClassInstanceExpression(
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier(StateManagementTypes.PROP_DECORATED),
-                    arkts.factory.createTSTypeParameterInstantiation(
-                        this.property.typeAnnotation ? [this.property.typeAnnotation] : []
-                    )
-                )
-            ),
-            args
-        );
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            right
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_PROP,
+                this.property.typeAnnotation,
+                args,
+                true
+            )
         );
         return arkts.factory.createExpressionStatement(assign);
     }
 
     generateUpdateStruct(mutableThis: arkts.Expression, originalName: string): arkts.AstNode {
-        const binaryItem = arkts.factory.createBinaryExpression(
-            factory.createBlockStatementForOptionalExpression(
-                arkts.factory.createIdentifier('initializers'),
-                originalName
-            ),
-            arkts.factory.createUndefinedLiteral(),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NOT_STRICT_EQUAL
-        );
         const member: arkts.MemberExpression = arkts.factory.createMemberExpression(
             arkts.factory.createTSNonNullExpression(mutableThis),
-            arkts.factory.createIdentifier('update'),
+            arkts.factory.createIdentifier(StateManagementTypes.UPDATE),
             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
             false,
             false
         );
-        return arkts.factory.createIfStatement(
-            binaryItem,
-            arkts.factory.createBlock([
-                arkts.factory.createExpressionStatement(
-                    arkts.factory.createCallExpression(member, undefined, [
-                        arkts.factory.createTSAsExpression(
-                            factory.createNonNullOrOptionalMemberExpression('initializers', originalName, false, true),
-                            this.property.typeAnnotation ? this.property.typeAnnotation.clone() : undefined,
-                            false
-                        ),
-                    ])
+        return factory.createIfInUpdateStruct(originalName, member, [
+            arkts.factory.createTSAsExpression(
+                factory.createNonNullOrOptionalMemberExpression(
+                    CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
+                    originalName,
+                    false,
+                    true
                 ),
-            ])
-        );
+                this.property.typeAnnotation ? this.property.typeAnnotation.clone() : undefined,
+                false
+            ),
+        ]);
     }
 }
 
