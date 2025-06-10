@@ -84,3 +84,4 @@ export const NEWFILE: string = 'newFile';
 export const DECLFILESPATH: string = '/entry/build/default/intermediates/loader_out/default/etsFortgz/decl-fileInfo.json';
 export const DECLGENV2OUTPATH: string = '/entry/build/default/intermediates/declgen/default/declgenV2';
 export const HAR_DECLGENV2OUTPATH: string = '/har/build/default/intermediates/declgen/default/declgenV2';
+export const HAR_BRIDGECODEPATH: string = '/har/build/default/intermediates/declgen/default/declgenBridgeCode';

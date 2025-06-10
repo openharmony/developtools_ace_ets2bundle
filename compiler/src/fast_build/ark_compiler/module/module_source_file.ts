@@ -432,7 +432,7 @@ export class ModuleSourceFile {
           ModuleSourceFile.logger, parentEvent, this.metaInfo);
       }
     } else {
-      await writeBridgeCodeFileSyncByNode(<ts.SourceFile> this.source, this.moduleId);
+      await writeBridgeCodeFileSyncByNode(<ts.SourceFile> this.source, this.moduleId, this.metaInfo);
     }
   }
 
