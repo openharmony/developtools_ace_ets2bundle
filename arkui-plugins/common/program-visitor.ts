@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor, VisitorOptions } from './abstract-visitor';
 import { matchPrefix } from './arkts-utils';
 import { debugDump, getDumpFileName } from './debug';
-import { InteroperAbilityNames } from './predefines';
+import { InteroperAbilityNames } from '../ui-plugins/interop/predefines';
 import { PluginContext } from './plugin-context';
 import { LegacyTransformer } from '../ui-plugins/interop/legacy-transformer';
 import { ComponentTransformer } from '../ui-plugins/component-transformer';

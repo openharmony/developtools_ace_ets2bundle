@@ -16,12 +16,12 @@
 
 
 import * as arkts from '@koalaui/libarkts';
-import { InteroperAbilityNames } from '../../common/predefines';
+import { ESValueMethodNames, InteroperAbilityNames } from './predefines';
 import { getCustomComponentOptionsName } from '../utils';
 import { InteropContext } from '../component-transformer';
 import { annotation, backingField, isAnnotation } from '../../common/arkts-utils';
 import { processLink, processNormal } from './initstatevar';
-import { createProvideInterop, resetFindProvide } from './provide';
+import { createProvideInterop, setAndResetFindProvide } from './provide';
 import { getPropertyESValue, getWrapValue, setPropertyESValue, hasLink, createEmptyESValue, hasProp } from './utils';
 
 interface propertyInfo {
@@ -75,7 +75,7 @@ function instantiateComponent(params: arkts.AstNode[]): arkts.VariableDeclaratio
                 arkts.factory.createCallExpression(
                     arkts.factory.createMemberExpression(
                         arkts.factory.createIdentifier(InteroperAbilityNames.STRUCTOBJECT),
-                        arkts.factory.createIdentifier(InteroperAbilityNames.INSTANTIATE),
+                        arkts.factory.createIdentifier(ESValueMethodNames.INSTANTIATE),
                         arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                         false,
                         false
@@ -89,7 +89,7 @@ function instantiateComponent(params: arkts.AstNode[]): arkts.VariableDeclaratio
 }
 
 function paramsLambdaDeclaration(name: string, args?: arkts.ObjectExpression): arkts.Statement[] {
-    const result = [];
+    const result: arkts.Statement[] = [];
     result.push(
         arkts.factory.createVariableDeclaration(
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
@@ -232,10 +232,10 @@ function createGlobal(): arkts.Statement {
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
         [arkts.factory.createVariableDeclarator(
             arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
-            arkts.factory.createIdentifier('global'),
+            arkts.factory.createIdentifier(InteroperAbilityNames.GLOBAL),
             arkts.factory.createCallExpression(
                 arkts.factory.createMemberExpression(
-                    arkts.factory.createIdentifier(InteroperAbilityNames.ESVALUE),
+                    arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE),
                     arkts.factory.createIdentifier('getGlobal'),
                     arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                     false,
@@ -250,7 +250,7 @@ function createGlobal(): arkts.Statement {
 
 function createELMTID(): arkts.Statement[] {
     const body: arkts.Statement[] = [];
-    const viewStackProcessor = getPropertyESValue('viewStackProcessor', 'global', 'ViewStackProcessor');
+    const viewStackProcessor = getPropertyESValue('viewStackProcessor', InteroperAbilityNames.GLOBAL, 'ViewStackProcessor');
     body.push(viewStackProcessor);
     const createId = getPropertyESValue('createId', 'viewStackProcessor', 'AllocateNewElmetIdForNextComponent');
     body.push(createId);
@@ -263,7 +263,7 @@ function createELMTID(): arkts.Statement[] {
             arkts.factory.createCallExpression(
                 arkts.factory.createMemberExpression(
                     arkts.factory.createIdentifier('createId'),
-                    arkts.factory.createIdentifier('invoke'),
+                    arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
                     arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                     false,
                     false
@@ -288,8 +288,8 @@ function createComponent(moduleName: string, className: string): arkts.Statement
                 arkts.factory.createIdentifier(moduleName),
                 arkts.factory.createCallExpression(
                     arkts.factory.createMemberExpression(
-                        arkts.factory.createIdentifier(InteroperAbilityNames.ESVALUE),
-                        arkts.factory.createIdentifier(InteroperAbilityNames.LOAD),
+                        arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE),
+                        arkts.factory.createIdentifier(ESValueMethodNames.LOAD),
                         arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                         false,
                         false
@@ -301,7 +301,7 @@ function createComponent(moduleName: string, className: string): arkts.Statement
         ]
     );
     body.push(module);
-    const structObject = getPropertyESValue('structObject', moduleName, className);
+    const structObject = getPropertyESValue(InteroperAbilityNames.STRUCTOBJECT, moduleName, className);
     body.push(structObject);
     const component = instantiateComponent(
         [
@@ -319,20 +319,20 @@ function createComponent(moduleName: string, className: string): arkts.Statement
 
 function invokeViewPUCreate(): arkts.Statement[] {
     const body: arkts.Statement[] = [];
-    const createMethod = getPropertyESValue('create', 'structObject', 'create');
+    const createMethod = getPropertyESValue('create', InteroperAbilityNames.STRUCTOBJECT, 'create');
     body.push(createMethod);
     const viewPUCreate = arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
                 arkts.factory.createIdentifier('create'),
-                arkts.factory.createIdentifier('invoke'),
+                arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
                 false
             ),
             undefined,
             [
-                arkts.factory.createIdentifier('component')
+                arkts.factory.createIdentifier(InteroperAbilityNames.COMPONENT)
             ]
         )
     );
@@ -342,10 +342,10 @@ function invokeViewPUCreate(): arkts.Statement[] {
 
 function createWrapperBlock(context: InteropContext, varMap: Map<string, propertyInfo>,
     updateProp: arkts.Property[]): arkts.BlockStatement {
-    const className = context.className;
-    const path = context.path;
-    const args = context.arguments;
-    const index = path.indexOf('/');
+    const className: string = context.className;
+    const path: string = context.path;
+    const args: arkts.ObjectExpression | undefined = context.arguments;
+    const index: number = path.indexOf('/');
     if (index === -1) {
         throw new Error('Error path of Legacy Component.');
     }
@@ -353,7 +353,7 @@ function createWrapperBlock(context: InteropContext, varMap: Map<string, propert
     const initial = [
         createGlobal(),
         createEmptyESValue(InteroperAbilityNames.PARAM),
-        getPropertyESValue('createState', 'global', 'createStateVariable'),
+        getPropertyESValue('createState', InteroperAbilityNames.GLOBAL, 'createStateVariable'),
         ...createProvideInterop()
     ];
     const initialArgsStatement = args ? initialArgs(args, varMap, updateProp) : [];
@@ -367,7 +367,7 @@ function createWrapperBlock(context: InteropContext, varMap: Map<string, propert
             ...createELMTID(),
             ...createComponent(moduleName, className),
             ...invokeViewPUCreate(),
-            resetFindProvide(),
+            ...setAndResetFindProvide(),
             // ...paramsLambdaDeclaration(className, args),
             // setPropertyESValue(
             //     'component', 
@@ -405,8 +405,8 @@ function updateStateVars(updateProp: arkts.Property[]): arkts.Statement {
     );
     return arkts.factory.createCallExpression(
         arkts.factory.createMemberExpression(
-            arkts.factory.createIdentifier('component'),
-            arkts.factory.createIdentifier('invokeMethod'),
+            arkts.factory.createIdentifier(InteroperAbilityNames.INSTANCE),
+            arkts.factory.createIdentifier(ESValueMethodNames.INVOKEMETHOD),
             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
             false,
             false
@@ -419,8 +419,7 @@ function updateStateVars(updateProp: arkts.Property[]): arkts.Statement {
     );
 }
 
-function createUpdater(esvalue: arkts.ETSTypeReference, varMap: Map<string, propertyInfo>,
-    updateProp: arkts.Property[]): arkts.ArrowFunctionExpression {
+function createUpdater(updateProp: arkts.Property[]): arkts.ArrowFunctionExpression {
     const updateState = updateStateVars(updateProp); 
     return arkts.factory.createArrowFunction(
         arkts.factory.createScriptFunction(
@@ -433,7 +432,13 @@ function createUpdater(esvalue: arkts.ETSTypeReference, varMap: Map<string, prop
                 undefined,
                 [
                     arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier(InteroperAbilityNames.INSTANCE, esvalue),
+                        arkts.factory.createIdentifier(InteroperAbilityNames.INSTANCE,
+                            arkts.factory.createTypeReference(
+                                arkts.factory.createTypeReferencePart(
+                                    arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE)
+                                )
+                            )
+                        ),
                         undefined,
                     ),
                 ],
@@ -480,14 +485,14 @@ function generateStructInfo(context: InteropContext): arkts.AstNode[] {
 }
 
 /**
- * After Parsed阶段
- * @param {Object} context - 组件上下文信息
- * @param {string} context.className - 组件类名
- * @param {string} context.path - 组件文件路径
- * @param {number} [context.line] - 组件在文件中的行号（可选）
- * @param {number} [context.col] - 组件在文件中的列号（可选）
- * @param {Object} [context.arguments] - 传递给组件的额外参数（可选）
- * @returns {Object} 返回带有互操作标识的1.1组件静态方法，用于承载相关信息
+ * 
+ * @param {Object} context - Context information about the parsed CustomComponent.
+ * @param {string} context.className - Name of the CustomComponent class.
+ * @param {string} context.path - File path where the CustomComponent is located.
+ * @param {number} [context.line] - Line number of the CustomComponent in the file (optional).
+ * @param {number} [context.col] - Column number of the CustomComponent in the file (optional).
+ * @param {Object} [context.arguments] - Additional arguments passed to the CustomComponent (optional).
+ * @returns {Object} <context.className>.instantiate_Interop.
  */
 export function generateInstantiateInterop(context: InteropContext): arkts.CallExpression {
     return arkts.factory.createCallExpression(
@@ -504,9 +509,9 @@ export function generateInstantiateInterop(context: InteropContext): arkts.CallE
 }
 
 /**
- * After Checked阶段
+ * 
  * @param node 
- * @returns {boolean} 判断节点是否为带有互操作标识的CallExpression
+ * @returns {boolean}  Checks if a given CallExpression represents a call to <Struct>.instantiate_Interop.
  */
 export function isArkUICompatible(node: arkts.AstNode): boolean {
     if (node instanceof arkts.CallExpression && node.expression instanceof arkts.MemberExpression &&
@@ -521,7 +526,7 @@ export function isArkUICompatible(node: arkts.AstNode): boolean {
 /**
  * 
  * @param node 
- * @returns After Checked阶段，将带有互操作标识的1.1组件静态方法转换为ArkUICompatible函数
+ * @returns After Checked, transform instantiate_Interop -> ArkUICompatible
  */
 export function generateArkUICompatible(node: arkts.CallExpression): arkts.CallExpression {
     const classInterop = (node.expression as arkts.MemberExpression).object as arkts.Identifier;
@@ -540,14 +545,9 @@ export function generateArkUICompatible(node: arkts.CallExpression): arkts.CallE
     };
 
     const varMap: Map<string, propertyInfo> = generateVarMap(classInterop);
-    const esvalue = arkts.factory.createTypeReference(
-        arkts.factory.createTypeReferencePart(
-            arkts.factory.createIdentifier(InteroperAbilityNames.ESVALUE)
-        )
-    );
     const updateProp:arkts.Property[] = [];
     const initializer = createInitializer(context, varMap, updateProp);
-    const updater = createUpdater(esvalue, varMap, updateProp);
+    const updater = createUpdater(updateProp);
     return arkts.factory.updateCallExpression(
         node,
         arkts.factory.createIdentifier(InteroperAbilityNames.ARKUICOMPATIBLE),

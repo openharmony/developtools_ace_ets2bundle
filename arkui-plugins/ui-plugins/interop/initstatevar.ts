@@ -16,7 +16,7 @@
 
 
 import * as arkts from '@koalaui/libarkts';
-import { InteroperAbilityNames } from '../../common/predefines';
+import { ESValueMethodNames, InteroperAbilityNames } from './predefines';
 import { annotation, backingField, isAnnotation } from '../../common/arkts-utils';
 import { stateProxy, getPropertyESValue, getWrapValue, ifStateHasProxy, setPropertyESValue, hasLink, hasState, hasProvide, hasProp } from './utils';
 
@@ -90,7 +90,7 @@ function setCallbackForProxy(stateVar: () => arkts.Expression, type?: arkts.Type
         arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
                 arkts.factory.createIdentifier('createState'),
-                arkts.factory.createIdentifier('invoke'),
+                arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
                 false
@@ -124,7 +124,7 @@ function createSourceBlock(): arkts.BlockStatement {
                 arkts.factory.createCallExpression(
                     arkts.factory.createMemberExpression(
                         arkts.factory.createIdentifier('proxyState'),
-                        arkts.factory.createIdentifier('invokeMethod'),
+                        arkts.factory.createIdentifier(ESValueMethodNames.INVOKEMETHOD),
                         arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                         false,
                         false
@@ -149,7 +149,7 @@ function createNotifyBlock(): arkts.BlockStatement {
                 arkts.factory.createCallExpression(
                     arkts.factory.createMemberExpression(
                         arkts.factory.createIdentifier('proxyState'),
-                        arkts.factory.createIdentifier('invokeMethod'),
+                        arkts.factory.createIdentifier(ESValueMethodNames.INVOKEMETHOD),
                         arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                         false,
                         false
@@ -196,10 +196,10 @@ function setCallbackForSource(type?: arkts.TypeNode): arkts.Statement[] {
     return [createValueCallback, createNotifyCallback];
 }
 
-function configureState(stateVar: () => arkts.Expression): arkts.Statement {
+function bindCompatibleState(stateVar: () => arkts.Expression): arkts.Statement {
     return arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
-            arkts.factory.createIdentifier('configureState'),
+            arkts.factory.createIdentifier(InteroperAbilityNames.CONFIGURESTATE),
             undefined,
             [
                 stateVar(),
@@ -214,7 +214,7 @@ function configureState(stateVar: () => arkts.Expression): arkts.Statement {
 function createProxyForState(stateVar: () => arkts.Expression, type?: arkts.TypeNode): arkts.Statement[] {
     const setProxy = setCallbackForProxy(stateVar, type);
     const setSource = setCallbackForSource(type);
-    const cfgState = configureState(stateVar);
+    const cfgState = bindCompatibleState(stateVar);
     return [...setProxy, ...setSource, cfgState];
 }
 
@@ -246,15 +246,11 @@ function setAndGetProxy(varName: string, type: arkts.TypeNode, stateVar: () => a
         const getProxy = createVariableLet(
             stateProxy(varName),
             arkts.factory.createCallExpression(
-                arkts.factory.createMemberExpression(
-                    stateVar(),
-                    arkts.factory.createIdentifier('getProxy'),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
-                ),
+                arkts.factory.createIdentifier(InteroperAbilityNames.GETPROXY),
                 undefined,
-                undefined
+                [
+                    stateVar()
+                ]
             )
         );
         result.push(...setProxy, getProxy);
@@ -271,15 +267,11 @@ function linkGetSource(varName: string, proxySet: Set<string>): arkts.Statement[
         const getState = createVariableLet(
             stateName,
             arkts.factory.createCallExpression(
-                arkts.factory.createMemberExpression(
-                    backingLink,
-                    arkts.factory.createIdentifier('getSource'),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
-                ),
+                arkts.factory.createIdentifier(InteroperAbilityNames.GETSOURCE),
                 undefined,
-                undefined
+                [
+                    backingLink
+                ]
             )
         );
         result.push(getState);
@@ -293,7 +285,7 @@ function linkGetSource(varName: string, proxySet: Set<string>): arkts.Statement[
  * @param value 
  * @param type 
  * @param proxySet 
- * @returns 处理Link装饰器所生成的互操作代码
+ * @returns generate code to process @Link data interoperability
  */
 export function processLink(keyName: string, value: arkts.Expression, type: arkts.TypeNode, proxySet: Set<string>): arkts.Statement[] {
     const valueDecl = arkts.getDecl(value);
@@ -341,7 +333,7 @@ export function processLink(keyName: string, value: arkts.Expression, type: arkt
  * 
  * @param keyName 
  * @param value 
- * @returns 处理一般情况下的属性赋值
+ * @returns generate code to process regular data interoperability
  */
 export function processNormal(keyName: string, value: arkts.AstNode): arkts.Statement[] {
     const result: arkts.Statement[] = [];
