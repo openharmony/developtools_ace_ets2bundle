@@ -186,14 +186,25 @@ export function cleanUpProcessArkTSEvolutionObj(): void {
   fullNameToTmpVar = new Map();
 }
 
-export async function writeBridgeCodeFileSyncByNode(node: ts.SourceFile, moduleId: string): Promise<void> {
+export async function writeBridgeCodeFileSyncByNode(node: ts.SourceFile, moduleId: string,
+  metaInfo: Object): Promise<void> {
   const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   const writer: ts.EmitTextWriter = ts.createTextWriter(
     // @ts-ignore
     ts.getNewLineCharacter({ newLine: ts.NewLineKind.LineFeed, removeComments: false }));
     printer.writeFile(node, writer, undefined);
-  mkdirsSync(path.dirname(moduleId));
-  fs.writeFileSync(moduleId, writer.getText());
+  const cacheFilePath: string = genCachePathForBridgeCode(moduleId, metaInfo);
+  mkdirsSync(path.dirname(cacheFilePath));
+  fs.writeFileSync(cacheFilePath, writer.getText());
+}
+
+export function genCachePathForBridgeCode(moduleId: string, metaInfo: Object, cachePath?: string): string {
+  const bridgeCodePath: string = getDeclgenBridgeCodePath(metaInfo.pkgName);
+  const filePath: string = toUnixPath(moduleId);
+  const relativeFilePath: string = filePath.replace(
+    toUnixPath(path.join(bridgeCodePath, metaInfo.pkgName)), metaInfo.moduleName);
+  const cacheFilePath: string = path.join(cachePath ? cachePath : process.env.cachePath, relativeFilePath);
+  return cacheFilePath;
 }
 
 export function getDeclgenBridgeCodePath(pkgName: string): string {
