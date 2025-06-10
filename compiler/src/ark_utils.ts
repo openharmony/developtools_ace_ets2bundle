@@ -452,7 +452,8 @@ export function getNormalizedOhmUrlByAliasName(aliasName: string, projectConfig:
 
 export function getOhmUrlByByteCodeHar(moduleRequest: string, projectConfig: Object, rollupObject: Object, logger?: Object):
   string | undefined {
-  if (projectConfig.byteCodeHarInfo) {
+  if (projectConfig.useNormalizedOHMUrl &&
+    projectConfig.byteCodeHarInfo && Object.keys(projectConfig.byteCodeHarInfo).length > 0) {
     const moduleInfoByModuleRequest: Object = rollupObject.share?.importResolver?.(moduleRequest);
     if (moduleInfoByModuleRequest) {
        return getNormalizedOhmUrlByModuleRequest(moduleInfoByModuleRequest, projectConfig, logger);
