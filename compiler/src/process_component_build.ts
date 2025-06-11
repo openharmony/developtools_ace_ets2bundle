@@ -2774,7 +2774,7 @@ class StyleResult {
 }
 
 function isDoubleBind(styleResult: StyleResult, isStylesAttr: boolean, identifierNode: ts.Identifier,
-  propName: string, temp: any): boolean {
+  propName: string, temp: ts.CallExpression): boolean {
   if (isDoubleDollarToChange(isStylesAttr, identifierNode, propName, temp)) {
     styleResult.doubleDollar = true;
     return true;
@@ -3053,7 +3053,7 @@ function classifyArgumentsNum(args, argumentsArr: ts.Expression[], propName: str
   }
 }
 
-function classifyArgumentsNumV2(args: any, argumentsArr: ts.Expression[], propName: string, 
+function classifyArgumentsNumV2(args: ts.Expression[], argumentsArr: ts.Expression[], propName: string, 
   identifierNode: ts.Identifier): void {
   const componentName: string = identifierNode.escapedText.toString();
   if (STYLE_ADD_DOUBLE_EXCLAMATION.has(propName) && args.length || 
