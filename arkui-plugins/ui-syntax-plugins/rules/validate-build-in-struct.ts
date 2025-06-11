@@ -14,11 +14,10 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getIdentifierName } from '../utils';
+import { getIdentifierName, BUILD_NAME } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 
 const NOT_PARAM_LENGTH: number = 0;
-const BUILD_NAME: string = 'build';
 const BUILD_FUNCTION_COUNT_INI: number = 0;
 const BUILD_FUNCTION_COUNT: number = 1;
 const NOT_STATEMENT_LENGTH: number = 0;
@@ -66,7 +65,7 @@ function validateConstructorForBuildFunction(
   }
   const statements = blockStatement.statements;
   const structName = node.definition.ident;
-  if (buildFunctionCount !== BUILD_FUNCTION_COUNT &&
+  if (buildFunctionCount === BUILD_FUNCTION_COUNT_INI &&
     statements.length === NOT_STATEMENT_LENGTH) {
     reportMissingBuildInStruct(structName, blockStatement, context);
   }
@@ -91,10 +90,41 @@ function reportMissingBuildInStruct(
       const endPosition = startPosition;
       return {
         range: [startPosition, endPosition],
-        code: '{\nbuild {\n}'
+        code: '{\nbuild() {\n}\n'
       };
     }
   });
+}
+
+function validateDuplicateBuild(
+  buildFunctionCount: number,
+  member: arkts.MethodDefinition,
+  context: UISyntaxRuleContext
+): void {
+  if (buildFunctionCount > BUILD_FUNCTION_COUNT) {
+    const buildNode = member.scriptFunction.id;
+    if (!buildNode) {
+      return;
+    }
+    if (!arkts.isIdentifier(buildNode)) {
+      return;
+    }
+    context.report({
+      node: member,
+      message: rule.messages.invalidBuild,
+      data: {
+        structName: getIdentifierName(buildNode),
+      },
+      fix: (structName) => {
+        const startPosition = member.startPosition;
+        const endPosition = member.endPosition;
+        return {
+          range: [startPosition, endPosition],
+          code: ``
+        };
+      }
+    });
+  }
 }
 
 function validateBuild(
@@ -107,6 +137,7 @@ function validateBuild(
     if (arkts.isMethodDefinition(member) && arkts.isIdentifier(member.name) && getIdentifierName(member.name) === BUILD_NAME) {
       buildFunctionCount++;
       validateBuildFunctionParameters(member, context);
+      validateDuplicateBuild(buildFunctionCount, member, context);
     }
     // rule2: This rule validates the use of the 'build' function
     if (arkts.isMethodDefinition(member) &&

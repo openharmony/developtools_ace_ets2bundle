@@ -14,10 +14,9 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getIdentifierName, getAnnotationUsage, PresetDecorators } from '../utils';
+import { getIdentifierName, getAnnotationUsage, PresetDecorators, BUILD_NAME } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 
-const BUILD_NAME: string = 'build';
 const BUILD_ROOT_NUM: number = 1;
 const STATEMENT_LENGTH: number = 1;
 

@@ -14,10 +14,8 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getIdentifierName, PresetDecorators, getAnnotationName, getAnnotationUsage } from '../utils';
+import { getIdentifierName, PresetDecorators, getAnnotationName, getAnnotationUsage, BUILD_NAME } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
-
-const BUILD_NAME: string = 'build';
 
 function validateStructBody(
   node: arkts.StructDeclaration,
