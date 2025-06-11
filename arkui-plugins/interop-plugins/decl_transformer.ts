@@ -105,7 +105,7 @@ export class DeclTransformer extends AbstractVisitor {
                 node.name,
                 node.name?.name
             ),
-            arkts.factory.createFunctionExpression(updateFunc),
+            updateFunc,
             node.modifiers,
             false
         );
