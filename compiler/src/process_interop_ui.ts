@@ -93,28 +93,6 @@ class HandleUIImports {
   }
 
   private visitNode(node: ts.Node): ts.Node | undefined {
-    // TODO, declare struct => struct
-    if (node.parent && isStructDeclaration(node.parent) && ts.isModifier(node) &&
-      node.kind === ts.SyntaxKind.DeclareKeyword) {
-      return;
-    }
-
-    // TODO, build() => build() {}
-    if (node.parent && isStructDeclaration(node.parent) && ts.isMethodDeclaration(node) &&
-      node.name && ts.isIdentifier(node.name) && node.name.escapedText.toString() === "build") {
-      return ts.factory.updateMethodDeclaration(node,
-        undefined,
-        undefined,
-        undefined,
-        node.name,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        ts.factory.createBlock([], false)
-      );
-    }
-
     // delete constructor
     if (node.parent && isStructDeclaration(node.parent) && ts.isConstructorDeclaration(node)) {
       return;
