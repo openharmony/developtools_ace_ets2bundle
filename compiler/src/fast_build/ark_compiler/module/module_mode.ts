@@ -120,11 +120,12 @@ import {
 } from '../logger';
 import {
   addDeclFilesConfig,
+  arkTSModuleMap,
   ArkTSEvolutionModule,
   getDeclgenBridgeCodePath,
-  pkgDeclFilesConfig,
-  arkTSModuleMap,
-  isArkTSEvolutionFile
+  genCachePathForBridgeCode,
+  isArkTSEvolutionFile,
+  pkgDeclFilesConfig
 } from '../../../process_arkts_evolution';
 
 export class ModuleInfo {
@@ -521,7 +522,8 @@ export class ModuleMode extends CommonMode {
 
     let moduleName: string = metaInfo.moduleName;
     let recordName: string = '';
-    let cacheFilePath: string = isArkTSEvolutionFile(filePath, metaInfo) ? originalFilePath :
+    let cacheFilePath: string = isArkTSEvolutionFile(filePath, metaInfo) ?
+      genCachePathForBridgeCode(originalFilePath, metaInfo, this.projectConfig.cachePath) :
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath, metaInfo);
     let packageName: string = '';
 
