@@ -101,6 +101,8 @@ export interface ProjectConfig {
     resetBundleName: boolean;
     allowEmptyBundleName: boolean;
     moduleType: string;
+    moduleRootPath: string;
+    aceModuleJsonPath: string;
 }
 
 export type PluginHandlerFunction = () => void;

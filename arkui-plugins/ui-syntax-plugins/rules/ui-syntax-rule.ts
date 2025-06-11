@@ -14,7 +14,8 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { UISyntaxRuleComponents } from 'ui-syntax-plugins/processor';
+import { ProjectConfig } from 'common/plugin-context';
+import { UISyntaxRuleComponents } from 'ui-syntax-plugins/utils';
 
 export type FixSuggestion = {
   range: [start: arkts.SourcePosition, end: arkts.SourcePosition];
@@ -29,17 +30,20 @@ export type ReportOptions = {
 };
 
 export type UISyntaxRuleContext = {
-  report(options: ReportOptions): void;
-  configOfComponent?: Set<string> | undefined;
+  projectConfig?: ProjectConfig;
   componentsInfo: UISyntaxRuleComponents;
+  report(options: ReportOptions): void;
+  getMainPages(): string[];
 };
 
-export type UISyntaxRuleHandler = (node: arkts.AstNode) => void;
+export type UISyntaxRulePhaseHandler = (node: arkts.AstNode) => void;
+
+export type UISyntaxRuleHandler = {
+  parsed?: UISyntaxRulePhaseHandler;
+};
 
 export type UISyntaxRule = {
   name: string;
   messages: Record<string, string>;
-  setup(context: UISyntaxRuleContext): {
-    parsed?: UISyntaxRuleHandler;
-  };
+  setup(context: UISyntaxRuleContext): UISyntaxRuleHandler;
 };

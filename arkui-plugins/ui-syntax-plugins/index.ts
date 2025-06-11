@@ -24,13 +24,17 @@ export function uiSyntaxLinterTransform(): Plugins {
   return {
     name: 'ui-syntax-plugin',
     parsed(this: PluginContext): arkts.EtsScript | undefined {
-      const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+      const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
       if (!contextPtr) {
         return undefined;
       }
-      let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+      const program = arkts.getOrUpdateGlobalContext(contextPtr).program;
       const node = program.astNode;
       if (node) {
+        const projectConfig = this.getProjectConfig();
+        if (projectConfig) {
+          processor.setProjectConfig(projectConfig);
+        }
         const script = new ParsedUISyntaxLinterTransformer(processor).visitor(
           node,
         ) as arkts.EtsScript;
