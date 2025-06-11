@@ -1337,7 +1337,7 @@ function isNonspecificChildBlock(blockNode: ts.Block, specificChildSet: Set<stri
         return true;
       }
       if (ts.isExpressionStatement(item)) {
-        let newNode: any = item.expression;
+        let newNode: ts.Expression = item.expression;
         while (newNode.expression) {
           if (ts.isEtsComponentExpression(newNode) && ts.isIdentifier(newNode.expression) &&
           !isForEachComponent(newNode) && isComponent(newNode, allComponentNames)) {
