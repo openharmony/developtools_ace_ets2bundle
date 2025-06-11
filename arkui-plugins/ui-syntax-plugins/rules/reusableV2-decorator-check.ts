@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { PresetDecorators, getAnnotationUsage } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 
-function reportInvalidDecoratorUsage(
+function reportConflictingDecorators(
   reusableDocoratorUsage: arkts.AnnotationUsage | undefined,
   structNode: arkts.Identifier | undefined,
   context: UISyntaxRuleContext
@@ -31,7 +31,7 @@ function reportInvalidDecoratorUsage(
   });
 }
 
-function reportConflictingDecorators(
+function reportInvalidDecoratorUsage(
   node: arkts.StructDeclaration,
   structNode: arkts.Identifier | undefined,
   context: UISyntaxRuleContext
@@ -70,11 +70,11 @@ const rule: UISyntaxRule = {
         const componnetV2DocoratorUsage = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
         // Check whether @Reusable and @ReusableV2 exist at the same time
         if (reusableV2DocoratorUsage && reusableDocoratorUsage && structNode) {
-          reportInvalidDecoratorUsage(reusableDocoratorUsage, structNode, context);
+          reportConflictingDecorators(reusableDocoratorUsage, structNode, context);
         }
         // Check if @ReusableV2 is applied to a class decorated by @ComponentV2
         if (reusableV2DocoratorUsage && !componnetV2DocoratorUsage && structNode) {
-          reportConflictingDecorators(node, structNode, context);
+          reportInvalidDecoratorUsage(node, structNode, context);
         }
       },
     };
