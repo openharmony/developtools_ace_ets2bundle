@@ -66,7 +66,10 @@ KInt impl_CheckCallbackEvent(KByte* buffer, KInt size) {
     }
     const CallbackEventKind frontEventKind = callbackEventsQueue.front();
 #ifdef __STDC_LIB_EXT1__
-    memcpy_s(result, size, &frontEventKind, 4);
+    errno_t res = memcpy_s(result, size, &frontEventKind, 4);
+    if (res != EOK) {
+        return 0;
+    }
 #else
     memcpy(result, &frontEventKind, 4);
 #endif
@@ -75,7 +78,10 @@ KInt impl_CheckCallbackEvent(KByte* buffer, KInt size) {
     {
         case Event_CallCallback:
 #ifdef __STDC_LIB_EXT1__
-            memcpy_s(result + 4, size, callbackCallSubqueue.front().buffer, sizeof(CallbackBuffer::buffer));
+            errno_t res = memcpy_s(result + 4, size, callbackCallSubqueue.front().buffer, sizeof(CallbackBuffer::buffer));
+            if (res != EOK) {
+                return 0;
+            }
 #else
             memcpy(result + 4, callbackCallSubqueue.front().buffer, sizeof(CallbackBuffer::buffer));
 #endif
@@ -84,7 +90,10 @@ KInt impl_CheckCallbackEvent(KByte* buffer, KInt size) {
         case Event_ReleaseManagedResource: {
             const InteropInt32 resourceId = callbackResourceSubqueue.front();
 #ifdef __STDC_LIB_EXT1__
-            memcpy_s(result + 4, size, &frontEventKind, 4);
+            errno_t res = memcpy_s(result + 4, size, &frontEventKind, 4);
+            if (res != EOK) {
+                return 0;
+            }
 #else
             memcpy(result + 4, &resourceId, 4);
 #endif
