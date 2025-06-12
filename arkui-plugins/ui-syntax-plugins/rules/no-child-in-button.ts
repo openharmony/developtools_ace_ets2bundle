@@ -43,8 +43,8 @@ function reportNoChildInButtonError(parentNode: arkts.AstNode, context: UISyntax
       node: parentNode,
       message: rule.messages.noChildInButton,
       fix: (parentNode) => {
-        const startPosition = arkts.getStartPosition(siblings[2]);
-        const endPosition = arkts.getEndPosition(siblings[2]);
+        const startPosition = siblings[2].startPosition;
+        const endPosition = siblings[2].endPosition;
         return {
           range: [startPosition, endPosition],
           code: '',

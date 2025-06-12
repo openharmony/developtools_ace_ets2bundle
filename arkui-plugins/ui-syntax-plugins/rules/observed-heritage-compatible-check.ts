@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
-import { PresetDecorators } from '../utils/index';
+import { getIdentifierName, PresetDecorators } from '../utils/index';
 
 function getObservedDecorator(node: arkts.AstNode, observedClasses: string[], observedV2Classes: string[]): void {
   for (const child of node.getChildren()) {
@@ -57,30 +57,45 @@ function checkInheritanceCompatibility(context: UISyntaxRuleContext, node: arkts
   );
 
   //Get the name of the superClass
-  const superClassName = node.definition?.super?.dumpSrc();
-  if (!superClassName) {
+  if (!node.definition?.super) {
     return;
   }
-  // Verify that the inheritance relationship is compatible
-  if (observedV1Decorator && observedV2Classes.includes(superClassName)) {
-    context.report({
-      node: observedV1Decorator,
-      message: rule.messages.incompatibleHeritageObservedToObservedV2,
-    });
-  }
-  if (observedV2Decorator && observedClasses.includes(superClassName)) {
-    context.report({
-      node: observedV2Decorator,
-      message: rule.messages.incompatibleHeritageObservedV2ToObserved,
-    });
+  if (arkts.isETSTypeReference(node.definition?.super)) {
+    if (!node.definition.super.part) {
+      return;
+    }
+    if (!arkts.isETSTypeReferencePart(node.definition?.super.part)) {
+      return;
+    }
+    if (!node.definition?.super.part.name) {
+      return;
+    }
+    const superClassName = getIdentifierName(node.definition?.super.part.name);
+
+    if (!superClassName) {
+      return;
+    }
+    // Verify that the inheritance relationship is compatible
+    if (observedV1Decorator && observedV2Classes.includes(superClassName)) {
+      context.report({
+        node: observedV1Decorator,
+        message: rule.messages.incompatibleHeritageObservedToObservedV2,
+      });
+    }
+    if (observedV2Decorator && observedClasses.includes(superClassName)) {
+      context.report({
+        node: observedV2Decorator,
+        message: rule.messages.incompatibleHeritageObservedV2ToObserved,
+      });
+    }
   }
 }
 
 const rule: UISyntaxRule = {
   name: 'observed-heritage-compatible-check',
   messages: {
-    incompatibleHeritageObservedToObservedV2: `The current class is decorated by '@Observed', it cannot inherit a class decorated by '@ObservedV2'.`,
-    incompatibleHeritageObservedV2ToObserved: `The current class is decorated by '@ObservedV2', it cannot inherit a class decorated by '@Observed'.`,
+    incompatibleHeritageObservedToObservedV2: `A class decorated by '@Observed' cannot inherit from a class decorated by '@ObservedV2'.`,
+    incompatibleHeritageObservedV2ToObserved: `A class decorated by '@ObservedV2' cannot inherit from a class decorated by '@Observed'.`,
   },
   setup(context) {
     // Record the class name decorated with @Observed and @ObservedV2
