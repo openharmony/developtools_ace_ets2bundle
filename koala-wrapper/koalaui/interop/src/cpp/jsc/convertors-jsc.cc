@@ -147,7 +147,10 @@ static JSValueRef u64ToBigInt(JSContextRef context, uint64_t value) {
 #else
     char buffer[128] = {0};
 #ifdef __STDC_LIB_EXT1__ 
-    std::snprintf_s(buffer, sizeof(buffer) - 1, "%zun", static_cast<size_t>(value));
+    errno_t res = std::snprintf_s(buffer, sizeof(buffer) - 1, "%zun", static_cast<size_t>(value));
+    if (res != EOK) {
+        return bigint;
+    }
 #else
     std::snprintf(buffer, sizeof(buffer) - 1, "%zun", static_cast<size_t>(value));
 #endif 
