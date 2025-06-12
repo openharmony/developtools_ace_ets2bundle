@@ -46,8 +46,8 @@ inline ElemType* getTypedElements(JSContextRef context, const JSValueRef argumen
 
 template <typename ElemType>
 inline ElemType* getTypedElements(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  ASSERT(index < argumentCount);
-  return getTypedElements<ElemType>(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getTypedElements<ElemType>(context, arguments[index]);
 }
 
 uint8_t* getUInt8Elements(JSContextRef context, const JSValueRef arguments);
