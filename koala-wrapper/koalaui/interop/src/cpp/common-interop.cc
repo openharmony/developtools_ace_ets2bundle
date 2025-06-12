@@ -129,7 +129,10 @@ void impl_StringData(KNativePointer ptr, KByte* bytes, KUInt size) {
     string* s = reinterpret_cast<string*>(ptr);
     if (s) {
 #ifdef __STDC_LIB_EXT1__
-        memcpy_s(bytes, size, s->c_str(), size);
+        errno_t res = memcpy_s(bytes, size, s->c_str(), size);
+        if (res != EOK) {
+            return;
+        }
 #else
         memcpy(bytes, s->c_str(), size);
 #endif
@@ -156,7 +159,10 @@ KOALA_INTEROP_1(StringMake, KNativePointer, KStringPtr)
 // For slow runtimes w/o fast encoders.
 KInt impl_ManagedStringWrite(const KStringPtr& string, KByte* buffer, KInt offset) {
 #ifdef __STDC_LIB_EXT1__
-    memcpy_s(buffer + offset, string.length() + 1, string.c_str(), string.length() + 1);
+    errno_t res = memcpy_s(buffer + offset, string.length() + 1, string.c_str(), string.length() + 1);
+    if (res != EOK) {
+        return 0;
+    }
 #else
     memcpy(buffer + offset, string.c_str(), string.length() + 1);
 #endif
@@ -471,7 +477,10 @@ KOALA_INTEROP_CTX_1(StdStringToString, KStringPtr, KNativePointer)
 KInteropReturnBuffer impl_RawReturnData(KVMContext vmContext, KInt v1, KInt v2) {
     void* data = new int8_t[v1];
 #ifdef __STDC_LIB_EXT1__
-    memset_s(data, v1, v2, v1);
+    errno_t res = memset_s(data, v1, v2, v1);
+    if (res != EOK) {
+        LOGE("RawReturnData failed");
+    }
 #else
     memset(data, v2, v1);
 #endif
