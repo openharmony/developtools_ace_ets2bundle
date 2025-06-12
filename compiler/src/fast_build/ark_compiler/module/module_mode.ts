@@ -119,10 +119,11 @@ import {
 } from '../logger';
 import {
   addDeclFilesConfig,
+  arkTSModuleMap,
   ArkTSEvolutionModule,
+  genCachePathForBridgeCode,
   getDeclgenBridgeCodePath,
   pkgDeclFilesConfig,
-  arkTSModuleMap
 } from '../../../process_arkts_evolution';
 
 export class ModuleInfo {
@@ -519,7 +520,8 @@ export class ModuleMode extends CommonMode {
 
     let moduleName: string = metaInfo.moduleName;
     let recordName: string = '';
-    let cacheFilePath: string =  metaInfo.language === ARKTS_1_2 ? originalFilePath :
+    let cacheFilePath: string =  metaInfo.language === ARKTS_1_2 ?
+      genCachePathForBridgeCode(originalFilePath, metaInfo, this.projectConfig.cachePath) :
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath, metaInfo);
     let packageName: string = '';
 
