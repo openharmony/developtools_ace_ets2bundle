@@ -65,29 +65,29 @@ KInt impl_CheckCallbackEvent(KByte* buffer, KInt size) {
         return 0;
     }
     const CallbackEventKind frontEventKind = callbackEventsQueue.front();
-    #ifdef __STDC_LIB_EXT1__
-        memcpy_s(result, size, &frontEventKind, 4);
-    #else
-        memcpy(result, &frontEventKind, 4);
-    #endif
+#ifdef __STDC_LIB_EXT1__
+    memcpy_s(result, size, &frontEventKind, 4);
+#else
+    memcpy(result, &frontEventKind, 4);
+#endif
 
     switch (frontEventKind)
     {
         case Event_CallCallback:
-            #ifdef __STDC_LIB_EXT1__
-                memcpy_s(result + 4, size, callbackCallSubqueue.front().buffer, sizeof(CallbackBuffer::buffer));
-            #else
-                memcpy(result + 4, callbackCallSubqueue.front().buffer, sizeof(CallbackBuffer::buffer));
-            #endif
+#ifdef __STDC_LIB_EXT1__
+            memcpy_s(result + 4, size, callbackCallSubqueue.front().buffer, sizeof(CallbackBuffer::buffer));
+#else
+            memcpy(result + 4, callbackCallSubqueue.front().buffer, sizeof(CallbackBuffer::buffer));
+#endif
             break;
         case Event_HoldManagedResource:
         case Event_ReleaseManagedResource: {
             const InteropInt32 resourceId = callbackResourceSubqueue.front();
-            #ifdef __STDC_LIB_EXT1__
-                memcpy_s(result + 4, size, &frontEventKind, 4);
-            #else
-                memcpy(result + 4, &resourceId, 4);
-            #endif
+#ifdef __STDC_LIB_EXT1__
+            memcpy_s(result + 4, size, &frontEventKind, 4);
+#else
+            memcpy(result + 4, &resourceId, 4);
+#endif
             break;
         }
         default:
