@@ -31,7 +31,6 @@
 #include "koala-types.h"
 #include "interop-types.h"
 
-// TODO: switch to more generic convertors eventually.
 template<class T>
 struct InteropTypeConverter {
     using InteropType = T;
@@ -88,9 +87,6 @@ struct InteropTypeConverter<KInteropBuffer> {
         (void*)copy,
         &result
       );
-      if (status != napi_ok) {
-        // do smth here
-      }
       return result;
     };
     static void release(napi_env env, InteropType value, KInteropBuffer converted) {}
@@ -241,7 +237,6 @@ public:
   }
 private:
   napi_env _env;
-  // napi_callback_info _info;
   std::vector<napi_value> args;
 };
 
@@ -513,11 +508,6 @@ inline KNativePointerArray getArgument<KNativePointerArray>(const CallbackInfo& 
   return getPointerElements(info, index);
 }
 
-// template <>
-// inline napi_value getArgument<napi_value>(const CallbackInfo& info, int index) {
-//   return getObject(info, index);
-// }
-
 template <>
 inline uint8_t* getArgument<uint8_t*>(const CallbackInfo& info, int index) {
   return getUInt8Elements(info, index);
@@ -573,7 +563,6 @@ napi_value makeUInt64(napi_env env, uint32_t value);
 napi_value makeFloat32(napi_env env, float value);
 napi_value makePointer(napi_env env, void* value);
 napi_value makeVoid(napi_env env);
-// napi_value makeObject(napi_env env, napi_value object);
 
 inline napi_value makeVoid(const CallbackInfo& info) {
   return makeVoid(info.Env());
@@ -656,8 +645,7 @@ public:
     const std::vector<std::pair<std::string, napi_type_t>>& getMethods(const std::string& module);
 };
 
-#define __QUOTE(x) #x
-#define QUOTE(x) __QUOTE(x)
+#define QUOTE(x) #x
 
 #ifdef _MSC_VER
 #define MAKE_NODE_EXPORT(module, name)                                  \

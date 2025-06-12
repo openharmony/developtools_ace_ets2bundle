@@ -38,7 +38,6 @@ static bool registerNatives(ets_env *env, const ets_class clazz, const std::vect
         if (registerByOne) {
             result &= env->RegisterNatives(clazz, &method, 1) >= 0;
             if (env->ErrorCheck()) {
-                //env->ErrorDescribe();
                 env->ErrorClear();
             }
         }
@@ -131,7 +130,6 @@ void EtsExports::setClasspath(const char* module, const char *classpath) {
 
 static std::map<std::string, std::string> g_defaultClasspaths = {
     {"InteropNativeModule", "@koalaui/interop/InteropNativeModule/InteropNativeModule"},
-    // todo leave just InteropNativeModule, define others via KOALA_ETS_INTEROP_MODULE_CLASSPATH
     {"TestNativeModule", "@koalaui/arkts-arkui/generated/arkts/TestNativeModule/TestNativeModule"},
     {"ArkUINativeModule", "@koalaui/arkts-arkui/generated/arkts/ArkUINativeModule/ArkUINativeModule"},
     {"ArkUIGeneratedNativeModule", "@koalaui/arkts-arkui/generated/arkts/ArkUIGeneratedNativeModule/ArkUIGeneratedNativeModule"},

@@ -127,7 +127,13 @@ KOALA_INTEROP_1(StringLength, KInt, KNativePointer)
 
 void impl_StringData(KNativePointer ptr, KByte* bytes, KUInt size) {
     string* s = reinterpret_cast<string*>(ptr);
-    if (s) memcpy(bytes, s->c_str(), size);
+    if (s) {
+        #ifdef __STDC_LIB_EXT1__
+            memcpy_s(bytes, size, s->c_str(), size);
+        #else
+            memcpy(bytes, s->c_str(), size);
+        #endif
+    }
 }
 KOALA_INTEROP_V3(StringData, KNativePointer, KByte*, KUInt)
 
@@ -149,7 +155,11 @@ KOALA_INTEROP_1(StringMake, KNativePointer, KStringPtr)
 
 // For slow runtimes w/o fast encoders.
 KInt impl_ManagedStringWrite(const KStringPtr& string, KByte* buffer, KInt offset) {
-    memcpy(buffer + offset, string.c_str(), string.length() + 1);
+    #ifdef __STDC_LIB_EXT1__
+        memcpy_s(buffer + offset, string.length() + 1, string.c_str(), string.length() + 1);
+    #else
+        memcpy(buffer + offset, string.c_str(), string.length() + 1);
+    #endif
     return string.length() + 1;
 }
 KOALA_INTEROP_3(ManagedStringWrite, KInt, KStringPtr, KByte*, KInt)
@@ -373,8 +383,7 @@ KInt impl_CallForeignVM(KNativePointer foreignContextRaw, KInt function, KByte* 
 KOALA_INTEROP_4(CallForeignVM, KInt, KNativePointer, KInt, KByte*, KInt)
 
 
-#define __QUOTE(x) #x
-#define QUOTE(x) __QUOTE(x)
+#define QUOTE(x) #x
 
 void impl_NativeLog(const KStringPtr& str) {
 #ifdef KOALA_OHOS
@@ -461,7 +470,11 @@ KOALA_INTEROP_CTX_1(StdStringToString, KStringPtr, KNativePointer)
 #if defined(KOALA_JNI) || defined(KOALA_NAPI) || defined(KOALA_CJ)
 KInteropReturnBuffer impl_RawReturnData(KVMContext vmContext, KInt v1, KInt v2) {
     void* data = new int8_t[v1];
-    memset(data, v2, v1);
+    #ifdef __STDC_LIB_EXT1__
+        memset_s(data, v1, v2, v1);
+    #else
+        memset(data, v2, v1);
+    #endif
     KInteropReturnBuffer buffer = { v1, data, [](KNativePointer ptr, KInt) { delete[] (int8_t*)ptr; }};
     return buffer;
 }
