@@ -39,7 +39,7 @@ import {
     type AnnotationUsage,
 } from '../../generated';
 import { Program } from '../peers/Program';
-import { clearNodeCache } from '../class-by-peer';
+import { clearNodeCache, nodeByType } from '../class-by-peer';
 import { SourcePosition } from '../peers/SourcePosition';
 import { MemberExpression } from '../to-be-generated/MemberExpression';
 
