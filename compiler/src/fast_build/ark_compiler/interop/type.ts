@@ -31,11 +31,6 @@ export interface ArkTSEvolutionModule {
   packageVersion: string;
 }
 
-export const ARKTS_1_2: string = '1.2';
-export const ARKTS_1_1: string = '1.1';
-export const ARKTS_1_0: string = '1.0';
-export const HYBRID: string = 'hybrid';
-
 export interface Params {
   dependentModuleMap: Map<string, ArkTSEvolutionModule>;
   projectConfig: ProjectConfig;
@@ -93,4 +88,46 @@ export interface DeclFilesConfig {
 interface DeclFileConfig {
   declPath: string;
   ohmUrl: string;
+}
+export interface ArkTSEvolutionModule {
+  language: string;
+  packageName: string;
+  pkgPath: string;
+  moduleName: string;
+  modulePath: string;
+  declgenV1OutPath?: string;
+  declgenV2OutPath?: string;
+  declgenBridgeCodePath?: string;
+  declFilesPath?: string;
+  dynamicFileList: string[];
+  staticFileList: string[];
+  cachePath: string;
+  byteCodeHarInfo?: Object;
+}
+
+export const ARKTS_1_2: string = '1.2';
+export const ARKTS_1_1: string = '1.1';
+export const ARKTS_1_0: string = '1.0';
+export const HYBRID: string = 'hybrid';
+
+export interface Params {
+  dependentModuleMap: Map<string, ArkTSEvolutionModule>;
+  projectConfig: ProjectConfig;
+  tasks: taskInfo[];
+}
+
+interface taskInfo {
+  packageName: string;
+  buildTask: BuildType
+}
+
+export interface AliasConfig {
+  originalAPIName: string;
+  isStatic: boolean;
+}
+
+export interface FileInfo {
+  recordName: string;
+  baseUrl: string;
+  abstractPath: string;
 }

@@ -34,6 +34,7 @@ import {
   preprocessNewExtend
 } from './validate_ui_syntax';
 import {
+  ARKTS_1_1,
   INNER_COMPONENT_MEMBER_DECORATORS,
   COMPONENT_DECORATORS_PARAMS,
   COMPONENT_BUILD_FUNCTION,
@@ -1073,6 +1074,7 @@ export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts
 export const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
 
 export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
+  const languageVersion = FileManager.mixCompile ? FileManager.getInstance().getLanguageVersionByFilePath(containingFile).languageVersion : ARKTS_1_1;
   startTimeStatisticsLocation(resolveModuleNamesTime);
   const resolvedModules: ts.ResolvedModuleFull[] = [];
   const cacheFileContent: ts.ResolvedModuleFull[] = resolvedModulesCache.get(path.resolve(containingFile));
@@ -1095,7 +1097,7 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           // When result has a value and the path parsed is the source code file path of module 1.2,
           // the parsing result needs to be modified to the glue code path of module 1.2
           let arktsEvoDeclFilePathExist: boolean = false;
-          const resolvedFileName: string  = toUnixPath(result.resolvedModule.resolvedFileName);
+          const resolvedFileName: string = toUnixPath(result.resolvedModule.resolvedFileName);
           const resultDETSPath: string = getArkTSEvoDeclFilePath({ moduleRequest: '', resolvedFileName });
           if (ts.sys.fileExists(resultDETSPath)) {
             resolvedModules.push(getResolveModule(resultDETSPath, EXTNAME_D_ETS));
@@ -1108,19 +1110,19 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           resolvedModules.push(result.resolvedModule);
         }
       } else if (new RegExp(`^@(${sdkConfigPrefix})\\.`, 'i').test(moduleName.trim())) {
-        let apiFileExist: boolean = false;
-        for (let i = 0; i < sdkConfigs.length; i++) {
-          const sdkConfig = sdkConfigs[i];
-          const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(sdkConfig.apiPath, moduleName, ['.d.ts', '.d.ets']);
-          const modulePath: string = resolveModuleInfo.modulePath;
-          const isDETS: boolean = resolveModuleInfo.isEts;
-          if (systemModules.includes(moduleName + (isDETS ? '.d.ets' : '.d.ts')) && ts.sys.fileExists(modulePath)) {
-            resolvedModules.push(getResolveModule(modulePath, isDETS ? '.d.ets' : '.d.ts'));
-            apiFileExist = true;
-            break;
-          }
-        }
-        if (!apiFileExist) {
+        const searchPaths = languageVersion && languageVersion === ARKTS_1_2
+          ? Array.from(FileManager.staticSDKDeclPath)
+          : [...new Set(sdkConfigs.flatMap(config => config.apiPath))];
+        const resolveModuleInfo = getRealModulePath(searchPaths, moduleName, ['.d.ts', '.d.ets']);
+        const modulePath = resolveModuleInfo.modulePath;
+        const extension = resolveModuleInfo.isEts ? '.d.ets' : '.d.ts';
+        const fullModuleName = moduleName + extension;
+
+        if (systemModules.includes(fullModuleName) && ts.sys.fileExists(modulePath)) {
+          resolvedModules.push(getResolveModule(modulePath, extension));
+        } else if (languageVersion === ARKTS_1_2) {
+          resolvedModules.push(getResolveModule(modulePath, extension));
+        } else {
           resolvedModules.push(null);
         }
       } else if (/\.ets$/.test(moduleName) && !/\.d\.ets$/.test(moduleName)) {
@@ -1138,46 +1140,57 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           resolvedModules.push(null);
         }
       } else {
-        const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
-        const systemDETSModulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ets');
-        const kitModulePath: string = path.resolve(__dirname, '../../../kits', moduleName + '.d.ts');
-        const kitSystemDETSModulePath: string = path.resolve(__dirname, '../../../kits', moduleName + '.d.ets');
-        const suffix: string = /\.js$/.test(moduleName) ? '' : '.js';
-        const jsModulePath: string = path.resolve(__dirname, '../node_modules', moduleName + suffix);
-        const fileModulePath: string =
-          path.resolve(__dirname, '../node_modules', moduleName + '/index.js');
-        const DETSModulePath: string = path.resolve(path.dirname(containingFile),
-          /\.d\.ets$/.test(moduleName) ? moduleName : moduleName + EXTNAME_D_ETS);
-        const arktsEvoDeclFilePath: string = getArkTSEvoDeclFilePath({ moduleRequest: moduleName, resolvedFileName: '' });
-        if (ts.sys.fileExists(modulePath)) {
-          resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
-        } else if (ts.sys.fileExists(systemDETSModulePath)) {
-          resolvedModules.push(getResolveModule(systemDETSModulePath, '.d.ets'));
-        } else if (ts.sys.fileExists(kitModulePath)) {
-          resolvedModules.push(getResolveModule(kitModulePath, '.d.ts'));
-        } else if (ts.sys.fileExists(kitSystemDETSModulePath)) {
-          resolvedModules.push(getResolveModule(kitSystemDETSModulePath, '.d.ets'));
-        } else if (ts.sys.fileExists(jsModulePath)) {
-          resolvedModules.push(getResolveModule(jsModulePath, '.js'));
-        } else if (ts.sys.fileExists(fileModulePath)) {
-          resolvedModules.push(getResolveModule(fileModulePath, '.js'));
-        } else if (ts.sys.fileExists(DETSModulePath)) {
-          resolvedModules.push(getResolveModule(DETSModulePath, '.d.ets'));
-        } else if (ts.sys.fileExists(arktsEvoDeclFilePath)) {
-          resolvedModules.push(getResolveModule(arktsEvoDeclFilePath, '.d.ets'));
+        const aliasConfig = FileManager.getInstance().queryOriginApiName(moduleName, containingFile);
+        if (aliasConfig) {
+          const searchPaths = aliasConfig.isStatic
+            ? Array.from(FileManager.staticSDKDeclPath)
+            : [...new Set(sdkConfigs.flatMap(config => config.apiPath))];
+          const resolveModuleInfo = getRealModulePath(searchPaths, aliasConfig.originalAPIName, ['.d.ts', '.d.ets']);
+          const modulePath = resolveModuleInfo.modulePath;
+          const extension = resolveModuleInfo.isEts ? '.d.ets' : '.d.ts';
+          resolvedModules.push(getResolveModule(modulePath, extension));
         } else {
-          const srcIndex: number = projectConfig.projectPath.indexOf('src' + path.sep + 'main');
-          let DETSModulePathFromModule: string;
-          if (srcIndex > 0) {
-            DETSModulePathFromModule = path.resolve(
-              projectConfig.projectPath.substring(0, srcIndex), moduleName + path.sep + 'index' + EXTNAME_D_ETS);
-            if (DETSModulePathFromModule && ts.sys.fileExists(DETSModulePathFromModule)) {
-              resolvedModules.push(getResolveModule(DETSModulePathFromModule, '.d.ets'));
+          const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
+          const systemDETSModulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ets');
+          const kitModulePath: string = path.resolve(__dirname, '../../../kits', moduleName + '.d.ts');
+          const kitSystemDETSModulePath: string = path.resolve(__dirname, '../../../kits', moduleName + '.d.ets');
+          const suffix: string = /\.js$/.test(moduleName) ? '' : '.js';
+          const jsModulePath: string = path.resolve(__dirname, '../node_modules', moduleName + suffix);
+          const fileModulePath: string =
+            path.resolve(__dirname, '../node_modules', moduleName + '/index.js');
+          const DETSModulePath: string = path.resolve(path.dirname(containingFile),
+            /\.d\.ets$/.test(moduleName) ? moduleName : moduleName + EXTNAME_D_ETS);
+          const arktsEvoDeclFilePath: string = getArkTSEvoDeclFilePath({ moduleRequest: moduleName, resolvedFileName: '' });
+          if (ts.sys.fileExists(modulePath)) {
+            resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
+          } else if (ts.sys.fileExists(systemDETSModulePath)) {
+            resolvedModules.push(getResolveModule(systemDETSModulePath, '.d.ets'));
+          } else if (ts.sys.fileExists(kitModulePath)) {
+            resolvedModules.push(getResolveModule(kitModulePath, '.d.ts'));
+          } else if (ts.sys.fileExists(kitSystemDETSModulePath)) {
+            resolvedModules.push(getResolveModule(kitSystemDETSModulePath, '.d.ets'));
+          } else if (ts.sys.fileExists(jsModulePath)) {
+            resolvedModules.push(getResolveModule(jsModulePath, '.js'));
+          } else if (ts.sys.fileExists(fileModulePath)) {
+            resolvedModules.push(getResolveModule(fileModulePath, '.js'));
+          } else if (ts.sys.fileExists(DETSModulePath)) {
+            resolvedModules.push(getResolveModule(DETSModulePath, '.d.ets'));
+          } else if (ts.sys.fileExists(arktsEvoDeclFilePath)) {
+            resolvedModules.push(getResolveModule(arktsEvoDeclFilePath, '.d.ets'));
+          } else {
+            const srcIndex: number = projectConfig.projectPath.indexOf('src' + path.sep + 'main');
+            let DETSModulePathFromModule: string;
+            if (srcIndex > 0) {
+              DETSModulePathFromModule = path.resolve(
+                projectConfig.projectPath.substring(0, srcIndex), moduleName + path.sep + 'index' + EXTNAME_D_ETS);
+              if (DETSModulePathFromModule && ts.sys.fileExists(DETSModulePathFromModule)) {
+                resolvedModules.push(getResolveModule(DETSModulePathFromModule, '.d.ets'));
+              } else {
+                resolvedModules.push(null);
+              }
             } else {
               resolvedModules.push(null);
             }
-          } else {
-            resolvedModules.push(null);
           }
         }
       }
@@ -1195,6 +1208,7 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
     resolvedModulesCache.set(path.resolve(containingFile), resolvedModules);
     stopTimeStatisticsLocation(resolveModuleNamesTime);
     return resolvedModules;
+
   }
   stopTimeStatisticsLocation(resolveModuleNamesTime);
   return resolvedModulesCache.get(path.resolve(containingFile));

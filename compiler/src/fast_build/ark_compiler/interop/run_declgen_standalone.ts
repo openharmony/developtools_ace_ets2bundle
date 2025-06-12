@@ -41,6 +41,9 @@ export function run(param: Params): boolean {
     DeclfileProductor.init(param);
     param.tasks.forEach(task => {
         const moduleInfo = FileManager.arkTSModuleMap.get(task.packageName);
+        if (moduleInfo.dynamicFileList.length <= 0) {
+            return;
+        }
         if (task.buildTask === BuildType.DECLGEN) {
             DeclfileProductor.getInstance().runDeclgen(moduleInfo);
         } else if (task.buildTask === BuildType.INTEROP_CONTEXT) {
