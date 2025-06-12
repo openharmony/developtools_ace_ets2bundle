@@ -112,6 +112,9 @@ export class Es2pandaNativeModule {
         string[]): KPtr {
         throw new Error('Not implemented');
     }
+    _CreateContextFromStringWithHistory(config: KPtr, source: String, filename: String): KPtr {
+        throw new Error('Not implemented');
+    }
     _CreateContextFromFile(config: KPtr, filename: String): KPtr {
         throw new Error('Not implemented');
     }
