@@ -157,6 +157,20 @@
         "type": "ERROR",
         "code": "10905311"
     },
+    "validateForbiddenSpecifyDefaultValue": [
+        {
+            "message": "The '@Link' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": ["Please initialize the rules according to the decorator."]
+        },
+        {
+            "message": "The '@ObjectLink' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": ["Please initialize the rules according to the decorator."]
+        }
+    ],
     "validateCustomDecorator": {
         "message": "The inner decorator '@State' cannot be used together with custom decorator.",
         "type": "ERROR",
