@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
-import { PresetDecorators, getAnnotationUsage } from '../utils';
+import { PresetDecorators, getAnnotationUsage, ReuseConstants } from '../utils';
 
 function findStructsWithReusableAndComponentV2(node: arkts.AstNode, reusableV2ComponentV2Struct: string[]): void {
   //Go through all the children of Program
@@ -41,11 +41,13 @@ function validateReuseOrReuseIdUsage(context: UISyntaxRuleContext, node: arkts.M
   const decoratedNode = node.property;
   if (arkts.isCallExpression(structNode)) {
     const Node = structNode.expression;
-    if (decoratedNode.dumpSrc() === 'reuse' && !reusableV2ComponentV2Struct.includes(Node.dumpSrc())) {
-      reportInvalidReuseUsage(context, node, structNode, rule);
-    }
-    else if (decoratedNode.dumpSrc() === 'reuseId' && reusableV2ComponentV2Struct.includes(Node.dumpSrc())) {
-      reportInvalidReuseIdUsage(context, node, structNode, rule);
+    if (arkts.isIdentifier(Node) && arkts.isIdentifier(decoratedNode)) {
+      if (decoratedNode.name === ReuseConstants.REUSE && !reusableV2ComponentV2Struct.includes(Node.name)) {
+        reportInvalidReuseUsage(context, node, decoratedNode, rule);
+      }
+      else if (decoratedNode.name === ReuseConstants.REUSE_ID && reusableV2ComponentV2Struct.includes(Node.name)) {
+        reportInvalidReuseIdUsage(context, node, decoratedNode, rule);
+      }
     }
   }
 }
@@ -55,12 +57,12 @@ function reportInvalidReuseUsage(context: UISyntaxRuleContext, node: arkts.AstNo
   context.report({
     node: node,
     message: rule.messages.invalidReuseUsage,
-    fix: (node) => {
-      const startPosition = arkts.getStartPosition(node);
-      const endPosition = arkts.getEndPosition(node);
+    fix: () => {
+      const startPosition = structNode.startPosition;
+      const endPosition = structNode.endPosition;
       return {
         range: [startPosition, endPosition],
-        code: `${structNode.dumpSrc()}.reuseId`,
+        code: ReuseConstants.REUSE_ID,
       };
     },
   });
@@ -71,12 +73,12 @@ function reportInvalidReuseIdUsage(context: UISyntaxRuleContext, node: arkts.Ast
   context.report({
     node: node,
     message: rule.messages.invalidReuseIdUsage,
-    fix: (node) => {
-      const startPosition = arkts.getStartPosition(node);
-      const endPosition = arkts.getEndPosition(node);
+    fix: () => {
+      const startPosition = structNode.startPosition;
+      const endPosition = structNode.endPosition;
       return {
         range: [startPosition, endPosition],
-        code: `${structNode.dumpSrc()}.reuse`,
+        code: ReuseConstants.REUSE,
       };
     },
   });
