@@ -66,11 +66,11 @@ struct KStringPtrImpl {
         if (data) {
           if (_owned) {
             _value = reinterpret_cast<char*>(malloc(len + 1));
-            #ifdef __STDC_LIB_EXT1__
-              memcpy_s(_value, len, data, len);
-            #else
-              memcpy(_value, data, len);
-            #endif
+#ifdef __STDC_LIB_EXT1__
+            memcpy_s(_value, len, data, len);
+#else
+            memcpy(_value, data, len);
+#endif
             _value[len] = 0;
           } else {
             _value = const_cast<char*>(data);
