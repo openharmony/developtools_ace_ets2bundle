@@ -60,6 +60,7 @@ export const forbiddenUseStateType: string[] = [
 ];
 
 export const PresetDecorators = {
+  TOGGLE: 'Toggle',
   BUILDER_PARAM: 'BuilderParam',
   COMPONENT_V1: 'Component',
   COMPONENT_V2: 'ComponentV2',
@@ -98,6 +99,15 @@ export const PresetDecorators = {
   REGULAR: 'regular',
   VARIABLE: 'variable',
   PARAMETER: 'parameter',
+};
+
+export const TOGGLE_TYPE: string = 'ToggleType';
+export const TYPE: string = 'type';
+export const WRAP_BUILDER: string = 'wrapBuilder';
+
+export const ToggleType = {
+  CHECKBOX: 'Checkbox',
+  BUTTON: 'Button'
 };
 
 const PUBLIC_PROPERTY_MODIFIERS: Number = 4;

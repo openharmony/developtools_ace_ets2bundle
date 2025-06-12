@@ -14,10 +14,9 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getIdentifierName, getAnnotationName, PresetDecorators } from '../utils';
+import { getIdentifierName, getAnnotationName, PresetDecorators, WRAP_BUILDER } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 
-const WRAPBUILDER_NAME: string = 'wrapBuilder';
 // Collect all the function names that are decorated with @Builder
 function collectBuilderFunctions(node: arkts.EtsScript, builderFunctionNames: string[]): void {
   node.statements.forEach((statement) => {
@@ -35,7 +34,7 @@ function collectBuilderFunctions(node: arkts.EtsScript, builderFunctionNames: st
         return;
       }
       const functionName = statement.scriptFunction.id?.name;
-      if (!functionName || builderFunctionNames.includes(functionName)) {
+      if (!functionName || functionName === '' || builderFunctionNames.includes(functionName)) {
         return;
       }
       builderFunctionNames.push(functionName);
@@ -43,52 +42,72 @@ function collectBuilderFunctions(node: arkts.EtsScript, builderFunctionNames: st
   });
 }
 
-// Verify that the wrapBuilder's arguments are decorated with @Builder
-function validateWrapBuilderArguments(
-  member: arkts.ClassProperty,
-  context: UISyntaxRuleContext,
-  builderFunctionNames: string[]
-): void {
-  member.getChildren().forEach((child) => {
-    if (!arkts.isCallExpression(child) || child.expression.dumpSrc() !== WRAPBUILDER_NAME) {
-      return;
-    }
-    let functionName: string | undefined;
-    child.arguments.forEach(firstArgument => {
-      if (arkts.isMemberExpression(firstArgument)) {
-        functionName = getIdentifierName(firstArgument.property);
-      } else if (arkts.isIdentifier(firstArgument)) {
-        functionName = firstArgument.name;
-      }
-      // Verify that wrapBuilder's arguments are decorated with @Builder
-      // rule1: The wrapBuilder accepts only a function decorated by '@Builder'
-      if (functionName && !builderFunctionNames.includes(functionName)) {
-        context.report({
-          node: firstArgument,
-          message: rule.messages.invalidBuilderCheck,
-        });
-      }
-    });
-  });
-}
-
-function validateWrapBuilder(
-  node: arkts.StructDeclaration,
+function validateWrapBuilderInIdentifier(
+  node: arkts.AstNode,
   builderFunctionNames: string[],
   context: UISyntaxRuleContext
 ): void {
-  node.definition.body.forEach(member => {
-    if (!arkts.isClassProperty(member)) {
-      return;
+  // If the current node is not a wrap builder, return
+  if (!arkts.isIdentifier(node) || getIdentifierName(node) !== WRAP_BUILDER) {
+    return;
+  }
+  const parentNode = node.parent;
+  if (!arkts.isCallExpression(parentNode)) {
+    return;
+  }
+  let functionName: string = '';
+  // Get the parameters of the wrap builder
+  parentNode.arguments.forEach(argument => {
+    if (arkts.isIdentifier(argument)) {
+      functionName = argument.name;
     }
-    validateWrapBuilderArguments(member, context, builderFunctionNames);
   });
+  // If the function name is not empty and not decorated by the @builder, an error is reported
+  if (functionName === '' || !builderFunctionNames.includes(functionName)) {
+    const errorNode = parentNode.arguments[0];
+    context.report({
+      node: errorNode,
+      message: rule.messages.invalidWrapBuilderCheck,
+    });
+  }
+}
+
+function validateWrapBuilderInReturnStatement(
+  node: arkts.AstNode,
+  builderFunctionNames: string[],
+  context: UISyntaxRuleContext
+): void {
+  if (!arkts.isReturnStatement(node)) {
+    return;
+  }
+  if (!node.argument || !arkts.isCallExpression(node.argument)) {
+    return;
+  }
+  if (!node.argument.expression || !arkts.isIdentifier(node.argument.expression) ||
+    node.argument.expression.name !== WRAP_BUILDER) {
+    return;
+  }
+  let functionName: string = '';
+  // Get the parameters of the wrap builder
+  node.argument.arguments.forEach(argument => {
+    if (arkts.isIdentifier(argument)) {
+      functionName = argument.name;
+    }
+  });
+  // If the function name is not empty and not decorated by the @builder, an error is reported
+  if (functionName === '' || !builderFunctionNames.includes(functionName)) {
+    const errorNode = node.argument.arguments[0];
+    context.report({
+      node: errorNode,
+      message: rule.messages.invalidWrapBuilderCheck,
+    });
+  }
 }
 
 const rule: UISyntaxRule = {
   name: 'wrap-builder-check',
   messages: {
-    invalidBuilderCheck: 'The wrapBuilder accepts only a function decorated by @Builder.',
+    invalidWrapBuilderCheck: 'The wrapBuilder\'s parameter should be @Builder function.',
   },
   setup(context) {
     let builderFunctionNames: string[] = [];
@@ -97,10 +116,8 @@ const rule: UISyntaxRule = {
         if (arkts.isEtsScript(node)) {
           collectBuilderFunctions(node, builderFunctionNames);
         }
-        if (!arkts.isStructDeclaration(node)) {
-          return;
-        }
-        validateWrapBuilder(node, builderFunctionNames, context);
+        validateWrapBuilderInIdentifier(node, builderFunctionNames, context);
+        validateWrapBuilderInReturnStatement(node, builderFunctionNames, context);
       },
     };
   },
