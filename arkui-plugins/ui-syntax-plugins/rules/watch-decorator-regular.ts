@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getClassPropertyAnnotationNames, PresetDecorators } from '../utils';
+import { getClassPropertyAnnotationNames, getClassPropertyName, PresetDecorators } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 
 const PROPERTY_ANNOTATION_NUM: number = 2;
@@ -25,16 +25,20 @@ function validateWatchDecorator(node: arkts.StructDeclaration, context: UISyntax
       return;
     }
     const hasWatchDecorator = member.annotations?.find(annotation =>
-      annotation.expr &&
-      annotation.expr.dumpSrc() === PresetDecorators.WATCH
+      annotation.expr && arkts.isIdentifier(annotation.expr) &&
+      annotation.expr.name === PresetDecorators.WATCH
     );
     const propertyAnnotationNames = getClassPropertyAnnotationNames(member);
+    const propertyName = getClassPropertyName(member);
     // Determine if there are any decorations other than @watch decorations
     // rule1: The @Watch decorator must be used with other decorators
     if (hasWatchDecorator && propertyAnnotationNames.length < PROPERTY_ANNOTATION_NUM) {
       context.report({
         node: hasWatchDecorator,
         message: rule.messages.invalidWatch,
+        data: {
+          propertyName: propertyName
+        }
       });
     }
   });
@@ -43,7 +47,7 @@ function validateWatchDecorator(node: arkts.StructDeclaration, context: UISyntax
 const rule: UISyntaxRule = {
   name: 'watch-decorator-regular',
   messages: {
-    invalidWatch: `The @Watch decorator must be used with other decorators.`,
+    invalidWatch: `Regular variable '{{propertyName}}' can not be decorated with '@Watch'.`,
   },
   setup(context) {
     return {
