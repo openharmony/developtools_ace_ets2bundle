@@ -78,7 +78,10 @@ private:
         ASSERT(newLength > dataLength);
         auto* newData = reinterpret_cast<uint8_t*>(malloc(newLength));
 #ifdef __STDC_LIB_EXT1__
-        memcpy_s(newData, newLength, data, position);
+        errno_t res = memcpy_s(newData, newLength, data, position);
+        if (res != EOK) {
+            return;
+        }
 #else
         memcpy(newData, data, position);
 #endif
@@ -133,7 +136,10 @@ public:
         check(4);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
 #ifdef __STDC_LIB_EXT1__
-        memcpy_s(data + position, dataLength, &value, 4);
+        errno_t res = memcpy_s(data + position, dataLength, &value, 4);
+        if (res != EOK) {
+            return;
+        }
 #else
         memcpy(data + position, &value, 4);
 #endif
@@ -147,7 +153,10 @@ public:
         check(8);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
 #ifdef __STDC_LIB_EXT1__
-        memcpy_s(data + position, dataLength, &value, 8);
+        errno_t res = memcpy_s(data + position, dataLength, &value, 8);
+        if (res != EOK) {
+            return;
+        }
 #else
         memcpy(data + position, &value, 8);
 #endif
@@ -161,7 +170,10 @@ public:
         check(8);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
 #ifdef __STDC_LIB_EXT1__
-        memcpy_s(data + position, dataLength, &value, 8);
+        errno_t res = memcpy_s(data + position, dataLength, &value, 8);
+        if (res != EOK) {
+            return;
+        }
 #else
         memcpy(data + position, &value, 8);
 #endif
@@ -175,7 +187,10 @@ public:
         check(8);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
 #ifdef __STDC_LIB_EXT1__
-        memcpy_s(data + position, dataLength, &value, 4);
+        errno_t res = memcpy_s(data + position, dataLength, &value, 4);
+        if (res != EOK) {
+            return;
+        }
 #else
         memcpy(data + position, &value, 4);
 #endif
@@ -189,7 +204,10 @@ public:
         check(8);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
 #ifdef __STDC_LIB_EXT1__
-        memcpy_s(data + position, dataLength, &value64, 8);
+        errno_t res = memcpy_s(data + position, dataLength, &value64, 8);
+        if (res != EOK) {
+            return;
+        }
 #else
         memcpy(data + position, &value, 8);
 #endif
@@ -247,7 +265,10 @@ public:
                     case 4: suffix = "lpx"; break;
                 }
 #ifdef __STDC_LIB_EXT1__ 
-                snprintf_s(buf, BUFFER_MAX_LEN, "%.8f%s", value.value, suffix.c_str());
+                errno_t res = snprintf_s(buf, BUFFER_MAX_LEN, "%.8f%s", value.value, suffix.c_str());
+                if (res != EOK) {
+                    return;
+                }
 #else
                 snprintf(buf, BUFFER_MAX_LEN, "%.8f%s", value.value, suffix.c_str());
 #endif

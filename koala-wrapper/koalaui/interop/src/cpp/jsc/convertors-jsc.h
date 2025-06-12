@@ -711,7 +711,7 @@ void InitExports(JSGlobalContextRef globalContext);
 
 #define KOALA_INTEROP_THROW(vmContext, object, ...) \
    do { \
-     /* TODO: implement*/ ASSERT(false); \
+     ASSERT(false); /* TODO: implement*/ \
      return __VA_ARGS__; \
    } while (0)
 
