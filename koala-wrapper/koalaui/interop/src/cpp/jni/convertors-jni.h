@@ -149,7 +149,10 @@ struct SlowInteropTypeConverter<KInteropBuffer> {
       jarray result = env->NewByteArray(bufferLength);
       void* data = env->GetPrimitiveArrayCritical(result, nullptr);
 #ifdef __STDC_LIB_EXT1__
-      memcpy_s(data, bufferLength, value.data, bufferLength);
+      errno_t res = memcpy_s(data, bufferLength, value.data, bufferLength);
+      if (res != EOK) {
+        return result;
+      }
 #else
       memcpy(data, value.data, bufferLength);
 #endif
@@ -170,7 +173,10 @@ struct SlowInteropTypeConverter<KInteropReturnBuffer> {
       jarray result = env->NewByteArray(bufferLength);
       void* data = env->GetPrimitiveArrayCritical(result, nullptr);
 #ifdef __STDC_LIB_EXT1__
-      memcpy_s(data, bufferLength, value.data, bufferLength);
+      errno_t res = memcpy_s(data, bufferLength, value.data, bufferLength);
+      if (res != EOK) {
+        return result;
+      }
 #else
       memcpy(data, value.data, bufferLength);
 #endif
