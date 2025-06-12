@@ -20,8 +20,8 @@ import { PresetDecorators } from '../utils/index';
 const rule: UISyntaxRule = {
   name: 'track-decorator-check',
   messages: {
-    invalidTarget: `The '@Track' decorator can only be used on class member variables.`,
-    invalidClass: `The '@Track' decorator can only be used within a 'class' decorated with '@Observed'.`
+    trackOnClassMemberOnly: `The '@Track' decorator can decorate only member variables of a class.`,
+    trackMustUsedWithObserved: `'@Track' cannot be used with classes decorated by '@ObservedV2'. Use the '@Trace' decorator instead.`,
   },
   setup(context) {
     return {
@@ -31,7 +31,7 @@ const rule: UISyntaxRule = {
         }
         // Check if the current node is a class declaration
         if (arkts.isClassDeclaration(node)) {
-          checkTrackOnlyUsedWithObserved(context, node);
+          checkTrackUsedWithObservedV2(context, node);
         }
       }
     };
@@ -60,13 +60,13 @@ function checkInvalidTrackAnnotations(context: UISyntaxRuleContext, node: arkts.
   },);
 }
 
-function checkTrackOnlyUsedWithObserved(context: UISyntaxRuleContext, node: arkts.ClassDeclaration): void {
+function checkTrackUsedWithObservedV2(context: UISyntaxRuleContext, node: arkts.ClassDeclaration): void {
   // Check if the class is decorated with @Observed
-  const hasObservedDecorator = node.definition?.annotations?.find(
+  const hasObservedV2Decorator = node.definition?.annotations?.find(
     annotations =>
       annotations.expr &&
       arkts.isIdentifier(annotations.expr) &&
-      annotations.expr.name === PresetDecorators.OBSERVED_V1
+      annotations.expr.name === PresetDecorators.OBSERVED_V2
   );
   // Traverse all members of the body class
   node.definition?.body.forEach((member) => {
@@ -74,7 +74,7 @@ function checkTrackOnlyUsedWithObserved(context: UISyntaxRuleContext, node: arkt
     if (arkts.isClassProperty(member)) {
       const hasTrackDecorator = findClassPropertyAnnotation(member, PresetDecorators.TRACK);
       // If the class is not decorated with @Observed and has decorators, an error is reported
-      if (!hasObservedDecorator && hasTrackDecorator) {
+      if (hasObservedV2Decorator && !(node.definition?.annotations.length === 0) && hasTrackDecorator) {
         reportInvalidClass(context, hasTrackDecorator);
       }
     }
@@ -92,10 +92,10 @@ function checkTrackOnlyUsedWithObserved(context: UISyntaxRuleContext, node: arkt
 function reportInvalidClass(context: UISyntaxRuleContext, hasTrackDecorator: arkts.AnnotationUsage): void {
   context.report({
     node: hasTrackDecorator,
-    message: rule.messages.invalidClass,
+    message: rule.messages.trackMustUsedWithObserved,
     fix: (hasTrackDecorator) => {
-      const startPosition = arkts.getStartPosition(hasTrackDecorator);
-      const endPosition = arkts.getEndPosition(hasTrackDecorator);
+      const startPosition = hasTrackDecorator.startPosition;
+      const endPosition = hasTrackDecorator.endPosition;
       return {
         range: [startPosition, endPosition],
         code: '',
@@ -111,7 +111,8 @@ function getMethodAnnotation(
   return node.scriptFunction.annotations?.find(
     annotation =>
       annotation.expr &&
-      annotation.expr.dumpSrc() === annotationName
+      arkts.isIdentifier(annotation.expr) &&
+      annotation.expr.name === annotationName
   );
 }
 
@@ -121,7 +122,8 @@ function findClassPropertyAnnotation(
   : arkts.AnnotationUsage | undefined {
   return node.annotations?.find(annotation =>
     annotation.expr &&
-    annotation.expr.dumpSrc() === annotationName
+    arkts.isIdentifier(annotation.expr) &&
+    annotation.expr.name === annotationName
   );
 }
 
@@ -131,10 +133,10 @@ function reportInvalidTarget(
   : void {
   context.report({
     node: node,
-    message: rule.messages.invalidTarget,
+    message: rule.messages.trackOnClassMemberOnly,
     fix: (node) => {
-      const startPosition = arkts.getStartPosition(node);
-      const endPosition = arkts.getEndPosition(node);
+      const startPosition = node.startPosition;
+      const endPosition = node.endPosition;
       return {
         range: [startPosition, endPosition],
         code: '',

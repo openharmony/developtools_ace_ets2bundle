@@ -14,15 +14,38 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getClassPropertyAnnotationNames } from '../utils';
+import { getClassPropertyAnnotationNames, PresetDecorators } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 
-function checkInvalidStaticPropertyDecorations(context: UISyntaxRuleContext, node: arkts.StructDeclaration): void {
+const decorators: string[] = [
+  PresetDecorators.BUILDER_PARAM,
+  PresetDecorators.STATE,
+  PresetDecorators.PROP,
+  PresetDecorators.LINK,
+  PresetDecorators.OBJECT_LINK,
+  PresetDecorators.STORAGE_PROP,
+  PresetDecorators.STORAGE_LINK,
+  PresetDecorators.WATCH,
+  PresetDecorators.LOCAL_STORAGE_LINK,
+  PresetDecorators.LOCAL_STORAGE_PROP,
+  PresetDecorators.REQUIRE,
+];
+
+function hasPropertyDecorator(
+  member: arkts.ClassProperty,
+): boolean {
+  const annotationName = getClassPropertyAnnotationNames(member);
+  return decorators.some(decorator =>
+    annotationName.includes(decorator)
+  );
+}
+
+function checkInvalidStaticPropertyDecorations(context: UISyntaxRuleContext, node: arkts.StructDeclaration,): void {
   node.definition.body.forEach((member) => {
     // Errors are reported when the node type is ClassProperty,
     if (arkts.isClassProperty(member)) {
       const propertyNameNode = member.key;
-      if ((member.isStatic && getClassPropertyAnnotationNames(member).length > 0) && propertyNameNode) {
+      if ((member.isStatic && hasPropertyDecorator(member)) && propertyNameNode) {
         context.report({
           node: propertyNameNode,
           message: rule.messages.invalidStaticUsage
@@ -35,7 +58,7 @@ function checkInvalidStaticPropertyDecorations(context: UISyntaxRuleContext, nod
 const rule: UISyntaxRule = {
   name: 'struct-property-decorator',
   messages: {
-    invalidStaticUsage: `Static variables in custom components cannot be decorated by built-in variable decorators.`
+    invalidStaticUsage: `The static variable of struct cannot be used together with built-in decorators.`
   },
   setup(context) {
     return {

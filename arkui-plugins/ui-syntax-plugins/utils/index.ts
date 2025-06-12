@@ -103,6 +103,12 @@ export const PresetDecorators = {
 const PUBLIC_PROPERTY_MODIFIERS: Number = 4;
 const PROTECTED_PROPERTY_MODIFIERS: Number = 8;
 const PRIVATE_PROPERTY_MODIFIERS: Number = 16;
+
+export const ReuseConstants = {
+  REUSE: 'reuse',
+  REUSE_ID: 'reuseId',
+};
+
 export function getIdentifierName(node: arkts.AstNode): string {
   if (!arkts.isIdentifier(node)) {
     throw new Error(`Except a Identifier type!`);
