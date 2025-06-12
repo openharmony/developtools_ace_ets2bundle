@@ -16,7 +16,6 @@
 #define _DESERIALIZER_BASE_H_
 
 #include <stdint.h>
-#include <cassert>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -343,7 +342,7 @@ public:
   {
     if (position + count > length) {
         fprintf(stderr, "Incorrect serialized data, check for %d, buffer %d position %d\n", count, length, position);
-        assert(false);
+        ASSERT(false);
         abort();
     }
   }
