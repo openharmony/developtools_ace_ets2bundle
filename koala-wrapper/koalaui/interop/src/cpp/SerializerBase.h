@@ -21,13 +21,13 @@
 #include <cstring>
 #include <string>
 #include <memory>
-#include <cassert>
 #include <cstddef>
 #include <vector>
 
 #include "callback-resource.h"
 #include "interop-types.h"
 #include "koala-types.h"
+#include "interop-logging.h"
 
 #ifdef __arm__
 #define KOALA_NO_UNALIGNED_ACCESS 1
@@ -55,7 +55,7 @@ T* allocArray(const std::array<T, size>& ref) {
   std::size_t space = sizeof(buffer) - offset;
   void* ptr = buffer + offset;
   void* aligned_ptr = std::align(alignof(T), sizeof(T) * size, ptr, space);
-  assert(aligned_ptr != nullptr && "Insufficient space or alignment failed!");
+  ASSERT(aligned_ptr != nullptr && "Insufficient space or alignment failed!");
   offset = (char*)aligned_ptr + sizeof(T) * size - buffer;
   T* array = reinterpret_cast<T*>(aligned_ptr);
   for (size_t i = 0; i < size; ++i) {
@@ -72,8 +72,8 @@ private:
     bool ownData;
     CallbackResourceHolder* resourceHolder;
     void resize(uint32_t newLength) {
-        assert(ownData);
-        assert(newLength > dataLength);
+        ASSERT(ownData);
+        ASSERT(newLength > dataLength);
         auto* newData = reinterpret_cast<uint8_t*>(malloc(newLength));
         memcpy(newData, data, position);
         free(data);
@@ -112,8 +112,7 @@ public:
             if (ownData) {
                 resize(dataLength * 3 / 2 + 2);
             } else {
-                fprintf(stderr, "Buffer overrun: %d > %d\n", position + more, dataLength);
-                assert(false);
+                INTEROP_FATAL("Buffer overrun: %d > %d\n", position + more, dataLength);
             }
         }
     }
