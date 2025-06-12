@@ -40,6 +40,10 @@ static es2panda_Impl *impl = nullptr;
 #endif
 
 const char* LIB_ES2PANDA_PUBLIC = LIB_PREFIX "es2panda_public" LIB_SUFFIX;
+constexpr const char* IS_UI_FLAG = "IS_UI_FLAG";
+constexpr const char* NOT_UI_FLAG = "NOT_UI_FLAG";
+const string MODULE_SUFFIX = ".d.ets";
+const string ARKUI = "arkui";
 
 #ifdef KOALA_WINDOWS
     const char *SEPARATOR = "\\";
@@ -317,6 +321,43 @@ KNativePointer impl_AstNodeChildren(
     return new std::vector(cachedChildren);
 }
 KOALA_INTEROP_2(AstNodeChildren, KNativePointer, KNativePointer, KNativePointer)
+
+static bool isUIHeaderFile(es2panda_Context* context, es2panda_Program* program)
+{
+    auto result = GetImpl()->ProgramFileNameWithExtensionConst(context, program);
+    string fileNameWithExtension(result);
+    result = GetImpl()->ProgramModuleNameConst(context, program);
+    string moduleName(result);
+
+    return fileNameWithExtension.length() >= MODULE_SUFFIX.length()
+        && fileNameWithExtension.substr(fileNameWithExtension.length() - MODULE_SUFFIX.length()) == MODULE_SUFFIX
+        && moduleName.find(ARKUI) != std::string::npos;
+}
+
+KBoolean impl_ProgramCanSkipPhases(KNativePointer context, KNativePointer program)
+{
+    KStringPtr isUiFlag(IS_UI_FLAG);
+    KStringPtr notUiFlag(NOT_UI_FLAG);
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _program = reinterpret_cast<es2panda_Program*>(program);
+    if (isUIHeaderFile(_context, _program)) {
+        return false;
+    }
+    std::size_t sourceLen;
+    const auto externalSources = reinterpret_cast<es2panda_ExternalSource **>
+        (GetImpl()->ProgramExternalSources(_context, _program, &sourceLen));
+    for (std::size_t i = 0; i < sourceLen; ++i) {
+        std::size_t programLen;
+        auto programs = GetImpl()->ExternalSourcePrograms(externalSources[i], &programLen);
+        for (std::size_t j = 0; j < programLen; ++j) {
+            if (isUIHeaderFile(_context, programs[j])) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+KOALA_INTEROP_2(ProgramCanSkipPhases, KBoolean, KNativePointer, KNativePointer)
 
 /*
 -----------------------------------------------------------------------------------------------------------------------------

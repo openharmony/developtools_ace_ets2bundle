@@ -181,7 +181,7 @@ export enum Es2pandaAstNodeType {
     AST_NODE_TYPE_OBJECT_PATTERN,
     AST_NODE_TYPE_SPREAD_ELEMENT,
     AST_NODE_TYPE_REST_ELEMENT,
-}
+};
 
 export enum Es2pandaImportFlags {
     IMPORT_FLAGS_NONE,
