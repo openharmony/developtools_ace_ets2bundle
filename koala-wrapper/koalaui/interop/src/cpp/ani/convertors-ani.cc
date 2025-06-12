@@ -40,7 +40,6 @@ static bool registerNatives(ani_env *env, const ani_class clazz, const std::vect
             ani_boolean isError = false;
             env->ExistUnhandledError(&isError);
             if (isError) {
-                //env->ErrorDescribe();
                 env->ResetError();
             }
         }
@@ -72,26 +71,6 @@ bool registerAllModules(ani_env *env) {
 
     return true;
 }
-
-#if 0
-extern "C" ETS_EXPORT ets_int ETS_CALL EtsNapiOnLoad(ets_env *env) {
-    if (!registerAllModules(env)) {
-        LOGE("Failed to register ets modules");
-        return ETS_ERR;
-    }
-    auto interopClasspath = AniExports::getInstance()->getClasspath("InteropNativeModule");
-    auto interopClass = env->FindClass(interopClasspath.c_str());
-    if (interopClass == nullptr) {
-        LOGE("Can not find InteropNativeModule classpath to set callback dispatcher");
-        return ETS_ERR;
-    }
-    if (!setKoalaEtsNapiCallbackDispatcher(env, interopClass, callCallbackFromNative, callCallbackFromNativeSig)) {
-        LOGE("Failed to set koala ets callback dispatcher");
-        return ETS_ERR;
-    }
-    return ETS_NAPI_VERSION_1_0;
-}
-#endif
 
 AniExports* AniExports::getInstance() {
     static AniExports *instance = nullptr;
