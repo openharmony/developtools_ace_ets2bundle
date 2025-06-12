@@ -20,7 +20,7 @@ import { UISyntaxRule } from './ui-syntax-rule';
 const rule: UISyntaxRule = {
   name: 'entry-struct-no-export',
   messages: {
-    noExportWithEntry: `It's not a recommended way to export struct with @Entry decorator, which may cause ACE Engine error in component preview mode.`,
+    noExportWithEntry: `It's not a recommended way to export struct with '@Entry' decorator, which may cause ACE Engine error in component preview mode.`,
   },
   setup(context) {
     return {
@@ -36,10 +36,11 @@ const rule: UISyntaxRule = {
         );
 
         //Determines whether the struct is exported
-        const isExported = node.dumpSrc().includes('export struct');
+        const isStructExport = node.isExport;
+        const isStructDefaultExport = node.isDefaultExport;
 
         // If a @Entry decorator is present and the struct is exported
-        if (entryDecoratorUsage && isExported) {
+        if (entryDecoratorUsage && (isStructExport || isStructDefaultExport)) {
           context.report({
             node: entryDecoratorUsage,
             message: this.messages.noExportWithEntry,
