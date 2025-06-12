@@ -153,7 +153,7 @@ class CompC extends ViewPU {
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
-        this.__reviewVotes = this.initializeConsume("reviewVote", "reviewVotes");
+        this.__reviewVotes = this.initializeConsume("reviewVote", "reviewVotes", 15);
         this.setInitiallyProvidedValue(params);
         this.finalizeConstruction();
     }
