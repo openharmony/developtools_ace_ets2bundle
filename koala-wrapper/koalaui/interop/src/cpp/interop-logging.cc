@@ -14,7 +14,11 @@
  */
 #include <string>
 #include <vector>
-#include <stdarg.h>
+#ifdef __cplusplus
+    #include <cstdarg>
+#else
+    #include <stdarg.h>
+#endif
 
 #include "interop-logging.h"
 

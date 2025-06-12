@@ -199,11 +199,11 @@ template <>
 inline void WriteToString(std::string *result, const InteropMaterialized *value)
 {
   char hex[20];
-  #ifdef __STDC_LIB_EXT1__ 
-    std::snprintf_s(hex, sizeof(hex), "0x%llx", (long long)value->ptr);
-  #else
-    std::snprintf(hex, sizeof(hex), "0x%llx", (long long)value->ptr);
-  #endif
+#ifdef __STDC_LIB_EXT1__ 
+  std::snprintf_s(hex, sizeof(hex), "0x%llx", (long long)value->ptr);
+#else
+  std::snprintf(hex, sizeof(hex), "0x%llx", (long long)value->ptr);
+#endif
   result->append("\"");
   result->append("Materialized ");
   result->append(hex);
@@ -314,11 +314,11 @@ public:
     if (length > 0)
     {
       value = malloc(length * sizeof(E));
-      #ifdef __STDC_LIB_EXT1__
-        memset_s(value, length * sizeof(E), 0, length * sizeof(E));
-      #else
-        memset(value, 0, length * sizeof(E));
-      #endif
+#ifdef __STDC_LIB_EXT1__
+      memset_s(value, length * sizeof(E), 0, length * sizeof(E));
+#else
+      memset(value, 0, length * sizeof(E));
+#endif
       toClean.push_back(value);
     }
     array->length = length;
@@ -333,19 +333,19 @@ public:
     if (length > 0)
     {
       keys = malloc(length * sizeof(K));
-      #ifdef __STDC_LIB_EXT1__
-        memset_s(keys, length * sizeof(K), 0, length * sizeof(K));
-      #else
-        memset(keys, 0, length * sizeof(K));
-      #endif
+#ifdef __STDC_LIB_EXT1__
+      memset_s(keys, length * sizeof(K), 0, length * sizeof(K));
+#else
+      memset(keys, 0, length * sizeof(K));
+#endif
       toClean.push_back(keys);
 
       values = malloc(length * sizeof(V));
-      #ifdef __STDC_LIB_EXT1__
-        memset_s(values, length * sizeof(V), 0, length * sizeof(V));
-      #else
-        memset(values, 0, length * sizeof(V));
-      #endif
+#ifdef __STDC_LIB_EXT1__
+      memset_s(values, length * sizeof(V), 0, length * sizeof(V));
+#else
+      memset(values, 0, length * sizeof(V));
+#endif
       toClean.push_back(values);
     }
     map->size = length;
@@ -414,11 +414,11 @@ public:
     check(4);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
     InteropInt32 value;
-    #ifdef __STDC_LIB_EXT1__
-      memcpy_s(&value, 4, data + position, 4);
-    #else
-      memcpy(&value, data + position, 4);
-    #endif
+#ifdef __STDC_LIB_EXT1__
+    memcpy_s(&value, 4, data + position, 4);
+#else
+    memcpy(&value, data + position, 4);
+#endif
 #else
     auto value = *(InteropInt32 *)(data + position);
 #endif
@@ -430,11 +430,11 @@ public:
     check(8);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
     InteropInt64 value;
-    #ifdef __STDC_LIB_EXT1__
-      memcpy_s(&value, 4, data + position, 4);
-    #else
-      memcpy(&value, data + position, 4);
-    #endif
+#ifdef __STDC_LIB_EXT1__
+    memcpy_s(&value, 4, data + position, 4);
+#else
+    memcpy(&value, data + position, 4);
+#endif
 #else
     auto value = *(InteropInt64 *)(data + position);
 #endif
@@ -446,11 +446,11 @@ public:
     check(8);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
     InteropInt64 value;
-    #ifdef __STDC_LIB_EXT1__
-      memcpy_s(&value, 4, data + position, 4);
-    #else
-      memcpy(&value, data + position, 4);
-    #endif
+#ifdef __STDC_LIB_EXT1__
+    memcpy_s(&value, 4, data + position, 4);
+#else
+    memcpy(&value, data + position, 4);
+#endif
 #else
     auto value = *(InteropUInt64 *)(data + position);
 #endif
@@ -462,11 +462,11 @@ public:
     check(4);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
     InteropFloat32 value;
-    #ifdef __STDC_LIB_EXT1__
-      memcpy_s(&value, 4, data + position, 4);
-    #else
-      memcpy(&value, data + position, 4);
-    #endif
+#ifdef __STDC_LIB_EXT1__
+    memcpy_s(&value, 4, data + position, 4);
+#else
+    memcpy(&value, data + position, 4);
+#endif
 #else
     auto value = *(InteropFloat32 *)(data + position);
 #endif
@@ -478,11 +478,11 @@ public:
     check(8);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
     int64_t value = 0;
-    #ifdef __STDC_LIB_EXT1__
-      memcpy_s(&value, 8, data + position, 8);
-    #else
-      memcpy(&value, data + position, 8);
-    #endif
+#ifdef __STDC_LIB_EXT1__
+    memcpy_s(&value, 8, data + position, 8);
+#else
+    memcpy(&value, data + position, 8);
+#endif
 #else
     int64_t value = *(int64_t *)(data + position);
 #endif
@@ -615,11 +615,11 @@ inline void WriteToString(std::string *result, InteropFloat32 value)
 #if (defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && (__MAC_OS_X_VERSION_MAX_ALLOWED < 130300L))
   // to_chars() is not available on older macOS.
   char buf[20];
-  #ifdef __STDC_LIB_EXT1__ 
-    snprintf_s(buf, sizeof buf, "%f", value);
-  #else
-    snprintf(buf, sizeof buf, "%f", value);
-  #endif
+#ifdef __STDC_LIB_EXT1__ 
+  snprintf_s(buf, sizeof buf, "%f", value);
+#else
+  snprintf(buf, sizeof buf, "%f", value);
+#endif
   result->append(buf);
 #else
   std::string storage;
