@@ -16,7 +16,6 @@
 #ifndef KOALA_ANI
 #define KOALA_ANI
 
-#include <assert.h>
 #include <memory>
 #include <vector>
 #include <string>
@@ -1319,60 +1318,11 @@ bool setKoalaEtsNapiCallbackDispatcher(
 );
 void getKoalaEtsNapiCallbackDispatcher(ani_class* clazz, ani_method* method);
 
-#if 0
-#define KOALA_INTEROP_CALL_VOID(venv, id, length, args)                               \
-{                                                                                     \
-  ani_class clazz = nullptr;                                                          \
-  ani_method method = nullptr;                                                        \
-  getKoalaEtsNapiCallbackDispatcher(&clazz, &method);                                 \
-  ani_env* ani_env = reinterpret_cast<ani_env*>(vmContext);                              \
-  ani_env->PushLocalFrame(1);                                                          \
-  ani_fixedarray_byte args_ets = ani_env->NewByteArray(length);                              \
-  ani_env->SetByteArrayRegion(args_ets, 0, length, reinterpret_cast<ets_byte*>(args)); \
-  ani_env->CallStaticIntMethod(clazz, method, id, args_ets, length);                   \
-  ani_env->GetByteArrayRegion(args_ets, 0, length, reinterpret_cast<ets_byte*>(args)); \
-  ani_env->PopLocalFrame(nullptr);                                                     \
-}
-
-#define KOALA_INTEROP_CALL_INT(venv, id, length, args)                                \
-{                                                                                     \
-  ani_class clazz = nullptr;                                                          \
-  ani_method method = nullptr;                                                        \
-  getKoalaEtsNapiCallbackDispatcher(&clazz, &method);                                 \
-  ani_env* ani_env = reinterpret_cast<ani_env*>(venv);                              \
-  ani_env->PushLocalFrame(1);                                                          \
-  ani_fixedarray_byte args_ets = ani_env->NewByteArray(length);                              \
-  ani_env->SetByteArrayRegion(args_ets, 0, length, reinterpret_cast<ets_byte*>(args)); \
-  int32_t rv = ani_env->CallStaticIntMethod(clazz, method, id, args_ets, length);      \
-  ani_env->GetByteArrayRegion(args_ets, 0, length, reinterpret_cast<ets_byte*>(args)); \
-  ani_env->PopLocalFrame(nullptr);                                                     \
-  return rv;                                                                          \
-}
-
-#define KOALA_INTEROP_CALL_VOID_INTS32(venv, id, argc, args) KOALA_INTEROP_CALL_VOID(venv, id, (argc) * sizeof(int32_t), args)
-#define KOALA_INTEROP_CALL_INT_INTS32(venv, id, argc, args) KOALA_INTEROP_CALL_INT(venv, id, (argc) * sizeof(int32_t), args)
-
-#define KOALA_INTEROP_THROW(vmContext, object, ...) \
-   do { \
-     ani_env* env = reinterpret_cast<ani_env*>(vmContext); \
-     env->ThrowError(object); \
-     return __VA_ARGS__;  \
-   } while (0)
-
-#define KOALA_INTEROP_THROW_STRING(vmContext, message, ...) \
-  do { \
-    ani_env* env = reinterpret_cast<ani_env*>(vmContext); \
-    const static ani_class errorClass = env->FindClass("std/core/Error"); \
-    env->ThrowErrorNew(errorClass, message); \
-  } while (0)
-#else
-
 #define KOALA_INTEROP_CALL_VOID(venv, id, length, args)
 #define KOALA_INTEROP_CALL_INT(venv, id, length, args) { return 0; }
 #define KOALA_INTEROP_CALL_VOID_INTS32(venv, id, argc, args) { return; }
 #define KOALA_INTEROP_CALL_INT_INTS32(venv, id, argc, args) { return 0; }
 #define KOALA_INTEROP_THROW(vmContext, object, ...) { return __VA_ARGS__; }
 #define KOALA_INTEROP_THROW_STRING(vmContext, message, ...) { return __VA_ARGS__; }
-#endif
 
 #endif // KOALA_ETS_NAPI
