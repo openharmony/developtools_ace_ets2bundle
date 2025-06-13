@@ -1,7 +1,0 @@
-{
-  "name": "LinearIndicator",
-  "atomic": true,
-  "attrs": [
-    "indicatorStyle", "indicatorLoop", "onChange"
-  ]
-}
