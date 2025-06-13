@@ -36,7 +36,8 @@ import {
   updateSourceMap,
   hasTsNoCheckOrTsIgnoreFiles,
   compilingEtsOrTsFiles,
-  cleanUpFilesList
+  cleanUpFilesList,
+  isSubPathOf,
 } from '../../../lib/fast_build/ark_compiler/utils';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import { ModuleInfo } from '../mock/rollup_mock/module_info';
@@ -1381,5 +1382,53 @@ mocha.describe('test utils file api', function () {
     Object.keys(belongModuleInfo).forEach(item => {
       expect(belongModuleInfo[item] === expectBelongModuleInfo[item]).to.be.true;
     });
+  });
+
+  mocha.it('19-1: test isSubPathOf Api with includePath', function () {
+    const parentDir = 'a/b/c/d';
+    const filePath = 'a/b/c/d/e';
+    expect(isSubPathOf(filePath, parentDir)).to.be.true;
+  })
+
+  mocha.it('19-2: test isSubPathOf Api with same prefix', function () {
+    const parentDir = 'a/b/c/d';
+    const filePath = 'a/b/c/ddd/e';
+    expect(isSubPathOf(filePath, parentDir)).to.be.false;
+  })
+
+  mocha.it('19-4: test isSubPathOf with unrelated path', function () {
+    const parentDir = 'x/y/z';
+    const filePath = 'a/b/c';
+    expect(isSubPathOf(filePath, parentDir)).to.be.false;
+  });
+
+  mocha.it('19-5: test isSubPathOf with exact match', function () {
+    const parentDir = 'a/b/c';
+    const filePath = 'a/b/c';
+    expect(isSubPathOf(filePath, parentDir)).to.be.true;
+  });
+
+  mocha.it('19-6: test isSubPathOf with dot segments in path', function () {
+    const parentDir = 'a/b/c';
+    const filePath = 'a/b/c/../c/d/e';
+    expect(isSubPathOf(filePath, parentDir)).to.be.true;
+  });
+
+  mocha.it('19-7: test isSubPathOf with similar prefix but not subdir', function () {
+    const parentDir = 'a/b/c';
+    const filePath = 'a/b/cd/e';
+    expect(isSubPathOf(filePath, parentDir)).to.be.false;
+  });
+
+  mocha.it('19-8: test isSubPathOf with relative "./" segments', function () {
+    const parentDir = './src';
+    const filePath = './src/utils/helpers.ts';
+    expect(isSubPathOf(filePath, parentDir)).to.be.true;
+  });
+
+  mocha.it('19-9: test isSubPathOf where filePath is parent of parentDir', function () {
+    const parentDir = 'a/b/c/d';
+    const filePath = 'a/b';
+    expect(isSubPathOf(filePath, parentDir)).to.be.false;
   });
 });
