@@ -69,7 +69,10 @@ export class ComponentTransformer extends AbstractVisitor {
     private entryNames: string[] = [];
     private structMembersMap: Map<string, arkts.AstNode[]> = new Map();
     private isCustomComponentImported: boolean = false;
+    private isCustomComponentV2Imported: boolean = false;
     private isEntryPointImported: boolean = false;
+    private isPageLifeCycleImported: boolean = false;
+    private isLayoutCallbackImported: boolean = false;
     private shouldAddLinkIntrinsic: boolean = false;
     private hasLegacy: boolean = false;
     private legacyStructMap: Map<string, StructMap> = new Map();
@@ -87,7 +90,10 @@ export class ComponentTransformer extends AbstractVisitor {
         this.entryNames = [];
         this.structMembersMap = new Map();
         this.isCustomComponentImported = false;
+        this.isCustomComponentV2Imported = false;
         this.isEntryPointImported = false;
+        this.isPageLifeCycleImported = false;
+        this.isLayoutCallbackImported = false;
         this.shouldAddLinkIntrinsic = false;
         this.hasLegacy = false;
         this.legacyStructMap = new Map();
@@ -108,11 +114,32 @@ export class ComponentTransformer extends AbstractVisitor {
                 CustomComponentNames.COMPONENT_CLASS_NAME
             );
         }
+        if (arkts.isETSImportDeclaration(node) && !this.isCustomComponentV2Imported) {
+            this.isCustomComponentV2Imported = !!findLocalImport(
+                node,
+                CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
+                CustomComponentNames.COMPONENT_V2_CLASS_NAME
+            );
+        }
         if (arkts.isETSImportDeclaration(node) && !this.isEntryPointImported) {
             this.isEntryPointImported = !!findLocalImport(
                 node,
                 ENTRY_POINT_IMPORT_SOURCE_NAME,
                 EntryWrapperNames.ENTRY_POINT_CLASS_NAME
+            );
+        }
+        if (arkts.isETSImportDeclaration(node) && !this.isPageLifeCycleImported) {
+            this.isPageLifeCycleImported = !!findLocalImport(
+                node,
+                CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
+                CustomComponentNames.PAGE_LIFE_CYCLE
+            );
+        }
+        if (arkts.isETSImportDeclaration(node) && !this.isLayoutCallbackImported) {
+            this.isLayoutCallbackImported = !!findLocalImport(
+                node,
+                CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
+                CustomComponentNames.LAYOUT_CALLBACK
             );
         }
     }
@@ -126,9 +153,9 @@ export class ComponentTransformer extends AbstractVisitor {
         }
     }
 
-    createImportDeclaration(): void {
-        const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME);
-        const imported: arkts.Identifier = arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CLASS_NAME);
+    createImportDeclaration(sourceName: string, importedName: string): void {
+        const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(sourceName);
+        const imported: arkts.Identifier = arkts.factory.createIdentifier(importedName);
         // Insert this import at the top of the script's statements.
         if (!this.program) {
             throw Error('Failed to insert import: Transformer has no program');
@@ -152,7 +179,18 @@ export class ComponentTransformer extends AbstractVisitor {
             updateStatements.push(factory.createIntrinsicAnnotationDeclaration({ expr }));
         }
         if (this.componentInterfaceCollection.length > 0) {
-            if (!this.isCustomComponentImported) this.createImportDeclaration();
+            if (!this.isCustomComponentImported)
+                this.createImportDeclaration(
+                    CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
+                    CustomComponentNames.COMPONENT_CLASS_NAME
+                );
+            if (!this.isCustomComponentV2Imported)
+                this.createImportDeclaration(
+                    CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
+                    CustomComponentNames.COMPONENT_V2_CLASS_NAME
+                );
+            if (!this.isLayoutCallbackImported)
+                this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.LAYOUT_CALLBACK);
             updateStatements.push(...this.componentInterfaceCollection);
         }
 
@@ -160,6 +198,8 @@ export class ComponentTransformer extends AbstractVisitor {
             if (!this.isEntryPointImported) entryFactory.createAndInsertEntryPointImport(this.program);
             // normally, we should only have at most one @Entry component in a single file.
             // probably need to handle error message here.
+            if (!this.isPageLifeCycleImported)
+                this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.PAGE_LIFE_CYCLE);
             updateStatements.push(...this.entryNames.map(entryFactory.generateEntryWrapper));
         }
         if (updateStatements.length > 0) {
@@ -210,20 +250,16 @@ export class ComponentTransformer extends AbstractVisitor {
         if (!className || scopeInfo?.name !== className) {
             return node;
         }
-
         arkts.insertGlobalStructInfo(className);
-
         if (arkts.isStructDeclaration(node)) {
             this.collectComponentMembers(node, className);
         }
-
         const customComponentInterface = this.generateComponentInterface(
             className,
             node.modifiers | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT,
             Object.values(scopeInfo.annotations ?? {}).map((anno) => anno.clone())
         );
         this.componentInterfaceCollection.push(customComponentInterface);
-
         const definition: arkts.ClassDefinition = node.definition!;
         const newDefinitionBody: arkts.AstNode[] = [];
         if (!!scopeInfo.annotations?.entry) {
@@ -269,26 +305,24 @@ export class ComponentTransformer extends AbstractVisitor {
                 staticMethodBody.push(buildCompatibleNode);
             }
         }
+        const scopeInfo = this.scopeInfos[this.scopeInfos.length - 1];
+        const extendsName: string = scopeInfo.annotations.component
+            ? CustomComponentNames.COMPONENT_CLASS_NAME
+            : CustomComponentNames.COMPONENT_V2_CLASS_NAME;
         return arkts.factory
             .createClassDefinition(
                 definition.ident,
                 undefined,
                 undefined, // superTypeParams doen't work
-                definition.implements,
+                [...definition.implements, ...factory.generateImplementsForStruct(scopeInfo.annotations)],
                 undefined,
                 arkts.factory.createTypeReference(
                     arkts.factory.createTypeReferencePart(
-                        arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CLASS_NAME),
+                        arkts.factory.createIdentifier(extendsName),
                         arkts.factory.createTSTypeParameterInstantiation([
-                            arkts.factory.createTypeReference(
-                                arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(className))
-                            ),
-                            arkts.factory.createTypeReference(
-                                arkts.factory.createTypeReferencePart(
-                                    arkts.factory.createIdentifier(
-                                        `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${className}`
-                                    )
-                                )
+                            factory.createTypeReferenceFromString(className),
+                            factory.createTypeReferenceFromString(
+                                `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${className}`
                             ),
                         ])
                     )
@@ -407,9 +441,7 @@ export class ComponentTransformer extends AbstractVisitor {
             const context: InteropContext = {
                 className: className,
                 path: path,
-                arguments: args && args.length === 1 && args[0] instanceof arkts.ObjectExpression
-                    ? args[0]
-                    : undefined
+                arguments: args && args.length === 1 && args[0] instanceof arkts.ObjectExpression ? args[0] : undefined,
             };
             return generateInstantiateInterop(context);
         }

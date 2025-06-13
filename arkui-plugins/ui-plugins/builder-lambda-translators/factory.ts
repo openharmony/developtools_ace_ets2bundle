@@ -20,8 +20,9 @@ import {
     CustomComponentNames,
     findCanAddMemoFromParamExpression,
     isCustomComponentAnnotation,
+    hasMemoAnnotation,
 } from '../utils';
-import { backingField, filterDefined, removeAnnotationByName } from '../../common/arkts-utils';
+import { annotation, backingField, filterDefined, removeAnnotationByName } from '../../common/arkts-utils';
 import {
     BuilderLambdaDeclInfo,
     builderLambdaFunctionName,
@@ -42,29 +43,13 @@ import {
     isStyleWithReceiverCall,
     builderLambdaType,
 } from './utils';
-import { isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
+import { hasDecorator, isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { ProjectConfig } from '../../common/plugin-context';
-import { AnimationNames, BindableDecl, DecoratorIntrinsicNames, StructDecoratorNames } from '../../common/predefines';
+import { AnimationNames, BindableDecl, DecoratorIntrinsicNames, StructDecoratorNames, DecoratorNames } from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
 
 export class factory {
-    /**
-     * generate `reuseKey?: string` in `@ComponentBuilder` $_instantiate
-     */
-    static createReusableKeyArgForCustomComponent(): arkts.ETSParameterExpression {
-        return arkts.factory
-            .createParameterDeclaration(
-                arkts.factory.createIdentifier(
-                    'reuseKey',
-                    arkts.factory.createTypeReference(
-                        arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('string'))
-                    )
-                ),
-                undefined
-            )
-            .setOptional(true);
-    }
 
     /**
      * generate `packageInfo: string` in `@ComponentBuilder` XComponent
@@ -94,10 +79,7 @@ export class factory {
         const func: arkts.ScriptFunction = node.scriptFunction;
         let newParams: arkts.Expression[] = [styleArg];
         if (func.params.length > 0) {
-            newParams.push(...func.params.slice(0, func.params.length - 1));
-            if (node.name.name === BuilderLambdaNames.ORIGIN_METHOD_NAME) {
-                newParams.push(this.createReusableKeyArgForCustomComponent());
-            }
+            newParams.push(...this.updateBuilderParameters(func.params).slice(0, func.params.length - 1));
             if (externalSourceName === 'arkui.component.xcomponent' && node.name.name === 'XComponent') {
                 newParams.push(this.createPackageInfoArgForXComponent());
             }
@@ -122,10 +104,22 @@ export class factory {
             node,
             node.kind,
             arkts.factory.updateIdentifier(node.name, newName ?? node.name.name),
-            updateFunc,
+            node.name.name === BuilderLambdaNames.ORIGIN_METHOD_NAME ? addMemoAnnotation(updateFunc) : updateFunc,
             node.modifiers,
             false
         );
+    }
+
+    /**
+     * update `@Builder` decorated parameter expression.
+     */
+    static updateBuilderParameters(params: readonly arkts.Expression[]): arkts.Expression[] {
+        return params.map((item: arkts.Expression) => {
+            if (arkts.isEtsParameterExpression(item) && hasDecorator(item, DecoratorNames.BUILDER)) {
+                return addMemoAnnotation(item);
+            }
+            return item;
+        });
     }
 
     /*

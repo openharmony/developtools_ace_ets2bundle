@@ -77,6 +77,7 @@ import {
     ArrayExpression,
     AnnotationDeclaration,
     TryStatement,
+    TSClassImplements,
 } from '../../generated';
 import { Es2pandaModifierFlags } from '../../generated/Es2pandaEnums';
 import { classPropertySetOptional, hasModifierFlag } from '../utilities/public';
@@ -134,6 +135,7 @@ import { updateTemplateLiteral } from '../node-utilities/TemplateLiteral';
 import { updateArrayExpression } from '../node-utilities/ArrayExpression';
 import { updateAnnotationDeclaration } from '../node-utilities/AnnotationDeclaration';
 import { updateTryStatement } from '../node-utilities/TryStatement';
+import { updateTSClassImplements } from '../node-utilities/TSClassImplements';
 
 export const factory = {
     get createIdentifier(): (...args: Parameters<typeof Identifier.create2Identifier>) => Identifier {
@@ -564,6 +566,12 @@ export const factory = {
     },
     get updateTryStatement(): (...args: Parameters<typeof updateTryStatement>) => TryStatement {
         return updateTryStatement;
+    },
+    get createTSClassImplements(): (...args: Parameters<typeof TSClassImplements.createTSClassImplements>) => TSClassImplements {
+        return TSClassImplements.createTSClassImplements;
+    },
+    get UpdateTSClassImplements(): (...args: Parameters<typeof updateTSClassImplements>) => TSClassImplements {
+        return updateTSClassImplements;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {
