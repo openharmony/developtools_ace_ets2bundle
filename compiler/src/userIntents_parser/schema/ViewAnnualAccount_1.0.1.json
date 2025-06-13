@@ -1,26 +1,19 @@
 {
-  "intentName": "ViewLogistics",
+  "intentName": "ViewAnnualAccount",
   "intentVersion": "1.0.1",
-  "llmDescription": "查看快递",
-  "keywords": ["ViewLogistics"],
+  "llmDescription": "查看年度会算",
+  "keywords": ["ViewAnnualAccount"],
   "parameters": {
     "type": "object",
     "propertyNames": {
       "enum": [
-        "trackingNo",
-        "entityId"
+        "annualTime"
       ]
     },
     "properties": {
-      "trackingNo": {
-        "description": "快递单号，空则停留在首页。",
-        "maxLength": 64,
-        "type": "string"
-      },
-      "entityId": {
-        "description": "快递实体ID，查询场景下默认使用该字段回传打开。",
-        "maxLength": 64,
-        "type": "string"
+      "annualTime": {
+        "description": "年度时间，缺省时默认去年。",
+        "type": "number"
       }
     }
   },

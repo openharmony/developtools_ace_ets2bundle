@@ -40,7 +40,7 @@
         "type": "number"
       },
       "result": {
-        "description": "返回结果列表对象（列表Key名默认items），如果无内容则返回空。",
+        "description": "意图调用返回的数据，如果无数据则返回空。",
         "type": "object"
       }
     }
