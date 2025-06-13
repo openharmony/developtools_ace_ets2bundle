@@ -15,7 +15,7 @@
 
 import { UISyntaxRule } from './ui-syntax-rule';
 import AttributeNoInvoke from './attribute-no-invoke';
-import BuilderparamDecoratorCheck from './builderparam-decorator-check.ts';
+import BuilderparamDecoratorCheck from './builderparam-decorator-check';
 import BuildRootNode from './build-root-node';
 import CheckConstructPrivateParameter from './check-construct-private-parameter';
 import CheckDecoratedPropertyType from './check-decorated-property-type';
