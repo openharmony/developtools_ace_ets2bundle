@@ -50,7 +50,10 @@ export enum BindableDecl {
 export enum StructDecoratorNames {
     ENTRY = 'Entry',
     COMPONENT = 'Component',
+    COMPONENT_V2 = 'ComponentV2',
     RESUABLE = 'Reusable',
+    RESUABLE_V2 = 'ReusableV2',
+    CUSTOM_LAYOUT = 'CustomLayout',
 }
 
 export enum DecoratorNames {
