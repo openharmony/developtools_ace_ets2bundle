@@ -1,44 +1,25 @@
 {
-  "intentName": "ControlPlayback",
+  "intentName": "ViewMap",
   "intentVersion": "1.0.1",
-  "llmDescription": "播放音乐控制",
-  "keywords": ["ControlPlayback"],
+  "llmDescription": "查看地图",
+  "keywords": ["ViewMap"],
   "parameters": {
     "type": "object",
     "propertyNames": {
       "enum": [
-        "playbackSpeed",
-        "playbackProgress"
+        "mapType"
       ]
     },
-    "oneOf": [
-      {
-        "required": [
-          "playbackSpeed"
-        ]
-      },
-      {
-        "required": [
-          "playbackProgress"
-        ]
-      }
-    ],
     "properties": {
-      "playbackSpeed": {
-        "description": "播放倍速",
-        "type": "number",
+      "mapType": {
+        "description": "地图类型，枚举，Satellite：卫星地图，Standard：标准地图（默认），3D：3D地图。",
+        "type": "string",
         "enum": [
-          0.5,
-          0.75,
-          1.0,
-          1.25,
-          1.5,
-          2.0
-        ]
-      },
-      "playbackProgress": {
-        "description": "播放进度，单位秒。",
-        "type": "number"
+          "Satellite",
+          "Standard",
+          "3D"
+        ],
+        "default": "Standard"
       }
     }
   },

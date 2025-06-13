@@ -869,7 +869,7 @@ class ParseIntent {
       if (fs.existsSync(schemaPath)) {
         const schemaContent: string = fs.readFileSync(schemaPath, 'utf-8');
         const schemaObj: object = JSON.parse(schemaContent);
-        intentObj.parameters = schemaObj.params;
+        intentObj.parameters = schemaObj.parameters;
         intentObj.llmDescription = schemaObj.llmDescription;
         intentObj.keywords = schemaObj.keywords;
         intentObj.intentName = schemaObj.intentName;

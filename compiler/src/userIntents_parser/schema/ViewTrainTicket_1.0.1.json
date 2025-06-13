@@ -1,44 +1,40 @@
 {
-  "intentName": "ControlPlayback",
+  "intentName": "ViewTrainTicket",
   "intentVersion": "1.0.1",
-  "llmDescription": "播放音乐控制",
-  "keywords": ["ControlPlayback"],
+  "llmDescription": "查看火车票",
+  "keywords": ["ViewTrainTicket"],
   "parameters": {
     "type": "object",
     "propertyNames": {
       "enum": [
-        "playbackSpeed",
-        "playbackProgress"
+        "entityId",
+        "seatLevelShow"
       ]
     },
-    "oneOf": [
-      {
-        "required": [
-          "playbackSpeed"
-        ]
-      },
-      {
-        "required": [
-          "playbackProgress"
-        ]
-      }
+    "required": [
+      "entityId"
     ],
     "properties": {
-      "playbackSpeed": {
-        "description": "播放倍速",
-        "type": "number",
-        "enum": [
-          0.5,
-          0.75,
-          1.0,
-          1.25,
-          1.5,
-          2.0
-        ]
-      },
-      "playbackProgress": {
-        "description": "播放进度，单位秒。",
+      "entityId": {
+        "description": "数据唯一标识。",
         "type": "number"
+      },
+      "seatLevelShow": {
+        "description": "座位类型",
+        "type": "string",
+        "enum": [
+          "二等座",
+          "二等卧",
+          "一等座",
+          "一等卧",
+          "商务座",
+          "硬座",
+          "软座",
+          "硬卧",
+          "软卧",
+          "高软",
+          "无座"
+        ]
       }
     }
   },
