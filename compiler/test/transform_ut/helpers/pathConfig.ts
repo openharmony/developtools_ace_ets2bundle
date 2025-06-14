@@ -213,6 +213,8 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   'v2_component_decorator/reusableV2/reusableV2_initialRender',
   'v2_component_decorator/reusableV2/reusableV2_members',
   'v2_component_decorator/reusableV2/reusableV2_component_nesting',
+
+  'resource/resourceTest',
 ];
 
 export const UT_VALIDATE_PAGES_PREVIEW: string[] = [];
