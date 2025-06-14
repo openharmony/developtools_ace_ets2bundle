@@ -231,7 +231,6 @@ export function etsTransform() {
       const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsTransform', 'afterBuildEnd');
       const eventEtsTransformAfterBuildEnd = createAndStartEvent(hookEventFactory, 'etsTransformafterBuildEnd');
       if (parseIntent.intentData.length > 0 || parseIntent.isUpdateCompile) {
-        parseIntent.verifyInheritanceChain();
         parseIntent.writeUserIntentJsonFile();
       }
       // Copy the cache files in the compileArkTS directory to the loader_out directory
