@@ -301,7 +301,7 @@ export function processUISyntax(program: ts.Program, ut = false,
       }
       if (ts.isStructDeclaration(node)) {
         // This processing aims to parse InsightIntentDecorator.
-        node = parseIntent.detectInsightIntent(node, metaInfo, filePath, eventProcessUISyntax);
+        node = parseIntent.detectInsightIntent(node, metaInfo, filePath, eventProcessUISyntax, transformLog.errors);
         hasStruct = true;
         componentCollection.currentClassName = node.name.getText();
         componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);
@@ -412,7 +412,7 @@ export function processUISyntax(program: ts.Program, ut = false,
         }
       } else if (ts.isClassDeclaration(node)) {
         // This processing aims to parse InsightIntentDecorator.
-        node = parseIntent.detectInsightIntent(node, metaInfo, filePath, eventProcessUISyntax);
+        node = parseIntent.detectInsightIntent(node, metaInfo, filePath, eventProcessUISyntax, transformLog.errors);
         if (hasDecorator(node, COMPONENT_SENDABLE_DECORATOR)) {
           if (projectConfig.compileHar && !projectConfig.useTsHar) {
             let warnMessage: string = 'If you use @Sendable in js har, an exception will occur during runtime.\n' +
