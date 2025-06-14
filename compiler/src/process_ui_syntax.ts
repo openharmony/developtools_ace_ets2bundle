@@ -736,7 +736,7 @@ export function isAnimateToOrImmediately(node: ts.Node): boolean {
 
 export function processResourceData(node: ts.CallExpression, filePath: string,
   previewLog: {isAcceleratePreview: boolean, log: LogInfo[]} = {isAcceleratePreview: false, log: []}): ts.Node {
-  if (ts.isStringLiteral(node.arguments[0]) || ts.isNoSubstitutionTemplateLiteral(node.arguments[0])) {
+  if (ts.isStringLiteral(node.arguments[0])) {
     const resourceData: string[] = (node.arguments[0] as ts.StringLiteral).text.trim().split('.');
     const isResourceModule: boolean = resourceData.length && /^\[.*\]$/g.test(resourceData[0]);
     if (node.expression.getText() === RESOURCE_RAWFILE) {
