@@ -60,6 +60,15 @@ export interface IntentPageInfo extends IntentInfo {
   navDestinationName: string;
 }
 
+export interface IntentEntityDecoratorInfo {
+  entityCategory: string;
+  parameters?: object;
+}
+
+export interface FormIntentDecoratorInfo extends IntentInfo {
+  formName: string;
+}
+
 export class ParamChecker<T> {
   private _requiredFields: (keyof T)[];
   private _allowFields: Set<keyof T>;
@@ -193,7 +202,7 @@ IntentLinkInfoChecker.paramValidators = {
   intentVersion: validateRequiredString,
   displayName: validateRequiredString,
   displayDescription: validateOptionalString,
-  schema: validateRequiredString,
+  schema: validateOptionalString,
   icon: validateIcon,
   llmDescription: validateOptionalString,
   uri: validateRequiredString
@@ -209,7 +218,7 @@ intentEntryInfoChecker.paramValidators = {
   parameters: validateParameters,
   icon: validateIcon,
   keywords: validateKeywords,
-  schema: validateRequiredString,
+  schema: validateOptionalString,
   abilityName: validateRequiredString,
   displayDescription: validateRequiredString,
   displayName: validateRequiredString,
@@ -243,7 +252,7 @@ intentMethodInfoChecker.paramValidators = {
   parameters: validateParameters,
   icon: validateIcon,
   keywords: validateKeywords,
-  schema: validateRequiredString,
+  schema: validateOptionalString,
   intentName: validateRequiredString,
   domain: validateRequiredString,
   intentVersion: validateRequiredString,
@@ -268,7 +277,7 @@ IntentPageInfoChecker.paramValidators = {
   parameters: validateParameters,
   icon: validateIcon,
   keywords: validateKeywords,
-  schema: validateRequiredString,
+  schema: validateOptionalString,
   intentName: validateRequiredString,
   domain: validateRequiredString,
   intentVersion: validateRequiredString,
@@ -279,4 +288,34 @@ IntentPageInfoChecker.paramValidators = {
   pagePath: validateRequiredString,
   navigationId: validateOptionalString,
   navDestinationName: validateOptionalString
+};
+
+export const IntentEntityInfoChecker: ParamChecker<IntentEntityDecoratorInfo> = new ParamChecker<IntentEntityDecoratorInfo>();
+IntentEntityInfoChecker.requiredFields = ['entityCategory'];
+IntentEntityInfoChecker.allowFields = new Set<keyof IntentEntityDecoratorInfo>(['entityCategory', 'parameters']);
+
+IntentEntityInfoChecker.paramValidators = {
+  entityCategory: validateOptionalString,
+  parameters: validateParameters
+};
+
+export const intentFormInfoChecker = new ParamChecker<FormIntentDecoratorInfo>();
+intentFormInfoChecker.requiredFields = [...BASE_REQUIRED as Array<keyof FormIntentDecoratorInfo>, 'formName'];
+intentFormInfoChecker.allowFields = new Set<keyof FormIntentDecoratorInfo>([
+  ...BASE_ALLOW as Array<keyof FormIntentDecoratorInfo>, 'formName'
+]);
+intentFormInfoChecker.paramValidators = {
+  formName: validateOptionalString,
+  example: validateOptionalString,
+  result: validateParameters,
+  parameters: validateParameters,
+  icon: validateIcon,
+  keywords: validateKeywords,
+  schema: validateRequiredString,
+  intentName: validateRequiredString,
+  domain: validateRequiredString,
+  intentVersion: validateRequiredString,
+  displayName: validateRequiredString,
+  displayDescription: validateOptionalString,
+  llmDescription: validateOptionalString
 };
