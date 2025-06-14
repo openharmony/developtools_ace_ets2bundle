@@ -80,7 +80,7 @@ interface trackInterface {
 }
 
 @Observed() class F implements PropInterface, trackInterface, IObservedObject, ISubscribedWatches {
-  private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -94,7 +94,7 @@ interface trackInterface {
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
-  private ____V1RenderId: RenderIdType = 0;
+  @JSONStringifyIgnore() private ____V1RenderId: RenderIdType = 0;
   
   public setV1RenderId(renderId: RenderIdType): void {
     this.____V1RenderId = renderId;
@@ -106,11 +106,11 @@ interface trackInterface {
     }
   }
   
-  private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_propF: number = 1;
+  @JSONRename({newName:"propF"}) private __backing_propF: number = 1;
   
-  private __backing_trackF: number = 2;
+  @JSONRename({newName:"trackF"}) private __backing_trackF: number = 2;
   
   public constructor() {}
   

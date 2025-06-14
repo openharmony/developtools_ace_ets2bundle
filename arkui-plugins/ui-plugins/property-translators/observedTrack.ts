@@ -14,9 +14,9 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { backingField, expectName } from '../../common/arkts-utils';
+import { annotation, backingField, expectName } from '../../common/arkts-utils';
 import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
-import { collectStateManagementTypeImport, hasDecorator } from './utils';
+import { collectStateManagementTypeImport, hasDecorator, hasDecoratorName, removeDecorator } from './utils';
 import { ClassScopeInfo } from './types';
 import { factory } from './factory';
 
@@ -54,10 +54,29 @@ export class ObservedTrackTranslator {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
         );
+        const annotations: arkts.AnnotationUsage[] = [...this.property.annotations];
+        if (
+            !hasDecoratorName(this.property, DecoratorNames.JSONSTRINGIFYIGNORE) &&
+            !hasDecoratorName(this.property, DecoratorNames.JSONRENAME)) {
+            annotations.push(
+                annotation(DecoratorNames.JSONRENAME).addProperty(
+                    arkts.factory.createClassProperty(
+                        arkts.factory.createIdentifier('newName'),
+                        arkts.factory.createStringLiteral(originalName),
+                        undefined,
+                        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+                        false
+                    )
+                )
+            );
+        }
+        backingField.setAnnotations(annotations);
+        removeDecorator(backingField, DecoratorNames.TRACK);
         if (!this.isTracked) {
             return [backingField];
         }
         const metaField = this.metaField(originalName);
+        metaField.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE)]);
         return [backingField, metaField];
     }
 

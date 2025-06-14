@@ -74,7 +74,7 @@ function main() {}
 
 
 @Observed() class DateClass extends Date implements IObservedObject, ISubscribedWatches {
-  private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -88,7 +88,7 @@ function main() {}
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
-  private ____V1RenderId: RenderIdType = 0;
+  @JSONStringifyIgnore() private ____V1RenderId: RenderIdType = 0;
   
   public setV1RenderId(renderId: RenderIdType): void {
     this.____V1RenderId = renderId;
@@ -100,7 +100,7 @@ function main() {}
     }
   }
   
-  private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public constructor(args: number | string) {
     super(args);
@@ -109,7 +109,7 @@ function main() {}
 }
 
 @Observed() class NewDate implements IObservedObject, ISubscribedWatches {
-  private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -123,7 +123,7 @@ function main() {}
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
-  private ____V1RenderId: RenderIdType = 0;
+  @JSONStringifyIgnore() private ____V1RenderId: RenderIdType = 0;
   
   public setV1RenderId(renderId: RenderIdType): void {
     this.____V1RenderId = renderId;
@@ -135,9 +135,9 @@ function main() {}
     }
   }
   
-  private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_data: DateClass = new DateClass(11);
+  @JSONRename({newName:"data"}) private __backing_data: DateClass = new DateClass(11);
   
   public constructor(data: DateClass) {
     this.data = data;
