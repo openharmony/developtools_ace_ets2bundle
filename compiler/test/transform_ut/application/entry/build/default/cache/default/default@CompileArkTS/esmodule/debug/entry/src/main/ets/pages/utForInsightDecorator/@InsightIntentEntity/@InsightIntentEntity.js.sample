@@ -13,13 +13,14 @@
  * limitations under the License.
  */
 
-export const UT_PAGES: string[] = [
-    '@InsightIntentLink/@InsightIntentLink',
-    '@InsightIntentEntry/@InsightIntentEntry',
-    '@InsightIntentFunction/@InsightIntentFunction',
-    '@InsightIntentPage/@InsightIntentPage',
-    '@InsightIntentForm/@InsightIntentForm',
-    '@InsightIntentEntity/@InsightIntentEntity'
-]
-
-export const CACHE_PATH: string = 'default/cache/default/default@CompileArkTS/esmodule/debug';
+let __generate__Id = 0;
+function generateId() {
+  return "@InsightIntentEntity_" + ++__generate__Id;
+}
+export class ArtistClassDef {
+  constructor() {
+    this.entityId = "id";
+    this.name = '';
+  }
+}
+//# sourceMappingURL=@InsightIntentEntity.js.map
