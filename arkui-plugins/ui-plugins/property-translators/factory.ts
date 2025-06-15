@@ -654,17 +654,15 @@ export class factory {
      */
     static wrapInterfacePropertyType(type: arkts.TypeNode, wrapTypeName: StateManagementTypes): arkts.TypeNode {
         if (arkts.isETSUnionType(type)) {
-            return arkts.factory.updateUnionType(
-                type,
-                type.types.map((t) => factory.wrapInterfacePropertyType(t, wrapTypeName))
-            );
-        } else if (!arkts.isETSUndefinedType(type)) {
-            return arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier(wrapTypeName),
-                    arkts.factory.createTSTypeParameterInstantiation([(type as arkts.TypeNode).clone()])
-                )
-            );
+            return arkts.factory.updateUnionType(type, [
+                arkts.factory.createTypeReference(
+                    arkts.factory.createTypeReferencePart(
+                        arkts.factory.createIdentifier(wrapTypeName),
+                        arkts.factory.createTSTypeParameterInstantiation([type.types[0]])
+                    )
+                ),
+                type.types[1],
+            ]);
         }
         return type;
     }

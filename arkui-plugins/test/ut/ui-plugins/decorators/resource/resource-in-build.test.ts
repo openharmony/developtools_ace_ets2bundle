@@ -38,35 +38,51 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+
 import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { _rawfile as _rawfile } from "arkui.component.resources";
+
 import { _r as _r } from "arkui.component.resources";
-import { UIImageAnimatorAttribute as UIImageAnimatorAttribute } from "arkui.component.imageAnimator";
-import { UIImageAttribute as UIImageAttribute } from "arkui.component.image";
+
+import { ImageAnimatorAttribute as ImageAnimatorAttribute } from "arkui.component.imageAnimator";
+
+import { ImageAttribute as ImageAttribute } from "arkui.component.image";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component, $r as $r, $rawfile as $rawfile, Column as Column, Text as Text, Image as Image, TextInput as TextInput, Select as Select, SelectOption as SelectOption, Margin as Margin, ImageAnimator as ImageAnimator } from "@ohos.arkui.component";
 
 function main() {}
 
-@Component({freezeWhenInactive:false}) final class ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
+
+
+@Component({freezeWhenInactive:false}) final struct ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
   public __initializeStruct(initializers: __Options_ResourceComponent | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_str1 = ((({let gensym___147578113 = initializers;
     (((gensym___147578113) == (null)) ? undefined : gensym___147578113.str1)})) ?? ("app.media.ri"));
     this.__backing_str2 = ((({let gensym___220149772 = initializers;
     (((gensym___220149772) == (null)) ? undefined : gensym___220149772.str2)})) ?? ("app.photo2.png"));
   }
+  
   public __updateStruct(initializers: __Options_ResourceComponent | undefined): void {}
+  
   private __backing_str1?: string;
+  
   public get str1(): string {
     return (this.__backing_str1 as string);
   }
+  
   public set str1(value: string) {
     this.__backing_str1 = value;
   }
+  
   private __backing_str2?: string;
+  
   public get str2(): string {
     return (this.__backing_str2 as string);
   }
+  
   public set str2(value: string) {
     this.__backing_str2 = value;
   }
@@ -93,14 +109,14 @@ function main() {}
         value: "ddd",
         icon: _r("", "", "app.media.selection"),
       }));
-      Image(@memo() ((instance: UIImageAttribute): void => {
+      Image(((instance: ImageAttribute): void => {
         instance.margin(({
           top: _r("", "", "app.float.elements_margin_horizontal_m"),
           bottom: _r("", "", "app.float.elements_margin_horizontal_l"),
         } as Margin));
         return;
       }), _r("", "", "app.media.app_icon"));
-      ImageAnimator(@memo() ((instance: UIImageAnimatorAttribute): void => {
+      ImageAnimator(((instance: ImageAnimatorAttribute): void => {
         instance.images([{
           src: _r("", "", "app.media.aaa"),
         }, {
@@ -110,14 +126,19 @@ function main() {}
       }));
     }));
   }
+  
   private constructor() {}
+  
 }
 
 @Component({freezeWhenInactive:false}) export interface __Options_ResourceComponent {
   set str1(str1: string | undefined)
+  
   get str1(): string | undefined
   set str2(str2: string | undefined)
+  
   get str2(): string | undefined
+  
 }
 `;
 

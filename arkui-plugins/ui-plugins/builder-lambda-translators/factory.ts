@@ -86,20 +86,22 @@ export class factory {
      */
     static updateBuilderLambdaMethodDecl(
         node: arkts.MethodDefinition,
-        prefixArgs: arkts.ETSParameterExpression[],
+        styleArg: arkts.ETSParameterExpression,
         newAnno: arkts.AnnotationUsage[],
-        newName: string | undefined
+        newName: string | undefined,
+        externalSourceName?: string
     ): arkts.MethodDefinition {
         const func: arkts.ScriptFunction = node.scriptFunction;
-        let newParams: arkts.Expression[];
+        let newParams: arkts.Expression[] = [styleArg];
         if (func.params.length > 0) {
-            newParams = [...prefixArgs, ...func.params.slice(0, func.params.length - 1)];
+            newParams.push(...func.params.slice(0, func.params.length - 1));
             if (node.name.name === BuilderLambdaNames.ORIGIN_METHOD_NAME) {
                 newParams.push(this.createReusableKeyArgForCustomComponent());
             }
+            if (externalSourceName === 'arkui.component.xcomponent' && node.name.name === 'XComponent') {
+                newParams.push(this.createPackageInfoArgForXComponent());
+            }
             newParams.push(func.params.at(func.params.length - 1)!);
-        } else {
-            newParams = prefixArgs;
         }
         const updateFunc = arkts.factory
             .updateScriptFunction(
@@ -420,7 +422,9 @@ export class factory {
                 );
             reuseId = isReusable ? arkts.factory.createStringLiteral(type.name) : undefined;
         }
-        const args: (arkts.AstNode | undefined)[] = [this.createStyleArgInBuilderLambda(lambdaBody, returnType, moduleName)];
+        const args: (arkts.AstNode | undefined)[] = [
+            this.createStyleArgInBuilderLambda(lambdaBody, returnType, moduleName),
+        ];
         let index = 0;
         while (index < params.length) {
             if (isReusable && index === params.length - 1) {
@@ -539,20 +543,16 @@ export class factory {
         const func: arkts.ScriptFunction = node.scriptFunction;
         const isFunctionCall: boolean = isBuilderLambdaFunctionCall(node);
         const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node);
-        const prefixArgs: arkts.ETSParameterExpression[] = [];
-        prefixArgs.push(this.createStyleArgInBuilderLambdaDecl(typeNode, isFunctionCall));
-        if (externalSourceName === 'arkui.component.xcomponent' && node.name.name === 'XComponent') {
-            prefixArgs.push(this.createPackageInfoArgForXComponent());
-        }
         const newOverloads: arkts.MethodDefinition[] = node.overloads.map((method) =>
             factory.transformBuilderLambdaMethodDecl(method)
         );
 
         return this.updateBuilderLambdaMethodDecl(
             node,
-            prefixArgs,
+            this.createStyleArgInBuilderLambdaDecl(typeNode, isFunctionCall),
             removeAnnotationByName(func.annotations, BuilderLambdaNames.ANNOTATION_NAME),
-            replaceBuilderLambdaDeclMethodName(node.name.name)
+            replaceBuilderLambdaDeclMethodName(node.name.name),
+            externalSourceName
         ).setOverloads(newOverloads);
     }
 

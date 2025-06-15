@@ -38,17 +38,22 @@ const xcomponentTransform: Plugins = {
 const pluginTester = new PluginTester('test basic XComponent transform', buildConfig);
 
 const expectedScript: string = `
+
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { UIFlexAttribute as UIFlexAttribute } from "arkui.component.flex";
+
+import { FlexAttribute as FlexAttribute } from "arkui.component.flex";
+
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component, Flex as Flex, XComponent as XComponent, FlexDirection as FlexDirection, XComponentType as XComponentType, Entry as Entry, XComponentController as XComponentController, ItemAlign as ItemAlign, FlexAlign as FlexAlign, XComponentParameter as XComponentParameter } from "@ohos.arkui.component";
 
 function main() {}
 
 
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class Index extends CustomComponent<Index, __Options_Index> {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final struct Index extends CustomComponent<Index, __Options_Index> {
   public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_myXComponentController = ((({let gensym___221905990 = initializers;
     (((gensym___221905990) == (null)) ? undefined : gensym___221905990.myXComponentController)})) ?? (new XComponentController()));
@@ -67,7 +72,7 @@ function main() {}
   }
   
   @memo() public _build(@memo() style: ((instance: Index)=> Index) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Index | undefined): void {
-    Flex(@memo() ((instance: UIFlexAttribute): void => {
+    Flex(((instance: FlexAttribute): void => {
       instance.width("100%").height("100%");
       return;
     }), {
@@ -107,8 +112,136 @@ class __EntryWrapper extends EntryPoint {
 }
 `;
 
+const expectedHeader: string = `
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { ImageAIOptions as ImageAIOptions, ImageAnalyzerConfig as ImageAnalyzerConfig } from "./imageCommon";
+
+import { CommonMethod as CommonMethod, AttributeModifier as AttributeModifier } from "./common";
+
+import { XComponentType as XComponentType } from "./enums";
+
+import { VoidCallback as VoidCallback } from "./units";
+
+import { memo as memo, ComponentBuilder as ComponentBuilder } from "./../stateManagement/runtime";
+
+function main() {}
+
+
+@memo() export function XComponent(@memo() style?: ((instance: XComponentAttribute)=> void), params: XComponentParameter | XComponentOptions | NativeXComponentParameters, packageInfo: string, @memo() content_?: (()=> void)): void
+
+
+export declare interface SurfaceRect {
+  set offsetX(offsetX: number | undefined)
+  
+  get offsetX(): number | undefined
+  set offsetY(offsetY: number | undefined)
+  
+  get offsetY(): number | undefined
+  set surfaceWidth(surfaceWidth: number)
+  
+  get surfaceWidth(): number
+  set surfaceHeight(surfaceHeight: number)
+  
+  get surfaceHeight(): number
+  
+}
+
+export declare interface SurfaceRotationOptions {
+  set lock(lock: boolean | undefined)
+  
+  get lock(): boolean | undefined
+  
+}
+
+export declare class XComponentController {
+  public constructor()
+  
+  public getXComponentSurfaceId(): string
+  
+  public getXComponentContext(): Object
+  
+  public setXComponentSurfaceRect(rect: SurfaceRect): void
+  
+  public getXComponentSurfaceRect(): SurfaceRect
+  
+  public setXComponentSurfaceRotation(rotationOptions: SurfaceRotationOptions): void
+  
+  public getXComponentSurfaceRotation(): Required<SurfaceRotationOptions>
+  
+  public onSurfaceCreated(surfaceId: string): void
+  
+  public onSurfaceChanged(surfaceId: string, rect: SurfaceRect): void
+  
+  public onSurfaceDestroyed(surfaceId: string): void
+  
+  public startImageAnalyzer(config: ImageAnalyzerConfig): Promise<void>
+  
+  public stopImageAnalyzer(): void
+  
+}
+
+export declare interface XComponentOptions {
+  set type(type: XComponentType)
+  
+  get type(): XComponentType
+  set controller(controller: XComponentController)
+  
+  get controller(): XComponentController
+  set imageAIOptions(imageAIOptions: ImageAIOptions | undefined)
+  
+  get imageAIOptions(): ImageAIOptions | undefined
+  set screenId(screenId: number | undefined)
+  
+  get screenId(): number | undefined
+  
+}
+
+export declare interface NativeXComponentParameters {
+  set type(type: XComponentType)
+  
+  get type(): XComponentType
+  set imageAIOptions(imageAIOptions: ImageAIOptions | undefined)
+  
+  get imageAIOptions(): ImageAIOptions | undefined
+  
+}
+
+export type OnNativeLoadCallback = ((event?: object)=> void);
+
+export declare interface XComponentAttribute extends CommonMethod {
+  onLoad(callback: OnNativeLoadCallback | undefined): this
+  onDestroy(event: VoidCallback | undefined): this
+  enableAnalyzer(enable: boolean | undefined): this
+  enableSecure(isSecure: boolean | undefined): this
+  hdrBrightness(brightness: number | undefined): this
+  enableTransparentLayer(enabled: boolean | undefined): this
+  attributeModifier(modifier: AttributeModifier<XComponentAttribute> | AttributeModifier<CommonMethod> | undefined): this
+  
+}
+
+export declare interface XComponentParameter {
+  set id(id: string)
+  
+  get id(): string
+  set type(type: XComponentType)
+  
+  get type(): XComponentType
+  set libraryname(libraryname: string | undefined)
+  
+  get libraryname(): string | undefined
+  set controller(controller: XComponentController | undefined)
+  
+  get controller(): XComponentController | undefined
+  
+}
+`
+
 function testXComponentTransformer(this: PluginTestContext): void {
     expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
+    expect(parseDumpSrc(this.declContexts?.['arkui.component.xcomponent']?.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedHeader));
+    
 }
 
 pluginTester.run(
@@ -119,5 +252,6 @@ pluginTester.run(
     },
     {
         stopAfter: 'checked',
+        tracing: {externalSourceNames:['arkui.component.xcomponent']}
     }
 );

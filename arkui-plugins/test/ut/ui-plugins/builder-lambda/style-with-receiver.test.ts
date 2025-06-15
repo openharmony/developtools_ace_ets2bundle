@@ -38,38 +38,46 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { UITextAttribute as UITextAttribute } from "arkui.component.text";
+
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { memo as memo } from "@ohos.arkui.stateManagement";
-import { Text as Text, UITextAttribute as UITextAttribute, Column as Column, Component as Component } from "@ohos.arkui.component";
+
+import { Text as Text, TextAttribute as TextAttribute, Column as Column, Component as Component } from "@ohos.arkui.component";
+
 import hilog from "@ohos.hilog";
 
 function main() {}
 
-@memo() function cardStyle(this: UITextAttribute, num: number, str: string): UITextAttribute {
+
+@memo() function cardStyle(this: TextAttribute, num: number, str: string): TextAttribute {
   this.fontSize(num);
   this.backgroundColor(num);
   return this;
 }
 
-@memo() function style22(this: UITextAttribute): UITextAttribute {
+@memo() function style22(this: TextAttribute): TextAttribute {
   this.fontWeight(700);
   return this;
 }
 
-@Component({freezeWhenInactive:false}) final class MM extends CustomComponent<MM, __Options_MM> {
+
+@Component({freezeWhenInactive:false}) final struct MM extends CustomComponent<MM, __Options_MM> {
   public __initializeStruct(initializers: __Options_MM | undefined, @memo() content: (()=> void) | undefined): void {}
   
   public __updateStruct(initializers: __Options_MM | undefined): void {}
   
   @memo() public _build(@memo() style: ((instance: MM)=> MM) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MM | undefined): void {
     Column(undefined, (() => {
-      Text(@memo() ((instance: UITextAttribute): void => {
+      Text(((instance: TextAttribute): void => {
         style22(cardStyle(instance.height(200).fontColor("#000000"), 600, "#eeeeee").fontSize(60).fontWeight(400)).width(900);
         return;
       }), "hello world");
-      Text(@memo() ((instance: UITextAttribute): void => {
+      Text(@memo() ((instance: TextAttribute): void => {
         cardStyle(instance, 600, "#eeeeee");
         return;
       }), "hello world");

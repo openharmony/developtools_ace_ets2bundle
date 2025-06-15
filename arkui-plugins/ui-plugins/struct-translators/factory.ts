@@ -297,7 +297,7 @@ export class factory {
     }
 
     /*
-     * add headers for animation in UICommonMethod
+     * add headers for animation in CommonMethod
      */
     static modifyExternalComponentCommon(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
         const animationStart = factory.createAnimationMethod(BuilderLambdaNames.ANIMATION_START);
@@ -475,7 +475,7 @@ export class factory {
         if (!node.id || !node.body) {
             return node;
         }
-        if (externalSourceName === ARKUI_COMPONENT_COMMON_SOURCE_NAME && node.id.name === 'UICommonMethod') {
+        if (externalSourceName === ARKUI_COMPONENT_COMMON_SOURCE_NAME && node.id.name === 'CommonMethod') {
             return factory.modifyExternalComponentCommon(node);
         }
         if (isCustomComponentInterface(node)) {

@@ -165,7 +165,7 @@ class PluginTester {
     }
 
     private async compile(plugins: Plugins[], stopAfter?: PluginState, tracing?: TraceOptions): Promise<void> {
-        this.taskProcessor = new TaskProcessor(this.hashId, this.configBuilder.buildConfig);
+        this.taskProcessor = new TaskProcessor(this.hashId, this.configBuilder.buildConfig, tracing);
         return this.taskProcessor.invokeWorkers(plugins, stopAfter);
     }
 
@@ -196,7 +196,7 @@ class PluginTester {
                 that.clear();
             });
 
-            that.resolve = that.compile(plugins, options.stopAfter);
+            that.resolve = that.compile(plugins, options.stopAfter, options.tracing);
             that.compileTests(testName, pluginHooks);
         });
     }

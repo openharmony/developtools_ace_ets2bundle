@@ -14,7 +14,7 @@
  */
 
 import { memo } from "@ohos.arkui.stateManagement"
-import { Column, UIColumnAttribute } from "arkui.component.column"
+import { Column, ColumnAttribute } from "arkui.component.column"
 
 class MyStateSample {
     @memo build() {

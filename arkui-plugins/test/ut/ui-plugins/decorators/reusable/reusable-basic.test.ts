@@ -38,18 +38,26 @@ const reusableTransform: Plugins = {
 const pluginTester = new PluginTester('test basic reusable', buildConfig);
 
 const expectedScript: string = `
-import { StateDecoratedVariable as StateDecoratedVariable } from "arkui.stateManagement.decorators.decoratorState";
-import { PropDecoratedVariable as PropDecoratedVariable } from "arkui.stateManagement.decorators.decoratorProp";
+
+import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
+import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component, Reusable as Reusable } from "@ohos.arkui.component";
+
 import { State as State, Prop as Prop } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
 
 
-@Component({freezeWhenInactive:false}) final class MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Component({freezeWhenInactive:false}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {}
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
@@ -66,12 +74,12 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) @Reusable() final class Child extends CustomComponent<Child, __Options_Child> {
+@Component({freezeWhenInactive:false}) @Reusable() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_num = new PropDecoratedVariable<number>("num", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num)})) ?? (1)));
-    this.__backing_num1 = new StateDecoratedVariable<number>("num1", ((({let gensym___33833641 = initializers;
-    (((gensym___33833641) == (null)) ? undefined : gensym___33833641.num1)})) ?? (2)));
+    this.__backing_num = STATE_MGMT_FACTORY.makeProp<number>(this, "num", ((({let gensym___83257243 = initializers;
+    (((gensym___83257243) == (null)) ? undefined : gensym___83257243.num)})) ?? (1)));
+    this.__backing_num1 = STATE_MGMT_FACTORY.makeState<number>(this, "num1", ((({let gensym___24398512 = initializers;
+    (((gensym___24398512) == (null)) ? undefined : gensym___24398512.num1)})) ?? (2)));
   }
   
   public __updateStruct(initializers: __Options_Child | undefined): void {
@@ -89,7 +97,7 @@ function main() {}
     };
   }
   
-  private __backing_num?: PropDecoratedVariable<number>;
+  private __backing_num?: IPropDecoratedVariable<number>;
   
   public get num(): number {
     return this.__backing_num!.get();
@@ -99,7 +107,7 @@ function main() {}
     this.__backing_num!.set(value);
   }
   
-  private __backing_num1?: StateDecoratedVariable<number>;
+  private __backing_num1?: IStateDecoratedVariable<number>;
   
   public get num1(): number {
     return this.__backing_num1!.get();
@@ -123,15 +131,15 @@ function main() {}
   set num(num: number | undefined)
   
   get num(): number | undefined
-  set __backing_num(__backing_num: PropDecoratedVariable<number> | undefined)
+  set __backing_num(__backing_num: IPropDecoratedVariable<number> | undefined)
   
-  get __backing_num(): PropDecoratedVariable<number> | undefined
+  get __backing_num(): IPropDecoratedVariable<number> | undefined
   set num1(num1: number | undefined)
   
   get num1(): number | undefined
-  set __backing_num1(__backing_num1: StateDecoratedVariable<number> | undefined)
+  set __backing_num1(__backing_num1: IStateDecoratedVariable<number> | undefined)
   
-  get __backing_num1(): StateDecoratedVariable<number> | undefined
+  get __backing_num1(): IStateDecoratedVariable<number> | undefined
   
 }
 `;
