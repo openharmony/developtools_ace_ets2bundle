@@ -44,7 +44,7 @@ import { Component as Component, Entry as Entry, Builder as Builder, BuilderPara
 
 function main() {}
 
-@Component({freezeWhenInactive:false}) final class Child extends CustomComponent<Child, __Options_Child> {
+@Component({freezeWhenInactive:false}) final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_customBuilderParam = ((((({let gensym___169376706 = initializers;
     (((gensym___169376706) == (null)) ? undefined : gensym___169376706.customBuilderParam)})) ?? (content))) ?? (this.customBuilder))
@@ -72,7 +72,7 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) final class Parent extends CustomComponent<Parent, __Options_Parent> {
+@Component({freezeWhenInactive:false}) final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {}
   
   public __updateStruct(initializers: __Options_Parent | undefined): void {}

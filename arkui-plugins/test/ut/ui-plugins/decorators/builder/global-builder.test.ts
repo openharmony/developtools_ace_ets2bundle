@@ -57,7 +57,7 @@ class Tmp {
   public constructor() {}
 }
 
-@Component({freezeWhenInactive:false}) final class BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
+@Component({freezeWhenInactive:false}) final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
   public __initializeStruct(initializers: __Options_BuilderDemo | undefined, @memo() content: (()=> void) | undefined): void {}
   public __updateStruct(initializers: __Options_BuilderDemo | undefined): void {}
   @memo() public _build(@memo() style: ((instance: BuilderDemo)=> BuilderDemo) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_BuilderDemo | undefined): void {

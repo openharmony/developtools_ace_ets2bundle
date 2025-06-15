@@ -48,14 +48,14 @@ const expectedParsedScript: string = `
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
 
-@Component() final class CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
+@Component() final struct CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
   @Builder() public closerBuilder() {}
   @BuilderParam() public closer: (()=> void) = this.closerBuilder;
   public build() {}
   public constructor() {}
 }
 
-@Component() final class CustomContainerUser extends CustomComponent<CustomContainerUser, __Options_CustomContainerUser> {
+@Component() final struct CustomContainerUser extends CustomComponent<CustomContainerUser, __Options_CustomContainerUser> {
   public build() {
     Column(){
       CustomContainer(){
@@ -86,68 +86,84 @@ function testParedTransformer(this: PluginTestContext): void {
 }
 
 const expectedBuilderLambdaScript: string = `
-import { __memo_id_type as __memo_id_type } from "@ohos.arkui.stateManagement";
-import { __memo_context_type as __memo_context_type } from "@ohos.arkui.stateManagement";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { UIColumnAttribute as UIColumnAttribute } from "arkui.component.column";
-import { UITextAttribute as UITextAttribute } from "arkui.component.text";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
 
 function main() {}
 
-@Component({freezeWhenInactive:false}) final class CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
+
+
+@Component({freezeWhenInactive:false}) final struct CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
   public __initializeStruct(initializers: __Options_CustomContainer | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_closer = ((((({let gensym___38813563 = initializers;
     (((gensym___38813563) == (null)) ? undefined : gensym___38813563.closer)})) ?? (content))) ?? (this.closerBuilder))
   }
+  
   public __updateStruct(initializers: __Options_CustomContainer | undefined): void {}
+  
   private __backing_closer?: @memo() (()=> void);
+  
   public get closer(): @memo() (()=> void) {
     return this.__backing_closer!;
   }
+  
   public set closer(@memo() value: (()=> void)) {
     this.__backing_closer = value;
   }
+  
   @memo() public closerBuilder() {}
+  
   @memo() public _build(@memo() style: ((instance: CustomContainer)=> CustomContainer) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_CustomContainer | undefined): void {}
-  public constructor() {}
+  
+  private constructor() {}
+  
 }
 
-@Component({freezeWhenInactive:false}) final class CustomContainerUser extends CustomComponent<CustomContainerUser, __Options_CustomContainerUser> {
+@Component({freezeWhenInactive:false}) final struct CustomContainerUser extends CustomComponent<CustomContainerUser, __Options_CustomContainerUser> {
   public __initializeStruct(initializers: __Options_CustomContainerUser | undefined, @memo() content: (()=> void) | undefined): void {}
+  
   public __updateStruct(initializers: __Options_CustomContainerUser | undefined): void {}
+  
   @memo() public _build(@memo() style: ((instance: CustomContainerUser)=> CustomContainerUser) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_CustomContainerUser | undefined): void {
     Column(undefined, (() => {
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
       }), (() => {
         Column(undefined, (() => {
-          Text(undefined, "hello", undefined, undefined);
+          Text(undefined, "hello");
         }));
-      }), undefined);
+      }));
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
       }), ({} as __Options_CustomContainer), (() => {
         Column(undefined, (() => {}));
-      }), undefined);
+      }));
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
-      }), (() => {}), undefined);
+      }), undefined, (() => {}));
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
-      }), undefined, undefined, undefined);
+      }));
     }));
   }
-  public constructor() {}
+  
+  private constructor() {}
+  
 }
 
-interface __Options_CustomContainer {
-  set closer(closer: @memo() (()=> void) | undefined)
+@Component({freezeWhenInactive:false}) export interface __Options_CustomContainer {
+  set closer(@memo() closer: (()=> void) | undefined)
+  
   get closer(): @memo() (()=> void) | undefined
+  
 }
 
-interface __Options_CustomContainerUser {
+@Component({freezeWhenInactive:false}) export interface __Options_CustomContainerUser {
+  
 }
 `;
 
@@ -160,7 +176,7 @@ pluginTester.run(
     [parsedTransform, recheck, uiNoRecheck, recheck],
     {
         parsed: [testParedTransformer],
-        'checked:builder-lambda-no-recheck': [testCustomComponentTransformer],
+        'checked:ui-no-recheck': [testCustomComponentTransformer],
     },
     {
         stopAfter: 'checked',

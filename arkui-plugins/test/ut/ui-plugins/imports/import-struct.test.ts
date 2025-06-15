@@ -45,7 +45,7 @@ import { CustomComponent as CustomComponent } from \"arkui.component.customCompo
 import { Component as Component, Text as Text } from \"@ohos.arkui.component\";
 import { SimpleStruct as SimpleStruct } from \"./utils/simple-struct\";
 
-@Component() final class ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
+@Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
     public build() {
         SimpleStruct();
         SimpleStruct(({
@@ -70,7 +70,7 @@ import { SimpleStruct as SimpleStruct } from \"./utils/simple-struct\";
 
 function main() {}
 
-@Component({freezeWhenInactive:false}) final class ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
+@Component({freezeWhenInactive:false}) final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
     public __initializeStruct(initializers: __Options_ImportStruct | undefined, @memo() content: (()=> void) | undefined): void {}
     public __updateStruct(initializers: __Options_ImportStruct | undefined): void {}
     @memo() public _build(@memo() style: ((instance: ImportStruct)=> ImportStruct) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_ImportStruct | undefined): void {

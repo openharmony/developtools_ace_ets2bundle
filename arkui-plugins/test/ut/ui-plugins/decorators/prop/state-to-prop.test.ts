@@ -38,40 +38,58 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { StateDecoratedVariable as StateDecoratedVariable } from "arkui.stateManagement.decorators.decoratorState";
-import { PropDecoratedVariable as PropDecoratedVariable } from "arkui.stateManagement.decorators.decoratorProp";
+
+import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { UIButtonAttribute as UIButtonAttribute } from "arkui.component.button";
+
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
+import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component, Text as Text, Button as Button, Column as Column, ClickEvent as ClickEvent } from "@ohos.arkui.component";
+
 import { Prop as Prop, State as State } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@Component({freezeWhenInactive:false}) final class CountDownComponent extends CustomComponent<CountDownComponent, __Options_CountDownComponent> {
+
+
+@Component({freezeWhenInactive:false}) final struct CountDownComponent extends CustomComponent<CountDownComponent, __Options_CountDownComponent> {
   public __initializeStruct(initializers: __Options_CountDownComponent | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_count = new PropDecoratedVariable<number>("count", ((({let gensym___58710805 = initializers;
+    this.__backing_count = STATE_MGMT_FACTORY.makeProp<number>(this, "count", ((({let gensym___58710805 = initializers;
     (((gensym___58710805) == (null)) ? undefined : gensym___58710805.count)})) ?? (0)));
     this.__backing_costOfOneAttempt = ((({let gensym___88948111 = initializers;
     (((gensym___88948111) == (null)) ? undefined : gensym___88948111.costOfOneAttempt)})) ?? (1));
   }
+  
   public __updateStruct(initializers: __Options_CountDownComponent | undefined): void {
     if (((({let gensym___188547633 = initializers;
     (((gensym___188547633) == (null)) ? undefined : gensym___188547633.count)})) !== (undefined))) {
       this.__backing_count!.update((initializers!.count as number));
     }
   }
-  private __backing_count?: PropDecoratedVariable<number>;
+  
+  private __backing_count?: IPropDecoratedVariable<number>;
+  
   public get count(): number {
     return this.__backing_count!.get();
   }
+  
   public set count(value: number) {
     this.__backing_count!.set(value);
   }
+  
   private __backing_costOfOneAttempt?: number;
+  
   public get costOfOneAttempt(): number {
     return (this.__backing_costOfOneAttempt as number);
   }
+  
   public set costOfOneAttempt(value: number) {
     this.__backing_costOfOneAttempt = value;
   }
@@ -83,7 +101,7 @@ function main() {}
       } else {
         Text(undefined, "Game over!");
       }
-      Button(@memo() ((instance: UIButtonAttribute): void => {
+      Button(((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.count -= this.costOfOneAttempt;
         }));
@@ -91,32 +109,39 @@ function main() {}
       }), "Try again");
     }));
   }
+  
   private constructor() {}
+  
 }
 
-@Component({freezeWhenInactive:false}) final class ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> {
+@Component({freezeWhenInactive:false}) final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> {
   public __initializeStruct(initializers: __Options_ParentComponent | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_countDownStartValue = new StateDecoratedVariable<number>("countDownStartValue", ((({let gensym___249912438 = initializers;
+    this.__backing_countDownStartValue = STATE_MGMT_FACTORY.makeState<number>(this, "countDownStartValue", ((({let gensym___249912438 = initializers;
     (((gensym___249912438) == (null)) ? undefined : gensym___249912438.countDownStartValue)})) ?? (10)));
   }
+  
   public __updateStruct(initializers: __Options_ParentComponent | undefined): void {}
-  private __backing_countDownStartValue?: StateDecoratedVariable<number>;
+  
+  private __backing_countDownStartValue?: IStateDecoratedVariable<number>;
+  
   public get countDownStartValue(): number {
     return this.__backing_countDownStartValue!.get();
   }
+  
   public set countDownStartValue(value: number) {
     this.__backing_countDownStartValue!.set(value);
   }
+  
   @memo() public _build(@memo() style: ((instance: ParentComponent)=> ParentComponent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_ParentComponent | undefined): void {
     Column(undefined, (() => {
       Text(undefined, (((("Grant") + (this.countDownStartValue))) + ("nuggets to play.")));
-      Button(@memo() ((instance: UIButtonAttribute): void => {
+      Button(((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.countDownStartValue += 1;
         }));
         return;
       }), "+1 - Nuggets in New Game");
-      Button(@memo() ((instance: UIButtonAttribute): void => {
+      Button(((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.countDownStartValue -= 1;
         }));
@@ -130,23 +155,32 @@ function main() {}
       } as __Options_CountDownComponent));
     }));
   }
+  
   private constructor() {}
+  
 }
 
 @Component({freezeWhenInactive:false}) export interface __Options_CountDownComponent {
   set count(count: number | undefined)
+  
   get count(): number | undefined
-  set __backing_count(__backing_count: PropDecoratedVariable<number> | undefined)
-  get __backing_count(): PropDecoratedVariable<number> | undefined
+  set __backing_count(__backing_count: IPropDecoratedVariable<number> | undefined)
+  
+  get __backing_count(): IPropDecoratedVariable<number> | undefined
   set costOfOneAttempt(costOfOneAttempt: number | undefined)
+  
   get costOfOneAttempt(): number | undefined
+  
 }
 
 @Component({freezeWhenInactive:false}) export interface __Options_ParentComponent {
   set countDownStartValue(countDownStartValue: number | undefined)
+  
   get countDownStartValue(): number | undefined
-  set __backing_countDownStartValue(__backing_countDownStartValue: StateDecoratedVariable<number> | undefined)
-  get __backing_countDownStartValue(): StateDecoratedVariable<number> | undefined
+  set __backing_countDownStartValue(__backing_countDownStartValue: IStateDecoratedVariable<number> | undefined)
+  
+  get __backing_countDownStartValue(): IStateDecoratedVariable<number> | undefined
+  
 }
 `;
 

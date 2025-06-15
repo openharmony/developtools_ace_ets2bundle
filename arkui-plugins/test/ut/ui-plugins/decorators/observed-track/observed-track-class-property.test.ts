@@ -38,16 +38,27 @@ const observedTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test observed track transform with class property', buildConfig);
 
 const expectedScript: string = `
+
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { IObservedObject as IObservedObject } from "arkui.stateManagement.base.iObservedObject";
-import { setObservationDepth as setObservationDepth } from "arkui.stateManagement.base.iObservedObject";
-import { BackingValue as BackingValue } from "arkui.stateManagement.base.backingValue";
-import { MutableStateMeta as MutableStateMeta } from "arkui.stateManagement.base.mutableStateMeta";
-import { int32 as int32 } from "@koalaui.runtime.common";
-import { WatchIdType as WatchIdType } from "arkui.stateManagement.decorators.decoratorWatch";
-import { SubscribedWatches as SubscribedWatches } from "arkui.stateManagement.decorators.decoratorWatch";
+
+import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
+
+import { OBSERVE as OBSERVE } from "arkui.stateManagement.decorator";
+
+import { IMutableStateMeta as IMutableStateMeta } from "arkui.stateManagement.decorator";
+
+import { RenderIdType as RenderIdType } from "arkui.stateManagement.decorator";
+
+import { WatchIdType as WatchIdType } from "arkui.stateManagement.decorator";
+
+import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.decorator";
+
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component } from "@ohos.arkui.component";
+
 import { Observed as Observed, Track as Track } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -59,8 +70,8 @@ class Info {
   
 }
 
-class E implements IObservedObject {
-  private subscribedWatches: SubscribedWatches = new SubscribedWatches();
+class E implements IObservedObject, ISubscribedWatches {
+  private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -74,36 +85,43 @@ class E implements IObservedObject {
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
-  public _permissibleAddRefDepth: int32 = 0;
+  private ____V1RenderId: RenderIdType = 0;
+  
+  public setV1RenderId(renderId: RenderIdType): void {
+    this.____V1RenderId = renderId;
+  }
+  
+  protected conditionalAddRef(meta: IMutableStateMeta): void {
+    if (OBSERVE.shouldAddRef(this.____V1RenderId)) {
+      meta.addRef();
+    }
+  }
   
   public propE: Info = new Info();
   
-  private __backing_trackE: BackingValue<Info> = new BackingValue<Info>(new Info());
+  private __backing_trackE: Info = new Info();
   
-  private __meta_trackE: MutableStateMeta = new MutableStateMeta("@Track");
+  private __meta_trackE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public constructor() {}
   
   public get trackE(): Info {
-    if (((this._permissibleAddRefDepth) > (0))) {
-      this.__meta_trackE.addRef();
-    }
-    setObservationDepth(this.__backing_trackE.value, ((this._permissibleAddRefDepth) - (1)));
-    return this.__backing_trackE.value;
+    this.conditionalAddRef(this.__meta_trackE);
+    return this.__backing_trackE;
   }
   
   public set trackE(newValue: Info) {
-    if (((this.__backing_trackE.value) !== (newValue))) {
-      this.__backing_trackE.value = newValue;
-    this.__meta_trackE.fireChange();
-    this.executeOnSubscribingWatches("trackE");
+    if (((this.__backing_trackE) !== (newValue))) {
+      this.__backing_trackE = newValue;
+      this.__meta_trackE.fireChange();
+      this.executeOnSubscribingWatches("trackE");
     }
   }
   
 }
 
-@Observed() class E1 implements IObservedObject {
-  private subscribedWatches: SubscribedWatches = new SubscribedWatches();
+@Observed() class E1 implements IObservedObject, ISubscribedWatches {
+  private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -117,51 +135,55 @@ class E implements IObservedObject {
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
-  public _permissibleAddRefDepth: int32 = 0;
+  private ____V1RenderId: RenderIdType = 0;
   
-  private __meta: MutableStateMeta = new MutableStateMeta("@Observe properties (no @Track)");
+  public setV1RenderId(renderId: RenderIdType): void {
+    this.____V1RenderId = renderId;
+  }
   
-  private __backing_propE1: BackingValue<Info> = new BackingValue<Info>(new Info());
+  protected conditionalAddRef(meta: IMutableStateMeta): void {
+    if (OBSERVE.shouldAddRef(this.____V1RenderId)) {
+      meta.addRef();
+    }
+  }
   
-  private __backing_trackE1: BackingValue<Info> = new BackingValue<Info>(new Info());
+  private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  
+  private __backing_propE1: Info = new Info();
+  
+  private __backing_trackE1: Info = new Info();
   
   public constructor() {}
   
   public get propE1(): Info {
-    if (((this._permissibleAddRefDepth) > (0))) {
-      this.__meta.addRef();
-    }
-    setObservationDepth(this.__backing_propE1.value, ((this._permissibleAddRefDepth) - (1)));
-    return this.__backing_propE1.value;
+    this.conditionalAddRef(this.__meta);
+    return this.__backing_propE1;
   }
   
   public set propE1(newValue: Info) {
-    if (((this.__backing_propE1.value) !== (newValue))) {
-      this.__backing_propE1.value = newValue;
-    this.__meta.fireChange();
-    this.executeOnSubscribingWatches("propE1");
+    if (((this.__backing_propE1) !== (newValue))) {
+      this.__backing_propE1 = newValue;
+      this.__meta.fireChange();
+      this.executeOnSubscribingWatches("propE1");
     }
   }
   
   public get trackE1(): Info {
-    if (((this._permissibleAddRefDepth) > (0))) {
-      this.__meta.addRef();
-    }
-    setObservationDepth(this.__backing_trackE1.value, ((this._permissibleAddRefDepth) - (1)));
-    return this.__backing_trackE1.value;
+    this.conditionalAddRef(this.__meta);
+    return this.__backing_trackE1;
   }
   
   public set trackE1(newValue: Info) {
-    if (((this.__backing_trackE1.value) !== (newValue))) {
-      this.__backing_trackE1.value = newValue;
-    this.__meta.fireChange();
-    this.executeOnSubscribingWatches("trackE1");
+    if (((this.__backing_trackE1) !== (newValue))) {
+      this.__backing_trackE1 = newValue;
+      this.__meta.fireChange();
+      this.executeOnSubscribingWatches("trackE1");
     }
   }
   
 }
 
-@Component({freezeWhenInactive:false}) final class MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Component({freezeWhenInactive:false}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {}
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
