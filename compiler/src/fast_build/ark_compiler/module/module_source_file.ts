@@ -125,6 +125,7 @@ export class ModuleSourceFile {
     //   "etsSourceRootPath": "path of ets source root",
     //   "mockConfigPath": "path of mock configuration file"
     //   "mockConfigKey2ModuleInfo": "moduleInfo of mock-config key"
+    //   "source2ModuleIdMap": "moduleId of mock-config source value"
     // }
     ModuleSourceFile.needProcessMock = (rollupObject.share.projectConfig.mockParams &&
                                         rollupObject.share.projectConfig.mockParams.etsSourceRootPath &&
@@ -203,12 +204,17 @@ export class ModuleSourceFile {
     let mockFile: string = ModuleSourceFile.transformedHarOrHspMockConfigInfo[transKey] ?
       ModuleSourceFile.transformedHarOrHspMockConfigInfo[transKey].source :
       ModuleSourceFile.mockConfigInfo[originKey].source;
-    let mockFilePath: string = `${toUnixPath(rollupObject.share.projectConfig.modulePath)}/${mockFile}`;
+    let source2ModuleIdMap: Map<string, string> = new Map;
+    if (rollupObject.share.projectConfig.mockParams?.source2ModuleIdMap &&
+      rollupObject.share.projectConfig.mockParams?.source2ModuleIdMap.size > 0) {
+      source2ModuleIdMap = rollupObject.share.projectConfig.mockParams?.source2ModuleIdMap;
+    }
+    let mockFilePath: string = source2ModuleIdMap.size > 0 ?
+      source2ModuleIdMap.get(mockFile) :
+     `${toUnixPath(rollupObject.share.projectConfig.modulePath)}/${mockFile}`;
     let mockFileOhmUrl: string = '';
     if (useNormalizedOHMUrl) {
-      // When using mock for related compilation in module A, only the mock file under module A can be used,
-      // so the moduleInfo of the mock file is the moduleInfo of module A (that is, the main moduleInfo in the compilation process)
-      const targetModuleInfo: Object = ModuleSourceFile.generateModuleInfoOfMockFile(rollupObject);
+      const targetModuleInfo: Object = ModuleSourceFile.getModuleInfoOfMockFile(mockFilePath, rollupObject, source2ModuleIdMap);
       mockFileOhmUrl = ModuleSourceFile.spliceNormalizedOhmurl(targetModuleInfo, mockFilePath, importerFile);
     } else {
       mockFileOhmUrl = getOhmUrlByFilepath(mockFilePath,
@@ -223,13 +229,16 @@ export class ModuleSourceFile {
     ModuleSourceFile.addMockConfig(ModuleSourceFile.newMockConfigInfo, transKey, mockFileOhmUrl);
   }
 
-  static generateModuleInfoOfMockFile(rollupObject: Object): Object {
+  static getModuleInfoOfMockFile(filePath: string, rollupObject: Object, source2ModuleIdMap: Map<string, string>): Object {
+    if (source2ModuleIdMap.size > 0) {
+      return rollupObject.getModuleInfo(filePath);
+    }
     return {
       meta: {
         pkgName: rollupObject.share.projectConfig.entryPackageName,
         pkgPath: rollupObject.share.projectConfig.modulePath
       }
-    }
+    };
   }
 
   static isMockFile(file: string, rollupObject: Object): boolean {
