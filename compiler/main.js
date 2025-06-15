@@ -31,7 +31,8 @@ const {
   FAIL,
   TEST_RUNNER_DIR_SET,
   TS2ABC,
-  WORKERS_DIR
+  WORKERS_DIR,
+  ARKTS_1_2
 } = require('./lib/pre_define');
 
 const {
@@ -419,7 +420,7 @@ function setAbilityPages(projectConfig) {
   if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
     const moduleJson = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());
     abilityPages = readAbilityEntrance(moduleJson);
-    setAbilityFile(projectConfig, abilityPages, moduleJson.module?.codeLanguage);
+    setAbilityFile(projectConfig, abilityPages);
     setBundleModuleInfo(projectConfig, moduleJson);
   }
 }
@@ -486,16 +487,13 @@ function setBundleModuleInfo(projectConfig, moduleJson) {
   }
 }
 
-function setAbilityFile(projectConfig, abilityPages, codeLanguage) {
+function setAbilityFile(projectConfig, abilityPages) {
   abilityPages.forEach(abilityPath => {
     const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
     if (path.isAbsolute(abilityPath)) {
       abilityPath = '.' + abilityPath.slice(projectConfig.projectPath.length);
     }
     const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '').replace(/\.ets$/, '');
-    if (codeLanguage === '1.2') {
-      return;
-    }
     if (fs.existsSync(projectAbilityPath)) {
       abilityConfig.projectAbilityPath.push(projectAbilityPath);
       projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
@@ -513,10 +511,13 @@ function readAbilityEntrance(moduleJson) {
   if (moduleJson.module) {
     const moduleSrcEntrance = moduleJson.module.srcEntrance;
     const moduleSrcEntry = moduleJson.module.srcEntry;
-    if (moduleSrcEntry) {
+    // In a mixed compilation project, we only collect entries and abilities for version 1.1.
+    // When the field is missing or explicitly set to 1.1, the file is treated as a 1.1 file.
+    const isStatic = moduleJson.module?.abilityStageCodeLanguage === ARKTS_1_2;
+    if (moduleSrcEntry && !isStatic) {
       abilityPages.push(moduleSrcEntry);
       abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntry));
-    } else if (moduleSrcEntrance) {
+    } else if (moduleSrcEntrance && !isStatic) {
       abilityPages.push(moduleSrcEntrance);
       abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
     }
@@ -530,10 +531,17 @@ function readAbilityEntrance(moduleJson) {
   }
   return abilityPages;
 }
-
+/**
+ * In a mixed compilation project, we only collect entries and abilities for version 1.1.
+ * When the field is missing or explicitly set to 1.1, the file is treated as a 1.1 file.
+ */
 function setEntrance(abilityConfig, abilityPages) {
   if (abilityConfig && abilityConfig.length > 0) {
     abilityConfig.forEach(ability => {
+      const isStatic = ability.codeLanguage === ARKTS_1_2;
+      if (isStatic) {
+        return;
+      }
       if (ability.srcEntry) {
         abilityPages.push(ability.srcEntry);
         abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry));

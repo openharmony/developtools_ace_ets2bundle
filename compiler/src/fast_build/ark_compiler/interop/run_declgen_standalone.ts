@@ -41,7 +41,7 @@ export function run(param: Params): boolean {
     DeclfileProductor.init(param);
     param.tasks.forEach(task => {
         const moduleInfo = FileManager.arkTSModuleMap.get(task.packageName);
-        if (moduleInfo.dynamicFileList.length <= 0) {
+        if (moduleInfo?.dynamicFiles.length <= 0) {
             return;
         }
         if (task.buildTask === BuildType.DECLGEN) {
@@ -52,6 +52,7 @@ export function run(param: Params): boolean {
             //todo
         }
     });
+    FileManager.cleanFileManagerObject();
     return true;
 }
 
