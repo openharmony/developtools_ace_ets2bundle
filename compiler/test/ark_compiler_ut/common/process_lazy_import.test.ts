@@ -25,7 +25,8 @@ import {
   processJsCodeLazyImport,
   reExportNoCheckMode,
   reExportCheckLog,
-  resetReExportCheckLog
+  resetReExportCheckLog,
+  transformLazyImport
 } from '../../../lib/process_lazy_import';
 import { RELEASE } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import { ModuleSourceFile } from '../../../lib/fast_build/ark_compiler/module/module_source_file';
@@ -388,5 +389,79 @@ mocha.describe('process Lazy Imports tests', function () {
     const expectCode: string = 'import lazy { y1 } from "./test";\n';
     const result: string = processJsCodeLazyImport('index.js', code, true, 'strict');
     expect(result === expectCode).to.be.true;
+  });
+
+  mocha.it('3-1: test transformLazyImport: the symbol exist after conversion', function () {
+    const files: Record<string, string> = {
+      'main.ts': `
+        import { foo } from './lib';
+        console.log(foo);
+      `,
+      'lib.ts': `
+        export const foo = 42;
+      `
+    };
+
+    const fileNames = Object.keys(files);
+
+    const compilerHost = ts.createCompilerHost({}, true);
+    const getFileKey = (filePath: string) => path.basename(filePath);
+
+    compilerHost.getSourceFile = (filePath, languageVersion) => {
+      const key = getFileKey(filePath);
+      const sourceText = files[key];
+      return sourceText !== undefined
+        ? ts.createSourceFile(filePath, sourceText, languageVersion, true)
+        : undefined;
+    };
+
+    compilerHost.readFile = (filePath) => {
+      const key = getFileKey(filePath);
+      return files[key];
+    };
+
+    compilerHost.fileExists = (filePath) => {
+      const key = getFileKey(filePath);
+      return key in files;
+    };
+
+    compilerHost.getCanonicalFileName = fileName =>
+      ts.sys.useCaseSensitiveFileNames ? fileName : fileName.toLowerCase();
+
+    const program = ts.createProgram(['main.ts'], {
+      target: ts.ScriptTarget.ESNext,
+      module: ts.ModuleKind.ESNext
+    }, compilerHost);
+
+    const checker = program.getTypeChecker();
+
+    const originalSource = program.getSourceFile('main.ts')!;
+    const libSource = program.getSourceFile('lib.ts')!;
+
+    const libFooSymbol = (() => {
+      for (const stmt of libSource.statements) {
+        if (ts.isVariableStatement(stmt)) {
+          const decl = stmt.declarationList.declarations[0];
+          if (ts.isIdentifier(decl.name) && decl.name.text === 'foo') {
+            return checker.getSymbolAtLocation(decl.name)!;
+          }
+        }
+      }
+    })();
+    const mockResolver = {
+      isReferencedAliasDeclaration() {
+        return true;
+      }
+    };
+
+    const transformed = transformLazyImport(originalSource, mockResolver);
+
+    const importDecl = transformed.statements.find(ts.isImportDeclaration)!;
+    const specifiers = (importDecl.importClause!.namedBindings as ts.NamedImports).elements;
+
+    for (const spec of specifiers) {
+      const transformedSymbol = checker.getSymbolAtLocation(spec.name);
+      expect(transformedSymbol).to.exist;
+    }
   });
 });
