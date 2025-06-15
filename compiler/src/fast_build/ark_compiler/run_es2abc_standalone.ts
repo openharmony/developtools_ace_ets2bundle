@@ -24,7 +24,7 @@ import {
   MODULES_CACHE,
   NPMENTRIES_TXT,
   SOURCEMAPS,
-  SOURCEMAPS_JSON
+  SOURCEMAPS_JSON_MERGE
 } from './common/ark_define';
 
 /**
@@ -166,7 +166,7 @@ export function mergeSourceMap(cachePathList: string[], targetCachePath: string)
      */
     const possiblePaths = [
       path.join(item, SOURCEMAPS),
-      path.join(item, SOURCEMAPS_JSON),
+      path.join(item, SOURCEMAPS_JSON_MERGE),
     ];
   
     const sourceMapPath = possiblePaths.find(fs.existsSync);

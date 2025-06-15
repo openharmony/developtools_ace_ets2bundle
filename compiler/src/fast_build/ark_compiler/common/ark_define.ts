@@ -23,6 +23,7 @@ export const WIDGETS_ABC: string = 'widgets.abc';
 export const MODULELIST_JSON: string = 'moduleList.json';
 export const PREBUILDMODE_JSON: string = 'preBuildMode.json';
 export const SOURCEMAPS_JSON: string = 'sourceMaps.json';
+export const SOURCEMAPS_JSON_MERGE: string = 'sourceMapsMerge.json';
 export const SOURCEMAPS: string = 'sourceMaps.map';
 export const SYMBOLMAP: string = 'symbolMap.map';
 export const PROTO_FILESINFO_TXT: string = 'protoFilesInfo.txt';

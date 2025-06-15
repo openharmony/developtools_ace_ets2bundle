@@ -150,6 +150,7 @@ function loadEntryObj(projectConfig) {
   initProjectConfig(projectConfig);
   loadMemoryTrackingConfig(projectConfig);
   loadBuildJson();
+  // Initialize hybrid compilation related configuration
   initMixCompileHar(projectConfig);
   if (process.env.aceManifestPath && aceCompileMode === 'page') {
     setEntryFile(projectConfig);
@@ -161,6 +162,11 @@ function loadEntryObj(projectConfig) {
     setStageTestRunnerFile(projectConfig);
     loadNavigationConfig(aceBuildJson);
   }
+  
+  /**
+   * In the case of hybrid compilation mode and remote modules
+   * do not perform operations such as page path parsing
+   */
   if (projectConfig.mixCompile && projectConfig.isRemoteModule) {
     return;
   }
