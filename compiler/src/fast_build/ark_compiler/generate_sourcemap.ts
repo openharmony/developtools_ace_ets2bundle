@@ -92,7 +92,7 @@ export class SourceMapGenerator {
     this.sourceMapPath = this.getSourceMapSavePath();
     this.sourceMapPathTmp = path.join(this.projectConfig.cachePath, SOURCEMAPS_JSON + '.tmp');
     this.cacheSourceMapPath = path.join(this.projectConfig.cachePath, SOURCEMAPS_JSON);
-    this.sourceMapForMergePath = this.cacheSourceMapPath + '.merge';
+    this.sourceMapForMergePath = this.cacheSourceMapPath.replace('.json', 'Merge.json');
     this.triggerAsync = rollupObject.async;
     this.triggerEndSignal = rollupObject.signal;
     this.logger = CommonLogger.getInstance(rollupObject);
