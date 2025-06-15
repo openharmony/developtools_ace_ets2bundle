@@ -20,6 +20,15 @@ import {
   ES2ABC_ERROR_MAPPING
 } from './error_code';
 
+interface ErrorInfo {
+  code: ErrorCode;
+  description: string;
+  cause: string;
+  position: string;
+  solutions: string[];
+  details: string;
+}
+
 export class CommonLogger {
   private static instance: CommonLogger;
   private logger: Object;
@@ -142,29 +151,18 @@ export class LogDataFactory {
     if (!trimmedOutput) {
       return LogDataFactory.newInstance(
         ErrorCode.BYTECODE_OBFUSCATION_COMMON_ERROR,
-        'Bytecode program terminated abnormally',
-        `Status code: ${statusCode}`
-      );
+        'Bytecode program terminated abnormally', `Status code: ${statusCode}`);
     }
   
     const parseErrorLines = (output: string): Record<string, string> => 
-      output
-        .split('\n')
-        .reduce((acc: Record<string, string>, line) => {
+      output.split('\n').reduce((acc: Record<string, string>, line) => {
           const [key, ...values] = line.split(':').map(part => part.trim());
           return key && values.length ? { ...acc, [key]: values.join(':').trim() } : acc;
         }, {});
   
     const parsedErrors = parseErrorLines(trimmedOutput);
   
-    const getErrorInfo = (): {
-      code: ErrorCode;
-      description: string;
-      cause: string;
-      position: string;
-      solutions: string[];
-      details: string;
-    } => {
+    const getErrorInfo = (): ErrorInfo => {
       if (Object.keys(parsedErrors).length === 0) {
         return {
           code: ErrorCode.BYTECODE_OBFUSCATION_COMMON_ERROR,
@@ -186,7 +184,7 @@ export class LogDataFactory {
       };
     };
   
-    const { code, description, cause, position, solutions, details } = getErrorInfo();
+    const { code, description, cause, position, solutions, details }: ErrorInfo = getErrorInfo();
     return LogDataFactory.newInstance(
       code,
       description,
