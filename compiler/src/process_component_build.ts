@@ -2308,11 +2308,10 @@ function isBuilderChangeNode(argument: ts.Node, identifierNode: ts.Identifier, p
 }
 
 export function isWrappedBuilder(node: ts.PropertyAccessExpression): boolean {
+  const typeAtLocation = globalProgram.checker?.getTypeAtLocation(node.expression);
   if (projectConfig.minAPIVersion >= 11 && ts.isPropertyAccessExpression(node) &&
     node.name && ts.isIdentifier(node.name) && node.name.escapedText.toString() === WRAPBUILDER_BUILDERPROP &&
-    globalProgram.checker.getTypeAtLocation(node.expression) &&
-    globalProgram.checker.getTypeAtLocation(node.expression).symbol &&
-    globalProgram.checker.getTypeAtLocation(node.expression).symbol.escapedName === WRAPPEDBUILDER_CLASS) {
+    typeAtLocation && typeAtLocation.symbol && typeAtLocation.symbol.escapedName === WRAPPEDBUILDER_CLASS) {
     return true;
   }
   return false;
