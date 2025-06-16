@@ -362,11 +362,11 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     getJsDocNodeConditionCheckedResult: (jsDocFileCheckedInfo: ts.FileCheckModuleInfo, jsDocs: ts.JsDocTagInfo[]) => {
       return getJsDocNodeConditionCheckResult(jsDocFileCheckedInfo, jsDocs);
     },
-    uiProps: [],
+    uiProps: new Set(),
     clearProps: function() {
       dollarCollection.clear();
       extendCollection.clear();
-      this.uiProps.length = 0;
+      this.uiProps = new Set();
     },
     // TSC will re-do resolution if this callback return true.
     hasInvalidatedResolutions: (filePath: string): boolean => {
@@ -490,7 +490,7 @@ const allResolvedModules: Set<string> = new Set();
 export const allSourceFilePaths: Set<string> = new Set();
 // Used to collect file paths that have not been converted toUnixPath.
 export const allModuleIds: Set<string> = new Set();
-export let props: string[] = [];
+export let props: Set<string> = new Set();
 
 export let fastBuildLogger = null;
 
@@ -568,7 +568,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   }
 }
 
-export function traverseProgramSourceFiles(props: string[]): void {
+export function traverseProgramSourceFiles(props: Set<string>): void {
   globalProgram.program.getSourceFiles().forEach((sourceFile: ts.SourceFile) => {
     checkUISyntax(sourceFile, sourceFile.fileName, [], props);
   });
@@ -931,7 +931,7 @@ function validateError(message: string): boolean {
 function matchMessage(message: string, nameArr: any, reg: RegExp): boolean {
   if (reg.test(message)) {
     const match: string[] = message.match(reg);
-    if (match[1] && nameArr.includes(match[1])) {
+    if (match[1] && nameArr.has(match[1])) {
       return true;
     }
   }
@@ -1269,7 +1269,7 @@ export function watchChecker(rootFileNames: string[], newLogger: any = null, res
 }
 
 export function instanceInsteadThis(content: string, fileName: string, extendFunctionInfo: extendInfo[],
-  props: string[]): string {
+  props: Set<string>): string {
   extendFunctionInfo.reverse().forEach((item) => {
     const subStr: string = content.substring(item.start, item.end);
     const insert: string = subStr.replace(/(\s)\$(\.)/g, (origin, item1, item2) => {
@@ -1292,14 +1292,20 @@ export const dollarCollection: Set<string> = new Set();
 export const extendCollection: Set<string> = new Set();
 export const importModuleCollection: Set<string> = new Set();
 
-function checkUISyntax(sourceFile: ts.SourceFile, fileName: string, extendFunctionInfo: extendInfo[], props: string[]): void {
+function checkUISyntax(sourceFile: ts.SourceFile, fileName: string, extendFunctionInfo: extendInfo[],
+  props: Set<string>): void {
   if (/\.ets$/.test(fileName) && !/\.d.ets$/.test(fileName)) {
     if (process.env.compileMode === 'moduleJson' ||
       path.resolve(fileName) !== path.resolve(projectConfig.projectPath, 'app.ets')) {
       collectComponents(sourceFile);
       collectionCustomizeStyles(sourceFile);
       parseAllNode(sourceFile, sourceFile, extendFunctionInfo);
-      props.push(...dollarCollection, ...extendCollection);
+      dollarCollection.forEach((item) => {
+        props.add(item);
+      });
+      extendCollection.forEach((item) => {
+        props.add(item);
+      });
     }
   }
 }
@@ -1795,7 +1801,7 @@ export function resetEtsCheckTypeScript(): void {
 
 export function resetEtsCheck(): void {
   cache = {};
-  props = [];
+  props = new Set();
   needReCheckForChangedDepUsers = false;
   resetEtsCheckTypeScript();
   allResolvedModules.clear();
