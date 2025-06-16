@@ -47,6 +47,8 @@ import {
 } from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
 import {
+  ARKTS_1_2,
+  ESMODULE,
   TRANSFORMED_MOCK_CONFIG,
   USER_DEFINE_MOCK_CONFIG
 } from '../../../pre_define';
@@ -77,6 +79,11 @@ import {
   createAndStartEvent,
   stopEvent
 } from '../../../performance';
+import {
+  getDeclgenBridgeCodePath,
+  writeBridgeCodeFileSyncByNode
+} from '../../../process_arkts_evolution';
+
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
 const ROLLUP_EXPORTALL_NODE: string = 'ExportAllDeclaration';
@@ -90,6 +97,7 @@ export class ModuleSourceFile {
   private source: string | ts.SourceFile;
   private metaInfo: Object;
   private isSourceNode: boolean = false;
+  private isArkTSEvolution: boolean = false;
   private static projectConfig: Object;
   private static logger: CommonLogger;
   private static mockConfigInfo: Object = {};
@@ -108,6 +116,9 @@ export class ModuleSourceFile {
     this.metaInfo = metaInfo;
     if (typeof this.source !== 'string') {
       this.isSourceNode = true;
+    }
+    if (metaInfo?.language === ARKTS_1_2) {
+      this.isArkTSEvolution = true;
     }
   }
 
@@ -426,13 +437,17 @@ export class ModuleSourceFile {
     return this.moduleId;
   }
 
-  private async writeSourceFile(parentEvent: CompileEvent): Promise<void> {
-    if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
-      await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo,
-        this.moduleId, parentEvent, printObfLogger);
+  private async writeSourceFile(parentEvent: Object): Promise<void> {
+    if (!this.isArkTSEvolution) {
+      if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
+        await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo,
+          this.moduleId, parentEvent, ModuleSourceFile.logger);
+      } else {
+        await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig,
+          ModuleSourceFile.logger, parentEvent, this.metaInfo);
+      }
     } else {
-      await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig,
-        printObfLogger, parentEvent, this.metaInfo);
+      await writeBridgeCodeFileSyncByNode(<ts.SourceFile> this.source, this.moduleId);
     }
   }
 
@@ -510,10 +525,13 @@ export class ModuleSourceFile {
   }
 
   private static spliceNormalizedOhmurl(moduleInfo: Object, filePath: string, importerFile?: string): string {
+    const isArkTSEvolution: boolean = moduleInfo.meta.language === ARKTS_1_2;
+    const pkgPath: string = isArkTSEvolution ?
+      path.join(getDeclgenBridgeCodePath(moduleInfo.meta.pkgName), moduleInfo.meta.moduleName) : moduleInfo.meta.pkgPath;
     const pkgParams = {
       pkgName: moduleInfo.meta.pkgName,
-      pkgPath: moduleInfo.meta.pkgPath,
-      isRecordName: false
+      pkgPath,
+      isRecordName: false,
     };
     const ohmUrl: string =
       getNormalizedOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, pkgParams,
