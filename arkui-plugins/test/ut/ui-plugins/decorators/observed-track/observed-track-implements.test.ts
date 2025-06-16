@@ -38,14 +38,27 @@ const observedTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test observed track transform with implements', buildConfig);
 
 const expectedScript: string = `
+
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { IObservedObject as IObservedObject } from "arkui.stateManagement.base.iObservedObject";
-import { MutableStateMeta as MutableStateMeta } from "arkui.stateManagement.base.mutableStateMeta";
-import { int32 as int32 } from "@koalaui.runtime.common";
-import { WatchIdType as WatchIdType } from "arkui.stateManagement.decorators.decoratorWatch";
-import { SubscribedWatches as SubscribedWatches } from "arkui.stateManagement.decorators.decoratorWatch";
+
+import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
+
+import { OBSERVE as OBSERVE } from "arkui.stateManagement.decorator";
+
+import { IMutableStateMeta as IMutableStateMeta } from "arkui.stateManagement.decorator";
+
+import { RenderIdType as RenderIdType } from "arkui.stateManagement.decorator";
+
+import { WatchIdType as WatchIdType } from "arkui.stateManagement.decorator";
+
+import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.decorator";
+
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component } from "@ohos.arkui.component";
+
 import { Observed as Observed } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -66,8 +79,8 @@ interface trackInterface {
   
 }
 
-@Observed() class F implements PropInterface, trackInterface, IObservedObject {
-  private subscribedWatches: SubscribedWatches = new SubscribedWatches();
+@Observed() class F implements PropInterface, trackInterface, IObservedObject, ISubscribedWatches {
+  private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -81,9 +94,19 @@ interface trackInterface {
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
-  public _permissibleAddRefDepth: int32 = 0;
+  private ____V1RenderId: RenderIdType = 0;
   
-  private __meta: MutableStateMeta = new MutableStateMeta("@Observe properties (no @Track)");
+  public setV1RenderId(renderId: RenderIdType): void {
+    this.____V1RenderId = renderId;
+  }
+  
+  protected conditionalAddRef(meta: IMutableStateMeta): void {
+    if (OBSERVE.shouldAddRef(this.____V1RenderId)) {
+      meta.addRef();
+    }
+  }
+  
+  private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   private __backing_propF: number = 1;
   
@@ -91,39 +114,35 @@ interface trackInterface {
   
   public constructor() {}
   
-  public set propF(newValue: number) {
+  set propF(newValue: number) {
     if (((this.__backing_propF) !== (newValue))) {
       this.__backing_propF = newValue;
-    this.__meta.fireChange();
-    this.executeOnSubscribingWatches("propF");
+      this.__meta.fireChange();
+      this.executeOnSubscribingWatches("propF");
     }
   }
   
   public get propF(): number {
-    if (((this._permissibleAddRefDepth) > (0))) {
-      this.__meta.addRef();
-    }
+    this.conditionalAddRef(this.__meta);
     return this.__backing_propF;
   }
   
-  public set trackF(newValue: number) {
+  set trackF(newValue: number) {
     if (((this.__backing_trackF) !== (newValue))) {
       this.__backing_trackF = newValue;
-    this.__meta.fireChange();
-    this.executeOnSubscribingWatches("trackF");
+      this.__meta.fireChange();
+      this.executeOnSubscribingWatches("trackF");
     }
   }
   
   public get trackF(): number {
-    if (((this._permissibleAddRefDepth) > (0))) {
-      this.__meta.addRef();
-    }
+    this.conditionalAddRef(this.__meta);
     return this.__backing_trackF;
   }
   
 }
 
-@Component({freezeWhenInactive:false}) final class MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Component({freezeWhenInactive:false}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {}
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
@@ -137,7 +156,6 @@ interface trackInterface {
 @Component({freezeWhenInactive:false}) export interface __Options_MyStateSample {
   
 }
-
 `;
 
 function testObservedOnlyTransformer(this: PluginTestContext): void {

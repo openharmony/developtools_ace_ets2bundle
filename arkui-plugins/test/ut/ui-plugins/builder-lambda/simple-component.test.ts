@@ -33,7 +33,7 @@ const pluginTester = new PluginTester('test builder-lambda simple component', bu
 function testBuilderLambdaTransformer(this: PluginTestContext): void {
     const expectedScript: string = `
 import { memo as memo } from \"@ohos.arkui.stateManagement\";
-import { Column as Column, UIColumnAttribute as UIColumnAttribute } from \"arkui.component.column\";
+import { Column as Column, ColumnAttribute as ColumnAttribute } from \"arkui.component.column\";
 function main() {}
 class MyStateSample {
     @memo() public build() {
@@ -49,7 +49,7 @@ function testMemoTransformer(this: PluginTestContext): void {
     const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
 import { memo as memo } from \"@ohos.arkui.stateManagement\";
-import { Column as Column, UIColumnAttribute as UIColumnAttribute } from \"arkui.component.column\";
+import { Column as Column, ColumnAttribute as ColumnAttribute } from \"arkui.component.column\";
 function main() {}
 class MyStateSample {
     public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {

@@ -38,22 +38,35 @@ const observedTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test observed with track transform', buildConfig);
 
 const expectedScript: string = `
+
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { IObservedObject as IObservedObject } from "arkui.stateManagement.base.iObservedObject";
-import { MutableStateMeta as MutableStateMeta } from "arkui.stateManagement.base.mutableStateMeta";
-import { int32 as int32 } from "@koalaui.runtime.common";
-import { WatchIdType as WatchIdType } from "arkui.stateManagement.decorators.decoratorWatch";
-import { SubscribedWatches as SubscribedWatches } from "arkui.stateManagement.decorators.decoratorWatch";
+
+import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
+
+import { OBSERVE as OBSERVE } from "arkui.stateManagement.decorator";
+
+import { IMutableStateMeta as IMutableStateMeta } from "arkui.stateManagement.decorator";
+
+import { RenderIdType as RenderIdType } from "arkui.stateManagement.decorator";
+
+import { WatchIdType as WatchIdType } from "arkui.stateManagement.decorator";
+
+import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.decorator";
+
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component } from "@ohos.arkui.component";
+
 import { Observed as Observed, Track as Track } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
 
 
-@Observed() class B implements IObservedObject {
-  private subscribedWatches: SubscribedWatches = new SubscribedWatches();
+@Observed() class B implements IObservedObject, ISubscribedWatches {
+  private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -67,34 +80,42 @@ function main() {}
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
-  public _permissibleAddRefDepth: int32 = 0;
+  private ____V1RenderId: RenderIdType = 0;
+  
+  public setV1RenderId(renderId: RenderIdType): void {
+    this.____V1RenderId = renderId;
+  }
+  
+  protected conditionalAddRef(meta: IMutableStateMeta): void {
+    if (OBSERVE.shouldAddRef(this.____V1RenderId)) {
+      meta.addRef();
+    }
+  }
   
   public propB: number = 1;
   
   private __backing_trackB: number = 2;
   
-  private __meta_trackB: MutableStateMeta = new MutableStateMeta("@Track");
+  private __meta_trackB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public constructor() {}
   
   public get trackB(): number {
-    if (((this._permissibleAddRefDepth) > (0))) {
-      this.__meta_trackB.addRef();
-    }
+    this.conditionalAddRef(this.__meta_trackB);
     return this.__backing_trackB;
   }
   
   public set trackB(newValue: number) {
     if (((this.__backing_trackB) !== (newValue))) {
       this.__backing_trackB = newValue;
-    this.__meta_trackB.fireChange();
-    this.executeOnSubscribingWatches("trackB");
+      this.__meta_trackB.fireChange();
+      this.executeOnSubscribingWatches("trackB");
     }
   }
   
 }
 
-@Component({freezeWhenInactive:false}) final class MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Component({freezeWhenInactive:false}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {}
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
@@ -108,7 +129,6 @@ function main() {}
 @Component({freezeWhenInactive:false}) export interface __Options_MyStateSample {
   
 }
-
 `;
 
 function testObservedOnlyTransformer(this: PluginTestContext): void {

@@ -23,22 +23,25 @@ import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
-const OBSERVED_DIR_PATH: string = 'decorators/observed-track';
+const OBJECTLINK_DIR_PATH: string = 'decorators/objectlink';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, OBSERVED_DIR_PATH, 'track-only.ets'),
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, OBJECTLINK_DIR_PATH, 'objectlink-basic.ets'),
 ];
 
-const observedTrackTransform: Plugins = {
-    name: 'observedTrack',
+const objectlinkTrackTransform: Plugins = {
+    name: 'objectlink',
     parsed: uiTransform().parsed,
 }
 
-const pluginTester = new PluginTester('test track only transform', buildConfig);
+const pluginTester = new PluginTester('test objectlink basic transform', buildConfig);
 
 const expectedScript: string = `
+
 import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { IObjectLinkDecoratedVariable as IObjectLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -58,13 +61,13 @@ import { CustomComponent as CustomComponent } from "arkui.component.customCompon
 
 import { Component as Component } from "@ohos.arkui.component";
 
-import { Track as Track } from "@ohos.arkui.stateManagement";
+import { Observed as Observed, ObjectLink as ObjectLink } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
 
 
-class C implements IObservedObject, ISubscribedWatches {
+@Observed() class A implements IObservedObject, ISubscribedWatches {
   private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
@@ -91,33 +94,30 @@ class C implements IObservedObject, ISubscribedWatches {
     }
   }
   
-  public propC: number = 1;
-  
-  private __backing_trackC: number = 2;
-  
-  private __meta_trackC: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public constructor() {}
-  
-  public get trackC(): number {
-    this.conditionalAddRef(this.__meta_trackC);
-    return this.__backing_trackC;
-  }
-  
-  public set trackC(newValue: number) {
-    if (((this.__backing_trackC) !== (newValue))) {
-      this.__backing_trackC = newValue;
-      this.__meta_trackC.fireChange();
-      this.executeOnSubscribingWatches("trackC");
-    }
-  }
   
 }
 
 @Component({freezeWhenInactive:false}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {}
+  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
+    this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", ({let gensym___248819442 = initializers;
+    (((gensym___248819442) == (null)) ? undefined : gensym___248819442.objectlinkvar)})!)
+  }
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
+  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {
+    if (((({let gensym___97362509 = initializers;
+    (((gensym___97362509) == (null)) ? undefined : gensym___97362509.objectlinkvar)})) !== (undefined))) {
+      this.__backing_objectlinkvar!.update(initializers!.objectlinkvar!);
+    }
+  }
+  
+  private __backing_objectlinkvar?: IObjectLinkDecoratedVariable<A>;
+  
+  public get objectlinkvar(): A {
+    return this.__backing_objectlinkvar!.get();
+  }
   
   @memo() public _build(@memo() style: ((instance: MyStateSample)=> MyStateSample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MyStateSample | undefined): void {}
   
@@ -126,19 +126,25 @@ class C implements IObservedObject, ISubscribedWatches {
 }
 
 @Component({freezeWhenInactive:false}) export interface __Options_MyStateSample {
+  set objectlinkvar(objectlinkvar: A | undefined)
+  
+  get objectlinkvar(): A | undefined
+  set __backing_objectlinkvar(__backing_objectlinkvar: IObjectLinkDecoratedVariable<A> | undefined)
+  
+  get __backing_objectlinkvar(): IObjectLinkDecoratedVariable<A> | undefined
   
 }
 `;
 
-function testObservedOnlyTransformer(this: PluginTestContext): void {
+function testObjectLinkTransformer(this: PluginTestContext): void {
     expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
 }
 
 pluginTester.run(
-    'test track only transform',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    'test objectlink basic transform',
+    [objectlinkTrackTransform, uiNoRecheck, recheck],
     {
-        'checked:ui-no-recheck': [testObservedOnlyTransformer],
+        'checked:ui-no-recheck': [testObjectLinkTransformer],
     },
     {
         stopAfter: 'checked',

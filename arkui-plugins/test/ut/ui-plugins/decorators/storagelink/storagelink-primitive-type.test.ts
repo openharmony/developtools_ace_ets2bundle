@@ -38,9 +38,12 @@ const storageLinkTransform: Plugins = {
 const pluginTester = new PluginTester('test storagelink primitive type transform', buildConfig);
 
 const expectedScript: string = `
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { StorageLinkDecoratedVariable as StorageLinkDecoratedVariable } from "arkui.stateManagement.decorators.decoratorStorageLink";
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
+import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
 
@@ -54,16 +57,16 @@ function main() {}
 
 
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_numA = new StorageLinkDecoratedVariable<number>("Prop1", "numA", 33)
-    this.__backing_stringA = new StorageLinkDecoratedVariable<string>("Prop2", "stringA", "AA")
-    this.__backing_booleanA = new StorageLinkDecoratedVariable<boolean>("Prop3", "booleanA", true)
+    this.__backing_numA = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "Prop1", "numA", 33)
+    this.__backing_stringA = STATE_MGMT_FACTORY.makeStorageLink<string>(this, "Prop2", "stringA", "AA")
+    this.__backing_booleanA = STATE_MGMT_FACTORY.makeStorageLink<boolean>(this, "Prop3", "booleanA", true)
   }
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
   
-  private __backing_numA?: StorageLinkDecoratedVariable<number>;
+  private __backing_numA?: IStorageLinkDecoratedVariable<number>;
   
   public get numA(): number {
     return this.__backing_numA!.get();
@@ -73,7 +76,7 @@ function main() {}
     this.__backing_numA!.set(value);
   }
   
-  private __backing_stringA?: StorageLinkDecoratedVariable<string>;
+  private __backing_stringA?: IStorageLinkDecoratedVariable<string>;
   
   public get stringA(): string {
     return this.__backing_stringA!.get();
@@ -83,7 +86,7 @@ function main() {}
     this.__backing_stringA!.set(value);
   }
   
-  private __backing_booleanA?: StorageLinkDecoratedVariable<boolean>;
+  private __backing_booleanA?: IStorageLinkDecoratedVariable<boolean>;
   
   public get booleanA(): boolean {
     return this.__backing_booleanA!.get();
@@ -103,21 +106,21 @@ function main() {}
   set numA(numA: number | undefined)
   
   get numA(): number | undefined
-  set __backing_numA(__backing_numA: StorageLinkDecoratedVariable<number> | undefined)
+  set __backing_numA(__backing_numA: IStorageLinkDecoratedVariable<number> | undefined)
   
-  get __backing_numA(): StorageLinkDecoratedVariable<number> | undefined
+  get __backing_numA(): IStorageLinkDecoratedVariable<number> | undefined
   set stringA(stringA: string | undefined)
   
   get stringA(): string | undefined
-  set __backing_stringA(__backing_stringA: StorageLinkDecoratedVariable<string> | undefined)
+  set __backing_stringA(__backing_stringA: IStorageLinkDecoratedVariable<string> | undefined)
   
-  get __backing_stringA(): StorageLinkDecoratedVariable<string> | undefined
+  get __backing_stringA(): IStorageLinkDecoratedVariable<string> | undefined
   set booleanA(booleanA: boolean | undefined)
   
   get booleanA(): boolean | undefined
-  set __backing_booleanA(__backing_booleanA: StorageLinkDecoratedVariable<boolean> | undefined)
+  set __backing_booleanA(__backing_booleanA: IStorageLinkDecoratedVariable<boolean> | undefined)
   
-  get __backing_booleanA(): StorageLinkDecoratedVariable<boolean> | undefined
+  get __backing_booleanA(): IStorageLinkDecoratedVariable<boolean> | undefined
   
 }
 
@@ -131,7 +134,6 @@ class __EntryWrapper extends EntryPoint {
   public constructor() {}
   
 }
-
 `;
 
 function testStorageLinkTransformer(this: PluginTestContext): void {
