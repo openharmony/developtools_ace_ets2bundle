@@ -32,12 +32,22 @@ const {
   TEST_RUNNER_DIR_SET,
   TS2ABC,
   WORKERS_DIR,
-  ARKTS_1_2
+  ARKTS_1_2,
+  EXTNAME_TS
 } = require('./lib/pre_define');
 
 const {
   checkAotConfig
 } = require('./lib/gen_aot');
+
+const {
+  LogDataFactory
+} = require('./lib/fast_build/ark_compiler/logger');
+
+const {
+  ErrorCode,
+  ArkTSInternalErrorDescription
+} = require('./lib/fast_build/ark_compiler/error_code');
 
 const {
   configure,
@@ -73,6 +83,7 @@ let sdkConfigPrefix = 'ohos|system|kit|arkts';
 let ohosSystemModulePaths = [];
 let ohosSystemModuleSubDirPaths = [];
 let allModulesPaths = [];
+let entryFileLanguageInfo = new Map();
 
 function initProjectConfig(projectConfig) {
   initProjectPathConfig(projectConfig);
@@ -134,6 +145,8 @@ function initProjectPathConfig(projectConfig) {
   projectConfig.aceSoPath = projectConfig.aceSoPath || process.env.aceSoPath;
   projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath;
   projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath;
+  // In hybrid compilation, if the entry file is a static file, the path should be convert into under bridgeCodepath one
+  projectConfig.entryBridgeCodePath = projectConfig.entryBridgeCodePath || process.env.entryBridgeCodePath;
 }
 
 function loadMemoryTrackingConfig(projectConfig) {
@@ -494,13 +507,30 @@ function setBundleModuleInfo(projectConfig, moduleJson) {
   }
 }
 
+/**
+ * This file collects root files [entry, ability] for Rollup to bundle.
+ * 
+ * The ability paths are configured in `aceModuleJson`.
+ * - In version 1.1, the value is a relative path.
+ * - In version 1.2, the value is an OHM URL (specific to 1.2).
+ * 
+ * We need to read these values and populate them into `entryObj`.
+ * - `entryObj` is an object where:
+ *   - The key should be converted to the relative path format used in version 1.1.
+ *   - The value should be the corresponding absolute file path.
+ *   - For version 1.2 entries, the value should be converted to the corresponding glue code path.
+ */
+
 function setAbilityFile(projectConfig, abilityPages) {
   abilityPages.forEach(abilityPath => {
-    const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
-    if (path.isAbsolute(abilityPath)) {
+    const isStatic = entryFileLanguageInfo.get(abilityPath) ?? false;
+    const projectAbilityPath = isStatic ? path.join(projectConfig.entryBridgeCodePath, abilityPath + EXTNAME_TS) :
+      path.resolve(projectConfig.projectPath, '../', abilityPath);
+    if (path.isAbsolute(abilityPath) && !isStatic) {
       abilityPath = '.' + abilityPath.slice(projectConfig.projectPath.length);
     }
-    const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '').replace(/\.ets$/, '');
+    const entryPageKey = isStatic ? transformModuleNameToRelativePath(abilityPath) :
+      abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '').replace(/\.ets$/, '');
     if (fs.existsSync(projectAbilityPath)) {
       abilityConfig.projectAbilityPath.push(projectAbilityPath);
       projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
@@ -518,15 +548,18 @@ function readAbilityEntrance(moduleJson) {
   if (moduleJson.module) {
     const moduleSrcEntrance = moduleJson.module.srcEntrance;
     const moduleSrcEntry = moduleJson.module.srcEntry;
-    // In a mixed compilation project, we only collect entries and abilities for version 1.1.
-    // When the field is missing or explicitly set to 1.1, the file is treated as a 1.1 file.
     const isStatic = moduleJson.module?.abilityStageCodeLanguage === ARKTS_1_2;
-    if (moduleSrcEntry && !isStatic) {
+
+    if (moduleSrcEntry) {
       abilityPages.push(moduleSrcEntry);
-      abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntry));
-    } else if (moduleSrcEntrance && !isStatic) {
+      // abilityPagesFullPath is only for v1.1 - v1.2 files won't be included here 
+      !isStatic && abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntry));
+      entryFileLanguageInfo.set(moduleSrcEntry, isStatic);
+    } else if (moduleSrcEntrance) {
       abilityPages.push(moduleSrcEntrance);
-      abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
+      // abilityPagesFullPath is only for v1.1 - v1.2 files won't be included here 
+      !isStatic && abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
+      entryFileLanguageInfo.set(moduleSrcEntrance, isStatic);
     }
     if (moduleJson.module.abilities && moduleJson.module.abilities.length > 0) {
       setEntrance(moduleJson.module.abilities, abilityPages);
@@ -538,23 +571,21 @@ function readAbilityEntrance(moduleJson) {
   }
   return abilityPages;
 }
-/**
- * In a mixed compilation project, we only collect entries and abilities for version 1.1.
- * When the field is missing or explicitly set to 1.1, the file is treated as a 1.1 file.
- */
+
 function setEntrance(abilityConfig, abilityPages) {
   if (abilityConfig && abilityConfig.length > 0) {
     abilityConfig.forEach(ability => {
       const isStatic = ability.codeLanguage === ARKTS_1_2;
-      if (isStatic) {
-        return;
-      }
       if (ability.srcEntry) {
+        ability.srcEntry = ability.srcEntry.replace(/:[^/]+$/, '');
         abilityPages.push(ability.srcEntry);
-        abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry));
+        entryFileLanguageInfo.set(ability.srcEntry, isStatic);
+        !isStatic && abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry));
       } else if (ability.srcEntrance) {
+        ability.srcEntrance = ability.srcEntrance.replace(/:[^/]+$/, '');
         abilityPages.push(ability.srcEntrance);
-        abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
+        entryFileLanguageInfo.set(ability.srcEntrance, isStatic);
+        !isStatic && abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
       }
     });
   }
@@ -1212,6 +1243,26 @@ function initMixCompileHar(projectConfig) {
      */
     setIntentEntryPages(projectConfig);
   }
+}
+
+function transformModuleNameToRelativePath(moduleName) {
+  let defaultSourceRoot = 'src/main';
+  const normalizedModuleName = moduleName.replace(/\\/g, '/');
+  const normalizedRoot = defaultSourceRoot.replace(/\\/g, '/');
+
+  const rootIndex = normalizedModuleName.indexOf(`/${normalizedRoot}/`);
+  if (rootIndex === -1) {
+    const errInfo = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_WRONG_MODULE_NAME_FROM_ACEMODULEJSON,
+      ArkTSInternalErrorDescription,
+      `defaultSourceRoot '${defaultSourceRoot}' not found ` +
+      `when process moduleName '${moduleName}'`
+    );
+    throw Error(errInfo.toString());
+  }
+
+  const relativePath = normalizedModuleName.slice(rootIndex + normalizedRoot.length + 1);
+  return './' + relativePath;
 }
 
 exports.globalProgram = globalProgram;
