@@ -38,12 +38,21 @@ const storageLinkTransform: Plugins = {
 const pluginTester = new PluginTester('test storagelink with appstorage', buildConfig);
 
 const expectedScript: string = `
-import { StorageLinkDecoratedVariable as StorageLinkDecoratedVariable } from "arkui.stateManagement.decorators.decoratorStorageLink";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { UITextAttribute as UITextAttribute } from "arkui.component.text";
+
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
+import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component, Entry as Entry, Column as Column, Text as Text, ClickEvent as ClickEvent } from "@ohos.arkui.component";
+
 import { StorageLink as StorageLink, AppStorage as AppStorage } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -60,15 +69,15 @@ class Data {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class Index extends CustomComponent<Index, __Options_Index> {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final struct Index extends CustomComponent<Index, __Options_Index> {
   public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_storageLink = new StorageLinkDecoratedVariable<number>("PropA", "storageLink", 1)
-    this.__backing_storageLinkObject = new StorageLinkDecoratedVariable<Data>("PropB", "storageLinkObject", new Data(1))
+    this.__backing_storageLink = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "PropA", "storageLink", 1)
+    this.__backing_storageLinkObject = STATE_MGMT_FACTORY.makeStorageLink<Data>(this, "PropB", "storageLinkObject", new Data(1))
   }
   
   public __updateStruct(initializers: __Options_Index | undefined): void {}
   
-  private __backing_storageLink?: StorageLinkDecoratedVariable<number>;
+  private __backing_storageLink?: IStorageLinkDecoratedVariable<number>;
   
   public get storageLink(): number {
     return this.__backing_storageLink!.get();
@@ -78,7 +87,7 @@ class Data {
     this.__backing_storageLink!.set(value);
   }
   
-  private __backing_storageLinkObject?: StorageLinkDecoratedVariable<Data>;
+  private __backing_storageLinkObject?: IStorageLinkDecoratedVariable<Data>;
   
   public get storageLinkObject(): Data {
     return this.__backing_storageLinkObject!.get();
@@ -90,13 +99,13 @@ class Data {
   
   @memo() public _build(@memo() style: ((instance: Index)=> Index) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Index | undefined): void {
     Column(undefined, (() => {
-      Text(@memo() ((instance: UITextAttribute): void => {
+      Text(((instance: TextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.storageLink += 1;
         }));
         return;
       }), \`From AppStorage \${this.storageLink}\`);
-      Text(@memo() ((instance: UITextAttribute): void => {
+      Text(((instance: TextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.storageLinkObject.code += 1;
         }));
@@ -113,15 +122,15 @@ class Data {
   set storageLink(storageLink: number | undefined)
   
   get storageLink(): number | undefined
-  set __backing_storageLink(__backing_storageLink: StorageLinkDecoratedVariable<number> | undefined)
+  set __backing_storageLink(__backing_storageLink: IStorageLinkDecoratedVariable<number> | undefined)
   
-  get __backing_storageLink(): StorageLinkDecoratedVariable<number> | undefined
+  get __backing_storageLink(): IStorageLinkDecoratedVariable<number> | undefined
   set storageLinkObject(storageLinkObject: Data | undefined)
   
   get storageLinkObject(): Data | undefined
-  set __backing_storageLinkObject(__backing_storageLinkObject: StorageLinkDecoratedVariable<Data> | undefined)
+  set __backing_storageLinkObject(__backing_storageLinkObject: IStorageLinkDecoratedVariable<Data> | undefined)
   
-  get __backing_storageLinkObject(): StorageLinkDecoratedVariable<Data> | undefined
+  get __backing_storageLinkObject(): IStorageLinkDecoratedVariable<Data> | undefined
   
 }
 

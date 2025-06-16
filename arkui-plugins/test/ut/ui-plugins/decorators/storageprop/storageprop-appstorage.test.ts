@@ -38,12 +38,21 @@ const storagePropTransform: Plugins = {
 const pluginTester = new PluginTester('test storageprop with appstorage', buildConfig);
 
 const expectedScript: string = `
-import { StoragePropDecoratedVariable as StoragePropDecoratedVariable } from "arkui.stateManagement.decorators.decoratorStorageProp";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { UITextAttribute as UITextAttribute } from "arkui.component.text";
+
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
+import { IStoragePropDecoratedVariable as IStoragePropDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component, Entry as Entry, Column as Column, Text as Text, ClickEvent as ClickEvent } from "@ohos.arkui.component";
+
 import { StorageProp as StorageProp, AppStorage as AppStorage } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -60,15 +69,15 @@ class Data {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class Index extends CustomComponent<Index, __Options_Index> {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final struct Index extends CustomComponent<Index, __Options_Index> {
   public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_storageProp = new StoragePropDecoratedVariable<number>("PropA", "storageProp", 1)
-    this.__backing_storagePropObject = new StoragePropDecoratedVariable<Data>("PropB", "storagePropObject", new Data(1))
+    this.__backing_storageProp = STATE_MGMT_FACTORY.makeStorageProp<number>(this, "PropA", "storageProp", 1)
+    this.__backing_storagePropObject = STATE_MGMT_FACTORY.makeStorageProp<Data>(this, "PropB", "storagePropObject", new Data(1))
   }
   
   public __updateStruct(initializers: __Options_Index | undefined): void {}
   
-  private __backing_storageProp?: StoragePropDecoratedVariable<number>;
+  private __backing_storageProp?: IStoragePropDecoratedVariable<number>;
   
   public get storageProp(): number {
     return this.__backing_storageProp!.get();
@@ -78,7 +87,7 @@ class Data {
     this.__backing_storageProp!.set(value);
   }
   
-  private __backing_storagePropObject?: StoragePropDecoratedVariable<Data>;
+  private __backing_storagePropObject?: IStoragePropDecoratedVariable<Data>;
   
   public get storagePropObject(): Data {
     return this.__backing_storagePropObject!.get();
@@ -90,13 +99,13 @@ class Data {
   
   @memo() public _build(@memo() style: ((instance: Index)=> Index) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Index | undefined): void {
     Column(undefined, (() => {
-      Text(@memo() ((instance: UITextAttribute): void => {
+      Text(((instance: TextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.storageProp += 1;
         }));
         return;
       }), \`From AppStorage \${this.storageProp}\`);
-      Text(@memo() ((instance: UITextAttribute): void => {
+      Text(((instance: TextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.storagePropObject.code += 1;
         }));
@@ -113,15 +122,15 @@ class Data {
   set storageProp(storageProp: number | undefined)
   
   get storageProp(): number | undefined
-  set __backing_storageProp(__backing_storageProp: StoragePropDecoratedVariable<number> | undefined)
+  set __backing_storageProp(__backing_storageProp: IStoragePropDecoratedVariable<number> | undefined)
   
-  get __backing_storageProp(): StoragePropDecoratedVariable<number> | undefined
+  get __backing_storageProp(): IStoragePropDecoratedVariable<number> | undefined
   set storagePropObject(storagePropObject: Data | undefined)
   
   get storagePropObject(): Data | undefined
-  set __backing_storagePropObject(__backing_storagePropObject: StoragePropDecoratedVariable<Data> | undefined)
+  set __backing_storagePropObject(__backing_storagePropObject: IStoragePropDecoratedVariable<Data> | undefined)
   
-  get __backing_storagePropObject(): StoragePropDecoratedVariable<Data> | undefined
+  get __backing_storagePropObject(): IStoragePropDecoratedVariable<Data> | undefined
   
 }
 
@@ -135,7 +144,6 @@ class __EntryWrapper extends EntryPoint {
   public constructor() {}
   
 }
-
 `;
 
 function testStoragePropTransformer(this: PluginTestContext): void {

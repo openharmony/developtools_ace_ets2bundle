@@ -33,30 +33,36 @@ buildConfig.compileFiles = [
 const animationTransform: Plugins = {
     name: 'animation',
     parsed: uiTransform().parsed,
-}
+};
 
 const pluginTester = new PluginTester('test basic animation transform', buildConfig);
 
 const expectedScript: string = `
+
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { UITextAttribute as UITextAttribute } from "arkui.component.text";
+
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Text as Text, Column as Column, Component as Component, Color as Color, Curve as Curve } from "@ohos.arkui.component";
+
 import { Entry as Entry } from "@ohos.arkui.component";
 
 function main() {}
 
 
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class AnimatablePropertyExample extends CustomComponent<AnimatablePropertyExample, __Options_AnimatablePropertyExample> {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final struct AnimatablePropertyExample extends CustomComponent<AnimatablePropertyExample, __Options_AnimatablePropertyExample> {
   public __initializeStruct(initializers: __Options_AnimatablePropertyExample | undefined, @memo() content: (()=> void) | undefined): void {}
   
   public __updateStruct(initializers: __Options_AnimatablePropertyExample | undefined): void {}
   
   @memo() public _build(@memo() style: ((instance: AnimatablePropertyExample)=> AnimatablePropertyExample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_AnimatablePropertyExample | undefined): void {
     Column(undefined, (() => {
-      Text(@memo() ((instance: UITextAttribute): void => {
+      Text(((instance: TextAttribute): void => {
         instance.animationStart({
           duration: 2000,
           curve: Curve.Ease,
@@ -95,8 +101,15 @@ class __EntryWrapper extends EntryPoint {
 }
 `;
 
+const expectedHeader =
+    `
+    animationStart(value: AnimateParam | undefined): this
+    animationStop(value: AnimateParam | undefined): this
+    `;
+
 function testAnimationTransformer(this: PluginTestContext): void {
     expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
+    expect(parseDumpSrc(this.declContexts?.['arkui.component.common']?.scriptSnapshot ?? '')).toContain(parseDumpSrc(expectedHeader));
 }
 
 pluginTester.run(
@@ -107,5 +120,6 @@ pluginTester.run(
     },
     {
         stopAfter: 'checked',
+        tracing: { externalSourceNames: ['arkui.component.common'] },
     }
 );
