@@ -150,6 +150,8 @@ function loadEntryObj(projectConfig) {
   initProjectConfig(projectConfig);
   loadMemoryTrackingConfig(projectConfig);
   loadBuildJson();
+  // Initialize hybrid compilation related configuration
+  initMixCompileHar(projectConfig);
   if (process.env.aceManifestPath && aceCompileMode === 'page') {
     setEntryFile(projectConfig);
     setFaTestRunnerFile(projectConfig);
@@ -160,7 +162,14 @@ function loadEntryObj(projectConfig) {
     setStageTestRunnerFile(projectConfig);
     loadNavigationConfig(aceBuildJson);
   }
-
+  
+  /**
+   * In the case of hybrid compilation mode and remote modules
+   * do not perform operations such as page path parsing
+   */
+  if (projectConfig.mixCompile && projectConfig.isRemoteModule) {
+    return;
+  }
   if (staticPreviewPage) {
     projectConfig.entryObj['./' + staticPreviewPage] = projectConfig.projectPath + path.sep +
       staticPreviewPage + '.ets?entry';
@@ -265,7 +274,23 @@ function buildManifest(manifest, aceConfigPath) {
 }
 
 function getPackageJsonEntryPath() {
-  const rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../' + projectConfig.packageJson);
+  /**
+   * adapt to oh_modules compile
+   * origin local module => project/library/src/main/ets
+   * oh_module => project/library/src/main
+   * bcs some oh_module don't contain ets dir
+   */
+
+  const candidatePaths = [
+    path.resolve(projectConfig.projectPath, '../../../', projectConfig.packageJson),
+    path.resolve(projectConfig.projectPath, '../../', projectConfig.packageJson),
+  ];
+  
+  const rootPackageJsonPath =
+    candidatePaths.find(fs.existsSync) ??
+    (() => {
+      throw new Error('package.json not found');
+    })();
   if (fs.existsSync(rootPackageJsonPath)) {
     let rootPackageJsonContent;
     try {
@@ -394,6 +419,9 @@ function setIntentEntryPages(projectConfig) {
 }
 
 function setAbilityPages(projectConfig) {
+  if (projectConfig.isRemoteModule) {
+    return;
+  }
   let abilityPages = [];
   if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
     const moduleJson = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());
@@ -1152,6 +1180,27 @@ function initMain() {
   staticPreviewPage = process.env.aceStaticPreview;
   aceCompileMode = process.env.aceCompileMode || 'page';
   abilityConfig.abilityType = process.env.abilityType || 'page';
+}
+
+/**
+ * due to some oh_modules is different with the original arkTs module.
+ * Some branches were not reached, causing some information to be uninitialized.
+ */
+function initMixCompileHar(projectConfig) {
+  projectConfig.isRemoteModule = process.env.isRemoteModule === 'true';
+  projectConfig.mixCompile = process.env.mixCompile === 'true';
+  if (projectConfig.isRemoteModule && projectConfig.mixCompile) {
+    projectConfig.compileHar = true;
+    process.env.compileMode = 'moduleJson';
+    getPackageJsonEntryPath();
+    /**
+     * ets-loader will generate decl file from projectConfig.intentEntry which init in setIntentEntryPages.
+     * aceModuleJsonPath->ark_modules.json
+     * when compile oh_module with ets-loader, aceModuleJsonPath will be undefined.
+     * so projectConfig.intentEntry is empty.
+     */
+    setIntentEntryPages(projectConfig);
+  }
 }
 
 exports.globalProgram = globalProgram;

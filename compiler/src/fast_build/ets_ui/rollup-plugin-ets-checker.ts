@@ -31,11 +31,13 @@ import {
   targetESVersionChanged,
   collectFileToIgnoreDiagnostics,
   TSC_SYSTEM_CODE,
-  traverseProgramSourceFiles
+  traverseProgramSourceFiles,
+  arkTsEvolutionModuleMap,
+  cleanUpArkTsEvolutionModuleMap,
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
-  setChecker
+  setChecker,
 } from '../../utils';
 import {
   configureSyscapInfo,
@@ -53,6 +55,7 @@ import {
 } from '../../performance';
 import { LINTER_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info';
 import { ErrorCodeModule } from '../../hvigor_error_code/const/error_code_module';
+import { collectArkTSEvolutionModuleInfo } from '../../process_arkts_evolution';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -62,6 +65,9 @@ export function etsChecker() {
   return {
     name: 'etsChecker',
     buildStart() {
+      if (this.share.projectConfig.dependentModuleMap) {
+        collectArkTSEvolutionModuleInfo(this.share);
+      }
       const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ROLLUP_PLUGIN_BUILD_START);
       const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsChecker', 'buildStart');
       const eventServiceChecker = createAndStartEvent(hookEventFactory, 'serviceChecker');

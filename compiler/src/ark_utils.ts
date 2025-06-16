@@ -48,6 +48,7 @@ import {
   EXTNAME_CJS,
   EXTNAME_ABC,
   EXTNAME_ETS,
+  EXTNAME_D_ETS,
   EXTNAME_TS_MAP,
   EXTNAME_JS_MAP,
   ESMODULE,
@@ -108,6 +109,17 @@ export const packageCollection: Map<string, Array<string>> = new Map();
 export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object,
   pkgParams: Object, importerFile: string): string {
   const { pkgName, pkgPath, isRecordName } = pkgParams;
+  const { projectFilePath, pkgInfo } = getPkgInfo(filePath, projectConfig, logger, pkgPath, pkgName, importerFile);
+  const recordName: string = `${pkgInfo.bundleName}&${pkgName}/${projectFilePath}&${pkgInfo.version}`;
+  if (isRecordName) {
+    // record name style: <bunldName>&<packageName>/entry/ets/xxx/yyy&<version>
+    return recordName;
+  }
+  return `${pkgInfo.isSO ? 'Y' : 'N'}&${pkgInfo.moduleName}&${recordName}`;
+}
+
+export function getPkgInfo(filePath: string, projectConfig: Object, logger: Object, pkgPath: string,
+  pkgName: string, importerFile?: string): Object {
   // rollup uses commonjs plugin to handle commonjs files,
   // the commonjs files are prefixed with '\x00' and need to be removed.
   if (filePath.startsWith('\x00')) {
@@ -136,13 +148,8 @@ export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: O
     logger.printError(errInfo);
     return filePath;
   }
-  let projectFilePath: string = unixFilePath.replace(toUnixPath(pkgPath), '');
-  let recordName = `${pkgInfo.bundleName}&${pkgName}${projectFilePath}&${pkgInfo.version}`;
-  if (isRecordName) {
-    // record name style: <bunldName>&<packageName>/entry/ets/xxx/yyy&<version>
-    return recordName;
-  }
-  return `${pkgInfo.isSO ? 'Y' : 'N'}&${pkgInfo.moduleName}&${recordName}`;
+  const projectFilePath: string = unixFilePath.replace(toUnixPath(pkgPath) + '/', '');
+  return { projectFilePath, pkgInfo };
 }
 
 export function getOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object, namespace?: string,

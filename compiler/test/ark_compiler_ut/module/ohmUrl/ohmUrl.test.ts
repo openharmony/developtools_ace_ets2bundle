@@ -23,7 +23,8 @@ import {
   getOhmUrlBySystemApiOrLibRequest,
   getNormalizedOhmUrlByFilepath,
   getNormalizedOhmUrlByAliasName,
-  getNormalizedOhmUrlByModuleRequest
+  getNormalizedOhmUrlByModuleRequest,
+  pkgDeclFilesConfig
 } from '../../../../lib/ark_utils';
 import { PACKAGES } from '../../../../lib/pre_define';
 import projectConfig from '../../utils/processProjectConfig';
@@ -974,7 +975,6 @@ mocha.describe('generate ohmUrl', function () {
       'json5': undefined
     };
     const filePath: string = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
-    const moduleName: string = 'entry';
     const importerFile: string = 'importTest.ts';
     const errInfo: LogData = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_EXTERNAL_FAILED_TO_RESOLVE_OHM_URL,

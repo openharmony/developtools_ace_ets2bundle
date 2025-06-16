@@ -23,6 +23,7 @@ export const WIDGETS_ABC: string = 'widgets.abc';
 export const MODULELIST_JSON: string = 'moduleList.json';
 export const PREBUILDMODE_JSON: string = 'preBuildMode.json';
 export const SOURCEMAPS_JSON: string = 'sourceMaps.json';
+export const SOURCEMAPS_JSON_MERGE: string = 'sourceMapsMerge.json';
 export const SOURCEMAPS: string = 'sourceMaps.map';
 export const SYMBOLMAP: string = 'symbolMap.map';
 export const PROTO_FILESINFO_TXT: string = 'protoFilesInfo.txt';
@@ -122,6 +123,9 @@ export const USE_SHARED_COMMENT: string = '// "use shared"';
 export const SEPARATOR_BITWISE_AND: string = '&';
 export const SEPARATOR_AT: string = '@';
 export const SEPARATOR_SLASH: string = '/';
+
+export const GEN_ABC_CMD: string = 'genAbcCmd';
+export const GEN_ABC_CMD_FILE_PATH: string = 'genAbcCmd.json';
 
 export const ES_ANNOTATIONS = [
   '_ESConcurrentModuleRequestsAnnotation',
