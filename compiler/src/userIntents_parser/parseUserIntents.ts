@@ -646,13 +646,13 @@ class ParseIntent {
       if (!ts.isMethodDeclaration(member) || !this.hasModifier(member, ts.SyntaxKind.StaticKeyword)) {
         continue;
       }
-      const decorator: ts.ModifierLike = member.modifiers?.find(m => {
-        if (!ts.isDecorator(m)) {
+      const decorator: ts.ModifierLike = member.modifiers?.find(modifier => {
+        if (!ts.isDecorator(modifier)) {
           return false;
         }
         let decoratorName: string | undefined;
-        if (ts.isCallExpression(m.expression)) {
-          decoratorName = `@${decorator.expression.expression.getText()}`;
+        if (ts.isCallExpression(modifier.expression)) {
+          decoratorName = `@${modifier.expression.expression.getText()}`;
         }
         return decoratorName === decoratorType;
       });
