@@ -23,7 +23,7 @@ import {
     DecoratorNames,
     DECORATOR_TYPE_MAP,
     StateManagementTypes,
-    GetSetTypes
+    GetSetTypes,
 } from '../../common/predefines';
 import { addMemoAnnotation, findCanAddMemoFromParamExpression, findCanAddMemoFromTypeAnnotation } from '../utils';
 
@@ -94,7 +94,12 @@ export function hasDecoratorName(
 }
 
 export function hasDecorator(
-    property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition,
+    property:
+        | arkts.ClassProperty
+        | arkts.ClassDefinition
+        | arkts.MethodDefinition
+        | arkts.ETSParameterExpression
+        | arkts.ETSFunctionType,
     decoratorName: DecoratorNames
 ): boolean {
     if (arkts.isMethodDefinition(property)) {

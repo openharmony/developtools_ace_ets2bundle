@@ -23,6 +23,7 @@ import {
     getTypeParamsFromClassDecl,
     isCustomComponentInterface,
     MemoNames,
+    isKnownMethodDefinition,
 } from '../utils';
 import { factory as uiFactory } from '../ui-factory';
 import { factory as propertyFactory } from '../property-translators/factory';
@@ -35,7 +36,7 @@ import {
     InterfacePropertyTranslator,
     PropertyTranslator,
 } from '../property-translators';
-import { CustomComponentScopeInfo, isEtsGlobalClass, isKnownMethodDefinition } from './utils';
+import { CustomComponentScopeInfo, isEtsGlobalClass } from './utils';
 import { collectStateManagementTypeImport, hasDecorator, PropertyCache } from '../property-translators/utils';
 import { ProjectConfig } from '../../common/plugin-context';
 import { DeclarationCollector } from '../../common/declaration-collector';
@@ -58,47 +59,6 @@ export class factory {
         member.modifiers &= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PROTECTED;
         member.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
         return member;
-    }
-
-    /*
-     * create _build method.
-     */
-    static transformBuildMethodWithOriginBuild(
-        method: arkts.MethodDefinition,
-        typeName: string,
-        optionsName: string,
-        isDecl?: boolean
-    ): arkts.MethodDefinition {
-        const updateKey: arkts.Identifier = arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_BUILD);
-
-        const scriptFunction: arkts.ScriptFunction = method.scriptFunction;
-        const updateScriptFunction = arkts.factory.createScriptFunction(
-            scriptFunction.body,
-            arkts.FunctionSignature.createFunctionSignature(
-                scriptFunction.typeParams,
-                [
-                    uiFactory.createStyleParameter(typeName),
-                    uiFactory.createContentParameter(),
-                    uiFactory.createInitializersOptionsParameter(optionsName),
-                ],
-                arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                false
-            ),
-            scriptFunction.flags,
-            scriptFunction.modifiers
-        );
-        addMemoAnnotation(updateScriptFunction);
-
-        const modifiers: arkts.Es2pandaModifierFlags = isDecl
-            ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_ABSTRACT
-            : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
-        return arkts.factory.createMethodDefinition(
-            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
-            updateKey,
-            updateScriptFunction,
-            modifiers,
-            false
-        );
     }
 
     /*
@@ -441,24 +401,14 @@ export class factory {
     /**
      * transform non-property members in custom-component class.
      */
-    static transformNonPropertyMembersInClass(
-        member: arkts.AstNode,
-        classTypeName: string | undefined,
-        classOptionsName: string | undefined,
-        className: string,
-        isDecl?: boolean
-    ): arkts.AstNode {
+    static transformNonPropertyMembersInClass(member: arkts.AstNode, isDecl?: boolean): arkts.AstNode {
         if (arkts.isMethodDefinition(member)) {
             propertyFactory.addMemoToBuilderClassMethod(member);
             if (isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI) && !isDecl) {
                 return this.setStructConstructorToPrivate(member);
-            } else if (isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_BUILD_ORI)) {
-                return this.transformBuildMethodWithOriginBuild(
-                    member,
-                    classTypeName ?? className,
-                    classOptionsName ?? getCustomComponentOptionsName(className),
-                    isDecl
-                );
+            }
+            if (isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_BUILD_ORI)) {
+                addMemoAnnotation(member.scriptFunction);
             }
             return member;
         }
@@ -472,11 +422,9 @@ export class factory {
         if (!node.definition) {
             return node;
         }
-        let classTypeName: string | undefined;
         let classOptionsName: string | undefined;
         if (scope.isDecl) {
-            const [classType, classOptions] = getTypeParamsFromClassDecl(node);
-            classTypeName = getTypeNameFromTypeParameter(classType);
+            const [_, classOptions] = getTypeParamsFromClassDecl(node);
             classOptionsName = getTypeNameFromTypeParameter(classOptions);
         }
         const definition: arkts.ClassDefinition = node.definition;
@@ -495,15 +443,7 @@ export class factory {
         );
         const updateMembers: arkts.AstNode[] = definition.body
             .filter((member) => !arkts.isClassProperty(member))
-            .map((member: arkts.AstNode) =>
-                factory.transformNonPropertyMembersInClass(
-                    member,
-                    classTypeName,
-                    classOptionsName,
-                    className,
-                    scope.isDecl
-                )
-            );
+            .map((member: arkts.AstNode) => factory.transformNonPropertyMembersInClass(member, scope.isDecl));
 
         const updateClassDef: arkts.ClassDefinition = this.updateCustomComponentClass(definition, [
             ...translatedMembers,
@@ -546,7 +486,25 @@ export class factory {
         if (isCustomComponentInterface(node)) {
             return factory.tranformCustomComponentInterfaceMembers(node);
         }
-        return node;
+        return factory.tranformInterfaceBuildMember(node);
+    }
+
+    static tranformInterfaceBuildMember(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
+        const newBody: arkts.AstNode[] = node.body!.body.map((it) => {
+            if (arkts.isMethodDefinition(it)) {
+                propertyFactory.addMemoToBuilderClassMethod(it);
+            }
+            return it;
+        });
+        return arkts.factory.updateInterfaceDeclaration(
+            node,
+            node.extends,
+            node.id,
+            node.typeParams,
+            arkts.factory.updateInterfaceBody(node.body!, newBody),
+            node.isStatic,
+            node.isFromExternal
+        );
     }
 
     /**
@@ -619,9 +577,13 @@ export class factory {
     }
 
     static transformTSTypeAlias(node: arkts.TSTypeAliasDeclaration): arkts.TSTypeAliasDeclaration {
-        if (arkts.isETSFunctionType(node.typeAnnotation) && hasDecorator(node.typeAnnotation, DecoratorNames.BUILDER)) {
+        if (
+            node.typeAnnotation &&
+            arkts.isETSFunctionType(node.typeAnnotation) &&
+            hasDecorator(node.typeAnnotation, DecoratorNames.BUILDER)
+        ) {
             node.typeAnnotation.setAnnotations([annotation(MemoNames.MEMO)]);
-        } 
+        }
         return node;
     }
 
