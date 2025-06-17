@@ -15,7 +15,6 @@
 
 import * as arkts from '@koalaui/libarkts';
 import {
-    BuilderLambdaNames,
     addMemoAnnotation,
     CustomComponentNames,
     getCustomComponentOptionsName,
@@ -42,6 +41,7 @@ import { ProjectConfig } from '../../common/plugin-context';
 import { DeclarationCollector } from '../../common/declaration-collector';
 import { ImportCollector } from '../../common/import-collector';
 import {
+    AnimationNames,
     ARKUI_COMPONENT_COMMON_SOURCE_NAME,
     DecoratorNames,
     Dollars,
@@ -297,14 +297,16 @@ export class factory {
     }
 
     /*
-     * add headers for animation in CommonMethod
+     * add headers for animation & @AnimatableExtend in CommonMethod
      */
     static modifyExternalComponentCommon(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
-        const animationStart = factory.createAnimationMethod(BuilderLambdaNames.ANIMATION_START);
-        const animationStop = factory.createAnimationMethod(BuilderLambdaNames.ANIMATION_STOP);
+        const animationStart = factory.createAnimationMethod(AnimationNames.ANIMATION_START);
+        const animationStop = factory.createAnimationMethod(AnimationNames.ANIMATION_STOP);
+        const createOrSetAniProperty = factory.createOrSetAniProperty();
         const updatedBody = arkts.factory.updateInterfaceBody(node.body!, [
             animationStart,
             animationStop,
+            createOrSetAniProperty,
             ...node.body!.body,
         ]);
         return arkts.factory.updateInterfaceDeclaration(
@@ -315,6 +317,69 @@ export class factory {
             updatedBody,
             node.isStatic,
             node.isFromExternal
+        );
+    }
+
+    /*
+     * helper to create value parameter for AnimatableExtend methods
+     */
+    static createAniExtendValueParam(): arkts.ETSParameterExpression {
+        const numberType = uiFactory.createTypeReferenceFromString('number');
+        const AnimatableArithmeticType = arkts.factory.createTypeReference(
+            arkts.factory.createTypeReferencePart(
+                arkts.factory.createIdentifier(AnimationNames.ANIMATABLE_ARITHMETIC),
+                arkts.factory.createTSTypeParameterInstantiation([uiFactory.createTypeReferenceFromString('T')])
+            )
+        );
+        return arkts.factory.createParameterDeclaration(
+            arkts.factory.createIdentifier(
+                'value',
+                arkts.factory.createUnionType([numberType, AnimatableArithmeticType])
+            ),
+            undefined
+        );
+    }
+
+    /*
+     * generate __createOrSetAnimatableProperty(...) for AnimatableExtend
+     */
+    static createOrSetAniProperty(): arkts.MethodDefinition {
+        const funcNameParam: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
+            arkts.factory.createIdentifier('functionName', uiFactory.createTypeReferenceFromString('string')),
+            undefined
+        );
+        const cbParam = arkts.factory.createParameterDeclaration(
+            arkts.factory.createIdentifier(
+                'callback',
+                arkts.factory.createFunctionType(
+                    arkts.factory.createFunctionSignature(
+                        undefined,
+                        [factory.createAniExtendValueParam()],
+                        arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                        false
+                    ),
+                    arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
+                )
+            ),
+            undefined
+        );
+        return arkts.factory.createMethodDefinition(
+            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+            arkts.factory.createIdentifier(AnimationNames.CREATE_OR_SET_ANIMATABLEPROPERTY),
+            uiFactory.createScriptFunction({
+                typeParams: arkts.factory.createTypeParameterDeclaration(
+                    [arkts.factory.createTypeParameter(arkts.factory.createIdentifier('T'))],
+                    0
+                ),
+                params: [funcNameParam, factory.createAniExtendValueParam(), cbParam],
+                returnTypeAnnotation: arkts.factory.createPrimitiveType(
+                    arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID
+                ),
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            }),
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            false
         );
     }
 
@@ -519,11 +584,35 @@ export class factory {
             return node;
         }
         if (isEtsGlobalClass(node)) {
-            node.definition.body.forEach(
-                (member: arkts.AstNode) =>
-                    arkts.isMethodDefinition(member) && propertyFactory.addMemoToBuilderClassMethod(member)
+             const updatedBody = node.definition.body.map((member: arkts.AstNode) => {
+                arkts.isMethodDefinition(member) && propertyFactory.addMemoToBuilderClassMethod(member);
+                if (arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.ANIMATABLE_EXTEND)) {
+                    member = arkts.factory.updateMethodDefinition(
+                        member,
+                        member.kind,
+                        member.name,
+                        factory.transformAnimatableExtend(member.scriptFunction),
+                        member.modifiers,
+                        false
+                    );
+                }
+                return member;
+            });
+             return arkts.factory.updateClassDeclaration(
+                node,
+                arkts.factory.updateClassDefinition(
+                    node.definition,
+                    node.definition.ident,
+                    node.definition.typeParams,
+                    node.definition.superTypeParams,
+                    node.definition.implements,
+                    undefined,
+                    node.definition.super,
+                    updatedBody,
+                    node.definition.modifiers,
+                    arkts.classDefinitionFlags(node.definition)
+                )
             );
-            return node;
         }
         const newClassDef = factory.updateObservedTrackClassDef(node.definition);
         return arkts.factory.updateClassDeclaration(node, newClassDef);
@@ -609,5 +698,85 @@ export class factory {
             ...nonClassPropertyOrGetter,
             ...classScopeInfo.getters,
         ];
+    }
+
+    /*
+     * helper for transformAnimatableExtend to create callback argument in __createAnimatableProperty
+     */
+    static createAniExtendCbArg(
+        param: arkts.ETSParameterExpression,
+        originStatements: arkts.Statement[]
+    ): arkts.ArrowFunctionExpression {
+        const assignmentExpr = arkts.factory.createExpressionStatement(
+            arkts.factory.createAssignmentExpression(
+                param.identifier.clone(),
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+                arkts.factory.createTSAsExpression(param.identifier.clone(), param.type as arkts.TypeNode, false)
+            )
+        );
+        const numberType = uiFactory.createTypeReferenceFromString('number');
+        const AnimatableArithmeticType = arkts.factory.createTypeReference(
+            arkts.factory.createTypeReferencePart(
+                arkts.factory.createIdentifier(AnimationNames.ANIMATABLE_ARITHMETIC),
+                arkts.factory.createTSTypeParameterInstantiation([param.type as arkts.TypeNode])
+            )
+        );
+        ImportCollector.getInstance().collectImport(AnimationNames.ANIMATABLE_ARITHMETIC);
+        return arkts.factory.createArrowFunction(
+            uiFactory.createScriptFunction({
+                body: arkts.factory.createBlock([assignmentExpr, ...originStatements]),
+                params: [
+                    arkts.factory.createParameterDeclaration(
+                        arkts.factory.createIdentifier(
+                            param.identifier.name,
+                            arkts.factory.createUnionType([numberType, AnimatableArithmeticType])
+                        ),
+                        undefined
+                    ),
+                ],
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+            })
+        );
+    }
+
+    /*
+     * transform @AnimatableExtend method
+     */
+    static transformAnimatableExtend(node: arkts.ScriptFunction): arkts.ScriptFunction {
+        if (!arkts.isEtsParameterExpression(node.params[1]) || !node.body || !arkts.isBlockStatement(node.body)) {
+            return node;
+        }
+        const funcName: arkts.StringLiteral = arkts.factory.createStringLiteral(node.id?.name!);
+        const paramValue: arkts.ETSParameterExpression = node.params[1];
+        const originStatements: arkts.Statement[] = [...node.body.statements];
+        const createOrSetStatement = arkts.factory.createExpressionStatement(
+            arkts.factory.createCallExpression(
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createThisExpression(),
+                    arkts.factory.createIdentifier(AnimationNames.CREATE_OR_SET_ANIMATABLEPROPERTY),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                ),
+                undefined,
+                [
+                    funcName,
+                    paramValue.identifier,
+                    factory.createAniExtendCbArg(paramValue, originStatements.slice(0, -1)),
+                ]
+            )
+        );
+        return arkts.factory.updateScriptFunction(
+            node,
+            arkts.factory.createBlock([createOrSetStatement, originStatements[originStatements.length - 1]]),
+            arkts.FunctionSignature.createFunctionSignature(
+                node.typeParams,
+                node.params,
+                node.returnTypeAnnotation,
+                node.hasReceiver
+            ),
+            node.flags,
+            node.modifiers
+        );
     }
 }

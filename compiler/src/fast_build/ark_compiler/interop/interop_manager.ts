@@ -26,7 +26,10 @@ import {
   FileInfo,
   AliasConfig
 } from './type';
-import { hasExistingPaths } from '../utils';
+import {
+  hasExistingPaths,
+  isSubPathOf
+} from '../utils';
 import {
   CommonLogger,
   LogData,
@@ -103,6 +106,8 @@ export class FileManager {
     const convertedMap = new Map<string, ArkTSEvolutionModule>();
 
     for (const [key, module] of dependentModuleMap) {
+      module.dynamicFiles = module.dynamicFiles?.map(toUnixPath);
+      module.staticFiles = module.staticFiles?.map(toUnixPath);
       const convertedModule: ArkTSEvolutionModule = {
         ...module,
         modulePath: toUnixPath(module.modulePath),
@@ -168,18 +173,16 @@ export class FileManager {
     staticSDKGlueCodePaths?: Set<string>,
     checkFileExist: boolean = true
   ): void {
-    const isDynamicValid = !dynamicSDKPath || hasExistingPaths(dynamicSDKPath);
-    const isStaticBaseValid = !staticSDKBaseUrl || hasExistingPaths(staticSDKBaseUrl);
-    const isGlueCodeValid = !staticSDKGlueCodePaths || hasExistingPaths(staticSDKGlueCodePaths);
-    FileManager.isInteropSDKEnabled = isDynamicValid && isStaticBaseValid && isGlueCodeValid;
-    if (!FileManager.isInteropSDKEnabled && checkFileExist) {
-      return;
-    }
-
     if (dynamicSDKPath) {
       for (const path of dynamicSDKPath) {
         FileManager.dynamicLibPath.add(toUnixPath(path));
       }
+    }
+    const isStaticBaseValid = !staticSDKBaseUrl || hasExistingPaths(staticSDKBaseUrl);
+    const isGlueCodeValid = !staticSDKGlueCodePaths || hasExistingPaths(staticSDKGlueCodePaths);
+    FileManager.isInteropSDKEnabled = isStaticBaseValid && isGlueCodeValid;
+    if (!FileManager.isInteropSDKEnabled && checkFileExist) {
+      return;
     }
     if (staticSDKBaseUrl) {
       for (const path of staticSDKBaseUrl) {
@@ -198,11 +201,12 @@ export class FileManager {
       this.instance = undefined;
     }
 
-    FileManager.arkTSModuleMap.clear();
-    FileManager.dynamicLibPath.clear();
-    FileManager.staticSDKDeclPath.clear();
-    FileManager.staticSDKGlueCodePath.clear();
-    FileManager.glueCodeFileInfos.clear();
+    FileManager.arkTSModuleMap?.clear();
+    FileManager.dynamicLibPath?.clear();
+    FileManager.staticSDKDeclPath?.clear();
+    FileManager.staticSDKGlueCodePath?.clear();
+    FileManager.glueCodeFileInfos?.clear();
+    FileManager.aliasConfig?.clear();
     FileManager.mixCompile = false;
   }
 
@@ -221,51 +225,67 @@ export class FileManager {
     if (sdkMatch) {
       return sdkMatch;
     }
-
-    return undefined;
+    const firstLine = readFirstLineSync(filePath);
+    if (firstLine.includes('use static')) {
+      return {
+        languageVersion: ARKTS_1_2,
+        pkgName: ''
+      };
+    }
+    return {
+      languageVersion: ARKTS_1_1,
+      pkgName: ''
+    };
   }
 
   private static matchModulePath(path: string): {
     languageVersion: string,
     pkgName: string
   } | undefined {
-    for (const [_, moduleInfo] of FileManager.arkTSModuleMap) {
-      if (!path.startsWith(moduleInfo.modulePath)) {
-        continue;
+    let matchedModuleInfo: ArkTSEvolutionModule;
+
+    for (const [, moduleInfo] of FileManager.arkTSModuleMap) {
+      if (isSubPathOf(path, moduleInfo.modulePath)) {
+        matchedModuleInfo = moduleInfo;
+        break;
       }
+    }
 
-      const isHybrid = moduleInfo.language === HYBRID;
-      const pkgName = moduleInfo.packageName;
+    if (!matchedModuleInfo) {
+      return undefined;
+    }
 
-      if (!isHybrid) {
-        return {
-          languageVersion: moduleInfo.language,
-          pkgName
-        };
-      }
+    const isHybrid = matchedModuleInfo.language === HYBRID;
+    const pkgName = matchedModuleInfo.packageName;
 
-      const isDynamic =
-        moduleInfo.dynamicFiles.includes(path) ||
-        (moduleInfo.declgenV2OutPath && path.startsWith(moduleInfo.declgenV2OutPath));
+    if (!isHybrid) {
+      return {
+        languageVersion: matchedModuleInfo.language,
+        pkgName
+      };
+    }
 
-      if (isDynamic) {
-        return {
-          languageVersion: ARKTS_1_1,
-          pkgName
-        };
-      }
+    const isDynamic =
+      matchedModuleInfo.dynamicFiles.includes(path) ||
+      (matchedModuleInfo.declgenV2OutPath && isSubPathOf(path, matchedModuleInfo.declgenV2OutPath));
 
-      const isStatic =
-        moduleInfo.staticFiles.includes(path) ||
-        (moduleInfo.declgenV1OutPath && path.startsWith(moduleInfo.declgenV1OutPath)) ||
-        (moduleInfo.declgenBridgeCodePath && path.startsWith(moduleInfo.declgenBridgeCodePath));
+    if (isDynamic) {
+      return {
+        languageVersion: ARKTS_1_1,
+        pkgName
+      };
+    }
 
-      if (isStatic) {
-        return {
-          languageVersion: ARKTS_1_2,
-          pkgName
-        };
-      }
+    const isStatic =
+      matchedModuleInfo.staticFiles.includes(path) ||
+      (matchedModuleInfo.declgenV1OutPath && isSubPathOf(path, matchedModuleInfo.declgenV1OutPath)) ||
+      (matchedModuleInfo.declgenBridgeCodePath && isSubPathOf(path, matchedModuleInfo.declgenBridgeCodePath));
+
+    if (isStatic) {
+      return {
+        languageVersion: ARKTS_1_2,
+        pkgName
+      };
     }
 
     return undefined;
@@ -291,7 +311,7 @@ export class FileManager {
 
     for (const [paths, version] of sdkMatches) {
       const isMatch = paths && Array.from(paths).some(
-        p => p && (path.startsWith(p + '/') || path === p)
+        p => p && (isSubPathOf(path, p))
       );
       if (isMatch) {
         return { languageVersion: version, pkgName: 'SDK' };
@@ -301,6 +321,12 @@ export class FileManager {
   }
 
   queryOriginApiName(moduleName: string, containingFile: string): AliasConfig {
+    if (!FileManager.mixCompile) {
+      return undefined;
+    }
+    if (!FileManager.isInteropSDKEnabled) {
+      return undefined;
+    }
     const result = this.getLanguageVersionByFilePath(containingFile);
     if (!result) {
       return undefined;
@@ -331,7 +357,6 @@ export class FileManager {
 
     return undefined;
   }
-
 }
 
 export function initFileManagerInRollup(share: Object): void {
@@ -352,7 +377,7 @@ export function initFileManagerInRollup(share: Object): void {
   FileManager.setRollUpObj(share);
 }
 
-function collectSDKInfo(share: Object): {
+export function collectSDKInfo(share: Object): {
   dynamicSDKPath: Set<string>,
   staticSDKInteropDecl: Set<string>,
   staticSDKGlueCodePath: Set<string>
@@ -385,6 +410,7 @@ function collectSDKInfo(share: Object): {
   dynamicSDKPath.add(declarationsPath);
   dynamicSDKPath.add(componentPath);
   dynamicSDKPath.add(etsComponentPath);
+  dynamicSDKPath.add(toUnixPath(share.projectConfig.etsLoaderPath));
   sdkConfigs.forEach(({ apiPath }) => {
     apiPath.forEach(path => {
       dynamicSDKPath.add(toUnixPath(path));
@@ -395,4 +421,25 @@ function collectSDKInfo(share: Object): {
     staticSDKInteropDecl: staticSDKInteropDecl,
     staticSDKGlueCodePath: staticSDKGlueCodePath
   };
+}
+
+function readFirstLineSync(filePath: string): string {
+  const buffer = fs.readFileSync(filePath, 'utf-8');
+  const newlineIndex = buffer.indexOf('\n');
+  if (newlineIndex === -1) {
+    return buffer.trim();
+  }
+  return buffer.substring(0, newlineIndex).trim();
+}
+
+export function isBridgeCode(filePath: string, projectConfig: Object): boolean {
+  if (!projectConfig?.mixCompile) {
+    return false;
+  }
+  for (const [pkgName, dependentModuleInfo] of projectConfig.dependentModuleMap) {
+    if (isSubPathOf(filePath, dependentModuleInfo.declgenBridgeCodePath)) {
+      return true;
+    }
+  }
+  return false;
 }

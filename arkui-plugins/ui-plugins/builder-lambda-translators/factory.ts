@@ -45,7 +45,7 @@ import {
 import { isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { ProjectConfig } from '../../common/plugin-context';
-import { BindableDecl, DecoratorIntrinsicNames, StructDecoratorNames } from '../../common/predefines';
+import { AnimationNames, BindableDecl, DecoratorIntrinsicNames, StructDecoratorNames } from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
 
 export class factory {
@@ -569,14 +569,14 @@ export class factory {
                 continue;
             }
             const property: arkts.Identifier = instanceCalls[curIdx].call.expression as arkts.Identifier;
-            if (property.name === BuilderLambdaNames.ANIMATION_NAME) {
+            if (property.name === AnimationNames.ANIMATION) {
                 const aniStart: arkts.CallExpression = arkts.factory.createCallExpression(
-                    arkts.factory.createIdentifier(BuilderLambdaNames.ANIMATION_START),
+                    arkts.factory.createIdentifier(AnimationNames.ANIMATION_START),
                     undefined,
                     instanceCalls[curIdx].call.arguments
                 );
                 const aniStop: arkts.CallExpression = arkts.factory.createCallExpression(
-                    arkts.factory.createIdentifier(BuilderLambdaNames.ANIMATION_STOP),
+                    arkts.factory.createIdentifier(AnimationNames.ANIMATION_STOP),
                     undefined,
                     instanceCalls[curIdx].call.arguments.map((arg) => arg.clone())
                 );
