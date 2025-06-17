@@ -23,13 +23,15 @@ export enum CustomComponentNames {
     COMPONENT_BUILD_ORI = 'build',
     COMPONENT_CONSTRUCTOR_ORI = 'constructor',
     COMPONENT_CLASS_NAME = 'CustomComponent',
+    COMPONENT_V2_CLASS_NAME = 'CustomComponentV2',
     COMPONENT_INTERFACE_PREFIX = '__Options_',
     COMPONENT_INITIALIZE_STRUCT = '__initializeStruct',
     COMPONENT_UPDATE_STRUCT = '__updateStruct',
-    COMPONENT_BUILD = '_build',
     COMPONENT_INITIALIZERS_NAME = 'initializers',
     BUILDCOMPATIBLENODE = '_buildCompatibleNode',
     OPTIONS = 'options',
+    PAGE_LIFE_CYCLE = 'PageLifeCycle',
+    LAYOUT_CALLBACK = 'LayoutCallback',
 }
 
 export enum BuilderLambdaNames {
@@ -137,8 +139,20 @@ export type CustomComponentInfo = {
 
 export type CustomComponentAnontations = {
     component?: arkts.AnnotationUsage;
+    componentV2?: arkts.AnnotationUsage;
     entry?: arkts.AnnotationUsage;
     reusable?: arkts.AnnotationUsage;
+    reusableV2?: arkts.AnnotationUsage;
+    customLayout?: arkts.AnnotationUsage;
+};
+
+type StructAnnoationInfo = {
+    isComponent: boolean;
+    isComponentV2: boolean;
+    isEntry: boolean;
+    isReusable: boolean;
+    isReusableV2: boolean;
+    isCustomLayout: boolean;
 };
 
 export function isCustomComponentAnnotation(
@@ -174,22 +188,28 @@ export function collectCustomComponentScopeInfo(
     const isDecl: boolean = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
     const isCustomComponentClassDecl = !isStruct && isDecl;
     const shouldIgnoreDecl = isStruct || isDecl;
-    if (isCustomComponentClassDecl && definition.ident.name !== CustomComponentNames.COMPONENT_CLASS_NAME) {
+    if (
+        isCustomComponentClassDecl &&
+        definition.ident.name !== CustomComponentNames.COMPONENT_CLASS_NAME &&
+        definition.ident.name !== CustomComponentNames.COMPONENT_V2_CLASS_NAME
+    ) {
         return undefined;
     }
     let annotations: CustomComponentAnontations = {};
     if (!isCustomComponentClassDecl) {
         let isCustomComponent: boolean = false;
         for (const anno of definition.annotations) {
-            const isComponent = isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT, shouldIgnoreDecl);
-            const isEntry = isCustomComponentAnnotation(anno, StructDecoratorNames.ENTRY, shouldIgnoreDecl);
-            const isReusable = isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE, shouldIgnoreDecl);
-            isCustomComponent ||= isComponent;
+            const { isComponent, isComponentV2, isEntry, isReusable, isReusableV2, isCustomLayout } =
+                getAnnotationInfoForStruct(anno, shouldIgnoreDecl);
+            isCustomComponent ||= isComponent || isComponentV2;
             annotations = {
                 ...annotations,
                 ...(isComponent && !annotations?.component && { component: anno }),
+                ...(isComponentV2 && !annotations?.componentV2 && { componentV2: anno }),
                 ...(isEntry && !annotations?.entry && { entry: anno }),
                 ...(isReusable && !annotations?.reusable && { reusable: anno }),
+                ...(isReusableV2 && !annotations?.reusableV2 && { reusableV2: anno }),
+                ...(isCustomLayout && !annotations?.customLayout && { customLayout: anno }),
             };
         }
         if (!isCustomComponent) {
@@ -201,6 +221,19 @@ export function collectCustomComponentScopeInfo(
         isDecl,
         annotations: annotations as CustomComponentAnontations,
     };
+}
+
+export function getAnnotationInfoForStruct(
+    anno: arkts.AnnotationUsage,
+    shouldIgnoreDecl: boolean
+): StructAnnoationInfo {
+    const isComponent = isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT, shouldIgnoreDecl);
+    const isComponentV2 = isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT_V2, shouldIgnoreDecl);
+    const isEntry = isCustomComponentAnnotation(anno, StructDecoratorNames.ENTRY, shouldIgnoreDecl);
+    const isReusable = isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE, shouldIgnoreDecl);
+    const isReusableV2 = isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE_V2, shouldIgnoreDecl);
+    const isCustomLayout = isCustomComponentAnnotation(anno, StructDecoratorNames.CUSTOM_LAYOUT, shouldIgnoreDecl);
+    return { isComponent, isComponentV2, isEntry, isReusable, isReusableV2, isCustomLayout };
 }
 
 export function isComponentStruct(node: arkts.StructDeclaration, scopeInfo: CustomComponentInfo): boolean {
@@ -218,7 +251,9 @@ export function isCustomComponentClass(node: arkts.ClassDeclaration, scopeInfo: 
     }
     const name: string = node.definition.ident.name;
     if (scopeInfo.isDecl) {
-        return name === CustomComponentNames.COMPONENT_CLASS_NAME;
+        return (
+            name === CustomComponentNames.COMPONENT_CLASS_NAME || name === CustomComponentNames.COMPONENT_V2_CLASS_NAME
+        );
     }
     return name === scopeInfo.name;
 }
@@ -311,4 +346,20 @@ export function addMemoAnnotation<T extends MemoAstNode>(node: T, memoName: Memo
         return node;
     }
     return node.setAnnotations(newAnnotations) as T;
+}
+
+/**
+ * Determine whether it is method with specified name.
+ *
+ * @param method method definition node
+ * @param name specified method name
+ */
+export function isKnownMethodDefinition(method: arkts.MethodDefinition, name: string): boolean {
+    if (!method || !arkts.isMethodDefinition(method)) {
+        return false;
+    }
+
+    // For now, we only considered matched method name.
+    const isNameMatched: boolean = method.name?.name === name;
+    return isNameMatched;
 }

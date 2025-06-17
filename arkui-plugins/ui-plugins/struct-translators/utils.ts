@@ -31,22 +31,6 @@ export type CustomComponentScopeInfo = CustomComponentInfo & {
 };
 
 /**
- * Determine whether it is method with specified name.
- *
- * @param method method definition node
- * @param name specified method name
- */
-export function isKnownMethodDefinition(method: arkts.MethodDefinition, name: string): boolean {
-    if (!method || !arkts.isMethodDefinition(method)) {
-        return false;
-    }
-
-    // For now, we only considered matched method name.
-    const isNameMatched: boolean = method.name?.name === name;
-    return isNameMatched;
-}
-
-/**
  * Determine whether it is ETSGLOBAL class.
  *
  * @param node class declaration node

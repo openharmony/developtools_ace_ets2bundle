@@ -17,6 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import {
     addMemoAnnotation,
     BuilderLambdaNames,
+    CustomComponentAnontations,
     CustomComponentNames,
     findCanAddMemoFromParamExpression,
     hasNullOrUndefinedType,
@@ -96,18 +97,6 @@ export class factory {
                 arkts.factory.createETSUndefinedType(),
             ])
         );
-    }
-
-    /**
-     * create `@memo() style: ((instance: <typeName>) => void) | undefined` as parameter
-     */
-    static createStyleParameter(typeName: string): arkts.ETSParameterExpression {
-        const styleParam: arkts.Identifier = factory.createStyleIdentifier(typeName);
-        const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(styleParam, undefined);
-        if (findCanAddMemoFromParamExpression(param)) {
-            addMemoAnnotation(param);
-        }
-        return param;
     }
 
     /**
@@ -369,5 +358,36 @@ export class factory {
             }
         }
         return st;
+    }
+
+    /*
+     * create class implements : `implements <interfaceName>`.
+     */
+    static createClassImplements(
+        interfaceName: string,
+        typeParameters?: arkts.TSTypeParameterInstantiation
+    ): arkts.TSClassImplements {
+        return arkts.factory.createTSClassImplements(
+            arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(interfaceName))
+            ),
+            typeParameters
+        );
+    }
+
+    /**
+     * Generate class implements for struct with struct annotations.
+     *
+     * @param method method definition node
+     */
+    static generateImplementsForStruct(annotations: CustomComponentAnontations): arkts.TSClassImplements[] {
+        const implementsInfo: arkts.TSClassImplements[] = [];
+        if (annotations.entry) {
+            implementsInfo.push(factory.createClassImplements(CustomComponentNames.PAGE_LIFE_CYCLE));
+        }
+        if (annotations.customLayout) {
+            implementsInfo.push(factory.createClassImplements(CustomComponentNames.LAYOUT_CALLBACK));
+        }
+        return implementsInfo;
     }
 }
