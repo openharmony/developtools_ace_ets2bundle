@@ -38,6 +38,7 @@ const observedTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test track only transform', buildConfig);
 
 const expectedScript: string = `
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
@@ -65,7 +66,7 @@ function main() {}
 
 
 class C implements IObservedObject, ISubscribedWatches {
-  private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -79,7 +80,7 @@ class C implements IObservedObject, ISubscribedWatches {
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
-  private ____V1RenderId: RenderIdType = 0;
+  @JSONStringifyIgnore() private ____V1RenderId: RenderIdType = 0;
   
   public setV1RenderId(renderId: RenderIdType): void {
     this.____V1RenderId = renderId;
@@ -93,9 +94,9 @@ class C implements IObservedObject, ISubscribedWatches {
   
   public propC: number = 1;
   
-  private __backing_trackC: number = 2;
+  @JSONRename({newName:"trackC"}) private __backing_trackC: number = 2;
   
-  private __meta_trackC: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_trackC: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public constructor() {}
   

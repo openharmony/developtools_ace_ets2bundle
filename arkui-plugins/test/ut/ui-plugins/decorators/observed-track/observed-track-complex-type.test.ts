@@ -141,7 +141,7 @@ final class Status extends BaseEnum<int> {
 }
 
 @Observed() class mixed1 implements IObservedObject, ISubscribedWatches {
-  private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -155,7 +155,7 @@ final class Status extends BaseEnum<int> {
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
-  private ____V1RenderId: RenderIdType = 0;
+  @JSONStringifyIgnore() private ____V1RenderId: RenderIdType = 0;
   
   public setV1RenderId(renderId: RenderIdType): void {
     this.____V1RenderId = renderId;
@@ -167,49 +167,49 @@ final class Status extends BaseEnum<int> {
     }
   }
   
-  private __backing_numA: number = 33;
+  @JSONRename({newName:"numA"}) private __backing_numA: number = 33;
   
-  private __meta_numA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_numA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_stringA: string = "AA";
+  @JSONRename({newName:"stringA"}) private __backing_stringA: string = "AA";
   
-  private __meta_stringA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_stringA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_booleanA: boolean = true;
+  @JSONRename({newName:"booleanA"}) private __backing_booleanA: boolean = true;
   
-  private __meta_booleanA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_booleanA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_arrayA: Array<number> = [1, 2, 3];
+  @JSONRename({newName:"arrayA"}) private __backing_arrayA: Array<number> = [1, 2, 3];
   
-  private __meta_arrayA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_arrayA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_objectA: Object = {};
+  @JSONRename({newName:"objectA"}) private __backing_objectA: Object = {};
   
-  private __meta_objectA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_objectA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_dateA: Date = new Date("2021-08-08");
+  @JSONRename({newName:"dateA"}) private __backing_dateA: Date = new Date("2021-08-08");
   
-  private __meta_dateA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_dateA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_setA: Set<number> = new Set<number>();
+  @JSONRename({newName:"setA"}) private __backing_setA: Set<number> = new Set<number>();
   
-  private __meta_setA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_setA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_mapA: Map<number, string> = new Map<number, string>();
+  @JSONRename({newName:"mapA"}) private __backing_mapA: Map<number, string> = new Map<number, string>();
   
-  private __meta_mapA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_mapA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_unionA: string | undefined = "";
+  @JSONRename({newName:"unionA"}) private __backing_unionA: string | undefined = "";
   
-  private __meta_unionA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_unionA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_classA: Person = new Person();
+  @JSONRename({newName:"classA"}) private __backing_classA: Person = new Person();
   
-  private __meta_classA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_classA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_enumA: Status = Status.NotFound;
+  @JSONRename({newName:"enumA"}) private __backing_enumA: Status = Status.NotFound;
   
-  private __meta_enumA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_enumA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public numB: number = 33;
   
@@ -381,7 +381,7 @@ final class Status extends BaseEnum<int> {
 }
 
 @Observed() class mixed2 implements IObservedObject, ISubscribedWatches {
-  private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -395,7 +395,7 @@ final class Status extends BaseEnum<int> {
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
-  private ____V1RenderId: RenderIdType = 0;
+  @JSONStringifyIgnore() private ____V1RenderId: RenderIdType = 0;
   
   public setV1RenderId(renderId: RenderIdType): void {
     this.____V1RenderId = renderId;
@@ -407,29 +407,29 @@ final class Status extends BaseEnum<int> {
     }
   }
   
-  private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_numA: number = 33;
+  @JSONRename({newName:"numA"}) private __backing_numA: number = 33;
   
-  private __backing_stringA: string = "AA";
+  @JSONRename({newName:"stringA"}) private __backing_stringA: string = "AA";
   
-  private __backing_booleanA: boolean = true;
+  @JSONRename({newName:"booleanA"}) private __backing_booleanA: boolean = true;
   
-  private __backing_arrayA: Array<number> = [1, 2, 3];
+  @JSONRename({newName:"arrayA"}) private __backing_arrayA: Array<number> = [1, 2, 3];
   
-  private __backing_objectA: Object = {};
+  @JSONRename({newName:"objectA"}) private __backing_objectA: Object = {};
   
-  private __backing_dateA: Date = new Date("2021-08-08");
+  @JSONRename({newName:"dateA"}) private __backing_dateA: Date = new Date("2021-08-08");
   
-  private __backing_setA: Set<number> = new Set<number>();
+  @JSONRename({newName:"setA"}) private __backing_setA: Set<number> = new Set<number>();
   
-  private __backing_mapA: Map<number, string> = new Map<number, string>();
+  @JSONRename({newName:"mapA"}) private __backing_mapA: Map<number, string> = new Map<number, string>();
   
-  private __backing_unionA: string | undefined = "";
+  @JSONRename({newName:"unionA"}) private __backing_unionA: string | undefined = "";
   
-  private __backing_classA: Person = new Person();
+  @JSONRename({newName:"classA"}) private __backing_classA: Person = new Person();
   
-  private __backing_enumA: Status = Status.NotFound;
+  @JSONRename({newName:"enumA"}) private __backing_enumA: Status = Status.NotFound;
   
   public constructor() {}
   
@@ -579,7 +579,7 @@ final class Status extends BaseEnum<int> {
 }
 
 class mixed3 implements IObservedObject, ISubscribedWatches {
-  private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -593,7 +593,7 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
-  private ____V1RenderId: RenderIdType = 0;
+  @JSONStringifyIgnore() private ____V1RenderId: RenderIdType = 0;
   
   public setV1RenderId(renderId: RenderIdType): void {
     this.____V1RenderId = renderId;
@@ -605,49 +605,49 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
     }
   }
   
-  private __backing_numA: number = 33;
+  @JSONRename({newName:"numA"}) private __backing_numA: number = 33;
   
-  private __meta_numA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_numA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_stringA: string = "AA";
+  @JSONRename({newName:"stringA"}) private __backing_stringA: string = "AA";
   
-  private __meta_stringA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_stringA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_booleanA: boolean = true;
+  @JSONRename({newName:"booleanA"}) private __backing_booleanA: boolean = true;
   
-  private __meta_booleanA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_booleanA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_arrayA: Array<number> = [1, 2, 3];
+  @JSONRename({newName:"arrayA"}) private __backing_arrayA: Array<number> = [1, 2, 3];
   
-  private __meta_arrayA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_arrayA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_objectA: Object = {};
+  @JSONRename({newName:"objectA"}) private __backing_objectA: Object = {};
   
-  private __meta_objectA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_objectA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_dateA: Date = new Date("2021-08-08");
+  @JSONRename({newName:"dateA"}) private __backing_dateA: Date = new Date("2021-08-08");
   
-  private __meta_dateA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_dateA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_setA: Set<number> = new Set<number>();
+  @JSONRename({newName:"setA"}) private __backing_setA: Set<number> = new Set<number>();
   
-  private __meta_setA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_setA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_mapA: Map<number, string> = new Map<number, string>();
+  @JSONRename({newName:"mapA"}) private __backing_mapA: Map<number, string> = new Map<number, string>();
   
-  private __meta_mapA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_mapA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_unionA: string | undefined = "";
+  @JSONRename({newName:"unionA"}) private __backing_unionA: string | undefined = "";
   
-  private __meta_unionA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_unionA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_classA: Person = new Person();
+  @JSONRename({newName:"classA"}) private __backing_classA: Person = new Person();
   
-  private __meta_classA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_classA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  private __backing_enumA: Status = Status.NotFound;
+  @JSONRename({newName:"enumA"}) private __backing_enumA: Status = Status.NotFound;
   
-  private __meta_enumA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_enumA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public constructor() {}
   

@@ -19,6 +19,7 @@ import { DecoratorNames, DECORATOR_TYPE_MAP, StateManagementTypes } from '../../
 import { factory as UIFactory } from '../ui-factory';
 import { collectStateManagementTypeImport, getValueInAnnotation, hasDecorator, removeDecorator } from './utils';
 import { addMemoAnnotation, findCanAddMemoFromTypeAnnotation, CustomComponentNames } from '../utils';
+import { annotation } from '../../common/arkts-utils';
 
 export class factory {
     /**
@@ -341,6 +342,7 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
         );
+        subscribedWatches.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE)]);
         collectStateManagementTypeImport(StateManagementTypes.SUBSCRIBED_WATCHES);
 
         const addWatchSubscriber = factory.createWatchMethod(
@@ -459,6 +461,7 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
         );
+        v1RenderId.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE)]);
         collectStateManagementTypeImport(StateManagementTypes.RENDER_ID_TYPE);
         const setV1RenderId: arkts.MethodDefinition = factory.setV1RenderId();
         return [v1RenderId, setV1RenderId];
@@ -598,7 +601,7 @@ export class factory {
      */
     static createMetaInObservedClass(): arkts.ClassProperty {
         collectStateManagementTypeImport(StateManagementTypes.MUTABLE_STATE_META);
-        return arkts.factory.createClassProperty(
+        const meta = arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(StateManagementTypes.META),
             factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_MUTABLESTATE_META, undefined, [], false),
             arkts.factory.createTypeReference(
@@ -609,6 +612,8 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
         );
+        meta.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE)]);
+        return meta;
     }
 
     /**
