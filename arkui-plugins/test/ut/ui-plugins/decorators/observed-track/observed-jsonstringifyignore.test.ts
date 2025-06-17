@@ -27,15 +27,15 @@ const OBSERVED_DIR_PATH: string = 'decorators/observed-track';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, OBSERVED_DIR_PATH, 'observed-track-class-property.ets'),
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, OBSERVED_DIR_PATH, 'observed-jsonstringifyignore.ets'),
 ];
 
-const observedTrackTransform: Plugins = {
-    name: 'observedTrack',
+const observedJsonStringifyIgnoreTransform: Plugins = {
+    name: 'observedJsonStringifyIgnore',
     parsed: uiTransform().parsed,
 }
 
-const pluginTester = new PluginTester('test observed track transform with class property', buildConfig);
+const pluginTester = new PluginTester('test observed class transform with JsonStringifyIgnore annotation', buildConfig);
 
 const expectedScript: string = `
 
@@ -65,12 +65,9 @@ function main() {}
 
 
 
-class Info {
-  public constructor() {}
-  
-}
+@Retention({policy:"SOURCE"}) @interface TestDecor {}
 
-class E implements IObservedObject, ISubscribedWatches {
+@Observed() class testJSONStringifyIgnore implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
@@ -97,87 +94,81 @@ class E implements IObservedObject, ISubscribedWatches {
     }
   }
   
-  public propE: Info = new Info();
+  public var1: number = 1;
   
-  @JSONRename({newName:"trackE"}) private __backing_trackE: Info = new Info();
+  @JSONRename({newName:"var2"}) private __backing_var2: number = 2;
   
-  @JSONStringifyIgnore() private __meta_trackE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() private __meta_var2: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  public constructor() {}
+  @JSONStringifyIgnore() public var3: number = 3;
   
-  public get trackE(): Info {
-    this.conditionalAddRef(this.__meta_trackE);
-    return this.__backing_trackE;
-  }
+  @TestDecor() public var4: number = 4;
   
-  public set trackE(newValue: Info) {
-    if (((this.__backing_trackE) !== (newValue))) {
-      this.__backing_trackE = newValue;
-      this.__meta_trackE.fireChange();
-      this.executeOnSubscribingWatches("trackE");
-    }
-  }
+  @JSONStringifyIgnore() private __backing_var5: number = 5;
   
-}
-
-@Observed() class E1 implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() private __meta_var5: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  public addWatchSubscriber(watchId: WatchIdType): void {
-    this.subscribedWatches.addWatchSubscriber(watchId);
-  }
+  @JSONStringifyIgnore() @TestDecor() public var6: number = 6;
   
-  public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return this.subscribedWatches.removeWatchSubscriber(watchId);
-  }
+  @TestDecor() @JSONRename({newName:"var7"}) private __backing_var7: number = 7;
   
-  public executeOnSubscribingWatches(propertyName: string): void {
-    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
-  }
+  @JSONStringifyIgnore() private __meta_var7: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  @JSONStringifyIgnore() private ____V1RenderId: RenderIdType = 0;
+  @JSONStringifyIgnore() @TestDecor() private __backing_var8: number = 8;
   
-  public setV1RenderId(renderId: RenderIdType): void {
-    this.____V1RenderId = renderId;
-  }
-  
-  protected conditionalAddRef(meta: IMutableStateMeta): void {
-    if (OBSERVE.shouldAddRef(this.____V1RenderId)) {
-      meta.addRef();
-    }
-  }
-  
-  @JSONStringifyIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
-  @JSONRename({newName:"propE1"}) private __backing_propE1: Info = new Info();
-  
-  @JSONRename({newName:"trackE1"}) private __backing_trackE1: Info = new Info();
+  @JSONStringifyIgnore() private __meta_var8: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public constructor() {}
   
-  public get propE1(): Info {
-    this.conditionalAddRef(this.__meta);
-    return this.__backing_propE1;
+  public get var2(): number {
+    this.conditionalAddRef(this.__meta_var2);
+    return this.__backing_var2;
   }
   
-  public set propE1(newValue: Info) {
-    if (((this.__backing_propE1) !== (newValue))) {
-      this.__backing_propE1 = newValue;
-      this.__meta.fireChange();
-      this.executeOnSubscribingWatches("propE1");
+  public set var2(newValue: number) {
+    if (((this.__backing_var2) !== (newValue))) {
+      this.__backing_var2 = newValue;
+      this.__meta_var2.fireChange();
+      this.executeOnSubscribingWatches("var2");
     }
   }
   
-  public get trackE1(): Info {
-    this.conditionalAddRef(this.__meta);
-    return this.__backing_trackE1;
+  public get var5(): number {
+    this.conditionalAddRef(this.__meta_var5);
+    return this.__backing_var5;
   }
   
-  public set trackE1(newValue: Info) {
-    if (((this.__backing_trackE1) !== (newValue))) {
-      this.__backing_trackE1 = newValue;
-      this.__meta.fireChange();
-      this.executeOnSubscribingWatches("trackE1");
+  public set var5(newValue: number) {
+    if (((this.__backing_var5) !== (newValue))) {
+      this.__backing_var5 = newValue;
+      this.__meta_var5.fireChange();
+      this.executeOnSubscribingWatches("var5");
+    }
+  }
+  
+  public get var7(): number {
+    this.conditionalAddRef(this.__meta_var7);
+    return this.__backing_var7;
+  }
+  
+  public set var7(newValue: number) {
+    if (((this.__backing_var7) !== (newValue))) {
+      this.__backing_var7 = newValue;
+      this.__meta_var7.fireChange();
+      this.executeOnSubscribingWatches("var7");
+    }
+  }
+  
+  public get var8(): number {
+    this.conditionalAddRef(this.__meta_var8);
+    return this.__backing_var8;
+  }
+  
+  public set var8(newValue: number) {
+    if (((this.__backing_var8) !== (newValue))) {
+      this.__backing_var8 = newValue;
+      this.__meta_var8.fireChange();
+      this.executeOnSubscribingWatches("var8");
     }
   }
   
@@ -199,15 +190,15 @@ class E implements IObservedObject, ISubscribedWatches {
 }
 `;
 
-function testObservedOnlyTransformer(this: PluginTestContext): void {
+function testObservedJsonStringifyIgnoreTransformer(this: PluginTestContext): void {
     expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
 }
 
 pluginTester.run(
-    'test observed track transform with class property',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    'test observed only transform',
+    [observedJsonStringifyIgnoreTransform, uiNoRecheck, recheck],
     {
-        'checked:ui-no-recheck': [testObservedOnlyTransformer],
+        'checked:ui-no-recheck': [testObservedJsonStringifyIgnoreTransformer],
     },
     {
         stopAfter: 'checked',

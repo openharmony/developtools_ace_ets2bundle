@@ -71,6 +71,8 @@ export enum DecoratorNames {
     LOCAL_STORAGE_LINK = 'LocalStorageLink',
     REUSABLE = 'Reusable',
     TRACK = 'Track',
+    JSONSTRINGIFYIGNORE = 'JSONStringifyIgnore',
+    JSONRENAME = 'JSONRename',
     ANIMATABLE_EXTEND = 'AnimatableExtend'
 }
 
