@@ -73,6 +73,7 @@ export enum DecoratorNames {
     TRACK = 'Track',
     JSONSTRINGIFYIGNORE = 'JSONStringifyIgnore',
     JSONRENAME = 'JSONRename',
+    ANIMATABLE_EXTEND = 'AnimatableExtend'
 }
 
 export enum DecoratorIntrinsicNames {
@@ -113,6 +114,14 @@ export enum StateManagementTypes {
     MAKE_OBJECT_LINK = 'makeObjectLink',
     MAKE_SUBSCRIBED_WATCHES = 'makeSubscribedWatches',
     MAKE_MUTABLESTATE_META = 'makeMutableStateMeta',
+}
+
+export enum AnimationNames {
+    ANIMATABLE_ARITHMETIC = 'AnimatableArithmetic',
+    CREATE_OR_SET_ANIMATABLEPROPERTY = '__createOrSetAnimatableProperty',
+    ANIMATION = 'animation',
+    ANIMATION_START = 'animationStart',
+    ANIMATION_STOP = 'animationStop',
 }
 
 export const DECORATOR_TYPE_MAP = new Map<DecoratorNames, StateManagementTypes>([
@@ -181,6 +190,7 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
             StateManagementTypes.STATE_MANAGEMENT_FACTORY
         ],
     ],
+    [DecoratorNames.ANIMATABLE_EXTEND, [AnimationNames.ANIMATABLE_ARITHMETIC]]
 ]);
 
 /**
@@ -194,6 +204,7 @@ export const IMPORT_SOURCE_MAP_V2: Map<string, string> = new Map<string, string>
     [StateManagementTypes.STORAGE_LINK_STATE, 'arkui.stateManagement.runtime'],
     [StateManagementTypes.OBSERVABLE_PROXY, 'arkui.stateManagement.runtime'],
     [StateManagementTypes.PROP_STATE, 'arkui.stateManagement.runtime'],
+    [AnimationNames.ANIMATABLE_ARITHMETIC, 'arkui.component.common']
 ]);
 
 export enum GetSetTypes {
