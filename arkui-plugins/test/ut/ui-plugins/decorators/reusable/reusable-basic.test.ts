@@ -47,6 +47,10 @@ import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateMan
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Reusable as Reusable } from "@ohos.arkui.component";
@@ -57,24 +61,24 @@ function main() {}
 
 
 
-@Component({freezeWhenInactive:false}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {}
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
   
-  @memo() public _build(@memo() style: ((instance: MyStateSample)=> MyStateSample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MyStateSample | undefined): void {
+  @memo() public build() {
     Child._instantiateImpl(undefined, (() => {
       return new Child();
-    }), ({
+    }), {
       num: 5,
-    } as __Options_Child), "Child", undefined);
+    }, "Child", undefined);
   }
   
   private constructor() {}
   
 }
 
-@Component({freezeWhenInactive:false}) @Reusable() final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component() @Reusable() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_num = STATE_MGMT_FACTORY.makeProp<number>(this, "num", ((({let gensym___83257243 = initializers;
     (((gensym___83257243) == (null)) ? undefined : gensym___83257243.num)})) ?? (1)));
@@ -117,17 +121,17 @@ function main() {}
     this.__backing_num1!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {}
+  @memo() public build() {}
   
   private constructor() {}
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_MyStateSample {
+@Component() export interface __Options_MyStateSample {
   
 }
 
-@Component({freezeWhenInactive:false}) @Reusable() export interface __Options_Child {
+@Component() @Reusable() export interface __Options_Child {
   set num(num: number | undefined)
   
   get num(): number | undefined

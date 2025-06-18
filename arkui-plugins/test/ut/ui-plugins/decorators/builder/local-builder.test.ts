@@ -41,6 +41,10 @@ import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Column as Column, Builder as Builder, Text as Text } from "@ohos.arkui.component";
@@ -49,7 +53,7 @@ function main() {}
 
 
 
-@Component({freezeWhenInactive:false}) final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
+@Component() final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
   public __initializeStruct(initializers: __Options_BuilderDemo | undefined, @memo() content: (()=> void) | undefined): void {}
   
   public __updateStruct(initializers: __Options_BuilderDemo | undefined): void {}
@@ -68,7 +72,7 @@ function main() {}
     }), param);
   }
   
-  @memo() public _build(@memo() style: ((instance: BuilderDemo)=> BuilderDemo) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_BuilderDemo | undefined): void {
+  @memo() public build() {
     Column(undefined, @memo() (() => {
       this.showTextBuilder();
       this.showTextValueBuilder("Hello @Builder");
@@ -79,7 +83,7 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_BuilderDemo {
+@Component() export interface __Options_BuilderDemo {
   
 }
 `;

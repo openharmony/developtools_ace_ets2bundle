@@ -45,6 +45,10 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component } from "@ohos.arkui.component";
@@ -132,7 +136,7 @@ final class PropType extends BaseEnum<int> {
   
 }
 
-@Component({freezeWhenInactive:false}) final struct Parent extends CustomComponent<Parent, __Options_Parent> {
+@Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_propVar1 = STATE_MGMT_FACTORY.makeProp<Per>(this, "propVar1", ((({let gensym___95172135 = initializers;
     (((gensym___95172135) == (null)) ? undefined : gensym___95172135.propVar1)})) ?? (new Per(6))));
@@ -331,13 +335,13 @@ final class PropType extends BaseEnum<int> {
     this.__backing_propVar12!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: Parent)=> Parent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Parent | undefined): void {}
+  @memo() public build() {}
   
   private constructor() {}
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_Parent {
+@Component() export interface __Options_Parent {
   set propVar1(propVar1: Per | undefined)
   
   get propVar1(): Per | undefined

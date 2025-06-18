@@ -49,6 +49,10 @@ import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateMan
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Text as Text, Button as Button, Column as Column, ClickEvent as ClickEvent } from "@ohos.arkui.component";
@@ -59,7 +63,7 @@ function main() {}
 
 
 
-@Component({freezeWhenInactive:false}) final struct CountDownComponent extends CustomComponent<CountDownComponent, __Options_CountDownComponent> {
+@Component() final struct CountDownComponent extends CustomComponent<CountDownComponent, __Options_CountDownComponent> {
   public __initializeStruct(initializers: __Options_CountDownComponent | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_count = STATE_MGMT_FACTORY.makeProp<number>(this, "count", ((({let gensym___58710805 = initializers;
     (((gensym___58710805) == (null)) ? undefined : gensym___58710805.count)})) ?? (0)));
@@ -94,7 +98,7 @@ function main() {}
     this.__backing_costOfOneAttempt = value;
   }
   
-  @memo() public _build(@memo() style: ((instance: CountDownComponent)=> CountDownComponent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_CountDownComponent | undefined): void {
+  @memo() public build() {
     Column(undefined, (() => {
       if (((this.count) > (0))) {
         Text(undefined, (((("You have") + (this.count))) + ("Nuggets left")));
@@ -114,7 +118,7 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> {
+@Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> {
   public __initializeStruct(initializers: __Options_ParentComponent | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_countDownStartValue = STATE_MGMT_FACTORY.makeState<number>(this, "countDownStartValue", ((({let gensym___249912438 = initializers;
     (((gensym___249912438) == (null)) ? undefined : gensym___249912438.countDownStartValue)})) ?? (10)));
@@ -132,7 +136,7 @@ function main() {}
     this.__backing_countDownStartValue!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: ParentComponent)=> ParentComponent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_ParentComponent | undefined): void {
+  @memo() public build() {
     Column(undefined, (() => {
       Text(undefined, (((("Grant") + (this.countDownStartValue))) + ("nuggets to play.")));
       Button(((instance: ButtonAttribute): void => {
@@ -149,10 +153,10 @@ function main() {}
       }), "-1 - Nuggets in New Game");
       CountDownComponent._instantiateImpl(undefined, (() => {
         return new CountDownComponent();
-      }), ({
+      }), {
         count: this.countDownStartValue,
         costOfOneAttempt: 2,
-      } as __Options_CountDownComponent));
+      });
     }));
   }
   
@@ -160,7 +164,7 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_CountDownComponent {
+@Component() export interface __Options_CountDownComponent {
   set count(count: number | undefined)
   
   get count(): number | undefined
@@ -173,7 +177,7 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_ParentComponent {
+@Component() export interface __Options_ParentComponent {
   set countDownStartValue(countDownStartValue: number | undefined)
   
   get countDownStartValue(): number | undefined

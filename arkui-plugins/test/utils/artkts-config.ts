@@ -35,6 +35,7 @@ import {
 } from './path-config';
 import { ArkTSConfigContextCache } from './cache';
 import { BuildConfig, CompileFileInfo, DependentModule } from './shared-types';
+import { setUpSoPath } from './global';
 
 export interface ArkTSConfigObject {
     compilerOptions: {
@@ -200,6 +201,7 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
         this.moduleInfos = new Map<string, ModuleInfo>();
         this.mergedAbcFile = path.resolve(this.outputDir, MOCK_OUTPUT_FILE_NAME);
 
+        setUpSoPath(this.pandaSdkPath);
         this.generateModuleInfos();
         this.generateArkTSConfigForModules();
         this.cacheArkTSConfig();

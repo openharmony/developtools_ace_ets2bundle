@@ -55,6 +55,10 @@ import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component } from "@ohos.arkui.component";
@@ -128,18 +132,18 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {}
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
   
-  @memo() public _build(@memo() style: ((instance: MyStateSample)=> MyStateSample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MyStateSample | undefined): void {}
+  @memo() public build() {}
   
   private constructor() {}
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_MyStateSample {
+@Component() export interface __Options_MyStateSample {
   
 }
 `;

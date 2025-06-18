@@ -43,7 +43,13 @@ import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { FlexAttribute as FlexAttribute } from "arkui.component.flex";
 
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
+
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -53,7 +59,7 @@ function main() {}
 
 
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final struct Index extends CustomComponent<Index, __Options_Index> {
+@Entry({shared:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_myXComponentController = ((({let gensym___221905990 = initializers;
     (((gensym___221905990) == (null)) ? undefined : gensym___221905990.myXComponentController)})) ?? (new XComponentController()));
@@ -71,7 +77,7 @@ function main() {}
     this.__backing_myXComponentController = value;
   }
   
-  @memo() public _build(@memo() style: ((instance: Index)=> Index) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Index | undefined): void {
+  @memo() public build() {
     Flex(((instance: FlexAttribute): void => {
       instance.width("100%").height("100%");
       return;
@@ -93,7 +99,7 @@ function main() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) export interface __Options_Index {
+@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
   set myXComponentController(myXComponentController: XComponentController | undefined)
   
   get myXComponentController(): XComponentController | undefined

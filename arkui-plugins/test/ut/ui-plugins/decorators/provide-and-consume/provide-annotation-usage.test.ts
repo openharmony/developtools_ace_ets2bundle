@@ -45,6 +45,10 @@ import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.st
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component } from "@ohos.arkui.component";
@@ -55,7 +59,7 @@ function main() {}
 
 
 
-@Component({freezeWhenInactive:false}) final struct Ancestors extends CustomComponent<Ancestors, __Options_Ancestors> {
+@Component() final struct Ancestors extends CustomComponent<Ancestors, __Options_Ancestors> {
   public __initializeStruct(initializers: __Options_Ancestors | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_count = STATE_MGMT_FACTORY.makeProvide<string | undefined>(this, "count", "count", ((({let gensym___58710805 = initializers;
     (((gensym___58710805) == (null)) ? undefined : gensym___58710805.count)})) ?? ("Child0")), false);
@@ -157,13 +161,13 @@ function main() {}
     this.__backing_count7!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: Ancestors)=> Ancestors) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Ancestors | undefined): void {}
+  @memo() public build() {}
   
   private constructor() {}
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_Ancestors {
+@Component() export interface __Options_Ancestors {
   set count(count: string | undefined | undefined)
   
   get count(): string | undefined | undefined

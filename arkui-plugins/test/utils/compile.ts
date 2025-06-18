@@ -15,11 +15,24 @@
 
 import * as arkts from '@koalaui/libarkts';
 import EventEmitter from 'events';
-import type { JobInfo, PluginTestContext, ProcessEvent, SingleProgramContext, TraceOptions } from './shared-types';
+import {
+    CompileStrategy,
+    JobInfo,
+    PluginTestContext,
+    ProcessEvent,
+    SingleProgramContext,
+    TraceOptions,
+} from './shared-types';
 import { MockPluginDriver, stateName } from './plugin-driver';
-import { createCacheContextFromFile, destroyContext, resetConfig } from './global';
+import {
+    createContextFromString,
+    createCacheContextFromFile,
+    destroyContext,
+    resetConfig,
+} from './global';
 import { PluginDriver } from './plugin-driver';
 import { PluginState, PluginContext, PluginExecutor } from '../../common/plugin-context';
+import { concatObject } from './serializable';
 
 function insertPlugin(driver: PluginDriver, plugin: PluginExecutor | undefined): boolean {
     const pluginContext: PluginContext = driver.getPluginContext();
@@ -29,40 +42,74 @@ function insertPlugin(driver: PluginDriver, plugin: PluginExecutor | undefined):
     return true;
 }
 
+function collectPluginTextContextFromSourceProgram(program: arkts.Program, tracing: TraceOptions): PluginTestContext {
+    const pluginTestContext: PluginTestContext = {};
+    const script: arkts.EtsScript = program.astNode;
+    pluginTestContext.scriptSnapshot = script.dumpSrc();
+    return pluginTestContext;
+}
+
+function collectPluginTextContextFromExternalSource(
+    externalSources: arkts.ExternalSource[],
+    tracing: TraceOptions,
+    matchSourceName: (name: string) => boolean,
+    useCache?: boolean
+) {
+    let pluginTestContext: PluginTestContext = {};
+    const filteredExternalSourceNames: string[] = [...tracing.externalSourceNames];
+    const filteredExternalSources = externalSources.filter((source) => {
+        const name = source.getName();
+        const sourceProgram: arkts.Program = source.programs[0];
+        const shouldCollectByName = filteredExternalSourceNames.includes(name) || matchSourceName(name);
+        const shouldCollectByProgram = sourceProgram && (!useCache || sourceProgram.isASTLowered());
+        return shouldCollectByName && shouldCollectByProgram;
+    });
+    const declContexts: Record<string, SingleProgramContext> = {};
+    filteredExternalSources.forEach((source) => {
+        const name: string = source.getName();
+        const sourceProgram: arkts.Program = source.programs[0];
+        if (matchSourceName(name)) {
+            pluginTestContext = concatObject(
+                pluginTestContext,
+                collectPluginTextContextFromSourceProgram(sourceProgram, tracing)
+            );
+        } else {
+            const sourceTestContext: SingleProgramContext = {};
+            const script: arkts.EtsScript = sourceProgram.astNode;
+            const scriptSnapshot = script.dumpSrc();
+            sourceTestContext.scriptSnapshot = scriptSnapshot;
+            declContexts[name] = sourceTestContext;
+        }
+    });
+    pluginTestContext.declContexts = declContexts;
+    return pluginTestContext;
+}
+
 function collectPluginTestContext(
     context: arkts.Context,
-    isExternal: boolean,
-    tracing: TraceOptions
+    compileStrategy: CompileStrategy,
+    tracing: TraceOptions,
+    matchSourceName: (name: string) => boolean
 ): PluginTestContext {
-    const pluginTestContext: PluginTestContext = {};
+    const useCache: boolean = compileStrategy !== CompileStrategy.ABC_WTIH_EXTERNAL;
+    const canCollectSource: boolean = !useCache || compileStrategy === CompileStrategy.ABC;
+    const canCollectExternal: boolean = !useCache || compileStrategy === CompileStrategy.EXTERNAL;
+    let pluginTestContext: PluginTestContext = {};
     try {
         const program: arkts.Program = arkts.getOrUpdateGlobalContext(context.peer).program;
         // TODO: add error/warning handling after plugin
-        if (!isExternal) {
-            const script: arkts.EtsScript = program.astNode;
-            pluginTestContext.scriptSnapshot = script.dumpSrc();
-        } else {
-            const declContexts: Record<string, SingleProgramContext> = {};
+        if (canCollectSource) {
+            pluginTestContext = concatObject(
+                pluginTestContext,
+                collectPluginTextContextFromSourceProgram(program, tracing)
+            );
+        }
+        if (canCollectExternal) {
             const externalSources: arkts.ExternalSource[] = program.externalSources;
-            externalSources
-                .filter((source) => {
-                    const sourceProgram: arkts.Program = source.programs[0];
-                    return (
-                        tracing.externalSourceNames.includes(source.getName()) &&
-                        sourceProgram &&
-                        sourceProgram.isASTLowered()
-                    );
-                })
-                .forEach((source) => {
-                    const sourceProgram: arkts.Program = source.programs[0];
-                    const sourceTestContext: SingleProgramContext = {};
-                    const name: string = source.getName();
-                    const script: arkts.EtsScript = sourceProgram.astNode;
-                    const scriptSnapshot = script.dumpSrc();
-                    sourceTestContext.scriptSnapshot = scriptSnapshot;
-                    declContexts[name] = sourceTestContext;
-                });
-            pluginTestContext.declContexts = declContexts;
+            pluginTestContext = concatObject(
+                pluginTestContext,
+                collectPluginTextContextFromExternalSource(externalSources, tracing, matchSourceName, useCache)
+            );
         }
     } catch (e) {
         // Do nothing
@@ -71,12 +118,17 @@ function collectPluginTestContext(
     }
 }
 
+function buildMatchNameFunc(prefix: string, suffix: string): (name: string) => boolean {
+    return (name: string): boolean => {
+        return name.startsWith(`${prefix}.`) && name.endsWith(`.${suffix}`);
+    };
+}
+
 /**
  * @param emitter event emitter.
  * @param jobInfo job info.
  * @param state the current state.
  * @param context context for the single file.
- * @param isExternal boolean indicates if plugin is compiling external sources.
  * @param stopAfter state that should stop after running plugins.
  * @returns boolean indicates whether should proceed to the next state.
  */
@@ -85,19 +137,21 @@ function runPluginsAtState(
     jobInfo: JobInfo,
     state: arkts.Es2pandaContextState,
     context: arkts.Context,
-    isExternal: boolean,
     tracing: TraceOptions,
     stopAfter?: PluginState
 ): boolean {
     const stateStr = stateName(state);
     const plugins = MockPluginDriver.getInstance().getSortedPlugins(state);
+    const packageName = jobInfo.buildConfig!.packageName;
     const fileName = jobInfo.compileFileInfo!.fileName;
+    const matchSourceName = buildMatchNameFunc(packageName, fileName);
+    const compileStrategy = jobInfo.isCompileAbc;
     if (plugins && plugins.length > 0) {
         plugins.forEach((plugin) => {
             insertPlugin(MockPluginDriver.getInstance(), plugin);
             const pluginName: string = plugin.name;
             const pluginStateId: `${PluginState}:${string}` = `${stateStr}:${pluginName}`;
-            const pluginTestContext = collectPluginTestContext(context, isExternal, tracing);
+            const pluginTestContext = collectPluginTestContext(context, compileStrategy, tracing, matchSourceName);
             emitter.emit('TASK_COLLECT', {
                 jobId: jobInfo.id,
                 pluginStateId,
@@ -107,7 +161,7 @@ function runPluginsAtState(
         });
     }
     const pluginStateId: PluginState = `${stateStr}`;
-    const pluginTestContext = collectPluginTestContext(context, isExternal, tracing);
+    const pluginTestContext = collectPluginTestContext(context, compileStrategy, tracing, matchSourceName);
     emitter.emit('TASK_COLLECT', {
         jobId: jobInfo.id,
         pluginStateId,
@@ -145,6 +199,48 @@ function createContextForExternalCompilation(jobInfo: JobInfo): arkts.Context {
     return context;
 }
 
+function compileAbcWithExternal(emitter: EventEmitter<ProcessEvent>, jobInfo: JobInfo, tracing: TraceOptions): void {
+    MockPluginDriver.getInstance().initPlugins(jobInfo.plugins ?? []);
+    const context = createContextFromString(jobInfo.filePaths!);
+    MockPluginDriver.getInstance().getPluginContext().setContextPtr(context.peer);
+    const stopAfter = jobInfo.stopAfter!;
+    let shouldStop = false;
+    arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED, context.peer);
+    shouldStop = runPluginsAtState(
+        emitter,
+        jobInfo,
+        arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
+        context,
+        tracing,
+        stopAfter
+    );
+    if (shouldStop) {
+        destroyContext(context);
+        MockPluginDriver.getInstance().clear();
+        emitter.emit('TASK_FINISH', { jobId: 'compile-abc-with-external' });
+        return;
+    }
+    arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED, context.peer);
+    shouldStop = runPluginsAtState(
+        emitter,
+        jobInfo,
+        arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
+        context,
+        tracing,
+        stopAfter
+    );
+    if (shouldStop) {
+        destroyContext(context);
+        MockPluginDriver.getInstance().clear();
+        emitter.emit('TASK_FINISH', { jobId: 'compile-abc-with-external' });
+        return;
+    }
+    arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_BIN_GENERATED, context.peer);
+    destroyContext(context);
+    MockPluginDriver.getInstance().clear();
+    emitter.emit('TASK_FINISH', { jobId: 'compile-abc-with-external' });
+}
+
 function compileAbc(emitter: EventEmitter<ProcessEvent>, jobInfo: JobInfo, tracing: TraceOptions): void {
     MockPluginDriver.getInstance().initPlugins(jobInfo.plugins ?? []);
     const context = createContextForAbcCompilation(jobInfo);
@@ -157,7 +253,6 @@ function compileAbc(emitter: EventEmitter<ProcessEvent>, jobInfo: JobInfo, traci
         jobInfo,
         arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
         context,
-        false,
         tracing,
         stopAfter
     );
@@ -172,7 +267,6 @@ function compileAbc(emitter: EventEmitter<ProcessEvent>, jobInfo: JobInfo, traci
         jobInfo,
         arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
         context,
-        false,
         tracing,
         stopAfter
     );
@@ -191,12 +285,12 @@ function compileExternalProgram(emitter: EventEmitter<ProcessEvent>, jobInfo: Jo
     const context = createContextForExternalCompilation(jobInfo);
     MockPluginDriver.getInstance().getPluginContext().setContextPtr(context.peer);
     arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED, context.peer);
-    runPluginsAtState(emitter, jobInfo, arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED, context, true, tracing);
+    runPluginsAtState(emitter, jobInfo, arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED, context, tracing);
     arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED, context.peer);
-    runPluginsAtState(emitter, jobInfo, arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED, context, true, tracing);
+    runPluginsAtState(emitter, jobInfo, arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED, context, tracing);
     arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_LOWERED, context.peer);
     destroyContext(context);
     MockPluginDriver.getInstance().clear();
 }
 
-export { compileAbc, compileExternalProgram };
+export { compileAbcWithExternal, compileAbc, compileExternalProgram };
