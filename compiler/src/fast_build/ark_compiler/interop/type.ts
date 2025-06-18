@@ -116,3 +116,4 @@ export interface FileInfo {
   baseUrl: string;
   abstractPath: string;
 }
+export const DECLGEN_CACHE_FILE = 'declgen_cache.json';
