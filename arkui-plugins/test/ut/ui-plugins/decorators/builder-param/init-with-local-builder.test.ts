@@ -38,48 +38,72 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+
 import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
 
 function main() {}
 
-@Component({freezeWhenInactive:false}) final struct Child extends CustomComponent<Child, __Options_Child> {
+
+
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_customBuilderParam = ((((({let gensym___169376706 = initializers;
     (((gensym___169376706) == (null)) ? undefined : gensym___169376706.customBuilderParam)})) ?? (content))) ?? (this.doNothingBuilder))
     this.__backing_customBuilderParam2 = ((((({let gensym___14041256 = initializers;
     (((gensym___14041256) == (null)) ? undefined : gensym___14041256.customBuilderParam2)})) ?? (content))) ?? (this.doNothingBuilder2))
   }
+  
   public __updateStruct(initializers: __Options_Child | undefined): void {}
+  
   private __backing_customBuilderParam?: @memo() (()=> void);
+  
   public get customBuilderParam(): @memo() (()=> void) {
     return this.__backing_customBuilderParam!;
   }
+  
   public set customBuilderParam(@memo() value: (()=> void)) {
     this.__backing_customBuilderParam = value;
   }
+  
   private __backing_customBuilderParam2?: @memo() ((str: string)=> void);
+  
   public get customBuilderParam2(): @memo() ((str: string)=> void) {
     return this.__backing_customBuilderParam2!;
   }
+  
   public set customBuilderParam2(@memo() value: ((str: string)=> void)) {
     this.__backing_customBuilderParam2 = value;
   }
+  
   @memo() public doNothingBuilder() {}
+  
   @memo() public doNothingBuilder2(str: string) {}
-  @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {
+  
+  @memo() public build() {
     this.customBuilderParam();
     this.customBuilderParam2("hello");
   }
+  
   private constructor() {}
+  
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_Child {
+@Component() export interface __Options_Child {
   set customBuilderParam(@memo() customBuilderParam: (()=> void) | undefined)
+  
   get customBuilderParam(): @memo() (()=> void) | undefined
   set customBuilderParam2(@memo() customBuilderParam2: ((str: string)=> void) | undefined)
+  
   get customBuilderParam2(): @memo() ((str: string)=> void) | undefined
+  
 }
 `;
 

@@ -13,10 +13,15 @@
  * limitations under the License.
  */
 
+import fs from 'fs'
 import * as arkts from '@koalaui/libarkts';
 import { CompileFileInfo } from './shared-types';
 
-function createGlobalConfig(fileInfo: CompileFileInfo, isDebug: boolean = true): arkts.Config {
+function createGlobalConfig(
+    fileInfo: CompileFileInfo,
+    isDebug: boolean = true,
+    isUseCache: boolean = true
+): arkts.Config {
     const config = [
         '_',
         '--extension',
@@ -32,14 +37,18 @@ function createGlobalConfig(fileInfo: CompileFileInfo, isDebug: boolean = true):
     }
     config.push(fileInfo.filePath);
 
-    arkts.MemInitialize();
+    if (isUseCache) {
+        arkts.MemInitialize();
+    }
     arkts.arktsGlobal.filePath = fileInfo.filePath;
     return resetConfig(config);
 }
 
-function destroyGlobalConfig(config: arkts.Config): void {
+function destroyGlobalConfig(config: arkts.Config, isUseCache: boolean = true): void {
     destroyConfig(config);
-    arkts.MemFinalize();
+    if (isUseCache) {
+        arkts.MemFinalize();
+    }
 }
 
 function createGlobalContextPtr(config: arkts.Config, files: string[]): number {
@@ -57,6 +66,12 @@ function createCacheContextFromFile(
     isExternal: boolean
 ): arkts.Context {
     return arkts.Context.createCacheContextFromFile(config.peer, filePath, globalContextPtr, isExternal);
+}
+
+function createContextFromString(filePaths: string[]): arkts.Context {
+    const source = fs.readFileSync(filePaths.at(0)!).toString();
+    arkts.arktsGlobal.filePath = filePaths.at(0)!;
+    return arkts.Context.createFromString(source);
 }
 
 function resetContext(source: string): void {
@@ -99,14 +114,20 @@ function destroyConfig(config: arkts.Config): void {
     }
 }
 
+function setUpSoPath(pandaSdkPath: string): void {
+    arkts.arktsGlobal.es2panda._SetUpSoPath(pandaSdkPath);
+}
+
 export {
     createGlobalConfig,
     destroyGlobalConfig,
     createGlobalContextPtr,
     destroyGlobalContextPtr,
     createCacheContextFromFile,
+    createContextFromString,
     resetContext,
     resetConfig,
     destroyContext,
     destroyConfig,
+    setUpSoPath,
 };

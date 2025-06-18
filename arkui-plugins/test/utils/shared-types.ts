@@ -76,12 +76,13 @@ export interface DependentModule {
 
 export interface JobInfo {
     id: string;
-    isCompileAbc: boolean; // TODO: change to enum
+    isCompileAbc: CompileStrategy;
     compileFileInfo?: CompileFileInfo;
     buildConfig?: BuildConfig;
     plugins?: Plugins[];
     globalContextPtr?: number;
     stopAfter?: PluginState;
+    filePaths?: string[];
 }
 
 export interface TraceOptions {
@@ -119,3 +120,21 @@ export type ProcessEvents =
 export type ProcessEvent = {
     [E in ProcessEvents as E['type']]: Omit<E, 'type'>[];
 };
+
+export interface Processor {
+    hashId: string;
+    buildConfig: BuildConfig;
+    tracing: TraceOptions;
+    cacheDir: string;
+    arktsConfigFile: string;
+    compileFiles: Map<string, CompileFileInfo>;
+
+    invokeWorkers(plugins: Plugins[], stopAfter?: PluginState): Promise<void>;
+    clear(): void;
+}
+
+export enum CompileStrategy {
+    ABC,
+    EXTERNAL,
+    ABC_WTIH_EXTERNAL,
+}

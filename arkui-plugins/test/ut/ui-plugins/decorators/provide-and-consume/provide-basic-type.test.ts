@@ -45,6 +45,10 @@ import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.st
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component } from "@ohos.arkui.component";
@@ -55,7 +59,7 @@ function main() {}
 
 
 
-@Component({freezeWhenInactive:false}) final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
+@Component() final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
   public __initializeStruct(initializers: __Options_PropParent | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_provideVar1 = STATE_MGMT_FACTORY.makeProvide<string>(this, "provideVar1", "provideVar1", ((({let gensym___181030638 = initializers;
     (((gensym___181030638) == (null)) ? undefined : gensym___181030638.provideVar1)})) ?? ("propVar1")), false);
@@ -121,13 +125,13 @@ function main() {}
     this.__backing_provideVar5!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: PropParent)=> PropParent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_PropParent | undefined): void {}
+  @memo() public build() {}
   
   private constructor() {}
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_PropParent {
+@Component() export interface __Options_PropParent {
   set provideVar1(provideVar1: string | undefined)
   
   get provideVar1(): string | undefined

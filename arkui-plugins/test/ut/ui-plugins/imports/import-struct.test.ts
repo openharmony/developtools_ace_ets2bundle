@@ -40,57 +40,82 @@ const importParsed: Plugins = {
 const pluginTester = new PluginTester('test import transform', buildConfig);
 
 const expectedParsedScript: string = `
-import { __Options_SimpleStruct as __Options_SimpleStruct } from \"./utils/simple-struct\";
-import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
-import { Component as Component, Text as Text } from \"@ohos.arkui.component\";
-import { SimpleStruct as SimpleStruct } from \"./utils/simple-struct\";
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Component as Component, Text as Text } from "@ohos.arkui.component";
+
+import { SimpleStruct as SimpleStruct } from "./utils/simple-struct";
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
-    public build() {
-        SimpleStruct();
-        SimpleStruct(({
-            message: \"str1\",
-        } as __Options_SimpleStruct));
-        SimpleStruct(){
-            Text(\"a\");
-        };
-    }
-    public constructor() {}
+  public build() {
+    SimpleStruct();
+    SimpleStruct({
+      message: "str1",
+    });
+    SimpleStruct(){
+      Text("a");
+    };
+  }
+  
+  public constructor() {}
+  
 }
+
 @Component() export interface __Options_ImportStruct {
+  
 }
 `;
 
 const expectedCheckedScript: string = `
-import { memo as memo } from \"arkui.stateManagement.runtime\";
-import { __Options_SimpleStruct as __Options_SimpleStruct } from \"./utils/simple-struct\";
-import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
-import { Component as Component, Text as Text } from \"@ohos.arkui.component\";
-import { SimpleStruct as SimpleStruct } from \"./utils/simple-struct\";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Component as Component, Text as Text } from "@ohos.arkui.component";
+
+import { SimpleStruct as SimpleStruct } from "./utils/simple-struct";
 
 function main() {}
 
-@Component({freezeWhenInactive:false}) final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
-    public __initializeStruct(initializers: __Options_ImportStruct | undefined, @memo() content: (()=> void) | undefined): void {}
-    public __updateStruct(initializers: __Options_ImportStruct | undefined): void {}
-    @memo() public _build(@memo() style: ((instance: ImportStruct)=> ImportStruct) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_ImportStruct | undefined): void {
-        SimpleStruct._instantiateImpl(undefined, (() => {
-            return new SimpleStruct();
-        }));
-        SimpleStruct._instantiateImpl(undefined, (() => {
-            return new SimpleStruct();
-        }), ({
-            message: \"str1\",
-        } as __Options_SimpleStruct));
-        SimpleStruct._instantiateImpl(undefined, (() => {
-            return new SimpleStruct();
-        }), (() => {
-            Text(undefined, \"a\");
-        }));
-    }
-    private constructor() {}
+
+
+@Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
+  public __initializeStruct(initializers: __Options_ImportStruct | undefined, @memo() content: (()=> void) | undefined): void {}
+  
+  public __updateStruct(initializers: __Options_ImportStruct | undefined): void {}
+  
+  @memo() public build() {
+    SimpleStruct._instantiateImpl(undefined, (() => {
+      return new SimpleStruct();
+    }));
+    SimpleStruct._instantiateImpl(undefined, (() => {
+      return new SimpleStruct();
+    }), {
+      message: "str1",
+    });
+    SimpleStruct._instantiateImpl(undefined, (() => {
+      return new SimpleStruct();
+    }), (() => {
+      Text(undefined, "a");
+    }));
+  }
+  
+  private constructor() {}
+  
 }
-@Component({freezeWhenInactive:false}) export interface __Options_ImportStruct {
+
+@Component() export interface __Options_ImportStruct {
+  
 }
 `;
 

@@ -47,7 +47,13 @@ import { IStoragePropDecoratedVariable as IStoragePropDecoratedVariable } from "
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
+
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -69,7 +75,7 @@ class Data {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final struct Index extends CustomComponent<Index, __Options_Index> {
+@Entry({shared:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_storageProp = STATE_MGMT_FACTORY.makeStorageProp<number>(this, "PropA", "storageProp", 1)
     this.__backing_storagePropObject = STATE_MGMT_FACTORY.makeStorageProp<Data>(this, "PropB", "storagePropObject", new Data(1))
@@ -97,7 +103,7 @@ class Data {
     this.__backing_storagePropObject!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: Index)=> Index) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Index | undefined): void {
+  @memo() public build() {
     Column(undefined, (() => {
       Text(((instance: TextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
@@ -118,7 +124,7 @@ class Data {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) export interface __Options_Index {
+@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
   set storageProp(storageProp: number | undefined)
   
   get storageProp(): number | undefined

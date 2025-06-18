@@ -47,6 +47,10 @@ import { LinkSourceType as LinkSourceType } from "arkui.stateManagement.decorato
 
 import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component } from "@ohos.arkui.component";
@@ -57,7 +61,7 @@ function main() {}
 
 
 
-@Component({freezeWhenInactive:false}) final struct LinkParent extends CustomComponent<LinkParent, __Options_LinkParent> {
+@Component() final struct LinkParent extends CustomComponent<LinkParent, __Options_LinkParent> {
   public __initializeStruct(initializers: __Options_LinkParent | undefined, @memo() content: (()=> void) | undefined): void {
     if (({let gensym___11910109 = initializers;
     (((gensym___11910109) == (null)) ? undefined : gensym___11910109.__backing_linkVar1)})) {
@@ -133,7 +137,7 @@ function main() {}
     this.__backing_linkVar5!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: LinkParent)=> LinkParent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_LinkParent | undefined): void {}
+  @memo() public build() {}
   
   private constructor() {}
   
@@ -141,7 +145,7 @@ function main() {}
 
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
-@Component({freezeWhenInactive:false}) export interface __Options_LinkParent {
+@Component() export interface __Options_LinkParent {
   @__Link_intrinsic() set linkVar1(linkVar1: string | undefined)
   
   @__Link_intrinsic() get linkVar1(): string | undefined

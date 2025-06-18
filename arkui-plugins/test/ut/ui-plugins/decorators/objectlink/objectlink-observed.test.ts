@@ -61,7 +61,13 @@ import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
+
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -158,7 +164,7 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_label = ((({let gensym___171896504 = initializers;
     (((gensym___171896504) == (null)) ? undefined : gensym___171896504.label)})) ?? ("date"));
@@ -189,7 +195,7 @@ function main() {}
     return this.__backing_data!.get();
   }
   
-  @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {
+  @memo() public build() {
     Column(undefined, (() => {
       Button(((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
@@ -204,7 +210,7 @@ function main() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final struct Parent extends CustomComponent<Parent, __Options_Parent> {
+@Entry({shared:false,storage:"",routeName:""}) @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_newData = STATE_MGMT_FACTORY.makeState<NewDate>(this, "newData", ((({let gensym___225289068 = initializers;
     (((gensym___225289068) == (null)) ? undefined : gensym___225289068.newData)})) ?? (new NewDate(new DateClass("2023-1-1")))));
@@ -222,14 +228,14 @@ function main() {}
     this.__backing_newData!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: Parent)=> Parent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Parent | undefined): void {
+  @memo() public build() {
     Column(undefined, (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
-      }), ({
+      }), {
         label: "date",
         data: this.newData.data,
-      } as __Options_Child));
+      });
       Button(((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.newData.data = new DateClass("2023-07-07");
@@ -249,7 +255,7 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_Child {
+@Component() export interface __Options_Child {
   set label(label: string | undefined)
   
   get label(): string | undefined
@@ -262,7 +268,7 @@ function main() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) export interface __Options_Parent {
+@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_Parent {
   set newData(newData: NewDate | undefined)
   
   get newData(): NewDate | undefined
