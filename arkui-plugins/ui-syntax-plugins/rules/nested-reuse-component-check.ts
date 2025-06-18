@@ -111,6 +111,9 @@ function checkNoReusableV1InReusableV2(
     // Traverse upwards to find the custom component.
     let struceNode: arkts.AstNode = node;
     while (!arkts.isStructDeclaration(struceNode)) {
+      if (!struceNode.parent) {
+        return;
+      }
       struceNode = struceNode.parent;
     }
     const annotationsList = struceNode.definition.annotations;
@@ -160,6 +163,9 @@ function checkNestedReuseComponent(
     let struceNode: arkts.AstNode = node;
     let hasReportedError = false;
     while (!arkts.isStructDeclaration(struceNode)) {
+      if (!struceNode.parent) {
+        return;
+      }
       struceNode = struceNode.parent;
       if (!hasReportedError) {
         hasReportedError = checkNoReusableV2InRepeatTemplate(struceNode, node, context);

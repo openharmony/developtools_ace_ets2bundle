@@ -14,17 +14,45 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getClassPropertyType, PresetDecorators, getAnnotationUsage } from '../utils';
+import { getClassPropertyType, PresetDecorators, getAnnotationUsage, isClassPropertyOptional } from '../utils';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 
 const CUSTOM_DIALOG_CONTROLLER: string = 'CustomDialogController';
+
+function hasCustomDialogControllerInUnion(
+  property: arkts.ClassProperty,
+  CUSTOM_DIALOG_CONTROLLER: string
+): boolean {
+  if (!isClassPropertyOptional(property)) {
+    return false;
+  }
+  if (!property.typeAnnotation || !arkts.isETSUnionType(property.typeAnnotation)) {
+    return false;
+  }
+  for (const type of property.typeAnnotation.types) {
+    if (!arkts.isETSTypeReference(type)) {
+      continue;
+    }
+
+    const part = type.part;
+    if (!part || !arkts.isETSTypeReferencePart(part)) {
+      continue;
+    }
+
+    const name = part.name;
+    if (name && arkts.isIdentifier(name) && name.name === CUSTOM_DIALOG_CONTROLLER) {
+      return true;
+    }
+  }
+  return false;
+}
 
 function missingController(
   node: arkts.StructDeclaration,
   context: UISyntaxRuleContext
 ): void {
   // Check for the @CustomDialog decorator
-  const hasCustomDialogDecorator = getAnnotationUsage(node, PresetDecorators.CUSTOM_DIALOG);
+  const customDialogDecorator = getAnnotationUsage(node, PresetDecorators.CUSTOM_DIALOG);
   const structName = node.definition.ident;
   if (!structName) {
     return;
@@ -33,13 +61,14 @@ function missingController(
   let hasControllerProperty = false;
   node.definition.body.forEach((property) => {
     if (arkts.isClassProperty(property)) {
+      hasControllerProperty = hasCustomDialogControllerInUnion(property, CUSTOM_DIALOG_CONTROLLER);
       const propertyType = getClassPropertyType(property);
       if (propertyType === CUSTOM_DIALOG_CONTROLLER) {
         hasControllerProperty = true;
       }
     }
   });
-  if (!hasControllerProperty && hasCustomDialogDecorator) {
+  if (!hasControllerProperty && customDialogDecorator) {
     context.report({
       node: structName,
       message: rule.messages.missingController,

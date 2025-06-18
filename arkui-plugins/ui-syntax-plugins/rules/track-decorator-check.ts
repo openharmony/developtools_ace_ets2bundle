@@ -43,18 +43,18 @@ function checkInvalidTrackAnnotations(context: UISyntaxRuleContext, node: arkts.
   node.definition.body.forEach((member) => {
     // Check whether it is a member variable
     if (arkts.isClassProperty(member)) {
-      const hasTrackDecorator = findClassPropertyAnnotation(member, PresetDecorators.TRACK);
+      const trackDecorator = findClassPropertyAnnotation(member, PresetDecorators.TRACK);
       // If a member variable is decorated with @Track, an error is reported immediately
-      if (hasTrackDecorator) {
-        reportInvalidTarget(context, hasTrackDecorator);
+      if (trackDecorator) {
+        reportInvalidTarget(context, trackDecorator);
       }
     }
     // Check whether this is the method
     if (arkts.isMethodDefinition(member)) {
-      const hasTrackDecorator = getMethodAnnotation(member, PresetDecorators.TRACK);
+      const trackDecorator = getMethodAnnotation(member, PresetDecorators.TRACK);
       // If the method is decorated with @Track, an error is reported immediately
-      if (hasTrackDecorator) {
-        reportInvalidTarget(context, hasTrackDecorator);
+      if (trackDecorator) {
+        reportInvalidTarget(context, trackDecorator);
       }
     }
   },);
@@ -62,7 +62,7 @@ function checkInvalidTrackAnnotations(context: UISyntaxRuleContext, node: arkts.
 
 function checkTrackUsedWithObservedV2(context: UISyntaxRuleContext, node: arkts.ClassDeclaration): void {
   // Check if the class is decorated with @Observed
-  const hasObservedV2Decorator = node.definition?.annotations?.find(
+  const observedV2Decorator = node.definition?.annotations?.find(
     annotations =>
       annotations.expr &&
       arkts.isIdentifier(annotations.expr) &&
@@ -72,30 +72,30 @@ function checkTrackUsedWithObservedV2(context: UISyntaxRuleContext, node: arkts.
   node.definition?.body.forEach((member) => {
     // Check whether it is a class attribute
     if (arkts.isClassProperty(member)) {
-      const hasTrackDecorator = findClassPropertyAnnotation(member, PresetDecorators.TRACK);
+      const trackDecorator = findClassPropertyAnnotation(member, PresetDecorators.TRACK);
       // If the class is not decorated with @Observed and has decorators, an error is reported
-      if (hasObservedV2Decorator && !(node.definition?.annotations.length === 0) && hasTrackDecorator) {
-        reportInvalidClass(context, hasTrackDecorator);
+      if (observedV2Decorator && !(node.definition?.annotations.length === 0) && trackDecorator) {
+        reportInvalidClass(context, trackDecorator);
       }
     }
     // Check whether this is the method
     if (arkts.isMethodDefinition(member)) {
-      const hasTrackDecorator = getMethodAnnotation(member, PresetDecorators.TRACK);
+      const trackDecorator = getMethodAnnotation(member, PresetDecorators.TRACK);
       // If the method is decorated with @Track, an error is reported immediately
-      if (hasTrackDecorator) {
-        reportInvalidTarget(context, hasTrackDecorator);
+      if (trackDecorator) {
+        reportInvalidTarget(context, trackDecorator);
       }
     }
   });
 }
 
-function reportInvalidClass(context: UISyntaxRuleContext, hasTrackDecorator: arkts.AnnotationUsage): void {
+function reportInvalidClass(context: UISyntaxRuleContext, trackDecorator: arkts.AnnotationUsage): void {
   context.report({
-    node: hasTrackDecorator,
+    node: trackDecorator,
     message: rule.messages.trackMustUsedWithObserved,
-    fix: (hasTrackDecorator) => {
-      const startPosition = hasTrackDecorator.startPosition;
-      const endPosition = hasTrackDecorator.endPosition;
+    fix: (trackDecorator) => {
+      const startPosition = trackDecorator.startPosition;
+      const endPosition = trackDecorator.endPosition;
       return {
         range: [startPosition, endPosition],
         code: '',

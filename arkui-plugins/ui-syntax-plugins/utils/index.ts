@@ -100,6 +100,7 @@ export const PresetDecorators = {
   REGULAR: 'regular',
   VARIABLE: 'variable',
   PARAMETER: 'parameter',
+  ANIMATABLE_EXTEND: 'AnimatableExtend',
 };
 
 export const TOGGLE_TYPE: string = 'ToggleType';
@@ -119,6 +120,16 @@ export const ReuseConstants = {
   REUSE: 'reuse',
   REUSE_ID: 'reuseId',
 };
+
+const OPTIONAL_MASK = 1 << 7;
+
+export function isClassPropertyOptional(node: arkts.ClassProperty): boolean {
+  if ((node.modifiers & OPTIONAL_MASK) !== 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 export function getIdentifierName(node: arkts.AstNode): string {
   if (!arkts.isIdentifier(node)) {

@@ -86,7 +86,7 @@ function getPath(): string | undefined {
   const contextPtr = arkts.arktsGlobal.compilerContext?.peer;
   if (!!contextPtr) {
     let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-    return program.programGlobalAbsName;
+    return program.globalAbsName;
   }
   return undefined;
 }

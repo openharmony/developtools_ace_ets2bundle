@@ -35,12 +35,12 @@ function getStructNameWithMultiplyBuilderParam(
       if (!arkts.isClassProperty(item) || !item.key) {
         return;
       }
-      const hasBuilderParam = item.annotations.find(annotation =>
+      const builderParam = item.annotations.find(annotation =>
         annotation.expr && arkts.isIdentifier(annotation.expr) &&
         annotation.expr.name === PresetDecorators.BUILDER_PARAM
       );
 
-      if (hasBuilderParam) {
+      if (builderParam) {
         count++;
       }
     });
@@ -51,6 +51,9 @@ function getStructNameWithMultiplyBuilderParam(
 }
 
 function isInBuild(node: arkts.AstNode): boolean {
+  if (!node.parent) {
+    return false;
+  }
   let structNode = node.parent;
   arkts.isMethodDefinition(structNode);
   while (!arkts.isMethodDefinition(structNode) || getIdentifierName(structNode.name) !== BUILD_NAME) {
@@ -63,6 +66,9 @@ function isInBuild(node: arkts.AstNode): boolean {
 }
 
 function hasBlockStatement(node: arkts.AstNode): boolean {
+  if (!node.parent) {
+    return false;
+  }
   let parentNode = node.parent;
   const siblings = parentNode.getChildren();
   if (!Array.isArray(siblings) || siblings.length < 2) {
@@ -83,7 +89,7 @@ function checkComponentInitialize(
   if (!arkts.isIdentifier(node) || !structNameWithMultiplyBuilderParam.includes(getIdentifierName(node))) {
     return;
   }
-  if (!hasBlockStatement(node)) {
+  if (!hasBlockStatement(node) || !node.parent) {
     return;
   }
   let structName: string = getIdentifierName(node);
