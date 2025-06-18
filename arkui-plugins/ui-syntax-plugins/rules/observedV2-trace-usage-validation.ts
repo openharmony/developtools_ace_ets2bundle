@@ -83,11 +83,11 @@ function tracePerportyRule(
     reportTraceDecoratorError(context, traceDecorator);
   } else if (arkts.isClassDeclaration(currentNode) && currentNode.definition) {
     const observedDecorator = getObservedDecorator(currentNode);
-    const observedV2 = currentNode.definition.annotations.some(annotation => {
+    const observedV2 = currentNode.definition.annotations.some(annotation =>
       annotation.expr &&
-        arkts.isIdentifier(annotation.expr) &&
-        annotation.expr.name === PresetDecorators.OBSERVED_V2;
-    });
+      arkts.isIdentifier(annotation.expr) &&
+      annotation.expr.name === PresetDecorators.OBSERVED_V2
+    );
     if (!observedV2 && !observedDecorator) {
       reportTraceMustUsedWithObservedV2(context, traceDecorator, currentNode);
     } else if (!observedV2 && observedDecorator) {
@@ -153,16 +153,7 @@ function validateTraceDecoratorUsage(node: arkts.AstNode, context: UISyntaxRuleC
     }
   }
   if (arkts.isClassProperty(node)) {
-    const traceDecorator = node.annotations?.find(annotation =>
-      annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name === PresetDecorators.TRACE);
-    if (traceDecorator) {
-      // Iterate up the parent node to check whether it is a class or a custom component
-      while (!arkts.isStructDeclaration(currentNode) && !arkts.isClassDeclaration(currentNode)) {
-        currentNode = currentNode.parent;
-      }
-      // The '@Trace' decorator can only be used in 'class'
-      tracePerportyRule(context, currentNode, traceDecorator);
-    }
+    checkTraceDecoratorUsageInClassProperty(context, node, currentNode);
   }
   if (arkts.isMethodDefinition(node)) {
     // Check that @Trace is in the correct location
@@ -171,6 +162,25 @@ function validateTraceDecoratorUsage(node: arkts.AstNode, context: UISyntaxRuleC
     if (traceDecorator) {
       reportTraceMemberVariableError(context, traceDecorator);
     }
+  }
+}
+
+function checkTraceDecoratorUsageInClassProperty(
+  context: UISyntaxRuleContext,
+  node: arkts.ClassProperty,
+  currentNode: arkts.AstNode,): void {
+  const traceDecorator = node.annotations?.find(annotation =>
+    annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name === PresetDecorators.TRACE);
+  if (traceDecorator) {
+    // Iterate up the parent node to check whether it is a class or a custom component
+    while (!arkts.isStructDeclaration(currentNode) && !arkts.isClassDeclaration(currentNode)) {
+      if (!currentNode.parent) {
+        return;
+      }
+      currentNode = currentNode.parent;
+    }
+    // The '@Trace' decorator can only be used in 'class'
+    tracePerportyRule(context, currentNode, traceDecorator);
   }
 }
 

@@ -52,7 +52,7 @@ function validateWrapBuilderInIdentifier(
     return;
   }
   const parentNode = node.parent;
-  if (!arkts.isCallExpression(parentNode)) {
+  if (!parentNode || !arkts.isCallExpression(parentNode)) {
     return;
   }
   let functionName: string = '';
@@ -65,38 +65,6 @@ function validateWrapBuilderInIdentifier(
   // If the function name is not empty and not decorated by the @builder, an error is reported
   if (functionName === '' || !builderFunctionNames.includes(functionName)) {
     const errorNode = parentNode.arguments[0];
-    context.report({
-      node: errorNode,
-      message: rule.messages.invalidWrapBuilderCheck,
-    });
-  }
-}
-
-function validateWrapBuilderInReturnStatement(
-  node: arkts.AstNode,
-  builderFunctionNames: string[],
-  context: UISyntaxRuleContext
-): void {
-  if (!arkts.isReturnStatement(node)) {
-    return;
-  }
-  if (!node.argument || !arkts.isCallExpression(node.argument)) {
-    return;
-  }
-  if (!node.argument.expression || !arkts.isIdentifier(node.argument.expression) ||
-    node.argument.expression.name !== WRAP_BUILDER) {
-    return;
-  }
-  let functionName: string = '';
-  // Get the parameters of the wrap builder
-  node.argument.arguments.forEach(argument => {
-    if (arkts.isIdentifier(argument)) {
-      functionName = argument.name;
-    }
-  });
-  // If the function name is not empty and not decorated by the @builder, an error is reported
-  if (functionName === '' || !builderFunctionNames.includes(functionName)) {
-    const errorNode = node.argument.arguments[0];
     context.report({
       node: errorNode,
       message: rule.messages.invalidWrapBuilderCheck,
@@ -117,7 +85,6 @@ const rule: UISyntaxRule = {
           collectBuilderFunctions(node, builderFunctionNames);
         }
         validateWrapBuilderInIdentifier(node, builderFunctionNames, context);
-        validateWrapBuilderInReturnStatement(node, builderFunctionNames, context);
       },
     };
   },

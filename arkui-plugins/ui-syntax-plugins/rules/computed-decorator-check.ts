@@ -23,7 +23,7 @@ function validateStructBody(
   computedSetters: Map<string, arkts.MethodDefinition>,
   context: UISyntaxRuleContext
 ): void {
-  let hasComputed: arkts.AnnotationUsage | undefined;
+  let computedDecorator: arkts.AnnotationUsage | undefined;
   node.definition.body.forEach((member) => {
     if (arkts.isClassProperty(member)) {
       validateComputedOnClassProperty(member, context);
@@ -31,11 +31,11 @@ function validateStructBody(
     }
     if (arkts.isMethodDefinition(member)) {
       const methodName = getIdentifierName(member.name);
-      hasComputed = member.scriptFunction.annotations?.find(annotation =>
+      computedDecorator = member.scriptFunction.annotations?.find(annotation =>
         annotation.expr && arkts.isIdentifier(annotation.expr) &&
         annotation.expr.name === PresetDecorators.COMPUTED
       );
-      validateComputedMethodKind(member, hasComputed, methodName, computedGetters, context);
+      validateComputedMethodKind(member, computedDecorator, methodName, computedGetters, context);
       const isSetter = member.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
       if (isSetter) {
         computedSetters.set(methodName, member);
@@ -49,17 +49,17 @@ function validateStructBody(
 }
 
 function validateComputedOnClassProperty(member: arkts.ClassProperty, context: UISyntaxRuleContext): void {
-  const hasComputed = member.annotations?.find(annotation =>
+  const computedDecorator = member.annotations?.find(annotation =>
     annotation.expr && arkts.isIdentifier(annotation.expr) &&
     annotation.expr.name === PresetDecorators.COMPUTED
   );
-  if (hasComputed) {
+  if (computedDecorator) {
     context.report({
-      node: hasComputed,
+      node: computedDecorator,
       message: rule.messages.onlyOnGetter,
-      fix: (hasComputed) => {
-        const startPosition = hasComputed.startPosition;
-        const endPosition = hasComputed.endPosition;
+      fix: (computedDecorator) => {
+        const startPosition = computedDecorator.startPosition;
+        const endPosition = computedDecorator.endPosition;
         return {
           range: [startPosition, endPosition],
           code: '',
@@ -71,15 +71,15 @@ function validateComputedOnClassProperty(member: arkts.ClassProperty, context: U
 
 function validateComputedMethodKind(
   member: arkts.MethodDefinition,
-  hasComputed: arkts.AnnotationUsage | undefined,
+  computedDecorator: arkts.AnnotationUsage | undefined,
   methodName: string,
   computedGetters: Map<string, arkts.MethodDefinition>,
   context: UISyntaxRuleContext
 ): void {
-  if (hasComputed) {
+  if (computedDecorator) {
     const isGetter = member.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET;
     if (!isGetter) {
-      reportValidateComputedMethodKind(hasComputed, context);
+      reportValidateComputedMethodKind(computedDecorator, context);
     } else {
       computedGetters.set(methodName, member);
     }
@@ -87,18 +87,18 @@ function validateComputedMethodKind(
 }
 
 function reportValidateComputedMethodKind(
-  hasComputed: arkts.AnnotationUsage | undefined,
+  computedDecorator: arkts.AnnotationUsage | undefined,
   context: UISyntaxRuleContext
 ): void {
-  if (!hasComputed) {
+  if (!computedDecorator) {
     return;
   }
   context.report({
-    node: hasComputed,
+    node: computedDecorator,
     message: rule.messages.onlyOnGetter,
-    fix: (hasComputed) => {
-      const startPosition = hasComputed.startPosition;
-      const endPosition = hasComputed.endPosition;
+    fix: (computedDecorator) => {
+      const startPosition = computedDecorator.startPosition;
+      const endPosition = computedDecorator.endPosition;
       return {
         range: [startPosition, endPosition],
         code: '',
@@ -211,21 +211,21 @@ function validateClassBody(
   computedGetters: Map<string, arkts.MethodDefinition>,
   context: UISyntaxRuleContext
 ): void {
-  const hasObservedV2 = node.definition?.annotations.find(annotation =>
+  const observedV2Decorator = node.definition?.annotations.find(annotation =>
     getAnnotationName(annotation) === PresetDecorators.OBSERVED_V2
   );
   node.definition?.body.forEach((member) => {
     if (arkts.isMethodDefinition(member)) {
-      validateComputedInClass(node, member, hasObservedV2, context);
+      validateComputedInClass(node, member, observedV2Decorator, context);
       if (!arkts.isIdentifier(member.name)) {
         return;
       }
       const methodName = getIdentifierName(member.name);
-      const hasComputed = member.scriptFunction.annotations?.find(annotation =>
+      const computedDecorator = member.scriptFunction.annotations?.find(annotation =>
         annotation.expr && arkts.isIdentifier(annotation.expr) &&
         annotation.expr.name === PresetDecorators.COMPUTED
       );
-      validateComputedMethodKind(member, hasComputed, methodName, computedGetters, context);
+      validateComputedMethodKind(member, computedDecorator, methodName, computedGetters, context);
     }
   });
 }
@@ -234,29 +234,29 @@ function validateComponentV2InStruct(
   node: arkts.StructDeclaration,
   context: UISyntaxRuleContext
 ): void {
-  const hasComponentV2 = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
-  const hasComponent = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
+  const componentV2Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
+  const componentDecorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
   node.definition?.body.forEach((member) => {
     if (arkts.isMethodDefinition(member)) {
-      reportComponentV2InStruct(node, member, hasComponentV2, hasComponent, context);
+      checkComponentV2InStruct(node, member, componentV2Decorator, componentDecorator, context);
     }
   });
 }
 
-function reportComponentV2InStruct(
+function checkComponentV2InStruct(
   node: arkts.StructDeclaration | arkts.ClassDeclaration,
   member: arkts.MethodDefinition,
-  hasComponentV2: arkts.AnnotationUsage | undefined,
-  hasComponent: arkts.AnnotationUsage | undefined,
+  componentV2Decorator: arkts.AnnotationUsage | undefined,
+  componentDecorator: arkts.AnnotationUsage | undefined,
   context: UISyntaxRuleContext
 ): void {
-  const hasComputed = member.scriptFunction.annotations?.find(annotation =>
+  const computedDecorator = member.scriptFunction.annotations?.find(annotation =>
     annotation.expr && arkts.isIdentifier(annotation.expr) &&
     annotation.expr.name === PresetDecorators.COMPUTED
   );
-  if (hasComputed && !hasComponentV2 && !hasComponent) {
+  if (computedDecorator && !componentV2Decorator && !componentDecorator) {
     context.report({
-      node: hasComputed,
+      node: computedDecorator,
       message: rule.messages.componentV2InStruct,
       fix: () => {
         const startPosition = node.startPosition;
@@ -268,13 +268,13 @@ function reportComponentV2InStruct(
       },
     });
   }
-  if (hasComputed && !hasComponentV2 && hasComponent) {
+  if (computedDecorator && !componentV2Decorator && componentDecorator) {
     context.report({
-      node: hasComputed,
+      node: computedDecorator,
       message: rule.messages.componentV2InStruct,
       fix: () => {
-        const startPosition = hasComponent.startPosition;
-        const endPosition = hasComponent.endPosition;
+        const startPosition = componentDecorator.startPosition;
+        const endPosition = componentDecorator.endPosition;
         return {
           range: [startPosition, endPosition],
           code: `@${PresetDecorators.COMPONENT_V2}`,
@@ -287,17 +287,17 @@ function reportComponentV2InStruct(
 function validateComputedInClass(
   node: arkts.AstNode,
   member: arkts.MethodDefinition,
-  hasObservedV2: arkts.AnnotationUsage | undefined,
+  observedV2Decorator: arkts.AnnotationUsage | undefined,
   context: UISyntaxRuleContext
 ): void {
-  const hasComputed = member.scriptFunction.annotations?.find(annotation =>
+  const computedDecorator = member.scriptFunction.annotations?.find(annotation =>
     annotation.expr && arkts.isIdentifier(annotation.expr) &&
     annotation.expr.name === PresetDecorators.COMPUTED
   );
-  if (hasComputed && !hasObservedV2 &&
+  if (computedDecorator && !observedV2Decorator &&
     arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET === member.kind) {
     context.report({
-      node: hasComputed,
+      node: computedDecorator,
       message: rule.messages.onlyInObservedV2,
       fix: () => {
         const startPosition = node.startPosition;
