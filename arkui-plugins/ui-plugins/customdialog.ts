@@ -96,18 +96,12 @@ export function transformCallToArrow(value: arkts.CallExpression): arkts.ArrowFu
         )
     );
     const newValue = arkts.factory.createArrowFunction(
-        arkts.factory.createScriptFunction(
-            arkts.factory.createBlock([
-                as_value
-            ]),
-            arkts.factory.createFunctionSignature(
-                undefined,
-                [],
-                undefined,
-                false
-            ),
-            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+        factory.createScriptFunction(
+            {
+                body: arkts.factory.createBlock([as_value]),
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            }
         )
     );
     return newValue;
@@ -122,7 +116,7 @@ export function transformController(newInstance: arkts.ETSNewClassInstanceExpres
     const property = properties[0];
     const value = property?.value;
     if (!(value && arkts.isCallExpression(value) && arkts.isIdentifier(value.expression))) {
-        throw new Error('Error value of method builder.');
+        return newInstance;
     }
 
     const memoArrow = transformCallToArrow(value);
@@ -242,16 +236,17 @@ function updateStyle(style: arkts.ArrowFunctionExpression, key_name: string, dia
     const block = updateStyleBlock(key_name, dialogName, isProperty);
     return arkts.factory.updateArrowFunction(
         style,
-        arkts.factory.createScriptFunction(
-            block,
-            arkts.factory.createFunctionSignature(undefined, [], 
-                arkts.factory.createTypeReference(
+        factory.createScriptFunction(
+            {
+                body: block,
+                returnTypeAnnotation: arkts.factory.createTypeReference(
                     arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier(dialogName)
-                )
-            ), false),
-            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+                        arkts.factory.createIdentifier(dialogName)
+                    )
+                ),
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+            }
         )
     );
 }
@@ -265,29 +260,25 @@ export function updateArrow(arrow: arkts.ArrowFunctionExpression, controller: st
     const dialogName = member.object.name;
     const styleArrow = call.arguments[1] as arkts.ArrowFunctionExpression;
     const newStyle = updateStyle(styleArrow, controller, dialogName, isProperty);
-    const newScriptFunction = arkts.factory.createScriptFunction(
-        arkts.factory.createBlock([
-            arkts.factory.createExpressionStatement(
-                arkts.factory.updateCallExpression(
-                    call,
-                    member,
-                    call.typeArguments,
-                    [
-                        call.arguments[0],
-                        newStyle,
-                        ...call.arguments.slice(2)
-                    ]
+    const newScriptFunction = factory.createScriptFunction(
+        {
+            body: arkts.factory.createBlock([
+                arkts.factory.createExpressionStatement(
+                    arkts.factory.updateCallExpression(
+                        call,
+                        member,
+                        call.typeArguments,
+                        [
+                            call.arguments[0],
+                            newStyle,
+                            ...call.arguments.slice(2)
+                        ]
+                    )
                 )
-            )
-        ]),
-        arkts.factory.createFunctionSignature(
-            undefined,
-            [],
-            undefined,
-            false
-        ),
-        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            ]),
+            flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+        }
     );
     const newArrow = arkts.factory.updateArrowFunction(
         arrow,
@@ -353,7 +344,7 @@ export function insertImportDeclaration(program: arkts.Program | undefined): voi
     }
     const imported = arkts.factory.createIdentifier('ExtendableComponent');
     createAndInsertImportDeclaration(
-        arkts.factory.createStringLiteral('./customComponent'),
+        arkts.factory.createStringLiteral('./extendableComponent'),
         imported,
         imported,
         arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE,

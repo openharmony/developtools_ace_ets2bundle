@@ -22,7 +22,16 @@ import {
     CustomComponentNames,
     isCustomComponentClass,
 } from '../utils';
-import { CustomComponentScopeInfo, findCanAddMemoFromArrowFunction, isResourceNode, ScopeInfoCollection } from './utils';
+import {
+    CustomComponentScopeInfo,
+    findCanAddMemoFromArrowFunction,
+    isResourceNode,
+    ScopeInfoCollection,
+    LoaderJson,
+    ResourceInfo,
+    loadBuildJson,
+    initResourceInfo,
+} from './utils';
 import { factory } from './factory';
 import { isEntryWrapperClass } from '../entry-translators/utils';
 import { factory as entryFactory } from '../entry-translators/factory';
@@ -33,11 +42,15 @@ import { PropertyCache } from '../property-translators/utils';
 export class StructTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
     projectConfig: ProjectConfig | undefined;
+    aceBuildJson: LoaderJson;
+    resourceInfo: ResourceInfo;
 
     constructor(projectConfig: ProjectConfig | undefined) {
         super();
         this.projectConfig = projectConfig;
         this.scope = { customComponents: [] };
+        this.aceBuildJson = loadBuildJson(this.projectConfig);
+        this.resourceInfo = initResourceInfo(this.projectConfig, this.aceBuildJson);
     }
 
     reset(): void {
@@ -91,7 +104,7 @@ export class StructTransformer extends AbstractVisitor {
         } else if (arkts.isClassDeclaration(node)) {
             return factory.transformNormalClass(node);
         } else if (arkts.isCallExpression(node) && isResourceNode(node)) {
-            return factory.transformResource(node, this.projectConfig);
+            return factory.transformResource(node, this.projectConfig, this.resourceInfo);
         } else if (arkts.isTSInterfaceDeclaration(node)) {
             return factory.tranformInterfaceMembers(node, this.externalSourceName);
         } else if (findCanAddMemoFromArrowFunction(node)) {
