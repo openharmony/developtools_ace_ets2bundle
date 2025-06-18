@@ -6,11 +6,11 @@
     },
 
     "compileFiles": [
-        "./demo/localtest/entry/new.ets"
+        "./demo/localtest/entry/src/main/ets/pages/new.ets"
     ],
 
     "entryFiles": [
-        "./demo/localtest/entry/new.ets"
+        "./demo/localtest/entry/src/main/ets/pages/new.ets"
     ],
 
     "buildMode": "Debug",
@@ -43,5 +43,6 @@
       "levelStr": "INFO",
       "colour": "green"
     },
-    "isBuildConfigModified": false
+    "isBuildConfigModified": false,
+    "aceModuleJsonPath": "./demo/localtest/entry/src/main/module.json5"
 }

@@ -21,13 +21,17 @@ function addProperty(item: arkts.AstNode, structName: string, privatePropertyMap
   if (!arkts.isClassProperty(item) || !isPrivateClassProperty(item)) {
     return;
   }
+  const propertyName = getClassPropertyName(item);
+  if (!propertyName) {
+    return;
+  }
   // Check if structName already exists in privateMap
   if (privatePropertyMap.has(structName)) {
     // If it exists, retrieve the current string[] and append the new content
-    privatePropertyMap.get(structName)?.push(getClassPropertyName(item));
+    privatePropertyMap.get(structName)!.push(propertyName);
   } else {
     // If it doesn't exist, create a new string[] and add the content
-    privatePropertyMap.set(structName, [getClassPropertyName(item)]);
+    privatePropertyMap.set(structName, [propertyName]);
   }
 }
 
