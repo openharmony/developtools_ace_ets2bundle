@@ -43,10 +43,12 @@ import NoSameAsBuiltInAttribute from './no-same-as-built-in-attribute';
 import ReuseAttributeCheck from './reuse-attribute-check';
 import StructMissingDecorator from './struct-missing-decorator';
 import StructPropertyDecorator from './struct-property-decorator';
+import StructPropertyOptional from './struct-property-optional';
 import StructVariableInitialization from './struct-variable-initialization';
 import TrackDecoratorCheck from './track-decorator-check';
 import TypeDecoratorCheck from './type-decorator-check';
 import ValidateBuildInStruct from './validate-build-in-struct';
+import ValidateDecoratorTarget from './validate-decorator-target';
 import VariableInitializationViaComponentCons from './variable-initialization-via-component-cons';
 import WatchDecoratorFunction from './watch-decorator-function';
 import WatchDecoratorRegular from './watch-decorator-regular';
@@ -96,10 +98,12 @@ const rules: UISyntaxRule[] = [
   ReuseAttributeCheck,
   StructMissingDecorator,
   StructPropertyDecorator,
+  StructPropertyOptional,
   StructVariableInitialization,
   TrackDecoratorCheck,
   TypeDecoratorCheck,
   ValidateBuildInStruct,
+  ValidateDecoratorTarget,
   VariableInitializationViaComponentCons,
   WatchDecoratorFunction,
   WatchDecoratorRegular,
