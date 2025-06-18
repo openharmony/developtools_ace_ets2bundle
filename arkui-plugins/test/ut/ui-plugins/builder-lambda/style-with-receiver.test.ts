@@ -43,6 +43,10 @@ import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { memo as memo } from "@ohos.arkui.stateManagement";
@@ -66,12 +70,12 @@ function main() {}
 }
 
 
-@Component({freezeWhenInactive:false}) final struct MM extends CustomComponent<MM, __Options_MM> {
+@Component() final struct MM extends CustomComponent<MM, __Options_MM> {
   public __initializeStruct(initializers: __Options_MM | undefined, @memo() content: (()=> void) | undefined): void {}
   
   public __updateStruct(initializers: __Options_MM | undefined): void {}
   
-  @memo() public _build(@memo() style: ((instance: MM)=> MM) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MM | undefined): void {
+  @memo() public build() {
     Column(undefined, (() => {
       Text(((instance: TextAttribute): void => {
         style22(cardStyle(instance.height(200).fontColor("#000000"), 600, "#eeeeee").fontSize(60).fontWeight(400)).width(900);
@@ -88,7 +92,7 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_MM {
+@Component() export interface __Options_MM {
   
 }
 `;

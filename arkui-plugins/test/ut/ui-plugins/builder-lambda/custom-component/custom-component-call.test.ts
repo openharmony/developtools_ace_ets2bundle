@@ -45,14 +45,24 @@ const parsedTransform: Plugins = {
 };
 
 const expectedParsedScript: string = `
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
 
 @Component() final struct CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
   @Builder() public closerBuilder() {}
+  
   @BuilderParam() public closer: (()=> void) = this.closerBuilder;
+  
   public build() {}
+  
   public constructor() {}
+  
 }
 
 @Component() final struct CustomContainerUser extends CustomComponent<CustomContainerUser, __Options_CustomContainerUser> {
@@ -63,21 +73,25 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
           Text("hello");
         };
       };
-      CustomContainer(({} as __Options_CustomContainer)){
+      CustomContainer({}){
         Column(){};
       };
       CustomContainer(undefined){};
       CustomContainer();
     };
   }
+  
   public constructor() {}
+  
 }
 
 @Component() export interface __Options_CustomContainer {
   @BuilderParam() closer?: (()=> void);
+  
 }
 
 @Component() export interface __Options_CustomContainerUser {
+  
 }
 `;
 
@@ -89,6 +103,10 @@ const expectedBuilderLambdaScript: string = `
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
@@ -97,7 +115,7 @@ function main() {}
 
 
 
-@Component({freezeWhenInactive:false}) final struct CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
+@Component() final struct CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
   public __initializeStruct(initializers: __Options_CustomContainer | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_closer = ((((({let gensym___38813563 = initializers;
     (((gensym___38813563) == (null)) ? undefined : gensym___38813563.closer)})) ?? (content))) ?? (this.closerBuilder))
@@ -117,18 +135,18 @@ function main() {}
   
   @memo() public closerBuilder() {}
   
-  @memo() public _build(@memo() style: ((instance: CustomContainer)=> CustomContainer) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_CustomContainer | undefined): void {}
+  @memo() public build() {}
   
   private constructor() {}
   
 }
 
-@Component({freezeWhenInactive:false}) final struct CustomContainerUser extends CustomComponent<CustomContainerUser, __Options_CustomContainerUser> {
+@Component() final struct CustomContainerUser extends CustomComponent<CustomContainerUser, __Options_CustomContainerUser> {
   public __initializeStruct(initializers: __Options_CustomContainerUser | undefined, @memo() content: (()=> void) | undefined): void {}
   
   public __updateStruct(initializers: __Options_CustomContainerUser | undefined): void {}
   
-  @memo() public _build(@memo() style: ((instance: CustomContainerUser)=> CustomContainerUser) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_CustomContainerUser | undefined): void {
+  @memo() public build() {
     Column(undefined, (() => {
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
@@ -139,7 +157,7 @@ function main() {}
       }));
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
-      }), ({} as __Options_CustomContainer), (() => {
+      }), {}, (() => {
         Column(undefined, (() => {}));
       }));
       CustomContainer._instantiateImpl(undefined, (() => {
@@ -155,14 +173,14 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_CustomContainer {
+@Component() export interface __Options_CustomContainer {
   set closer(@memo() closer: (()=> void) | undefined)
   
   get closer(): @memo() (()=> void) | undefined
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_CustomContainerUser {
+@Component() export interface __Options_CustomContainerUser {
   
 }
 `;

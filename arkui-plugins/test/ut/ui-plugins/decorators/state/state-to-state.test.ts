@@ -23,11 +23,11 @@ import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
-const BUILDER_LAMBDA_DIR_PATH: string = 'decorators/state';
+const STATE_DIR_PATH: string = 'decorators/state';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, BUILDER_LAMBDA_DIR_PATH, 'state-to-state.ets'),
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, STATE_DIR_PATH, 'state-to-state.ets'),
 ];
 
 const pluginTester = new PluginTester('test @State decorated variables passing', buildConfig);
@@ -44,6 +44,10 @@ import { memo as memo } from "arkui.stateManagement.runtime";
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -64,7 +68,7 @@ class Per {
   
 }
 
-@Component({freezeWhenInactive:false}) final struct Parent extends CustomComponent<Parent, __Options_Parent> {
+@Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_parentVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "parentVar1", ((({let gensym___247315634 = initializers;
     (((gensym___247315634) == (null)) ? undefined : gensym___247315634.parentVar1)})) ?? (new Per("hello"))));
@@ -82,13 +86,13 @@ class Per {
     this.__backing_parentVar1!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: Parent)=> Parent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Parent | undefined): void {
+  @memo() public build() {
     Column(undefined, (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
-      }), ({
+      }), {
         childVar1: this.parentVar1,
-      } as __Options_Child));
+      });
     }));
   }
   
@@ -96,7 +100,7 @@ class Per {
   
 }
 
-@Component({freezeWhenInactive:false}) final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_childVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "childVar1", ((({let gensym___218939886 = initializers;
     (((gensym___218939886) == (null)) ? undefined : gensym___218939886.childVar1)})) ?? (new Per("ccc"))));
@@ -114,7 +118,7 @@ class Per {
     this.__backing_childVar1!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {
+  @memo() public build() {
     Text(undefined, this.childVar1.str);
   }
   
@@ -122,7 +126,7 @@ class Per {
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_Parent {
+@Component() export interface __Options_Parent {
   set parentVar1(parentVar1: Per | undefined)
   
   get parentVar1(): Per | undefined
@@ -132,7 +136,7 @@ class Per {
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_Child {
+@Component() export interface __Options_Child {
   set childVar1(childVar1: Per | undefined)
   
   get childVar1(): Per | undefined

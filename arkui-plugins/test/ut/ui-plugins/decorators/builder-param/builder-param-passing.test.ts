@@ -38,13 +38,22 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+
 import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component, Entry as Entry, Builder as Builder, BuilderParam as BuilderParam, Column as Column, Text as Text } from "@ohos.arkui.component";
 
 function main() {}
 
-@Component({freezeWhenInactive:false}) final struct Child extends CustomComponent<Child, __Options_Child> {
+
+
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_customBuilderParam = ((((({let gensym___169376706 = initializers;
     (((gensym___169376706) == (null)) ? undefined : gensym___169376706.customBuilderParam)})) ?? (content))) ?? (this.customBuilder))
@@ -64,7 +73,7 @@ function main() {}
   
   @memo() public customBuilder() {}
   
-  @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {
+  @memo() public build() {
     this.customBuilderParam();
   }
   
@@ -72,7 +81,7 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) final struct Parent extends CustomComponent<Parent, __Options_Parent> {
+@Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {}
   
   public __updateStruct(initializers: __Options_Parent | undefined): void {}
@@ -81,20 +90,20 @@ function main() {}
     Text(undefined, "Parent builder");
   }
   
-  @memo() public _build(@memo() style: ((instance: Parent)=> Parent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Parent | undefined): void {
+  @memo() public build() {
     Column(undefined, (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
-      }), ({
+      }), {
         customBuilderParam: this.componentBuilder,
-      } as __Options_Child));
+      });
       Child._instantiateImpl(undefined, (() => {
         return new Child();
-      }), ({
+      }), {
         customBuilderParam: @memo() (() => {
           this.componentBuilder();
         }),
-      } as __Options_Child));
+      });
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), (() => {
@@ -102,15 +111,20 @@ function main() {}
       }));
     }));
   }
+  
   private constructor() {}
+  
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_Child {
+@Component() export interface __Options_Child {
   set customBuilderParam(@memo() customBuilderParam: (()=> void) | undefined)
+  
   get customBuilderParam(): @memo() (()=> void) | undefined
+  
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_Parent {
+@Component() export interface __Options_Parent {
+  
 }
 `;
 
