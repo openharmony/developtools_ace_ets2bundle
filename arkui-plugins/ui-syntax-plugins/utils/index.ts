@@ -16,7 +16,6 @@
 import * as arkts from '@koalaui/libarkts';
 import * as fs from 'fs';
 import * as path from 'path';
-import { UISyntaxRuleComponents } from 'ui-syntax-plugins/processor';
 import { UISyntaxRuleContext } from 'ui-syntax-plugins/rules/ui-syntax-rule';
 
 export const BUILD_NAME: string = 'build';
@@ -166,12 +165,15 @@ export function getClassAnnotationUsage(
 
 
 
-export function getClassPropertyName(property: arkts.ClassProperty): string {
+export function getClassPropertyName(property: arkts.ClassProperty): string | undefined {
+  if (!property.key) {
+    return undefined;
+  }
   return getIdentifierName(property.key);
 }
 
-export function getClassPropertyType(property: arkts.ClassProperty): string {
-  return property.typeAnnotation.dumpSrc();
+export function getClassPropertyType(property: arkts.ClassProperty): string | undefined {
+  return property.typeAnnotation?.dumpSrc();
 }
 
 export function getClassPropertyAnnotationNames(
@@ -252,6 +254,15 @@ interface ComponentJson {
   children?: string[];
 }
 
+export interface UISyntaxRuleComponents {
+  builtInAttributes: string[];
+  containerComponents: string[];
+  atomicComponents: string[];
+  singleChildComponents: string[];
+  validParentComponent: Map<string, string[]>;
+  validChildComponent: Map<string, string[]>;
+}
+
 export function getUIComponents(dirPath: string): UISyntaxRuleComponents {
   const absolutePath = path.resolve(__dirname, dirPath);
   let builtInAttributes: string[] = [];
@@ -327,4 +338,15 @@ export function isContainerComponent(context: UISyntaxRuleContext, componentName
 
 export function isSingleChildComponent(context: UISyntaxRuleContext, componentName: string): boolean {
   return context.componentsInfo.singleChildComponents.includes(componentName);
+}
+
+export function readJSON<T>(path: string): T {
+  if (!fs.existsSync(path)) {
+    throw new Error(`Failed to read file becasue the ${path} is not exist.`);
+  }
+  const content = fs.readFileSync(path).toString();
+  if (!content) {
+    throw new Error(`Failed to read file because the file content is empty.`);
+  }
+  return JSON.parse(content) as T;
 }

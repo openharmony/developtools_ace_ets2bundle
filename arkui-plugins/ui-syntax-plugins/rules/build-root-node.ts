@@ -49,7 +49,7 @@ function reportvalidBuildRoot(
 }
 
 function checkBuildRootNode(node: arkts.AstNode, context: UISyntaxRuleContext): void {
-  const loadedContainerComponents = context.containerComponents;
+  const loadedContainerComponents = context.componentsInfo.containerComponents;
   if (!arkts.isStructDeclaration(node)) {
     return;
   }
@@ -92,7 +92,7 @@ function checkBuildRootNode(node: arkts.AstNode, context: UISyntaxRuleContext): 
       return;
     }
     isContainer = componentName
-      ? loadedContainerComponents.has(componentName)
+      ? loadedContainerComponents.includes(componentName)
       : false;
     // rule2: its 'build' function can have only one root node, which must be a container component.
     reportvalidBuildRoot(entryDecoratorUsage, isContainer, buildNode, context);

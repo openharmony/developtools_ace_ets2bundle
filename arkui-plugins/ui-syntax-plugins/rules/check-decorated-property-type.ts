@@ -44,8 +44,11 @@ function checkDecoratedPropertyType(
   if (!arkts.isClassProperty(member)) {
     return;
   }
-  const propertyName: string = getClassPropertyName(member);
-  const propertyType: string = getClassPropertyType(member);
+  const propertyName = getClassPropertyName(member);
+  const propertyType = getClassPropertyType(member);
+  if (!propertyName || !propertyType) {
+    return;
+  }
   const propertyAnnotationNames: string[] = getClassPropertyAnnotationNames(member);
   const decoratorName: string | undefined =
     propertyAnnotationNames.find((annotation) => annoList.includes(annotation));
@@ -61,6 +64,7 @@ function checkDecoratedPropertyType(
       data: { decoratorName, propertyName, propertyType },
     });
   }
+
 }
 
 const rule: UISyntaxRule = {
