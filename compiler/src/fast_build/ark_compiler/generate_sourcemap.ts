@@ -117,25 +117,6 @@ export class SourceMapGenerator {
     SourceMapGenerator.instance.isCompileSingle = SourceMapGenerator.instance.isNewSourceMap &&
       SourceMapGenerator.instance.projectConfig.singleFileEmit && isShouldSourceMap;
 
-    if (isShouldSourceMap && SourceMapGenerator.instance.isNewSourceMap) {
-      if (fs.existsSync(SourceMapGenerator.instance.sourceMapPath)) {
-        fs.unlinkSync(SourceMapGenerator.instance.sourceMapPath);
-      }
-      if (fs.existsSync(SourceMapGenerator.instance.sourceMapPathTmp)) {
-        fs.unlinkSync(SourceMapGenerator.instance.sourceMapPathTmp);
-      }
-
-      const sourceMapPathDir: string = path.dirname(SourceMapGenerator.instance.sourceMapPath);
-      if (!fs.existsSync(sourceMapPathDir)) {
-        fs.mkdirSync(sourceMapPathDir, { recursive: true });
-      }
-
-      const sourceMapPathTmpDir: string = path.dirname(SourceMapGenerator.instance.sourceMapPathTmp);
-      if (!fs.existsSync(sourceMapPathTmpDir)) {
-        fs.mkdirSync(sourceMapPathTmpDir, { recursive: true });
-      }
-    }
-
     if (SourceMapGenerator.instance.projectConfig.hotReload) {
       isShouldSourceMap = false;
     }
@@ -265,6 +246,13 @@ export class SourceMapGenerator {
 
   public writeOrigin(content: string): void {
     if (!this.originFd) {
+      if (fs.existsSync(this.sourceMapPath)) {
+        fs.unlinkSync(this.sourceMapPath);
+      }
+      const sourceMapPathDir: string = path.dirname(this.sourceMapPath);
+      if (!fs.existsSync(sourceMapPathDir)) {
+        fs.mkdirSync(sourceMapPathDir, { recursive: true });
+      }
       this.originFd = fs.openSync(this.sourceMapPath, 'a');
     }
     fs.appendFileSync(this.originFd, content, { encoding: 'utf8' });
@@ -272,6 +260,13 @@ export class SourceMapGenerator {
 
   public writeTemp(content: string): void {
     if (!this.tempFd) {
+      if (fs.existsSync(this.sourceMapPathTmp)) {
+        fs.unlinkSync(this.sourceMapPathTmp);
+      }
+      const sourceMapPathTmpDir: string = path.dirname(this.sourceMapPathTmp);
+      if (!fs.existsSync(sourceMapPathTmpDir)) {
+        fs.mkdirSync(sourceMapPathTmpDir, { recursive: true });
+      }
       this.tempFd = fs.openSync(this.sourceMapPathTmp, 'a');
     }
     fs.appendFileSync(this.tempFd, content, { encoding: 'utf8' });
