@@ -736,18 +736,22 @@ export function isAnimateToOrImmediately(node: ts.Node): boolean {
 
 export function processResourceData(node: ts.CallExpression, filePath: string,
   previewLog: {isAcceleratePreview: boolean, log: LogInfo[]} = {isAcceleratePreview: false, log: []}): ts.Node {
-  if (ts.isStringLiteral(node.arguments[0]) || ts.isNoSubstitutionTemplateLiteral(node.arguments[0])) {
+  let isTemplateString: boolean = false;
+  if (ts.isNoSubstitutionTemplateLiteral(node.arguments[0])) {
+      isTemplateString = true;
+  }
+  if (ts.isStringLiteral(node.arguments[0]) || isTemplateString) {
     const resourceData: string[] = (node.arguments[0] as ts.StringLiteral).text.trim().split('.');
     const isResourceModule: boolean = resourceData.length && /^\[.*\]$/g.test(resourceData[0]);
     if (node.expression.getText() === RESOURCE_RAWFILE) {
-      isResourcefile(node, previewLog, isResourceModule);
+      isResourcefile(node, previewLog, isResourceModule, isTemplateString);
       if (resourceData && resourceData[0] && isResourceModule) {
         return createResourceParam(-1, RESOURCE_TYPE.rawfile, [node.arguments[0]], resourceData[0], true);
       } else { 
         return createResourceParam(0, RESOURCE_TYPE.rawfile, [node.arguments[0]], '', false);
       }
     } else {
-      return getResourceDataNode(node, previewLog, resourceData, isResourceModule, filePath);
+      return getResourceDataNode(node, previewLog, resourceData, isResourceModule, filePath, isTemplateString);
     }
   } else if (node.expression.getText() === RESOURCE && node.arguments && node.arguments.length) {
     resourcePreviewMessage(previewLog);
@@ -769,14 +773,14 @@ function resourcePreviewMessage(previewLog: {isAcceleratePreview: boolean, log: 
   }
 }
 
-function getResourceDataNode(node: ts.CallExpression,
-  previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, resourceData: string[], isResourceModule: boolean, filePath: string): ts.Node {
+function getResourceDataNode(node: ts.CallExpression, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]},
+  resourceData: string[], isResourceModule: boolean, filePath: string, isTemplateString: boolean): ts.Node {
   let resourceValue: number;
-  if (preCheckResourceData(resourceData, resources, node.arguments[0].getStart(), previewLog, isResourceModule, filePath)) {
+  if (preCheckResourceData(resourceData, resources, node.arguments[0].getStart(), previewLog, isResourceModule, filePath, isTemplateString)) {
     let resourceType: number = RESOURCE_TYPE[resourceData[1]];
     if (resourceType === undefined && !previewLog.isAcceleratePreview) {
       transformLog.errors.push({
-        type: LogType.ERROR,
+        type: isTemplateString ? LogType.WARN : LogType.ERROR,
         message: `The resource type '${resourceData[1]}' is not supported.`,
         pos: node.getStart(),
         code: '10906334'
@@ -796,11 +800,12 @@ function getResourceDataNode(node: ts.CallExpression,
   return node;
 }
 
-function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, isResourceModule: boolean): void {
+function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, isResourceModule: boolean,
+  isTemplateString: boolean): void {
   if (!isResourceModule && process.env.rawFileResource && !storedFileInfo.resourcesArr.has(node.arguments[0].text) &&
     !previewLog.isAcceleratePreview && process.env.compileMode === 'moduleJson') {
     transformLog.errors.push({
-      type: LogType.ERROR,
+      type: isTemplateString ? LogType.WARN : LogType.ERROR,
       message: `No such '${node.arguments[0].text}' resource in current module.`,
       pos: node.getStart(),
       code: '10904333'
@@ -906,19 +911,19 @@ function createResourceParam(resourceValue: number, resourceType: number, argsAr
 }
 
 function preCheckResourceData(resourceData: string[], resources: object, pos: number,
-  previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, isResourceModule: boolean, filePath: string): boolean {
+  previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, isResourceModule: boolean, filePath: string, isTemplateString: boolean): boolean {
   if (previewLog.isAcceleratePreview) {
-    return validateResourceData(resourceData, resources, pos, previewLog.log, true, isResourceModule, filePath);
+    return validateResourceData(resourceData, resources, pos, previewLog.log, true, isResourceModule, filePath, isTemplateString);
   } else {
-    return validateResourceData(resourceData, resources, pos, transformLog.errors, false, isResourceModule, filePath);
+    return validateResourceData(resourceData, resources, pos, transformLog.errors, false, isResourceModule, filePath, isTemplateString);
   }
 }
 
 function validateResourceData(resourceData: string[], resources: object, pos: number, log: LogInfo[], isAcceleratePreview: boolean,
-  isResourceModule: boolean, filePath: string): boolean {
+  isResourceModule: boolean, filePath: string, isTemplateString: boolean): boolean {
   if (resourceData.length !== 3) {
     log.push({
-      type: LogType.ERROR,
+      type: isTemplateString ? LogType.WARN : LogType.ERROR,
       message: `Invalid resource file parameter. Enter a value in the format of 'xxx.yyy.zzz'.`,
       pos,
       code: '10905332'
@@ -930,20 +935,20 @@ function validateResourceData(resourceData: string[], resources: object, pos: nu
     if (isResourceModule) {
       if (/^\[.*\]$/.test(resourceData[0]) && projectConfig.hspResourcesMap) {
         const resourceDataFirst: string = resourceData[0].replace(/^\[/, '').replace(/\]$/, '').trim();
-        return resourceCheck(resourceData, resources, pos, log, true, resourceDataFirst, false);
+        return resourceCheck(resourceData, resources, pos, log, true, resourceDataFirst, false, isTemplateString);
       } else {
-        return resourceCheck(resourceData, resources, pos, log, false, resourceData[0], true);
+        return resourceCheck(resourceData, resources, pos, log, false, resourceData[0], true, isTemplateString);
       }
     } else {
-      return resourceCheck(resourceData, resources, pos, log, false, resourceData[0], false);
+      return resourceCheck(resourceData, resources, pos, log, false, resourceData[0], false, isTemplateString);
     }
   }
   return false;
 }
 
 function resourceCheck(resourceData: string[], resources: object, pos: number, log: LogInfo[], isHspResourceModule: boolean,
-  resourceDataFirst: string, faOrNoHspResourcesMap: boolean): boolean {
-  const logType: LogType = isHspResourceModule ? LogType.WARN : LogType.ERROR;
+  resourceDataFirst: string, faOrNoHspResourcesMap: boolean, isTemplateString: boolean): boolean {
+  const logType: LogType = isHspResourceModule || isTemplateString ? LogType.WARN : LogType.ERROR;
   if (!faOrNoHspResourcesMap && !resources[resourceDataFirst]) {
     log.push({
       type: logType,
