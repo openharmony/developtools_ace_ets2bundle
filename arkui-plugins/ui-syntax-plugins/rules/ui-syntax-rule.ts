@@ -18,32 +18,67 @@ import { ProjectConfig } from 'common/plugin-context';
 import { UISyntaxRuleComponents } from 'ui-syntax-plugins/utils';
 
 export type FixSuggestion = {
-  range: [start: arkts.SourcePosition, end: arkts.SourcePosition];
-  code: string;
+    range: [start: arkts.SourcePosition, end: arkts.SourcePosition];
+    code: string;
 };
 
 export type ReportOptions = {
-  node: arkts.AstNode;
-  message: string;
-  data?: Record<string, string>;
-  fix?: (node: arkts.AstNode) => FixSuggestion;
+    node: arkts.AstNode;
+    message: string;
+    data?: Record<string, string>;
+    fix?: (node: arkts.AstNode) => FixSuggestion;
+    level?: UISyntaxRuleLevel;
 };
 
 export type UISyntaxRuleContext = {
-  projectConfig?: ProjectConfig;
-  componentsInfo: UISyntaxRuleComponents;
-  report(options: ReportOptions): void;
-  getMainPages(): string[];
+    projectConfig?: ProjectConfig;
+    componentsInfo: UISyntaxRuleComponents;
+    report(options: ReportOptions): void;
+    getMainPages(): string[];
 };
 
 export type UISyntaxRulePhaseHandler = (node: arkts.AstNode) => void;
 
 export type UISyntaxRuleHandler = {
-  parsed?: UISyntaxRulePhaseHandler;
+    parsed?: UISyntaxRulePhaseHandler;
 };
 
 export type UISyntaxRule = {
-  name: string;
-  messages: Record<string, string>;
-  setup(context: UISyntaxRuleContext): UISyntaxRuleHandler;
+    name: string;
+    messages: Record<string, string>;
+    setup(context: UISyntaxRuleContext): UISyntaxRuleHandler;
 };
+
+export type UISyntaxRuleReportOptions = {
+    node: arkts.AstNode;
+    message: string;
+    data?: Record<string, string>;
+    fix?: (node: arkts.AstNode) => FixSuggestion;
+};
+
+export type UISyntaxRuleLevel = 'error' | 'warn' | 'none';
+
+export interface UISyntaxRuleConstructor {
+    new (context: UISyntaxRuleContext, level: UISyntaxRuleLevel): AbstractUISyntaxRule;
+}
+
+export abstract class AbstractUISyntaxRule {
+    protected messages: Record<string, string>;
+
+    constructor(protected context: UISyntaxRuleContext, protected level: UISyntaxRuleLevel) {
+        this.messages = this.setup();
+    }
+
+    public parsed(node: arkts.AstNode): void {}
+    public binded(node: arkts.AstNode): void {}
+    public abstract setup(): Record<string, string>;
+
+    protected report(options: UISyntaxRuleReportOptions): void {
+        this.context.report({
+            ...options,
+            level: this.level,
+        });
+    }
+}
+
+export type UISyntaxRuleConfig = [UISyntaxRuleConstructor, UISyntaxRuleLevel];
