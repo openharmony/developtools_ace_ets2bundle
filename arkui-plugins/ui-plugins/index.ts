@@ -15,7 +15,6 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { ComponentTransformer } from './component-transformer';
-import { PreprocessorTransformer } from './preprocessor-transform';
 import { CheckedTransformer } from './checked-transformer';
 import { Plugins, PluginContext } from '../common/plugin-context';
 import { ProgramVisitor } from '../common/program-visitor';
@@ -75,11 +74,10 @@ function parsedProgramVisit(program: arkts.Program, context: PluginContext): ark
     } else {
         debugLog('[CANT SKIP PHASE] phase: ui-parsed, moduleName: ', program.moduleName);
         const componentTransformer = new ComponentTransformer();
-        const preprocessorTransformer = new PreprocessorTransformer();
         const programVisitor = new ProgramVisitor({
             pluginName: uiTransform.name,
             state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
-            visitors: [componentTransformer, preprocessorTransformer],
+            visitors: [componentTransformer],
             skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
             pluginContext: context,
         });

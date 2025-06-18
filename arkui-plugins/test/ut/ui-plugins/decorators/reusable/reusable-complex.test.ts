@@ -51,7 +51,13 @@ import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
+
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -72,7 +78,7 @@ class Message {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final struct Index extends CustomComponent<Index, __Options_Index> {
+@Entry({shared:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_display = STATE_MGMT_FACTORY.makeState<boolean>(this, "display", ((({let gensym___83835842 = initializers;
     (((gensym___83835842) == (null)) ? undefined : gensym___83835842.display)})) ?? (true)));
@@ -90,7 +96,7 @@ class Message {
     this.__backing_display!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: Index)=> Index) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Index | undefined): void {
+  @memo() public build() {
     Column(((instance: ColumnAttribute): void => {
       instance.height("100%").width("100%");
       return;
@@ -104,9 +110,9 @@ class Message {
       if (this.display) {
         Child._instantiateImpl(undefined, (() => {
           return new Child();
-        }), ({
+        }), {
           message: new Message("Child"),
-        } as __Options_Child), "Child", undefined);
+        }, "Child", undefined);
       }
     }));
   }
@@ -115,7 +121,7 @@ class Message {
   
 }
 
-@Reusable() @Component({freezeWhenInactive:false}) final struct Child extends CustomComponent<Child, __Options_Child> {
+@Reusable() @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_message = STATE_MGMT_FACTORY.makeState<Message>(this, "message", ((({let gensym___91869411 = initializers;
     (((gensym___91869411) == (null)) ? undefined : gensym___91869411.message)})) ?? (new Message("AboutToReuse"))));
@@ -144,7 +150,7 @@ class Message {
     console.info("Recycle ====Child==");
   }
   
-  @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {
+  @memo() public build() {
     Column(((instance: ColumnAttribute): void => {
       instance.borderWidth(1).height(100);
       return;
@@ -160,7 +166,7 @@ class Message {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) export interface __Options_Index {
+@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
   set display(display: boolean | undefined)
   
   get display(): boolean | undefined
@@ -170,7 +176,7 @@ class Message {
   
 }
 
-@Reusable() @Component({freezeWhenInactive:false}) export interface __Options_Child {
+@Reusable() @Component() export interface __Options_Child {
   set message(message: Message | undefined)
   
   get message(): Message | undefined

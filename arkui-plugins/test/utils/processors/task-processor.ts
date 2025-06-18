@@ -18,28 +18,29 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as child_process from 'child_process';
 import EventEmitter from 'events';
-import type {
-    BuildConfig,
-    CompileFileInfo,
-    JobInfo,
-    PluginTestContext,
-    ProcessEvent,
-    TraceOptions,
-} from './shared-types';
-import { mockBuildConfig } from './artkts-config';
+import {
+    CompileStrategy,
+    type BuildConfig,
+    type CompileFileInfo,
+    type JobInfo,
+    type PluginTestContext,
+    type ProcessEvent,
+    type TraceOptions,
+} from '../shared-types';
 import {
     DECL_ETS_SUFFIX,
     ensurePathExists,
     getFileName,
     MOCK_DEP_INPUT_FILE_NAME,
     MOCK_FILE_DEP_FILE_NAME,
-} from './path-config';
-import { ArkTSConfigContextCache, FileDependencyContextCache, PluginTestContextCache } from './cache';
-import { HashGenerator } from './hash-generator';
-import { createGlobalConfig, createGlobalContextPtr, destroyGlobalConfig, destroyGlobalContextPtr } from './global';
-import { Plugins, PluginState } from '../../common/plugin-context';
-import { concatObject, serializable } from './serializable';
-import { compileAbc, compileExternalProgram } from './compile';
+} from '../path-config';
+import { FileDependencyContextCache, PluginTestContextCache } from '../cache';
+import { HashGenerator } from '../hash-generator';
+import { createGlobalConfig, createGlobalContextPtr, destroyGlobalConfig, destroyGlobalContextPtr } from '../global';
+import { Plugins, PluginState } from '../../../common/plugin-context';
+import { concatObject, serializable } from '../serializable';
+import { compileAbc, compileExternalProgram } from '../compile';
+import { BaseProcessor } from './base-processor';
 
 interface Job {
     id: string;
@@ -230,17 +231,11 @@ function addJobToQueues(job: Job, queues: Queues): void {
     }
 }
 
-class TaskProcessor {
-    hashId: string;
-    buildConfig: BuildConfig;
-    tracing: TraceOptions;
-    cacheDir: string;
+class TaskProcessor extends BaseProcessor {
     entryFiles: Set<string>;
     depAnalyzerPath: string;
     depInputFile: string;
     fileDepsInfoJson: string;
-    arktsConfigFile: string;
-    compileFiles: Map<string, CompileFileInfo>;
     jobMap: Record<string, Job>;
     jobQueues: Queues;
 
@@ -248,18 +243,11 @@ class TaskProcessor {
     private worker!: WorkerInfo;
 
     constructor(hashId: string, buildConfig?: BuildConfig, tracing?: TraceOptions) {
-        this.hashId = hashId;
-        this.tracing = tracing ?? { externalSourceNames: [] };
-
-        const _buildConfig: BuildConfig = buildConfig ?? mockBuildConfig();
-        this.buildConfig = _buildConfig;
-        this.cacheDir = _buildConfig.cachePath;
-        this.entryFiles = new Set<string>(_buildConfig.compileFiles as string[]);
-        this.depAnalyzerPath = _buildConfig.depAnalyzerPath;
-        this.depInputFile = path.resolve(_buildConfig.cachePath, this.hashId, MOCK_DEP_INPUT_FILE_NAME);
-        this.fileDepsInfoJson = path.resolve(_buildConfig.cachePath, this.hashId, MOCK_FILE_DEP_FILE_NAME);
-        this.arktsConfigFile = this.getArktsConfigFile();
-        this.compileFiles = this.getCompileFiles();
+        super(hashId, buildConfig, tracing);
+        this.entryFiles = new Set<string>(this.buildConfig.compileFiles as string[]);
+        this.depAnalyzerPath = this.buildConfig.depAnalyzerPath;
+        this.depInputFile = path.resolve(this.buildConfig.cachePath, this.hashId, MOCK_DEP_INPUT_FILE_NAME);
+        this.fileDepsInfoJson = path.resolve(this.buildConfig.cachePath, this.hashId, MOCK_FILE_DEP_FILE_NAME);
 
         this.generateFileDependencies();
         this.cacheFileDependencies();
@@ -271,26 +259,6 @@ class TaskProcessor {
         const depInputFile: string = this.arktsConfigFile;
         const fileDepsInfoJson: string = this.fileDepsInfoJson;
         FileDependencyContextCache.getInstance().set(this.hashId, { depInputFile, fileDepsInfoJson });
-    }
-
-    private getArktsConfigFile(): string {
-        const arktsConfigFile = ArkTSConfigContextCache.getInstance().get(this.hashId)?.arktsConfigFile;
-        if (!arktsConfigFile) {
-            const err = `[${this.hashId}] TaskProcessor cannot get arktsConfigFile`;
-            console.error(err);
-            throw new Error(err);
-        }
-        return arktsConfigFile;
-    }
-
-    private getCompileFiles(): Map<string, CompileFileInfo> {
-        const compileFiles = ArkTSConfigContextCache.getInstance().get(this.hashId)?.compileFiles;
-        if (!compileFiles) {
-            const err = `[${this.hashId}] TaskProcessor cannot get compileFiles`;
-            console.error(err);
-            throw new Error(err);
-        }
-        return compileFiles;
     }
 
     private generateFileDependencies(): void {
@@ -431,13 +399,13 @@ class TaskProcessor {
             job = this.jobQueues.externalProgramQueue.shift()!;
             jobInfo = {
                 id: job.id,
-                isCompileAbc: false,
+                isCompileAbc: CompileStrategy.EXTERNAL,
             };
         } else if (this.jobQueues.abcQueue.length > 0) {
             job = this.jobQueues.abcQueue.shift()!;
             jobInfo = {
                 id: job.id,
-                isCompileAbc: true,
+                isCompileAbc: CompileStrategy.ABC,
             };
         }
 
@@ -475,9 +443,9 @@ class TaskProcessor {
     private subscribe() {
         this.emitter.on('ASSIGN_TASK', (msg) => {
             const job = msg.jobInfo;
-            if (job.isCompileAbc) {
+            if (job.isCompileAbc === CompileStrategy.ABC) {
                 compileAbc(this.emitter, job, this.tracing);
-            } else {
+            } else if (job.isCompileAbc === CompileStrategy.EXTERNAL) {
                 compileExternalProgram(this.emitter, job, this.tracing);
             }
             this.emitter.emit('TASK_FINISH', { jobId: job.id });

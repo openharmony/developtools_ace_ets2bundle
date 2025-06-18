@@ -39,7 +39,13 @@ const pluginTester = new PluginTester('test import transform', buildConfig);
 
 const expectedParsedScript: string = `
 
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
+
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -53,7 +59,7 @@ import { Button as Button } from "arkui.component.button";
 
 import hilog from "@ohos.hilog";
 
-@Entry() @Component() final struct A extends CustomComponent<A, __Options_A> {
+@Entry() @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
   @State() public a: string = "str";
   
   @Prop() public b!: string;
@@ -101,7 +107,13 @@ import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
+
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -119,7 +131,7 @@ function main() {}
 
 
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final struct A extends CustomComponent<A, __Options_A> {
+@Entry({shared:false,storage:"",routeName:""}) @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_A | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_a = STATE_MGMT_FACTORY.makeState<string>(this, "a", ((({let gensym___94024326 = initializers;
     (((gensym___94024326) == (null)) ? undefined : gensym___94024326.a)})) ?? ("str")));
@@ -153,7 +165,7 @@ function main() {}
     this.__backing_b!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: A)=> A) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_A | undefined): void {
+  @memo() public build() {
     Column(undefined, (() => {
       Button(((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {}));
@@ -170,7 +182,7 @@ function main() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) export interface __Options_A {
+@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_A {
   set a(a: string | undefined)
   
   get a(): string | undefined

@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,15 +28,15 @@ const ANIMATION_DIR_PATH: string = 'animation';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, ANIMATION_DIR_PATH, 'animation-basic.ets'),
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, ANIMATION_DIR_PATH, 'animatable-extend-basic.ets'),
 ];
 
-const animationTransform: Plugins = {
-    name: 'animation',
+const animatableExtendTransform: Plugins = {
+    name: 'animatable-extend',
     parsed: uiTransform().parsed,
 };
 
-const pluginTester = new PluginTester('test basic animation transform', buildConfig);
+const pluginTester = new PluginTester('test basic animatableExtend transform', buildConfig);
 
 const expectedScript: string = `
 
@@ -109,20 +110,19 @@ class __EntryWrapper extends EntryPoint {
 
 const expectedHeader =
     `
-    animationStart(value: AnimateParam | undefined): this
-    animationStop(value: AnimateParam | undefined): this
+    __createOrSetAnimatableProperty<T>(functionName: string, value: number | AnimatableArithmetic<T>, callback: ((value: number | AnimatableArithmetic<T>)=> void)): void
     `;
 
-function testAnimationTransformer(this: PluginTestContext): void {
+function testAnimatableExtendTransformer(this: PluginTestContext): void {
     expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
     expect(parseDumpSrc(this.declContexts?.['arkui.component.common']?.scriptSnapshot ?? '')).toContain(parseDumpSrc(expectedHeader));
 }
 
 pluginTester.run(
     'test basic animation transform',
-    [animationTransform, uiNoRecheck, recheck],
+    [animatableExtendTransform, uiNoRecheck, recheck],
     {
-        checked: [testAnimationTransformer],
+        checked: [testAnimatableExtendTransformer],
     },
     {
         stopAfter: 'checked',

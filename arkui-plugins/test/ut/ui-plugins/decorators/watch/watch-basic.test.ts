@@ -73,7 +73,13 @@ import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
+
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -135,7 +141,7 @@ function main() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Entry({shared:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_statevar = STATE_MGMT_FACTORY.makeState<string>(this, "statevar", ((({let gensym___76198660 = initializers;
     (((gensym___76198660) == (null)) ? undefined : gensym___76198660.statevar)})) ?? ("Hello World")), ((_: string): void => {
@@ -258,7 +264,7 @@ function main() {}
   
   public ProvideOnChange(propName: string) {}
   
-  @memo() public _build(@memo() style: ((instance: MyStateSample)=> MyStateSample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MyStateSample | undefined): void {
+  @memo() public build() {
     Child._instantiateImpl(undefined, (() => {
       return new Child();
     }));
@@ -268,7 +274,7 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_providevar = STATE_MGMT_FACTORY.makeConsume<string>(this, "providevar", "providevar", ((_: string): void => {
       this.ConsumeOnChange(_);
@@ -289,7 +295,7 @@ function main() {}
   
   public ConsumeOnChange(propName: string) {}
   
-  @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {}
+  @memo() public build() {}
   
   private constructor() {}
   
@@ -297,7 +303,7 @@ function main() {}
 
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) export interface __Options_MyStateSample {
+@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
   set statevar(statevar: string | undefined)
   
   get statevar(): string | undefined
@@ -343,7 +349,7 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_Child {
+@Component() export interface __Options_Child {
   set providevar(providevar: string | undefined)
   
   get providevar(): string | undefined

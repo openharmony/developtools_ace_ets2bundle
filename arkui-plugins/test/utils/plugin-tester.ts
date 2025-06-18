@@ -20,14 +20,16 @@ import {
     CompileFileInfo,
     PluginStateId,
     PluginTestContext,
+    Processor,
     SingleProgramContext,
     TraceOptions,
 } from './shared-types';
 import { HashGenerator } from './hash-generator';
-import { TaskProcessor } from './task-processor';
 import { PluginTestContextCache } from './cache';
 import { Plugins, PluginState } from '../../common/plugin-context';
 import { concatObject } from './serializable';
+import { ProcessorBuilder } from './processor-builder';
+import { MainProcessor } from './processors/main-processor';
 
 type TestParams = Parameters<typeof test>;
 
@@ -53,7 +55,7 @@ class PluginTester {
     private hashId: string;
     private describe: string;
     private configBuilder: ArktsConfigBuilder;
-    private taskProcessor?: TaskProcessor;
+    private taskProcessor?: Processor;
     private resolve?: Promise<void>;
 
     constructor(describe: string, buildConfig?: BuildConfig) {
@@ -97,12 +99,16 @@ class PluginTester {
         let declContexts: Record<string, SingleProgramContext> = {};
         fileNames.forEach((fileName) => {
             const sourceKey = `${abcKey}:${fileName}`;
-            const sourceContext = PluginTestContextCache.getInstance().get(sourceKey)!;
+            const sourceContext = PluginTestContextCache.getInstance().get(sourceKey) ?? {};
+            if (!!sourceContext.declContexts) {
+                declContexts = concatObject(declContexts, sourceContext.declContexts);
+                delete sourceContext.declContexts;
+            }
             sourceContexts[fileName] = sourceContext;
 
             const declKey = `${externalKey}:${fileName}`;
-            const declContext = PluginTestContextCache.getInstance().get(declKey)!;
-            declContexts = concatObject(declContexts, declContext.declContexts);
+            const declContext = PluginTestContextCache.getInstance().get(declKey) ?? {};
+            declContexts = concatObject(declContexts, declContext.declContexts ?? {});
         });
 
         return { sourceContexts, declContexts };
@@ -165,7 +171,12 @@ class PluginTester {
     }
 
     private async compile(plugins: Plugins[], stopAfter?: PluginState, tracing?: TraceOptions): Promise<void> {
-        this.taskProcessor = new TaskProcessor(this.hashId, this.configBuilder.buildConfig, tracing);
+        this.taskProcessor = ProcessorBuilder.build(
+            MainProcessor,
+            this.hashId,
+            this.configBuilder.buildConfig,
+            tracing
+        );
         return this.taskProcessor.invokeWorkers(plugins, stopAfter);
     }
 

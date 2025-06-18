@@ -51,6 +51,10 @@ import { LinkSourceType as LinkSourceType } from "arkui.stateManagement.decorato
 
 import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Column as Column, TextInput as TextInput } from "@ohos.arkui.component";
@@ -61,7 +65,7 @@ function main() {}
 
 
 
-@Component({freezeWhenInactive:false}) final struct Parant extends CustomComponent<Parant, __Options_Parant> {
+@Component() final struct Parant extends CustomComponent<Parant, __Options_Parant> {
   public __initializeStruct(initializers: __Options_Parant | undefined, @memo() content: (()=> void) | undefined): void {
     if (({let gensym___10127521 = initializers;
     (((gensym___10127521) == (null)) ? undefined : gensym___10127521.__backing_text1)})) {
@@ -81,19 +85,19 @@ function main() {}
     this.__backing_text1!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: Parant)=> Parant) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Parant | undefined): void {
+  @memo() public build() {
     Column(undefined, (() => {
       TextInput(undefined, {
         text: this.text1,
       });
       Child._instantiateImpl(undefined, (() => {
         return new Child();
-      }), ({
+      }), {
         __backing_childText: this.__backing_text1,
         childText2: this.text1,
         childText3: this.text1,
         childText4: this.text1,
-      } as __Options_Child));
+      });
     }));
   }
   
@@ -101,7 +105,7 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
     if (({let gensym___161337494 = initializers;
     (((gensym___161337494) == (null)) ? undefined : gensym___161337494.__backing_childText)})) {
@@ -165,7 +169,7 @@ function main() {}
     this.__backing_childText4!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {
+  @memo() public build() {
     TextInput(undefined, {
       text: this.childText,
     });
@@ -177,7 +181,7 @@ function main() {}
 
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
-@Component({freezeWhenInactive:false}) export interface __Options_Parant {
+@Component() export interface __Options_Parant {
   @__Link_intrinsic() set text1(text1: string | undefined)
   
   @__Link_intrinsic() get text1(): string | undefined
@@ -187,7 +191,7 @@ function main() {}
   
 }
 
-@Component({freezeWhenInactive:false}) export interface __Options_Child {
+@Component() export interface __Options_Child {
   @__Link_intrinsic() set childText(childText: string | undefined)
   
   @__Link_intrinsic() get childText(): string | undefined

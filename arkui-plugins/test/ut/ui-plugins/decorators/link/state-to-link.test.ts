@@ -51,7 +51,13 @@ import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateMan
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
+
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -63,7 +69,7 @@ function main() {}
 
 
 
-@Component({freezeWhenInactive:false}) final struct DateComponent extends CustomComponent<DateComponent, __Options_DateComponent> {
+@Component() final struct DateComponent extends CustomComponent<DateComponent, __Options_DateComponent> {
   public __initializeStruct(initializers: __Options_DateComponent | undefined, @memo() content: (()=> void) | undefined): void {
     if (({let gensym___164314175 = initializers;
     (((gensym___164314175) == (null)) ? undefined : gensym___164314175.__backing_selectedDate)})) {
@@ -83,7 +89,7 @@ function main() {}
     this.__backing_selectedDate!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: DateComponent)=> DateComponent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_DateComponent | undefined): void {
+  @memo() public build() {
     Column(undefined, (() => {
       Button(((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
@@ -109,7 +115,7 @@ function main() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> {
+@Entry({shared:false,storage:"",routeName:""}) @Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_ParentComponent | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_parentSelectedDate = STATE_MGMT_FACTORY.makeState<Date>(this, "parentSelectedDate", ((({let gensym___80922148 = initializers;
     (((gensym___80922148) == (null)) ? undefined : gensym___80922148.parentSelectedDate)})) ?? (new Date("2021-08-08"))));
@@ -127,7 +133,7 @@ function main() {}
     this.__backing_parentSelectedDate!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: ParentComponent)=> ParentComponent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_ParentComponent | undefined): void {
+  @memo() public build() {
     Column(undefined, (() => {
       Button(((instance: ButtonAttribute): void => {
         instance.margin(10).onClick(((e: ClickEvent) => {
@@ -148,9 +154,9 @@ function main() {}
       });
       DateComponent._instantiateImpl(undefined, (() => {
         return new DateComponent();
-      }), ({
+      }), {
         __backing_selectedDate: this.__backing_parentSelectedDate,
-      } as __Options_DateComponent));
+      });
     }));
   }
   
@@ -160,7 +166,7 @@ function main() {}
 
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
-@Component({freezeWhenInactive:false}) export interface __Options_DateComponent {
+@Component() export interface __Options_DateComponent {
   @__Link_intrinsic() set selectedDate(selectedDate: Date | undefined)
   
   @__Link_intrinsic() get selectedDate(): Date | undefined
@@ -170,7 +176,7 @@ function main() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) export interface __Options_ParentComponent {
+@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_ParentComponent {
   set parentSelectedDate(parentSelectedDate: Date | undefined)
   
   get parentSelectedDate(): Date | undefined
