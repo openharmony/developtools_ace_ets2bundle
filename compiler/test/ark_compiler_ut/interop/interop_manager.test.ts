@@ -23,6 +23,8 @@ import {
   isBridgeCode
  } from '../../../lib/fast_build/ark_compiler/interop/interop_manager';
 import { ARKTS_1_1, ARKTS_1_2, HYBRID } from '../../../lib/fast_build/ark_compiler/interop/type';
+import { sdkConfigs } from '../../../main';
+import { toUnixPath } from '../../../lib/utils';
 
 export interface ArkTSEvolutionModule {
   language: string;
@@ -241,12 +243,13 @@ mocha.describe('test interop_manager file api', function () {
       '/mock/ets-loader/declarations',
       '/mock/ets-loader/components',
       '/component',
-      '/mock/ets-loader',
-      '/mnt/data/z00893105/dev/developtools/api',
-      '/mnt/data/z00893105/dev/developtools/arkts',
-      '/mnt/data/z00893105/dev/developtools/kits'
+      '/mock/ets-loader'
     ]);
-
+    sdkConfigs.forEach(({ apiPath }) => {
+      apiPath.forEach(path => {
+        expectedDynamicSDKPath.add(toUnixPath(path));
+      });
+    });
     const expectedStaticInteropDecl = new Set([
       '/ets1.2/build-tools/interop/declarations/kits',
       '/ets1.2/build-tools/interop/declarations/api',
@@ -258,7 +261,6 @@ mocha.describe('test interop_manager file api', function () {
       '/ets1.2/build-tools/interop/bridge/api',
       '/ets1.2/build-tools/interop/bridge/arkts'
     ]);
-
     expect([...result.dynamicSDKPath]).to.have.deep.members([...expectedDynamicSDKPath]);
     expect([...result.staticSDKInteropDecl]).to.have.deep.members([...expectedStaticInteropDecl]);
     expect([...result.staticSDKGlueCodePath]).to.have.deep.members([...expectedStaticGlueCode]);
@@ -274,29 +276,29 @@ mocha.describe('isBridgeCode', function () {
     ]),
   };
 
-  mocha.it('20-1: should return true when filePath is inside a declgenBridgeCodePath', function () {
+  mocha.it('1-1: should return true when filePath is inside a declgenBridgeCodePath', function () {
     const filePath = path.resolve('project/bridge/pkgA/utils/helper.ts');
     expect(isBridgeCode(filePath, mockConfig)).to.be.true;
   });
 
-  mocha.it('20-2: should return false when filePath is outside all bridge code paths', function () {
+  mocha.it('1-2: should return false when filePath is outside all bridge code paths', function () {
     const filePath = path.resolve('project/otherpkg/index.ts');
     expect(isBridgeCode(filePath, mockConfig)).to.be.false;
   });
 
-  mocha.it('20-3: should return false when mixCompile is false', function () {
+  mocha.it('1-3: should return false when mixCompile is false', function () {
     const config = { ...mockConfig, mixCompile: false };
     const filePath = path.resolve('project/bridge/pkgA/utils/helper.ts');
     expect(isBridgeCode(filePath, config)).to.be.false;
   });
 
-  mocha.it('20-4: should return false when dependentModuleMap is empty', function () {
+  mocha.it('1-4: should return false when dependentModuleMap is empty', function () {
     const config = { mixCompile: true, dependentModuleMap: new Map() };
     const filePath = path.resolve('project/bridge/pkgA/file.ts');
     expect(isBridgeCode(filePath, config)).to.be.false;
   });
 
-  mocha.it('20-5: should return true for multiple matches, stop at first match', function () {
+  mocha.it('1-5: should return true for multiple matches, stop at first match', function () {
     const config = {
       mixCompile: true,
       dependentModuleMap: new Map([

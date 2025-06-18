@@ -33,8 +33,25 @@ action("gen_ui_plugins") {
   outputs = [ "$target_gen_dir" ]
 }
 
+action("build_ets_sysResource") {
+  deps = [":gen_ui_plugins"]
+  script = "//developtools/ace_ets2bundle/generateSysResource.py"
+  ets_sysResource = "$target_gen_dir" + "/lib/ui-plugins/sysResource.js"
+  outputs = [ ets_sysResource ]
+
+  _id_defined_json = "//base/global/system_resources/systemres/main/resources/base/element/id_defined.json"
+  inputs = [ _id_defined_json ]
+
+  args = [
+    "--input-json",
+    rebase_path(_id_defined_json, root_build_dir),
+    "--output-js",
+    rebase_path(ets_sysResource, root_build_dir),
+  ]
+}
+
 ohos_copy("ui_plugin") {
-  deps = [ ":gen_ui_plugins" ]
+  deps = [":gen_ui_plugins", ":build_ets_sysResource" ]
   sources = [ rebase_path("$target_gen_dir") ]
   outputs = [ target_out_dir + "/$target_name" ]
   module_source_dir = target_out_dir + "/$target_name"
