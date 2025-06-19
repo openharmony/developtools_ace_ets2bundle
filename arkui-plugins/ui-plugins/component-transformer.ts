@@ -48,6 +48,7 @@ import {
     ENTRY_POINT_IMPORT_SOURCE_NAME,
 } from '../common/predefines';
 import { generateInstantiateInterop } from './interop/interop';
+import { createCustomDialogMethod, isNewCustomDialogController, transformController } from './customdialog';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string;
@@ -77,6 +78,7 @@ export class ComponentTransformer extends AbstractVisitor {
     private hasLegacy: boolean = false;
     private legacyStructMap: Map<string, StructMap> = new Map();
     private legacyCallMap: Map<string, string> = new Map();
+    private customDialogController: string = '';
 
     constructor(options?: ComponentTransformerOptions) {
         const _options: ComponentTransformerOptions = options ?? {};
@@ -98,6 +100,7 @@ export class ComponentTransformer extends AbstractVisitor {
         this.hasLegacy = false;
         this.legacyStructMap = new Map();
         this.legacyCallMap = new Map();
+        this.customDialogController = '';
     }
 
     enter(node: arkts.AstNode) {
@@ -142,6 +145,9 @@ export class ComponentTransformer extends AbstractVisitor {
                 CustomComponentNames.LAYOUT_CALLBACK
             );
         }
+        if (this.isCustomDialog() && arkts.isClassProperty(node)) {
+            this.hasCustomDialogController(node);
+        }
     }
 
     exit(node: arkts.AstNode) {
@@ -150,6 +156,38 @@ export class ComponentTransformer extends AbstractVisitor {
             if (this.scopeInfos[this.scopeInfos.length - 1]?.name === node.definition.ident.name) {
                 this.scopeInfos.pop();
             }
+        }
+    }
+
+    isCustomDialog(): boolean {
+        if (this.scopeInfos.length === 0) {
+            return false;
+        }
+        const scopeInfo: ScopeInfo = this.scopeInfos[this.scopeInfos.length - 1];
+        return !!scopeInfo.annotations.customdialog;
+    }
+    
+    hasController(node: arkts.ETSTypeReference, key_name: string): void {
+        const ident = node.part?.name;
+        if (ident && arkts.isIdentifier(ident) && ident.name === 'CustomDialogController') {
+            this.customDialogController = key_name;
+        }
+    }
+
+    hasCustomDialogController(node: arkts.ClassProperty): void {
+        const key = node.key;
+        if (!(key && arkts.isIdentifier(key) && node.typeAnnotation)) {
+            return;
+        }
+        const typeAnno = node.typeAnnotation;
+        if (arkts.isETSUnionType(typeAnno)) {
+            for (const type of typeAnno.types) {
+                if (arkts.isETSTypeReference(type)) {
+                    this.hasController(type, key.name);
+                }
+            }
+        } else if (arkts.isETSTypeReference(typeAnno)) {
+            this.hasController(typeAnno, key.name);
         }
     }
 
@@ -269,6 +307,11 @@ export class ComponentTransformer extends AbstractVisitor {
             if (!!entryWithStorage) {
                 newDefinitionBody.push(entryFactory.createEntryLocalStorageInClass(entryWithStorage));
             }
+        }
+        if (!!scopeInfo.annotations.customdialog) {
+            const setDialogController = createCustomDialogMethod(this.customDialogController);
+            newDefinitionBody.push(setDialogController);
+            this.customDialogController = '';
         }
         const newDefinition: arkts.ClassDefinition = this.createNewDefinition(
             node,
@@ -453,6 +496,9 @@ export class ComponentTransformer extends AbstractVisitor {
         const newNode = this.visitEachChild(node);
         if (arkts.isEtsScript(newNode)) {
             return this.processEtsScript(newNode);
+        }
+        if (isNewCustomDialogController(newNode)) {
+            return transformController(newNode as arkts.ETSNewClassInstanceExpression);
         }
         if (
             arkts.isStructDeclaration(newNode) &&

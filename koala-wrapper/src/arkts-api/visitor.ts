@@ -109,12 +109,10 @@ export function visitEachChild(node: AstNode, visitor: Visitor): AstNode {
 function visitOuterExpression(node: AstNode, visitor: Visitor): AstNode {
     if (updated) {
         return node;
-    }
-    if (isBlockExpression(node)) {
+    } else if (isBlockExpression(node)) {
         updated = true;
         return factory.updateBlockExpression(node, nodesVisitor(node.statements, visitor));
-    }
-    if (isCallExpression(node)) {
+    } else if (isCallExpression(node)) {
         updated = true;
         const call = factory.updateCallExpression(
             node,
@@ -126,12 +124,10 @@ function visitOuterExpression(node: AstNode, visitor: Visitor): AstNode {
             call.setTralingBlock(nodeVisitor(node.trailingBlock, visitor));
         }
         return call;
-    }
-    if (isArrowFunctionExpression(node)) {
+    } else if (isArrowFunctionExpression(node)) {
         updated = true;
         return factory.updateArrowFunction(node, nodeVisitor(node.scriptFunction, visitor));
-    }
-    if (isAssignmentExpression(node)) {
+    } else if (isAssignmentExpression(node)) {
         updated = true;
         return factory.updateAssignmentExpression(
             node,
@@ -139,8 +135,7 @@ function visitOuterExpression(node: AstNode, visitor: Visitor): AstNode {
             node.operatorType,
             nodeVisitor(node.right as Expression, visitor)
         );
-    }
-    if (isETSNewClassInstanceExpression(node)) {
+    } else if (isETSNewClassInstanceExpression(node)) {
         updated = true;
         return factory.updateETSNewClassInstanceExpression(
             node,

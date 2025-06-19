@@ -451,7 +451,7 @@ export function findMemoFromTypeAnnotation(typeAnnotation: arkts.AstNode | undef
     if (arkts.isETSTypeReference(typeAnnotation) && !!typeAnnotation.part && !!typeAnnotation.part.name) {
         let decl: arkts.AstNode | undefined = arkts.getDecl(typeAnnotation.part.name);
         if (!!decl && arkts.isTSTypeAliasDeclaration(decl)) {
-            return hasMemoAnnotation(decl) || hasMemoIntrinsicAnnotation(decl);
+            return hasMemoAnnotation(decl) || hasMemoIntrinsicAnnotation(decl) || decl.typeAnnotation ? findMemoFromTypeAnnotation(decl.typeAnnotation) : false;
         }
     } else if (arkts.isETSFunctionType(typeAnnotation)) {
         return hasMemoAnnotation(typeAnnotation) || hasMemoIntrinsicAnnotation(typeAnnotation);
