@@ -1550,15 +1550,20 @@ class ParseIntent {
     }
   }
 
-  public writeUserIntentJsonFile(): void {
+  // This method writes the parsed data to a file.
+  public writeUserIntentJsonFile(harIntentDataObj: object): void {
+    const cachePath: string =
+      path.join(projectConfig.cachePath, 'insight_compile_cache.json'); // Compiled cache file
+    if (!(fs.existsSync(cachePath) || this.intentData.length > 0 || Object.keys(harIntentDataObj).length !== 0)) {
+      return;
+    }
     this.verifyInheritanceChain();
-    const writeJsonData: object = this.processIntentData();
+    const mergedData: object = this.processIntentData(harIntentDataObj);
     const cacheSourceMapPath: string =
       path.join(projectConfig.aceProfilePath, 'insight_intent.json'); // The user's intents configuration file
-    const cachePath: string = path.join(projectConfig.cachePath, 'insight_compile_cache.json'); // Compiled cache file
     try {
       if (this.intentData.length > 0) {
-        fs.writeFileSync(cacheSourceMapPath, JSON.stringify(writeJsonData, null, 2), 'utf-8');
+        fs.writeFileSync(cacheSourceMapPath, JSON.stringify(mergedData, null, 2), 'utf-8');
         fs.writeFileSync(cachePath, JSON.stringify({ 'extractInsightIntents': this.intentData }, null, 2), 'utf-8');
       } else if (fs.existsSync(cacheSourceMapPath)) {
         fs.unlinkSync(cacheSourceMapPath);
@@ -1587,7 +1592,7 @@ class ParseIntent {
     }
   }
 
-  private processIntentData(): object {
+  private processIntentData(harIntentDataObj: object): object {
     this.matchEntities();
     if (!projectConfig.aceProfilePath) {
       const errorMessage: string = `Internal error aceProfilePath not found`;
@@ -1630,8 +1635,51 @@ class ParseIntent {
         'extractInsightIntents': this.intentData
       });
     }
+    const mergedData: object = this.mergeHarData(writeJsonData, harIntentDataObj);
     this.validateIntentIntentName(writeJsonData);
-    return writeJsonData;
+    return mergedData;
+  }
+
+  private mergeHarData(writeJsonData: object, harIntentDataObj: object): object {
+    let mergedData: object = {};
+    if (writeJsonData) {
+      mergedData = JSON.parse(JSON.stringify(writeJsonData));
+    }
+    Object.keys(harIntentDataObj || {})?.forEach(harName => {
+      if (harIntentDataObj[harName].extractInsightIntents) {
+        harIntentDataObj[harName].extractInsightIntents.forEach(intentObj => {
+          intentObj.moduleName = projectConfig.moduleName;
+          intentObj.bundleName = projectConfig.bundleName;
+        });
+        if (harIntentDataObj[harName].extractInsightIntents) {
+          mergedData.extractInsightIntents?.push(...harIntentDataObj[harName].extractInsightIntents);
+        }
+      }
+    });
+    return mergedData;
+  }
+
+  // This method get the user's intents from the bytecode HAR package.
+  public getHarData(): object {
+    const harIntentDataObj: object = {};
+    if (fs.existsSync(projectConfig.aceBuildJson)) {
+      const loaderJson: string = fs.readFileSync(projectConfig.aceBuildJson, 'utf8');
+      const { byteCodeHarInfo } = JSON.parse(loaderJson);
+      Object.keys(byteCodeHarInfo || {})?.forEach((harName) => {
+        const harAbcFilePath = byteCodeHarInfo[harName].abcPath as string;
+        const harModulePath: string = harAbcFilePath.split('ets')[0];
+        const harSourcePath: string = path.join(harModulePath, 'src', 'main', 'resources', 'base', 'profile');
+        const intentDataSourcePath: string = path.join(harSourcePath, 'insight_intent.json');
+        let harIntentData: object = {};
+        if (fs.existsSync(intentDataSourcePath)) {
+          harIntentData = JSON.parse(fs.readFileSync(intentDataSourcePath, 'utf8')) as object;
+        }
+        Object.assign(harIntentDataObj, {
+          harName: harIntentData
+        });
+      });
+    }
+    return harIntentDataObj;
   }
 
   private validateIntentIntentName(writeJsonData: object): void {
