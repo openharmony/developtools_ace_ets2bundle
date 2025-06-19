@@ -19,8 +19,9 @@ import * as arkts from '@koalaui/libarkts';
 const isDebugLog: boolean = false;
 const isDebugDump: boolean = false;
 const isPerformance: boolean = false;
+const enableMemoryTracker: boolean = false;
 arkts.Performance.getInstance().skip(!isPerformance);
-
+arkts.Performance.getInstance().enableMemoryTracker(enableMemoryTracker);
 export function getEnumName(enumType: any, value: number): string | undefined {
     return enumType[value];
 }

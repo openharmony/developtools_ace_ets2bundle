@@ -18,6 +18,7 @@
 #include <set>
 #include <string>
 #include <mutex>
+#include "memoryTracker.h"
 
 std::set<std::string> globalStructInfo;
 std::mutex g_structMutex;
@@ -657,3 +658,22 @@ void impl_LogDiagnosticWithSuggestion(KNativePointer context, KNativePointer dia
     GetImpl()->LogDiagnosticWithSuggestion(_context, _diagnosticInfo, _suggestionInfo, _range);
 }
 KOALA_INTEROP_V4(LogDiagnosticWithSuggestion, KNativePointer, KNativePointer, KNativePointer, KNativePointer);
+
+MemoryTracker tracker;
+void impl_MemoryTrackerReset(KNativePointer context)
+{
+    tracker.Reset();
+}
+KOALA_INTEROP_V1(MemoryTrackerReset, KNativePointer);
+
+void impl_MemoryTrackerGetDelta(KNativePointer context)
+{
+    tracker.Report(tracker.GetDelta());
+}
+KOALA_INTEROP_V1(MemoryTrackerGetDelta, KNativePointer);
+
+void impl_MemoryTrackerPrintCurrent(KNativePointer context)
+{
+    tracker.Report(GetMemoryStats());
+}
+KOALA_INTEROP_V1(MemoryTrackerPrintCurrent, KNativePointer);

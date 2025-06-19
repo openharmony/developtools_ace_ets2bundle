@@ -934,6 +934,18 @@ export class Es2pandaNativeModule {
     _SetUpSoPath(soPath: string): void {
         throw new Error('Not implemented');
     }
+
+    _MemoryTrackerReset(context: KNativePointer): void {
+        throw new Error('CallExpressionIsTrailingCallConst was not overloaded by native module initialization');
+    }
+
+    _MemoryTrackerGetDelta(context: KNativePointer): void {
+        throw new Error('CallExpressionIsTrailingCallConst was not overloaded by native module initialization');
+    }
+
+    _MemoryTrackerPrintCurrent(context: KNativePointer): void {
+        throw new Error('CallExpressionIsTrailingCallConst was not overloaded by native module initialization');
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {
