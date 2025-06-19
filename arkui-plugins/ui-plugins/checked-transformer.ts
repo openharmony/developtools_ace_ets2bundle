@@ -41,6 +41,7 @@ import { ImportCollector } from '../common/import-collector';
 import { DeclarationCollector } from '../common/declaration-collector';
 import { PropertyCache } from './property-translators/utils';
 import { isArkUICompatible, generateArkUICompatible } from './interop/interop';
+import { checkCustomDialogController, insertImportDeclaration, transformDeclaration } from './customdialog';
 import { LogCollector } from '../common/log-collector';
 
 export class CheckedTransformer extends AbstractVisitor {
@@ -92,6 +93,24 @@ export class CheckedTransformer extends AbstractVisitor {
         }
     }
 
+    isCustomDialogController(): boolean {
+        if (this.isExternal && this.externalSourceName === 'arkui.component.customDialogController') {
+            return true;
+        }
+        return false;
+    }
+
+    processCustomDialogController(node: arkts.AstNode): arkts.AstNode {
+        if (arkts.isEtsScript(node)) {
+            insertImportDeclaration(this.program);
+        }
+        if (arkts.isClassDeclaration(node) && node.definition && node.definition.ident &&
+            node.definition.ident.name === 'CustomDialogController') {
+            return transformDeclaration(node as arkts.ClassDeclaration);
+        }
+        return node;
+    }
+
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         this.enter(beforeChildren);
         if (arkts.isCallExpression(beforeChildren) && isBuilderLambda(beforeChildren)) {
@@ -102,7 +121,9 @@ export class CheckedTransformer extends AbstractVisitor {
             return this.visitEachChild(lambda);
         }
         const node = this.visitEachChild(beforeChildren);
-        if (
+        if (this.isCustomDialogController()) {
+            return this.processCustomDialogController(node);
+        } else if (
             arkts.isClassDeclaration(node) &&
             this.scope.customComponents.length > 0 &&
             isCustomComponentClass(node, this.scope.customComponents[this.scope.customComponents.length - 1])
@@ -129,6 +150,8 @@ export class CheckedTransformer extends AbstractVisitor {
             LogCollector.getInstance().emitLogInfo();
         } else if (arkts.isTSTypeAliasDeclaration(node)) {
             return structFactory.transformTSTypeAlias(node);
+        } else if (arkts.isBlockStatement(node)) {
+            return checkCustomDialogController(node);
         }
         return node;
     }

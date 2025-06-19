@@ -32,6 +32,10 @@ export enum CustomComponentNames {
     OPTIONS = 'options',
     PAGE_LIFE_CYCLE = 'PageLifeCycle',
     LAYOUT_CALLBACK = 'LayoutCallback',
+    CUSTOMDIALOG_ANNOTATION_NAME = 'CustomDialog',
+    CUSTOMDIALOG_CONTROLLER = 'CustomDialogController',
+    CUSTOMDIALOG_CONTROLLER_OPTIONS = 'CustomDialogControllerOptions',
+    SETDIALOGCONTROLLER_METHOD = '__setDialogController__',
 }
 
 export enum BuilderLambdaNames {
@@ -144,6 +148,7 @@ export type CustomComponentAnontations = {
     reusable?: arkts.AnnotationUsage;
     reusableV2?: arkts.AnnotationUsage;
     customLayout?: arkts.AnnotationUsage;
+    customdialog?: arkts.AnnotationUsage;
 };
 
 type StructAnnoationInfo = {
@@ -153,6 +158,7 @@ type StructAnnoationInfo = {
     isReusable: boolean;
     isReusableV2: boolean;
     isCustomLayout: boolean;
+    isCustomDialog: boolean;
 };
 
 export function isCustomComponentAnnotation(
@@ -199,9 +205,9 @@ export function collectCustomComponentScopeInfo(
     if (!isCustomComponentClassDecl) {
         let isCustomComponent: boolean = false;
         for (const anno of definition.annotations) {
-            const { isComponent, isComponentV2, isEntry, isReusable, isReusableV2, isCustomLayout } =
+            const { isComponent, isComponentV2, isEntry, isReusable, isReusableV2, isCustomLayout, isCustomDialog } =
                 getAnnotationInfoForStruct(anno, shouldIgnoreDecl);
-            isCustomComponent ||= isComponent || isComponentV2;
+            isCustomComponent ||= isComponent || isComponentV2 || isCustomDialog;
             annotations = {
                 ...annotations,
                 ...(isComponent && !annotations?.component && { component: anno }),
@@ -210,6 +216,7 @@ export function collectCustomComponentScopeInfo(
                 ...(isReusable && !annotations?.reusable && { reusable: anno }),
                 ...(isReusableV2 && !annotations?.reusableV2 && { reusableV2: anno }),
                 ...(isCustomLayout && !annotations?.customLayout && { customLayout: anno }),
+                ...(isCustomDialog && !annotations?.reusable && { customdialog: anno }),
             };
         }
         if (!isCustomComponent) {
@@ -233,7 +240,8 @@ export function getAnnotationInfoForStruct(
     const isReusable = isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE, shouldIgnoreDecl);
     const isReusableV2 = isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE_V2, shouldIgnoreDecl);
     const isCustomLayout = isCustomComponentAnnotation(anno, StructDecoratorNames.CUSTOM_LAYOUT, shouldIgnoreDecl);
-    return { isComponent, isComponentV2, isEntry, isReusable, isReusableV2, isCustomLayout };
+    const isCustomDialog = isCustomComponentAnnotation(anno, StructDecoratorNames.CUSTOMDIALOG, shouldIgnoreDecl);
+    return { isComponent, isComponentV2, isEntry, isReusable, isReusableV2, isCustomLayout, isCustomDialog };
 }
 
 export function isComponentStruct(node: arkts.StructDeclaration, scopeInfo: CustomComponentInfo): boolean {
