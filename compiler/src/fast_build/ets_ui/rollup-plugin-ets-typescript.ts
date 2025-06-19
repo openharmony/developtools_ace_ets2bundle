@@ -230,8 +230,9 @@ export function etsTransform() {
     afterBuildEnd() {
       const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsTransform', 'afterBuildEnd');
       const eventEtsTransformAfterBuildEnd = createAndStartEvent(hookEventFactory, 'etsTransformafterBuildEnd');
-      if (parseIntent.intentData.length > 0 || parseIntent.isUpdateCompile) {
-        parseIntent.writeUserIntentJsonFile();
+      const harIntentDataObj: object = parseIntent.getHarData();
+      if (parseIntent.intentData.length > 0 || parseIntent.isUpdateCompile || Object.keys(harIntentDataObj).length !== 0) {
+        parseIntent.writeUserIntentJsonFile(harIntentDataObj);
       }
       // Copy the cache files in the compileArkTS directory to the loader_out directory
       if (projectConfig.compileHar && !projectConfig.byteCodeHar) {
