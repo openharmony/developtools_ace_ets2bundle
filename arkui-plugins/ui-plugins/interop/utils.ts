@@ -16,7 +16,7 @@
 
 
 import * as arkts from '@koalaui/libarkts';
-import { ESValueMethodNames, InteroperAbilityNames } from './predefines';
+import { ESValueMethodNames } from './predefines';
 
 
 /**
@@ -126,33 +126,10 @@ export function getPropertyESValue(result: string, obj: string, key: string): ar
 
 /**
  * 
- * @param stateVar 
- * @param block 
- * @returns if (getCompatibleState(stateVar) === undefined) { block }
- */
-export function ifStateHasProxy(stateVar: () => arkts.Expression, block: arkts.BlockStatement): arkts.Statement {
-    return arkts.factory.createIfStatement(
-        arkts.factory.createBinaryExpression(
-            arkts.factory.createCallExpression(
-                arkts.factory.createIdentifier(InteroperAbilityNames.GETPROXY),
-                undefined,
-                [
-                    stateVar()
-                ]
-            ),
-            arkts.factory.createUndefinedLiteral(),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_STRICT_EQUAL
-        ),
-        block
-    );
-}
-
-/**
- * Generates a state proxy variable name by appending "_State_Proxy" suffix.
  * @param {string} stateVarName - Original state variable name to be proxied.
- * @returns {string} Proxied variable name in the format: "{stateVarName}_State_Proxy".
+ * @returns {string} Proxied variable name in the format: "__Proxy_{stateVarName}".
  */
 export function stateProxy(stateVarName: string): string {
-    return `${stateVarName}_State_Proxy`;
+    return `__Proxy_${stateVarName}`;
 }
 
