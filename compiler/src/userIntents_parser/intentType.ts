@@ -16,6 +16,7 @@
 import ts from 'typescript';
 import parseIntent from './parseUserIntents';
 import Ajv from 'ajv';
+import json5 from 'json5';
 
 const ajv = new Ajv({allErrors: true});
 
@@ -125,7 +126,7 @@ function validateParameters(v: ts.Expression): boolean {
     const initializer = ts.isIdentifier(v) ?
       parseIntent.checker.getSymbolAtLocation(v)?.valueDeclaration?.initializer :
       v;
-    return ts.isObjectLiteralExpression(initializer) && ajv.compile(JSON.parse(initializer.getText()));
+    return ts.isObjectLiteralExpression(initializer) && ajv.compile(json5.parse(initializer.getText()));
   } catch {
     return false;
   }
