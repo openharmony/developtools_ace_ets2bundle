@@ -9,6 +9,6 @@
     "alignListItem", "nestedScroll", "friction", "contentStartOffset", "contentEndOffset", "childrenMainSize",
     "maintainVisibleContentPosition", "onScrollFrameBegin", "onScrollStart", "onScrollVisibleContentChange",
     "flingSpeedLimit", "clipContent", "onWillScroll", "onDidScroll", "scrollBarColor", "scrollBarWidth", "backToTop",
-    "stackFromEnd", "focusWrapMode"
+    "stackFromEnd", "focusWrapMode", "syncLoad"
   ]
 }

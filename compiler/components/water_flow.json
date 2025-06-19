@@ -31,6 +31,7 @@
         "onWillScroll",
         "onDidScroll",
         "clipContent",
-        "backToTop"
+        "backToTop",
+        "syncLoad"
     ]
 }
