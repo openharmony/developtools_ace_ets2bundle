@@ -103,6 +103,7 @@ export interface ProjectConfig {
     moduleType: string;
     moduleRootPath: string;
     aceModuleJsonPath: string;
+    ignoreError: boolean;
 }
 
 export type PluginHandlerFunction = () => void;

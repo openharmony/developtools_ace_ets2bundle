@@ -48,6 +48,9 @@ import {
     isArrayExpression,
     isTryStatement,
     isBinaryExpression,
+    isForInStatement,
+    isForUpdateStatement,
+    isForOfStatement,
 } from '../generated';
 import {
     isEtsScript,
@@ -98,6 +101,7 @@ export function visitEachChild(node: AstNode, visitor: Visitor): AstNode {
     script = visitDefinition(script, visitor);
     script = visitDefinitionBody(script, visitor);
     script = visitStatement(script, visitor);
+    script = visitForLoopStatement(script, visitor);
     script = visitOuterExpression(script, visitor);
     script = visitInnerExpression(script, visitor);
     script = visitTrivialExpression(script, visitor);
@@ -145,10 +149,7 @@ function visitOuterExpression(node: AstNode, visitor: Visitor): AstNode {
     }
     if (isArrayExpression(node)) {
         updated = true;
-        return factory.updateArrayExpression(
-            node,
-            nodesVisitor(node.elements, visitor)
-        );
+        return factory.updateArrayExpression(node, nodesVisitor(node.elements, visitor));
     }
     return node;
 }
@@ -350,6 +351,42 @@ function visitStatement(node: AstNode, visitor: Visitor): AstNode {
         );
     }
     // TODO
+    return node;
+}
+
+function visitForLoopStatement(node: AstNode, visitor: Visitor): AstNode {
+    if (updated) {
+        return node;
+    }
+    if (isForUpdateStatement(node)) {
+        updated = true;
+        return factory.updateForUpdateStatement(
+            node,
+            nodeVisitor(node.init, visitor),
+            nodeVisitor(node.test, visitor),
+            nodeVisitor(node.update, visitor),
+            nodeVisitor(node.body, visitor)
+        );
+    }
+    if (isForInStatement(node)) {
+        updated = true;
+        return factory.updateForInStatement(
+            node,
+            nodeVisitor(node.left, visitor),
+            nodeVisitor(node.right, visitor),
+            nodeVisitor(node.body, visitor)
+        );
+    }
+    if (isForOfStatement(node)) {
+        updated = true;
+        return factory.updateForOfStatement(
+            node,
+            nodeVisitor(node.left, visitor),
+            nodeVisitor(node.right, visitor),
+            nodeVisitor(node.body, visitor),
+            node.isAwait
+        );
+    }
     return node;
 }
 

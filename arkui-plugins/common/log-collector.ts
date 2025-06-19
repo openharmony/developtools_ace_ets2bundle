@@ -15,6 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { LogType } from './predefines';
+import { ProjectConfig } from './plugin-context';
 
 interface LogInfo {
     type: LogType;
@@ -55,7 +56,10 @@ export class LogCollector {
         this.logInfos.push(logItem);
     }
 
-    emitLogInfo(): void {
+    emitLogInfo(projectConfig: ProjectConfig | undefined): void {
+        if (!projectConfig || projectConfig.ignoreError) {
+            return;
+        }
         this.logInfos.forEach((logItem: LogInfo) => {
             arkts.Diagnostic.logDiagnostic(generateDiagnosticKind(logItem), arkts.getStartPosition(logItem.node));
         });
