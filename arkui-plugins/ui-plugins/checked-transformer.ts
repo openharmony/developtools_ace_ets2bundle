@@ -147,7 +147,7 @@ export class CheckedTransformer extends AbstractVisitor {
             return addMemoAnnotation(node);
         } else if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
             ImportCollector.getInstance().insertCurrentImports(this.program);
-            LogCollector.getInstance().emitLogInfo();
+            LogCollector.getInstance().emitLogInfo(this.projectConfig);
         } else if (arkts.isTSTypeAliasDeclaration(node)) {
             return structFactory.transformTSTypeAlias(node);
         } else if (arkts.isBlockStatement(node)) {

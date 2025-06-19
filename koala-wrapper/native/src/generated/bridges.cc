@@ -11282,6 +11282,19 @@ KNativePointer impl_CreateForUpdateStatement(KNativePointer context, KNativePoin
 }
 KOALA_INTEROP_5(CreateForUpdateStatement, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointer);
 
+KNativePointer impl_UpdateForUpdateStatement(KNativePointer context, KNativePointer original, KNativePointer init, KNativePointer test, KNativePointer update, KNativePointer body)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _original = reinterpret_cast<es2panda_AstNode*>(original);
+    const auto _init = reinterpret_cast<es2panda_AstNode*>(init);
+    const auto _test = reinterpret_cast<es2panda_AstNode*>(test);
+    const auto _update = reinterpret_cast<es2panda_AstNode*>(update);
+    const auto _body = reinterpret_cast<es2panda_AstNode*>(body);
+    auto result = GetImpl()->UpdateForUpdateStatement(_context, _original, _init, _test, _update, _body);
+    return result;
+}
+KOALA_INTEROP_6(UpdateForUpdateStatement, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointer);
+
 KNativePointer impl_ForUpdateStatementInit(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
