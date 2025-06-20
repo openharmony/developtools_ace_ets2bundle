@@ -13,16 +13,25 @@
  * limitations under the License.
  */
 
+import { ProjectConfig } from 'common/plugin-context';
 import { BuildConfig, Processor, TraceOptions } from './shared-types';
 
 class ProcessorBuilder {
     static build(
-        Processor: { new (hashId: string, buildConfig?: BuildConfig, tracing?: TraceOptions): Processor },
+        Processor: {
+            new (
+                hashId: string,
+                buildConfig?: BuildConfig,
+                projectConfig?: ProjectConfig,
+                tracing?: TraceOptions
+            ): Processor;
+        },
         hashId: string,
         buildConfig?: BuildConfig,
+        projectConfig?: ProjectConfig,
         tracing?: TraceOptions
     ): Processor {
-        return new Processor(hashId, buildConfig, tracing);
+        return new Processor(hashId, buildConfig, projectConfig, tracing);
     }
 }
 

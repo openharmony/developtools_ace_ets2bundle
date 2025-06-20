@@ -58,7 +58,7 @@ export class PluginContext {
     }
 
     public setProjectConfig(projectConfig: ProjectConfig): void {
-        throw new Error('do not set projectConfig!');
+        this.projectConfig = projectConfig;
     }
 
     public getProjectConfig(): ProjectConfig | undefined {

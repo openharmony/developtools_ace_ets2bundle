@@ -13,20 +13,21 @@
  * limitations under the License.
  */
 
-import { Plugins, PluginState } from "common/plugin-context";
-import { mockBuildConfig } from "../artkts-config";
-import { ArkTSConfigContextCache } from "../cache";
-import { BuildConfig, CompileFileInfo, Processor, TraceOptions } from "../shared-types";
+import { Plugins, PluginState, ProjectConfig } from '../../../common/plugin-context';
+import { mockBuildConfig, mockProjectConfig } from '../artkts-config';
+import { ArkTSConfigContextCache } from '../cache';
+import { BuildConfig, CompileFileInfo, Processor, TraceOptions } from '../shared-types';
 
 abstract class BaseProcessor implements Processor {
     hashId: string;
     buildConfig: BuildConfig;
+    projectConfig: ProjectConfig;
     tracing: TraceOptions;
     cacheDir: string;
     arktsConfigFile: string;
     compileFiles: Map<string, CompileFileInfo>;
 
-    constructor(hashId: string, buildConfig?: BuildConfig, tracing?: TraceOptions) {
+    constructor(hashId: string, buildConfig?: BuildConfig, projectConfig?: ProjectConfig, tracing?: TraceOptions) {
         this.hashId = hashId;
         this.tracing = tracing ?? { externalSourceNames: [] };
 
@@ -35,6 +36,9 @@ abstract class BaseProcessor implements Processor {
         this.cacheDir = _buildConfig.cachePath;
         this.arktsConfigFile = this.getArktsConfigFile();
         this.compileFiles = this.getCompileFiles();
+
+        const _projectConfig: ProjectConfig = projectConfig ?? mockProjectConfig();
+        this.projectConfig = _projectConfig;
     }
 
     private getArktsConfigFile(): string {
