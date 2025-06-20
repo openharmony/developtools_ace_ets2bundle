@@ -21,13 +21,17 @@ import {
     changeFileExtension,
     ensurePathExists,
     getFileName,
+    getResourcePath,
     getRootPath,
+    MOCK_BUNDLE_NAME,
     MOCK_DEP_ANALYZER_PATH,
     MOCK_ENTRY_DIR_PATH,
     MOCK_ENTRY_FILE_NAME,
     MOCK_OUTPUT_CACHE_PATH,
     MOCK_OUTPUT_DIR_PATH,
     MOCK_OUTPUT_FILE_NAME,
+    MOCK_RAWFILE_DIR_PATH,
+    MOCK_RESOURCE_TABLE_FILE_NAME,
     PANDA_SDK_STDLIB_PATH,
     STDLIB_ESCOMPAT_PATH,
     STDLIB_PATH,
@@ -36,6 +40,7 @@ import {
 import { ArkTSConfigContextCache } from './cache';
 import { BuildConfig, CompileFileInfo, DependentModule } from './shared-types';
 import { setUpSoPath } from './global';
+import { ProjectConfig } from '../../common/plugin-context';
 
 export interface ArkTSConfigObject {
     compilerOptions: {
@@ -75,6 +80,10 @@ export interface ArktsConfigBuilder {
     mergedAbcFile: string;
     // logger: Logger; // TODO
     isDebug: boolean;
+    projectConfig: ProjectConfig;
+
+    withBuildConfig(buildConfig: BuildConfig): this;
+    withProjectConfig(projectConfig: ProjectConfig): this;
 
     clear(): void;
 }
@@ -162,28 +171,60 @@ function mockBuildConfig(): BuildConfig {
     };
 }
 
+function mockProjectConfig(): ProjectConfig {
+    return {
+        bundleName: MOCK_BUNDLE_NAME,
+        moduleName: 'entry',
+        cachePath: path.resolve(getRootPath(), MOCK_OUTPUT_CACHE_PATH),
+        dependentModuleList: [],
+        appResource: path.resolve(getResourcePath(), MOCK_RESOURCE_TABLE_FILE_NAME),
+        rawFileResource: path.resolve(getResourcePath(), MOCK_RAWFILE_DIR_PATH),
+        buildLoaderJson: '',
+        hspResourcesMap: false,
+        compileHar: false,
+        byteCodeHar: false,
+        uiTransformOptimization: false,
+        resetBundleName: false,
+        allowEmptyBundleName: false,
+        moduleType: 'entry',
+        moduleRootPath: path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH),
+        aceModuleJsonPath: '',
+    };
+}
+
 class MockArktsConfigBuilder implements ArktsConfigBuilder {
     hashId: string;
-    buildConfig: BuildConfig;
-    entryFiles: Set<string>;
-    compileFiles: Map<string, CompileFileInfo>;
-    outputDir: string;
-    cacheDir: string;
-    pandaSdkPath: string;
-    apiPath: string;
-    kitsPath: string;
-    packageName: string;
-    sourceRoots: string[];
-    moduleRootPath: string;
-    dependentModuleList: DependentModule[];
-    moduleInfos: Map<string, ModuleInfo>;
-    mergedAbcFile: string;
+    buildConfig!: BuildConfig;
+    entryFiles!: Set<string>;
+    compileFiles!: Map<string, CompileFileInfo>;
+    outputDir!: string;
+    cacheDir!: string;
+    pandaSdkPath!: string;
+    apiPath!: string;
+    kitsPath!: string;
+    packageName!: string;
+    sourceRoots!: string[];
+    moduleRootPath!: string;
+    dependentModuleList!: DependentModule[];
+    moduleInfos!: Map<string, ModuleInfo>;
+    mergedAbcFile!: string;
     isDebug: boolean;
+    projectConfig: ProjectConfig;
 
-    constructor(hashId: string, buildConfig?: BuildConfig) {
+    constructor(hashId: string, buildConfig?: BuildConfig, projectConfig?: ProjectConfig) {
         this.hashId = hashId;
 
         const _buildConfig: BuildConfig = buildConfig ?? mockBuildConfig();
+        this._setBuildConfig(_buildConfig);
+
+        const _projectConfig: ProjectConfig = projectConfig ?? mockProjectConfig();
+        this.projectConfig = _projectConfig;
+
+        this.isDebug = true;
+    }
+
+    private _setBuildConfig(buildConfig: BuildConfig): void {
+        const _buildConfig: BuildConfig = buildConfig;
         this.buildConfig = _buildConfig;
         this.entryFiles = new Set<string>(_buildConfig.compileFiles as string[]);
         this.outputDir = _buildConfig.loaderOutPath as string;
@@ -195,7 +236,6 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
         this.sourceRoots = _buildConfig.sourceRoots as string[];
         this.moduleRootPath = path.resolve(_buildConfig.moduleRootPath as string);
         this.dependentModuleList = _buildConfig.dependentModuleList as DependentModule[];
-        this.isDebug = true;
 
         this.compileFiles = new Map<string, CompileFileInfo>();
         this.moduleInfos = new Map<string, ModuleInfo>();
@@ -306,9 +346,19 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
         });
     }
 
+    withBuildConfig(buildConfig: BuildConfig): this {
+        this._setBuildConfig(buildConfig);
+        return this;
+    }
+
+    withProjectConfig(projectConfig: ProjectConfig): this {
+        this.projectConfig = projectConfig;
+        return this;
+    }
+
     clear(): void {
         ArkTSConfigContextCache.getInstance().delete(this.hashId);
     }
 }
 
-export { mockBuildConfig, MockArktsConfigBuilder };
+export { mockBuildConfig, mockProjectConfig, MockArktsConfigBuilder };

@@ -55,7 +55,4 @@ module.exports = {
         API_PATH: apiPath,
         KIT_PATH: kitPath
     },
-    testPathIgnorePatterns: [
-        './test/ut/ui-plugins/decorators/resource/',
-    ],
 };

@@ -201,6 +201,7 @@ function createContextForExternalCompilation(jobInfo: JobInfo): arkts.Context {
 
 function compileAbcWithExternal(emitter: EventEmitter<ProcessEvent>, jobInfo: JobInfo, tracing: TraceOptions): void {
     MockPluginDriver.getInstance().initPlugins(jobInfo.plugins ?? []);
+    MockPluginDriver.getInstance().getPluginContext().setProjectConfig(jobInfo.projectConfig!);
     const context = createContextFromString(jobInfo.filePaths!);
     MockPluginDriver.getInstance().getPluginContext().setContextPtr(context.peer);
     const stopAfter = jobInfo.stopAfter!;
@@ -243,6 +244,7 @@ function compileAbcWithExternal(emitter: EventEmitter<ProcessEvent>, jobInfo: Jo
 
 function compileAbc(emitter: EventEmitter<ProcessEvent>, jobInfo: JobInfo, tracing: TraceOptions): void {
     MockPluginDriver.getInstance().initPlugins(jobInfo.plugins ?? []);
+    MockPluginDriver.getInstance().getPluginContext().setProjectConfig(jobInfo.projectConfig!);
     const context = createContextForAbcCompilation(jobInfo);
     MockPluginDriver.getInstance().getPluginContext().setContextPtr(context.peer);
     const stopAfter = jobInfo.stopAfter!;
@@ -282,6 +284,7 @@ function compileAbc(emitter: EventEmitter<ProcessEvent>, jobInfo: JobInfo, traci
 
 function compileExternalProgram(emitter: EventEmitter<ProcessEvent>, jobInfo: JobInfo, tracing: TraceOptions): void {
     MockPluginDriver.getInstance().initPlugins(jobInfo.plugins ?? []);
+    MockPluginDriver.getInstance().getPluginContext().setProjectConfig(jobInfo.projectConfig!);
     const context = createContextForExternalCompilation(jobInfo);
     MockPluginDriver.getInstance().getPluginContext().setContextPtr(context.peer);
     arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED, context.peer);

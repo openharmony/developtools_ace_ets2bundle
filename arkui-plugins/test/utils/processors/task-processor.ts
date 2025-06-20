@@ -37,7 +37,7 @@ import {
 import { FileDependencyContextCache, PluginTestContextCache } from '../cache';
 import { HashGenerator } from '../hash-generator';
 import { createGlobalConfig, createGlobalContextPtr, destroyGlobalConfig, destroyGlobalContextPtr } from '../global';
-import { Plugins, PluginState } from '../../../common/plugin-context';
+import { Plugins, PluginState, ProjectConfig } from '../../../common/plugin-context';
 import { concatObject, serializable } from '../serializable';
 import { compileAbc, compileExternalProgram } from '../compile';
 import { BaseProcessor } from './base-processor';
@@ -242,8 +242,8 @@ class TaskProcessor extends BaseProcessor {
     readonly emitter: EventEmitter<ProcessEvent> = new EventEmitter<ProcessEvent>();
     private worker!: WorkerInfo;
 
-    constructor(hashId: string, buildConfig?: BuildConfig, tracing?: TraceOptions) {
-        super(hashId, buildConfig, tracing);
+    constructor(hashId: string, buildConfig?: BuildConfig, projectConfig?: ProjectConfig, tracing?: TraceOptions) {
+        super(hashId, buildConfig, projectConfig, tracing);
         this.entryFiles = new Set<string>(this.buildConfig.compileFiles as string[]);
         this.depAnalyzerPath = this.buildConfig.depAnalyzerPath;
         this.depInputFile = path.resolve(this.buildConfig.cachePath, this.hashId, MOCK_DEP_INPUT_FILE_NAME);
@@ -413,6 +413,7 @@ class TaskProcessor extends BaseProcessor {
             processingJobs.add(job.id);
             jobInfo.compileFileInfo = this.compileFiles.get(job.fileList[0]);
             jobInfo.buildConfig = serializable(this.buildConfig);
+            jobInfo.projectConfig = serializable(this.projectConfig);
             jobInfo.plugins = plugins;
             jobInfo.globalContextPtr = globalContextPtr;
             jobInfo.stopAfter = stopAfter;

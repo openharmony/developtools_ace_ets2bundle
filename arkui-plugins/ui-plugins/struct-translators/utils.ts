@@ -189,9 +189,6 @@ function readAppResource(
     aceBuildJson: LoaderJson,
     rawfile: Set<string>
 ): void {
-    if (!projectConfig.appResource) {
-        projectConfig.ignoreError = true;
-    }
     if ('hspResourcesMap' in aceBuildJson && aceBuildJson.hspResourcesMap) {
         readHspResource(aceBuildJson, projectConfig, resourcesList);
     }

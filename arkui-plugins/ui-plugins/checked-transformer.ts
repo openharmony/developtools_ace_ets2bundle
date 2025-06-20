@@ -145,9 +145,10 @@ export class CheckedTransformer extends AbstractVisitor {
             return structFactory.tranformInterfaceMembers(node, this.externalSourceName);
         } else if (findCanAddMemoFromArrowFunction(node)) {
             return addMemoAnnotation(node);
-        } else if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
+        } else if (arkts.isEtsScript(node)) {
             ImportCollector.getInstance().insertCurrentImports(this.program);
-            LogCollector.getInstance().emitLogInfo(this.projectConfig);
+            LogCollector.getInstance().shouldIgnoreError(this.projectConfig?.ignoreError);
+            LogCollector.getInstance().emitLogInfo();
         } else if (arkts.isTSTypeAliasDeclaration(node)) {
             return structFactory.transformTSTypeAlias(node);
         } else if (arkts.isBlockStatement(node)) {

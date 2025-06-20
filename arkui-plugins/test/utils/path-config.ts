@@ -16,7 +16,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-export const ARKTS_CONFIG_FILE_PATH: string = 'arktsconfig.json';;
+export const ARKTS_CONFIG_FILE_PATH: string = 'arktsconfig.json';
 export const PANDA_SDK_STDLIB_PATH: string = 'lib';
 export const STDLIB_PATH: string = 'stdlib';
 export const STDLIB_STD_PATH: string = 'stdlib/std';
@@ -29,12 +29,19 @@ export const MOCK_OUTPUT_FILE_NAME: string = 'entry.abc';
 export const MOCK_DEP_ANALYZER_PATH: string = 'bin/dependency_analyzer';
 export const MOCK_FILE_DEP_FILE_NAME: string = 'file_dependencies.json';
 export const MOCK_DEP_INPUT_FILE_NAME: string = 'depInput.txt';
+export const MOCK_RESOURCE_TABLE_FILE_NAME: string = 'ResourceTable.txt';
+export const MOCK_BUNDLE_NAME: string = 'com.example.mock';
+export const MOCK_RAWFILE_DIR_PATH: string = 'rawfile';
 export const ETS_SUFFIX: string = '.ets';
 export const ABC_SUFFIX: string = '.abc';
 export const DECL_ETS_SUFFIX: string = '.d.ets';
 
 function getRootPath(): string {
     return path.resolve(__dirname, '..', '..', 'test');
+}
+
+function getResourcePath(): string {
+    return path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, 'resource');
 }
 
 function changeFileExtension(file: string, targetExt: string, originExt = ''): string {
@@ -62,4 +69,4 @@ function ensurePathExists(filePath: string): void {
     }
 }
 
-export { getRootPath, changeFileExtension, getFileName, ensurePathExists };
+export { getRootPath, getResourcePath, changeFileExtension, getFileName, ensurePathExists };
