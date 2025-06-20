@@ -15,83 +15,90 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { getClassPropertyType, PresetDecorators, getAnnotationUsage, isClassPropertyOptional } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 const CUSTOM_DIALOG_CONTROLLER: string = 'CustomDialogController';
 
-function hasCustomDialogControllerInUnion(
-  property: arkts.ClassProperty,
-  CUSTOM_DIALOG_CONTROLLER: string
-): boolean {
-  if (!isClassPropertyOptional(property)) {
-    return false;
-  }
-  if (!property.typeAnnotation || !arkts.isETSUnionType(property.typeAnnotation)) {
-    return false;
-  }
-  for (const type of property.typeAnnotation.types) {
-    if (!arkts.isETSTypeReference(type)) {
-      continue;
-    }
-
-    const part = type.part;
-    if (!part || !arkts.isETSTypeReferencePart(part)) {
-      continue;
-    }
-
-    const name = part.name;
-    if (name && arkts.isIdentifier(name) && name.name === CUSTOM_DIALOG_CONTROLLER) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function missingController(
-  node: arkts.StructDeclaration,
-  context: UISyntaxRuleContext
-): void {
-  // Check for the @CustomDialog decorator
-  const customDialogDecorator = getAnnotationUsage(node, PresetDecorators.CUSTOM_DIALOG);
-  const structName = node.definition.ident;
-  if (!structName) {
-    return;
-  }
-  // Check if there is an attribute of type CustomDialogController in the class
-  let hasControllerProperty = false;
-  node.definition.body.forEach((property) => {
-    if (arkts.isClassProperty(property)) {
-      hasControllerProperty = hasCustomDialogControllerInUnion(property, CUSTOM_DIALOG_CONTROLLER);
-      const propertyType = getClassPropertyType(property);
-      if (propertyType === CUSTOM_DIALOG_CONTROLLER) {
-        hasControllerProperty = true;
-      }
-    }
-  });
-  if (!hasControllerProperty && customDialogDecorator) {
-    context.report({
-      node: structName,
-      message: rule.messages.missingController,
-    });
-  }
-}
-
-const rule: UISyntaxRule = {
-  name: 'custom-dialog-missing-controller',
-  messages: {
-    missingController: `The @CustomDialog decorated custom component must contain a property of the CustomDialogController type.`,
-  },
-  setup(context) {
+class CustomDialogMissingControllerRule extends AbstractUISyntaxRule {
+  public setup(): Record<string, string> {
     return {
-      parsed: (node): void => {
-        if (!arkts.isStructDeclaration(node)) {
+      missingController: `The @CustomDialog decorated custom component must contain a property of the CustomDialogController type.`,
+    };
+  }
+
+  public parsed(node: arkts.AstNode): void {
+    if (!arkts.isStructDeclaration(node)) {
+      return;
+    }
+    this.checkMissingController(node);
+  }
+
+  // Check if the @CustomDialog-decorated struct contains a property of type CustomDialogController
+  private checkMissingController(node: arkts.StructDeclaration): void {
+    const customDialogDecorator = getAnnotationUsage(node, PresetDecorators.CUSTOM_DIALOG);
+
+    if (!customDialogDecorator) {
+      return;
+    }
+
+    const structName = node.definition.ident;
+    if (!structName) {
+      return;
+    }
+
+    let hasControllerProperty = false;
+
+    node.definition.body.forEach((property) => {
+      if (arkts.isClassProperty(property)) {
+        // Check if it's a union type, such as CustomDialogController | undefined
+        if (this.hasCustomDialogControllerInUnion(property)) {
+          hasControllerProperty = true;
           return;
         }
-        missingController(node, context);
-      },
-    };
-  },
-};
 
-export default rule;
+        // Check if it's directly of the CustomDialogController type
+        const propertyType = getClassPropertyType(property);
+        if (propertyType === CUSTOM_DIALOG_CONTROLLER) {
+          hasControllerProperty = true;
+        }
+      }
+    });
 
+    if (!hasControllerProperty) {
+      this.report({
+        node: structName,
+        message: this.messages.missingController,
+      });
+    }
+  }
+
+  // Check that the property is of a form that contains a CustomDialogController in the union type (for example: CustomDialogController | undefined）
+  private hasCustomDialogControllerInUnion(property: arkts.ClassProperty): boolean {
+    if (!isClassPropertyOptional(property)) {
+      return false;
+    }
+
+    if (!property.typeAnnotation || !arkts.isETSUnionType(property.typeAnnotation)) {
+      return false;
+    }
+
+    for (const type of property.typeAnnotation.types) {
+      if (!arkts.isETSTypeReference(type)) {
+        continue;
+      }
+
+      const part = type.part;
+      if (!part || !arkts.isETSTypeReferencePart(part)) {
+        continue;
+      }
+
+      const name = part.name;
+      if (name && arkts.isIdentifier(name) && name.name === CUSTOM_DIALOG_CONTROLLER) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+export default CustomDialogMissingControllerRule;
