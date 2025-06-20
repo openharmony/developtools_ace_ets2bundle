@@ -47,6 +47,8 @@ import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateM
 
 import { GridItemAttribute as GridItemAttribute } from "arkui.component.gridItem";
 
+import { Bindable as Bindable } from "arkui.component.common";
+
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
@@ -89,13 +91,23 @@ c = false;
     Column(undefined, (() => {
       Grid(undefined, (() => {
         GridItem(((instance: GridItemAttribute): void => {
-          instance.selected($$(this.boo));
+          instance.selected(({
+            value: this.boo,
+            onChange: ((value: boolean) => {
+              this.boo = value;
+            }),
+          } as Bindable<boolean>));
           return;
         }), (() => {
           Text(undefined, "nihao");
         }));
         GridItem(((instance: GridItemAttribute): void => {
-          instance.selected($$(c));
+          instance.selected(({
+            value: c,
+            onChange: ((value: boolean) => {
+              c = value;
+            }),
+          } as Bindable<boolean>));
           return;
         }), (() => {
           Text(undefined, "nihao");
