@@ -25,6 +25,7 @@ import {
     ArkTSEvolutionModule,
     BuildType,
     DeclFilesConfig,
+    DECLGEN_CACHE_FILE,
     Params,
     ProjectConfig,
     RunnerParms
@@ -34,7 +35,8 @@ import path from 'path';
 import * as ts from 'typescript';
 import { EXTNAME_D_ETS, EXTNAME_JS } from '../common/ark_define';
 import { getRealModulePath } from '../../system_api/api_check_utils';
-import { generateInteropDecls } from '../../../../node_modules/declgen/build/src/generateInteropDecls';
+import { generateInteropDecls } from 'declgen/build/src/generateInteropDecls';
+import { calculateFileHash } from '../utils';
 
 export function run(param: Params): boolean {
     FileManager.init(param.dependentModuleMap);
@@ -121,18 +123,35 @@ class DeclfileProductor {
     }
 
     runDeclgen(moduleInfo: ArkTSEvolutionModule): void {
+        const cachePath = `${moduleInfo.declgenV2OutPath}/.${DECLGEN_CACHE_FILE}`;
+        let existingCache = {};
+        const filesToProcess = [];
+
+        if (fs.existsSync(cachePath)) {
+            existingCache = JSON.parse(fs.readFileSync(cachePath, 'utf-8'));
+        }
+
         let inputList = [];
+        let hashMap = {};
         moduleInfo.dynamicFiles.forEach(path => {
-            inputList.push(toUnixPath(path));
+            let unixPath = toUnixPath(path);
+            const fileHash = calculateFileHash(path);
+            if (!existingCache[unixPath] || existingCache[unixPath] !== fileHash) {
+                filesToProcess.push(unixPath);
+                hashMap[unixPath] = fileHash;
+            }
         });
+        if (filesToProcess.length === 0) {
+            return;
+        }
         readDeaclareFiles().forEach(path => {
-            inputList.push(toUnixPath(path));
+            filesToProcess.push(toUnixPath(path));
         });
 
         inputList = inputList.filter(filePath => !filePath.endsWith('.js'));
         const config: RunnerParms = {
             inputDirs: [],
-            inputFiles: inputList,
+            inputFiles: filesToProcess,
             outDir: moduleInfo.declgenV2OutPath,
             // use package name as folder name
             rootDir: moduleInfo.modulePath,
@@ -140,12 +159,17 @@ class DeclfileProductor {
             customCompilerOptions: DeclfileProductor.compilerOptions,
             includePaths: [moduleInfo.modulePath]
         };
-        if (fs.existsSync(config.outDir)) {
-            fs.rmSync(config.outDir, { recursive: true, force: true });
+        if (!fs.existsSync(config.outDir)) {
+            fs.mkdirSync(config.outDir, { recursive: true });
         }
         fs.mkdirSync(config.outDir, { recursive: true });
         generateInteropDecls(config);
         processInteropUI(FileManager.arkTSModuleMap.get(moduleInfo.packageName)?.declgenV2OutPath);
+        const newCache = {
+            ...existingCache,
+            ...hashMap
+        };
+        fs.writeFileSync(cachePath, JSON.stringify(newCache, null, 2));
     }
 
     writeDeclFileInfo(moduleInfo: ArkTSEvolutionModule, mainModuleName: string): void {
@@ -155,7 +179,9 @@ class DeclfileProductor {
 
         const declFilesConfigFile: string = toUnixPath(moduleInfo.declFilesPath);
         mkdirsSync(path.dirname(declFilesConfigFile));
-        fs.writeFileSync(declFilesConfigFile, JSON.stringify(this.pkgDeclFilesConfig[moduleInfo.packageName], null, 2), 'utf-8');
+        if (this.pkgDeclFilesConfig[moduleInfo.packageName]) {
+            fs.writeFileSync(declFilesConfigFile, JSON.stringify(this.pkgDeclFilesConfig[moduleInfo.packageName], null, 2), 'utf-8');
+        }
     }
 
     addDeclFilesConfig(filePath: string, mainModuleName: string, bundleName: string, moduleInfo: ArkTSEvolutionModule): void {
@@ -167,6 +193,9 @@ class DeclfileProductor {
         }
         if (!this.pkgDeclFilesConfig[moduleInfo.packageName]) {
             this.pkgDeclFilesConfig[moduleInfo.packageName] = { packageName: moduleInfo.packageName, files: {} };
+        }
+        if (filePath.endsWith(EXTNAME_JS)) {
+            return;
         }
         if (this.pkgDeclFilesConfig[moduleInfo.packageName].files[projectFilePath]) {
             return;
