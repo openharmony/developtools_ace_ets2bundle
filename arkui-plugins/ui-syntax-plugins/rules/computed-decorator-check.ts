@@ -15,48 +15,106 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { getIdentifierName, PresetDecorators, getAnnotationName, getAnnotationUsage, BUILD_NAME } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-function validateStructBody(
-  node: arkts.StructDeclaration,
-  computedGetters: Map<string, arkts.MethodDefinition>,
-  computedSetters: Map<string, arkts.MethodDefinition>,
-  context: UISyntaxRuleContext
-): void {
-  let computedDecorator: arkts.AnnotationUsage | undefined;
-  node.definition.body.forEach((member) => {
-    if (arkts.isClassProperty(member)) {
-      validateComputedOnClassProperty(member, context);
+
+class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
+  private computedGetters: Map<string, arkts.MethodDefinition> = new Map();
+  private computedSetters: Map<string, arkts.MethodDefinition> = new Map();
+
+  public setup(): Record<string, string> {
+    return {
+      onlyOnGetter: `@Computed can only decorate 'GetAccessor'.`,
+      onlyInObservedV2: `The '@Computed' can decorate only member method within a 'class' decorated with ObservedV2.`,
+      componentV2InStruct: `The '@Computed' decorator can only be used in a 'struct' decorated with ComponentV2.`,
+      noTwoWayBinding: `A property decorated by '@Computed' cannot be used with two-way bind syntax.`,
+      computedMethodDefineSet: `A property decorated by '@Computed' cannot define a set method.`
+    };
+  }
+
+  public parsed(node: arkts.AstNode): void {
+    if (arkts.isStructDeclaration(node)) {
+      this.validateComponentV2InStruct(node);
+      this.validateStructBody(node);
+    }
+
+    if (arkts.isClassDeclaration(node)) {
+      this.validateClassBody(node);
+    }
+  }
+
+  private validateStructBody(node: arkts.StructDeclaration): void {
+    let computedDecorator: arkts.AnnotationUsage | undefined;
+    node.definition.body.forEach((member) => {
+      if (arkts.isClassProperty(member)) {
+        this.validateComputedOnClassProperty(member);
+        return;
+      }
+
+      if (arkts.isMethodDefinition(member)) {
+        const methodName = getIdentifierName(member.name);
+        computedDecorator = member.scriptFunction.annotations?.find(annotation =>
+          annotation.expr && arkts.isIdentifier(annotation.expr) &&
+          annotation.expr.name === PresetDecorators.COMPUTED
+        );
+
+        this.validateComputedMethodKind(member, computedDecorator, methodName);
+        if (member.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {
+          this.computedSetters.set(methodName, member);
+        }
+
+        if (methodName === BUILD_NAME) {
+          this.validateBuildMethod(member);
+        }
+      }
+    });
+
+    this.validateGetterSetterConflict();
+  }
+
+  private validateComputedOnClassProperty(member: arkts.ClassProperty): void {
+    const computedDecorator = member.annotations?.find(annotation =>
+      annotation.expr && arkts.isIdentifier(annotation.expr) &&
+      annotation.expr.name === PresetDecorators.COMPUTED
+    );
+    if (computedDecorator) {
+      this.report({
+        node: computedDecorator,
+        message: this.messages.onlyOnGetter,
+        fix: (computedDecorator) => {
+          const startPosition = computedDecorator.startPosition;
+          const endPosition = computedDecorator.endPosition;
+          return {
+            range: [startPosition, endPosition],
+            code: '',
+          };
+        },
+      });
+    }
+  }
+
+  private validateComputedMethodKind(
+    member: arkts.MethodDefinition,
+    computedDecorator: arkts.AnnotationUsage | undefined,
+    methodName: string
+  ): void {
+    if (computedDecorator) {
+      const isGetter = member.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET;
+      if (!isGetter) {
+        this.reportValidateComputedMethodKind(computedDecorator);
+      } else {
+        this.computedGetters.set(methodName, member);
+      }
+    }
+  }
+
+  private reportValidateComputedMethodKind(computedDecorator: arkts.AnnotationUsage | undefined): void {
+    if (!computedDecorator) {
       return;
     }
-    if (arkts.isMethodDefinition(member)) {
-      const methodName = getIdentifierName(member.name);
-      computedDecorator = member.scriptFunction.annotations?.find(annotation =>
-        annotation.expr && arkts.isIdentifier(annotation.expr) &&
-        annotation.expr.name === PresetDecorators.COMPUTED
-      );
-      validateComputedMethodKind(member, computedDecorator, methodName, computedGetters, context);
-      const isSetter = member.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
-      if (isSetter) {
-        computedSetters.set(methodName, member);
-      }
-      if (methodName === BUILD_NAME) {
-        validateBuildMethod(member, computedGetters, context);
-      }
-    }
-  });
-  validateGetterSetterConflict(computedGetters, computedSetters, context);
-}
-
-function validateComputedOnClassProperty(member: arkts.ClassProperty, context: UISyntaxRuleContext): void {
-  const computedDecorator = member.annotations?.find(annotation =>
-    annotation.expr && arkts.isIdentifier(annotation.expr) &&
-    annotation.expr.name === PresetDecorators.COMPUTED
-  );
-  if (computedDecorator) {
-    context.report({
+    this.report({
       node: computedDecorator,
-      message: rule.messages.onlyOnGetter,
+      message: this.messages.onlyOnGetter,
       fix: (computedDecorator) => {
         const startPosition = computedDecorator.startPosition;
         const endPosition = computedDecorator.endPosition;
@@ -67,104 +125,77 @@ function validateComputedOnClassProperty(member: arkts.ClassProperty, context: U
       },
     });
   }
-}
 
-function validateComputedMethodKind(
-  member: arkts.MethodDefinition,
-  computedDecorator: arkts.AnnotationUsage | undefined,
-  methodName: string,
-  computedGetters: Map<string, arkts.MethodDefinition>,
-  context: UISyntaxRuleContext
-): void {
-  if (computedDecorator) {
-    const isGetter = member.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET;
-    if (!isGetter) {
-      reportValidateComputedMethodKind(computedDecorator, context);
-    } else {
-      computedGetters.set(methodName, member);
-    }
-  }
-}
-
-function reportValidateComputedMethodKind(
-  computedDecorator: arkts.AnnotationUsage | undefined,
-  context: UISyntaxRuleContext
-): void {
-  if (!computedDecorator) {
-    return;
-  }
-  context.report({
-    node: computedDecorator,
-    message: rule.messages.onlyOnGetter,
-    fix: (computedDecorator) => {
-      const startPosition = computedDecorator.startPosition;
-      const endPosition = computedDecorator.endPosition;
-      return {
-        range: [startPosition, endPosition],
-        code: '',
-      };
-    },
-  });
-}
-
-function validateBuildMethod(
-  member: arkts.MethodDefinition,
-  computedGetters: Map<string, arkts.MethodDefinition>,
-  context: UISyntaxRuleContext
-): void {
-  member.scriptFunction.body?.getChildren().forEach((childNode) => {
-    if (!arkts.isExpressionStatement(childNode)) {
-      return;
-    }
-    const queue: Array<arkts.AstNode> = [childNode];
-    while (queue.length > 0) {
-      const currentNode: arkts.AstNode = queue.shift() as arkts.AstNode;
-      // Check if it's a CallExpression (function call)
-      if (arkts.isCallExpression(currentNode)) {
-        // Check if it's a $$(...) call
-        validateCallExpression(currentNode, computedGetters, context);
+  private validateBuildMethod(member: arkts.MethodDefinition): void {
+    member.scriptFunction.body?.getChildren().forEach((childNode) => {
+      if (!arkts.isExpressionStatement(childNode)) {
+        return;
       }
-      // Continue traversing the child nodes
-      const children = currentNode.getChildren();
-      for (const child of children) {
-        queue.push(child);
-      }
-    }
-  });
-}
 
-function validateCallExpression(
-  currentNode: arkts.CallExpression,
-  computedGetters: Map<string, arkts.MethodDefinition>,
-  context: UISyntaxRuleContext
-): void {
-  // Check if it's a $$(...) call
-  if (!arkts.isIdentifier(currentNode.expression)) {
-    return;
-  }
-  if (getIdentifierName(currentNode.expression) === '$$') {
-    currentNode.arguments.forEach(argument => {
-      if (arkts.isMemberExpression(argument)) {
-        const getterName = getIdentifierName(argument.property);
-        reportValidateCallExpression(currentNode, getterName, computedGetters, context);
+      const queue: Array<arkts.AstNode> = [childNode];
+      while (queue.length > 0) {
+        const currentNode: arkts.AstNode = queue.shift() as arkts.AstNode;
+        if (arkts.isCallExpression(currentNode)) {
+          this.validateCallExpression(currentNode);
+        }
+        // Continue traversing the child nodes
+        const children = currentNode.getChildren();
+        for (const child of children) {
+          queue.push(child);
+        }
       }
     });
   }
-}
 
-function reportValidateCallExpression(
-  currentNode: arkts.CallExpression,
-  getterName: string,
-  computedGetters: Map<string, arkts.MethodDefinition>,
-  context: UISyntaxRuleContext
-): void {
-  if (computedGetters.has(getterName)) {
-    context.report({
-      node: currentNode,
-      message: rule.messages.noTwoWayBinding,
-      fix: (currentNode) => {
-        const startPosition = currentNode.startPosition;
-        const endPosition = currentNode.endPosition;
+  private validateCallExpression(currentNode: arkts.CallExpression): void {
+    if (!arkts.isIdentifier(currentNode.expression) || getIdentifierName(currentNode.expression) !== '$$') {
+      return;
+    }
+
+    currentNode.arguments.forEach((argument) => {
+      if (arkts.isMemberExpression(argument)) {
+        const getterName = getIdentifierName(argument.property);
+        this.reportValidateCallExpression(currentNode, getterName);
+      }
+    });
+  }
+
+  private reportValidateCallExpression(
+    currentNode: arkts.CallExpression,
+    getterName: string
+  ): void {
+    if (this.computedGetters.has(getterName)) {
+      this.report({
+        node: currentNode,
+        message: this.messages.noTwoWayBinding,
+        fix: (currentNode) => {
+          const startPosition = currentNode.startPosition;
+          const endPosition = currentNode.endPosition;
+          return {
+            range: [startPosition, endPosition],
+            code: '',
+          };
+        },
+      });
+    }
+  }
+
+  private validateGetterSetterConflict(): void {
+    for (const [name] of this.computedGetters) {
+      if (this.computedSetters.has(name)) {
+        this.reportValidateGetterSetterConflict(name);
+      }
+    }
+  }
+
+  private reportValidateGetterSetterConflict(name: string): void {
+    const setter = this.computedSetters.get(name)!;
+    this.report({
+      node: setter,
+      message: this.messages.computedMethodDefineSet,
+      fix: (node) => {
+        const startPosition = node.startPosition;
+        const endPosition = node.endPosition;
         return {
           range: [startPosition, endPosition],
           code: '',
@@ -172,168 +203,107 @@ function reportValidateCallExpression(
       },
     });
   }
-}
 
-// Check for the presence of a @Computed property that defines both a getter and a setter
-function validateGetterSetterConflict(
-  computedGetters: Map<string, arkts.MethodDefinition>,
-  computedSetters: Map<string, arkts.MethodDefinition>,
-  context: UISyntaxRuleContext
-): void {
-  for (const [name] of computedGetters) {
-    if (computedSetters.has(name)) {
-      reportValidateGetterSetterConflict(computedSetters, name, context);
-    }
-  }
-}
+  private validateClassBody(node: arkts.ClassDeclaration): void {
+    const observedV2Decorator = node.definition?.annotations.find(annotation =>
+      getAnnotationName(annotation) === PresetDecorators.OBSERVED_V2
+    );
 
-function reportValidateGetterSetterConflict(
-  computedSetters: Map<string, arkts.MethodDefinition>,
-  name: string,
-  context: UISyntaxRuleContext
-): void {
-  context.report({
-    node: computedSetters.get(name)!,
-    message: rule.messages.computedMethodDefineSet,
-    fix: (node) => {
-      const startPosition = node.startPosition;
-      const endPosition = node.endPosition;
-      return {
-        range: [startPosition, endPosition],
-        code: '',
-      };
-    },
-  });
-}
+    node.definition?.body.forEach((member) => {
+      if (arkts.isMethodDefinition(member)) {
 
-function validateClassBody(
-  node: arkts.ClassDeclaration,
-  computedGetters: Map<string, arkts.MethodDefinition>,
-  context: UISyntaxRuleContext
-): void {
-  const observedV2Decorator = node.definition?.annotations.find(annotation =>
-    getAnnotationName(annotation) === PresetDecorators.OBSERVED_V2
-  );
-  node.definition?.body.forEach((member) => {
-    if (arkts.isMethodDefinition(member)) {
-      validateComputedInClass(node, member, observedV2Decorator, context);
-      if (!arkts.isIdentifier(member.name)) {
-        return;
+        this.validateComputedInClass(node, member, observedV2Decorator);
+        const computedDecorator = member.scriptFunction.annotations?.find(annotation =>
+          annotation.expr && arkts.isIdentifier(annotation.expr) &&
+          annotation.expr.name === PresetDecorators.COMPUTED
+        );
+        if (!arkts.isIdentifier(member.name)) {
+          return;
+        }
+        const methodName = getIdentifierName(member.name);
+
+        this.validateComputedMethodKind(member, computedDecorator, methodName);
       }
-      const methodName = getIdentifierName(member.name);
-      const computedDecorator = member.scriptFunction.annotations?.find(annotation =>
-        annotation.expr && arkts.isIdentifier(annotation.expr) &&
-        annotation.expr.name === PresetDecorators.COMPUTED
-      );
-      validateComputedMethodKind(member, computedDecorator, methodName, computedGetters, context);
+    });
+  }
+
+  private validateComponentV2InStruct(node: arkts.StructDeclaration): void {
+    const componentV2Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
+    const componentDecorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
+
+    node.definition?.body.forEach((member) => {
+      if (arkts.isMethodDefinition(member)) {
+        this.checkComponentV2InStruct(node, member, componentV2Decorator, componentDecorator);
+      }
+    });
+  }
+
+  private checkComponentV2InStruct(
+    node: arkts.StructDeclaration | arkts.ClassDeclaration,
+    member: arkts.MethodDefinition,
+    componentV2Decorator: arkts.AnnotationUsage | undefined,
+    componentDecorator: arkts.AnnotationUsage | undefined
+  ): void {
+    const computedDecorator = member.scriptFunction.annotations?.find(annotation =>
+      annotation.expr && arkts.isIdentifier(annotation.expr) &&
+      annotation.expr.name === PresetDecorators.COMPUTED
+    );
+    if (computedDecorator && !componentV2Decorator && !componentDecorator) {
+      this.report({
+        node: computedDecorator,
+        message: this.messages.componentV2InStruct,
+        fix: () => {
+          const startPosition = node.startPosition;
+          const endPosition = node.startPosition;
+          return {
+            range: [startPosition, endPosition],
+            code: `@${PresetDecorators.COMPONENT_V2}\n`,
+          };
+        },
+      });
     }
-  });
-}
 
-function validateComponentV2InStruct(
-  node: arkts.StructDeclaration,
-  context: UISyntaxRuleContext
-): void {
-  const componentV2Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
-  const componentDecorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
-  node.definition?.body.forEach((member) => {
-    if (arkts.isMethodDefinition(member)) {
-      checkComponentV2InStruct(node, member, componentV2Decorator, componentDecorator, context);
+    if (computedDecorator && !componentV2Decorator && componentDecorator) {
+      this.report({
+        node: computedDecorator,
+        message: this.messages.componentV2InStruct,
+        fix: () => {
+          const startPosition = componentDecorator.startPosition;
+          const endPosition = componentDecorator.endPosition;
+          return {
+            range: [startPosition, endPosition],
+            code: `@${PresetDecorators.COMPONENT_V2}`,
+          };
+        },
+      });
     }
-  });
-}
-
-function checkComponentV2InStruct(
-  node: arkts.StructDeclaration | arkts.ClassDeclaration,
-  member: arkts.MethodDefinition,
-  componentV2Decorator: arkts.AnnotationUsage | undefined,
-  componentDecorator: arkts.AnnotationUsage | undefined,
-  context: UISyntaxRuleContext
-): void {
-  const computedDecorator = member.scriptFunction.annotations?.find(annotation =>
-    annotation.expr && arkts.isIdentifier(annotation.expr) &&
-    annotation.expr.name === PresetDecorators.COMPUTED
-  );
-  if (computedDecorator && !componentV2Decorator && !componentDecorator) {
-    context.report({
-      node: computedDecorator,
-      message: rule.messages.componentV2InStruct,
-      fix: () => {
-        const startPosition = node.startPosition;
-        const endPosition = node.startPosition;
-        return {
-          range: [startPosition, endPosition],
-          code: `@${PresetDecorators.COMPONENT_V2}\n`,
-        };
-      },
-    });
   }
-  if (computedDecorator && !componentV2Decorator && componentDecorator) {
-    context.report({
-      node: computedDecorator,
-      message: rule.messages.componentV2InStruct,
-      fix: () => {
-        const startPosition = componentDecorator.startPosition;
-        const endPosition = componentDecorator.endPosition;
-        return {
-          range: [startPosition, endPosition],
-          code: `@${PresetDecorators.COMPONENT_V2}`,
-        };
-      },
-    });
+
+  private validateComputedInClass(
+    node: arkts.AstNode,
+    member: arkts.MethodDefinition,
+    observedV2Decorator: arkts.AnnotationUsage | undefined,
+  ): void {
+    const computedDecorator = member.scriptFunction.annotations?.find(annotation =>
+      annotation.expr && arkts.isIdentifier(annotation.expr) &&
+      annotation.expr.name === PresetDecorators.COMPUTED
+    );
+    if (computedDecorator && !observedV2Decorator &&
+      arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET === member.kind) {
+      this.report({
+        node: computedDecorator,
+        message: this.messages.onlyInObservedV2,
+        fix: () => {
+          const startPosition = node.startPosition;
+          return {
+            range: [startPosition, startPosition],
+            code: `@${PresetDecorators.OBSERVED_V2}\n`,
+          };
+        },
+      });
+    }
   }
 }
 
-function validateComputedInClass(
-  node: arkts.AstNode,
-  member: arkts.MethodDefinition,
-  observedV2Decorator: arkts.AnnotationUsage | undefined,
-  context: UISyntaxRuleContext
-): void {
-  const computedDecorator = member.scriptFunction.annotations?.find(annotation =>
-    annotation.expr && arkts.isIdentifier(annotation.expr) &&
-    annotation.expr.name === PresetDecorators.COMPUTED
-  );
-  if (computedDecorator && !observedV2Decorator &&
-    arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET === member.kind) {
-    context.report({
-      node: computedDecorator,
-      message: rule.messages.onlyInObservedV2,
-      fix: () => {
-        const startPosition = node.startPosition;
-        return {
-          range: [startPosition, startPosition],
-          code: `@${PresetDecorators.OBSERVED_V2}\n`,
-        };
-      },
-    });
-  }
-}
+export default ComputedDecoratorCheckRule;
 
-const rule: UISyntaxRule = {
-  name: 'computed-decorator-check',
-  messages: {
-    onlyOnGetter: `@Computed can only decorate 'GetAccessor'.`,
-    onlyInObservedV2: `The '@Computed' can decorate only member method within a 'class' decorated with ObservedV2.`,
-    componentV2InStruct: `The '@Computed' decorator can only be used in a 'struct' decorated with ComponentV2.`,
-    noTwoWayBinding: `A property decorated by '@Computed' cannot be used with two-way bind syntax.`,
-    computedMethodDefineSet: `A property decorated by '@Computed' cannot define a set method.`
-  },
-  setup(context) {
-    const computedGetters = new Map<string, arkts.MethodDefinition>();
-    const computedSetters = new Map<string, arkts.MethodDefinition>();
-    return {
-      parsed: (node): void => {
-        if (arkts.isStructDeclaration(node)) {
-          validateComponentV2InStruct(node, context);
-          validateStructBody(node, computedGetters, computedSetters, context);
-        }
-        if (arkts.isClassDeclaration(node)) {
-          validateClassBody(node, computedGetters, context);
-        }
-      },
-    };
-  },
-};
-
-export default rule;
