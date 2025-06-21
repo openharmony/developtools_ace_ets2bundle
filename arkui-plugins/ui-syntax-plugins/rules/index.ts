@@ -26,12 +26,11 @@ import ConstructParameter from './construct-parameter';
 import ConsumerProviderDecoratorCheck from './consumer-provider-decorator-check';
 import ComponentV2StateUsageValidation from './componentV2-state-usage-validation';
 import CustomDialogMissingController from './custom-dialog-missing-controller';
-import DecoratorsInUIComponentOnly from './decorators-in-ui-component-only';
 import EntryLoacalStorageCheck from './entry-localstorage-check';
 import EntryStructNoExport from './entry-struct-no-export';
-import LocalBuilderCheck from './local-builder-check';
 import MonitorDecoratorCheck from './monitor-decorator-check';
 import NestedRelationship from './nested-relationship';
+import NestedReuseComponentCheck from './nested-reuse-component-check';
 import NoChildInButton from './no-child-in-button';
 import NoDuplicateDecorators from './no-duplicate-decorators';
 import NoDuplicateEntry from './no-duplicate-entry';
@@ -48,8 +47,6 @@ import StructVariableInitialization from './struct-variable-initialization';
 import TrackDecoratorCheck from './track-decorator-check';
 import TypeDecoratorCheck from './type-decorator-check';
 import ValidateBuildInStruct from './validate-build-in-struct';
-import ValidateDecoratorTarget from './validate-decorator-target';
-import VariableInitializationViaComponentCons from './variable-initialization-via-component-cons';
 import WatchDecoratorFunction from './watch-decorator-function';
 import WatchDecoratorRegular from './watch-decorator-regular';
 import WrapBuilderCheck from './wrap-builder-check';
@@ -81,12 +78,11 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     ConsumerProviderDecoratorCheck,
     ComponentV2StateUsageValidation,
     CustomDialogMissingController,
-    DecoratorsInUIComponentOnly,
     EntryLoacalStorageCheck,
     EntryStructNoExport,
-    LocalBuilderCheck,
     MonitorDecoratorCheck,
     NestedRelationship,
+    NestedReuseComponentCheck,
     NoChildInButton,
     NoDuplicateDecorators,
     NoDuplicateEntry,
@@ -103,8 +99,6 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     TrackDecoratorCheck,
     TypeDecoratorCheck,
     ValidateBuildInStruct,
-    ValidateDecoratorTarget,
-    VariableInitializationViaComponentCons,
     WatchDecoratorFunction,
     WatchDecoratorRegular,
     WrapBuilderCheck,

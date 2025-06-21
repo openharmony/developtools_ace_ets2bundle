@@ -21,11 +21,9 @@ function reportError(context: UISyntaxRuleContext, errorNode: arkts.AnnotationUs
   context.report({
     node: errorNode,
     message: rule.messages.duplicateEntry,
-    fix: (previewDecoratorUsage) => {
-      const startPosition = previewDecoratorUsage.startPosition;
-      const endPosition = previewDecoratorUsage.endPosition;
+    fix: () => {
       return {
-        range: [startPosition, endPosition],
+        range: [errorNode.startPosition, errorNode.endPosition],
         code: '',
       };
     }

@@ -45,44 +45,8 @@ function reportMultipleBuiltInDecoratorsError(context: UISyntaxRuleContext, anno
     context.report({
       node: annotation,
       message: rule.messages.multipleBuiltInDecorators,
-      fix: (annotation) => {
-        const startPosition = annotation.startPosition;
-        const endPosition = annotation.endPosition;
-        return {
-          range: [startPosition, endPosition],
-          code: '',
-        };
-      },
     });
   }
-}
-
-function checkDecoratorOnlyInisComponentV2(context: UISyntaxRuleContext, member: arkts.ClassProperty,
-  node: arkts.StructDeclaration, hasisComponentV2: boolean, hasComponent: boolean): void {
-  member.annotations?.forEach(annotation => {
-    if (annotation.expr && arkts.isIdentifier(annotation.expr)) {
-      const annotationsName = annotation.expr?.name;
-      if (annotationsName && builtInDecorators.includes(annotationsName) && !hasisComponentV2 && !hasComponent) {
-        reportDecoratorOnlyInisComponentV2Error(context, annotation, annotationsName, node);
-      }
-    }
-  });
-};
-
-function reportDecoratorOnlyInisComponentV2Error(context: UISyntaxRuleContext, annotation: arkts.AnnotationUsage,
-  annotationsName: string, node: arkts.StructDeclaration): void {
-  context.report({
-    node: annotation,
-    message: rule.messages.decoratorOnlyInisComponentV2,
-    data: { annotationsName },
-    fix: (annotation) => {
-      const startPosition = node.definition.startPosition;
-      return {
-        range: [startPosition, startPosition],
-        code: `@${PresetDecorators.COMPONENT_V2}\n`,
-      };
-    },
-  });
 }
 
 function checkParamRequiresRequire(context: UISyntaxRuleContext, member: arkts.ClassProperty,
@@ -109,7 +73,10 @@ function checkRequireOnlyWithParam(context: UISyntaxRuleContext, member: arkts.C
   const requireDecorator = member.annotations?.find(annotation =>
     annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name === PresetDecorators.REQUIRE
   );
-  if (isComponentV2 && requireDecorator && !propertyDecorators.includes(PresetDecorators.PARAM)) {
+  if (isComponentV2 &&
+    requireDecorator &&
+    !propertyDecorators.includes(PresetDecorators.PARAM) &&
+    !propertyDecorators.includes(PresetDecorators.BUILDER_PARAM)) {
     context.report({
       node: requireDecorator,
       message: rule.messages.requireOnlyWithParam,
@@ -151,112 +118,6 @@ function reportInvalidDecoratorOnMethod(context: UISyntaxRuleContext, annotation
   });
 }
 
-function checkMustInitialize(
-  node: arkts.AstNode,
-  context: UISyntaxRuleContext,
-  mustInitMap: Map<string, Map<string, string>>
-): void {
-  if (!arkts.isIdentifier(node)) {
-    return;
-  }
-  const structName: string = getIdentifierName(node);
-  if (!mustInitMap.has(structName)) {
-    return;
-  }
-  const parentNode: arkts.AstNode = node.parent;
-  if (!arkts.isCallExpression(parentNode)) {
-    return;
-  }
-  // Get all the properties of a record via StructName
-  const mustInitName: Map<string, string> = mustInitMap.get(structName)!;
-  parentNode.arguments?.forEach((member) => {
-    const childkeyNameArray: string[] = getChildKeyNameArray(member);
-    mustInitName.forEach((value, key) => {
-      // If an attribute that must be initialized is not initialized, an error is reported
-      if (!childkeyNameArray.includes(key)) {
-        context.report({
-          node: parentNode,
-          message: rule.messages.paramNeedInit,
-          data: {
-            name: key,
-          },
-        });
-      }
-    });
-  });
-}
-
-function getChildKeyNameArray(member: arkts.AstNode): string[] {
-  const childkeyNameArray: string[] = [];
-  member.getChildren().forEach((property) => {
-    if (!arkts.isProperty(property) || !property.key || !arkts.isIdentifier(property.key)) {
-      return;
-    }
-    const childkeyName = property.key.name;
-    if (childkeyName !== '') {
-      childkeyNameArray.push(childkeyName);
-    }
-  });
-  return childkeyNameArray;
-}
-
-function initMap(node: arkts.AstNode, mustInitMap: Map<string, Map<string, string>>, mustInitArray: string[][],
-): void {
-  if (arkts.nodeType(node) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
-    return;
-  }
-  node.getChildren().forEach((member) => {
-    if (!(arkts.isStructDeclaration(member) ||
-      (arkts.isClassDeclaration(member) && !!member.definition &&
-        arkts.classDefinitionIsFromStructConst(member.definition))
-    )) {
-      return;
-    }
-    const structName: string = member.definition!.ident?.name ?? '';
-    if (structName === '') {
-      return;
-    }
-    member.definition?.body.forEach((item) => {
-      checkPropertyByAnnotations(item, structName, mustInitMap, mustInitArray);
-    });
-  });
-}
-
-function checkPropertyByAnnotations(
-  item: arkts.AstNode,
-  structName: string,
-  mustInitMap: Map<string, Map<string, string>>,
-  mustInitArray: string[][]
-): void {
-  if (!arkts.isClassProperty(item) || !item.key || !arkts.isIdentifier(item.key)) {
-    return;
-  }
-  const propertyName: string = item.key.name;
-  if (item.annotations.length === 0 || propertyName === '') {
-    return;
-  }
-  const annotationArray: string[] = getClassPropertyAnnotationNames(item);
-  // If the member variable is decorated, it is added to the corresponding map
-  mustInitArray.forEach(arr => {
-    if (arr.every(annotation => annotationArray.includes(annotation))) {
-      const annotationName: string = arr[0];
-      addProperty(mustInitMap, structName, propertyName, annotationName);
-    }
-  });
-}
-
-// Define a function to add property data to the property map
-function addProperty(propertyMap: Map<string, Map<string, string>>, structName: string,
-  propertyName: string, annotationName: string): void {
-  if (!propertyMap.has(structName)) {
-    propertyMap.set(structName, new Map());
-  }
-  const structProperties = propertyMap.get(structName);
-  if (structProperties) {
-    structProperties.set(propertyName, annotationName);
-  }
-}
-
 function validateClassPropertyDecorators(context: UISyntaxRuleContext, node: arkts.StructDeclaration): void {
   const isComponentV2 = hasisComponentV2(node);
   const isComponent = hasComponent(node);
@@ -268,13 +129,10 @@ function validateClassPropertyDecorators(context: UISyntaxRuleContext, node: ark
     // Rule 1: Multiple built-in decorators
     checkMultipleBuiltInDecorators(context, member, propertyDecorators);
 
-    // Rule 2: Built-in decorators only allowed in @isComponentV2
-    checkDecoratorOnlyInisComponentV2(context, member, node, isComponentV2, isComponent);
-
-    // Rule 3: @Param without default value must be combined with @Require
+    // Rule 2: @Param without default value must be combined with @Require
     checkParamRequiresRequire(context, member, propertyDecorators);
 
-    // Rule 4: @Require must be used together with @Param
+    // Rule 3: @Require must be used together with @Param
     checkRequireOnlyWithParam(context, member, propertyDecorators, isComponentV2);
   });
 }
@@ -360,7 +218,7 @@ function checkInitializeRule(
   context: UISyntaxRuleContext,
   componentV2PropertyMap: Map<string, Map<string, string>>,
 ): void {
-  if (!arkts.isIdentifier(node) || !componentV2PropertyMap.has(getIdentifierName(node))) {
+  if (!arkts.isIdentifier(node) || !componentV2PropertyMap.has(getIdentifierName(node)) || !node.parent) {
     return;
   }
   let structName: string = getIdentifierName(node);
@@ -450,27 +308,20 @@ const rule: UISyntaxRule = {
   name: 'componentV2-state-usage-validation',
   messages: {
     multipleBuiltInDecorators: `The member property or method cannot be decorated by multiple built-in decorators.`,
-    decoratorOnlyInisComponentV2: `The '@{{annotationsName}}' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`,
     paramRequiresRequire: `When a variable decorated with '@Param' is not assigned a default value, it must also be decorated with '@Require'.`,
-    requireOnlyWithParam: `In a struct decorated with '@ComponentV2', '@Require' can only be used with @Param.`,
+    requireOnlyWithParam: `In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' or '@BuilderParam'.`,
     localNeedNoInit: `The '{{decoratorName}}' property '{{key}}' in the custom component '{{componentName}}' cannot be initialized here (forbidden to specify).`,
-    paramNeedInit: `Property '{{name}}' must be initialized through the component constructor.`,
     useStateDecoratorsWithProperty: `'@{{annotationName}}' can only decorate member property.`,
   },
 
   setup(context) {
-    let mustInitMap: Map<string, Map<string, string>> = new Map();
-    const mustInitArray: string[][] = [[PresetDecorators.REQUIRE, PresetDecorators.PARAM]];
     let componentV2PropertyMap: Map<string, Map<string, string>> = new Map();
     return {
       parsed: (node): void => {
         initComponentV2PropertyMap(node, componentV2PropertyMap);
         checkInitializeRule(node, context, componentV2PropertyMap);
-        initMap(node, mustInitMap, mustInitArray);
-        // Rule 6: Property with require and Param must be initialized through the component constructor
-        checkMustInitialize(node, context, mustInitMap);
         if (arkts.isMethodDefinition(node)) {
-          // Rule 7: Local, Param, Event decorators must be used with Property
+          // Rule 5: Local, Param, Event decorators must be used with Property
           checkuseStateDecoratorsWithProperty(context, node);
         }
         if (!arkts.isStructDeclaration(node)) {
