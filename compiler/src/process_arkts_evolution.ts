@@ -18,6 +18,7 @@ import path from 'path';
 import ts from 'typescript';
 
 import {
+  EXTNAME_TS,
   EXTNAME_ETS,
   EXTNAME_D_ETS,
   ARKTS_1_0,
@@ -136,6 +137,19 @@ export function getArkTSEvoDeclFilePath(resolvedFileInfo: ResolvedFileInfo): str
         pkgName,
         toUnixPath(path.join(declgenV1OutPath, pkgName, 'src/main/ets'))
       ) + EXTNAME_D_ETS;
+      
+      if (fs.existsSync(arktsEvoDeclFilePath)) {
+        break;
+      }
+      /**
+       * If the import is exported via the package name, for example:
+       *   import { xxx } from 'src/main/ets/xxx/xxx/...'
+       * there is no need to additionally concatenate 'src/main/ets'
+       */
+      arktsEvoDeclFilePath = moduleRequest.replace(
+        pkgName,
+        toUnixPath(path.join(declgenV1OutPath, pkgName))
+      ) + EXTNAME_D_ETS;
       break;
     }
   }
@@ -252,7 +266,12 @@ export function isArkTSEvolutionFile(filePath: string, metaInfo: Object): boolea
     const normalizedFilePath = toUnixPath(filePath);
     const staticFileList = hybridModule.staticFiles || [];
     
-    return new Set(staticFileList.map(toUnixPath)).has(normalizedFilePath);
+    // Concatenate the corresponding source code path based on the bridge code path.
+    const declgenCodeBrigdePath = path.join(toUnixPath(hybridModule.declgenBridgeCodePath), metaInfo.pkgName);
+    let moduleId = normalizedFilePath.replace(toUnixPath(declgenCodeBrigdePath), toUnixPath(metaInfo.pkgPath));
+    const arktsEvolutionFile = moduleId.replace(new RegExp(`\\${EXTNAME_TS}$`), EXTNAME_ETS);
+
+    return new Set(staticFileList.map(toUnixPath)).has(arktsEvolutionFile);
   }
 
   return false;
