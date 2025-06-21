@@ -68,11 +68,11 @@ function getPrivateNames(node: arkts.StructDeclaration): string[] {
 function reportInvalidWatch(
   member: arkts.ClassProperty,
   parameterName: string,
-  hasWatchDecorator: arkts.AnnotationUsage,
+  watchDecorator: arkts.AnnotationUsage,
   context: UISyntaxRuleContext
 ): void {
   context.report({
-    node: hasWatchDecorator,
+    node: watchDecorator,
     message: rule.messages.invalidWatch,
     data: { parameterName },
     fix: () => {
@@ -89,14 +89,14 @@ function reportInvalidWatch(
 function reportStringOnly(
   parameters: arkts.Expression | undefined,
   privateNames: string[],
-  hasWatchDecorator: arkts.AnnotationUsage,
+  watchDecorator: arkts.AnnotationUsage,
   context: UISyntaxRuleContext
 ): void {
   if (!parameters) {
     return;
   }
   context.report({
-    node: hasWatchDecorator,
+    node: watchDecorator,
     message: rule.messages.stringOnly,
     data: { parameterName: getExpressionValue(parameters, privateNames) },
     fix: () => {
@@ -114,11 +114,11 @@ function validateWatchDecorator(
   member: arkts.ClassProperty,
   methodNames: string[],
   privateNames: string[],
-  hasWatchDecorator: arkts.AnnotationUsage | undefined,
+  watchDecorator: arkts.AnnotationUsage | undefined,
   context: UISyntaxRuleContext
 ): void {
   member.annotations.forEach((annotation) => {
-    validateWatchProperty(annotation, member, methodNames, privateNames, hasWatchDecorator, context);
+    validateWatchProperty(annotation, member, methodNames, privateNames, watchDecorator, context);
   });
 }
 
@@ -127,7 +127,7 @@ function validateWatchProperty(
   member: arkts.ClassProperty,
   methodNames: string[],
   privateNames: string[],
-  hasWatchDecorator: arkts.AnnotationUsage | undefined,
+  watchDecorator: arkts.AnnotationUsage | undefined,
   context: UISyntaxRuleContext
 ): void {
   if (
@@ -145,15 +145,15 @@ function validateWatchProperty(
       return;
     }
     if (!arkts.isStringLiteral(element.value)) {
-      if (!hasWatchDecorator) {
+      if (!watchDecorator) {
         return;
       }
-      reportStringOnly(element.value, privateNames, hasWatchDecorator, context);
+      reportStringOnly(element.value, privateNames, watchDecorator, context);
       return;
     }
     const parameterName = element.value.str;
-    if (hasWatchDecorator && parameterName && !methodNames.includes(parameterName)) {
-      reportInvalidWatch(member, parameterName, hasWatchDecorator, context);
+    if (watchDecorator && parameterName && !methodNames.includes(parameterName)) {
+      reportInvalidWatch(member, parameterName, watchDecorator, context);
     }
   });
 
@@ -169,12 +169,12 @@ function validateWatch(
     if (!arkts.isClassProperty(member)) {
       return;
     }
-    const hasWatchDecorator = member.annotations?.find(annotation =>
+    const watchDecorator = member.annotations?.find(annotation =>
       annotation.expr && arkts.isIdentifier(annotation.expr) &&
       annotation.expr.name === PresetDecorators.WATCH
     );
     // Determine whether it contains @watch decorators
-    validateWatchDecorator(member, methodNames, privateNames, hasWatchDecorator, context);
+    validateWatchDecorator(member, methodNames, privateNames, watchDecorator, context);
   });
 }
 

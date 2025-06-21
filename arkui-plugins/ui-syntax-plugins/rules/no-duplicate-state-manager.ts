@@ -62,7 +62,7 @@ function duplicateState(
 const rule: UISyntaxRule = {
   name: 'no-duplicate-state-manager',
   messages: {
-    duplicateState: `This property '{{attributeName}}' cannot have mutilate state management decorators.`,
+    duplicateState: `The property '{{attributeName}}' cannot have multiple state management decorators.`,
   },
   setup(context) {
     return {
@@ -70,8 +70,8 @@ const rule: UISyntaxRule = {
         if (!arkts.isStructDeclaration(node)) {
           return;
         }
-        const hasComponentV2 = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
-        if (hasComponentV2) {
+        const componentV2Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
+        if (componentV2Decorator) {
           return;
         }
         duplicateState(node, context);

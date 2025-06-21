@@ -41,12 +41,6 @@ function reportNoReusableV1InComponentV2(node: arkts.AstNode, context: UISyntaxR
   context.report({
     node: node,
     message: rule.messages.noReusableV1InComponentV2,
-    fix: (node) => {
-      return {
-        range: [node.startPosition, node.endPosition],
-        code: '',
-      };
-    }
   });
 }
 
@@ -62,6 +56,9 @@ function checkNoReusableV1InComponentV2(
     // Traverse upwards to find the custom component.
     let struceNode: arkts.AstNode = node;
     while (!arkts.isStructDeclaration(struceNode)) {
+      if (!struceNode.parent) {
+        return;
+      }
       struceNode = struceNode.parent;
     }
     const annotationsList = struceNode.definition.annotations;

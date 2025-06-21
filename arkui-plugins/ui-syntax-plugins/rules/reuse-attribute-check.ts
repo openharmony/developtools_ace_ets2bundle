@@ -25,9 +25,9 @@ function findStructsWithReusableAndComponentV2(node: arkts.AstNode, reusableV2Co
       continue;
     }
     // Check that the current component has @ComponentV2 and @ReusableV2 decorators
-    const hasReusableV2Decorator = getAnnotationUsage(childNode, PresetDecorators.REUSABLE_V2);
-    const hasComponentV2Decorator = getAnnotationUsage(childNode, PresetDecorators.COMPONENT_V2);
-    if (hasReusableV2Decorator && hasComponentV2Decorator) {
+    const reusableV2Decorator = getAnnotationUsage(childNode, PresetDecorators.REUSABLE_V2);
+    const componentV2Decorator = getAnnotationUsage(childNode, PresetDecorators.COMPONENT_V2);
+    if (reusableV2Decorator && componentV2Decorator) {
       const struceName = childNode.definition?.ident?.name ?? '';
       reusableV2ComponentV2Struct.push(struceName);
     }

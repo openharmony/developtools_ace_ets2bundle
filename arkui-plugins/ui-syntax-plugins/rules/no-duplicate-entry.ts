@@ -38,27 +38,25 @@ function checkDuplicateEntry(
     return;
   }
   if (entryData.count === MAX_ENTRY_DECORATOR_COUNT) {
+    const entryDocoratorUsage = entryDecoratorUsages.at(0)!;
     context.report({
-      node: entryDecoratorUsages.at(0)!,
+      node: entryDocoratorUsage,
       message: rule.messages.duplicateEntry,
-      fix: (entryDocoratorUsage) => {
-        const startPosition = entryDocoratorUsage.startPosition;
-        const endPosition = entryDocoratorUsage.endPosition;
+      fix: () => {
         return {
-          range: [startPosition, endPosition],
+          range: [entryDocoratorUsage.startPosition, entryDocoratorUsage.endPosition],
           code: '',
         };
       }
     });
   }
+  const entryDocoratorUsage = entryDecoratorUsages.at(entryData.count)!;
   context.report({
-    node: entryDecoratorUsages.at(entryData.count)!,
+    node: entryDocoratorUsage,
     message: rule.messages.duplicateEntry,
-    fix: (entryDocoratorUsage) => {
-      const startPosition = entryDocoratorUsage.startPosition;
-      const endPosition = entryDocoratorUsage.endPosition;
+    fix: () => {
       return {
-        range: [startPosition, endPosition],
+        range: [entryDocoratorUsage.startPosition, entryDocoratorUsage.endPosition],
         code: '',
       };
     }
