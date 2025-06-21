@@ -22,6 +22,7 @@ import { ParameterTransformer } from '../../../memo-plugins/parameter-transforme
 import { ReturnTransformer } from '../../../memo-plugins/return-transformer';
 import { SignatureTransformer } from '../../../memo-plugins/signature-transformer';
 import { FunctionTransformer } from '../../../memo-plugins/function-transformer';
+import { InternalsTransformer } from '../../../memo-plugins/internal-transformer';
 
 /**
  * AfterCheck unmemoizeTransform with no recheck AST.
@@ -39,11 +40,13 @@ export const memoNoRecheck: Plugins = {
             });
             const returnTransformer = new ReturnTransformer();
             const signatureTransformer = new SignatureTransformer();
+            const internalsTransformer = new InternalsTransformer({ positionalIdTracker });
             const functionTransformer = new FunctionTransformer({
                 positionalIdTracker,
                 parameterTransformer,
                 returnTransformer,
                 signatureTransformer,
+                internalsTransformer,
             });
             const programVisitor = new ProgramVisitor({
                 pluginName: memoNoRecheck.name,

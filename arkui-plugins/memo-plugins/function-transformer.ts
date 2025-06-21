@@ -48,12 +48,13 @@ import {
     isStandaloneArrowFunction,
     isThisAttributeAssignment,
     removeMemoAnnotation,
-    parametrizedNodeHasReceiver
+    parametrizedNodeHasReceiver,
 } from './utils';
 import { ParameterTransformer } from './parameter-transformer';
 import { ReturnTransformer } from './return-transformer';
 import { SignatureTransformer } from './signature-transformer';
 import { moveToFront } from '../common/arkts-utils';
+import { InternalsTransformer } from './internal-transformer';
 
 interface ScopeInfo extends MemoInfo {
     regardAsSameScope?: boolean;
@@ -64,6 +65,7 @@ export interface FunctionTransformerOptions extends VisitorOptions {
     parameterTransformer: ParameterTransformer;
     returnTransformer: ReturnTransformer;
     signatureTransformer: SignatureTransformer;
+    internalsTransformer?: InternalsTransformer;
 }
 
 export class FunctionTransformer extends AbstractVisitor {
@@ -71,6 +73,7 @@ export class FunctionTransformer extends AbstractVisitor {
     private readonly parameterTransformer: ParameterTransformer;
     private readonly returnTransformer: ReturnTransformer;
     private readonly signatureTransformer: SignatureTransformer;
+    private readonly internalsTransformer?: InternalsTransformer;
 
     /* Tracking whether should import `__memo_context_type` and `__memo_id_type` */
     private modified = false;
@@ -81,6 +84,7 @@ export class FunctionTransformer extends AbstractVisitor {
         this.parameterTransformer = options.parameterTransformer;
         this.returnTransformer = options.returnTransformer;
         this.signatureTransformer = options.signatureTransformer;
+        this.internalsTransformer = options.internalsTransformer;
     }
 
     private scopes: ScopeInfo[] = [];
@@ -224,15 +228,36 @@ export class FunctionTransformer extends AbstractVisitor {
         return this;
     }
 
+    updateInternalsInScriptFunction(scriptFunction: arkts.ScriptFunction): arkts.ScriptFunction {
+        if (!scriptFunction.body || !arkts.isBlockStatement(scriptFunction.body) || !this.internalsTransformer) {
+            return scriptFunction;
+        }
+        const afterInternalsTransformer = this.internalsTransformer.visitor(
+            scriptFunction.body
+        ) as arkts.BlockStatement;
+        return arkts.factory.updateScriptFunction(
+            scriptFunction,
+            afterInternalsTransformer,
+            arkts.factory.createFunctionSignature(
+                scriptFunction.typeParams,
+                scriptFunction.params,
+                scriptFunction.returnTypeAnnotation,
+                scriptFunction.hasReceiver
+            ),
+            scriptFunction.flags,
+            scriptFunction.modifiers
+        );
+    }
+
     updateScriptFunction(scriptFunction: arkts.ScriptFunction, name: string = ''): arkts.ScriptFunction {
         if (!scriptFunction.body || !arkts.isBlockStatement(scriptFunction.body)) {
             return scriptFunction;
         }
         if (this.parameterTransformer.isTracked(scriptFunction.body)) {
-            return scriptFunction;
+            return this.updateInternalsInScriptFunction(scriptFunction);
         }
         if (hasMemoIntrinsicAnnotation(scriptFunction) || hasMemoEntryAnnotation(scriptFunction)) {
-            return scriptFunction;
+            return this.updateInternalsInScriptFunction(scriptFunction);
         }
         const returnType = scriptFunction.returnTypeAnnotation;
         const isStableThis = this.stable > 0 && returnType !== undefined && arkts.isTSThisType(returnType);
@@ -264,7 +289,7 @@ export class FunctionTransformer extends AbstractVisitor {
         );
         this.modified = true;
         this.parameterTransformer.track(updateScriptFunction.body);
-        return updateScriptFunction;
+        return this.updateInternalsInScriptFunction(updateScriptFunction);
     }
 
     private updateMethodDefinition(node: arkts.MethodDefinition): arkts.MethodDefinition {

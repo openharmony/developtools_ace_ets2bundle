@@ -15,7 +15,7 @@
 
 import { global } from '../static/global';
 import { isNumber, throwError, getEnumName } from '../../utils';
-import { KNativePointer, KInt, nullptr, withStringResult } from '@koalaui/interop';
+import { KNativePointer, KInt, nullptr, withStringResult, KStringArrayPtr } from '@koalaui/interop'
 import { passNode, passString, passStringArray, unpackNodeArray, unpackNonNullableNode } from './private';
 import { isFunctionDeclaration, isMemberExpression, isMethodDefinition, isNumberLiteral } from '../factory/nodeTests';
 import {

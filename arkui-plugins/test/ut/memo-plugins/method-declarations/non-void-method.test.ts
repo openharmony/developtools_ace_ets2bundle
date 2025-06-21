@@ -73,10 +73,10 @@ class Test {
     }
     @memo_entry() public memoEntry<R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() entry: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> R)): R {
         const getContext = (() => {
-            return __context();
+            return __memo_context;
         });
         const getId = (() => {
-            return __id();
+            return __memo_id;
         });
         {
             const __memo_context = getContext();
