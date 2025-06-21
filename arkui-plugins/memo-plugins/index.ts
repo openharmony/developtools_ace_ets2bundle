@@ -36,6 +36,8 @@ export function unmemoizeTransform(): Plugins {
 
 function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
     console.log('[MEMO PLUGIN] AFTER CHECKED ENTER');
+    arkts.Performance.getInstance().memoryTrackerReset();
+    arkts.Performance.getInstance().startMemRecord('Node:UIPlugin:Memo-AfterCheck');
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
@@ -52,7 +54,7 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         arkts.Performance.getInstance().createEvent('memo-checked');
         program = checkedProgramVisit(program, this);
         script = program.astNode;
-        arkts.Performance.getInstance().stopEvent('memo-checked', false);
+        arkts.Performance.getInstance().stopEvent('memo-checked', true);
         debugLog('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
         debugDump(
             script.dumpSrc(),
@@ -61,14 +63,18 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
             cachePath,
             program.fileNameWithExtension
         );
+
+        arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:Memo-AfterCheck');
+        arkts.Performance.getInstance().memoryTrackerReset();
+        arkts.Performance.getInstance().stopMemRecord('Node:UIPlugin:Memo-AfterCheck');
+        arkts.Performance.getInstance().startMemRecord('Node:ArkTS:Recheck');
         arkts.Performance.getInstance().createEvent('memo-recheck');
         arkts.recheckSubtree(script);
-        arkts.Performance.getInstance().stopEvent('memo-recheck', false);
-        arkts.Performance.getInstance().clearAllEvents(false);
-        arkts.Performance.getInstance().visualizeEvents(true);
-        arkts.Performance.getInstance().clearHistory();
-        arkts.Performance.getInstance().clearTotalDuration();
+        arkts.Performance.getInstance().stopEvent('memo-recheck', true);
         this.setArkTSAst(script);
+        arkts.Performance.getInstance().memoryTrackerGetDelta('ArkTS:Recheck');
+        arkts.Performance.getInstance().stopMemRecord('Node:ArkTS:Recheck');
+        arkts.Performance.getInstance().memoryTrackerPrintCurrent('UIPlugin:End');
         console.log('[MEMO PLUGIN] AFTER CHECKED EXIT');
         return script;
     }

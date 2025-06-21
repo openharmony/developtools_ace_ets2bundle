@@ -174,7 +174,6 @@ export class ProgramVisitor extends AbstractVisitor {
         const visited = new Set();
         const queue: arkts.Program[] = programQueue;
         this.getLegacyModule();
-        arkts.Performance.getInstance().createEvent(`${this.state}-external-source`);
         while (queue.length > 0) {
             const currProgram = queue.shift()!;
             if (visited.has(currProgram.peer) || currProgram.isASTLowered()) {
@@ -197,16 +196,13 @@ export class ProgramVisitor extends AbstractVisitor {
                 this.visitNextProgramInQueue(queue, visited, externalSource);
             }
         }
-        arkts.Performance.getInstance().stopEvent(`${this.state}-external-source`, false);
     }
 
     programVisitor(program: arkts.Program): arkts.Program {
         this.visitExternalSources(program, [program]);
 
-        arkts.Performance.getInstance().createEvent(`${this.state}-source`);
         let programScript = program.astNode;
         programScript = this.visitor(programScript, program, this.externalSourceName);
-        arkts.Performance.getInstance().stopEvent(`${this.state}-source`, false);
 
         const visitorsToReset = flattenVisitorsInHooks(this.hooks, this.state);
         visitorsToReset.forEach((visitor) => visitor.reset());
@@ -247,7 +243,6 @@ export class ProgramVisitor extends AbstractVisitor {
     }
 
     visitor(node: arkts.AstNode, program?: arkts.Program, externalSourceName?: string): arkts.EtsScript {
-        arkts.Performance.getInstance().createEvent(`${this.state}-${externalSourceName ?? 'SOURCE'}`);
         let hook: ProgramHookLifeCycle | undefined;
 
         let script: arkts.EtsScript = node as arkts.EtsScript;
@@ -264,9 +259,7 @@ export class ProgramVisitor extends AbstractVisitor {
             }
             this.visitTransformer(transformer, script, externalSourceName, program);
             transformer.reset();
-            arkts.Performance.getInstance().createEvent('set-all-parent');
             arkts.setAllParents(script);
-            arkts.Performance.getInstance().stopEvent('set-all-parent', false);
             if (!transformer.isExternal) {
                 debugDump(
                     script.dumpSrc(),
@@ -282,8 +275,6 @@ export class ProgramVisitor extends AbstractVisitor {
         // post-run visitors
         hook = isExternal ? this.hooks?.external : this.hooks?.source;
         this.postVisitor(hook, node, program, externalSourceName);
-
-        arkts.Performance.getInstance().stopEvent(`${this.state}-${externalSourceName ?? 'SOURCE'}`, false);
         return script;
     }
 
@@ -303,12 +294,10 @@ export class ProgramVisitor extends AbstractVisitor {
         externalSourceName?: string,
         program?: arkts.Program
     ): arkts.EtsScript {
-        arkts.Performance.getInstance().createEvent(transformer.constructor.name);
         transformer.isExternal = !!externalSourceName;
         transformer.externalSourceName = externalSourceName;
         transformer.program = program;
         const newScript = transformer.visitor(script) as arkts.EtsScript;
-        arkts.Performance.getInstance().stopEvent(transformer.constructor.name, false);
         return newScript;
     }
 }

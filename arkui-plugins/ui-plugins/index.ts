@@ -35,6 +35,9 @@ export function uiTransform(): Plugins {
 function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
     let script: arkts.EtsScript | undefined;
     console.log('[UI PLUGIN] AFTER PARSED ENTER');
+    arkts.Performance.getInstance().memoryTrackerPrintCurrent('ArkTS:Parse');
+    arkts.Performance.getInstance().memoryTrackerReset();
+    arkts.Performance.getInstance().startMemRecord('Node:UIPlugin:AfterParse');
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
@@ -51,7 +54,7 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
         arkts.Performance.getInstance().createEvent('ui-parsed');
         program = parsedProgramVisit(program, this);
         script = program.astNode;
-        arkts.Performance.getInstance().stopEvent('ui-parsed', false);
+        arkts.Performance.getInstance().stopEvent('ui-parsed', true);
         debugLog('[AFTER PARSED SCRIPT] script: ', script.dumpSrc());
         debugDump(
             script.dumpSrc(),
@@ -61,6 +64,9 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
             program.fileNameWithExtension
         );
         this.setArkTSAst(script);
+        arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:AfterParse');
+        arkts.Performance.getInstance().memoryTrackerReset();
+        arkts.Performance.getInstance().stopMemRecord('Node:UIPlugin:AfterParse');
         console.log('[UI PLUGIN] AFTER PARSED EXIT');
         return script;
     }
@@ -89,6 +95,10 @@ function parsedProgramVisit(program: arkts.Program, context: PluginContext): ark
 function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
     let script: arkts.EtsScript | undefined;
     console.log('[UI PLUGIN] AFTER CHECKED ENTER');
+    arkts.Performance.getInstance().memoryTrackerPrintCurrent('ArkTS:Check');
+    arkts.Performance.getInstance().memoryTrackerGetDelta('ArkTS:Check');
+    arkts.Performance.getInstance().memoryTrackerReset();
+    arkts.Performance.getInstance().startMemRecord('Node:UIPlugin:UI-AfterCheck');
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
@@ -105,7 +115,7 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         arkts.Performance.getInstance().createEvent('ui-checked');
         program = checkedProgramVisit(program, this);
         script = program.astNode;
-        arkts.Performance.getInstance().stopEvent('ui-checked', false);
+        arkts.Performance.getInstance().stopEvent('ui-checked', true);
         debugLog('[AFTER STRUCT SCRIPT] script: ', script.dumpSrc());
         debugDump(
             script.dumpSrc(),
@@ -116,12 +126,10 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         );
         arkts.Performance.getInstance().createEvent('ui-recheck');
         arkts.recheckSubtree(script);
-        arkts.Performance.getInstance().stopEvent('ui-recheck', false);
-        arkts.Performance.getInstance().clearAllEvents(false);
-        arkts.Performance.getInstance().visualizeEvents(true);
-        arkts.Performance.getInstance().clearHistory();
-        arkts.Performance.getInstance().clearTotalDuration();
+        arkts.Performance.getInstance().stopEvent('ui-recheck', true);
         this.setArkTSAst(script);
+        arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:UI-AfterCheck');
+        arkts.Performance.getInstance().stopMemRecord('Node:UIPlugin:UI-AfterCheck');
         console.log('[UI PLUGIN] AFTER CHECKED EXIT');
         return script;
     }

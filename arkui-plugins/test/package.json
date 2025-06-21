@@ -1,7 +1,6 @@
 {
   "name": "arkui-plugins-test",
   "version": "1.0.0",
-  "description": "",
   "private": true,
   "scripts": {
     "compile:ohos": "node $INIT_CWD/../../../../arkcompiler/ets_frontend/ets2panda/driver/build-system/dist/entry.js ./demo/hello_world/build_config.json",
@@ -10,6 +9,13 @@
     "clean:localtest": "rm -rf dist",
     "clean:test": "rm -rf generated",
     "clean:all": "npm run clean:localtest && npm run clean:test",
+    "mem": "rm -rf dist && node localtest_config.js && LD_LIBRARY_PATH=$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/lib LD_BIND_NOW=1  /usr/local/valgrind-3.25.1/bin/valgrind --tool=massif --pages-as-heap=yes --heap=yes --alloc-fn='libes2panda_public.so*' --alloc-fn='*es2panda.node*'  node $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/driver/build-system/dist/entry.js ./demo/localtest/build_config.json",
+    "local": "rm -rf dist && node localtest_config.js && LD_LIBRARY_PATH=$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/lib node $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/driver/build-system/dist/entry.js ./demo/localtest/build_config.json",
+    "inspect": "rm -rf dist && node localtest_config.js && LD_LIBRARY_PATH=$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/lib node --inspect-brk --expose_gc --no-turbo-inlining $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/driver/build-system/dist/entry.js ./demo/localtest/build_config.json",
+    "clinic_mem": "rm -rf dist && node localtest_config.js && LD_LIBRARY_PATH=$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/lib clinic heapprofiler --node-arguments='--heapsnapshot-on-signal' -- node $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/driver/build-system/dist/entry.js ./demo/localtest/build_config.json",
+    "mem1": "rm -rf dist && node localtest_config.js && LD_LIBRARY_PATH=$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/lib clinic flame --mem --collect-only -- node --expose_gc --heap-prof --trace-gc --track-heap-objects $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/driver/build-system/dist/entry.js ./demo/localtest/build_config.json",
+    "mem2": "rm -rf dist && node localtest_config.js && LD_LIBRARY_PATH=$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/lib clinic flame --mem-prof -- node --no-node-snapshot --no-deprecation $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/driver/build-system/dist/entry.js ./demo/localtest/build_config.json", 
+    "valgrind": "rm -rf dist && node localtest_config.js && npm run compile:plugins && LD_LIBRARY_PATH=$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/lib LD_BIND_NOW=1  /usr/local/valgrind-3.25.1/bin/valgrind --tool=massif --pages-as-heap=yes --heap=yes --alloc-fn='libes2panda_public.so*' --alloc-fn='*es2panda.node*'  node $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/driver/build-system/dist/entry.js ./demo/localtest/build_config.json",
     "test": "npm run clean:all && npm run compile:plugins && cd .. && npm run test",
     "test:gdb": "npm run clean:all && npm run compile:plugins && cd .. && npm run test:gdb",
     "localtest": "rm -rf dist && node localtest_config.js && npm run compile:plugins && LD_LIBRARY_PATH=$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ets2panda/lib node $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/driver/build-system/dist/entry.js ./demo/localtest/build_config.json",
