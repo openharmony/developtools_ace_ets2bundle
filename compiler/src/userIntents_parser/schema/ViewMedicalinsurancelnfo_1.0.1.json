@@ -1,28 +1,11 @@
 {
-  "intentName": "ViewLogistics",
+  "intentName": "ViewMedicalinsurancelnfo",
   "intentVersion": "1.0.1",
-  "llmDescription": "查看快递",
-  "keywords": ["ViewLogistics"],
+  "llmDescription": "查看医保信息",
+  "keywords": ["ViewMedicalinsurancelnfo"],
   "parameters": {
     "type": "object",
-    "propertyNames": {
-      "enum": [
-        "trackingNo",
-        "entityId"
-      ]
-    },
-    "properties": {
-      "trackingNo": {
-        "description": "快递单号，空则停留在首页。",
-        "maxLength": 64,
-        "type": "string"
-      },
-      "entityId": {
-        "description": "快递实体ID，查询场景下默认使用该字段回传打开。",
-        "maxLength": 64,
-        "type": "string"
-      }
-    }
+    "properties": {}
   },
   "result": {
     "type": "object",
