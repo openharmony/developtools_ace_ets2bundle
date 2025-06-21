@@ -79,7 +79,7 @@ export class factory {
         const func: arkts.ScriptFunction = node.scriptFunction;
         let newParams: arkts.Expression[] = [styleArg];
         if (func.params.length > 0) {
-            newParams.push(...this.updateBuilderParameters(func.params).slice(0, func.params.length - 1));
+            newParams.push(...func.params.slice(0, func.params.length - 1));
             if (externalSourceName === 'arkui.component.xcomponent' && node.name.name === 'XComponent') {
                 newParams.push(this.createPackageInfoArgForXComponent());
             }
@@ -108,18 +108,6 @@ export class factory {
             node.modifiers,
             false
         );
-    }
-
-    /**
-     * update `@Builder` decorated parameter expression.
-     */
-    static updateBuilderParameters(params: readonly arkts.Expression[]): arkts.Expression[] {
-        return params.map((item: arkts.Expression) => {
-            if (arkts.isEtsParameterExpression(item) && hasDecorator(item, DecoratorNames.BUILDER)) {
-                return addMemoAnnotation(item);
-            }
-            return item;
-        });
     }
 
     /*
