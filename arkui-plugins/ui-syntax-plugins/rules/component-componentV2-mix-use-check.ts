@@ -37,7 +37,7 @@ const v2ComponentDecorators: string[] = [
 ];
 
 // Report an Observed version violation error
-function reportObservedConflict(
+function checkObservedConflict(
   node: arkts.ClassProperty,
   context: UISyntaxRuleContext,
   componentDecorators: string[],
@@ -72,11 +72,11 @@ function processNode(
     const currentNode: arkts.AstNode = queue.shift() as arkts.AstNode;
     if (arkts.isIdentifier(currentNode)) {
       if (observedV1Name.has(getIdentifierName(currentNode)) && annotationName === PresetDecorators.COMPONENT_V2) {
-        reportObservedConflict(node, context, v2ComponentDecorators, rule.messages.observedv1_v2);
+        checkObservedConflict(node, context, v2ComponentDecorators, rule.messages.observedv1_v2);
         break;
       }
       if (observedV2Name.has(getIdentifierName(currentNode)) && annotationName === PresetDecorators.COMPONENT_V1) {
-        reportObservedConflict(node, context, v1ComponentDecorators, rule.messages.observedv2_v1);
+        checkObservedConflict(node, context, v1ComponentDecorators, rule.messages.observedv2_v1);
         break;
       }
     }

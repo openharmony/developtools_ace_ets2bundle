@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
-import { PresetDecorators } from '../utils/index';
+import { PresetDecorators, isClassPropertyOptional } from '../utils/index';
 
 // @Prop needs to consider whether there is an initialization value
 const requireDecorators = [
@@ -51,15 +51,6 @@ function hasPropOrRequireDecorator(context: UISyntaxRuleContext, node: arkts.Cla
       }
     }
   });
-}
-
-function isClassPropertyOptional(node: arkts.ClassProperty): boolean {
-  const OPTIONAL_MASK = 1 << 7;
-  if ((node.modifiers & OPTIONAL_MASK) !== 0) {
-    return true;
-  } else {
-    return false;
-  }
 }
 
 const rule: UISyntaxRule = {
