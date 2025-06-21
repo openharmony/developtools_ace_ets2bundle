@@ -47,20 +47,27 @@ function checkComponentInitLink(
   if (!arkts.isIdentifier(node) || !componentV1WithLinkList.includes(getIdentifierName(node))) {
     return;
   }
-  let parentNode = node.parent;
-  while (!arkts.isStructDeclaration(parentNode)) {
-    if (!parentNode.parent) {
+  if (!node.parent) {
+    return;
+  }
+  let structNode = node.parent;
+  while (!arkts.isStructDeclaration(structNode)) {
+    if (!structNode.parent) {
       return;
     }
-    parentNode = parentNode.parent;
+    structNode = structNode.parent;
   }
-  if (getAnnotationUsage(parentNode, PresetDecorators.COMPONENT_V2) !== undefined) {
+  if (getAnnotationUsage(structNode, PresetDecorators.COMPONENT_V2) !== undefined) {
+    if (!node.parent) {
+      return;
+    }
+    const parentNode = node.parent;
     context.report({
-      node: node.parent,
+      node: parentNode,
       message: rule.messages.componentInitLinkCheck,
-      fix: (node) => {
+      fix: () => {
         return {
-          range: [node.startPosition, node.endPosition],
+          range: [parentNode.startPosition, parentNode.endPosition],
           code: '',
         };
       }

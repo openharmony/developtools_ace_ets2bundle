@@ -18,6 +18,9 @@ import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 import { getIdentifierName } from '../utils';
 
 function isInsideStructAndBuild(node: arkts.AstNode): boolean {
+  if (!node.parent) {
+    return false;
+  }
   let parentNode = node.parent;
   let isInStruct = false;
   let isInBuild = false;
@@ -27,6 +30,9 @@ function isInsideStructAndBuild(node: arkts.AstNode): boolean {
     }
     if (arkts.isScriptFunction(parentNode) && parentNode.id?.name === 'build') {
       isInBuild = true;
+    }
+    if (!parentNode.parent) {
+      return false;
     }
     parentNode = parentNode.parent;
   }
@@ -72,6 +78,9 @@ const rule: UISyntaxRule = {
           return;
         }
         if (!isInsideStructAndBuild(node)) {
+          return;
+        }
+        if (!node.parent) {
           return;
         }
         // Obtain the information of the parent node of the current node

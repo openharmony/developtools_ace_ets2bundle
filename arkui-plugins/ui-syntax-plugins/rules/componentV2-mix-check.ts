@@ -37,15 +37,15 @@ const rule: UISyntaxRule = {
           return;
         }
         // Check if the struct has the '@ComponentV2' annotation
-        const hasComponentV2 = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
-        if (!hasComponentV2) {
+        const componentV2Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
+        if (!componentV2Decorator) {
           return;
         }
         // Check for the presence of conflicting decorators: '@Component', '@Reusable', '@CustomDialog'
-        const hasComponent = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
-        const hasReusable = getAnnotationUsage(node, PresetDecorators.REUSABLE_V1);
-        const hasCustomDialog = getAnnotationUsage(node, PresetDecorators.CUSTOM_DIALOG);
-        if (hasComponent || hasReusable || hasCustomDialog) {
+        const componentDecorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
+        const reusableDecorator = getAnnotationUsage(node, PresetDecorators.REUSABLE_V1);
+        const customDialogDecorator = getAnnotationUsage(node, PresetDecorators.CUSTOM_DIALOG);
+        if (componentDecorator || reusableDecorator || customDialogDecorator) {
           context.report({
             node: structNameNode,
             message: rule.messages.conflictWithComponentV2,

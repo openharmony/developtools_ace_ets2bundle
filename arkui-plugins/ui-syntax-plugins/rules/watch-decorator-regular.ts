@@ -24,7 +24,7 @@ function validateWatchDecorator(node: arkts.StructDeclaration, context: UISyntax
     if (!arkts.isClassProperty(member)) {
       return;
     }
-    const hasWatchDecorator = member.annotations?.find(annotation =>
+    const watchDecorator = member.annotations?.find(annotation =>
       annotation.expr && arkts.isIdentifier(annotation.expr) &&
       annotation.expr.name === PresetDecorators.WATCH
     );
@@ -32,9 +32,9 @@ function validateWatchDecorator(node: arkts.StructDeclaration, context: UISyntax
     const propertyName = getClassPropertyName(member);
     // Determine if there are any decorations other than @watch decorations
     // rule1: The @Watch decorator must be used with other decorators
-    if (hasWatchDecorator && propertyAnnotationNames.length < PROPERTY_ANNOTATION_NUM) {
+    if (watchDecorator && propertyAnnotationNames.length < PROPERTY_ANNOTATION_NUM) {
       context.report({
-        node: hasWatchDecorator,
+        node: watchDecorator,
         message: rule.messages.invalidWatch,
         data: {
           propertyName: propertyName

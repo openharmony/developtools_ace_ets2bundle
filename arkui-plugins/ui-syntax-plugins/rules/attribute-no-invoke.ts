@@ -15,7 +15,6 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
-import { getIdentifierName, BUILD_NAME } from '../utils';
 
 function attributeNoInvoke(node: arkts.AstNode, context: UISyntaxRuleContext): void {
   const childNode = node.getChildren();
@@ -31,17 +30,6 @@ function attributeNoInvoke(node: arkts.AstNode, context: UISyntaxRuleContext): v
       },
     });
   }
-}
-
-function isInBuild(node: arkts.AstNode): boolean {
-  let structNode = node.parent;
-  while (!arkts.isMethodDefinition(structNode) || getIdentifierName(structNode.name) !== BUILD_NAME) {
-    if (!structNode.parent) {
-      return false;
-    }
-    structNode = structNode.parent;
-  }
-  return true;
 }
 
 function chainJudgment(node: arkts.AstNode): boolean {
@@ -71,7 +59,7 @@ const rule: UISyntaxRule = {
   setup(context) {
     return {
       parsed: (node): void => {
-        if (arkts.isExpressionStatement(node) && isInBuild(node) && chainJudgment(node)) {
+        if (arkts.isExpressionStatement(node) && !arkts.isIdentifier(node.expression) && chainJudgment(node)) {
           attributeNoInvoke(node, context);
         }
       },
