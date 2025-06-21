@@ -424,7 +424,7 @@ export function isDoubleDollarCall(
         return false;
     }
     if (!ignoreDecl) {
-        const decl = arkts.getDecl(value);
+        const decl = arkts.getDecl(value.expression);
         if (!decl) {
             return false;
         }
