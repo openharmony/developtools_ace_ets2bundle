@@ -20,6 +20,7 @@ const UniqueId = common.UniqueId;
 export enum RuntimeNames {
     __CONTEXT = '__context',
     __ID = '__id',
+    ANNOTATION_BUILDER = 'Builder',
     ANNOTATION = 'memo',
     ANNOTATION_ENTRY = 'memo_entry',
     ANNOTATION_INTRINSIC = 'memo_intrinsic',
@@ -115,7 +116,7 @@ export type MemoAstNode =
     | arkts.VariableDeclaration;
 
 export function hasMemoAnnotation<T extends MemoAstNode>(node: T): boolean {
-    return node.annotations.some((it) => isMemoAnnotation(it, RuntimeNames.ANNOTATION));
+    return node.annotations.some((it) => isMemoAnnotation(it, RuntimeNames.ANNOTATION) || isMemoAnnotation(it, RuntimeNames.ANNOTATION_BUILDER));
 }
 
 export function hasMemoIntrinsicAnnotation<T extends MemoAstNode>(node: T): boolean {

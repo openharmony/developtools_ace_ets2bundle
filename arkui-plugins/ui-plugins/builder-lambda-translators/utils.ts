@@ -271,7 +271,7 @@ export function findBuilderLambdaDecl(node: arkts.CallExpression | arkts.Identif
         return undefined;
     }
     const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
-    if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
+    if (!moduleName) {
         return undefined;
     }
     DeclarationCollector.getInstance().collect(decl);
@@ -299,7 +299,7 @@ export function findBuilderLambdaDeclInfo(decl: arkts.AstNode | undefined): Buil
         return undefined;
     }
     const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
-    if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
+    if (!moduleName) {
         return undefined;
     }
     if (arkts.isMethodDefinition(decl)) {
@@ -424,7 +424,7 @@ export function isDoubleDollarCall(
         return false;
     }
     if (!ignoreDecl) {
-        const decl = arkts.getDecl(value);
+        const decl = arkts.getDecl(value.expression);
         if (!decl) {
             return false;
         }

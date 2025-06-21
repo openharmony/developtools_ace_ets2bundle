@@ -22,13 +22,8 @@ const mustInitInConstructorDecorators: string[][] = [
   [PresetDecorators.REQUIRE, PresetDecorators.STATE],
   [PresetDecorators.REQUIRE, PresetDecorators.PROVIDE],
   [PresetDecorators.REQUIRE, PresetDecorators.PROP],
-  [PresetDecorators.REQUIRE, PresetDecorators.BUILDER_PARAM]
-];
-const shouldInitInConstructorDecorators: string[][] = [
-  [PresetDecorators.PROP],
-  [PresetDecorators.BUILDER_PARAM],
-  [PresetDecorators.LINK],
-  [PresetDecorators.OBJECT_LINK]
+  [PresetDecorators.REQUIRE, PresetDecorators.BUILDER_PARAM],
+  [PresetDecorators.REQUIRE, PresetDecorators.PARAM]
 ];
 const notAllowInitInConstructorDecorators: string[][] = [
   [PresetDecorators.STORAGE_LINK],
@@ -54,7 +49,6 @@ function checkPropertyByAnnotations(
   item: arkts.AstNode,
   structName: string,
   mustInitMap: Map<string, Map<string, string>>,
-  shouldInitMap: Map<string, Map<string, string>>,
   cannotInitMap: Map<string, Map<string, string>>
 ): void {
   if (!arkts.isClassProperty(item) || !item.key || !arkts.isIdentifier(item.key)) {
@@ -78,19 +72,11 @@ function checkPropertyByAnnotations(
       addProperty(cannotInitMap, structName, propertyName, annotationName);
     }
   });
-  shouldInitInConstructorDecorators.forEach(arr => {
-    if (arr.every(annotation => annotationArray.includes(annotation)) &&
-      !annotationArray.includes(PresetDecorators.REQUIRE)) {
-      const annotationName: string = arr[0];
-      addProperty(shouldInitMap, structName, propertyName, annotationName);
-    }
-  });
 }
 
 function initMap(
   node: arkts.AstNode,
   mustInitMap: Map<string, Map<string, string>>,
-  shouldInitMap: Map<string, Map<string, string>>,
   cannotInitMap: Map<string, Map<string, string>>
 ): void {
   if (arkts.nodeType(node) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
@@ -108,7 +94,7 @@ function initMap(
       return;
     }
     member.definition?.body.forEach((item) => {
-      checkPropertyByAnnotations(item, structName, mustInitMap, shouldInitMap, cannotInitMap);
+      checkPropertyByAnnotations(item, structName, mustInitMap, cannotInitMap);
     });
   });
 }
@@ -141,7 +127,7 @@ function checkMustInitialize(
     return;
   }
   const structName: string = getIdentifierName(node);
-  if (!mustInitMap.has(structName)) {
+  if (!mustInitMap.has(structName) || !node.parent) {
     return;
   }
   const parentNode: arkts.AstNode = node.parent;
@@ -165,40 +151,6 @@ function checkMustInitialize(
   });
 }
 
-function checkShouldInitialize(
-  node: arkts.AstNode,
-  context: UISyntaxRuleContext,
-  shouldInitMap: Map<string, Map<string, string>>,
-): void {
-  if (!arkts.isIdentifier(node)) {
-    return;
-  }
-  const structName: string = getIdentifierName(node);
-  if (!shouldInitMap.has(structName)) {
-    return;
-  }
-  const parentNode: arkts.AstNode = node.parent;
-  if (!arkts.isCallExpression(parentNode)) {
-    return;
-  }
-  // Get all the properties of a record via StructName
-  const shouldInitProperty: Map<string, string> = shouldInitMap.get(structName)!;
-  const childkeyNameArray: string[] = getChildKeyNameArray(parentNode);
-  // If the attribute that should be initialized is not initialized, an error is reported
-  shouldInitProperty.forEach((value, key) => {
-    if (!childkeyNameArray.includes(key)) {
-      context.report({
-        node: parentNode,
-        message: rule.messages.shouldInitializeViaComponentConstructor,
-        data: {
-          varName: `@${key}`,
-          customComponentName: structName,
-        },
-      });
-    }
-  });
-}
-
 function checkCannotInitialize(
   node: arkts.AstNode,
   context: UISyntaxRuleContext,
@@ -208,7 +160,7 @@ function checkCannotInitialize(
     return;
   }
   const structName: string = getIdentifierName(node);
-  if (!cannotInitMap.has(structName)) {
+  if (!cannotInitMap.has(structName) || !node.parent) {
     return;
   }
   const parentNode: arkts.AstNode = node.parent;
@@ -230,7 +182,7 @@ function checkCannotInitialize(
       if (cannotInitName.has(propertyName)) {
         const propertyType: string = cannotInitName.get(propertyName)!;
         context.report({
-          node: property.key,
+          node: property,
           message: rule.messages.disallowVariableInitializationViaComponentConstructor,
           data: {
             decoratorName: `@${propertyType}`,
@@ -247,18 +199,15 @@ const rule: UISyntaxRule = {
   name: 'variable-initialization-via-component-constructor',
   messages: {
     requireVariableInitializationViaComponentConstructor: `'@Require' decorated '{{varName}}' must be initialized through the component constructor.`,
-    shouldInitializeViaComponentConstructor: `The property '{{varName}}' in the custom component '{{customComponentName}}' is missing (mandatory to specify).`,
     disallowVariableInitializationViaComponentConstructor: `The '{{decoratorName}}' property '{{varName}}' in the custom component '{{customComponentName}}' cannot be initialized here (forbidden to specify).`,
   },
   setup(context) {
     let mustInitMap: Map<string, Map<string, string>> = new Map();
-    let shouldInitMap: Map<string, Map<string, string>> = new Map();
     let cannotInitMap: Map<string, Map<string, string>> = new Map();
     return {
       parsed: (node): void => {
-        initMap(node, mustInitMap, shouldInitMap, cannotInitMap);
+        initMap(node, mustInitMap, cannotInitMap);
         checkMustInitialize(node, context, mustInitMap);
-        checkShouldInitialize(node, context, shouldInitMap);
         checkCannotInitialize(node, context, cannotInitMap);
       },
     };

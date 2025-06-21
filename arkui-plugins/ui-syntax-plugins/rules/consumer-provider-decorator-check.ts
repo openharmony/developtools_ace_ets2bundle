@@ -27,11 +27,11 @@ function processStructMembers(
   node.definition.body.forEach((member) => {
     // When a member variable is @consumer modified, it is stored to mark fields that cannot be initialized
     if (arkts.isClassProperty(member)) {
-      const hasComsumerDecorator = member?.annotations.some(annotation =>
+      const comsumerDecorator = member?.annotations.some(annotation =>
         annotation.expr && arkts.isIdentifier(annotation.expr) &&
         annotation.expr.name === PresetDecorators.CONSUMER
       );
-      const hasProviderDecorator = member?.annotations.some(annotation =>
+      const providerDecorator = member?.annotations.some(annotation =>
         annotation.expr && arkts.isIdentifier(annotation.expr) &&
         annotation.expr.name === PresetDecorators.PROVIDER
       );
@@ -39,11 +39,11 @@ function processStructMembers(
         return;
       }
       const memberName = getIdentifierName(member?.key);
-      if (hasComsumerDecorator && structName && memberName) {
+      if (comsumerDecorator && structName && memberName) {
         componentv2WithConsumer.add(structName, memberName);
       }
 
-      if (hasProviderDecorator && structName && memberName) {
+      if (providerDecorator && structName && memberName) {
         componentv2WithProvider.add(structName, memberName);
       }
     }
@@ -132,16 +132,16 @@ function validateMultipleBuiltInDecorators(
   context: UISyntaxRuleContext,
 ): void {
 
-  const hasDecorator = findDecorator(member, decorateName);
+  const decorator = findDecorator(member, decorateName);
   const otherDecorators = findOtherDecorator(member, decorateName);
-  if (!hasDecorator || !otherDecorators) {
+  if (!decorator || !otherDecorators) {
     return;
   }
   context.report({
-    node: hasDecorator,
+    node: decorator,
     message: rule.messages.multipleBuiltInDecorators,
     data: {
-      decorator: getAnnotationName(hasDecorator)
+      decorator: getAnnotationName(decorator)
     },
     fix: (decorator) => {
       const startPosition = otherDecorators.startPosition;
@@ -154,67 +154,11 @@ function validateMultipleBuiltInDecorators(
   });
 }
 
-// Report a bug where @Provider is missing @ComponentV2
-function reportProviderRequiresComponentV2(
-  decorator: arkts.AnnotationUsage,
-  hasComponent: arkts.AnnotationUsage | undefined,
-  node: arkts.AstNode,
-  context: UISyntaxRuleContext,
-): void {
-  if (hasComponent) {
-    context.report({
-      node: decorator,
-      message: rule.messages.providerRequiresComponentV2,
-      data: {
-        decorator: getAnnotationName(decorator),
-      },
-      fix: (hasProviderDecorator) => {
-        const startPosition = hasComponent.startPosition;
-        const endPosition = hasComponent.endPosition;
-        return {
-          range: [startPosition, endPosition],
-          code: `@${PresetDecorators.COMPONENT_V2}`,
-        };
-      }
-    });
-  } else {
-    context.report({
-      node: decorator,
-      message: rule.messages.providerRequiresComponentV2,
-      data: {
-        decorator: getAnnotationName(decorator),
-      },
-      fix: (hasProviderDecorator) => {
-        const startPosition = node.startPosition;
-        const endPosition = startPosition;
-        return {
-          range: [startPosition, endPosition],
-          code: `@${PresetDecorators.COMPONENT_V2}\n`,
-        };
-      }
-    });
-  }
-}
-
-function validateDecoratorWithComponentV2Requirement(
-  member: arkts.ClassProperty,
-  hasComponentV2: arkts.AnnotationUsage | undefined,
-  hasComponent: arkts.AnnotationUsage | undefined,
-  node: arkts.AstNode,
-  context: UISyntaxRuleContext,
-  decoratorName: string
-): void {
-  const decorator = findDecorator(member, decoratorName);
-  if (decorator && !hasComponentV2) {
-    reportProviderRequiresComponentV2(decorator, hasComponent, node, context);
-  }
-}
-
 // Verify decorator conflicts on member variables
 function validateMemberDecorators(
   member: arkts.ClassProperty,
-  hasComponentV2: arkts.AnnotationUsage | undefined,
-  hasComponent: arkts.AnnotationUsage | undefined,
+  componentV2Decorator: arkts.AnnotationUsage | undefined,
+  componentDecorator: arkts.AnnotationUsage | undefined,
   node: arkts.AstNode,
   context: UISyntaxRuleContext
 ): void {
@@ -223,15 +167,6 @@ function validateMemberDecorators(
 
   // Check that the @Provider is mixed with other decorators
   validateMultipleBuiltInDecorators(member, PresetDecorators.PROVIDER, context);
-
-  // Check if the @Consumer is in a @ComponentV2-modified structure
-  validateDecoratorWithComponentV2Requirement(
-    member, hasComponentV2, hasComponent, node, context, PresetDecorators.CONSUMER
-  );
-  // Check if the @Provider is in a @ComponentV2-modified structure
-  validateDecoratorWithComponentV2Requirement(
-    member, hasComponentV2, hasComponent, node, context, PresetDecorators.PROVIDER
-  );
 }
 
 // Verify that @Provider is being used in the class
@@ -250,9 +185,9 @@ function validateDecoratorInClass(
     data: {
       decorator: getAnnotationName(decorator),
     },
-    fix: (hasProviderDecorator) => {
-      const startPosition = hasProviderDecorator.startPosition;
-      const endPosition = hasProviderDecorator.endPosition;
+    fix: (providerDecorator) => {
+      const startPosition = providerDecorator.startPosition;
+      const endPosition = providerDecorator.endPosition;
       return {
         range: [startPosition, endPosition],
         code: '',
@@ -262,15 +197,16 @@ function validateDecoratorInClass(
 }
 
 // Verify that the current identifier is an illegally initialized @Consumer member variable
-function reportValidateConsumer(
+function checkInvalidConsumerUsage(
   currentNode: arkts.Identifier,
   callExpName: string,
   componentv2WithConsumer: MultiMap<string, string>,
   context: UISyntaxRuleContext
 ): void {
-  if (componentv2WithConsumer.get(callExpName).includes(getIdentifierName(currentNode))) {
+  const parent = currentNode.parent;
+  if (parent && componentv2WithConsumer.get(callExpName).includes(getIdentifierName(currentNode))) {
     context.report({
-      node: currentNode.parent,
+      node: parent,
       message: rule.messages.forbiddenInitialization,
       data: {
         decorator: PresetDecorators.CONSUMER,
@@ -278,8 +214,8 @@ function reportValidateConsumer(
         structName: callExpName
       },
       fix: () => {
-        const startPosition = currentNode.parent.startPosition;
-        const endPosition = currentNode.parent.endPosition;
+        const startPosition = parent.startPosition;
+        const endPosition = parent.endPosition;
         return {
           range: [startPosition, endPosition],
           code: '',
@@ -289,15 +225,16 @@ function reportValidateConsumer(
   }
 }
 
-function reportValidateProvider(
+function checkInvalidProviderUsage(
   currentNode: arkts.Identifier,
   callExpName: string,
   componentv2WithProvider: MultiMap<string, string>,
   context: UISyntaxRuleContext
 ): void {
-  if (componentv2WithProvider.get(callExpName).includes(getIdentifierName(currentNode))) {
+  const parent = currentNode.parent;
+  if (parent && componentv2WithProvider.get(callExpName)?.includes(getIdentifierName(currentNode))) {
     context.report({
-      node: currentNode.parent,
+      node: parent,
       message: rule.messages.forbiddenInitialization,
       data: {
         decorator: PresetDecorators.PROVIDER,
@@ -305,8 +242,8 @@ function reportValidateProvider(
         structName: callExpName
       },
       fix: () => {
-        const startPosition = currentNode.parent.startPosition;
-        const endPosition = currentNode.parent.endPosition;
+        const startPosition = parent.startPosition;
+        const endPosition = parent.endPosition;
         return {
           range: [startPosition, endPosition],
           code: '',
@@ -328,7 +265,7 @@ function validateConsumerInitialization(node: arkts.CallExpression, componentv2W
     while (queue.length > 0) {
       const currentNode: arkts.AstNode = queue.shift() as arkts.AstNode;
       if (arkts.isIdentifier(currentNode)) {
-        reportValidateConsumer(currentNode, callExpName, componentv2WithConsumer, context);
+        checkInvalidConsumerUsage(currentNode, callExpName, componentv2WithConsumer, context);
       }
       const children = currentNode.getChildren();
       for (const child of children) {
@@ -349,7 +286,7 @@ function validateProviderInitialization(node: arkts.CallExpression, componentv2W
     while (queue.length > 0) {
       const currentNode: arkts.AstNode = queue.shift() as arkts.AstNode;
       if (arkts.isIdentifier(currentNode)) {
-        reportValidateProvider(currentNode, callExpName, componentv2WithProvider, context);
+        checkInvalidProviderUsage(currentNode, callExpName, componentv2WithProvider, context);
       }
       const children = currentNode.getChildren();
       for (const child of children) {
@@ -382,14 +319,14 @@ function collectStructsWithConsumerAndProvider(
 
 function validateStructDecoratorsAndMembers(node: arkts.AstNode, context: UISyntaxRuleContext): void {
   if (arkts.isStructDeclaration(node)) {
-    const hasComponentV2 = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
-    const hasComponent = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
+    const componentV2Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
+    const componentDecorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
     node.definition.body.forEach(member => {
       if (arkts.isMethodDefinition(member)) {
         validateDecoratorOnMethod(member, context);
       }
       if (arkts.isClassProperty(member)) {
-        validateMemberDecorators(member, hasComponentV2, hasComponent, node, context);
+        validateMemberDecorators(member, componentV2Decorator, componentDecorator, node, context);
       }
     });
   }
@@ -411,7 +348,6 @@ const rule: UISyntaxRule = {
   messages: {
     consumerOnlyOnMember: `'@{{decorator}}' can only decorate member property.`,
     multipleBuiltInDecorators: `The struct member variable can not be decorated by multiple built-in decorators.`,
-    providerRequiresComponentV2: `The '@{{decorator}}' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`,
     providerOnlyInStruct: `The '@{{decorator}}' decorator can only be used with 'struct'.`,
     forbiddenInitialization: `The '@{{decorator}}' property '{{value}}' in the custom component '{{structName}}' cannot be initialized here (forbidden to specify).`,
   },

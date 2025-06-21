@@ -26,7 +26,7 @@ import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
 // When a specific decorator is used as a parameter, the assigned decorator is not allowed
 const disallowAssignedDecorators: string[] = [
   PresetDecorators.REGULAR, PresetDecorators.LINK, PresetDecorators.OBJECT_LINK,
-  PresetDecorators.BUILDER_PARAM, PresetDecorators.LOCAL_BUILDER, PresetDecorators.STATE,
+  PresetDecorators.BUILDER_PARAM, PresetDecorators.BUILDER, PresetDecorators.STATE,
   PresetDecorators.PROP, PresetDecorators.PROVIDE, PresetDecorators.CONSUME,
   PresetDecorators.BUILDER,
 ];
@@ -206,14 +206,14 @@ function reportBuilderError(
   if (!arkts.isProperty(property) || !property.value) {
     return;
   }
-  let isLocalBuilder: boolean = false;
+  let isBuilderInStruct: boolean = false;
   if (arkts.isMemberExpression(property.value) && arkts.isIdentifier(property.value.property)) {
     const parentName = property.value.property.name;
     const parentType: string = getPropertyAnnotationName(property, parentName);
     if (parentType === '') {
       return;
     }
-    isLocalBuilder = parentType === PresetDecorators.LOCAL_BUILDER;
+    isBuilderInStruct = parentType === PresetDecorators.BUILDER;
   }
   let isBuilder: boolean = false;
   if (arkts.isIdentifier(property.value)) {
@@ -229,7 +229,7 @@ function reportBuilderError(
       });
     }
   }
-  if (childType === PresetDecorators.BUILDER_PARAM && !isBuilder && !isLocalBuilder) {
+  if (childType === PresetDecorators.BUILDER_PARAM && !isBuilder && !isBuilderInStruct) {
     context.report({
       node: property,
       message: rule.messages.parameterIsBuilderParam,
@@ -251,6 +251,9 @@ function checkConstructParameter(
     return;
   }
   let structName: string = getIdentifierName(node);
+  if (!node.parent) {
+    return;
+  }
   let parentNode: arkts.AstNode = node.parent;
   if (!arkts.isCallExpression(parentNode)) {
     return;
@@ -299,7 +302,7 @@ const rule: UISyntaxRule = {
   messages: {
     constructParameter: `The '{{initializer}}' property '{{initializerName}}' cannot be assigned to the '{{parameter}}' property '{{parameterName}}'.`,
     initializerIsBuilder: `'@Builder' function '{{initializerName}}' can only initialize '@BuilderParam' attribute.`,
-    parameterIsBuilderParam: `'@BuilderParam' attribute '{{parameterName}}' can only initialized by '@Builder' function or '@LocalBuilder' method in struct.`,
+    parameterIsBuilderParam: `'@BuilderParam' attribute '{{parameterName}}' can only initialized by '@Builder' function or '@Builder' method in struct.`,
   },
   setup(context) {
     let propertyMap: Map<string, Map<string, string>> = new Map();

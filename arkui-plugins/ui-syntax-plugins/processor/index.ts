@@ -59,28 +59,30 @@ class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
             message = this.format(options.message, options.data);
         }
 
-        const kind: arkts.DiagnosticKind = arkts.DiagnosticKind.create(
+        const diagnosticKind: arkts.DiagnosticKind = arkts.DiagnosticKind.create(
             message,
             options.level === 'error'
                 ? arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_ERROR
                 : arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_WARNING
         );
         if (options.fix) {
-            const diagnosticInfo: arkts.DiagnosticInfo = arkts.DiagnosticInfo.create(kind);
+            const diagnosticInfo: arkts.DiagnosticInfo = arkts.DiagnosticInfo.create(diagnosticKind);
             const fixSuggestion = options.fix(options.node);
-            const suggestionInfo: arkts.SuggestionInfo = arkts.SuggestionInfo.create(kind, fixSuggestion.code);
+            const suggestionKind: arkts.DiagnosticKind =
+            arkts.DiagnosticKind.create(message, arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_SUGGESTION);
+            const suggestionInfo: arkts.SuggestionInfo = arkts.SuggestionInfo.create(suggestionKind, fixSuggestion.code);
             const [startPosition, endPosition] = fixSuggestion.range;
             const sourceRange: arkts.SourceRange = arkts.SourceRange.create(startPosition, endPosition);
             arkts.Diagnostic.logDiagnosticWithSuggestion(diagnosticInfo, suggestionInfo, sourceRange);
         } else {
-            arkts.Diagnostic.logDiagnostic(kind, arkts.getStartPosition(options.node));
+            arkts.Diagnostic.logDiagnostic(diagnosticKind, arkts.getStartPosition(options.node));
         }
 
         // todo
         const position = arkts.getStartPosition(options.node);
         if (options.fix) {
             const suggestion = options.fix(options.node);
-            console.log(`syntax-${options.level ?? 'error'}: ${message}`);
+            console.log(`syntax-${options.level ?? 'error'}: ${message}  (${position.index()},${position.line()})`);
             console.log(
                 `range: (${suggestion.range[0].index()}, ${suggestion.range[0].line()}) - (${suggestion.range[1].index()}, ${suggestion.range[1].line()})`,
                 `code: ${suggestion.code}`
