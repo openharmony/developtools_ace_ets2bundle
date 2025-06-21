@@ -24,8 +24,13 @@ export const EXTERNAL_SOURCE_PREFIX_NAMES: (string | RegExp)[] = [
     /@arkts\..*/,
     /@ohos\.(?!arkui).*/,
     /@system\..*/,
-    /arkui\.(?!Ark|[Uu]serView$)[A-Z]/, // temporary solution
     /ability\..*/,
+];
+
+export const EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK: (string | RegExp)[] = [
+    'std',
+    'escompat',
+    /@arkts\..*/
 ];
 
 export const ARKUI_IMPORT_PREFIX_NAMES: (string | RegExp)[] = [/arkui\..*/, /@ohos\..*/, /@kit\..*/];

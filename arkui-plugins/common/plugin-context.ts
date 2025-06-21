@@ -107,6 +107,7 @@ export interface ProjectConfig {
     projectPath: string,
     projectRootPath: string,
     integratedHsp: boolean
+    frameworkMode?: string;
 }
 
 export type PluginHandlerFunction = () => void;

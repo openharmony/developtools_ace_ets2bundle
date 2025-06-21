@@ -16,8 +16,8 @@
 import { ArktsObject } from './ArktsObject';
 import { global } from '../static/global';
 import { throwError, filterSource } from '../../utils';
-import { passString } from '../utilities/private';
-import { KBoolean, KNativePointer } from '@koalaui/interop';
+import { passString, passStringArray } from '../utilities/private';
+import { KBoolean, KInt, KNativePointer } from '@koalaui/interop';
 import { AstNode } from './AstNode';
 import { Program } from './Program';
 export class Context extends ArktsObject {
@@ -44,6 +44,17 @@ export class Context extends ArktsObject {
             global.es2panda._CreateCacheContextFromFile(configPtr, passString(fileName), globalContextPtr, isExternal)
         );
     }
+
+    static createContextGenerateAbcForExternalSourceFiles(
+        filenames: string[]): Context {
+        if (!global.configIsInitialized()) {
+            throwError(`Config not initialized`);
+        }
+        return new Context(
+            global.es2panda._CreateContextGenerateAbcForExternalSourceFiles(global.config, filenames.length, passStringArray(filenames))
+        );
+    }
+
 
     static destroyAndRecreate(ast: AstNode): Context {
         console.log('[TS WRAPPER] DESTROY AND RECREATE');

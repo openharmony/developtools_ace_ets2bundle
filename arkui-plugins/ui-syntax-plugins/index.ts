@@ -29,9 +29,14 @@ export function uiSyntaxLinterTransform(): Plugins {
         return undefined;
       }
       const program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+      const projectConfig = this.getProjectConfig();
+      const isFrameworkMode = this.getProjectConfig()?.frameworkMode;
+      const canSkipPhases = !isFrameworkMode;
+      if (canSkipPhases) {
+        return undefined;
+      }
       const node = program.astNode;
       if (node) {
-        const projectConfig = this.getProjectConfig();
         if (projectConfig) {
           processor.setProjectConfig(projectConfig);
         }
