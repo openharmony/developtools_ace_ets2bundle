@@ -50,22 +50,6 @@ import { AnimationNames, BindableDecl, DecoratorIntrinsicNames, StructDecoratorN
 import { ImportCollector } from '../../common/import-collector';
 
 export class factory {
-
-    /**
-     * generate `packageInfo: string` in `@ComponentBuilder` XComponent
-     */
-    static createPackageInfoArgForXComponent(): arkts.ETSParameterExpression {
-        return arkts.factory.createParameterDeclaration(
-            arkts.factory.createIdentifier(
-                'packageInfo',
-                arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('string'))
-                )
-            ),
-            undefined
-        );
-    }
-
     /**
      * update `@ComponentBuilder` decorated method.
      */
@@ -80,9 +64,6 @@ export class factory {
         let newParams: arkts.Expression[] = [styleArg];
         if (func.params.length > 0) {
             newParams.push(...func.params.slice(0, func.params.length - 1));
-            if (externalSourceName === 'arkui.component.xcomponent' && node.name.name === 'XComponent') {
-                newParams.push(this.createPackageInfoArgForXComponent());
-            }
             newParams.push(func.params.at(func.params.length - 1)!);
         }
         const updateFunc = arkts.factory
@@ -417,20 +398,6 @@ export class factory {
                         projectConfig,
                         type?.name,
                         arkts.factory.createUndefinedLiteral()
-                    )
-                );
-            } else if (type?.name === 'XComponent' && index === params.length - 1) {
-                let packageInfo: string = '';
-                if (projectConfig?.bundleName && projectConfig?.moduleName) {
-                    packageInfo = projectConfig?.bundleName + '/' + projectConfig?.moduleName;
-                }
-                const packageInfoNode = arkts.factory.createStringLiteral(packageInfo);
-                args.push(
-                    this.createOrUpdateArgInBuilderLambda(
-                        leaf.arguments.at(index),
-                        projectConfig,
-                        type?.name,
-                        packageInfoNode
                     )
                 );
             } else {
