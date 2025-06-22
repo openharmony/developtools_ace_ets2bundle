@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -99,6 +99,9 @@ import {
   LogDataFactory
 } from './fast_build/ark_compiler/logger';
 import * as ts from 'typescript';
+import {
+  PreloadFileModules
+} from './fast_build/ark_compiler/module/module_preload_file_utils';
 
 export const SRC_MAIN: string = 'src/main';
 
@@ -283,13 +286,19 @@ function processPackageDir(params: Object): string {
   return originalFilePath;
 }
 
-
-export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string, config?: Object, logger?: Object,
-  importerFile?: string, useNormalizedOHMUrl: boolean = false): string {
+export type OhmUrlParams = {
+  moduleRequest: string;
+  moduleId: string;
+  config?: Object;
+  logger?: Object;
+  importerFile?: string;
+};
+export function getOhmUrlBySystemApiOrLibRequest(params: OhmUrlParams,
+  useNormalizedOHMUrl: boolean = false, needPreloadSo: boolean = false): string {
   // 'arkui-x' represents cross platform related APIs, processed as 'ohos'
   const REG_SYSTEM_MODULE: RegExp = new RegExp(`@(${sdkConfigPrefix})\\.(\\S+)`);
   const REG_LIB_SO: RegExp = /lib(\S+)\.so/;
-
+  const moduleRequest = params.moduleRequest;
   if (REG_SYSTEM_MODULE.test(moduleRequest.trim())) {
     return moduleRequest.replace(REG_SYSTEM_MODULE, (_, moduleType, systemKey) => {
       let moduleRequestStr = '';
@@ -297,30 +306,35 @@ export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string, config?:
         moduleRequestStr = moduleRequestCallback(moduleRequest, _, moduleType, systemKey);
       }
       if (moduleRequestStr !== '') {
+        needPreloadSo && PreloadFileModules.updatePreloadFileDataByItems(
+          moduleRequest, moduleRequestStr, params.moduleId);
         return moduleRequestStr;
       }
+      let resultOhmUrl: string = '';
       const systemModule: string = `${moduleType}.${systemKey}`;
       if (NATIVE_MODULE.has(systemModule)) {
-        return `@native:${systemModule}`;
+        resultOhmUrl = `@native:${systemModule}`;
       } else if (moduleType === ARKTS_MODULE_NAME) {
         // @arkts.xxx -> @ohos:arkts.xxx
-        return `@ohos:${systemModule}`;
+        resultOhmUrl = `@ohos:${systemModule}`;
       } else {
-        return `@ohos:${systemKey}`;
-      };
+        resultOhmUrl = `@ohos:${systemKey}`;
+      }
+      needPreloadSo && PreloadFileModules.updatePreloadFileDataByItems(moduleRequest, resultOhmUrl, params.moduleId);
+      return resultOhmUrl;
     });
   }
   if (REG_LIB_SO.test(moduleRequest.trim())) {
     if (useNormalizedOHMUrl) {
-      const pkgInfo = config.pkgContextInfo[moduleRequest];
+      const pkgInfo = params.config.pkgContextInfo[moduleRequest];
       if (!pkgInfo) {
         const errInfo: LogData = LogDataFactory.newInstance(
           ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_PKG_CONTENT_INFO,
           ArkTSInternalErrorDescription,
           `Can not get pkgContextInfo of package '${moduleRequest}' ` +
-          `which being imported by '${importerFile}'`
+          `which being imported by '${params.importerFile}'`
         );
-        logger?.printError(errInfo);
+        params.logger?.printError(errInfo);
         return moduleRequest;
       }
       const isSo = pkgInfo.isSO ? 'Y' : 'N';

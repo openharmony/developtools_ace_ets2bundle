@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use rollupObject file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,7 @@
 import { expect } from 'chai';
 import mocha from 'mocha';
 import sinon from 'sinon';
+import fs from 'fs';
 
 import {
   getOhmUrlByFilepath,
@@ -24,7 +25,8 @@ import {
   getNormalizedOhmUrlByFilepath,
   getNormalizedOhmUrlByAliasName,
   getNormalizedOhmUrlByModuleRequest,
-  pkgDeclFilesConfig
+  pkgDeclFilesConfig,
+  OhmUrlParams
 } from '../../../../lib/ark_utils';
 import { PACKAGES } from '../../../../lib/pre_define';
 import projectConfig from '../../utils/processProjectConfig';
@@ -42,6 +44,7 @@ import {
   LogData,
   LogDataFactory
 } from '../../../../lib/fast_build/ark_compiler/logger';
+import { PreloadFileModules } from '../../../../lib/fast_build/ark_compiler/module/module_preload_file_utils';
 
 const PRVIEW_MOCK_CONFIG : Object = {
   // system api mock
@@ -108,9 +111,30 @@ mocha.describe('generate ohmUrl', function () {
     const systemModuleRequest: string = '@system.app';
     const ohosModuleRequest: string = '@ohos.hilog';
     const appSoModuleRequest: string = 'libapplication.so';
-    const systemOhmUrl: string = getOhmUrlBySystemApiOrLibRequest(systemModuleRequest);
-    const ohosOhmUrl: string = getOhmUrlBySystemApiOrLibRequest(ohosModuleRequest);
-    const appOhmUrl: string = getOhmUrlBySystemApiOrLibRequest(appSoModuleRequest);
+    const systemParams: OhmUrlParams = {
+      moduleRequest:systemModuleRequest,
+      moduleId: '',
+      config: ModuleSourceFile.projectConfig,
+      logger: ModuleSourceFile.logger,
+      importerFile: undefined,
+    };
+    const systemOhmUrl: string = getOhmUrlBySystemApiOrLibRequest(systemParams);
+    const ohosParams: OhmUrlParams = {
+      moduleRequest: ohosModuleRequest,
+      moduleId: '',
+      config: ModuleSourceFile.projectConfig,
+      logger: ModuleSourceFile.logger,
+      importerFile: undefined,
+    };
+    const ohosOhmUrl: string = getOhmUrlBySystemApiOrLibRequest(ohosParams);
+    const appSoParams: OhmUrlParams = {
+      moduleRequest: appSoModuleRequest,
+      moduleId: '',
+      config: ModuleSourceFile.projectConfig,
+      logger: ModuleSourceFile.logger,
+      importerFile: undefined,
+    };
+    const appOhmUrl: string = getOhmUrlBySystemApiOrLibRequest(appSoParams);
     const expectedSystemOhmUrl: string = '@native:system.app';
     const expectedOhosOhmUrl: string = '@ohos:hilog';
     const expectedappOhmUrl: string = '@app:UtTestApplication/entry/application';
@@ -1252,8 +1276,14 @@ mocha.describe('generate ohmUrl', function () {
       '/testHap/oh_modules/.ohpm/pkghar@test+har=/oh_modules/pkghar/src/main/ets/pages/Index.ets';
     const appSoModuleRequest: string = 'libapplication.so';
     try {
-      getOhmUrlBySystemApiOrLibRequest(appSoModuleRequest, this.rollup.share.projectConfig, logger,
-        importerFile, true);
+      const appSoParams: OhmUrlParams = {
+        moduleRequest: appSoModuleRequest,
+        moduleId: '',
+        config: this.rollup.share.projectConfig,
+        logger: logger,
+        importerFile: importerFile,
+      };
+      getOhmUrlBySystemApiOrLibRequest(appSoParams, true);
     } catch (e) {
     }
     expect(loggerStub.calledWith(errInfo)).to.be.true;
@@ -1279,8 +1309,14 @@ mocha.describe('generate ohmUrl', function () {
       '/testHap/oh_modules/.ohpm/pkghar@test+har=/oh_modules/pkghar/src/main/ets/pages/Index.ets';
     const appSoModuleRequest: string = 'libapplication.so';
     try {
-      getOhmUrlBySystemApiOrLibRequest(appSoModuleRequest, this.rollup.share.projectConfig, logger,
-        importerFile, true);
+      const appSoParams: OhmUrlParams = {
+        moduleRequest: appSoModuleRequest,
+        moduleId: '',
+        config: this.rollup.share.projectConfig,
+        logger: logger,
+        importerFile: importerFile,
+      };
+      getOhmUrlBySystemApiOrLibRequest(appSoParams, true);
     } catch (e) {
     }
     expect(loggerStub.calledWith(errInfo.toString())).to.be.true;
@@ -1473,5 +1509,50 @@ mocha.describe('generate ohmUrl', function () {
     CommonLogger.destroyInstance();
     this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
     loggerStub.restore();
+  });
+
+  mocha.it('Collect. so libraries referenced in the project and generate JSON files', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
+    this.rollup.share.projectConfig.preloadSoFilePath = 'build/default/intermediates/preload/default/preload.json';
+    const filePath: string = '/testHsp/hsp/src/main/ets/utils/Calc.ets';
+    const outFilePath: string = 'build/default/intermediates/preload/default/preload.json';
+    const moduleRequest: string = '@ohos.router';
+    const moduleInfo = {
+      id: filePath,
+      meta: {
+        needPreloadSo: true
+      },
+      importedIdMaps: [filePath]
+    }
+    this.rollup.moduleInfos.push(moduleInfo);
+    const importerFile: string = '/testHsp/hsp/src/main/ets/pages/Index.ets'
+    const moduleSourceFile: string = new ModuleSourceFile();
+    moduleSourceFile.moduleId = filePath;
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    PreloadFileModules.initialize(this.rollup);
+    ModuleSourceFile.PreloadEntryNames = [];
+    ModuleSourceFile.preloadEntries = [];
+
+    const resultOhmUrl: string = moduleSourceFile.getOhmUrl(this.rollup, moduleRequest, filePath, importerFile);
+
+    PreloadFileModules.finalizeWritePreloadSoList();
+
+    const fileContent = fs.readFileSync(outFilePath, 'utf8');
+    const expectedJson =  {
+      "systemPreloadHintStartupTasks": [
+        {
+          "name": "@ohos.router",
+          "ohmurl": "@ohos:router",
+          "srcEntry": "@ohos.router"
+        }
+      ]
+    };
+
+    // Remove trailing ',' if exists
+    const parsedFileContent = JSON.parse(fileContent.trim().replace(/,$/, ''));
+    expect(resultOhmUrl === '@ohos:router').to.be.true;
+    expect(fs.existsSync(outFilePath)).to.be.true;
+    expect(parsedFileContent).to.deep.equal(expectedJson);
   });
 });

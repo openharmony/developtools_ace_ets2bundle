@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use rollupObject file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,7 +28,8 @@ import {
   getOhmUrlByByteCodeHar,
   getOhmUrlByFilepath,
   getOhmUrlByExternalPackage,
-  getOhmUrlBySystemApiOrLibRequest
+  getOhmUrlBySystemApiOrLibRequest,
+  OhmUrlParams
 } from '../../../ark_utils';
 import { writeFileSyncByNode } from '../../../process_module_files';
 import {
@@ -83,6 +84,7 @@ import {
   getDeclgenBridgeCodePath,
   writeBridgeCodeFileSyncByNode
 } from '../../../process_arkts_evolution';
+import { PreloadFileModules } from './module_preload_file_utils';
 
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
@@ -371,6 +373,7 @@ export class ModuleSourceFile {
       if (!rollupObject.share.projectConfig.compileHar || ModuleSourceFile.projectConfig.byteCodeHar) {
         //compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
         const eventBuildModuleSourceFile = createAndStartEvent(parentEvent, 'build module source files');
+        PreloadFileModules.collectModuleIds(moduleId);
         await moduleSourceFile.processModuleRequest(rollupObject, eventBuildModuleSourceFile);
         stopEvent(eventBuildModuleSourceFile);
       }
@@ -410,6 +413,7 @@ export class ModuleSourceFile {
       if (!rollupObject.share.projectConfig.compileHar || byteCodeHar) {
         // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
         const eventBuildModuleSourceFile = createAndStartEvent(parentEvent, 'build module source files');
+        PreloadFileModules.collectModuleIds(source.getModuleId());
         await source.processModuleRequest(rollupObject, eventBuildModuleSourceFile);
         stopEvent(eventBuildModuleSourceFile);
       }
@@ -457,8 +461,16 @@ export class ModuleSourceFile {
     if (!!rollupObject.share.projectConfig.useNormalizedOHMUrl) {
       useNormalizedOHMUrl = rollupObject.share.projectConfig.useNormalizedOHMUrl;
     }
-    let systemOrLibOhmUrl = getOhmUrlBySystemApiOrLibRequest(moduleRequest, ModuleSourceFile.projectConfig,
-      ModuleSourceFile.logger, importerFile, useNormalizedOHMUrl);
+    const metaModuleInfo: Object = rollupObject.getModuleInfo(this.moduleId);
+    const isNeedPreloadSo = metaModuleInfo?.meta?.needPreloadSo ? metaModuleInfo?.meta?.needPreloadSo : false;
+    const params: OhmUrlParams = {
+      moduleRequest,
+      moduleId: this.moduleId,
+      config: ModuleSourceFile.projectConfig,
+      logger: ModuleSourceFile.logger,
+      importerFile,
+    };
+    let systemOrLibOhmUrl = getOhmUrlBySystemApiOrLibRequest(params, useNormalizedOHMUrl, isNeedPreloadSo);
     if (systemOrLibOhmUrl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
         ModuleSourceFile.generateNewMockInfo(moduleRequest, systemOrLibOhmUrl, rollupObject, importerFile);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -45,6 +45,7 @@ export enum ErrorCode {
   ETS2BUNDLE_INTERNAL_SOURCE_CODE_OBFUSCATION_FAILED = '10310020',
   ETS2BUNDLE_INTERNAL_ES2ABC_SUBPROCESS_START_FAILED = '10310021',
   ETS2BUNDLE_INTERNAL_EXECUTE_ES2ABC_WITH_ASYNC_HANDLER_FAILED = '10310022',
+  ETS2BUNDLE_INTERNAL_WRITE_PERLOAD_SO_FAILED = '10310023',
 
   // EXTERNAL ERRORS
   ETS2BUNDLE_EXTERNAL_FORBIDDEN_IMPORT_ARKTS_FILE = '10311001',
