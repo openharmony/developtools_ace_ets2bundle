@@ -14,9 +14,12 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { EntryWrapperNames } from './utils';
+import * as path from 'path';
 import { annotation, createAndInsertImportDeclaration } from '../../common/arkts-utils';
-import { ENTRY_POINT_IMPORT_SOURCE_NAME } from '../../common/predefines';
+import { ENTRY_POINT_IMPORT_SOURCE_NAME, EntryWrapperNames, NavigationNames } from '../../common/predefines';
+import { ProjectConfig } from '../../common/plugin-context';
+import { factory as uiFactory } from '../ui-factory';
+import { getRelativePagePath } from './utils';
 
 export class factory {
     /**
@@ -141,11 +144,7 @@ export class factory {
      */
     static generateEntryProperty(name: string): arkts.ClassProperty {
         const exp = arkts.factory.createExpressionStatement(
-            arkts.factory.createCallExpression(
-                arkts.factory.createIdentifier(name),
-                undefined,
-                []
-            )
+            arkts.factory.createCallExpression(arkts.factory.createIdentifier(name), undefined, [])
         );
         const key: arkts.Identifier = arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_FUNC);
         const block: arkts.BlockStatement = arkts.factory.createBlock([exp]);
@@ -280,5 +279,187 @@ export class factory {
             arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE,
             program
         );
+    }
+
+    /**
+     * transform `@Entry` storage params, e.g. `@Entry`({useSharedStorage: ..., storage: ...})
+     */
+    static transformStorageParams(
+        storage: arkts.ClassProperty | undefined,
+        useSharedStorage: arkts.ClassProperty | undefined,
+        definition: arkts.ClassDefinition
+    ): void {
+        if (!storage && !useSharedStorage) {
+            return;
+        }
+        const ctor: arkts.MethodDefinition | undefined = definition.body.find(
+            (member) =>
+                arkts.isMethodDefinition(member) &&
+                member.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR
+        ) as arkts.MethodDefinition | undefined;
+        if (!ctor) {
+            return;
+        }
+        let sharedArg = arkts.factory.createBooleanLiteral(false);
+        if (useSharedStorage && useSharedStorage.value && arkts.isBooleanLiteral(useSharedStorage.value)) {
+            sharedArg = useSharedStorage.value;
+        }
+        let storageArg = arkts.factory.createUndefinedLiteral();
+        if (storage && storage.value && arkts.isStringLiteral(storage.value)) {
+            storageArg = arkts.factory.createCallExpression(
+                arkts.factory.createIdentifier(storage.value.str),
+                undefined,
+                undefined
+            );
+        }
+        const superCall = arkts.factory.createExpressionStatement(
+            arkts.factory.createCallExpression(arkts.factory.createSuperExpression(), undefined, [
+                sharedArg,
+                storageArg,
+            ])
+        );
+        if (ctor.scriptFunction.body && arkts.isBlockStatement(ctor.scriptFunction.body)) {
+            ctor.scriptFunction.setBody(
+                arkts.factory.updateBlock(ctor.scriptFunction.body, [...ctor.scriptFunction.body.statements, superCall])
+            );
+        }
+    }
+
+    /**
+     * helper for callRegisterNamedRouter to generate NavInterface arg
+     */
+    static navInterfaceArg(
+        projectConfig: ProjectConfig | undefined,
+        fileAbsName: string | undefined
+    ): arkts.TSAsExpression {
+        const projectRoot = projectConfig?.moduleRootPath
+            ? path.join(projectConfig.moduleRootPath, 'src', 'main', 'ets')
+            : '';
+        const pageFullPath = getRelativePagePath(projectConfig?.projectPath ?? '', fileAbsName ?? '');
+        const pagePath = getRelativePagePath(projectRoot, fileAbsName ?? '');
+        return arkts.factory.createTSAsExpression(
+            arkts.factory.createObjectExpression(
+                arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+                [
+                    factory.createNavProperty(NavigationNames.BUNDLE_NAME, projectConfig?.bundleName),
+                    factory.createNavProperty(NavigationNames.MODULE_NAME, projectConfig?.moduleName),
+                    factory.createNavProperty(NavigationNames.PAGE_PATH, pagePath),
+                    factory.createNavProperty(NavigationNames.PAGE_FULL_PATH, pageFullPath),
+                    factory.createNavProperty(NavigationNames.INTEGRATED_HSP, projectConfig?.integratedHsp?.toString()),
+                ],
+                false
+            ),
+            uiFactory.createTypeReferenceFromString(NavigationNames.NAVINTERFACE),
+            false
+        );
+    }
+
+    /**
+     * helper for navInterfaceArg to generate class properties, e.g. buneleName: '...'
+     */
+    static createNavProperty(key: NavigationNames, value: string | undefined): arkts.Property {
+        return arkts.factory.createProperty(
+            arkts.factory.createIdentifier(key),
+            arkts.factory.createStringLiteral(value ?? '')
+        );
+    }
+
+    /**
+     * generate __EntryWrapper.RegisterNamedRouter(...)
+     */
+    static callRegisterNamedRouter(
+        entryRouteName: string | undefined,
+        projectConfig: ProjectConfig | undefined,
+        fileAbsName: string | undefined
+    ): arkts.ExpressionStatement {
+        return arkts.factory.createExpressionStatement(
+            arkts.factory.createCallExpression(
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createIdentifier(EntryWrapperNames.WRAPPER_CLASS_NAME),
+                    arkts.factory.createIdentifier(EntryWrapperNames.REGISTER_NAMED_ROUTER),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                ),
+                undefined,
+                [
+                    arkts.factory.createStringLiteral(entryRouteName ?? ''),
+                    arkts.factory.createETSNewClassInstanceExpression(
+                        arkts.factory.createTypeReference(
+                            arkts.factory.createTypeReferencePart(
+                                arkts.factory.createIdentifier(EntryWrapperNames.WRAPPER_CLASS_NAME)
+                            )
+                        ),
+                        []
+                    ),
+                    factory.navInterfaceArg(projectConfig, fileAbsName),
+                ]
+            )
+        );
+    }
+
+    /**
+     * generate interface NavInterface in header arkui.UserView
+     */
+    static createNavInterface(): arkts.TSInterfaceDeclaration {
+        return arkts.factory.createInterfaceDeclaration(
+            [],
+            arkts.factory.createIdentifier(NavigationNames.NAVINTERFACE),
+            undefined,
+            arkts.factory.createInterfaceBody([
+                this.createClassProp(NavigationNames.BUNDLE_NAME),
+                this.createClassProp(NavigationNames.MODULE_NAME),
+                this.createClassProp(NavigationNames.PAGE_PATH),
+                this.createClassProp(NavigationNames.PAGE_FULL_PATH),
+                this.createClassProp(NavigationNames.INTEGRATED_HSP),
+            ]),
+            false,
+            false
+        );
+    }
+
+    /**
+     * helper for createNavInterface to generate class properties
+     */
+    static createClassProp(propName: string): arkts.ClassProperty {
+        return arkts.factory.createClassProperty(
+            arkts.factory.createIdentifier(propName),
+            undefined,
+            uiFactory.createTypeReferenceFromString('string'),
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            false
+        );
+    }
+
+    /**
+     * helper for generateRegisterNamedRouter to generate param decl, e.g: `routerName: string`
+     */
+    static registerRouteParam(name: EntryWrapperNames, type: string): arkts.ETSParameterExpression {
+        return arkts.factory.createParameterDeclaration(
+            arkts.factory.createIdentifier(name, uiFactory.createTypeReferenceFromString(type)),
+            undefined
+        );
+    }
+
+    /**
+     * generate generateRegisterNamedRouter method in header arkui.UserView
+     */
+    static generateRegisterNamedRouter(): arkts.MethodDefinition {
+        const params = [
+            factory.registerRouteParam(EntryWrapperNames.ROUTER_NAME, 'string'),
+            factory.registerRouteParam(EntryWrapperNames.INSTANCE, EntryWrapperNames.ENTRY_POINT_CLASS_NAME),
+            factory.registerRouteParam(EntryWrapperNames.PARAM, NavigationNames.NAVINTERFACE),
+        ];
+        return uiFactory.createMethodDefinition({
+            key: arkts.factory.createIdentifier(EntryWrapperNames.REGISTER_NAMED_ROUTER),
+            kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+            function: {
+                body: arkts.factory.createBlock([]),
+                params: params,
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+            },
+            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+        });
     }
 }

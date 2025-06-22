@@ -47,6 +47,8 @@ import { IStoragePropDecoratedVariable as IStoragePropDecoratedVariable } from "
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
+import { NavInterface as NavInterface } from "arkui.UserView";
+
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
@@ -66,6 +68,14 @@ function main() {}
 AppStorage.setOrCreate("PropA", 47);
 AppStorage.setOrCreate("PropB", new Data(50));
 
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/storageprop/storageprop-appstorage",
+  pageFullPath: "test/demo/mock/decorators/storageprop/storageprop-appstorage",
+  integratedHsp: "false",
+  } as NavInterface));
+
 class Data {
   public code: number;
   
@@ -75,7 +85,7 @@ class Data {
   
 }
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_storageProp = STATE_MGMT_FACTORY.makeStorageProp<number>(this, "PropA", "storageProp", 1)
     this.__backing_storagePropObject = STATE_MGMT_FACTORY.makeStorageProp<Data>(this, "PropB", "storagePropObject", new Data(1))
@@ -124,7 +134,7 @@ class Data {
   
 }
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
   set storageProp(storageProp: number | undefined)
   
   get storageProp(): number | undefined

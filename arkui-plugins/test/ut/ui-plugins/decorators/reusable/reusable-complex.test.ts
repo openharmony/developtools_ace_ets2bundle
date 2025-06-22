@@ -51,6 +51,8 @@ import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
+import { NavInterface as NavInterface } from "arkui.UserView";
+
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
@@ -67,7 +69,13 @@ import { State as State } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/reusable/reusable-complex",
+  pageFullPath: "test/demo/mock/decorators/reusable/reusable-complex",
+  integratedHsp: "false",
+  } as NavInterface));
 
 class Message {
   public value: string | undefined;
@@ -78,7 +86,7 @@ class Message {
   
 }
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_display = STATE_MGMT_FACTORY.makeState<boolean>(this, "display", ((({let gensym___83835842 = initializers;
     (((gensym___83835842) == (null)) ? undefined : gensym___83835842.display)})) ?? (true)));
@@ -166,7 +174,7 @@ class Message {
   
 }
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
   set display(display: boolean | undefined)
   
   get display(): boolean | undefined

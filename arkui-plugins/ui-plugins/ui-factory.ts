@@ -263,7 +263,7 @@ export class factory {
      * create MethodDefinition with configurations.
      */
     static createMethodDefinition(
-        config: PartialNestedExcept<MethodDefinitionConfiguration, 'key'>
+        config: PartialNested<MethodDefinitionConfiguration>
     ): arkts.MethodDefinition {
         const newFunc: arkts.ScriptFunction = factory.createScriptFunction({
             ...config.function,
@@ -271,7 +271,7 @@ export class factory {
         });
         const newMethod: arkts.MethodDefinition = arkts.factory.createMethodDefinition(
             config.kind ?? arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_NONE,
-            config.key,
+            config.key!,
             newFunc,
             config.modifiers ?? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             config.isComputed ?? false
