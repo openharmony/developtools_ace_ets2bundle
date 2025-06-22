@@ -79,7 +79,9 @@ function parsedProgramVisit(program: arkts.Program, context: PluginContext): ark
         debugLog('[SKIP PHASE] phase: ui-parsed, moduleName: ', program.moduleName);
     } else {
         debugLog('[CANT SKIP PHASE] phase: ui-parsed, moduleName: ', program.moduleName);
-        const componentTransformer = new ComponentTransformer();
+        const componentTransformer = new ComponentTransformer({
+            projectConfig: context.getProjectConfig(),
+        });
         const programVisitor = new ProgramVisitor({
             pluginName: uiTransform.name,
             state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,

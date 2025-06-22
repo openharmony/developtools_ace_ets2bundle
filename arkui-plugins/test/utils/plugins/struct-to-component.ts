@@ -30,7 +30,9 @@ export const structToComponent: Plugins = {
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
             script = program.astNode;
-            const componentTransformer = new ComponentTransformer();
+            const componentTransformer = new ComponentTransformer({
+                projectConfig: this.getProjectConfig(),
+            });
             const programVisitor = new ProgramVisitor({
                 pluginName: structToComponent.name,
                 state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,

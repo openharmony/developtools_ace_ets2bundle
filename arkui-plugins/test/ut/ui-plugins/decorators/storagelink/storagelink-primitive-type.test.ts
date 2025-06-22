@@ -45,6 +45,8 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { NavInterface as NavInterface } from "arkui.UserView";
+
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
@@ -61,9 +63,15 @@ import { StorageLink as StorageLink } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/storagelink/storagelink-primitive-type",
+  pageFullPath: "test/demo/mock/decorators/storagelink/storagelink-primitive-type",
+  integratedHsp: "false",
+  } as NavInterface));
 
-
-@Entry({shared:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_numA = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "Prop1", "numA", 33)
     this.__backing_stringA = STATE_MGMT_FACTORY.makeStorageLink<string>(this, "Prop2", "stringA", "AA")
@@ -108,7 +116,7 @@ function main() {}
   
 }
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
   set numA(numA: number | undefined)
   
   get numA(): number | undefined

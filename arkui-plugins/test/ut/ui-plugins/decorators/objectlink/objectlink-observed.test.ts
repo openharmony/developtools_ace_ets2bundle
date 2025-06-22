@@ -61,6 +61,8 @@ import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
+import { NavInterface as NavInterface } from "arkui.UserView";
+
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
@@ -77,7 +79,13 @@ import { State as State, ObjectLink as ObjectLink, Observed as Observed } from "
 
 function main() {}
 
-
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/objectlink/objectlink-observed",
+  pageFullPath: "test/demo/mock/decorators/objectlink/objectlink-observed",
+  integratedHsp: "false",
+  } as NavInterface));
 
 @Observed() class DateClass extends Date implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
@@ -210,7 +218,7 @@ function main() {}
   
 }
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> implements PageLifeCycle {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_newData = STATE_MGMT_FACTORY.makeState<NewDate>(this, "newData", ((({let gensym___225289068 = initializers;
     (((gensym___225289068) == (null)) ? undefined : gensym___225289068.newData)})) ?? (new NewDate(new DateClass("2023-1-1")))));
@@ -268,7 +276,7 @@ function main() {}
   
 }
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_Parent {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Parent {
   set newData(newData: NewDate | undefined)
   
   get newData(): NewDate | undefined

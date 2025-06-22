@@ -45,6 +45,8 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { NavInterface as NavInterface } from "arkui.UserView";
+
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
@@ -61,7 +63,13 @@ import { StorageLink as StorageLink } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/storagelink/storagelink-complex-type",
+  pageFullPath: "test/demo/mock/decorators/storagelink/storagelink-complex-type",
+  integratedHsp: "false",
+  } as NavInterface));
 
 class Person {
   public name: string = "";
@@ -138,7 +146,7 @@ final class Status extends BaseEnum<int> {
   
 }
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_arrayA = STATE_MGMT_FACTORY.makeStorageLink<Array<number>>(this, "Prop1", "arrayA", [1, 2, 3])
     this.__backing_objectA = STATE_MGMT_FACTORY.makeStorageLink<Object>(this, "Prop2", "objectA", {})
@@ -238,7 +246,7 @@ final class Status extends BaseEnum<int> {
   
 }
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
   set arrayA(arrayA: Array<number> | undefined)
   
   get arrayA(): Array<number> | undefined

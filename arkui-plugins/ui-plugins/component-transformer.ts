@@ -34,7 +34,8 @@ import {
     collect,
     createAndInsertImportDeclaration,
 } from '../common/arkts-utils';
-import { EntryWrapperNames, findEntryWithStorageInClassAnnotations } from './entry-translators/utils';
+import { ProjectConfig } from '../common/plugin-context';
+import { getEntryParams } from './entry-translators/utils';
 import { factory as entryFactory } from './entry-translators/factory';
 import { hasDecoratorName, findDecoratorInfos, isDecoratorAnnotation } from './property-translators/utils';
 import { factory } from './ui-factory';
@@ -46,12 +47,15 @@ import {
     DecoratorNames,
     DECORATOR_TYPE_MAP,
     ENTRY_POINT_IMPORT_SOURCE_NAME,
+    NavigationNames,
+    EntryWrapperNames
 } from '../common/predefines';
 import { generateInstantiateInterop } from './interop/interop';
 import { createCustomDialogMethod, isNewCustomDialogController, transformController } from './customdialog';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string;
+    projectConfig?: ProjectConfig,
 }
 
 type ScopeInfo = CustomComponentInfo;
@@ -79,10 +83,13 @@ export class ComponentTransformer extends AbstractVisitor {
     private legacyStructMap: Map<string, StructMap> = new Map();
     private legacyCallMap: Map<string, string> = new Map();
     private customDialogController: string = '';
+    private projectConfig: ProjectConfig | undefined;
+    private entryRouteName: string | undefined;
 
     constructor(options?: ComponentTransformerOptions) {
         const _options: ComponentTransformerOptions = options ?? {};
         super(_options);
+        this.projectConfig = options?.projectConfig;
     }
 
     reset(): void {
@@ -208,6 +215,11 @@ export class ComponentTransformer extends AbstractVisitor {
     }
 
     processEtsScript(node: arkts.EtsScript): arkts.EtsScript {
+        if (this.isExternal && this.externalSourceName === ENTRY_POINT_IMPORT_SOURCE_NAME) {
+            const navInterface = entryFactory.createNavInterface();
+            navInterface.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
+            return arkts.factory.updateEtsScript(node, [...node.statements, navInterface]);
+        }
         if (this.isExternal && this.componentInterfaceCollection.length === 0 && this.entryNames.length === 0) {
             return node;
         }
@@ -239,11 +251,40 @@ export class ComponentTransformer extends AbstractVisitor {
             if (!this.isPageLifeCycleImported)
                 this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.PAGE_LIFE_CYCLE);
             updateStatements.push(...this.entryNames.map(entryFactory.generateEntryWrapper));
+            updateStatements.push(
+                entryFactory.callRegisterNamedRouter(
+                    this.entryRouteName,
+                    this.projectConfig,
+                    this.program?.globalAbsName
+                )
+            );
+            this.createImportDeclaration(ENTRY_POINT_IMPORT_SOURCE_NAME, NavigationNames.NAVINTERFACE);
         }
         if (updateStatements.length > 0) {
             return arkts.factory.updateEtsScript(node, [...node.statements, ...updateStatements]);
         }
         return node;
+    }
+
+    updateEntryPoint(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
+        if (!node.definition) {
+            return node;
+        }
+        return arkts.factory.updateClassDeclaration(
+            node,
+            arkts.factory.updateClassDefinition(
+                node.definition,
+                node.definition.ident,
+                node.definition.typeParams,
+                node.definition.superTypeParams,
+                node.definition.implements,
+                undefined,
+                node.definition.super,
+                [entryFactory.generateRegisterNamedRouter(), ...node.definition.body],
+                node.definition.modifiers,
+                arkts.classDefinitionFlags(node.definition)
+            )
+        );
     }
 
     createStaticMethod(definition: arkts.ClassDefinition): arkts.MethodDefinition {
@@ -302,10 +343,10 @@ export class ComponentTransformer extends AbstractVisitor {
         const newDefinitionBody: arkts.AstNode[] = [];
         if (!!scopeInfo.annotations?.entry) {
             this.entryNames.push(className);
-            const entryWithStorage: arkts.ClassProperty | undefined =
-                findEntryWithStorageInClassAnnotations(definition);
-            if (!!entryWithStorage) {
-                newDefinitionBody.push(entryFactory.createEntryLocalStorageInClass(entryWithStorage));
+            const { storage, useSharedStorage, routeName } = getEntryParams(definition);
+            entryFactory.transformStorageParams(storage, useSharedStorage, definition);
+            if (routeName && routeName.value && arkts.isStringLiteral(routeName.value)) {
+                this.entryRouteName = routeName.value.str;
             }
         }
         if (!!scopeInfo.annotations.customdialog) {
@@ -508,6 +549,13 @@ export class ComponentTransformer extends AbstractVisitor {
             const updateNode = this.processComponent(newNode);
             this.exit(newNode);
             return updateNode;
+        }
+        if (
+            arkts.isClassDeclaration(newNode) &&
+            this.externalSourceName === ENTRY_POINT_IMPORT_SOURCE_NAME &&
+            newNode.definition?.ident?.name === EntryWrapperNames.ENTRY_POINT_CLASS_NAME
+        ) {
+            return this.updateEntryPoint(newNode);
         }
         // process interop code
         if (!this.hasLegacy) {

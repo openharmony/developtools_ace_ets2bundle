@@ -76,6 +76,23 @@ export enum StructDecoratorNames {
     CUSTOMDIALOG = 'CustomDialog',
 }
 
+export enum EntryWrapperNames {
+    ENTRY_FUNC = 'entry',
+    WRAPPER_CLASS_NAME = '__EntryWrapper',
+    ENTRY_STORAGE_LOCAL_STORAGE_PROPERTY_NAME = '_entry_local_storage_',
+    ENTRY_POINT_CLASS_NAME = 'EntryPoint',
+    REGISTER_NAMED_ROUTER = 'RegisterNamedRouter',
+    ROUTER_NAME = 'routerName',
+    INSTANCE = 'instance',
+    PARAM = 'param'
+}
+
+export enum EntryParamNames {
+    ENTRY_STORAGE = 'storage',
+    ENTRY_USE_SHARED_STORAGE = 'useSharedStorage',
+    ENTRY_ROUTE_NAME = 'routeName'
+}
+
 export enum DecoratorNames {
     STATE = 'State',
     STORAGE_LINK = 'StorageLink',
@@ -145,6 +162,15 @@ export enum AnimationNames {
     ANIMATION = 'animation',
     ANIMATION_START = 'animationStart',
     ANIMATION_STOP = 'animationStop',
+}
+
+export enum NavigationNames {
+    NAVINTERFACE = 'NavInterface',
+    BUNDLE_NAME = 'bundleName',
+    MODULE_NAME = 'moduleName',
+    PAGE_PATH = 'pagePath',
+    PAGE_FULL_PATH = 'pageFullPath',
+    INTEGRATED_HSP = 'integratedHsp',
 }
 
 export const RESOURCE_TYPE: Record<string, number> = {

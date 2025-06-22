@@ -38,6 +38,7 @@ const importParsed: Plugins = {
 const pluginTester = new PluginTester('test import transform', buildConfig);
 
 const expectedParsedScript: string = `
+import { NavInterface as NavInterface } from "arkui.UserView";
 
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
@@ -91,6 +92,13 @@ class __EntryWrapper extends EntryPoint {
   public constructor() {}
   
 }
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../imports/kit-import",
+  pageFullPath: "test/demo/mock/imports/kit-import",
+  integratedHsp: "false",
+  } as NavInterface))
 `;
 
 const expectedCheckedScript: string = `
@@ -106,6 +114,8 @@ import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateM
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
+
+import { NavInterface as NavInterface } from "arkui.UserView";
 
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
@@ -129,9 +139,15 @@ import hilog from "@ohos.hilog";
 
 function main() {}
 
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../imports/kit-import",
+  pageFullPath: "test/demo/mock/imports/kit-import",
+  integratedHsp: "false",
+  } as NavInterface));
 
-
-@Entry({shared:false,storage:"",routeName:""}) @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_A | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_a = STATE_MGMT_FACTORY.makeState<string>(this, "a", ((({let gensym___94024326 = initializers;
     (((gensym___94024326) == (null)) ? undefined : gensym___94024326.a)})) ?? ("str")));
@@ -182,7 +198,7 @@ function main() {}
   
 }
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_A {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_A {
   set a(a: string | undefined)
   
   get a(): string | undefined
