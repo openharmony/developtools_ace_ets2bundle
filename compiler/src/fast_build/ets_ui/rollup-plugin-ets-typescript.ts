@@ -117,6 +117,7 @@ import { ARKUI_SUBSYSTEM_CODE } from '../../../lib/hvigor_error_code/hvigor_erro
 import { ProjectCollections } from 'arkguard';
 import parseIntent from '../../userIntents_parser/parseUserIntents';
 import { concatenateEtsOptions, getExternalComponentPaths } from '../../external_component_map';
+import { expandAllImportPaths } from '../../import_path_expand';
 
 let switchTsAst: boolean = true;
 
@@ -501,6 +502,7 @@ async function transform(code: string, id: string) {
         {
           before: [
             processUISyntax(null, false, eventEmit, id, this.share, metaInfo),
+            expandAllImportPaths(tsProgram.getTypeChecker(), this),
             processKitImport(id, metaInfo, eventEmit, true, lazyImportOptions),
             collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
               shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))
@@ -518,6 +520,7 @@ async function transform(code: string, id: string) {
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
         [processUISyntax(null, false, eventTransformNodes, id, this.share, metaInfo),
+        expandAllImportPaths(tsProgram.getTypeChecker(), this),
         processKitImport(id, metaInfo, eventTransformNodes, false, lazyImportOptions),
         collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
           shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))], false);
