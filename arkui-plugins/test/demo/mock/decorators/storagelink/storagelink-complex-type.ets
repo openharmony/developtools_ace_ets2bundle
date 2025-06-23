@@ -35,7 +35,6 @@ struct MyStateSample {
   @StorageLink('Prop3') dateA: Date = new Date('2021-08-08');
   @StorageLink('Prop4') setA: Set<number> = new Set<number>();
   @StorageLink('Prop5') mapA: Map<number, string> = new Map<number, string>();
-  @StorageLink('Prop6') unionA: string | undefined = "";
   @StorageLink('Prop7') classA: Person = new Person("John");
   @StorageLink('Prop8') enumA: Status = Status.NotFound;
 

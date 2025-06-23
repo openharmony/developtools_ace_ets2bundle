@@ -38,27 +38,16 @@ const storageLinkTransform: Plugins = {
 const pluginTester = new PluginTester('test storagelink primitive type transform', buildConfig);
 
 const expectedScript: string = `
-
 import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
-
 import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
-
 import { NavInterface as NavInterface } from "arkui.UserView";
-
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
-
 import { EntryPoint as EntryPoint } from "arkui.UserView";
-
 import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
 import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
-
 import { StorageLink as StorageLink } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -73,9 +62,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_numA = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "Prop1", "numA", 33)
-    this.__backing_stringA = STATE_MGMT_FACTORY.makeStorageLink<string>(this, "Prop2", "stringA", "AA")
-    this.__backing_booleanA = STATE_MGMT_FACTORY.makeStorageLink<boolean>(this, "Prop3", "booleanA", true)
+    this.__backing_numA = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "Prop1", "numA", 33, Type.from<number>())
+    this.__backing_stringA = STATE_MGMT_FACTORY.makeStorageLink<string>(this, "Prop2", "stringA", "AA", Type.from<string>())
+    this.__backing_booleanA = STATE_MGMT_FACTORY.makeStorageLink<boolean>(this, "Prop3", "booleanA", true, Type.from<boolean>())
   }
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}

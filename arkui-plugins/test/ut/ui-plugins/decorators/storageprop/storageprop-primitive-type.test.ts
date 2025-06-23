@@ -38,12 +38,11 @@ const storagePropTransform: Plugins = {
 const pluginTester = new PluginTester('test storageprop primitive type transform', buildConfig);
 
 const expectedScript: string = `
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
-import { IStoragePropDecoratedVariable as IStoragePropDecoratedVariable } from "arkui.stateManagement.decorator";
+import { IStoragePropRefDecoratedVariable as IStoragePropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { NavInterface as NavInterface } from "arkui.UserView";
 
@@ -73,14 +72,14 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_numB = STATE_MGMT_FACTORY.makeStorageProp<number>(this, "Prop1", "numB", 43)
-    this.__backing_stringB = STATE_MGMT_FACTORY.makeStorageProp<string>(this, "Prop2", "stringB", "BB")
-    this.__backing_booleanB = STATE_MGMT_FACTORY.makeStorageProp<boolean>(this, "Prop3", "booleanB", false)
+    this.__backing_numB = STATE_MGMT_FACTORY.makeStoragePropRef<number>(this, "Prop1", "numB", 43, Type.from<number>())
+    this.__backing_stringB = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "Prop2", "stringB", "BB", Type.from<string>())
+    this.__backing_booleanB = STATE_MGMT_FACTORY.makeStoragePropRef<boolean>(this, "Prop3", "booleanB", false, Type.from<boolean>())
   }
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
   
-  private __backing_numB?: IStoragePropDecoratedVariable<number>;
+  private __backing_numB?: IStoragePropRefDecoratedVariable<number>;
   
   public get numB(): number {
     return this.__backing_numB!.get();
@@ -90,7 +89,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_numB!.set(value);
   }
   
-  private __backing_stringB?: IStoragePropDecoratedVariable<string>;
+  private __backing_stringB?: IStoragePropRefDecoratedVariable<string>;
   
   public get stringB(): string {
     return this.__backing_stringB!.get();
@@ -100,7 +99,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_stringB!.set(value);
   }
   
-  private __backing_booleanB?: IStoragePropDecoratedVariable<boolean>;
+  private __backing_booleanB?: IStoragePropRefDecoratedVariable<boolean>;
   
   public get booleanB(): boolean {
     return this.__backing_booleanB!.get();
@@ -120,21 +119,21 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   set numB(numB: number | undefined)
   
   get numB(): number | undefined
-  set __backing_numB(__backing_numB: IStoragePropDecoratedVariable<number> | undefined)
+  set __backing_numB(__backing_numB: IStoragePropRefDecoratedVariable<number> | undefined)
   
-  get __backing_numB(): IStoragePropDecoratedVariable<number> | undefined
+  get __backing_numB(): IStoragePropRefDecoratedVariable<number> | undefined
   set stringB(stringB: string | undefined)
   
   get stringB(): string | undefined
-  set __backing_stringB(__backing_stringB: IStoragePropDecoratedVariable<string> | undefined)
+  set __backing_stringB(__backing_stringB: IStoragePropRefDecoratedVariable<string> | undefined)
   
-  get __backing_stringB(): IStoragePropDecoratedVariable<string> | undefined
+  get __backing_stringB(): IStoragePropRefDecoratedVariable<string> | undefined
   set booleanB(booleanB: boolean | undefined)
   
   get booleanB(): boolean | undefined
-  set __backing_booleanB(__backing_booleanB: IStoragePropDecoratedVariable<boolean> | undefined)
+  set __backing_booleanB(__backing_booleanB: IStoragePropRefDecoratedVariable<boolean> | undefined)
   
-  get __backing_booleanB(): IStoragePropDecoratedVariable<boolean> | undefined
+  get __backing_booleanB(): IStoragePropRefDecoratedVariable<boolean> | undefined
   
 }
 

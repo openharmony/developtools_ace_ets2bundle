@@ -88,15 +88,16 @@ export class StoragePropTranslator extends PropertyTranslator implements Initial
             arkts.factory.createStringLiteral(storagePropValueStr),
             arkts.factory.create1StringLiteral(originalName),
             this.property.value ?? arkts.factory.createUndefinedLiteral(),
+            factory.createTypeFrom(this.property.typeAnnotation)
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
-        collectStateManagementTypeImport(StateManagementTypes.STORAGE_PROP_DECORATED);
+        collectStateManagementTypeImport(StateManagementTypes.STORAGE_PROP_REF_DECORATED);
 
         return arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
             factory.generateStateMgmtFactoryCall(
-                StateManagementTypes.MAKE_STORAGE_PROP,
+                StateManagementTypes.MAKE_STORAGE_PROP_REF,
                 this.property.typeAnnotation,
                 args,
                 true
@@ -108,7 +109,7 @@ export class StoragePropTranslator extends PropertyTranslator implements Initial
         const field = factory.createOptionalClassProperty(
             newName,
             this.property,
-            StateManagementTypes.STORAGE_PROP_DECORATED,
+            StateManagementTypes.STORAGE_PROP_REF_DECORATED,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
