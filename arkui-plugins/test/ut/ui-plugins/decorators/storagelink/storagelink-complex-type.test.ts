@@ -38,27 +38,16 @@ const storageLinkTransform: Plugins = {
 const pluginTester = new PluginTester('test storagelink complex type transform', buildConfig);
 
 const expectedScript: string = `
-
 import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
-
 import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
-
 import { NavInterface as NavInterface } from "arkui.UserView";
-
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
-
 import { EntryPoint as EntryPoint } from "arkui.UserView";
-
 import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
 import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
-
 import { StorageLink as StorageLink } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -148,14 +137,13 @@ final class Status extends BaseEnum<int> {
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_arrayA = STATE_MGMT_FACTORY.makeStorageLink<Array<number>>(this, "Prop1", "arrayA", [1, 2, 3])
-    this.__backing_objectA = STATE_MGMT_FACTORY.makeStorageLink<Object>(this, "Prop2", "objectA", {})
-    this.__backing_dateA = STATE_MGMT_FACTORY.makeStorageLink<Date>(this, "Prop3", "dateA", new Date("2021-08-08"))
-    this.__backing_setA = STATE_MGMT_FACTORY.makeStorageLink<Set<number>>(this, "Prop4", "setA", new Set<number>())
-    this.__backing_mapA = STATE_MGMT_FACTORY.makeStorageLink<Map<number, string>>(this, "Prop5", "mapA", new Map<number, string>())
-    this.__backing_unionA = STATE_MGMT_FACTORY.makeStorageLink<string | undefined>(this, "Prop6", "unionA", "")
-    this.__backing_classA = STATE_MGMT_FACTORY.makeStorageLink<Person>(this, "Prop7", "classA", new Person("John"))
-    this.__backing_enumA = STATE_MGMT_FACTORY.makeStorageLink<Status>(this, "Prop8", "enumA", Status.NotFound)
+    this.__backing_arrayA = STATE_MGMT_FACTORY.makeStorageLink<Array<number>>(this, "Prop1", "arrayA", [1, 2, 3], Type.from<Array<number>>())
+    this.__backing_objectA = STATE_MGMT_FACTORY.makeStorageLink<Object>(this, "Prop2", "objectA", {}, Type.from<Object>())
+    this.__backing_dateA = STATE_MGMT_FACTORY.makeStorageLink<Date>(this, "Prop3", "dateA", new Date("2021-08-08"), Type.from<Date>())
+    this.__backing_setA = STATE_MGMT_FACTORY.makeStorageLink<Set<number>>(this, "Prop4", "setA", new Set<number>(), Type.from<Set<number>>())
+    this.__backing_mapA = STATE_MGMT_FACTORY.makeStorageLink<Map<number, string>>(this, "Prop5", "mapA", new Map<number, string>(), Type.from<Map<number, string>>())
+    this.__backing_classA = STATE_MGMT_FACTORY.makeStorageLink<Person>(this, "Prop7", "classA", new Person("John"), Type.from<Person>())
+    this.__backing_enumA = STATE_MGMT_FACTORY.makeStorageLink<Status>(this, "Prop8", "enumA", Status.NotFound, Type.from<Status>())
   }
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
@@ -208,16 +196,6 @@ final class Status extends BaseEnum<int> {
   
   public set mapA(value: Map<number, string>) {
     this.__backing_mapA!.set(value);
-  }
-  
-  private __backing_unionA?: IStorageLinkDecoratedVariable<string | undefined>;
-  
-  public get unionA(): string | undefined {
-    return this.__backing_unionA!.get();
-  }
-  
-  public set unionA(value: string | undefined) {
-    this.__backing_unionA!.set(value);
   }
   
   private __backing_classA?: IStorageLinkDecoratedVariable<Person>;
@@ -277,12 +255,6 @@ final class Status extends BaseEnum<int> {
   set __backing_mapA(__backing_mapA: IStorageLinkDecoratedVariable<Map<number, string>> | undefined)
   
   get __backing_mapA(): IStorageLinkDecoratedVariable<Map<number, string>> | undefined
-  set unionA(unionA: string | undefined | undefined)
-  
-  get unionA(): string | undefined | undefined
-  set __backing_unionA(__backing_unionA: IStorageLinkDecoratedVariable<string | undefined> | undefined)
-  
-  get __backing_unionA(): IStorageLinkDecoratedVariable<string | undefined> | undefined
   set classA(classA: Person | undefined)
   
   get classA(): Person | undefined

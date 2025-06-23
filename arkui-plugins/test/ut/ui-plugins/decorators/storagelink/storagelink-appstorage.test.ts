@@ -38,29 +38,17 @@ const storageLinkTransform: Plugins = {
 const pluginTester = new PluginTester('test storagelink with appstorage', buildConfig);
 
 const expectedScript: string = `
-
-import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
-
-import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
-
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
-
 import { NavInterface as NavInterface } from "arkui.UserView";
-
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
-
 import { EntryPoint as EntryPoint } from "arkui.UserView";
-
 import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
 import { Component as Component, Entry as Entry, Column as Column, Text as Text, ClickEvent as ClickEvent } from "@ohos.arkui.component";
-
 import { StorageLink as StorageLink, AppStorage as AppStorage } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -78,17 +66,15 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 class Data {
   public code: number;
-  
   public constructor(code: number) {
     this.code = code;
   }
-  
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_storageLink = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "PropA", "storageLink", 1)
-    this.__backing_storageLinkObject = STATE_MGMT_FACTORY.makeStorageLink<Data>(this, "PropB", "storageLinkObject", new Data(1))
+    this.__backing_storageLink = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "PropA", "storageLink", 1, Type.from<number>())
+    this.__backing_storageLinkObject = STATE_MGMT_FACTORY.makeStorageLink<Data>(this, "PropB", "storageLinkObject", new Data(1), Type.from<Data>())
   }
   
   public __updateStruct(initializers: __Options_Index | undefined): void {}
@@ -136,18 +122,13 @@ class Data {
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
   set storageLink(storageLink: number | undefined)
-  
   get storageLink(): number | undefined
   set __backing_storageLink(__backing_storageLink: IStorageLinkDecoratedVariable<number> | undefined)
-  
   get __backing_storageLink(): IStorageLinkDecoratedVariable<number> | undefined
   set storageLinkObject(storageLinkObject: Data | undefined)
-  
   get storageLinkObject(): Data | undefined
   set __backing_storageLinkObject(__backing_storageLinkObject: IStorageLinkDecoratedVariable<Data> | undefined)
-  
   get __backing_storageLinkObject(): IStorageLinkDecoratedVariable<Data> | undefined
-  
 }
 
 class __EntryWrapper extends EntryPoint {

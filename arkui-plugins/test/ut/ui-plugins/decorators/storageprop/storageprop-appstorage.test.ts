@@ -38,10 +38,11 @@ const storagePropTransform: Plugins = {
 const pluginTester = new PluginTester('test storageprop with appstorage', buildConfig);
 
 const expectedScript: string = `
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
-import { IStoragePropDecoratedVariable as IStoragePropDecoratedVariable } from "arkui.stateManagement.decorator";
+import { IStoragePropRefDecoratedVariable as IStoragePropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
@@ -87,13 +88,13 @@ class Data {
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_storageProp = STATE_MGMT_FACTORY.makeStorageProp<number>(this, "PropA", "storageProp", 1)
-    this.__backing_storagePropObject = STATE_MGMT_FACTORY.makeStorageProp<Data>(this, "PropB", "storagePropObject", new Data(1))
+    this.__backing_storageProp = STATE_MGMT_FACTORY.makeStoragePropRef<number>(this, "PropA", "storageProp", 1, Type.from<number>())
+    this.__backing_storagePropObject = STATE_MGMT_FACTORY.makeStoragePropRef<Data>(this, "PropB", "storagePropObject", new Data(1), Type.from<Data>())
   }
   
   public __updateStruct(initializers: __Options_Index | undefined): void {}
   
-  private __backing_storageProp?: IStoragePropDecoratedVariable<number>;
+  private __backing_storageProp?: IStoragePropRefDecoratedVariable<number>;
   
   public get storageProp(): number {
     return this.__backing_storageProp!.get();
@@ -103,7 +104,7 @@ class Data {
     this.__backing_storageProp!.set(value);
   }
   
-  private __backing_storagePropObject?: IStoragePropDecoratedVariable<Data>;
+  private __backing_storagePropObject?: IStoragePropRefDecoratedVariable<Data>;
   
   public get storagePropObject(): Data {
     return this.__backing_storagePropObject!.get();
@@ -138,15 +139,15 @@ class Data {
   set storageProp(storageProp: number | undefined)
   
   get storageProp(): number | undefined
-  set __backing_storageProp(__backing_storageProp: IStoragePropDecoratedVariable<number> | undefined)
+  set __backing_storageProp(__backing_storageProp: IStoragePropRefDecoratedVariable<number> | undefined)
   
-  get __backing_storageProp(): IStoragePropDecoratedVariable<number> | undefined
+  get __backing_storageProp(): IStoragePropRefDecoratedVariable<number> | undefined
   set storagePropObject(storagePropObject: Data | undefined)
   
   get storagePropObject(): Data | undefined
-  set __backing_storagePropObject(__backing_storagePropObject: IStoragePropDecoratedVariable<Data> | undefined)
+  set __backing_storagePropObject(__backing_storagePropObject: IStoragePropRefDecoratedVariable<Data> | undefined)
   
-  get __backing_storagePropObject(): IStoragePropDecoratedVariable<Data> | undefined
+  get __backing_storagePropObject(): IStoragePropRefDecoratedVariable<Data> | undefined
   
 }
 

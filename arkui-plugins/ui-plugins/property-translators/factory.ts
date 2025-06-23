@@ -781,4 +781,18 @@ export class factory {
         }
         return property;
     }
+
+    static createTypeFrom(typeAnnotation: arkts.TypeNode | undefined) {
+        return arkts.factory.createCallExpression(
+            arkts.factory.createMemberExpression(
+                arkts.factory.createIdentifier('Type'),
+                arkts.factory.createIdentifier('from'),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
+            ),
+            typeAnnotation ? [typeAnnotation] : undefined,
+            undefined
+        );
+    }
 }
