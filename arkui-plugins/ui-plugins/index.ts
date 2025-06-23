@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import { ComponentTransformer } from './component-transformer';
 import { CheckedTransformer } from './checked-transformer';
-import { Plugins, PluginContext } from '../common/plugin-context';
+import { Plugins, PluginContext, ProjectConfig } from '../common/plugin-context';
 import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../common/predefines';
 import { debugDump, debugLog, getDumpFileName } from '../common/debug';
@@ -142,7 +142,11 @@ function checkedProgramVisit(program: arkts.Program, context: PluginContext): ar
         debugLog('[SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
     } else {
         debugLog('[CANT SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
-        const checkedTransformer = new CheckedTransformer(context.getProjectConfig());
+        const projectConfig: ProjectConfig | undefined = context.getProjectConfig();
+        if (projectConfig && !projectConfig.appResource) {
+            projectConfig.ignoreError = true;
+        }
+        const checkedTransformer = new CheckedTransformer(projectConfig);
         const programVisitor = new ProgramVisitor({
             pluginName: uiTransform.name,
             state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,

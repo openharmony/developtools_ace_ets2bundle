@@ -26,7 +26,7 @@ import {
 } from './shared-types';
 import { HashGenerator } from './hash-generator';
 import { PluginTestContextCache } from './cache';
-import { Plugins, PluginState } from '../../common/plugin-context';
+import { Plugins, PluginState, ProjectConfig } from '../../common/plugin-context';
 import { concatObject } from './serializable';
 import { ProcessorBuilder } from './processor-builder';
 import { MainProcessor } from './processors/main-processor';
@@ -48,6 +48,7 @@ type TestHooks = {
 export interface PluginTesterOptions {
     stopAfter: PluginState;
     buildConfig?: BuildConfig;
+    projectConfig?: ProjectConfig;
     tracing?: TraceOptions;
 }
 
@@ -58,7 +59,7 @@ class PluginTester {
     private taskProcessor?: Processor;
     private resolve?: Promise<void>;
 
-    constructor(describe: string, buildConfig?: BuildConfig) {
+    constructor(describe: string, buildConfig?: BuildConfig, projectConfig?: ProjectConfig) {
         this.describe = describe;
         this.hashId = HashGenerator.getInstance().dynamicSha1Id(describe, 13);
         this.configBuilder = new MockArktsConfigBuilder(this.hashId, buildConfig);
@@ -175,6 +176,7 @@ class PluginTester {
             MainProcessor,
             this.hashId,
             this.configBuilder.buildConfig,
+            this.configBuilder.projectConfig,
             tracing
         );
         return this.taskProcessor.invokeWorkers(plugins, stopAfter);
@@ -188,7 +190,10 @@ class PluginTester {
         testHooks?: TestHooks
     ): void {
         if (!!options.buildConfig) {
-            this.configBuilder = new MockArktsConfigBuilder(this.hashId, options.buildConfig);
+            this.configBuilder = this.configBuilder.withBuildConfig(options.buildConfig);
+        }
+        if (!!options.projectConfig) {
+            this.configBuilder = this.configBuilder.withProjectConfig(options.projectConfig);
         }
 
         const that = this;

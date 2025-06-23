@@ -3562,6 +3562,16 @@ export class Es2pandaNativeModule {
     _CreateForUpdateStatement(context: KNativePointer, init: KNativePointer, test: KNativePointer, update: KNativePointer, body: KNativePointer): KNativePointer {
         throw new Error("'CreateForUpdateStatement was not overloaded by native module initialization")
     }
+    _UpdateForUpdateStatement(
+        context: KNativePointer,
+        original: KNativePointer,
+        init: KNativePointer,
+        test: KNativePointer,
+        update: KNativePointer,
+        body: KNativePointer
+    ): KNativePointer {
+        throw new Error("'CreateForUpdateStatement was not overloaded by native module initialization");
+    }
     _ForUpdateStatementInit(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'ForUpdateStatementInit was not overloaded by native module initialization")
     }

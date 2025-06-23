@@ -13,36 +13,46 @@
  * limitations under the License.
  */
 
-import { Component, $r, $rawfile, Column, Text, Image, TextInput, Select, SelectOption, Margin, ImageAnimator } from "@ohos.arkui.component"
+import { Component, $r, $rawfile, Column, Text, Image, TextInput, Select, SelectOption, Margin, ImageAnimator, Resource } from "@ohos.arkui.component"
 
 @Component
 struct ResourceComponent {
   str1: string = 'app.media.ri'
   str2: string = 'app.photo2.png'
+  numbers: string[] = ['0','1','3','5','8']
+  aboutToAppear() {
+    let arr: Array<Resource> = new Array<Resource>()
+    for (let i = 0; i < 5; i++) {
+      arr.push($r('app.string.app_name'))
+    }
+    for (let item of this.numbers) {
+      arr.push($r('app.string.app_name'))
+    }
+  }
   build() {
     Column() {
       Text($r('app.string.app_name'))
-      Image($rawfile('app.photo.png'))
-      TextInput({ text: $r('app.string.input_content') })
+      Image($rawfile('app.mock.txt'))
+      TextInput({ text: $r('app.string.module_desc') })
       Text($r(this.str1))
       Text($r(this.str2))
       Select(new Array<SelectOption>(
-        { value: 'aaa', icon: $r("app.media.selection") },
-        { value: 'bbb', icon: $r("app.media.selection") },
-        { value: 'ccc', icon: $r("app.media.selection") },
-        { value: 'ddd', icon: $r("app.media.selection") }
+        { value: 'aaa', icon: $r("app.media.background") },
+        { value: 'bbb', icon: $r("app.media.background") },
+        { value: 'ccc', icon: $r("app.media.background") },
+        { value: 'ddd', icon: $r("app.media.background") }
       ))
       Image($r('app.media.app_icon'))
         .margin({
-          top: $r('app.float.elements_margin_horizontal_m'),
-          bottom: $r('app.float.elements_margin_horizontal_l')
+          top: $r('app.float.page_text_font_size'),
+          bottom: $r('app.float.page_text_font_size')
         } as Margin)
       ImageAnimator().images([
         {
-          src: $r('app.media.aaa')
+          src: $r('app.media.app_icon')
         },
         {
-          src: $r('app.media.bbb')
+          src: $r('app.media.layered_image')
         },
       ])
     }

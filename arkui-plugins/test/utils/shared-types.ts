@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import type { Plugins, PluginState } from '../../common/plugin-context';
+import type { Plugins, PluginState, ProjectConfig } from '../../common/plugin-context';
 
 export type PluginTesterId = string | `${string}:${string}`;
 
@@ -61,9 +61,10 @@ export interface BuildConfig {
     sourceRoots: string[];
     moduleRootPath: string;
     dependentModuleList: DependentModule[];
+    projectConfig?: ProjectConfig;
 }
 
-export type ModuleType = 'har' | string; // TODO: module type unclear
+export type ModuleType = 'har' | 'feature' | 'entry' | string; // TODO: module type unclear
 
 export interface DependentModule {
     packageName: string;
@@ -79,6 +80,7 @@ export interface JobInfo {
     isCompileAbc: CompileStrategy;
     compileFileInfo?: CompileFileInfo;
     buildConfig?: BuildConfig;
+    projectConfig?: ProjectConfig;
     plugins?: Plugins[];
     globalContextPtr?: number;
     stopAfter?: PluginState;
@@ -124,6 +126,7 @@ export type ProcessEvent = {
 export interface Processor {
     hashId: string;
     buildConfig: BuildConfig;
+    projectConfig?: ProjectConfig;
     tracing: TraceOptions;
     cacheDir: string;
     arktsConfigFile: string;

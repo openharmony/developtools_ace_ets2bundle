@@ -78,6 +78,9 @@ import {
     AnnotationDeclaration,
     TryStatement,
     TSClassImplements,
+    ForUpdateStatement,
+    ForInStatement,
+    ForOfStatement,
 } from '../../generated';
 import { Es2pandaModifierFlags } from '../../generated/Es2pandaEnums';
 import { classPropertySetOptional, hasModifierFlag } from '../utilities/public';
@@ -136,6 +139,9 @@ import { updateArrayExpression } from '../node-utilities/ArrayExpression';
 import { updateAnnotationDeclaration } from '../node-utilities/AnnotationDeclaration';
 import { updateTryStatement } from '../node-utilities/TryStatement';
 import { updateTSClassImplements } from '../node-utilities/TSClassImplements';
+import { updateForUpdateStatement } from '../node-utilities/ForUpdateStatement';
+import { updateForInStatement } from '../node-utilities/ForInStatement';
+import { updateForOfStatement } from '../node-utilities/ForOfStatement';
 
 export const factory = {
     get createIdentifier(): (...args: Parameters<typeof Identifier.create2Identifier>) => Identifier {
@@ -567,11 +573,33 @@ export const factory = {
     get updateTryStatement(): (...args: Parameters<typeof updateTryStatement>) => TryStatement {
         return updateTryStatement;
     },
-    get createTSClassImplements(): (...args: Parameters<typeof TSClassImplements.createTSClassImplements>) => TSClassImplements {
+    get createTSClassImplements(): (
+        ...args: Parameters<typeof TSClassImplements.createTSClassImplements>
+    ) => TSClassImplements {
         return TSClassImplements.createTSClassImplements;
     },
     get UpdateTSClassImplements(): (...args: Parameters<typeof updateTSClassImplements>) => TSClassImplements {
         return updateTSClassImplements;
+    },
+    get createForUpdateStatement(): (
+        ...args: Parameters<typeof ForUpdateStatement.createForUpdateStatement>
+    ) => ForUpdateStatement {
+        return ForUpdateStatement.createForUpdateStatement;
+    },
+    get updateForUpdateStatement(): (...args: Parameters<typeof updateForUpdateStatement>) => ForUpdateStatement {
+        return updateForUpdateStatement;
+    },
+    get createForInStatement(): (...args: Parameters<typeof ForInStatement.createForInStatement>) => ForInStatement {
+        return ForInStatement.createForInStatement;
+    },
+    get updateForInStatement(): (...args: Parameters<typeof updateForInStatement>) => ForInStatement {
+        return updateForInStatement;
+    },
+    get createForOfStatement(): (...args: Parameters<typeof ForOfStatement.createForOfStatement>) => ForOfStatement {
+        return ForOfStatement.createForOfStatement;
+    },
+    get updateForOfStatement(): (...args: Parameters<typeof updateForOfStatement>) => ForOfStatement {
+        return updateForOfStatement;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {

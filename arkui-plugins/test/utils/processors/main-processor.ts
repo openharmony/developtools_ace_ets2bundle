@@ -26,11 +26,8 @@ import {
 import { BaseProcessor } from './base-processor';
 import { PluginTestContextCache } from '../cache';
 import { concatObject, serializable } from '../serializable';
-import { Plugins, PluginState } from '../../../common/plugin-context';
-import {
-    createGlobalConfig,
-    destroyGlobalConfig,
-} from '../global';
+import { Plugins, PluginState, ProjectConfig } from '../../../common/plugin-context';
+import { createGlobalConfig, destroyGlobalConfig } from '../global';
 import { compileAbcWithExternal } from '../compile';
 
 class MainProcessor extends BaseProcessor {
@@ -38,8 +35,8 @@ class MainProcessor extends BaseProcessor {
 
     readonly emitter: EventEmitter<ProcessEvent> = new EventEmitter<ProcessEvent>();
 
-    constructor(hashId: string, buildConfig?: BuildConfig, tracing?: TraceOptions) {
-        super(hashId, buildConfig, tracing);
+    constructor(hashId: string, buildConfig?: BuildConfig, projectConfig?: ProjectConfig, tracing?: TraceOptions) {
+        super(hashId, buildConfig, projectConfig, tracing);
         this.filePaths = this.getCompileFilePaths();
     }
 
@@ -65,19 +62,16 @@ class MainProcessor extends BaseProcessor {
         });
     }
 
-    private assignTask(
-        fileInfo: CompileFileInfo,
-        plugins: Plugins[],
-        stopAfter?: PluginState
-    ): void {
+    private assignTask(fileInfo: CompileFileInfo, plugins: Plugins[], stopAfter?: PluginState): void {
         const jobInfo: JobInfo = {
             id: 'compile-abc-with-external',
             isCompileAbc: CompileStrategy.ABC_WTIH_EXTERNAL,
             compileFileInfo: fileInfo,
             buildConfig: serializable(this.buildConfig),
+            projectConfig: serializable(this.projectConfig),
             plugins,
             stopAfter,
-            filePaths: this.filePaths
+            filePaths: this.filePaths,
         };
         compileAbcWithExternal(this.emitter, jobInfo, this.tracing);
     }
