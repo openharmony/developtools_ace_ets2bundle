@@ -18,29 +18,29 @@ import { getIdentifierName, MultiMap, PresetDecorators, getAnnotationName } from
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
-  private componentv2WithConsumer: MultiMap<string, string> = new MultiMap();
-  private componentv2WithProvider: MultiMap<string, string> = new MultiMap();
+  private componentV2WithConsumer: MultiMap<string, string> = new MultiMap();
+  private componentV2WithProvider: MultiMap<string, string> = new MultiMap();
 
   public setup(): Record<string, string> {
     return {
-      consumerOnlyOnMember: `'@{{decorator}}' can only decorate member property.`,
+      providerAndConsumerOnlyOnProperty: `'@{{decorator}}' can only decorate member property.`,
       multipleBuiltInDecorators: `The struct member variable can not be decorated by multiple built-in decorators.`,
-      providerOnlyInStruct: `The '@{{decorator}}' decorator can only be used with 'struct'.`,
+      providerAndConsumerOnlyInStruct: `The '@{{decorator}}' decorator can only be used with 'struct'.`,
       forbiddenInitialization: `The '@{{decorator}}' property '{{value}}' in the custom component '{{structName}}' cannot be initialized here (forbidden to specify).`,
     };
   }
 
   public parsed(node: arkts.AstNode): void {
     this.collectStructsWithConsumerAndProvider(node);
-    this.validateStructDecoratorsAndMembers(node);
-    this.validateInClass(node);
+    this.validateDecoratorsOnMember(node);
+    this.validateOnlyInStruct(node);
 
     if (arkts.isCallExpression(node)) {
       this.validateConsumerInitialization(node);
       this.validateProviderInitialization(node);
     }
   }
-  
+
   private collectStructsWithConsumerAndProvider(node: arkts.AstNode): void {
     if (arkts.nodeType(node) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
       // Breadth traversal is done through while and queues
@@ -59,7 +59,7 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
 
   private rememberStructName(node: arkts.AstNode): void {
     if (arkts.isStructDeclaration(node)) {
-      node?.definition?.annotations.forEach((anno) => {
+      node.definition.annotations.forEach((anno) => {
         if (!anno.expr) {
           return;
         }
@@ -77,35 +77,38 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
     node.definition.body.forEach((member) => {
       // When a member variable is @consumer modified, it is stored to mark fields that cannot be initialized
       if (arkts.isClassProperty(member)) {
-        const comsumerDecorator = member?.annotations.some(annotation =>
+        const consumerDecorator = member.annotations.some(annotation =>
           annotation.expr && arkts.isIdentifier(annotation.expr) &&
           annotation.expr.name === PresetDecorators.CONSUMER
         );
-        const providerDecorator = member?.annotations.some(annotation =>
+        const providerDecorator = member.annotations.some(annotation =>
           annotation.expr && arkts.isIdentifier(annotation.expr) &&
           annotation.expr.name === PresetDecorators.PROVIDER
         );
-        if (!member?.key) {
+        if (!member.key) {
           return;
         }
-        const memberName = getIdentifierName(member?.key);
-        if (comsumerDecorator && structName && memberName) {
-          this.componentv2WithConsumer.add(structName, memberName);
+        const memberName = getIdentifierName(member.key);
+        if (consumerDecorator && structName && memberName) {
+          this.componentV2WithConsumer.add(structName, memberName);
         }
 
         if (providerDecorator && structName && memberName) {
-          this.componentv2WithProvider.add(structName, memberName);
+          this.componentV2WithProvider.add(structName, memberName);
         }
       }
     });
   }
 
-  private validateStructDecoratorsAndMembers(node: arkts.AstNode): void {
+  private validateDecoratorsOnMember(node: arkts.AstNode): void {
+    if (arkts.isScriptFunction(node) || arkts.isVariableDeclaration(node) || arkts.isTSInterfaceDeclaration(node) ||
+      arkts.isTSTypeAliasDeclaration(node)) {
+      this.validateDecorator(node, this.messages.providerAndConsumerOnlyOnProperty, PresetDecorators.CONSUMER);
+      this.validateDecorator(node, this.messages.providerAndConsumerOnlyOnProperty, PresetDecorators.PROVIDER);
+    }
+
     if (arkts.isStructDeclaration(node)) {
       node.definition.body.forEach(member => {
-        if (arkts.isMethodDefinition(member)) {
-          this.validateDecoratorOnMethod(member);
-        }
         if (arkts.isClassProperty(member)) {
           this.validateMemberDecorators(member);
         }
@@ -146,41 +149,68 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
     });
   }
 
-  private findDecorator(member: arkts.ClassProperty, decoratorName: string): arkts.AnnotationUsage | undefined {
-    return member.annotations?.find(annotation =>
+  private findDecorator(
+    member: arkts.ClassProperty | arkts.VariableDeclaration | arkts.FunctionDeclaration |
+      arkts.ScriptFunction | arkts.TSInterfaceDeclaration | arkts.TSTypeAliasDeclaration,
+    decoratorName: string
+  ): arkts.AnnotationUsage | undefined {
+    return member.annotations.find(annotation =>
       annotation.expr && arkts.isIdentifier(annotation.expr) &&
       annotation.expr.name === decoratorName
     );
   }
 
   private findOtherDecorator(member: arkts.ClassProperty, decoratorName: string): arkts.AnnotationUsage | undefined {
-    return member.annotations?.find(annotation =>
+    return member.annotations.find(annotation =>
       annotation.expr && arkts.isIdentifier(annotation.expr) &&
       annotation.expr.name !== decoratorName
     );
   }
 
-  private findDecoratorInMethod(member: arkts.MethodDefinition, decoratorName: string): arkts.AnnotationUsage | undefined {
-    return member.scriptFunction.annotations?.find(annotation =>
-      annotation.expr && arkts.isIdentifier(annotation.expr) &&
-      annotation.expr.name === decoratorName
-    );
+  private validateOnlyInStruct(node: arkts.AstNode): void {
+
+    if (arkts.isClassDeclaration(node)) {
+      node.definition?.body.forEach(member => {
+        if (arkts.isClassProperty(member)) {
+          this.validateDecorator(member, this.messages.providerAndConsumerOnlyInStruct, PresetDecorators.CONSUMER);
+          this.validateDecorator(member, this.messages.providerAndConsumerOnlyInStruct, PresetDecorators.PROVIDER);
+        }
+        if (arkts.isMethodDefinition(member)) {
+          this.validateDecorator(
+            member.scriptFunction, this.messages.providerAndConsumerOnlyInStruct, PresetDecorators.CONSUMER);
+          this.validateDecorator(
+            member.scriptFunction, this.messages.providerAndConsumerOnlyInStruct, PresetDecorators.PROVIDER);
+        }
+      });
+      return;
+    }
+
+    // function/ variable/ interface/ type alias declaration
+    if (arkts.isFunctionDeclaration(node) ||
+      arkts.isVariableDeclaration(node) ||
+      arkts.isTSInterfaceDeclaration(node) ||
+      arkts.isTSTypeAliasDeclaration(node)
+    ) {
+      this.validateDecorator(node, this.messages.providerAndConsumerOnlyInStruct, PresetDecorators.CONSUMER);
+      this.validateDecorator(node, this.messages.providerAndConsumerOnlyInStruct, PresetDecorators.PROVIDER);
+      return;
+    }
   }
 
-  private validateDecoratorOnMethod(member: arkts.MethodDefinition): void {
-    this.validateDecorator(member, PresetDecorators.CONSUMER);
-    this.validateDecorator(member, PresetDecorators.PROVIDER);
-  }
-
-  private validateDecorator(member: arkts.MethodDefinition, decoratorName: string): void {
-    const decorator = this.findDecoratorInMethod(member, decoratorName);
+  private validateDecorator(
+    node: arkts.ClassProperty | arkts.VariableDeclaration | arkts.FunctionDeclaration |
+      arkts.ScriptFunction | arkts.TSInterfaceDeclaration | arkts.TSTypeAliasDeclaration,
+    message: string,
+    decoratorName: string
+  ): void {
+    const decorator = this.findDecorator(node, decoratorName);
     if (!decorator) {
       return;
     }
 
     this.report({
       node: decorator,
-      message: this.messages.consumerOnlyOnMember,
+      message: message,
       data: {
         decorator: getAnnotationName(decorator),
       },
@@ -195,45 +225,12 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
     });
   }
 
-  private validateInClass(node: arkts.AstNode): void {
-    if (arkts.isClassDeclaration(node)) {
-      node.definition?.body.forEach(member => {
-        if (arkts.isClassProperty(member)) {
-          this.validateDecoratorInClass(member, PresetDecorators.CONSUMER);
-          this.validateDecoratorInClass(member, PresetDecorators.PROVIDER);
-        }
-      });
-    }
-  }
-
-  private validateDecoratorInClass(member: arkts.ClassProperty, decoratorName: string): void {
-    const decorator = this.findDecorator(member, decoratorName);
-    if (!decorator) {
-      return;
-    }
-    this.report({
-      node: decorator,
-      message: this.messages.providerOnlyInStruct,
-      data: {
-        decorator: getAnnotationName(decorator),
-      },
-      fix: (providerDecorator) => {
-        const startPosition = providerDecorator.startPosition;
-        const endPosition = providerDecorator.endPosition;
-        return {
-          range: [startPosition, endPosition],
-          code: '',
-        };
-      }
-    });
-  }
-
   private validateConsumerInitialization(node: arkts.CallExpression): void {
     if (!arkts.isIdentifier(node.expression)) {
       return;
     }
     const callExpName: string = node.expression.name;
-    if (this.componentv2WithConsumer.has(callExpName)) {
+    if (this.componentV2WithConsumer.has(callExpName)) {
       const queue: Array<arkts.AstNode> = [node];
       while (queue.length > 0) {
         const currentNode: arkts.AstNode = queue.shift() as arkts.AstNode;
@@ -253,7 +250,7 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
       return;
     }
     const callExpName: string = node.expression.name;
-    if (this.componentv2WithProvider.has(callExpName)) {
+    if (this.componentV2WithProvider.has(callExpName)) {
       const queue: Array<arkts.AstNode> = [node];
       while (queue.length > 0) {
         const currentNode: arkts.AstNode = queue.shift() as arkts.AstNode;
@@ -270,7 +267,7 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
 
   private checkInvalidConsumerUsage(currentNode: arkts.Identifier, callExpName: string): void {
     const parent = currentNode.parent;
-    if (parent && this.componentv2WithConsumer.get(callExpName).includes(getIdentifierName(currentNode))) {
+    if (parent && this.componentV2WithConsumer.get(callExpName).includes(getIdentifierName(currentNode))) {
       this.report({
         node: parent,
         message: this.messages.forbiddenInitialization,
@@ -293,7 +290,7 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
 
   private checkInvalidProviderUsage(currentNode: arkts.Identifier, callExpName: string): void {
     const parent = currentNode.parent;
-    if (parent && this.componentv2WithProvider.get(callExpName)?.includes(getIdentifierName(currentNode))) {
+    if (parent && this.componentV2WithProvider.get(callExpName)?.includes(getIdentifierName(currentNode))) {
       this.report({
         node: parent,
         message: this.messages.forbiddenInitialization,
@@ -316,3 +313,4 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
 }
 
 export default ConsumerProviderDecoratorCheckRule;
+
