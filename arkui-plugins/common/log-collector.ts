@@ -35,9 +35,11 @@ export function generateDiagnosticKind(logItem: LogInfo): arkts.DiagnosticKind {
 export class LogCollector {
     public logInfos: LogInfo[];
     private static instance: LogCollector;
+    private ignoreError: boolean;
 
     private constructor() {
         this.logInfos = [];
+        this.ignoreError = false;
     }
 
     static getInstance(): LogCollector {
@@ -49,6 +51,7 @@ export class LogCollector {
 
     reset(): void {
         this.logInfos = [];
+        this.ignoreError = false;
     }
 
     collectLogInfo(logItem: LogInfo): void {
@@ -56,8 +59,17 @@ export class LogCollector {
     }
 
     emitLogInfo(): void {
+        if (this.ignoreError) {
+            return;
+        }
         this.logInfos.forEach((logItem: LogInfo) => {
             arkts.Diagnostic.logDiagnostic(generateDiagnosticKind(logItem), arkts.getStartPosition(logItem.node));
         });
+    }
+
+    shouldIgnoreError(ignoreError: boolean | undefined): void {
+        if (!!ignoreError) {
+            this.ignoreError = true;
+        }
     }
 }
