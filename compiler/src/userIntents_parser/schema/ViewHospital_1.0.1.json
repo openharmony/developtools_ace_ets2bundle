@@ -9,9 +9,6 @@
       "enum": [
         "entityId"
       ],
-      "required": [
-        "entityId"
-      ],
       "properties": {
         "entityId": {
           "description": "数据唯一标识",
@@ -19,7 +16,10 @@
           "maxLength": 64
         }
       }
-    }
+    },
+    "required": [
+      "entityId"
+    ]
   },
   "result": {
     "type": "object",
