@@ -18,6 +18,7 @@ import { getIdentifierName, getAnnotationUsage, PresetDecorators, BUILD_NAME } f
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 const STATEMENT_LENGTH: number = 1;
+const BUILD_COUNT_LIMIT: number = 1;
 
 class BuildRootNodeRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
@@ -37,45 +38,68 @@ class BuildRootNodeRule extends AbstractUISyntaxRule {
                 return;
             }
             const blockStatement = member.scriptFunction.body;
-            if (!blockStatement || !arkts.isBlockStatement(blockStatement)) {
-                return;
-            }
             const buildNode = member.scriptFunction.id;
-            if (!buildNode) {
+            if (!blockStatement || !arkts.isBlockStatement(blockStatement) || !buildNode) {
                 return;
             }
             const statements = blockStatement.statements;
+            let buildCount = 0;
+            // rule1: The 'build' method cannot have more than one root node.
             if (statements.length > STATEMENT_LENGTH) {
-                // rule1: The 'build' method cannot have more than one root node.
-                this.report({
-                    node: buildNode,
-                    message: entryDecoratorUsage ? this.messages.invalidEntryBuildRoot : this.messages.invalidBuildRoot,
-                });
+                if (!this.isBuildOneRoot(statements, buildCount)) {
+                    this.report({
+                        node: buildNode,
+                        message: entryDecoratorUsage ? this.messages.invalidEntryBuildRoot : this.messages.invalidBuildRoot,
+                    });
+                }
             }
+            // rule2: its 'build' function can have only one root node, which must be a container component.
             if (!statements.length || !entryDecoratorUsage) {
                 return;
             }
-            const expressionStatement = statements[0];
-            if (!arkts.isExpressionStatement(expressionStatement)) {
+            this.validateContainerInBuild(statements, buildNode);
+        });
+    }
+
+    private isBuildOneRoot(
+        statements: readonly arkts.Statement[],
+        buildCount: number
+    ): boolean {
+        statements.forEach(statement => {
+            if (!arkts.isExpressionStatement(statement)) {
                 return;
             }
-            const callExpression = expressionStatement.expression;
-            if (!arkts.isCallExpression(callExpression)) {
+            if (!statement.expression) {
                 return;
             }
-            let componentName: string | undefined = this.getComponentName(callExpression);
-            if (!componentName) {
-                return;
-            }
-            let isContainer: boolean = this.isContainerComponent(componentName);
-            // rule2: its 'build' function can have only one root node, which must be a container component.
-            if (!isContainer) {
-                this.report({
-                    node: buildNode,
-                    message: this.messages.invalidEntryBuildRoot,
-                });
+            const componentName = this.getComponentName(statement.expression);
+            if (componentName && componentName !== 'hilog') {
+                buildCount++;
             }
         });
+        return buildCount <= BUILD_COUNT_LIMIT;
+    }
+
+    private validateContainerInBuild(statements: readonly arkts.Statement[], buildNode: arkts.Identifier): void {
+        const expressionStatement = statements[0];
+        if (!arkts.isExpressionStatement(expressionStatement)) {
+            return;
+        }
+        const callExpression = expressionStatement.expression;
+        if (!arkts.isCallExpression(callExpression)) {
+            return;
+        }
+        let componentName = this.getComponentName(callExpression);
+        if (!componentName) {
+            return;
+        }
+        let isContainer = this.isContainerComponent(componentName);
+        if (!isContainer) {
+            this.report({
+                node: buildNode,
+                message: this.messages.invalidEntryBuildRoot,
+            });
+        }
     }
 
     private isContainerComponent(componentName: string): boolean {
