@@ -49,6 +49,8 @@ import { GridItemAttribute as GridItemAttribute } from "arkui.component.gridItem
 
 import { Bindable as Bindable } from "arkui.component.common";
 
+import { NavInterface as NavInterface } from "arkui.UserView";
+
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
@@ -69,7 +71,15 @@ function main() {}
 
 c = false;
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../double-dollar/double-dollar-griditem",
+  pageFullPath: "test/demo/mock/double-dollar/double-dollar-griditem",
+  integratedHsp: "false",
+  } as NavInterface));
+
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_boo = STATE_MGMT_FACTORY.makeState<boolean>(this, "boo", ((({let gensym___9142460 = initializers;
     (((gensym___9142460) == (null)) ? undefined : gensym___9142460.boo)})) ?? (true)));
@@ -120,7 +130,7 @@ c = false;
   
 }
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
   set boo(boo: boolean | undefined)
   
   get boo(): boolean | undefined

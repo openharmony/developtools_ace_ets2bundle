@@ -51,6 +51,8 @@ import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateMan
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
+import { NavInterface as NavInterface } from "arkui.UserView";
+
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
@@ -67,7 +69,13 @@ import { Link as Link, State as State } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/link/state-to-link",
+  pageFullPath: "test/demo/mock/decorators/link/state-to-link",
+  integratedHsp: "false",
+  } as NavInterface));
 
 @Component() final struct DateComponent extends CustomComponent<DateComponent, __Options_DateComponent> {
   public __initializeStruct(initializers: __Options_DateComponent | undefined, @memo() content: (()=> void) | undefined): void {
@@ -115,7 +123,7 @@ function main() {}
   
 }
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> implements PageLifeCycle {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_ParentComponent | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_parentSelectedDate = STATE_MGMT_FACTORY.makeState<Date>(this, "parentSelectedDate", ((({let gensym___80922148 = initializers;
     (((gensym___80922148) == (null)) ? undefined : gensym___80922148.parentSelectedDate)})) ?? (new Date("2021-08-08"))));
@@ -176,7 +184,7 @@ function main() {}
   
 }
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_ParentComponent {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_ParentComponent {
   set parentSelectedDate(parentSelectedDate: Date | undefined)
   
   get parentSelectedDate(): Date | undefined

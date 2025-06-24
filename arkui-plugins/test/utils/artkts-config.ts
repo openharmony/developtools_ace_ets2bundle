@@ -30,6 +30,7 @@ import {
     MOCK_OUTPUT_CACHE_PATH,
     MOCK_OUTPUT_DIR_PATH,
     MOCK_OUTPUT_FILE_NAME,
+    MOCK_PROJECT_ROOT_PATH,
     MOCK_RAWFILE_DIR_PATH,
     MOCK_RESOURCE_TABLE_FILE_NAME,
     PANDA_SDK_STDLIB_PATH,
@@ -173,23 +174,27 @@ function mockBuildConfig(): BuildConfig {
 
 function mockProjectConfig(): ProjectConfig {
     return {
-        bundleName: MOCK_BUNDLE_NAME,
-        moduleName: 'entry',
-        cachePath: path.resolve(getRootPath(), MOCK_OUTPUT_CACHE_PATH),
-        dependentModuleList: [],
-        appResource: path.resolve(getResourcePath(), MOCK_RESOURCE_TABLE_FILE_NAME),
-        rawFileResource: path.resolve(getResourcePath(), MOCK_RAWFILE_DIR_PATH),
-        buildLoaderJson: '',
-        hspResourcesMap: false,
-        compileHar: false,
-        byteCodeHar: false,
-        uiTransformOptimization: false,
-        resetBundleName: false,
-        allowEmptyBundleName: false,
-        moduleType: 'entry',
-        moduleRootPath: path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH),
-        aceModuleJsonPath: '',
-    };
+    bundleName: MOCK_BUNDLE_NAME,
+    moduleName: 'entry',
+    cachePath: path.resolve(getRootPath(), MOCK_OUTPUT_CACHE_PATH),
+    dependentModuleList: [],
+    appResource: path.resolve(getResourcePath(), MOCK_RESOURCE_TABLE_FILE_NAME),
+    rawFileResource: path.resolve(getResourcePath(), MOCK_RAWFILE_DIR_PATH),
+    buildLoaderJson: '',
+    hspResourcesMap: false,
+    compileHar: false,
+    byteCodeHar: false,
+    uiTransformOptimization: false,
+    resetBundleName: false,
+    allowEmptyBundleName: false,
+    moduleType: 'entry',
+    moduleRootPath: path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH),
+    aceModuleJsonPath: '',
+    ignoreError: true,
+    projectPath: '',
+    projectRootPath: path.resolve(getRootPath(), MOCK_PROJECT_ROOT_PATH),
+    integratedHsp: false
+};
 }
 
 class MockArktsConfigBuilder implements ArktsConfigBuilder {

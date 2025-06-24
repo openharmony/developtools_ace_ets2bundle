@@ -73,6 +73,8 @@ import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
+import { NavInterface as NavInterface } from "arkui.UserView";
+
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
@@ -89,7 +91,13 @@ import { State as State, Prop as Prop, StorageLink as StorageLink, StorageProp a
 
 function main() {}
 
-
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/watch/watch-basic",
+  pageFullPath: "test/demo/mock/decorators/watch/watch-basic",
+  integratedHsp: "false",
+  } as NavInterface));
 
 @Observed() class A implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
@@ -141,7 +149,7 @@ function main() {}
   
 }
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
     this.__backing_statevar = STATE_MGMT_FACTORY.makeState<string>(this, "statevar", ((({let gensym___76198660 = initializers;
     (((gensym___76198660) == (null)) ? undefined : gensym___76198660.statevar)})) ?? ("Hello World")), ((_: string): void => {
@@ -303,7 +311,7 @@ function main() {}
 
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
-@Entry({shared:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
   set statevar(statevar: string | undefined)
   
   get statevar(): string | undefined

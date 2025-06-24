@@ -104,6 +104,9 @@ export interface ProjectConfig {
     moduleRootPath: string;
     aceModuleJsonPath: string;
     ignoreError: boolean;
+    projectPath: string,
+    projectRootPath: string,
+    integratedHsp: boolean
 }
 
 export type PluginHandlerFunction = () => void;
