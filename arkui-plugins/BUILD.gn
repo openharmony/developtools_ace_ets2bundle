@@ -61,7 +61,7 @@ ohos_copy("ui_plugin") {
 }
 
 ohos_copy("ohos_ets_ui_plugins") {
-  deps = [ ":gen_ui_plugins" ]
+  deps = [ ":gen_ui_plugins", ":build_ets_sysResource" ]
   sources = [ rebase_path("$target_gen_dir") ]
   outputs = [ ohos_ets_ui_plugins_path ]
   subsystem_name = "developtools"
