@@ -1,7 +1,7 @@
 {
   "intentName": "FindEBicycle",
   "intentVersion": "1.0.2",
-  "llmDescription": "寻找电动自行车",
+  "llmDescription": "寻找电动车",
   "keywords": ["FindEBicycle"],
   "parameters": {
     "type": "object",
