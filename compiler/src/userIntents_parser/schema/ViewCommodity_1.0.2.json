@@ -22,7 +22,19 @@
         "type": "string",
         "maxLength": 1500
       }
-    }
+    },
+    "oneOf": [
+      {
+        "required": [
+          "entityId"
+        ]
+      },
+      {
+        "required": [
+          "shareLink"
+        ]
+      }
+    ]
   },
   "result": {
     "type": "object",
