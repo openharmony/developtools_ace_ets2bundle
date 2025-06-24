@@ -838,7 +838,7 @@ class ParseIntent {
     const propertyClassName: string = typeSymbol.getName();
     if (this.isArrayType(propType)) {
       elementType = (propType as ts.TypeReference).typeArguments?.[0];
-      propDeclaration = elementType.getSymbol().getDeclarations()[0];
+      propDeclaration = elementType.getSymbol()?.getDeclarations()[0];
     } else {
       propDeclaration = typeSymbol.getDeclarations()?.[0];
     }
@@ -871,6 +871,8 @@ class ParseIntent {
 
   private getTypeCategory(type: ts.Type): { category: 'array' | 'object'; } {
     const flags: ts.TypeFlags = type.getFlags();
+    const valueDeclaration: ts.Declaration | undefined = type.getSymbol()?.valueDeclaration;
+    const isEnum: boolean = valueDeclaration ? ts.isEnumDeclaration(valueDeclaration) : false;
 
     const isPrimitive: boolean = !!(flags & ts.TypeFlags.StringLike) ||
       !!(flags & ts.TypeFlags.NumberLike) ||
@@ -881,7 +883,7 @@ class ParseIntent {
     const isArray: boolean = this.isArrayType(type);
     const isObject: boolean = !isPrimitive &&
       !isArray &&
-      !!(flags & ts.TypeFlags.Object);
+      (!!(flags & ts.TypeFlags.Object) || isEnum);
     let category: 'array' | 'object';
     if (isArray) {
       category = 'array';
