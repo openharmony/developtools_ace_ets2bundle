@@ -16,190 +16,61 @@
 
 
 import * as arkts from '@koalaui/libarkts';
-import { getPropertyESValue } from './utils';
-import { createVariableLet, setStateProxy } from './initstatevar';
+import { getPropertyESValue, getWrapValue } from './utils';
 import { ESValueMethodNames, InteroperAbilityNames, InteropProvideNames } from './predefines';
 
-
-function findProvide(): arkts.Statement {
-    return createVariableLet(
-        InteropProvideNames.STATICPROVIDE,
-        arkts.factory.createCallExpression(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createThisExpression(),
-                arkts.factory.createIdentifier(InteropProvideNames.FINDPROVIDE),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
-            [
-                arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(
-                        arkts.factory.createIdentifier('Object')
-                    )
-                )
-            ],
-            [
-                arkts.factory.createIdentifier(InteropProvideNames.PROVIDEDPROPNAME)
-            ]
-        )
-    );
-}
-
-function setProvideProxy(): arkts.Statement[] {
-    return setStateProxy(
-        () => arkts.factory.createTSNonNullExpression(
-            arkts.factory.createIdentifier(InteropProvideNames.STATICPROVIDE)
-        )
-    );
-}
-
-function getProvideProxy(): arkts.Statement {
-    return createVariableLet(
-        'proxy',
-        arkts.factory.createCallExpression(
-            arkts.factory.createIdentifier(InteroperAbilityNames.GETPROXY),
-            undefined,
-            [
-                arkts.factory.createTSNonNullExpression(
-                    arkts.factory.createIdentifier(InteropProvideNames.STATICPROVIDE)
-                )
-            ]
-        )
-    );
-}
-
-function returnProvide(): arkts.Statement {
-    return arkts.factory.createReturnStatement(
-        arkts.factory.createTSNonNullExpression(
-            arkts.factory.createCallExpression(
-                arkts.factory.createMemberExpression(
-                    arkts.factory.createTSAsExpression(
-                        arkts.factory.createIdentifier('proxy'),
-                        arkts.factory.createTypeReference(
-                            arkts.factory.createTypeReferencePart(
-                                arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE)
-                            )
-                        ),
-                        false
-                    ),
-                    arkts.factory.createIdentifier(ESValueMethodNames.UNWRAP),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
-                ),
-                undefined,
-                undefined
-            )
-        )
-    );
-}
-
-function createProvideBlock(): arkts.BlockStatement {
-    const provide = findProvide();
-    const setProxy = setProvideProxy();
-    const getProxy = getProvideProxy();
-    const returnStatement = returnProvide();
-    return arkts.factory.createBlock([provide, ...setProxy, getProxy, returnStatement]);
-}
-
-function findProvideCallback(): arkts.Statement {
-    const block = createProvideBlock();
-    const callback = createVariableLet(
-        InteropProvideNames.FINDPROVIDECALLBACK,
-        arkts.factory.createArrowFunction(
-            arkts.factory.createScriptFunction(
-                block,
-                arkts.factory.createFunctionSignature(
-                    undefined,
-                    [
-                        arkts.factory.createParameterDeclaration(
-                            arkts.factory.createIdentifier(InteropProvideNames.PROVIDEDPROPNAME,
-                                arkts.factory.createTypeReference(
-                                    arkts.factory.createTypeReferencePart(
-                                        arkts.factory.createIdentifier('string')
-                                    )
-                                )
-                            ),
-                            undefined,
-                        ),
-                    ],
-                    arkts.factory.createTypeReference(
-                        arkts.factory.createTypeReferencePart(
-                            arkts.factory.createIdentifier('Object')
-                        )
-                    ),
-                    false
-                ),
-                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-            )
-        )
-    );
-    return callback;
-}
-
 export function createProvideInterop(): arkts.Statement[] {
-    const viewPUFunc = getPropertyESValue(
-        InteropProvideNames.SETVIEWPUFINDPROVIDE,
-        InteroperAbilityNames.GLOBAL,
-        InteropProvideNames.SETVIEWPUFINDPROVIDE
-    );
-    const componentFunc = getPropertyESValue(
+    const createState = getPropertyESValue(InteroperAbilityNames.CREATESTATE, InteroperAbilityNames.GLOBAL, InteroperAbilityNames.CREATESTATE);
+    const setCallbackFunc = getPropertyESValue(
         InteropProvideNames.SETFINDPROVIDE,
         InteroperAbilityNames.GLOBAL,
         InteropProvideNames.SETFINDPROVIDE
     );
-    const callback = findProvideCallback();
+    const viewPUResetFunc = getPropertyESValue(
+        'resetViewPUFindProvideInterop',
+        InteroperAbilityNames.GLOBAL,
+        'resetViewPUFindProvideInterop'
+    );
     const invokeFunc = arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createIdentifier(InteropProvideNames.SETVIEWPUFINDPROVIDE),
-                arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
+            arkts.factory.createIdentifier(InteroperAbilityNames.BINDPROVIDEINTEROP),
             undefined,
             [
-                arkts.factory.createIdentifier(InteropProvideNames.FINDPROVIDECALLBACK)
+                arkts.factory.createThisExpression(),
+                arkts.factory.createIdentifier(InteroperAbilityNames.CREATESTATE),
+                getWrapValue(arkts.factory.createIdentifier(InteropProvideNames.SETFINDPROVIDE))
             ]
         )
     );
-    return [viewPUFunc, componentFunc, callback, invokeFunc];
+    return [createState, setCallbackFunc, viewPUResetFunc, invokeFunc];
 }
 
 
 export function setAndResetFindProvide(): arkts.Statement[] {
     const setComponent = arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
-            arkts.factory.createMemberExpression(
+            arkts.factory.createIdentifier(InteroperAbilityNames.BINDPROVIDEINTEROP),
+            undefined,
+            [
+                arkts.factory.createThisExpression(),
+                arkts.factory.createIdentifier(InteroperAbilityNames.CREATESTATE),
                 arkts.factory.createIdentifier(InteropProvideNames.SETFINDPROVIDE),
+                arkts.factory.createIdentifier(InteroperAbilityNames.COMPONENT),
+            ]
+        )
+    );
+
+    const resetViewPU = arkts.factory.createExpressionStatement(
+        arkts.factory.createCallExpression(
+            arkts.factory.createMemberExpression(
+                arkts.factory.createIdentifier('resetViewPUFindProvideInterop'),
                 arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
                 false
             ),
             undefined,
-            [
-                arkts.factory.createIdentifier(InteroperAbilityNames.COMPONENT),
-                arkts.factory.createIdentifier(InteropProvideNames.FINDPROVIDECALLBACK)
-            ]
-        )
-    );
-    const resetViewPU = arkts.factory.createExpressionStatement(
-        arkts.factory.createCallExpression(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createIdentifier(InteroperAbilityNames.STRUCTOBJECT),
-                arkts.factory.createIdentifier(ESValueMethodNames.INVOKEMETHOD),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
-            undefined,
-            [
-                arkts.factory.createStringLiteral('resetFindInterop')
-            ]
+            undefined
         )
     );
     return [setComponent, resetViewPU];

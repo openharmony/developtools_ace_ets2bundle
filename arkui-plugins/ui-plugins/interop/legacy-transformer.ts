@@ -20,9 +20,9 @@ import { getInteropPath } from '../../path';
 const interop = require(getInteropPath());
 const nullptr = interop.nullptr;
 import { AbstractVisitor, VisitorOptions } from '../../common/abstract-visitor';
-import { ESValueMethodNames, InteroperAbilityNames } from './predefines';
+import { InteroperAbilityNames } from './predefines';
 import { getCustomComponentOptionsName } from '../utils';
-import { annotation } from 'common/arkts-utils';
+import { factory } from '../ui-factory';
 
 interface LegacyTransformerOptions extends VisitorOptions {
     structList?: string[]
@@ -169,44 +169,45 @@ export class LegacyTransformer extends AbstractVisitor {
     }
 
     processConstructor(node: arkts.MethodDefinition): arkts.MethodDefinition {
-        const esvalue = arkts.factory.createTypeReference(
-            arkts.factory.createTypeReferencePart(
-                arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE)
-            )
-        );
-        const script = arkts.factory.createScriptFunction(
-            arkts.factory.createBlock([]),
-            arkts.factory.createFunctionSignature(
-                undefined,
-                [
-                    arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier(InteroperAbilityNames.PARENT, esvalue),
-                        undefined,
-                    ),
-                    arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier(InteroperAbilityNames.PARAM, esvalue),
-                        undefined,
-                    ),
-                    arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier('localStorage', esvalue),
-                        undefined,
-                    ),
-                    arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID, esvalue),
-                        undefined,
-                    ),
-                    arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier(InteroperAbilityNames.PARAMSLAMBDA, esvalue),
-                        undefined,
-                    ),
-                    arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier(InteroperAbilityNames.EXTRAINFO, esvalue),
-                        undefined,
-                    )
-                ], undefined, false),
-            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
-        );
+        const valueType = arkts.factory.createUnionType([
+            arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier('Object')
+                )
+            ),
+            arkts.factory.createETSUndefinedType()
+        ]);
+        const script = factory.createScriptFunction({
+            body: arkts.factory.createBlock([]),
+            params: [
+                arkts.factory.createParameterDeclaration(
+                    arkts.factory.createIdentifier(InteroperAbilityNames.PARENT, valueType),
+                    undefined,
+                ),
+                arkts.factory.createParameterDeclaration(
+                    arkts.factory.createIdentifier(InteroperAbilityNames.PARAM, valueType),
+                    undefined,
+                ),
+                arkts.factory.createParameterDeclaration(
+                    arkts.factory.createIdentifier('localStorage', valueType),
+                    undefined,
+                ),
+                arkts.factory.createParameterDeclaration(
+                    arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID, valueType),
+                    undefined,
+                ),
+                arkts.factory.createParameterDeclaration(
+                    arkts.factory.createIdentifier(InteroperAbilityNames.PARAMSLAMBDA, valueType),
+                    undefined,
+                ),
+                arkts.factory.createParameterDeclaration(
+                    arkts.factory.createIdentifier(InteroperAbilityNames.EXTRAINFO, valueType),
+                    undefined,
+                )
+            ],
+            flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR,
+            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+        })
         return arkts.factory.updateMethodDefinition(
             node,
             node.kind,
