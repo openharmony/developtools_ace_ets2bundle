@@ -17,7 +17,7 @@
 export enum InteroperAbilityNames {
     ARKTS_1_1 = '1.1',
     ARKTS_1_2 = '1.2',
-    ARKUICOMPATIBLE = 'ArkUICompatible',
+    ARKUICOMPATIBLE = 'compatibleComponent',
     ELMTID = 'elmtId',
     NUMBER = 'number',
     PARENT = 'parent',
@@ -32,9 +32,9 @@ export enum InteroperAbilityNames {
     PARAMSLAMBDA = 'paramsLambda',
     INTEROPCOMPONENT = 'interopComponent',
     OHMURL = '@normalized:N&entry&com.example.Interop2use1&har1/src/main/ets/components/MainPage&1.0.0',
-    CONFIGURESTATE = 'bindCompatibleState',
-    GETSOURCE = 'findBindingSourceState',
-    GETPROXY = 'getCompatibleState'
+    GETCOMPATIBLESTATE = 'getCompatibleState',
+    BINDPROVIDEINTEROP = 'bindCompatibleProvideCallback',
+    CREATESTATE = 'createStateVariable',
 }
 
 
