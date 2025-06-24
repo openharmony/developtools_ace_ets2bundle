@@ -1,41 +1,20 @@
 {
-  "intentName": "OpenScan",
+  "intentName": "ViewTravelGuides",
   "intentVersion": "1.0.1",
-  "llmDescription": "扫码",
-  "keywords": ["OpenScan"],
+  "llmDescription": "查看旅游攻略",
+  "keywords": ["ViewTravelGuides"],
   "parameters": {
     "type": "object",
     "propertyNames": {
       "enum": [
-        "entityId",
-        "scanFunction"
+        "entityId"
       ]
     },
     "properties": {
       "entityId": {
         "description": "数据唯一标识。",
         "type": "string",
-        "maxLength":64
-      },
-      "scanFunction": {
-        "description": "扫描里的功能。",
-        "type": "string",
-        "enum": [
-          "General",
-          "RecognizeText",
-          "RecognizeTranslation",
-          "RecognizeObjects",
-          "ScanCertificate",
-          "ScanIDCard",
-          "ScanHouseholdRegistrationRecord",
-          "ScanPassport",
-          "ScanDriverLicense",
-          "ScanVehicleLicense",
-          "ScanBankCard",
-          "ScanHousePropertyCard",
-          "ScanBusinessLicense",
-          "EraseHandwriting"
-        ]
+        "maxLength": 64
       }
     }
   },

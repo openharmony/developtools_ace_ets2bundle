@@ -1330,7 +1330,7 @@ class ParseIntent {
   private collectSchemaInfo(intentObj: object): void {
     if (intentObj.schema) {
       const schemaPath: string = path.join(
-        __dirname, 'schema',
+        __dirname, '../../insight_intents/schema',
         `${intentObj.schema}_${intentObj.intentVersion}.json`
       );
       if (fs.existsSync(schemaPath)) {
