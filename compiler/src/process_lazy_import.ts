@@ -90,8 +90,8 @@ function updateImportDecl(node: ts.ImportDeclaration, resolver: Object): ts.Impo
       // eliminate the type symbol
       // eg: import { type t, x } from '...' --> import { x } from '...'
       const newNameBindings: ts.ImportSpecifier[] = eliminateTypeSymbol(namedBindings, resolver);
-      newImportClause = ts.factory.createImportClause(false, importClause.name,
-        ts.factory.createNamedImports(newNameBindings));
+      newImportClause = ts.factory.updateImportClause(importClause, false, importClause.name,
+        ts.factory.updateNamedImports(namedBindings, newNameBindings));
     } else {
       newImportClause = importClause;
     }
@@ -113,10 +113,11 @@ function eliminateTypeSymbol(namedBindings: ts.NamedImportBindings, resolver: Ob
       // import { x } from './y' --> propertyName is undefined
       // import { x as a } from './y' --> propertyName is x
       newNameBindings.push(
-        ts.factory.createImportSpecifier(
+        ts.factory.updateImportSpecifier(
+          element,
           false,
-          element.propertyName ? ts.factory.createIdentifier(element.propertyName.text) : undefined,
-          ts.factory.createIdentifier(element.name.text)
+          element.propertyName,
+          element.name
         )
       );
     }
