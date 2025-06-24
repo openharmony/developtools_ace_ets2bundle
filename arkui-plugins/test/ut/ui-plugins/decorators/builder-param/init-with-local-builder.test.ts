@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -37,21 +37,13 @@ const parsedTransform: Plugins = {
     parsed: uiTransform().parsed
 };
 
-const expectedScript: string = `
-
+const expectedAfterUIScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
 import { Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
-
 function main() {}
-
-
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
@@ -107,15 +99,114 @@ function main() {}
 }
 `;
 
+const expectedAfterMemoScript: string = `
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+import { memo as memo } from "arkui.stateManagement.runtime";
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+import { Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
+
+function main() {}
+
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
+  public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined): void {
+    this.__backing_customBuilderParam = ((((({let gensym___169376706 = initializers;
+    (((gensym___169376706) == (null)) ? undefined : gensym___169376706.customBuilderParam)})) ?? (content))) ?? (this.doNothingBuilder))
+    this.__backing_customBuilderParam2 = ((((({let gensym___14041256 = initializers;
+    (((gensym___14041256) == (null)) ? undefined : gensym___14041256.customBuilderParam2)})) ?? (content))) ?? (this.doNothingBuilder2))
+  }
+  
+  public __updateStruct(initializers: __Options_Child | undefined): void {}
+  
+  private __backing_customBuilderParam?: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+  
+  public get customBuilderParam(): @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
+    return this.__backing_customBuilderParam!;
+  }
+  
+  public set customBuilderParam(value: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
+    this.__backing_customBuilderParam = value;
+  }
+  
+  private __backing_customBuilderParam2?: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void);
+  
+  public get customBuilderParam2(): @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) {
+    return this.__backing_customBuilderParam2!;
+  }
+  
+  public set customBuilderParam2(value: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void)) {
+    this.__backing_customBuilderParam2 = value;
+  }
+  
+  @memo() public doNothingBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (174403279)), 0);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
+      return;
+    }
+    {
+      __memo_scope.recache();
+      return;
+    }
+  }
+  
+  @memo() public doNothingBuilder2(__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string) {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (76253767)), 1);
+    const __memo_parameter_str = __memo_scope.param(0, str);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
+      return;
+    }
+    {
+      __memo_scope.recache();
+      return;
+    }
+  }
+  
+  @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (179390036)), 0);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
+      return;
+    }
+    this.customBuilderParam(__memo_context, ((__memo_id) + (241913892)));
+    this.customBuilderParam2(__memo_context, ((__memo_id) + (137225318)), "hello");
+    {
+      __memo_scope.recache();
+      return;
+    }
+  }
+  
+  private constructor() {}
+  
+}
+
+@Component() export interface __Options_Child {
+  set customBuilderParam(customBuilderParam: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
+  
+  get customBuilderParam(): @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined
+  set customBuilderParam2(customBuilderParam2: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) | undefined)
+  
+  get customBuilderParam2(): @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) | undefined
+  
+}
+`;
+
 function testCheckedTransformer(this: PluginTestContext): void {
-    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedAfterUIScript));
+}
+
+function testAfterMemoCheckedTransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedAfterMemoScript));
 }
 
 pluginTester.run(
     'test builder param init with local builder',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
+        'checked:memo-no-recheck': [testAfterMemoCheckedTransformer],
     },
     {
         stopAfter: 'checked',
