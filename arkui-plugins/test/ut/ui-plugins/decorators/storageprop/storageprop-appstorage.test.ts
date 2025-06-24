@@ -38,8 +38,6 @@ const storagePropTransform: Plugins = {
 const pluginTester = new PluginTester('test storageprop with appstorage', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStoragePropRefDecoratedVariable as IStoragePropRefDecoratedVariable } from "arkui.stateManagement.decorator";
@@ -66,8 +64,8 @@ import { StorageProp as StorageProp, AppStorage as AppStorage } from "@ohos.arku
 
 function main() {}
 
-AppStorage.setOrCreate("PropA", 47);
-AppStorage.setOrCreate("PropB", new Data(50));
+AppStorage.setOrCreate("PropA", 47, Type.from<number>());
+AppStorage.setOrCreate("PropB", new Data(50), Type.from<Data>());
 
 __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   bundleName: "com.example.mock",

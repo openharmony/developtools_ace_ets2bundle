@@ -40,6 +40,7 @@ const pluginTester = new PluginTester('test storageprop complex type transform',
 const expectedScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+import { IStoragePropRefDecoratedVariable as IStoragePropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 import { NavInterface as NavInterface } from "arkui.UserView";
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 import { EntryPoint as EntryPoint } from "arkui.UserView";
