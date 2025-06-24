@@ -22,166 +22,163 @@ import {
   listToString,
   SINGLE_CHILD_COMPONENT
 } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-function checkValidParentComponent(node: arkts.AstNode, context: UISyntaxRuleContext,): void {
-  // Check if the node is an identifier and if there are any restrictions on the parent component
-  if (!arkts.isIdentifier(node)) {
-    return;
+class NestedRelationshipRule extends AbstractUISyntaxRule {
+  public setup(): Record<string, string> {
+    return {
+      noChildComponent: `No child component is allowed in the '{{componentName}}' component.`,
+      singleChildComponent: `The '{{componentName}}' component can have only one child component.`,
+      delegateChildrenComponentChildren: `The '{{childComponentName}}' component cannot be a child component of the '{{parentComponentName}}' component.`,
+      delegateChildrenComponentParent: `The component '{{parentComponentName}}' can only have the child component {{childComponentList}}.`,
+      delegateParentComponent: `The '{{componentName}}' component can only be nested in the {{parentComponentList}} parent component.`,
+    };
   }
-  const componentName: string = getIdentifierName(node);
-  if (!context.componentsInfo.validParentComponent.has(componentName) || !node.parent || !node.parent.parent) {
-    return;
+  public parsed(node: arkts.StructDeclaration): void {
+    this.checkValidParentComponent(node);
+    this.checkValidChildComponent(node);
+    this.checkSingleChildComponent(node);
+    this.checkNoChildComponent(node);
   }
-  let curNode = node.parent.parent;
-  while (!arkts.isCallExpression(curNode) || !arkts.isIdentifier(curNode.expression) ||
-    !isBuildInComponent(context, curNode.expression.name)) {
-    if (!curNode.parent) {
+
+  private checkValidParentComponent(node: arkts.AstNode): void {
+    // Check if the node is an identifier and if there are any restrictions on the parent component
+    if (!arkts.isIdentifier(node)) {
       return;
     }
-    curNode = curNode.parent;
-  }
-  // If the parent component of the current component is not within the valid range, an error is reported
-  const parentComponentName = curNode.expression.name;
-  if (!context.componentsInfo.validParentComponent.get(componentName)!.includes(parentComponentName)) {
-    context.report({
-      node: node,
-      message: rule.messages.delegateChildrenComponentChildren,
-      data: {
-        childComponentName: componentName,
-        parentComponentName: parentComponentName,
-      },
-    });
-    const parentComponentListArray: string[] = context.componentsInfo.validParentComponent.get(componentName)!;
-    const parentComponentList: string = listToString(parentComponentListArray);
-    context.report({
-      node: node,
-      message: rule.messages.delegateParentComponent,
-      data: {
-        componentName: componentName,
-        parentComponentList: parentComponentList,
-      },
-    });
-  }
-}
-
-function checkValidChildComponent(node: arkts.AstNode, context: UISyntaxRuleContext): void {
-  // Check whether the node is an identifier and whether there are restrictions on subcomponents
-  if (!arkts.isIdentifier(node)) {
-    return;
-  }
-  const parentComponentName: string = getIdentifierName(node);
-  if (!context.componentsInfo.validChildComponent.has(parentComponentName) || !node.parent) {
-    return;
-  }
-  let parentNode = node.parent;
-  if (!arkts.isCallExpression(parentNode) || !arkts.isIdentifier(parentNode.expression)) {
-    return;
-  }
-  // If the BlockStatement contains a child component that should not exist under the component, an error will be reported
-  parentNode.getChildren().forEach(member => {
-    if (!arkts.isBlockStatement(member)) {
+    const componentName: string = getIdentifierName(node);
+    if (!this.context.componentsInfo.validParentComponent.has(componentName) || !node.parent || !node.parent.parent) {
       return;
     }
-    member.statements.forEach(statement => {
-      if (!arkts.isExpressionStatement(statement) || !statement.expression) {
+    let curNode = node.parent.parent;
+    while (!arkts.isCallExpression(curNode) || !arkts.isIdentifier(curNode.expression) ||
+      !isBuildInComponent(this.context, curNode.expression.name)) {
+      if (!curNode.parent) {
         return;
       }
-      if (!arkts.isCallExpression(statement.expression) || !statement.expression.expression ||
-        !arkts.isIdentifier(statement.expression.expression)) {
+      curNode = curNode.parent;
+    }
+    // If the parent component of the current component is not within the valid range, an error is reported
+    const parentComponentName = curNode.expression.name;
+    if (!this.context.componentsInfo.validParentComponent.get(componentName)!.includes(parentComponentName)) {
+      this.context.report({
+        node: node,
+        message: this.messages.delegateChildrenComponentChildren,
+        data: {
+          childComponentName: componentName,
+          parentComponentName: parentComponentName,
+        },
+      });
+      const parentComponentListArray: string[] = this.context.componentsInfo.validParentComponent.get(componentName)!;
+      const parentComponentList: string = listToString(parentComponentListArray);
+      this.report({
+        node: node,
+        message: this.messages.delegateParentComponent,
+        data: {
+          componentName: componentName,
+          parentComponentList: parentComponentList,
+        },
+      });
+    }
+  }
+
+  private checkValidChildComponent(node: arkts.AstNode): void {
+    // Check whether the node is an identifier and whether there are restrictions on subcomponents
+    if (!arkts.isIdentifier(node)) {
+      return;
+    }
+    const parentComponentName: string = getIdentifierName(node);
+    if (!this.context.componentsInfo.validChildComponent.has(parentComponentName) || !node.parent) {
+      return;
+    }
+    let parentNode = node.parent;
+    if (!arkts.isCallExpression(parentNode) || !arkts.isIdentifier(parentNode.expression)) {
+      return;
+    }
+    // If the BlockStatement contains a child component that should not exist under the component, an error will be reported
+    parentNode.getChildren().forEach(member => {
+      if (!arkts.isBlockStatement(member)) {
         return;
       }
-      const componentName = getIdentifierName(statement.expression.expression);
-      const childComponentListArray: string[] = context.componentsInfo.validChildComponent.get(parentComponentName)!;
-      if (!childComponentListArray.includes(componentName) && isBuildInComponent(context, componentName)) {
-        const childComponentList: string = listToString(childComponentListArray);
-        context.report({
-          node: parentNode,
-          message: rule.messages.delegateChildrenComponentParent,
-          data: {
-            parentComponentName: parentComponentName,
-            childComponentList: childComponentList,
-          },
+      member.statements.forEach(statement => {
+        if (!arkts.isExpressionStatement(statement) || !statement.expression) {
+          return;
+        }
+        if (!arkts.isCallExpression(statement.expression) || !statement.expression.expression ||
+          !arkts.isIdentifier(statement.expression.expression)) {
+          return;
+        }
+        const componentName = getIdentifierName(statement.expression.expression);
+        const childComponentListArray: string[] = this.context.componentsInfo.validChildComponent.get(parentComponentName)!;
+        if (!childComponentListArray.includes(componentName) && isBuildInComponent(this.context, componentName)) {
+          const childComponentList: string = listToString(childComponentListArray);
+          this.report({
+            node: parentNode,
+            message: this.messages.delegateChildrenComponentParent,
+            data: {
+              parentComponentName: parentComponentName,
+              childComponentList: childComponentList,
+            },
+          });
+        }
+      });
+    });
+  }
+  private checkSingleChildComponent(node: arkts.AstNode): void {
+    // Check whether the current node is an identifier and a single subcomponent container
+    if (!arkts.isIdentifier(node)) {
+      return;
+    }
+    const componentName: string = getIdentifierName(node);
+    if (!isSingleChildComponent(this.context, componentName) || !node.parent) {
+      return;
+    }
+    const parentNode = node.parent;
+    if (!arkts.isCallExpression(parentNode)) {
+      return;
+    }
+    // If there is more than one subcomponent in the BlockStatement, an error is reported
+    parentNode.getChildren().forEach(member => {
+      if (!arkts.isBlockStatement(member)) {
+        return;
+      }
+      if (member.statements.length > SINGLE_CHILD_COMPONENT) {
+        this.report({
+          node: node,
+          message: this.messages.singleChildComponent,
+          data: { componentName: componentName }
         });
       }
     });
-  });
-}
-function checkSingleChildComponent(node: arkts.AstNode, context: UISyntaxRuleContext): void {
-  // Check whether the current node is an identifier and a single subcomponent container
-  if (!arkts.isIdentifier(node)) {
-    return;
   }
-  const componentName: string = getIdentifierName(node);
-  if (!isSingleChildComponent(context, componentName) || !node.parent) {
-    return;
-  }
-  const parentNode = node.parent;
-  if (!arkts.isCallExpression(parentNode)) {
-    return;
-  }
-  // If there is more than one subcomponent in the BlockStatement, an error is reported
-  parentNode.getChildren().forEach(member => {
-    if (!arkts.isBlockStatement(member)) {
+
+  private checkNoChildComponent(node: arkts.AstNode): void {
+    // Check whether the current node is an identifier and an atomic component
+    if (!arkts.isIdentifier(node)) {
       return;
     }
-    if (member.statements.length > SINGLE_CHILD_COMPONENT) {
-      context.report({
-        node: node,
-        message: rule.messages.singleChildComponent,
-        data: { componentName: componentName }
-      });
-    }
-  });
-}
-
-function checkNoChildComponent(node: arkts.AstNode, context: UISyntaxRuleContext): void {
-  // Check whether the current node is an identifier and an atomic component
-  if (!arkts.isIdentifier(node)) {
-    return;
-  }
-  const componentName: string = getIdentifierName(node);
-  if (!isAtomicComponent(context, componentName) || !node.parent) {
-    return;
-  }
-  let parentNode = node.parent;
-  if (!arkts.isCallExpression(parentNode)) {
-    return;
-  }
-  // If there are child components in arguments, an error will be reported
-  parentNode.getChildren().forEach(member => {
-    if (!arkts.isBlockStatement(member)) {
+    const componentName: string = getIdentifierName(node);
+    if (!isAtomicComponent(this.context, componentName) || !node.parent) {
       return;
     }
-    if (member.statements.length > 0) {
-      context.report({
-        node: node,
-        message: rule.messages.noChildComponent,
-        data: { componentName: componentName }
-      });
+    let parentNode = node.parent;
+    if (!arkts.isCallExpression(parentNode)) {
+      return;
     }
-  });
+    // If there are child components in arguments, an error will be reported
+    parentNode.getChildren().forEach(member => {
+      if (!arkts.isBlockStatement(member)) {
+        return;
+      }
+      if (member.statements.length > 0) {
+        this.report({
+          node: node,
+          message: this.messages.noChildComponent,
+          data: { componentName: componentName }
+        });
+      }
+    });
+  }
 }
 
-const rule: UISyntaxRule = {
-  name: 'nested-relationship',
-  messages: {
-    noChildComponent: `No child component is allowed in the '{{componentName}}' component.`,
-    singleChildComponent: `The '{{componentName}}' component can have only one child component.`,
-    delegateChildrenComponentChildren: `The '{{childComponentName}}' component cannot be a child component of the '{{parentComponentName}}' component.`,
-    delegateChildrenComponentParent: `The component '{{parentComponentName}}' can only have the child component {{childComponentList}}.`,
-    delegateParentComponent: `The '{{componentName}}' component can only be nested in the {{parentComponentList}} parent component.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
-        checkValidParentComponent(node, context);
-        checkValidChildComponent(node, context);
-        checkSingleChildComponent(node, context);
-        checkNoChildComponent(node, context);
-      },
-    };
-  },
-};
-
-export default rule;
+export default NestedRelationshipRule;

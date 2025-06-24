@@ -14,40 +14,38 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { UISyntaxRule } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 import { isBuiltInAttribute } from '../utils';
 
-const rule: UISyntaxRule = {
-  name: 'no-same-as-built-in-attribute',
-  messages: {
-    duplicateName: `The struct '{{structName}}' cannot have the same name as the built-in attribute '{{builtInName}}'.`,
-  },
-  setup(context) {
+class NoSameAsBuiltInAttributeRule extends AbstractUISyntaxRule {
+  public setup(): Record<string, string> {
     return {
-      parsed: (node): void => {
-        if (!arkts.isStructDeclaration(node)) {
-          return;
-        }
-        if (!node.definition) {
-          return;
-        }
-        if (!arkts.isClassDefinition(node.definition)) {
-          return;
-        }
-        const structIdent = node.definition.ident;
-        const structName = node.definition.ident?.name ?? ' ';
-        // If the struct name matches any built-in attribute, report an error
-        if (structIdent && isBuiltInAttribute(context, structName)) {
-          const builtInName = structName;
-          context.report({
-            node: structIdent,
-            message: rule.messages.duplicateName,
-            data: { structName, builtInName }
-          });
-        }
-      },
+      duplicateName: `The struct '{{structName}}' cannot have the same name as the built-in attribute '{{builtInName}}'.`,
     };
-  },
+  }
+
+  public parsed(node: arkts.AstNode): void {
+    if (!arkts.isStructDeclaration(node)) {
+      return;
+    }
+    if (!node.definition) {
+      return;
+    }
+    if (!arkts.isClassDefinition(node.definition)) {
+      return;
+    }
+    const structIdent = node.definition.ident;
+    const structName = node.definition.ident?.name ?? ' ';
+    // If the struct name matches any built-in attribute, report an error
+    if (structIdent && isBuiltInAttribute(this.context, structName)) {
+      const builtInName = structName;
+      this.report({
+        node: structIdent,
+        message: this.messages.duplicateName,
+        data: { structName, builtInName }
+      });
+    }
+  }
 };
 
-export default rule;
+export default NoSameAsBuiltInAttributeRule;

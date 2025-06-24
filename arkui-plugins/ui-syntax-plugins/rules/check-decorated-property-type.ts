@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 import {
   forbiddenUseStateType,
   getAnnotationUsage, getClassPropertyAnnotationNames, getClassPropertyName,
@@ -35,62 +35,58 @@ const forbiddenUseStateTypeForDecorators: string[] = [
   PresetDecorators.LOCAL_STORAGE_LINK,
 ];
 
-function checkDecoratedPropertyType(
-  member: arkts.AstNode,
-  context: UISyntaxRuleContext,
-  annoList: string[],
-  typeList: string[]
-): void {
-  if (!arkts.isClassProperty(member)) {
-    return;
+class CheckDecoratedPropertyTypeRule extends AbstractUISyntaxRule {
+  public setup(): Record<string, string> {
+    return {
+      invalidDecoratedPropertyType: `The '@{{decoratorName}}' property '{{propertyName}}' cannot be a '{{propertyType}}' object.`,
+    };
   }
-  const propertyName = getClassPropertyName(member);
-  const propertyType = getClassPropertyType(member);
-  if (!propertyName || !propertyType) {
-    return;
-  }
-  const propertyAnnotationNames: string[] = getClassPropertyAnnotationNames(member);
-  const decoratorName: string | undefined =
-    propertyAnnotationNames.find((annotation) => annoList.includes(annotation));
-  const isType: boolean = typeList.includes(propertyType);
-  if (!member.key) {
-    return;
-  }
-  const errorNode = member.key;
-  if (decoratorName && isType) {
-    context.report({
-      node: errorNode,
-      message: rule.messages.invalidDecoratedPropertyType,
-      data: { decoratorName, propertyName, propertyType },
+
+  public parsed(node: arkts.StructDeclaration): void {
+    if (!arkts.isStructDeclaration(node)) {
+      return;
+    }
+    if (!node.definition) {
+      return;
+    }
+    const componentDecorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
+    if (!componentDecorator) {
+      return;
+    }
+    node.definition.body.forEach(member => {
+      this.checkDecoratedPropertyType(member, forbiddenUseStateTypeForDecorators, forbiddenUseStateType);
     });
   }
 
+  private checkDecoratedPropertyType(
+    member: arkts.AstNode,
+    annoList: string[],
+    typeList: string[]
+  ): void {
+    if (!arkts.isClassProperty(member)) {
+      return;
+    }
+    const propertyName = getClassPropertyName(member);
+    const propertyType = getClassPropertyType(member);
+    if (!propertyName || !propertyType) {
+      return;
+    }
+    const propertyAnnotationNames: string[] = getClassPropertyAnnotationNames(member);
+    const decoratorName: string | undefined =
+      propertyAnnotationNames.find((annotation) => annoList.includes(annotation));
+    const isType: boolean = typeList.includes(propertyType);
+    if (!member.key) {
+      return;
+    }
+    const errorNode = member.key;
+    if (decoratorName && isType) {
+      this.report({
+        node: errorNode,
+        message: this.messages.invalidDecoratedPropertyType,
+        data: { decoratorName, propertyName, propertyType },
+      });
+    }
+  }
 }
 
-const rule: UISyntaxRule = {
-  name: 'check-decorated-property-type',
-  messages: {
-    invalidDecoratedPropertyType: `The '@{{decoratorName}}' property '{{propertyName}}' cannot be a '{{propertyType}}' object.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
-        if (!arkts.isStructDeclaration(node)) {
-          return;
-        }
-        if (!node.definition) {
-          return;
-        }
-        const componentDecorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
-        if (!componentDecorator) {
-          return;
-        }
-        node.definition.body.forEach(member => {
-          checkDecoratedPropertyType(member, context, forbiddenUseStateTypeForDecorators, forbiddenUseStateType);
-        });
-      },
-    };
-  },
-};
-
-export default rule;
+export default CheckDecoratedPropertyTypeRule;
