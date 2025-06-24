@@ -782,7 +782,12 @@ export class factory {
         return property;
     }
 
-    static createTypeFrom(typeAnnotation: arkts.TypeNode | undefined) {
+    /**
+     * create `Type.from<xxx>()` when translating `@StorageLink`, `@StorageProp`, `@LocalStorageLink`
+     *
+     * @param typeAnnotation expecting property's original type annotation.
+     */
+    static createTypeFrom(typeAnnotation: arkts.TypeNode | undefined): arkts.CallExpression {
         return arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
                 arkts.factory.createIdentifier('Type'),

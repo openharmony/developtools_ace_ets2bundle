@@ -38,9 +38,9 @@ const storageLinkTransform: Plugins = {
 const pluginTester = new PluginTester('test storagelink with appstorage', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
+import { memo as memo } from "arkui.stateManagement.runtime";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { NavInterface as NavInterface } from "arkui.UserView";
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
@@ -53,8 +53,8 @@ import { StorageLink as StorageLink, AppStorage as AppStorage } from "@ohos.arku
 
 function main() {}
 
-AppStorage.setOrCreate("PropA", 47);
-AppStorage.setOrCreate("PropB", new Data(50));
+AppStorage.setOrCreate("PropA", 47, Type.from<number>());
+AppStorage.setOrCreate("PropB", new Data(50), Type.from<Data>());
 
 __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   bundleName: "com.example.mock",

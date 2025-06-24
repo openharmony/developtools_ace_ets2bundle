@@ -47,7 +47,7 @@ import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.st
 
 import { IObjectLinkDecoratedVariable as IObjectLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { IStoragePropDecoratedVariable as IStoragePropDecoratedVariable } from "arkui.stateManagement.decorator";
+import { IStoragePropRefDecoratedVariable as IStoragePropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -165,10 +165,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         this.linkOnChange(_);
       }));
     };
-    this.__backing_storagelinkvar = STATE_MGMT_FACTORY.makeStorageLink<string>(this, "prop1", "storagelinkvar", "Hello World", ((_: string): void => {
+    this.__backing_storagelinkvar = STATE_MGMT_FACTORY.makeStorageLink<string>(this, "prop1", "storagelinkvar", "Hello World", Type.from<string>(), ((_: string): void => {
       this.storageLinkOnChange(_);
     }))
-    this.__backing_storagepropvar = STATE_MGMT_FACTORY.makeStorageProp<string>(this, "prop2", "storagepropvar", "Hello World", ((_: string): void => {
+    this.__backing_storagepropvar = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "prop2", "storagepropvar", "Hello World", Type.from<string>(), ((_: string): void => {
       this.storagePropOnChange(_);
     }))
     this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", ({let gensym___172556967 = initializers;
@@ -232,7 +232,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_storagelinkvar!.set(value);
   }
   
-  private __backing_storagepropvar?: IStoragePropDecoratedVariable<string>;
+  private __backing_storagepropvar?: IStoragePropRefDecoratedVariable<string>;
   
   public get storagepropvar(): string {
     return this.__backing_storagepropvar!.get();
@@ -339,9 +339,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   set storagepropvar(storagepropvar: string | undefined)
   
   get storagepropvar(): string | undefined
-  set __backing_storagepropvar(__backing_storagepropvar: IStoragePropDecoratedVariable<string> | undefined)
+  set __backing_storagepropvar(__backing_storagepropvar: IStoragePropRefDecoratedVariable<string> | undefined)
   
-  get __backing_storagepropvar(): IStoragePropDecoratedVariable<string> | undefined
+  get __backing_storagepropvar(): IStoragePropRefDecoratedVariable<string> | undefined
   set objectlinkvar(objectlinkvar: A | undefined)
   
   get objectlinkvar(): A | undefined
