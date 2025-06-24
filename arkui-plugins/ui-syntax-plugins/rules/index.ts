@@ -18,27 +18,28 @@ import AttributeNoInvoke from './attribute-no-invoke';
 import BuilderparamDecoratorCheck from './builderparam-decorator-check';
 import BuildRootNodeRule from './build-root-node';
 import CheckConstructPrivateParameter from './check-construct-private-parameter';
-import CheckDecoratedPropertyType from './check-decorated-property-type';
-import ComponentComponentV2MixUseCheck from './component-componentV2-mix-use-check';
-import ComponentV2MixCheck from './componentV2-mix-check';
+import CheckDecoratedPropertyTypeRule from './check-decorated-property-type';
+import ComponentComponentV2MixUseCheckRule from './component-componentV2-mix-use-check';
+import ComponentV2MixCheckRule from './componentV2-mix-check';
 import ConstructParameterLiteral from './construct-parameter-literal';
-import ConstructParameter from './construct-parameter';
-import ConsumerProviderDecoratorCheck from './consumer-provider-decorator-check';
-import ComponentV2StateUsageValidation from './componentV2-state-usage-validation';
-import CustomDialogMissingController from './custom-dialog-missing-controller';
+import ConstructParameterRule from './construct-parameter';
+import ConsumerProviderDecoratorCheckRule from './consumer-provider-decorator-check';
+import ComputedDecoratorCheckRule from './computed-decorator-check';
+import ComponentV2StateUsageValidationRule from './componentV2-state-usage-validation';
+import CustomDialogMissingControllerRule from './custom-dialog-missing-controller';
 import EntryLoacalStorageCheck from './entry-localstorage-check';
 import EntryStructNoExport from './entry-struct-no-export';
-import MonitorDecoratorCheck from './monitor-decorator-check';
-import NestedRelationship from './nested-relationship';
-import NestedReuseComponentCheck from './nested-reuse-component-check';
-import NoChildInButton from './no-child-in-button';
+import MonitorDecoratorCheckRule from './monitor-decorator-check';
+import NestedRelationshipRule from './nested-relationship';
+import NestedReuseComponentCheckRule from './nested-reuse-component-check';
+import NoChildInButtonRule from './no-child-in-button';
 import NoDuplicateDecorators from './no-duplicate-decorators';
-import NoDuplicateEntry from './no-duplicate-entry';
+import NoDuplicateEntryRule from './no-duplicate-entry';
 import NoDuplicateId from './no-duplicate-id';
-import NoDuplicatePreview from './no-duplicate-preview';
-import NoDuplicateStateManager from './no-duplicate-state-manager';
+import NoDuplicatePreviewRule from './no-duplicate-preview';
+import NoDuplicateStateManagerRule from './no-duplicate-state-manager';
 import NoPropLinkObjectlinkInEntry from './no-prop-link-objectlink-in-entry';
-import NoSameAsBuiltInAttribute from './no-same-as-built-in-attribute';
+import NoSameAsBuiltInAttributeRule from './no-same-as-built-in-attribute';
 import ReuseAttributeCheck from './reuse-attribute-check';
 import StructMissingDecorator from './struct-missing-decorator';
 import StructPropertyDecorator from './struct-property-decorator';
@@ -47,21 +48,21 @@ import StructVariableInitialization from './struct-variable-initialization';
 import TrackDecoratorCheck from './track-decorator-check';
 import TypeDecoratorCheck from './type-decorator-check';
 import ValidateBuildInStruct from './validate-build-in-struct';
+import ValidateDecoratorTarget from './validate-decorator-target';
 import WatchDecoratorFunction from './watch-decorator-function';
 import WatchDecoratorRegular from './watch-decorator-regular';
 import WrapBuilderCheck from './wrap-builder-check';
-import ObservedHeritageCompatibleCheck from './observed-heritage-compatible-check';
-import ObservedObservedV2 from './observed-observedV2-check';
+import ObservedHeritageCompatibleCheckRule from './observed-heritage-compatible-check';
+import ObservedObservedV2Rule from './observed-observedV2-check';
 import ObservedV2TraceUsageValidation from './observedV2-trace-usage-validation';
 import OnceDecoratorCheck from './once-decorator-check';
 import OneDecoratorOnFunctionMethod from './one-decorator-on-function-method';
 import OldNewDecoratorMixUseCheck from './old-new-decorator-mix-use-check';
-import ComputedDecoratorCheck from './computed-decorator-check';
 import ReusableV2DecoratorCheck from './reusableV2-decorator-check';
 import RequireDecoratorRegular from './require-decorator-regular';
 import ReusableComponentInV2Check from './reusable-component-in-V2-check';
 import VariableInitializationViaComponentConstructor from './variable-initialization-via-component-constructor';
-import ComponentComponentV2InitCheck from './component-componentV2-init-check';
+import ComponentComponentV2InitCheckRule from './component-componentV2-init-check';
 import SpecificComponentChildren from './specific-component-children';
 import StructNoExtends from './struct-no-extends';
 
@@ -70,27 +71,27 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     BuilderparamDecoratorCheck,
     [BuildRootNodeRule, 'error'],
     CheckConstructPrivateParameter,
-    CheckDecoratedPropertyType,
-    ComponentComponentV2MixUseCheck,
-    ComponentV2MixCheck,
+    [CheckDecoratedPropertyTypeRule, 'error'],
+    [ComponentComponentV2MixUseCheckRule, 'error'],
+    [ComponentV2MixCheckRule, 'error'],
     ConstructParameterLiteral,
-    ConstructParameter,
-    ConsumerProviderDecoratorCheck,
-    ComponentV2StateUsageValidation,
-    CustomDialogMissingController,
+    [ConstructParameterRule, 'error'],
+    [ConsumerProviderDecoratorCheckRule, 'error'],
+    [ComponentV2StateUsageValidationRule, 'error'],
+    [CustomDialogMissingControllerRule, 'error'],
     EntryLoacalStorageCheck,
     EntryStructNoExport,
-    MonitorDecoratorCheck,
-    NestedRelationship,
-    NestedReuseComponentCheck,
-    NoChildInButton,
+    [MonitorDecoratorCheckRule, 'error'],
+    [NestedRelationshipRule, 'error'],
+    [NestedReuseComponentCheckRule, 'error'],
+    [NoChildInButtonRule, 'error'],
     NoDuplicateDecorators,
-    NoDuplicateEntry,
+    [NoDuplicateEntryRule, 'error'],
     NoDuplicateId,
-    NoDuplicatePreview,
-    NoDuplicateStateManager,
+    [NoDuplicatePreviewRule, 'error'],
+    [NoDuplicateStateManagerRule, 'error'],
     NoPropLinkObjectlinkInEntry,
-    NoSameAsBuiltInAttribute,
+    [NoSameAsBuiltInAttributeRule, 'error'],
     ReuseAttributeCheck,
     StructMissingDecorator,
     StructPropertyDecorator,
@@ -99,21 +100,22 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     TrackDecoratorCheck,
     TypeDecoratorCheck,
     ValidateBuildInStruct,
+    ValidateDecoratorTarget,
     WatchDecoratorFunction,
     WatchDecoratorRegular,
     WrapBuilderCheck,
-    ObservedHeritageCompatibleCheck,
-    ObservedObservedV2,
+    [ObservedHeritageCompatibleCheckRule, 'error'],
+    [ObservedObservedV2Rule, 'error'],
     ObservedV2TraceUsageValidation,
     OnceDecoratorCheck,
     OneDecoratorOnFunctionMethod,
     OldNewDecoratorMixUseCheck,
-    ComputedDecoratorCheck,
+    [ComputedDecoratorCheckRule, 'error'],
     ReusableV2DecoratorCheck,
     RequireDecoratorRegular,
     ReusableComponentInV2Check,
     VariableInitializationViaComponentConstructor,
-    ComponentComponentV2InitCheck,
+    [ComponentComponentV2InitCheckRule, 'error'],
     SpecificComponentChildren,
     StructNoExtends,
 ];

@@ -15,9 +15,9 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { getClassPropertyAnnotationNames, getIdentifierName, PresetDecorators, getAnnotationUsage } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-export const stateManagementDecorator = {
+const stateManagementDecorator = {
   STATE: PresetDecorators.STATE,
   PROP: PresetDecorators.PROP,
   LINK: PresetDecorators.LINK,
@@ -26,58 +26,56 @@ export const stateManagementDecorator = {
 };
 
 const CLASS_PROPERTY_ANNOTATION_ONE: number = 1;
-function duplicateState(
-  node: arkts.StructDeclaration,
-  context: UISyntaxRuleContext
-): void {
-  node.definition.body.forEach(body => {
-    if (arkts.isClassProperty(body)) {
-      // Get the list of decorators
+
+class NoDuplicateStateManagerRule extends AbstractUISyntaxRule {
+  public setup(): Record<string, string> {
+    return {
+      duplicateState: `The property '{{attributeName}}' cannot have multiple state management decorators.`,
+    };
+  }
+
+  public parsed(node: arkts.AstNode): void {
+    if (!arkts.isStructDeclaration(node)) {
+      return;
+    }
+
+    // If it's a struct for @ComponentV2, the check is skipped
+    const componentV2Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
+    if (componentV2Decorator) {
+      return;
+    }
+
+    this.checkForDuplicateStateDecorators(node);
+  }
+
+  // Check that the properties in the struct are not reused with state management-related decorators
+  private checkForDuplicateStateDecorators(node: arkts.StructDeclaration): void {
+    node.definition.body.forEach((body) => {
+      if (!arkts.isClassProperty(body)) {
+        return;
+      }
+
       const propertyDecorators = getClassPropertyAnnotationNames(body);
       // Filter the decorators to get those related to state management
       const stateDecorators = propertyDecorators.filter(decorator =>
         Object.values(stateManagementDecorator).includes(decorator)
       );
 
-      // Check if Require is included
       const propertyNameNode = body.key;
-      let attributeName: string = '';
-      if (propertyNameNode && arkts.isIdentifier(propertyNameNode)) {
-        attributeName = getIdentifierName(propertyNameNode);
-      }
-      if (!propertyNameNode || !attributeName) {
+      if (!propertyNameNode || !arkts.isIdentifier(propertyNameNode)) {
         return;
       }
+
+      const attributeName = getIdentifierName(propertyNameNode);
       if (stateDecorators.length > CLASS_PROPERTY_ANNOTATION_ONE) {
-        context.report({
+        this.report({
           node: propertyNameNode,
-          message: rule.messages.duplicateState,
+          message: this.messages.duplicateState,
           data: { attributeName },
         });
       }
-    }
-  });
+    });
+  }
 }
 
-const rule: UISyntaxRule = {
-  name: 'no-duplicate-state-manager',
-  messages: {
-    duplicateState: `The property '{{attributeName}}' cannot have multiple state management decorators.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
-        if (!arkts.isStructDeclaration(node)) {
-          return;
-        }
-        const componentV2Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
-        if (componentV2Decorator) {
-          return;
-        }
-        duplicateState(node, context);
-      },
-    };
-  },
-};
-
-export default rule;
+export default NoDuplicateStateManagerRule;

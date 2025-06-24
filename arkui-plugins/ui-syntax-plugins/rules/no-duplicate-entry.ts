@@ -15,69 +15,58 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { getAnnotationUsage, MAX_ENTRY_DECORATOR_COUNT, PresetDecorators } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-function checkDuplicateEntry(
-  node: arkts.AstNode,
-  context: UISyntaxRuleContext,
-  entryDecoratorUsages: arkts.AnnotationUsage[],
-  entryData: { count: number }
-): void {
-  if (!arkts.isStructDeclaration(node)) {
-    return;
+class NoDuplicateEntryRule extends AbstractUISyntaxRule {
+  private entryDecoratorUsages: arkts.AnnotationUsage[] = [];
+  private entryDecoratorUsageIndex = 1;
+
+  public setup(): Record<string, string> {
+    return {
+      duplicateEntry: `A page can't contain more then one '@Entry' decorator.`,
+    };
   }
-  const entryDecoratorUsage = getAnnotationUsage(
-    node,
-    PresetDecorators.ENTRY,
-  );
-  if (entryDecoratorUsage) {
-    entryDecoratorUsages.push(entryDecoratorUsage);
-  }
-  // If more than one entry decorator is recorded, an error is reported
-  if (entryDecoratorUsages.length <= MAX_ENTRY_DECORATOR_COUNT) {
-    return;
-  }
-  if (entryData.count === MAX_ENTRY_DECORATOR_COUNT) {
-    const entryDocoratorUsage = entryDecoratorUsages.at(0)!;
-    context.report({
-      node: entryDocoratorUsage,
-      message: rule.messages.duplicateEntry,
+  public parsed(node: arkts.StructDeclaration): void {
+    if (!arkts.isStructDeclaration(node)) {
+      return;
+    }
+    let entryDecoratorUsage = getAnnotationUsage(
+      node,
+      PresetDecorators.ENTRY,
+    );
+    if (entryDecoratorUsage) {
+      this.entryDecoratorUsages.push(entryDecoratorUsage);
+    }
+    // If more than one entry decorator is recorded, an error is reported
+    if (this.entryDecoratorUsages.length <= MAX_ENTRY_DECORATOR_COUNT) {
+      return;
+    }
+    if (this.entryDecoratorUsageIndex === MAX_ENTRY_DECORATOR_COUNT) {
+      const entryDecoratorUsage = this.entryDecoratorUsages.at(0)!;
+      this.report({
+        node: entryDecoratorUsage,
+        message: this.messages.duplicateEntry,
+        fix: () => {
+          return {
+            range: [entryDecoratorUsage.startPosition, entryDecoratorUsage.endPosition],
+            code: '',
+          };
+        }
+      });
+    }
+    entryDecoratorUsage = this.entryDecoratorUsages.at(this.entryDecoratorUsageIndex)!;
+    this.report({
+      node: entryDecoratorUsage,
+      message: this.messages.duplicateEntry,
       fix: () => {
         return {
-          range: [entryDocoratorUsage.startPosition, entryDocoratorUsage.endPosition],
+          range: [entryDecoratorUsage.startPosition, entryDecoratorUsage.endPosition],
           code: '',
         };
       }
     });
+    this.entryDecoratorUsageIndex++;
   }
-  const entryDocoratorUsage = entryDecoratorUsages.at(entryData.count)!;
-  context.report({
-    node: entryDocoratorUsage,
-    message: rule.messages.duplicateEntry,
-    fix: () => {
-      return {
-        range: [entryDocoratorUsage.startPosition, entryDocoratorUsage.endPosition],
-        code: '',
-      };
-    }
-  });
-  entryData.count++;
 }
 
-const rule: UISyntaxRule = {
-  name: 'no-duplicate-entry',
-  messages: {
-    duplicateEntry: `A page can't contain more then one '@Entry' decorator.`,
-  },
-  setup(context) {
-    let entryDecoratorUsages: arkts.AnnotationUsage[] = [];
-    let entryData = { count: 1 };
-    return {
-      parsed: (node): void => {
-        checkDuplicateEntry(node, context, entryDecoratorUsages, entryData);
-      },
-    };
-  },
-};
-
-export default rule;
+export default NoDuplicateEntryRule;
