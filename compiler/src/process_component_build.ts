@@ -167,7 +167,8 @@ import {
   componentCollection,
   builderParamObjectCollection,
   checkAllNode,
-  enumCollection
+  enumCollection,
+  extendFromSourceFile
 } from './validate_ui_syntax';
 import {
   processCustomComponent,
@@ -193,7 +194,8 @@ import {
   contextGlobal,
   validatorCard,
   builderTypeParameter,
-  resourceFileName
+  resourceFileName,
+  currentSourceFile
 } from './process_ui_syntax';
 import { regularCollection, getSymbolIfAliased } from './validate_ui_syntax';
 import { contextStackPushOrPop } from './process_component_class';
@@ -203,6 +205,7 @@ import {
   concatenateEtsOptions,
   getExternalComponentPaths
 } from './external_component_map';
+import { extendCollection } from './ets_checker';
 
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
@@ -852,10 +855,55 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   }
 }
 
+/**
+ * Check the inner component's called attributes, and check if the attribute is defined
+ * by '@Extend' decorated function, then check if the function exists on current sourceFile
+ * @param {ts.CallExpression} node
+ * @param {Set<string>} currentSourceExtend
+ * @param {ts.SourceFile} currentSource
+ * @param {LogInfo[]} log
+ * @param {typeName} typeName
+ * @return {*}  {void}
+ */
+function validateAttrsNames(node: ts.CallExpression, currentSourceExtend: Set<string>,
+  currentSource: ts.SourceFile, log: LogInfo[], typeName: string): void {
+  if (!ts.isPropertyAccessExpression(node.expression)) {
+    return;
+  }
+  const newNode: ts.PropertyAccessExpression = node.expression;
+  const currentAttr: string = newNode.name.getText();
+  if (extendCollection.has(currentAttr) && !currentSourceExtend.has(currentAttr)) {
+    validateInvalidExtend(newNode, currentSource, log, typeName);
+  }
+  if (ts.isCallExpression(newNode.expression)) {
+    validateAttrsNames(newNode.expression, currentSourceExtend,
+      currentSource, log, typeName);
+  }
+}
+
+function validateInvalidExtend(node: ts.PropertyAccessExpression, currentSource: ts.SourceFile,
+  log: LogInfo[], typeName:string): void {
+  log.push({
+    type: LogType.ERROR,
+    message: `Property '${node.name.getText()}' does not exist on type '${typeName}'.`,
+    pos: node.getEnd(),
+    code: '10905361',
+    fileName: currentSource.fileName
+  });
+}
+
 function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameResult,
   innerCompStatements: ts.Statement[], log: LogInfo[], parent: string = undefined, isBuilder: boolean = false,
   isGlobalBuilder: boolean = false, isTransition: boolean = false, idName: ts.Expression = undefined,
   builderParamsResult: BuilderParamsResult = null, isInRepeatTemplate: boolean = false): void {
+  // check the component's attributes first
+  if (ts.isCallExpression(node.expression)) {
+    const currentSource: ts.SourceFile = currentSourceFile;
+    const currentSourceExtend: Set<string> = extendFromSourceFile.has(currentSource.fileName) ?
+      new Set(Array.from(extendFromSourceFile.get(currentSource.fileName).keys())) : new Set();
+    const typeName: string = getName(node) + 'Attribute';
+    validateAttrsNames(node.expression, currentSourceExtend, currentSource, log, typeName);
+  }
   const newStatements: ts.Statement[] = [];
   if (addElmtIdNode()) {
     newStatements.push(createCollectElmtIdNode());
@@ -1178,6 +1226,14 @@ function createInitRenderStatement(node: ts.Statement,
 function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResult, innerCompStatements: ts.Statement[],
   log: LogInfo[], parent: string = undefined, isGlobalBuilder: boolean = false, idName: ts.Expression = undefined,
   builderParamsResult: BuilderParamsResult = null, isInRepeatTemplate: boolean = false): void {
+  // check the component's attributes first
+  if (ts.isCallExpression(node.expression)) {
+    const currentSource: ts.SourceFile = currentSourceFile;
+    const currentSourceExtend: Set<string> = extendFromSourceFile.has(currentSource.fileName) ?
+      new Set(Array.from(extendFromSourceFile.get(currentSource.fileName).keys())) : new Set();
+    const typeName: string = getName(node) + 'Attribute';
+    validateAttrsNames(node.expression, currentSourceExtend, currentSource, log, typeName);
+  }
   const itemRenderInnerStatements: ts.Statement[] = [];
   const immutableStatements: ts.Statement[] = [];
   const deepItemRenderInnerStatements: ts.Statement[] = [];
@@ -1477,6 +1533,14 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
   nameResult: NameResult, log: LogInfo[], parent: string = undefined, isGlobalBuilder: boolean = false,
   idName: ts.Expression = undefined, builderParamsResult: BuilderParamsResult = null,
   isInRepeatTemplate: boolean = false): void {
+  // check the component's attributes first
+  if (ts.isCallExpression(node.expression)) {
+    const currentSource: ts.SourceFile = currentSourceFile;
+    const currentSourceExtend: Set<string> = extendFromSourceFile.has(currentSource.fileName) ?
+      new Set(Array.from(extendFromSourceFile.get(currentSource.fileName).keys())) : new Set();
+    const typeName: string = getName(node) + 'Attribute';
+    validateAttrsNames(node.expression, currentSourceExtend, currentSource, log, typeName);
+  }
   const name: string = nameResult.name;
   const tabContentComp: ts.EtsComponentExpression = getEtsComponentExpression(node);
   const tabContentBody: ts.Block = tabContentComp.body;
