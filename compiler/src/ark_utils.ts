@@ -616,7 +616,7 @@ export async function writeObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: 
     harFilesRecord.set(originSourceFilePath, genFileInHar);
   }
 
-  fs.writeFileSync(moduleInfo.buildFilePath, moduleInfo.content);
+  writeFileSyncCaseAware(moduleInfo.buildFilePath, moduleInfo.content);
 }
 
 export function getPreviousStageSourceMap(moduleInfo: ModuleInfo, rollupNewSourceMaps: Object = {}): sourceMap.RawSourceMap | undefined {
@@ -789,7 +789,7 @@ export function writeDeclarationFiles(compileMode: string): void {
     for (const genFilesInHar of harFilesRecord.values()) {
       if (genFilesInHar.originalDeclarationCachePath && genFilesInHar.originalDeclarationContent) {
         mkdirsSync(path.dirname(genFilesInHar.originalDeclarationCachePath));
-        fs.writeFileSync(genFilesInHar.originalDeclarationCachePath, genFilesInHar.originalDeclarationContent);
+        writeFileSyncCaseAware(genFilesInHar.originalDeclarationCachePath, genFilesInHar.originalDeclarationContent);
       }
     }
   }
@@ -1010,4 +1010,13 @@ export function transformOhmurlToPkgName(ohmurl: string): string {
     return paths.slice(0, 2).join(SEPARATOR_SLASH);
   }
   return paths[0];
+}
+
+export function writeFileSyncCaseAware(filePath: fs.PathOrFileDescriptor, data: string | NodeJS.ArrayBufferView, options?: fs.WriteFileOptions): void {
+    // If filePath is not a file descriptor number (i.e., it's a file path) and the file at that path already exists,
+    // delete the existing file first to ensure the written file name matches the input.
+    if (typeof filePath !== 'number' && fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    fs.writeFileSync(filePath, data, options);
 }
