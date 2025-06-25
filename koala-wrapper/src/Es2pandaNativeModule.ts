@@ -820,6 +820,10 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
+    _ProgramAbsoluteNameConst(context: KNativePointer, instance: KNativePointer): KNativePointer {
+        throw new Error('Not implemented');
+    }
+
     _ImportSpecifierIsRemovableConst(context: KNativePointer, instance: KNativePointer): KBoolean {
         throw new Error('Not implemented');
     }
