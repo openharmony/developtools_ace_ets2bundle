@@ -255,7 +255,7 @@ export class ComponentTransformer extends AbstractVisitor {
                 entryFactory.callRegisterNamedRouter(
                     this.entryRouteName,
                     this.projectConfig,
-                    this.program?.globalAbsName
+                    this.program?.absName
                 )
             );
             this.createImportDeclaration(ENTRY_POINT_IMPORT_SOURCE_NAME, NavigationNames.NAVINTERFACE);
