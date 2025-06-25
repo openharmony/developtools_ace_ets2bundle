@@ -40,12 +40,13 @@ function validateReuseOrReuseIdUsage(context: UISyntaxRuleContext, node: arkts.M
   // Gets the reuse or reuseId attribute
   const decoratedNode = node.property;
   if (arkts.isCallExpression(structNode)) {
-    const Node = structNode.expression;
-    if (arkts.isIdentifier(Node) && arkts.isIdentifier(decoratedNode)) {
-      if (decoratedNode.name === ReuseConstants.REUSE && !reusableV2ComponentV2Struct.includes(Node.name)) {
+    const nodeExpression = structNode.expression;
+    if (arkts.isIdentifier(nodeExpression) && arkts.isIdentifier(decoratedNode)) {
+      if (decoratedNode.name === ReuseConstants.REUSE && !reusableV2ComponentV2Struct.includes(nodeExpression.name)) {
         reportInvalidReuseUsage(context, node, decoratedNode, rule);
       }
-      else if (decoratedNode.name === ReuseConstants.REUSE_ID && reusableV2ComponentV2Struct.includes(Node.name)) {
+      else if (decoratedNode.name === ReuseConstants.REUSE_ID &&
+        reusableV2ComponentV2Struct.includes(nodeExpression.name)) {
         reportInvalidReuseIdUsage(context, node, decoratedNode, rule);
       }
     }
