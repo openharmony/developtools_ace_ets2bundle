@@ -446,6 +446,15 @@ KNativePointer impl_ETSParserGetGlobalProgramAbsName(KNativePointer contextPtr)
 }
 KOALA_INTEROP_1(ETSParserGetGlobalProgramAbsName, KNativePointer, KNativePointer)
 
+KNativePointer impl_ProgramAbsoluteNameConst(KNativePointer contextPtr, KNativePointer instancePtr)
+{
+    auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
+    auto &&instance = reinterpret_cast<es2panda_Program *>(instancePtr);
+    auto result = GetImpl()->ProgramAbsoluteNameConst(context, instance);
+    return new std::string(result);
+}
+KOALA_INTEROP_2(ProgramAbsoluteNameConst, KNativePointer, KNativePointer, KNativePointer);
+
 KNativePointer impl_ClassVariableDeclaration(KNativePointer context, KNativePointer classInstance)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);

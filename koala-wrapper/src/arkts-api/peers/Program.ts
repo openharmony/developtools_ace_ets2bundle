@@ -59,8 +59,15 @@ export class Program extends ArktsObject {
         return unpackString(global.es2panda._ProgramFileNameWithExtensionConst(global.context, this.peer));
     }
 
+    /**
+     * @deprecated
+     */
     get globalAbsName(): string {
         return unpackString(global.es2panda._ETSParserGetGlobalProgramAbsName(global.context));
+    }
+
+    get absName(): string {
+        return unpackString(global.es2panda._ProgramAbsoluteNameConst(global.context, this.peer));
     }
 
     get moduleName(): string {
