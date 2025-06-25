@@ -179,6 +179,9 @@ export const provideInitialization: Map<string, Set<string>> = new Map();
 export const privateCollection: Map<string, Set<string>> = new Map();
 export const regularStaticCollection: Map<string, Set<string>> = new Map();
 
+// Create a map, key: ts.sourceFile, value is a map which's key and value are both string
+export const extendFromSourceFile: Map<string, Map<string, string>> = new Map();
+
 export const isStaticViewCollection: Map<string, boolean> = new Map();
 
 export const useOSFiles: Set<string> = new Set();
@@ -487,7 +490,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
     [isObservedV1Class, isObservedClass, isSendableClass] = parseClassDecorator(node, sourceFileNode, log);
   }
   if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) {
-    methodDecoratorCollect(node);
+    methodDecoratorCollect(node, sourceFileNode);
     if (hasDecorator(node, COMPONENT_CONCURRENT_DECORATOR)) {
       // ark compiler's feature
       checkConcurrentDecorator(node, log, sourceFileNode);
@@ -643,7 +646,8 @@ function findDuplicateDecoratorMethod(mapKeys: string[], mapValues: number[]): s
   return output;
 }
 
-export function methodDecoratorCollect(node: ts.MethodDeclaration | ts.FunctionDeclaration): void {
+export function methodDecoratorCollect(node: ts.MethodDeclaration | ts.FunctionDeclaration,
+  sourceFileNode: ts.SourceFile): void {
   const extendResult: ExtendResult = { decoratorName: '', componentName: '' };
   const builderCondition: builderConditionType = {
     isBuilder: false,
@@ -663,6 +667,8 @@ export function methodDecoratorCollect(node: ts.MethodDeclaration | ts.FunctionD
   } else if (ts.isFunctionDeclaration(node) && isExtendFunction(node, extendResult)) {
     if (extendResult.decoratorName === CHECK_COMPONENT_EXTEND_DECORATOR) {
       collectExtend(EXTEND_ATTRIBUTE, extendResult.componentName, node.name.getText());
+      collectExtendBySourceFile(sourceFileNode, extendFromSourceFile,
+        node.name.getText(), extendResult.componentName);
     }
     if (extendResult.decoratorName === CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR) {
       collectExtend(storedFileInfo.getCurrentArkTsFile().animatableExtendAttribute,
@@ -670,6 +676,25 @@ export function methodDecoratorCollect(node: ts.MethodDeclaration | ts.FunctionD
     }
   } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
     collectStyles(node);
+  }
+}
+
+
+/**
+ * Collect extend functions in each sourceFile 
+ * Each function stores the valid component name
+ * @param {ts.SourceFile} sourceFileNode
+ * @param {Map<String, Map<string, string>>} extendFromSourceFile
+ * @param {string} functionName extend function name
+ * @param {string} compName
+ */
+function collectExtendBySourceFile(sourceFileNode: ts.SourceFile,
+  extendFromSourceFile: Map<string, Map<string, string>>, functionName: string,
+  compName: string): void {
+  if (extendFromSourceFile.has(sourceFileNode.fileName)) {
+    extendFromSourceFile.get(sourceFileNode.fileName).set(functionName, compName);
+  } else {
+    extendFromSourceFile.set(sourceFileNode.fileName, new Map([[functionName, compName]]));
   }
 }
 
@@ -1888,6 +1913,7 @@ export function resetComponentCollection(): void {
   provideInitialization.clear();
   privateCollection.clear();
   regularStaticCollection.clear();
+  extendFromSourceFile.clear();
 }
 
 function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[], sourceFile: ts.SourceFile): void {

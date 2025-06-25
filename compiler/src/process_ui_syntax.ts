@@ -178,6 +178,9 @@ export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
 import parseIntent from './userIntents_parser/parseUserIntents';
 
+// declare the current sourcefile which is being transformed
+export let currentSourceFile: ts.SourceFile;
+
 export function processUISyntax(program: ts.Program, ut = false,
   parentEvent?: CompileEvent, filePath: string = '', share: object = null, metaInfo: Object = {}): Function {
   let entryNodeKey: ts.Expression;
@@ -193,6 +196,7 @@ export function processUISyntax(program: ts.Program, ut = false,
       eventProcessUISyntax = createAndStartEvent(parentEvent, 'processUISyntax');
       pagesDir = path.resolve(path.dirname(node.fileName));
       resourceFileName = path.resolve(node.fileName);
+      currentSourceFile = node;
       pageFile = path.resolve(filePath !== '' ? filePath : node.fileName);
       if (process.env.compiler === BUILD_ON || process.env.compileTool === 'rollup') {
         const fileHash = share?.getHashByFilePath ? share?.getHashByFilePath(pageFile) : '';
@@ -2020,6 +2024,7 @@ export function validatorCard(log: LogInfo[], type: number, pos: number,
 export function resetProcessUiSyntax(): void {
   transformLog = new createAstNodeUtils.FileLog();
   contextGlobal = undefined;
+  currentSourceFile = undefined;
 }
 
 function createSharedStorageWithRoute(context: ts.TransformationContext, name: string, cardRelativePath: string,
