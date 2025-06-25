@@ -20,9 +20,10 @@ import { PositionalIdTracker } from './utils';
 import { ReturnTransformer } from './return-transformer';
 import { ParameterTransformer } from './parameter-transformer';
 import { ProgramVisitor } from '../common/program-visitor';
-import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../common/predefines';
+import { EXTERNAL_SOURCE_PREFIX_NAMES, EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK } from '../common/predefines';
 import { debugDump, debugLog, getDumpFileName } from '../common/debug';
 import { SignatureTransformer } from './signature-transformer';
+import { InternalsTransformer } from './internal-transformer';
 
 export function unmemoizeTransform(): Plugins {
     return {
@@ -44,6 +45,8 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         let script = program.astNode;
         debugLog('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
         const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
+        const isFrameworkMode = !!this.getProjectConfig()?.frameworkMode;
+        const canSkipPhases = !isFrameworkMode && program.canSkipPhases();
         debugDump(
             script.dumpSrc(),
             getDumpFileName(0, 'SRC', 5, 'MEMO_AfterCheck_Begin'),
@@ -52,7 +55,7 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
             program.fileNameWithExtension
         );
         arkts.Performance.getInstance().createEvent('memo-checked');
-        program = checkedProgramVisit(program, this);
+        program = checkedProgramVisit(program, this, canSkipPhases, isFrameworkMode);
         script = program.astNode;
         arkts.Performance.getInstance().stopEvent('memo-checked', true);
         debugLog('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
@@ -82,8 +85,13 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
     return undefined;
 }
 
-function checkedProgramVisit(program: arkts.Program, context: PluginContext): arkts.Program {
-    if (program.canSkipPhases()) {
+function checkedProgramVisit(
+    program: arkts.Program,
+    pluginContext: PluginContext,
+    canSkipPhases: boolean = false,
+    isFrameworkMode: boolean = false
+): arkts.Program {
+    if (canSkipPhases) {
         debugLog('[SKIP PHASE] phase: memo-checked, moduleName: ', program.moduleName);
     } else {
         debugLog('[CANT SKIP PHASE] phase: memo-checked, moduleName: ', program.moduleName);
@@ -91,18 +99,23 @@ function checkedProgramVisit(program: arkts.Program, context: PluginContext): ar
         const parameterTransformer = new ParameterTransformer({ positionalIdTracker });
         const returnTransformer = new ReturnTransformer();
         const signatureTransformer = new SignatureTransformer();
+        const internalsTransformer = new InternalsTransformer({ positionalIdTracker });
         const functionTransformer = new FunctionTransformer({
             positionalIdTracker,
             parameterTransformer,
             returnTransformer,
             signatureTransformer,
+            internalsTransformer,
         });
+        const skipPrefixNames = isFrameworkMode
+            ? EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK
+            : EXTERNAL_SOURCE_PREFIX_NAMES;
         const programVisitor = new ProgramVisitor({
             pluginName: unmemoizeTransform.name,
             state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
             visitors: [functionTransformer],
-            skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
-            pluginContext: context,
+            skipPrefixNames,
+            pluginContext,
         });
         program = programVisitor.programVisitor(program);
     }

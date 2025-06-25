@@ -65,8 +65,8 @@ class Test {
             __memo_scope.cached;
             return;
         }
-        __context();
-        __id();
+        __memo_context;
+        __memo_id;
         {
             __memo_scope.recache();
             return;
