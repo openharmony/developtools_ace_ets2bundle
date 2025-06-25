@@ -56,7 +56,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
     propertyDecorators: string[]): void {
     const appliedBuiltInDecorators = propertyDecorators.filter(d => builtInDecorators.includes(d));
     if (appliedBuiltInDecorators.length > 1) {
-      member.annotations?.forEach(annotation => {
+      member.annotations.forEach(annotation => {
         if (annotation.expr && arkts.isIdentifier(annotation.expr)) {
           const annotationsName = annotation.expr.name;
           this.reportMultipleBuiltInDecoratorsError(annotation, annotationsName, builtInDecorators);
@@ -96,7 +96,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
 
   private checkRequireOnlyWithParam(member: arkts.ClassProperty,
     propertyDecorators: string[], isComponentV2: boolean): void {
-    const requireDecorator = member.annotations?.find(annotation =>
+    const requireDecorator = member.annotations.find(annotation =>
       annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name === PresetDecorators.REQUIRE
     );
     if (isComponentV2 &&
@@ -119,7 +119,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
   };
 
   private checkuseStateDecoratorsWithProperty(method: arkts.MethodDefinition): void {
-    method.scriptFunction.annotations?.forEach(annotation => {
+    method.scriptFunction.annotations.forEach(annotation => {
       if (annotation.expr && arkts.isIdentifier(annotation.expr) && builtInDecorators.includes(annotation.expr.name)) {
         const annotationName = annotation.expr.name;
         this.reportInvalidDecoratorOnMethod(annotation, annotationName);
@@ -146,7 +146,6 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
 
   private validateClassPropertyDecorators(node: arkts.StructDeclaration): void {
     const isComponentV2 = this.hasisComponentV2(node);
-    const isComponent = this.hasComponent(node);
     node.definition.body.forEach(member => {
       if (!arkts.isClassProperty(member)) {
         return;
@@ -203,11 +202,11 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
     }
     node.getChildren().forEach((member) => {
       if (!arkts.isStructDeclaration(member) || !member.definition.ident ||
-        !this.checkDecorator(member?.definition.annotations, PresetDecorators.COMPONENT_V2)) {
+        !this.checkDecorator(member.definition.annotations, PresetDecorators.COMPONENT_V2)) {
         return;
       }
-      let structName: string = member.definition.ident?.name ?? '';
-      member.definition?.body?.forEach((item) => {
+      let structName: string = member.definition.ident.name;
+      member.definition.body.forEach((item) => {
         this.processClassPropertyAnnotations(item, structName, componentV2PropertyMap);
       });
     });

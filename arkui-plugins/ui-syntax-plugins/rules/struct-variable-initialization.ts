@@ -29,7 +29,6 @@ const mustInitializeDecorators = [
 // Disables a list of decorators that are initialized locally
 const prohibitInitializeDecorators = [
   PresetDecorators.LINK,
-  PresetDecorators.CONSUME,
   PresetDecorators.OBJECT_LINK,
 ];
 
