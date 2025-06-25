@@ -105,6 +105,10 @@ export class Es2pandaNativeModule {
     _CreateContextFromString(config: KPtr, source: String, filename: String): KPtr {
         throw new Error('Not implemented');
     }
+    _CreateContextGenerateAbcForExternalSourceFiles(config: KPtr, fileCount: KInt, filenames:
+        string[]): KPtr {
+        throw new Error('Not implemented');
+    }
     _CreateContextFromFile(config: KPtr, filename: String): KPtr {
         throw new Error('Not implemented');
     }

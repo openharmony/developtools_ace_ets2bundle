@@ -20,6 +20,7 @@ const UniqueId = common.UniqueId;
 export enum RuntimeNames {
     __CONTEXT = '__context',
     __ID = '__id',
+    __KEY = "__key",
     ANNOTATION_BUILDER = 'Builder',
     ANNOTATION = 'memo',
     ANNOTATION_ENTRY = 'memo_entry',
@@ -451,9 +452,14 @@ export function findMemoFromTypeAnnotation(typeAnnotation: arkts.AstNode | undef
     }
     if (arkts.isETSTypeReference(typeAnnotation) && !!typeAnnotation.part && !!typeAnnotation.part.name) {
         let decl: arkts.AstNode | undefined = arkts.getDecl(typeAnnotation.part.name);
-        if (!!decl && arkts.isTSTypeAliasDeclaration(decl)) {
-            return hasMemoAnnotation(decl) || hasMemoIntrinsicAnnotation(decl) || decl.typeAnnotation ? findMemoFromTypeAnnotation(decl.typeAnnotation) : false;
+        if (!decl || !arkts.isTSTypeAliasDeclaration(decl)) {
+            return false;   
         }
+        let isMemo: boolean = hasMemoAnnotation(decl) || hasMemoIntrinsicAnnotation(decl);
+        if (!isMemo && !!decl.typeAnnotation) {
+            isMemo = findMemoFromTypeAnnotation(decl.typeAnnotation);
+        }
+        return isMemo;
     } else if (arkts.isETSFunctionType(typeAnnotation)) {
         return hasMemoAnnotation(typeAnnotation) || hasMemoIntrinsicAnnotation(typeAnnotation);
     } else if (arkts.isETSUnionType(typeAnnotation)) {

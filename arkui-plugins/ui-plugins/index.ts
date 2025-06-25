@@ -43,6 +43,8 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
         script = program.astNode;
         const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
+        const isFrameworkMode = this.getProjectConfig()?.frameworkMode;
+        const canSkipPhases = !!isFrameworkMode || program.canSkipPhases();
         debugLog('[BEFORE PARSED SCRIPT] script: ', script.dumpSrc());
         debugDump(
             script.dumpSrc(),
@@ -52,7 +54,7 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
             program.fileNameWithExtension
         );
         arkts.Performance.getInstance().createEvent('ui-parsed');
-        program = parsedProgramVisit(program, this);
+        program = parsedProgramVisit(program, this, canSkipPhases);
         script = program.astNode;
         arkts.Performance.getInstance().stopEvent('ui-parsed', true);
         debugLog('[AFTER PARSED SCRIPT] script: ', script.dumpSrc());
@@ -74,8 +76,12 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
     return script;
 }
 
-function parsedProgramVisit(program: arkts.Program, context: PluginContext): arkts.Program {
-    if (program.canSkipPhases()) {
+function parsedProgramVisit(
+    program: arkts.Program,
+    context: PluginContext,
+    canSkipPhases: boolean = false
+): arkts.Program {
+    if (canSkipPhases) {
         debugLog('[SKIP PHASE] phase: ui-parsed, moduleName: ', program.moduleName);
     } else {
         debugLog('[CANT SKIP PHASE] phase: ui-parsed, moduleName: ', program.moduleName);
@@ -106,6 +112,8 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
         script = program.astNode;
         const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
+        const isFrameworkMode = this.getProjectConfig()?.frameworkMode;
+        const canSkipPhases = !!isFrameworkMode || program.canSkipPhases();
         debugLog('[BEFORE STRUCT SCRIPT] script: ', script.dumpSrc());
         debugDump(
             script.dumpSrc(),
@@ -115,7 +123,7 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
             program.fileNameWithExtension
         );
         arkts.Performance.getInstance().createEvent('ui-checked');
-        program = checkedProgramVisit(program, this);
+        program = checkedProgramVisit(program, this, canSkipPhases);
         script = program.astNode;
         arkts.Performance.getInstance().stopEvent('ui-checked', true);
         debugLog('[AFTER STRUCT SCRIPT] script: ', script.dumpSrc());
@@ -139,8 +147,12 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
     return script;
 }
 
-function checkedProgramVisit(program: arkts.Program, context: PluginContext): arkts.Program {
-    if (program.canSkipPhases()) {
+function checkedProgramVisit(
+    program: arkts.Program,
+    context: PluginContext,
+    canSkipPhases: boolean = false
+): arkts.Program {
+    if (canSkipPhases) {
         debugLog('[SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
     } else {
         debugLog('[CANT SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
