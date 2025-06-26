@@ -43,6 +43,7 @@ action("build_ets_loader_library") {
     ":form_components",
     ":install_arkguard_tsc_declgen",
     ":server",
+    "//interface/sdk-js:ohos_declaration_ets",
     "//interface/sdk-js:bundle_arkts",
     "//interface/sdk-js:bundle_kits",
     "//interface/sdk-js:ets_component",
