@@ -90,11 +90,6 @@ interface DeclFileConfig {
   ohmUrl: string;
 }
 
-export const ARKTS_1_2: string = '1.2';
-export const ARKTS_1_1: string = '1.1';
-export const ARKTS_1_0: string = '1.0';
-export const HYBRID: string = 'hybrid';
-
 export interface Params {
   dependentModuleMap: Map<string, ArkTSEvolutionModule>;
   projectConfig: ProjectConfig;

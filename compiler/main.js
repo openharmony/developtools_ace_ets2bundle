@@ -31,9 +31,7 @@ const {
   FAIL,
   TEST_RUNNER_DIR_SET,
   TS2ABC,
-  WORKERS_DIR,
-  ARKTS_1_2,
-  EXTNAME_TS
+  WORKERS_DIR
 } = require('./lib/pre_define');
 
 const {
@@ -41,18 +39,20 @@ const {
 } = require('./lib/gen_aot');
 
 const {
-  LogDataFactory
-} = require('./lib/fast_build/ark_compiler/logger');
-
-const {
-  ErrorCode,
-  ArkTSInternalErrorDescription
-} = require('./lib/fast_build/ark_compiler/error_code');
-
-const {
   configure,
   getLogger
 } = require('log4js');
+
+const {
+  entryFileLanguageInfo,
+  isMixCompile,
+  processAbilityPagesFullPath,
+  transformAbilityPages
+} = require('./lib/fast_build/ark_compiler/interop/interop_manager');
+
+const {
+  ARKTS_1_2
+} = require('./lib/fast_build/ark_compiler/interop/pre_define');
 
 configure({
   appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
@@ -83,7 +83,6 @@ let sdkConfigPrefix = 'ohos|system|kit|arkts';
 let ohosSystemModulePaths = [];
 let ohosSystemModuleSubDirPaths = [];
 let allModulesPaths = [];
-let entryFileLanguageInfo = new Map();
 
 function initProjectConfig(projectConfig) {
   initProjectPathConfig(projectConfig);
@@ -144,8 +143,6 @@ function initProjectPathConfig(projectConfig) {
   projectConfig.aceSoPath = projectConfig.aceSoPath || process.env.aceSoPath;
   projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath;
   projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath;
-  // In hybrid compilation, if the entry file is a static file, the path should be convert into under bridgeCodepath one
-  projectConfig.entryBridgeCodePath = projectConfig.entryBridgeCodePath || process.env.entryBridgeCodePath;
 }
 
 function loadMemoryTrackingConfig(projectConfig) {
@@ -163,7 +160,6 @@ function loadEntryObj(projectConfig) {
   initProjectConfig(projectConfig);
   loadMemoryTrackingConfig(projectConfig);
   loadBuildJson();
-  initMixCompileHar(projectConfig);
   if (process.env.aceManifestPath && aceCompileMode === 'page') {
     setEntryFile(projectConfig);
     setFaTestRunnerFile(projectConfig);
@@ -173,9 +169,6 @@ function loadEntryObj(projectConfig) {
     setAbilityPages(projectConfig);
     setStageTestRunnerFile(projectConfig);
     loadNavigationConfig(aceBuildJson);
-  }
-  if (projectConfig.mixCompile && projectConfig.isRemoteModule) {
-    return;
   }
   if (staticPreviewPage) {
     projectConfig.entryObj['./' + staticPreviewPage] = projectConfig.projectPath + path.sep +
@@ -218,6 +211,9 @@ function loadEntryObj(projectConfig) {
           '. \u001b[39m').message;
       }
     }
+  }
+  if (isMixCompile()) {
+    processAbilityPagesFullPath(abilityPagesFullPath);
   }
 }
 
@@ -281,23 +277,7 @@ function buildManifest(manifest, aceConfigPath) {
 }
 
 function getPackageJsonEntryPath() {
-  /**
-   * adapt to oh_modules compile
-   * origin local module => project/library/src/main/ets
-   * oh_module => project/library/src/main
-   * bcs some oh_module don't contain ets dir
-   */
-
-  const candidatePaths = [
-    path.resolve(projectConfig.projectPath, '../../../', projectConfig.packageJson),
-    path.resolve(projectConfig.projectPath, '../../', projectConfig.packageJson),
-  ];
-  
-  const rootPackageJsonPath =
-    candidatePaths.find(fs.existsSync) ??
-    (() => {
-      throw new Error('package.json not found in ../../../ or ../../');
-    })();
+  const rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../' + projectConfig.packageJson);
   if (fs.existsSync(rootPackageJsonPath)) {
     let rootPackageJsonContent;
     try {
@@ -426,9 +406,6 @@ function setIntentEntryPages(projectConfig) {
 }
 
 function setAbilityPages(projectConfig) {
-  if (projectConfig.isRemoteModule) {
-    return;
-  }
   let abilityPages = [];
   if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
     const moduleJson = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());
@@ -500,35 +477,21 @@ function setBundleModuleInfo(projectConfig, moduleJson) {
   }
 }
 
-/**
- * This file collects root files [entry, ability] for Rollup to bundle.
- * 
- * The ability paths are configured in `aceModuleJson`.
- * - In version 1.1, the value is a relative path.
- * - In version 1.2, the value is an OHM URL (specific to 1.2).
- * 
- * We need to read these values and populate them into `entryObj`.
- * - `entryObj` is an object where:
- *   - The key should be converted to the relative path format used in version 1.1.
- *   - The value should be the corresponding absolute file path.
- *   - For version 1.2 entries, the value should be converted to the corresponding glue code path.
- */
-
 function setAbilityFile(projectConfig, abilityPages) {
   abilityPages.forEach(abilityPath => {
-    const isStatic = entryFileLanguageInfo.get(abilityPath) ?? false;
-    const projectAbilityPath = isStatic ? path.join(projectConfig.entryBridgeCodePath, abilityPath + EXTNAME_TS) :
-      path.resolve(projectConfig.projectPath, '../', abilityPath);
-    if (path.isAbsolute(abilityPath) && !isStatic) {
+    const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
+    if (path.isAbsolute(abilityPath)) {
       abilityPath = '.' + abilityPath.slice(projectConfig.projectPath.length);
     }
-    const entryPageKey = isStatic ? transformModuleNameToRelativePath(abilityPath) :
-      abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '').replace(/\.ets$/, '');
+    const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '').replace(/\.ets$/, '');
     if (fs.existsSync(projectAbilityPath)) {
       abilityConfig.projectAbilityPath.push(projectAbilityPath);
       projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
       setEntryArrayForObf(entryPageKey);
     } else {
+      if (isMixCompile() && transformAbilityPages(abilityPath)) {
+        return;
+      }
       throw Error(
         `\u001b[31m ERROR: srcEntry file '${projectAbilityPath.replace(/\\/g, '/')}' does not exist. \u001b[39m`
       ).message;
@@ -545,13 +508,11 @@ function readAbilityEntrance(moduleJson) {
 
     if (moduleSrcEntry) {
       abilityPages.push(moduleSrcEntry);
-      // abilityPagesFullPath is only for v1.1 - v1.2 files won't be included here 
-      !isStatic && abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntry));
+      abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntry));
       entryFileLanguageInfo.set(moduleSrcEntry, isStatic);
     } else if (moduleSrcEntrance) {
       abilityPages.push(moduleSrcEntrance);
-      // abilityPagesFullPath is only for v1.1 - v1.2 files won't be included here 
-      !isStatic && abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
+      abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
       entryFileLanguageInfo.set(moduleSrcEntrance, isStatic);
     }
     if (moduleJson.module.abilities && moduleJson.module.abilities.length > 0) {
@@ -570,15 +531,13 @@ function setEntrance(abilityConfig, abilityPages) {
     abilityConfig.forEach(ability => {
       const isStatic = ability.codeLanguage === ARKTS_1_2;
       if (ability.srcEntry) {
-        ability.srcEntry = ability.srcEntry.replace(/:[^/]+$/, '');
         abilityPages.push(ability.srcEntry);
         entryFileLanguageInfo.set(ability.srcEntry, isStatic);
-        !isStatic && abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry));
+        abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry));
       } else if (ability.srcEntrance) {
-        ability.srcEntrance = ability.srcEntrance.replace(/:[^/]+$/, '');
         abilityPages.push(ability.srcEntrance);
         entryFileLanguageInfo.set(ability.srcEntrance, isStatic);
-        !isStatic && abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
+        abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
       }
     });
   }
@@ -1207,47 +1166,6 @@ function initMain() {
   staticPreviewPage = process.env.aceStaticPreview;
   aceCompileMode = process.env.aceCompileMode || 'page';
   abilityConfig.abilityType = process.env.abilityType || 'page';
-}
-
-/**
- * due to some oh_modules is different with the original arkTs module.
- * Some branches were not reached, causing some information to be uninitialized.
- */
-function initMixCompileHar(projectConfig) {
-  projectConfig.isRemoteModule = process.env.isRemoteModule === 'true';
-  projectConfig.mixCompile = process.env.mixCompile === 'true';
-  if (projectConfig.isRemoteModule && projectConfig.mixCompile) {
-    projectConfig.compileHar = true;
-    process.env.compileMode = 'moduleJson';
-    getPackageJsonEntryPath();
-    /**
-     * ets-loader will generate decl file from projectConfig.intentEntry which init in setIntentEntryPages.
-     * aceModuleJsonPath->ark_modules.json
-     * when compile oh_module with ets-loader, aceModuleJsonPath will be undefined.
-     * so projectConfig.intentEntry is empty.
-     */
-    setIntentEntryPages(projectConfig);
-  }
-}
-
-function transformModuleNameToRelativePath(moduleName) {
-  let defaultSourceRoot = 'src/main';
-  const normalizedModuleName = moduleName.replace(/\\/g, '/');
-  const normalizedRoot = defaultSourceRoot.replace(/\\/g, '/');
-
-  const rootIndex = normalizedModuleName.indexOf(`/${normalizedRoot}/`);
-  if (rootIndex === -1) {
-    const errInfo = LogDataFactory.newInstance(
-      ErrorCode.ETS2BUNDLE_INTERNAL_WRONG_MODULE_NAME_FROM_ACEMODULEJSON,
-      ArkTSInternalErrorDescription,
-      `defaultSourceRoot '${defaultSourceRoot}' not found ` +
-      `when process moduleName '${moduleName}'`
-    );
-    throw Error(errInfo.toString());
-  }
-
-  const relativePath = normalizedModuleName.slice(rootIndex + normalizedRoot.length + 1);
-  return './' + relativePath;
 }
 
 exports.globalProgram = globalProgram;
