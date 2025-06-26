@@ -70,19 +70,21 @@ class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
                 : arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_WARNING
         );
         if (options.fix) {
-            const diagnosticInfo: arkts.DiagnosticInfo = arkts.DiagnosticInfo.create(diagnosticKind);
+            const diagnosticInfo: arkts.DiagnosticInfo = arkts.DiagnosticInfo.create(diagnosticKind,
+                arkts.getStartPosition(options.node));
             const fixSuggestion = options.fix(options.node);
             const suggestionKind: arkts.DiagnosticKind = arkts.DiagnosticKind.create(
                 message,
                 arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_SUGGESTION
             );
-            const suggestionInfo: arkts.SuggestionInfo = arkts.SuggestionInfo.create(
-                suggestionKind,
-                fixSuggestion.code
-            );
             const [startPosition, endPosition] = fixSuggestion.range;
             const sourceRange: arkts.SourceRange = arkts.SourceRange.create(startPosition, endPosition);
-            arkts.Diagnostic.logDiagnosticWithSuggestion(diagnosticInfo, suggestionInfo, sourceRange);
+            const suggestionInfo: arkts.SuggestionInfo = arkts.SuggestionInfo.create(
+                suggestionKind,
+                fixSuggestion.code,
+                sourceRange
+            );
+            arkts.Diagnostic.logDiagnosticWithSuggestion(diagnosticInfo, suggestionInfo);
         } else {
             arkts.Diagnostic.logDiagnostic(diagnosticKind, arkts.getStartPosition(options.node));
         }
