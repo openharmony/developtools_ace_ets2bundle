@@ -30,11 +30,11 @@ import { LogCollector } from '../common/log-collector';
 import {
     CustomComponentScopeInfo,
     initResourceInfo,
-    isResourceNode,
     loadBuildJson,
     LoaderJson,
     ResourceInfo,
     ScopeInfoCollection,
+    isForEachDecl
 } from './struct-translators/utils';
 import { collectCustomComponentScopeInfo, CustomComponentNames, isCustomComponentClass } from './utils';
 import { findAndCollectMemoableNode } from '../collectors/memo-collectors/factory';
@@ -136,8 +136,10 @@ export class CheckedTransformer extends AbstractVisitor {
             return node;
         } else if (arkts.isClassDeclaration(node)) {
             return structFactory.transformNormalClass(node);
-        } else if (arkts.isCallExpression(node) && isResourceNode(node)) {
-            return structFactory.transformResource(node, this.projectConfig, this.resourceInfo);
+        } else if (arkts.isCallExpression(node)) {
+            return structFactory.transformCallExpression(node, this.projectConfig, this.resourceInfo);
+        } else if (arkts.isMethodDefinition(node) && isForEachDecl(node, this.externalSourceName)) {
+            return structFactory.AddArrowTypeForParameter(node);
         } else if (isArkUICompatible(node)) {
             return generateArkUICompatible(node as arkts.CallExpression);
         } else if (arkts.isTSInterfaceDeclaration(node)) {

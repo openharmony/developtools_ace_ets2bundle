@@ -39,6 +39,7 @@ export const MEMO_IMPORT_SOURCE_NAME: string = 'arkui.stateManagement.runtime';
 export const CUSTOM_COMPONENT_IMPORT_SOURCE_NAME: string = 'arkui.component.customComponent';
 export const ENTRY_POINT_IMPORT_SOURCE_NAME: string = 'arkui.UserView';
 export const ARKUI_COMPONENT_COMMON_SOURCE_NAME: string = 'arkui.component.common';
+export const ARKUI_FOREACH_SOURCE_NAME: string = 'arkui.component.forEach';
 
 export enum ModuleType {
     HAR = 'har',
@@ -96,6 +97,10 @@ export enum EntryParamNames {
     ENTRY_STORAGE = 'storage',
     ENTRY_USE_SHARED_STORAGE = 'useSharedStorage',
     ENTRY_ROUTE_NAME = 'routeName'
+}
+
+export enum InnerComponentNames {
+    FOR_EACH = 'ForEach',
 }
 
 export enum DecoratorNames {
