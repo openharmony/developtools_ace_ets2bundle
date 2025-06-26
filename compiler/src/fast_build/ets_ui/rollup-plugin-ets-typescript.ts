@@ -112,7 +112,7 @@ import { ProjectCollections } from 'arkguard';
 import {
   interopTransformLog,
   interopTransform
-} from '../../process_arkts_evolution';
+} from '../ark_compiler/interop/process_arkts_evolution';
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
