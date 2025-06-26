@@ -17,9 +17,13 @@ import * as arkts from '@koalaui/libarkts';
 import { UISyntaxLinterVisitor } from './ui-syntax-linter-visitor';
 
 export class ParsedUISyntaxLinterTransformer extends UISyntaxLinterVisitor {
-  visitor(node: arkts.AstNode): arkts.AstNode {
-    this.processor.parsed(node);
-    node = this.visitEachChild(node);
-    return node;
-  }
+    handle(node: arkts.AstNode): void {
+        this.processor.parsed(node);
+    }
+}
+
+export class CheckedUISyntaxLinterTransformer extends UISyntaxLinterVisitor {
+    handle(node: arkts.AstNode): void {
+        this.processor.checked(node);
+    }
 }

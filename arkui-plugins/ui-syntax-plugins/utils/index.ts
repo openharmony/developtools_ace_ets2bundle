@@ -18,6 +18,23 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { UISyntaxRuleContext } from 'ui-syntax-plugins/rules/ui-syntax-rule';
 
+export const EXCLUDE_EXTERNAL_SOURCE_PREFIXES: Array<string | RegExp> = [
+    'std',
+    'escompat',
+    'security',
+    'application',
+    'permissions',
+    'bundleManager',
+    'commonEvent',
+    'global',
+    'arkui',
+    /@arkts\..*/,
+    /@ohos\.*/,
+    /@system\..*/,
+    /@koalaui\./,
+    /ability\..*/,
+];
+
 export const BUILD_NAME: string = 'build';
 
 export const SINGLE_CHILD_COMPONENT: number = 1;
@@ -28,79 +45,79 @@ export const COMPONENT_REPEAT: string = 'Repeat';
 export const TEMPLATE: string = 'template';
 
 export const PresetType = {
-  STRING: 'string',
-  NUMBER: 'number',
-  BOOLEAN: 'boolean',
-  BIGINT: 'bigint'
+    STRING: 'string',
+    NUMBER: 'number',
+    BOOLEAN: 'boolean',
+    BIGINT: 'bigint',
 };
 
 export const forbiddenUseStateType: string[] = [
-  'Scroller',
-  'SwiperScroller',
-  'VideoController',
-  'WebController',
-  'CustomDialogController',
-  'SwiperController',
-  'TabsController',
-  'CalendarController',
-  'AbilityController',
-  'XComponentController',
-  'CanvasRenderingContext2D',
-  'CanvasGradient',
-  'ImageBitmap',
-  'ImageData',
-  'Path2D',
-  'RenderingContextSettings',
-  'OffscreenCanvasRenderingContext2D',
-  'PatternLockController',
-  'TextAreaController',
-  'TextInputController',
-  'TextTimerController',
-  'SearchController',
-  'RichEditorController',
+    'Scroller',
+    'SwiperScroller',
+    'VideoController',
+    'WebController',
+    'CustomDialogController',
+    'SwiperController',
+    'TabsController',
+    'CalendarController',
+    'AbilityController',
+    'XComponentController',
+    'CanvasRenderingContext2D',
+    'CanvasGradient',
+    'ImageBitmap',
+    'ImageData',
+    'Path2D',
+    'RenderingContextSettings',
+    'OffscreenCanvasRenderingContext2D',
+    'PatternLockController',
+    'TextAreaController',
+    'TextInputController',
+    'TextTimerController',
+    'SearchController',
+    'RichEditorController',
 ];
 
 export const PresetDecorators = {
-  TOGGLE: 'Toggle',
-  BUILDER_PARAM: 'BuilderParam',
-  COMPONENT_V1: 'Component',
-  COMPONENT_V2: 'ComponentV2',
-  COMPUTED: 'Computed',
-  CONSUME: 'Consume',
-  CONSUMER: 'Consumer',
-  CUSTOM_DIALOG: 'CustomDialog',
-  ENTRY: 'Entry',
-  EVENT: 'Event',
-  PREVIEW: 'Preview',
-  STATE: 'State',
-  PARAM: 'Param',
-  PROP: 'Prop',
-  PROVIDE: 'Provide',
-  PROVIDER: 'Provider',
-  LINK: 'Link',
-  LOCAL: 'Local',
-  OBJECT_LINK: 'ObjectLink',
-  STORAGE_PROP: 'StorageProp',
-  STORAGE_LINK: 'StorageLink',
-  LOCAL_STORAGE_PROP: 'LocalStorageProp',
-  LOCAL_STORAGE_LINK: 'LocalStorageLink',
-  REQUIRE: 'Require',
-  REUSABLE_V1: 'Reusable',
-  REUSABLE_V2: 'ReusableV2',
-  OBSERVED_V1: 'Observed',
-  OBSERVED_V2: 'ObservedV2',
-  TYPE: 'Type',
-  WATCH: 'Watch',
-  BUILDER: 'Builder',
-  TRACK: 'Track',
-  TRACE: 'Trace',
-  ONCE: 'Once',
-  MONITOR: 'Monitor',
-  LOCAL_BUILDER: 'LocalBuilder',
-  REGULAR: 'regular',
-  VARIABLE: 'variable',
-  PARAMETER: 'parameter',
-  ANIMATABLE_EXTEND: 'AnimatableExtend',
+    TOGGLE: 'Toggle',
+    BUILDER_PARAM: 'BuilderParam',
+    COMPONENT_V1: 'Component',
+    COMPONENT_V2: 'ComponentV2',
+    COMPUTED: 'Computed',
+    CONSUME: 'Consume',
+    CONSUMER: 'Consumer',
+    CUSTOM_DIALOG: 'CustomDialog',
+    ENTRY: 'Entry',
+    EVENT: 'Event',
+    PREVIEW: 'Preview',
+    STATE: 'State',
+    PARAM: 'Param',
+    PROP: 'Prop',
+    PROVIDE: 'Provide',
+    PROVIDER: 'Provider',
+    LINK: 'Link',
+    LOCAL: 'Local',
+    OBJECT_LINK: 'ObjectLink',
+    STORAGE_PROP: 'StorageProp',
+    STORAGE_LINK: 'StorageLink',
+    LOCAL_STORAGE_PROP: 'LocalStorageProp',
+    LOCAL_STORAGE_LINK: 'LocalStorageLink',
+    REQUIRE: 'Require',
+    REUSABLE_V1: 'Reusable',
+    REUSABLE_V2: 'ReusableV2',
+    OBSERVED_V1: 'Observed',
+    OBSERVED_V2: 'ObservedV2',
+    TYPE: 'Type',
+    WATCH: 'Watch',
+    BUILDER: 'Builder',
+    TRACK: 'Track',
+    TRACE: 'Trace',
+    ONCE: 'Once',
+    MONITOR: 'Monitor',
+    LOCAL_BUILDER: 'LocalBuilder',
+    REGULAR: 'regular',
+    VARIABLE: 'variable',
+    PARAMETER: 'parameter',
+    ANIMATABLE_EXTEND: 'AnimatableExtend',
 };
 
 export const TOGGLE_TYPE: string = 'ToggleType';
@@ -108,8 +125,8 @@ export const TYPE: string = 'type';
 export const WRAP_BUILDER: string = 'wrapBuilder';
 
 export const ToggleType = {
-  CHECKBOX: 'Checkbox',
-  BUTTON: 'Button'
+    CHECKBOX: 'Checkbox',
+    BUTTON: 'Button',
 };
 
 const PUBLIC_PROPERTY_MODIFIERS: Number = 4;
@@ -117,247 +134,240 @@ const PROTECTED_PROPERTY_MODIFIERS: Number = 8;
 const PRIVATE_PROPERTY_MODIFIERS: Number = 16;
 
 export const ReuseConstants = {
-  REUSE: 'reuse',
-  REUSE_ID: 'reuseId',
+    REUSE: 'reuse',
+    REUSE_ID: 'reuseId',
 };
 
-const OPTIONAL_MASK = 1 << 7;
-
 export function isClassPropertyOptional(node: arkts.ClassProperty): boolean {
-  if ((node.modifiers & OPTIONAL_MASK) !== 0) {
-    return true;
-  } else {
-    return false;
-  }
+    return arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL);
 }
 
 export function getIdentifierName(node: arkts.AstNode): string {
-  if (!arkts.isIdentifier(node)) {
-    throw new Error(`Except a Identifier type!`);
-  }
-  return node.name;
+    if (!arkts.isIdentifier(node)) {
+        throw new Error(`Except a Identifier type!`);
+    }
+    return node.name;
 }
 
 export function getAnnotationName(annotation: arkts.AnnotationUsage): string {
-  if (!annotation.expr) {
-    throw new Error(`The expr property does not exist!`);
-  }
-  return getIdentifierName(annotation.expr);
+    if (!annotation.expr) {
+        throw new Error(`The expr property does not exist!`);
+    }
+    return getIdentifierName(annotation.expr);
 }
 
 export function getAnnotationUsage(
-  declaration: arkts.StructDeclaration,
-  annotationName: string,
+    declaration: arkts.StructDeclaration,
+    annotationName: string
 ): arkts.AnnotationUsage | undefined {
-  return declaration.definition.annotations.find(
-    (annotation) =>
-      annotation.expr &&
-      arkts.isIdentifier(annotation.expr) &&
-      annotation.expr.name === annotationName,
-  );
+    return declaration.definition.annotations.find(
+        (annotation) =>
+            annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name === annotationName
+    );
 }
 
 export function getClassAnnotationUsage(
-  declaration: arkts.ClassDeclaration,
-  annotationName: string,
+    declaration: arkts.ClassDeclaration,
+    annotationName: string
 ): arkts.AnnotationUsage | undefined {
-  if (!declaration.definition || !declaration.definition.annotations) {
-    return undefined;
-  }
-  return declaration.definition.annotations.find(
-    (annotation) =>
-      annotation.expr &&
-      ((arkts.isIdentifier(annotation.expr) && annotation.expr.name === annotationName) ||
-        (arkts.isCallExpression(annotation.expr) &&
-          arkts.isIdentifier(annotation.expr) &&
-          annotation.expr.name === annotationName))
-  );
+    if (!declaration.definition || !declaration.definition.annotations) {
+        return undefined;
+    }
+    return declaration.definition.annotations.find(
+        (annotation) =>
+            annotation.expr &&
+            ((arkts.isIdentifier(annotation.expr) && annotation.expr.name === annotationName) ||
+                (arkts.isCallExpression(annotation.expr) &&
+                    arkts.isIdentifier(annotation.expr) &&
+                    annotation.expr.name === annotationName))
+    );
 }
 
-
-
 export function getClassPropertyName(property: arkts.ClassProperty): string | undefined {
-  if (!property.key) {
-    return undefined;
-  }
-  return getIdentifierName(property.key);
+    if (!property.key) {
+        return undefined;
+    }
+    return getIdentifierName(property.key);
 }
 
 export function getClassPropertyType(property: arkts.ClassProperty): string | undefined {
-  return property.typeAnnotation?.dumpSrc();
+    return property.typeAnnotation?.dumpSrc();
 }
 
-export function getClassPropertyAnnotationNames(
-  property: arkts.ClassProperty,
-): string[] {
-  return property.annotations.map((annotation) =>
-    getAnnotationName(annotation),
-  );
+export function getClassPropertyAnnotationNames(property: arkts.ClassProperty): string[] {
+    return property.annotations.map((annotation) => getAnnotationName(annotation));
 }
 
 export function isPublicClassProperty(property: arkts.ClassProperty): boolean {
-  // todo 使用接口实现
-  return property.modifiers === PUBLIC_PROPERTY_MODIFIERS;
+    return arkts.hasModifierFlag(property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
 }
 
 export function isPrivateClassProperty(property: arkts.ClassProperty): boolean {
-  // todo 使用接口实现
-  return property.modifiers === PRIVATE_PROPERTY_MODIFIERS;
+    return arkts.hasModifierFlag(property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE);
 }
 
-export function isProtectedlassProperty(property: arkts.ClassProperty): boolean {
-  // todo 使用接口实现
-  return property.modifiers === PROTECTED_PROPERTY_MODIFIERS;
+export function isProtectedClassProperty(property: arkts.ClassProperty): boolean {
+    return arkts.hasModifierFlag(property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PROTECTED);
 }
 
 export function listToString(strList: string[]): string {
-  return strList.length > 1 ? `${strList.slice(0, -1).join(', ')} and ${strList.slice(-1)}` : strList.join('');
+    return strList.length > 1 ? `${strList.slice(0, -1).join(', ')} and ${strList.slice(-1)}` : strList.join('');
 }
 
 export class MultiMap<K, V> {
-  private readonly map: Map<K, V[]>;
-  constructor() {
-    this.map = new Map();
-  }
-  /**
-   * Add key-value pairs to MultiMap
-   * @param key key
-   * @param value value
-   */
-  add(key: K, value: V): void {
-    if (!this.map.has(key)) {
-      this.map.set(key, []);
+    private readonly map: Map<K, V[]>;
+    constructor() {
+        this.map = new Map();
     }
-    this.map.get(key)!.push(value);
-  }
+    /**
+     * Add key-value pairs to MultiMap
+     * @param key key
+     * @param value value
+     */
+    add(key: K, value: V): void {
+        if (!this.map.has(key)) {
+            this.map.set(key, []);
+        }
+        this.map.get(key)!.push(value);
+    }
 
-  /**
-   * Gets all the values of the specified key
-   * @param key key
-   * @returns An array of values, which returns an empty array if the key does not exist
-   */
-  get(key: K): V[] {
-    return this.map.get(key) || [];
-  }
+    /**
+     * Gets all the values of the specified key
+     * @param key key
+     * @returns An array of values, which returns an empty array if the key does not exist
+     */
+    get(key: K): V[] {
+        return this.map.get(key) || [];
+    }
 
-  /**
-   * Check if the specified key exists in the MultiMap
-   * @param key key
-   * @returns Whether it exists
-   */
-  has(key: K): boolean {
-    return this.map.has(key);
-  }
+    /**
+     * Check if the specified key exists in the MultiMap
+     * @param key key
+     * @returns Whether it exists
+     */
+    has(key: K): boolean {
+        return this.map.has(key);
+    }
 }
 
 export function hasAnnotation(annoArray: readonly arkts.AnnotationUsage[], annotationName: string): boolean {
-  return (annoArray || []).some(anno =>
-    anno.expr && getIdentifierName(anno.expr) === annotationName
-  );
+    return (annoArray || []).some((anno) => anno.expr && getIdentifierName(anno.expr) === annotationName);
 }
 
 interface ComponentJson {
-  name: string;
-  atomic?: boolean;
-  attrs: string[];
-  single?: boolean;
-  parents?: string[];
-  children?: string[];
+    name: string;
+    atomic?: boolean;
+    attrs: string[];
+    single?: boolean;
+    parents?: string[];
+    children?: string[];
 }
 
 export interface UISyntaxRuleComponents {
-  builtInAttributes: string[];
-  containerComponents: string[];
-  atomicComponents: string[];
-  singleChildComponents: string[];
-  validParentComponent: Map<string, string[]>;
-  validChildComponent: Map<string, string[]>;
+    builtInAttributes: string[];
+    containerComponents: string[];
+    atomicComponents: string[];
+    singleChildComponents: string[];
+    validParentComponent: Map<string, string[]>;
+    validChildComponent: Map<string, string[]>;
 }
 
 export function getUIComponents(dirPath: string): UISyntaxRuleComponents {
-  const absolutePath = path.resolve(__dirname, dirPath);
-  let builtInAttributes: string[] = [];
-  let containerComponents: string[] = [];
-  let atomicComponents: string[] = [];
-  let singleChildComponents: string[] = [];
-  let validParentComponent: Map<string, string[]> = new Map();
-  let validChildComponent: Map<string, string[]> = new Map();
+    const absolutePath = path.resolve(__dirname, dirPath);
+    let builtInAttributes: string[] = [];
+    let containerComponents: string[] = [];
+    let atomicComponents: string[] = [];
+    let singleChildComponents: string[] = [];
+    let validParentComponent: Map<string, string[]> = new Map();
+    let validChildComponent: Map<string, string[]> = new Map();
 
-  if (!fs.existsSync(absolutePath)) {
-    throw new Error(`Directory does not exist: ${absolutePath}`);
-  }
-  // Read all files in the directory
-  const files = fs.readdirSync(absolutePath);
-
-  files.forEach(file => {
-    if (path.extname(file) === '.json') {
-      const filePath = path.join(absolutePath, file);
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      const componentJson: ComponentJson = JSON.parse(fileContent);
-      // Record the container component name
-      if ((!componentJson.atomic || componentJson.atomic !== true) && (componentJson.name)) {
-        containerComponents.push(componentJson.name);
-      }
-      // Record the atomic component name
-      if (componentJson.atomic && componentJson.atomic === true && componentJson.name) {
-        atomicComponents.push(componentJson.name);
-      }
-      // Record the name of a single subcomponent component name
-      if (componentJson.single && componentJson.single === true && componentJson.name) {
-        singleChildComponents.push(componentJson.name);
-      }
-      // Record a valid parent component name
-      if (componentJson.parents && componentJson.name) {
-        validParentComponent.set(componentJson.name, componentJson.parents);
-      }
-      // Record a valid children component name
-      if (componentJson.children && componentJson.name) {
-        validChildComponent.set(componentJson.name, componentJson.children);
-      }
-      // Document all built-in attributes
-      componentJson.attrs?.filter(attr => !builtInAttributes.includes(attr))
-        .forEach(attr => builtInAttributes.push(attr));
+    if (!fs.existsSync(absolutePath)) {
+        throw new Error(`Directory does not exist: ${absolutePath}`);
     }
-  });
-  const componentsInfo: UISyntaxRuleComponents = {
-    builtInAttributes,
-    containerComponents,
-    atomicComponents,
-    singleChildComponents,
-    validParentComponent,
-    validChildComponent,
-  };
+    // Read all files in the directory
+    const files = fs.readdirSync(absolutePath);
 
-  return componentsInfo;
+    files.forEach((file) => {
+        if (path.extname(file) === '.json') {
+            const filePath = path.join(absolutePath, file);
+            const fileContent = fs.readFileSync(filePath, 'utf-8');
+            const componentJson: ComponentJson = JSON.parse(fileContent);
+            // Record the container component name
+            if ((!componentJson.atomic || componentJson.atomic !== true) && componentJson.name) {
+                containerComponents.push(componentJson.name);
+            }
+            // Record the atomic component name
+            if (componentJson.atomic && componentJson.atomic === true && componentJson.name) {
+                atomicComponents.push(componentJson.name);
+            }
+            // Record the name of a single subcomponent component name
+            if (componentJson.single && componentJson.single === true && componentJson.name) {
+                singleChildComponents.push(componentJson.name);
+            }
+            // Record a valid parent component name
+            if (componentJson.parents && componentJson.name) {
+                validParentComponent.set(componentJson.name, componentJson.parents);
+            }
+            // Record a valid children component name
+            if (componentJson.children && componentJson.name) {
+                validChildComponent.set(componentJson.name, componentJson.children);
+            }
+            // Document all built-in attributes
+            componentJson.attrs
+                ?.filter((attr) => !builtInAttributes.includes(attr))
+                .forEach((attr) => builtInAttributes.push(attr));
+        }
+    });
+    const componentsInfo: UISyntaxRuleComponents = {
+        builtInAttributes,
+        containerComponents,
+        atomicComponents,
+        singleChildComponents,
+        validParentComponent,
+        validChildComponent,
+    };
+
+    return componentsInfo;
 }
 
 export function isBuiltInAttribute(context: UISyntaxRuleContext, attributeName: string): boolean {
-  return context.componentsInfo.builtInAttributes.includes(attributeName);
+    return context.componentsInfo.builtInAttributes.includes(attributeName);
 }
 export function isBuildInComponent(context: UISyntaxRuleContext, componentName: string): boolean {
-  return context.componentsInfo.containerComponents.includes(componentName) ||
-    context.componentsInfo.atomicComponents.includes(componentName);
+    return (
+        context.componentsInfo.containerComponents.includes(componentName) ||
+        context.componentsInfo.atomicComponents.includes(componentName)
+    );
 }
 
 export function isAtomicComponent(context: UISyntaxRuleContext, componentName: string): boolean {
-  return context.componentsInfo.atomicComponents.includes(componentName);
+    return context.componentsInfo.atomicComponents.includes(componentName);
 }
 
 export function isContainerComponent(context: UISyntaxRuleContext, componentName: string): boolean {
-  return context.componentsInfo.containerComponents.includes(componentName);
+    return context.componentsInfo.containerComponents.includes(componentName);
 }
 
 export function isSingleChildComponent(context: UISyntaxRuleContext, componentName: string): boolean {
-  return context.componentsInfo.singleChildComponents.includes(componentName);
+    return context.componentsInfo.singleChildComponents.includes(componentName);
 }
 
 export function readJSON<T>(path: string): T {
-  if (!fs.existsSync(path)) {
-    throw new Error(`Failed to read file becasue the ${path} is not exist.`);
-  }
-  const content = fs.readFileSync(path).toString();
-  if (!content) {
-    throw new Error(`Failed to read file because the file content is empty.`);
-  }
-  return JSON.parse(content) as T;
+    if (!fs.existsSync(path)) {
+        throw new Error(`Failed to read file becasue the ${path} is not exist.`);
+    }
+    const content = fs.readFileSync(path).toString();
+    if (!content) {
+        throw new Error(`Failed to read file because the file content is empty.`);
+    }
+    return JSON.parse(content) as T;
+}
+
+export function tracePerformance<T extends (...args: any[]) => any>(name: string, fn: T): T {
+    return function (this: ThisParameterType<T>, ...args: Parameters<T>): ReturnType<T> {
+        arkts.Performance.getInstance().createEvent(name);
+        const result = fn.apply(this, args);
+        arkts.Performance.getInstance().stopEvent(name, true);
+        return result;
+    } as T;
 }
