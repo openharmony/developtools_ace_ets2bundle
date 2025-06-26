@@ -16,13 +16,13 @@
 import fs from 'fs';
 import path from 'path';
 
-import { sdkConfigs } from '../../../../main';
+import {
+  projectConfig,
+  sdkConfigs
+} from '../../../../main';
 import { toUnixPath } from '../../../utils';
 import {
-  ARKTS_1_1,
   ArkTSEvolutionModule,
-  ARKTS_1_2,
-  HYBRID,
   FileInfo,
   AliasConfig
 } from './type';
@@ -37,8 +37,17 @@ import {
 } from '../logger';
 import {
   ArkTSErrorDescription,
+  ArkTSInternalErrorDescription,
   ErrorCode
 } from '../error_code';
+import { EXTNAME_TS } from '../common/ark_define';
+import {
+  ARKTS_1_1,
+  ARKTS_1_2,
+  ARKTS_HYBRID
+} from './pre_define';
+
+export let entryFileLanguageInfo = new Map();
 
 export class FileManager {
   private static instance: FileManager | undefined = undefined;
@@ -208,6 +217,7 @@ export class FileManager {
     FileManager.glueCodeFileInfos?.clear();
     FileManager.aliasConfig?.clear();
     FileManager.mixCompile = false;
+    entryFileLanguageInfo.clear();
   }
 
   getLanguageVersionByFilePath(filePath: string): {
@@ -255,7 +265,7 @@ export class FileManager {
       return undefined;
     }
 
-    const isHybrid = matchedModuleInfo.language === HYBRID;
+    const isHybrid = matchedModuleInfo.language === ARKTS_HYBRID;
     const pkgName = matchedModuleInfo.packageName;
 
     if (!isHybrid) {
@@ -443,3 +453,95 @@ export function isBridgeCode(filePath: string, projectConfig: Object): boolean {
   }
   return false;
 }
+
+export function isMixCompile(): boolean {
+  return process.env.mixCompile === 'true';
+}
+
+/**
+ * Delete the 1.2 part in abilityPagesFullPath. This array will be used in transform.
+ * The 1.2 source files will not participate in the 1.1 compilation process.
+ */
+export function processAbilityPagesFullPath(abilityPagesFullPath: Set<string>): void {
+  if (!isMixCompile()) {
+    return;
+  }
+
+  const extensions = ['.ts', '.ets'];
+
+  for (const filePath of Array.from(abilityPagesFullPath)) {
+    let realPath: string | null = null;
+
+    for (const ext of extensions) {
+      const candidate = filePath.endsWith(ext) ? filePath : filePath + ext;
+      if (fs.existsSync(candidate)) {
+        realPath = candidate;
+        break;
+      }
+    }
+
+    if (!realPath) {
+      continue;
+    }
+
+    const firstLine = readFirstLineSync(realPath);
+    if (firstLine.includes('use static')) {
+      abilityPagesFullPath.delete(filePath);
+    }
+  }
+}
+
+
+export function transformAbilityPages(abilityPath: string): boolean {
+  const entryBridgeCodePath = process.env.entryBridgeCodePath;
+  if (!entryBridgeCodePath) {
+    const errInfo = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
+      ArkTSInternalErrorDescription,
+      `Missing entryBridgeCodePath`
+    );
+    throw Error(errInfo.toString());
+  }
+  if (!entryFileLanguageInfo?.get(abilityPath)) {
+    return false;
+  }
+  if (abilityPath.includes(':')) {
+    abilityPath = abilityPath.substring(0, abilityPath.lastIndexOf(':'));
+  }
+  const bridgeCodePath = path.join(entryBridgeCodePath, abilityPath + EXTNAME_TS);
+  if (fs.existsSync(bridgeCodePath)) {
+    projectConfig.entryObj[transformModuleNameToRelativePath(abilityPath)] = bridgeCodePath;
+    return true;
+  }
+  return false;
+}
+
+function transformModuleNameToRelativePath(moduleName): string {
+  let defaultSourceRoot = 'src/main';
+  const normalizedModuleName = moduleName.replace(/\\/g, '/');
+  const normalizedRoot = defaultSourceRoot.replace(/\\/g, '/');
+
+  const rootIndex = normalizedModuleName.indexOf(`/${normalizedRoot}/`);
+  if (rootIndex === -1) {
+    const errInfo = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_WRONG_MODULE_NAME_FROM_ACEMODULEJSON,
+      ArkTSInternalErrorDescription,
+      `defaultSourceRoot '${defaultSourceRoot}' not found ` +
+      `when process moduleName '${moduleName}'`
+    );
+    throw Error(errInfo.toString());
+  }
+
+  const relativePath = normalizedModuleName.slice(rootIndex + normalizedRoot.length + 1);
+  return './' + relativePath;
+}
+
+export function getApiPathForInterop(apiDirs: string[], languageVersion: string): void {
+  if (languageVersion !== ARKTS_1_2) {
+    return;
+  }
+
+  const staticPaths = [...FileManager.staticSDKDeclPath];
+  apiDirs.unshift(...staticPaths);
+}
+

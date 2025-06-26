@@ -102,7 +102,7 @@ import {
   LogData,
   LogDataFactory
 } from '../../../lib/fast_build/ark_compiler/logger';
-import { arkTSEvolutionModuleMap } from '../../../lib/process_arkts_evolution';
+import { arkTSEvolutionModuleMap } from '../../../lib/fast_build/ark_compiler/interop/process_arkts_evolution';
 
 function checkGenerateEs2AbcCmdExpect(cmdArgs: Array<object>, compatibleSdkVersion: string, byteCodeHar: boolean): void {
   const fileThreads: number = cpus();
@@ -829,7 +829,7 @@ mocha.describe('test module_mode file api', function () {
         'language': '1.2'
       }
     };
-    
+    process.env.mixCompile = 'true';
     this.rollup.moduleInfos.push(moduleInfoMock);
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     sourceMapGenerator.setNewSoureMaps(false);
@@ -841,6 +841,7 @@ mocha.describe('test module_mode file api', function () {
     this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
     this.rollup.share.allFiles.delete(arkTSEvoFile);
     SourceMapGenerator.cleanSourceMapObject();
+    process.env.mixCompile = 'false';
   });
 
   mocha.it('3-1-1: test updateCachedSourceMaps under build debug: cacheSourceMapPath not exist', function () {

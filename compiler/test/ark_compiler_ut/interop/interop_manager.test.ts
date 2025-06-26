@@ -22,7 +22,7 @@ import {
   collectSDKInfo,
   isBridgeCode
  } from '../../../lib/fast_build/ark_compiler/interop/interop_manager';
-import { ARKTS_1_1, ARKTS_1_2, HYBRID } from '../../../lib/fast_build/ark_compiler/interop/type';
+import { ARKTS_1_1, ARKTS_1_2, ARKTS_HYBRID } from '../../../lib/fast_build/ark_compiler/interop/pre_define';
 import { sdkConfigs } from '../../../main';
 import { toUnixPath } from '../../../lib/utils';
 
@@ -108,7 +108,7 @@ mocha.describe('test interop_manager file api', function () {
     });
 
     dependentModuleMap.set('hybrid', {
-      language: HYBRID,
+      language: ARKTS_HYBRID,
       packageName: 'hybrid',
       moduleName: 'hybrid',
       modulePath: '/MyApplication16/hybrid',
