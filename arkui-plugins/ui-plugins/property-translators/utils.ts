@@ -137,15 +137,6 @@ export function findDecoratorInfos(
     return infos;
 }
 
-export function getStateManagementType(decoratorInfo: DecoratorInfo): StateManagementTypes {
-    const decoratorName = decoratorInfo.name;
-    const typeName = DECORATOR_TYPE_MAP.get(decoratorName);
-    if (!!typeName) {
-        return typeName;
-    }
-    return StateManagementTypes.MUTABLE_STATE;
-}
-
 export function collectStateManagementTypeImport(type: StateManagementTypes): void {
     ImportCollector.getInstance().collectImport(type);
 }
@@ -438,3 +429,4 @@ export class PropertyCache {
         this._cache.set(name, { ...this._cache.get(name), toRecordBody: newToRecordBody });
     }
 }
+
