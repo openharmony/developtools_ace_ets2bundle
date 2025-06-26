@@ -25,6 +25,9 @@ import {
     CustomComponentInfo,
     collectCustomComponentScopeInfo,
     isComponentStruct,
+    isCustomDialogControllerOptions,
+    getComponentExtendsName,
+    ComponentType,
 } from './utils';
 import {
     backingField,
@@ -52,7 +55,6 @@ import {
     EntryWrapperNames,
 } from '../common/predefines';
 import { generateInstantiateInterop } from './interop/interop';
-import { createCustomDialogMethod, isNewCustomDialogController, transformController } from './customdialog';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string;
@@ -76,6 +78,7 @@ export class ComponentTransformer extends AbstractVisitor {
     private structMembersMap: Map<string, arkts.AstNode[]> = new Map();
     private isCustomComponentImported: boolean = false;
     private isCustomComponentV2Imported: boolean = false;
+    private isBaseCustomDialogImported: boolean = false;
     private isEntryPointImported: boolean = false;
     private isPageLifeCycleImported: boolean = false;
     private isLayoutCallbackImported: boolean = false;
@@ -83,9 +86,14 @@ export class ComponentTransformer extends AbstractVisitor {
     private hasLegacy: boolean = false;
     private legacyStructMap: Map<string, StructMap> = new Map();
     private legacyCallMap: Map<string, string> = new Map();
-    private customDialogController: string = '';
     private projectConfig: ProjectConfig | undefined;
     private entryRouteName: string | undefined;
+    private componentType: ComponentType = {
+        hasComponent: false,
+        hasComponentV2: false,
+        hasCustomDialog: false,
+        hasCustomLayout: false,
+    };
 
     constructor(options?: ComponentTransformerOptions) {
         const _options: ComponentTransformerOptions = options ?? {};
@@ -101,6 +109,7 @@ export class ComponentTransformer extends AbstractVisitor {
         this.structMembersMap = new Map();
         this.isCustomComponentImported = false;
         this.isCustomComponentV2Imported = false;
+        this.isBaseCustomDialogImported = false;
         this.isEntryPointImported = false;
         this.isPageLifeCycleImported = false;
         this.isLayoutCallbackImported = false;
@@ -108,7 +117,12 @@ export class ComponentTransformer extends AbstractVisitor {
         this.hasLegacy = false;
         this.legacyStructMap = new Map();
         this.legacyCallMap = new Map();
-        this.customDialogController = '';
+        this.componentType = {
+            hasComponent: false,
+            hasComponentV2: false,
+            hasCustomDialog: false,
+            hasCustomLayout: false,
+        };
     }
 
     enter(node: arkts.AstNode) {
@@ -132,6 +146,13 @@ export class ComponentTransformer extends AbstractVisitor {
                 CustomComponentNames.COMPONENT_V2_CLASS_NAME
             );
         }
+        if (arkts.isETSImportDeclaration(node) && !this.isBaseCustomDialogImported) {
+            this.isBaseCustomDialogImported = !!findLocalImport(
+                node,
+                CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
+                CustomComponentNames.BASE_CUSTOM_DIALOG_NAME
+            );
+        }
         if (arkts.isETSImportDeclaration(node) && !this.isEntryPointImported) {
             this.isEntryPointImported = !!findLocalImport(
                 node,
@@ -153,9 +174,6 @@ export class ComponentTransformer extends AbstractVisitor {
                 CustomComponentNames.LAYOUT_CALLBACK
             );
         }
-        if (this.isCustomDialog() && arkts.isClassProperty(node)) {
-            this.hasCustomDialogController(node);
-        }
     }
 
     exit(node: arkts.AstNode) {
@@ -164,38 +182,6 @@ export class ComponentTransformer extends AbstractVisitor {
             if (this.scopeInfos[this.scopeInfos.length - 1]?.name === node.definition.ident.name) {
                 this.scopeInfos.pop();
             }
-        }
-    }
-
-    isCustomDialog(): boolean {
-        if (this.scopeInfos.length === 0) {
-            return false;
-        }
-        const scopeInfo: ScopeInfo = this.scopeInfos[this.scopeInfos.length - 1];
-        return !!scopeInfo.annotations.customdialog;
-    }
-
-    hasController(node: arkts.ETSTypeReference, key_name: string): void {
-        const ident = node.part?.name;
-        if (ident && arkts.isIdentifier(ident) && ident.name === 'CustomDialogController') {
-            this.customDialogController = key_name;
-        }
-    }
-
-    hasCustomDialogController(node: arkts.ClassProperty): void {
-        const key = node.key;
-        if (!(key && arkts.isIdentifier(key) && node.typeAnnotation)) {
-            return;
-        }
-        const typeAnno = node.typeAnnotation;
-        if (arkts.isETSUnionType(typeAnno)) {
-            for (const type of typeAnno.types) {
-                if (arkts.isETSTypeReference(type)) {
-                    this.hasController(type, key.name);
-                }
-            }
-        } else if (arkts.isETSTypeReference(typeAnno)) {
-            this.hasController(typeAnno, key.name);
         }
     }
 
@@ -230,18 +216,7 @@ export class ComponentTransformer extends AbstractVisitor {
             updateStatements.push(factory.createIntrinsicAnnotationDeclaration({ expr }));
         }
         if (this.componentInterfaceCollection.length > 0) {
-            if (!this.isCustomComponentImported)
-                this.createImportDeclaration(
-                    CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
-                    CustomComponentNames.COMPONENT_CLASS_NAME
-                );
-            if (!this.isCustomComponentV2Imported)
-                this.createImportDeclaration(
-                    CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
-                    CustomComponentNames.COMPONENT_V2_CLASS_NAME
-                );
-            if (!this.isLayoutCallbackImported)
-                this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.LAYOUT_CALLBACK);
+            this.insertComponentImport();
             updateStatements.push(...this.componentInterfaceCollection);
         }
 
@@ -253,11 +228,7 @@ export class ComponentTransformer extends AbstractVisitor {
                 this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.PAGE_LIFE_CYCLE);
             updateStatements.push(...this.entryNames.map(entryFactory.generateEntryWrapper));
             updateStatements.push(
-                entryFactory.callRegisterNamedRouter(
-                    this.entryRouteName,
-                    this.projectConfig,
-                    this.program?.absName
-                )
+                entryFactory.callRegisterNamedRouter(this.entryRouteName, this.projectConfig, this.program?.absName)
             );
             this.createImportDeclaration(ENTRY_POINT_IMPORT_SOURCE_NAME, NavigationNames.NAVINTERFACE);
         }
@@ -265,6 +236,30 @@ export class ComponentTransformer extends AbstractVisitor {
             return arkts.factory.updateEtsScript(node, [...node.statements, ...updateStatements]);
         }
         return node;
+    }
+
+    insertComponentImport(): void {
+        if (!this.isCustomComponentImported && this.componentType.hasComponent) {
+            this.createImportDeclaration(
+                CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
+                CustomComponentNames.COMPONENT_CLASS_NAME
+            );
+        }
+        if (!this.isCustomComponentV2Imported && this.componentType.hasComponentV2) {
+            this.createImportDeclaration(
+                CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
+                CustomComponentNames.COMPONENT_V2_CLASS_NAME
+            );
+        }
+        if (!this.isBaseCustomDialogImported && this.componentType.hasCustomDialog) {
+            this.createImportDeclaration(
+                CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
+                CustomComponentNames.BASE_CUSTOM_DIALOG_NAME
+            );
+        }
+        if (!this.isLayoutCallbackImported && this.componentType.hasCustomLayout) {
+            this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.LAYOUT_CALLBACK);
+        }
     }
 
     updateEntryPoint(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
@@ -349,11 +344,6 @@ export class ComponentTransformer extends AbstractVisitor {
                 this.entryRouteName = routeName.value.str;
             }
         }
-        if (!!scopeInfo.annotations.customdialog) {
-            const setDialogController = createCustomDialogMethod(this.customDialogController);
-            newDefinitionBody.push(setDialogController);
-            this.customDialogController = '';
-        }
         const newDefinition: arkts.ClassDefinition = this.createNewDefinition(
             node,
             className,
@@ -390,9 +380,7 @@ export class ComponentTransformer extends AbstractVisitor {
             }
         }
         const scopeInfo = this.scopeInfos[this.scopeInfos.length - 1];
-        const extendsName: string = scopeInfo.annotations.component
-            ? CustomComponentNames.COMPONENT_CLASS_NAME
-            : CustomComponentNames.COMPONENT_V2_CLASS_NAME;
+        const extendsName: string = getComponentExtendsName(scopeInfo.annotations, this.componentType);
         return arkts.factory
             .createClassDefinition(
                 definition.ident,
@@ -538,9 +526,6 @@ export class ComponentTransformer extends AbstractVisitor {
         if (arkts.isEtsScript(newNode)) {
             return this.processEtsScript(newNode);
         }
-        if (isNewCustomDialogController(newNode)) {
-            return transformController(newNode as arkts.ETSNewClassInstanceExpression);
-        }
         if (
             arkts.isStructDeclaration(newNode) &&
             this.scopeInfos.length > 0 &&
@@ -556,6 +541,12 @@ export class ComponentTransformer extends AbstractVisitor {
             newNode.definition?.ident?.name === EntryWrapperNames.ENTRY_POINT_CLASS_NAME
         ) {
             return this.updateEntryPoint(newNode);
+        }
+        if (
+            arkts.isTSInterfaceDeclaration(newNode) &&
+            isCustomDialogControllerOptions(newNode, this.externalSourceName)
+        ) {
+            return factory.updateCustomDialogOptionsInterface(newNode);
         }
         // process interop code
         if (!this.hasLegacy) {

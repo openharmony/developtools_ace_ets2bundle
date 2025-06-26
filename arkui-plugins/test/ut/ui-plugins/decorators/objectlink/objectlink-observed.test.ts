@@ -67,10 +67,6 @@ import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent"
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
 
-import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Entry as Entry, Column as Column, Button as Button, ClickEvent as ClickEvent } from "@ohos.arkui.component";
