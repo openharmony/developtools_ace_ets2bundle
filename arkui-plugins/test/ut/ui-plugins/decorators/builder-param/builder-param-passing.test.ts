@@ -40,10 +40,6 @@ const parsedTransform: Plugins = {
 const expectedAfterUIScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Entry as Entry, Builder as Builder, BuilderParam as BuilderParam, Column as Column, Text as Text } from "@ohos.arkui.component";
@@ -128,8 +124,6 @@ function main() {}
 const expectedAfterMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Entry as Entry, Builder as Builder, BuilderParam as BuilderParam, Column as Column, Text as Text } from "@ohos.arkui.component";
 

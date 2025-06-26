@@ -44,10 +44,6 @@ import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent"
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
 
-import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Prop as Prop, Column as Column, Entry as Entry } from "@kit.ArkUI";
@@ -120,10 +116,6 @@ import { NavInterface as NavInterface } from "arkui.UserView";
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
-
-import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
