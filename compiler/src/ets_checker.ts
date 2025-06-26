@@ -34,7 +34,6 @@ import {
   preprocessNewExtend
 } from './validate_ui_syntax';
 import {
-  ARKTS_1_1,
   INNER_COMPONENT_MEMBER_DECORATORS,
   COMPONENT_DECORATORS_PARAMS,
   COMPONENT_BUILD_FUNCTION,
@@ -106,16 +105,18 @@ import { ErrorCodeModule } from './hvigor_error_code/const/error_code_module';
 import { buildErrorInfoFromDiagnostic } from './hvigor_error_code/utils';
 import { concatenateEtsOptions, getExternalComponentPaths } from './external_component_map';
 import {
-  RunnerParms,
-  generateInteropDecls
-} from '../node_modules/declgen/build/src/generateInteropDecls';
+  getArkTSEvoDeclFilePath,
+  redirectToDeclFileForInterop
+} from './fast_build/ark_compiler/interop/process_arkts_evolution';
 import {
-  arkTSEvolutionModuleMap,
-  arkTSHybridModuleMap,
-  getArkTSEvoDeclFilePath
-} from './process_arkts_evolution';
-import { FileManager } from './fast_build/ark_compiler/interop/interop_manager';
-import { ARKTS_1_2 } from './pre_define';
+  FileManager,
+  getApiPathForInterop,
+  isMixCompile
+} from './fast_build/ark_compiler/interop/interop_manager';
+import {
+  ARKTS_1_1,
+  ARKTS_1_2
+} from './fast_build/ark_compiler/interop/pre_define';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -613,7 +614,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   MemoryMonitor.stopRecordStage(runArkTSLinterRecordInfo);
   ts.PerformanceDotting.stopAdvanced('runArkTSLinterTime');
 
-  if (process.env.watchMode !== 'true' && !projectConfig.isRemoteModule) {
+  if (process.env.watchMode !== 'true') {
     const processBuildHaprrecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP);
     processBuildHap(cacheFile, rootFileNames, parentEvent, rollupShareObject);
     MemoryMonitor.stopRecordStage(processBuildHaprrecordInfo);
@@ -1164,28 +1165,23 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           } else {
             resolvedModules.push(result.resolvedModule);
           }
-        } else if (result.resolvedModule.resolvedFileName && /\.ets$/.test(result.resolvedModule.resolvedFileName) &&
-          !/\.d\.ets$/.test(result.resolvedModule.resolvedFileName) && (arkTSEvolutionModuleMap.size !== 0 || arkTSHybridModuleMap.size !== 0)) {
+        } else if (isMixCompile() && result.resolvedModule.resolvedFileName && /\.ets$/.test(result.resolvedModule.resolvedFileName) &&
+          !/\.d\.ets$/.test(result.resolvedModule.resolvedFileName)) {
           // When result has a value and the path parsed is the source code file path of module 1.2,
           // the parsing result needs to be modified to the glue code path of module 1.2
-          let arktsEvoDeclFilePathExist: boolean = false;
-          const resolvedFileName: string = toUnixPath(result.resolvedModule.resolvedFileName);
-          const resultDETSPath: string = getArkTSEvoDeclFilePath({ moduleRequest: '', resolvedFileName });
-          if (ts.sys.fileExists(resultDETSPath)) {
-            resolvedModules.push(getResolveModule(resultDETSPath, EXTNAME_D_ETS));
-            arktsEvoDeclFilePathExist = true;
-          }
-          if (!arktsEvoDeclFilePathExist) {
+          const queryResult = redirectToDeclFileForInterop(result.resolvedModule.resolvedFileName);
+          if (queryResult) {
+            resolvedModules.push(queryResult);
+          } else {
             resolvedModules.push(result.resolvedModule);
           }
         } else {
           resolvedModules.push(result.resolvedModule);
         }
       } else if (new RegExp(`^@(${sdkConfigPrefix})\\.`, 'i').test(moduleName.trim())) {
-        const searchPaths = languageVersion && languageVersion === ARKTS_1_2
-          ? Array.from(FileManager.staticSDKDeclPath)
-          : [...new Set(sdkConfigs.flatMap(config => config.apiPath))];
-        const resolveModuleInfo = getRealModulePath(searchPaths, moduleName, ['.d.ts', '.d.ets']);
+        const apiPaths = sdkConfigs.flatMap(config => config.apiPath);
+        isMixCompile() && getApiPathForInterop(apiPaths, languageVersion);
+        const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(apiPaths, moduleName, ['.d.ts', '.d.ets']);
         const modulePath = resolveModuleInfo.modulePath;
         const extension = resolveModuleInfo.isEts ? '.d.ets' : '.d.ts';
         const fullModuleName = moduleName + extension;
@@ -1232,7 +1228,8 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
             path.resolve(__dirname, '../node_modules', moduleName + '/index.js');
           const DETSModulePath: string = path.resolve(path.dirname(containingFile),
             /\.d\.ets$/.test(moduleName) ? moduleName : moduleName + EXTNAME_D_ETS);
-          const arktsEvoDeclFilePath: string = getArkTSEvoDeclFilePath({ moduleRequest: moduleName, resolvedFileName: '' });
+          const arktsEvoDeclFilePath: string = isMixCompile() ?
+            getArkTSEvoDeclFilePath({ moduleRequest: moduleName, resolvedFileName: '' }) : '';
           if (ts.sys.fileExists(modulePath)) {
             resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
           } else if (ts.sys.fileExists(systemDETSModulePath)) {
@@ -1247,7 +1244,7 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
             resolvedModules.push(getResolveModule(fileModulePath, '.js'));
           } else if (ts.sys.fileExists(DETSModulePath)) {
             resolvedModules.push(getResolveModule(DETSModulePath, '.d.ets'));
-          } else if (ts.sys.fileExists(arktsEvoDeclFilePath)) {
+          } else if (isMixCompile() && ts.sys.fileExists(arktsEvoDeclFilePath)) {
             resolvedModules.push(getResolveModule(arktsEvoDeclFilePath, '.d.ets'));
           } else {
             const srcIndex: number = projectConfig.projectPath.indexOf('src' + path.sep + 'main');
@@ -1942,38 +1939,4 @@ export function resetEtsCheck(): void {
   targetESVersionChanged = false;
   fileToIgnoreDiagnostics = undefined;
   maxMemoryInServiceChecker = 0;
-}
-
-export function generateDeclarationFileForSTS(rootFileNames: string[]): void {
-  if (!(projectConfig.compileHar || projectConfig.compileShared)) {
-    return;
-  }
-  const unixRootFileNames = rootFileNames.map(path => {
-    return toUnixPath(path);
-  });
-
-  const uniqueFiles = Array.from(new Set([
-    ...unixRootFileNames,
-    /**
-     * arkui lacks explicit import statements and needs to be manually added to the global rootfile,
-     * otherwise an error will be reported during the tsc compilation of declgen
-     */
-    ...readDeaclareFiles()
-  ]));
-
-  const config: RunnerParms = {
-    inputDirs: [],
-    inputFiles: uniqueFiles,
-    outDir: projectConfig.dependentModuleMap.get(projectConfig.entryPackageName).declgenV2OutPath,
-    // use package name as folder name
-    rootDir: projectConfig.modulePath,
-    customResolveModuleNames: resolveModuleNames,
-    customCompilerOptions: compilerOptions,
-    includePaths: [projectConfig.modulePath]
-  };
-  if (fs.existsSync(config.outDir)) {
-    fs.rmSync(config.outDir, { recursive: true, force: true });
-  }
-  fs.mkdirSync(config.outDir, { recursive: true });
-  generateInteropDecls(config);
 }

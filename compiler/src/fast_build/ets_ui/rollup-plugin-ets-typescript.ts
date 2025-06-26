@@ -121,7 +121,7 @@ import { expandAllImportPaths } from '../../import_path_expand';
 import {
   interopTransformLog,
   interopTransform
-} from '../../process_arkts_evolution';
+} from '../ark_compiler/interop/process_arkts_evolution';
 
 let switchTsAst: boolean = true;
 
