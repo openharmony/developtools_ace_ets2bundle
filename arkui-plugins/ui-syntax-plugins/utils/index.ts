@@ -211,7 +211,7 @@ export function isProtectedClassProperty(property: arkts.ClassProperty): boolean
 }
 
 export function listToString(strList: string[]): string {
-    return strList.length > 1 ? `${strList.slice(0, -1).join(', ')} and ${strList.slice(-1)}` : strList.join('');
+    return strList.length > 1 ? `${strList.join(',')}` : strList.join('');
 }
 
 export class MultiMap<K, V> {

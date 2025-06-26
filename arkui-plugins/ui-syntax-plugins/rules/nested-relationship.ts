@@ -27,11 +27,10 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 class NestedRelationshipRule extends AbstractUISyntaxRule {
   public setup(): Record<string, string> {
     return {
-      noChildComponent: `No child component is allowed in the '{{componentName}}' component.`,
+      noChildComponent: `The component '{{componentName}}' can't have any child.`,
       singleChildComponent: `The '{{componentName}}' component can have only one child component.`,
-      delegateChildrenComponentChildren: `The '{{childComponentName}}' component cannot be a child component of the '{{parentComponentName}}' component.`,
-      delegateChildrenComponentParent: `The component '{{parentComponentName}}' can only have the child component {{childComponentList}}.`,
-      delegateParentComponent: `The '{{componentName}}' component can only be nested in the {{parentComponentList}} parent component.`,
+      delegateChildrenComponentParent: `The component '{{parentComponentName}}' can only have the child component '{{childComponentList}}'.`,
+      delegateParentComponent: `The '{{componentName}}' component can only be nested in the '{{parentComponentList}}' parent component.`,
     };
   }
   public parsed(node: arkts.StructDeclaration): void {
@@ -61,14 +60,6 @@ class NestedRelationshipRule extends AbstractUISyntaxRule {
     // If the parent component of the current component is not within the valid range, an error is reported
     const parentComponentName = curNode.expression.name;
     if (!this.context.componentsInfo.validParentComponent.get(componentName)!.includes(parentComponentName)) {
-      this.context.report({
-        node: node,
-        message: this.messages.delegateChildrenComponentChildren,
-        data: {
-          childComponentName: componentName,
-          parentComponentName: parentComponentName,
-        },
-      });
       const parentComponentListArray: string[] = this.context.componentsInfo.validParentComponent.get(componentName)!;
       const parentComponentList: string = listToString(parentComponentListArray);
       this.report({
