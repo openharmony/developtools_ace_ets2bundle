@@ -1,49 +1,45 @@
 {
-    "plugins": {
-        "ui_syntax_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/ui-syntax-plugins/index",
-        "ui_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/ui-plugins/index",
-        "memo_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/memo-plugins/index"
-    },
-
-    "compileFiles": [
-        "./demo/localtest/entry/src/main/ets/pages/new.ets"
-    ],
-
-    "entryFiles": [
-        "./demo/localtest/entry/src/main/ets/pages/new.ets"
-    ],
-
-    "buildMode": "Debug",
-    "projectRootPath": "./demo/localtest/",
-    "moduleRootPath": "./demo/localtest/entry/",
-    "cachePath": "./dist/cache",
-    "loaderOutPath": "./dist",
-    "compileSdkVersion": 20,
-    "compatibleSdkVersion": 20,
-    "bundleName": "com.example.myapplication",
-    "useNormalizedOHMUrl": true,
-    "buildType": "build",
-    "packageName": "entry",
-    "buildSdkPath": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/",
-    "sourceRoots": [
-      "./"
-    ],
-    "moduleType": "shared",
-    "moduleName": "entry",
-    "dependentModuleList": [],
-    "hasMainModule": true,
-    "buildLoaderJson": "",
-    "integratedHsp": false,
-    "allowEmptyBundleName": false,
-    "declgenV2OutPath": "",
-    "externalApiPaths": [
-    ],
-    "level": {
-      "level": 20000,
-      "levelStr": "INFO",
-      "colour": "green"
-    },
-    "isBuildConfigModified": false,
-    "aceModuleJsonPath": "./demo/localtest/entry/src/main/module.json5",
-    "es2pandaMode": 2
+  "plugins": {
+    "ui_syntax_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/ui-syntax-plugins/index",
+    "ui_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/ui-plugins/index",
+    "memo_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/memo-plugins/index"
+  },
+  "compileFiles": [
+    "./demo/localtest/entry/src/main/ets/pages/new.ets"
+  ],
+  "entryFiles": [
+    "./demo/localtest/entry/src/main/ets/pages/new.ets"
+  ],
+  "buildMode": "Debug",
+  "projectRootPath": "./demo/localtest/",
+  "moduleRootPath": "./demo/localtest/entry/",
+  "cachePath": "./dist/cache",
+  "loaderOutPath": "./dist",
+  "compileSdkVersion": 20,
+  "compatibleSdkVersion": 20,
+  "bundleName": "com.example.myapplication",
+  "useNormalizedOHMUrl": true,
+  "buildType": "build",
+  "packageName": "entry",
+  "buildSdkPath": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/",
+  "sourceRoots": [
+    "./"
+  ],
+  "moduleType": "shared",
+  "moduleName": "entry",
+  "dependentModuleList": [],
+  "hasMainModule": true,
+  "buildLoaderJson": "",
+  "integratedHsp": false,
+  "allowEmptyBundleName": false,
+  "declgenV2OutPath": "",
+  "externalApiPaths": [],
+  "level": {
+    "level": 20000,
+    "levelStr": "INFO",
+    "colour": "green"
+  },
+  "isBuildConfigModified": false,
+  "aceModuleJsonPath": "./demo/localtest/entry/src/main/module.json5",
+  "es2pandaMode": 2
 }

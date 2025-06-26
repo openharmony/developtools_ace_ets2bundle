@@ -18,55 +18,58 @@ import { getAnnotationUsage, MAX_ENTRY_DECORATOR_COUNT, PresetDecorators } from 
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 class NoDuplicateEntryRule extends AbstractUISyntaxRule {
-  private entryDecoratorUsages: arkts.AnnotationUsage[] = [];
-  private entryDecoratorUsageIndex = 1;
+    private entryDecoratorUsages: arkts.AnnotationUsage[] = [];
+    private entryDecoratorUsageIndex = 1;
 
-  public setup(): Record<string, string> {
-    return {
-      duplicateEntry: `A page can't contain more then one '@Entry' decorator.`,
-    };
-  }
-  public parsed(node: arkts.StructDeclaration): void {
-    if (!arkts.isStructDeclaration(node)) {
-      return;
-    }
-    let entryDecoratorUsage = getAnnotationUsage(
-      node,
-      PresetDecorators.ENTRY,
-    );
-    if (entryDecoratorUsage) {
-      this.entryDecoratorUsages.push(entryDecoratorUsage);
-    }
-    // If more than one entry decorator is recorded, an error is reported
-    if (this.entryDecoratorUsages.length <= MAX_ENTRY_DECORATOR_COUNT) {
-      return;
-    }
-    if (this.entryDecoratorUsageIndex === MAX_ENTRY_DECORATOR_COUNT) {
-      const entryDecoratorUsage = this.entryDecoratorUsages.at(0)!;
-      this.report({
-        node: entryDecoratorUsage,
-        message: this.messages.duplicateEntry,
-        fix: () => {
-          return {
-            range: [entryDecoratorUsage.startPosition, entryDecoratorUsage.endPosition],
-            code: '',
-          };
-        }
-      });
-    }
-    entryDecoratorUsage = this.entryDecoratorUsages.at(this.entryDecoratorUsageIndex)!;
-    this.report({
-      node: entryDecoratorUsage,
-      message: this.messages.duplicateEntry,
-      fix: () => {
+    public setup(): Record<string, string> {
         return {
-          range: [entryDecoratorUsage.startPosition, entryDecoratorUsage.endPosition],
-          code: '',
+            duplicateEntry: `A page can't contain more then one '@Entry' decorator.`,
         };
-      }
-    });
-    this.entryDecoratorUsageIndex++;
-  }
+    }
+
+    public beforeTransform(): void {
+        this.entryDecoratorUsages = [];
+        this.entryDecoratorUsageIndex = 1;
+    }
+
+    public parsed(node: arkts.StructDeclaration): void {
+        if (!arkts.isStructDeclaration(node)) {
+            return;
+        }
+        let entryDecoratorUsage = getAnnotationUsage(node, PresetDecorators.ENTRY);
+        if (entryDecoratorUsage) {
+            this.entryDecoratorUsages.push(entryDecoratorUsage);
+        }
+        // If more than one entry decorator is recorded, an error is reported
+        if (this.entryDecoratorUsages.length <= MAX_ENTRY_DECORATOR_COUNT) {
+            return;
+        }
+        if (this.entryDecoratorUsageIndex === MAX_ENTRY_DECORATOR_COUNT) {
+            const entryDecoratorUsage = this.entryDecoratorUsages.at(0)!;
+            this.report({
+                node: entryDecoratorUsage,
+                message: this.messages.duplicateEntry,
+                fix: () => {
+                    return {
+                        range: [entryDecoratorUsage.startPosition, entryDecoratorUsage.endPosition],
+                        code: '',
+                    };
+                },
+            });
+        }
+        entryDecoratorUsage = this.entryDecoratorUsages.at(this.entryDecoratorUsageIndex)!;
+        this.report({
+            node: entryDecoratorUsage,
+            message: this.messages.duplicateEntry,
+            fix: () => {
+                return {
+                    range: [entryDecoratorUsage.startPosition, entryDecoratorUsage.endPosition],
+                    code: '',
+                };
+            },
+        });
+        this.entryDecoratorUsageIndex++;
+    }
 }
 
 export default NoDuplicateEntryRule;

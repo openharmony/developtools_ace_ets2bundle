@@ -14,40 +14,102 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { PluginContext, Plugins } from '../common/plugin-context';
-import { ParsedUISyntaxLinterTransformer } from './transformers/parsed-ui-syntax-linter-transformer';
-import { createUISyntaxRuleProcessor } from './processor';
+import { PluginContext, PluginHandler, Plugins } from '../common/plugin-context';
+import {
+    CheckedUISyntaxLinterTransformer,
+    ParsedUISyntaxLinterTransformer,
+} from './transformers/ui-syntax-linter-transformer';
+import { createUISyntaxRuleProcessor, UISyntaxRuleProcessor } from './processor';
+import { UISyntaxLinterVisitor } from './transformers/ui-syntax-linter-visitor';
 import rules from './rules';
+import { matchPrefix } from '../common/arkts-utils';
+import { EXCLUDE_EXTERNAL_SOURCE_PREFIXES, tracePerformance } from './utils';
 
 export function uiSyntaxLinterTransform(): Plugins {
-  const processor = createUISyntaxRuleProcessor(rules);
-  return {
-    name: 'ui-syntax-plugin',
-    parsed(this: PluginContext): arkts.EtsScript | undefined {
-      const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
-      if (!contextPtr) {
-        return undefined;
-      }
-      const program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-      const projectConfig = this.getProjectConfig();
-      const isFrameworkMode = this.getProjectConfig()?.frameworkMode;
-      const canSkipPhases = !isFrameworkMode;
-      if (canSkipPhases) {
-        return undefined;
-      }
-      const node = program.astNode;
-      if (node) {
-        if (projectConfig) {
-          processor.setProjectConfig(projectConfig);
+    const processor = createUISyntaxRuleProcessor(rules);
+    const parsedTransformer = new ParsedUISyntaxLinterTransformer(processor);
+    const checkedTransformer = new CheckedUISyntaxLinterTransformer(processor);
+    return {
+        name: 'ui-syntax-plugin',
+        parsed: createTransformer('parsed', processor, parsedTransformer),
+        checked: createTransformer('checked', processor, checkedTransformer),
+    };
+}
+
+function createTransformer(
+    phase: string,
+    processor: UISyntaxRuleProcessor,
+    transformer: UISyntaxLinterVisitor
+): PluginHandler {
+    const visitedPrograms: Set<any> = new Set();
+    const visitedExternalSources: Set<any> = new Set();
+    return tracePerformance(`UISyntaxPlugin::${phase}`, function (this: PluginContext): arkts.EtsScript | undefined {
+        const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
+        if (!contextPtr) {
+            return undefined;
         }
-        const script = new ParsedUISyntaxLinterTransformer(processor).visitor(
-          node,
-        ) as arkts.EtsScript;
-        arkts.setAllParents(script);
-        this.setArkTSAst(script);
-        return script;
-      }
-      return undefined;
+        const projectConfig = this.getProjectConfig();
+        if (!projectConfig) {
+            return undefined;
+        }
+        processor.setProjectConfig(projectConfig);
+        if (projectConfig.frameworkMode) {
+            return undefined;
+        }
+        const program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+        if (visitedPrograms.has(program.peer)) {
+            return undefined;
+        }
+        const isCoding = this.isCoding?.() ?? false;
+        if (isCoding) {
+            const codingFilePath = this.getCodingFilePath();
+            if (program.absName === codingFilePath) {
+                return transformProgram.call(this, transformer, program);
+            }
+        } else {
+            transformExternalSources.call(this, program, visitedExternalSources, visitedPrograms, transformer);
+            if (program.absName) {
+                return transformProgram.call(this, transformer, program);
+            }
+        }
+        visitedPrograms.add(program.peer);
+        return undefined;
+    });
+}
+
+function transformExternalSources(
+    this: PluginContext,
+    program: arkts.Program,
+    visitedExternalSources: Set<any>,
+    visitedPrograms: Set<any>,
+    transformer: UISyntaxLinterVisitor
+): void {
+    const externalSources = program.externalSources;
+    for (const externalSource of externalSources) {
+        if (matchPrefix(EXCLUDE_EXTERNAL_SOURCE_PREFIXES, externalSource.getName())) {
+            continue;
+        }
+        if (visitedExternalSources.has(externalSource)) {
+            continue;
+        }
+        const programs = externalSource.programs;
+        for (const program of programs) {
+            if (visitedPrograms.has(program.peer)) {
+                continue;
+            }
+            const script = transformer.transform(program.astNode) as arkts.EtsScript;
+            this.setArkTSAst(script);
+        }
+        visitedExternalSources.add(externalSource.peer);
     }
-  };
+}
+
+function transformProgram(
+    this: PluginContext,
+    transformer: UISyntaxLinterVisitor,
+    program: arkts.Program
+): arkts.EtsScript {
+    const script = transformer.transform(program.astNode) as arkts.EtsScript;
+    this.setArkTSAst(script);
+    return script;
 }
