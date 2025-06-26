@@ -298,24 +298,6 @@ KInt impl_ETSFunctionTypeIrFlags(KNativePointer context, KNativePointer receiver
 }
 KOALA_INTEROP_2(ETSFunctionTypeIrFlags, KInt, KNativePointer, KNativePointer);
 
-KBoolean impl_ETSFunctionTypeIrIsThrowingConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ETSFunctionTypeIrIsThrowingConst(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ETSFunctionTypeIrIsThrowingConst, KBoolean, KNativePointer, KNativePointer);
-
-KBoolean impl_ETSFunctionTypeIrIsRethrowingConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ETSFunctionTypeIrIsRethrowingConst(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ETSFunctionTypeIrIsRethrowingConst, KBoolean, KNativePointer, KNativePointer);
-
 KBoolean impl_ETSFunctionTypeIrIsExtensionFunctionConst(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -3240,24 +3222,6 @@ KBoolean impl_ScriptFunctionHasThrowStatementConst(KNativePointer context, KNati
     return result;
 }
 KOALA_INTEROP_2(ScriptFunctionHasThrowStatementConst, KBoolean, KNativePointer, KNativePointer);
-
-KBoolean impl_ScriptFunctionIsThrowingConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ScriptFunctionIsThrowingConst(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ScriptFunctionIsThrowingConst, KBoolean, KNativePointer, KNativePointer);
-
-KBoolean impl_ScriptFunctionIsRethrowingConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ScriptFunctionIsRethrowingConst(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ScriptFunctionIsRethrowingConst, KBoolean, KNativePointer, KNativePointer);
 
 KBoolean impl_ScriptFunctionIsDynamicConst(KNativePointer context, KNativePointer receiver)
 {
