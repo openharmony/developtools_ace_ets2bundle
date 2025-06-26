@@ -41,8 +41,6 @@ const expectedScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { _rawfile as _rawfile } from "arkui.component.resources";
 import { _r as _r } from "arkui.component.resources";
-import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, $r as $r, $rawfile as $rawfile, Column as Column, Text as Text, Image as Image, Resource as Resource } from "@ohos.arkui.component";
 
