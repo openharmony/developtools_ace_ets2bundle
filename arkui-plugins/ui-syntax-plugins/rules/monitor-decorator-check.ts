@@ -48,14 +48,14 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
     // Check for errors related to @Monitor usage
     if (monitorUsed && !isObservedV2 && arkts.isClassDeclaration(node)) {
-      this.reportInvalidUsage(
+      this.checkInvalidUsage(
         node,
         this.messages.monitorUsedInObservedV2Class,
         `@${PresetDecorators.OBSERVED_V2}`
       );
     }
     if (monitorUsed && !isComponentV2 && arkts.isStructDeclaration(node)) {
-      this.reportInvalidUsage(
+      this.checkInvalidUsage(
         node,
         this.messages.monitorUsedInComponentV2Struct,
         `@${PresetDecorators.COMPONENT_V2}\n`
@@ -168,14 +168,24 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     });
   }
 
-  private reportInvalidUsage(node: arkts.AstNode, message: string, fixCode: string): void {
-    this.report({
-      node,
-      message,
-      fix: () => ({
-        range: [node.startPosition, node.startPosition],
-        code: fixCode
-      })
+  private checkInvalidUsage(node: arkts.ClassDeclaration | arkts.StructDeclaration, message: string, fixCode: string): void {
+    let monitor: arkts.AnnotationUsage | undefined;
+    node.definition?.body.forEach((body) => {
+      if (!arkts.isMethodDefinition(body)) {
+        return;
+      }
+      monitor = this.getLocalMonitorUsed(body);
+      if (!monitor) {
+        return;
+      }
+      this.report({
+        node: monitor,
+        message,
+        fix: () => ({
+          range: [node.startPosition, node.startPosition],
+          code: fixCode
+        })
+      });
     });
   }
 

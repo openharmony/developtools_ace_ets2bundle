@@ -29,21 +29,11 @@ const v1ComponentDecorators: string[] = [
   PresetDecorators.LOCAL_STORAGE_PROP,
 ];
 
-const v2ComponentDecorators: string[] = [
-  PresetDecorators.LOCAL,
-  PresetDecorators.PARAM,
-  PresetDecorators.EVENT,
-  PresetDecorators.PROVIDER,
-  PresetDecorators.CONSUMER,
-];
-
 class ComponentComponentV2MixUseCheckRule extends AbstractUISyntaxRule {
-  private observedV1Names: Set<string> = new Set();
   private observedV2Names: Set<string> = new Set();
 
   public setup(): Record<string, string> {
     return {
-      observedv1_v2: `The type of the @{{annotation}} property cannot be a class decorated with '@Observed'.`,
       observedv2_v1: `The type of the @{{annotation}} property cannot be a class decorated with '@ObservedV2'.`
     };
   }
@@ -67,13 +57,9 @@ class ComponentComponentV2MixUseCheckRule extends AbstractUISyntaxRule {
         }
 
         const annotationName = getIdentifierName(anno.expr);
-        if (annotationName === PresetDecorators.OBSERVED_V1) {
-          const componentV1Name = node?.definition?.ident?.name;
-          componentV1Name ? this.observedV1Names.add(componentV1Name) : null;
-        }
 
         if (annotationName === PresetDecorators.OBSERVED_V2) {
-          const componentV2Name = node?.definition?.ident?.name;
+          const componentV2Name = node.definition?.ident?.name;
           componentV2Name ? this.observedV2Names.add(componentV2Name) : null;
         }
       });
@@ -108,9 +94,7 @@ class ComponentComponentV2MixUseCheckRule extends AbstractUISyntaxRule {
   ): void {
     if (arkts.isIdentifier(node)) {
       const name = getIdentifierName(node);
-      if (this.observedV1Names.has(name)) {
-        this.observedV1Names.add(typeName);
-      }
+     
       if (this.observedV2Names.has(name)) {
         this.observedV2Names.add(typeName);
       }
@@ -160,13 +144,6 @@ class ComponentComponentV2MixUseCheckRule extends AbstractUISyntaxRule {
       const currentNode: arkts.AstNode = queue.shift() as arkts.AstNode;
       if (arkts.isIdentifier(currentNode)) {
         const name = getIdentifierName(currentNode);
-        if (
-          annotationName === PresetDecorators.COMPONENT_V2 &&
-          this.observedV1Names.has(name)
-        ) {
-          this.checkObservedConflict(node, v2ComponentDecorators);
-          break;
-        }
 
         if (
           annotationName === PresetDecorators.COMPONENT_V1 &&
@@ -196,9 +173,7 @@ class ComponentComponentV2MixUseCheckRule extends AbstractUISyntaxRule {
       if (annotationName && componentDecorators.includes(annotationName)) {
         this.report({
           node: anno,
-          message: this.messages[
-            v1ComponentDecorators.includes(annotationName) ? 'observedv2_v1' : 'observedv1_v2'
-          ],
+          message: this.messages.observedv2_v1,
           data: {
             annotation: annotationName,
           },
