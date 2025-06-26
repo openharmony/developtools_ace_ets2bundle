@@ -101,6 +101,7 @@ import {
   LogData,
   LogDataFactory
 } from '../../../lib/fast_build/ark_compiler/logger';
+import { arkTSEvolutionModuleMap } from '../../../lib/fast_build/ark_compiler/interop/process_arkts_evolution';
 
 function checkGenerateEs2AbcCmdExpect(cmdArgs: Array<object>, compatibleSdkVersion: string, byteCodeHar: boolean): void {
   const fileThreads: number = cpus();
@@ -789,6 +790,62 @@ mocha.describe('test module_mode file api', function () {
     SourceMapGenerator.cleanSourceMapObject();
   });
 
+<<<<<<< HEAD
+=======
+  mocha.it('2-8: test addModuleInfoItem under build mixCompile', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'har': {
+        'packageName': 'har',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '1.0.0',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      },
+      'entry': {
+        'packageName': 'entry',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    const arkTSEvoFile = path.join(HAR_BRIDGECODEPATH, 'har','Index.ts');
+    const arkTSEvolutionModuleInfo = {
+      language: '1.2',
+      packageName: 'har',
+      moduleName: 'har',
+      declgenBridgeCodePath: HAR_BRIDGECODEPATH,
+    }
+    arkTSEvolutionModuleMap.set('har', arkTSEvolutionModuleInfo)
+    this.rollup.share.allFiles.add(arkTSEvoFile);
+    const moduleInfoMock = {
+      id: arkTSEvoFile,
+      meta: {
+        'pkgName': 'har',
+        'moduleName': 'har',
+        'language': '1.2'
+      }
+    };
+    process.env.mixCompile = 'true';
+    this.rollup.moduleInfos.push(moduleInfoMock);
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.setNewSoureMaps(false);
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.addModuleInfoItemMock(this.rollup);
+    const cacheFilePath = moduleMode.moduleInfos.get(toUnixPath(arkTSEvoFile)).cacheFilePath;
+    const expectCacheFilePath = path.join(moduleMode.projectConfig.cachePath, 'har/Index.ts');
+    expect(cacheFilePath === expectCacheFilePath).to.be.true;
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
+    this.rollup.share.allFiles.delete(arkTSEvoFile);
+    SourceMapGenerator.cleanSourceMapObject();
+    process.env.mixCompile = 'false';
+  });
+
+>>>>>>> edb7a9a5... Fix invasive modifications
   mocha.it('3-1-1: test updateCachedSourceMaps under build debug: cacheSourceMapPath not exist', function () {
     this.rollup.build();
     const moduleMode = new ModuleModeMock(this.rollup);
