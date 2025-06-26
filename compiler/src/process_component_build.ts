@@ -2427,7 +2427,7 @@ function isWrappedBuilderCallExpression(node: ts.CallExpression): boolean {
 }
 
 function parseBuilderNode(node: ts.Node, propertyName: string):
-  ts.ObjectLiteralExpression | ts.CallExpression | ts.ArrowFunction {
+  ts.ObjectLiteralExpression | ts.CallExpression | ts.ArrowFunction | ts.PropertyAccessExpression {
   if (isWrappedBuilder(node as ts.PropertyAccessExpression) || isPropertyAccessExpressionNode(node)) {
     if (CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY.has(propertyName)) {
       return processPropertyBuilderWithoutKey(node as ts.PropertyAccessExpression);
@@ -2448,6 +2448,8 @@ function parseBuilderNode(node: ts.Node, propertyName: string):
     }
   } else if (ts.isObjectLiteralExpression(node)) {
     return processObjectPropertyBuilder(node);
+  } else if (ts.isPropertyAccessExpression(node)) {
+    return node;
   }
   return undefined;
 }

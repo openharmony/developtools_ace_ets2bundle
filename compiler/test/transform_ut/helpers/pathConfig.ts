@@ -136,6 +136,7 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   'render_decorator/@builder/@builderWithForEach',
   'render_decorator/@builder/@builderWithLinkData',
   'render_decorator/@builder/handleCustomBuilder',
+  'render_decorator/@builder/@builderParam',
   'render_decorator/@builderParam/@builderParam',
   'render_decorator/@builderParam/@builderParam1',
   'render_decorator/@builderParam/@builderParamQuestionMark',
