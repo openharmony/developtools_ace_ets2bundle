@@ -48,6 +48,10 @@ class ComponentComponentV2MixUseCheckRule extends AbstractUISyntaxRule {
     };
   }
 
+  public beforeTransform(): void {
+    this.observedV2Names = new Set();
+  }
+
   public parsed(node: arkts.AstNode): void {
     if (arkts.nodeType(node) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
       this.findAllObserved(node);

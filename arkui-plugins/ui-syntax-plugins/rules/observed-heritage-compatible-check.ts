@@ -18,6 +18,10 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 import { getIdentifierName, PresetDecorators } from '../utils/index';
 
 class ObservedHeritageCompatibleCheckRule extends AbstractUISyntaxRule {
+  // Record the class name decorated with @Observed and @ObservedV2
+  private observedClasses: string[] = [];
+  private observedV2Classes: string[] = [];
+
   public setup(): Record<string, string> {
     return {
       incompatibleHeritageObservedToObservedV2: `A class decorated by '@Observed' cannot inherit from a class decorated by '@ObservedV2'.`,
@@ -25,9 +29,10 @@ class ObservedHeritageCompatibleCheckRule extends AbstractUISyntaxRule {
     };
   }
 
-  // Record the class name decorated with @Observed and @ObservedV2
-  private observedClasses: string[] = [];
-  private observedV2Classes: string[] = [];
+  public beforeTransform(): void {
+    this.observedClasses = [];
+    this.observedV2Classes = [];
+  }
 
   public parsed(node: arkts.AstNode): void {
     // Check if it's of type "Program".

@@ -25,6 +25,11 @@ class ComponentComponentV2InitCheckRule extends AbstractUISyntaxRule {
       componentInitLinkCheck: `A V2 component cannot be used with any member property decorated by '@Link' in a V1 component.`,
     };
   }
+
+  public beforeTransform(): void {
+    this.componentV1WithLinkList = [];
+  }
+
   public parsed(node: arkts.StructDeclaration): void {
     this.initComponentV1WithLinkList(node);
     this.checkComponentInitLink(node);

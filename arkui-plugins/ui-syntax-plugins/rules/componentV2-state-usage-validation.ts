@@ -23,6 +23,11 @@ const builtInDecorators = [PresetDecorators.LOCAL, PresetDecorators.PARAM, Prese
 
 class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
   private componentV2PropertyMap: Map<string, Map<string, string>> = new Map();
+
+  public beforeTransform(): void {
+    this.componentV2PropertyMap = new Map();
+  }
+
   public setup(): Record<string, string> {
     return {
       multipleBuiltInDecorators: `The member property or method cannot be decorated by multiple built-in decorators.`,
