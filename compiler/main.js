@@ -762,8 +762,8 @@ function filterWorker(workerPath) {
           .replace(apiDirPath, '')
           .replace(arktsDirPath, '')
           .replace(kitsDirPath, '')
-          .replace(/(^\\)|(.d.e?ts$)/g, '')
-          .replace(/\\/g, '/');
+          .replace(/\\/g, '/')
+          .replace(/(^\/)|(.d.e?ts$)/g, '');
       });
       ohosSystemModuleSubDirPaths.push(...moduleSubdir);
       allModulesPaths.push(...modulePaths);
