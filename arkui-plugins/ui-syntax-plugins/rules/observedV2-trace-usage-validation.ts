@@ -14,174 +14,209 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { PresetDecorators, getAnnotationUsage } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import {
+    PresetDecorators, getAnnotationUsage, findDecorator, getClassDeclarationAnnotation
+} from '../utils';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-const rule: UISyntaxRule = {
-  name: 'observedV2-trace-usage-validation',
-  messages: {
-    observedV2DecoratorError: `The '@ObservedV2' decorator can only be used in 'class'.`,
-    traceDecoratorError: `The '@Trace' decorator can only be used in 'class'.`,
-    traceMemberVariableError: `The '@Trace' decorator can only decorate member variables within a 'class' decorated with '@ObservedV2'.`,
-    //The repair logic is different, if there is v1, update to v2
-    traceMustUsedWithObservedV2: `The '@Trace' decorator can only be used within a 'class' decorated with 'ObservedV2'.`,
-    traceMustUsedWithObservedV2Update: `The '@Trace' decorator can only be used within a 'class' decorated with 'ObservedV2'.`,
+class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
+    public setup(): Record<string, string> {
+        return {
+            observedV2DecoratorError: `The '@ObservedV2' decorator can only be used in 'class'.`,
+            traceDecoratorError: `The '@Trace' decorator can only be used in 'class'.`,
+            traceMemberVariableError: `The '@Trace' decorator can only decorate member variables within a 'class' decorated with '@ObservedV2'.`,
+            //The repair logic is different, if there is v1, update to v2
+            traceMustUsedWithObservedV2: `The '@Trace' decorator can only be used within a 'class' decorated with 'ObservedV2'.`,
+            traceMustUsedWithObservedV2Update: `The '@Trace' decorator can only be used within a 'class' decorated with 'ObservedV2'.`,
+        };
+    }
 
+    public parsed(node: arkts.AstNode): void {
+        this.validateTraceDecoratorUsage(node);
+    }
 
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
-        validateTraceDecoratorUsage(node, context);
-      },
-    };
-  },
+    private getObservedDecorator(node: arkts.ClassDeclaration): arkts.AnnotationUsage | undefined {
+        if (!node.definition) {
+            return undefined;
+        }
+        return getClassDeclarationAnnotation(node, PresetDecorators.OBSERVED_V1);
+    }
+
+    private reportObservedV2DecoratorError(observedV2Decorator: arkts.AnnotationUsage)
+        : void {
+        this.report({
+            node: observedV2Decorator,
+            message: this.messages.observedV2DecoratorError,
+            fix: (observedV2Decorator) => {
+                const startPosition = observedV2Decorator.startPosition;
+                const endPosition = observedV2Decorator.endPosition;
+                return {
+                    range: [startPosition, endPosition],
+                    code: '',
+                };
+            },
+        });
+    }
+
+    private reportTraceMemberVariableError(traceDecorator: arkts.AnnotationUsage)
+        : void {
+        this.report({
+            node: traceDecorator,
+            message: this.messages.traceMemberVariableError,
+            fix: (traceDecorator) => {
+                const startPosition = traceDecorator.startPosition;
+                const endPosition = traceDecorator.endPosition;
+                return {
+                    range: [startPosition, endPosition],
+                    code: '',
+                };
+            },
+        });
+    }
+
+    private tracePropertyRule(
+        currentNode: arkts.AstNode,
+        traceDecorator: arkts.AnnotationUsage): void {
+        if (arkts.isStructDeclaration(currentNode)) {
+            this.reportTraceDecoratorError(traceDecorator);
+        } else if (arkts.isClassDeclaration(currentNode) && currentNode.definition) {
+            const observedDecorator = this.getObservedDecorator(currentNode);
+            const observedV2 = currentNode.definition.annotations.some(annotation =>
+                annotation.expr &&
+                arkts.isIdentifier(annotation.expr) &&
+                annotation.expr.name === PresetDecorators.OBSERVED_V2
+            );
+            if (!observedV2 && !observedDecorator) {
+                this.reportTraceMustUsedWithObservedV2(traceDecorator, currentNode);
+            } else if (!observedV2 && observedDecorator) {
+                this.reportTraceMustUsedWithObservedV2Update(traceDecorator, observedDecorator);
+            }
+        }
+    }
+
+    private reportTraceDecoratorError(traceDecorator: arkts.AnnotationUsage)
+        : void {
+        this.report({
+            node: traceDecorator,
+            message: this.messages.traceDecoratorError,
+            fix: (traceDecorator) => {
+                const startPosition = traceDecorator.startPosition;
+                const endPosition = traceDecorator.endPosition;
+                return {
+                    range: [startPosition, endPosition],
+                    code: '',
+                };
+            },
+        });
+    }
+
+    private reportTraceMustUsedWithObservedV2(traceDecorator: arkts.AnnotationUsage,
+        currentNode: arkts.ClassDeclaration): void {
+        this.report({
+            node: traceDecorator,
+            message: this.messages.traceMustUsedWithObservedV2,
+            fix: () => {
+                const startPosition = currentNode.startPosition;
+                return {
+                    range: [startPosition, startPosition],
+                    code: `@${PresetDecorators.OBSERVED_V2}\n`,
+                };
+            },
+        });
+    }
+
+    private reportTraceMustUsedWithObservedV2Update(traceDecorator: arkts.AnnotationUsage,
+        observedDecorator: arkts.AnnotationUsage): void {
+        this.report({
+            node: traceDecorator,
+            message: this.messages.traceMustUsedWithObservedV2Update,
+            fix: () => {
+                const startPosition = observedDecorator.startPosition;
+                const endPosition = observedDecorator.endPosition;
+                return {
+                    range: [startPosition, endPosition],
+                    code: `@${PresetDecorators.OBSERVED_V2}`,
+                };
+            },
+        });
+    }
+
+    private isInClassDeclaration(node: arkts.AstNode): boolean {
+        while (!arkts.isClassDeclaration(node)) {
+            if (!node.parent) {
+                return false;
+            }
+            node = node.parent;
+        }
+        return true;
+    }
+
+    private checkAndReportObservedV2Decorator(
+        node: arkts.FunctionDeclaration | arkts.VariableDeclaration | arkts.ScriptFunction |
+            arkts.TSInterfaceDeclaration | arkts.TSTypeAliasDeclaration | arkts.ClassProperty): void {
+        const observedV2Decorator = findDecorator(node, PresetDecorators.OBSERVED_V2);
+        if (observedV2Decorator) {
+            this.reportObservedV2DecoratorError(observedV2Decorator);
+        }
+    }
+
+    private validateTraceDecoratorUsage(node: arkts.AstNode): void {
+        let currentNode = node;
+        if (arkts.isStructDeclaration(node)) {
+            // Check whether the current custom component is decorated by the @ObservedV2 decorator
+            const observedV2Decorator = getAnnotationUsage(node, PresetDecorators.OBSERVED_V2);
+            const traceDecorator = getAnnotationUsage(node, PresetDecorators.TRACE);
+            if (observedV2Decorator) {
+                this.reportObservedV2DecoratorError(observedV2Decorator);
+            }
+            if (traceDecorator) {
+                this.reportTraceDecoratorError(traceDecorator);
+            }
+        } else if (
+            arkts.isFunctionDeclaration(node) ||
+            arkts.isVariableDeclaration(node) ||
+            arkts.isTSInterfaceDeclaration(node) ||
+            arkts.isTSTypeAliasDeclaration(node)
+        ) {
+            this.checkAndReportObservedV2Decorator(node);
+            const traceDecorator = findDecorator(node, PresetDecorators.TRACE);
+            if (traceDecorator) {
+                this.reportTraceDecoratorError(traceDecorator);
+            }
+        } else if (arkts.isClassProperty(node)) {
+            this.checkTraceDecoratorUsageInClassProperty(node, currentNode);
+            this.checkAndReportObservedV2Decorator(node);
+        }
+        if (arkts.isMethodDefinition(node) && this.isInClassDeclaration(currentNode)) {
+            // Check that @Trace is in the correct location
+            const traceDecorator = findDecorator(node.scriptFunction, PresetDecorators.TRACE);
+            if (traceDecorator) {
+                this.reportTraceMemberVariableError(traceDecorator);
+            }
+        } else if (arkts.isMethodDefinition(node) && !this.isInClassDeclaration(currentNode)) {
+            const traceDecorator = findDecorator(node.scriptFunction, PresetDecorators.TRACE);
+            if (traceDecorator) {
+                this.reportTraceDecoratorError(traceDecorator);
+            }
+        }
+    }
+
+    private checkTraceDecoratorUsageInClassProperty(
+        node: arkts.ClassProperty,
+        currentNode: arkts.AstNode,): void {
+        const traceDecorator = findDecorator(node, PresetDecorators.TRACE);
+        if (traceDecorator) {
+            // Iterate up the parent node to check whether it is a class or a custom component
+            while (!arkts.isStructDeclaration(currentNode) && !arkts.isClassDeclaration(currentNode)) {
+                if (!currentNode.parent) {
+                    return;
+                }
+                currentNode = currentNode.parent;
+            }
+            // The '@Trace' decorator can only be used in 'class'
+            this.tracePropertyRule(currentNode, traceDecorator);
+        }
+    }
 };
 
-function getObservedDecorator(node: arkts.ClassDeclaration): arkts.AnnotationUsage | undefined {
-  return node.definition?.annotations.find(annotation =>
-    annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name === PresetDecorators.OBSERVED_V1);
-}
-
-function reportObservedV2DecoratorError(context: UISyntaxRuleContext, hasObservedV2Decorator: arkts.AnnotationUsage)
-  : void {
-  context.report({
-    node: hasObservedV2Decorator,
-    message: rule.messages.observedV2DecoratorError,
-    fix: (hasObservedV2Decorator) => {
-      const startPosition = hasObservedV2Decorator.startPosition;
-      const endPosition = hasObservedV2Decorator.endPosition;
-      return {
-        range: [startPosition, endPosition],
-        code: '',
-      };
-    },
-  });
-}
-
-function reportTraceMemberVariableError(context: UISyntaxRuleContext, traceDecorator: arkts.AnnotationUsage)
-  : void {
-  context.report({
-    node: traceDecorator,
-    message: rule.messages.traceMemberVariableError,
-    fix: (traceDecorator) => {
-      const startPosition = traceDecorator.startPosition;
-      const endPosition = traceDecorator.endPosition;
-      return {
-        range: [startPosition, endPosition],
-        code: '',
-      };
-    },
-  });
-}
-
-function tracePerportyRule(
-  context: UISyntaxRuleContext,
-  currentNode: arkts.AstNode,
-  traceDecorator: arkts.AnnotationUsage): void {
-  if (arkts.isStructDeclaration(currentNode)) {
-    reportTraceDecoratorError(context, traceDecorator);
-  } else if (arkts.isClassDeclaration(currentNode) && currentNode.definition) {
-    const observedDecorator = getObservedDecorator(currentNode);
-    const observedV2 = currentNode.definition.annotations.some(annotation =>
-      annotation.expr &&
-      arkts.isIdentifier(annotation.expr) &&
-      annotation.expr.name === PresetDecorators.OBSERVED_V2
-    );
-    if (!observedV2 && !observedDecorator) {
-      reportTraceMustUsedWithObservedV2(context, traceDecorator, currentNode);
-    } else if (!observedV2 && observedDecorator) {
-      reportTraceMustUsedWithObservedV2Update(context, traceDecorator, observedDecorator);
-    }
-  }
-}
-
-function reportTraceDecoratorError(context: UISyntaxRuleContext, traceDecorator: arkts.AnnotationUsage)
-  : void {
-  context.report({
-    node: traceDecorator,
-    message: rule.messages.traceDecoratorError,
-    fix: (traceDecorator) => {
-      const startPosition = traceDecorator.startPosition;
-      const endPosition = traceDecorator.endPosition;
-      return {
-        range: [startPosition, endPosition],
-        code: '',
-      };
-    },
-  });
-}
-
-function reportTraceMustUsedWithObservedV2(context: UISyntaxRuleContext, traceDecorator: arkts.AnnotationUsage,
-  currentNode: arkts.ClassDeclaration): void {
-  context.report({
-    node: traceDecorator,
-    message: rule.messages.traceMustUsedWithObservedV2,
-    fix: () => {
-      const startPosition = currentNode.startPosition;
-      return {
-        range: [startPosition, startPosition],
-        code: `@${PresetDecorators.OBSERVED_V2}\n`,
-      };
-    },
-  });
-}
-
-function reportTraceMustUsedWithObservedV2Update(context: UISyntaxRuleContext, traceDecorator: arkts.AnnotationUsage,
-  observedDecorator: arkts.AnnotationUsage): void {
-  context.report({
-    node: traceDecorator,
-    message: rule.messages.traceMustUsedWithObservedV2Update,
-    fix: () => {
-      const startPosition = observedDecorator.startPosition;
-      const endPosition = observedDecorator.endPosition;
-      return {
-        range: [startPosition, endPosition],
-        code: `@${PresetDecorators.OBSERVED_V2}`,
-      };
-    },
-  });
-}
-
-function validateTraceDecoratorUsage(node: arkts.AstNode, context: UISyntaxRuleContext): void {
-  let currentNode = node;
-  if (arkts.isStructDeclaration(node)) {
-    // Check whether the current custom component is decorated by the @ObservedV2 decorator
-    const hasObservedV2Decorator = getAnnotationUsage(node, PresetDecorators.OBSERVED_V2);
-    if (hasObservedV2Decorator) {
-      reportObservedV2DecoratorError(context, hasObservedV2Decorator);
-    }
-  }
-  if (arkts.isClassProperty(node)) {
-    checkTraceDecoratorUsageInClassProperty(context, node, currentNode);
-  }
-  if (arkts.isMethodDefinition(node)) {
-    // Check that @Trace is in the correct location
-    const traceDecorator = node.scriptFunction.annotations?.find(annotation =>
-      annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name === PresetDecorators.TRACE);
-    if (traceDecorator) {
-      reportTraceMemberVariableError(context, traceDecorator);
-    }
-  }
-}
-
-function checkTraceDecoratorUsageInClassProperty(
-  context: UISyntaxRuleContext,
-  node: arkts.ClassProperty,
-  currentNode: arkts.AstNode,): void {
-  const traceDecorator = node.annotations?.find(annotation =>
-    annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name === PresetDecorators.TRACE);
-  if (traceDecorator) {
-    // Iterate up the parent node to check whether it is a class or a custom component
-    while (!arkts.isStructDeclaration(currentNode) && !arkts.isClassDeclaration(currentNode)) {
-      if (!currentNode.parent) {
-        return;
-      }
-      currentNode = currentNode.parent;
-    }
-    // The '@Trace' decorator can only be used in 'class'
-    tracePerportyRule(context, currentNode, traceDecorator);
-  }
-}
-
-export default rule;
+export default ObservedV2TraceUsageValidationRule;

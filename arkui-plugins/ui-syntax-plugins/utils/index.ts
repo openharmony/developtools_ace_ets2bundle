@@ -194,6 +194,38 @@ export function getClassPropertyAnnotationNames(property: arkts.ClassProperty): 
     return property.annotations.map((annotation) => getAnnotationName(annotation));
 }
 
+export function getClassPropertyAnnotation(
+    property: arkts.ClassProperty,
+    decoratorName: string
+): arkts.AnnotationUsage | undefined {
+    return property.annotations?.find(annotation =>
+        annotation.expr &&
+        arkts.isIdentifier(annotation.expr) &&
+        annotation.expr.name === decoratorName
+    );
+}
+
+export function getClassDeclarationAnnotation(
+    classDeclaration: arkts.ClassDeclaration,
+    decoratorName: string
+): arkts.AnnotationUsage | undefined {
+    return classDeclaration.definition?.annotations.find(annotation =>
+        annotation.expr && arkts.isIdentifier(annotation.expr) &&
+        annotation.expr.name === decoratorName
+    );
+}
+
+export function findDecorator(
+    member: arkts.ClassProperty | arkts.VariableDeclaration | arkts.FunctionDeclaration |
+        arkts.ScriptFunction | arkts.TSInterfaceDeclaration | arkts.TSTypeAliasDeclaration,
+    decoratorName: string
+): arkts.AnnotationUsage | undefined {
+    return member.annotations.find(annotation =>
+        annotation.expr && arkts.isIdentifier(annotation.expr) &&
+        annotation.expr.name === decoratorName
+    );
+}
+
 export function isPublicClassProperty(property: arkts.ClassProperty): boolean {
     return arkts.hasModifierFlag(property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC);
 }
@@ -467,3 +499,43 @@ export function isStructClassDeclaration(node: arkts.AstNode): node is arkts.Cla
         arkts.isClassDeclaration(node) && !!node.definition && arkts.classDefinitionIsFromStructConst(node.definition)
     );
 }
+
+export function getFunctionAnnotationUsage(
+    declaration: arkts.FunctionDeclaration,
+    annotationName: string,
+): arkts.AnnotationUsage | undefined {
+    if (!declaration || !declaration.annotations) {
+        return undefined;
+    }
+    return declaration.annotations.find(
+        (annotation) =>
+            annotation.expr &&
+            ((arkts.isIdentifier(annotation.expr) && annotation.expr.name === annotationName) ||
+                (arkts.isCallExpression(annotation.expr) &&
+                    arkts.isIdentifier(annotation.expr) &&
+                    annotation.expr.name === annotationName))
+    );
+}
+
+export const TypeFlags = {
+    Boolean: 'boolean',
+    String: 'string',
+    Number: 'number',
+    Enum: 'enum',
+    Null: 'null',
+    Undefined: 'undefined',
+    Object: 'object',
+    Array: 'array',
+    Function: 'function',
+    Symbol: 'symbol',
+    BigInt: 'bigint',
+    Unknown: 'unknown',
+    Any: 'any',
+    Never: 'never',
+    Void: 'void',
+    This: 'this',
+    TypeParameter: 'typeParameter',
+    Literal: 'literal',
+    Union: 'union',
+
+};

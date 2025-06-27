@@ -14,39 +14,29 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-function checkExtendOrImplement(
-  node: arkts.AstNode,
-  context: UISyntaxRuleContext
-): void {
-  if (!arkts.isStructDeclaration(node) || !node.definition.ident) {
-    return;
-  }
-  const hasSuperClass: boolean = node.definition.super !== undefined;
-  const hasImplements: boolean = node.definition.implements.length > 0;
-  // If there is an inheritance class or implementation interface, an error is reported
-  if (hasSuperClass || hasImplements) {
-    const errorNode = node.definition.ident;
-    context.report({
-      node: errorNode,
-      message: rule.messages.structNoExtends,
-    });
-  }
+class StructNoExtendsRule extends AbstractUISyntaxRule {
+    public setup(): Record<string, string> {
+        return {
+            structNoExtends: `Structs are not allowed to inherit from classes or implement interfaces.`,
+        };
+    }
+    public parsed(node: arkts.StructDeclaration): void {
+        if (!arkts.isStructDeclaration(node) || !node.definition.ident) {
+            return;
+        }
+        const hasSuperClass: boolean = node.definition.super !== undefined;
+        const hasImplements: boolean = node.definition.implements.length > 0;
+        // If there is an inheritance class or implementation interface, an error is reported
+        if (hasSuperClass || hasImplements) {
+            const errorNode = node.definition.ident;
+            this.report({
+                node: errorNode,
+                message: this.messages.structNoExtends,
+            });
+        }
+    }
 }
 
-const rule: UISyntaxRule = {
-  name: 'struct-no-extends',
-  messages: {
-    structNoExtends: `Structs are not allowed to inherit from classes or implement interfaces.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
-        checkExtendOrImplement(node, context);
-      },
-    };
-  },
-};
-
-export default rule;
+export default StructNoExtendsRule;
