@@ -99,13 +99,17 @@ function checkedProgramVisit(
         const parameterTransformer = new ParameterTransformer({ positionalIdTracker });
         const returnTransformer = new ReturnTransformer();
         const signatureTransformer = new SignatureTransformer();
-        const internalsTransformer = new InternalsTransformer({ positionalIdTracker });
+        let internalsTransformer: InternalsTransformer | undefined;
+        if (isFrameworkMode) {
+            internalsTransformer = new InternalsTransformer({ positionalIdTracker });
+        }
         const functionTransformer = new FunctionTransformer({
             positionalIdTracker,
             parameterTransformer,
             returnTransformer,
             signatureTransformer,
             internalsTransformer,
+            useCache: arkts.NodeCache.getInstance().isCollected(),
         });
         const skipPrefixNames = isFrameworkMode
             ? EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK
@@ -118,6 +122,7 @@ function checkedProgramVisit(
             pluginContext,
         });
         program = programVisitor.programVisitor(program);
+        arkts.NodeCache.getInstance().clear();
     }
     return program;
 }

@@ -75,8 +75,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __updateStruct(initializers: __Options_AnimatablePropertyExample | undefined): void {}
   
   @memo() public build() {
-    Column(undefined, (() => {
-      Text(((instance: TextAttribute): void => {
+    Column(undefined, undefined, (() => {
+      Text(@memo() ((instance: TextAttribute): void => {
         instance.animationStart({
           duration: 2000,
           curve: Curve.Ease,
@@ -91,7 +91,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
           curve: Curve.Ease,
         }).width("100%");
         return;
-      }), "AnimatableProperty");
+      }), "AnimatableProperty", undefined, undefined);
     }));
   }
   
@@ -107,7 +107,7 @@ class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     AnimatablePropertyExample._instantiateImpl(undefined, (() => {
       return new AnimatablePropertyExample();
-    }));
+    }), undefined, undefined, undefined);
   }
   
   public constructor() {}

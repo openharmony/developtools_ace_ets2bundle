@@ -15,6 +15,7 @@
 
 import { Expression, ReturnStatement } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
+import { NodeCache } from '../utilities/nodeCache';
 import { attachModifiers, updateThenAttach } from '../utilities/private';
 
 export function updateReturnStatement(original: ReturnStatement, argument?: Expression): ReturnStatement {
@@ -23,5 +24,9 @@ export function updateReturnStatement(original: ReturnStatement, argument?: Expr
     }
 
     const update = updateThenAttach(ReturnStatement.update1ReturnStatement, attachModifiers);
-    return update(original, argument);
+    const newNode = update(original, argument);
+    if (NodeCache.getInstance().has(original)) {
+        NodeCache.getInstance().refresh(original, newNode);
+    }
+    return newNode;
 }

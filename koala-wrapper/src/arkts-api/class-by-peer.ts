@@ -26,7 +26,7 @@ export function clearNodeCache(): void {
     cache.clear();
 }
 
-function getOrPut(peer: KNativePointer, create: (peer: KNativePointer) => AstNode): AstNode {
+export function getOrPut(peer: KNativePointer, create: (peer: KNativePointer) => AstNode): AstNode {
     if (cache.has(peer)) {
         return cache.get(peer)!;
     }

@@ -43,13 +43,13 @@ import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateMan
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { LinkSourceType as LinkSourceType } from "arkui.stateManagement.decorator";
 
 import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
 
@@ -86,10 +86,10 @@ function main() {}
   }
   
   @memo() public build() {
-    Column(undefined, (() => {
+    Column(undefined, undefined, @memo() (() => {
       TextInput(undefined, {
         text: this.text1,
-      });
+      }, undefined);
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {
@@ -97,7 +97,7 @@ function main() {}
         childText2: this.text1,
         childText3: this.text1,
         childText4: this.text1,
-      });
+      }, undefined, undefined);
     }));
   }
   
@@ -172,7 +172,7 @@ function main() {}
   @memo() public build() {
     TextInput(undefined, {
       text: this.childText,
-    });
+    }, undefined);
   }
   
   private constructor() {}

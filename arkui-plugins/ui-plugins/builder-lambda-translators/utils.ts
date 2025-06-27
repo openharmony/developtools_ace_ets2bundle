@@ -15,9 +15,9 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { isAnnotation, matchPrefix } from '../../common/arkts-utils';
-import { BuilderLambdaNames } from '../utils';
+import { BuilderLambdaNames, isCustomComponentAnnotation } from '../utils';
 import { DeclarationCollector } from '../../common/declaration-collector';
-import { ARKUI_IMPORT_PREFIX_NAMES, BindableDecl, Dollars } from '../../common/predefines';
+import { ARKUI_IMPORT_PREFIX_NAMES, BindableDecl, Dollars, StructDecoratorNames } from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
 
 export type BuilderLambdaDeclInfo = {
@@ -33,6 +33,37 @@ export type InstanceCallInfo = {
     isReceiver: boolean;
     call: arkts.CallExpression;
 };
+
+export type BuilderLambdaArgInfo = {
+    isFunctionCall: boolean;
+};
+
+export type BuilderLambdaReusableArgInfo = {
+    isReusable?: boolean;
+    reuseId?: string;
+};
+
+export type BuilderLambdaSecondLastArgInfo = BuilderLambdaArgInfo &
+    BuilderLambdaReusableArgInfo;
+
+export function buildSecondLastArgInfo(
+    type: arkts.Identifier | undefined,
+    isFunctionCall: boolean
+): BuilderLambdaSecondLastArgInfo {
+    let isReusable: boolean | undefined;
+    let reuseId: string | undefined;
+    if (!isFunctionCall && !!type) {
+        const customComponentDecl = arkts.getDecl(type);
+        isReusable =
+            !!customComponentDecl &&
+            arkts.isClassDefinition(customComponentDecl) &&
+            customComponentDecl.annotations.some((anno) =>
+                isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE)
+            );
+        reuseId = isReusable ? type.name : undefined;
+    }
+    return { isFunctionCall, isReusable, reuseId };
+}
 
 /**
  * Used in finding "XXX" in BuilderLambda("XXX")

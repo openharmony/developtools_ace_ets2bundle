@@ -18,7 +18,7 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { memoNoRecheck, recheck } from '../../../utils/plugins';
+import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 
 const FUNCTION_DIR_PATH: string = 'memo/functions';
@@ -35,12 +35,23 @@ import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
 @memo() export function A<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type): Attribute<T>
-function func<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type): ItemBuilder<T> {
+@memo() function func<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type): ItemBuilder<T> {
     const __memo_scope = __memo_context.scope<ItemBuilder<T>>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         return __memo_scope.cached;
     }
-    return __memo_scope.recache(((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: Item<T>): void => {}));
+    return __memo_scope.recache(((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: Item<T>): void => {
+        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+        const __memo_parameter_item = __memo_scope.param(0, item);
+        if (__memo_scope.unchanged) {
+            __memo_scope.cached;
+            return;
+        }
+        {
+            __memo_scope.recache();
+            return;
+        }
+    }));
 }
 @memo() type ItemBuilder<T> = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: Item<T>)=> void);
 interface Item<T> {
@@ -51,13 +62,13 @@ interface Attribute<T> {
     @memo() each<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() itemGenerator: ItemBuilder<T>): Attribute<T>
 }
 class B {
-    public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
-        A<string>(__memo_context, ((__memo_id) + (<some_random_number>))).each(__memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, ri: Item<string>): void => {
+        A<string>(__memo_context, ((__memo_id) + (<some_random_number>))).each(__memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, ri: Item<string>) => {
             const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
             const __memo_parameter_ri = __memo_scope.param(0, ri);
             if (__memo_scope.unchanged) {
@@ -84,7 +95,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'transform functions with type reference',
-    [memoNoRecheck, recheck],
+    [beforeMemoNoRecheck, memoNoRecheck, recheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],
     },

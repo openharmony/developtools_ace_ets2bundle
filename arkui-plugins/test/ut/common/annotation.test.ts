@@ -17,13 +17,14 @@ import * as arkts from '@koalaui/libarkts';
 import path from 'path';
 import { PluginTester } from '../../utils/plugin-tester';
 import { BuildConfig, PluginTestContext } from '../../utils/shared-types';
-import { recheck } from '../../utils/plugins';
 import { mockBuildConfig } from '../../utils/artkts-config';
 import { parseDumpSrc } from '../../utils/parse-string';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../utils/path-config';
 import { annotation } from '../../../common/arkts-utils';
 import { PluginContext, Plugins } from '../../../common/plugin-context';
 import { AbstractVisitor } from '../../../common/abstract-visitor';
+import { ProgramVisitor } from '../../../common/program-visitor';
+import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../../../common/predefines';
 
 const COMMON_UTILS_DIR_PATH: string = 'common-utils';
 
@@ -122,7 +123,14 @@ function addAnnotationTransform(this: PluginContext): arkts.EtsScript | undefine
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
         const annotationAdder = new AnnotationVisitor();
-        annotationAdder.visitor(program.astNode);
+        const programVisitor = new ProgramVisitor({
+            pluginName: addAnnotationTransform.name,
+            state: arkts.Es2pandaContextState.ES2PANDA_STATE_ERROR, // ignored
+            visitors: [annotationAdder],
+            skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+            pluginContext: this,
+        });
+        program = programVisitor.programVisitor(program);
         script = program.astNode;
         return script;
     }
@@ -135,7 +143,14 @@ function removeAnnotationTransform(this: PluginContext): arkts.EtsScript | undef
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
         const annotationAdder = new AnnotationVisitor(true);
-        annotationAdder.visitor(program.astNode);
+        const programVisitor = new ProgramVisitor({
+            pluginName: addAnnotationTransform.name,
+            state: arkts.Es2pandaContextState.ES2PANDA_STATE_ERROR, // ignored
+            visitors: [annotationAdder],
+            skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+            pluginContext: this,
+        });
+        program = programVisitor.programVisitor(program);
         script = program.astNode;
         return script;
     }
@@ -198,7 +213,7 @@ function testCheckAnnotation(this: PluginTestContext): void {
 
 pluginTester.run(
     'annotation',
-    [addAnnotation, removeAnnotation, recheck],
+    [addAnnotation, removeAnnotation],
     {
         'parsed:add-annotation': [testParseAnnotation],
         'checked:add-annotation': [testCheckAnnotation],

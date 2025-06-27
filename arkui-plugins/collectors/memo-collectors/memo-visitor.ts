@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,13 +13,14 @@
  * limitations under the License.
  */
 
-// AfterParse
-export * from './struct-to-component';
+import * as arkts from '@koalaui/libarkts';
+import { AbstractVisitor } from '../../common/abstract-visitor';
+import { findAndCollectMemoableNode } from './factory';
 
-// AfterCheck
-export * from './before-memo-no-recheck';
-export * from './builder-lambda-no-recheck';
-export * from './memo-no-recheck';
-export * from './struct-no-recheck';
-export * from './ui-no-recheck';
-export * from './recheck';
+export class MemoVisitor extends AbstractVisitor {
+    visitor(node: arkts.AstNode): arkts.AstNode {
+        const newNode = this.visitEachChild(node);
+        findAndCollectMemoableNode(newNode);
+        return newNode;
+    }
+}

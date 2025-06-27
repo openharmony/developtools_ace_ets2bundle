@@ -19,22 +19,6 @@ import { factory as structFactory } from './struct-translators/factory';
 import { factory as builderLambdaFactory } from './builder-lambda-translators/factory';
 import { factory as entryFactory } from './entry-translators/factory';
 import { AbstractVisitor } from '../common/abstract-visitor';
-import {
-    addMemoAnnotation,
-    collectCustomComponentScopeInfo,
-    CustomComponentNames,
-    isCustomComponentClass,
-} from './utils';
-import {
-    CustomComponentScopeInfo,
-    ScopeInfoCollection,
-    findCanAddMemoFromArrowFunction,
-    isResourceNode,
-    LoaderJson,
-    ResourceInfo,
-    loadBuildJson,
-    initResourceInfo
-} from './struct-translators/utils';
 import { isBuilderLambda, isBuilderLambdaMethodDecl } from './builder-lambda-translators/utils';
 import { isEntryWrapperClass } from './entry-translators/utils';
 import { ImportCollector } from '../common/import-collector';
@@ -43,6 +27,17 @@ import { PropertyCache } from './property-translators/utils';
 import { isArkUICompatible, generateArkUICompatible } from './interop/interop';
 import { checkCustomDialogController, insertImportDeclaration, transformDeclaration } from './customdialog';
 import { LogCollector } from '../common/log-collector';
+import {
+    CustomComponentScopeInfo,
+    initResourceInfo,
+    isResourceNode,
+    loadBuildJson,
+    LoaderJson,
+    ResourceInfo,
+    ScopeInfoCollection,
+} from './struct-translators/utils';
+import { collectCustomComponentScopeInfo, CustomComponentNames, isCustomComponentClass } from './utils';
+import { findAndCollectMemoableNode } from '../collectors/memo-collectors/factory';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
@@ -114,13 +109,17 @@ export class CheckedTransformer extends AbstractVisitor {
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         this.enter(beforeChildren);
         if (arkts.isCallExpression(beforeChildren) && isBuilderLambda(beforeChildren)) {
-            const lambda = builderLambdaFactory.transformBuilderLambda(beforeChildren, this.projectConfig);
+            const lambda = builderLambdaFactory.transformBuilderLambda(beforeChildren);
             return this.visitEachChild(lambda);
         } else if (arkts.isMethodDefinition(beforeChildren) && isBuilderLambdaMethodDecl(beforeChildren)) {
-            const lambda = builderLambdaFactory.transformBuilderLambdaMethodDecl(beforeChildren, this.externalSourceName);
+            const lambda = builderLambdaFactory.transformBuilderLambdaMethodDecl(
+                beforeChildren,
+                this.externalSourceName
+            );
             return this.visitEachChild(lambda);
         }
         const node = this.visitEachChild(beforeChildren);
+        findAndCollectMemoableNode(node);
         if (this.isCustomDialogController()) {
             return this.processCustomDialogController(node);
         } else if (
@@ -143,16 +142,13 @@ export class CheckedTransformer extends AbstractVisitor {
             return generateArkUICompatible(node as arkts.CallExpression);
         } else if (arkts.isTSInterfaceDeclaration(node)) {
             return structFactory.tranformInterfaceMembers(node, this.externalSourceName);
-        } else if (findCanAddMemoFromArrowFunction(node)) {
-            return addMemoAnnotation(node);
-        } else if (arkts.isEtsScript(node)) {
+        } else if (arkts.isBlockStatement(node)) {
+            return checkCustomDialogController(node);
+        }
+        if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
             ImportCollector.getInstance().insertCurrentImports(this.program);
             LogCollector.getInstance().shouldIgnoreError(this.projectConfig?.ignoreError);
             LogCollector.getInstance().emitLogInfo();
-        } else if (arkts.isTSTypeAliasDeclaration(node)) {
-            return structFactory.transformTSTypeAlias(node);
-        } else if (arkts.isBlockStatement(node)) {
-            return checkCustomDialogController(node);
         }
         return node;
     }

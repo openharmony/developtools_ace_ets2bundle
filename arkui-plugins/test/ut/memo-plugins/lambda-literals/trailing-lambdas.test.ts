@@ -18,7 +18,7 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { memoNoRecheck, recheck } from '../../../utils/plugins';
+import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 
 const LAMBDA_DIR_PATH: string = 'memo/lambdas';
@@ -34,7 +34,7 @@ const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
-@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -44,7 +44,7 @@ function main() {}
     a.foo(__memo_context, ((__memo_id) + (<some_random_number>)), (() => {
         console.log();
     }));
-    a.goo(((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+    a.goo(((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -56,7 +56,7 @@ function main() {}
             return;
         }
     }));
-    a.koo(__memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+    a.koo(__memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -71,7 +71,7 @@ function main() {}
     bar(__memo_context, ((__memo_id) + (<some_random_number>)), (() => {
         console.log();
     }));
-    par(((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+    par(((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -83,7 +83,7 @@ function main() {}
             return;
         }
     }));
-    kar(__memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+    kar(__memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -100,7 +100,7 @@ function main() {}
         return;
     }
 });
-function bar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, f?: (()=> void)): void {
+@memo() function bar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, f?: (()=> void)): void {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
     const __memo_parameter_f = __memo_scope.param(0, f);
     if (__memo_scope.unchanged) {
@@ -113,7 +113,7 @@ function bar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, f?:
     }
 }
 function par(f?: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
-function kar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() f?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+@memo() function kar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() f?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
     const __memo_parameter_f = __memo_scope.param(0, f);
     if (__memo_scope.unchanged) {
@@ -126,7 +126,7 @@ function kar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @me
     }
 }
 class A {
-    public foo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, p?: (()=> void)): void {
+    @memo() public foo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, p?: (()=> void)): void {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_p = __memo_scope.param(0, p);
         if (__memo_scope.unchanged) {
@@ -139,7 +139,7 @@ class A {
         }
     }
     public goo(@memo() p?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
-    public koo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() p?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+    @memo() public koo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() p?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_p = __memo_scope.param(0, p);
         if (__memo_scope.unchanged) {
@@ -161,7 +161,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'transform trailing lambdas',
-    [memoNoRecheck, recheck],
+    [beforeMemoNoRecheck, memoNoRecheck, recheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],
     },

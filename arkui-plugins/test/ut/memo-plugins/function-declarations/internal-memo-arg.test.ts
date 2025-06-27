@@ -15,11 +15,12 @@
 
 import * as path from 'path';
 import { PluginTester } from '../../../utils/plugin-tester';
-import { mockBuildConfig } from '../../../utils/artkts-config';
+import { mockBuildConfig, mockProjectConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { memoNoRecheck, recheck } from '../../../utils/plugins';
+import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { ProjectConfig } from '../../../../common/plugin-context';
 
 const FUNCTION_DIR_PATH: string = 'memo/functions';
 
@@ -28,7 +29,10 @@ buildConfig.compileFiles = [
     path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, FUNCTION_DIR_PATH, 'internal-memo-arg.ets'),
 ];
 
-const pluginTester = new PluginTester('test internal memo argument calls', buildConfig);
+const projectConfig: ProjectConfig = mockProjectConfig();
+projectConfig.frameworkMode = 'frameworkMode';
+
+const pluginTester = new PluginTester('test internal memo argument calls', buildConfig, projectConfig);
 
 const expectedScript: string = `
 
@@ -63,7 +67,7 @@ export function __id(): __memo_id_type
   return __memo_context.valueBy<Value>(name);
 }
 
-@memo_intrinsic() export function contextLocalScope<Value>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, name: string, value: Value, @memo() content: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+@memo_intrinsic() export function contextLocalScope<Value>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, name: string, value: Value, @memo() content: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
   const scope = __memo_context.scope<void>(__memo_id, 1);
   scope.param<Value>(0, value, undefined, name, true);
   if (scope.unchanged) {
@@ -83,7 +87,7 @@ export function __id(): __memo_id_type
       if (!reuseKey) {
         update(__memo_context, ((__memo_id) + (6025780)), (__memo_context.node as Node));
       } else {
-        memoEntry(__memo_context, 0, ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+        memoEntry(__memo_context, 0, ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
           const __memo_scope = __memo_context.scope<void>(((__memo_id) + (31840240)), 0);
           if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -106,7 +110,7 @@ export function __id(): __memo_id_type
   return __memo_context.controlledScope(__memo_id, invalidate);
 }
 
-export function Repeat(__memo_context: __memo_context_type, __memo_id: __memo_id_type, count: int, @memo() action: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, index: int)=> void)): void {
+@memo() export function Repeat(__memo_context: __memo_context_type, __memo_id: __memo_id_type, count: int, @memo() action: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, index: int)=> void)) {
   const __memo_scope = __memo_context.scope<void>(((__memo_id) + (200707415)), 2);
   const __memo_parameter_count = __memo_scope.param(0, count), __memo_parameter_action = __memo_scope.param(1, action);
   if (__memo_scope.unchanged) {
@@ -137,7 +141,7 @@ export class MemoCallbackContext {
     this.id = id;
   }
   
-  public static Make(__memo_context: __memo_context_type, __memo_id: __memo_id_type): MemoCallbackContext {
+  @memo() public static Make(__memo_context: __memo_context_type, __memo_id: __memo_id_type): MemoCallbackContext {
     const __memo_scope = __memo_context.scope<MemoCallbackContext>(((__memo_id) + (41727473)), 0);
     if (__memo_scope.unchanged) {
       return __memo_scope.cached;
@@ -148,7 +152,7 @@ export class MemoCallbackContext {
 }
 
 export class CustomComponent {
-  public static _instantiateImpl(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+  @memo() public static _instantiateImpl(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (214802466)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -172,7 +176,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'transform internal __context() and __id() calls in functions',
-    [memoNoRecheck, recheck],
+    [beforeMemoNoRecheck, memoNoRecheck, recheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],
     },

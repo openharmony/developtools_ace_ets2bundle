@@ -20,6 +20,7 @@ import { ENTRY_POINT_IMPORT_SOURCE_NAME, EntryWrapperNames, NavigationNames } fr
 import { ProjectConfig } from '../../common/plugin-context';
 import { factory as uiFactory } from '../ui-factory';
 import { getRelativePagePath } from './utils';
+import { addMemoAnnotation } from '../../collectors/memo-collectors/utils';
 
 export class factory {
     /**
@@ -218,7 +219,8 @@ export class factory {
                 !!member.scriptFunction.id &&
                 member.scriptFunction.id.name === EntryWrapperNames.ENTRY_FUNC
             ) {
-                member.scriptFunction.setAnnotations([annotation('memo')]);
+                addMemoAnnotation(member.scriptFunction);
+                arkts.NodeCache.getInstance().collect(member);
             }
         });
     }

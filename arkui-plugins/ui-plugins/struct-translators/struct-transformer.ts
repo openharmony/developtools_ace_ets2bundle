@@ -16,15 +16,9 @@
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor } from '../../common/abstract-visitor';
 import { ProjectConfig } from '../../common/plugin-context';
-import {
-    addMemoAnnotation,
-    collectCustomComponentScopeInfo,
-    CustomComponentNames,
-    isCustomComponentClass,
-} from '../utils';
+import { collectCustomComponentScopeInfo, CustomComponentNames, isCustomComponentClass } from '../utils';
 import {
     CustomComponentScopeInfo,
-    findCanAddMemoFromArrowFunction,
     isResourceNode,
     ScopeInfoCollection,
     LoaderJson,
@@ -38,6 +32,7 @@ import { factory as entryFactory } from '../entry-translators/factory';
 import { ImportCollector } from '../../common/import-collector';
 import { DeclarationCollector } from '../../common/declaration-collector';
 import { PropertyCache } from '../property-translators/utils';
+import { generateArkUICompatible, isArkUICompatible } from '../interop/interop';
 
 export class StructTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
@@ -105,11 +100,12 @@ export class StructTransformer extends AbstractVisitor {
             return factory.transformNormalClass(node);
         } else if (arkts.isCallExpression(node) && isResourceNode(node)) {
             return factory.transformResource(node, this.projectConfig, this.resourceInfo);
+        } else if (isArkUICompatible(node)) {
+            return generateArkUICompatible(node as arkts.CallExpression);
         } else if (arkts.isTSInterfaceDeclaration(node)) {
             return factory.tranformInterfaceMembers(node, this.externalSourceName);
-        } else if (findCanAddMemoFromArrowFunction(node)) {
-            return addMemoAnnotation(node);
-        } else if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
+        }
+        if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
             ImportCollector.getInstance().insertCurrentImports(this.program);
         }
         return node;

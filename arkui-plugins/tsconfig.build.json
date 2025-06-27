@@ -17,6 +17,7 @@
         "removeComments": false
     },
     "include": [
+        "./collectors/**/*.ts",
         "./common/**/*.ts",
         "./memo-plugins/**/*.ts",
         "./ui-plugins/**/*.ts",

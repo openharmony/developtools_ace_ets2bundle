@@ -18,7 +18,7 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { memoNoRecheck, recheck } from '../../../utils/plugins';
+import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 
 const PROPERTY_DIR_PATH: string = 'memo/properties';
@@ -38,7 +38,7 @@ class A {
     public arg: (()=> void);
     @memo() public memo_arg: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
     @memo() public memo_optional_arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined;
-    @memo() public memo_union_arg: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+    @memo() public memo_union_arg: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -52,7 +52,7 @@ class A {
     public arg_memo_type: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
     public constructor() {
         this.arg = (() => {});
-        this.memo_arg = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+        this.memo_arg = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -63,7 +63,7 @@ class A {
                 return;
             }
         });
-        this.arg_memo_type = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+        this.arg_memo_type = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -75,7 +75,7 @@ class A {
             }
         });
     }
-    public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -98,7 +98,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'transform properties in class',
-    [memoNoRecheck, recheck],
+    [beforeMemoNoRecheck, memoNoRecheck, recheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],
     },

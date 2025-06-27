@@ -20,24 +20,6 @@
 #include <mutex>
 #include "memoryTracker.h"
 
-std::set<std::string> globalStructInfo;
-std::mutex g_structMutex;
-
-void impl_InsertGlobalStructInfo(KNativePointer contextPtr, KStringPtr& instancePtr)
-{
-    std::lock_guard<std::mutex> lock(g_structMutex);
-    globalStructInfo.insert(getStringCopy(instancePtr));
-    return;
-}
-KOALA_INTEROP_V2(InsertGlobalStructInfo, KNativePointer, KStringPtr);
-
-KBoolean impl_HasGlobalStructInfo(KNativePointer contextPtr, KStringPtr& instancePtr)
-{
-    std::lock_guard<std::mutex> lock(g_structMutex);
-    return globalStructInfo.count(getStringCopy(instancePtr));
-}
-KOALA_INTEROP_2(HasGlobalStructInfo, KBoolean, KNativePointer, KStringPtr);
-
 KBoolean impl_ClassDefinitionIsFromStructConst(KNativePointer contextPtr, KNativePointer instancePtr)
 {
     auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
@@ -661,6 +643,7 @@ KNativePointer impl_CreateSuggestionInfo(KNativePointer context, KNativePointer 
 }
 KOALA_INTEROP_5(CreateSuggestionInfo, KNativePointer, KNativePointer, KNativePointer,
                 KStringArray, KInt, KStringPtr);
+
 void impl_LogDiagnostic(KNativePointer context, KNativePointer kind, KStringArray argvPtr,
                         KInt argc, KNativePointer pos)
 {
@@ -680,6 +663,7 @@ void impl_LogDiagnostic(KNativePointer context, KNativePointer kind, KStringArra
     GetImpl()->LogDiagnostic(_context_, _kind_, argv, argc, _pos_);
 }
 KOALA_INTEROP_V5(LogDiagnostic, KNativePointer, KNativePointer, KStringArray, KInt, KNativePointer);
+
 void impl_LogDiagnosticWithSuggestion(KNativePointer context, KNativePointer diagnosticInfo,
                                       KNativePointer suggestionInfo, KNativePointer range)
 {
@@ -690,6 +674,14 @@ void impl_LogDiagnosticWithSuggestion(KNativePointer context, KNativePointer dia
     GetImpl()->LogDiagnosticWithSuggestion(_context, _diagnosticInfo, _suggestionInfo, _range);
 }
 KOALA_INTEROP_V4(LogDiagnosticWithSuggestion, KNativePointer, KNativePointer, KNativePointer, KNativePointer);
+
+KBoolean impl_CallExpressionIsTrailingCallConst(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context *>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode *>(receiver);
+    return GetImpl()->CallExpressionIsTrailingCallConst(_context, _receiver);
+}
+KOALA_INTEROP_2(CallExpressionIsTrailingCallConst, KBoolean, KNativePointer, KNativePointer);
 
 MemoryTracker tracker;
 void impl_MemoryTrackerReset(KNativePointer context)

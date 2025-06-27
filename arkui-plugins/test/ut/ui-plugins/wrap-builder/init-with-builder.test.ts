@@ -51,14 +51,14 @@ function main() {}
 
 globalBuilder = wrapBuilder(myBuilder);
 @memo() function myBuilder(value: string, size: number) {
-  Text(((instance: TextAttribute): void => {
+  Text(@memo() ((instance: TextAttribute): void => {
     instance.fontSize(size);
     return;
-  }), value);
+  }), value, undefined, undefined);
 }
 
 
-type MyBuilderFuncType = @memo() ((value: string, size: number)=> void);
+@memo() type MyBuilderFuncType = @Builder() ((value: string, size: number)=> void);
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
   public __initializeStruct(initializers: __Options_ImportStruct | undefined, @memo() content: (()=> void) | undefined): void {}
@@ -66,7 +66,7 @@ type MyBuilderFuncType = @memo() ((value: string, size: number)=> void);
   public __updateStruct(initializers: __Options_ImportStruct | undefined): void {}
   
   @memo() public build() {
-    Column(undefined, (() => {
+    Column(undefined, undefined, @memo() (() => {
       globalBuilder.builder("hello", 50);
     }));
   }

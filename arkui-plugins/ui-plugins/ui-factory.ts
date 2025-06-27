@@ -15,17 +15,16 @@
 
 import * as arkts from '@koalaui/libarkts';
 import {
-    addMemoAnnotation,
     BuilderLambdaNames,
     CustomComponentAnontations,
     CustomComponentNames,
-    findCanAddMemoFromParamExpression,
     hasNullOrUndefinedType,
     hasPropertyInAnnotation,
 } from './utils';
 import { PartialExcept, PartialNested, PartialNestedExcept } from '../common/safe-types';
 import { DecoratorNames } from '../common/predefines';
 import { needDefiniteOrOptionalModifier } from './property-translators/utils';
+import { addMemoAnnotation } from '../collectors/memo-collectors/utils';
 
 export interface ScriptFunctionConfiguration {
     key: arkts.Identifier | undefined;
@@ -138,9 +137,7 @@ export class factory {
     static createContentParameter(): arkts.ETSParameterExpression {
         const contentParam: arkts.Identifier = factory.createContentIdentifier();
         const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(contentParam, undefined);
-        if (findCanAddMemoFromParamExpression(param)) {
-            addMemoAnnotation(param);
-        }
+        addMemoAnnotation(param);
         return param;
     }
 
@@ -305,7 +302,7 @@ export class factory {
         return newAnnotationDecl;
     }
 
-    /*
+    /**
      * add alias: <property.key.name> to @Provide annotation when no alias in @Provide({...}).
      */
     static processNoAliasProvideVariable(property: arkts.ClassProperty): void {
@@ -333,7 +330,7 @@ export class factory {
         property.setAnnotations(newAnnos);
     }
 
-    /*
+    /**
      * create class property : `alias: <value>`.
      */
     static createAliasClassProperty(value: arkts.Identifier): arkts.ClassProperty {
@@ -346,7 +343,7 @@ export class factory {
         );
     }
 
-    /*
+    /**
      * add optional or definite modifier for class property needs initializing without assignment.
      */
     static PreprocessClassPropertyModifier(st: arkts.AstNode): arkts.AstNode {
@@ -360,7 +357,7 @@ export class factory {
         return st;
     }
 
-    /*
+    /**
      * create class implements : `implements <interfaceName>`.
      */
     static createClassImplements(

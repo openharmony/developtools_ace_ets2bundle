@@ -280,3 +280,8 @@ export enum GetSetTypes {
     GET = 'get',
     SET = 'set',
 }
+
+export enum GenSymPrefix {
+    INTRINSIC = 'gensym%%',
+    UI = 'gensym__'
+}

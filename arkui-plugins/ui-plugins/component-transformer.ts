@@ -33,11 +33,12 @@ import {
     filterDefined,
     collect,
     createAndInsertImportDeclaration,
+    isDecoratorAnnotation,
 } from '../common/arkts-utils';
 import { ProjectConfig } from '../common/plugin-context';
 import { getEntryParams } from './entry-translators/utils';
 import { factory as entryFactory } from './entry-translators/factory';
-import { hasDecoratorName, findDecoratorInfos, isDecoratorAnnotation } from './property-translators/utils';
+import { hasDecoratorName, findDecoratorInfos } from './property-translators/utils';
 import { factory } from './ui-factory';
 import { factory as propertyFactory } from './property-translators/factory';
 import { StructMap } from '../common/program-visitor';
@@ -173,7 +174,7 @@ export class ComponentTransformer extends AbstractVisitor {
         const scopeInfo: ScopeInfo = this.scopeInfos[this.scopeInfos.length - 1];
         return !!scopeInfo.annotations.customdialog;
     }
-    
+
     hasController(node: arkts.ETSTypeReference, key_name: string): void {
         const ident = node.part?.name;
         if (ident && arkts.isIdentifier(ident) && ident.name === 'CustomDialogController') {
@@ -329,7 +330,6 @@ export class ComponentTransformer extends AbstractVisitor {
         if (!className || scopeInfo?.name !== className) {
             return node;
         }
-        arkts.insertGlobalStructInfo(className);
         if (arkts.isStructDeclaration(node)) {
             this.collectComponentMembers(node, className);
         }

@@ -167,6 +167,10 @@ function main() {}
 `;
 
 function testParsedAndCheckedTransformer(this: PluginTestContext): void {
+    console.log("[testParsedAndCheckedTransformer] this: ", this);
+    console.log("[testParsedAndCheckedTransformer] parseDumpSrc(this.scriptSnapshot ?? ''): ", parseDumpSrc(this.scriptSnapshot ?? ''));
+    console.log("[testParsedAndCheckedTransformer] parseDumpSrc(expectedScript): ", parseDumpSrc(expectedScript));
+
     expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
 }
 
