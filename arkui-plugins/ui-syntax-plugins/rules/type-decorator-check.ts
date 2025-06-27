@@ -14,154 +14,143 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getAnnotationName, PresetDecorators } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { getAnnotationName, PresetDecorators, findDecorator, getClassDeclarationAnnotation } from '../utils';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-function findTypeDecorator(
-  annotations: readonly arkts.AnnotationUsage[]
-): arkts.AnnotationUsage | undefined {
-  let typeDecorator = annotations?.find(annotation =>
-    annotation.expr && arkts.isIdentifier(annotation.expr) &&
-    annotation.expr.name === PresetDecorators.TYPE
-  );
-  return typeDecorator;
-}
-
-function getTypeDecorator(
-  node: arkts.ClassDeclaration,
-): arkts.AnnotationUsage | undefined {
-  let typeDecorator: arkts.AnnotationUsage | undefined;
-  node.definition?.body.forEach(member => {
-    if (arkts.isClassProperty(member) && member.annotations) {
-      typeDecorator = findTypeDecorator(member.annotations);
+class TypeDecoratorCheckRule extends AbstractUISyntaxRule {
+    public setup(): Record<string, string> {
+        return {
+            invalidType: `The @Type decorator is not allowed here. It must be used in a class.`,
+            invalidDecoratorWith: `The @Type decorator can not be used within a 'class' decorated with @Observed.`,
+            invalidTypeMember: `The @Type decorator is not allowed here. It can only decorate properties of a class.`
+        };
     }
-  });
-  return typeDecorator;
-}
 
-// rule1: @Type can only be used for class
-function checkTypeInStruct(
-  node: arkts.StructDeclaration,
-  context: UISyntaxRuleContext,
-): void {
-  let typeDecorator: arkts.AnnotationUsage | undefined;
-  node.definition.body.forEach(member => {
-    if (arkts.isClassProperty(member) && member.annotations) {
-      typeDecorator = findTypeDecorator(member.annotations);
-      reportInvalidTypeUsageInStruct(typeDecorator, context);
-    }
-  });
-}
+    public parsed(node: arkts.AstNode): void {
 
-function reportInvalidTypeUsageInStruct(
-  typeDecorator: arkts.AnnotationUsage | undefined,
-  context: UISyntaxRuleContext
-): void {
-  if (!typeDecorator) {
-    return;
-  }
-  context.report({
-    node: typeDecorator,
-    message: rule.messages.invalidType,
-    fix: (typeDecorator) => {
-      const startPosition = typeDecorator.startPosition;
-      const endPosition = typeDecorator.endPosition;
-      return {
-        range: [startPosition, endPosition],
-        code: ''
-      };
-    }
-  });
-}
+        this.checkTypeOnlyForClass(node);
 
-// rule2: Conflict between @Type and @Observed
-function checkObservedAndTypeConflict(
-  node: arkts.ClassDeclaration,
-  context: UISyntaxRuleContext
-): void {
-  let typeDecorator: arkts.AnnotationUsage | undefined;
-  node.definition?.annotations.forEach(member => {
-    const annotation = getAnnotationName(member);
-    typeDecorator = getTypeDecorator(node);
-    if (annotation !== PresetDecorators.OBSERVED_V2) {
-      reportObservedAndTypeDecoratorConflict(typeDecorator, context);
-    }
-  });
-}
-
-function reportObservedAndTypeDecoratorConflict(
-  typeDecorator: arkts.AnnotationUsage | undefined,
-  context: UISyntaxRuleContext
-): void {
-  if (!typeDecorator) {
-    return;
-  }
-  context.report({
-    node: typeDecorator,
-    message: rule.messages.invalidDecoratorWith,
-    fix: () => {
-      const startPosition = typeDecorator.startPosition;
-      const endPosition = typeDecorator.endPosition;
-      return {
-        range: [startPosition, endPosition],
-        code: ''
-      };
-    }
-  });
-}
-
-// rule3: @TypeCannot be used for function members
-function validateScriptFunctionForTypeDecorator(
-  node: arkts.ScriptFunction,
-  context: UISyntaxRuleContext
-): void {
-  const typeDecorator = findTypeDecorator(node.annotations);
-  reportInvalidTypeDecorator(typeDecorator, context);
-}
-
-function reportInvalidTypeDecorator(
-  typeDecorator: arkts.AnnotationUsage | undefined,
-  context: UISyntaxRuleContext
-): void {
-  if (!typeDecorator) {
-    return;
-  }
-  context.report({
-    node: typeDecorator,
-    message: rule.messages.invalidTypeMember,
-    fix: (typeDecorator) => {
-      const startPosition = typeDecorator.startPosition;
-      const endPosition = typeDecorator.endPosition;
-      return {
-        range: [startPosition, endPosition],
-        code: ''
-      };
-    }
-  });
-}
-
-const rule: UISyntaxRule = {
-  name: 'type-decorator-check',
-  messages: {
-    invalidType: `The @Type decorator is not allowed here. It must be used in a class.`,
-    invalidDecoratorWith: `The @Type decorator can not be used within a 'class' decorated with @Observed.`,
-    invalidTypeMember: `The @Type decorator is not allowed here. It can only decorate properties of a class.`
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
         // Check the decorator on the class
         if (arkts.isClassDeclaration(node)) {
-          checkObservedAndTypeConflict(node, context);
+            this.checkObservedAndTypeConflict(node);
         }
+
+        if (arkts.isScriptFunction(node)) {
+            this.validateScriptFunctionForTypeDecorator(node);
+        }
+    }
+
+    // rule1: @Type can only be used for class
+    private checkTypeOnlyForClass(node: arkts.AstNode): void {
         if (arkts.isStructDeclaration(node)) {
-          checkTypeInStruct(node, context);
+            node.definition?.body.forEach(member => {
+                if (arkts.isClassProperty(member)) {
+                    this.validateDecorator(member, PresetDecorators.TYPE);
+                }
+                if (arkts.isMethodDefinition(member)) {
+                    this.validateDecorator(member.scriptFunction, PresetDecorators.TYPE);
+                }
+            });
+            return;
         }
-        if (arkts.isScriptFunction(node) && node.annotations) {
-          validateScriptFunctionForTypeDecorator(node, context);
+
+        // function/ variable/ interface/ type alias declaration
+        if (arkts.isFunctionDeclaration(node) ||
+            arkts.isVariableDeclaration(node) ||
+            arkts.isTSInterfaceDeclaration(node) ||
+            arkts.isTSTypeAliasDeclaration(node)
+        ) {
+            this.validateDecorator(node, PresetDecorators.TYPE);
         }
-      },
-    };
-  },
-};
-export default rule;
+    }
+
+    // rule2: Conflict between @Type and @Observed
+    private checkObservedAndTypeConflict(
+        node: arkts.ClassDeclaration,
+    ): void {
+        let typeDecorator: arkts.AnnotationUsage | undefined;
+        node.definition?.body.forEach(member => {
+            if (arkts.isClassProperty(member)) {
+                typeDecorator = findDecorator(member, PresetDecorators.TYPE);
+            }
+        });
+        const annotation = getClassDeclarationAnnotation(node, PresetDecorators.OBSERVED_V1);
+        if (typeDecorator && annotation) {
+            this.reportObservedAndTypeDecoratorConflict(typeDecorator);
+        }
+    }
+
+    // rule3: @TypeCannot be used for function members
+    private validateScriptFunctionForTypeDecorator(
+        node: arkts.ScriptFunction,
+    ): void {
+        const typeDecorator = findDecorator(node, PresetDecorators.TYPE);
+        this.reportInvalidTypeDecorator(typeDecorator);
+    }
+
+    private validateDecorator(
+        node: arkts.ClassProperty | arkts.VariableDeclaration | arkts.FunctionDeclaration |
+            arkts.ScriptFunction | arkts.TSInterfaceDeclaration | arkts.TSTypeAliasDeclaration,
+        decoratorName: string
+    ): void {
+        const decorator = findDecorator(node, decoratorName);
+        if (!decorator) {
+            return;
+        }
+
+        this.report({
+            node: decorator,
+            message: this.messages.invalidType,
+            fix: (decorator) => {
+                const startPosition = decorator.startPosition;
+                const endPosition = decorator.endPosition;
+                return {
+                    range: [startPosition, endPosition],
+                    code: ''
+                };
+            }
+        });
+    }
+
+    private reportObservedAndTypeDecoratorConflict(
+        typeDecorator: arkts.AnnotationUsage | undefined,
+    ): void {
+        if (!typeDecorator) {
+            return;
+        }
+        this.report({
+            node: typeDecorator,
+            message: this.messages.invalidDecoratorWith,
+            fix: () => {
+                const startPosition = typeDecorator.startPosition;
+                const endPosition = typeDecorator.endPosition;
+                return {
+                    range: [startPosition, endPosition],
+                    code: ''
+                };
+            }
+        });
+    }
+
+    private reportInvalidTypeDecorator(
+        typeDecorator: arkts.AnnotationUsage | undefined,
+    ): void {
+        if (!typeDecorator) {
+            return;
+        }
+        this.report({
+            node: typeDecorator,
+            message: this.messages.invalidTypeMember,
+            fix: (typeDecorator) => {
+                const startPosition = typeDecorator.startPosition;
+                const endPosition = typeDecorator.endPosition;
+                return {
+                    range: [startPosition, endPosition],
+                    code: ''
+                };
+            }
+        });
+    }
+}
+
+export default TypeDecoratorCheckRule;
