@@ -21,10 +21,7 @@ import { createGetter, createSetter, generateThisBacking, hasDecorator, removeDe
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { factory } from './factory';
-import {
-    addMemoAnnotation,
-    findCanAddMemoFromTypeAnnotation,
-} from '../../collectors/memo-collectors/utils';
+import { addMemoAnnotation, findCanAddMemoFromTypeAnnotation } from '../../collectors/memo-collectors/utils';
 
 export class BuilderParamTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
@@ -53,9 +50,14 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
             true
         );
         arkts.NodeCache.getInstance().collect(field);
-        const thisGetValue: arkts.Expression = generateThisBacking(newName, false, true);
         const thisSetValue: arkts.Expression = generateThisBacking(newName, false, false);
-        const getter: arkts.MethodDefinition = this.translateGetter(originalName, propertyType?.clone(), thisGetValue);
+        const getter: arkts.MethodDefinition = this.translateGetter(
+            originalName,
+            propertyType?.clone(),
+            arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL)
+                ? generateThisBacking(newName, false, false)
+                : generateThisBacking(newName, false, true)
+        );
         arkts.NodeCache.getInstance().collect(getter);
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, propertyType?.clone(), thisSetValue);
         arkts.NodeCache.getInstance().collect(setter);

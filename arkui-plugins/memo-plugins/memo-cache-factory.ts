@@ -203,7 +203,9 @@ export class RewriteFactory {
             _hasMemoEntry,
             _hasMemoIntrinsic,
             _callName,
-            _hasReceiver
+            _hasReceiver,
+            _isGetter,
+            _isSetter
         );
         return arkts.factory.updateScriptFunction(
             node,
@@ -356,9 +358,11 @@ function prepareRewriteScriptFunctionBody(
     hasMemoEntry?: boolean,
     hasMemoIntrinsic?: boolean,
     callName?: string,
-    hasReceiver?: boolean
+    hasReceiver?: boolean,
+    isGetter?: boolean, 
+    isSetter?: boolean, 
 ): arkts.AstNode | undefined {
-    if (isDecl || !node.body || !arkts.isBlockStatement(node.body)) {
+    if (isGetter || isSetter || isDecl || !node.body || !arkts.isBlockStatement(node.body)) {
         return node.body;
     }
 
