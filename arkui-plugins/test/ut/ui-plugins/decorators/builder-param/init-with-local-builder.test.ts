@@ -69,7 +69,7 @@ function main() {}
     return this.__backing_customBuilderParam!;
   }
   
-  public set customBuilderParam(@memo() value: (()=> void)) {
+  public set customBuilderParam(value: @memo() (()=> void)) {
     this.__backing_customBuilderParam = value;
   }
   
@@ -79,7 +79,7 @@ function main() {}
     return this.__backing_customBuilderParam2!;
   }
   
-  public set customBuilderParam2(@memo() value: ((str: string)=> void)) {
+  public set customBuilderParam2(value: @memo() ((str: string)=> void)) {
     this.__backing_customBuilderParam2 = value;
   }
   
@@ -97,10 +97,10 @@ function main() {}
 }
 
 @Component() export interface __Options_Child {
-  set customBuilderParam(@memo() customBuilderParam: (()=> void) | undefined)
+  set customBuilderParam(customBuilderParam: @memo() (()=> void) | undefined)
   
   get customBuilderParam(): @memo() (()=> void) | undefined
-  set customBuilderParam2(@memo() customBuilderParam2: ((str: string)=> void) | undefined)
+  set customBuilderParam2(customBuilderParam2: @memo() ((str: string)=> void) | undefined)
   
   get customBuilderParam2(): @memo() ((str: string)=> void) | undefined
   

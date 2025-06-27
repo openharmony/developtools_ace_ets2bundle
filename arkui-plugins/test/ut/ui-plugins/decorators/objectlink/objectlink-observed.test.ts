@@ -41,9 +41,9 @@ const expectedScript: string = `
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { IObjectLinkDecoratedVariable as IObjectLinkDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
@@ -204,13 +204,13 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   @memo() public build() {
-    Column(undefined, (() => {
-      Button(((instance: ButtonAttribute): void => {
+    Column(undefined, undefined, @memo() (() => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.data.setDate(((this.data.getDate()) + (1)));
         }));
         return;
-      }), "child increase the day by 1");
+      }), "child increase the day by 1", undefined, undefined);
     }));
   }
   
@@ -237,25 +237,25 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   @memo() public build() {
-    Column(undefined, (() => {
+    Column(undefined, undefined, @memo() (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {
         label: "date",
         data: this.newData.data,
-      });
-      Button(((instance: ButtonAttribute): void => {
+      }, undefined, undefined);
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.newData.data = new DateClass("2023-07-07");
         }));
         return;
-      }), "parent update the new date");
-      Button(((instance: ButtonAttribute): void => {
+      }), "parent update the new date", undefined, undefined);
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.newData = new NewDate(new DateClass("2023-08-20"));
         }));
         return;
-      }), "ViewB: this.newData = new NewDate(new DateClass('2023-08-20'))");
+      }), "ViewB: this.newData = new NewDate(new DateClass('2023-08-20'))", undefined, undefined);
     }));
   }
   
@@ -290,7 +290,7 @@ class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     Parent._instantiateImpl(undefined, (() => {
       return new Parent();
-    }));
+    }), undefined, undefined, undefined);
   }
   
   public constructor() {}

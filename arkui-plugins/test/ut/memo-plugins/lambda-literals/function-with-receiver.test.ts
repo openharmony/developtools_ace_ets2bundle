@@ -18,7 +18,7 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { memoNoRecheck, recheck } from '../../../utils/plugins';
+import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { Plugins } from '../../../../common/plugin-context';
 import { uiTransform } from '../../../../ui-plugins';
@@ -43,7 +43,7 @@ import { memo as memo } from "arkui.stateManagement.runtime";
 
 function main() {}
 
-function foo1(this: B, __memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string): void {
+@memo() function foo1(this: B, __memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string): void {
   const __memo_scope = __memo_context.scope<void>(((__memo_id) + (38567515)), 2);
   const __memo_parameter_this = __memo_scope.param(0, this), __memo_parameter_str = __memo_scope.param(1, str);
   if (__memo_scope.unchanged) {
@@ -57,7 +57,7 @@ function foo1(this: B, __memo_context: __memo_context_type, __memo_id: __memo_id
   }
 }
 
-function foo2(this: B, __memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string): B {
+@memo() function foo2(this: B, __memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string): B {
   const __memo_scope = __memo_context.scope<B>(((__memo_id) + (167482260)), 2);
   const __memo_parameter_this = __memo_scope.param(0, this), __memo_parameter_str = __memo_scope.param(1, str);
   if (__memo_scope.unchanged) {
@@ -68,7 +68,7 @@ function foo2(this: B, __memo_context: __memo_context_type, __memo_id: __memo_id
 }
 
 class B {
-  public internal_call(__memo_context: __memo_context_type, __memo_id: __memo_id_type): B {
+  @memo() public internal_call(__memo_context: __memo_context_type, __memo_id: __memo_id_type): B {
     const __memo_scope = __memo_context.scope<B>(((__memo_id) + (146437675)), 0);
     if (__memo_scope.unchanged) {
       return __memo_scope.cached;
@@ -87,7 +87,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'transform lambdas about function with receiver feature',
-    [parsedTransform, memoNoRecheck, recheck],
+    [parsedTransform, beforeMemoNoRecheck, memoNoRecheck, recheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],
     },

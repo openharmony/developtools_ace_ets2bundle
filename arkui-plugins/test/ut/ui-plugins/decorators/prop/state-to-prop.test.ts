@@ -41,11 +41,11 @@ const expectedScript: string = `
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
@@ -99,18 +99,18 @@ function main() {}
   }
   
   @memo() public build() {
-    Column(undefined, (() => {
+    Column(undefined, undefined, @memo() (() => {
       if (((this.count) > (0))) {
-        Text(undefined, (((("You have") + (this.count))) + ("Nuggets left")));
+        Text(undefined, (((("You have") + (this.count))) + ("Nuggets left")), undefined, undefined);
       } else {
-        Text(undefined, "Game over!");
+        Text(undefined, "Game over!", undefined, undefined);
       }
-      Button(((instance: ButtonAttribute): void => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.count -= this.costOfOneAttempt;
         }));
         return;
-      }), "Try again");
+      }), "Try again", undefined, undefined);
     }));
   }
   
@@ -137,26 +137,26 @@ function main() {}
   }
   
   @memo() public build() {
-    Column(undefined, (() => {
-      Text(undefined, (((("Grant") + (this.countDownStartValue))) + ("nuggets to play.")));
-      Button(((instance: ButtonAttribute): void => {
+    Column(undefined, undefined, @memo() (() => {
+      Text(undefined, (((("Grant") + (this.countDownStartValue))) + ("nuggets to play.")), undefined, undefined);
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.countDownStartValue += 1;
         }));
         return;
-      }), "+1 - Nuggets in New Game");
-      Button(((instance: ButtonAttribute): void => {
+      }), "+1 - Nuggets in New Game", undefined, undefined);
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.countDownStartValue -= 1;
         }));
         return;
-      }), "-1 - Nuggets in New Game");
+      }), "-1 - Nuggets in New Game", undefined, undefined);
       CountDownComponent._instantiateImpl(undefined, (() => {
         return new CountDownComponent();
       }), {
         count: this.countDownStartValue,
         costOfOneAttempt: 2,
-      });
+      }, undefined, undefined);
     }));
   }
   

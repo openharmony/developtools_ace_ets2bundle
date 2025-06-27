@@ -17,12 +17,12 @@ import * as arkts from '@koalaui/libarkts';
 import {
     fixGensymParams,
     buildeParamInfos,
-    isUnmemoizedInFunction,
+    isUnmemoizedInFunctionParams,
     mayAddLastReturn,
     ParamInfo,
     ReturnTypeInfo,
     RuntimeNames,
-    parametrizedNodeHasReceiver
+    parametrizedNodeHasReceiver,
 } from './utils';
 import { moveToFront } from '../common/arkts-utils';
 
@@ -88,7 +88,7 @@ export class factory {
         hasReceiver: boolean = false
     ): readonly arkts.Expression[] {
         const _params = params ?? [];
-        if (isUnmemoizedInFunction(_params)) {
+        if (isUnmemoizedInFunctionParams(_params)) {
             return _params;
         }
         let newParams: arkts.Expression[] = [...factory.createHiddenParameters(), ..._params];
@@ -97,12 +97,15 @@ export class factory {
         }
         return newParams;
     }
-    static updateFunctionTypeWithMemoParameters(type: arkts.ETSFunctionType): arkts.ETSFunctionType {
+    static updateFunctionTypeWithMemoParameters(
+        type: arkts.ETSFunctionType,
+        hasReceiver: boolean = false
+    ): arkts.ETSFunctionType {
         return arkts.factory.updateFunctionType(
             type,
             arkts.factory.createFunctionSignature(
                 undefined,
-                factory.createHiddenParameterIfNotAdded(type.params),
+                factory.createHiddenParameterIfNotAdded(type.params, hasReceiver),
                 type.returnType,
                 false
             ),
@@ -298,6 +301,18 @@ export class factory {
             returnStatement
         );
     }
+    static createWrappedReturnStatement(
+        argument: arkts.Expression,
+        isReturnVoid: boolean
+    ): arkts.ReturnStatement | arkts.BlockStatement {
+        if (!isReturnVoid) {
+            return arkts.factory.createReturnStatement(argument);
+        }
+        return arkts.factory.createBlock([
+            arkts.factory.createExpressionStatement(argument),
+            arkts.factory.createReturnStatement(),
+        ]);
+    }
 
     // Compute
     static createLambdaWrapper(node: arkts.Expression): arkts.ArrowFunctionExpression {
@@ -389,11 +404,13 @@ export class factory {
 
     static insertHiddenArgumentsToCall(
         node: arkts.CallExpression,
-        hash: arkts.NumberLiteral | arkts.StringLiteral
+        hash: arkts.NumberLiteral | arkts.StringLiteral,
+        hasReceiver?: boolean
     ): arkts.CallExpression {
-        return arkts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
-            ...factory.createHiddenArguments(hash),
-            ...node.arguments,
-        ]);
+        let updatedArguments = [...factory.createHiddenArguments(hash), ...node.arguments];
+        if (!!hasReceiver) {
+            updatedArguments = moveToFront(updatedArguments, 2);
+        }
+        return arkts.factory.updateCallExpression(node, node.expression, node.typeArguments, updatedArguments);
     }
 }

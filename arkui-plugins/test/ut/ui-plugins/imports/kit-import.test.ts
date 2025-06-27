@@ -103,8 +103,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 const expectedCheckedScript: string = `
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
@@ -112,6 +110,8 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
@@ -182,15 +182,15 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   @memo() public build() {
-    Column(undefined, (() => {
-      Button(((instance: ButtonAttribute): void => {
+    Column(undefined, undefined, @memo() (() => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {}));
         return;
-      }), "button");
-      Text(((instance: TextAttribute): void => {
+      }), "button", undefined, undefined);
+      Text(@memo() ((instance: TextAttribute): void => {
         instance.fontSize(20);
         return;
-      }), "text");
+      }), "text", undefined, undefined);
     }));
   }
   
@@ -218,7 +218,7 @@ class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     A._instantiateImpl(undefined, (() => {
       return new A();
-    }));
+    }), undefined, undefined, undefined);
   }
   
   public constructor() {}

@@ -19,16 +19,23 @@ class Person {
     constructor() {}
 }
 
+@memo
 function fullName(this: Person, @memo arg?: () => void): void {
   return;
 }
 
 class A {}
 
+@memo
 type F1 = (this: A, @memo arg?: () => void) => void;
+
+@memo
 type F2 = (a: A, @memo arg?: () => void) => void;
 
+@memo
 function foo(this: A, @memo arg?: () => void): void {}
+
+@memo
 function goo(a: A, @memo arg?: () => void): void {}
 
 @memo
@@ -37,11 +44,7 @@ function goo(a: A, @memo arg?: () => void): void {}
     x.fullName(() => {});
 
     let f1: F1 = foo;
-    f1 = goo;
-
     let f2: F2 = goo;
-    f2 = foo;
-    f1 = f2;
 
     let a = new A();
     a.f1(() => {});

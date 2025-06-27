@@ -14,10 +14,9 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { annotation, matchPrefix } from '../common/arkts-utils';
-import { ARKUI_IMPORT_PREFIX_NAMES, MEMO_IMPORT_SOURCE_NAME, StructDecoratorNames } from '../common/predefines';
+import { matchPrefix } from '../common/arkts-utils';
+import { ARKUI_IMPORT_PREFIX_NAMES, StructDecoratorNames } from '../common/predefines';
 import { DeclarationCollector } from '../common/declaration-collector';
-import { ImportCollector } from '../common/import-collector';
 
 export enum CustomComponentNames {
     COMPONENT_BUILD_ORI = 'build',
@@ -45,10 +44,6 @@ export enum BuilderLambdaNames {
     STYLE_PARAM_NAME = 'style',
     STYLE_ARROW_PARAM_NAME = 'instance',
     CONTENT_PARAM_NAME = 'content'
-}
-
-export enum MemoNames {
-    MEMO = 'memo',
 }
 
 // IMPORT
@@ -276,84 +271,6 @@ export function isCustomComponentInterface(node: arkts.TSInterfaceDeclaration): 
 
 export function getCustomComponentOptionsName(className: string): string {
     return `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${className}`;
-}
-
-// MEMO
-export type MemoAstNode =
-    | arkts.ScriptFunction
-    | arkts.ETSParameterExpression
-    | arkts.ClassProperty
-    | arkts.TSTypeAliasDeclaration
-    | arkts.ETSFunctionType
-    | arkts.ArrowFunctionExpression
-    | arkts.ETSUnionType;
-
-export function hasMemoAnnotation<T extends MemoAstNode>(node: T): boolean {
-    return node.annotations.some((it) => isMemoAnnotation(it, MemoNames.MEMO));
-}
-
-export function collectMemoAnnotationImport(memoName: MemoNames = MemoNames.MEMO): void {
-    ImportCollector.getInstance().collectImport(memoName);
-}
-
-export function collectMemoAnnotationSource(memoName: MemoNames = MemoNames.MEMO): void {
-    ImportCollector.getInstance().collectSource(memoName, MEMO_IMPORT_SOURCE_NAME);
-}
-
-export function findCanAddMemoFromTypeAnnotation(
-    typeAnnotation: arkts.AstNode | undefined
-): typeAnnotation is arkts.ETSFunctionType {
-    if (!typeAnnotation) {
-        return false;
-    }
-    if (arkts.isETSFunctionType(typeAnnotation)) {
-        return true;
-    } else if (arkts.isETSUnionType(typeAnnotation)) {
-        return typeAnnotation.types.some((type) => arkts.isETSFunctionType(type));
-    }
-    return false;
-}
-
-export function findCanAddMemoFromParamExpression(
-    param: arkts.AstNode | undefined
-): param is arkts.ETSParameterExpression {
-    if (!param) {
-        return false;
-    }
-    if (!arkts.isEtsParameterExpression(param)) {
-        return false;
-    }
-    const type = param.type;
-    return findCanAddMemoFromTypeAnnotation(type);
-}
-
-export function isMemoAnnotation(node: arkts.AnnotationUsage, memoName: MemoNames): boolean {
-    if (!(node.expr !== undefined && arkts.isIdentifier(node.expr) && node.expr.name === memoName)) {
-        return false;
-    }
-    return true;
-}
-
-export function addMemoAnnotation<T extends MemoAstNode>(node: T, memoName: MemoNames = MemoNames.MEMO): T {
-    collectMemoAnnotationSource(memoName);
-    if (arkts.isETSUnionType(node)) {
-        const functionType = node.types.find((type) => arkts.isETSFunctionType(type));
-        if (!functionType) {
-            return node;
-        }
-        addMemoAnnotation(functionType, memoName);
-        return node;
-    }
-    const newAnnotations: arkts.AnnotationUsage[] = [
-        ...node.annotations.filter((it) => !isMemoAnnotation(it, memoName)),
-        annotation(memoName),
-    ];
-    collectMemoAnnotationImport(memoName);
-    if (arkts.isEtsParameterExpression(node)) {
-        node.annotations = newAnnotations;
-        return node;
-    }
-    return node.setAnnotations(newAnnotations) as T;
 }
 
 /**

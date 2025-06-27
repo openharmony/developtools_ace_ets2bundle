@@ -15,11 +15,12 @@
 
 import * as path from 'path';
 import { PluginTester } from '../../../utils/plugin-tester';
-import { mockBuildConfig } from '../../../utils/artkts-config';
+import { mockBuildConfig, mockProjectConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { memoNoRecheck, recheck } from '../../../utils/plugins';
+import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { ProjectConfig } from '../../../../common/plugin-context';
 
 const FUNCTION_DIR_PATH: string = 'memo/functions';
 
@@ -28,7 +29,10 @@ buildConfig.compileFiles = [
     path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, FUNCTION_DIR_PATH, 'complex-memo-intrinsic.ets'),
 ];
 
-const pluginTester = new PluginTester('test complex memo intrinsic function', buildConfig);
+const projectConfig: ProjectConfig = mockProjectConfig();
+projectConfig.frameworkMode = 'frameworkMode';
+
+const pluginTester = new PluginTester('test complex memo intrinsic function', buildConfig, projectConfig);
 
 const expectedScript: string = `
 
@@ -104,13 +108,13 @@ class A<T>  implements IA<T> {
 export type SimpleArray<T> = Array<T> | ReadonlyArray<T> | Readonly<Array<T>>;
 
 class Use {
-  public test(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+  @memo() public test(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (228150357)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    const style = @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, attributes: IA<number>): void => {
+    const style = @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, attributes: IA<number>) => {
       const __memo_scope = __memo_context.scope<void>(((__memo_id) + (237001330)), 1);
       const __memo_parameter_attributes = __memo_scope.param(0, attributes);
       if (__memo_scope.unchanged) {
@@ -141,7 +145,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'transform complex @memo_intrinsic calls in functions',
-    [memoNoRecheck, recheck],
+    [beforeMemoNoRecheck, memoNoRecheck, recheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],
     },

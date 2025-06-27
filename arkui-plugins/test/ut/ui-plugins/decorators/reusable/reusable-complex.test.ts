@@ -41,13 +41,13 @@ const expectedScript: string = `
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
@@ -105,16 +105,16 @@ class Message {
   }
   
   @memo() public build() {
-    Column(((instance: ColumnAttribute): void => {
+    Column(@memo() ((instance: ColumnAttribute): void => {
       instance.height("100%").width("100%");
       return;
-    }), (() => {
-      Button(((instance: ButtonAttribute): void => {
+    }), undefined, @memo() (() => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.fontSize(30).fontWeight(FontWeight.Bold).onClick(((e: ClickEvent) => {
           this.display = !(this.display);
         }));
         return;
-      }), "Hello");
+      }), "Hello", undefined, undefined);
       if (this.display) {
         Child._instantiateImpl(undefined, (() => {
           return new Child();
@@ -159,14 +159,14 @@ class Message {
   }
   
   @memo() public build() {
-    Column(((instance: ColumnAttribute): void => {
+    Column(@memo() ((instance: ColumnAttribute): void => {
       instance.borderWidth(1).height(100);
       return;
-    }), (() => {
-      Text(((instance: TextAttribute): void => {
+    }), undefined, @memo() (() => {
+      Text(@memo() ((instance: TextAttribute): void => {
         instance.fontSize(30);
         return;
-      }), this.message.value);
+      }), this.message.value, undefined, undefined);
     }));
   }
   
@@ -198,7 +198,7 @@ class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     Index._instantiateImpl(undefined, (() => {
       return new Index();
-    }));
+    }), undefined, undefined, undefined);
   }
   
   public constructor() {}

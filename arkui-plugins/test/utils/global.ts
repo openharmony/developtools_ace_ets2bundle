@@ -35,6 +35,9 @@ function createGlobalConfig(
     if (isDebug) {
         config.push('--debug-info');
     }
+    if (!isUseCache) {
+        config.push('--simultaneous');
+    }
     config.push(fileInfo.filePath);
 
     if (isUseCache) {
@@ -68,10 +71,8 @@ function createCacheContextFromFile(
     return arkts.Context.createCacheContextFromFile(config.peer, filePath, globalContextPtr, isExternal);
 }
 
-function createContextFromString(filePaths: string[]): arkts.Context {
-    const source = fs.readFileSync(filePaths.at(0)!).toString();
-    arkts.arktsGlobal.filePath = filePaths.at(0)!;
-    return arkts.Context.createFromString(source);
+function createContextGenerateAbcForExternalSourceFiles(filePaths: string[]): arkts.Context {
+    return arkts.Context.createContextGenerateAbcForExternalSourceFiles(filePaths);
 }
 
 function resetContext(source: string): void {
@@ -124,7 +125,7 @@ export {
     createGlobalContextPtr,
     destroyGlobalContextPtr,
     createCacheContextFromFile,
-    createContextFromString,
+    createContextGenerateAbcForExternalSourceFiles,
     resetContext,
     resetConfig,
     destroyContext,

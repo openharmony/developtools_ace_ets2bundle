@@ -39,11 +39,11 @@ const pluginTester = new PluginTester('test storageprop with appstorage', buildC
 
 const expectedScript: string = `
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStoragePropDecoratedVariable as IStoragePropDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -114,19 +114,19 @@ class Data {
   }
   
   @memo() public build() {
-    Column(undefined, (() => {
-      Text(((instance: TextAttribute): void => {
+    Column(undefined, undefined, @memo() (() => {
+      Text(@memo() ((instance: TextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.storageProp += 1;
         }));
         return;
-      }), \`From AppStorage \${this.storageProp}\`);
-      Text(((instance: TextAttribute): void => {
+      }), \`From AppStorage \${this.storageProp}\`, undefined, undefined);
+      Text(@memo() ((instance: TextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.storagePropObject.code += 1;
         }));
         return;
-      }), \`From AppStorage \${this.storagePropObject.code}\`);
+      }), \`From AppStorage \${this.storagePropObject.code}\`, undefined, undefined);
     }));
   }
   
@@ -154,7 +154,7 @@ class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     Index._instantiateImpl(undefined, (() => {
       return new Index();
-    }));
+    }), undefined, undefined, undefined);
   }
   
   public constructor() {}

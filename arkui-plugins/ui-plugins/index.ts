@@ -134,9 +134,6 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
             cachePath,
             program.fileNameWithExtension
         );
-        arkts.Performance.getInstance().createEvent('ui-recheck');
-        arkts.recheckSubtree(script);
-        arkts.Performance.getInstance().stopEvent('ui-recheck', true);
         this.setArkTSAst(script);
         arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:UI-AfterCheck');
         arkts.Performance.getInstance().stopMemRecord('Node:UIPlugin:UI-AfterCheck');

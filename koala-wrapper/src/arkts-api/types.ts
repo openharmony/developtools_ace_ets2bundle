@@ -27,7 +27,6 @@ import {
     allFlags,
     arrayOfNullptr,
     assertValidPeer,
-    nodeType,
     passNode,
     passNodeArray,
     passString,
@@ -239,6 +238,14 @@ export class CallExpression extends Expression {
     setTypeParams(typeParams?: TSTypeParameterInstantiation): this {
         global.generatedEs2panda._CallExpressionSetTypeParams(global.context, this.peer, passNode(typeParams));
         return this;
+    }
+
+    get hasTrailingComma(): boolean {
+        return global.generatedEs2panda._CallExpressionHasTrailingCommaConst(global.context, this.peer);
+    }
+
+    get isTrailingCall(): boolean {
+        return global.es2panda._CallExpressionIsTrailingCallConst(global.context, this.peer);
     }
 
     readonly expression: AstNode; // Expression

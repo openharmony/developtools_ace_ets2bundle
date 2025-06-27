@@ -16,8 +16,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as arkts from '@koalaui/libarkts';
-import { CustomComponentInfo, isMemoAnnotation, MemoNames } from '../utils';
-import { isDecoratorAnnotation } from '../property-translators/utils';
+import { CustomComponentInfo } from '../utils';
 import { matchPrefix } from '../../common/arkts-utils';
 import {
     ARKUI_IMPORT_PREFIX_NAMES,
@@ -105,38 +104,6 @@ export function isResourceNode(node: arkts.CallExpression, ignoreDecl: boolean =
         DeclarationCollector.getInstance().collect(decl);
     }
     return true;
-}
-
-export function isMemoCall(node: arkts.AstNode): node is arkts.CallExpression {
-    if (!arkts.isCallExpression(node)) {
-        return false;
-    }
-    const expr: arkts.AstNode = node.expression;
-    const decl: arkts.AstNode | undefined = arkts.getDecl(expr);
-
-    if (!decl) {
-        return false;
-    }
-
-    if (arkts.isMethodDefinition(decl)) {
-        return decl.scriptFunction.annotations.some(
-            (anno) => isDecoratorAnnotation(anno, DecoratorNames.BUILDER) || isMemoAnnotation(anno, MemoNames.MEMO)
-        );
-    }
-    return false;
-}
-
-export function findCanAddMemoFromArrowFunction(node: arkts.AstNode): node is arkts.ArrowFunctionExpression {
-    if (!arkts.isArrowFunctionExpression(node)) {
-        return false;
-    }
-    const hasMemo: boolean = node.annotations.some((anno) => isMemoAnnotation(anno, MemoNames.MEMO));
-    if (!hasMemo && !!node.scriptFunction.body && arkts.isBlockStatement(node.scriptFunction.body)) {
-        return node.scriptFunction.body.statements.some(
-            (st) => arkts.isExpressionStatement(st) && isMemoCall(st.expression)
-        );
-    }
-    return false;
 }
 
 /**

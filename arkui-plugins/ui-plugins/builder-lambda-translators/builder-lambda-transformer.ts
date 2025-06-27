@@ -34,7 +34,7 @@ export class BuilderLambdaTransformer extends AbstractVisitor {
 
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         if (arkts.isCallExpression(beforeChildren) && isBuilderLambda(beforeChildren)) {
-            const lambda = factory.transformBuilderLambda(beforeChildren, this.projectConfig);
+            const lambda = factory.transformBuilderLambda(beforeChildren);
             return this.visitEachChild(lambda);
         }
         if (arkts.isMethodDefinition(beforeChildren) && isBuilderLambdaMethodDecl(beforeChildren)) {
