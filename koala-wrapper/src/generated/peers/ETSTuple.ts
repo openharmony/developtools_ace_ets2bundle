@@ -31,10 +31,13 @@ import {
 
 import { TypeNode } from "./TypeNode"
 export class ETSTuple extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TUPLE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TUPLE;
     }
     static createETSTuple(): ETSTuple {
         return new ETSTuple(global.generatedEs2panda._CreateETSTuple(global.context))

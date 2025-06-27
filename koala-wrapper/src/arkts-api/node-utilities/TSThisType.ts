@@ -14,13 +14,13 @@
  */
 
 import { TSThisType } from '../../generated';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import { attachModifiers, attachParent, updateThenAttach } from '../utilities/private';
 
 export function updateTSThisType(
     original: TSThisType
 ): TSThisType {
     /* TODO: no getter provided yet */
 
-    const update = updateThenAttach(TSThisType.updateTSThisType, attachModifiers);
+    const update = updateThenAttach(TSThisType.updateTSThisType, attachModifiers, attachParent);
     return update(original);
 }

@@ -38,6 +38,9 @@ export class ArrayExpression extends AnnotatedExpression {
     constructor(pointer: KNativePointer) {
         super(pointer);
     }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ARRAY_EXPRESSION;
+    }
     static createArrayExpression(elements: readonly Expression[]): ArrayExpression {
         return new ArrayExpression(
             global.generatedEs2panda._CreateArrayExpression(global.context, passNodeArray(elements), elements.length)

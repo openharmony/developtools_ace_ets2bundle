@@ -17,10 +17,13 @@ import { KInt } from '@koalaui/interop';
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { AstNode } from '../peers/AstNode';
 import { MethodDefinition } from '../types';
-import { updateThenAttach } from '../utilities/private';
+import {
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 import { Es2pandaMethodDefinitionKind } from '../../generated/Es2pandaEnums';
 import { ScriptFunction } from '../../generated';
-import { NodeCache } from '../utilities/nodeCache';
 
 export function updateMethodDefinition(
     original: MethodDefinition,
@@ -40,10 +43,10 @@ export function updateMethodDefinition(
         return original;
     }
 
-    const update = updateThenAttach(MethodDefinition.update);
-    const newNode = update(original, kind, key, value, modifiers, isComputed);
-    if (NodeCache.getInstance().has(original)) {
-        NodeCache.getInstance().refresh(original, newNode);
-    }
-    return newNode;
+    const update = updateThenAttach(
+        MethodDefinition.update,
+        attachParent,
+        refreshNodeCache
+    );
+    return update(original, kind, key, value, modifiers, isComputed);
 }

@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { structNoRecheck, recheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck, uiNoRecheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { GetSetDumper, dumpGetterSetter, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -93,7 +93,7 @@ final class LinkType extends BaseEnum<int> {
   }
   
   public static getValueOf(name: String): LinkType {
-    for (let i = 0;((i) < (LinkType.#NamesArray.length));(++i)) {
+    for (let i = ((LinkType.#NamesArray.length) - (1));((i) >= (0));(--i)) {
       if (((name) == (LinkType.#NamesArray[i]))) {
         return LinkType.#ItemsArray[i];
       }
@@ -102,7 +102,7 @@ final class LinkType extends BaseEnum<int> {
   }
   
   public static fromValue(value: int): LinkType {
-    for (let i = 0;((i) < (LinkType.#ValuesArray.length));(++i)) {
+    for (let i = ((LinkType.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
       if (((value) == (LinkType.#ValuesArray[i]))) {
         return LinkType.#ItemsArray[i];
       }
@@ -309,57 +309,58 @@ final class LinkType extends BaseEnum<int> {
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
-@Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
-
 @Component() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar1', '(Per | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar1', '(Per | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar1', '(LinkSourceType<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar2', '(Array<number> | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar2', '(Array<number> | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar2', '(LinkSourceType<Array<number>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar3', '(LinkType | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar3', '(LinkType | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar3', '(LinkSourceType<LinkType> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar4', '(Set<string> | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar4', '(Set<string> | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar4', '(LinkSourceType<Set<string>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar5', '(Array<boolean> | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar5', '(Array<boolean> | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar5', '(LinkSourceType<Array<boolean>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar5', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar6', '(Array<Per> | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar6', '(Array<Per> | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar6', '(LinkSourceType<Array<Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar6', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar7', '(Array<Per> | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar7', '(Array<Per> | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar7', '(LinkSourceType<Array<Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar7', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar8', '(((sr: string)=> void) | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar8', '(((sr: string)=> void) | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar8', '(LinkSourceType<((sr: string)=> void)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar8', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar9', '(Date | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar9', '(Date | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar9', '(LinkSourceType<Date> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar9', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar10', '(LinkSourceType<Map<number, Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar10', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar11', '((string | number) | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar11', '((string | number) | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar11', '(LinkSourceType<(string | number)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar11', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar12', '(LinkSourceType<(Set<string> | Per)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar12', '(boolean | undefined)')}
   
@@ -372,9 +373,9 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test complex type @Link decorated variables transformation',
-    [parsedTransform, structNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
-        'checked:struct-no-recheck': [testParsedAndCheckedTransformer],
+        'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },
     {
         stopAfter: 'checked',

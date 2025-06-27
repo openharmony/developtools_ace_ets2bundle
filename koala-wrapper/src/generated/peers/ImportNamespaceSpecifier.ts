@@ -32,10 +32,13 @@ import {
 import { Statement } from "./Statement"
 import { Identifier } from "./Identifier"
 export class ImportNamespaceSpecifier extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_IMPORT_NAMESPACE_SPECIFIER)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_IMPORT_NAMESPACE_SPECIFIER;
     }
     static createImportNamespaceSpecifier(local?: Identifier): ImportNamespaceSpecifier {
         return new ImportNamespaceSpecifier(global.generatedEs2panda._CreateImportNamespaceSpecifier(global.context, passNode(local)))

@@ -13,32 +13,32 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo} from "arkui.incremental.annotation";
 
 class Person {
     constructor() {}
 }
 
-@memo
-function fullName(this: Person, @memo arg?: () => void): void {
+@Memo
+function fullName(this: Person, @Memo arg?: () => void): void {
   return;
 }
 
 class A {}
 
-@memo
-type F1 = (this: A, @memo arg?: () => void) => void;
+@Memo
+type F1 = (this: A, @Memo arg?: () => void) => void;
 
-@memo
-type F2 = (a: A, @memo arg?: () => void) => void;
+@Memo
+type F2 = (a: A, @Memo arg?: () => void) => void;
 
-@memo
-function foo(this: A, @memo arg?: () => void): void {}
+@Memo
+function foo(this: A, @Memo arg?: () => void): void {}
 
-@memo
-function goo(a: A, @memo arg?: () => void): void {}
+@Memo
+function goo(a: A, @Memo arg?: () => void): void {}
 
-@memo
+@Memo
 () => {
     let x = new Person();
     x.fullName(() => {});

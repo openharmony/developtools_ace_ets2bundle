@@ -32,10 +32,13 @@ import {
 import { Expression } from "./Expression"
 import { Es2pandaTokenType } from "./../Es2pandaEnums"
 export class UnaryExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_UNARY_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_UNARY_EXPRESSION;
     }
     static createUnaryExpression(argument: Expression | undefined, unaryOperator: Es2pandaTokenType): UnaryExpression {
         return new UnaryExpression(global.generatedEs2panda._CreateUnaryExpression(global.context, passNode(argument), unaryOperator))

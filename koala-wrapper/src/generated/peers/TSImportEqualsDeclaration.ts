@@ -33,10 +33,13 @@ import { Statement } from "./Statement"
 import { Identifier } from "./Identifier"
 import { Expression } from "./Expression"
 export class TSImportEqualsDeclaration extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_IMPORT_EQUALS_DECLARATION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_IMPORT_EQUALS_DECLARATION;
     }
     static createTSImportEqualsDeclaration(id: Identifier | undefined, moduleReference: Expression | undefined, isExport: boolean): TSImportEqualsDeclaration {
         return new TSImportEqualsDeclaration(global.generatedEs2panda._CreateTSImportEqualsDeclaration(global.context, passNode(id), passNode(moduleReference), isExport))

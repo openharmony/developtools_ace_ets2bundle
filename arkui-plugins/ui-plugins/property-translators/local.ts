@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
-import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
+import { DecoratorNames, GetSetTypes, NodeCacheNames, StateManagementTypes } from '../../common/predefines';
 import {
     createGetter,
     createSetter2,
@@ -25,158 +25,282 @@ import {
     hasDecorator,
     collectStateManagementTypeImport,
     findCachedMemoMetadata,
+    checkIsNameStartWithBackingField,
 } from './utils';
 import {
+    BasePropertyTranslator,
+    InterfacePropertyCachedTranslator,
     InterfacePropertyTranslator,
     InterfacePropertyTypes,
+    PropertyCachedTranslator,
+    PropertyCachedTranslatorOptions,
     PropertyTranslator,
     PropertyTranslatorOptions,
 } from './base';
-import { GetterSetter, InitializerConstructor } from './types';
 import { factory } from './factory';
 import { factory as UIFactory } from '../ui-factory';
 import { PropertyCache } from './cache/propertyCache';
+import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
 
-export class LocalTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
-    private isStatic: boolean;
+function factoryCallWithLocalProperty(
+    this: BasePropertyTranslator,
+    originalName: string,
+    metadata?: arkts.AstNodeCacheValueMetadata,
+    isStatic?: boolean
+): arkts.CallExpression | undefined {
+    if (!this.stateManagementType || !this.makeType) {
+        return undefined;
+    }
+    const args: arkts.Expression[] = [
+        arkts.factory.create1StringLiteral(originalName),
+        this.property.value ?? arkts.factory.createUndefinedLiteral(),
+    ];
+    collectStateManagementTypeImport(this.stateManagementType);
+    const factoryCall: arkts.CallExpression = factory.generateStateMgmtFactoryCall(
+        this.makeType,
+        this.propertyType?.clone(),
+        args,
+        !isStatic,
+        metadata
+    );
+    return factoryCall;
+}
+
+function initializeStructWithLocalProperty(
+    this: BasePropertyTranslator,
+    newName: string,
+    originalName: string,
+    metadata?: arkts.AstNodeCacheValueMetadata
+): arkts.Statement | undefined {
+    const factoryCall = factoryCallWithLocalProperty.bind(this)(originalName, metadata);
+    if (!factoryCall) {
+        return undefined;
+    }
+    const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
+        generateThisBacking(newName),
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+        factoryCall
+    );
+    return arkts.factory.createExpressionStatement(assign);
+}
+
+function fieldWithStaticLocalProperty(
+    this: BasePropertyTranslator,
+    newName: string,
+    originalName: string,
+    metadata?: arkts.AstNodeCacheValueMetadata
+): arkts.ClassProperty | undefined {
+    if (!this.stateManagementType || !this.makeType) {
+        return undefined;
+    }
+    const factoryCall = factoryCallWithLocalProperty.bind(this)(originalName, metadata, true);
+    if (!factoryCall) {
+        return undefined;
+    }
+    const field = arkts.factory.createClassProperty(
+        arkts.factory.createIdentifier(newName),
+        factoryCall,
+        factory.createStageManagementType(this.stateManagementType, this.propertyType),
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+        false
+    );
+    if (this.isMemoCached) {
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(field, metadata);
+    }
+    return field;
+}
+
+function getterWithStaticLocalProperty(
+    this: BasePropertyTranslator,
+    newName: string,
+    originalName: string,
+    structName: string,
+    metadata?: arkts.AstNodeCacheValueMetadata
+): arkts.MethodDefinition {
+    const thisValue: arkts.Expression = UIFactory.generateMemberExpression(
+        arkts.factory.createIdentifier(structName),
+        newName
+    );
+    const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
+    const getter: arkts.MethodDefinition = createGetter(
+        originalName,
+        this.propertyType,
+        thisGet,
+        this.isMemoCached,
+        true,
+        metadata
+    );
+    if (this.isMemoCached) {
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(getter, metadata);
+    }
+    return getter;
+}
+
+function setterWithStaticLocalProperty(
+    this: BasePropertyTranslator,
+    newName: string,
+    originalName: string,
+    structName: string,
+    metadata?: arkts.AstNodeCacheValueMetadata
+): arkts.MethodDefinition {
+    const thisValue: arkts.Expression = UIFactory.generateMemberExpression(
+        arkts.factory.createIdentifier(structName),
+        newName
+    );
+    const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
+        generateGetOrSetCall(thisValue, GetSetTypes.SET)
+    );
+    const setter: arkts.MethodDefinition = createSetter2(originalName, this.propertyType, thisSet, true);
+    if (this.isMemoCached) {
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(setter, metadata);
+    }
+    return setter;
+}
+
+export class LocalTranslator extends PropertyTranslator {
+    protected stateManagementType: StateManagementTypes = StateManagementTypes.LOCAL_DECORATED;
+    protected makeType: StateManagementTypes = StateManagementTypes.MAKE_LOCAL;
+    protected shouldWrapPropertyType: boolean = true;
+    protected hasInitializeStruct: boolean = true;
+    protected hasUpdateStruct: boolean = false;
+    protected hasToRecord: boolean = false;
+    protected hasField: boolean = true;
+    protected hasGetter: boolean = true;
+    protected hasSetter: boolean = true;
+    protected isStatic?: boolean;
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
         this.isStatic = this.property.isStatic;
-    }
-
-    translateMember(): arkts.AstNode[] {
-        const originalName: string = expectName(this.property.key);
-        const newName: string = backingField(originalName);
-        this.cacheTranslatedInitializer(newName, originalName);
-        return this.translateWithoutInitializer(newName, originalName);
-    }
-
-    cacheTranslatedInitializer(newName: string, originalName: string): void {
-        if (!this.isStatic) {
-            const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
-            PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
+        if (this.isStatic) {
+            this.hasInitializeStruct = false;
+            this.makeType = StateManagementTypes.MAKE_STATIC_LOCAL;
         }
     }
 
-    translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = this.createPropertyField(newName, originalName);
-        const thisValue: arkts.Expression = this.isStatic
-            ? UIFactory.generateMemberExpression(arkts.factory.createIdentifier(this.structInfo.name), newName)
-            : generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
-        const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            generateGetOrSetCall(thisValue, GetSetTypes.SET)
-        );
-        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
-        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
-        if (this.isMemoCached) {
-            const metadata = findCachedMemoMetadata(this.property, false);
-            arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
-            arkts.NodeCache.getInstance().collect(getter, metadata);
-            arkts.NodeCache.getInstance().collect(setter, metadata);
+    field(newName: string, originalName?: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.ClassProperty {
+        if (this.isStatic && !!originalName) {
+            const property = fieldWithStaticLocalProperty.bind(this)(newName, originalName, metadata);
+            if (!!property) {
+                return property;
+            }
         }
-        return [field, getter, setter];
+        return super.field(newName, originalName, metadata);
     }
 
-    createPropertyField(newName: string, originalName: string): arkts.ClassProperty {
-        return this.isStatic
-            ? arkts.factory.createClassProperty(
-                  arkts.factory.createIdentifier(newName),
-                  this.generateInitializeValue(originalName),
-                  factory.createStageManagementType(StateManagementTypes.LOCAL_DECORATED, this.propertyType),
-                  arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
-                  false
-              )
-            : factory.createOptionalClassProperty(
-                  newName,
-                  this.property,
-                  StateManagementTypes.LOCAL_DECORATED,
-                  arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
-              );
+    getter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+        if (this.isStatic) {
+            return getterWithStaticLocalProperty.bind(this)(newName, originalName, this.structInfo.name, metadata);
+        }
+        return super.getter(newName, originalName, metadata);
     }
 
-    translateGetter(
+    setter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+        if (this.isStatic) {
+            return setterWithStaticLocalProperty.bind(this)(newName, originalName, this.structInfo.name, metadata);
+        }
+        return super.setter(newName, originalName, metadata);
+    }
+
+    initializeStruct(
+        newName: string,
         originalName: string,
-        typeAnnotation: arkts.TypeNode | undefined,
-        returnValue: arkts.Expression
-    ): arkts.MethodDefinition {
-        return createGetter(originalName, typeAnnotation, returnValue, false, this.isStatic);
+        metadata?: arkts.AstNodeCacheValueMetadata
+    ): arkts.Statement | undefined {
+        if (this.isStatic) {
+            return undefined;
+        }
+        return initializeStructWithLocalProperty.bind(this)(newName, originalName, metadata);
+    }
+}
+
+export class LocalCachedTranslator extends PropertyCachedTranslator {
+    protected stateManagementType: StateManagementTypes = StateManagementTypes.LOCAL_DECORATED;
+    protected makeType: StateManagementTypes = StateManagementTypes.MAKE_LOCAL;
+    protected shouldWrapPropertyType: boolean = true;
+    protected hasInitializeStruct: boolean = true;
+    protected hasUpdateStruct: boolean = false;
+    protected hasToRecord: boolean = false;
+    protected hasField: boolean = true;
+    protected hasGetter: boolean = true;
+    protected hasSetter: boolean = true;
+    protected isStatic?: boolean;
+
+    constructor(options: PropertyCachedTranslatorOptions) {
+        super(options);
+        this.isStatic = this.property.isStatic;
+        if (this.isStatic) {
+            this.hasInitializeStruct = false;
+            this.makeType = StateManagementTypes.MAKE_STATIC_LOCAL;
+        }
     }
 
-    translateSetter(
+    field(newName: string, originalName?: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.ClassProperty {
+        if (this.isStatic && !!originalName) {
+            const property = fieldWithStaticLocalProperty.bind(this)(newName, originalName, metadata);
+            if (!!property) {
+                return property;
+            }
+        }
+        return super.field(newName, originalName, metadata);
+    }
+
+    getter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+        if (this.isStatic) {
+            const structName: string = this.propertyInfo.structInfo?.name!;
+            return getterWithStaticLocalProperty.bind(this)(newName, originalName, structName, metadata);
+        }
+        return super.getter(newName, originalName, metadata);
+    }
+
+    setter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+        if (this.isStatic) {
+            const structName: string = this.propertyInfo.structInfo?.name!;
+            return setterWithStaticLocalProperty.bind(this)(newName, originalName, structName, metadata);
+        }
+        return super.setter(newName, originalName, metadata);
+    }
+
+    initializeStruct(
+        newName: string,
         originalName: string,
-        typeAnnotation: arkts.TypeNode | undefined,
-        statement: arkts.AstNode
-    ): arkts.MethodDefinition {
-        return createSetter2(originalName, typeAnnotation, statement, this.isStatic);
-    }
-
-    generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        collectStateManagementTypeImport(StateManagementTypes.LOCAL_DECORATED);
-        const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
-            generateThisBacking(newName),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            this.generateInitializeValue(originalName)
-        );
-        return arkts.factory.createExpressionStatement(assign);
-    }
-
-    generateInitializeValue(originalName: string): arkts.Expression {
-        const args: arkts.Expression[] = [
-            arkts.factory.create1StringLiteral(originalName),
-            this.property.value ?? arkts.factory.createUndefinedLiteral(),
-        ];
-        collectStateManagementTypeImport(StateManagementTypes.LOCAL_DECORATED);
-        return factory.generateStateMgmtFactoryCall(
-            this.isStatic ? StateManagementTypes.MAKE_STATIC_LOCAL : StateManagementTypes.MAKE_LOCAL,
-            this.propertyType?.clone(),
-            args,
-            !this.isStatic,
-            this.isMemoCached ? findCachedMemoMetadata(this.property, true) : undefined
-        );
+        metadata?: arkts.AstNodeCacheValueMetadata
+    ): arkts.Statement | undefined {
+        if (this.isStatic) {
+            return undefined;
+        }
+        return initializeStructWithLocalProperty.bind(this)(newName, originalName, metadata);
     }
 }
 
 export class LocalInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
-    translateProperty(): T {
-        if (arkts.isMethodDefinition(this.property)) {
-            this.modified = true;
-            return flatVisitMethodWithOverloads(this.property, this.updateStateMethodInInterface) as T;
-        } else if (arkts.isClassProperty(this.property)) {
-            this.modified = true;
-            return this.updateStatePropertyInInterface(this.property) as T;
-        }
-        return this.property;
-    }
+    protected decorator: DecoratorNames = DecoratorNames.LOCAL;
 
+    /**
+     * @deprecated
+     */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
-        if (arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.LOCAL)) {
-            return true;
-        } else if (arkts.isClassProperty(node) && hasDecorator(node, DecoratorNames.LOCAL)) {
-            return true;
+        if (arkts.isMethodDefinition(node)) {
+            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.LOCAL);
+        } else if (arkts.isClassProperty(node)) {
+            return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.LOCAL);
         }
         return false;
     }
+}
+
+export class LocalCachedInterfaceTranslator<
+    T extends InterfacePropertyTypes,
+> extends InterfacePropertyCachedTranslator<T> {
+    protected decorator: DecoratorNames = DecoratorNames.LOCAL;
 
     /**
-     * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
-     * to `ILocalDecoratedVariable<T> | undefined`.
-     *
-     * @param method expecting getter with `@Local` and a setter with `@Local` in the overloads.
+     * @deprecated
      */
-    private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
-        const metadata = findCachedMemoMetadata(method);
-        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.LOCAL, metadata);
-    }
-
-    /**
-     * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
-     * to `ILocalDecoratedVariable<T> | undefined`.
-     *
-     * @param property expecting property with `@Local`.
-     */
-    private updateStatePropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
-        return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.LOCAL);
+    static canBeTranslated(
+        node: arkts.AstNode,
+        metadata?: CustomComponentInterfacePropertyInfo
+    ): node is InterfacePropertyTypes {
+        return !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasLocal;
     }
 }

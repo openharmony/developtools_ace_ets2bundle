@@ -15,7 +15,12 @@
 
 import { ETSTypeReferencePart, Expression, TSTypeParameterInstantiation } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateETSTypeReferencePart(
     original: ETSTypeReferencePart,
@@ -31,6 +36,11 @@ export function updateETSTypeReferencePart(
         return original;
     }
 
-    const update = updateThenAttach(ETSTypeReferencePart.updateETSTypeReferencePart, attachModifiers);
+    const update = updateThenAttach(
+        ETSTypeReferencePart.updateETSTypeReferencePart,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, name, typeParams, prev);
 }

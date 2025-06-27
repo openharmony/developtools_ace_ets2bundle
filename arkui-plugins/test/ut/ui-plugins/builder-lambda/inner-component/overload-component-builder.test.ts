@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -93,6 +93,10 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
         }), @Memo() (() => {}));
     }
     public constructor() {}
+    
+    static {
+    
+    }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -111,6 +115,7 @@ class __EntryWrapper extends EntryPoint {
 const expectedUIHeaderScript: string = `
 import { Memo as Memo } from "arkui.incremental.annotation";
 import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 
 function main() {}
 
@@ -131,9 +136,9 @@ interface FakeOptions {
 }
 
 interface FakeComponentAttribute {
-  setFakeComponentOptions(str: string): this
   setFakeComponentOptions(options?: FakeOptions): this
   setFakeComponentOptions(): this
+  setFakeComponentOptions(str: string): this
   
 }
 `;
@@ -145,7 +150,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test multiple overload @ComponentBuilder',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -92,11 +92,26 @@ interface trackInterface {
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_bb: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
+  public get bb(): boolean {
+    this.conditionalAddRef(this.__meta_bb);
+    return UIUtils.makeObserved((this.__backing_bb as boolean));
+  }
+  
+  public set bb(newValue: boolean) {
+    if (((this.__backing_bb) !== (newValue))) {
+      this.__backing_bb = newValue;
+      this.__meta_bb.fireChange();
+      this.executeOnSubscribingWatches("bb");
+    }
+  }
+
+  public constructor(bb: boolean) {
+    this.bb = bb;
+  }
+
   @JSONRename({newName:"propF"}) private __backing_propF: number = 1;
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_propF: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
-  private _$property$_trackF: number = 2;
 
   public get propF(): number {
     this.conditionalAddRef(this.__meta_propF);
@@ -110,6 +125,8 @@ interface trackInterface {
       this.executeOnSubscribingWatches("propF");
     }
   }
+
+  private _$property$_trackF: number = 2;
   
   public get trackF(): number {
     return this._$property$_trackF;
@@ -119,24 +136,10 @@ interface trackInterface {
     this._$property$_trackF = _$property$_trackF;
     return;
   }
+
+  static {
   
-  public get bb(): boolean {
-    this.conditionalAddRef(this.__meta_bb);
-    return UIUtils.makeObserved((this.__backing_bb as boolean));
   }
-  
-  public set bb(newValue: boolean) {
-    if (((this.__backing_bb) !== (newValue))) {
-      this.__backing_bb = newValue;
-      this.__meta_bb.fireChange();
-      this.executeOnSubscribingWatches("bb");
-    }
-  }
-  
-  public constructor(bb: boolean) {
-    this.bb = bb;
-  }
-  
 }
 `;
 
@@ -146,7 +149,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @ObservedV2 implements interface',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

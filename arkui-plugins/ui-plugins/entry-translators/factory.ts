@@ -16,11 +16,16 @@
 import * as arkts from '@koalaui/libarkts';
 import * as path from 'path';
 import { annotation, createAndInsertImportDeclaration } from '../../common/arkts-utils';
-import { CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, EntryWrapperNames, NavigationNames } from '../../common/predefines';
+import {
+    CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
+    EntryWrapperNames,
+    NavigationNames,
+    NodeCacheNames,
+} from '../../common/predefines';
 import { ProjectConfig } from '../../common/plugin-context';
 import { factory as uiFactory } from '../ui-factory';
 import { getRelativePagePath } from './utils';
-import { addMemoAnnotation } from '../../collectors/memo-collectors/utils';
+import { addMemoAnnotation, MemoNames } from '../../collectors/memo-collectors/utils';
 
 export class factory {
     /**
@@ -220,7 +225,7 @@ export class factory {
                 member.scriptFunction.id.name === EntryWrapperNames.ENTRY_FUNC
             ) {
                 addMemoAnnotation(member.scriptFunction);
-                arkts.NodeCache.getInstance().collect(member);
+                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(member);
             }
         });
     }
@@ -241,7 +246,7 @@ export class factory {
                 arkts.isIdentifier(member.key) &&
                 member.key.name === EntryWrapperNames.ENTRY_FUNC
             ) {
-                member.setAnnotations([annotation('Memo')]);
+                member.setAnnotations([annotation(MemoNames.MEMO_UI)]);
             }
         });
     }

@@ -31,10 +31,13 @@ import {
 
 import { TypeNode } from "./TypeNode"
 export class TSArrayType extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_ARRAY_TYPE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_ARRAY_TYPE;
     }
     static createTSArrayType(elementType?: TypeNode): TSArrayType {
         return new TSArrayType(global.generatedEs2panda._CreateTSArrayType(global.context, passNode(elementType)))

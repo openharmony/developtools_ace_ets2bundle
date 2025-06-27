@@ -16,6 +16,7 @@
 function parseDumpSrc(str: string): string {
     let _str: string = str;
     _str = cleanCopyRight(_str);
+    _str = removeImportStatements(_str);
     _str = removeSpaceAndReturn(_str);
     _str = replaceWithRandomNumber(_str);
 
@@ -38,6 +39,14 @@ function removeSpaceAndReturn(str: string): string {
     const spaceAndReturnRegex = /^[\s\r]+/gm;
 
     return str.replace(spaceAndReturnRegex, '').trim();
+}
+
+/**
+ * @deprecated
+ */
+function removeImportStatements(str: string): string {
+    const importRegex = /^import\s+(?:(?:\*\s+as\s+\w+)|(?:\{[^}]*\})|(?:\w+(?:\s*,\s*\w+)*)|(?:\w+\s*,\s*\{[^}]*\})|\w+)?\s+from\s+['"`][^'"`]+['"`]\s*;?\s*$/gm;
+    return str.replace(importRegex, '').trim();
 }
 
 function replaceWithRandomNumber(text: string): string {

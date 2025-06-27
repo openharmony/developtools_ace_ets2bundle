@@ -39,7 +39,7 @@ import {
     type AnnotationUsage,
 } from '../../generated';
 import { Program } from '../peers/Program';
-import { clearNodeCache } from '../class-by-peer';
+import { clearNodeCache } from '../node-by-type';
 import { SourcePosition } from '../peers/SourcePosition';
 import { MemberExpression } from '../to-be-generated/MemberExpression';
 import { Es2pandaAstNodeType } from '../../Es2pandaEnums';
@@ -75,7 +75,8 @@ function processErrorState(state: Es2pandaContextState, context: KNativePointer,
 }
 
 export function nodeType(node: AstNode): Es2pandaAstNodeType {
-    return global.generatedEs2panda._AstNodeTypeConst(global.context, passNode(node));
+    // return global.generatedEs2panda._AstNodeTypeConst(global.context, passNode(node));
+    return node.nodeType;
 }
 
 export function startChecker(): boolean {
@@ -94,49 +95,11 @@ export function getDecl(node: AstNode): AstNode | undefined {
     if (isMemberExpression(node)) {
         return getDeclFromArrayOrObjectMember(node);
     }
-    if (isObjectExpression(node)) {
-        return getPeerObjectDecl(passNode(node));
-    }
-    const decl = getPeerDecl(passNode(node));
+    const decl = getPeerIdentifierDecl(passNode(node));
     if (!!decl) {
         return decl;
     }
-    if (!!node.parent && isProperty(node.parent)) {
-        return getDeclFromProperty(node.parent);
-    }
     return undefined;
-}
-
-function getDeclFromProperty(node: Property): AstNode | undefined {
-    if (!node.key) {
-        return undefined;
-    }
-    if (!!node.parent && !isObjectExpression(node.parent)) {
-        return getPeerDecl(passNode(node.key));
-    }
-    return getDeclFromObjectExpressionProperty(node);
-}
-
-function getDeclFromObjectExpressionProperty(node: Property): AstNode | undefined {
-    const declNode = getPeerObjectDecl(passNode(node.parent));
-    if (!declNode || !node.key || !isIdentifier(node.key)) {
-        return undefined;
-    }
-    let body: readonly AstNode[] = [];
-    if (isClassDefinition(declNode)) {
-        body = declNode.body;
-    } else if (isTSInterfaceDeclaration(declNode)) {
-        body = declNode.body?.body ?? [];
-    }
-    return body.find(
-        (statement) =>
-            isMethodDefinition(statement) &&
-            statement.kind === Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET &&
-            !!statement.name &&
-            !!node.key &&
-            isIdentifier(node.key) &&
-            statement.name.name === node.key.name
-    );
 }
 
 function getDeclFromArrayOrObjectMember(node: MemberExpression): AstNode | undefined {
@@ -146,7 +109,7 @@ function getDeclFromArrayOrObjectMember(node: MemberExpression): AstNode | undef
     return getDecl(node.property);
 }
 
-export function getPeerDecl(peer: KNativePointer): AstNode | undefined {
+export function getPeerIdentifierDecl(peer: KNativePointer): AstNode | undefined {
     const decl = global.es2panda._DeclarationFromIdentifier(global.context, peer);
     if (decl === nullptr) {
         return undefined;
@@ -156,6 +119,22 @@ export function getPeerDecl(peer: KNativePointer): AstNode | undefined {
 
 export function getPeerObjectDecl(peer: KNativePointer): AstNode | undefined {
     const decl = global.es2panda._ClassVariableDeclaration(global.context, peer);
+    if (decl === nullptr) {
+        return undefined;
+    }
+    return unpackNonNullableNode(decl);
+}
+
+export function getPeerMemberDecl(peer: KNativePointer): AstNode | undefined {
+    const decl = global.es2panda._DeclarationFromMemberExpression(global.context, peer);
+    if (decl === nullptr) {
+        return undefined;
+    }
+    return unpackNonNullableNode(decl);
+}
+
+export function getPeerPropertyDecl(peer: KNativePointer): AstNode | undefined {
+    const decl = global.es2panda._DeclarationFromProperty(global.context, peer);
     if (decl === nullptr) {
         return undefined;
     }
@@ -213,8 +192,12 @@ export function importDeclarationInsert(node: ETSImportDeclaration, program: Pro
     global.es2panda._InsertETSImportDeclarationAndParse(global.context, program.peer, node.peer);
 }
 
-export function getProgramFromAstNode(node: AstNode): Program {
-    return new Program(global.es2panda._AstNodeProgram(global.context, node.peer));
+export function getProgramFromAstNode(node: AstNode): Program | undefined {
+    const programPeer = global.es2panda._AstNodeProgram(global.context, node.peer);
+    if (programPeer === nullptr) {
+        return undefined;
+    }
+    return new Program(programPeer);
 }
 
 export function hasModifierFlag(node: AstNode, flag: Es2pandaModifierFlags): boolean {

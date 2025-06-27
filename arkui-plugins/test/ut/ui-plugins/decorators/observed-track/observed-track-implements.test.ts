@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -105,12 +105,10 @@ interface trackInterface {
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  @JSONRename({newName:"propF"}) private __backing_propF: number = 1;
-  
-  @JSONRename({newName:"trackF"}) private __backing_trackF: number = 2;
-  
   public constructor() {}
-  
+
+  @JSONRename({newName:"propF"}) private __backing_propF: number = 1;
+
   public get propF(): number {
     this.conditionalAddRef(this.__meta);
     return this.__backing_propF;
@@ -124,6 +122,8 @@ interface trackInterface {
     }
   }
   
+  @JSONRename({newName:"trackF"}) private __backing_trackF: number = 2;
+
   public get trackF(): number {
     this.conditionalAddRef(this.__meta);
     return this.__backing_trackF;
@@ -136,7 +136,10 @@ interface trackInterface {
       this.executeOnSubscribingWatches("trackF");
     }
   }
+
+  static {
   
+  }
 }
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
@@ -147,7 +150,10 @@ interface trackInterface {
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_MyStateSample {
@@ -161,7 +167,7 @@ function testObservedOnlyTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test observed track transform with implements',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testObservedOnlyTransformer],
     },

@@ -16,10 +16,14 @@
 import { Identifier } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { VariableDeclarator } from '../types';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 import { Es2pandaVariableDeclaratorFlag } from '../../generated/Es2pandaEnums';
 import { AstNode } from '../peers/AstNode';
-import { NodeCache } from '../utilities/nodeCache';
 
 export function updateVariableDeclarator(
     original: VariableDeclarator,
@@ -35,10 +39,6 @@ export function updateVariableDeclarator(
         return original;
     }
 
-    const update = updateThenAttach(VariableDeclarator.update, attachModifiers);
-    const newNode = update(original, flag, name, initializer);
-    if (NodeCache.getInstance().has(original)) {
-        NodeCache.getInstance().refresh(original, newNode);
-    }
-    return newNode;
+    const update = updateThenAttach(VariableDeclarator.update, attachModifiers, attachParent, refreshNodeCache);
+    return update(original, flag, name, initializer);
 }

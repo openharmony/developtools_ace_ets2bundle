@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -95,7 +95,10 @@ function main() {}
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Observed() class B implements IObservedObject, ISubscribedWatches {
@@ -128,7 +131,10 @@ function main() {}
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
@@ -153,7 +159,10 @@ function main() {}
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() final struct MyStateSample2 extends CustomComponent<MyStateSample2, __Options_MyStateSample2> {
@@ -202,26 +211,29 @@ function main() {}
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', '(A | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', '(A | undefined)', [dumpAnnotation('ObjectLink')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar', '(IObjectLinkDecoratedVariable<A> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar', '(boolean | undefined)')}
   
 }
 
 @Component() export interface __Options_MyStateSample2 {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar1', '((A | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar1', '((A | undefined) | undefined)', [dumpAnnotation('ObjectLink')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar1', '(IObjectLinkDecoratedVariable<(A | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar2', '((A | B) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar2', '((A | B) | undefined)', [dumpAnnotation('ObjectLink')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar2', '(IObjectLinkDecoratedVariable<(A | B)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar3', '((A | B | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar3', '((A | B | null) | undefined)', [dumpAnnotation('ObjectLink')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar3', '(IObjectLinkDecoratedVariable<(A | B | null)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar3', '(boolean | undefined)')}
   
@@ -234,7 +246,7 @@ function testObjectLinkTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test objectlink basic transform',
-    [objectlinkTrackTransform, uiNoRecheck, recheck],
+    [objectlinkTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testObjectLinkTransformer],
     },

@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { structNoRecheck, recheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck, beforeUINoRecheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -158,39 +158,42 @@ function main() {}
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_Ancestors {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "count", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count1', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count1', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "prov1", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count1', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count2', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count2', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "prov2", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count2', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count3', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count3', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "prov3", allowOverride: true })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count3', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count4', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count4', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride: false, alias: "count4" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count4', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count5', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count5', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride: true, alias: "count5" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count5', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count5', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count6', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count6', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "", allowOverride: true })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count6', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count6', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count7', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count7', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count7', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count7', '(boolean | undefined)')}
   
@@ -203,9 +206,9 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test different @Provide annotation usage transformation',
-    [parsedTransform, structNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
-        'checked:struct-no-recheck': [testParsedAndCheckedTransformer],
+        'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },
     {
         stopAfter: 'checked',

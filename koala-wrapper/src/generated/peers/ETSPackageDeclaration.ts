@@ -32,10 +32,13 @@ import {
 import { Statement } from "./Statement"
 import { Expression } from "./Expression"
 export class ETSPackageDeclaration extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PACKAGE_DECLARATION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PACKAGE_DECLARATION;
     }
     static createETSPackageDeclaration(name?: Expression): ETSPackageDeclaration {
         return new ETSPackageDeclaration(global.generatedEs2panda._CreateETSPackageDeclaration(global.context, passNode(name)))

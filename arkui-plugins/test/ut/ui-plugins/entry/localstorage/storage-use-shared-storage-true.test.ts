@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -88,11 +88,11 @@ function testEntryTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test entry with storage and useSharedStorage true',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform],
     {
         'parsed': [testEntryTransformer],
     },
     {
-        stopAfter: 'parsed',
+        stopAfter: 'checked',
     }
 );

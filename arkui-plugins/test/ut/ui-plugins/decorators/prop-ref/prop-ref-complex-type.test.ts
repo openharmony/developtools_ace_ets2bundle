@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { structNoRecheck, recheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck, beforeUINoRecheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -91,7 +91,7 @@ final class PropType extends BaseEnum<int> {
   }
   
   public static getValueOf(name: String): PropType {
-    for (let i = 0;((i) < (PropType.#NamesArray.length));(++i)) {
+    for (let i = ((PropType.#NamesArray.length) - (1));((i) >= (0));(--i)) {
       if (((name) == (PropType.#NamesArray[i]))) {
         return PropType.#ItemsArray[i];
       }
@@ -100,7 +100,7 @@ final class PropType extends BaseEnum<int> {
   }
   
   public static fromValue(value: int): PropType {
-    for (let i = 0;((i) < (PropType.#ValuesArray.length));(++i)) {
+    for (let i = ((PropType.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
       if (((value) == (PropType.#ValuesArray[i]))) {
         return PropType.#ItemsArray[i];
       }
@@ -332,55 +332,58 @@ final class PropType extends BaseEnum<int> {
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar1', '(Per | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar1', '(Per | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar1', '(IPropRefDecoratedVariable<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar2', '(Array<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar2', '(Array<number> | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar2', '(IPropRefDecoratedVariable<Array<number>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar3', '(PropType | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar3', '(PropType | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar3', '(IPropRefDecoratedVariable<PropType> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar4', '(Set<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar4', '(Set<string> | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar4', '(IPropRefDecoratedVariable<Set<string>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar5', '(Array<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar5', '(Array<boolean> | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar5', '(IPropRefDecoratedVariable<Array<boolean>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar5', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar6', '(Array<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar6', '(Array<Per> | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar6', '(IPropRefDecoratedVariable<Array<Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar6', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar7', '(Array<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar7', '(Array<Per> | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar7', '(IPropRefDecoratedVariable<Array<Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar7', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar8', '(((sr: string)=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar8', '(((sr: string)=> void) | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar8', '(IPropRefDecoratedVariable<((sr: string)=> void)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar8', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar9', '(Date | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar9', '(Date | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar9', '(IPropRefDecoratedVariable<Date> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar9', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar10', '(Map<number, Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar10', '(IPropRefDecoratedVariable<Map<number, Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar10', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar11', '((string | number) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar11', '((string | number) | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar11', '(IPropRefDecoratedVariable<(string | number)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar11', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar12', '((Set<string> | Per) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar12', '(IPropRefDecoratedVariable<(Set<string> | Per)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar12', '(boolean | undefined)')}
   
@@ -393,9 +396,9 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test complex type @PropRef decorated variables transformation',
-    [parsedTransform, structNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
-        'checked:struct-no-recheck': [testParsedAndCheckedTransformer],
+        'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },
     {
         stopAfter: 'checked',

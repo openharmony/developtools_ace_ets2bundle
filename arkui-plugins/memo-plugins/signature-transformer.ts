@@ -109,7 +109,7 @@ export class SignatureTransformer extends AbstractVisitor {
                 throw 'Invalid @memo usage';
             }
             const expr = node.part.name;
-            const decl = arkts.getDecl(expr);
+            const decl = arkts.getPeerIdentifierDecl(expr.peer);
             if (!decl || !arkts.isTSTypeAliasDeclaration(decl)) {
                 return node as any as T;
             }

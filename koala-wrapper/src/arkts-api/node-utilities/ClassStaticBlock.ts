@@ -15,14 +15,23 @@
 
 import { ClassStaticBlock, Expression } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateClassStaticBlock(original: ClassStaticBlock, value?: Expression): ClassStaticBlock {
     if (isSameNativeObject(value, original.value)) {
         return original;
     }
 
-    const update = updateThenAttach(ClassStaticBlock.updateClassStaticBlock, attachModifiers);
-    const newNode = update(original, value);
-    return newNode;
+    const update = updateThenAttach(
+        ClassStaticBlock.updateClassStaticBlock, 
+        attachModifiers, 
+        attachParent, 
+        refreshNodeCache
+    );
+    return update(original, value);
 }

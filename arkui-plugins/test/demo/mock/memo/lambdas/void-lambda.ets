@@ -13,14 +13,14 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo} from "arkui.incremental.annotation";
 
-@memo
+@Memo
 (): void => {
   return;
 }
 
-@memo
+@Memo
 (arg?: () => string): void => {
   return;
 }

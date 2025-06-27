@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpAnnotation, dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -68,7 +68,6 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
   }
   
   public constructor() {}
-  
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
@@ -88,16 +87,15 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
   }
   
   public constructor() {}
-  
 }
 
 @ComponentV2() export interface __Options_Child {
   ${ignoreNewLines(`
-  onceParamNum?: number;
+  @Param() @Once() onceParamNum?: number;
   @Param() @Once() __backing_onceParamNum?: number;
   __options_has_onceParamNum?: boolean;
-  onceParamInfo?: Info;
-  @Param() @Once() @Require() __backing_onceParamInfo?: Info;
+  @Param() @Once() @Require() onceParamInfo?: Info;
+  @Param() @Once() __backing_onceParamInfo?: Info;
   __options_has_onceParamInfo?: boolean;
   `)}
   
@@ -105,10 +103,10 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
 
 @ComponentV2() export interface __Options_Index {
   ${ignoreNewLines(`
-  localNum?: number;
+  @Local() localNum?: number;
   @Local() __backing_localNum?: number;
   __options_has_localNum?: boolean;
-  localInfo?: Info;
+  @Local() localInfo?: Info;
   @Local() __backing_localInfo?: Info;
   __options_has_localInfo?: boolean;
   `)}
@@ -198,7 +196,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @ComponentV2() final struct Child extends CustomComponentV2<Child, __Options_Child> {
@@ -253,7 +254,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
@@ -309,26 +313,29 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @ComponentV2() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamNum', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamNum', '(number | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamNum', '(IParamOnceDecoratedVariable<number> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceParamNum', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamInfo', '(Info | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamInfo', '(IParamOnceDecoratedVariable<Info> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamInfo', '(Info | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once'), dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamInfo', '(IParamOnceDecoratedVariable<Info> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceParamInfo', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localNum', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'localNum', '(number | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localNum', '(ILocalDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localNum', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localInfo', '(Info | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'localInfo', '(Info | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localInfo', '(ILocalDecoratedVariable<Info> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localInfo', '(boolean | undefined)')}
   
@@ -345,7 +352,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Once Decorator with @Require',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'parsed': [testParsedTransformer],
         'checked:ui-no-recheck': [testCheckedTransformer],

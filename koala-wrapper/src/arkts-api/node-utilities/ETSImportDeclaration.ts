@@ -16,7 +16,12 @@
 import { ETSImportDeclaration, StringLiteral } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { AstNode } from '../peers/AstNode';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 import { Es2pandaImportKinds } from '../../generated/Es2pandaEnums';
 
 export function updateETSImportDeclaration(
@@ -34,6 +39,11 @@ export function updateETSImportDeclaration(
         return original;
     }
 
-    const update = updateThenAttach(ETSImportDeclaration.updateETSImportDeclaration, attachModifiers);
+    const update = updateThenAttach(
+        ETSImportDeclaration.updateETSImportDeclaration,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, source, specifiers, importKind);
 }

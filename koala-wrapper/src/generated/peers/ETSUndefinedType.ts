@@ -31,10 +31,13 @@ import {
 
 import { TypeNode } from "./TypeNode"
 export class ETSUndefinedType extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_UNDEFINED_TYPE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ETS_UNDEFINED_TYPE;
     }
     static createETSUndefinedType(): ETSUndefinedType {
         return new ETSUndefinedType(global.generatedEs2panda._CreateETSUndefinedTypeIr(global.context))

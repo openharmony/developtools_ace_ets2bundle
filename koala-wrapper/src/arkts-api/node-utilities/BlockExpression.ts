@@ -15,13 +15,23 @@
 
 import { BlockExpression, Statement } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateBlockExpression(original: BlockExpression, statements: readonly Statement[]): BlockExpression {
     if (isSameNativeObject(statements, original.statements)) {
         return original;
     }
 
-    const update = updateThenAttach(BlockExpression.updateBlockExpression, attachModifiers);
+    const update = updateThenAttach(
+        BlockExpression.updateBlockExpression,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, statements);
 }

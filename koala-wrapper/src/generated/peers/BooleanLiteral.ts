@@ -31,10 +31,13 @@ import {
 
 import { Literal } from "./Literal"
 export class BooleanLiteral extends Literal {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_BOOLEAN_LITERAL)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_BOOLEAN_LITERAL;
     }
     static createBooleanLiteral(value: boolean): BooleanLiteral {
         return new BooleanLiteral(global.generatedEs2panda._CreateBooleanLiteral(global.context, value))

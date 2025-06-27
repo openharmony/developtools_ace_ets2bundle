@@ -31,10 +31,13 @@ import {
 
 import { TypeNode } from "./TypeNode"
 export class TSThisType extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_THIS_TYPE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_THIS_TYPE;
     }
     static createTSThisType(): TSThisType {
         return new TSThisType(global.generatedEs2panda._CreateTSThisType(global.context))

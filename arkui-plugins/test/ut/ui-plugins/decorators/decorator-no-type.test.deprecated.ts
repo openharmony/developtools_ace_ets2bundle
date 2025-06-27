@@ -126,7 +126,7 @@ final class StateType extends BaseEnum<int> {
   }
   
   public static getValueOf(name: String): StateType {
-    for (let i = 0;((i) < (StateType.#NamesArray.length));(++i)) {
+    for (let i = ((StateType.#NamesArray.length) - (1));((i) >= (0));(--i)) {
       if (((name) == (StateType.#NamesArray[i]))) {
         return StateType.#ItemsArray[i];
       }
@@ -135,7 +135,7 @@ final class StateType extends BaseEnum<int> {
   }
   
   public static fromValue(value: int): StateType {
-    for (let i = 0;((i) < (StateType.#ValuesArray.length));(++i)) {
+    for (let i = ((StateType.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
       if (((value) == (StateType.#ValuesArray[i]))) {
         return StateType.#ItemsArray[i];
       }
@@ -365,7 +365,10 @@ final class StateType extends BaseEnum<int> {
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @ComponentV2() final struct V2Parent extends CustomComponentV2<V2Parent, __Options_V2Parent> {
@@ -516,7 +519,10 @@ final class StateType extends BaseEnum<int> {
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @CustomDialog() final struct CC extends BaseCustomDialog<CC, __Options_CC> {
@@ -667,19 +673,22 @@ final class StateType extends BaseEnum<int> {
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar1', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar1', '(Any | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar1', '(IStateDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar2', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar2', '(Any | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar2', '(IPropRefDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar3', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar3', '(Any | undefined)', [dumpAnnotation('Provide', { alias: "stateVar3", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar3', '(IProvideDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar3', '(boolean | undefined)')}
 
@@ -689,113 +698,113 @@ final class StateType extends BaseEnum<int> {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar9', '(Any | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar9', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11113', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11113', '(Any | undefined)', [dumpAnnotation('Provide', { alias: "me0", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11113', '(IProvideDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11113', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11114', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11114', '(Any | undefined)', [dumpAnnotation('Provide', { alias: "stateVar11114", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11114', '(IProvideDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11114', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11115', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11115', '(Any | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11115', '(IStateDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11115', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_V2Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(Any | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar4', '(IParamOnceDecoratedVariable<Any> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar5', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar5', '(Any | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar5', '(ILocalDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar5', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar6', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar6', '(Any | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar6', '(ILocalDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar6', '(boolean | undefined)')}
 
   ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar7', '(Any | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar7', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar8', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar8', '(Any | undefined)', [dumpAnnotation('Event')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar8', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar9', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar9', '(Any | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar9', '(IParamDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar9', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar10', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar10', '(Any | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar10', '(IParamDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar10', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11', '(Any | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11', '(IParamOnceDecoratedVariable<Any> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar12', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar12', '(Any | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar12', '(IProviderDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar12', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11111', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11111', '(Any | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11111', '(IConsumerDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11111', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11188', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11188', '(Any | undefined)', [dumpAnnotation('Provider', { value: "var" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11188', '(IProviderDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11188', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11112', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11112', '(Any | undefined)', [dumpAnnotation('Consumer', { value: "nihao" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11112', '(IConsumerDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11112', '(boolean | undefined)')}
   
 }
 
 @CustomDialog() export interface __Options_CC {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(Any | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar4', '(IParamOnceDecoratedVariable<Any> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar5', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar5', '(Any | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar5', '(ILocalDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar5', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar6', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar6', '(Any | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar6', '(ILocalDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar6', '(boolean | undefined)')}
 
   ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar7', '(Any | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar7', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar8', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar8', '(Any | undefined)', [dumpAnnotation('Event')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar8', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar9', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar9', '(Any | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar9', '(IParamDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar9', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar10', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar10', '(Any | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar10', '(IParamDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar10', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11', '(Any | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11', '(IParamOnceDecoratedVariable<Any> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar12', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar12', '(Any | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar12', '(IProviderDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar12', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11111', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11111', '(Any | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11111', '(IConsumerDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11111', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11188', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11188', '(Any | undefined)', [dumpAnnotation('Provider', { value: "var" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11188', '(IProviderDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11188', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11112', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11112', '(Any | undefined)', [dumpAnnotation('Consumer', { value: "nihao" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11112', '(IConsumerDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11112', '(boolean | undefined)')}
   

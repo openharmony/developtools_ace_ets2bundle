@@ -34,10 +34,13 @@ import { Expression } from "./Expression"
 import { Identifier } from "./Identifier"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class AnnotationDeclaration extends Statement {
-     constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 1)
+    constructor(pointer: KNativePointer) {
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ANNOTATION_DECLARATION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ANNOTATION_DECLARATION;
     }
     static createAnnotationDeclaration(expr?: Expression): AnnotationDeclaration {
         return new AnnotationDeclaration(global.generatedEs2panda._CreateAnnotationDeclaration(global.context, passNode(expr)))
@@ -109,6 +112,6 @@ export class AnnotationDeclaration extends Statement {
 export function isAnnotationDeclaration(node: AstNode): node is AnnotationDeclaration {
     return node instanceof AnnotationDeclaration
 }
-if (!nodeByType.has(1)) {
-    nodeByType.set(1, AnnotationDeclaration)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_ANNOTATION_DECLARATION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_ANNOTATION_DECLARATION, AnnotationDeclaration)
 }

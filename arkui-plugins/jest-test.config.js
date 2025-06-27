@@ -56,5 +56,9 @@ module.exports = {
         PANDA_SDK_PATH: pandaSdkPath,
         API_PATH: apiPath,
         KIT_PATH: kitPath,
+        UI_CACHE_ENABLED: true,
+        UI_UPDATE_ENABLED: true,
+        MEMO_CACHE_ENABLED: true,
+        MEMO_UPDATE_ENABLED: true,
     },
 };

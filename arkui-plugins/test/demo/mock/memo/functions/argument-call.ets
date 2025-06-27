@@ -13,14 +13,14 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo} from "arkui.incremental.annotation";
 
-@memo function memo_arg_call(
+@Memo function memo_arg_call(
     arg1: number,
     arg2: (x: number) => number,
-    @memo arg3: (x: number) => number,
+    @Memo arg3: (x: number) => number,
     arg4?: (x: number) => number,
-    @memo arg5?: (x: number) => number,
+    @Memo arg5?: (x: number) => number,
 ) {
     arg2(arg1)
     arg3(arg1)
@@ -28,11 +28,11 @@ import { memo } from "arkui.stateManagement.runtime";
     arg5?.(arg1)
 }
 
-@memo
+@Memo
 function memo_arg_call_with_lowering(
     arg1: number,
     arg4?: (x: number) => number,
-    @memo arg5?: (x: number) => number,
+    @Memo arg5?: (x: number) => number,
 ) {
     {let gensym___1 = arg4;
       ((gensym___1 == null) ? undefined : gensym___1(arg1))};
@@ -40,13 +40,33 @@ function memo_arg_call_with_lowering(
       ((gensym___2 == null) ? undefined : gensym___2(arg1))};
 }
 
-@memo
+@Memo
 function args_with_default_values(
     arg1: int = 10,
-    @memo arg2: () => int = () => { return 20 },
+    @Memo arg2: () => int = () => { return 20 },
     arg3: int = arg1,
     arg4?: int
 ): void { 
     console.log(arg1, arg2, arg3, arg4)
     console.log(arg2())
+}
+
+@Memo
+function memo_with_non_memo(non_memo_cb: () => void): void {
+
+}
+
+function non_memo(cb: () => void): void {
+
+}
+
+@Memo
+() => {
+    memo_with_non_memo(() => {
+        non_memo(() => {
+            const inner_cb = (msg: string) => {
+                let obj = msg;
+            }
+        })
+    })
 }

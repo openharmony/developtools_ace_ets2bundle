@@ -15,7 +15,12 @@
 
 import { AnnotationDeclaration, Expression } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 import { AstNode } from '../peers/AstNode';
 
 export function updateAnnotationDeclaration(
@@ -27,6 +32,11 @@ export function updateAnnotationDeclaration(
         return original;
     }
 
-    const update = updateThenAttach(AnnotationDeclaration.update1AnnotationDeclaration, attachModifiers);
+    const update = updateThenAttach(
+        AnnotationDeclaration.update1AnnotationDeclaration,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, expr, properties);
 }

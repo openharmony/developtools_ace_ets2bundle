@@ -31,10 +31,13 @@ import {
 
 import { Expression } from "./Expression"
 export class TSInterfaceBody extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERFACE_BODY)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERFACE_BODY;
     }
     static createTSInterfaceBody(body: readonly AstNode[]): TSInterfaceBody {
         return new TSInterfaceBody(global.generatedEs2panda._CreateTSInterfaceBody(global.context, passNodeArray(body), body.length))

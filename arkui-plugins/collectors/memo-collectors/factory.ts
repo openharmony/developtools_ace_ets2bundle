@@ -24,9 +24,10 @@ import {
     findCanAddMemoFromParameter,
     findCanAddMemoFromProperty,
     findCanAddMemoFromTypeAlias,
+    isArrowFunctionAsValue,
 } from './utils';
 import { coerceToAstNode } from '../../common/arkts-utils';
-import { isArrowFunctionAsValue } from './utils';
+import { getPerfName } from '../../common/debug';
 
 export type RewriteAfterFoundFn<T extends arkts.AstNode = arkts.AstNode> = (
     node: T,
@@ -35,10 +36,21 @@ export type RewriteAfterFoundFn<T extends arkts.AstNode = arkts.AstNode> = (
 
 export function findAndCollectMemoableNode(node: arkts.AstNode, rewriteFn?: RewriteAfterFoundFn): arkts.AstNode {
     const type = arkts.nodeType(node);
-    if (collectByType.has(type)) {
-        return collectByType.get(type)!(node, rewriteFn);
-    }
+    collectMemoableNodeByTypeInPostOrder(type, node, rewriteFn);
     return node;
+}
+
+export function collectMemoableNodeByTypeInPostOrder(
+    type: arkts.Es2pandaAstNodeType,
+    node: arkts.AstNode,
+    rewriteFn?: RewriteAfterFoundFn
+): void {
+    if (collectByType.has(type)) {
+        const func = collectByType.get(type)!;
+        arkts.Performance.getInstance().createDetailedEvent(getPerfName([0, 2, 2], func.name));
+        func(node, rewriteFn);
+        arkts.Performance.getInstance().stopDetailedEvent(getPerfName([0, 2, 2], func.name));
+    }
 }
 
 export class factory {
@@ -56,10 +68,12 @@ export class factory {
         let found: boolean = false;
         if (findCanAddMemoFromProperty(node)) {
             found = true;
-            const value = (
-                isArrowFunctionAsValue(node.value!) ? node.value.expr : node.value
-            ) as arkts.ArrowFunctionExpression;
-            addMemoAnnotation(value);
+            const value = node.value!;
+            if (isArrowFunctionAsValue(value)) {
+                addMemoAnnotation(value.expr! as arkts.ArrowFunctionExpression);
+            } else {
+                addMemoAnnotation(value as arkts.ArrowFunctionExpression);
+            }
         }
         if (found && !!rewriteFn) {
             return rewriteFn(node, arkts.Es2pandaAstNodeType.AST_NODE_TYPE_PROPERTY);

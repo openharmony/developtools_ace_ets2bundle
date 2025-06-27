@@ -15,7 +15,12 @@
 
 import { ETSNewClassInstanceExpression, Expression } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateETSNewClassInstanceExpression(
     original: ETSNewClassInstanceExpression,
@@ -29,6 +34,11 @@ export function updateETSNewClassInstanceExpression(
         return original;
     }
 
-    const update = updateThenAttach(ETSNewClassInstanceExpression.updateETSNewClassInstanceExpression, attachModifiers);
+    const update = updateThenAttach(
+        ETSNewClassInstanceExpression.updateETSNewClassInstanceExpression,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, typeReference, _arguments);
 }

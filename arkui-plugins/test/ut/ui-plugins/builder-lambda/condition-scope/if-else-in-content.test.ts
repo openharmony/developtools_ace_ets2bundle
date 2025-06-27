@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { collectNoRecheck, memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -116,6 +116,10 @@ function main() {}
         }));
     }
     public constructor() {}
+
+    static {
+
+    }
 }
 @Component() export interface __Options_IfElse {
 }
@@ -322,7 +326,10 @@ function main() {}
                                 return;
                             }
                         }));
-                        return;
+                        {
+                            __memo_scope.recache();
+                            return;
+                        }
                         TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                             const __memo_parameter_instance = __memo_scope.param(0, instance);
@@ -367,6 +374,10 @@ function main() {}
         }
     }
     public constructor() {}
+
+    static {
+
+    }
 }
 @Component() export interface __Options_IfElse {
 }
@@ -378,7 +389,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test if-else',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testUITransformer],
         'checked:memo-no-recheck': [testMemoTransformer],

@@ -32,10 +32,13 @@ import {
 import { Statement } from "./Statement"
 import { Identifier } from "./Identifier"
 export class LabelledStatement extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_LABELLED_STATEMENT)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_LABELLED_STATEMENT;
     }
     static createLabelledStatement(ident?: Identifier, body?: Statement): LabelledStatement {
         return new LabelledStatement(global.generatedEs2panda._CreateLabelledStatement(global.context, passNode(ident), passNode(body)))

@@ -16,8 +16,9 @@
 import * as arkts from '@koalaui/libarkts';
 import { PluginContext, Plugins } from '../../../common/plugin-context';
 import { ProgramVisitor } from '../../../common/program-visitor';
-import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../../../common/predefines';
+import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../../../common/predefines';
 import { CheckedTransformer } from '../../../ui-plugins/checked-transformer';
+import { Collector } from '../../../collectors/collector';
 
 /**
  * AfterCheck uiTransform with no recheck AST.
@@ -30,7 +31,10 @@ export const uiNoRecheck: Plugins = {
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
             script = program.astNode;
-            const checkedTransformer = new CheckedTransformer(this.getProjectConfig());
+            const checkedTransformer = new CheckedTransformer({
+                projectConfig: this.getProjectConfig(),
+                useCache: arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected(),
+            });
             const programVisitor = new ProgramVisitor({
                 pluginName: uiNoRecheck.name,
                 state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,

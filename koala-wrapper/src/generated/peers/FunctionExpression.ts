@@ -33,10 +33,13 @@ import { Expression } from "./Expression"
 import { ScriptFunction } from "./ScriptFunction"
 import { Identifier } from "./Identifier"
 export class FunctionExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_EXPRESSION;
     }
     static createFunctionExpression(func?: ScriptFunction): FunctionExpression {
         return new FunctionExpression(global.generatedEs2panda._CreateFunctionExpression(global.context, passNode(func)))

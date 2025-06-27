@@ -32,10 +32,13 @@ import {
 import { TypeNode } from "./TypeNode"
 import { Expression } from "./Expression"
 export class TSConditionalType extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_CONDITIONAL_TYPE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_CONDITIONAL_TYPE;
     }
     static createTSConditionalType(checkType?: Expression, extendsType?: Expression, trueType?: Expression, falseType?: Expression): TSConditionalType {
         return new TSConditionalType(global.generatedEs2panda._CreateTSConditionalType(global.context, passNode(checkType), passNode(extendsType), passNode(trueType), passNode(falseType)))

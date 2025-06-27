@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -109,7 +109,7 @@ final class MonitorNames extends BaseEnum<String> {
   }
   
   public static getValueOf(name: String): MonitorNames {
-    for (let i = 0;((i) < (MonitorNames.#NamesArray.length));(++i)) {
+    for (let i = ((MonitorNames.#NamesArray.length) - (1));((i) >= (0));(--i)) {
       if (((name) == (MonitorNames.#NamesArray[i]))) {
         return MonitorNames.#ItemsArray[i];
       }
@@ -118,7 +118,7 @@ final class MonitorNames extends BaseEnum<String> {
   }
   
   public static fromValue(value: String): MonitorNames {
-    for (let i = 0;((i) < (MonitorNames.#StringValuesArray.length));(++i)) {
+    for (let i = ((MonitorNames.#StringValuesArray.length) - (1));((i) >= (0));(--i)) {
       if (((value) == (MonitorNames.#StringValuesArray[i]))) {
         return MonitorNames.#ItemsArray[i];
       }
@@ -172,15 +172,7 @@ final class MonitorNames extends BaseEnum<String> {
   @JSONRename({newName:"name"}) private __backing_name: string = "Tom";
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
-  @JSONRename({newName:"strArr"}) private __backing_strArr: Array<string> = ["North", "east"];
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_strArr: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
-  private __monitor_changeCCC: (IMonitorDecoratedVariable | undefined);
-  
-  @Monitor({value:[MonitorNames.name1, MonitorNames.name2, MonitorNames.name3]}) public changeCCC(monitor: IMonitor) {}
-  
+
   public get name(): string {
     this.conditionalAddRef(this.__meta_name);
     return UIUtils.makeObserved(this.__backing_name);
@@ -193,6 +185,10 @@ final class MonitorNames extends BaseEnum<String> {
       this.executeOnSubscribingWatches("name");
     }
   }
+
+  @JSONRename({newName:"strArr"}) private __backing_strArr: Array<string> = ["North", "east"];
+  
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_strArr: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public get strArr(): Array<string> {
     this.conditionalAddRef(this.__meta_strArr);
@@ -206,6 +202,10 @@ final class MonitorNames extends BaseEnum<String> {
       this.executeOnSubscribingWatches("strArr");
     }
   }
+
+  private __monitor_changeCCC: (IMonitorDecoratedVariable | undefined);
+  
+  @Monitor({value:[MonitorNames.name1, MonitorNames.name2, MonitorNames.name3]}) public changeCCC(monitor: IMonitor) {}
   
   public constructor() {
     this.__monitor_changeCCC = STATE_MGMT_FACTORY.makeMonitor([{
@@ -229,7 +229,10 @@ final class MonitorNames extends BaseEnum<String> {
       this.changeCCC(_m);
     }));
   }
+
+  static {
   
+  }
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
@@ -265,11 +268,14 @@ final class MonitorNames extends BaseEnum<String> {
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @ComponentV2() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'varF', '(FFF | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'varF', '(FFF | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_varF', '(ILocalDecoratedVariable<FFF> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_varF', '(boolean | undefined)')}
   
@@ -282,7 +288,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Monitor decorator enum parameters transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

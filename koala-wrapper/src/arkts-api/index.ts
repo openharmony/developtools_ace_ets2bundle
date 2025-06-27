@@ -76,7 +76,9 @@ export * from '../generated/peers/FunctionExpression';
 export * from '../generated/peers/AwaitExpression';
 export * from '../generated/peers/TSQualifiedName';
 export * from '../generated/peers/UnaryExpression';
+export * from '../generated/peers/IfStatement';
 
+export * from './class-by-peer';
 export * from './types';
 export * from './utilities/private';
 export * from './utilities/public';

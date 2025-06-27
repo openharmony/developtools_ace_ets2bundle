@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -70,7 +70,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() @Reusable() final struct Child extends CustomComponent<Child, __Options_Child> {
@@ -119,7 +122,10 @@ function main() {}
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_MyStateSample {
@@ -127,11 +133,11 @@ function main() {}
 }
 
 @Component() @Reusable() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IPropRefDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'num1', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'num1', '(number | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num1', '(IStateDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num1', '(boolean | undefined)')}
   
@@ -144,7 +150,7 @@ function testReusableTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic reusable',
-    [reusableTransform, uiNoRecheck, recheck],
+    [reusableTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testReusableTransformer],
     },

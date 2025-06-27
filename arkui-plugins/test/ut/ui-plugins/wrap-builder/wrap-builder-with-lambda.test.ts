@@ -18,9 +18,9 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { uiNoRecheck, recheck, memoNoRecheck } from '../../../utils/plugins';
+import { uiNoRecheck, recheck, memoNoRecheck, collectNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -85,7 +85,7 @@ const wBuilder: WrappedBuilder<MyBuilderFuncType> = wrapBuilder(overBuilder);
 function main() {}
 
 
-@Memo() function overBuilder(@MemoSkip() param: (()=> Tmp)) {
+@Builder() @Memo() function overBuilder(@MemoSkip() param: (()=> Tmp)) {
   ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
     instance.setColumnOptions(undefined).applyAttributesFinish();
     return;
@@ -128,8 +128,6 @@ function main() {}
   
   @JSONRename({newName:"paramA2"}) private __backing_paramA2: string = "hello";
   
-  public constructor() {}
-  
   public get paramA2(): string {
     this.conditionalAddRef(this.__meta);
     return this.__backing_paramA2;
@@ -143,6 +141,11 @@ function main() {}
     }
   }
   
+  public constructor() {}
+
+  static {
+  
+  }
 }
 
 @Memo() type MyBuilderFuncType = @Builder() ((param: (()=> Tmp))=> void);
@@ -185,11 +188,14 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(Tmp | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(Tmp | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_label', '(IStateDecoratedVariable<Tmp> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
   
@@ -249,7 +255,7 @@ const wBuilder: WrappedBuilder<MyBuilderFuncType> = wrapBuilder(overBuilder);
 function main() {}
 
 
-@Memo() function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() param: (()=> Tmp)) {
+@Builder() @Memo() function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() param: (()=> Tmp)) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (133793681)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -328,8 +334,6 @@ function main() {}
   
   @JSONRename({newName:"paramA2"}) private __backing_paramA2: string = "hello";
   
-  public constructor() {}
-  
   public get paramA2(): string {
     this.conditionalAddRef(this.__meta);
     return this.__backing_paramA2;
@@ -343,6 +347,11 @@ function main() {}
     }
   }
   
+  public constructor() {}
+
+  static {
+  
+  }
 }
 
 @Memo() type MyBuilderFuncType = @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, param: (()=> Tmp))=> void);
@@ -421,11 +430,14 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(Tmp | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(Tmp | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_label', '(IStateDecoratedVariable<Tmp> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
 
@@ -438,7 +450,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test wrap builder with lambda',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testUITransformer],
         'checked:memo-no-recheck': [testMemoTransformer],

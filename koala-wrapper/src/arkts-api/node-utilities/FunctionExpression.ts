@@ -15,13 +15,22 @@
 
 import { ScriptFunction, FunctionExpression } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
+
+export function createFunctionExpression(expression: ScriptFunction): FunctionExpression {
+    return FunctionExpression.createFunctionExpression(expression);
+}
 
 export function updateFunctionExpression(original: FunctionExpression, func?: ScriptFunction): FunctionExpression {
     if (isSameNativeObject(func, original.function)) {
         return original;
     }
 
-    const update = updateThenAttach(FunctionExpression.updateFunctionExpression, attachModifiers);
+    const update = updateThenAttach(FunctionExpression.updateFunctionExpression, attachModifiers, attachParent, refreshNodeCache);
     return update(original, func);
 }

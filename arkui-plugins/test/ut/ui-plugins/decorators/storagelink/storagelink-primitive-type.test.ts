@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -101,7 +101,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -116,15 +119,15 @@ class __EntryWrapper extends EntryPoint {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'numA', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'numA', '(number | undefined)', [dumpAnnotation('StorageLink', { value: "Prop1" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_numA', '(IStorageLinkDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_numA', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stringA', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stringA', '(string | undefined)', [dumpAnnotation('StorageLink', { value: "Prop2" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stringA', '(IStorageLinkDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stringA', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'booleanA', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'booleanA', '(boolean | undefined)', [dumpAnnotation('StorageLink', { value: "Prop3" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_booleanA', '(IStorageLinkDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_booleanA', '(boolean | undefined)')}
   
@@ -137,7 +140,7 @@ function testStorageLinkTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test storagelink primitive type transform',
-    [storageLinkTransform, uiNoRecheck, recheck],
+    [storageLinkTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testStorageLinkTransformer],
     },

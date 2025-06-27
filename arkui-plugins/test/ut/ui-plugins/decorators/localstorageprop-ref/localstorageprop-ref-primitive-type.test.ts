@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -117,27 +117,30 @@ function main() {}
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'numB', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'numB', '(number | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop1" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_numB', '(ILocalStoragePropRefDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_numB', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stringB', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stringB', '(string | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop2" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stringB', '(ILocalStoragePropRefDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stringB', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'booleanB', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'booleanB', '(boolean | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop3" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_booleanB', '(ILocalStoragePropRefDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_booleanB', '(boolean | undefined)')}
   
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'undefinedB', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'undefinedB', '(undefined | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop4" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_undefinedB', '(ILocalStoragePropRefDecoratedVariable<undefined> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_undefinedB', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'nullB', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'nullB', '(null | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop5" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_nullB', '(ILocalStoragePropRefDecoratedVariable<null> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_nullB', '(boolean | undefined)')}
   
@@ -150,7 +153,7 @@ function testStoragePropTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @LocalStoragePropRef primitive type transform',
-    [storagePropTransform, uiNoRecheck, recheck],
+    [storagePropTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testStoragePropTransformer],
     },

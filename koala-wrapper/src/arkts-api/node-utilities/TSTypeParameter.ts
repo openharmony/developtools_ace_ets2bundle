@@ -15,7 +15,12 @@
 
 import { Identifier, TSTypeParameter, TypeNode } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateTSTypeParameter(
     original: TSTypeParameter,
@@ -31,6 +36,11 @@ export function updateTSTypeParameter(
         return original;
     }
 
-    const update = updateThenAttach(TSTypeParameter.updateTSTypeParameter, attachModifiers);
+    const update = updateThenAttach(
+        TSTypeParameter.updateTSTypeParameter,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, name, constraint, defaultType);
 }

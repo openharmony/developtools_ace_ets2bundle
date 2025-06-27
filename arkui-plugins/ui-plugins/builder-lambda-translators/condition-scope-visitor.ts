@@ -15,6 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor } from '../../common/abstract-visitor';
+import { NodeCacheNames } from '../../common/predefines';
 import { factory as BuilderLambdaFactory } from './factory';
 
 /**
@@ -55,7 +56,10 @@ export class ConditionScopeVisitor extends AbstractVisitor {
     }
 
     private enter(node: arkts.AstNode): void {
-        if (arkts.isVariableDeclarator(node) && arkts.NodeCache.getInstance().has(node)) {
+        if (
+            arkts.isVariableDeclarator(node) &&
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)
+        ) {
             this._enforceUpdateCondition = true;
         }
     }
@@ -81,8 +85,8 @@ export class ConditionScopeVisitor extends AbstractVisitor {
         }
         if (
             arkts.isArrowFunctionExpression(node) &&
-            !arkts.NodeCache.getInstance().has(node) &&
-            !arkts.NodeCache.getInstance().has(node.scriptFunction)
+            !arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node) &&
+            !arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node.scriptFunction)
         ) {
             this.shouldUpdateCondition = false;
             this._enforceUpdateCondition = false;

@@ -31,10 +31,13 @@ import {
 
 import { Expression } from "./Expression"
 export class TemplateElement extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TEMPLATE_ELEMENT)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TEMPLATE_ELEMENT;
     }
     static createTemplateElement(): TemplateElement {
         return new TemplateElement(global.generatedEs2panda._CreateTemplateElement(global.context))

@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { collectNoRecheck, memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -54,6 +54,10 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+
+  @Memo() public doNothingBuilder() {}
+  
+  @Memo() public doNothingBuilder2(@MemoSkip() str: string) {}
   
   private __backing_customBuilderParam?: @Memo() (()=> void);
   
@@ -75,17 +79,16 @@ function main() {}
     this.__backing_customBuilderParam2 = value;
   }
   
-  @Memo() public doNothingBuilder() {}
-  
-  @Memo() public doNothingBuilder2(@MemoSkip() str: string) {}
-  
   @Memo() public build() {
     this.customBuilderParam();
     this.customBuilderParam2("hello");
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_Child {
@@ -116,27 +119,7 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
-  
-  private __backing_customBuilderParam?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
-  
-  public get customBuilderParam(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
-    return this.__backing_customBuilderParam!;
-  }
-  
-  public set customBuilderParam(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
-    this.__backing_customBuilderParam = value;
-  }
-  
-  private __backing_customBuilderParam2?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void);
-  
-  public get customBuilderParam2(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) {
-    return this.__backing_customBuilderParam2!;
-  }
-  
-  public set customBuilderParam2(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void)) {
-    this.__backing_customBuilderParam2 = value;
-  }
-  
+
   @Memo() public doNothingBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (174403279)), 0);
     if (__memo_scope.unchanged) {
@@ -160,6 +143,26 @@ function main() {}
       return;
     }
   }
+
+  private __backing_customBuilderParam?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+  
+  public get customBuilderParam(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
+    return this.__backing_customBuilderParam!;
+  }
+  
+  public set customBuilderParam(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
+    this.__backing_customBuilderParam = value;
+  }
+  
+  private __backing_customBuilderParam2?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void);
+  
+  public get customBuilderParam2(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) {
+    return this.__backing_customBuilderParam2!;
+  }
+  
+  public set customBuilderParam2(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void)) {
+    this.__backing_customBuilderParam2 = value;
+  }
   
   @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (179390036)), 0);
@@ -176,7 +179,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_Child {
@@ -199,7 +205,7 @@ function testAfterMemoCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test builder param init with local builder',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
         'checked:memo-no-recheck': [testAfterMemoCheckedTransformer],

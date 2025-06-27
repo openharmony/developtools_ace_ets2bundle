@@ -18,14 +18,13 @@ import { LANGUAGE_VERSION } from './predefines';
 import { readFirstLineSync, toUnixPath } from './arkts-utils';
 import { BuildConfig, DependentModuleConfig } from './plugin-context';
 
-
 export class FileManager {
     private static instance: FileManager | undefined = undefined;
     static arkTSModuleMap: Map<string, DependentModuleConfig> = new Map();
     static staticApiPath: Set<string> = new Set();
     static dynamicApiPath: Set<string> = new Set();
     static buildConfig: BuildConfig;
-    private constructor() { }
+    private constructor() {}
 
     static setInstance(instance: FileManager | undefined): void {
         if (instance === undefined) {

@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { structNoRecheck, recheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck, beforeUINoRecheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -119,27 +119,30 @@ function main() {}
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @ComponentV2() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar1', '(string | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar1', '(IConsumerDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar2', '(number | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar2', '(IConsumerDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar3', '(boolean | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar3', '(IConsumerDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar4', '(undefined | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar4', '(IConsumerDecoratedVariable<undefined> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar5', '(null | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar5', '(IConsumerDecoratedVariable<null> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar5', '(boolean | undefined)')}
   
@@ -152,9 +155,9 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic type @Consumer decorated variables transformation',
-    [parsedTransform, structNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
-        'checked:struct-no-recheck': [testCheckedTransformer],
+        'checked:ui-no-recheck': [testCheckedTransformer],
     },
     {
         stopAfter: 'checked',

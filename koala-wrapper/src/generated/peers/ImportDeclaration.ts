@@ -33,10 +33,13 @@ import { Statement } from "./Statement"
 import { StringLiteral } from "./StringLiteral"
 import { Es2pandaImportKinds } from "./../Es2pandaEnums"
 export class ImportDeclaration extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         // assertValidPeer(pointer, 39)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_IMPORT_DECLARATION;
     }
     static createImportDeclaration(source: StringLiteral | undefined, specifiers: readonly AstNode[], importKind: Es2pandaImportKinds): ImportDeclaration {
         return new ImportDeclaration(global.generatedEs2panda._CreateImportDeclaration(global.context, passNode(source), passNodeArray(specifiers), specifiers.length, importKind))
