@@ -366,6 +366,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     clearProps: function() {
       dollarCollection.clear();
       extendCollection.clear();
+      newExtendCollection.clear();
       this.uiProps = new Set();
     },
     // TSC will re-do resolution if this callback return true.
@@ -835,6 +836,10 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
       return;
     }
 
+    // validate whether the message matches new Extend error, and modify its level for compatibility
+    if (validateNewExtend(message)) {
+      diagnostic.category = ts.DiagnosticCategory.warning;
+    }
     const logPrefix: string = diagnostic.category === ts.DiagnosticCategory.Error ? 'ERROR' : 'WARN';
     const etsCheckerLogger = fastBuildLogger || logger;
     let logMessage: string;
@@ -931,6 +936,21 @@ function validateError(message: string): boolean {
   }
   return true;
 }
+
+
+/**
+ * validate whether ets diagnostic has collected the error about new Extend function
+ * @param {string} message
+ * @return {*}  {boolean}
+ */
+function validateNewExtend(message: string): boolean {
+  const stateInfoReg: RegExp = /Property\s*'(\$?[_a-zA-Z0-9]+)' does not exist on type/;
+  if (matchMessage(message, newExtendCollection, stateInfoReg)) {
+    return true;
+  }
+  return false;
+}
+
 function matchMessage(message: string, nameArr: any, reg: RegExp): boolean {
   if (reg.test(message)) {
     const match: string[] = message.match(reg);
@@ -1293,6 +1313,8 @@ function getResolveModule(modulePath: string, type): ts.ResolvedModuleFull {
 
 export const dollarCollection: Set<string> = new Set();
 export const extendCollection: Set<string> = new Set();
+// a new set defined to collect @Extend functions with new format
+const newExtendCollection: Set<string> = new Set();
 export const importModuleCollection: Set<string> = new Set();
 
 function checkUISyntax(sourceFile: ts.SourceFile, fileName: string, extendFunctionInfo: extendInfo[],
@@ -1543,7 +1565,7 @@ function processContent(source: string, id: string): string {
     source = visualTransform(source, id, fastBuildLogger);
   }
   source = preprocessExtend(source, extendCollection);
-  source = preprocessNewExtend(source, extendCollection);
+  source = preprocessNewExtend(source, newExtendCollection);
   return source;
 }
 
@@ -1813,6 +1835,7 @@ export function resetEtsCheck(): void {
   resolvedModulesCache.clear();
   dollarCollection.clear();
   extendCollection.clear();
+  newExtendCollection.clear();
   allSourceFilePaths.clear();
   allModuleIds.clear();
   filesBuildInfo.clear();
