@@ -15,7 +15,7 @@
 
 import { UnaryExpression, Expression } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import { attachModifiers, attachParent, refreshNodeCache, updateThenAttach } from '../utilities/private';
 import { Es2pandaTokenType } from '../../generated/Es2pandaEnums';
 
 export function updateUnaryExpression(
@@ -27,6 +27,11 @@ export function updateUnaryExpression(
         return original;
     }
 
-    const update = updateThenAttach(UnaryExpression.updateUnaryExpression, attachModifiers);
+    const update = updateThenAttach(
+        UnaryExpression.updateUnaryExpression,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, argument, unaryOperator);
 }

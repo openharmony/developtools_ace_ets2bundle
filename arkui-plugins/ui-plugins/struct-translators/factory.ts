@@ -32,6 +32,7 @@ import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as BuilderLambdaFactory } from '../builder-lambda-translators/factory';
 import { BuilderFactory } from '../builder-lambda-translators/builder-factory';
 import {
+    annotation,
     backingField,
     collect,
     filterDefined,
@@ -49,7 +50,6 @@ import {
 import {
     CustomComponentScopeInfo,
     isEtsGlobalClass,
-    ResourceInfo,
     checkRawfileResource,
     generateResourceModuleName,
     generateResourceBundleName,
@@ -67,7 +67,7 @@ import {
 } from './utils';
 import { collectStateManagementTypeImport, generateThisBacking, hasDecorator } from '../property-translators/utils';
 import { findComponentAttributeInInterface } from '../builder-lambda-translators/utils';
-import { ProjectConfig } from '../../common/plugin-context';
+import { ProjectConfig, ResourceInfo } from '../../common/plugin-context';
 import { ImportCollector } from '../../common/import-collector';
 import {
     AnimationNames,
@@ -79,17 +79,19 @@ import {
     RESOURCE_TYPE,
     ARKUI_BUILDER_SOURCE_NAME,
     TypeNames,
+    NodeCacheNames,
 } from '../../common/predefines';
-import { ObservedTranslator } from '../property-translators/index';
+import { BaseObservedPropertyTranslator } from '../property-translators/index';
 import { addMemoAnnotation } from '../../collectors/memo-collectors/utils';
 import { generateArkUICompatible } from '../interop/interop';
 import { GenSymGenerator } from '../../common/gensym-generator';
-import { MethodTranslator } from '../property-translators/base';
+import { BaseMethodTranslator, MethodTranslator } from '../property-translators/base';
 import { MonitorCache } from '../property-translators/cache/monitorCache';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
 import { ComputedCache } from '../property-translators/cache/computedCache';
 import { ComponentAttributeCache } from '../builder-lambda-translators/cache/componentAttributeCache';
-import { isInteropComponent } from '../interop/utils';
+import { CustomDialogControllerBuilderCache, CustomDialogControllerCache } from '../memo-collect-cache';
+import { insertInteropComponentImports, isInteropComponent } from '../interop/utils';
 
 export class factory {
     /**
@@ -674,7 +676,11 @@ export class factory {
         }
     }
 
-    static createCustomDialogMethod(isDecl: boolean, controller?: string): arkts.MethodDefinition {
+    static createCustomDialogMethod(
+        isDecl: boolean,
+        controller?: string,
+        controllerType?: string
+    ): arkts.MethodDefinition {
         let block: arkts.BlockStatement | undefined = undefined;
         if (!!controller) {
             block = arkts.factory.createBlock(this.createSetControllerElements(controller));
@@ -682,7 +688,7 @@ export class factory {
         const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
             arkts.factory.createIdentifier(
                 CustomDialogNames.CONTROLLER,
-                UIFactory.createTypeReferenceFromString(CustomDialogNames.CUSTOM_DIALOG_CONTROLLER)
+                UIFactory.createTypeReferenceFromString(controllerType ?? CustomDialogNames.CUSTOM_DIALOG_CONTROLLER)
             ),
             undefined
         );
@@ -815,7 +821,10 @@ export class factory {
             return factory.tranformCustomComponentInterfaceMembers(node);
         }
         let attributeName: string | undefined;
-        if (ComponentAttributeCache.getInstance().isCollected() && !!(attributeName = findComponentAttributeInInterface(node))) {
+        if (
+            ComponentAttributeCache.getInstance().isCollected() &&
+            !!(attributeName = findComponentAttributeInInterface(node))
+        ) {
             const componentName = attributeName.replace(/Attribute$/, '');
             if (!ComponentAttributeCache.getInstance().hasComponentName(componentName)) {
                 return newNode;
@@ -986,7 +995,7 @@ export class factory {
             getters: getters,
         };
         const body: readonly arkts.AstNode[] = definition.body;
-        const translators: (ObservedTranslator | MethodTranslator)[] = filterDefined(
+        const translators: (BaseObservedPropertyTranslator | BaseMethodTranslator)[] = filterDefined(
             body.map((it) => classifyInObservedClass(it, classScopeInfo))
         );
         const metaProperty: arkts.ClassProperty[] = ObservedAnno.classHasTrack
@@ -1133,6 +1142,7 @@ export class factory {
             return this.transformResource(node, projectConfig, resourceInfo);
         }
         if (isInteropComponent(node)) {
+            insertInteropComponentImports();
             return generateArkUICompatible(node as arkts.CallExpression, globalBuilder);
         }
         return node;
@@ -1156,13 +1166,14 @@ export class factory {
         const builder: arkts.Property = properties.at(builderIndex)!;
         const gensymName: string = GenSymGenerator.getInstance().id();
         const newBuilderValue = this.createDialogBuilderArrow(builder.value!, gensymName);
-        const newProperty = arkts.factory.updateProperty(builder, builder.key, newBuilderValue);
+        builder.setValue(newBuilderValue);
+        CustomDialogControllerBuilderCache.getInstance().updateAll().reset();
         const newObj = arkts.factory.updateObjectExpression(
             options,
             arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
             [
                 ...(options.properties as arkts.Property[]).slice(0, builderIndex),
-                newProperty,
+                builder,
                 ...(options.properties as arkts.Property[]).slice(builderIndex + 1),
                 this.createBaseComponent(),
             ],
@@ -1172,35 +1183,38 @@ export class factory {
             ? arkts.factory.updateTSAsExpression(optionArg, newObj, optionArg.typeAnnotation, optionArg.isConst)
             : newObj;
         const typeRef = node.getTypeRef as arkts.ETSTypeReference;
-        const newNode = arkts.factory.updateETSNewClassInstanceExpression(node, typeRef, [newOptions]);
-        return factory.createBlockStatementForOptionalExpression(newNode, gensymName);
+        const controller = arkts.factory.updateETSNewClassInstanceExpression(node, typeRef, [newOptions]);
+        CustomDialogControllerCache.getInstance().collect({ controller });
+        return factory.createBlockStatementForOptionalExpression(controller, gensymName);
     }
 
     static createDialogBuilderArrow(value: arkts.Expression, gensymName: string): arkts.Expression {
-        if (
+        let arrowFunc: arkts.ArrowFunctionExpression | undefined;
+        let call: arkts.CallExpression | undefined;
+        if (arkts.isArrowFunctionExpression(value)) {
+            arrowFunc = value
+        } else if (
             arkts.isCallExpression(value) &&
             arkts.isMemberExpression(value.expression) &&
             arkts.isIdentifier(value.expression.property) &&
             value.expression.property.name === BuilderLambdaNames.TRANSFORM_METHOD_NAME
         ) {
-            return addMemoAnnotation(
-                arkts.factory.createArrowFunction(
-                    UIFactory.createScriptFunction({
-                        body: arkts.factory.createBlock([
-                            arkts.factory.createExpressionStatement(
-                                this.transformCustomDialogComponentCall(value, gensymName)
-                            ),
-                        ]),
-                        flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                        modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-                    })
-                )
+            call = this.transformCustomDialogComponentCall(value, gensymName);
+            arrowFunc = arkts.factory.createArrowFunction(
+                UIFactory.createScriptFunction({
+                    body: arkts.factory.createBlock([
+                        arkts.factory.createExpressionStatement(call)
+                    ]),
+                    flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                    modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+                })
             );
         }
-        if (arkts.isArrowFunctionExpression(value)) {
-            return addMemoAnnotation(value);
+        if (!arrowFunc) {
+            return value;
         }
-        return value;
+        CustomDialogControllerBuilderCache.getInstance().collect({ arrowFunc, call });
+        return addMemoAnnotation(arrowFunc);
     }
 
     static transformCustomDialogComponentCall(value: arkts.CallExpression, gensymName: string): arkts.CallExpression {

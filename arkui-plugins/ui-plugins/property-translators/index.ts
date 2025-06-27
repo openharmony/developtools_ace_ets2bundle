@@ -15,35 +15,128 @@
 
 import * as arkts from '@koalaui/libarkts';
 
+import {
+    CustomComponentInterfacePropertyInfo,
+    NormalClassAnnotationInfo,
+    NormalClassPropertyInfo,
+    StructPropertyAnnotationInfo,
+    StructPropertyInfo,
+} from '../../collectors/ui-collectors/records';
 import { DecoratorNames } from '../../common/predefines';
-import { InterfacePropertyTranslator, MethodTranslator, PropertyTranslator } from './base';
+import {
+    PropertyCachedTranslator,
+    InterfacePropertyTranslator,
+    MethodTranslator,
+    PropertyTranslator,
+    InterfacePropertyCachedTranslator,
+    BaseObservedPropertyTranslator,
+    InterfacePropertyTypes,
+    BaseMethodTranslator,
+} from './base';
 import { hasDecorator } from './utils';
-import { StateInterfaceTranslator, StateTranslator } from './state';
-import { StorageLinkInterfaceTranslator, StorageLinkTranslator } from './storagelink';
-import { LocalStorageLinkInterfaceTranslator, LocalStorageLinkTranslator } from './localstoragelink';
-import { LinkInterfaceTranslator, LinkTranslator } from './link';
-import { ObjectLinkInterfaceTranslator, ObjectLinkTranslator } from './objectlink';
-import { RegularInterfaceTranslator, RegularPropertyTranslator } from './regularProperty';
-import { StaticPropertyTranslator } from './staticProperty';
-import { CustomComponentInfo } from '../utils';
-import { ConsumeInterfaceTranslator, ConsumeTranslator } from './consume';
-import { ProvideInterfaceTranslator, ProvideTranslator } from './provide';
-import { BuilderParamInterfaceTranslator, BuilderParamTranslator } from './builderParam';
-import { PropRefInterfaceTranslator, PropRefTranslator } from './propRef';
-import { ObservedTrackTranslator } from './observedTrack';
+import {
+    StateCachedInterfaceTranslator,
+    StateCachedTranslator,
+    StateTranslator,
+    StateInterfaceTranslator,
+} from './state';
+import {
+    StorageLinkCachedTranslator,
+    StorageLinkCachedInterfaceTranslator,
+    StorageLinkTranslator,
+    StorageLinkInterfaceTranslator,
+} from './storagelink';
+import {
+    LocalStorageLinkCachedTranslator,
+    LocalStorageLinkCachedInterfaceTranslator,
+    LocalStorageLinkTranslator,
+    LocalStorageLinkInterfaceTranslator,
+} from './localstoragelink';
+import { LinkCachedTranslator, LinkCachedInterfaceTranslator, LinkTranslator, LinkInterfaceTranslator } from './link';
+import {
+    ObjectLinkCachedTranslator,
+    ObjectLinkTranslator,
+    ObjectLinkInterfaceTranslator,
+    ObjectLinkCachedInterfaceTranslator,
+} from './objectlink';
+import {
+    RegularPropertyCachedTranslator,
+    RegularCachedInterfaceTranslator,
+    RegularPropertyTranslator,
+    RegularInterfaceTranslator,
+} from './regularProperty';
+import { StaticPropertyCachedTranslator, StaticPropertyTranslator } from './staticProperty';
+import { ClassInfo, CustomComponentInfo } from '../utils';
+import {
+    ConsumeCachedTranslator,
+    ConsumeCachedInterfaceTranslator,
+    ConsumeTranslator,
+    ConsumeInterfaceTranslator,
+} from './consume';
+import {
+    ProvideCachedTranslator,
+    ProvideCachedInterfaceTranslator,
+    ProvideTranslator,
+    ProvideInterfaceTranslator,
+} from './provide';
+import {
+    BuilderParamCachedTranslator,
+    BuilderParamCachedInterfaceTranslator,
+    BuilderParamTranslator,
+    BuilderParamInterfaceTranslator,
+} from './builderParam';
+import {
+    PropRefCachedTranslator,
+    PropRefCachedInterfaceTranslator,
+    PropRefTranslator,
+    PropRefInterfaceTranslator,
+} from './propRef';
+import { ObservedTrackCachedTranslator, ObservedTrackTranslator } from './observedTrack';
 import { ClassScopeInfo } from '../struct-translators/utils';
-import { LocalInterfaceTranslator, LocalTranslator } from './local';
-import { StoragePropRefInterfaceTranslator, StoragePropRefTranslator } from './storagePropRef';
-import { LocalStoragePropRefInterfaceTranslator, LocalStoragePropRefTranslator } from './localStoragePropRef';
-import { ObservedV2TraceTranslator } from './observedV2Trace';
-import { ParamInterfaceTranslator, ParamTranslator } from './param';
-import { OnceInterfaceTranslator, OnceTranslator } from './once';
-import { ProviderInterfaceTranslator, ProviderTranslator } from './provider';
-import { ConsumerInterfaceTranslator, ConsumerTranslator } from './consumer';
+import {
+    LocalCachedTranslator,
+    LocalCachedInterfaceTranslator,
+    LocalTranslator,
+    LocalInterfaceTranslator,
+} from './local';
+import {
+    StoragePropRefCachedTranslator,
+    StoragePropRefCachedInterfaceTranslator,
+    StoragePropRefTranslator,
+    StoragePropRefInterfaceTranslator,
+} from './storagePropRef';
+import {
+    LocalStoragePropRefCachedTranslator,
+    LocalStoragePropRefCachedInterfaceTranslator,
+    LocalStoragePropRefTranslator,
+    LocalStoragePropRefInterfaceTranslator,
+} from './localStoragePropRef';
+import { ObservedV2TraceCachedTranslator, ObservedV2TraceTranslator } from './observedV2Trace';
+import {
+    ParamCachedTranslator,
+    ParamCachedInterfaceTranslator,
+    ParamTranslator,
+    ParamInterfaceTranslator,
+} from './param';
+import { OnceCachedTranslator, OnceCachedInterfaceTranslator, OnceTranslator, OnceInterfaceTranslator } from './once';
+import {
+    ProviderCachedTranslator,
+    ProviderCachedInterfaceTranslator,
+    ProviderTranslator,
+    ProviderInterfaceTranslator,
+} from './provider';
+import {
+    ConsumerCachedTranslator,
+    ConsumerCachedInterfaceTranslator,
+    ConsumerTranslator,
+    ConsumerInterfaceTranslator,
+} from './consumer';
 import { ComputedTranslator } from './computed';
 import { MonitorTranslator } from './monitor';
+import { EventCachedInterfaceTranslator, EventCachedTranslator } from './event';
+import { RequireCachedTranslator } from './require';
 
-export { PropertyTranslator, InterfacePropertyTranslator };
+export { BaseObservedPropertyTranslator, PropertyTranslator, PropertyCachedTranslator, InterfacePropertyTranslator };
 export type { ClassScopeInfo };
 
 export function classifyStructMembers(
@@ -53,7 +146,7 @@ export function classifyStructMembers(
     if (arkts.isClassProperty(member)) {
         return classifyProperty(member, structInfo);
     } else if (arkts.isMethodDefinition(member)) {
-        return classifyMethod(member, true, structInfo.name);
+        return classifyMethod(member, { isFromStruct: true, className: structInfo.name });
     }
     return undefined;
 }
@@ -220,34 +313,28 @@ export function classifyV2PropertyInInterface(property: arkts.AstNode): Interfac
     return undefined;
 }
 
-export type ObservedTranslator = ObservedV2TraceTranslator | ObservedTrackTranslator;
-
 export function classifyObservedClassProperty(
-    member: arkts.ClassProperty,
+    property: arkts.ClassProperty,
     classScopeInfo: ClassScopeInfo
-): ObservedTranslator | undefined {
+): BaseObservedPropertyTranslator | undefined {
     if (classScopeInfo.isObservedV2) {
-        return new ObservedV2TraceTranslator(member, classScopeInfo);
+        return new ObservedV2TraceTranslator({ property, classScopeInfo });
     }
     if (classScopeInfo.isObserved || classScopeInfo.classHasTrack) {
-        return new ObservedTrackTranslator(member, classScopeInfo);
+        return new ObservedTrackTranslator({ property, classScopeInfo });
     }
     return undefined;
 }
 
-export function classifyMethod(
-    member: arkts.AstNode,
-    isFromStruct: boolean,
-    className: string
-): MethodTranslator | undefined {
-    if (!arkts.isMethodDefinition(member)) {
+export function classifyMethod(method: arkts.AstNode, classInfo: ClassInfo): MethodTranslator | undefined {
+    if (!arkts.isMethodDefinition(method)) {
         return undefined;
     }
-    if (hasDecorator(member, DecoratorNames.COMPUTED)) {
-        return new ComputedTranslator(member, { isFromStruct, className });
+    if (hasDecorator(method, DecoratorNames.COMPUTED)) {
+        return new ComputedTranslator({ method, classInfo });
     }
-    if (hasDecorator(member, DecoratorNames.MONITOR)) {
-        return new MonitorTranslator(member, { isFromStruct, className });
+    if (hasDecorator(method, DecoratorNames.MONITOR)) {
+        return new MonitorTranslator({ method, classInfo });
     }
     return undefined;
 }
@@ -255,11 +342,212 @@ export function classifyMethod(
 export function classifyInObservedClass(
     member: arkts.AstNode,
     classScopeInfo: ClassScopeInfo
-): ObservedTranslator | MethodTranslator | undefined {
+): BaseObservedPropertyTranslator | BaseMethodTranslator | undefined {
     if (arkts.isClassProperty(member)) {
         return classifyObservedClassProperty(member, classScopeInfo);
     } else if (arkts.isMethodDefinition(member)) {
-        return classifyMethod(member, false, classScopeInfo.className);
+        return classifyMethod(member, { isFromStruct: false, className: classScopeInfo.className });
+    }
+    return undefined;
+}
+
+export function classifyPropertyFromInfo(
+    node: arkts.ClassProperty,
+    metadata: StructPropertyInfo
+): PropertyCachedTranslator | undefined {
+    if (!metadata.structInfo || !!metadata.structInfo.isDecl) {
+        return undefined;
+    }
+    if (StaticPropertyCachedTranslator.canBeStaticTranslate(node, metadata)) {
+        return new StaticPropertyCachedTranslator({ property: node, propertyInfo: metadata });
+    }
+    const annotationInfo = metadata.annotationInfo;
+    if (!annotationInfo) {
+        return new RegularPropertyCachedTranslator({ property: node, propertyInfo: metadata });
+    }
+    let propertyTranslator: PropertyCachedTranslator | undefined;
+    propertyTranslator = classifyV1PropertyFromInfo(node, metadata);
+    if (!!propertyTranslator) {
+        return propertyTranslator;
+    }
+    propertyTranslator = classifyV2PropertyFromInfo(node, metadata);
+    if (!!propertyTranslator) {
+        return propertyTranslator;
+    }
+    return undefined;
+}
+
+export function classifyV1PropertyFromInfo(
+    node: arkts.ClassProperty,
+    metadata: StructPropertyInfo
+): PropertyCachedTranslator | undefined {
+    const property: arkts.ClassProperty = node;
+    const propertyInfo: StructPropertyInfo = metadata;
+    const annotationInfo: StructPropertyAnnotationInfo = metadata.annotationInfo!;
+    if (annotationInfo.hasState) {
+        return new StateCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasStorageLink) {
+        return new StorageLinkCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasLocalStorageLink) {
+        return new LocalStorageLinkCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasLink) {
+        return new LinkCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasObjectLink) {
+        return new ObjectLinkCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasLocalStoragePropRef) {
+        return new LocalStoragePropRefCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasStoragePropRef) {
+        return new StoragePropRefCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasPropRef) {
+        return new PropRefCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasProvide) {
+        return new ProvideCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasConsume) {
+        return new ConsumeCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasBuilderParam) {
+        return new BuilderParamCachedTranslator({ property, propertyInfo });
+    }
+    return undefined;
+}
+
+export function classifyV2PropertyFromInfo(
+    node: arkts.ClassProperty,
+    metadata: StructPropertyInfo
+): PropertyCachedTranslator | undefined {
+    const property: arkts.ClassProperty = node;
+    const propertyInfo: StructPropertyInfo = metadata;
+    const annotationInfo: StructPropertyAnnotationInfo = metadata.annotationInfo!;
+    if (annotationInfo.hasLocal) {
+        return new LocalCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasOnce) {
+        return new OnceCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasParam) {
+        return new ParamCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasProvider) {
+        return new ProviderCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasConsumer) {
+        return new ConsumerCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasEvent) {
+        return new EventCachedTranslator({ property, propertyInfo });
+    }
+    if (annotationInfo.hasRequire) {
+        return new RequireCachedTranslator({ property, propertyInfo });
+    }
+    return undefined;
+}
+
+export function classifyPropertyInInterfaceFromInfo<T extends InterfacePropertyTypes>(
+    property: T,
+    metadata?: CustomComponentInterfacePropertyInfo
+): InterfacePropertyCachedTranslator<T> | undefined {
+    const propertyInfo = metadata;
+    let interfacePropertyTranslater: InterfacePropertyCachedTranslator<T> | undefined;
+    interfacePropertyTranslater = classifyV1PropertyInInterfaceFromInfo(property, propertyInfo);
+    if (!!interfacePropertyTranslater) {
+        return interfacePropertyTranslater;
+    }
+    interfacePropertyTranslater = classifyV2PropertyInInterfaceFromInfo(property, propertyInfo);
+    if (!!interfacePropertyTranslater) {
+        return interfacePropertyTranslater;
+    }
+    if (RegularCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new RegularCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    return undefined;
+}
+
+export function classifyV1PropertyInInterfaceFromInfo<T extends InterfacePropertyTypes>(
+    property: T,
+    metadata?: CustomComponentInterfacePropertyInfo
+): InterfacePropertyCachedTranslator<T> | undefined {
+    const propertyInfo = metadata;
+    if (StateCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new StateCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (LinkCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new LinkCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (PropRefCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new PropRefCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (ProvideCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new ProvideCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (ConsumeCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new ConsumeCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (StorageLinkCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new StorageLinkCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (StoragePropRefCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new StoragePropRefCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (LocalStoragePropRefCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new LocalStoragePropRefCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (BuilderParamCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new BuilderParamCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (LocalStorageLinkCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new LocalStorageLinkCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (ObjectLinkCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new ObjectLinkCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    return undefined;
+}
+
+export function classifyV2PropertyInInterfaceFromInfo<T extends InterfacePropertyTypes>(
+    property: T,
+    metadata?: CustomComponentInterfacePropertyInfo
+): InterfacePropertyCachedTranslator<T> | undefined {
+    const propertyInfo = metadata;
+    if (LocalCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new LocalCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (OnceCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new OnceCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (ParamCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new ParamCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (ProviderCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new ProviderCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (ConsumerCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new ConsumerCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (EventCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new EventCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    return undefined;
+}
+
+export function classifyObservedClassPropertyFromInfo(
+    property: arkts.ClassProperty,
+    propertyInfo: NormalClassPropertyInfo
+): BaseObservedPropertyTranslator | undefined {
+    const classAnnotationInfo: NormalClassAnnotationInfo | undefined = propertyInfo.classInfo?.annotationInfo;
+    if (classAnnotationInfo?.hasObservedV2) {
+        return new ObservedV2TraceCachedTranslator({ property, propertyInfo });
+    }
+    if (classAnnotationInfo?.hasObserved || propertyInfo.annotationInfo?.hasTrack) {
+        return new ObservedTrackCachedTranslator({ property, propertyInfo });
     }
     return undefined;
 }

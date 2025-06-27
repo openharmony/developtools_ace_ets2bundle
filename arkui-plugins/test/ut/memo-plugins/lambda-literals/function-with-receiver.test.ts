@@ -43,7 +43,7 @@ import { memo as memo } from "arkui.stateManagement.runtime";
 
 function main() {}
 
-@memo() function foo1(this: B, __memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string): void {
+@Memo() function foo1(this: B, __memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string): void {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (38567515)), 2);
   const __memo_parameter_this = __memo_scope.param(0, this), __memo_parameter_str = __memo_scope.param(1, str);
   if (__memo_scope.unchanged) {
@@ -57,7 +57,7 @@ function main() {}
   }
 }
 
-@memo() function foo2(this: B, __memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string): B {
+@Memo() function foo2(this: B, __memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string): B {
   const __memo_scope = __memo_context.scope<B>(((__memo_id) + (167482260)), 2);
   const __memo_parameter_this = __memo_scope.param(0, this), __memo_parameter_str = __memo_scope.param(1, str);
   if (__memo_scope.unchanged) {
@@ -68,7 +68,7 @@ function main() {}
 }
 
 class B {
-  @memo() public internal_call(__memo_context: __memo_context_type, __memo_id: __memo_id_type): B {
+  @Memo() public internal_call(__memo_context: __memo_context_type, __memo_id: __memo_id_type): B {
     const __memo_scope = __memo_context.scope<B>(((__memo_id) + (146437675)), 0);
     if (__memo_scope.unchanged) {
       return __memo_scope.cached;

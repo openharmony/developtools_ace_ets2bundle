@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -96,14 +96,6 @@ function main() {}
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  @JSONRename({newName:"newProp"}) private __backing_newProp?: boolean;
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_newProp: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
-  public constructor(newProp: boolean) {
-    this.newProp = newProp;
-  }
-  
   public get trackB(): number {
     this.conditionalAddRef(this.__meta_trackB);
     return this.__backing_trackB;
@@ -116,6 +108,10 @@ function main() {}
       this.executeOnSubscribingWatches("trackB");
     }
   }
+
+  @JSONRename({newName:"newProp"}) private __backing_newProp?: boolean;
+  
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_newProp: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public get newProp(): boolean {
     this.conditionalAddRef(this.__meta_newProp);
@@ -129,7 +125,14 @@ function main() {}
       this.executeOnSubscribingWatches("newProp");
     }
   }
+
+  public constructor(newProp: boolean) {
+    this.newProp = newProp;
+  }
+
+  static {
   
+  }
 }
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
@@ -140,7 +143,10 @@ function main() {}
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_MyStateSample {
@@ -154,7 +160,7 @@ function testObservedOnlyTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test observed with track transform',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testObservedOnlyTransformer],
     },

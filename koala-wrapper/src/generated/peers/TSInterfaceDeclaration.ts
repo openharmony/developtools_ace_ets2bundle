@@ -38,10 +38,13 @@ import { Decorator } from "./Decorator"
 import { ClassDeclaration } from "./ClassDeclaration"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class TSInterfaceDeclaration extends TypedStatement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERFACE_DECLARATION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERFACE_DECLARATION;
     }
     static createTSInterfaceDeclaration(_extends: readonly TSInterfaceHeritage[], id: AstNode | undefined, typeParams: AstNode | undefined, body: AstNode | undefined, isStatic: boolean, isExternal: boolean): TSInterfaceDeclaration {
         return new TSInterfaceDeclaration(global.generatedEs2panda._CreateTSInterfaceDeclaration(global.context, passNodeArray(_extends), _extends.length, passNode(id), passNode(typeParams), passNode(body), isStatic, isExternal))

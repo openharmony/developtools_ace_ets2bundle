@@ -19,7 +19,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { collectNoRecheck, memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -121,6 +121,10 @@ function main() {}
         }));
     }
     public constructor() {}
+
+    static {
+
+    }
 }
 @Component() export interface __Options_IfInSwitch {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(string | undefined)')}
@@ -360,6 +364,10 @@ function main() {}
         }
     }
     public constructor() {}
+
+    static {
+
+    }
 }
 @Component() export interface __Options_IfInSwitch {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(string | undefined)')}
@@ -374,7 +382,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test if conditions in switch-case',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testUITransformer],
         'checked:memo-no-recheck': [testMemoTransformer],

@@ -16,13 +16,18 @@
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { AstNode } from '../peers/AstNode';
 import { ExpressionStatement } from '../types';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateExpressionStatement(original: ExpressionStatement, expression: AstNode): ExpressionStatement {
     if (isSameNativeObject(expression, original.expression)) {
         return original;
     }
 
-    const update = updateThenAttach(ExpressionStatement.update, attachModifiers);
+    const update = updateThenAttach(ExpressionStatement.update, attachModifiers, attachParent, refreshNodeCache);
     return update(original, expression);
 }

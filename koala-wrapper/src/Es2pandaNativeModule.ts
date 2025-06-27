@@ -110,8 +110,7 @@ export class Es2pandaNativeModule {
     _CreateContextFromString(config: KPtr, source: String, filename: String): KPtr {
         throw new Error('Not implemented');
     }
-    _CreateContextGenerateAbcForExternalSourceFiles(config: KPtr, fileCount: KInt, filenames:
-        string[]): KPtr {
+    _CreateContextGenerateAbcForExternalSourceFiles(config: KPtr, fileCount: KInt, filenames: string[]): KPtr {
         throw new Error('Not implemented');
     }
     _CreateContextFromStringWithHistory(config: KPtr, source: String, filename: String): KPtr {
@@ -718,6 +717,15 @@ export class Es2pandaNativeModule {
     _DeclarationFromIdentifier(context: KPtr, identifier: KPtr): KPtr {
         throw new Error('Not implemented');
     }
+    _DeclarationFromProperty(context: KPtr, property: KPtr): KPtr {
+        throw new Error('Not implemented');
+    }
+    _DeclarationFromMemberExpression(context: KPtr, expression: KPtr): KPtr {
+        throw new Error('Not implemented');
+    }
+    _DeclarationFromAstNode(context: KPtr, node: KPtr): KPtr {
+        throw new Error('Not implemented');
+    }
     _IsTSInterfaceDeclaration(ast: KNativePointer): KBoolean {
         throw new Error('Not implemented');
     }
@@ -778,10 +786,7 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
-    _GenerateStaticDeclarationsFromContext(
-        config: KPtr,
-        outputPath: String
-    ): KPtr {
+    _GenerateStaticDeclarationsFromContext(config: KPtr, outputPath: String): KPtr {
         throw new Error('Not implemented');
     }
 
@@ -812,6 +817,9 @@ export class Es2pandaNativeModule {
     _CreateETSStringLiteralType(context: KNativePointer, str: String): KNativePointer {
         throw new Error('Not implemented');
     }
+    _UpdateETSStringLiteralType(context: KNativePointer, original: KNativePointer, value: KStringPtr): KNativePointer {
+        throw new Error('UpdateETSStringLiteralType was not overloaded by native module initialization');
+    }
 
     _ClassDefinitionIsFromStructConst(context: KNativePointer, instance: KNativePointer): KBoolean {
         throw new Error('Not implemented');
@@ -820,16 +828,45 @@ export class Es2pandaNativeModule {
     _ClassDefinitionSetFromStructModifier(context: KNativePointer, instance: KNativePointer): void {
         throw new Error('Not implemented');
     }
-    
-    _CreateClassDefinition3(context: KNativePointer, ident: KNativePointer, typeParams: KNativePointer, superTypeParams: KNativePointer, _implements: BigUint64Array, _implementsSequenceLength: KUInt, ctor: KNativePointer, superClass: KNativePointer, body: BigUint64Array, bodySequenceLength: KUInt, modifiers: KInt, flags: KInt, lang: KInt): KNativePointer {
-        throw new Error("'CreateClassDefinition was not overloaded by native module initialization")
+
+    _CreateClassDefinition3(
+        context: KNativePointer,
+        ident: KNativePointer,
+        typeParams: KNativePointer,
+        superTypeParams: KNativePointer,
+        _implements: BigUint64Array,
+        _implementsSequenceLength: KUInt,
+        ctor: KNativePointer,
+        superClass: KNativePointer,
+        body: BigUint64Array,
+        bodySequenceLength: KUInt,
+        modifiers: KInt,
+        flags: KInt,
+        lang: KInt
+    ): KNativePointer {
+        throw new Error("'CreateClassDefinition was not overloaded by native module initialization");
     }
-    _UpdateClassDefinition3(context: KNativePointer, original: KNativePointer, ident: KNativePointer, typeParams: KNativePointer, superTypeParams: KNativePointer, _implements: BigUint64Array, _implementsSequenceLength: KUInt, ctor: KNativePointer, superClass: KNativePointer, body: BigUint64Array, bodySequenceLength: KUInt, modifiers: KInt, flags: KInt, lang: KInt): KNativePointer {
-        throw new Error("'UpdateClassDefinition was not overloaded by native module initialization")
+    _UpdateClassDefinition3(
+        context: KNativePointer,
+        original: KNativePointer,
+        ident: KNativePointer,
+        typeParams: KNativePointer,
+        superTypeParams: KNativePointer,
+        _implements: BigUint64Array,
+        _implementsSequenceLength: KUInt,
+        ctor: KNativePointer,
+        superClass: KNativePointer,
+        body: BigUint64Array,
+        bodySequenceLength: KUInt,
+        modifiers: KInt,
+        flags: KInt,
+        lang: KInt
+    ): KNativePointer {
+        throw new Error("'UpdateClassDefinition was not overloaded by native module initialization");
     }
-    
+
     _ClassDefinitionLanguageConst(context: KNativePointer, receiver: KNativePointer): KInt {
-        throw new Error("'ClassDefinitionLanguageConst was not overloaded by native module initialization")
+        throw new Error("'ClassDefinitionLanguageConst was not overloaded by native module initialization");
     }
 
     _ProgramFileNameConst(context: KPtr, program: KPtr): KNativePointer {
@@ -920,8 +957,12 @@ export class Es2pandaNativeModule {
         throw new Error('MemFinalize was not overloaded by native module initialization');
     }
 
-    _CreateGlobalContext(configPtr: KNativePointer, externalFileList: KStringArrayPtr, fileNum: KInt,
-        lspUsage: boolean): KNativePointer {
+    _CreateGlobalContext(
+        configPtr: KNativePointer,
+        externalFileList: KStringArrayPtr,
+        fileNum: KInt,
+        lspUsage: boolean
+    ): KNativePointer {
         throw new Error('CreateGlobalContext was not overloaded by native module initialization');
     }
 
@@ -929,8 +970,12 @@ export class Es2pandaNativeModule {
         throw new Error('DestroyGlobalContext was not overloaded by native module initialization');
     }
 
-    _CreateCacheContextFromFile(configPtr: KNativePointer, filename: string, globalContext: KNativePointer,
-        isExternal: KBoolean): KNativePointer {
+    _CreateCacheContextFromFile(
+        configPtr: KNativePointer,
+        filename: string,
+        globalContext: KNativePointer,
+        isExternal: KBoolean
+    ): KNativePointer {
         throw new Error('CreateCacheContextFromFile was not overloaded by native module initialization');
     }
 
@@ -938,22 +983,43 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
-    _CreateDiagnosticInfo(context: KNativePointer, kind: KNativePointer, args: string[],
-        argc: number, pos: KNativePointer): KNativePointer {
+    _CreateDiagnosticInfo(
+        context: KNativePointer,
+        kind: KNativePointer,
+        args: string[],
+        argc: number,
+        pos: KNativePointer
+    ): KNativePointer {
         throw new Error('Not implemented');
     }
 
-    _CreateSuggestionInfo(context: KNativePointer, kind: KNativePointer, args: string[],
-        argc: number, substitutionCode: string, title: string, range?: KNativePointer): KNativePointer {
+    _CreateSuggestionInfo(
+        context: KNativePointer,
+        kind: KNativePointer,
+        args: string[],
+        argc: number,
+        substitutionCode: string,
+        title: string,
+        range?: KNativePointer
+    ): KNativePointer {
         throw new Error('Not implemented');
     }
 
-    _LogDiagnostic(context: KNativePointer, kind: KNativePointer, argv: string[], argc: number, pos: KNativePointer): void {
+    _LogDiagnostic(
+        context: KNativePointer,
+        kind: KNativePointer,
+        argv: string[],
+        argc: number,
+        pos: KNativePointer
+    ): void {
         throw new Error('Not implemented');
     }
 
-    _LogDiagnosticWithSuggestion(context: KNativePointer, diagnosticInfo: KNativePointer,
-        suggestionInfo?: KNativePointer): void {
+    _LogDiagnosticWithSuggestion(
+        context: KNativePointer,
+        diagnosticInfo: KNativePointer,
+        suggestionInfo?: KNativePointer
+    ): void {
         throw new Error('Not implemented');
     }
 
@@ -985,12 +1051,24 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
+    _AstNodeFindNodeInInnerChild(context: KNativePointer, node: KNativePointer, target: KNativePointer): boolean {
+        throw new Error('AstNodeFindNodeInInnerChild was not overloaded by native module initialization');
+    }
+
+    _AstNodeFindInnerChild(context: KNativePointer, node: KNativePointer, nodeType: KInt): KNativePointer {
+        throw new Error('AstNodeFindInnerChild was not overloaded by native module initialization');
+    }
+
+    _AstNodeFindOuterParent(context: KNativePointer, node: KNativePointer, nodeType: KInt): KNativePointer {
+        throw new Error('AstNodeFindOuterParent was not overloaded by native module initialization');
+    }
+
     _GetCompilationMode(config: KNativePointer): KInt {
-        throw new Error('Not implemented');
+        throw new Error('GetCompilationMode was not overloaded by native module initialization');
     }
 
     _CreateTypeNodeFromTsType(context: KNativePointer, classInstance: KNativePointer): KNativePointer {
-        throw new Error('Not implemented');
+        throw new Error('CreateTypeNodeFromTsType was not overloaded by native module initialization');
     }
 
     _ScriptFunctionSetParams(
@@ -999,7 +1077,75 @@ export class Es2pandaNativeModule {
         paramsList: BigUint64Array,
         paramsListSequenceLength: KUInt
     ): void {
-        throw new Error('This methods was not overloaded by native module initialization');
+        throw new Error('ScriptFunctionSetParams was not overloaded by native module initialization');
+    }
+
+    _ClassDefinitionEmplaceBody(context: KNativePointer, receiver: KNativePointer, body: KNativePointer): void {
+        throw new Error('ClassDefinitionEmplaceBody was not overloaded by native module initialization');
+    }
+
+    _ClassDefinitionClearBody(context: KNativePointer, receiver: KNativePointer): void {
+        throw new Error('ClassDefinitionClearBody was not overloaded by native module initialization');
+    }
+
+    _ClassDefinitionSetValueBody(
+        context: KNativePointer,
+        receiver: KNativePointer,
+        body: KNativePointer,
+        index: KUInt
+    ): void {
+        throw new Error('ClassDefinitionSetValueBody was not overloaded by native module initialization');
+    }
+
+    _ClassDefinitionEmplaceImplements(
+        context: KNativePointer,
+        receiver: KNativePointer,
+        _implements: KNativePointer
+    ): void {
+        throw new Error('ClassDefinitionEmplaceImplements was not overloaded by native module initialization');
+    }
+
+    _ClassDefinitionClearImplements(context: KNativePointer, receiver: KNativePointer): void {
+        throw new Error('ClassDefinitionClearImplements was not overloaded by native module initialization');
+    }
+
+    _ClassDefinitionSetValueImplements(
+        context: KNativePointer,
+        receiver: KNativePointer,
+        _implements: KNativePointer,
+        index: KUInt
+    ): void {
+        throw new Error('ClassDefinitionSetValueImplements was not overloaded by native module initialization');
+    }
+
+    _ClassDefinitionSetImplements(
+        context: KNativePointer,
+        receiver: KNativePointer,
+        implementsList: BigUint64Array,
+        implementsListSequenceLength: KUInt
+    ): void {
+        throw new Error('ClassDefinitionSetImplements was not overloaded by native module initialization');
+    }
+
+    _ClassDefinitionSetBody(
+        context: KNativePointer,
+        receiver: KNativePointer,
+        body: BigUint64Array,
+        bodyLength: KUInt
+    ): void {
+        throw new Error('ClassDefinitionSetBody was not overloaded by native module initialization');
+    }
+
+    _ClassDefinitionSetSuperTypeParams(
+        context: KNativePointer,
+        receiver: KNativePointer,
+        superTypeParams: KNativePointer
+    ): void {
+        throw new Error('ClassDefinitionSetSuperTypeParams was not overloaded by native module initialization');
+    }
+
+    _PropertySetValue(context: KNativePointer, receiver: KNativePointer, value: KNativePointer): void {
+        throw new Error("PropertySetValue was not overloaded by native module initialization");
     }
 }
 

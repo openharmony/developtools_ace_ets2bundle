@@ -13,23 +13,23 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo} from "arkui.incremental.annotation";
 
 class Test {
-    @memo lambda_arg(@memo arg: () => void) {
+    @Memo lambda_arg(@Memo arg: () => void) {
 
 	}
 
-	@memo lambda_arg_with_arg(@memo arg: (value: string) => string) {
+	@Memo lambda_arg_with_arg(@Memo arg: (value: string) => string) {
 
 	}
 
-    @memo memo_content(@memo content: () => void) {
+    @Memo memo_content(@Memo content: () => void) {
 		content()
 	}
 
-    @memo compute_test(
-		@memo arg1: (() => void) | undefined,
+    @Memo compute_test(
+		@Memo arg1: (() => void) | undefined,
 		arg2: (() => void) | undefined,
 		content: (() => void) | undefined
 	): void {
@@ -38,7 +38,7 @@ class Test {
 }
 
 class Use {
-    @memo test() {
+    @Memo test() {
 		const test = new Test()
 
 		test.lambda_arg((): void => {})

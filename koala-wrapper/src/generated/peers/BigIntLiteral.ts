@@ -31,10 +31,13 @@ import {
 
 import { Literal } from "./Literal"
 export class BigIntLiteral extends Literal {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_BIGINT_LITERAL)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_BIGINT_LITERAL;
     }
     static createBigIntLiteral(src: string): BigIntLiteral {
         return new BigIntLiteral(global.generatedEs2panda._CreateBigIntLiteral(global.context, src))

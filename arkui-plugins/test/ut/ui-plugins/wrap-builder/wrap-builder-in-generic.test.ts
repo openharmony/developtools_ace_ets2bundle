@@ -18,9 +18,9 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { uiNoRecheck, recheck, memoNoRecheck } from '../../../utils/plugins';
+import { uiNoRecheck, recheck, memoNoRecheck, collectNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -60,13 +60,13 @@ let builderArr: Array<WrappedBuilder<@Builder() ((value: string, size: number)=>
 let wrappedBuilder1: WrappedBuilder<@Builder() ((value: string, size: number)=> void)>;
 let wrappedBuilder2: WrappedBuilder<@Builder() ((value: string, size: number)=> void)>;
 function main() {}
-@Memo() function MyBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() @Memo() function MyBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
         return;
     }), undefined);
 }
-@Memo() function YourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() @Memo() function YourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink).applyAttributesFinish();
         return;
@@ -109,7 +109,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
       ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return builderArr;
-        }), @Memo() ((item: WrappedBuilder<@Builder() ((value: string, size: number)=> void)>) => {
+        }), ((item: WrappedBuilder<@Builder() ((value: string, size: number)=> void)>) => {
           item.builder("Hello World", 30);
         }), undefined);
         return;
@@ -118,7 +118,10 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 class __EntryWrapper extends EntryPoint {
     @Memo() public entry(): void {
@@ -129,7 +132,7 @@ class __EntryWrapper extends EntryPoint {
     public constructor() {}
 }
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
   
@@ -163,7 +166,7 @@ let builderArr: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context
 let wrappedBuilder1: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
 let wrappedBuilder2: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
 function main() {}
-@Memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() @Memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -187,7 +190,7 @@ function main() {}
         return;
     }
 }
-@Memo() function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() @Memo() function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -273,14 +276,14 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
         }
         __memo_parameter_instance.value.setForEachOptions((() => {
           return builderArr;
-        }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
+        }), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (223657391)), 1);
           const __memo_parameter_item = __memo_scope.param(0, item);
           if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
           }
-          item.builder(__memo_context, ((__memo_id) + (218979098)), "Hello World", 30);
+          __memo_parameter_item.value.builder(__memo_context, ((__memo_id) + (218979098)), "Hello World", 30);
           {
             __memo_scope.recache();
             return;
@@ -303,7 +306,10 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 class __EntryWrapper extends EntryPoint {
     @Memo() public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
@@ -323,7 +329,7 @@ class __EntryWrapper extends EntryPoint {
     public constructor() {}
 }
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
   
@@ -336,7 +342,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test wrap builder with generic builder type',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testUITransformer],
         'checked:memo-no-recheck': [testMemoTransformer],

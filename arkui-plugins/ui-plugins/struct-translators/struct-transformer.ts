@@ -15,14 +15,13 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor } from '../../common/abstract-visitor';
-import { ProjectConfig } from '../../common/plugin-context';
+import { ProjectConfig, ResourceInfo } from '../../common/plugin-context';
 import { collectCustomComponentScopeInfo, CustomComponentNames, isCustomComponentClass } from '../utils';
 import {
     CustomComponentScopeInfo,
     isResourceNode,
     ScopeInfoCollection,
     LoaderJson,
-    ResourceInfo,
     loadBuildJson,
     initResourceInfo,
 } from './utils';

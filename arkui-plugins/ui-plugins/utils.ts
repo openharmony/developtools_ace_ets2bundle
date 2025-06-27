@@ -60,7 +60,7 @@ export enum BuilderLambdaNames {
     STYLE_ARROW_PARAM_NAME = 'instance',
     CONTENT_PARAM_NAME = 'content',
     COMPONENT_PARAM_ORI = 'content_',
-    APPLY_ATTRIBUTES_FINISH_METHOD = 'applyAttributesFinish'
+    APPLY_ATTRIBUTES_FINISH_METHOD = 'applyAttributesFinish',
 }
 
 // IMPORT
@@ -195,11 +195,11 @@ export function isCustomComponentAnnotation(
         return false;
     }
     if (!ignoreDecl) {
-        const decl = arkts.getDecl(anno.expr);
+        const decl = arkts.getPeerIdentifierDecl(anno.expr.peer);
         if (!decl) {
             return false;
         }
-        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        const moduleName = arkts.getProgramFromAstNode(decl)?.moduleName;
         if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
             return false;
         }

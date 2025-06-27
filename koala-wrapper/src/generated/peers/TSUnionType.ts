@@ -31,10 +31,13 @@ import {
 
 import { TypeNode } from "./TypeNode"
 export class TSUnionType extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_UNION_TYPE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_UNION_TYPE;
     }
     static createTSUnionType(types: readonly TypeNode[]): TSUnionType {
         return new TSUnionType(global.generatedEs2panda._CreateTSUnionType(global.context, passNodeArray(types), types.length))

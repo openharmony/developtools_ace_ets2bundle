@@ -15,7 +15,12 @@
 
 import { Expression, SpreadElement } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 import { Es2pandaAstNodeType } from '../../Es2pandaEnums';
 import { global } from '../static/global';
 
@@ -29,6 +34,6 @@ export function updateSpreadElement(
         return original;
     }
 
-    const update = updateThenAttach(SpreadElement.updateSpreadElement, attachModifiers);
+    const update = updateThenAttach(SpreadElement.updateSpreadElement, attachModifiers, attachParent, refreshNodeCache);
     return update(original, nodeType, argument);
 }

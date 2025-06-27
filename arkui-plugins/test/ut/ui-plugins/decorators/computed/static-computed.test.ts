@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -91,21 +91,6 @@ function main() {}
   
   @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_firstName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  @JSONRename({newName:"lastName"}) public static __backing_lastName: string = "Li";
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_lastName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
-  public static __computed_fullName = STATE_MGMT_FACTORY.makeComputed<string>((() => {
-    return ((((Name.firstName) + (" "))) + (Name.lastName));
-  }), "fullName");
-  
-  @Computed() public static get fullName(): string {
-    return Name.__computed_fullName.get();
-  }
-  
-  static {
-    
-  }
   public static get firstName(): string {
     Name.__meta_firstName.addRef();
     return UIUtils.makeObserved(Name.__backing_firstName);
@@ -117,6 +102,10 @@ function main() {}
       Name.__meta_firstName.fireChange();
     }
   }
+
+  @JSONRename({newName:"lastName"}) public static __backing_lastName: string = "Li";
+  
+  @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_lastName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public static get lastName(): string {
     Name.__meta_lastName.addRef();
@@ -129,9 +118,20 @@ function main() {}
       Name.__meta_lastName.fireChange();
     }
   }
+
+  public static __computed_fullName = STATE_MGMT_FACTORY.makeComputed<string>((() => {
+    return ((((Name.firstName) + (" "))) + (Name.lastName));
+  }), "fullName");
+  
+  @Computed() public static get fullName(): string {
+    return Name.__computed_fullName.get();
+  }
   
   public constructor() {}
-  
+
+  static {
+    
+  }
 }
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
@@ -168,9 +168,9 @@ function main() {}
   }
   
   @Memo() public build() {}
-  
+
   public constructor() {}
-  
+
   static {
     
   }
@@ -198,9 +198,9 @@ function main() {}
   }
   
   @Memo() public build() {}
-  
+
   public constructor() {}
-  
+
   static {
     
   }
@@ -234,20 +234,20 @@ function main() {}
   @Computed() public static get fullName(): string {
     return Name2.__computed_fullName.get();
   }
-  
+
+  public constructor() {}
+
   static {
     
   }
-  public constructor() {}
-  
 }
 
 @ComponentV2() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar1', '(string | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar1', '(ILocalDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar2', '(number | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar2', '(ILocalDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar2', '(boolean | undefined)')}
   
@@ -264,7 +264,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Computed decorated static getter method',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

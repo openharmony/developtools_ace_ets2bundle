@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -89,7 +89,7 @@ final class Status extends BaseEnum<int> {
   }
   
   public static getValueOf(name: String): Status {
-    for (let i = 0;((i) < (Status.#NamesArray.length));(++i)) {
+    for (let i = ((Status.#NamesArray.length) - (1));((i) >= (0));(--i)) {
       if (((name) == (Status.#NamesArray[i]))) {
         return Status.#ItemsArray[i];
       }
@@ -98,7 +98,7 @@ final class Status extends BaseEnum<int> {
   }
   
   public static fromValue(value: int): Status {
-    for (let i = 0;((i) < (Status.#ValuesArray.length));(++i)) {
+    for (let i = ((Status.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
       if (((value) == (Status.#ValuesArray[i]))) {
         return Status.#ItemsArray[i];
       }
@@ -214,35 +214,38 @@ final class Status extends BaseEnum<int> {
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'arrayB', '(Array<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'arrayB', '(Array<number> | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop1" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_arrayB', '(IStoragePropRefDecoratedVariable<Array<number>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_arrayB', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectB', '(Object | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectB', '(Object | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop2" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectB', '(IStoragePropRefDecoratedVariable<Object> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectB', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'dateB', '(Date | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'dateB', '(Date | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop3" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_dateB', '(IStoragePropRefDecoratedVariable<Date> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dateB', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'setB', '(Set<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'setB', '(Set<number> | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop4" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_setB', '(IStoragePropRefDecoratedVariable<Set<number>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_setB', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'mapB', '(Map<number, string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'mapB', '(Map<number, string> | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop5" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_mapB', '(IStoragePropRefDecoratedVariable<Map<number, string>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_mapB', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'classB', '(Person | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'classB', '(Person | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop7" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_classB', '(IStoragePropRefDecoratedVariable<Person> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_classB', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'enumB', '(Status | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'enumB', '(Status | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop8" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_enumB', '(IStoragePropRefDecoratedVariable<Status> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_enumB', '(boolean | undefined)')}
   
@@ -255,7 +258,7 @@ function testStoragePropTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @StoragePropRef complex type transform',
-    [storagePropTransform, uiNoRecheck, recheck],
+    [storagePropTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testStoragePropTransformer],
     },

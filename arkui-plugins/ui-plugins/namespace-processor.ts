@@ -62,4 +62,3 @@ export class NamespaceProcessor {
         return arkts.factory.updateEtsScript(node, [...node.statements, ...this.currentNamepaceInterfaces]);
     }
 }
-    

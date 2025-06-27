@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -90,7 +90,7 @@ final class Status extends BaseEnum<int> {
   }
   
   public static getValueOf(name: String): Status {
-    for (let i = 0;((i) < (Status.#NamesArray.length));(++i)) {
+    for (let i = ((Status.#NamesArray.length) - (1));((i) >= (0));(--i)) {
       if (((name) == (Status.#NamesArray[i]))) {
         return Status.#ItemsArray[i];
       }
@@ -99,7 +99,7 @@ final class Status extends BaseEnum<int> {
   }
   
   public static fromValue(value: int): Status {
-    for (let i = 0;((i) < (Status.#ValuesArray.length));(++i)) {
+    for (let i = ((Status.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
       if (((value) == (Status.#ValuesArray[i]))) {
         return Status.#ItemsArray[i];
       }
@@ -153,46 +153,189 @@ final class Status extends BaseEnum<int> {
   @JSONRename({newName:"numA"}) private __backing_numA: number = 33;
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_numA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
+  public get numA(): number {
+    this.conditionalAddRef(this.__meta_numA);
+    return UIUtils.makeObserved(this.__backing_numA);
+  }
+  
+  public set numA(newValue: number) {
+    if (((this.__backing_numA) !== (newValue))) {
+      this.__backing_numA = newValue;
+      this.__meta_numA.fireChange();
+      this.executeOnSubscribingWatches("numA");
+    }
+  }
   
   @JSONRename({newName:"stringA"}) private __backing_stringA: string = "AA";
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_stringA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
+  public get stringA(): string {
+    this.conditionalAddRef(this.__meta_stringA);
+    return UIUtils.makeObserved(this.__backing_stringA);
+  }
+  
+  public set stringA(newValue: string) {
+    if (((this.__backing_stringA) !== (newValue))) {
+      this.__backing_stringA = newValue;
+      this.__meta_stringA.fireChange();
+      this.executeOnSubscribingWatches("stringA");
+    }
+  }
   
   @JSONRename({newName:"booleanA"}) private __backing_booleanA: boolean = true;
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_booleanA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
+  public get booleanA(): boolean {
+    this.conditionalAddRef(this.__meta_booleanA);
+    return UIUtils.makeObserved(this.__backing_booleanA);
+  }
+  
+  public set booleanA(newValue: boolean) {
+    if (((this.__backing_booleanA) !== (newValue))) {
+      this.__backing_booleanA = newValue;
+      this.__meta_booleanA.fireChange();
+      this.executeOnSubscribingWatches("booleanA");
+    }
+  }
   
   @JSONRename({newName:"arrayA"}) private __backing_arrayA: Array<number> = [1, 2, 3];
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_arrayA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
+  public get arrayA(): Array<number> {
+    this.conditionalAddRef(this.__meta_arrayA);
+    return UIUtils.makeObserved(this.__backing_arrayA);
+  }
+  
+  public set arrayA(newValue: Array<number>) {
+    if (((this.__backing_arrayA) !== (newValue))) {
+      this.__backing_arrayA = newValue;
+      this.__meta_arrayA.fireChange();
+      this.executeOnSubscribingWatches("arrayA");
+    }
+  }
   
   @JSONRename({newName:"objectA"}) private __backing_objectA: Object = {};
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_objectA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
+  public get objectA(): Object {
+    this.conditionalAddRef(this.__meta_objectA);
+    return UIUtils.makeObserved(this.__backing_objectA);
+  }
+  
+  public set objectA(newValue: Object) {
+    if (((this.__backing_objectA) !== (newValue))) {
+      this.__backing_objectA = newValue;
+      this.__meta_objectA.fireChange();
+      this.executeOnSubscribingWatches("objectA");
+    }
+  }
   
   @JSONRename({newName:"dateA"}) private __backing_dateA: Date = new Date("2021-08-08");
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_dateA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
+  public get dateA(): Date {
+    this.conditionalAddRef(this.__meta_dateA);
+    return UIUtils.makeObserved(this.__backing_dateA);
+  }
+  
+  public set dateA(newValue: Date) {
+    if (((this.__backing_dateA) !== (newValue))) {
+      this.__backing_dateA = newValue;
+      this.__meta_dateA.fireChange();
+      this.executeOnSubscribingWatches("dateA");
+    }
+  }
   
   @JSONRename({newName:"setA"}) private __backing_setA: Set<number> = new Set<number>();
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_setA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
+  public get setA(): Set<number> {
+    this.conditionalAddRef(this.__meta_setA);
+    return UIUtils.makeObserved(this.__backing_setA);
+  }
+  
+  public set setA(newValue: Set<number>) {
+    if (((this.__backing_setA) !== (newValue))) {
+      this.__backing_setA = newValue;
+      this.__meta_setA.fireChange();
+      this.executeOnSubscribingWatches("setA");
+    }
+  }
   
   @JSONRename({newName:"mapA"}) private __backing_mapA: Map<number, string> = new Map<number, string>();
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_mapA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
+  public get mapA(): Map<number, string> {
+    this.conditionalAddRef(this.__meta_mapA);
+    return UIUtils.makeObserved(this.__backing_mapA);
+  }
+  
+  public set mapA(newValue: Map<number, string>) {
+    if (((this.__backing_mapA) !== (newValue))) {
+      this.__backing_mapA = newValue;
+      this.__meta_mapA.fireChange();
+      this.executeOnSubscribingWatches("mapA");
+    }
+  }
   
   @JSONRename({newName:"unionA"}) private __backing_unionA: (string | undefined) = "";
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_unionA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
+  public get unionA(): (string | undefined) {
+    this.conditionalAddRef(this.__meta_unionA);
+    return UIUtils.makeObserved(this.__backing_unionA);
+  }
+  
+  public set unionA(newValue: (string | undefined)) {
+    if (((this.__backing_unionA) !== (newValue))) {
+      this.__backing_unionA = newValue;
+      this.__meta_unionA.fireChange();
+      this.executeOnSubscribingWatches("unionA");
+    }
+  }
   
   @JSONRename({newName:"classA"}) private __backing_classA: Person = new Person();
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_classA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
+  public get classA(): Person {
+    this.conditionalAddRef(this.__meta_classA);
+    return UIUtils.makeObserved(this.__backing_classA);
+  }
+  
+  public set classA(newValue: Person) {
+    if (((this.__backing_classA) !== (newValue))) {
+      this.__backing_classA = newValue;
+      this.__meta_classA.fireChange();
+      this.executeOnSubscribingWatches("classA");
+    }
+  }
   
   @JSONRename({newName:"enumA"}) private __backing_enumA: Status = Status.NotFound;
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_enumA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
+  public get enumA(): Status {
+    this.conditionalAddRef(this.__meta_enumA);
+    return UIUtils.makeObserved(this.__backing_enumA);
+  }
+  
+  public set enumA(newValue: Status) {
+    if (((this.__backing_enumA) !== (newValue))) {
+      this.__backing_enumA = newValue;
+      this.__meta_enumA.fireChange();
+      this.executeOnSubscribingWatches("enumA");
+    }
+  }
   
   public numB: number = 33;
   
@@ -216,151 +359,11 @@ final class Status extends BaseEnum<int> {
   
   public enumB: Status = Status.NotFound;
   
-  public get numA(): number {
-    this.conditionalAddRef(this.__meta_numA);
-    return UIUtils.makeObserved(this.__backing_numA);
-  }
-  
-  public set numA(newValue: number) {
-    if (((this.__backing_numA) !== (newValue))) {
-      this.__backing_numA = newValue;
-      this.__meta_numA.fireChange();
-      this.executeOnSubscribingWatches("numA");
-    }
-  }
-  
-  public get stringA(): string {
-    this.conditionalAddRef(this.__meta_stringA);
-    return UIUtils.makeObserved(this.__backing_stringA);
-  }
-  
-  public set stringA(newValue: string) {
-    if (((this.__backing_stringA) !== (newValue))) {
-      this.__backing_stringA = newValue;
-      this.__meta_stringA.fireChange();
-      this.executeOnSubscribingWatches("stringA");
-    }
-  }
-  
-  public get booleanA(): boolean {
-    this.conditionalAddRef(this.__meta_booleanA);
-    return UIUtils.makeObserved(this.__backing_booleanA);
-  }
-  
-  public set booleanA(newValue: boolean) {
-    if (((this.__backing_booleanA) !== (newValue))) {
-      this.__backing_booleanA = newValue;
-      this.__meta_booleanA.fireChange();
-      this.executeOnSubscribingWatches("booleanA");
-    }
-  }
-  
-  public get arrayA(): Array<number> {
-    this.conditionalAddRef(this.__meta_arrayA);
-    return UIUtils.makeObserved(this.__backing_arrayA);
-  }
-  
-  public set arrayA(newValue: Array<number>) {
-    if (((this.__backing_arrayA) !== (newValue))) {
-      this.__backing_arrayA = newValue;
-      this.__meta_arrayA.fireChange();
-      this.executeOnSubscribingWatches("arrayA");
-    }
-  }
-  
-  public get objectA(): Object {
-    this.conditionalAddRef(this.__meta_objectA);
-    return UIUtils.makeObserved(this.__backing_objectA);
-  }
-  
-  public set objectA(newValue: Object) {
-    if (((this.__backing_objectA) !== (newValue))) {
-      this.__backing_objectA = newValue;
-      this.__meta_objectA.fireChange();
-      this.executeOnSubscribingWatches("objectA");
-    }
-  }
-  
-  public get dateA(): Date {
-    this.conditionalAddRef(this.__meta_dateA);
-    return UIUtils.makeObserved(this.__backing_dateA);
-  }
-  
-  public set dateA(newValue: Date) {
-    if (((this.__backing_dateA) !== (newValue))) {
-      this.__backing_dateA = newValue;
-      this.__meta_dateA.fireChange();
-      this.executeOnSubscribingWatches("dateA");
-    }
-  }
-  
-  public get setA(): Set<number> {
-    this.conditionalAddRef(this.__meta_setA);
-    return UIUtils.makeObserved(this.__backing_setA);
-  }
-  
-  public set setA(newValue: Set<number>) {
-    if (((this.__backing_setA) !== (newValue))) {
-      this.__backing_setA = newValue;
-      this.__meta_setA.fireChange();
-      this.executeOnSubscribingWatches("setA");
-    }
-  }
-  
-  public get mapA(): Map<number, string> {
-    this.conditionalAddRef(this.__meta_mapA);
-    return UIUtils.makeObserved(this.__backing_mapA);
-  }
-  
-  public set mapA(newValue: Map<number, string>) {
-    if (((this.__backing_mapA) !== (newValue))) {
-      this.__backing_mapA = newValue;
-      this.__meta_mapA.fireChange();
-      this.executeOnSubscribingWatches("mapA");
-    }
-  }
-  
-  public get unionA(): (string | undefined) {
-    this.conditionalAddRef(this.__meta_unionA);
-    return UIUtils.makeObserved(this.__backing_unionA);
-  }
-  
-  public set unionA(newValue: (string | undefined)) {
-    if (((this.__backing_unionA) !== (newValue))) {
-      this.__backing_unionA = newValue;
-      this.__meta_unionA.fireChange();
-      this.executeOnSubscribingWatches("unionA");
-    }
-  }
-  
-  public get classA(): Person {
-    this.conditionalAddRef(this.__meta_classA);
-    return UIUtils.makeObserved(this.__backing_classA);
-  }
-  
-  public set classA(newValue: Person) {
-    if (((this.__backing_classA) !== (newValue))) {
-      this.__backing_classA = newValue;
-      this.__meta_classA.fireChange();
-      this.executeOnSubscribingWatches("classA");
-    }
-  }
-  
-  public get enumA(): Status {
-    this.conditionalAddRef(this.__meta_enumA);
-    return UIUtils.makeObserved(this.__backing_enumA);
-  }
-  
-  public set enumA(newValue: Status) {
-    if (((this.__backing_enumA) !== (newValue))) {
-      this.__backing_enumA = newValue;
-      this.__meta_enumA.fireChange();
-      this.executeOnSubscribingWatches("enumA");
-    }
-  }
-  
   public constructor() {}
+
+  static {
   
+  }
 }
 `;
 
@@ -370,7 +373,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @ObservedV2 class with different types class property',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

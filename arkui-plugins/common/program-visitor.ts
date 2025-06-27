@@ -18,10 +18,12 @@ import { AbstractVisitor, VisitorOptions } from './abstract-visitor';
 import { matchPrefix } from './arkts-utils';
 import { getDumpFileName, debugDumpAstNode, debugLog } from './debug';
 import { PluginContext } from './plugin-context';
-import { LegacyTransformer } from '../ui-plugins/interop/legacy-transformer';
 import { ProgramSkipper } from './program-skipper';
+import { InteroperAbilityNames } from '../ui-plugins/interop/predefines';
+import { LegacyTransformer } from '../ui-plugins/interop/legacy-transformer';
 import { FileManager } from './file-manager';
 import { LANGUAGE_VERSION } from './predefines';
+import { ComponentTransformer } from '../ui-plugins/component-transformer';
 
 export interface ProgramVisitorOptions extends VisitorOptions {
     pluginName: string;
@@ -30,7 +32,7 @@ export interface ProgramVisitorOptions extends VisitorOptions {
     skipPrefixNames: (string | RegExp)[];
     hooks?: ProgramHooks;
     pluginContext?: PluginContext;
-    isFrameworkMode ?: boolean;
+    isFrameworkMode?: boolean;
 }
 
 export interface ProgramHookConfig {
@@ -102,12 +104,7 @@ export class ProgramVisitor extends AbstractVisitor {
         prefixName: string,
         extensionName: string
     ): void {
-        debugDumpAstNode(
-            script,
-            getDumpFileName(this.state, prefixName, undefined, name),
-            cachePath,
-            extensionName
-        );
+        debugDumpAstNode(script, getDumpFileName(this.state, prefixName, undefined, name), cachePath, extensionName);
     }
 
     private visitLegacyInExternalSource(program: arkts.Program, externalSourceName: string): void {
@@ -125,7 +122,9 @@ export class ProgramVisitor extends AbstractVisitor {
         cachePath?: string
     ): void {
         const extensionName: string = program.fileNameWithExtension;
-        this.visitor(currProgram.astNode, currProgram, name, cachePath, extensionName);
+        this.dumpExternalSource(currProgram.astNode, name, `${cachePath}/BEFORE`, this.pluginName, extensionName);
+        const newScript = this.visitor(currProgram.astNode, currProgram, name);
+        this.dumpExternalSource(newScript, name, `${cachePath}/AFTER`, this.pluginName, extensionName);
     }
 
     private visitNextProgramInQueue(
@@ -227,13 +226,7 @@ export class ProgramVisitor extends AbstractVisitor {
         }
     }
 
-    visitor(
-        node: arkts.AstNode,
-        program?: arkts.Program,
-        externalSourceName?: string,
-        cachePath?: string,
-        extensionName?: string
-    ): arkts.EtsScript {
+    visitor(node: arkts.AstNode, program?: arkts.Program, externalSourceName?: string): arkts.EtsScript {
         if (!this.isFrameworkMode && ProgramSkipper.canSkipProgram(program)) {
             debugLog('can skip file: ', program?.absName);
             return node as arkts.EtsScript;
@@ -251,7 +244,7 @@ export class ProgramVisitor extends AbstractVisitor {
         this.preVisitor(hook, node, program, externalSourceName);
 
         for (const transformer of this.visitors) {
-            this.visitTransformer(transformer, script, externalSourceName, program, cachePath, extensionName);
+            this.visitTransformer(transformer, script, externalSourceName, program);
             arkts.setAllParents(script);
             if (!transformer.isExternal) {
                 debugDumpAstNode(
@@ -274,17 +267,13 @@ export class ProgramVisitor extends AbstractVisitor {
         transformer: AbstractVisitor,
         script: arkts.EtsScript,
         externalSourceName?: string,
-        program?: arkts.Program,
-        cachePath?: string,
-        extensionName?: string
+        program?: arkts.Program
     ): arkts.EtsScript {
         transformer.isExternal = !!externalSourceName;
         transformer.externalSourceName = externalSourceName;
         transformer.program = program;
         transformer.init();
-        this.dumpExternalSource(script, externalSourceName!, `${cachePath}/BEFORE`, this.pluginName, extensionName!);
         const newScript = transformer.visitor(script) as arkts.EtsScript;
-        this.dumpExternalSource(newScript, externalSourceName!, `${cachePath}/AFTER`, this.pluginName, extensionName!);
         transformer.reset();
         return newScript;
     }

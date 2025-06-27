@@ -13,27 +13,27 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo} from "arkui.incremental.annotation";
 
 interface A {
-    @memo a: () => void
+    @Memo a: () => void
 }
 
 class AA {
 
-    @memo a: (() => void) | undefined
+    @Memo a: (() => void) | undefined
 
     constructor(arg?: A) {
         this.a = arg?.a;
     }
 
-    @memo
+    @Memo
     build() {
         this.a?.();
     }
 }
 
-@memo
+@Memo
 () => {
     let a = new AA({ a: () => {} }) ;
 }

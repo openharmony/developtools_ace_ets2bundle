@@ -36,10 +36,13 @@ import { TSTypeParameterDeclaration } from "./TSTypeParameterDeclaration"
 import { Expression } from "./Expression"
 import { TypeNode } from "./TypeNode"
 export class TSSignatureDeclaration extends TypedAstNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_SIGNATURE_DECLARATION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_SIGNATURE_DECLARATION;
     }
     static createTSSignatureDeclaration(kind: Es2pandaTSSignatureDeclarationKind, signature?: FunctionSignature): TSSignatureDeclaration {
         return new TSSignatureDeclaration(global.generatedEs2panda._CreateTSSignatureDeclaration(global.context, kind, passNode(signature)))

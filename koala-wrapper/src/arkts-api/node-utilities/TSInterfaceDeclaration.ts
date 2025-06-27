@@ -16,7 +16,12 @@
 import { TSInterfaceDeclaration, TSInterfaceHeritage } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { AstNode } from '../peers/AstNode';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateTSInterfaceDeclaration(
     original: TSInterfaceDeclaration,
@@ -41,7 +46,9 @@ export function updateTSInterfaceDeclaration(
     const update = updateThenAttach(
         TSInterfaceDeclaration.updateTSInterfaceDeclaration,
         attachModifiers,
-        (node: TSInterfaceDeclaration, original: TSInterfaceDeclaration) => node.setAnnotations(original.annotations)
+        (node: TSInterfaceDeclaration, original: TSInterfaceDeclaration) => node.setAnnotations(original.annotations),
+        attachParent,
+        refreshNodeCache
     );
     return update(original, _extends, id, typeParams, body, isStatic, isExternal);
 }

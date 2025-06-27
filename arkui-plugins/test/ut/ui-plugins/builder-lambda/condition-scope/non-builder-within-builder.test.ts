@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { collectNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -46,7 +46,7 @@ import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
 import { Component as Component, Builder as Builder } from \"@ohos.arkui.component\";
 function main() {}
-@Memo() function TestComponent(@MemoSkip() init: TestInitCallback, @MemoSkip() update: TestUpdateCallback): void {}
+@Builder() @Memo() function TestComponent(@MemoSkip() init: TestInitCallback, @MemoSkip() update: TestUpdateCallback): void {}
 type TestInitCallback = (()=> void);
 type TestUpdateCallback = (()=> void);
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
@@ -62,6 +62,10 @@ type TestUpdateCallback = (()=> void);
     }));
   }
   public constructor() {}
+
+  static {
+  
+  }
 }
 @Component() export interface __Options_MyStateSample {
 }
@@ -73,7 +77,7 @@ function testUITransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test no conditionScope in non-@Builder function',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testUITransformer],
     },

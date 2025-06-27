@@ -13,34 +13,34 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo} from "arkui.incremental.annotation";
 
-@memo
+@Memo
 declare function funcA(): void;
 
 class A {
-    @memo foo() {
+    @Memo foo() {
         funcA();
     }
 }
 
-@memo
+@Memo
 function funcB(): void {
     funcA();
 }
 
 interface MemoBuilder {
-    @memo builder: () => void
+    @Memo builder: () => void
 }
 
-@memo
-function funcWithMemoBuilder(@memo memo_arg: MemoBuilder): void {}
+@Memo
+function funcWithMemoBuilder(@Memo memo_arg: MemoBuilder): void {}
 
 function funcWithArg(arg: () => void): void {}
 
 function func(): void {}
 
-@memo
+@Memo
 () => {
     funcA();
     funcWithMemoBuilder({

@@ -63,6 +63,7 @@ import {
     prepareRewriteScriptFunctionParameters,
     prepareRewriteScriptFunctionReturnType
 } from './memo-cache-factory';
+import { NodeCacheNames } from '../common/predefines';
 
 interface ScopeInfo extends MemoInfo {
     regardAsSameScope?: boolean;
@@ -709,9 +710,13 @@ export class FunctionTransformer extends AbstractVisitor {
     }
 
     private visitorWithCache(beforeChildren: arkts.AstNode): arkts.AstNode {
+        const _memoCache = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO);
+        if (!_memoCache.shouldUpdate(beforeChildren)) {
+            return beforeChildren;
+        }
         const node = this.visitEachChild(beforeChildren);
-        if (arkts.NodeCache.getInstance().has(node)) {
-            const value = arkts.NodeCache.getInstance().get(node)!;
+        if (_memoCache.has(node)) {
+            const value = _memoCache.get(node)!;
             if (rewriteByType.has(value.type)) {
                 this.modified = true;
                 const metadata: CachedMetadata = { ...value.metadata, internalsTransformer: this.internalsTransformer };

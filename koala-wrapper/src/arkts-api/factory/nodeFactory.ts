@@ -21,7 +21,6 @@ import {
     EtsScript,
     ExpressionStatement,
     FunctionDeclaration,
-    IfStatement,
     MethodDefinition,
     NumberLiteral,
     StructDeclaration,
@@ -90,6 +89,7 @@ import {
     TSQualifiedName,
     ClassStaticBlock,
     UnaryExpression,
+    IfStatement,
 } from '../../generated';
 import { updateIdentifier } from '../node-utilities/Identifier';
 import { updateAwaitExpression } from '../node-utilities/AwaitExpression';
@@ -160,6 +160,8 @@ import { updateTSThisType } from '../node-utilities/TSThisType';
 import { updateTSQualifiedName } from '../node-utilities/TSQualifiedName';
 import { updateClassStaticBlock } from '../node-utilities/ClassStaticBlock';
 import { updateUnaryExpression } from '../node-utilities/UnaryExpression';
+import { updateETSStringLiteralType } from '../node-utilities/ETSStringLiteralType';
+import { updateBooleanLiteral } from '../node-utilities/BooleanLiteral';
 
 export const factory = {
     get createIdentifier(): (...args: Parameters<typeof Identifier.create2Identifier>) => Identifier {
@@ -326,8 +328,8 @@ export const factory = {
     get updateReturnStatement(): (...args: Parameters<typeof updateReturnStatement>) => ReturnStatement {
         return updateReturnStatement;
     },
-    get createIfStatement(): (...args: Parameters<typeof IfStatement.create>) => IfStatement {
-        return IfStatement.create;
+    get createIfStatement(): (...args: Parameters<typeof IfStatement.createIfStatement>) => IfStatement {
+        return IfStatement.createIfStatement;
     },
     get updateIfStatement(): (...args: Parameters<typeof updateIfStatement>) => IfStatement {
         return updateIfStatement;
@@ -554,8 +556,16 @@ export const factory = {
     ) => ETSStringLiteralType {
         return ETSStringLiteralType.create;
     },
+    get updateETSStringLiteralType(): (
+        ...args: Parameters<typeof updateETSStringLiteralType>
+    ) => ETSStringLiteralType {
+        return updateETSStringLiteralType;
+    },
     get createBooleanLiteral(): (...args: Parameters<typeof BooleanLiteral.createBooleanLiteral>) => BooleanLiteral {
         return BooleanLiteral.createBooleanLiteral;
+    },
+    get updateBooleanLiteral(): (...args: Parameters<typeof updateBooleanLiteral>) => BooleanLiteral {
+        return updateBooleanLiteral;
     },
     get createObjectExpression(): (
         ...args: Parameters<typeof ObjectExpression.createObjectExpression>

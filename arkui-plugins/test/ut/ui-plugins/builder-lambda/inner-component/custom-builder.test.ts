@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { collectNoRecheck, memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -44,16 +44,68 @@ const parsedTransform: Plugins = {
     parsed: uiTransform().parsed,
 };
 
+const expectedUIScript: string = `
+function main() {}
+@Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
+  
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+
+  @Memo() public itemHead(@MemoSkip() text: string) {
+    TextImpl(@Memo() ((instance: TextAttribute): void => {
+      instance.setTextOptions(text, undefined).fontSize(20).backgroundColor(0xAABBCC).applyAttributesFinish();
+      return;
+    }), undefined);
+  }
+
+  @Memo() public itemFoot(@MemoSkip() num: number) {
+    TextImpl(@Memo() ((instance: TextAttribute): void => {
+      instance.setTextOptions(\"Foot\", undefined).fontSize(16).backgroundColor(0xAABBCC).applyAttributesFinish();
+      return;
+    }), undefined);
+  }
+
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @Memo() (() => {
+      ListItemGroupImpl(@Memo() ((instance: ListItemGroupAttribute): void => {
+        instance.setListItemGroupOptions({
+          header: @Memo() (() => {
+            this.itemHead(\"Head\");
+          }),
+          footer: ((() => {
+            this.itemFoot(100);
+          }) as CustomBuilder),
+        }).applyAttributesFinish();
+        return;
+      }), @Memo() (() => {}));
+    }));
+  }
+  public constructor() {}
+  static {
+  }
+}
+
+@Component() export interface __Options_MyStateSample {
+}
+`;
+
+function testUITransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedUIScript));
+}
+
 const expectedMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.incremental.runtime.state";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+
 import { ListItemGroupAttribute as ListItemGroupAttribute } from "arkui.component.listItemGroup";
 
 import { ListItemGroupImpl as ListItemGroupImpl } from "arkui.component.listItemGroup";
-
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 
@@ -63,9 +115,11 @@ import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
 
+import { Memo as Memo } from "arkui.incremental.annotation";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
-import { Text as Text, Column as Column, Component as Component, ListItemGroup as ListItemGroup, Builder as Builder, CustomBuilder as CustomBuilder } from "@ohos.arkui.component";
+import { Text as Text, Column as Column, Component as Component, Builder as Builder, ListItemGroup as ListItemGroup, CustomBuilder as CustomBuilder } from "@ohos.arkui.component";
 
 function main() {}
 
@@ -126,12 +180,12 @@ function main() {}
   }
   
   @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (245938697)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (145073445)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    ColumnImpl(__memo_context, ((__memo_id) + (78055758)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+    ColumnImpl(__memo_context, ((__memo_id) + (262314519)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (46726221)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
@@ -144,12 +198,12 @@ function main() {}
         return;
       }
     }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (136716185)), 0);
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (78055758)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
       }
-      ListItemGroupImpl(__memo_context, ((__memo_id) + (54078781)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ListItemGroupAttribute): void => {
+      ListItemGroupImpl(__memo_context, ((__memo_id) + (136716185)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ListItemGroupAttribute): void => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (213687742)), 1);
         const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {
@@ -157,7 +211,7 @@ function main() {}
           return;
         }
         __memo_parameter_instance.value.setListItemGroupOptions({
-          header: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+          header: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (218979098)), 0);
             if (__memo_scope.unchanged) {
               __memo_scope.cached;
@@ -186,7 +240,17 @@ function main() {}
           __memo_scope.recache();
           return;
         }
-      }), (() => {}));
+      }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (54078781)), 0);
+        if (__memo_scope.unchanged) {
+          __memo_scope.cached;
+          return;
+        }
+        {
+          __memo_scope.recache();
+          return;
+        }
+      }));
       {
         __memo_scope.recache();
         return;
@@ -200,6 +264,9 @@ function main() {}
   
   public constructor() {}
   
+  static {
+    
+  }
 }
 
 @Component() export interface __Options_MyStateSample {
@@ -213,8 +280,9 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test passing CustomBuilder to component',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
+        'checked:ui-no-recheck': [testUITransformer],
         'checked:memo-no-recheck': [testCheckedTransformer],
     },
     {

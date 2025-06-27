@@ -187,6 +187,7 @@ function isIfStatementWithSyntheticReturn(node: arkts.AstNode): boolean {
         node.test.object.name === RuntimeNames.SCOPE &&
         arkts.isIdentifier(node.test.property) &&
         node.test.property.name === RuntimeNames.INTERNAL_VALUE_OK &&
+        !!node.consequent &&
         (arkts.isBlockStatement(node.consequent) || arkts.isReturnStatement(node.consequent))
     );
 }
@@ -465,7 +466,7 @@ export function findMemoFromTypeAnnotation(typeAnnotation: arkts.AstNode | undef
         return false;
     }
     if (arkts.isETSTypeReference(typeAnnotation) && !!typeAnnotation.part && !!typeAnnotation.part.name) {
-        let decl: arkts.AstNode | undefined = arkts.getDecl(typeAnnotation.part.name);
+        let decl: arkts.AstNode | undefined = arkts.getPeerIdentifierDecl(typeAnnotation.part.name.peer);
         if (!decl || !arkts.isTSTypeAliasDeclaration(decl)) {
             return false;
         }
@@ -491,7 +492,7 @@ export function findReturnTypeFromTypeAnnotation(
         return undefined;
     }
     if (arkts.isETSTypeReference(typeAnnotation) && !!typeAnnotation.part && !!typeAnnotation.part.name) {
-        let decl: arkts.AstNode | undefined = arkts.getDecl(typeAnnotation.part.name);
+        let decl: arkts.AstNode | undefined = arkts.getPeerIdentifierDecl(typeAnnotation.part.name.peer);
         if (!!decl && arkts.isTSTypeAliasDeclaration(decl)) {
             return findReturnTypeFromTypeAnnotation(decl.typeAnnotation);
         }

@@ -24,17 +24,75 @@ import { UISyntaxLinterVisitor } from './transformers/ui-syntax-linter-visitor';
 import rules from './rules';
 import { matchPrefix } from '../common/arkts-utils';
 import { EXCLUDE_EXTERNAL_SOURCE_PREFIXES, tracePerformance } from './utils';
+import { debugLog, getDumpFileName } from '../common/debug';
+import { UIVisitor } from '../collectors/ui-collectors/ui-visitor';
+import { MemoVisitor } from '../collectors/memo-collectors/memo-visitor';
+import { Collector } from '../collectors/collector';
+import { ProgramVisitor } from '../common/program-visitor';
+import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../common/predefines';
 
 export function uiSyntaxLinterTransform(): Plugins {
-    const processor = createUISyntaxRuleProcessor(rules);
-    const parsedTransformer = new ParsedUISyntaxLinterTransformer(processor);
-    const checkedTransformer = new CheckedUISyntaxLinterTransformer(processor);
     return {
         name: 'ui-syntax-plugin',
-        parsed: createTransformer('parsed', processor, parsedTransformer),
-        checked: createTransformer('checked', processor, checkedTransformer),
+        checked: collectAndLint,
     };
 }
+
+function collectAndLint(this: PluginContext): arkts.EtsScript | undefined {
+    let script: arkts.EtsScript | undefined;
+    arkts.Debugger.getInstance().phasesDebugLog('[UI LINTER PLUGIN] AFTER CHECKED ENTER');
+    const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
+    const isCoding = this.isCoding?.() ?? false;
+    if (!!contextPtr) {
+        let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+        script = program.astNode;
+        debugLog('[BEFORE LINTER SCRIPT] script: ', script);
+        arkts.Performance.getInstance().createEvent('ui-linter');
+        program = checkedProgramVisit(program, this, isCoding);
+        script = program.astNode;
+        arkts.Performance.getInstance().stopEvent('ui-linter', true);
+        debugLog('[AFTER LINTER SCRIPT] script: ', script);
+        this.setArkTSAst(script);
+        arkts.Performance.getInstance().logDetailedEventInfos(true);
+        arkts.Debugger.getInstance().phasesDebugLog('[UI LINTER PLUGIN] AFTER CHECKED EXIT');
+        return script;
+    }
+    arkts.Debugger.getInstance().phasesDebugLog('[UI LINTER PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
+    return script;
+}
+
+function checkedProgramVisit(
+    program: arkts.Program,
+    context: PluginContext,
+    isCoding: boolean = false
+): arkts.Program {
+    if (isCoding) {
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollect(false);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollect(false);
+    } else {
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollectUpdate(true);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollectUpdate(true);
+    }
+    const collector = new Collector({
+        shouldCollectUI: true,
+        shouldCollectMemo: true,
+        shouldCheckUISyntax: false
+    });
+    const programVisitor = new ProgramVisitor({
+        pluginName: uiSyntaxLinterTransform.name,
+        state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
+        visitors: [collector],
+        skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+        pluginContext: context,
+    });
+    program = programVisitor.programVisitor(program);
+    if (!isCoding) {
+        arkts.NodeCacheFactory.getInstance().perfLog(NodeCacheNames.UI, true);
+        arkts.NodeCacheFactory.getInstance().perfLog(NodeCacheNames.MEMO, true);
+    }
+    return program;
+}
+
 
 function createTransformer(
     phase: string,

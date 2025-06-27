@@ -15,13 +15,23 @@
 
 import { ETSTypeReference, ETSTypeReferencePart } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateETSTypeReference(original: ETSTypeReference, part?: ETSTypeReferencePart): ETSTypeReference {
     if (isSameNativeObject(part, original.part)) {
         return original;
     }
 
-    const update = updateThenAttach(ETSTypeReference.updateETSTypeReference, attachModifiers);
+    const update = updateThenAttach(
+        ETSTypeReference.updateETSTypeReference,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, part);
 }

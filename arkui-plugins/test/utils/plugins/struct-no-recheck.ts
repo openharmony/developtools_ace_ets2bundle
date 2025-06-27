@@ -21,6 +21,7 @@ import { StructTransformer } from '../../../ui-plugins/struct-translators/struct
 
 /**
  * AfterCheck struct transform with no recheck AST.
+ * @deprecated
  */
 export const structNoRecheck: Plugins = {
     name: 'struct-no-recheck',

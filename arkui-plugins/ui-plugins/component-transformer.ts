@@ -47,7 +47,6 @@ import { factory as propertyFactory } from './property-translators/factory';
 import { factory as structFactory } from './struct-translators/factory';
 import {
     CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
-    DecoratorIntrinsicNames,
     DecoratorNames,
     DECORATOR_TYPE_MAP,
     NavigationNames,
@@ -75,13 +74,6 @@ export class ComponentTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
     private entryNames: string[] = [];
     private structMembersMap: Map<string, arkts.AstNode[]> = new Map();
-    private isCustomComponentImported: boolean = false;
-    private isCustomComponentV2Imported: boolean = false;
-    private isBaseCustomDialogImported: boolean = false;
-    private isEntryPointImported: boolean = false;
-    private isPageLifeCycleImported: boolean = false;
-    private isLayoutCallbackImported: boolean = false;
-    private shouldAddLinkIntrinsic: boolean = false;
     private projectConfig: ProjectConfig | undefined;
     private entryRouteName: string | undefined;
     private componentType: ComponentType = {
@@ -103,13 +95,6 @@ export class ComponentTransformer extends AbstractVisitor {
         this.scopeInfos = [];
         this.entryNames = [];
         this.structMembersMap = new Map();
-        this.isCustomComponentImported = false;
-        this.isCustomComponentV2Imported = false;
-        this.isBaseCustomDialogImported = false;
-        this.isEntryPointImported = false;
-        this.isPageLifeCycleImported = false;
-        this.isLayoutCallbackImported = false;
-        this.shouldAddLinkIntrinsic = false;
         this.componentType = {
             hasComponent: false,
             hasComponentV2: false,
@@ -118,63 +103,22 @@ export class ComponentTransformer extends AbstractVisitor {
         };
     }
 
-    enter(node: arkts.AstNode) {
-        if (arkts.isStructDeclaration(node) && !!node.definition.ident) {
-            const info: ScopeInfo | undefined = collectCustomComponentScopeInfo(node);
-            if (info) {
-                this.scopeInfos.push(info);
-            }
+    enterStruct(node: arkts.StructDeclaration): void {
+        if (!node.definition.ident) {
+            return;
         }
-        if (arkts.isETSImportDeclaration(node) && !this.isCustomComponentImported) {
-            this.isCustomComponentImported = !!findLocalImport(
-                node,
-                CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
-                CustomComponentNames.COMPONENT_CLASS_NAME
-            );
-        }
-        if (arkts.isETSImportDeclaration(node) && !this.isCustomComponentV2Imported) {
-            this.isCustomComponentV2Imported = !!findLocalImport(
-                node,
-                CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
-                CustomComponentNames.COMPONENT_V2_CLASS_NAME
-            );
-        }
-        if (arkts.isETSImportDeclaration(node) && !this.isBaseCustomDialogImported) {
-            this.isBaseCustomDialogImported = !!findLocalImport(
-                node,
-                CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
-                CustomComponentNames.BASE_CUSTOM_DIALOG_NAME
-            );
-        }
-        if (arkts.isETSImportDeclaration(node) && !this.isEntryPointImported) {
-            this.isEntryPointImported = !!findLocalImport(
-                node,
-                CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
-                EntryWrapperNames.ENTRY_POINT_CLASS_NAME
-            );
-        }
-        if (arkts.isETSImportDeclaration(node) && !this.isPageLifeCycleImported) {
-            this.isPageLifeCycleImported = !!findLocalImport(
-                node,
-                CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
-                CustomComponentNames.PAGE_LIFE_CYCLE
-            );
-        }
-        if (arkts.isETSImportDeclaration(node) && !this.isLayoutCallbackImported) {
-            this.isLayoutCallbackImported = !!findLocalImport(
-                node,
-                CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
-                CustomComponentNames.LAYOUT_CALLBACKS
-            );
+        const info: ScopeInfo | undefined = collectCustomComponentScopeInfo(node);
+        if (info) {
+            this.scopeInfos.push(info);
         }
     }
 
-    exit(node: arkts.AstNode) {
-        if (arkts.isStructDeclaration(node) || arkts.isClassDeclaration(node)) {
-            if (!node.definition || !node.definition.ident || this.scopeInfos.length === 0) return;
-            if (this.scopeInfos[this.scopeInfos.length - 1]?.name === node.definition.ident.name) {
-                this.scopeInfos.pop();
-            }
+    exitStruct(node: arkts.StructDeclaration | arkts.ClassDeclaration): void {
+        if (!node.definition || !node.definition.ident || this.scopeInfos.length === 0) {
+            return;
+        }
+        if (this.scopeInfos[this.scopeInfos.length - 1]?.name === node.definition.ident.name) {
+            this.scopeInfos.pop();
         }
     }
 
@@ -200,27 +144,23 @@ export class ComponentTransformer extends AbstractVisitor {
             navInterface.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
             return arkts.factory.updateEtsScript(node, [...node.statements, navInterface]);
         }
-        if (this.isExternal && this.entryNames.length === 0 && NamespaceProcessor.getInstance().totalInterfacesCnt === 0) {
+        if (
+            this.isExternal &&
+            this.entryNames.length === 0 &&
+            NamespaceProcessor.getInstance().totalInterfacesCnt === 0
+        ) {
             return node;
         }
 
         this.insertComponentImport();
 
         const updateStatements: arkts.AstNode[] = [];
-        if (this.shouldAddLinkIntrinsic) {
-            const expr = arkts.factory.createIdentifier(DecoratorIntrinsicNames.LINK);
-            updateStatements.push(factory.createIntrinsicAnnotationDeclaration({ expr }));
-        }
 
         if (this.entryNames.length > 0) {
-            if (!this.isEntryPointImported) {
-                entryFactory.createAndInsertEntryPointImport(this.program);
-            }
+            entryFactory.createAndInsertEntryPointImport(this.program);
             // normally, we should only have at most one @Entry component in a single file.
             // probably need to handle error message here.
-            if (!this.isPageLifeCycleImported) {
-                this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.PAGE_LIFE_CYCLE);
-            }
+            this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.PAGE_LIFE_CYCLE);
             updateStatements.push(...this.entryNames.map(entryFactory.generateEntryWrapper));
             updateStatements.push(
                 entryFactory.callRegisterNamedRouter(this.entryRouteName, this.projectConfig, this.program?.absName)
@@ -234,25 +174,25 @@ export class ComponentTransformer extends AbstractVisitor {
     }
 
     insertComponentImport(): void {
-        if (!this.isCustomComponentImported && this.componentType.hasComponent) {
+        if (this.componentType.hasComponent) {
             this.createImportDeclaration(
                 CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
                 CustomComponentNames.COMPONENT_CLASS_NAME
             );
         }
-        if (!this.isCustomComponentV2Imported && this.componentType.hasComponentV2) {
+        if (this.componentType.hasComponentV2) {
             this.createImportDeclaration(
                 CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
                 CustomComponentNames.COMPONENT_V2_CLASS_NAME
             );
         }
-        if (!this.isBaseCustomDialogImported && this.componentType.hasCustomDialog) {
+        if (this.componentType.hasCustomDialog) {
             this.createImportDeclaration(
                 CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
                 CustomComponentNames.BASE_CUSTOM_DIALOG_NAME
             );
         }
-        if (!this.isLayoutCallbackImported && this.componentType.hasCustomLayout) {
+        if (this.componentType.hasCustomLayout) {
             this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.LAYOUT_CALLBACKS);
         }
     }
@@ -441,79 +381,87 @@ export class ComponentTransformer extends AbstractVisitor {
     }
 
     createInterfaceInnerMember(member: arkts.ClassProperty): arkts.ClassProperty[] {
+        const infos = findDecoratorInfos(member);
+        const annotations = infos.map((it) => it.annotation.clone());
         const originalName: string = expectName(member.key);
-        const originMember: arkts.ClassProperty = propertyFactory.createOptionalClassProperty(
-            originalName,
-            member,
-            undefined,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
-        );
-        const infos: DecoratorInfo[] = findDecoratorInfos(member);
-        const buildParamInfo: DecoratorInfo | undefined = infos.find((it) =>
-            isDecoratorAnnotation(it.annotation, DecoratorNames.BUILDER_PARAM, true)
-        );
-        const optionsHasMember = factory.createOptionsHasMember(originalName);
-        if (!!buildParamInfo) {
-            originMember.setAnnotations([buildParamInfo.annotation.clone()]);
-            return [originMember, optionsHasMember];
-        }
-        const targetInfo = infos.find((it) => DECORATOR_TYPE_MAP.has(it.name));
-        if (!!targetInfo) {
-            const newName: string = backingField(originalName);
-            const newMember: arkts.ClassProperty = propertyFactory.createOptionalClassProperty(
-                newName,
+        const originMember: arkts.ClassProperty = propertyFactory
+            .createOptionalClassProperty(
+                originalName,
                 member,
                 undefined,
                 arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
-            );
-            newMember.setAnnotations(member.annotations);
-            if (isDecoratorAnnotation(targetInfo.annotation, DecoratorNames.LINK, true)) {
-                this.shouldAddLinkIntrinsic = true;
-                originMember.setAnnotations([annotation(DecoratorIntrinsicNames.LINK)]);
-            }
+            )
+            .setAnnotations(annotations);
+        const optionsHasMember = factory.createOptionsHasMember(originalName);
+        const typedAnnotations = infos
+            .filter((it) => DECORATOR_TYPE_MAP.has(it.name))
+            .map((it) => it.annotation.clone());
+        if (typedAnnotations.length > 0) {
+            const newName: string = backingField(originalName);
+            const newMember: arkts.ClassProperty = propertyFactory
+                .createOptionalClassProperty(
+                    newName,
+                    member,
+                    undefined,
+                    arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+                )
+                .setAnnotations(typedAnnotations);
             return [originMember, newMember, optionsHasMember];
         }
         return [originMember, optionsHasMember];
     }
 
-    visitor(node: arkts.AstNode): arkts.AstNode {
-        this.enter(node);
-        if (arkts.isEtsScript(node)) {
-            NamespaceProcessor.getInstance().enter();
-        }
-        const newNode = this.visitEachChild(node);
-        if (arkts.isEtsScript(newNode)) {
-            let res: arkts.EtsScript;
-            if (newNode.isNamespace) {
-                res = NamespaceProcessor.getInstance().updateCurrentNamespace(newNode);
-            } else {
-                res = NamespaceProcessor.getInstance().updateCurrentNamespace(this.processRootEtsScript(newNode));
-            }
-            NamespaceProcessor.getInstance().exit();
-            return res;
-        }
-        if (
-            arkts.isStructDeclaration(newNode) &&
-            this.scopeInfos.length > 0 &&
-            isComponentStruct(newNode, this.scopeInfos[this.scopeInfos.length - 1])
-        ) {
-            const updateNode = this.processComponent(newNode);
-            this.exit(newNode);
+    visitStruct(node: arkts.StructDeclaration): arkts.StructDeclaration | arkts.ClassDeclaration {
+        this.enterStruct(node);
+        if (this.scopeInfos.length > 0 && isComponentStruct(node, this.scopeInfos[this.scopeInfos.length - 1])) {
+            const updateNode = this.processComponent(node);
+            this.exitStruct(updateNode);
             return updateNode;
         }
-        if (
-            arkts.isClassDeclaration(newNode) &&
-            this.externalSourceName === CUSTOM_COMPONENT_IMPORT_SOURCE_NAME &&
-            newNode.definition?.ident?.name === EntryWrapperNames.ENTRY_POINT_CLASS_NAME
-        ) {
-            return this.updateEntryPoint(newNode);
+        return node;
+    }
+
+    visitETSModule(node: arkts.EtsScript): arkts.EtsScript {
+        NamespaceProcessor.getInstance().enter();
+        const isNamespace = node.isNamespace;
+        const newStatements = node.statements.map((st) => {
+            if (arkts.isStructDeclaration(st)) {
+                return this.visitStruct(st);
+            }
+            if (arkts.isEtsScript(st)) {
+                return this.visitETSModule(st);
+            }
+            if (!isNamespace) {
+                if (
+                    arkts.isClassDeclaration(st) &&
+                    this.externalSourceName === CUSTOM_COMPONENT_IMPORT_SOURCE_NAME &&
+                    st.definition?.ident?.name === EntryWrapperNames.ENTRY_POINT_CLASS_NAME
+                ) {
+                    return this.updateEntryPoint(st);
+                }
+                if (
+                    arkts.isTSInterfaceDeclaration(st) &&
+                    isCustomDialogControllerOptions(st, this.externalSourceName)
+                ) {
+                    return factory.updateCustomDialogOptionsInterface(st);
+                }
+            }
+            return st;
+        });
+        let newNode = arkts.factory.updateEtsScript(node, newStatements);
+        if (isNamespace) {
+            newNode = NamespaceProcessor.getInstance().updateCurrentNamespace(newNode);
+        } else {
+            newNode = NamespaceProcessor.getInstance().updateCurrentNamespace(this.processRootEtsScript(newNode));
         }
-        if (
-            arkts.isTSInterfaceDeclaration(newNode) &&
-            isCustomDialogControllerOptions(newNode, this.externalSourceName)
-        ) {
-            return factory.updateCustomDialogOptionsInterface(newNode);
-        }
+        NamespaceProcessor.getInstance().exit();
         return newNode;
+    }
+
+    visitor(node: arkts.AstNode): arkts.AstNode {
+        if (!arkts.isEtsScript(node)) {
+            return node;
+        }
+        return this.visitETSModule(node);
     }
 }

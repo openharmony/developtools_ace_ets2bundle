@@ -21,6 +21,9 @@ import { Es2pandaModifierFlags } from '../../generated/Es2pandaEnums';
 import { ArktsObject } from './ArktsObject';
 import { SourcePosition } from './SourcePosition';
 import { copyCacheToClonedNode } from '../utilities/nodeCache';
+import { nodeByType } from '../node-by-type';
+import { Es2pandaAstNodeType } from '../../Es2pandaEnums';
+import { Performance } from '../utilities/performance';
 
 export abstract class AstNode extends ArktsObject {
     protected constructor(peer: KNativePointer) {
@@ -105,9 +108,36 @@ export abstract class AstNode extends ArktsObject {
         return clonedNode as this;
     }
 
+    public findNodeInInnerChild(node: AstNode): boolean {
+        return global.es2panda._AstNodeFindNodeInInnerChild(global.context, this.peer, node.peer);
+    }
+
+    public findInnerChild<T extends AstNode>(nodeType: Es2pandaAstNodeType): T | undefined {
+        const childNodePeer = global.es2panda._AstNodeFindInnerChild(global.context, this.peer, nodeType);
+        if (childNodePeer === nullptr) {
+            return undefined;
+        }
+        const Node = nodeByType.get(nodeType) ?? UnsupportedNode;
+        return new Node(childNodePeer) as T;
+    }
+
+    public findOuterParent<T extends AstNode>(nodeType: Es2pandaAstNodeType): T | undefined {
+        const parentNodePeer = global.es2panda._AstNodeFindOuterParent(global.context, this.peer, nodeType);
+        if (parentNodePeer === nullptr) {
+            return undefined;
+        }
+        const Node = nodeByType.get(nodeType) ?? UnsupportedNode;
+        return new Node(parentNodePeer) as T;
+    }
+
+    public get nodeType(): Es2pandaAstNodeType {
+        return -1 as Es2pandaAstNodeType;
+    }
+
     public get parent(): AstNode | undefined {
         const parent = global.generatedEs2panda._AstNodeParent(global.context, this.peer);
-        return unpackNode(parent);
+        const res = unpackNode(parent);
+        return res;
     }
 
     public set parent(node: AstNode | undefined) {

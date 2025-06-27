@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { collectNoRecheck, memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -53,7 +53,7 @@ import { Component as Component, Entry as Entry, Builder as Builder, BuilderPara
 
 function main() {}
 
-@Memo() function showTextBuilder() {
+@Builder() @Memo() function showTextBuilder() {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions("Hello World", undefined).applyAttributesFinish();
     return;
@@ -114,7 +114,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
@@ -146,7 +149,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_Child {
@@ -179,7 +185,7 @@ import { Component as Component, Entry as Entry, Builder as Builder, BuilderPara
 
 function main() {}
 
-@Memo() function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+@Builder() @Memo() function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (183537441)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -321,7 +327,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
@@ -407,7 +416,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_Child {
@@ -434,7 +446,7 @@ function testMemoCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test optional builder param',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testUICheckedTransformer],
         'checked:memo-no-recheck': [testMemoCheckedTransformer],

@@ -21,6 +21,7 @@ import { BuilderLambdaTransformer } from '../../../ui-plugins/builder-lambda-tra
 
 /**
  * AfterCheck builder-lambda transform with no recheck AST.
+ * @deprecated
  */
 export const builderLambdaNoRecheck: Plugins = {
     name: 'builder-lambda-no-recheck',

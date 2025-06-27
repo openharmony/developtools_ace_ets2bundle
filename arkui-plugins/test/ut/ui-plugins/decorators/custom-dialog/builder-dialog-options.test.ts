@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { collectNoRecheck, memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -63,7 +63,6 @@ import hilog from "@ohos.hilog";
   }
   
   public constructor() {}
-  
 }
 
 @Component() final struct CustomDialogUser2 extends CustomComponent<CustomDialogUser2, __Options_CustomDialogUser2> {
@@ -76,7 +75,6 @@ import hilog from "@ohos.hilog";
   }
   
   public constructor() {}
-  
 }
 
 @Component() export interface __Options_CustomDialogUser {
@@ -115,9 +113,9 @@ import hilog from "@ohos.hilog";
 
 function main() {}
 
-@Memo() function builder1(@MemoSkip() str: string) {}
+@Builder() @Memo() function builder1(@MemoSkip() str: string) {}
 
-@Memo() function builder2() {}
+@Builder() @Memo() function builder2() {}
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -152,7 +150,10 @@ function main() {}
   }
   
   public constructor() {}
-  
+
+  static {
+
+  }
 }
 
 @Component() final struct CustomDialogUser2 extends CustomComponent<CustomDialogUser2, __Options_CustomDialogUser2> {
@@ -186,7 +187,10 @@ function main() {}
   }
   
   public constructor() {}
-  
+
+  static {
+
+  }
 }
 
 @Component() export interface __Options_CustomDialogUser {
@@ -212,7 +216,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test CustomDialogControllerOptions with @Builder parameter',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'parsed': [testParsedTransformer],
         'checked:ui-no-recheck': [testCheckedTransformer],

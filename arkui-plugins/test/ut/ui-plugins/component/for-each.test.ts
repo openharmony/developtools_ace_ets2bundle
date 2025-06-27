@@ -18,7 +18,7 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
@@ -107,7 +107,7 @@ class AB {
       ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return this.arr;
-        }), @Memo() ((item: string) => {
+        }), ((item: string) => {
           TextImpl(@Memo() ((instance: TextAttribute): void => {
             instance.setTextOptions(item, undefined).applyAttributesFinish();
             return;
@@ -118,7 +118,7 @@ class AB {
       ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return this.getArray();
-        }), @Memo() ((item: Person) => {
+        }), ((item: Person) => {
           TextImpl(@Memo() ((instance: TextAttribute): void => {
             instance.setTextOptions(item.name, undefined).applyAttributesFinish();
             return;
@@ -129,7 +129,7 @@ class AB {
       ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return new AB().bar;
-        }), @Memo() ((item: string) => {
+        }), ((item: string) => {
           TextImpl(@Memo() ((instance: TextAttribute): void => {
             instance.setTextOptions(item, undefined).applyAttributesFinish();
             return;
@@ -140,23 +140,23 @@ class AB {
       ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return new AB().bar;
-        }), @Memo() (() => {}), undefined);
+        }), (() => {}), undefined);
         return;
       }));
       ForEachImpl<Person>(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions<Person>((() => {
           return this.getArray();
-        }), @Memo() (() => {}), undefined);
+        }), (() => {}), undefined);
         return;
       }));
       ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return new Array<string>("1", "2");
-        }), @Memo() (() => {
+        }), (() => {
           ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
             instance.setForEachOptions((() => {
               return new Array<string>("1", "2");
-            }), @Memo() ((item: string) => {
+            }), ((item: string) => {
               TextImpl(@Memo() ((instance: TextAttribute): void => {
                 instance.setTextOptions(item, undefined).applyAttributesFinish();
                 return;
@@ -171,7 +171,10 @@ class AB {
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_ImportStruct {
@@ -194,7 +197,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test ForEach component transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

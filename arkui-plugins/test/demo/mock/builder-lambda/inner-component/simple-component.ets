@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-import { memo } from "@ohos.arkui.stateManagement"
+import { Memo } from "arkui.incremental.annotation"
 import { Column, ColumnAttribute } from "arkui.component.column"
 
 class MyStateSample {
-    @memo build() {
+    @Memo build() {
         Column(undefined) {}
     }
 }

@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -82,11 +82,7 @@ function main() {}
   @JSONRename({newName:"traceE"}) private __backing_traceE: number = 2;
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
-  @JSONRename({newName:"vv"}) private __backing_vv?: string;
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_vv: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
+
   public get traceE(): number {
     this.conditionalAddRef(this.__meta_traceE);
     return UIUtils.makeObserved(this.__backing_traceE);
@@ -99,6 +95,10 @@ function main() {}
       this.executeOnSubscribingWatches("traceE");
     }
   }
+  
+  @JSONRename({newName:"vv"}) private __backing_vv?: string;
+  
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_vv: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public get vv(): string {
     this.conditionalAddRef(this.__meta_vv);
@@ -116,7 +116,10 @@ function main() {}
   public constructor(vv1: string) {
     this.vv = vv1;
   }
+
+  static {
   
+  }
 }
 `;
 
@@ -126,7 +129,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic @Trace decorated variable initialized with constuctor',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

@@ -31,10 +31,13 @@ import {
 
 import { Expression } from "./Expression"
 export class TypeofExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TYPEOF_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TYPEOF_EXPRESSION;
     }
     static createTypeofExpression(argument?: Expression): TypeofExpression {
         return new TypeofExpression(global.generatedEs2panda._CreateTypeofExpression(global.context, passNode(argument)))

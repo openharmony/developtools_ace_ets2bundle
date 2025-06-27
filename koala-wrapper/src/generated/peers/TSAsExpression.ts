@@ -33,10 +33,13 @@ import { AnnotatedExpression } from "./AnnotatedExpression"
 import { Expression } from "./Expression"
 import { TypeNode } from "./TypeNode"
 export class TSAsExpression extends AnnotatedExpression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_AS_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_AS_EXPRESSION;
     }
     static createTSAsExpression(expression: Expression | undefined, typeAnnotation: TypeNode | undefined, isConst: boolean): TSAsExpression {
         return new TSAsExpression(global.generatedEs2panda._CreateTSAsExpression(global.context, passNode(expression), passNode(typeAnnotation), isConst))

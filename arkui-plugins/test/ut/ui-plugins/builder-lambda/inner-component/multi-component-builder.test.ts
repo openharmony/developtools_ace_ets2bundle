@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -96,6 +96,10 @@ function main() {}
         }), @Memo() (() => {}));
     }
     public constructor() {}
+
+    static {
+    
+    }
 }
     
 class __EntryWrapper extends EntryPoint {
@@ -114,13 +118,13 @@ class __EntryWrapper extends EntryPoint {
 const expectedUIHeaderScript: string = `
 import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { ComponentBuilder as ComponentBuilder } from \"arkui.component.builder\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 
 function main() {}
 
 @Memo() export function FakeComponentA(style: (@Memo() ((instance: FakeComponentAAttribute)=> void) | undefined), str: string, @Memo() content_?: (()=> void)): void
 @Memo() export function FakeComponentB(style: (@Memo() ((instance: FakeComponentBAttribute)=> void) | undefined), options?: FakeOptions, @Memo() content_?: (()=> void)): void
 @Memo() export function FakeComponentC(style: (@Memo() ((instance: FakeComponentCAttribute)=> void) | undefined), @Memo() content_?: (()=> void)): void
-
 @Memo() export function FakeComponentAImpl(style: (@Memo() ((instance: FakeComponentAAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
 @Memo() export function FakeComponentBImpl(style: (@Memo() ((instance: FakeComponentBAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
 @Memo() export function FakeComponentCImpl(style: (@Memo() ((instance: FakeComponentCAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
@@ -154,7 +158,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test multiple different @ComponentBuilder',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

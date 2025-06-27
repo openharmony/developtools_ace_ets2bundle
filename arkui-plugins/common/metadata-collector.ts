@@ -13,9 +13,10 @@
  * limitations under the License.
  */
 
-import { ProjectConfig } from './plugin-context';
+import { ProjectConfig, ResourceInfo } from './plugin-context';
 
 export class MetaDataCollector {
+    public resourceInfo: ResourceInfo | undefined;
     public projectConfig: ProjectConfig | undefined;
     public fileAbsName: string | undefined;
     public externalSourceName: string | undefined;
@@ -43,9 +44,15 @@ export class MetaDataCollector {
         return this;
     }
 
+    setResourceInfo(resourceInfo: ResourceInfo | undefined): this {
+        this.resourceInfo = resourceInfo;
+        return this;
+    }
+
     reset(): void {
         this.projectConfig = undefined;
         this.fileAbsName = undefined;
         this.externalSourceName = undefined;
+        this.resourceInfo = undefined;
     }
 }

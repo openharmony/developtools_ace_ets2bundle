@@ -486,7 +486,7 @@ export function getAnnotationUsageByName(
             return false;
         }
         const program = arkts.getProgramFromAstNode(annotationDeclaration);
-        if (!isFromPresetModules(program.moduleName)) {
+        if (!program || !isFromPresetModules(program.moduleName)) {
             return false;
         }
         return true;

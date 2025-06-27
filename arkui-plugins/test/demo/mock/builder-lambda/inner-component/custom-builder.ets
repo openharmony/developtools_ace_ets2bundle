@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Text, Column, Component, ListItemGroup, Builder, CustomBuilder } from "@ohos.arkui.component"
+import { Text, Column, Component, Builder, ListItemGroup, CustomBuilder } from "@ohos.arkui.component"
 
 @Component
 struct MyStateSample {

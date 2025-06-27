@@ -14,6 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import { expectNameInTypeReference } from '../../../common/arkts-utils';
 import {
     collectTypeRecordFromParameter,
     collectTypeRecordFromTypeParameterDeclaration,
@@ -22,9 +23,8 @@ import {
     TypeParameterTypeRecord,
     TypeRecord,
 } from '../../../collectors/utils/collect-types';
-import { checkIsTrailingLambdaInLastParam, isForEach } from '../utils';
+import { checkIsTrailingLambdaInLastParam, isForEach } from '../../../collectors/ui-collectors/records';
 import { factory as UIFactory } from '../../ui-factory';
-import { expectNameInTypeReference } from '../../utils';
 
 export interface ComponentRecord {
     name: string;

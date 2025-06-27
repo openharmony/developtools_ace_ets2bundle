@@ -18,7 +18,7 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { uiNoRecheck, recheck, memoNoRecheck } from '../../../utils/plugins';
+import { uiNoRecheck, recheck, memoNoRecheck, collectNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
@@ -51,7 +51,7 @@ let globalBuilder: WrappedBuilder<MyBuilderFuncType>;
 
 function main() {}
 
-@Memo() function myBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() @Memo() function myBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
     return;
@@ -77,7 +77,10 @@ globalBuilder = wrapBuilder(myBuilder);
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_ImportStruct {
@@ -113,7 +116,7 @@ let globalBuilder: WrappedBuilder<MyBuilderFuncType>;
 
 function main() {}
 
-@Memo() function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() @Memo() function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (52041161)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -184,7 +187,10 @@ globalBuilder = wrapBuilder(myBuilder);
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_ImportStruct {
@@ -198,7 +204,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test wrap builder init with @Builder function',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testUITransformer],
         'checked:memo-no-recheck': [testMemoTransformer],

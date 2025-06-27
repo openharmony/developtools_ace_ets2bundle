@@ -18,7 +18,7 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { uiNoRecheck, recheck, memoNoRecheck } from '../../../utils/plugins';
+import { uiNoRecheck, recheck, memoNoRecheck, collectNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
@@ -63,14 +63,14 @@ const globalBuilderArr: Array<WrappedBuilder<MyBuilderFuncType>> = [wrapBuilder(
 function main() {}
 
 
-@Memo() function myBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() @Memo() function myBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
     return;
   }), undefined);
 }
 
-@Memo() function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() @Memo() function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
     return;
@@ -88,7 +88,7 @@ function main() {}
     ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
       instance.setForEachOptions((() => {
         return globalBuilderArr;
-      }), @Memo() ((item: WrappedBuilder<MyBuilderFuncType>) => {
+      }), ((item: WrappedBuilder<MyBuilderFuncType>) => {
         item.builder("hello world", 39);
       }), undefined);
       return;
@@ -105,7 +105,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_ImportStruct {
@@ -145,7 +148,7 @@ const globalBuilderArr: Array<WrappedBuilder<MyBuilderFuncType>> = [wrapBuilder(
 function main() {}
 
 
-@Memo() function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() @Memo() function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (52041161)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -170,7 +173,7 @@ function main() {}
   }
 }
 
-@Memo() function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() @Memo() function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (151467670)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -217,14 +220,14 @@ function main() {}
       }
       __memo_parameter_instance.value.setForEachOptions((() => {
         return globalBuilderArr;
-      }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<MyBuilderFuncType>) => {
+      }), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<MyBuilderFuncType>) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (76711614)), 1);
         const __memo_parameter_item = __memo_scope.param(0, item);
         if (__memo_scope.unchanged) {
           __memo_scope.cached;
           return;
         }
-        item.builder(__memo_context, ((__memo_id) + (46726221)), "hello world", 39);
+        __memo_parameter_item.value.builder(__memo_context, ((__memo_id) + (46726221)), "hello world", 39);
         {
           __memo_scope.recache();
           return;
@@ -278,7 +281,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_ImportStruct {
@@ -292,7 +298,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test wrap builder in UI',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testUITransformer],
         'checked:memo-no-recheck': [testMemoTransformer],

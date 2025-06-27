@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -58,14 +58,14 @@ import { Component as Component, Row as Row, Builder as Builder, Text as Text } 
 function main() {}
 
 
-@Memo() function showTextBuilder() {
+@Builder() function showTextBuilder() {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions("Hello World", undefined).applyAttributesFinish();
     return;
   }), undefined);
 }
 
-@Memo() function overBuilder(@MemoSkip() params: Tmp) {
+@Builder() function overBuilder(@MemoSkip() params: Tmp) {
   RowImpl(@Memo() ((instance: RowAttribute): void => {
     instance.setRowOptions(undefined).applyAttributesFinish();
     return;
@@ -77,7 +77,7 @@ function main() {}
   }));
 }
 
-@Memo() function globalBuilder(@MemoSkip() param: Person) {
+@Builder() function globalBuilder(@MemoSkip() param: Person) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions("globalBuilder", undefined).applyAttributesFinish();
     return;
@@ -127,7 +127,10 @@ interface Person {
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_BuilderDemo {
@@ -141,7 +144,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'global builder',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

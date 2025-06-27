@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
-import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
+import { DecoratorNames, GetSetTypes, NodeCacheNames, StateManagementTypes } from '../../common/predefines';
 import { CustomComponentNames } from '../utils';
 import {
     generateToRecord,
@@ -27,158 +27,83 @@ import {
     collectStateManagementTypeImport,
     hasDecorator,
     findCachedMemoMetadata,
+    checkIsNameStartWithBackingField,
 } from './utils';
-import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
-import { GetterSetter, InitializerConstructor } from './types';
+import {
+    InterfacePropertyCachedTranslator,
+    InterfacePropertyTranslator,
+    InterfacePropertyTypes,
+    PropertyCachedTranslator,
+    PropertyCachedTranslatorOptions,
+    PropertyTranslator,
+    PropertyTranslatorOptions,
+} from './base';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
+import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
 
-export class PropRefTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
-    translateMember(): arkts.AstNode[] {
-        const originalName: string = expectName(this.property.key);
-        const newName: string = backingField(originalName);
+export class PropRefTranslator extends PropertyTranslator {
+    protected stateManagementType: StateManagementTypes = StateManagementTypes.PROP_REF_DECORATED;
+    protected makeType: StateManagementTypes = StateManagementTypes.MAKE_PROP_REF;
+    protected shouldWrapPropertyType: boolean = true;
+    protected hasInitializeStruct: boolean = true;
+    protected hasUpdateStruct: boolean = true;
+    protected hasToRecord: boolean = true;
+    protected hasField: boolean = true;
+    protected hasGetter: boolean = true;
+    protected hasSetter: boolean = true;
 
-        this.cacheTranslatedInitializer(newName, originalName);
-        return this.translateWithoutInitializer(newName, originalName);
+    constructor(options: PropertyTranslatorOptions) {
+        super(options);
+        this.hasWatch = hasDecorator(this.property, DecoratorNames.WATCH);
     }
+}
 
-    cacheTranslatedInitializer(newName: string, originalName: string): void {
-        const mutableThis: arkts.Expression = generateThisBacking(newName);
-        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
-        PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
-        const updateStruct: arkts.AstNode = this.generateUpdateStruct(mutableThis, originalName);
-        PropertyCache.getInstance().collectUpdateStruct(this.structInfo.name, [updateStruct]);
-        if (!!this.structInfo.annotations?.reusable) {
-            const toRecord = generateToRecord(newName, originalName);
-            PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);
-        }
-    }
+export class PropRefCachedTranslator extends PropertyCachedTranslator {
+    protected stateManagementType: StateManagementTypes = StateManagementTypes.PROP_REF_DECORATED;
+    protected makeType: StateManagementTypes = StateManagementTypes.MAKE_PROP_REF;
+    protected shouldWrapPropertyType: boolean = true;
+    protected hasInitializeStruct: boolean = true;
+    protected hasUpdateStruct: boolean = true;
+    protected hasToRecord: boolean = true;
+    protected hasField: boolean = true;
+    protected hasGetter: boolean = true;
+    protected hasSetter: boolean = true;
 
-    translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = factory.createOptionalClassProperty(
-            newName,
-            this.property,
-            StateManagementTypes.PROP_REF_DECORATED,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
-        );
-        const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
-        const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            generateGetOrSetCall(thisValue, GetSetTypes.SET)
-        );
-        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
-        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
-        if (this.isMemoCached) {
-            const metadata = findCachedMemoMetadata(this.property, false);
-            arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
-            arkts.NodeCache.getInstance().collect(getter, metadata);
-            arkts.NodeCache.getInstance().collect(setter, metadata);
-        }
-        return [field, getter, setter];
-    }
-
-    translateGetter(
-        originalName: string,
-        typeAnnotation: arkts.TypeNode | undefined,
-        returnValue: arkts.Expression
-    ): arkts.MethodDefinition {
-        return createGetter(originalName, typeAnnotation, returnValue);
-    }
-
-    translateSetter(
-        originalName: string,
-        typeAnnotation: arkts.TypeNode | undefined,
-        statement: arkts.AstNode
-    ): arkts.MethodDefinition {
-        return createSetter2(originalName, typeAnnotation, statement);
-    }
-
-    generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        const args: arkts.Expression[] = [
-            arkts.factory.create1StringLiteral(originalName),
-            factory.generateInitializeValue(this.property, this.propertyType, originalName),
-        ];
-        factory.judgeIfAddWatchFunc(args, this.property);
-        collectStateManagementTypeImport(StateManagementTypes.PROP_REF_DECORATED);
-        const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
-            generateThisBacking(newName),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(
-                StateManagementTypes.MAKE_PROP_REF,
-                this.propertyType?.clone(),
-                args,
-                true,
-                this.isMemoCached ? findCachedMemoMetadata(this.property, true) : undefined
-            )
-        );
-        return arkts.factory.createExpressionStatement(assign);
-    }
-
-    generateUpdateStruct(mutableThis: arkts.Expression, originalName: string): arkts.AstNode {
-        const member: arkts.MemberExpression = arkts.factory.createMemberExpression(
-            arkts.factory.createTSNonNullExpression(mutableThis),
-            arkts.factory.createIdentifier(StateManagementTypes.UPDATE),
-            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-            false,
-            false
-        );
-        const asExpression = arkts.factory.createTSAsExpression(
-            factory.createNonNullOrOptionalMemberExpression(
-                CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
-                originalName,
-                false,
-                true
-            ),
-            this.propertyType,
-            false
-        );
-        if (this.isMemoCached) {
-            const metadata = findCachedMemoMetadata(this.property, false);
-            arkts.NodeCache.getInstance().collect(asExpression, { ...metadata, isWithinTypeParams: true });
-        }
-        return factory.createIfInUpdateStruct(originalName, member, [asExpression]);
+    constructor(options: PropertyCachedTranslatorOptions) {
+        super(options);
+        this.hasWatch = this.propertyInfo.annotationInfo?.hasWatch;
     }
 }
 
 export class PropRefInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
-    translateProperty(): T {
-        if (arkts.isMethodDefinition(this.property)) {
-            this.modified = true;
-            return flatVisitMethodWithOverloads(this.property, this.updateStateMethodInInterface) as T;
-        } else if (arkts.isClassProperty(this.property)) {
-            this.modified = true;
-            return this.updateStatePropertyInInterface(this.property) as T;
-        }
-        return this.property;
-    }
+    protected decorator: DecoratorNames = DecoratorNames.PROP_REF;
 
+    /**
+     * @deprecated
+     */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
-        if (arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.PROP_REF)) {
-            return true;
-        } else if (arkts.isClassProperty(node) && hasDecorator(node, DecoratorNames.PROP_REF)) {
-            return true;
+        if (arkts.isMethodDefinition(node)) {
+            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.PROP_REF);
+        } else if (arkts.isClassProperty(node)) {
+            return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.PROP_REF);
         }
         return false;
     }
+}
+
+export class PropRefCachedInterfaceTranslator<
+    T extends InterfacePropertyTypes,
+> extends InterfacePropertyCachedTranslator<T> {
+    protected decorator: DecoratorNames = DecoratorNames.PROP_REF;
 
     /**
-     * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
-     * to `IPropRefDecoratedVariable<T> | undefined`.
-     *
-     * @param method expecting getter with `@PropRef` and a setter with `@PropRef` in the overloads.
+     * @deprecated
      */
-    private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
-        const metadata = findCachedMemoMetadata(method);
-        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.PROP_REF, metadata);
-    }
-
-    /**
-     * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
-     * to `IPropRefDecoratedVariable<T> | undefined`.
-     *
-     * @param property expecting property with `@PropRef`.
-     */
-    private updateStatePropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
-        return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.PROP_REF);
+    static canBeTranslated(
+        node: arkts.AstNode,
+        metadata?: CustomComponentInterfacePropertyInfo
+    ): node is InterfacePropertyTypes {
+        return !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasPropRef;
     }
 }

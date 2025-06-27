@@ -14,21 +14,17 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import { BaseValidator } from './base';
 
-export interface GetterSetter {
-    translateGetter(
-        originalName: string,
-        typeAnnotation: arkts.TypeNode | undefined,
-        returnValue: arkts.Expression
-    ): arkts.MethodDefinition;
-    translateSetter(
-        originalName: string,
-        typeAnnotation: arkts.TypeNode | undefined,
-        left: arkts.MemberExpression
-    ): arkts.MethodDefinition;
-}
+export type IntrinsicValidatorFunction = <T extends arkts.AstNode>(this: BaseValidator<T, Object>, node: T) => void;
 
-export interface InitializerConstructor {
-    cacheTranslatedInitializer(newName: string, originalName: string): void;
-    translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[];
-}
+export type ModifiedValidatorFunction = <T extends arkts.AstNode, U extends arkts.AstNode>(
+    this: BaseValidator<T, Object>,
+    node: U
+) => void;
+
+export type ExtendedValidatorFunction = <T extends arkts.AstNode, U extends arkts.AstNode>(
+    this: BaseValidator<T, Object>,
+    node: T,
+    other?: U
+) => void;
