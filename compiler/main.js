@@ -217,7 +217,7 @@ function loadEntryObj(projectConfig) {
 function loadNavigationConfig(aceBuildJson) {
   if (aceBuildJson && aceBuildJson.routerMap && Array.isArray(aceBuildJson.routerMap)) {
     aceBuildJson.routerMap.forEach((item) => {
-      if (item.pageSourceFile && item.name && item.buildFunction) {
+      if (item.pageSourceFile && (item.name || item.name === '') && item.buildFunction) {
         const filePath = path.resolve(item.pageSourceFile);
         const storedFileInfo = getStoredFileInfo();
         if (storedFileInfo.routerInfo.has(filePath)) {
