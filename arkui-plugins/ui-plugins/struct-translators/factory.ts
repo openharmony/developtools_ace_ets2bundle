@@ -45,6 +45,8 @@ import {
     preCheckResourceData,
     ResourceParameter,
     getResourceParams,
+    isResourceNode,
+    isForEachCall,
 } from './utils';
 import { collectStateManagementTypeImport, hasDecorator, PropertyCache } from '../property-translators/utils';
 import { ProjectConfig } from '../../common/plugin-context';
@@ -663,7 +665,7 @@ export class factory {
             return node;
         }
         if (isEtsGlobalClass(node)) {
-             const updatedBody = node.definition.body.map((member: arkts.AstNode) => {
+            const updatedBody = node.definition.body.map((member: arkts.AstNode) => {
                 arkts.isMethodDefinition(member) && propertyFactory.addMemoToBuilderClassMethod(member);
                 if (arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.ANIMATABLE_EXTEND)) {
                     member = arkts.factory.updateMethodDefinition(
@@ -677,7 +679,7 @@ export class factory {
                 }
                 return member;
             });
-             return arkts.factory.updateClassDeclaration(
+            return arkts.factory.updateClassDeclaration(
                 node,
                 arkts.factory.updateClassDefinition(
                     node.definition,
@@ -850,5 +852,74 @@ export class factory {
             node.flags,
             node.modifiers
         );
+    }
+
+    /*
+     * add arrow function type to arguments of call expression.
+     */
+    static transformCallArguments(node: arkts.CallExpression): arkts.CallExpression {
+        if (!arkts.isArrowFunctionExpression(node.arguments[1])) {
+            return node;
+        }
+        const argTypeParam: arkts.Expression = node.arguments[1].scriptFunction.params[0];
+        if (
+            !arkts.isEtsParameterExpression(argTypeParam) ||
+            !argTypeParam.type ||
+            !arkts.isTypeNode(argTypeParam.type)
+        ) {
+            return node;
+        }
+        const referenceType = uiFactory.createComplexTypeFromStringAndTypeParameter('Array', [
+            argTypeParam.type.clone(),
+        ]);
+        const newArrowArg: arkts.ArrowFunctionExpression = arkts.factory.createArrowFunction(
+            uiFactory.createScriptFunction({
+                body: arkts.factory.createBlock([arkts.factory.createReturnStatement(node.arguments[0])]),
+                returnTypeAnnotation: referenceType,
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            })
+        );
+        return arkts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
+            newArrowArg,
+            ...node.arguments.slice(1),
+        ]);
+    }
+
+    static AddArrowTypeForParameter(node: arkts.MethodDefinition): arkts.MethodDefinition {
+        if (node.scriptFunction.params.length < 2) {
+            return node;
+        }
+        const paramFirst = node.scriptFunction.params[0];
+        if (!arkts.isEtsParameterExpression(paramFirst) || !paramFirst.type || !arkts.isTypeNode(paramFirst.type)) {
+            return node;
+        }
+        const script = uiFactory.updateScriptFunction(node.scriptFunction, {
+            params: [
+                arkts.factory.createParameterDeclaration(
+                    arkts.factory.createIdentifier(
+                        paramFirst.identifier.name,
+                        uiFactory.createLambdaFunctionType([], paramFirst.type)
+                    ),
+                    undefined
+                ),
+                ...node.scriptFunction.params.slice(1),
+            ],
+        });
+        return arkts.factory.updateMethodDefinition(node, node.kind, node.name, script, node.modifiers, false);
+    }
+
+    static transformCallExpression(
+        node: arkts.CallExpression,
+        projectConfig: ProjectConfig | undefined,
+        resourceInfo: ResourceInfo
+    ): arkts.CallExpression {
+        if (arkts.isCallExpression(node) && isResourceNode(node)) {
+            return this.transformResource(node, projectConfig, resourceInfo);
+        }
+        if (arkts.isCallExpression(node) && isForEachCall(node)) {
+            return this.transformCallArguments(node);
+        }
+        return node;
     }
 }
