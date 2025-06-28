@@ -30,6 +30,11 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
     };
   }
 
+  public beforeTransform(): void {
+    this.componentV2WithConsumer = new MultiMap();
+    this.componentV2WithProvider = new MultiMap();
+  }
+
   public parsed(node: arkts.AstNode): void {
     this.collectStructsWithConsumerAndProvider(node);
     this.validateDecoratorsOnMember(node);

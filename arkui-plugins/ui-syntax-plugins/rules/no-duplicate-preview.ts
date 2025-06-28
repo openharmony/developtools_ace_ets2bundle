@@ -27,6 +27,11 @@ class NoDuplicatePreviewRule extends AbstractUISyntaxRule {
     };
   }
 
+  public beforeTransform(): void {
+    this.previewDecoratorUsages = [];
+    this.previewDecoratorUsageIndex = 10;
+  }
+
   public parsed(node: arkts.StructDeclaration): void {
     if (!arkts.isStructDeclaration(node)) {
       return;

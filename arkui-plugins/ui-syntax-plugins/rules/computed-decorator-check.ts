@@ -32,6 +32,11 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
     };
   }
 
+  public beforeTransform(): void {
+    this.computedGetters = new Map();
+    this.computedSetters = new Map();
+  }
+
   public parsed(node: arkts.AstNode): void {
     if (arkts.isStructDeclaration(node)) {
       this.validateComponentV2InStruct(node);
