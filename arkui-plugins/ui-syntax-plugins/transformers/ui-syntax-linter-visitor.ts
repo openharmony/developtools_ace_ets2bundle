@@ -13,11 +13,27 @@
  * limitations under the License.
  */
 
+import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor } from '../../common/abstract-visitor';
 import { UISyntaxRuleProcessor } from '../processor';
 
 export abstract class UISyntaxLinterVisitor extends AbstractVisitor {
-  constructor(protected processor: UISyntaxRuleProcessor) {
-    super();
-  }
+    constructor(protected processor: UISyntaxRuleProcessor) {
+        super();
+    }
+
+    visitor(node: arkts.AstNode): arkts.AstNode {
+        this.handle(node);
+        node = this.visitEachChild(node);
+        return node;
+    }
+
+    transform(node: arkts.AstNode): arkts.AstNode {
+        this.processor.beforeTransform();
+        const transformedNode = this.visitor(node);
+        this.processor.afterTransform();
+        return transformedNode;
+    }
+
+    abstract handle(node: arkts.AstNode): void;
 }
