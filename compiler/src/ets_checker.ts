@@ -1181,7 +1181,10 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
         } else if (ts.sys.fileExists(DETSModulePath)) {
           resolvedModules.push(getResolveModule(DETSModulePath, '.d.ets'));
         } else {
-          const srcIndex: number = projectConfig.projectPath.indexOf('src' + path.sep + 'main');
+          let srcIndex: number = 0;
+          if (!!projectConfig.projectPath) {
+            srcIndex = projectConfig.projectPath.indexOf('src' + path.sep + 'main');
+          }
           let DETSModulePathFromModule: string;
           if (srcIndex > 0) {
             DETSModulePathFromModule = path.resolve(
