@@ -41,6 +41,7 @@ export type UISyntaxRulePhaseHandler = (node: arkts.AstNode) => void;
 
 export type UISyntaxRuleHandler = {
     parsed?: UISyntaxRulePhaseHandler;
+    checked?: UISyntaxRulePhaseHandler;
 };
 
 export type UISyntaxRule = {
@@ -69,8 +70,10 @@ export abstract class AbstractUISyntaxRule {
         this.messages = this.setup();
     }
 
+    public beforeTransform(): void {}
+    public afterTransform(): void {}
     public parsed(node: arkts.AstNode): void {}
-    public binded(node: arkts.AstNode): void {}
+    public checked(node: arkts.AstNode): void {}
     public abstract setup(): Record<string, string>;
 
     protected report(options: UISyntaxRuleReportOptions): void {

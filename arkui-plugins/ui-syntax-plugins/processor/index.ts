@@ -16,6 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import * as path from 'node:path';
 import {
+    AbstractUISyntaxRule,
     ReportOptions,
     UISyntaxRule,
     UISyntaxRuleConfig,
@@ -27,7 +28,10 @@ import { ProjectConfig } from 'common/plugin-context';
 
 export type UISyntaxRuleProcessor = {
     setProjectConfig(projectConfig: ProjectConfig): void;
+    beforeTransform(): void;
+    afterTransform(): void;
     parsed(node: arkts.AstNode): void;
+    checked(node: arkts.AstNode): void;
 };
 
 type ModuleConfig = {
@@ -68,9 +72,14 @@ class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
         if (options.fix) {
             const diagnosticInfo: arkts.DiagnosticInfo = arkts.DiagnosticInfo.create(diagnosticKind);
             const fixSuggestion = options.fix(options.node);
-            const suggestionKind: arkts.DiagnosticKind =
-            arkts.DiagnosticKind.create(message, arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_SUGGESTION);
-            const suggestionInfo: arkts.SuggestionInfo = arkts.SuggestionInfo.create(suggestionKind, fixSuggestion.code);
+            const suggestionKind: arkts.DiagnosticKind = arkts.DiagnosticKind.create(
+                message,
+                arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_SUGGESTION
+            );
+            const suggestionInfo: arkts.SuggestionInfo = arkts.SuggestionInfo.create(
+                suggestionKind,
+                fixSuggestion.code
+            );
             const [startPosition, endPosition] = fixSuggestion.range;
             const sourceRange: arkts.SourceRange = arkts.SourceRange.create(startPosition, endPosition);
             arkts.Diagnostic.logDiagnosticWithSuggestion(diagnosticInfo, suggestionInfo, sourceRange);
@@ -145,9 +154,31 @@ class ConcreteUISyntaxRuleProcessor implements UISyntaxRuleProcessor {
         }, []);
     }
 
+    beforeTransform(): void {
+        for (const handler of this.handlers) {
+            if (handler instanceof AbstractUISyntaxRule) {
+                handler.beforeTransform();
+            }
+        }
+    }
+
+    afterTransform(): void {
+        for (const handler of this.handlers) {
+            if (handler instanceof AbstractUISyntaxRule) {
+                handler.afterTransform();
+            }
+        }
+    }
+
     parsed(node: arkts.AstNode): void {
-        for (const handlers of this.handlers) {
-            handlers.parsed?.(node);
+        for (const handler of this.handlers) {
+            handler.parsed?.(node);
+        }
+    }
+
+    checked(node: arkts.AstNode): void {
+        for (const handler of this.handlers) {
+            handler.checked?.(node);
         }
     }
 
