@@ -52,9 +52,6 @@ import {
 } from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
 import {
-  ARKTS_1_2,
-  ARKTS_HYBRID,
-  ESMODULE,
   TRANSFORMED_MOCK_CONFIG,
   USER_DEFINE_MOCK_CONFIG
 } from '../../../pre_define';
@@ -82,11 +79,15 @@ import {
 import { checkIfJsImportingArkts } from '../check_import_module';
 import {
   getDeclgenBridgeCodePath,
-  writeBridgeCodeFileSyncByNode,
-  isArkTSEvolutionFile
-} from '../../../process_arkts_evolution';
-import { FileManager } from '../interop/interop_manager';
+  isArkTSEvolutionFile,
+  writeBridgeCodeFileSyncByNode
+} from '../interop/process_arkts_evolution';
+import {
+  FileManager,
+  isMixCompile
+} from '../interop/interop_manager';
 import { FileInfo } from '../interop/type';
+import { ARKTS_1_2 } from '../interop/pre_define';
 
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
@@ -425,16 +426,16 @@ export class ModuleSourceFile {
   }
 
   private async writeSourceFile(parentEvent: Object): Promise<void> {
-    if (!this.isArkTSEvolution) {
-      if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
-        await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo,
-          this.moduleId, parentEvent, ModuleSourceFile.logger);
-      } else {
-        await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig,
-          ModuleSourceFile.logger, parentEvent, this.metaInfo);
-      }
-    } else {
+    if (isMixCompile() && this.isArkTSEvolution) {
       await writeBridgeCodeFileSyncByNode(<ts.SourceFile> this.source, this.moduleId, this.metaInfo);
+      return;
+    }
+    if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
+      await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo,
+        this.moduleId, parentEvent, ModuleSourceFile.logger);
+    } else {
+      await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig,
+        ModuleSourceFile.logger, parentEvent, this.metaInfo);
     }
   }
 
@@ -530,9 +531,10 @@ export class ModuleSourceFile {
   }
 
   private static spliceNormalizedOhmurl(moduleInfo: Object, filePath: string, importerFile?: string): string {
-    const isArkTSEvolution: boolean = isArkTSEvolutionFile(filePath, moduleInfo.meta);
-    const pkgPath: string = isArkTSEvolution ?
-      path.join(getDeclgenBridgeCodePath(moduleInfo.meta.pkgName), moduleInfo.meta.pkgName) : moduleInfo.meta.pkgPath;
+    let pkgPath: string = moduleInfo.meta.pkgPath;
+    if (isMixCompile() && isArkTSEvolutionFile(filePath, moduleInfo.meta)) {
+      pkgPath = path.join(getDeclgenBridgeCodePath(moduleInfo.meta.pkgName), moduleInfo.meta.pkgName);
+    }
     const pkgParams = {
       pkgName: moduleInfo.meta.pkgName,
       pkgPath,

@@ -17,36 +17,40 @@ import fs from 'fs';
 import path from 'path';
 import ts from 'typescript';
 
+import { getResolveModule } from '../../../ets_checker';
 import {
-  EXTNAME_TS,
-  EXTNAME_ETS,
-  EXTNAME_D_ETS,
   ARKTS_1_0,
   ARKTS_1_1,
   ARKTS_1_2,
-  ARKTS_HYBRID,
-  SUPER_ARGS
+  ARKTS_HYBRID
 } from './pre_define';
 import {
-  toUnixPath,
-  mkdirsSync,
   IFileLog,
-  LogType
-} from './utils';
+  LogType,
+  mkdirsSync,
+  toUnixPath
+} from '../../../utils';
+import { getPkgInfo } from '../../../ark_utils';
 import {
-  red,
-  reset
-} from './fast_build/ark_compiler/common/ark_define';
-import { getPkgInfo } from './ark_utils';
-import createAstNodeUtils from './create_ast_node_utils';
+  EXTNAME_D_ETS,
+  EXTNAME_ETS,
+  EXTNAME_TS,
+  SUPER_ARGS
+} from '../../../pre_define';
 import {
+  CommonLogger,
   LogData,
   LogDataFactory
-} from './fast_build/ark_compiler/logger';
+} from '../logger';
 import {
   ArkTSErrorDescription,
   ErrorCode
-} from './fast_build/ark_compiler/error_code';
+} from '../error_code';
+import createAstNodeUtils from '../../../create_ast_node_utils';
+import {
+  red,
+  reset
+} from '../common/ark_define';
 
 interface DeclFileConfig {
   declPath: string;
@@ -157,10 +161,19 @@ export function getArkTSEvoDeclFilePath(resolvedFileInfo: ResolvedFileInfo): str
 }
 
 export function collectArkTSEvolutionModuleInfo(share: Object): void {
+  if (!share.projectConfig.dependentModuleMap) {
+    return;
+  }
   if (!share.projectConfig.useNormalizedOHMUrl) {
-    share.throwArkTsCompilerError(red, 'ArkTS:ERROR: Failed to compile mixed project.\n' +
-          'Error Message: Failed to compile mixed project because useNormalizedOHMUrl is false.\n' +
-          'Solutions: > Check whether useNormalizedOHMUrl is true.', reset);
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_COLLECT_INTEROP_INFO_FAILED,
+      ArkTSErrorDescription,
+      'Failed to compile mixed project.',
+      `Failed to compile mixed project because useNormalizedOHMUrl is false.`,
+      ['Please check whether useNormalizedOHMUrl is true.']
+    );
+    CommonLogger.getInstance(share).printErrorAndExit(errInfo);
+    
   }
   // dependentModuleMap Contents eg.
   // 1.2 hap -> 1.1 har: It contains the information of 1.1 har
@@ -670,4 +683,13 @@ function addSuper(needSuper: boolean, injectStatement: ts.ExpressionStatement[],
         undefined)
     );
   }
+}
+
+export function redirectToDeclFileForInterop(resolvedFileName: string): ts.ResolvedModuleFull {
+  const filePath: string = toUnixPath(resolvedFileName);
+  const resultDETSPath: string = getArkTSEvoDeclFilePath({ moduleRequest: '', resolvedFileName: filePath });
+  if (ts.sys.fileExists(resultDETSPath)) {
+    return getResolveModule(resultDETSPath, EXTNAME_D_ETS);
+  }
+  return undefined;
 }
