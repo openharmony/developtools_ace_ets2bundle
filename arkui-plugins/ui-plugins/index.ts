@@ -43,8 +43,7 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
         script = program.astNode;
         const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
-        const isFrameworkMode = this.getProjectConfig()?.frameworkMode;
-        const canSkipPhases = !!isFrameworkMode || program.canSkipPhases();
+        const canSkipPhases = program.canSkipPhases();
         debugLog('[BEFORE PARSED SCRIPT] script: ', script.dumpSrc());
         debugDump(
             script.dumpSrc(),
@@ -112,8 +111,7 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
         script = program.astNode;
         const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
-        const isFrameworkMode = this.getProjectConfig()?.frameworkMode;
-        const canSkipPhases = !!isFrameworkMode || program.canSkipPhases();
+        const canSkipPhases = program.canSkipPhases();
         debugLog('[BEFORE STRUCT SCRIPT] script: ', script.dumpSrc());
         debugDump(
             script.dumpSrc(),
