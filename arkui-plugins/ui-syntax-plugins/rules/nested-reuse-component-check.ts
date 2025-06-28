@@ -29,6 +29,12 @@ class NestedReuseComponentCheckRule extends AbstractUISyntaxRule {
       noReusableV2InRepeatTemplate: `The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.`,
     };
   }
+
+  public beforeTransform(): void {
+    this.reusableV2StructName = [];
+    this.reusableStructName = [];
+  }
+
   public parsed(node: arkts.StructDeclaration): void {
     this.initStructName(node);
     this.checkNestedReuseComponent(node);

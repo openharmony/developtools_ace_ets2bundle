@@ -58,6 +58,13 @@ class ConstructParameterRule extends AbstractUISyntaxRule {
       parameterIsBuilderParam: `'@BuilderParam' attribute '{{parameterName}}' can only initialized by '@Builder' function or '@Builder' method in struct.`,
     };
   }
+
+  public beforeTransform(): void {
+    this.propertyMap = new Map();
+    this.regularVariableList = [];
+    this.builderFunctionList = [];
+  }
+
   public parsed(node: arkts.StructDeclaration): void {
     this.initList(node);
     this.initPropertyMap(node);
