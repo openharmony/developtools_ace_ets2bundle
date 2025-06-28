@@ -151,6 +151,18 @@ export class factory {
     }
 
     /**
+     * create complex type from string and type parameter, e.g. `Set<T>`
+     */
+    static createComplexTypeFromStringAndTypeParameter(name: string, params: arkts.TypeNode[]): arkts.TypeNode {
+        return arkts.factory.createTypeReference(
+            arkts.factory.createTypeReferencePart(
+                arkts.factory.createIdentifier(name),
+                arkts.factory.createTSTypeParameterInstantiation(params)
+            )
+        );
+    }
+
+    /**
      * create `(<params>) => <returnType>`. If returnType is not given, then using `void`.
      */
     static createLambdaFunctionType(
@@ -259,9 +271,7 @@ export class factory {
     /**
      * create MethodDefinition with configurations.
      */
-    static createMethodDefinition(
-        config: PartialNested<MethodDefinitionConfiguration>
-    ): arkts.MethodDefinition {
+    static createMethodDefinition(config: PartialNested<MethodDefinitionConfiguration>): arkts.MethodDefinition {
         const newFunc: arkts.ScriptFunction = factory.createScriptFunction({
             ...config.function,
             key: config.key,

@@ -18,29 +18,27 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../utils/plugins';
+import { structNoRecheck, recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
-const WRAP_BUILDER_DIR_PATH: string = 'wrap-builder';
+const COMPONENT_DIR_PATH: string = 'component';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, WRAP_BUILDER_DIR_PATH, 'wrap-builder-in-ui.ets'),
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, COMPONENT_DIR_PATH, 'for-each.ets'),
 ];
 
-const pluginTester = new PluginTester('test wrap builder used in UI', buildConfig);
+const pluginTester = new PluginTester('test ForEach component transformation', buildConfig);
 
 const parsedTransform: Plugins = {
-    name: 'parsed transform',
+    name: 'for-each',
     parsed: uiTransform().parsed
 };
 
 const expectedScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
-
-import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
 
@@ -48,46 +46,74 @@ import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customCo
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
-import { Component as Component, Text as Text, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Builder as Builder, Column as Column, ForEach as ForEach } from "@kit.ArkUI";
-
-const globalBuilderArr: Array<WrappedBuilder<MyBuilderFuncType>> = [wrapBuilder(myBuilder), wrapBuilder(yourBuilder)];
+import { Component as Component, Text as Text, WrappedBuilder as WrappedBuilder, Column as Column, ForEach as ForEach } from "@kit.ArkUI";
 
 function main() {}
 
-
-@memo() function myBuilder(value: string, size: number) {
-  Text(@memo() ((instance: TextAttribute): void => {
-    instance.fontSize(size);
-    return;
-  }), value, undefined, undefined);
+interface Person {
+  set name(name: string)
+  
+  get name(): string
+  set age(age: number)
+  
+  get age(): number
+  
 }
 
-@memo() function yourBuilder(value: string, size: number) {
-  Text(@memo() ((instance: TextAttribute): void => {
-    instance.fontSize(size);
-    return;
-  }), value, undefined, undefined);
+class AB {
+  public per: string = "hello";
+  
+  public bar: Array<string> = new Array<string>("xx", "yy", "zz");
+  
+  public constructor() {}
+  
 }
-
-
-@memo() type MyBuilderFuncType = @Builder() ((value: string, size: number)=> void);
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
-  public __initializeStruct(initializers: __Options_ImportStruct | undefined, @memo() content: (()=> void) | undefined): void {}
+  public __initializeStruct(initializers: __Options_ImportStruct | undefined, @memo() content: (()=> void) | undefined): void {
+    this.__backing_arr = ((({let gensym___244068973 = initializers;
+    (((gensym___244068973) == (null)) ? undefined : gensym___244068973.arr)})) ?? (["a", "b", "c"]));
+  }
   
   public __updateStruct(initializers: __Options_ImportStruct | undefined): void {}
   
-  @memo() public testBuilder() {
-    ForEach(((): Array<WrappedBuilder<MyBuilderFuncType>> => {
-      return globalBuilderArr;
-    }), ((item: WrappedBuilder<MyBuilderFuncType>) => {
-      item.builder("hello world", 39);
-    }));
+  private __backing_arr?: Array<string>;
+  
+  public get arr(): Array<string> {
+    return (this.__backing_arr as Array<string>);
+  }
+  
+  public set arr(value: Array<string>) {
+    this.__backing_arr = value;
+  }
+  
+  public getArray() {
+    return new Array<Person>(({
+      name: "LiHua",
+      age: 25,
+    } as Person), ({
+      name: "Amy",
+      age: 18,
+    } as Person));
   }
   
   @memo() public build() {
     Column(undefined, undefined, @memo() (() => {
-      this.testBuilder();
+      ForEach(((): Array<string> => {
+        return this.arr;
+      }), ((item: string) => {
+        Text(undefined, item, undefined, undefined);
+      }));
+      ForEach(((): Array<Person> => {
+        return this.getArray();
+      }), ((item: Person) => {
+        Text(undefined, item.name, undefined, undefined);
+      }));
+      ForEach(((): Array<string> => {
+        return new AB().bar;
+      }), ((item: string) => {
+        Text(undefined, item, undefined, undefined);
+      }));
     }));
   }
   
@@ -96,6 +122,9 @@ function main() {}
 }
 
 @Component() export interface __Options_ImportStruct {
+  set arr(arr: Array<string> | undefined)
+  
+  get arr(): Array<string> | undefined
   
 }
 `;
@@ -105,7 +134,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 }
 
 pluginTester.run(
-    'test wrap builder init with @Builder function',
+    'test ForEach component transformation',
     [parsedTransform, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
