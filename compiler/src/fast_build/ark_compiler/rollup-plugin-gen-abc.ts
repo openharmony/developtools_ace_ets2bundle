@@ -27,8 +27,8 @@ import { cleanUpUtilsObjects, writeDeclarationFiles } from '../../ark_utils';
 import { cleanUpKitImportObjects } from '../../process_kit_import';
 import { cleanUpFilesList } from './utils';
 import { CommonLogger } from './logger';
-import { cleanUpProcessArkTSEvolutionObj } from '../../process_arkts_evolution';
-import { FileManager } from './interop/interop_manager';
+import { FileManager, isMixCompile } from './interop/interop_manager';
+import { cleanUpProcessArkTSEvolutionObj } from './interop/process_arkts_evolution';
 
 export function genAbc() {
   return {
@@ -75,7 +75,7 @@ export function genAbc() {
       ModuleSourceFile.cleanUpObjects();
       cleanSharedModuleSet();
       CommonLogger.destroyInstance();
-      cleanUpProcessArkTSEvolutionObj();
+      isMixCompile() && cleanUpProcessArkTSEvolutionObj();
       FileManager.cleanFileManagerObject();
     }
   };
