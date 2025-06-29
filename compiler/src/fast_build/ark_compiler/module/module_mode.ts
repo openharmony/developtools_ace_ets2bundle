@@ -55,7 +55,6 @@ import {
   TS,
   JS,
   PERFREPORT_JSON,
-  GEN_ABC_CMD
 } from '../common/ark_define';
 import {
   needAotCompiler,
@@ -98,7 +97,6 @@ import {
   FaultHandler
 } from '../../../gen_aot';
 import {
-  ARKTS_1_2,
   NATIVE_MODULE
 } from '../../../pre_define';
 import {
@@ -107,11 +105,9 @@ import {
 import { SourceMapGenerator } from '../generate_sourcemap';
 import {
   addDeclFilesConfig,
-  ArkTSEvolutionModule,
   getDeclgenBridgeCodePath,
-  pkgDeclFilesConfig,
-  arkTSModuleMap
-} from '../../../process_arkts_evolution';
+  writeDeclFilesConfigJson
+} from '../interop/process_arkts_evolution';
 import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../../meomry_monitor/memory_define';
 import {
@@ -132,6 +128,11 @@ import {
   stopEvent
  } from '../../../performance';
 import { BytecodeObfuscator } from '../bytecode_obfuscator';
+import { isMixCompile } from '../interop/interop_manager';
+import {
+  ARKTS_1_2,
+  GEN_ABC_CMD
+} from '../interop/pre_define';
 
 export class ModuleInfo {
   filePath: string;
@@ -261,8 +262,10 @@ export class ModuleMode extends CommonMode {
         this.logger.printErrorAndExit(errInfo);
       }
       const isArkTSEvolution: boolean = metaInfo.language === ARKTS_1_2;
-      const pkgPath: string = isArkTSEvolution ?
-        path.join(getDeclgenBridgeCodePath(metaInfo.pkgName), metaInfo.moduleName) : metaInfo.pkgPath;
+      let pkgPath = metaInfo.pkgPath;
+      if (isMixCompile() && isArkTSEvolution) {
+        pkgPath = path.join(getDeclgenBridgeCodePath(metaInfo.pkgName), metaInfo.moduleName);
+      }
       const pkgParams = {
         pkgName: metaInfo.pkgName,
         pkgPath,
@@ -322,22 +325,11 @@ export class ModuleMode extends CommonMode {
   prepareForCompilation(rollupObject: Object, parentEvent: CompileEvent): void {
     const eventPrepareForCompilation = createAndStartEvent(parentEvent, 'preparation for compilation');
     this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
-    if (rollupObject.share.projectConfig.dependentModuleMap) {
-      this.writeDeclFilesConfigJson(rollupObject.share.projectConfig.entryPackageName);
+    if (isMixCompile()) {
+      writeDeclFilesConfigJson(rollupObject.share.projectConfig.entryPackageName);
     }
     this.removeCacheInfo(rollupObject);
     stopEvent(eventPrepareForCompilation);
-  }
-
-  // Write the declaration file information of the 1.1 module file to the disk of the corresponding module
-  writeDeclFilesConfigJson(pkgName: string): void {
-    if (!arkTSModuleMap.size) {
-      return;
-    }
-    const arkTSEvolutionModuleInfo: ArkTSEvolutionModule = arkTSModuleMap.get(pkgName);
-    const declFilesConfigFile: string = toUnixPath(arkTSEvolutionModuleInfo.declFilesPath);
-    mkdirsSync(path.dirname(declFilesConfigFile));
-    fs.writeFileSync(declFilesConfigFile, JSON.stringify(pkgDeclFilesConfig[pkgName], null, 2), 'utf-8');
   }
 
   collectModuleFileList(module: Object, fileList: IterableIterator<string>): void {
@@ -536,15 +528,17 @@ export class ModuleMode extends CommonMode {
     if (this.useNormalizedOHMUrl) {
       packageName = metaInfo.pkgName;
       const isArkTSEvolution: boolean = metaInfo.language === ARKTS_1_2;
-      const pkgPath: string = isArkTSEvolution ?
-        path.join(getDeclgenBridgeCodePath(packageName), metaInfo.moduleName) : metaInfo.pkgPath;
+      let pkgPath = metaInfo.pkgPath;
+      if (isMixCompile() && isArkTSEvolution) {
+        pkgPath = path.join(getDeclgenBridgeCodePath(metaInfo.pkgName), metaInfo.moduleName);
+      }
       const pkgParams = {
         pkgName: packageName,
         pkgPath,
         isRecordName: true,
       };
       recordName = getNormalizedOhmUrlByFilepath(filePath, this.projectConfig, this.logger, pkgParams, undefined);
-      if (!isArkTSEvolution) {
+      if (isMixCompile() && !isArkTSEvolution) {
         addDeclFilesConfig(originalFilePath, this.projectConfig, this.logger, pkgPath, packageName);
       }
     } else {
@@ -709,8 +703,6 @@ export class ModuleMode extends CommonMode {
     // collect data error from subprocess
     let logDataList: Object[] = [];
     let errMsg: string = '';
-    const eventGenDescriptionsForMergedEs2abc = createAndStartEvent(parentEvent, 'generate descriptions for merged es2abc');
-    stopEvent(eventGenDescriptionsForMergedEs2abc);
 
     if (this.projectConfig.invokeEs2abcByHvigor) {
       this.rollupCache.set(GEN_ABC_CMD, this.cmdArgs);

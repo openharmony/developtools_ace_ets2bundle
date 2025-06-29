@@ -31,7 +31,7 @@ import {
   mergeCacheData,
   mergeCompileContextInfo,
   mergeSourceMap,
-} from '../../lib/fast_build/ark_compiler/run_es2abc_standalone';
+} from '../../lib/fast_build/ark_compiler/interop/run_es2abc_standalone';
 import RollUpPluginMock from './mock/rollup_mock/rollup_plugin_mock';
 
 let MERGE_CACHE_PATH;
