@@ -19,20 +19,32 @@ import ts from 'typescript';
 
 import {
   EXTNAME_ETS,
-  EXTNAME_D_ETS,
+  EXTNAME_D_ETS
+} from '../../../pre_define';
+import {
+  toUnixPath,
+  mkdirsSync
+} from '../../../utils';
+import {
+  red,
+  reset
+} from '../common/ark_define';
+import { getPkgInfo } from '../../../ark_utils';
+import { getResolveModule } from '../../../ets_checker';
+import {
   ARKTS_1_0,
   ARKTS_1_1,
   ARKTS_1_2
 } from './pre_define';
 import {
-  toUnixPath,
-  mkdirsSync
-} from './utils';
+  CommonLogger,
+  LogData,
+  LogDataFactory
+} from '../logger';
 import {
-  red,
-  reset
-} from './fast_build/ark_compiler/common/ark_define';
-import { getPkgInfo } from './ark_utils';
+  ArkTSErrorDescription,
+  ErrorCode
+} from '../error_code';
 
 interface DeclFileConfig {
   declPath: string;
@@ -124,10 +136,18 @@ export function getArkTSEvoDeclFilePath(resolvedFileInfo: ResolvedFileInfo): str
 }
 
 export function collectArkTSEvolutionModuleInfo(share: Object): void {
+  if (!share.projectConfig.dependentModuleMap) {
+    return;
+  }
   if (!share.projectConfig.useNormalizedOHMUrl) {
-    share.throwArkTsCompilerError(red, 'ArkTS:ERROR: Failed to compile mixed project.\n' +
-          'Error Message: Failed to compile mixed project because useNormalizedOHMUrl is false.\n' +
-          'Solutions: > Check whether useNormalizedOHMUrl is true.', reset);
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_COLLECT_INTEROP_INFO_FAILED,
+      ArkTSErrorDescription,
+      'Failed to compile mixed project.',
+      `Failed to compile mixed project because useNormalizedOHMUrl is false.`,
+      ['Please check whether useNormalizedOHMUrl is true.']
+    );
+    CommonLogger.getInstance(share).printErrorAndExit(errInfo);
   }
   // dependentModuleMap Contents eg.
   // 1.2 hap -> 1.1 har: It contains the information of 1.1 har
@@ -186,3 +206,22 @@ function getDeclgenV2OutPath(pkgName: string): string {
   return '';
 }
 
+export function redirectToDeclFileForInterop(resolvedFileName: string): ts.ResolvedModuleFull {
+  const filePath: string = toUnixPath(resolvedFileName);
+  const resultDETSPath: string = getArkTSEvoDeclFilePath({ moduleRequest: '', resolvedFileName: filePath });
+  if (ts.sys.fileExists(resultDETSPath)) {
+    return getResolveModule(resultDETSPath, EXTNAME_D_ETS);
+  }
+  return undefined;
+}
+
+  // Write the declaration file information of the 1.1 module file to the disk of the corresponding module
+  export function writeDeclFilesConfigJson(pkgName: string): void {
+    if (!arkTSModuleMap.size) {
+      return;
+    }
+    const arkTSEvolutionModuleInfo: ArkTSEvolutionModule = arkTSModuleMap.get(pkgName);
+    const declFilesConfigFile: string = toUnixPath(arkTSEvolutionModuleInfo.declFilesPath);
+    mkdirsSync(path.dirname(declFilesConfigFile));
+    fs.writeFileSync(declFilesConfigFile, JSON.stringify(pkgDeclFilesConfig[pkgName], null, 2), 'utf-8');
+  }

@@ -48,8 +48,6 @@ import {
 } from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
 import {
-  ARKTS_1_2,
-  ESMODULE,
   TRANSFORMED_MOCK_CONFIG,
   USER_DEFINE_MOCK_CONFIG
 } from '../../../pre_define';
@@ -83,8 +81,10 @@ import {
 import {
   getDeclgenBridgeCodePath,
   writeBridgeCodeFileSyncByNode
-} from '../../../process_arkts_evolution';
+} from '../interop/process_arkts_evolution';
 import { PreloadFileModules } from './module_preload_file_utils';
+import { isMixCompile } from '../interop/interop_manager';
+import { ARKTS_1_2 } from '../interop/pre_define';
 
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
@@ -442,16 +442,17 @@ export class ModuleSourceFile {
   }
 
   private async writeSourceFile(parentEvent: Object): Promise<void> {
-    if (!this.isArkTSEvolution) {
-      if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
-        await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo,
-          this.moduleId, parentEvent, ModuleSourceFile.logger);
-      } else {
-        await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig,
-          ModuleSourceFile.logger, parentEvent, this.metaInfo);
-      }
-    } else {
+    if (isMixCompile() && this.isArkTSEvolution) {
       await writeBridgeCodeFileSyncByNode(<ts.SourceFile> this.source, this.moduleId);
+      return;
+    }
+
+    if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
+      await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo,
+        this.moduleId, parentEvent, ModuleSourceFile.logger);
+    } else {
+      await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig,
+        ModuleSourceFile.logger, parentEvent, this.metaInfo);
     }
   }
 
@@ -538,8 +539,10 @@ export class ModuleSourceFile {
 
   private static spliceNormalizedOhmurl(moduleInfo: Object, filePath: string, importerFile?: string): string {
     const isArkTSEvolution: boolean = moduleInfo.meta.language === ARKTS_1_2;
-    const pkgPath: string = isArkTSEvolution ?
-      path.join(getDeclgenBridgeCodePath(moduleInfo.meta.pkgName), moduleInfo.meta.moduleName) : moduleInfo.meta.pkgPath;
+    let pkgPath = moduleInfo.meta.pkgPath;
+    if (isMixCompile() && isArkTSEvolution) {
+      pkgPath = path.join(getDeclgenBridgeCodePath(moduleInfo.meta.pkgName), moduleInfo.meta.moduleName);
+    }
     const pkgParams = {
       pkgName: moduleInfo.meta.pkgName,
       pkgPath,
