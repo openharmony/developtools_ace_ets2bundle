@@ -70,6 +70,11 @@ export class ModuleHotfixMode extends ModuleMode {
       this.cmdArgs.push('--dump-symbol-table');
       this.cmdArgs.push(`"${oldHapSymbolTable}"`);
     }
+    // Add column numbers for bytecode instructions in release mode
+    if (!Object.prototype.hasOwnProperty.call(this.projectConfig, 'enableColumnNum') ||
+      this.projectConfig.enableColumnNum) {
+      this.cmdArgs.push('--enable-release-column');
+    }
 
     this.cmdArgs.push('--merge-abc');
   }
