@@ -76,7 +76,6 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [ConsumerProviderDecoratorCheckRule, 'error'],
     [ComponentV2StateUsageValidationRule, 'error'],
     [CustomDialogMissingControllerRule, 'error'],
-    [MainPagesEntryCheckRule, 'error'],
     [MonitorDecoratorCheckRule, 'error'],
     [NestedRelationshipRule, 'error'],
     [NestedReuseComponentCheckRule, 'error'],
