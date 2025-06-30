@@ -15,11 +15,18 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { factory } from './memo-factory';
-import { hasMemoAnnotation, hasMemoIntrinsicAnnotation, parametrizedNodeHasReceiver } from './utils';
+import {
+    hasMemoAnnotation,
+    hasMemoIntrinsicAnnotation,
+    parametrizedNodeHasReceiver,
+    isMemoTSTypeAliasDeclaration,
+} from './utils';
 import { AbstractVisitor } from '../common/abstract-visitor';
 
 function isScriptFunctionFromGetter(node: arkts.ScriptFunction): boolean {
     return (
+        !!node.parent &&
+        !!node.parent.parent &&
         arkts.isFunctionExpression(node.parent) &&
         arkts.isMethodDefinition(node.parent.parent) &&
         node.parent.parent.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET
@@ -28,6 +35,8 @@ function isScriptFunctionFromGetter(node: arkts.ScriptFunction): boolean {
 
 function isScriptFunctionFromSetter(node: arkts.ScriptFunction): boolean {
     return (
+        !!node.parent &&
+        !!node.parent.parent &&
         arkts.isFunctionExpression(node.parent) &&
         arkts.isMethodDefinition(node.parent.parent) &&
         node.parent.parent.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET
@@ -35,6 +44,7 @@ function isScriptFunctionFromSetter(node: arkts.ScriptFunction): boolean {
 }
 
 export class SignatureTransformer extends AbstractVisitor {
+    /* Tracking whether should import `__memo_context_type` and `__memo_id_type` */
     public modified = false;
 
     reset(): void {
@@ -122,7 +132,7 @@ export class SignatureTransformer extends AbstractVisitor {
                 console.error(`@memo parameter's type has not been declared`);
                 throw 'Invalid @memo usage';
             }
-            const memoDecl = hasMemoAnnotation(decl) || hasMemoIntrinsicAnnotation(decl);
+            const memoDecl = isMemoTSTypeAliasDeclaration(decl);
             if (memoDecl) {
                 return node as any as T;
             }

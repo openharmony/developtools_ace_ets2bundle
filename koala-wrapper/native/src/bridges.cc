@@ -283,6 +283,29 @@ static KNativePointer impl_ExternalSourcePrograms(KNativePointer instance)
 }
 KOALA_INTEROP_1(ExternalSourcePrograms, KNativePointer, KNativePointer);
 
+KNativePointer impl_CreateContextGenerateAbcForExternalSourceFiles(
+    KNativePointer configPtr, KInt fileNamesCount, KStringArray fileNames)
+{
+    auto config = reinterpret_cast<es2panda_Config *>(configPtr);
+    const std::size_t headerLen = 4;
+    const char **argv =
+        new const char *[static_cast<unsigned int>(fileNamesCount)];
+    std::size_t position = headerLen;
+    std::size_t strLen;
+    for (std::size_t i = 0; i < static_cast<std::size_t>(fileNamesCount); ++i) {
+        strLen = unpackUInt(fileNames + position);
+        position += headerLen;
+        argv[i] = strdup(std::string(reinterpret_cast<const char *>(fileNames + position),
+            strLen).c_str());
+        position += strLen;
+    }
+    auto context = GetImpl()->CreateContextGenerateAbcForExternalSourceFiles(
+        config, fileNamesCount, argv);
+    delete[] argv;
+    return context;
+}
+KOALA_INTEROP_3(CreateContextGenerateAbcForExternalSourceFiles, KNativePointer, KNativePointer, KInt, KStringArray)
+
 KBoolean impl_IsClassProperty(KNativePointer nodePtr)
 {
     auto node = reinterpret_cast<es2panda_AstNode*>(nodePtr);
@@ -496,3 +519,18 @@ KBoolean impl_IsArrayExpression(KNativePointer nodePtr)
     return GetImpl()->IsArrayExpression(node);
 }
 KOALA_INTEROP_1(IsArrayExpression, KBoolean, KNativePointer)
+
+inline KUInt unpackUInt(const KByte* bytes)
+{
+    const KUInt BYTE_0 = 0;
+    const KUInt BYTE_1 = 1;
+    const KUInt BYTE_2 = 2;
+    const KUInt BYTE_3 = 3;
+
+    const KUInt BYTE_1_SHIFT = 8;
+    const KUInt BYTE_2_SHIFT = 16;
+    const KUInt BYTE_3_SHIFT = 24;
+    return (bytes[BYTE_0] | (bytes[BYTE_1] << BYTE_1_SHIFT)
+        | (bytes[BYTE_2] << BYTE_2_SHIFT) | (bytes[BYTE_3] << BYTE_3_SHIFT)
+    );
+}
