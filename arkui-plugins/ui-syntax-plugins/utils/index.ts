@@ -129,10 +129,6 @@ export const ToggleType = {
     BUTTON: 'Button',
 };
 
-const PUBLIC_PROPERTY_MODIFIERS: Number = 4;
-const PROTECTED_PROPERTY_MODIFIERS: Number = 8;
-const PRIVATE_PROPERTY_MODIFIERS: Number = 16;
-
 export const ReuseConstants = {
     REUSE: 'reuse',
     REUSE_ID: 'reuseId',
@@ -370,4 +366,48 @@ export function tracePerformance<T extends (...args: any[]) => any>(name: string
         arkts.Performance.getInstance().stopEvent(name, true);
         return result;
     } as T;
+}
+
+const ANNOTATION_PRESET_MODULE_PREFIXES: string[] = ['arkui.', '@ohos.', '@kit.ArkUI'];
+
+export function isFromPresetModules(moduleName: string): boolean {
+    for (const presetModulePrefix of ANNOTATION_PRESET_MODULE_PREFIXES) {
+        if (moduleName.startsWith(presetModulePrefix)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+export function getAnnotationUsagesByName(
+    annotations: readonly arkts.AnnotationUsage[],
+    annotationNames: string[]
+): Array<arkts.AnnotationUsage | undefined> {
+    return annotationNames.map((annotationName) => getAnnotationUsageByName(annotations, annotationName));
+}
+
+export function getAnnotationUsageByName(
+    annotations: readonly arkts.AnnotationUsage[],
+    annotationName: string
+): arkts.AnnotationUsage | undefined {
+    return annotations.find((annotation: arkts.AnnotationUsage): boolean => {
+        if (!annotation.expr || !arkts.isIdentifier(annotation.expr) || annotation.expr.name !== annotationName) {
+            return false;
+        }
+        const annotationDeclaration = arkts.getDecl(annotation.expr);
+        if (!annotationDeclaration) {
+            return false;
+        }
+        const program = arkts.getProgramFromAstNode(annotationDeclaration);
+        if (!isFromPresetModules(program.moduleName)) {
+            return false;
+        }
+        return true;
+    });
+}
+
+export function isStructClassDeclaration(node: arkts.AstNode): node is arkts.ClassDeclaration {
+    return (
+        arkts.isClassDeclaration(node) && !!node.definition && arkts.classDefinitionIsFromStructConst(node.definition)
+    );
 }
