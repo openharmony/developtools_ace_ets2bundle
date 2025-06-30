@@ -14,69 +14,67 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 import { PresetDecorators, isClassPropertyOptional } from '../utils/index';
 
 // @Prop needs to consider whether there is an initialization value
 const requireDecorators = [
-  PresetDecorators.LINK,
-  PresetDecorators.OBJECT_LINK,
+    PresetDecorators.LINK,
+    PresetDecorators.OBJECT_LINK,
 ];
 
-function hasPropOrRequireDecorator(context: UISyntaxRuleContext, node: arkts.ClassProperty, propertyName: string): void {
-  node.annotations?.forEach(annotation => {
-    if (annotation.expr && arkts.isIdentifier(annotation.expr)) {
-      const decoratorName = annotation.expr?.name;
-      const nodeKey = node.key;
-      const nodeValue = node.value;
-      // Check whether the prop decorator has an initial value, and no alarm will be generated if there is an initial value
-      if (decoratorName === PresetDecorators.PROP && nodeKey && !nodeValue) {
-        context.report({
-          node: nodeKey,
-          message: rule.messages.propertyOptional,
-          data: {
-            decoratorName,
-            propertyName,
-          },
-        });
-      } else if (requireDecorators.includes(decoratorName) && nodeKey) {
-        context.report({
-          node: nodeKey,
-          message: rule.messages.propertyOptional,
-          data: {
-            decoratorName,
-            propertyName,
-          },
-        });
-      }
+class StructPropertyOptionalRule extends AbstractUISyntaxRule {
+    public setup(): Record<string, string> {
+        return {
+            propertyOptional: `The '{{decoratorName}}' property '{{propertyName}}' cannot be an optional parameter.`,
+        };
     }
-  });
-}
 
-const rule: UISyntaxRule = {
-  name: 'struct-property-optional',
-  messages: {
-    propertyOptional: `The '{{decoratorName}}' property '{{propertyName}}' cannot be an optional parameter.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
+    public parsed(node: arkts.AstNode): void {
         // Check if it's a class property
         if (!arkts.isClassProperty(node)) {
-          return;
+            return;
         }
         if (!node.key || !arkts.isIdentifier(node.key)) {
-          return;
+            return;
         }
         const keyname = node.key.name;
         // If the property is optional, check the decorator further
         if (!isClassPropertyOptional(node)) {
-          return;
+            return;
         }
-        hasPropOrRequireDecorator(context, node, keyname);
-      },
-    };
-  },
-};
+        this.hasPropOrRequireDecorator(node, keyname);
+    }
 
-export default rule;
+    private hasPropOrRequireDecorator(node: arkts.ClassProperty, propertyName: string): void {
+        node.annotations?.forEach(annotation => {
+            if (annotation.expr && arkts.isIdentifier(annotation.expr)) {
+                const decoratorName = annotation.expr?.name;
+                const nodeKey = node.key;
+                const nodeValue = node.value;
+                // Check whether the prop decorator has an initial value, and no alarm will be generated if there is an initial value
+                if (decoratorName === PresetDecorators.PROP && nodeKey && !nodeValue) {
+                    this.report({
+                        node: nodeKey,
+                        message: this.messages.propertyOptional,
+                        data: {
+                            decoratorName,
+                            propertyName,
+                        },
+                    });
+                } else if (requireDecorators.includes(decoratorName) && nodeKey) {
+                    this.report({
+                        node: nodeKey,
+                        message: this.messages.propertyOptional,
+                        data: {
+                            decoratorName,
+                            propertyName,
+                        },
+                    });
+                }
+            }
+        });
+    }
+}
+
+export default StructPropertyOptionalRule;
