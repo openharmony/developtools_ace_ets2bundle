@@ -48,7 +48,7 @@ import type {
 
 import { GeneratedFileInHar, harFilesRecord, isPackageModulesFile, mkdirsSync, toUnixPath } from '../../../utils';
 import { allSourceFilePaths, collectAllFiles, localPackageSet } from '../../../ets_checker';
-import { isCurrentProjectFiles } from '../utils';
+import { isCurrentProjectFiles, removeCacheFile } from '../utils';
 import { sourceFileBelongProject } from '../module/module_source_file';
 import {
   compileToolIsRollUp,
@@ -56,7 +56,7 @@ import {
   ModuleInfo,
   writeArkguardObfuscatedSourceCode
 } from '../../../ark_utils';
-import { OBFUSCATION_TOOL, red, yellow } from './ark_define';
+import { OBFUSCATION_TOOL, red, yellow, EXTNAME_D_ETS } from './ark_define';
 import { logger } from '../../../compile_info';
 import { MergedConfig } from '../common/ob_config_resolver';
 import { ModuleSourceFile } from '../module/module_source_file';
@@ -482,9 +482,43 @@ export async function handlePostObfuscationTasks(
     arkObfuscator.fileContentManager.writeFileNamesMap();
   }
 
+  // compile byteCodeHar and enable filename obfuscation will remove redundant files
+  if (projectConfig.obfuscationMergedObConfig?.options?.enableFileNameObfuscation && 
+    (projectConfig.compileShared || (projectConfig.compileHar && projectConfig.byteCodeHar))) {
+    const deletedFilesSet: Set<string> | undefined = arkObfuscator?.filePathManager?.getDeletedSourceFilePaths();    
+    removeRedundantFiles(sourceProjectConfig, deletedFilesSet, projectConfig);
+  }
+
   printTimeSumInfo('All files obfuscation:');
   printTimeSumData();
   endFilesEvent(EventList.ALL_FILES_OBFUSCATION);
+}
+
+/**
+ * Remove redundant files 
+ */
+export function removeRedundantFiles(
+  sourceProjectConfig: Object,
+  deletedFilesSet: Set<string> | undefined,
+  projectConfig: Object,
+): void {
+  const obfuscationCacheDir: string | undefined = sourceProjectConfig.obfuscationOptions.obfuscationCacheDir;
+  if (obfuscationCacheDir && deletedFilesSet && obfuscationCacheDir.length > 0 && deletedFilesSet.size > 0) {
+    const defaultNameCachePath: string = path.join(obfuscationCacheDir, 'nameCache.json');
+    const arkguardNameCache: string = fs.readFileSync(defaultNameCachePath, 'utf8');
+    const nameCacheCollection: Object = JSON.parse(arkguardNameCache);
+    const projectRootPath: string = projectConfig.projectRootPath.replace(/\\/g, '/');
+    const buildPath: string = path.resolve(projectConfig.aceModuleBuild, '../etsFortgz');
+    deletedFilesSet.forEach((deletedFile) => {
+      let deletedFilePath: string = deletedFile.replace(projectRootPath, '').substring(1);
+      let obfName: string | undefined = nameCacheCollection[deletedFilePath]?.obfName;
+      if (obfName === undefined) {
+        return;
+      }
+      let obfFileCachePath: string = path.join(buildPath, obfName);
+      removeCacheFile(obfFileCachePath, EXTNAME_D_ETS);
+    });
+  }
 }
 
 /**
