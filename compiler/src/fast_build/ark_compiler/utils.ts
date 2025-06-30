@@ -96,7 +96,7 @@ export function changeFileExtension(file: string, targetExt: string, originExt =
   return fileWithoutExt + targetExt;
 }
 
-function removeCacheFile(cacheFilePath: string, ext: string): void {
+export function removeCacheFile(cacheFilePath: string, ext: string): void {
   let filePath = toUnixPath(changeFileExtension(cacheFilePath, ext));
   if (fs.existsSync(filePath)) {
     fs.rmSync(filePath);

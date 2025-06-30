@@ -39,7 +39,8 @@ import {
   getUpdatedFiles,
   obfuscationPreprocess,
   reObfuscate,
-  printObfLogger
+  printObfLogger,
+  removeRedundantFiles
 } from '../../../lib/fast_build/ark_compiler/common/ob_config_resolver';
 import {
   OBFUSCATION_RULE_PATH,
@@ -1116,6 +1117,58 @@ mocha.describe('test obfuscate config resolver api', function () {
         await new Promise(resolve => setTimeout(resolve, 100));
         expect(fs.existsSync(timePerformanceFilePath)).to.be.false;
         expect(fs.existsSync(memoryPerformanceFilePath)).to.be.false;
+      });
+    });
+
+    mocha.describe('10-7: removeRedundantFiles', function () {
+      let etsTestDir: string = 'test/ark_compiler_ut/testdata/testRemoveFiles/ets';
+      let etsFortgzTestDir: string = 'test/ark_compiler_ut/testdata/testRemoveFiles/etsFortgz';
+      let obfFilePath: string = 'test/ark_compiler_ut/testdata/testRemoveFiles/etsFortgz/a.d.ets';
+      const sourceProjectConfig = {
+        obfuscationOptions: {
+          obfuscationCacheDir: 'test/ark_compiler_ut/testdata/testRemoveFiles/'
+        }
+      }
+      const projectConfig = {
+        projectRootPath: '',
+        aceModuleBuild: 'test/ark_compiler_ut/testdata/testRemoveFiles/ets'
+      }
+      mocha.before(function () {
+        if (!fs.existsSync(etsTestDir)) {
+          fs.mkdirSync(etsTestDir, { recursive: true });
+        }
+        if (!fs.existsSync(etsFortgzTestDir)) {
+          fs.mkdirSync(etsFortgzTestDir, { recursive: true });
+        }
+        if (!fs.existsSync(obfFilePath)) {
+          fs.writeFileSync(obfFilePath, 'test');
+        }
+      });
+
+      mocha.after(function () {
+        if (fs.existsSync(obfFilePath)) {
+          fs.unlinkSync(obfFilePath);
+        }
+        if (fs.existsSync(etsFortgzTestDir)) {
+          fs.rmdirSync(etsFortgzTestDir, { recursive: true });
+        }
+        if (fs.existsSync(etsTestDir)) {
+          fs.rmdirSync(etsTestDir, { recursive: true });
+        }
+      });
+
+      mocha.it('10-7-1: should not be remove when file is not obfuscated', async function () {
+        let deletedFilesSet: Set<string> = new Set(['/test1.ets']);
+        await removeRedundantFiles(sourceProjectConfig, deletedFilesSet, projectConfig);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        expect(fs.existsSync(obfFilePath)).to.be.true;
+      });
+
+      mocha.it('10-7-2: should be remove when file is obfuscated', async function () {
+        let deletedFilesSet: Set<string> = new Set(['/test.ets']);
+        await removeRedundantFiles(sourceProjectConfig, deletedFilesSet, projectConfig);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        expect(fs.existsSync(obfFilePath)).to.be.false;
       });
     });
   });
