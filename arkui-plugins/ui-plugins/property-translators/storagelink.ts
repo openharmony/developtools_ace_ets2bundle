@@ -88,6 +88,7 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
             arkts.factory.createStringLiteral(storageLinkValueStr),
             arkts.factory.create1StringLiteral(originalName),
             this.property.value ?? arkts.factory.createUndefinedLiteral(),
+            factory.createTypeFrom(this.property.typeAnnotation)
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         collectStateManagementTypeImport(StateManagementTypes.STORAGE_LINK_DECORATED);

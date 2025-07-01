@@ -38,27 +38,16 @@ const storagePropTransform: Plugins = {
 const pluginTester = new PluginTester('test storageprop complex type transform', buildConfig);
 
 const expectedScript: string = `
-
 import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
-
-import { IStoragePropDecoratedVariable as IStoragePropDecoratedVariable } from "arkui.stateManagement.decorator";
-
+import { IStoragePropRefDecoratedVariable as IStoragePropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 import { NavInterface as NavInterface } from "arkui.UserView";
-
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
-
 import { EntryPoint as EntryPoint } from "arkui.UserView";
-
 import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
 import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
-
 import { StorageProp as StorageProp } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -148,19 +137,18 @@ final class Status extends BaseEnum<int> {
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_arrayB = STATE_MGMT_FACTORY.makeStorageProp<Array<number>>(this, "Prop1", "arrayB", [1, 2, 3])
-    this.__backing_objectB = STATE_MGMT_FACTORY.makeStorageProp<Object>(this, "Prop2", "objectB", {})
-    this.__backing_dateB = STATE_MGMT_FACTORY.makeStorageProp<Date>(this, "Prop3", "dateB", new Date("2021-09-09"))
-    this.__backing_setB = STATE_MGMT_FACTORY.makeStorageProp<Set<number>>(this, "Prop4", "setB", new Set<number>())
-    this.__backing_mapB = STATE_MGMT_FACTORY.makeStorageProp<Map<number, string>>(this, "Prop5", "mapB", new Map<number, string>())
-    this.__backing_unionB = STATE_MGMT_FACTORY.makeStorageProp<string | undefined>(this, "Prop6", "unionB", "")
-    this.__backing_classB = STATE_MGMT_FACTORY.makeStorageProp<Person>(this, "Prop7", "classB", new Person("Kevin"))
-    this.__backing_enumB = STATE_MGMT_FACTORY.makeStorageProp<Status>(this, "Prop8", "enumB", Status.NotFound)
+    this.__backing_arrayB = STATE_MGMT_FACTORY.makeStoragePropRef<Array<number>>(this, "Prop1", "arrayB", [1, 2, 3], Type.from<Array<number>>())
+    this.__backing_objectB = STATE_MGMT_FACTORY.makeStoragePropRef<Object>(this, "Prop2", "objectB", {}, Type.from<Object>())
+    this.__backing_dateB = STATE_MGMT_FACTORY.makeStoragePropRef<Date>(this, "Prop3", "dateB", new Date("2021-09-09"), Type.from<Date>())
+    this.__backing_setB = STATE_MGMT_FACTORY.makeStoragePropRef<Set<number>>(this, "Prop4", "setB", new Set<number>(), Type.from<Set<number>>())
+    this.__backing_mapB = STATE_MGMT_FACTORY.makeStoragePropRef<Map<number, string>>(this, "Prop5", "mapB", new Map<number, string>(), Type.from<Map<number, string>>())
+    this.__backing_classB = STATE_MGMT_FACTORY.makeStoragePropRef<Person>(this, "Prop7", "classB", new Person("Kevin"), Type.from<Person>())
+    this.__backing_enumB = STATE_MGMT_FACTORY.makeStoragePropRef<Status>(this, "Prop8", "enumB", Status.NotFound, Type.from<Status>())
   }
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
   
-  private __backing_arrayB?: IStoragePropDecoratedVariable<Array<number>>;
+  private __backing_arrayB?: IStoragePropRefDecoratedVariable<Array<number>>;
   
   public get arrayB(): Array<number> {
     return this.__backing_arrayB!.get();
@@ -170,7 +158,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_arrayB!.set(value);
   }
   
-  private __backing_objectB?: IStoragePropDecoratedVariable<Object>;
+  private __backing_objectB?: IStoragePropRefDecoratedVariable<Object>;
   
   public get objectB(): Object {
     return this.__backing_objectB!.get();
@@ -180,7 +168,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_objectB!.set(value);
   }
   
-  private __backing_dateB?: IStoragePropDecoratedVariable<Date>;
+  private __backing_dateB?: IStoragePropRefDecoratedVariable<Date>;
   
   public get dateB(): Date {
     return this.__backing_dateB!.get();
@@ -190,7 +178,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_dateB!.set(value);
   }
   
-  private __backing_setB?: IStoragePropDecoratedVariable<Set<number>>;
+  private __backing_setB?: IStoragePropRefDecoratedVariable<Set<number>>;
   
   public get setB(): Set<number> {
     return this.__backing_setB!.get();
@@ -200,7 +188,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_setB!.set(value);
   }
   
-  private __backing_mapB?: IStoragePropDecoratedVariable<Map<number, string>>;
+  private __backing_mapB?: IStoragePropRefDecoratedVariable<Map<number, string>>;
   
   public get mapB(): Map<number, string> {
     return this.__backing_mapB!.get();
@@ -210,17 +198,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_mapB!.set(value);
   }
   
-  private __backing_unionB?: IStoragePropDecoratedVariable<string | undefined>;
-  
-  public get unionB(): string | undefined {
-    return this.__backing_unionB!.get();
-  }
-  
-  public set unionB(value: string | undefined) {
-    this.__backing_unionB!.set(value);
-  }
-  
-  private __backing_classB?: IStoragePropDecoratedVariable<Person>;
+  private __backing_classB?: IStoragePropRefDecoratedVariable<Person>;
   
   public get classB(): Person {
     return this.__backing_classB!.get();
@@ -230,7 +208,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_classB!.set(value);
   }
   
-  private __backing_enumB?: IStoragePropDecoratedVariable<Status>;
+  private __backing_enumB?: IStoragePropRefDecoratedVariable<Status>;
   
   public get enumB(): Status {
     return this.__backing_enumB!.get();
@@ -250,51 +228,45 @@ final class Status extends BaseEnum<int> {
   set arrayB(arrayB: Array<number> | undefined)
   
   get arrayB(): Array<number> | undefined
-  set __backing_arrayB(__backing_arrayB: IStoragePropDecoratedVariable<Array<number>> | undefined)
+  set __backing_arrayB(__backing_arrayB: IStoragePropRefDecoratedVariable<Array<number>> | undefined)
   
-  get __backing_arrayB(): IStoragePropDecoratedVariable<Array<number>> | undefined
+  get __backing_arrayB(): IStoragePropRefDecoratedVariable<Array<number>> | undefined
   set objectB(objectB: Object | undefined)
   
   get objectB(): Object | undefined
-  set __backing_objectB(__backing_objectB: IStoragePropDecoratedVariable<Object> | undefined)
+  set __backing_objectB(__backing_objectB: IStoragePropRefDecoratedVariable<Object> | undefined)
   
-  get __backing_objectB(): IStoragePropDecoratedVariable<Object> | undefined
+  get __backing_objectB(): IStoragePropRefDecoratedVariable<Object> | undefined
   set dateB(dateB: Date | undefined)
   
   get dateB(): Date | undefined
-  set __backing_dateB(__backing_dateB: IStoragePropDecoratedVariable<Date> | undefined)
+  set __backing_dateB(__backing_dateB: IStoragePropRefDecoratedVariable<Date> | undefined)
   
-  get __backing_dateB(): IStoragePropDecoratedVariable<Date> | undefined
+  get __backing_dateB(): IStoragePropRefDecoratedVariable<Date> | undefined
   set setB(setB: Set<number> | undefined)
   
   get setB(): Set<number> | undefined
-  set __backing_setB(__backing_setB: IStoragePropDecoratedVariable<Set<number>> | undefined)
+  set __backing_setB(__backing_setB: IStoragePropRefDecoratedVariable<Set<number>> | undefined)
   
-  get __backing_setB(): IStoragePropDecoratedVariable<Set<number>> | undefined
+  get __backing_setB(): IStoragePropRefDecoratedVariable<Set<number>> | undefined
   set mapB(mapB: Map<number, string> | undefined)
   
   get mapB(): Map<number, string> | undefined
-  set __backing_mapB(__backing_mapB: IStoragePropDecoratedVariable<Map<number, string>> | undefined)
+  set __backing_mapB(__backing_mapB: IStoragePropRefDecoratedVariable<Map<number, string>> | undefined)
   
-  get __backing_mapB(): IStoragePropDecoratedVariable<Map<number, string>> | undefined
-  set unionB(unionB: string | undefined | undefined)
-  
-  get unionB(): string | undefined | undefined
-  set __backing_unionB(__backing_unionB: IStoragePropDecoratedVariable<string | undefined> | undefined)
-  
-  get __backing_unionB(): IStoragePropDecoratedVariable<string | undefined> | undefined
+  get __backing_mapB(): IStoragePropRefDecoratedVariable<Map<number, string>> | undefined
   set classB(classB: Person | undefined)
   
   get classB(): Person | undefined
-  set __backing_classB(__backing_classB: IStoragePropDecoratedVariable<Person> | undefined)
+  set __backing_classB(__backing_classB: IStoragePropRefDecoratedVariable<Person> | undefined)
   
-  get __backing_classB(): IStoragePropDecoratedVariable<Person> | undefined
+  get __backing_classB(): IStoragePropRefDecoratedVariable<Person> | undefined
   set enumB(enumB: Status | undefined)
   
   get enumB(): Status | undefined
-  set __backing_enumB(__backing_enumB: IStoragePropDecoratedVariable<Status> | undefined)
+  set __backing_enumB(__backing_enumB: IStoragePropRefDecoratedVariable<Status> | undefined)
   
-  get __backing_enumB(): IStoragePropDecoratedVariable<Status> | undefined
+  get __backing_enumB(): IStoragePropRefDecoratedVariable<Status> | undefined
   
 }
 

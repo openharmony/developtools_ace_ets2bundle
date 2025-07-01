@@ -23,26 +23,26 @@ import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
-const STORAGEPROP_DIR_PATH: string = 'decorators/storageprop';
+const LOCAL_STORAGELINK_DIR_PATH: string = 'decorators/localstoragelink';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, STORAGEPROP_DIR_PATH, 'storageprop-primitive-type.ets'),
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, LOCAL_STORAGELINK_DIR_PATH, 'localstoragelink-primitive-type.ets'),
 ];
 
-const storagePropTransform: Plugins = {
-    name: 'storageprop',
+const localStorageLinkTransform: Plugins = {
+    name: 'localStorageLink',
     parsed: uiTransform().parsed,
 }
 
-const pluginTester = new PluginTester('test storageprop primitive type transform', buildConfig);
+const pluginTester = new PluginTester('test LocalStorageLink primitive type transform', buildConfig);
 
 const expectedScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
-import { IStoragePropRefDecoratedVariable as IStoragePropRefDecoratedVariable } from "arkui.stateManagement.decorator";
+import { ILocalStorageLinkDecoratedVariable as ILocalStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { NavInterface as NavInterface } from "arkui.UserView";
 
@@ -58,55 +58,55 @@ import { CustomComponent as CustomComponent } from "arkui.component.customCompon
 
 import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
 
-import { StorageProp as StorageProp } from "@ohos.arkui.stateManagement";
+import { LocalStorageLink as LocalStorageLink } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
 __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   bundleName: "com.example.mock",
   moduleName: "entry",
-  pagePath: "../../../decorators/storageprop/storageprop-primitive-type",
-  pageFullPath: "test/demo/mock/decorators/storageprop/storageprop-primitive-type",
+  pagePath: "../../../decorators/localstoragelink/localstoragelink-primitive-type",
+  pageFullPath: "test/demo/mock/decorators/localstoragelink/localstoragelink-primitive-type",
   integratedHsp: "false",
-  } as NavInterface));
+} as NavInterface));
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_numB = STATE_MGMT_FACTORY.makeStoragePropRef<number>(this, "Prop1", "numB", 43, Type.from<number>())
-    this.__backing_stringB = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "Prop2", "stringB", "BB", Type.from<string>())
-    this.__backing_booleanB = STATE_MGMT_FACTORY.makeStoragePropRef<boolean>(this, "Prop3", "booleanB", false, Type.from<boolean>())
+    this.__backing_numA = STATE_MGMT_FACTORY.makeLocalStorageLink<number>(this, "Prop1", "numA", 33, Type.from<number>())
+    this.__backing_stringA = STATE_MGMT_FACTORY.makeLocalStorageLink<string>(this, "Prop2", "stringA", "AA", Type.from<string>())
+    this.__backing_booleanA = STATE_MGMT_FACTORY.makeLocalStorageLink<boolean>(this, "Prop3", "booleanA", true, Type.from<boolean>())
   }
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
   
-  private __backing_numB?: IStoragePropRefDecoratedVariable<number>;
+  private __backing_numA?: ILocalStorageLinkDecoratedVariable<number>;
   
-  public get numB(): number {
-    return this.__backing_numB!.get();
+  public get numA(): number {
+    return this.__backing_numA!.get();
   }
   
-  public set numB(value: number) {
-    this.__backing_numB!.set(value);
+  public set numA(value: number) {
+    this.__backing_numA!.set(value);
   }
   
-  private __backing_stringB?: IStoragePropRefDecoratedVariable<string>;
+  private __backing_stringA?: ILocalStorageLinkDecoratedVariable<string>;
   
-  public get stringB(): string {
-    return this.__backing_stringB!.get();
+  public get stringA(): string {
+    return this.__backing_stringA!.get();
   }
   
-  public set stringB(value: string) {
-    this.__backing_stringB!.set(value);
+  public set stringA(value: string) {
+    this.__backing_stringA!.set(value);
   }
   
-  private __backing_booleanB?: IStoragePropRefDecoratedVariable<boolean>;
+  private __backing_booleanA?: ILocalStorageLinkDecoratedVariable<boolean>;
   
-  public get booleanB(): boolean {
-    return this.__backing_booleanB!.get();
+  public get booleanA(): boolean {
+    return this.__backing_booleanA!.get();
   }
   
-  public set booleanB(value: boolean) {
-    this.__backing_booleanB!.set(value);
+  public set booleanA(value: boolean) {
+    this.__backing_booleanA!.set(value);
   }
   
   @memo() public build() {}
@@ -116,24 +116,24 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  set numB(numB: number | undefined)
+  set numA(numA: number | undefined)
   
-  get numB(): number | undefined
-  set __backing_numB(__backing_numB: IStoragePropRefDecoratedVariable<number> | undefined)
+  get numA(): number | undefined
+  set __backing_numA(__backing_numA: ILocalStorageLinkDecoratedVariable<number> | undefined)
   
-  get __backing_numB(): IStoragePropRefDecoratedVariable<number> | undefined
-  set stringB(stringB: string | undefined)
+  get __backing_numA(): ILocalStorageLinkDecoratedVariable<number> | undefined
+  set stringA(stringA: string | undefined)
   
-  get stringB(): string | undefined
-  set __backing_stringB(__backing_stringB: IStoragePropRefDecoratedVariable<string> | undefined)
+  get stringA(): string | undefined
+  set __backing_stringA(__backing_stringA: ILocalStorageLinkDecoratedVariable<string> | undefined)
   
-  get __backing_stringB(): IStoragePropRefDecoratedVariable<string> | undefined
-  set booleanB(booleanB: boolean | undefined)
+  get __backing_stringA(): ILocalStorageLinkDecoratedVariable<string> | undefined
+  set booleanA(booleanA: boolean | undefined)
   
-  get booleanB(): boolean | undefined
-  set __backing_booleanB(__backing_booleanB: IStoragePropRefDecoratedVariable<boolean> | undefined)
+  get booleanA(): boolean | undefined
+  set __backing_booleanA(__backing_booleanA: ILocalStorageLinkDecoratedVariable<boolean> | undefined)
   
-  get __backing_booleanB(): IStoragePropRefDecoratedVariable<boolean> | undefined
+  get __backing_booleanA(): ILocalStorageLinkDecoratedVariable<boolean> | undefined
   
 }
 
@@ -149,15 +149,15 @@ class __EntryWrapper extends EntryPoint {
 }
 `;
 
-function testStoragePropTransformer(this: PluginTestContext): void {
+function testLocalStorageLinkTransformer(this: PluginTestContext): void {
     expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
 }
 
 pluginTester.run(
-    'test storageprop primitive type transform',
-    [storagePropTransform, uiNoRecheck, recheck],
+    'test LocalStorageLink primitive type transform',
+    [localStorageLinkTransform, uiNoRecheck, recheck],
     {
-        'checked:ui-no-recheck': [testStoragePropTransformer],
+        'checked:ui-no-recheck': [testLocalStorageLinkTransformer],
     },
     {
         stopAfter: 'checked',
