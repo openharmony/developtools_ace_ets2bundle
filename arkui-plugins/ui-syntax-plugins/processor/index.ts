@@ -48,7 +48,7 @@ const BASE_RESOURCE_PATH = 'src/main/resources/base';
 const ETS_PATH = 'src/main/ets';
 
 class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
-    public componentsInfo: UISyntaxRuleComponents;
+    public componentsInfo: UISyntaxRuleComponents | undefined;
     public projectConfig?: ProjectConfig;
 
     constructor() {
@@ -107,11 +107,14 @@ class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
         }
         const { moduleRootPath, aceModuleJsonPath } = this.projectConfig;
         if (!aceModuleJsonPath) {
-            throw new Error('The aceModuleJsonPath config is empty.');
+            return [];
         }
         const moduleConfig = readJSON<ModuleConfig>(aceModuleJsonPath);
+        if (!moduleConfig) {
+            return [];
+        }
         if (!moduleConfig.module || !moduleConfig.module.pages) {
-            throw new Error('Failed to read pages because the content of module.json5 is invalid.');
+            return [];
         }
         const pagesPath = moduleConfig.module.pages;
         const matcher = /\$(?<directory>[_A-Za-z]+):(?<filename>[_A-Za-z]+)/.exec(pagesPath);
@@ -119,12 +122,15 @@ class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
             const { directory, filename } = matcher.groups;
             const mainPagesPath = path.resolve(moduleRootPath, BASE_RESOURCE_PATH, directory, `${filename}.json`);
             const mainPages = readJSON<MainPages>(mainPagesPath);
+            if (!mainPages) {
+                return [];
+            }
             if (!mainPages.src || !Array.isArray(mainPages.src)) {
-                throw new Error(`Failed to read pages because the content of ${filename}.json is invalid.`);
+                return [];
             }
             return mainPages.src.map((page) => path.resolve(moduleRootPath, ETS_PATH, `${page}.ets`));
         } else {
-            throw new Error('Failed to read pages from module.json5');
+            return [];
         }
     }
 

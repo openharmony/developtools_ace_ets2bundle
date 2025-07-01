@@ -140,14 +140,14 @@ export function isClassPropertyOptional(node: arkts.ClassProperty): boolean {
 
 export function getIdentifierName(node: arkts.AstNode): string {
     if (!arkts.isIdentifier(node)) {
-        throw new Error(`Except a Identifier type!`);
+        return '';
     }
     return node.name;
 }
 
 export function getAnnotationName(annotation: arkts.AnnotationUsage): string {
     if (!annotation.expr) {
-        throw new Error(`The expr property does not exist!`);
+        return '';
     }
     return getIdentifierName(annotation.expr);
 }
@@ -268,7 +268,7 @@ export interface UISyntaxRuleComponents {
     validChildComponent: Map<string, string[]>;
 }
 
-export function getUIComponents(dirPath: string): UISyntaxRuleComponents {
+export function getUIComponents(dirPath: string): UISyntaxRuleComponents | undefined {
     const absolutePath = path.resolve(__dirname, dirPath);
     let builtInAttributes: string[] = [];
     let containerComponents: string[] = [];
@@ -278,7 +278,7 @@ export function getUIComponents(dirPath: string): UISyntaxRuleComponents {
     let validChildComponent: Map<string, string[]> = new Map();
 
     if (!fs.existsSync(absolutePath)) {
-        throw new Error(`Directory does not exist: ${absolutePath}`);
+        return undefined;
     }
     // Read all files in the directory
     const files = fs.readdirSync(absolutePath);
@@ -327,9 +327,15 @@ export function getUIComponents(dirPath: string): UISyntaxRuleComponents {
 }
 
 export function isBuiltInAttribute(context: UISyntaxRuleContext, attributeName: string): boolean {
+    if (!context.componentsInfo) {
+        return false;
+    }
     return context.componentsInfo.builtInAttributes.includes(attributeName);
 }
 export function isBuildInComponent(context: UISyntaxRuleContext, componentName: string): boolean {
+    if (!context.componentsInfo) {
+        return false;
+    }
     return (
         context.componentsInfo.containerComponents.includes(componentName) ||
         context.componentsInfo.atomicComponents.includes(componentName)
@@ -337,24 +343,33 @@ export function isBuildInComponent(context: UISyntaxRuleContext, componentName: 
 }
 
 export function isAtomicComponent(context: UISyntaxRuleContext, componentName: string): boolean {
+    if (!context.componentsInfo) {
+        return false;
+    }
     return context.componentsInfo.atomicComponents.includes(componentName);
 }
 
 export function isContainerComponent(context: UISyntaxRuleContext, componentName: string): boolean {
+    if (!context.componentsInfo) {
+        return false;
+    }
     return context.componentsInfo.containerComponents.includes(componentName);
 }
 
 export function isSingleChildComponent(context: UISyntaxRuleContext, componentName: string): boolean {
+    if (!context.componentsInfo) {
+        return false;
+    }
     return context.componentsInfo.singleChildComponents.includes(componentName);
 }
 
-export function readJSON<T>(path: string): T {
+export function readJSON<T>(path: string): T | null {
     if (!fs.existsSync(path)) {
-        throw new Error(`Failed to read file becasue the ${path} is not exist.`);
+        return null;
     }
     const content = fs.readFileSync(path).toString();
     if (!content) {
-        throw new Error(`Failed to read file because the file content is empty.`);
+        return null;
     }
     return JSON.parse(content) as T;
 }
