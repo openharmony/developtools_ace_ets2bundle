@@ -23,42 +23,53 @@ import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
-const STORAGELINK_DIR_PATH: string = 'decorators/storagelink';
+const LOCAL_STORAGELINK_DIR_PATH: string = 'decorators/localstoragelink';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, STORAGELINK_DIR_PATH, 'storagelink-complex-type.ets'),
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, LOCAL_STORAGELINK_DIR_PATH, 'localstoragelink-complex-type.ets'),
 ];
 
-const storageLinkTransform: Plugins = {
-    name: 'storageLink',
+const localStorageLinkTransform: Plugins = {
+    name: 'localStorageLink',
     parsed: uiTransform().parsed,
 }
 
-const pluginTester = new PluginTester('test storagelink complex type transform', buildConfig);
+const pluginTester = new PluginTester('test LocalStorageLink complex type transform', buildConfig);
 
 const expectedScript: string = `
+
 import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
-import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { ILocalStorageLinkDecoratedVariable as ILocalStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { NavInterface as NavInterface } from "arkui.UserView";
+
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
+
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
 import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
-import { StorageLink as StorageLink } from "@ohos.arkui.stateManagement";
+
+import { LocalStorageLink as LocalStorageLink } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
 __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   bundleName: "com.example.mock",
   moduleName: "entry",
-  pagePath: "../../../decorators/storagelink/storagelink-complex-type",
-  pageFullPath: "test/demo/mock/decorators/storagelink/storagelink-complex-type",
+  pagePath: "../../../decorators/localstoragelink/localstoragelink-complex-type",
+  pageFullPath: "test/demo/mock/decorators/localstoragelink/localstoragelink-complex-type",
   integratedHsp: "false",
-  } as NavInterface));
+} as NavInterface));
 
 class Person {
   public name: string = "";
@@ -137,18 +148,18 @@ final class Status extends BaseEnum<int> {
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_arrayA = STATE_MGMT_FACTORY.makeStorageLink<Array<number>>(this, "Prop1", "arrayA", [1, 2, 3], Type.from<Array<number>>())
-    this.__backing_objectA = STATE_MGMT_FACTORY.makeStorageLink<Object>(this, "Prop2", "objectA", {}, Type.from<Object>())
-    this.__backing_dateA = STATE_MGMT_FACTORY.makeStorageLink<Date>(this, "Prop3", "dateA", new Date("2021-08-08"), Type.from<Date>())
-    this.__backing_setA = STATE_MGMT_FACTORY.makeStorageLink<Set<number>>(this, "Prop4", "setA", new Set<number>(), Type.from<Set<number>>())
-    this.__backing_mapA = STATE_MGMT_FACTORY.makeStorageLink<Map<number, string>>(this, "Prop5", "mapA", new Map<number, string>(), Type.from<Map<number, string>>())
-    this.__backing_classA = STATE_MGMT_FACTORY.makeStorageLink<Person>(this, "Prop7", "classA", new Person("John"), Type.from<Person>())
-    this.__backing_enumA = STATE_MGMT_FACTORY.makeStorageLink<Status>(this, "Prop8", "enumA", Status.NotFound, Type.from<Status>())
+    this.__backing_arrayA = STATE_MGMT_FACTORY.makeLocalStorageLink<Array<number>>(this, "Prop1", "arrayA", [1, 2, 3], Type.from<Array<number>>())
+    this.__backing_objectA = STATE_MGMT_FACTORY.makeLocalStorageLink<Object>(this, "Prop2", "objectA", {}, Type.from<Object>())
+    this.__backing_dateA = STATE_MGMT_FACTORY.makeLocalStorageLink<Date>(this, "Prop3", "dateA", new Date("2021-08-08"), Type.from<Date>())
+    this.__backing_setA = STATE_MGMT_FACTORY.makeLocalStorageLink<Set<number>>(this, "Prop4", "setA", new Set<number>(), Type.from<Set<number>>())
+    this.__backing_mapA = STATE_MGMT_FACTORY.makeLocalStorageLink<Map<number, string>>(this, "Prop5", "mapA", new Map<number, string>(), Type.from<Map<number, string>>())
+    this.__backing_classA = STATE_MGMT_FACTORY.makeLocalStorageLink<Person>(this, "Prop7", "classA", new Person("John"), Type.from<Person>())
+    this.__backing_enumA = STATE_MGMT_FACTORY.makeLocalStorageLink<Status>(this, "Prop8", "enumA", Status.NotFound, Type.from<Status>())
   }
   
   public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
   
-  private __backing_arrayA?: IStorageLinkDecoratedVariable<Array<number>>;
+  private __backing_arrayA?: ILocalStorageLinkDecoratedVariable<Array<number>>;
   
   public get arrayA(): Array<number> {
     return this.__backing_arrayA!.get();
@@ -158,7 +169,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_arrayA!.set(value);
   }
   
-  private __backing_objectA?: IStorageLinkDecoratedVariable<Object>;
+  private __backing_objectA?: ILocalStorageLinkDecoratedVariable<Object>;
   
   public get objectA(): Object {
     return this.__backing_objectA!.get();
@@ -168,7 +179,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_objectA!.set(value);
   }
   
-  private __backing_dateA?: IStorageLinkDecoratedVariable<Date>;
+  private __backing_dateA?: ILocalStorageLinkDecoratedVariable<Date>;
   
   public get dateA(): Date {
     return this.__backing_dateA!.get();
@@ -178,7 +189,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_dateA!.set(value);
   }
   
-  private __backing_setA?: IStorageLinkDecoratedVariable<Set<number>>;
+  private __backing_setA?: ILocalStorageLinkDecoratedVariable<Set<number>>;
   
   public get setA(): Set<number> {
     return this.__backing_setA!.get();
@@ -188,7 +199,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_setA!.set(value);
   }
   
-  private __backing_mapA?: IStorageLinkDecoratedVariable<Map<number, string>>;
+  private __backing_mapA?: ILocalStorageLinkDecoratedVariable<Map<number, string>>;
   
   public get mapA(): Map<number, string> {
     return this.__backing_mapA!.get();
@@ -198,7 +209,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_mapA!.set(value);
   }
   
-  private __backing_classA?: IStorageLinkDecoratedVariable<Person>;
+  private __backing_classA?: ILocalStorageLinkDecoratedVariable<Person>;
   
   public get classA(): Person {
     return this.__backing_classA!.get();
@@ -208,7 +219,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_classA!.set(value);
   }
   
-  private __backing_enumA?: IStorageLinkDecoratedVariable<Status>;
+  private __backing_enumA?: ILocalStorageLinkDecoratedVariable<Status>;
   
   public get enumA(): Status {
     return this.__backing_enumA!.get();
@@ -228,45 +239,45 @@ final class Status extends BaseEnum<int> {
   set arrayA(arrayA: Array<number> | undefined)
   
   get arrayA(): Array<number> | undefined
-  set __backing_arrayA(__backing_arrayA: IStorageLinkDecoratedVariable<Array<number>> | undefined)
+  set __backing_arrayA(__backing_arrayA: ILocalStorageLinkDecoratedVariable<Array<number>> | undefined)
   
-  get __backing_arrayA(): IStorageLinkDecoratedVariable<Array<number>> | undefined
+  get __backing_arrayA(): ILocalStorageLinkDecoratedVariable<Array<number>> | undefined
   set objectA(objectA: Object | undefined)
   
   get objectA(): Object | undefined
-  set __backing_objectA(__backing_objectA: IStorageLinkDecoratedVariable<Object> | undefined)
+  set __backing_objectA(__backing_objectA: ILocalStorageLinkDecoratedVariable<Object> | undefined)
   
-  get __backing_objectA(): IStorageLinkDecoratedVariable<Object> | undefined
+  get __backing_objectA(): ILocalStorageLinkDecoratedVariable<Object> | undefined
   set dateA(dateA: Date | undefined)
   
   get dateA(): Date | undefined
-  set __backing_dateA(__backing_dateA: IStorageLinkDecoratedVariable<Date> | undefined)
+  set __backing_dateA(__backing_dateA: ILocalStorageLinkDecoratedVariable<Date> | undefined)
   
-  get __backing_dateA(): IStorageLinkDecoratedVariable<Date> | undefined
+  get __backing_dateA(): ILocalStorageLinkDecoratedVariable<Date> | undefined
   set setA(setA: Set<number> | undefined)
   
   get setA(): Set<number> | undefined
-  set __backing_setA(__backing_setA: IStorageLinkDecoratedVariable<Set<number>> | undefined)
+  set __backing_setA(__backing_setA: ILocalStorageLinkDecoratedVariable<Set<number>> | undefined)
   
-  get __backing_setA(): IStorageLinkDecoratedVariable<Set<number>> | undefined
+  get __backing_setA(): ILocalStorageLinkDecoratedVariable<Set<number>> | undefined
   set mapA(mapA: Map<number, string> | undefined)
   
   get mapA(): Map<number, string> | undefined
-  set __backing_mapA(__backing_mapA: IStorageLinkDecoratedVariable<Map<number, string>> | undefined)
+  set __backing_mapA(__backing_mapA: ILocalStorageLinkDecoratedVariable<Map<number, string>> | undefined)
   
-  get __backing_mapA(): IStorageLinkDecoratedVariable<Map<number, string>> | undefined
+  get __backing_mapA(): ILocalStorageLinkDecoratedVariable<Map<number, string>> | undefined
   set classA(classA: Person | undefined)
   
   get classA(): Person | undefined
-  set __backing_classA(__backing_classA: IStorageLinkDecoratedVariable<Person> | undefined)
+  set __backing_classA(__backing_classA: ILocalStorageLinkDecoratedVariable<Person> | undefined)
   
-  get __backing_classA(): IStorageLinkDecoratedVariable<Person> | undefined
+  get __backing_classA(): ILocalStorageLinkDecoratedVariable<Person> | undefined
   set enumA(enumA: Status | undefined)
   
   get enumA(): Status | undefined
-  set __backing_enumA(__backing_enumA: IStorageLinkDecoratedVariable<Status> | undefined)
+  set __backing_enumA(__backing_enumA: ILocalStorageLinkDecoratedVariable<Status> | undefined)
   
-  get __backing_enumA(): IStorageLinkDecoratedVariable<Status> | undefined
+  get __backing_enumA(): ILocalStorageLinkDecoratedVariable<Status> | undefined
   
 }
 
@@ -282,15 +293,15 @@ class __EntryWrapper extends EntryPoint {
 }
 `;
 
-function testStorageLinkTransformer(this: PluginTestContext): void {
+function testLocalStorageLinkTransformer(this: PluginTestContext): void {
     expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
 }
 
 pluginTester.run(
-    'test storagelink complex type transform',
-    [storageLinkTransform, uiNoRecheck, recheck],
+    'test LocalStorageLink complex type transform',
+    [localStorageLinkTransform, uiNoRecheck, recheck],
     {
-        'checked:ui-no-recheck': [testStorageLinkTransformer],
+        'checked:ui-no-recheck': [testLocalStorageLinkTransformer],
     },
     {
         stopAfter: 'checked',
