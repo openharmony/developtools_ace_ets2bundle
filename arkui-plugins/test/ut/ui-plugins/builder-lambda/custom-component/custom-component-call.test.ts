@@ -97,6 +97,13 @@ function testParedTransformer(this: PluginTestContext): void {
 }
 
 const expectedBuilderLambdaScript: string = `
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
@@ -141,18 +148,30 @@ function main() {}
   public __updateStruct(initializers: (__Options_CustomContainerUser | undefined)): void {}
   
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
       }), undefined, undefined, @memo() (() => {
-        Column(undefined, undefined, @memo() (() => {
-          Text(undefined, "hello", undefined, undefined);
+        ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+          instance.setColumnOptions(undefined).applyAttributesFinish();
+          return;
+        }), @memo() (() => {
+          TextImpl(@memo() ((instance: TextAttribute): void => {
+            instance.setTextOptions("hello", undefined).applyAttributesFinish();
+            return;
+          }), undefined);
         }));
       }));
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
       }), {}, undefined, @memo() (() => {
-        Column(undefined, undefined, @memo() (() => {}));
+        ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+          instance.setColumnOptions(undefined).applyAttributesFinish();
+          return;
+        }), @memo() (() => {}));
       }));
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();

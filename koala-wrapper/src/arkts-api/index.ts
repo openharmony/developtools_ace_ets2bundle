@@ -70,6 +70,7 @@ export * from '../generated/peers/BreakStatement';
 export * from '../generated/peers/ContinueStatement';
 export * from '../generated/peers/SwitchCaseStatement';
 export * from '../generated/peers/SwitchStatement';
+export * from '../generated/peers/TSQualifiedName';
 
 export * from './types';
 export * from './utilities/private';
