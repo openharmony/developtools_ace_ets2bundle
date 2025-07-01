@@ -221,6 +221,14 @@ KNativePointer impl_ContextErrorMessage(KNativePointer contextPtr)
 }
 KOALA_INTEROP_1(ContextErrorMessage, KNativePointer, KNativePointer)
 
+KNativePointer impl_GetAllErrorMessages(KNativePointer contextPtr)
+{
+    auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
+
+    return new string(GetImpl()->GetAllErrorMessages(context));
+}
+KOALA_INTEROP_1(GetAllErrorMessages, KNativePointer, KNativePointer)
+
 KNativePointer impl_CallExpressionSignature(KNativePointer context, KNativePointer classInstance)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
