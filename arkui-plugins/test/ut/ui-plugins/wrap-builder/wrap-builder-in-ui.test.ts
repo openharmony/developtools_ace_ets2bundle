@@ -38,9 +38,15 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -52,17 +58,17 @@ function main() {}
 
 
 @memo() function myBuilder(value: string, size: number) {
-  Text(@memo() ((instance: TextAttribute): void => {
-    instance.fontSize(size);
+  TextImpl(@memo() ((instance: TextAttribute): void => {
+    instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
     return;
-  }), value, undefined, undefined);
+  }), undefined);
 }
 
 @memo() function yourBuilder(value: string, size: number) {
-  Text(@memo() ((instance: TextAttribute): void => {
-    instance.fontSize(size);
+  TextImpl(@memo() ((instance: TextAttribute): void => {
+    instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
     return;
-  }), value, undefined, undefined);
+  }), undefined);
 }
 
 
@@ -82,7 +88,10 @@ function main() {}
   }
   
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
       this.testBuilder();
     }));
   }
@@ -103,9 +112,15 @@ function testUITransformer(this: PluginTestContext): void {
 const expectedMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
 
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -123,19 +138,19 @@ function main() {}
     __memo_scope.cached;
     return;
   }
-  Text(__memo_context, ((__memo_id) + (175145513)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+  TextImpl(__memo_context, ((__memo_id) + (175145513)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (47330804)), 1);
     const __memo_parameter_instance = __memo_scope.param(0, instance);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    __memo_parameter_instance.value.fontSize(__memo_parameter_size.value);
+    __memo_parameter_instance.value.setTextOptions(__memo_parameter_value.value, undefined).fontSize(__memo_parameter_size.value).applyAttributesFinish();
     {
       __memo_scope.recache();
       return;
     }
-  }), __memo_parameter_value.value, undefined, undefined);
+  }), undefined);
   {
     __memo_scope.recache();
     return;
@@ -149,19 +164,19 @@ function main() {}
     __memo_scope.cached;
     return;
   }
-  Text(__memo_context, ((__memo_id) + (211301233)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+  TextImpl(__memo_context, ((__memo_id) + (211301233)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (137225318)), 1);
     const __memo_parameter_instance = __memo_scope.param(0, instance);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    __memo_parameter_instance.value.fontSize(__memo_parameter_size.value);
+    __memo_parameter_instance.value.setTextOptions(__memo_parameter_value.value, undefined).fontSize(__memo_parameter_size.value).applyAttributesFinish();
     {
       __memo_scope.recache();
       return;
     }
-  }), __memo_parameter_value.value, undefined, undefined);
+  }), undefined);
   {
     __memo_scope.recache();
     return;
@@ -209,7 +224,19 @@ function main() {}
       __memo_scope.cached;
       return;
     }
-    Column(__memo_context, ((__memo_id) + (54078781)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    ColumnImpl(__memo_context, ((__memo_id) + (54078781)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+      const __memo_parameter_instance = __memo_scope.param(0, instance);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      __memo_parameter_instance.value.setColumnOptions(undefined).applyAttributesFinish();
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
       const __memo_scope = __memo_context.scope<void>(((__memo_id) + (213687742)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;

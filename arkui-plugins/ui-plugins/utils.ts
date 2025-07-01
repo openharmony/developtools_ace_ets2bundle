@@ -59,6 +59,8 @@ export enum BuilderLambdaNames {
     STYLE_PARAM_NAME = 'style',
     STYLE_ARROW_PARAM_NAME = 'instance',
     CONTENT_PARAM_NAME = 'content',
+    COMPONENT_PARAM_ORI = 'content_',
+    APPLY_ATTRIBUTES_FINISH_METHOD = 'applyAttributesFinish'
 }
 
 // IMPORT

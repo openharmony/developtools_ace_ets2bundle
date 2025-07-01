@@ -42,11 +42,19 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
+
+import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { BaseCustomDialog as BaseCustomDialog } from "arkui.component.customComponent";
 
@@ -136,19 +144,22 @@ function main() {}
   }
   
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Text(@memo() ((instance: TextAttribute): void => {
-        instance.fontSize(30).height(100);
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions("CustomDialog One", undefined).fontSize(30).height(100).applyAttributesFinish();
         return;
-      }), "CustomDialog One", undefined, undefined);
-      Button(@memo() ((instance: ButtonAttribute): void => {
-        instance.onClick(((e: ClickEvent) => {
+      }), undefined);
+      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+        instance.setButtonOptions("Close", undefined).onClick(((e: ClickEvent) => {
           if (((this.aaController) != (undefined))) {
             this.aaController!.close();
           }
-        })).margin(20);
+        })).margin(20).applyAttributesFinish();
         return;
-      }), "Close", undefined, undefined);
+      }), undefined);
     }));
   }
   
@@ -222,15 +233,18 @@ function main() {}
   }
   
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Button(@memo() ((instance: ButtonAttribute): void => {
-        instance.onClick(((e: ClickEvent) => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+        instance.setButtonOptions("click me", undefined).onClick(((e: ClickEvent) => {
           if (((this.dialogController) != (null))) {
             this.dialogController!.open();
           }
-        })).backgroundColor(0x317aff);
+        })).backgroundColor(0x317aff).applyAttributesFinish();
         return;
-      }), "click me", undefined, undefined);
+      }), undefined);
     }));
   }
   

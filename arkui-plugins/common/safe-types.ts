@@ -34,8 +34,8 @@ export type PartialNested<T> = {
 
 type NestedKey<T, K extends string | number | symbol> = {
     [P in keyof T]: P extends K ? T[P] : T[P] extends object ? NestedKey<T[P], K> : T[P];
-  };
-  
+};
+
 export type PickNested<T, K extends keyof T> = {
     [P in keyof T]: P extends K ? T[P] : T[P] extends object ? NestedKey<T[P], K> : T[P];
 };

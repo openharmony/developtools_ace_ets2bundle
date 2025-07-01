@@ -90,6 +90,10 @@ import hilog from "@ohos.hilog";
 `;
 
 const expectedCheckedScript: string = `
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
@@ -132,7 +136,10 @@ function main() {}
   }
   
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {}));
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {}));
   }
   
   private constructor() {}
@@ -163,7 +170,10 @@ function main() {}
   }
   
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {}));
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {}));
   }
   
   private constructor() {}
