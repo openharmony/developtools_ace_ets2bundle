@@ -32,7 +32,7 @@ export type ReportOptions = {
 
 export type UISyntaxRuleContext = {
     projectConfig?: ProjectConfig;
-    componentsInfo: UISyntaxRuleComponents;
+    componentsInfo: UISyntaxRuleComponents | undefined;
     report(options: ReportOptions): void;
     getMainPages(): string[];
 };
@@ -60,7 +60,7 @@ export type UISyntaxRuleReportOptions = {
 export type UISyntaxRuleLevel = 'error' | 'warn' | 'none';
 
 export interface UISyntaxRuleConstructor {
-    new (context: UISyntaxRuleContext, level: UISyntaxRuleLevel): AbstractUISyntaxRule;
+    new(context: UISyntaxRuleContext, level: UISyntaxRuleLevel): AbstractUISyntaxRule;
 }
 
 export abstract class AbstractUISyntaxRule {
@@ -70,10 +70,10 @@ export abstract class AbstractUISyntaxRule {
         this.messages = this.setup();
     }
 
-    public beforeTransform(): void {}
-    public afterTransform(): void {}
-    public parsed(node: arkts.AstNode): void {}
-    public checked(node: arkts.AstNode): void {}
+    public beforeTransform(): void { }
+    public afterTransform(): void { }
+    public parsed(node: arkts.AstNode): void { }
+    public checked(node: arkts.AstNode): void { }
     public abstract setup(): Record<string, string>;
 
     protected report(options: UISyntaxRuleReportOptions): void {
