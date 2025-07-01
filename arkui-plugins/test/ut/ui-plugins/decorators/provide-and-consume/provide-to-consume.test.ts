@@ -105,7 +105,15 @@ import { IConsumeDecoratedVariable as IConsumeDecoratedVariable } from "arkui.st
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -144,9 +152,18 @@ function main() {}
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Text(undefined, \`Child num: \${this.num}\`, undefined, undefined);
-      Text(undefined, \`Child str: \${this.str}\`, undefined, undefined);
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Child num: \${this.num}\`, undefined).applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Child str: \${this.str}\`, undefined).applyAttributesFinish();
+        return;
+      }), undefined);
     }));
   }
 
@@ -185,9 +202,18 @@ function main() {}
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Text(undefined, \`Parent num: \${this.num}\`, undefined, undefined);
-      Text(undefined, \`Parent str: \${this.str}\`, undefined, undefined);
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Parent num: \${this.num}\`, undefined).applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Parent str: \${this.str}\`, undefined).applyAttributesFinish();
+        return;
+      }), undefined);
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), undefined, undefined, undefined);

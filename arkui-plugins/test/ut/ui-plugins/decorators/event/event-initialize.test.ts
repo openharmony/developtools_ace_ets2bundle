@@ -115,9 +115,15 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IParamDecoratedVariable as IParamDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
@@ -185,14 +191,17 @@ function main() {}
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Text(@memo() ((instance: TextAttribute): void => {
-        instance.onClick(((e) => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Child index: \${this.index}\`, undefined).onClick(((e) => {
           this.changeIndex(20);
           console.log(\`after changeIndex \${this.index}\`);
-        }));
+        })).applyAttributesFinish();
         return;
-      }), \`Child index: \${this.index}\`, undefined, undefined);
+      }), undefined);
     }));
   }
 
@@ -218,7 +227,10 @@ function main() {}
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {
