@@ -55,7 +55,8 @@ import {
 } from '../../performance';
 import { LINTER_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info';
 import { ErrorCodeModule } from '../../hvigor_error_code/const/error_code_module';
-import { collectArkTSEvolutionModuleInfo } from '../../process_arkts_evolution';
+import { collectArkTSEvolutionModuleInfo } from '../ark_compiler/interop/process_arkts_evolution';
+import { isMixCompile } from '../ark_compiler/interop/interop_manager';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -65,7 +66,7 @@ export function etsChecker() {
   return {
     name: 'etsChecker',
     buildStart() {
-      if (this.share.projectConfig.dependentModuleMap) {
+      if (isMixCompile()) {
         collectArkTSEvolutionModuleInfo(this.share);
       }
       const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ROLLUP_PLUGIN_BUILD_START);

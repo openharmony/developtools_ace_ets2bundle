@@ -19,13 +19,13 @@ import childProcess from 'child_process';
 import {
   COMPILE_CONTEXT_INFO_JSON,
   FILESINFO_TXT,
-  GEN_ABC_CMD_FILE_PATH,
   MODULES_ABC,
   MODULES_CACHE,
   NPMENTRIES_TXT,
   SOURCEMAPS,
   SOURCEMAPS_JSON_MERGE
-} from './common/ark_define';
+} from '../common/ark_define';
+import { GEN_ABC_CMD_FILE_PATH } from './pre_define';
 
 /**
  * A script is called by hvigor in a mixed compilation scenario which 1.0 module is not main module,np
