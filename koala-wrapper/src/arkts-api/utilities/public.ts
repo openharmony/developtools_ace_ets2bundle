@@ -67,7 +67,11 @@ function processErrorState(state: Es2pandaContextState, forceDtsEmit = false): v
             if (errorMessage === undefined) {
                 throwError(`Could not get ContextErrorMessage`);
             }
-            throwError([`Failed to proceed to ${Es2pandaContextState[state]}`, errorMessage].join(`\n`));
+            const allErrorMessages = withStringResult(global.es2panda._GetAllErrorMessages(global.context));
+            if (allErrorMessages === undefined) {
+                throwError(`Could not get AllErrorMessages`);
+            }
+            throwError([`Failed to proceed to ${Es2pandaContextState[state]}`, errorMessage, allErrorMessages].join(`\n`));
         }
     } catch (e) {
         global.es2panda._DestroyContext(global.context);
