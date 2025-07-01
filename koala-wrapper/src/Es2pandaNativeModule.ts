@@ -844,6 +844,10 @@ export class Es2pandaNativeModule {
     _IsArrayExpression(node: KPtr): KBoolean {
         throw new Error('Not implemented');
     }
+
+    _SetUpSoPath(soPath: string): void {
+        throw new Error('Not implemented');
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {
