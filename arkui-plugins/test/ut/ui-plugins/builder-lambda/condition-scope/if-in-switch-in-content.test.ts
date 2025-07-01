@@ -39,9 +39,13 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+import { TextImpl as TextImpl } from "arkui.component.text";
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
 import { Text as Text, Column as Column, Component as Component } from \"@ohos.arkui.component\";
 function main() {}
@@ -59,7 +63,10 @@ function main() {}
         this.__backing_num = value;
     }
     @memo() public build() {
-        Column(undefined, undefined, @memo() (() => {
+        ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+            instance.setColumnOptions(undefined).applyAttributesFinish();
+            return;
+        }), @memo() (() => {
             ConditionScope(@memo() (() => {
                 switch (this.num) {
                     case \"-1\": {
@@ -68,16 +75,25 @@ function main() {}
                                 ConditionScope(@memo() (() => {
                                     if (true) {
                                         ConditionBranch(@memo() (() => {
-                                            Text(undefined, \"case 1\", undefined, undefined);
+                                            TextImpl(@memo() ((instance: TextAttribute): void => {
+                                                instance.setTextOptions("case 1", undefined).applyAttributesFinish();
+                                                return;
+                                            }), undefined);
                                         }));
                                     } else {
                                         if (false) {
                                             ConditionBranch(@memo() (() => {
-                                                Text(undefined, \"case 2\", undefined, undefined);
+                                                TextImpl(@memo() ((instance: TextAttribute): void => {
+                                                    instance.setTextOptions("case 2", undefined).applyAttributesFinish();
+                                                    return;
+                                                }), undefined);
                                             }));
                                         } else {
                                             ConditionBranch(@memo() (() => {
-                                                Text(undefined, \"case 3\", undefined, undefined);
+                                                TextImpl(@memo() ((instance: TextAttribute): void => {
+                                                    instance.setTextOptions("case 3", undefined).applyAttributesFinish();
+                                                    return;
+                                                }), undefined);
                                             }));
                                         }
                                     }
@@ -90,7 +106,10 @@ function main() {}
                             ConditionScope(@memo() (() => {
                                 if (true) {
                                     ConditionBranch(@memo() (() => {
-                                        Text(undefined, \"case 4\", undefined, undefined);
+                                        TextImpl(@memo() ((instance: TextAttribute): void => {
+                                            instance.setTextOptions("case 4", undefined).applyAttributesFinish();
+                                            return;
+                                        }), undefined);
                                     }));
                                 }
                             }));
@@ -114,9 +133,13 @@ function testUITransformer(this: PluginTestContext): void {
 
 const expectedMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+import { TextImpl as TextImpl } from "arkui.component.text";
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
 import { Text as Text, Column as Column, Component as Component } from \"@ohos.arkui.component\";
 function main() {}
@@ -139,7 +162,19 @@ function main() {}
             __memo_scope.cached;
             return;
         }
-        Column(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+            const __memo_parameter_instance = __memo_scope.param(0, instance);
+            if (__memo_scope.unchanged) {
+                __memo_scope.cached;
+                return;
+            }
+            __memo_parameter_instance.value.setColumnOptions(undefined).applyAttributesFinish();
+            {
+                __memo_scope.recache();
+                return;
+            }
+        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -173,7 +208,19 @@ function main() {}
                                                 __memo_scope.cached;
                                                 return;
                                             }
-                                            Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"case 1\", undefined, undefined);
+                                            TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                                                const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                                const __memo_parameter_instance = __memo_scope.param(0, instance);
+                                                if (__memo_scope.unchanged) {
+                                                    __memo_scope.cached;
+                                                    return;
+                                                }
+                                                __memo_parameter_instance.value.setTextOptions("case 1", undefined).applyAttributesFinish();
+                                                {
+                                                    __memo_scope.recache();
+                                                    return;
+                                                }
+                                            }), undefined);
                                             {
                                                 __memo_scope.recache();
                                                 return;
@@ -187,7 +234,19 @@ function main() {}
                                                     __memo_scope.cached;
                                                     return;
                                                 }
-                                                Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"case 2\", undefined, undefined);
+                                                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                                                    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                                    const __memo_parameter_instance = __memo_scope.param(0, instance);
+                                                    if (__memo_scope.unchanged) {
+                                                        __memo_scope.cached;
+                                                        return;
+                                                    }
+                                                    __memo_parameter_instance.value.setTextOptions("case 2", undefined).applyAttributesFinish();
+                                                    {
+                                                        __memo_scope.recache();
+                                                        return;
+                                                    }
+                                                }), undefined);
                                                 {
                                                     __memo_scope.recache();
                                                     return;
@@ -200,7 +259,19 @@ function main() {}
                                                     __memo_scope.cached;
                                                     return;
                                                 }
-                                                Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"case 3\", undefined, undefined);
+                                                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                                                    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                                    const __memo_parameter_instance = __memo_scope.param(0, instance);
+                                                    if (__memo_scope.unchanged) {
+                                                        __memo_scope.cached;
+                                                        return;
+                                                    }
+                                                    __memo_parameter_instance.value.setTextOptions("case 3", undefined).applyAttributesFinish();
+                                                    {
+                                                        __memo_scope.recache();
+                                                        return;
+                                                    }
+                                                }), undefined);
                                                 {
                                                     __memo_scope.recache();
                                                     return;
@@ -240,7 +311,19 @@ function main() {}
                                             __memo_scope.cached;
                                             return;
                                         }
-                                        Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"case 4\", undefined, undefined);
+                                        TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                                            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                            const __memo_parameter_instance = __memo_scope.param(0, instance);
+                                            if (__memo_scope.unchanged) {
+                                                __memo_scope.cached;
+                                                return;
+                                            }
+                                            __memo_parameter_instance.value.setTextOptions("case 4", undefined).applyAttributesFinish();
+                                            {
+                                                __memo_scope.recache();
+                                                return;
+                                            }
+                                        }), undefined);
                                         {
                                             __memo_scope.recache();
                                             return;

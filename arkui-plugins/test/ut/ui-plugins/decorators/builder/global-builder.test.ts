@@ -37,8 +37,15 @@ const parsedTransform: Plugins = {
 
 const expectedScript: string = `
 
+import { RowAttribute as RowAttribute } from "arkui.component.row";
+
+import { RowImpl as RowImpl } from "arkui.component.row";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -48,12 +55,21 @@ function main() {}
 
 
 @memo() function showTextBuilder() {
-  Text(undefined, "Hello World", undefined, undefined);
+  TextImpl(@memo() ((instance: TextAttribute): void => {
+    instance.setTextOptions("Hello World", undefined).applyAttributesFinish();
+    return;
+  }), undefined);
 }
 
 @memo() function overBuilder(params: Tmp) {
-  Row(undefined, undefined, @memo() (() => {
-    Text(undefined, (("UseStateVarByReference: ") + (params.paramA1)), undefined, undefined);
+  RowImpl(@memo() ((instance: RowAttribute): void => {
+    instance.setRowOptions(undefined).applyAttributesFinish();
+    return;
+  }), @memo() (() => {
+    TextImpl(@memo() ((instance: TextAttribute): void => {
+      instance.setTextOptions((("UseStateVarByReference: ") + (params.paramA1)), undefined).applyAttributesFinish();
+      return;
+    }), undefined);
   }));
 }
 
@@ -71,7 +87,10 @@ class Tmp {
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
   
   @memo() public build() {
-    Row(undefined, undefined, @memo() (() => {
+    RowImpl(@memo() ((instance: RowAttribute): void => {
+      instance.setRowOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
       showTextBuilder();
       overBuilder({
         paramA1: "Hello",
