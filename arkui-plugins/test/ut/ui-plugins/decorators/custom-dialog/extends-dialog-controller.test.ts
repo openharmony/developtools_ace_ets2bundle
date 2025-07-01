@@ -40,7 +40,13 @@ const parsedTransform: Plugins = {
 const expectedScript: string = `
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
+import { ButtonImpl as ButtonImpl } from "arkui.component.button";
+
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { BaseCustomDialog as BaseCustomDialog } from "arkui.component.customComponent";
 
@@ -74,7 +80,10 @@ function main() {}
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {}));
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {}));
   }
 
   public constructor() {}
@@ -136,15 +145,18 @@ class DialogControllerV3 extends DialogControllerV2 {
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Button(@memo() ((instance: ButtonAttribute): void => {
-        instance.onClick(((e: ClickEvent) => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+        instance.setButtonOptions("click me", undefined).onClick(((e: ClickEvent) => {
           if (((this.dialogController) != (null))) {
             this.dialogController!.open();
           }
-        }));
+        })).applyAttributesFinish();
         return;
-      }), "click me", undefined, undefined);
+      }), undefined);
     }));
   }
 

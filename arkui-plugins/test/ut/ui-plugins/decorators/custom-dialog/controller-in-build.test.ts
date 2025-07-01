@@ -40,11 +40,21 @@ const parsedTransform: Plugins = {
 const expectedScript: string = `
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
+import { ButtonImpl as ButtonImpl } from "arkui.component.button";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { BaseCustomDialog as BaseCustomDialog } from "arkui.component.customComponent";
 
@@ -106,8 +116,14 @@ function main() {}
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Text(undefined, "CustomDialog One", undefined, undefined);
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions("CustomDialog One", undefined).applyAttributesFinish();
+        return;
+      }), undefined);
     }));
   }
 
@@ -124,9 +140,12 @@ function main() {}
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Button(@memo() ((instance: ButtonAttribute): void => {
-        instance.onClick(((e: ClickEvent) => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+        instance.setButtonOptions("click me", undefined).onClick(((e: ClickEvent) => {
           let dialogController: (CustomDialogController | undefined) = ({let gensym___220374545: Any;
           gensym___220374545 = new CustomDialogController({
             builder: @memo() (() => {
@@ -139,9 +158,9 @@ function main() {}
             baseComponent: this,
           })
           (gensym___220374545 as CustomDialogController)});
-        })).backgroundColor(0x317aff);
+        })).backgroundColor(0x317aff).applyAttributesFinish();
         return;
-      }), "click me", undefined, undefined);
+      }), undefined);
     }));
   }
 

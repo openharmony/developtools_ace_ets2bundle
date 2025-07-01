@@ -148,13 +148,23 @@ class Info {
 const expectedCheckedScript: string = `
 import { IParamDecoratedVariable as IParamDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
+
+import { ButtonImpl as ButtonImpl } from "arkui.component.button";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
@@ -211,7 +221,10 @@ class Info {
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
       ForEach<Info>(((): Array<Info> => {
         return this.infoList;
       }), ((info: Info) => {
@@ -222,14 +235,14 @@ class Info {
           __options_has_info: true,
         }, undefined, undefined);
       }));
-      Button(@memo() ((instance: ButtonAttribute): void => {
-        instance.onClick(((e) => {
+      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+        instance.setButtonOptions("change", undefined).onClick(((e) => {
           this.infoList[0] = new Info("Atom", 40, 27, 90);
           this.infoList[1].name = "Bob";
           this.infoList[2].region = new Region(7, 9);
-        }));
+        })).applyAttributesFinish();
         return;
-      }), "change", undefined, undefined);
+      }), undefined);
     }));
   }
 
@@ -256,9 +269,18 @@ class Info {
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Text(undefined, \`name: \${this.info.name}\`, undefined, undefined);
-      Text(undefined, \`age: \${this.info.age}\`, undefined, undefined);
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`name: \${this.info.name}\`, undefined).applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`age: \${this.info.age}\`, undefined).applyAttributesFinish();
+        return;
+      }), undefined);
       SubComponent._instantiateImpl(undefined, (() => {
         return new SubComponent();
       }), {
@@ -291,8 +313,14 @@ class Info {
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Text(undefined, \`region: \${this.region.x}-\${this.region.y}\`, undefined, undefined);
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`region: \${this.region.x}-\${this.region.y}\`, undefined).applyAttributesFinish();
+        return;
+      }), undefined);
     }));
   }
 

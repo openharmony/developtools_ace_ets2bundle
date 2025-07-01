@@ -43,6 +43,8 @@ import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateM
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
+import { ButtonImpl as ButtonImpl } from "arkui.component.button";
+
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
 import { OBSERVE as OBSERVE } from "arkui.stateManagement.decorator";
@@ -58,8 +60,15 @@ import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -74,9 +83,15 @@ const wBuilder: WrappedBuilder<MyBuilderFuncType> = wrapBuilder(overBuilder);
 function main() {}
 
 
-@memo() function overBuilder(@MemoSkip() param: (()=> Tmp)) {
-  Column(undefined, undefined, @memo() (() => {
-    Text(undefined, \`wrapBuildervalue:\${param().paramA2}\`, undefined, undefined);
+@memo() function overBuilder(param: (()=> Tmp)) {
+  ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+    instance.setColumnOptions(undefined).applyAttributesFinish();
+    return;
+  }), @memo() (() => {
+    TextImpl(@memo() ((instance: TextAttribute): void => {
+      instance.setTextOptions(\`wrapBuildervalue:\${param().paramA2}\`, undefined).applyAttributesFinish();
+      return;
+    }), undefined);
   }));
 }
 
@@ -149,18 +164,21 @@ function main() {}
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
       wBuilder.builder((() => {
         return {
           paramA2: this.label.paramA2,
         };
       }));
-      Button(@memo() ((instance: ButtonAttribute): void => {
-        instance.onClick(((e: ClickEvent) => {
+      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+        instance.setButtonOptions("Click me", undefined).onClick(((e: ClickEvent) => {
           this.label.paramA2 = "ArkUI";
-        }));
+        })).applyAttributesFinish();
         return;
-      }), "Click me", undefined, undefined);
+      }), undefined);
     }));
   }
 
@@ -194,6 +212,8 @@ import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateM
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
+import { ButtonImpl as ButtonImpl } from "arkui.component.button";
+
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
 import { OBSERVE as OBSERVE } from "arkui.stateManagement.decorator";
@@ -209,8 +229,15 @@ import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -231,13 +258,37 @@ function main() {}
     __memo_scope.cached;
     return;
   }
-  Column(__memo_context, ((__memo_id) + (241913892)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+  ColumnImpl(__memo_context, ((__memo_id) + (241913892)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+    const __memo_parameter_instance = __memo_scope.param(0, instance);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
+      return;
+    }
+    __memo_parameter_instance.value.setColumnOptions(undefined).applyAttributesFinish();
+    {
+      __memo_scope.recache();
+      return;
+    }
+  }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (175145513)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    Text(__memo_context, ((__memo_id) + (47330804)), undefined, \`wrapBuildervalue:\${param().paramA2}\`, undefined, undefined);
+    TextImpl(__memo_context, ((__memo_id) + (47330804)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+      const __memo_parameter_instance = __memo_scope.param(0, instance);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      __memo_parameter_instance.value.setTextOptions(\`wrapBuildervalue:\${__memo_parameter_param.value().paramA2}\`, undefined).applyAttributesFinish();
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }), undefined);
     {
       __memo_scope.recache();
       return;
@@ -323,7 +374,19 @@ function main() {}
       __memo_scope.cached;
       return;
     }
-    Column(__memo_context, ((__memo_id) + (218979098)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    ColumnImpl(__memo_context, ((__memo_id) + (218979098)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+      const __memo_parameter_instance = __memo_scope.param(0, instance);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      __memo_parameter_instance.value.setColumnOptions(undefined).applyAttributesFinish();
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
       const __memo_scope = __memo_context.scope<void>(((__memo_id) + (76711614)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -334,21 +397,21 @@ function main() {}
           paramA2: this.label.paramA2,
         };
       }));
-      Button(__memo_context, ((__memo_id) + (46726221)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ButtonAttribute): void => {
+      ButtonImpl(__memo_context, ((__memo_id) + (46726221)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ButtonAttribute): void => {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (213104625)), 1);
         const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {
           __memo_scope.cached;
           return;
         }
-        __memo_parameter_instance.value.onClick(((e: ClickEvent) => {
+        __memo_parameter_instance.value.setButtonOptions("Click me", undefined).onClick(((e: ClickEvent) => {
           this.label.paramA2 = "ArkUI";
-        }));
+        })).applyAttributesFinish();
         {
           __memo_scope.recache();
           return;
         }
-      }), "Click me", undefined, undefined);
+      }), undefined);
       {
         __memo_scope.recache();
         return;

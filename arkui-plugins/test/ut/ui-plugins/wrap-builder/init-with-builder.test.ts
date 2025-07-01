@@ -39,8 +39,11 @@ const parsedTransform: Plugins = {
 
 const expectedUIScript: string = `
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
+import { TextImpl as TextImpl } from "arkui.component.text";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Text as Text, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Builder as Builder, Column as Column } from "@kit.ArkUI";
 
@@ -51,8 +54,12 @@ function main() {}
 @memo() function myBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   Text(@memo() ((instance: TextAttribute): void => {
     instance.fontSize(size);
+globalBuilder = wrapBuilder(myBuilder);
+@memo() function myBuilder(value: string, size: number) {
+  TextImpl(@memo() ((instance: TextAttribute): void => {
+    instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
     return;
-  }), value, undefined, undefined);
+  }), undefined);
 }
 
 globalBuilder = wrapBuilder(myBuilder);
@@ -65,7 +72,10 @@ globalBuilder = wrapBuilder(myBuilder);
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
       globalBuilder.builder("hello", 50);
     }));
   }
@@ -88,10 +98,15 @@ const expectedMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
 
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -107,19 +122,19 @@ function main() {}
     __memo_scope.cached;
     return;
   }
-  Text(__memo_context, ((__memo_id) + (175145513)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+  TextImpl(__memo_context, ((__memo_id) + (175145513)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (47330804)), 1);
     const __memo_parameter_instance = __memo_scope.param(0, instance);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    __memo_parameter_instance.value.fontSize(size);
+    __memo_parameter_instance.value.setTextOptions(__memo_parameter_value.value, undefined).fontSize(__memo_parameter_size.value).applyAttributesFinish();
     {
       __memo_scope.recache();
       return;
     }
-  }), __memo_parameter_value.value, undefined, undefined);
+  }), undefined);
   {
     __memo_scope.recache();
     return;
@@ -141,7 +156,19 @@ globalBuilder = wrapBuilder(myBuilder);
       __memo_scope.cached;
       return;
     }
-    Column(__memo_context, ((__memo_id) + (213104625)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    ColumnImpl(__memo_context, ((__memo_id) + (213104625)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+      const __memo_parameter_instance = __memo_scope.param(0, instance);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      __memo_parameter_instance.value.setColumnOptions(undefined).applyAttributesFinish();
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
       const __memo_scope = __memo_context.scope<void>(((__memo_id) + (211301233)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;

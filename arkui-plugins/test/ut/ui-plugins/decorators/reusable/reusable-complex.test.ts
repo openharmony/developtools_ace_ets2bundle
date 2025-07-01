@@ -40,26 +40,31 @@ const pluginTester = new PluginTester('test complex reusable', buildConfig);
 const expectedScript: string = `
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
+import { TextImpl as TextImpl } from "arkui.component.text";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ConditionScope as ConditionScope } from "arkui.component.builder";
 
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
 
-import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
+
+import { ButtonImpl as ButtonImpl } from "arkui.component.button";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { NavInterface as NavInterface } from "arkui.UserView";
 
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
-
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -105,16 +110,16 @@ class Message {
   }
   
   @memo() public build() {
-    Column(@memo() ((instance: ColumnAttribute): void => {
-      instance.height("100%").width("100%");
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).height("100%").width("100%").applyAttributesFinish();
       return;
-    }), undefined, @memo() (() => {
-      Button(@memo() ((instance: ButtonAttribute): void => {
-        instance.fontSize(30).fontWeight(FontWeight.Bold).onClick(((e: ClickEvent) => {
+    }), @memo() (() => {
+      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+        instance.setButtonOptions("Hello", undefined).fontSize(30).fontWeight(FontWeight.Bold).onClick(((e: ClickEvent) => {
           this.display = !(this.display);
-        }));
+        })).applyAttributesFinish();
         return;
-      }), "Hello", undefined, undefined);
+      }), undefined);
       ConditionScope(@memo() (() => {
         if (this.display) {
           ConditionBranch(@memo() (() => {
@@ -162,14 +167,14 @@ class Message {
   public aboutToReuse(params: Record<string, ESObject>) {}
   
   @memo() public build() {
-    Column(@memo() ((instance: ColumnAttribute): void => {
-      instance.borderWidth(1).height(100);
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).borderWidth(1).height(100).applyAttributesFinish();
       return;
-    }), undefined, @memo() (() => {
-      Text(@memo() ((instance: TextAttribute): void => {
-        instance.fontSize(30);
+    }), @memo() (() => {
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(this.message.value, undefined).fontSize(30).applyAttributesFinish();
         return;
-      }), this.message.value, undefined, undefined);
+      }), undefined);
     }));
   }
   
