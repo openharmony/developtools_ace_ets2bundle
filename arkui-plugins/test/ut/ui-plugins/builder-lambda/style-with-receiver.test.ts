@@ -71,9 +71,9 @@ function main() {}
 
 
 @Component() final struct MM extends CustomComponent<MM, __Options_MM> {
-  public __initializeStruct(initializers: __Options_MM | undefined, @memo() content: (()=> void) | undefined): void {}
+  public __initializeStruct(initializers: (__Options_MM | undefined), @memo() content: ((()=> void) | undefined)): void {}
   
-  public __updateStruct(initializers: __Options_MM | undefined): void {}
+  public __updateStruct(initializers: (__Options_MM | undefined)): void {}
   
   @memo() public build() {
     Column(undefined, undefined, @memo() (() => {

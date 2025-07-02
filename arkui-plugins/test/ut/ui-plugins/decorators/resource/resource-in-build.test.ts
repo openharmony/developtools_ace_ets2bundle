@@ -59,7 +59,7 @@ import { Component as Component, $r as $r, $rawfile as $rawfile, Column as Colum
 function main() {}
 
 @Component() final struct ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
-  public __initializeStruct(initializers: __Options_ResourceComponent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_ResourceComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_str1 = ((({let gensym___147578113 = initializers;
     (((gensym___147578113) == (null)) ? undefined : gensym___147578113.str1)})) ?? ("app.media.ri"));
     this.__backing_str2 = ((({let gensym___220149772 = initializers;
@@ -68,7 +68,7 @@ function main() {}
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.numbers)})) ?? (["0", "1", "3", "5", "8"]));
   }
   
-  public __updateStruct(initializers: __Options_ResourceComponent | undefined): void {}
+  public __updateStruct(initializers: (__Options_ResourceComponent | undefined)): void {}
   
   private __backing_str1?: string;
   
@@ -153,12 +153,12 @@ function main() {}
 }
 
 @Component() export interface __Options_ResourceComponent {
-  set str1(str1: string | undefined)
-  get str1(): string | undefined
-  set str2(str2: string | undefined)
-  get str2(): string | undefined
-  set numbers(numbers: Array<string> | undefined)
-  get numbers(): Array<string> | undefined
+  set str1(str1: (string | undefined))
+  get str1(): (string | undefined)
+  set str2(str2: (string | undefined))
+  get str2(): (string | undefined)
+  set numbers(numbers: (Array<string> | undefined))
+  get numbers(): (Array<string> | undefined)
 }
 `;
 

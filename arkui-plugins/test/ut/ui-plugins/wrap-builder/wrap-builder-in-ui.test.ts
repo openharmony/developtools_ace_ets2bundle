@@ -73,9 +73,9 @@ function main() {}
 @memo() type MyBuilderFuncType = @Builder() ((value: string, size: number)=> void);
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
-  public __initializeStruct(initializers: __Options_ImportStruct | undefined, @memo() content: (()=> void) | undefined): void {}
+  public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @memo() content: ((()=> void) | undefined)): void {}
   
-  public __updateStruct(initializers: __Options_ImportStruct | undefined): void {}
+  public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
   
   @memo() public testBuilder() {
     ForEach(((): Array<WrappedBuilder<MyBuilderFuncType>> => {

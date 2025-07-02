@@ -38,7 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
@@ -78,14 +77,14 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   } as NavInterface));
 
 @Component() final struct DateComponent extends CustomComponent<DateComponent, __Options_DateComponent> {
-  public __initializeStruct(initializers: __Options_DateComponent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_DateComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___164314175 = initializers;
     (((gensym___164314175) == (null)) ? undefined : gensym___164314175.__backing_selectedDate)})) {
       this.__backing_selectedDate = STATE_MGMT_FACTORY.makeLink<Date>(this, "selectedDate", initializers!.__backing_selectedDate!);
     };
   }
   
-  public __updateStruct(initializers: __Options_DateComponent | undefined): void {}
+  public __updateStruct(initializers: (__Options_DateComponent | undefined)): void {}
   
   private __backing_selectedDate?: ILinkDecoratedVariable<Date>;
   
@@ -124,12 +123,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> implements PageLifeCycle {
-  public __initializeStruct(initializers: __Options_ParentComponent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_ParentComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_parentSelectedDate = STATE_MGMT_FACTORY.makeState<Date>(this, "parentSelectedDate", ((({let gensym___80922148 = initializers;
     (((gensym___80922148) == (null)) ? undefined : gensym___80922148.parentSelectedDate)})) ?? (new Date("2021-08-08"))));
   }
   
-  public __updateStruct(initializers: __Options_ParentComponent | undefined): void {}
+  public __updateStruct(initializers: (__Options_ParentComponent | undefined)): void {}
   
   private __backing_parentSelectedDate?: IStateDecoratedVariable<Date>;
   
@@ -175,22 +174,22 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 @Component() export interface __Options_DateComponent {
-  @__Link_intrinsic() set selectedDate(selectedDate: Date | undefined)
+  @__Link_intrinsic() set selectedDate(selectedDate: (Date | undefined))
   
-  @__Link_intrinsic() get selectedDate(): Date | undefined
-  set __backing_selectedDate(__backing_selectedDate: LinkSourceType<Date> | undefined)
+  @__Link_intrinsic() get selectedDate(): (Date | undefined)
+  set __backing_selectedDate(__backing_selectedDate: (LinkSourceType<Date> | undefined))
   
-  get __backing_selectedDate(): LinkSourceType<Date> | undefined
+  get __backing_selectedDate(): (LinkSourceType<Date> | undefined)
   
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_ParentComponent {
-  set parentSelectedDate(parentSelectedDate: Date | undefined)
+  set parentSelectedDate(parentSelectedDate: (Date | undefined))
   
-  get parentSelectedDate(): Date | undefined
-  set __backing_parentSelectedDate(__backing_parentSelectedDate: IStateDecoratedVariable<Date> | undefined)
+  get parentSelectedDate(): (Date | undefined)
+  set __backing_parentSelectedDate(__backing_parentSelectedDate: (IStateDecoratedVariable<Date> | undefined))
   
-  get __backing_parentSelectedDate(): IStateDecoratedVariable<Date> | undefined
+  get __backing_parentSelectedDate(): (IStateDecoratedVariable<Date> | undefined)
   
 }
 

@@ -38,7 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
@@ -61,17 +60,15 @@ import { Prop as Prop, State as State } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-
-
 @Component() final struct CountDownComponent extends CustomComponent<CountDownComponent, __Options_CountDownComponent> {
-  public __initializeStruct(initializers: __Options_CountDownComponent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_CountDownComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_count = STATE_MGMT_FACTORY.makeProp<number>(this, "count", ((({let gensym___58710805 = initializers;
     (((gensym___58710805) == (null)) ? undefined : gensym___58710805.count)})) ?? (0)));
     this.__backing_costOfOneAttempt = ((({let gensym___88948111 = initializers;
     (((gensym___88948111) == (null)) ? undefined : gensym___88948111.costOfOneAttempt)})) ?? (1));
   }
   
-  public __updateStruct(initializers: __Options_CountDownComponent | undefined): void {
+  public __updateStruct(initializers: (__Options_CountDownComponent | undefined)): void {
     if (((({let gensym___188547633 = initializers;
     (((gensym___188547633) == (null)) ? undefined : gensym___188547633.count)})) !== (undefined))) {
       this.__backing_count!.update((initializers!.count as number));
@@ -119,12 +116,12 @@ function main() {}
 }
 
 @Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> {
-  public __initializeStruct(initializers: __Options_ParentComponent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_ParentComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_countDownStartValue = STATE_MGMT_FACTORY.makeState<number>(this, "countDownStartValue", ((({let gensym___249912438 = initializers;
     (((gensym___249912438) == (null)) ? undefined : gensym___249912438.countDownStartValue)})) ?? (10)));
   }
   
-  public __updateStruct(initializers: __Options_ParentComponent | undefined): void {}
+  public __updateStruct(initializers: (__Options_ParentComponent | undefined)): void {}
   
   private __backing_countDownStartValue?: IStateDecoratedVariable<number>;
   
@@ -165,25 +162,25 @@ function main() {}
 }
 
 @Component() export interface __Options_CountDownComponent {
-  set count(count: number | undefined)
+  set count(count: (number | undefined))
   
-  get count(): number | undefined
-  set __backing_count(__backing_count: IPropDecoratedVariable<number> | undefined)
+  get count(): (number | undefined)
+  set __backing_count(__backing_count: (IPropDecoratedVariable<number> | undefined))
   
-  get __backing_count(): IPropDecoratedVariable<number> | undefined
-  set costOfOneAttempt(costOfOneAttempt: number | undefined)
+  get __backing_count(): (IPropDecoratedVariable<number> | undefined)
+  set costOfOneAttempt(costOfOneAttempt: (number | undefined))
   
-  get costOfOneAttempt(): number | undefined
+  get costOfOneAttempt(): (number | undefined)
   
 }
 
 @Component() export interface __Options_ParentComponent {
-  set countDownStartValue(countDownStartValue: number | undefined)
+  set countDownStartValue(countDownStartValue: (number | undefined))
   
-  get countDownStartValue(): number | undefined
-  set __backing_countDownStartValue(__backing_countDownStartValue: IStateDecoratedVariable<number> | undefined)
+  get countDownStartValue(): (number | undefined)
+  set __backing_countDownStartValue(__backing_countDownStartValue: (IStateDecoratedVariable<number> | undefined))
   
-  get __backing_countDownStartValue(): IStateDecoratedVariable<number> | undefined
+  get __backing_countDownStartValue(): (IStateDecoratedVariable<number> | undefined)
   
 }
 `;

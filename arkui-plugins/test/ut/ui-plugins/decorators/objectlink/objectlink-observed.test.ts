@@ -116,7 +116,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   @JSONStringifyIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  public constructor(args: number | string) {
+  public constructor(args: (number | string)) {
     super(args);
   }
   
@@ -173,14 +173,14 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_label = ((({let gensym___171896504 = initializers;
     (((gensym___171896504) == (null)) ? undefined : gensym___171896504.label)})) ?? ("date"));
     this.__backing_data = STATE_MGMT_FACTORY.makeObjectLink<DateClass>(this, "data", ({let gensym___209155591 = initializers;
     (((gensym___209155591) == (null)) ? undefined : gensym___209155591.data)})!)
   }
   
-  public __updateStruct(initializers: __Options_Child | undefined): void {
+  public __updateStruct(initializers: (__Options_Child | undefined)): void {
     if (((({let gensym___232946400 = initializers;
     (((gensym___232946400) == (null)) ? undefined : gensym___232946400.data)})) !== (undefined))) {
       this.__backing_data!.update(initializers!.data!);
@@ -219,12 +219,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> implements PageLifeCycle {
-  public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_newData = STATE_MGMT_FACTORY.makeState<NewDate>(this, "newData", ((({let gensym___225289068 = initializers;
     (((gensym___225289068) == (null)) ? undefined : gensym___225289068.newData)})) ?? (new NewDate(new DateClass("2023-1-1")))));
   }
   
-  public __updateStruct(initializers: __Options_Parent | undefined): void {}
+  public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
   private __backing_newData?: IStateDecoratedVariable<NewDate>;
   
@@ -264,25 +264,25 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Component() export interface __Options_Child {
-  set label(label: string | undefined)
+  set label(label: (string | undefined))
   
-  get label(): string | undefined
-  set data(data: DateClass | undefined)
+  get label(): (string | undefined)
+  set data(data: (DateClass | undefined))
   
-  get data(): DateClass | undefined
-  set __backing_data(__backing_data: IObjectLinkDecoratedVariable<DateClass> | undefined)
+  get data(): (DateClass | undefined)
+  set __backing_data(__backing_data: (IObjectLinkDecoratedVariable<DateClass> | undefined))
   
-  get __backing_data(): IObjectLinkDecoratedVariable<DateClass> | undefined
+  get __backing_data(): (IObjectLinkDecoratedVariable<DateClass> | undefined)
   
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Parent {
-  set newData(newData: NewDate | undefined)
+  set newData(newData: (NewDate | undefined))
   
-  get newData(): NewDate | undefined
-  set __backing_newData(__backing_newData: IStateDecoratedVariable<NewDate> | undefined)
+  get newData(): (NewDate | undefined)
+  set __backing_newData(__backing_newData: (IStateDecoratedVariable<NewDate> | undefined))
   
-  get __backing_newData(): IStateDecoratedVariable<NewDate> | undefined
+  get __backing_newData(): (IStateDecoratedVariable<NewDate> | undefined)
   
 }
 

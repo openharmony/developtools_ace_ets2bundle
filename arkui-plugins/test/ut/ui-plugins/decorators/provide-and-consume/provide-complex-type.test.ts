@@ -38,7 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.stateManagement.decorator";
@@ -56,8 +55,6 @@ import { Component as Component } from "@ohos.arkui.component";
 import { Provide as Provide } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
-
 
 class Per {
   public num: number;
@@ -137,7 +134,7 @@ final class PropType extends BaseEnum<int> {
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_provideVar1 = STATE_MGMT_FACTORY.makeProvide<Per>(this, "provideVar1", "provideVar1", ((({let gensym___181030638 = initializers;
     (((gensym___181030638) == (null)) ? undefined : gensym___181030638.provideVar1)})) ?? (new Per(6))), false);
     this.__backing_provideVar2 = STATE_MGMT_FACTORY.makeProvide<Array<number>>(this, "provideVar2", "provideVar2", ((({let gensym___143944235 = initializers;
@@ -158,13 +155,13 @@ final class PropType extends BaseEnum<int> {
     (((gensym___179115605) == (null)) ? undefined : gensym___179115605.provideVar9)})) ?? (new Date("2025-4-23"))), false);
     this.__backing_provideVar10 = STATE_MGMT_FACTORY.makeProvide<Map<number, Per>>(this, "provideVar10", "provideVar10", ((({let gensym___209671248 = initializers;
     (((gensym___209671248) == (null)) ? undefined : gensym___209671248.provideVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))), false);
-    this.__backing_provideVar11 = STATE_MGMT_FACTORY.makeProvide<string | number>(this, "provideVar11", "provideVar11", ((({let gensym___150211849 = initializers;
+    this.__backing_provideVar11 = STATE_MGMT_FACTORY.makeProvide<(string | number)>(this, "provideVar11", "provideVar11", ((({let gensym___150211849 = initializers;
     (((gensym___150211849) == (null)) ? undefined : gensym___150211849.provideVar11)})) ?? (0.0)), false);
-    this.__backing_provideVar12 = STATE_MGMT_FACTORY.makeProvide<Set<string> | Per>(this, "provideVar12", "provideVar12", ((({let gensym___256025818 = initializers;
+    this.__backing_provideVar12 = STATE_MGMT_FACTORY.makeProvide<(Set<string> | Per)>(this, "provideVar12", "provideVar12", ((({let gensym___256025818 = initializers;
     (((gensym___256025818) == (null)) ? undefined : gensym___256025818.provideVar12)})) ?? (new Per(6))), false);
   }
   
-  public __updateStruct(initializers: __Options_Parent | undefined): void {}
+  public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
   private __backing_provideVar1?: IProvideDecoratedVariable<Per>;
   
@@ -266,23 +263,23 @@ final class PropType extends BaseEnum<int> {
     this.__backing_provideVar10!.set(value);
   }
   
-  private __backing_provideVar11?: IProvideDecoratedVariable<string | number>;
+  private __backing_provideVar11?: IProvideDecoratedVariable<(string | number)>;
   
-  public get provideVar11(): string | number {
+  public get provideVar11(): (string | number) {
     return this.__backing_provideVar11!.get();
   }
   
-  public set provideVar11(value: string | number) {
+  public set provideVar11(value: (string | number)) {
     this.__backing_provideVar11!.set(value);
   }
   
-  private __backing_provideVar12?: IProvideDecoratedVariable<Set<string> | Per>;
+  private __backing_provideVar12?: IProvideDecoratedVariable<(Set<string> | Per)>;
   
-  public get provideVar12(): Set<string> | Per {
+  public get provideVar12(): (Set<string> | Per) {
     return this.__backing_provideVar12!.get();
   }
   
-  public set provideVar12(value: Set<string> | Per) {
+  public set provideVar12(value: (Set<string> | Per)) {
     this.__backing_provideVar12!.set(value);
   }
   
@@ -293,78 +290,78 @@ final class PropType extends BaseEnum<int> {
 }
 
 @Component() export interface __Options_Parent {
-  set provideVar1(provideVar1: Per | undefined)
+  set provideVar1(provideVar1: (Per | undefined))
   
-  get provideVar1(): Per | undefined
-  set __backing_provideVar1(__backing_provideVar1: IProvideDecoratedVariable<Per> | undefined)
+  get provideVar1(): (Per | undefined)
+  set __backing_provideVar1(__backing_provideVar1: (IProvideDecoratedVariable<Per> | undefined))
   
-  get __backing_provideVar1(): IProvideDecoratedVariable<Per> | undefined
-  set provideVar2(provideVar2: Array<number> | undefined)
+  get __backing_provideVar1(): (IProvideDecoratedVariable<Per> | undefined)
+  set provideVar2(provideVar2: (Array<number> | undefined))
   
-  get provideVar2(): Array<number> | undefined
-  set __backing_provideVar2(__backing_provideVar2: IProvideDecoratedVariable<Array<number>> | undefined)
+  get provideVar2(): (Array<number> | undefined)
+  set __backing_provideVar2(__backing_provideVar2: (IProvideDecoratedVariable<Array<number>> | undefined))
   
-  get __backing_provideVar2(): IProvideDecoratedVariable<Array<number>> | undefined
-  set provideVar3(provideVar3: PropType | undefined)
+  get __backing_provideVar2(): (IProvideDecoratedVariable<Array<number>> | undefined)
+  set provideVar3(provideVar3: (PropType | undefined))
   
-  get provideVar3(): PropType | undefined
-  set __backing_provideVar3(__backing_provideVar3: IProvideDecoratedVariable<PropType> | undefined)
+  get provideVar3(): (PropType | undefined)
+  set __backing_provideVar3(__backing_provideVar3: (IProvideDecoratedVariable<PropType> | undefined))
   
-  get __backing_provideVar3(): IProvideDecoratedVariable<PropType> | undefined
-  set provideVar4(provideVar4: Set<string> | undefined)
+  get __backing_provideVar3(): (IProvideDecoratedVariable<PropType> | undefined)
+  set provideVar4(provideVar4: (Set<string> | undefined))
   
-  get provideVar4(): Set<string> | undefined
-  set __backing_provideVar4(__backing_provideVar4: IProvideDecoratedVariable<Set<string>> | undefined)
+  get provideVar4(): (Set<string> | undefined)
+  set __backing_provideVar4(__backing_provideVar4: (IProvideDecoratedVariable<Set<string>> | undefined))
   
-  get __backing_provideVar4(): IProvideDecoratedVariable<Set<string>> | undefined
-  set provideVar5(provideVar5: Array<boolean> | undefined)
+  get __backing_provideVar4(): (IProvideDecoratedVariable<Set<string>> | undefined)
+  set provideVar5(provideVar5: (Array<boolean> | undefined))
   
-  get provideVar5(): Array<boolean> | undefined
-  set __backing_provideVar5(__backing_provideVar5: IProvideDecoratedVariable<Array<boolean>> | undefined)
+  get provideVar5(): (Array<boolean> | undefined)
+  set __backing_provideVar5(__backing_provideVar5: (IProvideDecoratedVariable<Array<boolean>> | undefined))
   
-  get __backing_provideVar5(): IProvideDecoratedVariable<Array<boolean>> | undefined
-  set provideVar6(provideVar6: Array<Per> | undefined)
+  get __backing_provideVar5(): (IProvideDecoratedVariable<Array<boolean>> | undefined)
+  set provideVar6(provideVar6: (Array<Per> | undefined))
   
-  get provideVar6(): Array<Per> | undefined
-  set __backing_provideVar6(__backing_provideVar6: IProvideDecoratedVariable<Array<Per>> | undefined)
+  get provideVar6(): (Array<Per> | undefined)
+  set __backing_provideVar6(__backing_provideVar6: (IProvideDecoratedVariable<Array<Per>> | undefined))
   
-  get __backing_provideVar6(): IProvideDecoratedVariable<Array<Per>> | undefined
-  set provideVar7(provideVar7: Array<Per> | undefined)
+  get __backing_provideVar6(): (IProvideDecoratedVariable<Array<Per>> | undefined)
+  set provideVar7(provideVar7: (Array<Per> | undefined))
   
-  get provideVar7(): Array<Per> | undefined
-  set __backing_provideVar7(__backing_provideVar7: IProvideDecoratedVariable<Array<Per>> | undefined)
+  get provideVar7(): (Array<Per> | undefined)
+  set __backing_provideVar7(__backing_provideVar7: (IProvideDecoratedVariable<Array<Per>> | undefined))
   
-  get __backing_provideVar7(): IProvideDecoratedVariable<Array<Per>> | undefined
-  set provideVar8(provideVar8: ((sr: string)=> void) | undefined)
+  get __backing_provideVar7(): (IProvideDecoratedVariable<Array<Per>> | undefined)
+  set provideVar8(provideVar8: (((sr: string)=> void) | undefined))
   
-  get provideVar8(): ((sr: string)=> void) | undefined
-  set __backing_provideVar8(__backing_provideVar8: IProvideDecoratedVariable<((sr: string)=> void)> | undefined)
+  get provideVar8(): (((sr: string)=> void) | undefined)
+  set __backing_provideVar8(__backing_provideVar8: (IProvideDecoratedVariable<((sr: string)=> void)> | undefined))
   
-  get __backing_provideVar8(): IProvideDecoratedVariable<((sr: string)=> void)> | undefined
-  set provideVar9(provideVar9: Date | undefined)
+  get __backing_provideVar8(): (IProvideDecoratedVariable<((sr: string)=> void)> | undefined)
+  set provideVar9(provideVar9: (Date | undefined))
   
-  get provideVar9(): Date | undefined
-  set __backing_provideVar9(__backing_provideVar9: IProvideDecoratedVariable<Date> | undefined)
+  get provideVar9(): (Date | undefined)
+  set __backing_provideVar9(__backing_provideVar9: (IProvideDecoratedVariable<Date> | undefined))
   
-  get __backing_provideVar9(): IProvideDecoratedVariable<Date> | undefined
-  set provideVar10(provideVar10: Map<number, Per> | undefined)
+  get __backing_provideVar9(): (IProvideDecoratedVariable<Date> | undefined)
+  set provideVar10(provideVar10: (Map<number, Per> | undefined))
   
-  get provideVar10(): Map<number, Per> | undefined
-  set __backing_provideVar10(__backing_provideVar10: IProvideDecoratedVariable<Map<number, Per>> | undefined)
+  get provideVar10(): (Map<number, Per> | undefined)
+  set __backing_provideVar10(__backing_provideVar10: (IProvideDecoratedVariable<Map<number, Per>> | undefined))
   
-  get __backing_provideVar10(): IProvideDecoratedVariable<Map<number, Per>> | undefined
-  set provideVar11(provideVar11: string | number | undefined)
+  get __backing_provideVar10(): (IProvideDecoratedVariable<Map<number, Per>> | undefined)
+  set provideVar11(provideVar11: ((string | number) | undefined))
   
-  get provideVar11(): string | number | undefined
-  set __backing_provideVar11(__backing_provideVar11: IProvideDecoratedVariable<string | number> | undefined)
+  get provideVar11(): ((string | number) | undefined)
+  set __backing_provideVar11(__backing_provideVar11: (IProvideDecoratedVariable<(string | number)> | undefined))
   
-  get __backing_provideVar11(): IProvideDecoratedVariable<string | number> | undefined
-  set provideVar12(provideVar12: Set<string> | Per | undefined)
+  get __backing_provideVar11(): (IProvideDecoratedVariable<(string | number)> | undefined)
+  set provideVar12(provideVar12: ((Set<string> | Per) | undefined))
   
-  get provideVar12(): Set<string> | Per | undefined
-  set __backing_provideVar12(__backing_provideVar12: IProvideDecoratedVariable<Set<string> | Per> | undefined)
+  get provideVar12(): ((Set<string> | Per) | undefined)
+  set __backing_provideVar12(__backing_provideVar12: (IProvideDecoratedVariable<(Set<string> | Per)> | undefined))
   
-  get __backing_provideVar12(): IProvideDecoratedVariable<Set<string> | Per> | undefined
+  get __backing_provideVar12(): (IProvideDecoratedVariable<(Set<string> | Per)> | undefined)
   
 }
 `;

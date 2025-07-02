@@ -38,7 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
@@ -56,8 +55,6 @@ import { Component as Component } from "@ohos.arkui.component";
 import { Prop as Prop } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
-
 
 class Per {
   public num: number;
@@ -137,7 +134,7 @@ final class PropType extends BaseEnum<int> {
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_propVar1 = STATE_MGMT_FACTORY.makeProp<Per>(this, "propVar1", ((({let gensym___95172135 = initializers;
     (((gensym___95172135) == (null)) ? undefined : gensym___95172135.propVar1)})) ?? (new Per(6))));
     this.__backing_propVar2 = STATE_MGMT_FACTORY.makeProp<Array<number>>(this, "propVar2", ((({let gensym___222490386 = initializers;
@@ -158,13 +155,13 @@ final class PropType extends BaseEnum<int> {
     (((gensym___123472108) == (null)) ? undefined : gensym___123472108.propVar9)})) ?? (new Date("2025-4-23"))));
     this.__backing_propVar10 = STATE_MGMT_FACTORY.makeProp<Map<number, Per>>(this, "propVar10", ((({let gensym___147847012 = initializers;
     (((gensym___147847012) == (null)) ? undefined : gensym___147847012.propVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
-    this.__backing_propVar11 = STATE_MGMT_FACTORY.makeProp<string | number>(this, "propVar11", ((({let gensym___117026760 = initializers;
+    this.__backing_propVar11 = STATE_MGMT_FACTORY.makeProp<(string | number)>(this, "propVar11", ((({let gensym___117026760 = initializers;
     (((gensym___117026760) == (null)) ? undefined : gensym___117026760.propVar11)})) ?? (0.0)));
-    this.__backing_propVar12 = STATE_MGMT_FACTORY.makeProp<Set<string> | Per>(this, "propVar12", ((({let gensym___220245132 = initializers;
+    this.__backing_propVar12 = STATE_MGMT_FACTORY.makeProp<(Set<string> | Per)>(this, "propVar12", ((({let gensym___220245132 = initializers;
     (((gensym___220245132) == (null)) ? undefined : gensym___220245132.propVar12)})) ?? (new Per(6))));
   }
   
-  public __updateStruct(initializers: __Options_Parent | undefined): void {
+  public __updateStruct(initializers: (__Options_Parent | undefined)): void {
     if (((({let gensym___67969738 = initializers;
     (((gensym___67969738) == (null)) ? undefined : gensym___67969738.propVar1)})) !== (undefined))) {
       this.__backing_propVar1!.update((initializers!.propVar1 as Per));
@@ -207,11 +204,11 @@ final class PropType extends BaseEnum<int> {
     }
     if (((({let gensym___2015283 = initializers;
     (((gensym___2015283) == (null)) ? undefined : gensym___2015283.propVar11)})) !== (undefined))) {
-      this.__backing_propVar11!.update((initializers!.propVar11 as string | number));
+      this.__backing_propVar11!.update((initializers!.propVar11 as (string | number)));
     }
     if (((({let gensym___39009414 = initializers;
     (((gensym___39009414) == (null)) ? undefined : gensym___39009414.propVar12)})) !== (undefined))) {
-      this.__backing_propVar12!.update((initializers!.propVar12 as Set<string> | Per));
+      this.__backing_propVar12!.update((initializers!.propVar12 as (Set<string> | Per)));
     }
   }
   
@@ -315,23 +312,23 @@ final class PropType extends BaseEnum<int> {
     this.__backing_propVar10!.set(value);
   }
   
-  private __backing_propVar11?: IPropDecoratedVariable<string | number>;
+  private __backing_propVar11?: IPropDecoratedVariable<(string | number)>;
   
-  public get propVar11(): string | number {
+  public get propVar11(): (string | number) {
     return this.__backing_propVar11!.get();
   }
   
-  public set propVar11(value: string | number) {
+  public set propVar11(value: (string | number)) {
     this.__backing_propVar11!.set(value);
   }
   
-  private __backing_propVar12?: IPropDecoratedVariable<Set<string> | Per>;
+  private __backing_propVar12?: IPropDecoratedVariable<(Set<string> | Per)>;
   
-  public get propVar12(): Set<string> | Per {
+  public get propVar12(): (Set<string> | Per) {
     return this.__backing_propVar12!.get();
   }
   
-  public set propVar12(value: Set<string> | Per) {
+  public set propVar12(value: (Set<string> | Per)) {
     this.__backing_propVar12!.set(value);
   }
   
@@ -342,78 +339,78 @@ final class PropType extends BaseEnum<int> {
 }
 
 @Component() export interface __Options_Parent {
-  set propVar1(propVar1: Per | undefined)
+  set propVar1(propVar1: (Per | undefined))
   
-  get propVar1(): Per | undefined
-  set __backing_propVar1(__backing_propVar1: IPropDecoratedVariable<Per> | undefined)
+  get propVar1(): (Per | undefined)
+  set __backing_propVar1(__backing_propVar1: (IPropDecoratedVariable<Per> | undefined))
   
-  get __backing_propVar1(): IPropDecoratedVariable<Per> | undefined
-  set propVar2(propVar2: Array<number> | undefined)
+  get __backing_propVar1(): (IPropDecoratedVariable<Per> | undefined)
+  set propVar2(propVar2: (Array<number> | undefined))
   
-  get propVar2(): Array<number> | undefined
-  set __backing_propVar2(__backing_propVar2: IPropDecoratedVariable<Array<number>> | undefined)
+  get propVar2(): (Array<number> | undefined)
+  set __backing_propVar2(__backing_propVar2: (IPropDecoratedVariable<Array<number>> | undefined))
   
-  get __backing_propVar2(): IPropDecoratedVariable<Array<number>> | undefined
-  set propVar3(propVar3: PropType | undefined)
+  get __backing_propVar2(): (IPropDecoratedVariable<Array<number>> | undefined)
+  set propVar3(propVar3: (PropType | undefined))
   
-  get propVar3(): PropType | undefined
-  set __backing_propVar3(__backing_propVar3: IPropDecoratedVariable<PropType> | undefined)
+  get propVar3(): (PropType | undefined)
+  set __backing_propVar3(__backing_propVar3: (IPropDecoratedVariable<PropType> | undefined))
   
-  get __backing_propVar3(): IPropDecoratedVariable<PropType> | undefined
-  set propVar4(propVar4: Set<string> | undefined)
+  get __backing_propVar3(): (IPropDecoratedVariable<PropType> | undefined)
+  set propVar4(propVar4: (Set<string> | undefined))
   
-  get propVar4(): Set<string> | undefined
-  set __backing_propVar4(__backing_propVar4: IPropDecoratedVariable<Set<string>> | undefined)
+  get propVar4(): (Set<string> | undefined)
+  set __backing_propVar4(__backing_propVar4: (IPropDecoratedVariable<Set<string>> | undefined))
   
-  get __backing_propVar4(): IPropDecoratedVariable<Set<string>> | undefined
-  set propVar5(propVar5: Array<boolean> | undefined)
+  get __backing_propVar4(): (IPropDecoratedVariable<Set<string>> | undefined)
+  set propVar5(propVar5: (Array<boolean> | undefined))
   
-  get propVar5(): Array<boolean> | undefined
-  set __backing_propVar5(__backing_propVar5: IPropDecoratedVariable<Array<boolean>> | undefined)
+  get propVar5(): (Array<boolean> | undefined)
+  set __backing_propVar5(__backing_propVar5: (IPropDecoratedVariable<Array<boolean>> | undefined))
   
-  get __backing_propVar5(): IPropDecoratedVariable<Array<boolean>> | undefined
-  set propVar6(propVar6: Array<Per> | undefined)
+  get __backing_propVar5(): (IPropDecoratedVariable<Array<boolean>> | undefined)
+  set propVar6(propVar6: (Array<Per> | undefined))
   
-  get propVar6(): Array<Per> | undefined
-  set __backing_propVar6(__backing_propVar6: IPropDecoratedVariable<Array<Per>> | undefined)
+  get propVar6(): (Array<Per> | undefined)
+  set __backing_propVar6(__backing_propVar6: (IPropDecoratedVariable<Array<Per>> | undefined))
   
-  get __backing_propVar6(): IPropDecoratedVariable<Array<Per>> | undefined
-  set propVar7(propVar7: Array<Per> | undefined)
+  get __backing_propVar6(): (IPropDecoratedVariable<Array<Per>> | undefined)
+  set propVar7(propVar7: (Array<Per> | undefined))
   
-  get propVar7(): Array<Per> | undefined
-  set __backing_propVar7(__backing_propVar7: IPropDecoratedVariable<Array<Per>> | undefined)
+  get propVar7(): (Array<Per> | undefined)
+  set __backing_propVar7(__backing_propVar7: (IPropDecoratedVariable<Array<Per>> | undefined))
   
-  get __backing_propVar7(): IPropDecoratedVariable<Array<Per>> | undefined
-  set propVar8(propVar8: ((sr: string)=> void) | undefined)
+  get __backing_propVar7(): (IPropDecoratedVariable<Array<Per>> | undefined)
+  set propVar8(propVar8: (((sr: string)=> void) | undefined))
   
-  get propVar8(): ((sr: string)=> void) | undefined
-  set __backing_propVar8(__backing_propVar8: IPropDecoratedVariable<((sr: string)=> void)> | undefined)
+  get propVar8(): (((sr: string)=> void) | undefined)
+  set __backing_propVar8(__backing_propVar8: (IPropDecoratedVariable<((sr: string)=> void)> | undefined))
   
-  get __backing_propVar8(): IPropDecoratedVariable<((sr: string)=> void)> | undefined
-  set propVar9(propVar9: Date | undefined)
+  get __backing_propVar8(): (IPropDecoratedVariable<((sr: string)=> void)> | undefined)
+  set propVar9(propVar9: (Date | undefined))
   
-  get propVar9(): Date | undefined
-  set __backing_propVar9(__backing_propVar9: IPropDecoratedVariable<Date> | undefined)
+  get propVar9(): (Date | undefined)
+  set __backing_propVar9(__backing_propVar9: (IPropDecoratedVariable<Date> | undefined))
   
-  get __backing_propVar9(): IPropDecoratedVariable<Date> | undefined
-  set propVar10(propVar10: Map<number, Per> | undefined)
+  get __backing_propVar9(): (IPropDecoratedVariable<Date> | undefined)
+  set propVar10(propVar10: (Map<number, Per> | undefined))
   
-  get propVar10(): Map<number, Per> | undefined
-  set __backing_propVar10(__backing_propVar10: IPropDecoratedVariable<Map<number, Per>> | undefined)
+  get propVar10(): (Map<number, Per> | undefined)
+  set __backing_propVar10(__backing_propVar10: (IPropDecoratedVariable<Map<number, Per>> | undefined))
   
-  get __backing_propVar10(): IPropDecoratedVariable<Map<number, Per>> | undefined
-  set propVar11(propVar11: string | number | undefined)
+  get __backing_propVar10(): (IPropDecoratedVariable<Map<number, Per>> | undefined)
+  set propVar11(propVar11: ((string | number) | undefined))
   
-  get propVar11(): string | number | undefined
-  set __backing_propVar11(__backing_propVar11: IPropDecoratedVariable<string | number> | undefined)
+  get propVar11(): ((string | number) | undefined)
+  set __backing_propVar11(__backing_propVar11: (IPropDecoratedVariable<(string | number)> | undefined))
   
-  get __backing_propVar11(): IPropDecoratedVariable<string | number> | undefined
-  set propVar12(propVar12: Set<string> | Per | undefined)
+  get __backing_propVar11(): (IPropDecoratedVariable<(string | number)> | undefined)
+  set propVar12(propVar12: ((Set<string> | Per) | undefined))
   
-  get propVar12(): Set<string> | Per | undefined
-  set __backing_propVar12(__backing_propVar12: IPropDecoratedVariable<Set<string> | Per> | undefined)
+  get propVar12(): ((Set<string> | Per) | undefined)
+  set __backing_propVar12(__backing_propVar12: (IPropDecoratedVariable<(Set<string> | Per)> | undefined))
   
-  get __backing_propVar12(): IPropDecoratedVariable<Set<string> | Per> | undefined
+  get __backing_propVar12(): (IPropDecoratedVariable<(Set<string> | Per)> | undefined)
   
 }
 `;

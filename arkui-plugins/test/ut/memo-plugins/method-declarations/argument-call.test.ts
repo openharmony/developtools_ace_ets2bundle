@@ -70,7 +70,7 @@ class Test {
             return;
         }
     }
-    @memo() public compute_test(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg1: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined, arg2: (()=> void) | undefined, content: (()=> void) | undefined): void {
+    @memo() public compute_test(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg1: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined), arg2: ((()=> void) | undefined), content: ((()=> void) | undefined)): void {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 3);
         const __memo_parameter_arg1 = __memo_scope.param(0, arg1), __memo_parameter_arg2 = __memo_scope.param(1, arg2), __memo_parameter_content = __memo_scope.param(2, content);
         if (__memo_scope.unchanged) {
