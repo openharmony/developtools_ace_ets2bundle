@@ -30,6 +30,9 @@ struct Child {
       if (this.customBuilderParam2) {
         (this.customBuilderParam2 as () => void)()
       }
+      if (this.customBuilderParam2) {
+        (this.customBuilderParam2!)()
+      }
       this.customBuilderParam1()
     }
   }
@@ -43,7 +46,7 @@ struct Parent {
 
   build() {
     Column() {
-      Child()
+      Child({ customBuilderParam2: () => { this.componentBuilder() } })
     }
   }
 }

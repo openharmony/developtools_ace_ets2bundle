@@ -69,9 +69,9 @@ class Tmp {
 }
 
 @Component() final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
-  public __initializeStruct(initializers: __Options_BuilderDemo | undefined, @memo() content: (()=> void) | undefined): void {}
+  public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @memo() content: ((()=> void) | undefined)): void {}
   
-  public __updateStruct(initializers: __Options_BuilderDemo | undefined): void {}
+  public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
   
   @memo() public build() {
     Row(undefined, undefined, @memo() (() => {

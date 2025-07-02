@@ -105,12 +105,12 @@ function main() {}
 }
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", ({let gensym___248819442 = initializers;
     (((gensym___248819442) == (null)) ? undefined : gensym___248819442.objectlinkvar)})!)
   }
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {
     if (((({let gensym___97362509 = initializers;
     (((gensym___97362509) == (null)) ? undefined : gensym___97362509.objectlinkvar)})) !== (undefined))) {
       this.__backing_objectlinkvar!.update(initializers!.objectlinkvar!);
@@ -130,12 +130,12 @@ function main() {}
 }
 
 @Component() export interface __Options_MyStateSample {
-  set objectlinkvar(objectlinkvar: A | undefined)
+  set objectlinkvar(objectlinkvar: (A | undefined))
   
-  get objectlinkvar(): A | undefined
-  set __backing_objectlinkvar(__backing_objectlinkvar: IObjectLinkDecoratedVariable<A> | undefined)
+  get objectlinkvar(): (A | undefined)
+  set __backing_objectlinkvar(__backing_objectlinkvar: (IObjectLinkDecoratedVariable<A> | undefined))
   
-  get __backing_objectlinkvar(): IObjectLinkDecoratedVariable<A> | undefined
+  get __backing_objectlinkvar(): (IObjectLinkDecoratedVariable<A> | undefined)
   
 }
 `;

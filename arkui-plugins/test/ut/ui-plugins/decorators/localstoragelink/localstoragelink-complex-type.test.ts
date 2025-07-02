@@ -147,7 +147,7 @@ final class Status extends BaseEnum<int> {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_arrayA = STATE_MGMT_FACTORY.makeLocalStorageLink<Array<number>>(this, "Prop1", "arrayA", [1, 2, 3], Type.from<Array<number>>())
     this.__backing_objectA = STATE_MGMT_FACTORY.makeLocalStorageLink<Object>(this, "Prop2", "objectA", {}, Type.from<Object>())
     this.__backing_dateA = STATE_MGMT_FACTORY.makeLocalStorageLink<Date>(this, "Prop3", "dateA", new Date("2021-08-08"), Type.from<Date>())
@@ -157,7 +157,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_enumA = STATE_MGMT_FACTORY.makeLocalStorageLink<Status>(this, "Prop8", "enumA", Status.NotFound, Type.from<Status>())
   }
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   private __backing_arrayA?: ILocalStorageLinkDecoratedVariable<Array<number>>;
   
@@ -236,48 +236,48 @@ final class Status extends BaseEnum<int> {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  set arrayA(arrayA: Array<number> | undefined)
+  set arrayA(arrayA: (Array<number> | undefined))
   
-  get arrayA(): Array<number> | undefined
-  set __backing_arrayA(__backing_arrayA: ILocalStorageLinkDecoratedVariable<Array<number>> | undefined)
+  get arrayA(): (Array<number> | undefined)
+  set __backing_arrayA(__backing_arrayA: (ILocalStorageLinkDecoratedVariable<Array<number>> | undefined))
   
-  get __backing_arrayA(): ILocalStorageLinkDecoratedVariable<Array<number>> | undefined
-  set objectA(objectA: Object | undefined)
+  get __backing_arrayA(): (ILocalStorageLinkDecoratedVariable<Array<number>> | undefined)
+  set objectA(objectA: (Object | undefined))
   
-  get objectA(): Object | undefined
-  set __backing_objectA(__backing_objectA: ILocalStorageLinkDecoratedVariable<Object> | undefined)
+  get objectA(): (Object | undefined)
+  set __backing_objectA(__backing_objectA: (ILocalStorageLinkDecoratedVariable<Object> | undefined))
   
-  get __backing_objectA(): ILocalStorageLinkDecoratedVariable<Object> | undefined
-  set dateA(dateA: Date | undefined)
+  get __backing_objectA(): (ILocalStorageLinkDecoratedVariable<Object> | undefined)
+  set dateA(dateA: (Date | undefined))
   
-  get dateA(): Date | undefined
-  set __backing_dateA(__backing_dateA: ILocalStorageLinkDecoratedVariable<Date> | undefined)
+  get dateA(): (Date | undefined)
+  set __backing_dateA(__backing_dateA: (ILocalStorageLinkDecoratedVariable<Date> | undefined))
   
-  get __backing_dateA(): ILocalStorageLinkDecoratedVariable<Date> | undefined
-  set setA(setA: Set<number> | undefined)
+  get __backing_dateA(): (ILocalStorageLinkDecoratedVariable<Date> | undefined)
+  set setA(setA: (Set<number> | undefined))
   
-  get setA(): Set<number> | undefined
-  set __backing_setA(__backing_setA: ILocalStorageLinkDecoratedVariable<Set<number>> | undefined)
+  get setA(): (Set<number> | undefined)
+  set __backing_setA(__backing_setA: (ILocalStorageLinkDecoratedVariable<Set<number>> | undefined))
   
-  get __backing_setA(): ILocalStorageLinkDecoratedVariable<Set<number>> | undefined
-  set mapA(mapA: Map<number, string> | undefined)
+  get __backing_setA(): (ILocalStorageLinkDecoratedVariable<Set<number>> | undefined)
+  set mapA(mapA: (Map<number, string> | undefined))
   
-  get mapA(): Map<number, string> | undefined
-  set __backing_mapA(__backing_mapA: ILocalStorageLinkDecoratedVariable<Map<number, string>> | undefined)
+  get mapA(): (Map<number, string> | undefined)
+  set __backing_mapA(__backing_mapA: (ILocalStorageLinkDecoratedVariable<Map<number, string>> | undefined))
   
-  get __backing_mapA(): ILocalStorageLinkDecoratedVariable<Map<number, string>> | undefined
-  set classA(classA: Person | undefined)
+  get __backing_mapA(): (ILocalStorageLinkDecoratedVariable<Map<number, string>> | undefined)
+  set classA(classA: (Person | undefined))
   
-  get classA(): Person | undefined
-  set __backing_classA(__backing_classA: ILocalStorageLinkDecoratedVariable<Person> | undefined)
+  get classA(): (Person | undefined)
+  set __backing_classA(__backing_classA: (ILocalStorageLinkDecoratedVariable<Person> | undefined))
   
-  get __backing_classA(): ILocalStorageLinkDecoratedVariable<Person> | undefined
-  set enumA(enumA: Status | undefined)
+  get __backing_classA(): (ILocalStorageLinkDecoratedVariable<Person> | undefined)
+  set enumA(enumA: (Status | undefined))
   
-  get enumA(): Status | undefined
-  set __backing_enumA(__backing_enumA: ILocalStorageLinkDecoratedVariable<Status> | undefined)
+  get enumA(): (Status | undefined)
+  set __backing_enumA(__backing_enumA: (ILocalStorageLinkDecoratedVariable<Status> | undefined))
   
-  get __backing_enumA(): ILocalStorageLinkDecoratedVariable<Status> | undefined
+  get __backing_enumA(): (ILocalStorageLinkDecoratedVariable<Status> | undefined)
   
 }
 

@@ -63,11 +63,11 @@ interface A {
     @memo() get a(): ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)
 }
 class AA {
-    @memo() public a: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined;
+    @memo() public a: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
     constructor() {
         this(undefined);
     }
-    public constructor(arg: A | undefined) {
+    public constructor(arg: (A | undefined)) {
         this.a = ({let gensym%%_<some_random_number> = arg;
         (((gensym%%_<some_random_number>) == (null)) ? undefined : gensym%%_<some_random_number>.a)});
     }

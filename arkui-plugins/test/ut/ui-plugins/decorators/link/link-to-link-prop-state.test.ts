@@ -38,7 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-
 import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
@@ -63,17 +62,15 @@ import { Link as Link, State as State, Prop as Prop } from "@ohos.arkui.stateMan
 
 function main() {}
 
-
-
 @Component() final struct Parant extends CustomComponent<Parant, __Options_Parant> {
-  public __initializeStruct(initializers: __Options_Parant | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Parant | undefined), @memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___10127521 = initializers;
     (((gensym___10127521) == (null)) ? undefined : gensym___10127521.__backing_text1)})) {
       this.__backing_text1 = STATE_MGMT_FACTORY.makeLink<string>(this, "text1", initializers!.__backing_text1!);
     };
   }
   
-  public __updateStruct(initializers: __Options_Parant | undefined): void {}
+  public __updateStruct(initializers: (__Options_Parant | undefined)): void {}
   
   private __backing_text1?: ILinkDecoratedVariable<string>;
   
@@ -106,7 +103,7 @@ function main() {}
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___161337494 = initializers;
     (((gensym___161337494) == (null)) ? undefined : gensym___161337494.__backing_childText)})) {
       this.__backing_childText = STATE_MGMT_FACTORY.makeLink<string>(this, "childText", initializers!.__backing_childText!);
@@ -118,7 +115,7 @@ function main() {}
     (((gensym___162028107) == (null)) ? undefined : gensym___162028107.childText4)})) ?? ("cc")));
   }
   
-  public __updateStruct(initializers: __Options_Child | undefined): void {
+  public __updateStruct(initializers: (__Options_Child | undefined)): void {
     if (((({let gensym___77632518 = initializers;
     (((gensym___77632518) == (null)) ? undefined : gensym___77632518.childText3)})) !== (undefined))) {
       this.__backing_childText3!.update((initializers!.childText3 as string));
@@ -182,40 +179,40 @@ function main() {}
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 @Component() export interface __Options_Parant {
-  @__Link_intrinsic() set text1(text1: string | undefined)
+  @__Link_intrinsic() set text1(text1: (string | undefined))
   
-  @__Link_intrinsic() get text1(): string | undefined
-  set __backing_text1(__backing_text1: LinkSourceType<string> | undefined)
+  @__Link_intrinsic() get text1(): (string | undefined)
+  set __backing_text1(__backing_text1: (LinkSourceType<string> | undefined))
   
-  get __backing_text1(): LinkSourceType<string> | undefined
+  get __backing_text1(): (LinkSourceType<string> | undefined)
   
 }
 
 @Component() export interface __Options_Child {
-  @__Link_intrinsic() set childText(childText: string | undefined)
+  @__Link_intrinsic() set childText(childText: (string | undefined))
   
-  @__Link_intrinsic() get childText(): string | undefined
-  set __backing_childText(__backing_childText: LinkSourceType<string> | undefined)
+  @__Link_intrinsic() get childText(): (string | undefined)
+  set __backing_childText(__backing_childText: (LinkSourceType<string> | undefined))
   
-  get __backing_childText(): LinkSourceType<string> | undefined
-  set childText2(childText2: string | undefined)
+  get __backing_childText(): (LinkSourceType<string> | undefined)
+  set childText2(childText2: (string | undefined))
   
-  get childText2(): string | undefined
-  set __backing_childText2(__backing_childText2: IStateDecoratedVariable<string> | undefined)
+  get childText2(): (string | undefined)
+  set __backing_childText2(__backing_childText2: (IStateDecoratedVariable<string> | undefined))
   
-  get __backing_childText2(): IStateDecoratedVariable<string> | undefined
-  set childText3(childText3: string | undefined)
+  get __backing_childText2(): (IStateDecoratedVariable<string> | undefined)
+  set childText3(childText3: (string | undefined))
   
-  get childText3(): string | undefined
-  set __backing_childText3(__backing_childText3: IPropDecoratedVariable<string> | undefined)
+  get childText3(): (string | undefined)
+  set __backing_childText3(__backing_childText3: (IPropDecoratedVariable<string> | undefined))
   
-  get __backing_childText3(): IPropDecoratedVariable<string> | undefined
-  set childText4(childText4: string | undefined)
+  get __backing_childText3(): (IPropDecoratedVariable<string> | undefined)
+  set childText4(childText4: (string | undefined))
   
-  get childText4(): string | undefined
-  set __backing_childText4(__backing_childText4: IPropDecoratedVariable<string> | undefined)
+  get childText4(): (string | undefined)
+  set __backing_childText4(__backing_childText4: (IPropDecoratedVariable<string> | undefined))
   
-  get __backing_childText4(): IPropDecoratedVariable<string> | undefined
+  get __backing_childText4(): (IPropDecoratedVariable<string> | undefined)
   
 }
 `;

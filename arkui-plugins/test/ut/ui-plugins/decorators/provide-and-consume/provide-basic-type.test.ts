@@ -38,7 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.stateManagement.decorator";
@@ -57,10 +56,8 @@ import { Provide as Provide } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-
-
 @Component() final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
-  public __initializeStruct(initializers: __Options_PropParent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_PropParent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_provideVar1 = STATE_MGMT_FACTORY.makeProvide<string>(this, "provideVar1", "provideVar1", ((({let gensym___181030638 = initializers;
     (((gensym___181030638) == (null)) ? undefined : gensym___181030638.provideVar1)})) ?? ("propVar1")), false);
     this.__backing_provideVar2 = STATE_MGMT_FACTORY.makeProvide<number>(this, "provideVar2", "provideVar2", ((({let gensym___143944235 = initializers;
@@ -73,7 +70,7 @@ function main() {}
     (((gensym___139253630) == (null)) ? undefined : gensym___139253630.provideVar5)})) ?? (null)), false);
   }
   
-  public __updateStruct(initializers: __Options_PropParent | undefined): void {}
+  public __updateStruct(initializers: (__Options_PropParent | undefined)): void {}
   
   private __backing_provideVar1?: IProvideDecoratedVariable<string>;
   
@@ -132,36 +129,36 @@ function main() {}
 }
 
 @Component() export interface __Options_PropParent {
-  set provideVar1(provideVar1: string | undefined)
+  set provideVar1(provideVar1: (string | undefined))
   
-  get provideVar1(): string | undefined
-  set __backing_provideVar1(__backing_provideVar1: IProvideDecoratedVariable<string> | undefined)
+  get provideVar1(): (string | undefined)
+  set __backing_provideVar1(__backing_provideVar1: (IProvideDecoratedVariable<string> | undefined))
   
-  get __backing_provideVar1(): IProvideDecoratedVariable<string> | undefined
-  set provideVar2(provideVar2: number | undefined)
+  get __backing_provideVar1(): (IProvideDecoratedVariable<string> | undefined)
+  set provideVar2(provideVar2: (number | undefined))
   
-  get provideVar2(): number | undefined
-  set __backing_provideVar2(__backing_provideVar2: IProvideDecoratedVariable<number> | undefined)
+  get provideVar2(): (number | undefined)
+  set __backing_provideVar2(__backing_provideVar2: (IProvideDecoratedVariable<number> | undefined))
   
-  get __backing_provideVar2(): IProvideDecoratedVariable<number> | undefined
-  set provideVar3(provideVar3: boolean | undefined)
+  get __backing_provideVar2(): (IProvideDecoratedVariable<number> | undefined)
+  set provideVar3(provideVar3: (boolean | undefined))
   
-  get provideVar3(): boolean | undefined
-  set __backing_provideVar3(__backing_provideVar3: IProvideDecoratedVariable<boolean> | undefined)
+  get provideVar3(): (boolean | undefined)
+  set __backing_provideVar3(__backing_provideVar3: (IProvideDecoratedVariable<boolean> | undefined))
   
-  get __backing_provideVar3(): IProvideDecoratedVariable<boolean> | undefined
-  set provideVar4(provideVar4: undefined | undefined)
+  get __backing_provideVar3(): (IProvideDecoratedVariable<boolean> | undefined)
+  set provideVar4(provideVar4: (undefined | undefined))
   
-  get provideVar4(): undefined | undefined
-  set __backing_provideVar4(__backing_provideVar4: IProvideDecoratedVariable<undefined> | undefined)
+  get provideVar4(): (undefined | undefined)
+  set __backing_provideVar4(__backing_provideVar4: (IProvideDecoratedVariable<undefined> | undefined))
   
-  get __backing_provideVar4(): IProvideDecoratedVariable<undefined> | undefined
-  set provideVar5(provideVar5: null | undefined)
+  get __backing_provideVar4(): (IProvideDecoratedVariable<undefined> | undefined)
+  set provideVar5(provideVar5: (null | undefined))
   
-  get provideVar5(): null | undefined
-  set __backing_provideVar5(__backing_provideVar5: IProvideDecoratedVariable<null> | undefined)
+  get provideVar5(): (null | undefined)
+  set __backing_provideVar5(__backing_provideVar5: (IProvideDecoratedVariable<null> | undefined))
   
-  get __backing_provideVar5(): IProvideDecoratedVariable<null> | undefined
+  get __backing_provideVar5(): (IProvideDecoratedVariable<null> | undefined)
   
 }
 `;

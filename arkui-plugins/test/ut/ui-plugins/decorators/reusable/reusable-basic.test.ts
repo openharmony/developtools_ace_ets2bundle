@@ -38,7 +38,6 @@ const reusableTransform: Plugins = {
 const pluginTester = new PluginTester('test basic reusable', buildConfig);
 
 const expectedScript: string = `
-
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
@@ -62,9 +61,9 @@ function main() {}
 
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {}
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {}
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   @memo() public build() {
     Child._instantiateImpl(undefined, (() => {
@@ -79,21 +78,21 @@ function main() {}
 }
 
 @Component() @Reusable() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_num = STATE_MGMT_FACTORY.makeProp<number>(this, "num", ((({let gensym___83257243 = initializers;
     (((gensym___83257243) == (null)) ? undefined : gensym___83257243.num)})) ?? (1)));
     this.__backing_num1 = STATE_MGMT_FACTORY.makeState<number>(this, "num1", ((({let gensym___24398512 = initializers;
     (((gensym___24398512) == (null)) ? undefined : gensym___24398512.num1)})) ?? (2)));
   }
   
-  public __updateStruct(initializers: __Options_Child | undefined): void {
+  public __updateStruct(initializers: (__Options_Child | undefined)): void {
     if (((({let gensym___108716469 = initializers;
     (((gensym___108716469) == (null)) ? undefined : gensym___108716469.num)})) !== (undefined))) {
       this.__backing_num!.update((initializers!.num as number));
     }
   }
   
-  public override __toRecord(params: Object): Record<string, Object> {
+  public override constructor __toRecord(params: Object): Record<string, Object> {
     const paramsCasted = (params as __Options_Child);
     return {
       "num": ((paramsCasted.num) ?? (new Object())),
@@ -132,18 +131,18 @@ function main() {}
 }
 
 @Component() @Reusable() export interface __Options_Child {
-  set num(num: number | undefined)
+  set num(num: (number | undefined))
   
-  get num(): number | undefined
-  set __backing_num(__backing_num: IPropDecoratedVariable<number> | undefined)
+  get num(): (number | undefined)
+  set __backing_num(__backing_num: (IPropDecoratedVariable<number> | undefined))
   
-  get __backing_num(): IPropDecoratedVariable<number> | undefined
-  set num1(num1: number | undefined)
+  get __backing_num(): (IPropDecoratedVariable<number> | undefined)
+  set num1(num1: (number | undefined))
   
-  get num1(): number | undefined
-  set __backing_num1(__backing_num1: IStateDecoratedVariable<number> | undefined)
+  get num1(): (number | undefined)
+  set __backing_num1(__backing_num1: (IStateDecoratedVariable<number> | undefined))
   
-  get __backing_num1(): IStateDecoratedVariable<number> | undefined
+  get __backing_num1(): (IStateDecoratedVariable<number> | undefined)
   
 }
 `;

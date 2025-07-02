@@ -188,9 +188,9 @@ class E implements IObservedObject, ISubscribedWatches {
 }
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {}
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {}
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   @memo() public build() {}
   

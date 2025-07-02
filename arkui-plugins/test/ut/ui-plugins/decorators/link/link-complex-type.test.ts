@@ -38,7 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
@@ -58,8 +57,6 @@ import { Component as Component } from "@ohos.arkui.component";
 import { Link as Link } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
-
 
 class Per {
   public num: number;
@@ -139,7 +136,7 @@ final class LinkType extends BaseEnum<int> {
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___11910109 = initializers;
     (((gensym___11910109) == (null)) ? undefined : gensym___11910109.__backing_linkVar1)})) {
       this.__backing_linkVar1 = STATE_MGMT_FACTORY.makeLink<Per>(this, "linkVar1", initializers!.__backing_linkVar1!);
@@ -182,15 +179,15 @@ final class LinkType extends BaseEnum<int> {
     };
     if (({let gensym___222468503 = initializers;
     (((gensym___222468503) == (null)) ? undefined : gensym___222468503.__backing_linkVar11)})) {
-      this.__backing_linkVar11 = STATE_MGMT_FACTORY.makeLink<string | number>(this, "linkVar11", initializers!.__backing_linkVar11!);
+      this.__backing_linkVar11 = STATE_MGMT_FACTORY.makeLink<(string | number)>(this, "linkVar11", initializers!.__backing_linkVar11!);
     };
     if (({let gensym___243301539 = initializers;
     (((gensym___243301539) == (null)) ? undefined : gensym___243301539.__backing_linkVar12)})) {
-      this.__backing_linkVar12 = STATE_MGMT_FACTORY.makeLink<Set<string> | Per>(this, "linkVar12", initializers!.__backing_linkVar12!);
+      this.__backing_linkVar12 = STATE_MGMT_FACTORY.makeLink<(Set<string> | Per)>(this, "linkVar12", initializers!.__backing_linkVar12!);
     };
   }
   
-  public __updateStruct(initializers: __Options_Parent | undefined): void {}
+  public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
   private __backing_linkVar1?: ILinkDecoratedVariable<Per>;
   
@@ -292,23 +289,23 @@ final class LinkType extends BaseEnum<int> {
     this.__backing_linkVar10!.set(value);
   }
   
-  private __backing_linkVar11?: ILinkDecoratedVariable<string | number>;
+  private __backing_linkVar11?: ILinkDecoratedVariable<(string | number)>;
   
-  public get linkVar11(): string | number {
+  public get linkVar11(): (string | number) {
     return this.__backing_linkVar11!.get();
   }
   
-  public set linkVar11(value: string | number) {
+  public set linkVar11(value: (string | number)) {
     this.__backing_linkVar11!.set(value);
   }
   
-  private __backing_linkVar12?: ILinkDecoratedVariable<Set<string> | Per>;
+  private __backing_linkVar12?: ILinkDecoratedVariable<(Set<string> | Per)>;
   
-  public get linkVar12(): Set<string> | Per {
+  public get linkVar12(): (Set<string> | Per) {
     return this.__backing_linkVar12!.get();
   }
   
-  public set linkVar12(value: Set<string> | Per) {
+  public set linkVar12(value: (Set<string> | Per)) {
     this.__backing_linkVar12!.set(value);
   }
   
@@ -321,78 +318,78 @@ final class LinkType extends BaseEnum<int> {
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 @Component() export interface __Options_Parent {
-  @__Link_intrinsic() set linkVar1(linkVar1: Per | undefined)
+  @__Link_intrinsic() set linkVar1(linkVar1: (Per | undefined))
   
-  @__Link_intrinsic() get linkVar1(): Per | undefined
-  set __backing_linkVar1(__backing_linkVar1: LinkSourceType<Per> | undefined)
+  @__Link_intrinsic() get linkVar1(): (Per | undefined)
+  set __backing_linkVar1(__backing_linkVar1: (LinkSourceType<Per> | undefined))
   
-  get __backing_linkVar1(): LinkSourceType<Per> | undefined
-  @__Link_intrinsic() set linkVar2(linkVar2: Array<number> | undefined)
+  get __backing_linkVar1(): (LinkSourceType<Per> | undefined)
+  @__Link_intrinsic() set linkVar2(linkVar2: (Array<number> | undefined))
   
-  @__Link_intrinsic() get linkVar2(): Array<number> | undefined
-  set __backing_linkVar2(__backing_linkVar2: LinkSourceType<Array<number>> | undefined)
+  @__Link_intrinsic() get linkVar2(): (Array<number> | undefined)
+  set __backing_linkVar2(__backing_linkVar2: (LinkSourceType<Array<number>> | undefined))
   
-  get __backing_linkVar2(): LinkSourceType<Array<number>> | undefined
-  @__Link_intrinsic() set linkVar3(linkVar3: LinkType | undefined)
+  get __backing_linkVar2(): (LinkSourceType<Array<number>> | undefined)
+  @__Link_intrinsic() set linkVar3(linkVar3: (LinkType | undefined))
   
-  @__Link_intrinsic() get linkVar3(): LinkType | undefined
-  set __backing_linkVar3(__backing_linkVar3: LinkSourceType<LinkType> | undefined)
+  @__Link_intrinsic() get linkVar3(): (LinkType | undefined)
+  set __backing_linkVar3(__backing_linkVar3: (LinkSourceType<LinkType> | undefined))
   
-  get __backing_linkVar3(): LinkSourceType<LinkType> | undefined
-  @__Link_intrinsic() set linkVar4(linkVar4: Set<string> | undefined)
+  get __backing_linkVar3(): (LinkSourceType<LinkType> | undefined)
+  @__Link_intrinsic() set linkVar4(linkVar4: (Set<string> | undefined))
   
-  @__Link_intrinsic() get linkVar4(): Set<string> | undefined
-  set __backing_linkVar4(__backing_linkVar4: LinkSourceType<Set<string>> | undefined)
+  @__Link_intrinsic() get linkVar4(): (Set<string> | undefined)
+  set __backing_linkVar4(__backing_linkVar4: (LinkSourceType<Set<string>> | undefined))
   
-  get __backing_linkVar4(): LinkSourceType<Set<string>> | undefined
-  @__Link_intrinsic() set linkVar5(linkVar5: Array<boolean> | undefined)
+  get __backing_linkVar4(): (LinkSourceType<Set<string>> | undefined)
+  @__Link_intrinsic() set linkVar5(linkVar5: (Array<boolean> | undefined))
   
-  @__Link_intrinsic() get linkVar5(): Array<boolean> | undefined
-  set __backing_linkVar5(__backing_linkVar5: LinkSourceType<Array<boolean>> | undefined)
+  @__Link_intrinsic() get linkVar5(): (Array<boolean> | undefined)
+  set __backing_linkVar5(__backing_linkVar5: (LinkSourceType<Array<boolean>> | undefined))
   
-  get __backing_linkVar5(): LinkSourceType<Array<boolean>> | undefined
-  @__Link_intrinsic() set linkVar6(linkVar6: Array<Per> | undefined)
+  get __backing_linkVar5(): (LinkSourceType<Array<boolean>> | undefined)
+  @__Link_intrinsic() set linkVar6(linkVar6: (Array<Per> | undefined))
   
-  @__Link_intrinsic() get linkVar6(): Array<Per> | undefined
-  set __backing_linkVar6(__backing_linkVar6: LinkSourceType<Array<Per>> | undefined)
+  @__Link_intrinsic() get linkVar6(): (Array<Per> | undefined)
+  set __backing_linkVar6(__backing_linkVar6: (LinkSourceType<Array<Per>> | undefined))
   
-  get __backing_linkVar6(): LinkSourceType<Array<Per>> | undefined
-  @__Link_intrinsic() set linkVar7(linkVar7: Array<Per> | undefined)
+  get __backing_linkVar6(): (LinkSourceType<Array<Per>> | undefined)
+  @__Link_intrinsic() set linkVar7(linkVar7: (Array<Per> | undefined))
   
-  @__Link_intrinsic() get linkVar7(): Array<Per> | undefined
-  set __backing_linkVar7(__backing_linkVar7: LinkSourceType<Array<Per>> | undefined)
+  @__Link_intrinsic() get linkVar7(): (Array<Per> | undefined)
+  set __backing_linkVar7(__backing_linkVar7: (LinkSourceType<Array<Per>> | undefined))
   
-  get __backing_linkVar7(): LinkSourceType<Array<Per>> | undefined
-  @__Link_intrinsic() set linkVar8(linkVar8: ((sr: string)=> void) | undefined)
+  get __backing_linkVar7(): (LinkSourceType<Array<Per>> | undefined)
+  @__Link_intrinsic() set linkVar8(linkVar8: (((sr: string)=> void) | undefined))
   
-  @__Link_intrinsic() get linkVar8(): ((sr: string)=> void) | undefined
-  set __backing_linkVar8(__backing_linkVar8: LinkSourceType<((sr: string)=> void)> | undefined)
+  @__Link_intrinsic() get linkVar8(): (((sr: string)=> void) | undefined)
+  set __backing_linkVar8(__backing_linkVar8: (LinkSourceType<((sr: string)=> void)> | undefined))
   
-  get __backing_linkVar8(): LinkSourceType<((sr: string)=> void)> | undefined
-  @__Link_intrinsic() set linkVar9(linkVar9: Date | undefined)
+  get __backing_linkVar8(): (LinkSourceType<((sr: string)=> void)> | undefined)
+  @__Link_intrinsic() set linkVar9(linkVar9: (Date | undefined))
   
-  @__Link_intrinsic() get linkVar9(): Date | undefined
-  set __backing_linkVar9(__backing_linkVar9: LinkSourceType<Date> | undefined)
+  @__Link_intrinsic() get linkVar9(): (Date | undefined)
+  set __backing_linkVar9(__backing_linkVar9: (LinkSourceType<Date> | undefined))
   
-  get __backing_linkVar9(): LinkSourceType<Date> | undefined
-  @__Link_intrinsic() set linkVar10(linkVar10: Map<number, Per> | undefined)
+  get __backing_linkVar9(): (LinkSourceType<Date> | undefined)
+  @__Link_intrinsic() set linkVar10(linkVar10: (Map<number, Per> | undefined))
   
-  @__Link_intrinsic() get linkVar10(): Map<number, Per> | undefined
-  set __backing_linkVar10(__backing_linkVar10: LinkSourceType<Map<number, Per>> | undefined)
+  @__Link_intrinsic() get linkVar10(): (Map<number, Per> | undefined)
+  set __backing_linkVar10(__backing_linkVar10: (LinkSourceType<Map<number, Per>> | undefined))
   
-  get __backing_linkVar10(): LinkSourceType<Map<number, Per>> | undefined
-  @__Link_intrinsic() set linkVar11(linkVar11: string | number | undefined)
+  get __backing_linkVar10(): (LinkSourceType<Map<number, Per>> | undefined)
+  @__Link_intrinsic() set linkVar11(linkVar11: ((string | number) | undefined))
   
-  @__Link_intrinsic() get linkVar11(): string | number | undefined
-  set __backing_linkVar11(__backing_linkVar11: LinkSourceType<string | number> | undefined)
+  @__Link_intrinsic() get linkVar11(): ((string | number) | undefined)
+  set __backing_linkVar11(__backing_linkVar11: (LinkSourceType<(string | number)> | undefined))
   
-  get __backing_linkVar11(): LinkSourceType<string | number> | undefined
-  @__Link_intrinsic() set linkVar12(linkVar12: Set<string> | Per | undefined)
+  get __backing_linkVar11(): (LinkSourceType<(string | number)> | undefined)
+  @__Link_intrinsic() set linkVar12(linkVar12: ((Set<string> | Per) | undefined))
   
-  @__Link_intrinsic() get linkVar12(): Set<string> | Per | undefined
-  set __backing_linkVar12(__backing_linkVar12: LinkSourceType<Set<string> | Per> | undefined)
+  @__Link_intrinsic() get linkVar12(): ((Set<string> | Per) | undefined)
+  set __backing_linkVar12(__backing_linkVar12: (LinkSourceType<(Set<string> | Per)> | undefined))
   
-  get __backing_linkVar12(): LinkSourceType<Set<string> | Per> | undefined
+  get __backing_linkVar12(): (LinkSourceType<(Set<string> | Per)> | undefined)
   
 }
 `;

@@ -680,15 +680,20 @@ export function collectMemoFromCallExpression(node: arkts.CallExpression): void 
     if (!decl) {
         return;
     }
+    let isCollected: boolean = false;
     if (arkts.NodeCache.getInstance().has(decl)) {
         arkts.NodeCache.getInstance().collect(node);
+        isCollected = true;
     }
     if (arkts.isMethodDefinition(decl)) {
-        collectCallWithDeclaredMethod(node, decl);
+        isCollected = collectCallWithDeclaredMethod(node, decl);
+    }
+    if (isCollected && arkts.isTSAsExpression(node.expression) && node.expression.typeAnnotation) {
+        arkts.NodeCache.getInstance().collect(node.expression.typeAnnotation);
     }
 }
 
-export function collectCallWithDeclaredMethod(node: arkts.CallExpression, decl: arkts.MethodDefinition): void {
+export function collectCallWithDeclaredMethod(node: arkts.CallExpression, decl: arkts.MethodDefinition): boolean {
     const hasReceiver = decl.scriptFunction.hasReceiver;
     const params = decl.scriptFunction.params;
     const args = node.arguments;
@@ -699,13 +704,16 @@ export function collectCallWithDeclaredMethod(node: arkts.CallExpression, decl: 
     if (arkts.NodeCache.getInstance().has(decl)) {
         const { hasMemoEntry, hasMemoIntrinsic } = arkts.NodeCache.getInstance().get(decl)!.metadata ?? {};
         arkts.NodeCache.getInstance().collect(node, { hasReceiver, hasMemoEntry, hasMemoIntrinsic });
+        return true;
     } else {
         const memoableInfo = collectMemoableInfoInScriptFunction(decl.scriptFunction);
         if (checkIsMemoFromMemoableInfo(memoableInfo, true)) {
             const { hasMemoEntry, hasMemoIntrinsic } = memoableInfo;
             arkts.NodeCache.getInstance().collect(node, { hasReceiver, hasMemoEntry, hasMemoIntrinsic });
+            return true;
         }
     }
+    return false;
 }
 
 export function collectCallArgsWithMethodParams(arg: arkts.Expression | undefined, param: arkts.Expression): void {
@@ -742,6 +750,12 @@ export function findIdentifierFromCallee(callee: arkts.AstNode | undefined): ark
     }
     if (arkts.isMemberExpression(callee)) {
         return findIdentifierFromCallee(callee.property);
+    }
+    if (arkts.isTSAsExpression(callee)) {
+        return findIdentifierFromCallee(callee.expr);
+    }
+    if (arkts.isTSNonNullExpression(callee)) {
+        return findIdentifierFromCallee(callee.expr);
     }
     return undefined;
 }

@@ -136,7 +136,7 @@ final class Status extends BaseEnum<int> {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_arrayB = STATE_MGMT_FACTORY.makeStoragePropRef<Array<number>>(this, "Prop1", "arrayB", [1, 2, 3], Type.from<Array<number>>())
     this.__backing_objectB = STATE_MGMT_FACTORY.makeStoragePropRef<Object>(this, "Prop2", "objectB", {}, Type.from<Object>())
     this.__backing_dateB = STATE_MGMT_FACTORY.makeStoragePropRef<Date>(this, "Prop3", "dateB", new Date("2021-09-09"), Type.from<Date>())
@@ -146,7 +146,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_enumB = STATE_MGMT_FACTORY.makeStoragePropRef<Status>(this, "Prop8", "enumB", Status.NotFound, Type.from<Status>())
   }
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   private __backing_arrayB?: IStoragePropRefDecoratedVariable<Array<number>>;
   
@@ -225,48 +225,48 @@ final class Status extends BaseEnum<int> {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  set arrayB(arrayB: Array<number> | undefined)
+  set arrayB(arrayB: (Array<number> | undefined))
   
-  get arrayB(): Array<number> | undefined
-  set __backing_arrayB(__backing_arrayB: IStoragePropRefDecoratedVariable<Array<number>> | undefined)
+  get arrayB(): (Array<number> | undefined)
+  set __backing_arrayB(__backing_arrayB: (IStoragePropRefDecoratedVariable<Array<number>> | undefined))
   
-  get __backing_arrayB(): IStoragePropRefDecoratedVariable<Array<number>> | undefined
-  set objectB(objectB: Object | undefined)
+  get __backing_arrayB(): (IStoragePropRefDecoratedVariable<Array<number>> | undefined)
+  set objectB(objectB: (Object | undefined))
   
-  get objectB(): Object | undefined
-  set __backing_objectB(__backing_objectB: IStoragePropRefDecoratedVariable<Object> | undefined)
+  get objectB(): (Object | undefined)
+  set __backing_objectB(__backing_objectB: (IStoragePropRefDecoratedVariable<Object> | undefined))
   
-  get __backing_objectB(): IStoragePropRefDecoratedVariable<Object> | undefined
-  set dateB(dateB: Date | undefined)
+  get __backing_objectB(): (IStoragePropRefDecoratedVariable<Object> | undefined)
+  set dateB(dateB: (Date | undefined))
   
-  get dateB(): Date | undefined
-  set __backing_dateB(__backing_dateB: IStoragePropRefDecoratedVariable<Date> | undefined)
+  get dateB(): (Date | undefined)
+  set __backing_dateB(__backing_dateB: (IStoragePropRefDecoratedVariable<Date> | undefined))
   
-  get __backing_dateB(): IStoragePropRefDecoratedVariable<Date> | undefined
-  set setB(setB: Set<number> | undefined)
+  get __backing_dateB(): (IStoragePropRefDecoratedVariable<Date> | undefined)
+  set setB(setB: (Set<number> | undefined))
   
-  get setB(): Set<number> | undefined
-  set __backing_setB(__backing_setB: IStoragePropRefDecoratedVariable<Set<number>> | undefined)
+  get setB(): (Set<number> | undefined)
+  set __backing_setB(__backing_setB: (IStoragePropRefDecoratedVariable<Set<number>> | undefined))
   
-  get __backing_setB(): IStoragePropRefDecoratedVariable<Set<number>> | undefined
-  set mapB(mapB: Map<number, string> | undefined)
+  get __backing_setB(): (IStoragePropRefDecoratedVariable<Set<number>> | undefined)
+  set mapB(mapB: (Map<number, string> | undefined))
   
-  get mapB(): Map<number, string> | undefined
-  set __backing_mapB(__backing_mapB: IStoragePropRefDecoratedVariable<Map<number, string>> | undefined)
+  get mapB(): (Map<number, string> | undefined)
+  set __backing_mapB(__backing_mapB: (IStoragePropRefDecoratedVariable<Map<number, string>> | undefined))
   
-  get __backing_mapB(): IStoragePropRefDecoratedVariable<Map<number, string>> | undefined
-  set classB(classB: Person | undefined)
+  get __backing_mapB(): (IStoragePropRefDecoratedVariable<Map<number, string>> | undefined)
+  set classB(classB: (Person | undefined))
   
-  get classB(): Person | undefined
-  set __backing_classB(__backing_classB: IStoragePropRefDecoratedVariable<Person> | undefined)
+  get classB(): (Person | undefined)
+  set __backing_classB(__backing_classB: (IStoragePropRefDecoratedVariable<Person> | undefined))
   
-  get __backing_classB(): IStoragePropRefDecoratedVariable<Person> | undefined
-  set enumB(enumB: Status | undefined)
+  get __backing_classB(): (IStoragePropRefDecoratedVariable<Person> | undefined)
+  set enumB(enumB: (Status | undefined))
   
-  get enumB(): Status | undefined
-  set __backing_enumB(__backing_enumB: IStoragePropRefDecoratedVariable<Status> | undefined)
+  get enumB(): (Status | undefined)
+  set __backing_enumB(__backing_enumB: (IStoragePropRefDecoratedVariable<Status> | undefined))
   
-  get __backing_enumB(): IStoragePropRefDecoratedVariable<Status> | undefined
+  get __backing_enumB(): (IStoragePropRefDecoratedVariable<Status> | undefined)
   
 }
 

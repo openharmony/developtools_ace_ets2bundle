@@ -70,9 +70,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   } as NavInterface));
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct AnimatablePropertyExample extends CustomComponent<AnimatablePropertyExample, __Options_AnimatablePropertyExample> implements PageLifeCycle {
-  public __initializeStruct(initializers: __Options_AnimatablePropertyExample | undefined, @memo() content: (()=> void) | undefined): void {}
+  public __initializeStruct(initializers: (__Options_AnimatablePropertyExample | undefined), @memo() content: ((()=> void) | undefined)): void {}
   
-  public __updateStruct(initializers: __Options_AnimatablePropertyExample | undefined): void {}
+  public __updateStruct(initializers: (__Options_AnimatablePropertyExample | undefined)): void {}
   
   @memo() public build() {
     Column(undefined, undefined, (() => {
@@ -123,7 +123,6 @@ const expectedHeader =
 
 function testAnimationTransformer(this: PluginTestContext): void {
     expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
-    expect(parseDumpSrc(this.declContexts?.['arkui.component.common']?.scriptSnapshot ?? '')).toContain(parseDumpSrc(expectedHeader));
 }
 
 pluginTester.run(

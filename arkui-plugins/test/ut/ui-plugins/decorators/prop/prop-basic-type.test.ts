@@ -60,7 +60,7 @@ function main() {}
 
 
 @Component() final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
-  public __initializeStruct(initializers: __Options_PropParent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_PropParent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_propVar1 = STATE_MGMT_FACTORY.makeProp<string>(this, "propVar1", ((({let gensym___95172135 = initializers;
     (((gensym___95172135) == (null)) ? undefined : gensym___95172135.propVar1)})) ?? ("propVar1")));
     this.__backing_propVar2 = STATE_MGMT_FACTORY.makeProp<number>(this, "propVar2", ((({let gensym___222490386 = initializers;
@@ -73,7 +73,7 @@ function main() {}
     (((gensym___54872258) == (null)) ? undefined : gensym___54872258.propVar5)})) ?? (null)));
   }
   
-  public __updateStruct(initializers: __Options_PropParent | undefined): void {
+  public __updateStruct(initializers: (__Options_PropParent | undefined)): void {
     if (((({let gensym___67969738 = initializers;
     (((gensym___67969738) == (null)) ? undefined : gensym___67969738.propVar1)})) !== (undefined))) {
       this.__backing_propVar1!.update((initializers!.propVar1 as string));
@@ -153,36 +153,36 @@ function main() {}
 }
 
 @Component() export interface __Options_PropParent {
-  set propVar1(propVar1: string | undefined)
+  set propVar1(propVar1: (string | undefined))
   
-  get propVar1(): string | undefined
-  set __backing_propVar1(__backing_propVar1: IPropDecoratedVariable<string> | undefined)
+  get propVar1(): (string | undefined)
+  set __backing_propVar1(__backing_propVar1: (IPropDecoratedVariable<string> | undefined))
   
-  get __backing_propVar1(): IPropDecoratedVariable<string> | undefined
-  set propVar2(propVar2: number | undefined)
+  get __backing_propVar1(): (IPropDecoratedVariable<string> | undefined)
+  set propVar2(propVar2: (number | undefined))
   
-  get propVar2(): number | undefined
-  set __backing_propVar2(__backing_propVar2: IPropDecoratedVariable<number> | undefined)
+  get propVar2(): (number | undefined)
+  set __backing_propVar2(__backing_propVar2: (IPropDecoratedVariable<number> | undefined))
   
-  get __backing_propVar2(): IPropDecoratedVariable<number> | undefined
-  set propVar3(propVar3: boolean | undefined)
+  get __backing_propVar2(): (IPropDecoratedVariable<number> | undefined)
+  set propVar3(propVar3: (boolean | undefined))
   
-  get propVar3(): boolean | undefined
-  set __backing_propVar3(__backing_propVar3: IPropDecoratedVariable<boolean> | undefined)
+  get propVar3(): (boolean | undefined)
+  set __backing_propVar3(__backing_propVar3: (IPropDecoratedVariable<boolean> | undefined))
   
-  get __backing_propVar3(): IPropDecoratedVariable<boolean> | undefined
-  set propVar4(propVar4: undefined | undefined)
+  get __backing_propVar3(): (IPropDecoratedVariable<boolean> | undefined)
+  set propVar4(propVar4: (undefined | undefined))
   
-  get propVar4(): undefined | undefined
-  set __backing_propVar4(__backing_propVar4: IPropDecoratedVariable<undefined> | undefined)
+  get propVar4(): (undefined | undefined)
+  set __backing_propVar4(__backing_propVar4: (IPropDecoratedVariable<undefined> | undefined))
   
-  get __backing_propVar4(): IPropDecoratedVariable<undefined> | undefined
-  set propVar5(propVar5: null | undefined)
+  get __backing_propVar4(): (IPropDecoratedVariable<undefined> | undefined)
+  set propVar5(propVar5: (null | undefined))
   
-  get propVar5(): null | undefined
-  set __backing_propVar5(__backing_propVar5: IPropDecoratedVariable<null> | undefined)
+  get propVar5(): (null | undefined)
+  set __backing_propVar5(__backing_propVar5: (IPropDecoratedVariable<null> | undefined))
   
-  get __backing_propVar5(): IPropDecoratedVariable<null> | undefined
+  get __backing_propVar5(): (IPropDecoratedVariable<null> | undefined)
   
 }
 `;
