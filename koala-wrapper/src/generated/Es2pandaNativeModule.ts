@@ -115,12 +115,6 @@ export class Es2pandaNativeModule {
     _ETSFunctionTypeIrFlags(context: KNativePointer, receiver: KNativePointer): KInt {
         throw new Error("'ETSFunctionTypeIrFlags was not overloaded by native module initialization")
     }
-    _ETSFunctionTypeIrIsThrowingConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
-        throw new Error("'ETSFunctionTypeIrIsThrowingConst was not overloaded by native module initialization")
-    }
-    _ETSFunctionTypeIrIsRethrowingConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
-        throw new Error("'ETSFunctionTypeIrIsRethrowingConst was not overloaded by native module initialization")
-    }
     _ETSFunctionTypeIrIsExtensionFunctionConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'ETSFunctionTypeIrIsExtensionFunctionConst was not overloaded by native module initialization")
     }
@@ -1047,12 +1041,6 @@ export class Es2pandaNativeModule {
     }
     _ScriptFunctionHasThrowStatementConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'ScriptFunctionHasThrowStatementConst was not overloaded by native module initialization")
-    }
-    _ScriptFunctionIsThrowingConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
-        throw new Error("'ScriptFunctionIsThrowingConst was not overloaded by native module initialization")
-    }
-    _ScriptFunctionIsRethrowingConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
-        throw new Error("'ScriptFunctionIsRethrowingConst was not overloaded by native module initialization")
     }
     _ScriptFunctionIsDynamicConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'ScriptFunctionIsDynamicConst was not overloaded by native module initialization")
