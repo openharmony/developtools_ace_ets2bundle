@@ -31,10 +31,10 @@ export enum InteroperAbilityNames {
     GLOBAL = 'global',
     PARAMSLAMBDA = 'paramsLambda',
     INTEROPCOMPONENT = 'interopComponent',
-    OHMURL = '@normalized:N&entry&com.example.Interop2use1&har1/src/main/ets/components/MainPage&1.0.0',
     GETCOMPATIBLESTATE = 'getCompatibleState',
     BINDPROVIDEINTEROP = 'bindCompatibleProvideCallback',
     CREATESTATE = 'createStateVariable',
+    INTEROP = 'arkui.component.interop',
 }
 
 
