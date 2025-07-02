@@ -1,7 +1,7 @@
 {
   "intentName": "StartNavigate",
   "intentVersion": "1.0.1",
-  "llmDescription": "出行导航",
+  "llmDescription": "开始导航",
   "keywords": ["StartNavigate"],
   "parameters": {
     "type": "object",
@@ -82,6 +82,7 @@
       },
       "wayPoints": {
         "description": "途经点列表，最多传5个。",
+        "maxLength": 5,
         "type": "array",
         "items": {
           "type": "object",
