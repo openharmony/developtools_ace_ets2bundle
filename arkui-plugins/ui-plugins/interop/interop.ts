@@ -446,7 +446,7 @@ export function generateArkUICompatible(node: arkts.CallExpression): arkts.CallE
     const updateProp:arkts.Property[] = [];
     const initializer = createInitializer(context, varMap, updateProp);
     const updater = createUpdater(updateProp);
-    return arkts.factory.updateCallExpression(
+    const result = arkts.factory.updateCallExpression(
         node,
         arkts.factory.createIdentifier(InteroperAbilityNames.ARKUICOMPATIBLE),
         undefined,
@@ -455,4 +455,6 @@ export function generateArkUICompatible(node: arkts.CallExpression): arkts.CallE
             updater,
         ]
     );
+    arkts.NodeCache.getInstance().collect(result);
+    return result;
 }

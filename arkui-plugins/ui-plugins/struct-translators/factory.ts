@@ -62,6 +62,7 @@ import {
 } from '../../common/predefines';
 import { ObservedTrackTranslator } from '../property-translators/observedTrack';
 import { addMemoAnnotation } from '../../collectors/memo-collectors/utils';
+import { generateArkUICompatible, isArkUICompatible } from '../interop/interop';
 
 export class factory {
     /**
@@ -919,6 +920,9 @@ export class factory {
         }
         if (arkts.isCallExpression(node) && isForEachCall(node)) {
             return this.transformCallArguments(node);
+        }
+        if (isArkUICompatible(node)) {
+            return generateArkUICompatible(node as arkts.CallExpression);
         }
         return node;
     }
