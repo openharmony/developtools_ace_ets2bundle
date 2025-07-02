@@ -1514,6 +1514,7 @@ mocha.describe('generate ohmUrl', function () {
   mocha.it('Collect. so libraries referenced in the project and generate JSON files', function () {
     this.rollup.build();
     this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
+    this.rollup.share.projectConfig.isPreloadSoEnabled = true;
     this.rollup.share.projectConfig.preloadSoFilePath = 'build/default/intermediates/preload/default/preload.json';
     const filePath: string = '/testHsp/hsp/src/main/ets/utils/Calc.ets';
     const outFilePath: string = 'build/default/intermediates/preload/default/preload.json';
