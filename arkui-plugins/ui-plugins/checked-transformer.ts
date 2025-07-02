@@ -24,7 +24,6 @@ import { isEntryWrapperClass } from './entry-translators/utils';
 import { ImportCollector } from '../common/import-collector';
 import { DeclarationCollector } from '../common/declaration-collector';
 import { PropertyCache } from './property-translators/utils';
-import { isArkUICompatible, generateArkUICompatible } from './interop/interop';
 import { checkCustomDialogController, insertImportDeclaration, transformDeclaration } from './customdialog';
 import { LogCollector } from '../common/log-collector';
 import {
@@ -140,8 +139,6 @@ export class CheckedTransformer extends AbstractVisitor {
             return structFactory.transformCallExpression(node, this.projectConfig, this.resourceInfo);
         } else if (arkts.isMethodDefinition(node) && isForEachDecl(node, this.externalSourceName)) {
             return structFactory.AddArrowTypeForParameter(node);
-        } else if (isArkUICompatible(node)) {
-            return generateArkUICompatible(node as arkts.CallExpression);
         } else if (arkts.isTSInterfaceDeclaration(node)) {
             return structFactory.tranformInterfaceMembers(node, this.externalSourceName);
         } else if (arkts.isBlockStatement(node)) {
