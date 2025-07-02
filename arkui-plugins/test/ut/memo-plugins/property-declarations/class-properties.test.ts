@@ -37,8 +37,8 @@ function main() {}
 class A {
     public arg: (()=> void);
     @memo() public memo_arg: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
-    @memo() public memo_optional_arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined;
-    @memo() public memo_union_arg: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    @memo() public memo_optional_arg?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
+    @memo() public memo_union_arg: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;

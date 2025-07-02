@@ -50,7 +50,7 @@ function main() {}
             return;
         }
     }));
-    let x: C | D = C.$_instantiate(__memo_context, ((__memo_id) + (<some_random_number>)), (() => {
+    let x: (C | D) = C.$_instantiate(__memo_context, ((__memo_id) + (<some_random_number>)), (() => {
         return new C();
     }));
     x = D.$_instantiate((() => {

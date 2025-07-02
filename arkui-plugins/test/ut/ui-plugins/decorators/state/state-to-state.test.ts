@@ -69,12 +69,12 @@ class Per {
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_parentVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "parentVar1", ((({let gensym___247315634 = initializers;
     (((gensym___247315634) == (null)) ? undefined : gensym___247315634.parentVar1)})) ?? (new Per("hello"))));
   }
   
-  public __updateStruct(initializers: __Options_Parent | undefined): void {}
+  public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
   private __backing_parentVar1?: IStateDecoratedVariable<Per>;
   
@@ -101,12 +101,12 @@ class Per {
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_childVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "childVar1", ((({let gensym___218939886 = initializers;
     (((gensym___218939886) == (null)) ? undefined : gensym___218939886.childVar1)})) ?? (new Per("ccc"))));
   }
   
-  public __updateStruct(initializers: __Options_Child | undefined): void {}
+  public __updateStruct(initializers: (__Options_Child | undefined)): void {}
   
   private __backing_childVar1?: IStateDecoratedVariable<Per>;
   
@@ -127,22 +127,22 @@ class Per {
 }
 
 @Component() export interface __Options_Parent {
-  set parentVar1(parentVar1: Per | undefined)
+  set parentVar1(parentVar1: (Per | undefined))
   
-  get parentVar1(): Per | undefined
-  set __backing_parentVar1(__backing_parentVar1: IStateDecoratedVariable<Per> | undefined)
+  get parentVar1(): (Per | undefined)
+  set __backing_parentVar1(__backing_parentVar1: (IStateDecoratedVariable<Per> | undefined))
   
-  get __backing_parentVar1(): IStateDecoratedVariable<Per> | undefined
+  get __backing_parentVar1(): (IStateDecoratedVariable<Per> | undefined)
   
 }
 
 @Component() export interface __Options_Child {
-  set childVar1(childVar1: Per | undefined)
+  set childVar1(childVar1: (Per | undefined))
   
-  get childVar1(): Per | undefined
-  set __backing_childVar1(__backing_childVar1: IStateDecoratedVariable<Per> | undefined)
+  get childVar1(): (Per | undefined)
+  set __backing_childVar1(__backing_childVar1: (IStateDecoratedVariable<Per> | undefined))
   
-  get __backing_childVar1(): IStateDecoratedVariable<Per> | undefined
+  get __backing_childVar1(): (IStateDecoratedVariable<Per> | undefined)
   
 }
 `;

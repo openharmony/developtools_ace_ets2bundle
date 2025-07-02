@@ -38,7 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
@@ -56,8 +55,6 @@ import { Component as Component } from "@ohos.arkui.component";
 import { State as State } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
-
 
 class Per {
   public num: number;
@@ -137,7 +134,7 @@ final class StateType extends BaseEnum<int> {
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_stateVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "stateVar1", ((({let gensym___213853607 = initializers;
     (((gensym___213853607) == (null)) ? undefined : gensym___213853607.stateVar1)})) ?? (new Per(6))));
     this.__backing_stateVar2 = STATE_MGMT_FACTORY.makeState<Array<number>>(this, "stateVar2", ((({let gensym___113574154 = initializers;
@@ -158,13 +155,13 @@ final class StateType extends BaseEnum<int> {
     (((gensym___171171899) == (null)) ? undefined : gensym___171171899.stateVar9)})) ?? (new Date("2025-4-23"))));
     this.__backing_stateVar10 = STATE_MGMT_FACTORY.makeState<Map<number, Per>>(this, "stateVar10", ((({let gensym___91651348 = initializers;
     (((gensym___91651348) == (null)) ? undefined : gensym___91651348.stateVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
-    this.__backing_stateVar11 = STATE_MGMT_FACTORY.makeState<string | number>(this, "stateVar11", ((({let gensym___56045278 = initializers;
+    this.__backing_stateVar11 = STATE_MGMT_FACTORY.makeState<(string | number)>(this, "stateVar11", ((({let gensym___56045278 = initializers;
     (((gensym___56045278) == (null)) ? undefined : gensym___56045278.stateVar11)})) ?? (0.0)));
-    this.__backing_stateVar12 = STATE_MGMT_FACTORY.makeState<Set<string> | Per>(this, "stateVar12", ((({let gensym___164759887 = initializers;
+    this.__backing_stateVar12 = STATE_MGMT_FACTORY.makeState<(Set<string> | Per)>(this, "stateVar12", ((({let gensym___164759887 = initializers;
     (((gensym___164759887) == (null)) ? undefined : gensym___164759887.stateVar12)})) ?? (new Per(6))));
   }
   
-  public __updateStruct(initializers: __Options_Parent | undefined): void {}
+  public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
   private __backing_stateVar1?: IStateDecoratedVariable<Per>;
   
@@ -266,23 +263,23 @@ final class StateType extends BaseEnum<int> {
     this.__backing_stateVar10!.set(value);
   }
   
-  private __backing_stateVar11?: IStateDecoratedVariable<string | number>;
+  private __backing_stateVar11?: IStateDecoratedVariable<(string | number)>;
   
-  public get stateVar11(): string | number {
+  public get stateVar11(): (string | number) {
     return this.__backing_stateVar11!.get();
   }
   
-  public set stateVar11(value: string | number) {
+  public set stateVar11(value: (string | number)) {
     this.__backing_stateVar11!.set(value);
   }
   
-  private __backing_stateVar12?: IStateDecoratedVariable<Set<string> | Per>;
+  private __backing_stateVar12?: IStateDecoratedVariable<(Set<string> | Per)>;
   
-  public get stateVar12(): Set<string> | Per {
+  public get stateVar12(): (Set<string> | Per) {
     return this.__backing_stateVar12!.get();
   }
   
-  public set stateVar12(value: Set<string> | Per) {
+  public set stateVar12(value: (Set<string> | Per)) {
     this.__backing_stateVar12!.set(value);
   }
   
@@ -293,80 +290,81 @@ final class StateType extends BaseEnum<int> {
 }
 
 @Component() export interface __Options_Parent {
-  set stateVar1(stateVar1: Per | undefined)
+  set stateVar1(stateVar1: (Per | undefined))
   
-  get stateVar1(): Per | undefined
-  set __backing_stateVar1(__backing_stateVar1: IStateDecoratedVariable<Per> | undefined)
+  get stateVar1(): (Per | undefined)
+  set __backing_stateVar1(__backing_stateVar1: (IStateDecoratedVariable<Per> | undefined))
   
-  get __backing_stateVar1(): IStateDecoratedVariable<Per> | undefined
-  set stateVar2(stateVar2: Array<number> | undefined)
+  get __backing_stateVar1(): (IStateDecoratedVariable<Per> | undefined)
+  set stateVar2(stateVar2: (Array<number> | undefined))
   
-  get stateVar2(): Array<number> | undefined
-  set __backing_stateVar2(__backing_stateVar2: IStateDecoratedVariable<Array<number>> | undefined)
+  get stateVar2(): (Array<number> | undefined)
+  set __backing_stateVar2(__backing_stateVar2: (IStateDecoratedVariable<Array<number>> | undefined))
   
-  get __backing_stateVar2(): IStateDecoratedVariable<Array<number>> | undefined
-  set stateVar3(stateVar3: StateType | undefined)
+  get __backing_stateVar2(): (IStateDecoratedVariable<Array<number>> | undefined)
+  set stateVar3(stateVar3: (StateType | undefined))
   
-  get stateVar3(): StateType | undefined
-  set __backing_stateVar3(__backing_stateVar3: IStateDecoratedVariable<StateType> | undefined)
+  get stateVar3(): (StateType | undefined)
+  set __backing_stateVar3(__backing_stateVar3: (IStateDecoratedVariable<StateType> | undefined))
   
-  get __backing_stateVar3(): IStateDecoratedVariable<StateType> | undefined
-  set stateVar4(stateVar4: Set<string> | undefined)
+  get __backing_stateVar3(): (IStateDecoratedVariable<StateType> | undefined)
+  set stateVar4(stateVar4: (Set<string> | undefined))
   
-  get stateVar4(): Set<string> | undefined
-  set __backing_stateVar4(__backing_stateVar4: IStateDecoratedVariable<Set<string>> | undefined)
+  get stateVar4(): (Set<string> | undefined)
+  set __backing_stateVar4(__backing_stateVar4: (IStateDecoratedVariable<Set<string>> | undefined))
   
-  get __backing_stateVar4(): IStateDecoratedVariable<Set<string>> | undefined
-  set stateVar5(stateVar5: Array<boolean> | undefined)
+  get __backing_stateVar4(): (IStateDecoratedVariable<Set<string>> | undefined)
+  set stateVar5(stateVar5: (Array<boolean> | undefined))
   
-  get stateVar5(): Array<boolean> | undefined
-  set __backing_stateVar5(__backing_stateVar5: IStateDecoratedVariable<Array<boolean>> | undefined)
+  get stateVar5(): (Array<boolean> | undefined)
+  set __backing_stateVar5(__backing_stateVar5: (IStateDecoratedVariable<Array<boolean>> | undefined))
   
-  get __backing_stateVar5(): IStateDecoratedVariable<Array<boolean>> | undefined
-  set stateVar6(stateVar6: Array<Per> | undefined)
+  get __backing_stateVar5(): (IStateDecoratedVariable<Array<boolean>> | undefined)
+  set stateVar6(stateVar6: (Array<Per> | undefined))
   
-  get stateVar6(): Array<Per> | undefined
-  set __backing_stateVar6(__backing_stateVar6: IStateDecoratedVariable<Array<Per>> | undefined)
+  get stateVar6(): (Array<Per> | undefined)
+  set __backing_stateVar6(__backing_stateVar6: (IStateDecoratedVariable<Array<Per>> | undefined))
   
-  get __backing_stateVar6(): IStateDecoratedVariable<Array<Per>> | undefined
-  set stateVar7(stateVar7: Array<Per> | undefined)
+  get __backing_stateVar6(): (IStateDecoratedVariable<Array<Per>> | undefined)
+  set stateVar7(stateVar7: (Array<Per> | undefined))
   
-  get stateVar7(): Array<Per> | undefined
-  set __backing_stateVar7(__backing_stateVar7: IStateDecoratedVariable<Array<Per>> | undefined)
+  get stateVar7(): (Array<Per> | undefined)
+  set __backing_stateVar7(__backing_stateVar7: (IStateDecoratedVariable<Array<Per>> | undefined))
   
-  get __backing_stateVar7(): IStateDecoratedVariable<Array<Per>> | undefined
-  set stateVar8(stateVar8: ((sr: string)=> void) | undefined)
+  get __backing_stateVar7(): (IStateDecoratedVariable<Array<Per>> | undefined)
+  set stateVar8(stateVar8: (((sr: string)=> void) | undefined))
   
-  get stateVar8(): ((sr: string)=> void) | undefined
-  set __backing_stateVar8(__backing_stateVar8: IStateDecoratedVariable<((sr: string)=> void)> | undefined)
+  get stateVar8(): (((sr: string)=> void) | undefined)
+  set __backing_stateVar8(__backing_stateVar8: (IStateDecoratedVariable<((sr: string)=> void)> | undefined))
   
-  get __backing_stateVar8(): IStateDecoratedVariable<((sr: string)=> void)> | undefined
-  set stateVar9(stateVar9: Date | undefined)
+  get __backing_stateVar8(): (IStateDecoratedVariable<((sr: string)=> void)> | undefined)
+  set stateVar9(stateVar9: (Date | undefined))
   
-  get stateVar9(): Date | undefined
-  set __backing_stateVar9(__backing_stateVar9: IStateDecoratedVariable<Date> | undefined)
+  get stateVar9(): (Date | undefined)
+  set __backing_stateVar9(__backing_stateVar9: (IStateDecoratedVariable<Date> | undefined))
   
-  get __backing_stateVar9(): IStateDecoratedVariable<Date> | undefined
-  set stateVar10(stateVar10: Map<number, Per> | undefined)
+  get __backing_stateVar9(): (IStateDecoratedVariable<Date> | undefined)
+  set stateVar10(stateVar10: (Map<number, Per> | undefined))
   
-  get stateVar10(): Map<number, Per> | undefined
-  set __backing_stateVar10(__backing_stateVar10: IStateDecoratedVariable<Map<number, Per>> | undefined)
+  get stateVar10(): (Map<number, Per> | undefined)
+  set __backing_stateVar10(__backing_stateVar10: (IStateDecoratedVariable<Map<number, Per>> | undefined))
   
-  get __backing_stateVar10(): IStateDecoratedVariable<Map<number, Per>> | undefined
-  set stateVar11(stateVar11: string | number | undefined)
+  get __backing_stateVar10(): (IStateDecoratedVariable<Map<number, Per>> | undefined)
+  set stateVar11(stateVar11: ((string | number) | undefined))
   
-  get stateVar11(): string | number | undefined
-  set __backing_stateVar11(__backing_stateVar11: IStateDecoratedVariable<string | number> | undefined)
+  get stateVar11(): ((string | number) | undefined)
+  set __backing_stateVar11(__backing_stateVar11: (IStateDecoratedVariable<(string | number)> | undefined))
   
-  get __backing_stateVar11(): IStateDecoratedVariable<string | number> | undefined
-  set stateVar12(stateVar12: Set<string> | Per | undefined)
+  get __backing_stateVar11(): (IStateDecoratedVariable<(string | number)> | undefined)
+  set stateVar12(stateVar12: ((Set<string> | Per) | undefined))
   
-  get stateVar12(): Set<string> | Per | undefined
-  set __backing_stateVar12(__backing_stateVar12: IStateDecoratedVariable<Set<string> | Per> | undefined)
+  get stateVar12(): ((Set<string> | Per) | undefined)
+  set __backing_stateVar12(__backing_stateVar12: (IStateDecoratedVariable<(Set<string> | Per)> | undefined))
   
-  get __backing_stateVar12(): IStateDecoratedVariable<Set<string> | Per> | undefined
+  get __backing_stateVar12(): (IStateDecoratedVariable<(Set<string> | Per)> | undefined)
   
 }
+
 `;
 
 function testParsedAndCheckedTransformer(this: PluginTestContext): void {

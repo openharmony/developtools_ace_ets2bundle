@@ -116,12 +116,12 @@ function main() {}
 
 
 @Component() final struct CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
-  public __initializeStruct(initializers: __Options_CustomContainer | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_CustomContainer | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_closer = ((((({let gensym___38813563 = initializers;
     (((gensym___38813563) == (null)) ? undefined : gensym___38813563.closer)})) ?? (content))) ?? (this.closerBuilder))
   }
   
-  public __updateStruct(initializers: __Options_CustomContainer | undefined): void {}
+  public __updateStruct(initializers: (__Options_CustomContainer | undefined)): void {}
   
   private __backing_closer?: @memo() (()=> void);
   
@@ -142,9 +142,9 @@ function main() {}
 }
 
 @Component() final struct CustomContainerUser extends CustomComponent<CustomContainerUser, __Options_CustomContainerUser> {
-  public __initializeStruct(initializers: __Options_CustomContainerUser | undefined, @memo() content: (()=> void) | undefined): void {}
+  public __initializeStruct(initializers: (__Options_CustomContainerUser | undefined), @memo() content: ((()=> void) | undefined)): void {}
   
-  public __updateStruct(initializers: __Options_CustomContainerUser | undefined): void {}
+  public __updateStruct(initializers: (__Options_CustomContainerUser | undefined)): void {}
   
   @memo() public build() {
     Column(undefined, undefined, @memo() (() => {
@@ -174,9 +174,9 @@ function main() {}
 }
 
 @Component() export interface __Options_CustomContainer {
-  set closer(closer: @memo() (()=> void) | undefined)
+  set closer(closer: (@memo() (()=> void) | undefined))
   
-  get closer(): @memo() (()=> void) | undefined
+  get closer(): (@memo() (()=> void) | undefined)
   
 }
 

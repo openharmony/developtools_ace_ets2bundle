@@ -60,7 +60,7 @@ function main() {}
 
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_stateVar1 = STATE_MGMT_FACTORY.makeState<string>(this, "stateVar1", ((({let gensym___213853607 = initializers;
     (((gensym___213853607) == (null)) ? undefined : gensym___213853607.stateVar1)})) ?? ("stateVar1")));
     this.__backing_stateVar2 = STATE_MGMT_FACTORY.makeState<number>(this, "stateVar2", ((({let gensym___113574154 = initializers;
@@ -73,7 +73,7 @@ function main() {}
     (((gensym___99384342) == (null)) ? undefined : gensym___99384342.stateVar5)})) ?? (null)));
   }
   
-  public __updateStruct(initializers: __Options_Parent | undefined): void {}
+  public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
   private __backing_stateVar1?: IStateDecoratedVariable<string>;
   
@@ -132,36 +132,36 @@ function main() {}
 }
 
 @Component() export interface __Options_Parent {
-  set stateVar1(stateVar1: string | undefined)
+  set stateVar1(stateVar1: (string | undefined))
   
-  get stateVar1(): string | undefined
-  set __backing_stateVar1(__backing_stateVar1: IStateDecoratedVariable<string> | undefined)
+  get stateVar1(): (string | undefined)
+  set __backing_stateVar1(__backing_stateVar1: (IStateDecoratedVariable<string> | undefined))
   
-  get __backing_stateVar1(): IStateDecoratedVariable<string> | undefined
-  set stateVar2(stateVar2: number | undefined)
+  get __backing_stateVar1(): (IStateDecoratedVariable<string> | undefined)
+  set stateVar2(stateVar2: (number | undefined))
   
-  get stateVar2(): number | undefined
-  set __backing_stateVar2(__backing_stateVar2: IStateDecoratedVariable<number> | undefined)
+  get stateVar2(): (number | undefined)
+  set __backing_stateVar2(__backing_stateVar2: (IStateDecoratedVariable<number> | undefined))
   
-  get __backing_stateVar2(): IStateDecoratedVariable<number> | undefined
-  set stateVar3(stateVar3: boolean | undefined)
+  get __backing_stateVar2(): (IStateDecoratedVariable<number> | undefined)
+  set stateVar3(stateVar3: (boolean | undefined))
   
-  get stateVar3(): boolean | undefined
-  set __backing_stateVar3(__backing_stateVar3: IStateDecoratedVariable<boolean> | undefined)
+  get stateVar3(): (boolean | undefined)
+  set __backing_stateVar3(__backing_stateVar3: (IStateDecoratedVariable<boolean> | undefined))
   
-  get __backing_stateVar3(): IStateDecoratedVariable<boolean> | undefined
-  set stateVar4(stateVar4: undefined | undefined)
+  get __backing_stateVar3(): (IStateDecoratedVariable<boolean> | undefined)
+  set stateVar4(stateVar4: (undefined | undefined))
   
-  get stateVar4(): undefined | undefined
-  set __backing_stateVar4(__backing_stateVar4: IStateDecoratedVariable<undefined> | undefined)
+  get stateVar4(): (undefined | undefined)
+  set __backing_stateVar4(__backing_stateVar4: (IStateDecoratedVariable<undefined> | undefined))
   
-  get __backing_stateVar4(): IStateDecoratedVariable<undefined> | undefined
-  set stateVar5(stateVar5: null | undefined)
+  get __backing_stateVar4(): (IStateDecoratedVariable<undefined> | undefined)
+  set stateVar5(stateVar5: (null | undefined))
   
-  get stateVar5(): null | undefined
-  set __backing_stateVar5(__backing_stateVar5: IStateDecoratedVariable<null> | undefined)
+  get stateVar5(): (null | undefined)
+  set __backing_stateVar5(__backing_stateVar5: (IStateDecoratedVariable<null> | undefined))
   
-  get __backing_stateVar5(): IStateDecoratedVariable<null> | undefined
+  get __backing_stateVar5(): (IStateDecoratedVariable<null> | undefined)
   
 }
 `;

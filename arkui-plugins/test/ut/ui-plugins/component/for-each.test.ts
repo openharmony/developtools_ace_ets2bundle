@@ -18,7 +18,7 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { structNoRecheck, recheck, uiNoRecheck } from '../../../utils/plugins';
+import { recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
@@ -70,12 +70,12 @@ class AB {
 }
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
-  public __initializeStruct(initializers: __Options_ImportStruct | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_arr = ((({let gensym___244068973 = initializers;
     (((gensym___244068973) == (null)) ? undefined : gensym___244068973.arr)})) ?? (["a", "b", "c"]));
   }
   
-  public __updateStruct(initializers: __Options_ImportStruct | undefined): void {}
+  public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
   
   private __backing_arr?: Array<string>;
   
@@ -122,9 +122,9 @@ class AB {
 }
 
 @Component() export interface __Options_ImportStruct {
-  set arr(arr: Array<string> | undefined)
+  set arr(arr: (Array<string> | undefined))
   
-  get arr(): Array<string> | undefined
+  get arr(): (Array<string> | undefined)
   
 }
 `;
