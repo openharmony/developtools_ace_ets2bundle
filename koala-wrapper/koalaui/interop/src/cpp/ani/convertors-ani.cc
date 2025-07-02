@@ -20,7 +20,7 @@
 #include "interop-types.h"
 
 static const char* callCallbackFromNative = "callCallbackFromNative";
-static const char* callCallbackFromNativeSig = "I[BI:I";
+static const char* CALL_CALLBACK_FROM_NATIVE_SIG = "iA{b}i:i";
 
 static const char* FAST_NATIVE_PREFIX = "#F$";
 
@@ -114,11 +114,12 @@ void AniExports::setClasspath(const char* module, const char *classpath) {
 }
 
 static std::map<std::string, std::string> g_defaultClasspaths = {
-    {"InteropNativeModule", "@koalaui/interop/InteropNativeModule/InteropNativeModule"},
+    {"InteropNativeModule", "@koalaui.interop.InteropNativeModule.InteropNativeModule"},
     // todo leave just InteropNativeModule, define others via KOALA_ETS_INTEROP_MODULE_CLASSPATH
-    {"TestNativeModule", "@koalaui/arkts-arkui/generated/arkts/TestNativeModule/TestNativeModule"},
-    {"ArkUINativeModule", "@koalaui/arkts-arkui/generated/arkts/ArkUINativeModule/ArkUINativeModule"},
-    {"ArkUIGeneratedNativeModule", "@koalaui/arkts-arkui/generated/arkts/ArkUIGeneratedNativeModule/ArkUIGeneratedNativeModule"},
+    {"TestNativeModule", "@koalaui.arkts-arkui.generated.arkts.TestNativeModule.TestNativeModule"},
+    {"ArkUINativeModule", "@koalaui.arkts-arkui.generated.arkts.ArkUINativeModule.ArkUINativeModule"},
+    {"ArkUIGeneratedNativeModule",
+        "@koalaui.arkts-arkui.generated.arkts.ArkUIGeneratedNativeModule.ArkUIGeneratedNativeModule"},
 };
 const std::string& AniExports::getClasspath(const std::string& module) {
     auto it = classpaths.find(module);
