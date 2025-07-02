@@ -46,14 +46,14 @@ import { Component as Component, Builder as Builder, BuilderParam as BuilderPara
 function main() {}
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_customBuilderParam = ((((({let gensym___169376706 = initializers;
     (((gensym___169376706) == (null)) ? undefined : gensym___169376706.customBuilderParam)})) ?? (content))) ?? (this.doNothingBuilder))
     this.__backing_customBuilderParam2 = ((((({let gensym___14041256 = initializers;
     (((gensym___14041256) == (null)) ? undefined : gensym___14041256.customBuilderParam2)})) ?? (content))) ?? (this.doNothingBuilder2))
   }
   
-  public __updateStruct(initializers: __Options_Child | undefined): void {}
+  public __updateStruct(initializers: (__Options_Child | undefined)): void {}
   
   private __backing_customBuilderParam?: @memo() (()=> void);
   
@@ -89,12 +89,12 @@ function main() {}
 }
 
 @Component() export interface __Options_Child {
-  set customBuilderParam(customBuilderParam: @memo() (()=> void) | undefined)
+  set customBuilderParam(customBuilderParam: (@memo() (()=> void) | undefined))
   
-  get customBuilderParam(): @memo() (()=> void) | undefined
-  set customBuilderParam2(customBuilderParam2: @memo() ((str: string)=> void) | undefined)
+  get customBuilderParam(): (@memo() (()=> void) | undefined)
+  set customBuilderParam2(customBuilderParam2: (@memo() ((str: string)=> void) | undefined))
   
-  get customBuilderParam2(): @memo() ((str: string)=> void) | undefined
+  get customBuilderParam2(): (@memo() ((str: string)=> void) | undefined)
   
 }
 `;
@@ -110,14 +110,14 @@ import { Component as Component, Builder as Builder, BuilderParam as BuilderPara
 function main() {}
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_customBuilderParam = ((((({let gensym___169376706 = initializers;
     (((gensym___169376706) == (null)) ? undefined : gensym___169376706.customBuilderParam)})) ?? (content))) ?? (this.doNothingBuilder))
     this.__backing_customBuilderParam2 = ((((({let gensym___14041256 = initializers;
     (((gensym___14041256) == (null)) ? undefined : gensym___14041256.customBuilderParam2)})) ?? (content))) ?? (this.doNothingBuilder2))
   }
   
-  public __updateStruct(initializers: __Options_Child | undefined): void {}
+  public __updateStruct(initializers: (__Options_Child | undefined)): void {}
   
   private __backing_customBuilderParam?: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
   
@@ -183,12 +183,12 @@ function main() {}
 }
 
 @Component() export interface __Options_Child {
-  set customBuilderParam(customBuilderParam: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
+  set customBuilderParam(customBuilderParam: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined))
   
-  get customBuilderParam(): @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined
-  set customBuilderParam2(customBuilderParam2: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) | undefined)
+  get customBuilderParam(): (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
+  set customBuilderParam2(customBuilderParam2: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) | undefined))
   
-  get customBuilderParam2(): @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) | undefined
+  get customBuilderParam2(): (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) | undefined)
   
 }
 `;

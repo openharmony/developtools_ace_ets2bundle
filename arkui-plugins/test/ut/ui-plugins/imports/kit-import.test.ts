@@ -148,13 +148,13 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   } as NavInterface));
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
-  public __initializeStruct(initializers: __Options_A | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_A | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_a = STATE_MGMT_FACTORY.makeState<string>(this, "a", ((({let gensym___94024326 = initializers;
     (((gensym___94024326) == (null)) ? undefined : gensym___94024326.a)})) ?? ("str")));
     this.__backing_b = STATE_MGMT_FACTORY.makeProp<string>(this, "b", (initializers!.b as string));
   }
   
-  public __updateStruct(initializers: __Options_A | undefined): void {
+  public __updateStruct(initializers: (__Options_A | undefined)): void {
     if (((({let gensym___81454501 = initializers;
     (((gensym___81454501) == (null)) ? undefined : gensym___81454501.b)})) !== (undefined))) {
       this.__backing_b!.update((initializers!.b as string));
@@ -199,18 +199,18 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_A {
-  set a(a: string | undefined)
+  set a(a: (string | undefined))
   
-  get a(): string | undefined
-  set __backing_a(__backing_a: IStateDecoratedVariable<string> | undefined)
+  get a(): (string | undefined)
+  set __backing_a(__backing_a: (IStateDecoratedVariable<string> | undefined))
   
-  get __backing_a(): IStateDecoratedVariable<string> | undefined
-  set b(b: string | undefined)
+  get __backing_a(): (IStateDecoratedVariable<string> | undefined)
+  set b(b: (string | undefined))
   
-  get b(): string | undefined
-  set __backing_b(__backing_b: IPropDecoratedVariable<string> | undefined)
+  get b(): (string | undefined)
+  set __backing_b(__backing_b: (IPropDecoratedVariable<string> | undefined))
   
-  get __backing_b(): IPropDecoratedVariable<string> | undefined
+  get __backing_b(): (IPropDecoratedVariable<string> | undefined)
   
 }
 

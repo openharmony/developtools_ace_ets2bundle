@@ -38,7 +38,6 @@ const observedTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test observed track transform with complex type', buildConfig);
 
 const expectedScript: string = `
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
@@ -213,7 +212,7 @@ final class Status extends BaseEnum<int> {
   
   @JSONStringifyIgnore() private __meta_mapA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  @JSONRename({newName:"unionA"}) private __backing_unionA: string | undefined = "";
+  @JSONRename({newName:"unionA"}) private __backing_unionA: (string | undefined) = "";
   
   @JSONStringifyIgnore() private __meta_unionA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
@@ -241,7 +240,7 @@ final class Status extends BaseEnum<int> {
   
   public mapB: Map<number, string> = new Map<number, string>();
   
-  public unionB: string | undefined = "";
+  public unionB: (string | undefined) = "";
   
   public classB: Person = new Person();
   
@@ -353,12 +352,12 @@ final class Status extends BaseEnum<int> {
     }
   }
   
-  public get unionA(): string | undefined {
+  public get unionA(): (string | undefined) {
     this.conditionalAddRef(this.__meta_unionA);
     return this.__backing_unionA;
   }
   
-  public set unionA(newValue: string | undefined) {
+  public set unionA(newValue: (string | undefined)) {
     if (((this.__backing_unionA) !== (newValue))) {
       this.__backing_unionA = newValue;
       this.__meta_unionA.fireChange();
@@ -439,7 +438,7 @@ final class Status extends BaseEnum<int> {
   
   @JSONRename({newName:"mapA"}) private __backing_mapA: Map<number, string> = new Map<number, string>();
   
-  @JSONRename({newName:"unionA"}) private __backing_unionA: string | undefined = "";
+  @JSONRename({newName:"unionA"}) private __backing_unionA: (string | undefined) = "";
   
   @JSONRename({newName:"classA"}) private __backing_classA: Person = new Person();
   
@@ -551,12 +550,12 @@ final class Status extends BaseEnum<int> {
     }
   }
   
-  public get unionA(): string | undefined {
+  public get unionA(): (string | undefined) {
     this.conditionalAddRef(this.__meta);
     return this.__backing_unionA;
   }
   
-  public set unionA(newValue: string | undefined) {
+  public set unionA(newValue: (string | undefined)) {
     if (((this.__backing_unionA) !== (newValue))) {
       this.__backing_unionA = newValue;
       this.__meta.fireChange();
@@ -651,7 +650,7 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
   
   @JSONStringifyIgnore() private __meta_mapA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  @JSONRename({newName:"unionA"}) private __backing_unionA: string | undefined = "";
+  @JSONRename({newName:"unionA"}) private __backing_unionA: (string | undefined) = "";
   
   @JSONStringifyIgnore() private __meta_unionA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
@@ -769,12 +768,12 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
     }
   }
   
-  public get unionA(): string | undefined {
+  public get unionA(): (string | undefined) {
     this.conditionalAddRef(this.__meta_unionA);
     return this.__backing_unionA;
   }
   
-  public set unionA(newValue: string | undefined) {
+  public set unionA(newValue: (string | undefined)) {
     if (((this.__backing_unionA) !== (newValue))) {
       this.__backing_unionA = newValue;
       this.__meta_unionA.fireChange();
@@ -811,9 +810,9 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {}
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {}
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   @memo() public build() {}
   

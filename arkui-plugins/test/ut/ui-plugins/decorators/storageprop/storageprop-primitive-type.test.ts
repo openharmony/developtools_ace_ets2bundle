@@ -71,13 +71,13 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   } as NavInterface));
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_numB = STATE_MGMT_FACTORY.makeStoragePropRef<number>(this, "Prop1", "numB", 43, Type.from<number>())
     this.__backing_stringB = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "Prop2", "stringB", "BB", Type.from<string>())
     this.__backing_booleanB = STATE_MGMT_FACTORY.makeStoragePropRef<boolean>(this, "Prop3", "booleanB", false, Type.from<boolean>())
   }
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   private __backing_numB?: IStoragePropRefDecoratedVariable<number>;
   
@@ -116,24 +116,24 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  set numB(numB: number | undefined)
+  set numB(numB: (number | undefined))
   
-  get numB(): number | undefined
-  set __backing_numB(__backing_numB: IStoragePropRefDecoratedVariable<number> | undefined)
+  get numB(): (number | undefined)
+  set __backing_numB(__backing_numB: (IStoragePropRefDecoratedVariable<number> | undefined))
   
-  get __backing_numB(): IStoragePropRefDecoratedVariable<number> | undefined
-  set stringB(stringB: string | undefined)
+  get __backing_numB(): (IStoragePropRefDecoratedVariable<number> | undefined)
+  set stringB(stringB: (string | undefined))
   
-  get stringB(): string | undefined
-  set __backing_stringB(__backing_stringB: IStoragePropRefDecoratedVariable<string> | undefined)
+  get stringB(): (string | undefined)
+  set __backing_stringB(__backing_stringB: (IStoragePropRefDecoratedVariable<string> | undefined))
   
-  get __backing_stringB(): IStoragePropRefDecoratedVariable<string> | undefined
-  set booleanB(booleanB: boolean | undefined)
+  get __backing_stringB(): (IStoragePropRefDecoratedVariable<string> | undefined)
+  set booleanB(booleanB: (boolean | undefined))
   
-  get booleanB(): boolean | undefined
-  set __backing_booleanB(__backing_booleanB: IStoragePropRefDecoratedVariable<boolean> | undefined)
+  get booleanB(): (boolean | undefined)
+  set __backing_booleanB(__backing_booleanB: (IStoragePropRefDecoratedVariable<boolean> | undefined))
   
-  get __backing_booleanB(): IStoragePropRefDecoratedVariable<boolean> | undefined
+  get __backing_booleanB(): (IStoragePropRefDecoratedVariable<boolean> | undefined)
   
 }
 

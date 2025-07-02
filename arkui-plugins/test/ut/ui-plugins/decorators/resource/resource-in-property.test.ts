@@ -52,13 +52,13 @@ function main() {}
 
 i = _r(16777216, 10003, "com.example.mock", "entry");
 @Component() final struct ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
-  public __initializeStruct(initializers: __Options_ResourceComponent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_ResourceComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_str = ((({let gensym___42103502 = initializers;
     (((gensym___42103502) == (null)) ? undefined : gensym___42103502.str)})) ?? (_r(16777216, 10003, "com.example.mock", "entry")));
     this.__backing_icon = ((({let gensym___38135554 = initializers;
     (((gensym___38135554) == (null)) ? undefined : gensym___38135554.icon)})) ?? (_rawfile(0, 30000, "com.example.mock", "entry", "app.mock.txt")));
   }
-  public __updateStruct(initializers: __Options_ResourceComponent | undefined): void {}
+  public __updateStruct(initializers: (__Options_ResourceComponent | undefined)): void {}
   private __backing_str?: Resource;
   public get str(): Resource {
     return (this.__backing_str as Resource);
@@ -86,10 +86,10 @@ i = _r(16777216, 10003, "com.example.mock", "entry");
 }
 
 @Component() export interface __Options_ResourceComponent {
-  set str(str: Resource | undefined)
-  get str(): Resource | undefined
-  set icon(icon: Resource | undefined)
-  get icon(): Resource | undefined
+  set str(str: (Resource | undefined))
+  get str(): (Resource | undefined)
+  set icon(icon: (Resource | undefined))
+  get icon(): (Resource | undefined)
 }
 `;
 

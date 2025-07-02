@@ -61,13 +61,13 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   } as NavInterface));
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_numA = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "Prop1", "numA", 33, Type.from<number>())
     this.__backing_stringA = STATE_MGMT_FACTORY.makeStorageLink<string>(this, "Prop2", "stringA", "AA", Type.from<string>())
     this.__backing_booleanA = STATE_MGMT_FACTORY.makeStorageLink<boolean>(this, "Prop3", "booleanA", true, Type.from<boolean>())
   }
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   private __backing_numA?: IStorageLinkDecoratedVariable<number>;
   
@@ -106,24 +106,24 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  set numA(numA: number | undefined)
+  set numA(numA: (number | undefined))
   
-  get numA(): number | undefined
-  set __backing_numA(__backing_numA: IStorageLinkDecoratedVariable<number> | undefined)
+  get numA(): (number | undefined)
+  set __backing_numA(__backing_numA: (IStorageLinkDecoratedVariable<number> | undefined))
   
-  get __backing_numA(): IStorageLinkDecoratedVariable<number> | undefined
-  set stringA(stringA: string | undefined)
+  get __backing_numA(): (IStorageLinkDecoratedVariable<number> | undefined)
+  set stringA(stringA: (string | undefined))
   
-  get stringA(): string | undefined
-  set __backing_stringA(__backing_stringA: IStorageLinkDecoratedVariable<string> | undefined)
+  get stringA(): (string | undefined)
+  set __backing_stringA(__backing_stringA: (IStorageLinkDecoratedVariable<string> | undefined))
   
-  get __backing_stringA(): IStorageLinkDecoratedVariable<string> | undefined
-  set booleanA(booleanA: boolean | undefined)
+  get __backing_stringA(): (IStorageLinkDecoratedVariable<string> | undefined)
+  set booleanA(booleanA: (boolean | undefined))
   
-  get booleanA(): boolean | undefined
-  set __backing_booleanA(__backing_booleanA: IStorageLinkDecoratedVariable<boolean> | undefined)
+  get booleanA(): (boolean | undefined)
+  set __backing_booleanA(__backing_booleanA: (IStorageLinkDecoratedVariable<boolean> | undefined))
   
-  get __backing_booleanA(): IStorageLinkDecoratedVariable<boolean> | undefined
+  get __backing_booleanA(): (IStorageLinkDecoratedVariable<boolean> | undefined)
   
 }
 

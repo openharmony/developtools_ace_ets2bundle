@@ -38,10 +38,7 @@ const watchTransform: Plugins = {
 const pluginTester = new PluginTester('test basic watch transform', buildConfig);
 
 const expectedScript: string = `
-
 import { IConsumeDecoratedVariable as IConsumeDecoratedVariable } from "arkui.stateManagement.decorator";
-
-import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -58,6 +55,8 @@ import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateMan
 import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -85,7 +84,7 @@ import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customCo
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
-import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
+import { Component as Component, Entry as Entry, Column as Column } from "@ohos.arkui.component";
 
 import { State as State, Prop as Prop, StorageLink as StorageLink, StorageProp as StorageProp, Link as Link, Watch as Watch, ObjectLink as ObjectLink, Observed as Observed, Track as Track, Provide as Provide, Consume as Consume } from "@ohos.arkui.stateManagement";
 
@@ -150,7 +149,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_statevar = STATE_MGMT_FACTORY.makeState<string>(this, "statevar", ((({let gensym___76198660 = initializers;
     (((gensym___76198660) == (null)) ? undefined : gensym___76198660.statevar)})) ?? ("Hello World")), ((_: string): void => {
       this.stateOnChange(_);
@@ -181,7 +180,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }));
   }
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {
     if (((({let gensym___220608839 = initializers;
     (((gensym___220608839) == (null)) ? undefined : gensym___220608839.propvar)})) !== (undefined))) {
       this.__backing_propvar!.update((initializers!.propvar as string));
@@ -273,9 +272,11 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public ProvideOnChange(propName: string) {}
   
   @memo() public build() {
-    Child._instantiateImpl(undefined, (() => {
-      return new Child();
-    }), undefined, undefined, undefined);
+    Column(undefined, undefined, @memo() (() => {
+      Child._instantiateImpl(undefined, (() => {
+        return new Child();
+      }), undefined, undefined, undefined);
+    }));
   }
   
   private constructor() {}
@@ -283,13 +284,13 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_providevar = STATE_MGMT_FACTORY.makeConsume<string>(this, "providevar", "providevar", ((_: string): void => {
       this.ConsumeOnChange(_);
     }));
   }
   
-  public __updateStruct(initializers: __Options_Child | undefined): void {}
+  public __updateStruct(initializers: (__Options_Child | undefined)): void {}
   
   private __backing_providevar?: IConsumeDecoratedVariable<string>;
   
@@ -312,58 +313,58 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  set statevar(statevar: string | undefined)
+  set statevar(statevar: (string | undefined))
   
-  get statevar(): string | undefined
-  set __backing_statevar(__backing_statevar: IStateDecoratedVariable<string> | undefined)
+  get statevar(): (string | undefined)
+  set __backing_statevar(__backing_statevar: (IStateDecoratedVariable<string> | undefined))
   
-  get __backing_statevar(): IStateDecoratedVariable<string> | undefined
-  set propvar(propvar: string | undefined)
+  get __backing_statevar(): (IStateDecoratedVariable<string> | undefined)
+  set propvar(propvar: (string | undefined))
   
-  get propvar(): string | undefined
-  set __backing_propvar(__backing_propvar: IPropDecoratedVariable<string> | undefined)
+  get propvar(): (string | undefined)
+  set __backing_propvar(__backing_propvar: (IPropDecoratedVariable<string> | undefined))
   
-  get __backing_propvar(): IPropDecoratedVariable<string> | undefined
-  @__Link_intrinsic() set linkvar(linkvar: string | undefined)
+  get __backing_propvar(): (IPropDecoratedVariable<string> | undefined)
+  @__Link_intrinsic() set linkvar(linkvar: (string | undefined))
   
-  @__Link_intrinsic() get linkvar(): string | undefined
-  set __backing_linkvar(__backing_linkvar: LinkSourceType<string> | undefined)
+  @__Link_intrinsic() get linkvar(): (string | undefined)
+  set __backing_linkvar(__backing_linkvar: (LinkSourceType<string> | undefined))
   
-  get __backing_linkvar(): LinkSourceType<string> | undefined
-  set storagelinkvar(storagelinkvar: string | undefined)
+  get __backing_linkvar(): (LinkSourceType<string> | undefined)
+  set storagelinkvar(storagelinkvar: (string | undefined))
   
-  get storagelinkvar(): string | undefined
-  set __backing_storagelinkvar(__backing_storagelinkvar: IStorageLinkDecoratedVariable<string> | undefined)
+  get storagelinkvar(): (string | undefined)
+  set __backing_storagelinkvar(__backing_storagelinkvar: (IStorageLinkDecoratedVariable<string> | undefined))
   
-  get __backing_storagelinkvar(): IStorageLinkDecoratedVariable<string> | undefined
-  set storagepropvar(storagepropvar: string | undefined)
+  get __backing_storagelinkvar(): (IStorageLinkDecoratedVariable<string> | undefined)
+  set storagepropvar(storagepropvar: (string | undefined))
   
-  get storagepropvar(): string | undefined
-  set __backing_storagepropvar(__backing_storagepropvar: IStoragePropRefDecoratedVariable<string> | undefined)
+  get storagepropvar(): (string | undefined)
+  set __backing_storagepropvar(__backing_storagepropvar: (IStoragePropRefDecoratedVariable<string> | undefined))
   
-  get __backing_storagepropvar(): IStoragePropRefDecoratedVariable<string> | undefined
-  set objectlinkvar(objectlinkvar: A | undefined)
+  get __backing_storagepropvar(): (IStoragePropRefDecoratedVariable<string> | undefined)
+  set objectlinkvar(objectlinkvar: (A | undefined))
   
-  get objectlinkvar(): A | undefined
-  set __backing_objectlinkvar(__backing_objectlinkvar: IObjectLinkDecoratedVariable<A> | undefined)
+  get objectlinkvar(): (A | undefined)
+  set __backing_objectlinkvar(__backing_objectlinkvar: (IObjectLinkDecoratedVariable<A> | undefined))
   
-  get __backing_objectlinkvar(): IObjectLinkDecoratedVariable<A> | undefined
-  set providevar(providevar: string | undefined)
+  get __backing_objectlinkvar(): (IObjectLinkDecoratedVariable<A> | undefined)
+  set providevar(providevar: (string | undefined))
   
-  get providevar(): string | undefined
-  set __backing_providevar(__backing_providevar: IProvideDecoratedVariable<string> | undefined)
+  get providevar(): (string | undefined)
+  set __backing_providevar(__backing_providevar: (IProvideDecoratedVariable<string> | undefined))
   
-  get __backing_providevar(): IProvideDecoratedVariable<string> | undefined
+  get __backing_providevar(): (IProvideDecoratedVariable<string> | undefined)
   
 }
 
 @Component() export interface __Options_Child {
-  set providevar(providevar: string | undefined)
+  set providevar(providevar: (string | undefined))
   
-  get providevar(): string | undefined
-  set __backing_providevar(__backing_providevar: IConsumeDecoratedVariable<string> | undefined)
+  get providevar(): (string | undefined)
+  set __backing_providevar(__backing_providevar: (IConsumeDecoratedVariable<string> | undefined))
   
-  get __backing_providevar(): IConsumeDecoratedVariable<string> | undefined
+  get __backing_providevar(): (IConsumeDecoratedVariable<string> | undefined)
   
 }
 

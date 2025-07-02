@@ -51,22 +51,22 @@ function main() {}
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_customBuilderParam2 = ((((({let gensym___103851375 = initializers;
     (((gensym___103851375) == (null)) ? undefined : gensym___103851375.customBuilderParam2)})) ?? (content))) ?? (undefined))
     this.__backing_customBuilderParam1 = ((((({let gensym___20169645 = initializers;
     (((gensym___20169645) == (null)) ? undefined : gensym___20169645.customBuilderParam1)})) ?? (content))) ?? (showTextBuilder))
   }
   
-  public __updateStruct(initializers: __Options_Child | undefined): void {}
+  public __updateStruct(initializers: (__Options_Child | undefined)): void {}
   
-  private __backing_customBuilderParam2?: @memo() (()=> void) | undefined;
+  private __backing_customBuilderParam2?: (@memo() (()=> void) | undefined);
   
-  public get customBuilderParam2(): @memo() (()=> void) | undefined {
+  public get customBuilderParam2(): (@memo() (()=> void) | undefined) {
     return this.__backing_customBuilderParam2;
   }
   
-  public set customBuilderParam2(value: @memo() (()=> void) | undefined) {
+  public set customBuilderParam2(value: (@memo() (()=> void) | undefined)) {
     this.__backing_customBuilderParam2 = value;
   }
   
@@ -85,6 +85,9 @@ function main() {}
       if (this.customBuilderParam2) {
         (this.customBuilderParam2 as (()=> void))();
       }
+      if (this.customBuilderParam2) {
+        this.customBuilderParam2!();
+      }
       this.customBuilderParam1();
     }));
   }
@@ -94,9 +97,9 @@ function main() {}
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: (()=> void) | undefined): void {}
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {}
   
-  public __updateStruct(initializers: __Options_Parent | undefined): void {}
+  public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
   @memo() public componentBuilder() {
     Text(undefined, "Parent builder", undefined, undefined);
@@ -106,7 +109,11 @@ function main() {}
     Column(undefined, undefined, @memo() (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
-      }), undefined, undefined, undefined);
+      }), {
+        customBuilderParam2: @memo() (() => {
+          this.componentBuilder();
+        }),
+      }, undefined, undefined);
     }));
   }
   
@@ -115,10 +122,12 @@ function main() {}
 }
 
 @Component() export interface __Options_Child {
-  set customBuilderParam2(customBuilderParam2: (()=> void) | undefined | undefined)
-  get customBuilderParam2(): (()=> void) | undefined | undefined
-  set customBuilderParam1(customBuilderParam1: @memo() (()=> void) | undefined)
-  get customBuilderParam1(): @memo() (()=> void) | undefined
+  set customBuilderParam2(customBuilderParam2: (((()=> void) | undefined) | undefined))
+  
+  get customBuilderParam2(): (((()=> void) | undefined) | undefined)
+  set customBuilderParam1(customBuilderParam1: (@memo() (()=> void) | undefined))
+  
+  get customBuilderParam1(): (@memo() (()=> void) | undefined)
   
 }
 
@@ -151,22 +160,22 @@ function main() {}
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_customBuilderParam2 = ((((({let gensym___103851375 = initializers;
     (((gensym___103851375) == (null)) ? undefined : gensym___103851375.customBuilderParam2)})) ?? (content))) ?? (undefined))
     this.__backing_customBuilderParam1 = ((((({let gensym___20169645 = initializers;
     (((gensym___20169645) == (null)) ? undefined : gensym___20169645.customBuilderParam1)})) ?? (content))) ?? (showTextBuilder))
   }
   
-  public __updateStruct(initializers: __Options_Child | undefined): void {}
+  public __updateStruct(initializers: (__Options_Child | undefined)): void {}
   
-  private __backing_customBuilderParam2?: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined;
+  private __backing_customBuilderParam2?: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
   
-  public get customBuilderParam2(): @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined {
+  public get customBuilderParam2(): (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) {
     return this.__backing_customBuilderParam2;
   }
   
-  public set customBuilderParam2(value: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) {
+  public set customBuilderParam2(value: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)) {
     this.__backing_customBuilderParam2 = value;
   }
   
@@ -181,21 +190,24 @@ function main() {}
   }
   
   @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (262345387)), 0);
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (234402485)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    Row(__memo_context, ((__memo_id) + (211301233)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (137225318)), 0);
+    Row(__memo_context, ((__memo_id) + (46726221)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (213104625)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
       }
       if (this.customBuilderParam2) {
-        (this.customBuilderParam2 as (()=> void))();
+        (this.customBuilderParam2 as ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))(__memo_context, ((__memo_id) + (241913892)));
       }
-      this.customBuilderParam1(__memo_context, ((__memo_id) + (241913892)));
+      if (this.customBuilderParam2) {
+        this.customBuilderParam2!(__memo_context, ((__memo_id) + (137225318)));
+      }
+      this.customBuilderParam1(__memo_context, ((__memo_id) + (211301233)));
       {
         __memo_scope.recache();
         return;
@@ -212,17 +224,17 @@ function main() {}
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: __Options_Parent | undefined, @memo() content: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined): void {}
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
-  public __updateStruct(initializers: __Options_Parent | undefined): void {}
+  public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
   @memo() public componentBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (148254276)), 0);
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (179117969)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    Text(__memo_context, ((__memo_id) + (46726221)), undefined, "Parent builder", undefined, undefined);
+    Text(__memo_context, ((__memo_id) + (218979098)), undefined, "Parent builder", undefined, undefined);
     {
       __memo_scope.recache();
       return;
@@ -230,20 +242,33 @@ function main() {}
   }
   
   @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (146980563)), 0);
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (245938697)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    Column(__memo_context, ((__memo_id) + (192802443)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (223657391)), 0);
+    Column(__memo_context, ((__memo_id) + (78055758)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (136716185)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
       }
-      Child._instantiateImpl(__memo_context, ((__memo_id) + (218979098)), undefined, (() => {
+      Child._instantiateImpl(__memo_context, ((__memo_id) + (54078781)), undefined, (() => {
         return new Child();
-      }), undefined, undefined, undefined);
+      }), {
+        customBuilderParam2: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+          const __memo_scope = __memo_context.scope<void>(((__memo_id) + (213687742)), 0);
+          if (__memo_scope.unchanged) {
+            __memo_scope.cached;
+            return;
+          }
+          this.componentBuilder(__memo_context, ((__memo_id) + (192802443)));
+          {
+            __memo_scope.recache();
+            return;
+          }
+        }),
+      }, undefined, undefined);
       {
         __memo_scope.recache();
         return;
@@ -260,12 +285,12 @@ function main() {}
 }
 
 @Component() export interface __Options_Child {
-  set customBuilderParam2(customBuilderParam2: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined | undefined)
+  set customBuilderParam2(customBuilderParam2: ((((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | undefined))
   
-  get customBuilderParam2(): ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined | undefined
-  set customBuilderParam1(customBuilderParam1: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
+  get customBuilderParam2(): ((((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | undefined)
+  set customBuilderParam1(customBuilderParam1: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined))
   
-  get customBuilderParam1(): @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined
+  get customBuilderParam1(): (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
   
 }
 

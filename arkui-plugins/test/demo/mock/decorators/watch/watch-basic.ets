@@ -13,7 +13,7 @@
  * limitations under the License.
  */
  
-import { Component, Entry } from "@ohos.arkui.component"
+import { Component, Entry, Column } from "@ohos.arkui.component"
 import { State, Prop, StorageLink, StorageProp, Link, Watch, ObjectLink, Observed, Track, Provide, Consume } from "@ohos.arkui.stateManagement"
 
 @Observed
@@ -42,7 +42,9 @@ struct MyStateSample {
   ProvideOnChange(propName: string) {}
 
   build() {
-    Child()
+    Column() {
+      Child()
+    }
   }
 }
 

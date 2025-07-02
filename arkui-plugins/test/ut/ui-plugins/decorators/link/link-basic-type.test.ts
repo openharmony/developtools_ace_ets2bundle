@@ -62,7 +62,7 @@ function main() {}
 
 
 @Component() final struct LinkParent extends CustomComponent<LinkParent, __Options_LinkParent> {
-  public __initializeStruct(initializers: __Options_LinkParent | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_LinkParent | undefined), @memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___11910109 = initializers;
     (((gensym___11910109) == (null)) ? undefined : gensym___11910109.__backing_linkVar1)})) {
       this.__backing_linkVar1 = STATE_MGMT_FACTORY.makeLink<string>(this, "linkVar1", initializers!.__backing_linkVar1!);
@@ -85,7 +85,7 @@ function main() {}
     };
   }
   
-  public __updateStruct(initializers: __Options_LinkParent | undefined): void {}
+  public __updateStruct(initializers: (__Options_LinkParent | undefined)): void {}
   
   private __backing_linkVar1?: ILinkDecoratedVariable<string>;
   
@@ -146,36 +146,36 @@ function main() {}
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 @Component() export interface __Options_LinkParent {
-  @__Link_intrinsic() set linkVar1(linkVar1: string | undefined)
+  @__Link_intrinsic() set linkVar1(linkVar1: (string | undefined))
   
-  @__Link_intrinsic() get linkVar1(): string | undefined
-  set __backing_linkVar1(__backing_linkVar1: LinkSourceType<string> | undefined)
+  @__Link_intrinsic() get linkVar1(): (string | undefined)
+  set __backing_linkVar1(__backing_linkVar1: (LinkSourceType<string> | undefined))
   
-  get __backing_linkVar1(): LinkSourceType<string> | undefined
-  @__Link_intrinsic() set linkVar2(linkVar2: number | undefined)
+  get __backing_linkVar1(): (LinkSourceType<string> | undefined)
+  @__Link_intrinsic() set linkVar2(linkVar2: (number | undefined))
   
-  @__Link_intrinsic() get linkVar2(): number | undefined
-  set __backing_linkVar2(__backing_linkVar2: LinkSourceType<number> | undefined)
+  @__Link_intrinsic() get linkVar2(): (number | undefined)
+  set __backing_linkVar2(__backing_linkVar2: (LinkSourceType<number> | undefined))
   
-  get __backing_linkVar2(): LinkSourceType<number> | undefined
-  @__Link_intrinsic() set linkVar3(linkVar3: boolean | undefined)
+  get __backing_linkVar2(): (LinkSourceType<number> | undefined)
+  @__Link_intrinsic() set linkVar3(linkVar3: (boolean | undefined))
   
-  @__Link_intrinsic() get linkVar3(): boolean | undefined
-  set __backing_linkVar3(__backing_linkVar3: LinkSourceType<boolean> | undefined)
+  @__Link_intrinsic() get linkVar3(): (boolean | undefined)
+  set __backing_linkVar3(__backing_linkVar3: (LinkSourceType<boolean> | undefined))
   
-  get __backing_linkVar3(): LinkSourceType<boolean> | undefined
-  @__Link_intrinsic() set linkVar4(linkVar4: undefined | undefined)
+  get __backing_linkVar3(): (LinkSourceType<boolean> | undefined)
+  @__Link_intrinsic() set linkVar4(linkVar4: (undefined | undefined))
   
-  @__Link_intrinsic() get linkVar4(): undefined | undefined
-  set __backing_linkVar4(__backing_linkVar4: LinkSourceType<undefined> | undefined)
+  @__Link_intrinsic() get linkVar4(): (undefined | undefined)
+  set __backing_linkVar4(__backing_linkVar4: (LinkSourceType<undefined> | undefined))
   
-  get __backing_linkVar4(): LinkSourceType<undefined> | undefined
-  @__Link_intrinsic() set linkVar5(linkVar5: null | undefined)
+  get __backing_linkVar4(): (LinkSourceType<undefined> | undefined)
+  @__Link_intrinsic() set linkVar5(linkVar5: (null | undefined))
   
-  @__Link_intrinsic() get linkVar5(): null | undefined
-  set __backing_linkVar5(__backing_linkVar5: LinkSourceType<null> | undefined)
+  @__Link_intrinsic() get linkVar5(): (null | undefined)
+  set __backing_linkVar5(__backing_linkVar5: (LinkSourceType<null> | undefined))
   
-  get __backing_linkVar5(): LinkSourceType<null> | undefined
+  get __backing_linkVar5(): (LinkSourceType<null> | undefined)
   
 }
 `;

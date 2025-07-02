@@ -85,12 +85,12 @@ class Data {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
-  public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_storageProp = STATE_MGMT_FACTORY.makeStoragePropRef<number>(this, "PropA", "storageProp", 1, Type.from<number>())
     this.__backing_storagePropObject = STATE_MGMT_FACTORY.makeStoragePropRef<Data>(this, "PropB", "storagePropObject", new Data(1), Type.from<Data>())
   }
   
-  public __updateStruct(initializers: __Options_Index | undefined): void {}
+  public __updateStruct(initializers: (__Options_Index | undefined)): void {}
   
   private __backing_storageProp?: IStoragePropRefDecoratedVariable<number>;
   
@@ -134,18 +134,18 @@ class Data {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
-  set storageProp(storageProp: number | undefined)
+  set storageProp(storageProp: (number | undefined))
   
-  get storageProp(): number | undefined
-  set __backing_storageProp(__backing_storageProp: IStoragePropRefDecoratedVariable<number> | undefined)
+  get storageProp(): (number | undefined)
+  set __backing_storageProp(__backing_storageProp: (IStoragePropRefDecoratedVariable<number> | undefined))
   
-  get __backing_storageProp(): IStoragePropRefDecoratedVariable<number> | undefined
-  set storagePropObject(storagePropObject: Data | undefined)
+  get __backing_storageProp(): (IStoragePropRefDecoratedVariable<number> | undefined)
+  set storagePropObject(storagePropObject: (Data | undefined))
   
-  get storagePropObject(): Data | undefined
-  set __backing_storagePropObject(__backing_storagePropObject: IStoragePropRefDecoratedVariable<Data> | undefined)
+  get storagePropObject(): (Data | undefined)
+  set __backing_storagePropObject(__backing_storagePropObject: (IStoragePropRefDecoratedVariable<Data> | undefined))
   
-  get __backing_storagePropObject(): IStoragePropRefDecoratedVariable<Data> | undefined
+  get __backing_storagePropObject(): (IStoragePropRefDecoratedVariable<Data> | undefined)
   
 }
 

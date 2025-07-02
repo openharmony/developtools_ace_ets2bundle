@@ -78,7 +78,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   } as NavInterface));
 
 class Message {
-  public value: string | undefined;
+  public value: (string | undefined);
   
   public constructor(value: string) {
     this.value = value;
@@ -87,12 +87,12 @@ class Message {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
-  public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_display = STATE_MGMT_FACTORY.makeState<boolean>(this, "display", ((({let gensym___83835842 = initializers;
     (((gensym___83835842) == (null)) ? undefined : gensym___83835842.display)})) ?? (true)));
   }
   
-  public __updateStruct(initializers: __Options_Index | undefined): void {}
+  public __updateStruct(initializers: (__Options_Index | undefined)): void {}
   
   private __backing_display?: IStateDecoratedVariable<boolean>;
   
@@ -130,14 +130,14 @@ class Message {
 }
 
 @Reusable() @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_message = STATE_MGMT_FACTORY.makeState<Message>(this, "message", ((({let gensym___91869411 = initializers;
     (((gensym___91869411) == (null)) ? undefined : gensym___91869411.message)})) ?? (new Message("AboutToReuse"))));
   }
   
-  public __updateStruct(initializers: __Options_Child | undefined): void {}
+  public __updateStruct(initializers: (__Options_Child | undefined)): void {}
   
-  public override __toRecord(params: Object): Record<string, Object> {
+  public override constructor __toRecord(params: Object): Record<string, Object> {
     const paramsCasted = (params as __Options_Child);
     return {
       "message": ((paramsCasted.message) ?? (new Object())),
@@ -175,22 +175,22 @@ class Message {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
-  set display(display: boolean | undefined)
+  set display(display: (boolean | undefined))
   
-  get display(): boolean | undefined
-  set __backing_display(__backing_display: IStateDecoratedVariable<boolean> | undefined)
+  get display(): (boolean | undefined)
+  set __backing_display(__backing_display: (IStateDecoratedVariable<boolean> | undefined))
   
-  get __backing_display(): IStateDecoratedVariable<boolean> | undefined
+  get __backing_display(): (IStateDecoratedVariable<boolean> | undefined)
   
 }
 
 @Reusable() @Component() export interface __Options_Child {
-  set message(message: Message | undefined)
+  set message(message: (Message | undefined))
   
-  get message(): Message | undefined
-  set __backing_message(__backing_message: IStateDecoratedVariable<Message> | undefined)
+  get message(): (Message | undefined)
+  set __backing_message(__backing_message: (IStateDecoratedVariable<Message> | undefined))
   
-  get __backing_message(): IStateDecoratedVariable<Message> | undefined
+  get __backing_message(): (IStateDecoratedVariable<Message> | undefined)
   
 }
 

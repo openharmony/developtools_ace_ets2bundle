@@ -84,10 +84,10 @@ interface A {
     get arg(): (()=> void)
     @memo() set memo_arg(memo_arg: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))
     @memo() get memo_arg(): ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)
-    @memo() set memo_optional_arg(memo_optional_arg: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
-    @memo() get memo_optional_arg(): ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined
-    @memo() set memo_union_arg(memo_union_arg: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
-    @memo() get memo_union_arg(): ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined
+    @memo() set memo_optional_arg(memo_optional_arg: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined))
+    @memo() get memo_optional_arg(): (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
+    @memo() set memo_union_arg(memo_union_arg: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined))
+    @memo() get memo_union_arg(): (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
     set arg_memo_type(arg_memo_type: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))
     get arg_memo_type(): @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)
 }

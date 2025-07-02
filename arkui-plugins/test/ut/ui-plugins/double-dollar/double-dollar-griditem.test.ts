@@ -38,7 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
@@ -80,12 +79,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   } as NavInterface));
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_boo = STATE_MGMT_FACTORY.makeState<boolean>(this, "boo", ((({let gensym___9142460 = initializers;
     (((gensym___9142460) == (null)) ? undefined : gensym___9142460.boo)})) ?? (true)));
   }
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   private __backing_boo?: IStateDecoratedVariable<boolean>;
   
@@ -131,12 +130,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  set boo(boo: boolean | undefined)
+  set boo(boo: (boolean | undefined))
   
-  get boo(): boolean | undefined
-  set __backing_boo(__backing_boo: IStateDecoratedVariable<boolean> | undefined)
+  get boo(): (boolean | undefined)
+  set __backing_boo(__backing_boo: (IStateDecoratedVariable<boolean> | undefined))
   
-  get __backing_boo(): IStateDecoratedVariable<boolean> | undefined
+  get __backing_boo(): (IStateDecoratedVariable<boolean> | undefined)
   
 }
 

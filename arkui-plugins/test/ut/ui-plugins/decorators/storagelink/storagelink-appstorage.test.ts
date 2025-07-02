@@ -72,12 +72,12 @@ class Data {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
-  public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_storageLink = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "PropA", "storageLink", 1, Type.from<number>())
     this.__backing_storageLinkObject = STATE_MGMT_FACTORY.makeStorageLink<Data>(this, "PropB", "storageLinkObject", new Data(1), Type.from<Data>())
   }
   
-  public __updateStruct(initializers: __Options_Index | undefined): void {}
+  public __updateStruct(initializers: (__Options_Index | undefined)): void {}
   
   private __backing_storageLink?: IStorageLinkDecoratedVariable<number>;
   
@@ -121,14 +121,19 @@ class Data {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
-  set storageLink(storageLink: number | undefined)
-  get storageLink(): number | undefined
-  set __backing_storageLink(__backing_storageLink: IStorageLinkDecoratedVariable<number> | undefined)
-  get __backing_storageLink(): IStorageLinkDecoratedVariable<number> | undefined
-  set storageLinkObject(storageLinkObject: Data | undefined)
-  get storageLinkObject(): Data | undefined
-  set __backing_storageLinkObject(__backing_storageLinkObject: IStorageLinkDecoratedVariable<Data> | undefined)
-  get __backing_storageLinkObject(): IStorageLinkDecoratedVariable<Data> | undefined
+  set storageLink(storageLink: (number | undefined))
+  
+  get storageLink(): (number | undefined)
+  set __backing_storageLink(__backing_storageLink: (IStorageLinkDecoratedVariable<number> | undefined))
+  
+  get __backing_storageLink(): (IStorageLinkDecoratedVariable<number> | undefined)
+  set storageLinkObject(storageLinkObject: (Data | undefined))
+  
+  get storageLinkObject(): (Data | undefined)
+  set __backing_storageLinkObject(__backing_storageLinkObject: (IStorageLinkDecoratedVariable<Data> | undefined))
+  
+  get __backing_storageLinkObject(): (IStorageLinkDecoratedVariable<Data> | undefined)
+  
 }
 
 class __EntryWrapper extends EntryPoint {
