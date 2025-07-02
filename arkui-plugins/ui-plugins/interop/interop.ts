@@ -22,6 +22,7 @@ import { InteropContext } from '../component-transformer';
 import { createVariableLet, initialArgs} from './initstatevar';
 import { createProvideInterop, setAndResetFindProvide } from './provide';
 import { getPropertyESValue, getWrapValue, setPropertyESValue, createEmptyESValue } from './utils';
+import { ImportCollector } from '../../common/import-collector';
 
 
 function paramsLambdaDeclaration(name: string, args?: arkts.ObjectExpression): arkts.Statement[] {
@@ -408,6 +409,12 @@ export function isArkUICompatible(node: arkts.AstNode): boolean {
     if (node instanceof arkts.CallExpression && node.expression instanceof arkts.MemberExpression &&
         node.expression.property instanceof arkts.Identifier &&
         node.expression.property.name === 'instantiate_Interop') {
+        ImportCollector.getInstance().collectSource(InteroperAbilityNames.ARKUICOMPATIBLE, InteroperAbilityNames.INTEROP);
+        ImportCollector.getInstance().collectImport(InteroperAbilityNames.ARKUICOMPATIBLE);
+        ImportCollector.getInstance().collectSource(InteroperAbilityNames.BINDPROVIDEINTEROP, InteroperAbilityNames.INTEROP);
+        ImportCollector.getInstance().collectImport(InteroperAbilityNames.BINDPROVIDEINTEROP);
+        ImportCollector.getInstance().collectSource(InteroperAbilityNames.GETCOMPATIBLESTATE, InteroperAbilityNames.INTEROP);
+        ImportCollector.getInstance().collectImport(InteroperAbilityNames.GETCOMPATIBLESTATE);
         return true;
     }
     return false;
