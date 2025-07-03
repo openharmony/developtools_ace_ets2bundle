@@ -1,0 +1,104 @@
+/*
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
+/*
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
+// builderRefresh test
+import { UIUtils } from '@ohos.arkui.StateManagement';
+function CustomButton(num1, num2, parent = null) {
+    (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
+    Column.create();
+    }, Column);
+    (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
+    Button.createWithLabel(`Custom btn: ${num1.value} -- ${num2.value}`);
+    Button.onClick(() => {
+        num2.value += 1;
+    });    
+    }, Button);
+    Button.pop();
+    Column.pop();
+}
+class MyApp extends ViewV2 {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda, extraInfo) {
+        super(parent, elmtId, extraInfo);
+        this.num1 = 1;
+        this.num2 = 10;
+        this.finalizeConstruction();
+    }
+    resetStateVarsOnReuse(params) {
+        this.num1 = 1;
+        this.num2 = 10;
+    }
+    initialRender() {
+    this.observeComponentCreation2((elmtId, isInitialRender) => {
+        Column.create();
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+        Button.createWithLabel(`Entry btn ${this.num1} -- ${this.num2}`);
+        Button.onClick(() => {
+            this.num1 += 1;
+            this.num2 += 1;
+        });    
+        }, Button);
+        Button.pop();
+        CustomButton.bind(this)(UIUtils.makeBinding(() => this.num1), UIUtils.makeBinding(() => this.num2, val => this.num2 = val));
+        Column.pop();
+    }
+    rerender() {
+        this.updateDirtyElements();
+    }
+    static getEntryName() {
+        return "MyApp";
+    }
+}
+__decorate([
+Local
+], MyApp.prototype, "num1", void 0);
+__decorate([
+Local
+], MyApp.prototype, "num2", void 0);
+registerNamedRoute(() => new MyApp(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/ObservedObject_GetRawObject/builderRefresh", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/ObservedObject_GetRawObject/builderRefresh", integratedHsp: "false", moduleType: "followWithHap" });
+//# sourceMappingURL=builderRefresh.js.map

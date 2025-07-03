@@ -209,4 +209,143 @@ export declare class UIUtils {
     * @since 12
     */
     static makeObserved<T extends object>(source: T): T;
+    /**
+   * Make non-observed data into V1 observed data.
+   * Support JS object, interface, class (non-@Observed, non-ObservedV2).
+   *
+   * @param { T } source input source object data.
+   * @returns { T } V1 proxy object from the source object data.
+   * @static
+   * @syscap SystemCapability.ArkUI.ArkUI.Full
+   * @crossplatform
+   * @atomicservice
+   * @since 19
+   */
+   static makeV1Observed<T extends object>(source: T): T;
+
+   /**
+    * Enables V2 compatibility on given viewmodel object or nested viewmodels, which are V1 observed object already.
+    *
+    * @param {T} source - The object to be made V2-compatible.
+    * @returns {T} The processed object with V2 compatibility enabled.
+    * @static
+    * @syscap SystemCapability.ArkUI.ArkUI.Full
+    * @crossplatform
+    * @atomicservice
+    * @since 19
+    */
+    static enableV2Compatibility<T extends object>(source: T): T;
+
+    /**
+   * Creates read-only data binding.
+   *
+   *
+   * Example. UIUtils.makeBinding<number>(()=>this.num);
+   *
+   * Supports simple getters for read-only data.
+   * Intended for primitive value parameters when calling a @Builder function where arguments are of type Binding.
+   *
+   * @param { GetterCallback<T> } getter - A value or a function that returns the current value of type T.
+   * @returns { Binding<T> } read-only data binding value
+   * @static
+   * @syscap SystemCapability.ArkUI.ArkUI.Full
+   * @crossplatform
+   * @atomicservice
+   * @since 20
+   */
+  static makeBinding<T>(getter: GetterCallback<T>): Binding<T>;
+
+  /**
+   * Creates a mutable data binding.
+   *
+   * Two functions to implement function overloading.
+   *
+   * Example. UIUtils.makeBinding<number>(()=>this.num, val => this.num = val);
+   *
+   * Supports getter-setter pairs for mutable data.
+   * Intended for primitive value parameters when calling a @Builder
+   * function where arguments are of type MutableBinding.
+   *
+   * @param { GetterCallback<T> } getter - A value or a function that returns the current value of type T.
+   * @param { SetterCallback<T> } setter - A function to set a new value of type T. 
+   * If provided, a MutableBinding is created.
+   * @returns { MutableBinding<T> } mutable data binding value
+   * @static
+   * @syscap SystemCapability.ArkUI.ArkUI.Full
+   * @crossplatform
+   * @atomicservice
+   * @since 20
+   */
+  static makeBinding<T>(getter: GetterCallback<T>, setter: SetterCallback<T>): MutableBinding<T>;
+}
+/**
+ * Getter callback type. It is used to get value.
+ *
+ * @typedef { function } GetterCallback
+ * @returns { T }
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @crossplatform
+ * @atomicservice
+ * @since 20
+ */
+export declare type GetterCallback<T> = () => T;
+
+/**
+ * Setter callback type. It is used to assign a new value.
+ *
+ * @typedef { function } SetterCallback
+ * @param { T } newValue - update the value with newValue.
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @crossplatform
+ * @atomicservice
+ * @since 20
+ */
+export declare type SetterCallback<T> = (newValue: T) => void;
+
+/**
+ * Represents a read-only data binding.
+ * Use with @Builder argument list for primitive types. Use makeBinding to pass values when calling the function.
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @crossplatform
+ * @atomicservice
+ * @since 20
+ */
+export declare class Binding<T> {
+  /**
+   * Get function that can acquire the value.
+   * @returns T
+   * @syscap SystemCapability.ArkUI.ArkUI.Full
+   * @crossplatform
+   * @atomicservice
+   * @since 20
+   */
+  get value(): T;
+}
+
+/**
+ * Represents a mutable data binding allowing both read and write operations.
+ * Use with @Builder argument list for primitive types. Use makeBinding to pass values when calling the function.
+ * @syscap SystemCapability.ArkUI.ArkUI.Full
+ * @crossplatform
+ * @atomicservice
+ * @since 20
+ */
+export declare class MutableBinding<T> {
+  /**
+   * Get function that can acquire the value.
+   * @returns T
+   * @syscap SystemCapability.ArkUI.ArkUI.Full
+   * @crossplatform
+   * @atomicservice
+   * @since 20
+   */
+  get value(): T;
+  /**
+   * Set function that can set the new value.
+   * @syscap SystemCapability.ArkUI.ArkUI.Full
+   * @crossplatform
+   * @atomicservice
+   * @since 20
+   */
+  set value(newValue: T): void;
 }
