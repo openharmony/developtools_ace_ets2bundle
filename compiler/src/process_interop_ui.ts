@@ -77,6 +77,7 @@ class HandleUIImports {
   private importedInterfaces: Set<string> = new Set<string>();
   private interfacesNeedToImport: Set<string> = new Set<string>();
   private printer = ts.createPrinter();
+  private insertPosition = 0;
 
   private readonly trueSymbolAtLocationCache = new Map<ts.Node, ts.Symbol | null>();
 
@@ -88,6 +89,16 @@ class HandleUIImports {
 
   public createCustomTransformer(sourceFile: ts.SourceFile) {
     this.extractImportedNames(sourceFile);
+
+    const statements = sourceFile.statements;
+    for (let i = 0; i < statements.length; ++i) {
+      const statement = statements[i];
+      if (!ts.isJSDoc(statement) && !(ts.isExpressionStatement(statement) &&
+        ts.isStringLiteral(statement.expression))) {
+          this.insertPosition = i;
+          break;
+        }
+    }
 
     return ts.visitNode(sourceFile, this.visitNode.bind(this))
   }
@@ -162,7 +173,7 @@ class HandleUIImports {
           ts.factory.createStringLiteral(moduleName, true),
           undefined
         );
-        newStatements.splice(0, 0, compImportDeclaration);
+        newStatements.splice(this.insertPosition, 0, compImportDeclaration);
       }
 
       if (stateImportSpecifiers.length) {
@@ -178,7 +189,7 @@ class HandleUIImports {
           ts.factory.createStringLiteral(moduleName, true),
           undefined
         );
-        newStatements.splice(0, 0, stateImportDeclaration);
+        newStatements.splice(this.insertPosition, 0, stateImportDeclaration);
       }
 
       const updatedStatements = ts.factory.createNodeArray(newStatements);
