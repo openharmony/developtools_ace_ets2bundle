@@ -182,7 +182,7 @@ export class factory {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
             member.name,
-            arkts.factory.createFunctionExpression(member.scriptFunction),
+            member.scriptFunction,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
             false
         );
@@ -224,7 +224,7 @@ export class factory {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             updateKey,
-            arkts.factory.createFunctionExpression(updateScriptFunction),
+            updateScriptFunction,
             modifiers,
             false
         );

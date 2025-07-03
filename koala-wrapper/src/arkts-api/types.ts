@@ -666,9 +666,8 @@ export class MethodDefinition extends AstNode {
         assertValidPeer(peer, Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION);
         super(peer);
         this.kind = global.generatedEs2panda._MethodDefinitionKindConst(global.context, this.peer);
-        this.scriptFunction = unpackNonNullableNode(
-            global.generatedEs2panda._MethodDefinitionFunction(global.context, this.peer)
-        );
+        this.funcExpr = unpackNonNullableNode(global.generatedEs2panda._ClassElementValue(global.context, this.peer));
+        this.scriptFunction = this.funcExpr.scriptFunction;
         assertValidPeer(this.scriptFunction.peer, Es2pandaAstNodeType.AST_NODE_TYPE_SCRIPT_FUNCTION);
 
         // Somehow the scriptFunction cannot attach method's key to its ident after checker
@@ -687,7 +686,7 @@ export class MethodDefinition extends AstNode {
     static create(
         kind: Es2pandaMethodDefinitionKind,
         key: AstNode,
-        value: AstNode,
+        value: ScriptFunction,
         modifiers: KInt,
         isComputed: boolean
     ): MethodDefinition {
@@ -696,7 +695,7 @@ export class MethodDefinition extends AstNode {
                 global.context,
                 kind,
                 passNode(key),
-                passNode(value),
+                passNode(FunctionExpression.create(value)),
                 modifiers,
                 isComputed
             ),
@@ -708,7 +707,7 @@ export class MethodDefinition extends AstNode {
         node: MethodDefinition,
         kind: Es2pandaMethodDefinitionKind,
         key: AstNode,
-        value: AstNode,
+        value: ScriptFunction,
         modifiers: KInt,
         isComputed: boolean
     ): MethodDefinition {
@@ -718,7 +717,7 @@ export class MethodDefinition extends AstNode {
                 node.peer,
                 kind,
                 passNode(key),
-                passNode(value),
+                passNode(FunctionExpression.update(node.funcExpr, value)),
                 modifiers,
                 isComputed
             ),
@@ -748,6 +747,7 @@ export class MethodDefinition extends AstNode {
     readonly kind: Es2pandaMethodDefinitionKind;
     readonly scriptFunction: ScriptFunction;
     readonly name: Identifier;
+    readonly funcExpr: FunctionExpression;
 }
 
 export class VariableDeclaration extends AstNode {

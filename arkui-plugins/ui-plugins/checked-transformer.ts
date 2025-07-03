@@ -238,40 +238,38 @@ function createWatchMethod(
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
         arkts.factory.createIdentifier(methodName),
-        arkts.factory.createFunctionExpression(
-            arkts.factory.createScriptFunction(
-                arkts.factory.createBlock([
-                    isReturnStatement
-                        ? arkts.factory.createReturnStatement(
-                              arkts.factory.createCallExpression(thisSubscribedWatchesMember(methodName), undefined, [
-                                  arkts.factory.createIdentifier(paramName),
-                              ])
-                          )
-                        : arkts.factory.createExpressionStatement(
-                              arkts.factory.createCallExpression(thisSubscribedWatchesMember(methodName), undefined, [
-                                  arkts.factory.createIdentifier(paramName),
-                              ])
-                          ),
-                ]),
-                arkts.factory.createFunctionSignature(
-                    undefined,
-                    [
-                        arkts.factory.createParameterDeclaration(
-                            arkts.factory.createIdentifier(
-                                paramName,
-                                arkts.factory.createTypeReference(
-                                    arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(paramType))
-                                )
-                            ),
-                            undefined
+        arkts.factory.createScriptFunction(
+            arkts.factory.createBlock([
+                isReturnStatement
+                    ? arkts.factory.createReturnStatement(
+                            arkts.factory.createCallExpression(thisSubscribedWatchesMember(methodName), undefined, [
+                                arkts.factory.createIdentifier(paramName),
+                            ])
+                        )
+                    : arkts.factory.createExpressionStatement(
+                            arkts.factory.createCallExpression(thisSubscribedWatchesMember(methodName), undefined, [
+                                arkts.factory.createIdentifier(paramName),
+                            ])
                         ),
-                    ],
-                    arkts.factory.createPrimitiveType(returnType),
-                    false
-                ),
-                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
-            )
+            ]),
+            arkts.factory.createFunctionSignature(
+                undefined,
+                [
+                    arkts.factory.createParameterDeclaration(
+                        arkts.factory.createIdentifier(
+                            paramName,
+                            arkts.factory.createTypeReference(
+                                arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(paramType))
+                            )
+                        ),
+                        undefined
+                    ),
+                ],
+                arkts.factory.createPrimitiveType(returnType),
+                false
+            ),
+            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
         ),
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
         false

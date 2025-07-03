@@ -271,10 +271,8 @@ export class FunctionTransformer extends AbstractVisitor {
                 node,
                 node.kind,
                 node.name,
-                arkts.factory.createFunctionExpression(
-                    this.signatureTransformer.visitor(
-                        removeMemoAnnotation(this.updateScriptFunction(node.scriptFunction, node.name.name))
-                    )
+                this.signatureTransformer.visitor(
+                    removeMemoAnnotation(this.updateScriptFunction(node.scriptFunction, node.name.name))
                 ),
                 node.modifiers,
                 false
@@ -284,7 +282,7 @@ export class FunctionTransformer extends AbstractVisitor {
                 node,
                 node.kind,
                 node.name,
-                arkts.factory.createFunctionExpression(this.signatureTransformer.visitor(node.scriptFunction)),
+                this.signatureTransformer.visitor(node.scriptFunction),
                 node.modifiers,
                 false
             );
