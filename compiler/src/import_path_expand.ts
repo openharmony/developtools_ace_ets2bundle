@@ -33,7 +33,8 @@ interface ImportInfo {
 
 interface SymbolInfo {
   filePath: string,
-  isDefault: boolean
+  isDefault: boolean,
+  skipTransform: boolean
 }
 
 interface SeparatedImportInfos {
@@ -52,7 +53,8 @@ export function expandAllImportPaths(checker: ts.TypeChecker, rollupObejct: Obje
     // @ts-ignore
     const visitor: ts.Visitor = (node: ts.Node): ts.VisitResult<ts.Node> => {
       if (ts.isImportDeclaration(node)) {
-        const result: ts.ImportDeclaration[] = transformImportDecl(node, checker, exclude, modulePathMap);
+        const result: ts.ImportDeclaration[] = transformImportDecl(node, checker, exclude, modulePathMap,
+          rollupObejct.share.projectConfig);
         return result.length > 0 ? result : node;
       }
       return node;
@@ -65,13 +67,15 @@ export function expandAllImportPaths(checker: ts.TypeChecker, rollupObejct: Obje
 }
 
 function transformImportDecl(node: ts.ImportDeclaration, checker: ts.TypeChecker, exclude: string[],
-  modulePathMap: Map<string, string>): ts.ImportDeclaration[] {
+  modulePathMap: Map<string, string>, projectConfig: Object): ts.ImportDeclaration[] {
   const moduleSpecifier: ts.StringLiteral = node.moduleSpecifier as ts.StringLiteral;
   const moduleRequest: string = moduleSpecifier.text;
   const REG_SYSTEM_MODULE: RegExp = new RegExp(`@(${sdkConfigPrefix})\\.(\\S+)`);
   const REG_LIB_SO: RegExp = /lib(\S+)\.so/;
+  const depName2DepInfo: Object = projectConfig.depName2DepInfo;
   if (moduleRequest.startsWith('.') || REG_SYSTEM_MODULE.test(moduleRequest.trim()) ||
-    REG_LIB_SO.test(moduleRequest.trim()) || exclude.indexOf(moduleRequest) !== -1) {
+    REG_LIB_SO.test(moduleRequest.trim()) || exclude.indexOf(moduleRequest) !== -1 ||
+    (depName2DepInfo && !(depName2DepInfo.has(moduleRequest)))) {
     return [];
   }
   const importClause = node.importClause;
@@ -90,7 +94,7 @@ function transformImportDecl(node: ts.ImportDeclaration, checker: ts.TypeChecker
   if (importMap.size === 0) {
     return [];
   }
-  const { typeOnly, value }: SeparatedImportInfos = separateImportInfos(importMap);
+  const { typeOnly, value }: SeparatedImportInfos = separateImportInfos(importMap, moduleRequest);
   const results: ts.ImportDeclaration[] = [];
 
   for (const [_, info] of typeOnly.entries()) {
@@ -98,7 +102,8 @@ function transformImportDecl(node: ts.ImportDeclaration, checker: ts.TypeChecker
   }
 
   for (const [filePath, info] of value.entries()) {
-    const realModuleRequest = genModuleRequst(filePath, moduleSpecifier.text, modulePathMap);
+    const realModuleRequest = filePath === moduleRequest ? moduleRequest :
+      genModuleRequst(filePath, moduleSpecifier.text, modulePathMap);
     if (!realModuleRequest) {
       continue;
     }
@@ -116,19 +121,21 @@ function processDefaultImport(checker: ts.TypeChecker, importMap: Map<string, Im
     if (!resolved) {
       return;
     }
-    const filePath: string = resolved.filePath;
-    
-    if (!importMap.has(filePath)) {
-      importMap.set(filePath, { namedImports: [] });
+    const { filePath, isDefault, skipTransform } = resolved;
+
+    const mapKey = skipTransform ? moduleSpecifier.text : filePath;
+
+    if (!importMap.has(mapKey)) {
+      importMap.set(mapKey, { namedImports: [] });
     }
-    if (resolved.isDefault) {
-      importMap.get(filePath)!.defaultImport = {
+    if (isDefault) {
+      importMap.get(mapKey)!.defaultImport = {
         name: importClause.name,
         isTypeOnly: importClause.isTypeOnly
       };
     } else {
       // fallback: was re-exported as default, but originally named
-      importMap.get(filePath)!.namedImports.push(
+      importMap.get(mapKey)!.namedImports.push(
         ts.factory.createImportSpecifier(importClause.isTypeOnly,
           ts.factory.createIdentifier(importClause.name.text), importClause.name)
       );
@@ -145,51 +152,46 @@ function processNamedImport(checker: ts.TypeChecker, importMap: Map<string, Impo
       if (!resolved) {
         continue;
       }
+      const { filePath, isDefault, skipTransform } = resolved;
+      const mapKey = skipTransform ? moduleSpecifier.text : filePath;
 
-      const filePath: string = resolved.filePath;
-      
-      if (!importMap.has(filePath)) {
-        importMap.set(filePath, { namedImports: [] });
+      if (!importMap.has(mapKey)) {
+        importMap.set(mapKey, { namedImports: [] });
       }
-      if (resolved.isDefault) {
-        importMap.get(filePath)!.defaultImport = {
+      if (isDefault) {
+        importMap.get(mapKey)!.defaultImport = {
           name: element.name,
           isTypeOnly: element.isTypeOnly
         };
       } else {
-        importMap.get(filePath)!.namedImports.push(
+        importMap.get(mapKey)!.namedImports.push(
           ts.factory.createImportSpecifier(element.isTypeOnly, element.propertyName, element.name));
       }
     }
   }
 }
 
-function separateImportInfos(importInfos: Map<string, ImportInfo>): SeparatedImportInfos {
+function separateImportInfos(importInfos: Map<string, ImportInfo>, moduleRequest: string): SeparatedImportInfos {
   const typeOnly = new Map<string, ImportInfo>();
   const value = new Map<string, ImportInfo>();
 
   for (const [filePath, info] of importInfos.entries()) {
+    const isDeclarationFile: boolean = filePath.endsWith('.d.ets') || filePath.endsWith('.d.ts');
     const typeInfo: ImportInfo = { namedImports: [] };
     const valueInfo: ImportInfo = { namedImports: [] };
 
     if (info.defaultImport) {
-      if (info.defaultImport.isTypeOnly) {
-        typeInfo.defaultImport = info.defaultImport;
-      } else {
-        valueInfo.defaultImport = info.defaultImport;
-      }
+      const target = info.defaultImport.isTypeOnly || isDeclarationFile ? typeInfo : valueInfo;
+      target.defaultImport = info.defaultImport;
     }
 
     for (const spec of info.namedImports) {
-      if (spec.isTypeOnly) {
-        typeInfo.namedImports.push(spec);
-      } else {
-        valueInfo.namedImports.push(spec);
-      }
+      const target: ImportInfo = spec.isTypeOnly || isDeclarationFile ? typeInfo : valueInfo;
+      target.namedImports.push(spec);
     }
 
     if (typeInfo.defaultImport || typeInfo.namedImports.length > 0) {
-      typeOnly.set(filePath, typeInfo);
+      mergeTypeOnlyInfo(typeOnly, moduleRequest, typeInfo);
     }
     if (valueInfo.defaultImport || valueInfo.namedImports.length > 0) {
       value.set(filePath, valueInfo);
@@ -197,6 +199,18 @@ function separateImportInfos(importInfos: Map<string, ImportInfo>): SeparatedImp
   }
 
   return { typeOnly, value };
+}
+
+function mergeTypeOnlyInfo(typeOnly: Map<string, ImportInfo>, moduleRequest: string, typeInfo: ImportInfo): void {
+  const existing: ImportInfo = typeOnly.get(moduleRequest);
+  if (existing) {
+    existing.namedImports.push(...typeInfo.namedImports);
+    if (!existing.defaultImport && typeInfo.defaultImport) {
+      existing.defaultImport = typeInfo.defaultImport;
+    }
+  } else {
+    typeOnly.set(moduleRequest, typeInfo);
+  }
 }
 
 function createImportDeclarationFromInfo(importInfo: ImportInfo, originalNode: ts.ImportDeclaration,
@@ -216,7 +230,7 @@ function genModuleRequst(filePath: string, moduleRequest: string, modulePathMap:
   for (const [_, moduleRootPath] of Object.entries(modulePathMap)) {
     const unixModuleRootPath: string = toUnixPath(moduleRootPath);
     if (unixFilePath.startsWith(unixModuleRootPath + '/')) {
-      return unixFilePath.replace(unixModuleRootPath, moduleRequest).replace(/\.(d\.ets|ets|d\.ts|ts|js)$/, '');
+      return unixFilePath.replace(unixModuleRootPath, moduleRequest).replace(/\.(ets|ts|js)$/, '');
     }
   }
   return '';
@@ -231,14 +245,18 @@ function getRealFilePath(checker: ts.TypeChecker, moduleSpecifier: ts.StringLite
 
   const finalSymbol: ts.Symbol = resolveAliasedSymbol(symbol, checker);
   if (!finalSymbol || !finalSymbol.declarations || finalSymbol.declarations.length === 0) {
-    return undefined;
+    return {
+      filePath: moduleSpecifier.text,
+      isDefault: exportName === 'default',
+      skipTransform: true
+    };
   }
 
   const decl: ts.Declaration = finalSymbol.declarations?.[0];
   const filePath = path.normalize(decl.getSourceFile().fileName);
   const isDefault: boolean = isActuallyDefaultExport(finalSymbol);
 
-  return { filePath, isDefault };
+  return { filePath, isDefault, skipTransform: false };
 }
 
 function resolveImportedSymbol(checker: ts.TypeChecker, moduleSpecifier: ts.StringLiteral,
@@ -279,7 +297,8 @@ function resolveAliasedSymbol(symbol: ts.Symbol, checker: ts.TypeChecker): ts.Sy
   }
 
   // fallback: skip symbols with no declarations
-  while (finalSymbol && (!finalSymbol.declarations || finalSymbol.declarations.length === 0)) {
+  while (finalSymbol && (!finalSymbol.declarations || finalSymbol.declarations.length === 0) &&
+    (finalSymbol.flags & ts.SymbolFlags.Alias)) {
     if (visited.has(finalSymbol)) {
       break;
     }
