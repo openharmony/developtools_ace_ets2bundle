@@ -15,24 +15,24 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { getAnnotationUsage, PresetDecorators } from '../utils';
-import { UISyntaxRule } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-const rule: UISyntaxRule = {
-  name: 'entry-struct-no-export',
-  messages: {
-    noExportWithEntry: `It's not a recommended way to export struct with '@Entry' decorator, which may cause ACE Engine error in component preview mode.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
+class EntryStructNoExportRule extends AbstractUISyntaxRule {
+    public setup(): Record<string, string> {
+        return {
+            noExportWithEntry: `It's not a recommended way to export struct with '@Entry' decorator, which may cause ACE Engine error in component preview mode.`,
+        };
+    }
+
+    public parsed(node: arkts.AstNode): void {
         // Check if the current node is a schema declaration
         if (!arkts.isStructDeclaration(node)) {
-          return;
+            return;
         }
         // Get the usage of the @Entry decorator
         const entryDecoratorUsage = getAnnotationUsage(
-          node,
-          PresetDecorators.ENTRY,
+            node,
+            PresetDecorators.ENTRY,
         );
 
         //Determines whether the struct is exported
@@ -41,14 +41,12 @@ const rule: UISyntaxRule = {
 
         // If a @Entry decorator is present and the struct is exported
         if (entryDecoratorUsage && (isStructExport || isStructDefaultExport)) {
-          context.report({
-            node: entryDecoratorUsage,
-            message: this.messages.noExportWithEntry,
-          });
+            this.report({
+                node: entryDecoratorUsage,
+                message: this.messages.noExportWithEntry,
+            });
         }
-      },
-    };
-  },
+    }
 };
 
-export default rule;
+export default EntryStructNoExportRule;

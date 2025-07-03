@@ -14,106 +14,107 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
-import { getIdentifierName, PresetDecorators } from '../utils';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
+import { getClassPropertyAnnotationNames, getClassPropertyName, getIdentifierName, PresetDecorators } from '../utils';
 
-function recordStructWithLinkDecorators(item: arkts.AstNode, structName: string, linkMap: Map<string, string>): void {
-  if (!arkts.isClassProperty(item)) {
-    return;
-  }
-  item.annotations?.forEach((annotation) => {
-    if (!annotation.expr) {
-      return;
+
+class ConstructParameterLiteralRule extends AbstractUISyntaxRule {
+    // Record all @Link and @ObjectLink attributes
+    private linkMap: Map<string, string> = new Map();
+
+    public setup(): Record<string, string> {
+        return {
+            initializerIsLiteral: `The 'regular' property '{{initializerName}}' cannot be assigned to the '{{parameter}}' property '{{parameterName}}'.`,
+        };
     }
-    const annotationName: string = getIdentifierName(annotation.expr);
-    if (annotationName === '') {
-      return;
+
+    public beforeTransform(): void {
+        this.linkMap = new Map();
     }
-    // If the node has properties decorated with Link or ObjectLink, record this structure node
-    if (annotationName === PresetDecorators.LINK || annotationName === PresetDecorators.OBJECT_LINK) {
-      linkMap.set(structName, annotationName);
+
+    public parsed(node: arkts.StructDeclaration): void {
+        this.initMap(node);
+        this.checkInitializeWithLiteral(node);
     }
-  });
+
+    private recordStructWithLinkDecorators(item: arkts.AstNode, structName: string): void {
+        if (!arkts.isClassProperty(item)) {
+            return;
+        }
+        const ClassPropertyAnnotations = getClassPropertyAnnotationNames(item);
+
+        if (!ClassPropertyAnnotations.includes(PresetDecorators.OBJECT_LINK) &&
+            !ClassPropertyAnnotations.includes(PresetDecorators.LINK)) {
+            return;
+        }
+        const annotationName = getClassPropertyName(item);
+        if (!annotationName) {
+            return;
+        }
+        this.linkMap.set(structName, annotationName);
+    }
+
+    private initMap(node: arkts.AstNode): void {
+        // Check if the current node is the root node
+        if (arkts.nodeType(node) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
+            return;
+        }
+        node.getChildren().forEach((member) => {
+            if (!(arkts.isStructDeclaration(member))) {
+                return;
+            }
+            if (!member.definition || !member.definition.ident || !arkts.isIdentifier(member.definition.ident)) {
+                return;
+            }
+            const structName: string = member.definition.ident.name;
+            if (structName === '') {
+                return;
+            }
+            member.definition?.body?.forEach((item) => {
+                this.recordStructWithLinkDecorators(item, structName);
+            });
+        });
+    }
+
+    private checkInitializeWithLiteral(node: arkts.AstNode): void {
+        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.expression)) {
+            return;
+        }
+        const componentName = node.expression.name;
+        // Only assignments to properties decorated with Link or ObjectLink trigger rule checks
+        if (!this.linkMap.has(componentName)) {
+            return;
+        }
+        node.arguments.forEach((member) => {
+            member.getChildren().forEach((property) => {
+                if (!arkts.isProperty(property) || !property.key || !property.value) {
+                    return;
+                }
+                const key: string = getIdentifierName(property.key);
+                if (key === '') {
+                    return;
+                }
+                // If the statement type is single-level MemberExpression or Identifier, construct-parameter is validated.
+                if (arkts.isMemberExpression(property.value) && arkts.isThisExpression(property.value.object)) {
+                    return;
+                }
+                if (arkts.isIdentifier(property.value)) {
+                    return;
+                }
+                const initializerName = property.value.dumpSrc().replace(/\(this\)/g, 'this');
+                const parameter: string = this.linkMap.get(componentName)!;
+                this.report({
+                    node: property,
+                    message: this.messages.initializerIsLiteral,
+                    data: {
+                        initializerName: initializerName,
+                        parameter: `@${parameter}`,
+                        parameterName: key,
+                    },
+                });
+            });
+        });
+    }
 }
 
-function initMap(node: arkts.AstNode, linkMap: Map<string, string>): void {
-  // Check if the current node is the root node
-  if (arkts.nodeType(node) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
-    return;
-  }
-  node.getChildren().forEach((member) => {
-    if (!(arkts.isStructDeclaration(member))) {
-      return;
-    }
-    if (!member.definition || !member.definition.ident || !arkts.isIdentifier(member.definition.ident)) {
-      return;
-    }
-    const structName: string = member.definition.ident.name;
-    if (structName === '') {
-      return;
-    }
-    member.definition?.body?.forEach((item) => {
-      recordStructWithLinkDecorators(item, structName, linkMap);
-    });
-  });
-}
-
-function checkInitializeWithLiteral(node: arkts.AstNode, context: UISyntaxRuleContext,
-  linkMap: Map<string, string>
-): void {
-  if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.expression)) {
-    return;
-  }
-  const componentName = node.expression.name;
-  // Only assignments to properties decorated with Link or ObjectLink trigger rule checks
-  if (!linkMap.has(componentName)) {
-    return;
-  }
-  node.arguments.forEach((member) => {
-    member.getChildren().forEach((property) => {
-      if (!arkts.isProperty(property) || !property.key || !property.value) {
-        return;
-      }
-      const key: string = getIdentifierName(property.key);
-      if (key === '') {
-        return;
-      }
-      // If the assignment statement is of type MemberExpression or Identifier, it is not judged
-      if (arkts.isMemberExpression(property.value) && arkts.isThisExpression(property.value.object)) {
-        return;
-      }
-      if (arkts.isIdentifier(property.value)) {
-        return;
-      }
-      const initializerName = property.value.dumpSrc().replace(/\(this\)/g, 'this');
-      const parameter: string = linkMap.get(componentName)!;
-      context.report({
-        node: property,
-        message: rule.messages.initializerIsLiteral,
-        data: {
-          initializerName: initializerName,
-          parameter: `@${parameter}`,
-          parameterName: key,
-        },
-      });
-    });
-  });
-}
-
-const rule: UISyntaxRule = {
-  name: 'construct-parameter-literal',
-  messages: {
-    initializerIsLiteral: `The 'regular' property '{{initializerName}}' cannot be assigned to the '{{parameter}}' property '{{parameterName}}'.`,
-  },
-  setup(context) {
-    let linkMap: Map<string, string> = new Map();
-    return {
-      parsed: (node): void => {
-        initMap(node, linkMap);
-        checkInitializeWithLiteral(node, context, linkMap);
-      },
-    };
-  },
-};
-
-export default rule;
+export default ConstructParameterLiteralRule;

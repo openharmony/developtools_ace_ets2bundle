@@ -14,95 +14,85 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getClassPropertyAnnotationNames, PresetDecorators, isPrivateClassProperty, getClassPropertyName } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { getClassPropertyAnnotationNames, PresetDecorators, isPrivateClassProperty, getClassPropertyName, findDecorator } from '../utils';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 const allowedDecorators = [
-  PresetDecorators.STATE,
-  PresetDecorators.PROVIDE,
-  PresetDecorators.PROP,
-  PresetDecorators.PARAM,
-  PresetDecorators.BUILDER_PARAM
+    PresetDecorators.STATE,
+    PresetDecorators.PROVIDE,
+    PresetDecorators.PROP,
+    PresetDecorators.PARAM,
+    PresetDecorators.BUILDER_PARAM
 ];
 
-function getRequireDecorator(
-  member: arkts.ClassProperty
-): arkts.AnnotationUsage | undefined {
-  return member.annotations?.find(annotation =>
-    annotation.expr && arkts.isIdentifier(annotation.expr) &&
-    annotation.expr.name === PresetDecorators.REQUIRE
-  );
-}
-
-function findConflictingDecorator(
-  member: arkts.ClassProperty,
-  allowedDecorators: string[]
-): arkts.AnnotationUsage | undefined {
-  return member.annotations?.find(annotation =>
-    annotation.expr && arkts.isIdentifier(annotation.expr) &&
-    annotation.expr.name !== PresetDecorators.REQUIRE &&
-    !allowedDecorators.includes(annotation.expr.name)
-  );
-}
-
-function handlePrivateWithRequire(
-  member: arkts.ClassProperty,
-  context: UISyntaxRuleContext,
-): void {
-  const requireDecorator = getRequireDecorator(member);
-  if (requireDecorator) {
-    context.report({
-      node: requireDecorator,
-      message: rule.messages.invalidPrivateWithRequire,
-      data: {
-        propertyName: getClassPropertyName(member),
-        decoratorName: PresetDecorators.REQUIRE,
-      },
-    });
-  }
-}
-
-function checkRequireDecorator(node: arkts.StructDeclaration, context: UISyntaxRuleContext): void {
-  node.definition.body.forEach(member => {
-    if (!arkts.isClassProperty(member)) {
-      return;
+class RequireDecoratorRegularRule extends AbstractUISyntaxRule {
+    public setup(): Record<string, string> {
+        return {
+            invalidUsage: `The @Require decorator can only be used on a regular variable or a variable decorated by @State, @Provide, @Prop, @Param, or @BuilderParam.`,
+            invalidPrivateWithRequire: `Property '{{propertyName}}' can not be decorated with both {{decoratorName}} and private.`,
+        };
     }
-    // Get the list of decorators applied to the class property
-    const propertyDecorators = getClassPropertyAnnotationNames(member);
-    if (!propertyDecorators.includes(PresetDecorators.REQUIRE)) {
-      return;
-    }
-    if (isPrivateClassProperty(member)) {
-      handlePrivateWithRequire(member, context);
-    }
-    // Filter the decorators to find any that are not allowed with @Require
-    const otherDecorator = findConflictingDecorator(member, allowedDecorators);
-    const requireDecorator = getRequireDecorator(member);
-    if (otherDecorator && requireDecorator) {
-      context.report({
-        node: requireDecorator,
-        message: rule.messages.invalidUsage,
-      });
-    }
-  });
-}
 
-const rule: UISyntaxRule = {
-  name: 'require-decorator-regular',
-  messages: {
-    invalidUsage: `The @Require decorator can only be used on a regular variable or a variable decorated by @State, @Provide, @Prop, @Param, or @BuilderParam.`,
-    invalidPrivateWithRequire: `Property '{{propertyName}}' can not be decorated with both {{decoratorName}} and private.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
+    public parsed(node: arkts.AstNode): void {
         if (!arkts.isStructDeclaration(node)) {
-          return;
+            return;
         }
-        checkRequireDecorator(node, context);
-      },
-    };
-  },
-};
+        this.checkRequireDecorator(node);
+    }
 
-export default rule;
+    private checkRequireDecorator(node: arkts.StructDeclaration): void {
+        node.definition.body.forEach(member => {
+            if (!arkts.isClassProperty(member)) {
+                return;
+            }
+            // Get the list of decorators applied to the class property
+            const propertyDecorators = getClassPropertyAnnotationNames(member);
+            if (!propertyDecorators.includes(PresetDecorators.REQUIRE)) {
+                return;
+            }
+            if (isPrivateClassProperty(member)) {
+                this.handlePrivateWithRequire(member);
+            }
+            // Filter the decorators to find any that are not allowed with @Require
+            const otherDecorator = this.findConflictingDecorator(member, allowedDecorators);
+            const requireDecorator = findDecorator(member, PresetDecorators.REQUIRE);
+            if (otherDecorator && requireDecorator) {
+                this.report({
+                    node: requireDecorator,
+                    message: this.messages.invalidUsage,
+                });
+            }
+        });
+    }
+
+    private findConflictingDecorator(
+        member: arkts.ClassProperty,
+        allowedDecorators: string[]
+    ): arkts.AnnotationUsage | undefined {
+        return member.annotations?.find(annotation =>
+            annotation.expr && arkts.isIdentifier(annotation.expr) &&
+            annotation.expr.name !== PresetDecorators.REQUIRE &&
+            !allowedDecorators.includes(annotation.expr.name)
+        );
+    }
+
+    private handlePrivateWithRequire(member: arkts.ClassProperty): void {
+        const requireDecorator = findDecorator(member, PresetDecorators.REQUIRE);
+        const propertyName = getClassPropertyName(member);
+        if (!propertyName) {
+            return;
+        }
+        if (requireDecorator) {
+            this.report({
+                node: requireDecorator,
+                message: this.messages.invalidPrivateWithRequire,
+                data: {
+                    propertyName,
+                    decoratorName: PresetDecorators.REQUIRE,
+                },
+            });
+        }
+    }
+}
+
+export default RequireDecoratorRegularRule;

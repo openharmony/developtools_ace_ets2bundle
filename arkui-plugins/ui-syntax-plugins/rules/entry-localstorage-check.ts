@@ -15,48 +15,46 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { getAnnotationUsage, getClassPropertyAnnotationNames, PresetDecorators } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-function checkLocalStorageLink(node: arkts.StructDeclaration, context: UISyntaxRuleContext): void {
-  // Check if @Entry decorator exists with parameter
-  const entryDecorator = getAnnotationUsage(node, PresetDecorators.ENTRY);
-  const isStorageUsed = entryDecorator && node.definition.annotations[0].properties[0];
-  // Check if @LocalStorageLink exists
-  let localStorageLinkUsed = false;
-  node.definition.body.forEach(body => {
-    if (!arkts.isClassProperty(body)) {
-      return;
+class EntryLocalStorageCheckRule extends AbstractUISyntaxRule {
+    public setup(): Record<string, string> {
+        return {
+            entryLocalStorageCheck: `'@Entry' should have a parameter, like '@Entry ({ storage: "__get_local_storage__" })'.`,
+        };
     }
-    const propertyDecorators = getClassPropertyAnnotationNames(body);
-    localStorageLinkUsed = propertyDecorators.some(
-      decorator => decorator === PresetDecorators.LOCAL_STORAGE_LINK ||
-        decorator === PresetDecorators.LOCAL_STORAGE_PROP);
-  });
 
-  // If @LocalStorageLink is used but @Entry(storage) is missing, report error
-  if (entryDecorator && localStorageLinkUsed && !isStorageUsed) {
-    context.report({
-      node: entryDecorator,
-      message: rule.messages.entryLocalStorageCheck
-    });
-  }
+    public parsed(node: arkts.AstNode): void {
+        if (!arkts.isStructDeclaration(node)) {
+            return;
+        }
+        this.checkLocalStorageLink(node);
+    }
+
+    private checkLocalStorageLink(node: arkts.StructDeclaration): void {
+        // Check if @Entry decorator exists with parameter
+        const entryDecorator = getAnnotationUsage(node, PresetDecorators.ENTRY);
+        const isStorageUsed = entryDecorator && node.definition.annotations[0].properties[0];
+        // Check if @LocalStorageLink exists
+        let localStorageLinkUsed = false;
+        node.definition.body.forEach(body => {
+            if (!arkts.isClassProperty(body)) {
+                return;
+            }
+            const propertyDecorators = getClassPropertyAnnotationNames(body);
+            localStorageLinkUsed = propertyDecorators.some(
+                decorator => decorator === PresetDecorators.LOCAL_STORAGE_LINK ||
+                    decorator === PresetDecorators.LOCAL_STORAGE_PROP);
+        });
+
+        // If @LocalStorageLink is used but @Entry(storage) is missing, report error
+        if (entryDecorator && localStorageLinkUsed && !isStorageUsed) {
+            this.report({
+                node: entryDecorator,
+                message: this.messages.entryLocalStorageCheck
+            });
+        }
+    }
 }
 
-const rule: UISyntaxRule = {
-  name: 'entry-localstorage-check',
-  messages: {
-    entryLocalStorageCheck: `'@Entry' should have a parameter, like '@Entry ({ storage: "__get_local_storage__" })'.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
-        if (!arkts.isStructDeclaration(node)) {
-          return;
-        }
-        checkLocalStorageLink(node, context);
-      },
-    };
-  },
-};
-
-export default rule;
+export default EntryLocalStorageCheckRule;
