@@ -356,8 +356,8 @@ export class factory {
     /**
      * add optional or definite modifier for class property needs initializing without assignment.
      */
-    static PreprocessClassPropertyModifier(st: arkts.AstNode): arkts.AstNode {
-        if (arkts.isClassProperty(st) && needDefiniteOrOptionalModifier(st)) {
+    static PreprocessClassPropertyModifier(st: arkts.AstNode, isDecl: boolean): arkts.AstNode {
+        if (!isDecl && arkts.isClassProperty(st) && needDefiniteOrOptionalModifier(st)) {
             if (st.typeAnnotation && hasNullOrUndefinedType(st.typeAnnotation)) {
                 st.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL;
             } else {
