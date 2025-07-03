@@ -151,24 +151,28 @@ mocha.describe('generate ohmUrl', function () {
     const errorSharedLibrary: string = "@ohos/staticLibrary";
     const sharedLibraryModuleRequest = "@ohos/library////\\\\/";
     const sharedLibraryModuleRequestByPath = "@ohos/library/src/main/ets////";
+    const sharedLibraryPageIndex = "@ohos/library/src/main/ets/pages";
     const sharedLibraryPackageNameOhmUrl: string = getOhmUrlByExternalPackage(sharedLibraryPackageName, projectConfig, this.rollup);
     const sharedLibraryPackageNameSlashesOhmUrl: string = getOhmUrlByExternalPackage(sharedLibraryPackageNameSlashes, projectConfig, this.rollup, ModuleSourceFile.logger, true);
     const sharedLibraryPageOhmUrl: string = getOhmUrlByExternalPackage(sharedLibraryPage, projectConfig, this.rollup);
     const errorSharedLibraryOhmUrl = getOhmUrlByExternalPackage(errorSharedLibrary, projectConfig, this.rollup);
     const sharedLibraryModuleRequestOhmUrl = getOhmUrlByExternalPackage(sharedLibraryModuleRequest, projectConfig, this.rollup, ModuleSourceFile.logger, true);
     const sharedLibraryModuleRequestByPathOhmUrl = getOhmUrlByExternalPackage(sharedLibraryModuleRequestByPath, projectConfig, this.rollup, ModuleSourceFile.logger, true);
+    const sharedLibraryPageIndexOhmUrl = getOhmUrlByExternalPackage(sharedLibraryPageIndex, projectConfig, this.rollup, ModuleSourceFile.logger);
     const expectedSharedLibraryOhmUrl: string = "@bundle:UtTestApplication/sharedLibrary/ets/index";
     const expectedSharedLibrarySlashesOhmUrl: string = "@normalized:N&&&@ohos/library/Index&1.0.0";
     const expectedSharedLibraryPageOhmUrl: string = "@bundle:UtTestApplication/sharedLibrary/ets/pages/page1";
     const expectedErrorSharedLibraryOhmUrl = undefined;
     const expectsharedLibraryModuleRequestOhmUrl = "@normalized:N&&&@ohos/library/Index&1.0.0";
     const expectsharedLibraryModuleRequestByPathOhmUrl = "@normalized:N&&&@ohos/library/src/main/ets/Index&1.0.0";
+    const expectsharedLibraryPageIndexOhmUrl = "@bundle:UtTestApplication/library/ets/pages/index";
     expect(sharedLibraryPackageNameOhmUrl == expectedSharedLibraryOhmUrl).to.be.true;
     expect(sharedLibraryPackageNameSlashesOhmUrl == expectedSharedLibrarySlashesOhmUrl).to.be.true;
     expect(sharedLibraryPageOhmUrl == expectedSharedLibraryPageOhmUrl).to.be.true;
     expect(errorSharedLibraryOhmUrl == expectedErrorSharedLibraryOhmUrl).to.be.true;
     expect(sharedLibraryModuleRequestOhmUrl == expectsharedLibraryModuleRequestOhmUrl).to.be.true;
     expect(sharedLibraryModuleRequestByPathOhmUrl == expectsharedLibraryModuleRequestByPathOhmUrl).to.be.true;
+    expect(sharedLibraryPageIndexOhmUrl == expectsharedLibraryPageIndexOhmUrl).to.be.true;
 
   });
 

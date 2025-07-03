@@ -570,6 +570,12 @@ export function getOhmUrlByExternalPackage(moduleRequest: string, projectConfig:
         // case2: "@ohos/lib/src/main/ets/pages/page1" ---> "@bundle:bundleName/lib/ets/pages/page1"
         const idx: number = externalPkgMap[externalPkgName].split('/', 2).join('/').length;
         const ohmName: string = externalPkgMap[externalPkgName].substring(0, idx);
+        if (moduleInfoByModuleRequest) {
+          // when useNormalizedOHMUrl=false, and packageName combines with directory to import file, OhmUrl is supposed to end with "index"
+          const relativePathByModuleRequest: string = moduleInfoByModuleRequest.normalizedPath.split(SRC_MAIN)[1];
+          // "@bundle:bundleName/lib" + "/ets/pages/page1"
+          return ohmName + relativePathByModuleRequest;
+        }
         if (moduleRequest.indexOf(externalPkgName + '/' + SRC_MAIN) === 0) {
           return moduleRequest.replace(externalPkgName + '/' + SRC_MAIN, ohmName);
         } else {
