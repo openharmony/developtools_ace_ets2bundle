@@ -82,7 +82,7 @@ export class LegacyTransformer extends AbstractVisitor {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             arkts.factory.createIdentifier('instantiate_Interop'),
-            arkts.factory.createFunctionExpression(script),
+            script,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
             false
         );
@@ -201,7 +201,7 @@ export class LegacyTransformer extends AbstractVisitor {
             node,
             node.kind,
             node.name,
-            arkts.factory.createFunctionExpression(script),
+            script,
             node.modifiers,
             false
         );

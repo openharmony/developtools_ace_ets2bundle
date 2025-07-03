@@ -70,7 +70,7 @@ export class factory {
             node,
             node.kind,
             arkts.factory.updateIdentifier(node.name, newName ?? node.name.name),
-            arkts.factory.createFunctionExpression(updateFunc),
+            updateFunc,
             node.modifiers,
             false // TODO: how do I get it?
         );
