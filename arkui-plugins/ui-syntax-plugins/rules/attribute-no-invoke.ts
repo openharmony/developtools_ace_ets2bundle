@@ -14,57 +14,54 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-function attributeNoInvoke(node: arkts.AstNode, context: UISyntaxRuleContext): void {
-  const childNode = node.getChildren();
-  if (!Array.isArray(childNode) || childNode.length < 1) {
-    return;
-  }
-  if (arkts.isMemberExpression(childNode[0]) && arkts.isIdentifier(childNode[0].property)) {
-    context.report({
-      node,
-      message: rule.messages.cannotInitializePrivateVariables,
-      data: {
-        componentNode: node.dumpSrc(),
-      },
-    });
-  }
-}
-
-function chainJudgment(node: arkts.AstNode): boolean {
-  let childNode = node.getChildren();
-  while (true) {
-    if (!childNode || childNode.length === 0) {
-      return false;
+class AttributeNoInvokeRule extends AbstractUISyntaxRule {
+    public setup(): Record<string, string> {
+        return {
+            cannotInitializePrivateVariables: `'{{componentNode}}' does not meet UI component syntax.`,
+        };
     }
-    const firstChild = childNode[0];
-    if (arkts.isIdentifier(firstChild)) {
-      break;
-    }
-    if (!arkts.isMemberExpression(firstChild) && !arkts.isCallExpression(firstChild)) {
-      return false;
-    }
-    childNode = firstChild.getChildren();
-  }
-  return true;
-}
 
-
-const rule: UISyntaxRule = {
-  name: 'attribute-no-invoke',
-  messages: {
-    cannotInitializePrivateVariables: `'{{componentNode}}' does not meet UI component syntax.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
-        if (arkts.isExpressionStatement(node) && !arkts.isIdentifier(node.expression) && chainJudgment(node)) {
-          attributeNoInvoke(node, context);
+    public parsed(node: arkts.AstNode): void {
+        if (arkts.isExpressionStatement(node) && !arkts.isIdentifier(node.expression) && this.chainJudgment(node)) {
+            this.attributeNoInvoke(node);
         }
-      },
-    };
-  },
+    }
+
+    private attributeNoInvoke(node: arkts.AstNode): void {
+        const childNode = node.getChildren();
+        if (!Array.isArray(childNode) || childNode.length < 1) {
+            return;
+        }
+        if (arkts.isMemberExpression(childNode[0]) && arkts.isIdentifier(childNode[0].property)) {
+            this.report({
+                node,
+                message: this.messages.cannotInitializePrivateVariables,
+                data: {
+                    componentNode: node.dumpSrc(),
+                },
+            });
+        }
+    }
+
+    private chainJudgment(node: arkts.AstNode): boolean {
+        let children = node.getChildren();
+        while (true) {
+            if (!children || children.length === 0) {
+                return false;
+            }
+            const firstChild = children[0];
+            if (arkts.isIdentifier(firstChild)) {
+                break;
+            }
+            if (!arkts.isMemberExpression(firstChild) && !arkts.isCallExpression(firstChild)) {
+                return false;
+            }
+            children = firstChild.getChildren();
+        }
+        return true;
+    }
 };
 
-export default rule;
+export default AttributeNoInvokeRule;

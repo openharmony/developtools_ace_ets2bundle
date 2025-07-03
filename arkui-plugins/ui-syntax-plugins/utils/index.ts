@@ -326,6 +326,47 @@ export function getUIComponents(dirPath: string): UISyntaxRuleComponents | undef
     return componentsInfo;
 }
 
+export function getConsistentResourceInfo(): Map<string, { id: string; resourceName: string }[]> {
+    const resultMap = new Map<string, { id: string; resourceName: string }[]>();
+    const consistentResourcePath =
+        path.resolve(__dirname, '../../../../../../../previewer/common/resources/entry/resources.txt');
+    let resourceText: string = '';
+    try {
+        // The contents of the file are read synchronously
+        resourceText = fs.readFileSync(path.resolve(consistentResourcePath), 'utf-8');
+    } catch (error: unknown) {
+        return resultMap;
+    }
+    // Split text by line
+    const lines = resourceText.split('\n');
+    for (const line of lines) {
+        // Skip blank lines
+        if (!line.trim()) {
+            continue;
+        }
+        const match = line.match(/id:(\d+),\s*'([^']+)'\s*'([^']+)'/);
+        if (match && match.length === 4) {
+            const id = match[1];
+            const value = match[2];
+            const resourceName = match[3];
+            // Remove resource names that start with 'ohos_id' or 'ohos_fa'
+            if (resourceName.startsWith('ohos_id') || resourceName.startsWith('ohos_fa')) {
+                continue;
+            }
+            let entries = resultMap.get(value);
+            if (!entries) {
+                entries = [];
+                resultMap.set(value, entries);
+            }
+            entries.push({
+                id: id,
+                resourceName: resourceName,
+            });
+        }
+    }
+    return resultMap;
+}
+
 export function isBuiltInAttribute(context: UISyntaxRuleContext, attributeName: string): boolean {
     if (!context.componentsInfo) {
         return false;

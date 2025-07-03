@@ -15,106 +15,119 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { PresetDecorators, getAnnotationName, getAnnotationUsage, getIdentifierName } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-const oldV1Decorators: string[] = [
-  PresetDecorators.STATE,
-  PresetDecorators.PROP,
-  PresetDecorators.LINK,
-  PresetDecorators.PROVIDE,
-  PresetDecorators.CONSUME,
-  PresetDecorators.WATCH,
-  PresetDecorators.STORAGE_LINK,
-  PresetDecorators.STORAGE_PROP,
-  PresetDecorators.LOCAL_STORAGE_LINK,
-  PresetDecorators.LOCAL_STORAGE_PROP,
-  PresetDecorators.OBJECT_LINK,
-];
-const newV2decorators: string[] = [
-  PresetDecorators.LOCAL,
-  PresetDecorators.PARAM,
-  PresetDecorators.ONCE,
-  PresetDecorators.EVENT,
-  PresetDecorators.MONITOR,
-  PresetDecorators.PROVIDER,
-  PresetDecorators.CONSUMER,
-  PresetDecorators.COMPUTED,
-];
+class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
+    private static readonly oldV1Decorators: string[] = [
+        PresetDecorators.STATE,
+        PresetDecorators.PROP,
+        PresetDecorators.LINK,
+        PresetDecorators.PROVIDE,
+        PresetDecorators.CONSUME,
+        PresetDecorators.WATCH,
+        PresetDecorators.STORAGE_LINK,
+        PresetDecorators.STORAGE_PROP,
+        PresetDecorators.LOCAL_STORAGE_LINK,
+        PresetDecorators.LOCAL_STORAGE_PROP,
+        PresetDecorators.OBJECT_LINK,
+    ];
 
-function findPropertyDecorator(
-  node: arkts.ClassProperty,
-  decoratorList: string[]
-): arkts.AnnotationUsage | undefined {
-  return node.annotations?.find(annotation =>
-    annotation.expr &&
-    arkts.isIdentifier(annotation.expr) &&
-    decoratorList.includes(getIdentifierName(annotation.expr))
-  );
-}
+    private static readonly newV2decorators: string[] = [
+        PresetDecorators.LOCAL,
+        PresetDecorators.PARAM,
+        PresetDecorators.ONCE,
+        PresetDecorators.EVENT,
+        PresetDecorators.MONITOR,
+        PresetDecorators.PROVIDER,
+        PresetDecorators.CONSUMER,
+        PresetDecorators.COMPUTED,
+    ];
 
-function reportDecoratorError(
-  context: UISyntaxRuleContext,
-  hasStateDecorator: arkts.AnnotationUsage,
-  hasComponentV2Decorator: arkts.AnnotationUsage,
-  structDecoratorName: string
-): void {
-  let propertyDecoratorName = getAnnotationName(hasStateDecorator);
-  context.report({
-    node: hasStateDecorator,
-    message: rule.messages.oldAndNewDecoratorsMixUse,
-    data: {
-      decoratorName: propertyDecoratorName,
-      component: structDecoratorName,
-    },
-    fix: () => {
-      return {
-        range: [hasComponentV2Decorator.startPosition, hasComponentV2Decorator.endPosition],
-        code: `@${structDecoratorName}`,
-      };
-    },
-  });
-}
-
-function findDecoratorError(
-  node: arkts.StructDeclaration,
-  context: UISyntaxRuleContext
-): void {
-  // Gets the decorator version of a custom component
-  const hasComponentV2Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
-  const hasComponentDecorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
-  node.definition.body.forEach((property) => {
-    if (!arkts.isClassProperty(property)) {
-      return;
+    public setup(): Record<string, string> {
+        return {
+            oldAndNewDecoratorsMixUse: `The '@{{decoratorName}}' decorator can only be used in a 'struct' decorated with '@{{component}}'.`,
+        };
     }
-    const hasNewDecorator = findPropertyDecorator(property, newV2decorators);
-    const hasOldDecorator = findPropertyDecorator(property, oldV1Decorators);
-    // Check that the new decorator is used for componennt v2
-    if (hasNewDecorator && !hasComponentV2Decorator && hasComponentDecorator) {
-      reportDecoratorError(context, hasNewDecorator, hasComponentDecorator, PresetDecorators.COMPONENT_V2);
-    }
-    // Check that the old decorator is used for componennt v1
-    if (hasOldDecorator && !hasComponentDecorator && hasComponentV2Decorator) {
-      reportDecoratorError(context, hasOldDecorator, hasComponentV2Decorator, PresetDecorators.COMPONENT_V1);
-    }
-  });
-}
-
-
-const rule: UISyntaxRule = {
-  name: 'old-new-decorator-mix-use-check',
-  messages: {
-    oldAndNewDecoratorsMixUse: `The '@{{decoratorName}}' decorator can only be used in a 'struct' decorated with '@{{component}}'.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
+    public parsed(node: arkts.StructDeclaration): void {
         if (!arkts.isStructDeclaration(node)) {
-          return;
+            return;
         }
-        findDecoratorError(node, context);
-      },
-    };
-  },
-};
+        // Gets the decorator version of a custom component
+        const componentV2Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
+        const componentDecorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
+        node.definition.body.forEach((property) => {
+            if (!arkts.isClassProperty(property)) {
+                return;
+            }
+            const newDecorator = this.findPropertyDecorator(property, OldNewDecoratorMixUseCheckRule.newV2decorators);
+            const oldDecorator = this.findPropertyDecorator(property, OldNewDecoratorMixUseCheckRule.oldV1Decorators);
+            // Check that the new decorator is used for component v2
+            if (newDecorator && !componentV2Decorator && componentDecorator) {
+                this.reportErrorAndChangeDecorator(newDecorator, componentDecorator, PresetDecorators.COMPONENT_V2);
+            }
+            if (newDecorator && !componentDecorator && !componentV2Decorator) {
+                this.reportErrorAndAddDecorator(node, newDecorator);
+            }
+            // Check that the old decorator is used for component v1
+            if (oldDecorator && !componentDecorator && componentV2Decorator) {
+                this.reportErrorAndChangeDecorator(oldDecorator, componentV2Decorator, PresetDecorators.COMPONENT_V1);
+            }
+        });
+    }
 
-export default rule;
+    private findPropertyDecorator(
+        node: arkts.ClassProperty,
+        decoratorList: string[]
+    ): arkts.AnnotationUsage | undefined {
+        return node.annotations?.find(annotation =>
+            annotation.expr &&
+            arkts.isIdentifier(annotation.expr) &&
+            decoratorList.includes(getIdentifierName(annotation.expr))
+        );
+    }
+
+    private reportErrorAndChangeDecorator(
+        errorDecorator: arkts.AnnotationUsage,
+        hasComponentV2Decorator: arkts.AnnotationUsage,
+        structDecoratorName: string
+    ): void {
+        let propertyDecoratorName = getAnnotationName(errorDecorator);
+        this.report({
+            node: errorDecorator,
+            message: this.messages.oldAndNewDecoratorsMixUse,
+            data: {
+                decoratorName: propertyDecoratorName,
+                component: structDecoratorName,
+            },
+            fix: () => {
+                return {
+                    range: [hasComponentV2Decorator.startPosition, hasComponentV2Decorator.endPosition],
+                    code: `@${structDecoratorName}`,
+                };
+            },
+        });
+    }
+
+    private reportErrorAndAddDecorator(
+        structNode: arkts.StructDeclaration,
+        errorDecorator: arkts.AnnotationUsage,
+    ): void {
+        let propertyDecoratorName = getAnnotationName(errorDecorator);
+        this.report({
+            node: errorDecorator,
+            message: this.messages.oldAndNewDecoratorsMixUse,
+            data: {
+                decoratorName: propertyDecoratorName,
+                component: PresetDecorators.COMPONENT_V2,
+            },
+            fix: () => {
+                return {
+                    range: [structNode.startPosition, structNode.startPosition],
+                    code: `@${PresetDecorators.COMPONENT_V2}\n`,
+                };
+            },
+        });
+    }
+}
+
+export default OldNewDecoratorMixUseCheckRule;

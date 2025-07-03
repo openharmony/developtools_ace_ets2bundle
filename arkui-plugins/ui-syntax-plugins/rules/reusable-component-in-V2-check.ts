@@ -14,76 +14,67 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
-import { PresetDecorators } from '../utils';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
+import { getAnnotationUsage, PresetDecorators } from '../utils';
 
-function initStructName(node: arkts.AstNode, reusableStructName: string[]): void {
-  if (arkts.nodeType(node) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
-    return;
-  }
-  //Go through all the children of Program
-  for (const childNode of node.getChildren()) {
-    // Check whether the type is struct
-    if (!arkts.isStructDeclaration(childNode)) {
-      return;
+class ReusableComponentInV2CheckRule extends AbstractUISyntaxRule {
+    private reusableStructName: string[] = [];
+
+    public setup(): Record<string, string> {
+        return {
+            noReusableV1InComponentV2: `When a custom component is decorated with @ComponentV2 and contains a child component decorated with @Reusable, the child component will not create.`,
+        };
     }
-    // Get a list of annotations
-    const annotationsList = childNode.definition.annotations;
-    // Check that the current component has @Reusable decorators
-    if (annotationsList?.some((annotation: any) => annotation.expr.name === PresetDecorators.REUSABLE_V1)) {
-      const struceName = childNode.definition?.ident?.name || '';
-      reusableStructName.push(struceName);
+
+    public beforeTransform(): void {
+        this.reusableStructName = [];
     }
-  }
+    public parsed(node: arkts.StructDeclaration): void {
+        this.initStructName(node);
+        this.checkNoReusableV1InComponentV2(node);
+    }
+
+    private initStructName(node: arkts.AstNode): void {
+        if (arkts.nodeType(node) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
+            return;
+        }
+        //Go through all the children of Program
+        for (const childNode of node.getChildren()) {
+            // Check whether the type is struct
+            if (!arkts.isStructDeclaration(childNode)) {
+                return;
+            }
+            const reusableV1Decorator = getAnnotationUsage(childNode, PresetDecorators.REUSABLE_V1);
+            const structName = childNode.definition?.ident?.name;
+            if (reusableV1Decorator && structName) {
+                this.reusableStructName.push(structName);
+            }
+        }
+    }
+
+    private checkNoReusableV1InComponentV2(node: arkts.AstNode,): void {
+        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.expression)) {
+            return;
+        }
+        if (this.reusableStructName.includes(node.expression.name)) {
+            // Traverse upwards to find the custom component.
+            let structNode: arkts.AstNode = node;
+            while (!arkts.isStructDeclaration(structNode)) {
+                if (!structNode.parent) {
+                    return;
+                }
+                structNode = structNode.parent;
+            }
+            const annotationsList = structNode.definition.annotations;
+            // Check that the current component is decorated by the @ComponentV2 decorator
+            if (annotationsList?.some((annotation: any) => annotation.expr.name === PresetDecorators.COMPONENT_V2)) {
+                this.report({
+                    node: node,
+                    message: this.messages.noReusableV1InComponentV2,
+                });
+            }
+        }
+    }
 }
 
-function reportNoReusableV1InComponentV2(node: arkts.AstNode, context: UISyntaxRuleContext): void {
-  context.report({
-    node: node,
-    message: rule.messages.noReusableV1InComponentV2,
-  });
-}
-
-function checkNoReusableV1InComponentV2(
-  node: arkts.AstNode,
-  context: UISyntaxRuleContext,
-  reusableStructName: string[]
-): void {
-  if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.expression)) {
-    return;
-  }
-  if (reusableStructName.includes(node.expression.name)) {
-    // Traverse upwards to find the custom component.
-    let struceNode: arkts.AstNode = node;
-    while (!arkts.isStructDeclaration(struceNode)) {
-      if (!struceNode.parent) {
-        return;
-      }
-      struceNode = struceNode.parent;
-    }
-    const annotationsList = struceNode.definition.annotations;
-    // Check that the current component is decorated by the @ComponentV2 decorator
-    if (annotationsList?.some((annotation: any) => annotation.expr.name === PresetDecorators.COMPONENT_V2)) {
-      reportNoReusableV1InComponentV2(node, context);
-    }
-  }
-}
-
-const rule: UISyntaxRule = {
-  name: 'reusable-component-in-V2-check',
-  messages: {
-    noReusableV1InComponentV2: `When a custom component is decorated with @ComponentV2 and contains a child component decorated with @Reusable, the child component will not create.`,
-  },
-  setup(context) {
-    // Create an array to store custom components that are modified using the @Reusable decorator
-    const reusableStructName: string[] = [];
-    return {
-      parsed: (node): void => {
-        initStructName(node, reusableStructName);
-        checkNoReusableV1InComponentV2(node, context, reusableStructName);
-      },
-    };
-  },
-};
-
-export default rule;
+export default ReusableComponentInV2CheckRule;
