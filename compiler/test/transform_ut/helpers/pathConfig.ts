@@ -186,6 +186,7 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   'ui_state_management/others/decoratorKeyCheck/decoratorKeyCheck',
   'ui_state_management/ObservedObject_GetRawObject/enableV2Compatibility',
   'ui_state_management/ObservedObject_GetRawObject/makeV1Observed',
+  'ui_state_management/ObservedObject_GetRawObject/builderRefresh',
 
   'v2_component_decorator/event/event_base',
   'v2_component_decorator/event/event_parent',
