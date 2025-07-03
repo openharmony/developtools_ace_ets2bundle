@@ -202,6 +202,12 @@ class Share {
         packageName: "bytecode_alias_oh"
       }
     }
+    if (moduleRequest === "@ohos/library/src/main/ets/pages") {
+      return {
+        normalizedPath: "@ohos/library/src/main/ets/pages/index",
+        packageName: "@ohos/library"
+      }
+    }
     return undefined;
   }
   public scan(testcase: string) {
