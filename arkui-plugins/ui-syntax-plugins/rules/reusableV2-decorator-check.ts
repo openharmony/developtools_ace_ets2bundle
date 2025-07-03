@@ -15,70 +15,68 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { PresetDecorators, getAnnotationUsage } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-function reportConflictingDecorators(
-  reusableDocoratorUsage: arkts.AnnotationUsage | undefined,
-  structNode: arkts.Identifier | undefined,
-  context: UISyntaxRuleContext
-): void {
-  if (!structNode || !reusableDocoratorUsage) {
-    return;
-  }
-  context.report({
-    node: structNode,
-    message: rule.messages.conflictingDecorators,
-  });
-}
+class ReusableV2DecoratorCheckRule extends AbstractUISyntaxRule {
+    public setup(): Record<string, string> {
+        return {
+            conflictingDecorators: `The '@Reusable' and '@ReusableV2' decorators cannot be applied simultaneously.`,
+            invalidDecoratorUsage: `@ReusableV2 is only applicable to custom components decorated by @ComponentV2.`,
+        };
+    }
 
-function reportInvalidDecoratorUsage(
-  node: arkts.StructDeclaration,
-  structNode: arkts.Identifier | undefined,
-  context: UISyntaxRuleContext
-): void {
-  if (!structNode || !node) {
-    return;
-  }
-  context.report({
-    node: structNode,
-    message: rule.messages.invalidDecoratorUsage,
-  });
-}
-
-const rule: UISyntaxRule = {
-  name: 'reusableV2-decorator-check',
-  messages: {
-    conflictingDecorators: `The '@Reusable' and '@ReusableV2' decorators cannot be applied simultaneously.`,
-    invalidDecoratorUsage: `@ReusableV2 is only applicable to custom components decorated by @ComponentV2.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
+    public parsed(node: arkts.AstNode): void {
         if (!arkts.isStructDeclaration(node)) {
-          return;
+            return;
         }
         if (!node.definition) {
-          return;
+            return;
         }
         if (!arkts.isClassDefinition(node.definition)) {
-          return;
+            return;
         }
         const structNode = node.definition.ident;
         // Check whether the decoration exists, and mark true if it does
-        const reusableDocoratorUsage = getAnnotationUsage(node, PresetDecorators.REUSABLE_V1);
-        const reusableV2DocoratorUsage = getAnnotationUsage(node, PresetDecorators.REUSABLE_V2);
-        const componnetV2DocoratorUsage = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
-        // Check whether @Reusable and @ReusableV2 exist at the same time
-        if (reusableV2DocoratorUsage && reusableDocoratorUsage && structNode) {
-          reportConflictingDecorators(reusableDocoratorUsage, structNode, context);
-        }
-        // Check if @ReusableV2 is applied to a class decorated by @ComponentV2
-        if (reusableV2DocoratorUsage && !componnetV2DocoratorUsage && structNode) {
-          reportInvalidDecoratorUsage(node, structNode, context);
-        }
-      },
-    };
-  },
-};
+        const reusableDecoratorUsage = getAnnotationUsage(node, PresetDecorators.REUSABLE_V1);
+        const reusableV2DecoratorUsage = getAnnotationUsage(node, PresetDecorators.REUSABLE_V2);
+        const componentV2DecoratorUsage = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
 
-export default rule;
+        // Check whether @Reusable and @ReusableV2 exist at the same time
+        if (reusableV2DecoratorUsage && reusableDecoratorUsage && structNode) {
+            this.reportConflictingDecorators(reusableDecoratorUsage, structNode);
+        }
+
+        // Check if @ReusableV2 is applied to a class decorated by @ComponentV2
+        if (reusableV2DecoratorUsage && !componentV2DecoratorUsage && structNode) {
+            this.reportInvalidDecoratorUsage(node, structNode);
+        }
+    }
+
+    private reportConflictingDecorators(
+        reusableDecoratorUsage: arkts.AnnotationUsage | undefined,
+        structNode: arkts.Identifier | undefined,
+    ): void {
+        if (!structNode || !reusableDecoratorUsage) {
+            return;
+        }
+        this.report({
+            node: structNode,
+            message: this.messages.conflictingDecorators,
+        });
+    }
+
+    private reportInvalidDecoratorUsage(
+        node: arkts.StructDeclaration,
+        structNode: arkts.Identifier | undefined,
+    ): void {
+        if (!structNode || !node) {
+            return;
+        }
+        this.report({
+            node: structNode,
+            message: this.messages.invalidDecoratorUsage,
+        });
+    }
+}
+
+export default ReusableV2DecoratorCheckRule;

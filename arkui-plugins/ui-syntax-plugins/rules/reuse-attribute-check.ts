@@ -14,97 +14,106 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 import { PresetDecorators, getAnnotationUsage, ReuseConstants } from '../utils';
 
-function findStructsWithReusableAndComponentV2(node: arkts.AstNode, reusableV2ComponentV2Struct: string[]): void {
-  //Go through all the children of Program
-  for (const childNode of node.getChildren()) {
-    // Check whether the type is struct
-    if (!arkts.isStructDeclaration(childNode)) {
-      continue;
+class ReuseAttributeCheckRule extends AbstractUISyntaxRule {
+    private reusableV2ComponentV2Struct: string[] = [];
+
+    public setup(): Record<string, string> {
+        return {
+            invalidReuseUsage: `The reuse attribute is only applicable to custom components decorated with both @ComponentV2 and @ReusableV2.`,
+            invalidReuseIdUsage: `The reuseId attribute is not applicable to custom components decorated with both @ComponentV2 and @ReusableV2.`,
+        };
     }
-    // Check that the current component has @ComponentV2 and @ReusableV2 decorators
-    const reusableV2Decorator = getAnnotationUsage(childNode, PresetDecorators.REUSABLE_V2);
-    const componentV2Decorator = getAnnotationUsage(childNode, PresetDecorators.COMPONENT_V2);
-    if (reusableV2Decorator && componentV2Decorator) {
-      const struceName = childNode.definition?.ident?.name ?? '';
-      reusableV2ComponentV2Struct.push(struceName);
+
+    public beforeTransform(): void {
+        this.reusableV2ComponentV2Struct = [];
     }
-  }
-}
 
-function validateReuseOrReuseIdUsage(context: UISyntaxRuleContext, node: arkts.MemberExpression,
-  reusableV2ComponentV2Struct: string[]): void {
-  const structNode = node.object;
-  // Gets the reuse or reuseId attribute
-  const decoratedNode = node.property;
-  if (arkts.isCallExpression(structNode)) {
-    const nodeExpression = structNode.expression;
-    if (arkts.isIdentifier(nodeExpression) && arkts.isIdentifier(decoratedNode)) {
-      if (decoratedNode.name === ReuseConstants.REUSE && !reusableV2ComponentV2Struct.includes(nodeExpression.name)) {
-        reportInvalidReuseUsage(context, node, decoratedNode, rule);
-      }
-      else if (decoratedNode.name === ReuseConstants.REUSE_ID &&
-        reusableV2ComponentV2Struct.includes(nodeExpression.name)) {
-        reportInvalidReuseIdUsage(context, node, decoratedNode, rule);
-      }
-    }
-  }
-}
-
-function reportInvalidReuseUsage(context: UISyntaxRuleContext, node: arkts.AstNode, structNode: arkts.AstNode,
-  rule: any): void {
-  context.report({
-    node: node,
-    message: rule.messages.invalidReuseUsage,
-    fix: () => {
-      const startPosition = structNode.startPosition;
-      const endPosition = structNode.endPosition;
-      return {
-        range: [startPosition, endPosition],
-        code: ReuseConstants.REUSE_ID,
-      };
-    },
-  });
-}
-
-function reportInvalidReuseIdUsage(context: UISyntaxRuleContext, node: arkts.AstNode, structNode: arkts.AstNode,
-  rule: any): void {
-  context.report({
-    node: node,
-    message: rule.messages.invalidReuseIdUsage,
-    fix: () => {
-      const startPosition = structNode.startPosition;
-      const endPosition = structNode.endPosition;
-      return {
-        range: [startPosition, endPosition],
-        code: ReuseConstants.REUSE,
-      };
-    },
-  });
-}
-
-const rule: UISyntaxRule = {
-  name: 'reuse-attribute-check',
-  messages: {
-    invalidReuseUsage: `The reuse attribute is only applicable to custom components decorated with both @ComponentV2 and @ReusableV2.`,
-    invalidReuseIdUsage: `The reuseId attribute is not applicable to custom components decorated with both @ComponentV2 and @ReusableV2.`,
-  },
-  setup(context) {
-    const reusableV2ComponentV2Struct: string[] = [];
-    return {
-      parsed: (node): void => {
+    public parsed(node: arkts.AstNode): void {
         // Check whether the type is "Program"
         if (arkts.nodeType(node) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
-          findStructsWithReusableAndComponentV2(node, reusableV2ComponentV2Struct);
+            this.findStructsWithReusableAndComponentV2(node);
         }
         if (arkts.isMemberExpression(node)) {
-          validateReuseOrReuseIdUsage(context, node, reusableV2ComponentV2Struct);
+            this.validateReuseOrReuseIdUsage(node);
         }
-      },
-    };
-  },
+    }
+
+    private findStructsWithReusableAndComponentV2(node: arkts.AstNode): void {
+        //Go through all the children of Program
+        for (const childNode of node.getChildren()) {
+            // Check whether the type is struct
+            if (!arkts.isStructDeclaration(childNode)) {
+                continue;
+            }
+            // Check that the current component has @ComponentV2 and @ReusableV2 decorators
+            const reusableV2Decorator = getAnnotationUsage(childNode, PresetDecorators.REUSABLE_V2);
+            const componentV2Decorator = getAnnotationUsage(childNode, PresetDecorators.COMPONENT_V2);
+            if (reusableV2Decorator && componentV2Decorator) {
+                const struceName = childNode.definition.ident?.name ?? '';
+                this.reusableV2ComponentV2Struct.push(struceName);
+            }
+        }
+    }
+
+    private validateReuseOrReuseIdUsage(
+        node: arkts.MemberExpression
+    ): void {
+        const structNode = node.object;
+        // Gets the reuse or reuseId attribute
+        const decoratedNode = node.property;
+        if (arkts.isCallExpression(structNode)) {
+            const nodeExpression = structNode.expression;
+            if (arkts.isIdentifier(nodeExpression) && arkts.isIdentifier(decoratedNode)) {
+                if (decoratedNode.name === ReuseConstants.REUSE &&
+                    !this.reusableV2ComponentV2Struct.includes(nodeExpression.name)) {
+                    this.reportInvalidReuseUsage(node, decoratedNode);
+                }
+                else if (decoratedNode.name === ReuseConstants.REUSE_ID &&
+                    this.reusableV2ComponentV2Struct.includes(nodeExpression.name)) {
+                    this.reportInvalidReuseIdUsage(node, decoratedNode);
+                }
+            }
+        }
+    }
+
+    private reportInvalidReuseUsage(
+        node: arkts.AstNode,
+        structNode: arkts.AstNode,
+    ): void {
+        this.report({
+            node: node,
+            message: this.messages.invalidReuseUsage,
+            fix: () => {
+                const startPosition = structNode.startPosition;
+                const endPosition = structNode.endPosition;
+                return {
+                    range: [startPosition, endPosition],
+                    code: ReuseConstants.REUSE_ID,
+                };
+            },
+        });
+    }
+
+    private reportInvalidReuseIdUsage(
+        node: arkts.AstNode,
+        structNode: arkts.AstNode,
+    ): void {
+        this.report({
+            node: node,
+            message: this.messages.invalidReuseIdUsage,
+            fix: () => {
+                const startPosition = structNode.startPosition;
+                const endPosition = structNode.endPosition;
+                return {
+                    range: [startPosition, endPosition],
+                    code: ReuseConstants.REUSE,
+                };
+            },
+        });
+    }
 };
 
-export default rule;
+export default ReuseAttributeCheckRule;
