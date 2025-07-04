@@ -41,6 +41,7 @@ action("build_ets_loader_library") {
   deps = [
     ":components",
     ":form_components",
+    ":insight_intents",
     ":install_arkguard_tsc_declgen",
     ":server",
     "//interface/sdk-js:ohos_declaration_ets",
@@ -236,6 +237,13 @@ ohos_copy("form_components") {
   module_install_name = ""
 }
 
+ohos_copy("insight_intents") {
+  sources = [ "compiler/insight_intents" ]
+  outputs = [ target_out_dir + "/$target_name" ]
+  module_source_dir = target_out_dir + "/$target_name"
+  module_install_name = ""
+}
+
 ohos_copy("server") {
   sources = [ "compiler/server" ]
   outputs = [ target_out_dir + "/$target_name" ]
@@ -305,6 +313,15 @@ ohos_copy("ets_loader_ark_form_components") {
   outputs = [ target_out_dir + "/ets_loader_ark/form_components" ]
 }
 
+ohos_copy("ets_loader_ark_insight_intents") {
+  deps = [
+    ":build_ets_loader_library",
+    ":ets_loader_ark",
+  ]
+  sources = [ "compiler/insight_intents" ]
+  outputs = [ target_out_dir + "/ets_loader_ark/insight_intents" ]
+}
+
 ohos_copy("ets_loader_ark_server") {
   deps = [
     ":build_ets_loader_library",
@@ -339,6 +356,7 @@ group("ets_loader_ark_hap") {
     ":ets_loader_ark_components",
     ":ets_loader_ark_declaration",
     ":ets_loader_ark_form_components",
+    ":ets_loader_ark_insight_intents",
     ":ets_loader_ark_lib",
     ":ets_loader_ark_server",
     ":ohos_declaration_ets_ark",
