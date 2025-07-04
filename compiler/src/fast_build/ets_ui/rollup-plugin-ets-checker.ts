@@ -70,12 +70,7 @@ export function etsChecker() {
   return {
     name: 'etsChecker',
     buildStart() {
-<<<<<<< HEAD
-      if (this.share.projectConfig.dependentModuleMap) {
-=======
-      const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ROLLUP_PLUGIN_BUILD_START);
       if (isMixCompile()) {
->>>>>>> edb7a9a5... Fix invasive modifications
         collectArkTSEvolutionModuleInfo(this.share);
       }
       const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ROLLUP_PLUGIN_BUILD_START);

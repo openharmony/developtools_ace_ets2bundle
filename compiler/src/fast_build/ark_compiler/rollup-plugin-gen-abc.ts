@@ -34,9 +34,10 @@ import {
 } from '../../performance';
 import { BytecodeObfuscator } from './bytecode_obfuscator';
 import { PreloadFileModules } from './module/module_preload_file_utils';
-import { FileManager } from './interop/interop_manager';
-import { CommonLogger } from './logger';
-import { FileManager, isMixCompile } from './interop/interop_manager';
+import {
+  FileManager,
+  isMixCompile
+} from './interop/interop_manager';
 import { cleanUpProcessArkTSEvolutionObj } from './interop/process_arkts_evolution';
 
 export function genAbc() {

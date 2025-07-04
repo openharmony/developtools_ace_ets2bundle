@@ -14,6 +14,10 @@
  */
 import fs from 'fs';
 import path from 'path';
+import {
+  isMixCompile,
+  rebuildEntryObj
+} from '../ark_compiler/interop/interop_manager';
 
 const {
   projectConfig,
@@ -36,13 +40,13 @@ export function getEntryObj() {
   if (!projectConfig.isPreview) {
     loadWorker(projectConfig, workerFile);
   }
+  if (isMixCompile()) {
+    rebuildEntryObj(projectConfig);
+    return;
+  }
   projectConfig.entryObj = Object.keys(projectConfig.entryObj).reduce((newEntry, key) => {
     const newKey: string = key.replace(/^\.\//, '');
-    const filePath = projectConfig.entryObj[key].replace('?entry', '');
-    const firstLine = fs.readFileSync(filePath, 'utf-8').split('\n')[0];
-    if (!firstLine.includes('use static')) {
-      newEntry[newKey] = filePath;
-    }
+    newEntry[newKey] = projectConfig.entryObj[key].replace('?entry', '');
     return newEntry;
   }, {});
 }
