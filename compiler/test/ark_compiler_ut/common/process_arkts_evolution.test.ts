@@ -19,18 +19,16 @@ import sinon from 'sinon';
 import ts from 'typescript';
 import path from 'path';
 import proxyquire from 'proxyquire';
-
 import {
-  collectArkTSEvolutionModuleInfo,
   addDeclFilesConfig,
-  pkgDeclFilesConfig,
-  arkTSModuleMap,
   arkTSEvolutionModuleMap,
+  arkTSModuleMap,
+  cleanUpProcessArkTSEvolutionObj,
+  collectArkTSEvolutionModuleInfo,
   interopTransform,
   interopTransformLog,
-  cleanUpProcessArkTSEvolutionObj
-} from '../../../lib/process_arkts_evolution';
-import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
+  pkgDeclFilesConfig
+} from '../../../lib/fast_build/ark_compiler/interop/process_arkts_evolution';
 import {
   BUNDLE_NAME_DEFAULT,
   HAR_DECLGENV2OUTPATH
@@ -43,6 +41,8 @@ import {
   ArkTSErrorDescription,
   ErrorCode
 } from '../../../lib/fast_build/ark_compiler/error_code';
+import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
+import { CommonLogger } from '../../../lib/fast_build/ark_compiler/logger';
 
 const testFileName: string = '/TestProject/entry/test.ets';
 
@@ -502,15 +502,12 @@ mocha.describe('process arkts evolution tests', function () {
     this.rollup.build();
     this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
     this.rollup.share.projectConfig.dependentModuleMap.set('evohar', { language: '1.2' });
-    const throwArkTsCompilerErrorStub = sinon.stub(this.rollup.share, 'throwArkTsCompilerError');
+    const throwArkTsCompilerErrorStub = sinon.stub(CommonLogger.getInstance(this.rollup.share), 'printErrorAndExit');
     try {
       collectArkTSEvolutionModuleInfo(this.rollup.share);
     } catch(e) {
     }
-    const errMsg: string = 'ArkTS:ERROR: Failed to compile mixed project.\n' +
-      `Error Message: Failed to compile mixed project because useNormalizedOHMUrl is false.\n` +
-      'Solutions: > Check whether useNormalizedOHMUrl is true.';
-    expect(throwArkTsCompilerErrorStub.getCall(0).args[1] === errMsg).to.be.true;
+    expect(throwArkTsCompilerErrorStub.getCall(0).args[0].code === ErrorCode.ETS2BUNDLE_EXTERNAL_COLLECT_INTEROP_INFO_FAILED).to.be.true;
     throwArkTsCompilerErrorStub.restore();
   });
 

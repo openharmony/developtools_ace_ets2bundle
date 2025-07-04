@@ -19,6 +19,7 @@ import path from 'path';
 import ts from 'typescript';
 import os from 'os';
 import sourceMap from 'source-map';
+import * as crypto from 'node:crypto';
 
 import {
   DEBUG,
@@ -306,6 +307,28 @@ export function hasArkDecorator(node: ts.MethodDeclaration | ts.FunctionDeclarat
   return false;
 }
 
+export function hasExistingPaths(paths: Set<string>): boolean {
+  for (const p of paths) {
+    if (fs.existsSync(toUnixPath(p))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function isSubPathOf(targetPath: string, parentDir: string): boolean {
+  const resolvedParent = toUnixPath(path.resolve(parentDir));
+  const resolvedTarget = toUnixPath(path.resolve(targetPath));
+  return resolvedTarget === resolvedParent || resolvedTarget.startsWith(resolvedParent + '/');
+}
+
 export const utUtils = {
   writeFileContent
 };
+
+export function calculateFileHash(filePath: string, algorithm: string = 'sha256'): string {
+  const fileBuffer = fs.readFileSync(filePath);
+  const hash = crypto.createHash(algorithm);
+  hash.update(fileBuffer);
+  return hash.digest('hex');
+}

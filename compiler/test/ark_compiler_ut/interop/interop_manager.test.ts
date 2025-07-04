@@ -15,8 +15,16 @@
 
 import { expect } from 'chai';
 import mocha from 'mocha';
-import { FileManager } from '../../../lib/fast_build/ark_compiler/interop/interop_manager';
-import { ARKTS_1_1, ARKTS_1_2, HYBRID } from '../../../lib/fast_build/ark_compiler/interop/type';
+import path from "path";
+
+import {
+  FileManager,
+  collectSDKInfo,
+  isBridgeCode
+ } from '../../../lib/fast_build/ark_compiler/interop/interop_manager';
+import { ARKTS_1_1, ARKTS_1_2, ARKTS_HYBRID } from '../../../lib/fast_build/ark_compiler/interop/pre_define';
+import { sdkConfigs } from '../../../main';
+import { toUnixPath } from '../../../lib/utils';
 
 export interface ArkTSEvolutionModule {
   language: string;
@@ -100,7 +108,7 @@ mocha.describe('test interop_manager file api', function () {
     });
 
     dependentModuleMap.set('hybrid', {
-      language: HYBRID,
+      language: ARKTS_HYBRID,
       packageName: 'hybrid',
       moduleName: 'hybrid',
       modulePath: '/MyApplication16/hybrid',
@@ -114,14 +122,16 @@ mocha.describe('test interop_manager file api', function () {
       byteCodeHarInfo: {}
     });
     FileManager.cleanFileManagerObject();
-    FileManager.init(
+    FileManager.initForTest(
       dependentModuleMap,
+      undefined,
       dynamicSDKPath,
       staticSDKDeclPath,
       staticSDKGlueCodePath);
   });
 
   mocha.after(() => {
+    FileManager.cleanFileManagerObject();
   });
 
   mocha.it('1-1: test SDK path', function() {
@@ -180,17 +190,123 @@ mocha.describe('test interop_manager file api', function () {
     expect(result?.pkgName).to.equal('harv2');
   });
 
-  mocha.it('1-8: test source code file from hybrid module', function() {
+  mocha.it('1-9: test source code file from hybrid module', function() {
     const filePath = '/MyApplication16/hybrid/fileV1.ets';
     const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
     expect(result?.languageVersion).to.equal(ARKTS_1_1);
     expect(result?.pkgName).to.equal('hybrid');
   });
 
-  mocha.it('1-8: test source code file from hybrid module', function() {
+  mocha.it('1-10: test source code file from hybrid module', function() {
     const filePath = '/MyApplication16/hybrid/build/default/intermediates/declgen/default/declgenV1/file1';
     const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
     expect(result?.languageVersion).to.equal(ARKTS_1_2);
     expect(result?.pkgName).to.equal('hybrid');
+  });
+
+  mocha.it('2-1: test matchModulePath api with 1.1 module', function() {
+    const filePath = '/MyApplication16/dynamic1/sourceCode.ets';
+    const moduleInfo = FileManager.matchModulePath(filePath);
+    expect(moduleInfo.languageVersion).to.equal(ARKTS_1_1);
+    expect(moduleInfo.pkgName).to.equal('dynamic1');
+  })
+
+  mocha.it('2-2: test matchModulePath api with 1.2 module', function() {
+    const filePath = '/MyApplication16/harv2/sourceCode.ets';
+    const moduleInfo = FileManager.matchModulePath(filePath);
+    expect(moduleInfo.languageVersion).to.equal(ARKTS_1_2);
+    expect(moduleInfo.pkgName).to.equal('harv2');
+  })
+
+  mocha.it('2-3: test matchModulePath api with isHybrid module', function() {
+    const dymanicFilePath = '/MyApplication16/hybrid/fileV1.ets';
+    const staticFilePath = '/MyApplication16/hybrid/fileV2.ets';
+
+    const moduleInfoV1 = FileManager.matchModulePath(dymanicFilePath);
+    expect(moduleInfoV1.languageVersion).to.equal(ARKTS_1_1);
+    expect(moduleInfoV1.pkgName).to.equal('hybrid');
+
+    const moduleInfoV2 = FileManager.matchModulePath(staticFilePath);
+    expect(moduleInfoV2.languageVersion).to.equal(ARKTS_1_2);
+    expect(moduleInfoV2.pkgName).to.equal('hybrid');
+  })
+
+  mocha.it('3-1: test init SDK', function () {
+    const share = {
+      projectConfig: {
+        etsLoaderPath: '/mock/ets-loader',
+      }
+    };
+
+    const result = collectSDKInfo(share);
+    const expectedDynamicSDKPath = new Set([
+      '/mock/ets-loader/declarations',
+      '/mock/ets-loader/components',
+      '/component',
+      '/mock/ets-loader'
+    ]);
+    sdkConfigs.forEach(({ apiPath }) => {
+      apiPath.forEach(path => {
+        expectedDynamicSDKPath.add(toUnixPath(path));
+      });
+    });
+    const expectedStaticInteropDecl = new Set([
+      '/ets1.2/build-tools/interop/declarations/kits',
+      '/ets1.2/build-tools/interop/declarations/api',
+      '/ets1.2/build-tools/interop/declarations/arkts'
+    ]);
+
+    const expectedStaticGlueCode = new Set([
+      '/ets1.2/build-tools/interop/bridge/kits',
+      '/ets1.2/build-tools/interop/bridge/api',
+      '/ets1.2/build-tools/interop/bridge/arkts'
+    ]);
+    expect([...result.dynamicSDKPath]).to.have.deep.members([...expectedDynamicSDKPath]);
+    expect([...result.staticSDKInteropDecl]).to.have.deep.members([...expectedStaticInteropDecl]);
+    expect([...result.staticSDKGlueCodePath]).to.have.deep.members([...expectedStaticGlueCode]);
+  });
+});
+
+mocha.describe('isBridgeCode', function () {
+  const mockConfig = {
+    mixCompile: true,
+    dependentModuleMap: new Map([
+      ['pkgA', { declgenBridgeCodePath: path.resolve('project/bridge/pkgA') }],
+      ['pkgB', { declgenBridgeCodePath: path.resolve('project/bridge/pkgB') }],
+    ]),
+  };
+
+  mocha.it('1-1: should return true when filePath is inside a declgenBridgeCodePath', function () {
+    const filePath = path.resolve('project/bridge/pkgA/utils/helper.ts');
+    expect(isBridgeCode(filePath, mockConfig)).to.be.true;
+  });
+
+  mocha.it('1-2: should return false when filePath is outside all bridge code paths', function () {
+    const filePath = path.resolve('project/otherpkg/index.ts');
+    expect(isBridgeCode(filePath, mockConfig)).to.be.false;
+  });
+
+  mocha.it('1-3: should return false when mixCompile is false', function () {
+    const config = { ...mockConfig, mixCompile: false };
+    const filePath = path.resolve('project/bridge/pkgA/utils/helper.ts');
+    expect(isBridgeCode(filePath, config)).to.be.false;
+  });
+
+  mocha.it('1-4: should return false when dependentModuleMap is empty', function () {
+    const config = { mixCompile: true, dependentModuleMap: new Map() };
+    const filePath = path.resolve('project/bridge/pkgA/file.ts');
+    expect(isBridgeCode(filePath, config)).to.be.false;
+  });
+
+  mocha.it('1-5: should return true for multiple matches, stop at first match', function () {
+    const config = {
+      mixCompile: true,
+      dependentModuleMap: new Map([
+        ['pkg1', { declgenBridgeCodePath: path.resolve('path/one') }],
+        ['pkg2', { declgenBridgeCodePath: path.resolve('path/two') }],
+      ]),
+    };
+    const filePath = path.resolve('path/one/module.ts');
+    expect(isBridgeCode(filePath, config)).to.be.true;
   });
 });
