@@ -276,9 +276,6 @@ class ParseIntent {
       this.schemaValidateSync(properties, intentObj.parameters);
       this.analyzeBaseClass(node, pkgParams, intentObj, COMPONENT_USER_INTENTS_DECORATOR_ENTITY);
       this.createObfuscation(node);
-      if (this.isUpdateCompile) {
-        this.updatePageIntentObj.get(intentObj.decoratorFile).push(intentObj);
-      }
       if (this.entityMap.has(entityClassName)) {
         const errorMessage: string = 'class can be decorated with at most one @InsightIntentEntity';
         this.transformLog.push({
