@@ -684,13 +684,27 @@ export function collectMemoFromCallExpression(node: arkts.CallExpression): void 
     if (arkts.NodeCache.getInstance().has(decl)) {
         arkts.NodeCache.getInstance().collect(node);
         isCollected = true;
-    }
-    if (arkts.isMethodDefinition(decl)) {
+    } else if (arkts.isMethodDefinition(decl)) {
         isCollected = collectCallWithDeclaredMethod(node, decl);
+    } else if (arkts.isClassProperty(decl)) {
+        isCollected = collectCallWithDeclaredClassProperty(node, decl);
     }
     if (isCollected && arkts.isTSAsExpression(node.expression) && node.expression.typeAnnotation) {
         arkts.NodeCache.getInstance().collect(node.expression.typeAnnotation);
     }
+}
+
+export function collectCallWithDeclaredClassProperty(node: arkts.CallExpression, decl: arkts.ClassProperty): boolean {
+    if (arkts.NodeCache.getInstance().has(decl)) {
+        arkts.NodeCache.getInstance().collect(node);
+        return true;
+    }
+    const memoableInfo = collectMemoableInfoInClassProperty(decl);
+    if (checkIsMemoFromMemoableInfo(memoableInfo, false) || memoableInfo.hasBuilder || memoableInfo.hasBuilderParam) {
+        arkts.NodeCache.getInstance().collect(node);
+        return true;
+    }
+    return false;
 }
 
 export function collectCallWithDeclaredMethod(node: arkts.CallExpression, decl: arkts.MethodDefinition): boolean {
