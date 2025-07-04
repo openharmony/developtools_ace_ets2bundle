@@ -46,12 +46,14 @@ export class ParameterTransformer extends AbstractVisitor {
     private rewriteMemoInfos?: Map<number, RewriteMemoInfo>;
     private rewriteThis?: boolean;
     private skipNode?: arkts.VariableDeclaration;
+    private visited: Set<number>;
 
     private positionalIdTracker: PositionalIdTracker;
 
     constructor(options: ParameterTransformerOptions) {
         super(options);
         this.positionalIdTracker = options.positionalIdTracker;
+        this.visited = new Set();
     }
 
     reset(): void {
@@ -60,6 +62,7 @@ export class ParameterTransformer extends AbstractVisitor {
         this.rewriteCalls = undefined;
         this.rewriteMemoInfos = undefined;
         this.skipNode = undefined;
+        this.visited.clear();
     }
 
     withThis(flag: boolean): ParameterTransformer {
@@ -79,7 +82,7 @@ export class ParameterTransformer extends AbstractVisitor {
                         it.param.identifier.name.startsWith(RuntimeNames.GENSYM)
                             ? it.ident.originalPeer
                             : it.param.originalPeer,
-                        (passArgs: arkts.Expression[]) => {
+                        (passArgs: arkts.Expression[]): arkts.CallExpression => {
                             return factory.createMemoParameterAccessCall(it.ident.name, passArgs);
                         },
                     ];
@@ -91,7 +94,7 @@ export class ParameterTransformer extends AbstractVisitor {
                     it.param.identifier.name.startsWith(RuntimeNames.GENSYM)
                         ? it.ident.originalPeer
                         : it.param.originalPeer,
-                    () => {
+                    (): arkts.MemberExpression => {
                         return factory.createMemoParameterAccess(it.ident.name);
                     },
                 ];
@@ -119,6 +122,16 @@ export class ParameterTransformer extends AbstractVisitor {
         return this;
     }
 
+    track(node: arkts.AstNode | undefined): void {
+        if (!!node?.peer) {
+            this.visited.add(node.peer);
+        }
+    }
+
+    isTracked(node: arkts.AstNode | undefined): boolean {
+        return !!node?.peer && this.visited.has(node.peer);
+    }
+
     private updateArrowFunctionFromVariableDeclareInit(
         initializer: arkts.ArrowFunctionExpression,
         returnType: arkts.TypeNode | undefined
@@ -141,13 +154,15 @@ export class ParameterTransformer extends AbstractVisitor {
                 returnTypeInfo,
                 this.positionalIdTracker.id()
             );
-        const afterParameterTransformer = new ParameterTransformer({
+        const paramaterTransformer = new ParameterTransformer({
             positionalIdTracker: this.positionalIdTracker,
-        })
+        });
+        const returnTransformer = new ReturnTransformer();
+        const afterParameterTransformer = paramaterTransformer
             .withParameters(parameterIdentifiers)
             .skip(memoParametersDeclaration)
             .visitor(body);
-        const afterReturnTransformer = new ReturnTransformer()
+        const afterReturnTransformer = returnTransformer
             .skip(syntheticReturnStatement)
             .registerReturnTypeInfo(returnTypeInfo)
             .visitor(afterParameterTransformer);
@@ -156,6 +171,9 @@ export class ParameterTransformer extends AbstractVisitor {
             afterReturnTransformer,
             returnTypeInfo.node
         );
+        paramaterTransformer.reset();
+        returnTransformer.reset();
+        this.track(updateScriptFunction.body);
         return arkts.factory.updateArrowFunction(initializer, updateScriptFunction);
     }
 
@@ -229,12 +247,12 @@ export class ParameterTransformer extends AbstractVisitor {
                 }
                 if (!!declarator.initializer && arkts.isIdentifier(declarator.initializer)) {
                     const decl = arkts.getPeerDecl(declarator.initializer.originalPeer);
-                    if (decl && that.rewriteIdentifiers?.has(decl.originalPeer)) {
+                    if (decl && that.rewriteIdentifiers?.has(decl.peer)) {
                         return arkts.factory.updateVariableDeclarator(
                             declarator,
                             declarator.flag,
                             declarator.name,
-                            that.rewriteIdentifiers.get(decl.originalPeer)!()
+                            that.rewriteIdentifiers.get(decl.peer)!()
                         );
                     }
                 }
@@ -266,12 +284,12 @@ export class ParameterTransformer extends AbstractVisitor {
         }
         if (arkts.isCallExpression(beforeChildren) && arkts.isIdentifier(beforeChildren.expression)) {
             const decl = arkts.getPeerDecl(beforeChildren.expression.originalPeer);
-            if (decl && this.rewriteCalls?.has(decl.originalPeer)) {
-                const updateCall = this.rewriteCalls.get(decl.originalPeer)!(
+            if (decl && this.rewriteCalls?.has(decl.peer)) {
+                const updateCall = this.rewriteCalls.get(decl.peer)!(
                     beforeChildren.arguments.map((it) => this.visitor(it) as arkts.Expression)
                 );
-                if (this.rewriteMemoInfos?.has(decl.originalPeer)) {
-                    const memoInfo = this.rewriteMemoInfos.get(decl.originalPeer)!;
+                if (this.rewriteMemoInfos?.has(decl.peer)) {
+                    const memoInfo = this.rewriteMemoInfos.get(decl.peer)!;
                     return this.updateCallReDeclare(updateCall, beforeChildren.expression, memoInfo);
                 }
                 return updateCall;
@@ -280,8 +298,8 @@ export class ParameterTransformer extends AbstractVisitor {
         const node = this.visitEachChild(beforeChildren);
         if (arkts.isIdentifier(node)) {
             const decl = arkts.getPeerDecl(node.originalPeer);
-            if (decl && this.rewriteIdentifiers?.has(decl.originalPeer)) {
-                return this.rewriteIdentifiers.get(decl.originalPeer)!();
+            if (decl && this.rewriteIdentifiers?.has(decl.peer)) {
+                return this.rewriteIdentifiers.get(decl.peer)!();
             }
         }
         if (arkts.isThisExpression(node) && this.rewriteThis) {
