@@ -48,7 +48,7 @@ import { mkdirsSync } from '../../lib/utils';
 import {
   arkTSEvolutionModuleMap,
   cleanUpProcessArkTSEvolutionObj
-} from '../../lib/process_arkts_evolution';
+} from '../../lib/fast_build/ark_compiler/interop/process_arkts_evolution';
 
 mocha.describe('test ets_checker file api', function () {
     mocha.before(function () {
@@ -223,7 +223,9 @@ mocha.describe('test ets_checker file api', function () {
         mkdirsSync(path.dirname(arktsEvoTestDeclFilePath));
         fs.writeFileSync(arktsEvoIndexDeclFilePath, '');
         fs.writeFileSync(arktsEvoTestDeclFilePath, '');
+        process.env.mixCompile = 'true';
         const resolvedModules = resolveModuleNamesMain(moduleNames, filePath);
+        process.env.mixCompile = 'false';
         expect(resolvedModules[0].resolvedFileName === arktsEvoIndexDeclFilePath).to.be.true;
         expect(resolvedModules[1].resolvedFileName === arktsEvoTestDeclFilePath).to.be.true;
         fs.unlinkSync(filePath);
