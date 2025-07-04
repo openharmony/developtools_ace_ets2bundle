@@ -18,7 +18,7 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../utils/plugins';
+import { uiNoRecheck, recheck, memoNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
@@ -37,7 +37,7 @@ const parsedTransform: Plugins = {
     parsed: uiTransform().parsed
 };
 
-const expectedScript: string = `
+const expectedUIScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
@@ -100,15 +100,160 @@ function main() {}
 }
 `;
 
-function testParsedAndCheckedTransformer(this: PluginTestContext): void {
-    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
+function testUITransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedUIScript));
+}
+
+const expectedMemoScript: string = `
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Component as Component, Text as Text, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Builder as Builder, Column as Column, ForEach as ForEach } from "@kit.ArkUI";
+
+const globalBuilderArr: Array<WrappedBuilder<MyBuilderFuncType>> = [wrapBuilder(myBuilder), wrapBuilder(yourBuilder)];
+
+function main() {}
+
+
+@memo() function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number) {
+  const __memo_scope = __memo_context.scope<void>(((__memo_id) + (52041161)), 2);
+  const __memo_parameter_value = __memo_scope.param(0, value), __memo_parameter_size = __memo_scope.param(1, size);
+  if (__memo_scope.unchanged) {
+    __memo_scope.cached;
+    return;
+  }
+  Text(__memo_context, ((__memo_id) + (175145513)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (47330804)), 1);
+    const __memo_parameter_instance = __memo_scope.param(0, instance);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
+      return;
+    }
+    __memo_parameter_instance.value.fontSize(__memo_parameter_size.value);
+    {
+      __memo_scope.recache();
+      return;
+    }
+  }), __memo_parameter_value.value, undefined, undefined);
+  {
+    __memo_scope.recache();
+    return;
+  }
+}
+
+@memo() function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number) {
+  const __memo_scope = __memo_context.scope<void>(((__memo_id) + (151467670)), 2);
+  const __memo_parameter_value = __memo_scope.param(0, value), __memo_parameter_size = __memo_scope.param(1, size);
+  if (__memo_scope.unchanged) {
+    __memo_scope.cached;
+    return;
+  }
+  Text(__memo_context, ((__memo_id) + (211301233)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (137225318)), 1);
+    const __memo_parameter_instance = __memo_scope.param(0, instance);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
+      return;
+    }
+    __memo_parameter_instance.value.fontSize(__memo_parameter_size.value);
+    {
+      __memo_scope.recache();
+      return;
+    }
+  }), __memo_parameter_value.value, undefined, undefined);
+  {
+    __memo_scope.recache();
+    return;
+  }
+}
+
+
+@memo() type MyBuilderFuncType = @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
+
+@Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
+  public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
+  
+  public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
+  
+  @memo() public testBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (194881372)), 0);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
+      return;
+    }
+    ForEach(__memo_context, ((__memo_id) + (218979098)), ((): Array<WrappedBuilder<MyBuilderFuncType>> => {
+      return globalBuilderArr;
+    }), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<MyBuilderFuncType>) => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (76711614)), 1);
+      const __memo_parameter_item = __memo_scope.param(0, item);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      __memo_parameter_item.value.builder(__memo_context, ((__memo_id) + (46726221)), "hello world", 39);
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }));
+    {
+      __memo_scope.recache();
+      return;
+    }
+  }
+  
+  @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (142886843)), 0);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
+      return;
+    }
+    Column(__memo_context, ((__memo_id) + (54078781)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (213687742)), 0);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      this.testBuilder(__memo_context, ((__memo_id) + (192802443)));
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }));
+    {
+      __memo_scope.recache();
+      return;
+    }
+  }
+  
+  private constructor() {}
+  
+}
+
+@Component() export interface __Options_ImportStruct {
+  
+}
+`;
+
+function testMemoTransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedMemoScript));
 }
 
 pluginTester.run(
-    'test wrap builder init with @Builder function',
-    [parsedTransform, uiNoRecheck, recheck],
+    'test wrap builder in UI',
+    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
     {
-        'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
+        'checked:ui-no-recheck': [testUITransformer],
+        'checked:memo-no-recheck': [testMemoTransformer],
     },
     {
         stopAfter: 'checked',
