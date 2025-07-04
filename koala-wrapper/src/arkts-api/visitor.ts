@@ -335,7 +335,7 @@ function visitDefinition(node: AstNode, visitor: Visitor): AstNode {
             node,
             node.kind,
             node.name,
-            factory.createFunctionExpression(nodeVisitor(node.scriptFunction, visitor)),
+            nodeVisitor(node.scriptFunction, visitor),
             node.modifiers,
             false
         );
