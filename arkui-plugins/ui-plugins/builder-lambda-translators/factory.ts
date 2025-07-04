@@ -43,6 +43,7 @@ import {
     builderLambdaType,
     BuilderLambdaSecondLastArgInfo,
     buildSecondLastArgInfo,
+    checkIsSpecialComponentAttributeFromType,
 } from './utils';
 import { isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
 import { factory as PropertyFactory } from '../property-translators/factory';
@@ -177,13 +178,26 @@ export class factory {
     static createStyleArgInBuilderLambda(
         lambdaBody: arkts.Expression | undefined,
         typeNode: arkts.TypeNode | undefined,
-        moduleName: string
+        moduleName: string,
+        typeArgument?: arkts.TypeNode
     ): arkts.UndefinedLiteral | arkts.ArrowFunctionExpression {
         if (!lambdaBody) {
             return arkts.factory.createUndefinedLiteral();
         }
         collectComponentAttributeImport(typeNode, moduleName);
-        const safeType: arkts.TypeNode | undefined = isSafeType(typeNode) ? typeNode : undefined;
+        let safeType: arkts.TypeNode | undefined;
+        if (checkIsSpecialComponentAttributeFromType(typeNode, typeArgument)) {
+            safeType = arkts.factory.updateTypeReference(
+                typeNode,
+                arkts.factory.updateTypeReferencePart(
+                    typeNode.part!,
+                    typeNode.part!.name!,
+                    arkts.factory.createTSTypeParameterInstantiation([typeArgument!.clone()])
+                )
+            );
+        } else {
+            safeType = isSafeType(typeNode) ? typeNode : undefined;
+        }
 
         const styleLambdaParam: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
             arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME, safeType),
@@ -379,7 +393,7 @@ export class factory {
         const { isFunctionCall, params, returnType, moduleName } = declInfo;
         const type: arkts.Identifier | undefined = builderLambdaType(leaf);
         const args: (arkts.AstNode | undefined)[] = [
-            this.createStyleArgInBuilderLambda(lambdaBody, returnType, moduleName),
+            this.createStyleArgInBuilderLambda(lambdaBody, returnType, moduleName, leaf.typeArguments?.at(0)),
         ];
         const secondLastArgInfo = buildSecondLastArgInfo(type, isFunctionCall);
         const isTrailingCall = leaf.isTrailingCall;

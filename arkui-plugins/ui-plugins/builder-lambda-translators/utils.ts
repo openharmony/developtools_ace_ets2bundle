@@ -43,8 +43,7 @@ export type BuilderLambdaReusableArgInfo = {
     reuseId?: string;
 };
 
-export type BuilderLambdaSecondLastArgInfo = BuilderLambdaArgInfo &
-    BuilderLambdaReusableArgInfo;
+export type BuilderLambdaSecondLastArgInfo = BuilderLambdaArgInfo & BuilderLambdaReusableArgInfo;
 
 export function buildSecondLastArgInfo(
     type: arkts.Identifier | undefined,
@@ -359,6 +358,24 @@ export function isBuilderLambdaFunctionCall(decl: arkts.AstNode | undefined): bo
 export function callIsGoodForBuilderLambda(leaf: arkts.CallExpression): boolean {
     const node = leaf.expression;
     return arkts.isIdentifier(node) || arkts.isMemberExpression(node);
+}
+
+// quick-fix: make `Repeat` component as special return type check.
+// This is a temporary solution
+export function checkIsSpecialComponentAttributeFromType(
+    typeNode: arkts.TypeNode | undefined,
+    typeArgument?: arkts.TypeNode
+): typeNode is arkts.ETSTypeReference {
+    if (!typeNode || !typeArgument) {
+        return false;
+    }
+    if (!arkts.isETSTypeReference(typeNode) || !typeNode.part || !typeNode.part.name) {
+        return false;
+    }
+    if (!arkts.isIdentifier(typeNode.part.name)) {
+        return false;
+    }
+    return typeNode.part.name.name === 'RepeatAttribute';
 }
 
 export function isSafeType(type: arkts.TypeNode | undefined): boolean {
