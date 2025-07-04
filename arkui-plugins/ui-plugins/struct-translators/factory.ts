@@ -26,7 +26,7 @@ export class factory {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
             member.name,
-            arkts.factory.createFunctionExpression(member.scriptFunction),
+            member.scriptFunction,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
             false
         );
@@ -68,7 +68,7 @@ export class factory {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             updateKey,
-            arkts.factory.createFunctionExpression(updateScriptFunction),
+            updateScriptFunction,
             modifiers,
             false
         );
@@ -126,7 +126,7 @@ export class factory {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             updateKey,
-            arkts.factory.createFunctionExpression(scriptFunction),
+            scriptFunction,
             modifiers,
             false
         );
@@ -168,7 +168,7 @@ export class factory {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             updateKey,
-            arkts.factory.createFunctionExpression(scriptFunction),
+            scriptFunction,
             modifiers,
             false
         );
@@ -203,7 +203,7 @@ export class factory {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
             arkts.factory.createIdentifier('__toRecord'),
-            arkts.factory.createFunctionExpression(toRecordScriptFunction),
+            toRecordScriptFunction,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OVERRIDE,
             false
         );
@@ -317,13 +317,11 @@ export class factory {
                 undefined
             ),
         ];
-        const aniFuncExpr = arkts.factory.createFunctionExpression(
-            arkts.factory.createScriptFunction(
-                undefined,
-                arkts.factory.createFunctionSignature(undefined, aniparams, arkts.TSThisType.createTSThisType(), false),
-                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
-            )
+        const aniFuncExpr = arkts.factory.createScriptFunction(
+            undefined,
+            arkts.factory.createFunctionSignature(undefined, aniparams, arkts.TSThisType.createTSThisType(), false),
+            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
         );
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,

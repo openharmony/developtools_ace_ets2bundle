@@ -203,7 +203,7 @@ export class ComponentTransformer extends AbstractVisitor {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             arkts.factory.createIdentifier(CustomComponentNames.BUILDCOMPATIBLENODE),
-            arkts.factory.createFunctionExpression(script),
+            script,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
             false
         );

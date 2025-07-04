@@ -85,7 +85,7 @@ export class ObservedTrackTranslator {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET,
             arkts.factory.createIdentifier(originalName),
-            arkts.factory.createFunctionExpression(scriptFunction),
+            scriptFunction,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
             false
         );
@@ -109,7 +109,7 @@ export class ObservedTrackTranslator {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET,
             arkts.factory.createIdentifier(originalName),
-            arkts.factory.createFunctionExpression(scriptFunction),
+            scriptFunction,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
             false
         );
@@ -160,9 +160,7 @@ export class ObservedTrackTranslator {
                     originGetter,
                     originGetter.kind,
                     newGetter.name,
-                    arkts.factory.createFunctionExpression(
-                        newGetter.scriptFunction.addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD)
-                    ),
+                    newGetter.scriptFunction.addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD),
                     originGetter.modifiers,
                     false
                 );
@@ -170,11 +168,9 @@ export class ObservedTrackTranslator {
                     originSetter,
                     originSetter.kind,
                     newSetter.name,
-                    arkts.factory.createFunctionExpression(
-                        newSetter.scriptFunction
-                            .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_OVERLOAD)
-                            .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD)
-                    ),
+                    newSetter.scriptFunction
+                        .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_OVERLOAD)
+                        .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD),
                     originSetter.modifiers,
                     false
                 );

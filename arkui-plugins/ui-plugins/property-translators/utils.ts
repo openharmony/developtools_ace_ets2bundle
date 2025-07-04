@@ -118,7 +118,7 @@ export function createGetter(
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET,
         arkts.factory.createIdentifier(name),
-        arkts.factory.createFunctionExpression(scriptFunction),
+        scriptFunction,
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
         false
     );
@@ -157,7 +157,7 @@ export function createSetter(
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET,
         arkts.factory.createIdentifier(name),
-        arkts.factory.createFunctionExpression(scriptFunction),
+        scriptFunction,
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
         false
     );
@@ -183,7 +183,7 @@ export function createSetter2(
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET,
         arkts.factory.createIdentifier(name),
-        arkts.factory.createFunctionExpression(scriptFunction),
+        scriptFunction,
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
         false
     );
