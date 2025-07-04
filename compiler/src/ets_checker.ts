@@ -173,6 +173,9 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
       allPath.push('../*');
     }
   }
+  if (isMixCompile()) {
+    compilerOptions.preserveValueImports = true;
+  }
   const suffix: string = projectConfig.hotReload ? HOT_RELOAD_BUILD_INFO_SUFFIX : TS_BUILD_INFO_SUFFIX;
   const buildInfoPath: string = path.resolve(projectConfig.cachePath, '..', suffix);
   checkArkTSVersion();
