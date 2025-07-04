@@ -54,6 +54,7 @@ import { ParameterTransformer } from './parameter-transformer';
 import { ReturnTransformer } from './return-transformer';
 import { SignatureTransformer } from './signature-transformer';
 import { moveToFront } from '../common/arkts-utils';
+import { InternalsTransformer } from './internal-transformer';
 
 interface ScopeInfo extends MemoInfo {
     regardAsSameScope?: boolean;
@@ -64,6 +65,7 @@ export interface FunctionTransformerOptions extends VisitorOptions {
     parameterTransformer: ParameterTransformer;
     returnTransformer: ReturnTransformer;
     signatureTransformer: SignatureTransformer;
+    internalsTransformer?: InternalsTransformer;
 }
 
 export class FunctionTransformer extends AbstractVisitor {
@@ -71,6 +73,10 @@ export class FunctionTransformer extends AbstractVisitor {
     private readonly parameterTransformer: ParameterTransformer;
     private readonly returnTransformer: ReturnTransformer;
     private readonly signatureTransformer: SignatureTransformer;
+    private readonly internalsTransformer?: InternalsTransformer;
+
+    /* Tracking whether should import `__memo_context_type` and `__memo_id_type` */
+    private modified = false;
 
     constructor(options: FunctionTransformerOptions) {
         super(options);
@@ -78,6 +84,7 @@ export class FunctionTransformer extends AbstractVisitor {
         this.parameterTransformer = options.parameterTransformer;
         this.returnTransformer = options.returnTransformer;
         this.signatureTransformer = options.signatureTransformer;
+        this.internalsTransformer = options.internalsTransformer;
     }
 
     private scopes: ScopeInfo[] = [];
@@ -87,6 +94,7 @@ export class FunctionTransformer extends AbstractVisitor {
         super.reset();
         this.scopes = [];
         this.stable = 0;
+        this.modified = false;
         this.parameterTransformer.reset();
         this.returnTransformer.reset();
         this.signatureTransformer.reset();
@@ -213,19 +221,43 @@ export class FunctionTransformer extends AbstractVisitor {
 
     checkMemoCallInFunction() {
         const scope = this.scopes[this.scopes.length - 1];
-        if (scope?.regardAsSameScope === false && scope?.isMemo == false) {
+        if (scope?.regardAsSameScope === false && scope?.isMemo === false) {
             console.error(`Attempt to call @memo-function`);
             throw 'Invalid @memo usage';
         }
         return this;
     }
 
+    updateInternalsInScriptFunction(scriptFunction: arkts.ScriptFunction): arkts.ScriptFunction {
+        if (!scriptFunction.body || !arkts.isBlockStatement(scriptFunction.body) || !this.internalsTransformer) {
+            return scriptFunction;
+        }
+        const afterInternalsTransformer = this.internalsTransformer.visitor(
+            scriptFunction.body
+        ) as arkts.BlockStatement;
+        return arkts.factory.updateScriptFunction(
+            scriptFunction,
+            afterInternalsTransformer,
+            arkts.factory.createFunctionSignature(
+                scriptFunction.typeParams,
+                scriptFunction.params,
+                scriptFunction.returnTypeAnnotation,
+                scriptFunction.hasReceiver
+            ),
+            scriptFunction.flags,
+            scriptFunction.modifiers
+        );
+    }
+
     updateScriptFunction(scriptFunction: arkts.ScriptFunction, name: string = ''): arkts.ScriptFunction {
         if (!scriptFunction.body || !arkts.isBlockStatement(scriptFunction.body)) {
             return scriptFunction;
         }
+        if (this.parameterTransformer.isTracked(scriptFunction.body)) {
+            return this.updateInternalsInScriptFunction(scriptFunction);
+        }
         if (hasMemoIntrinsicAnnotation(scriptFunction) || hasMemoEntryAnnotation(scriptFunction)) {
-            return scriptFunction;
+            return this.updateInternalsInScriptFunction(scriptFunction);
         }
         const returnType = scriptFunction.returnTypeAnnotation;
         const isStableThis = this.stable > 0 && returnType !== undefined && arkts.isTSThisType(returnType);
@@ -255,7 +287,9 @@ export class FunctionTransformer extends AbstractVisitor {
             afterReturnTransformer,
             returnTypeInfo.node
         );
-        return updateScriptFunction;
+        this.modified = true;
+        this.parameterTransformer.track(updateScriptFunction.body);
+        return this.updateInternalsInScriptFunction(updateScriptFunction);
     }
 
     private updateMethodDefinition(node: arkts.MethodDefinition): arkts.MethodDefinition {
@@ -267,12 +301,14 @@ export class FunctionTransformer extends AbstractVisitor {
             hasMemoIntrinsicAnnotation(node.scriptFunction) ||
             hasMemoEntryAnnotation(node.scriptFunction);
         if (isMemo && node.scriptFunction.body) {
+            const hasIntrinsic = hasMemoIntrinsicAnnotation(node.scriptFunction);
             updateMethod = arkts.factory.updateMethodDefinition(
                 node,
                 node.kind,
                 node.name,
                 this.signatureTransformer.visitor(
-                    removeMemoAnnotation(this.updateScriptFunction(node.scriptFunction, node.name.name))
+                    removeMemoAnnotation(this.updateScriptFunction(node.scriptFunction, node.name.name)),
+                    hasIntrinsic
                 ),
                 node.modifiers,
                 false
@@ -290,6 +326,7 @@ export class FunctionTransformer extends AbstractVisitor {
         if (!!updateOverloads) {
             updateMethod.setOverloads(castOverloadsToMethods(updateOverloads));
         }
+        this.modified ||= this.signatureTransformer.modified;
         return updateMethod;
     }
 
@@ -307,6 +344,7 @@ export class FunctionTransformer extends AbstractVisitor {
                 this.enterAnonymousScope(it.scriptFunction);
                 const res = this.updateScriptFunction(it.scriptFunction);
                 this.exitAnonymousScope();
+                this.modified = true;
                 return arkts.factory.updateArrowFunction(it, res);
             }
             return it;
@@ -325,10 +363,12 @@ export class FunctionTransformer extends AbstractVisitor {
         if (parametrizedNodeHasReceiver(decl.scriptFunction) && isMemo) {
             updatedArguments = moveToFront(updatedArguments, 2);
         }
+        this.modified = true;
         return arkts.factory.updateCallExpression(node, node.expression, node.typeArguments, updatedArguments);
     }
 
     private updateDeclaredCallWithName(node: arkts.CallExpression, name: string): arkts.CallExpression {
+        this.modified = true;
         return factory.insertHiddenArgumentsToCall(node, this.positionalIdTracker.id(name));
     }
 
@@ -345,10 +385,12 @@ export class FunctionTransformer extends AbstractVisitor {
                 this.enterAnonymousScope(it.scriptFunction);
                 const res = this.updateScriptFunction(it.scriptFunction);
                 this.exitAnonymousScope();
+                this.modified = true;
                 return arkts.factory.updateArrowFunction(it, res);
             }
             return it;
         });
+        this.modified ||= this.signatureTransformer.modified;
         return arkts.factory.updateCallExpression(node, newExpression, node.typeArguments, updatedArguments);
     }
 
@@ -372,6 +414,7 @@ export class FunctionTransformer extends AbstractVisitor {
         this.exitAnonymousScope();
 
         const newNode = this.updateAnonymousCallWithMemoParams(node);
+        this.modified = true;
         return arkts.factory.updateCallExpression(
             node,
             arkts.factory.updateArrowFunction(expression, res),
@@ -440,6 +483,7 @@ export class FunctionTransformer extends AbstractVisitor {
             throw 'Invalid @memo usage';
         }
 
+        this.modified = true;
         return arkts.factory.updateClassProperty(
             node,
             node.key,
@@ -459,12 +503,14 @@ export class FunctionTransformer extends AbstractVisitor {
         this.exitAnonymousScope();
         if (!scope.isMemo) {
             if (!!node.typeAnnotation) {
-                return arkts.factory.updateTSTypeAliasDeclaration(
+                const newNode = arkts.factory.updateTSTypeAliasDeclaration(
                     node,
                     node.id,
                     node.typeParams,
                     this.signatureTransformer.visitor(node.typeAnnotation)
                 );
+                this.modified ||= this.signatureTransformer.modified;
+                return newNode;
             }
             return node;
         }
@@ -475,6 +521,7 @@ export class FunctionTransformer extends AbstractVisitor {
             throw 'Invalid @memo usage';
         }
 
+        this.modified = true;
         return arkts.factory.updateTSTypeAliasDeclaration(node, node.id, node.typeParams, typeAnnotation);
     }
 
@@ -493,6 +540,7 @@ export class FunctionTransformer extends AbstractVisitor {
         const res = this.updateScriptFunction(node.scriptFunction, node.scriptFunction.id?.name);
         this.exitAnonymousScope();
 
+        this.modified = true;
         return arkts.factory.updateArrowFunction(node, this.signatureTransformer.visitor(res));
     }
 
@@ -535,6 +583,7 @@ export class FunctionTransformer extends AbstractVisitor {
             initializer = arkts.factory.updateArrowFunction(initializer, res);
         }
 
+        this.modified = true;
         return arkts.factory.updateVariableDeclarator(
             node,
             node.flag,
@@ -567,6 +616,7 @@ export class FunctionTransformer extends AbstractVisitor {
             throw 'Invalid @memo usage';
         }
 
+        this.modified = true;
         return arkts.factory.updateTSAsExpression(
             node,
             arkts.factory.updateArrowFunction(expr, res),
@@ -594,6 +644,7 @@ export class FunctionTransformer extends AbstractVisitor {
         const res = this.updateScriptFunction(value.scriptFunction, value.scriptFunction.id?.name);
         this.exitAnonymousScope();
 
+        this.modified = true;
         return arkts.factory.updateProperty(node, key, arkts.factory.updateArrowFunction(value, res));
     }
 
@@ -616,6 +667,7 @@ export class FunctionTransformer extends AbstractVisitor {
         const res = this.updateScriptFunction(right.scriptFunction, right.scriptFunction.id?.name);
         this.exitAnonymousScope();
 
+        this.modified = true;
         return arkts.factory.updateAssignmentExpression(
             node,
             node.left!,
@@ -655,6 +707,9 @@ export class FunctionTransformer extends AbstractVisitor {
         if (isThisAttributeAssignment(node) && !!node.right && arkts.isArrowFunctionExpression(node.right)) {
             const thisAttribute = findThisAttribute(node.left!)!;
             return this.updateThisAttributeAssignment(node, thisAttribute, node.right);
+        }
+        if (arkts.isEtsScript(node) && this.modified) {
+            factory.createContextTypesImportDeclaration(this.program);
         }
         return node;
     }
