@@ -81,8 +81,6 @@ import {
 import { PreloadFileModules } from './module_preload_file_utils';
 import {
   getDeclgenBridgeCodePath,
-  writeBridgeCodeFileSyncByNode,
-  isArkTSEvolutionFile
   isArkTSEvolutionFile,
   writeBridgeCodeFileSyncByNode
 } from '../interop/process_arkts_evolution';
@@ -90,7 +88,6 @@ import {
   FileManager,
   isMixCompile
 } from '../interop/interop_manager';
->>>>>>> edb7a9a5... Fix invasive modifications
 import { FileInfo } from '../interop/type';
 import { ARKTS_1_2 } from '../interop/pre_define';
 

@@ -104,13 +104,6 @@ import {
   sharedModuleSet
 } from '../check_shared_module';
 import { SourceMapGenerator } from '../generate_sourcemap';
-import {
-  addDeclFilesConfig,
-  ArkTSEvolutionModule,
-  getDeclgenBridgeCodePath,
-  pkgDeclFilesConfig,
-  arkTSModuleMap
-} from '../../../process_arkts_evolution';
 import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../../meomry_monitor/memory_define';
 import {
@@ -623,7 +616,8 @@ export class ModuleMode extends CommonMode {
       this.cmdArgs.push('--enable-ets-implements');
     }
   }
-
+  }
+  
   addCacheFileArgs() {
     this.cmdArgs.push('--cache-file');
     this.cmdArgs.push(`"@${this.cacheFilePath}"`);

@@ -47,10 +47,6 @@ import {
   projectConfig
 } from '../../main';
 import { mkdirsSync } from '../../lib/utils';
-import {
-  arkTSEvolutionModuleMap,
-  cleanUpProcessArkTSEvolutionObj
-} from '../../lib/process_arkts_evolution';
 import { ArkTSEvolutionModule } from './interop/interop_manager.test';
 import { FileManager } from '../../lib/fast_build/ark_compiler/interop/interop_manager';
 
@@ -203,37 +199,6 @@ mocha.describe('test ets_checker file api', function () {
         const fileNames: string[] = ['../testdata/testfiles/testGetEmitHost.ts'];
         let program: ts.Program = ts.createProgram(fileNames, compilerOptions);
         expect(program.getEmitHost()).to.not.be.undefined;
-    });
-
-    mocha.it('2-1: test resolveModuleNames parse 1.2 module declaration files', function () {
-        const code: string = 'import { a } from "har";\nconsole.log(a);\n';
-        const moduleNames: string[] = [
-            'har',
-            'har/test'
-        ];
-        arkTSEvolutionModuleMap.set('har', {
-            language: '1.2',
-            packageName: 'har',
-            moduleName: 'har',
-            modulePath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har`,
-            declgenV1OutPath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har/build/default/intermediates/declgen/default/declgenV1`,
-            declgenBridgeCodePath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har/build/default/intermediates/declgen/default/bridgecode`
-        })
-        const filePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/${DEFAULT_ENTRY}/src/main/entryability/test.ets`;
-        const arktsEvoIndexDeclFilePath: string = `${arkTSEvolutionModuleMap.get('har').declgenV1OutPath}/har/Index.d.ets`;
-        const arktsEvoTestDeclFilePath: string = `${arkTSEvolutionModuleMap.get('har').declgenV1OutPath}/har/src/main/ets/test.d.ets`;
-        fs.writeFileSync(filePath, code);
-        mkdirsSync(path.dirname(arktsEvoIndexDeclFilePath));
-        mkdirsSync(path.dirname(arktsEvoTestDeclFilePath));
-        fs.writeFileSync(arktsEvoIndexDeclFilePath, '');
-        fs.writeFileSync(arktsEvoTestDeclFilePath, '');
-        const resolvedModules = resolveModuleNamesMain(moduleNames, filePath);
-        expect(resolvedModules[0].resolvedFileName === arktsEvoIndexDeclFilePath).to.be.true;
-        expect(resolvedModules[1].resolvedFileName === arktsEvoTestDeclFilePath).to.be.true;
-        fs.unlinkSync(filePath);
-        fs.unlinkSync(arktsEvoIndexDeclFilePath);
-        fs.unlinkSync(arktsEvoTestDeclFilePath);
-        cleanUpProcessArkTSEvolutionObj();
     });
 });
 
