@@ -217,8 +217,51 @@ const CASE_3_2_INDEX = `export * from './test';`;
 const EXPECT_3_2 = `import 'testPkg';
 `;
 
+const CASE_3_3_TEST = `import { test } from 'testPkg/Index';
+test();`;
+const CASE_3_3_FILES = {
+  'test.ts': `export function test() {}`
+};
+const CASE_3_3_INDEX = `export * from './test';`;
+const EXPECT_3_3 = `import { test } from 'testPkg/Index';
+test();
+`;
+
+const CASE_3_4_TEST = `import { A, B, C, D } from 'testPkg';
+A();
+B();
+C();
+D();`;
+const CASE_3_4_FILES = {
+  'a.js': `export function A() {}`,
+  'b.d.ts': `export function B() {}`,
+  'c.d.ets': `export function C() {}`,
+  'd.ts': `export function D() {}`
+};
+const CASE_3_4_INDEX = `
+export { A } from './a';
+export { B } from './b';
+export { C } from './c';
+export { D } from './d';
+`;
+const EXPECT_3_4 = `import { A, B, C } from "testPkg";
+import { D } from "testPkg/d";
+A();
+B();
+C();
+D();
+`;
+
 const baseConfig = { enable: true, exclude: [] };
-const rollupObejct =  { share: { projectConfig: { expandImportPath: baseConfig } } };
+const rollupObejct =  {
+  share: {
+    projectConfig: {
+      expandImportPath: baseConfig,
+      depName2DepInfo: new Map()
+    }
+  }
+};
+rollupObejct.share.projectConfig.depName2DepInfo.set('testPkg', {});
 
 mocha.describe('test import_path_expand file api', () => {
   mocha.it('1-1: split default + named + type imports', () => {
@@ -372,6 +415,36 @@ mocha.describe('test import_path_expand file api', () => {
     const result = printer.printFile(transformed)
 
     expect(result === EXPECT_3_2).to.be.true;
+    projectConfig.modulePathMap = tmpModulePathMap;
+  });
+
+  mocha.it('3-3: should preserve "pkgName/filePath" import', () => {
+    const tmpModulePathMap = projectConfig.modulePathMap;
+    projectConfig.modulePathMap = {
+      'testPkg': '/TestProject/testPkg'
+    };
+    const { program, testSourceFile } = createMultiSymbolProgram(CASE_3_3_TEST, CASE_3_3_FILES, CASE_3_3_INDEX);
+    const transformed = ts.transform(testSourceFile, [expandAllImportPaths(program.getTypeChecker(), rollupObejct)],
+      program.getCompilerOptions()).transformed[0];
+    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    const result = printer.printFile(transformed);
+
+    expect(result === EXPECT_3_3).to.be.true;
+    projectConfig.modulePathMap = tmpModulePathMap;
+  });
+
+  mocha.it('3-4: should preserve import when symbol is from js | .d.ts | .d.ets file', () => {
+    const tmpModulePathMap = projectConfig.modulePathMap;
+    projectConfig.modulePathMap = {
+      'testPkg': '/TestProject/testPkg'
+    };
+    const { program, testSourceFile } = createMultiSymbolProgram(CASE_3_4_TEST, CASE_3_4_FILES, CASE_3_4_INDEX);
+    const transformed = ts.transform(testSourceFile, [expandAllImportPaths(program.getTypeChecker(), rollupObejct)],
+      program.getCompilerOptions()).transformed[0];
+    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    const result = printer.printFile(transformed);
+
+    expect(result === EXPECT_3_4).to.be.true;
     projectConfig.modulePathMap = tmpModulePathMap;
   });
 });
