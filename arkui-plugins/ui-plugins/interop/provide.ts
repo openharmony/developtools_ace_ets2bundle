@@ -38,7 +38,7 @@ export function createProvideInterop(): arkts.Statement[] {
             [
                 arkts.factory.createThisExpression(),
                 arkts.factory.createIdentifier(InteroperAbilityNames.CREATESTATE),
-                getWrapValue(arkts.factory.createIdentifier(InteropProvideNames.SETFINDPROVIDE))
+                arkts.factory.createIdentifier(InteropProvideNames.SETFINDPROVIDE)
             ]
         )
     );
