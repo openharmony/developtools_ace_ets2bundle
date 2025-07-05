@@ -544,3 +544,39 @@ export function getApiPathForInterop(apiDirs: string[], languageVersion: string)
   const staticPaths = [...FileManager.staticSDKDeclPath];
   apiDirs.unshift(...staticPaths);
 }
+
+export function rebuildEntryObj(projectConfig: Object): void {
+  const entryObj = projectConfig.entryObj;
+
+  const removeExt = (p: string): string => p.replace(/\.[^/.]+$/, '');
+
+  projectConfig.entryObj = Object.keys(entryObj).reduce((newEntry, key) => {
+    const newKey = key.replace(/^\.\//, '');
+    const rawPath = entryObj[key]?.replace('?entry', '');
+    if (!rawPath || !fs.existsSync(rawPath)) {
+      return newEntry;
+    }
+
+    const firstLine = fs.readFileSync(rawPath, 'utf-8').split('\n')[0];
+
+    if (!firstLine.includes('use static')) {
+      newEntry[newKey] = rawPath;
+    } else if (rawPath.startsWith(projectConfig.projectRootPath)) {
+      const bridgePath = process.env.entryBridgeCodePath;
+      if (!bridgePath) {
+        const errInfo = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
+          ArkTSInternalErrorDescription,
+          `Missing entryBridgeCodePath`
+        );
+        throw Error(errInfo.toString());
+      }
+
+      const relativePath = path.relative(projectConfig.projectRootPath, rawPath);
+      const withoutExt = removeExt(relativePath);
+      newEntry[newKey] = path.join(bridgePath, withoutExt + '.ts');
+    }
+
+    return newEntry;
+  }, {} as Record<string, string>);
+}
