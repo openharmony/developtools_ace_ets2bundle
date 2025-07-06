@@ -28,37 +28,9 @@ import {
     collectStateManagementTypeImport,
     hasDecorator,
     PropertyCache,
+    getValueInAnnotation,
 } from './utils';
 import { factory } from './factory';
-
-function getStoragePropValueStr(node: arkts.AstNode): string | undefined {
-    if (!arkts.isClassProperty(node) || !node.value) return undefined;
-
-    return arkts.isStringLiteral(node.value) ? node.value.str : undefined;
-}
-
-function getStoragePropAnnotationValue(anno: arkts.AnnotationUsage): string | undefined {
-    const isStoragePropAnnotation: boolean =
-        !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === DecoratorNames.STORAGE_PROP;
-
-    if (isStoragePropAnnotation && anno.properties.length === 1) {
-        return getStoragePropValueStr(anno.properties.at(0)!);
-    }
-    return undefined;
-}
-
-function getStoragePropValueInAnnotation(node: arkts.ClassProperty): string | undefined {
-    const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
-
-    for (let i = 0; i < annotations.length; i++) {
-        const anno: arkts.AnnotationUsage = annotations[i];
-        const str: string | undefined = getStoragePropAnnotationValue(anno);
-        if (!!str) {
-            return str;
-        }
-    }
-    return undefined;
-}
 
 export class StoragePropTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
@@ -79,7 +51,10 @@ export class StoragePropTranslator extends PropertyTranslator implements Initial
     }
 
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        const storagePropValueStr: string | undefined = getStoragePropValueInAnnotation(this.property);
+        const storagePropValueStr: string | undefined = getValueInAnnotation(
+            this.property,
+            DecoratorNames.STORAGE_PROP
+        );
         if (!storagePropValueStr) {
             throw new Error('StorageProp required only one value!!');
         }
@@ -88,7 +63,7 @@ export class StoragePropTranslator extends PropertyTranslator implements Initial
             arkts.factory.createStringLiteral(storagePropValueStr),
             arkts.factory.create1StringLiteral(originalName),
             this.property.value ?? arkts.factory.createUndefinedLiteral(),
-            factory.createTypeFrom(this.property.typeAnnotation)
+            factory.createTypeFrom(this.property.typeAnnotation),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         collectStateManagementTypeImport(StateManagementTypes.STORAGE_PROP_REF_DECORATED);
