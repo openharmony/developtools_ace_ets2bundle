@@ -124,7 +124,11 @@ export enum DecoratorNames {
     TRACK = 'Track',
     JSONSTRINGIFYIGNORE = 'JSONStringifyIgnore',
     JSONRENAME = 'JSONRename',
-    ANIMATABLE_EXTEND = 'AnimatableExtend'
+    ANIMATABLE_EXTEND = 'AnimatableExtend',
+    PROP_REF = 'PropRef',
+    LOCAL = 'Local',
+    LOCAL_STORAGE_PROP_REF = 'LocalStoragePropRef',
+    STORAGE_PROP_REF = 'StoragePropRef',
 }
 
 export enum DecoratorIntrinsicNames {
@@ -144,6 +148,9 @@ export enum StateManagementTypes {
     PROVIDE_DECORATED = 'IProvideDecoratedVariable',
     CONSUME_DECORATED = 'IConsumeDecoratedVariable',
     OBJECT_LINK_DECORATED = 'IObjectLinkDecoratedVariable',
+    PROP_REF_DECORATED = 'IPropRefDecoratedVariable',
+    LOCAL_DECORATED = 'ILocalDecoratedVariable',
+    LOCAL_STORAGE_PROP_REF_DECORATED = 'ILocalStoragePropRefDecoratedVariable',
     MUTABLE_STATE_META = 'IMutableStateMeta',
     OBSERVED_OBJECT = 'IObservedObject',
     WATCH_ID_TYPE = 'WatchIdType',
@@ -158,7 +165,10 @@ export enum StateManagementTypes {
     MAKE_STATE = 'makeState',
     MAKE_LINK = 'makeLink',
     MAKE_PROP = 'makeProp',
+    MAKE_PROP_REF = 'makePropRef',
+    MAKE_LOCAL = 'makeLocal',
     MAKE_STORAGE_PROP_REF = 'makeStoragePropRef',
+    MAKE_LOCAL_STORAGE_PROP_REF = 'makeLocalStoragePropRef',
     MAKE_STORAGE_LINK = 'makeStorageLink',
     MAKE_LOCAL_STORAGE_LINK = 'makeLocalStorageLink',
     MAKE_PROVIDE = 'makeProvide',
@@ -204,13 +214,17 @@ export const DECORATOR_TYPE_MAP = new Map<DecoratorNames, StateManagementTypes>(
     [DecoratorNames.STATE, StateManagementTypes.STATE_DECORATED],
     [DecoratorNames.LINK, StateManagementTypes.LINK_SOURCE_TYPE],
     [DecoratorNames.PROP, StateManagementTypes.PROP_DECORATED],
+    [DecoratorNames.PROP_REF, StateManagementTypes.PROP_REF_DECORATED],
     [DecoratorNames.STORAGE_LINK, StateManagementTypes.STORAGE_LINK_DECORATED],
     [DecoratorNames.STORAGE_PROP, StateManagementTypes.STORAGE_PROP_REF_DECORATED],
+    [DecoratorNames.STORAGE_PROP_REF, StateManagementTypes.STORAGE_PROP_REF_DECORATED],
+    [DecoratorNames.LOCAL_STORAGE_PROP_REF, StateManagementTypes.LOCAL_STORAGE_PROP_REF_DECORATED],
     [DecoratorNames.LOCAL_STORAGE_PROP, StateManagementTypes.SYNCED_PROPERTY],
     [DecoratorNames.LOCAL_STORAGE_LINK, StateManagementTypes.LOCAL_STORAGE_LINK_DECORATED],
     [DecoratorNames.OBJECT_LINK, StateManagementTypes.OBJECT_LINK_DECORATED],
     [DecoratorNames.PROVIDE, StateManagementTypes.PROVIDE_DECORATED],
     [DecoratorNames.CONSUME, StateManagementTypes.CONSUME_DECORATED],
+    [DecoratorNames.LOCAL, StateManagementTypes.LOCAL_DECORATED],
 ]);
 
 export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string, string[]>([
@@ -220,12 +234,16 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
     [DecoratorNames.STATE, [StateManagementTypes.STATE_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.LINK, [StateManagementTypes.LINK_DECORATED, StateManagementTypes.LINK_SOURCE_TYPE, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.PROP, [StateManagementTypes.PROP_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [DecoratorNames.PROP_REF, [StateManagementTypes.PROP_REF_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.PROVIDE, [StateManagementTypes.PROVIDE_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.CONSUME, [StateManagementTypes.CONSUME_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.STORAGE_PROP, [StateManagementTypes.STORAGE_PROP_REF_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [DecoratorNames.STORAGE_PROP_REF, [StateManagementTypes.STORAGE_PROP_REF_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [DecoratorNames.LOCAL_STORAGE_PROP_REF, [StateManagementTypes.LOCAL_STORAGE_PROP_REF_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.STORAGE_LINK, [StateManagementTypes.STORAGE_LINK_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.OBJECT_LINK, [StateManagementTypes.OBJECT_LINK_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.LOCAL_STORAGE_LINK, [StateManagementTypes.LOCAL_STORAGE_LINK_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [DecoratorNames.LOCAL, [StateManagementTypes.LOCAL_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [
         DecoratorNames.LOCAL_STORAGE_PROP,
         [

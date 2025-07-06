@@ -32,8 +32,12 @@ import { StoragePropInterfaceTranslator, StoragePropTranslator } from './storage
 import { ConsumeInterfaceTranslator, ConsumeTranslator } from './consume';
 import { ProvideInterfaceTranslator, ProvideTranslator } from './provide';
 import { BuilderParamInterfaceTranslator, BuilderParamTranslator } from './builderParam';
+import { PropRefInterfaceTranslator, PropRefTranslator } from './propRef';
 import { ObservedTrackTranslator } from './observedTrack';
 import { ClassScopeInfo } from './types';
+import { LocalInterfaceTranslator, LocalTranslator } from './local';
+import { StoragePropRefInterfaceTranslator, StoragePropRefTranslator } from './storagePropRef';
+import { LocalStoragePropRefInterfaceTranslator, LocalStoragePropRefTranslator } from './localStoragePropRef';
 
 export { PropertyTranslator, InterfacePropertyTranslator };
 export type { ClassScopeInfo };
@@ -63,11 +67,20 @@ export function classifyProperty(
     if (hasDecorator(property, DecoratorNames.LOCAL_STORAGE_PROP)) {
         return new LocalStoragePropTranslator({ property, structInfo });
     }
+    if (hasDecorator(property, DecoratorNames.LOCAL_STORAGE_PROP_REF)) {
+        return new LocalStoragePropRefTranslator({ property, structInfo });
+    }
     if (hasDecorator(property, DecoratorNames.STORAGE_PROP)) {
         return new StoragePropTranslator({ property, structInfo });
     }
+    if (hasDecorator(property, DecoratorNames.STORAGE_PROP_REF)) {
+        return new StoragePropRefTranslator({ property, structInfo });
+    }
     if (hasDecorator(property, DecoratorNames.PROP)) {
         return new PropTranslator({ property, structInfo });
+    }
+    if (hasDecorator(property, DecoratorNames.PROP_REF)) {
+        return new PropRefTranslator({ property, structInfo });
     }
     if (hasDecorator(property, DecoratorNames.PROVIDE)) {
         return new ProvideTranslator({ property, structInfo });
@@ -77,6 +90,9 @@ export function classifyProperty(
     }
     if (hasDecorator(property, DecoratorNames.BUILDER_PARAM)) {
         return new BuilderParamTranslator({ property, structInfo });
+    }
+    if (hasDecorator(property, DecoratorNames.LOCAL)) {
+        return new LocalTranslator({ property, structInfo });
     }
 
     return new RegularPropertyTranslator({ property, structInfo });
@@ -92,6 +108,9 @@ export function classifyPropertyInInterface(property: arkts.AstNode): InterfaceP
     if (PropInterfaceTranslator.canBeTranslated(property)) {
         return new PropInterfaceTranslator({ property });
     }
+    if (PropRefInterfaceTranslator.canBeTranslated(property)) {
+        return new PropRefInterfaceTranslator({ property });
+    }
     if (ProvideInterfaceTranslator.canBeTranslated(property)) {
         return new ProvideInterfaceTranslator({ property });
     }
@@ -104,6 +123,12 @@ export function classifyPropertyInInterface(property: arkts.AstNode): InterfaceP
     if (StorageLinkInterfaceTranslator.canBeTranslated(property)) {
         return new StorageLinkInterfaceTranslator({ property });
     }
+    if (StoragePropRefInterfaceTranslator.canBeTranslated(property)) {
+        return new StoragePropInterfaceTranslator({ property });
+    }
+    if (LocalStoragePropRefInterfaceTranslator.canBeTranslated(property)) {
+        return new LocalStoragePropRefInterfaceTranslator({ property });
+    }
     if (BuilderParamInterfaceTranslator.canBeTranslated(property)) {
         return new BuilderParamInterfaceTranslator({ property });
     }
@@ -115,6 +140,9 @@ export function classifyPropertyInInterface(property: arkts.AstNode): InterfaceP
     }
     if (ObjectLinkInterfaceTranslator.canBeTranslated(property)) {
         return new ObjectLinkInterfaceTranslator({ property });
+    }
+    if (LocalInterfaceTranslator.canBeTranslated(property)) {
+        return new LocalInterfaceTranslator({ property });
     }
     if (RegularInterfaceTranslator.canBeTranslated(property)) {
         return new RegularInterfaceTranslator({ property });
