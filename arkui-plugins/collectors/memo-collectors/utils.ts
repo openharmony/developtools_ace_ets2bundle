@@ -684,7 +684,8 @@ export function collectMemoFromCallExpression(node: arkts.CallExpression): void 
     if (arkts.NodeCache.getInstance().has(decl)) {
         arkts.NodeCache.getInstance().collect(node);
         isCollected = true;
-    } else if (arkts.isMethodDefinition(decl)) {
+    }
+    if (arkts.isMethodDefinition(decl)) {
         isCollected = collectCallWithDeclaredMethod(node, decl);
     } else if (arkts.isClassProperty(decl)) {
         isCollected = collectCallWithDeclaredClassProperty(node, decl);
