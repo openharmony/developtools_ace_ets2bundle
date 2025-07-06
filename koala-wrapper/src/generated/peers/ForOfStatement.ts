@@ -16,50 +16,73 @@
 import {
     global,
     passNode,
-    passNodeArray,
-    unpackNonNullableNode,
     unpackNode,
-    unpackNodeArray,
     assertValidPeer,
     AstNode,
     Es2pandaAstNodeType,
     KNativePointer,
     nodeByType,
-    ArktsObject,
-    unpackString
-} from "../../reexport-for-generated"
+} from '../../reexport-for-generated';
 
-import { LoopStatement } from "./LoopStatement"
-import { Expression } from "./Expression"
-import { Statement } from "./Statement"
+import { LoopStatement } from './LoopStatement';
+import { Expression } from './Expression';
+import { Statement } from './Statement';
 export class ForOfStatement extends LoopStatement {
-     constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_FOR_OF_STATEMENT)
-        super(pointer)
-        
+    constructor(pointer: KNativePointer) {
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_FOR_OF_STATEMENT);
+        super(pointer);
     }
-    static createForOfStatement(left: AstNode | undefined, right: Expression | undefined, body: Statement | undefined, isAwait: boolean): ForOfStatement {
-        return new ForOfStatement(global.generatedEs2panda._CreateForOfStatement(global.context, passNode(left), passNode(right), passNode(body), isAwait))
+    static createForOfStatement(
+        left: AstNode | undefined,
+        right: Expression | undefined,
+        body: Statement | undefined,
+        isAwait: boolean
+    ): ForOfStatement {
+        return new ForOfStatement(
+            global.generatedEs2panda._CreateForOfStatement(
+                global.context,
+                passNode(left),
+                passNode(right),
+                passNode(body),
+                isAwait
+            )
+        );
     }
-    static updateForOfStatement(original: ForOfStatement | undefined, left: AstNode | undefined, right: Expression | undefined, body: Statement | undefined, isAwait: boolean): ForOfStatement {
-        return new ForOfStatement(global.generatedEs2panda._UpdateForOfStatement(global.context, passNode(original), passNode(left), passNode(right), passNode(body), isAwait))
+    static updateForOfStatement(
+        original: ForOfStatement | undefined,
+        left: AstNode | undefined,
+        right: Expression | undefined,
+        body: Statement | undefined,
+        isAwait: boolean
+    ): ForOfStatement {
+        return new ForOfStatement(
+            global.generatedEs2panda._UpdateForOfStatement(
+                global.context,
+                passNode(original),
+                passNode(left),
+                passNode(right),
+                passNode(body),
+                isAwait
+            )
+        );
     }
     get left(): AstNode | undefined {
-        return unpackNode(global.generatedEs2panda._ForOfStatementLeftConst(global.context, this.peer))
+        return unpackNode(global.generatedEs2panda._ForOfStatementLeft(global.context, this.peer));
     }
     get right(): Expression | undefined {
-        return unpackNode(global.generatedEs2panda._ForOfStatementRightConst(global.context, this.peer))
+        return unpackNode(global.generatedEs2panda._ForOfStatementRight(global.context, this.peer));
     }
     get body(): Statement | undefined {
-        return unpackNode(global.generatedEs2panda._ForOfStatementBodyConst(global.context, this.peer))
+        return unpackNode(global.generatedEs2panda._ForOfStatementBody(global.context, this.peer));
     }
     get isAwait(): boolean {
-        return global.generatedEs2panda._ForOfStatementIsAwaitConst(global.context, this.peer)
+        return global.generatedEs2panda._ForOfStatementIsAwaitConst(global.context, this.peer);
     }
+    protected readonly brandForOfStatement: undefined;
 }
-export function isForOfStatement(node: AstNode): node is ForOfStatement {
-    return node instanceof ForOfStatement
+export function isForOfStatement(node: object | undefined): node is ForOfStatement {
+    return node instanceof ForOfStatement;
 }
 if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_FOR_OF_STATEMENT)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_FOR_OF_STATEMENT, ForOfStatement)
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_FOR_OF_STATEMENT, ForOfStatement);
 }
