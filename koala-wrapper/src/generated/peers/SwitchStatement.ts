@@ -34,7 +34,7 @@ import { Expression } from "./Expression"
 import { SwitchCaseStatement } from "./SwitchCaseStatement"
 export class SwitchStatement extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 86)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_SWITCH_STATEMENT)
         super(pointer)
         
     }
@@ -54,6 +54,6 @@ export class SwitchStatement extends Statement {
 export function isSwitchStatement(node: AstNode): node is SwitchStatement {
     return node instanceof SwitchStatement
 }
-if (!nodeByType.has(86)) {
-    nodeByType.set(86, SwitchStatement)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_SWITCH_STATEMENT)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_SWITCH_STATEMENT, SwitchStatement)
 }

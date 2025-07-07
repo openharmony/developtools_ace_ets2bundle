@@ -34,7 +34,7 @@ import { Es2pandaVariableDeclaratorFlag } from "./../Es2pandaEnums"
 import { Expression } from "./Expression"
 export class VariableDeclarator extends TypedStatement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 151)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATOR)
         super(pointer)
         
     }
@@ -68,6 +68,6 @@ export class VariableDeclarator extends TypedStatement {
 export function isVariableDeclarator(node: AstNode): node is VariableDeclarator {
     return node instanceof VariableDeclarator
 }
-if (!nodeByType.has(151)) {
-    nodeByType.set(151, VariableDeclarator)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATOR)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATOR, VariableDeclarator)
 }

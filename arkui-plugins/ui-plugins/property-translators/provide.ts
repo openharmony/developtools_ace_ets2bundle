@@ -15,7 +15,15 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { createGetter, createSetter, generateThisBackingValue, getValueInAnnotation, DecoratorNames } from './utils';
+import {
+    generateToRecord,
+    createGetter,
+    createSetter2,
+    generateThisBacking,
+    generateGetOrSetCall,
+    getValueInProvideAnnotation,
+    ProvideOptions,
+} from './utils';
 import { PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName } from '../../common/arkts-utils';
@@ -32,8 +40,12 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
-        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
+        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(originalName, newName);
         currentStructInfo.initializeBody.push(initializeStruct);
+        if (currentStructInfo.isReusable) {
+            const toRecord = generateToRecord(newName, originalName);
+            currentStructInfo.toRecordBody.push(toRecord);
+        }
         arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
@@ -41,19 +53,23 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
         const field: arkts.ClassProperty = createOptionalClassProperty(
             newName,
             this.property,
-            'MutableState',
+            'ProvideDecoratedVariable',
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
-        const thisValue: arkts.MemberExpression = generateThisBackingValue(newName, false, true);
+        const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
+        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, 'get');
+        const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
+            generateGetOrSetCall(thisValue, 'set')
+        );
         const getter: arkts.MethodDefinition = this.translateGetter(
             originalName,
             this.property.typeAnnotation,
-            thisValue
+            thisGet
         );
         const setter: arkts.MethodDefinition = this.translateSetter(
             originalName,
             this.property.typeAnnotation,
-            thisValue
+            thisSet
         );
 
         return [field, getter, setter];
@@ -62,7 +78,7 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
     translateGetter(
         originalName: string,
         typeAnnotation: arkts.TypeNode | undefined,
-        returnValue: arkts.MemberExpression
+        returnValue: arkts.Expression
     ): arkts.MethodDefinition {
         return createGetter(originalName, typeAnnotation, returnValue);
     }
@@ -70,59 +86,20 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
     translateSetter(
         originalName: string,
         typeAnnotation: arkts.TypeNode | undefined,
-        left: arkts.MemberExpression
+        statement: arkts.AstNode
     ): arkts.MethodDefinition {
-        const right: arkts.CallExpression = arkts.factory.createCallExpression(
-            arkts.factory.createIdentifier('observableProxy'),
-            undefined,
-            [arkts.factory.createIdentifier('value')]
-        );
-
-        return createSetter(originalName, typeAnnotation, left, right);
+        return createSetter2(originalName, typeAnnotation, statement);
     }
 
-    generateInitializeStruct(newName: string, originName: string): arkts.AstNode {
-        let provideValueStr: string | undefined = getValueInAnnotation(this.property, DecoratorNames.PROVIDE);
-        if (!provideValueStr) {
-            provideValueStr = originName;
-        }
-        const memExp: arkts.Expression = factory.createDoubleBlockStatementForOptionalExpression(
-            arkts.factory.createIdentifier('initializers'),
-            newName,
-            'value'
+    generateInitializeStruct(originalName: string, newName: string): arkts.AstNode {
+        const options: undefined | ProvideOptions = getValueInProvideAnnotation(this.property);
+        const alias: string = options?.alias ?? originalName;
+        const allowOverride: boolean = options?.allowOverride ?? false;
+        const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
+            generateThisBacking(newName),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+            factory.generateAddProvideVarCall(originalName, this.property, alias, allowOverride)
         );
-        const body: arkts.BlockStatement = arkts.factory.createBlock([
-            arkts.factory.createReturnStatement(
-                arkts.factory.createBinaryExpression(
-                    memExp,
-                    this.property.value,
-                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-                )
-            ),
-        ]);
-        const script = arkts.factory.createScriptFunction(
-            body,
-            arkts.FunctionSignature.createFunctionSignature(undefined, [], this.property.typeAnnotation, false),
-            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
-        );
-        const right: arkts.CallExpression = arkts.factory.createCallExpression(
-            arkts.factory.createIdentifier('contextLocalStateOf'),
-            this.property.typeAnnotation ? [this.property.typeAnnotation] : undefined,
-            [arkts.factory.create1StringLiteral(provideValueStr), arkts.factory.createArrowFunction(script)]
-        );
-        return arkts.factory.createExpressionStatement(
-            arkts.factory.createAssignmentExpression(
-                arkts.factory.createMemberExpression(
-                    arkts.factory.createThisExpression(),
-                    arkts.factory.createIdentifier(newName),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
-                ),
-                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                right
-            )
-        );
+        return arkts.factory.createExpressionStatement(assign);
     }
 }
