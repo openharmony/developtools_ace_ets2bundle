@@ -42,9 +42,14 @@ import {
     isSpecificNewClass,
 } from './utils';
 import { findAndCollectMemoableNode } from '../collectors/memo-collectors/factory';
+import { InteroperAbilityNames } from './interop/predefines';
+import { generateBuilderCompatible } from './interop/builder-interop';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
+    private legacyBuilderSet: Set<string> = new Set();
+    private needCompatibleComponent : boolean = false;
+    private componentSet = new Set<string>();
     projectConfig: ProjectConfig | undefined;
     aceBuildJson: LoaderJson;
     resourceInfo: ResourceInfo;
@@ -55,11 +60,32 @@ export class CheckedTransformer extends AbstractVisitor {
         this.scope = { customComponents: [] };
         this.aceBuildJson = loadBuildJson(this.projectConfig);
         this.resourceInfo = initResourceInfo(this.projectConfig, this.aceBuildJson);
+        this.legacyBuilderSet = new Set();
+        this.initBuilderMap();
+    }
+
+    initBuilderMap(): void {
+        const moduleList = this.projectConfig?.dependentModuleList;
+        if (moduleList === undefined) {
+            return;
+        }
+        for (const module of moduleList) {
+            const language = module.language;
+            const moduleName = module.moduleName;
+            if (language !== InteroperAbilityNames.ARKTS_1_1) {
+                continue;
+            }
+            if (!this.legacyBuilderSet.has(moduleName)) {
+                this.legacyBuilderSet.add(moduleName);
+            }
+        }
     }
 
     reset(): void {
         super.reset();
         this.scope = { customComponents: [] };
+        this.needCompatibleComponent = false;
+        this.componentSet = new Set();
         PropertyCache.getInstance().reset();
         ImportCollector.getInstance().reset();
         DeclarationCollector.getInstance().reset();
@@ -92,11 +118,59 @@ export class CheckedTransformer extends AbstractVisitor {
         }
     }
 
+    isFromBuilder1_1(decl: arkts.AstNode | undefined): boolean {
+        if (!decl || this.legacyBuilderSet.size === 0) {
+            return false;
+        }
+        const moduleName = arkts.getProgramFromAstNode(decl).moduleName?.split('/')[0];
+
+        if (!this.legacyBuilderSet.has(moduleName)) {
+            return false;
+        }
+
+        let isFrom1_1 = false;
+        if (arkts.isMethodDefinition(decl)) {
+            const annotations = decl.scriptFunction.annotations;
+            const decorators: string[] = annotations.map(annotation => {
+                return (annotation.expr as arkts.Identifier).name;
+            });
+            decorators.forEach(element => {
+                if (element === 'Builder') {
+                    isFrom1_1 = true;
+                    return;
+                }
+            });
+        }
+        return isFrom1_1;
+    }
+
+    addComponentSet(node: arkts.ImportDeclaration): void {
+        node.specifiers.forEach(specifier => {
+            if (arkts.isImportSpecifier(specifier) && specifier.imported?.name) {
+                this.componentSet.add(specifier.imported?.name);
+            }
+        });
+    }
+
+    addcompatibleComponentImport(node: arkts.EtsScript): void {
+        if (this.needCompatibleComponent && !this.componentSet.has('compatibleComponent')) {
+            ImportCollector.getInstance().collectSource('compatibleComponent', 'arkui.component.interop');
+            ImportCollector.getInstance().collectImport('compatibleComponent');
+        }
+    }
+
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         this.enter(beforeChildren);
-        if (arkts.isCallExpression(beforeChildren) && isBuilderLambda(beforeChildren)) {
-            const lambda = builderLambdaFactory.transformBuilderLambda(beforeChildren);
-            return this.visitEachChild(lambda);
+        if (arkts.isCallExpression(beforeChildren)) {
+            const decl = arkts.getDecl(beforeChildren.expression);
+            if (arkts.isIdentifier(beforeChildren.expression) && this.isFromBuilder1_1(decl)) {
+                // Builder
+                this.needCompatibleComponent = true;
+                return generateBuilderCompatible(beforeChildren, beforeChildren.expression.name);
+            } else if (isBuilderLambda(beforeChildren, decl)) {
+                const lambda = builderLambdaFactory.transformBuilderLambda(beforeChildren);
+                return this.visitEachChild(lambda);
+            }
         } else if (arkts.isMethodDefinition(beforeChildren) && isBuilderLambdaMethodDecl(beforeChildren)) {
             const lambda = builderLambdaFactory.transformBuilderLambdaMethodDecl(
                 beforeChildren,
@@ -128,11 +202,17 @@ export class CheckedTransformer extends AbstractVisitor {
             return structFactory.tranformInterfaceMembers(node, this.externalSourceName);
         } else if (arkts.isETSNewClassInstanceExpression(node) && isSpecificNewClass(node, CustomDialogNames.CUSTOM_DIALOG_CONTROLLER)) {
             return structFactory.transformCustomDialogController(node);
+        } else if (arkts.isImportDeclaration(node) &&
+            (node.source?.str === '@ohos.arkui.component' || node.source?.str === 'arkui.component.interop')) {
+            this.addComponentSet(node);
         }
-        if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
-            ImportCollector.getInstance().insertCurrentImports(this.program);
-            LogCollector.getInstance().shouldIgnoreError(this.projectConfig?.ignoreError);
-            LogCollector.getInstance().emitLogInfo();
+        if (arkts.isEtsScript(node)) {
+            this.addcompatibleComponentImport(node);
+            if (ImportCollector.getInstance().importInfos.length > 0) {
+                ImportCollector.getInstance().insertCurrentImports(this.program);
+                LogCollector.getInstance().shouldIgnoreError(this.projectConfig?.ignoreError);
+                LogCollector.getInstance().emitLogInfo();
+            }
         }
         return node;
     }
