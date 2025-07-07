@@ -49,14 +49,14 @@ import {
     DECORATOR_TYPE_MAP,
     ENTRY_POINT_IMPORT_SOURCE_NAME,
     NavigationNames,
-    EntryWrapperNames
+    EntryWrapperNames,
 } from '../common/predefines';
 import { generateInstantiateInterop } from './interop/interop';
 import { createCustomDialogMethod, isNewCustomDialogController, transformController } from './customdialog';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string;
-    projectConfig?: ProjectConfig,
+    projectConfig?: ProjectConfig;
 }
 
 type ScopeInfo = CustomComponentInfo;
@@ -289,37 +289,37 @@ export class ComponentTransformer extends AbstractVisitor {
     }
 
     createStaticMethod(definition: arkts.ClassDefinition): arkts.MethodDefinition {
+        const isDecl: boolean = arkts.hasModifierFlag(definition, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
+        const modifiers =
+            arkts.classDefinitionFlags(definition) |
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
+        const body = isDecl ? undefined : arkts.factory.createBlock([arkts.factory.createReturnStatement()]);
         const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
             arkts.factory.createIdentifier(
                 CustomComponentNames.OPTIONS,
-                arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(
-                        arkts.factory.createIdentifier(getCustomComponentOptionsName(definition.ident!.name))
-                    )
-                )
+                factory.createTypeReferenceFromString(getCustomComponentOptionsName(definition.ident!.name))
             ),
             undefined
         );
+        const returnTypeAnnotation = arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
+        const flags = arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD;
+        const kind = arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD;
+        const key = arkts.factory.createIdentifier(CustomComponentNames.BUILDCOMPATIBLENODE);
 
-        const script = arkts.factory.createScriptFunction(
-            arkts.factory.createBlock([arkts.factory.createReturnStatement()]),
-            arkts.FunctionSignature.createFunctionSignature(
-                undefined,
-                [param],
-                arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                false
-            ),
-            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
-        );
-
-        return arkts.factory.createMethodDefinition(
-            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
-            arkts.factory.createIdentifier(CustomComponentNames.BUILDCOMPATIBLENODE),
-            script,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
-            false
-        );
+        return factory.createMethodDefinition({
+            key,
+            kind,
+            function: {
+                key,
+                body,
+                params: [param],
+                returnTypeAnnotation,
+                flags,
+                modifiers,
+            },
+            modifiers,
+        });
     }
 
     processComponent(
@@ -413,7 +413,7 @@ export class ComponentTransformer extends AbstractVisitor {
                 ),
                 [
                     ...newDefinitionBody,
-                    ...definition.body.map((st: arkts.AstNode) => factory.PreprocessClassPropertyModifier(st)),
+                    ...definition.body.map((st: arkts.AstNode) => factory.PreprocessClassPropertyModifier(st, scopeInfo.isDecl)),
                     ...staticMethodBody,
                 ],
                 definition.modifiers,

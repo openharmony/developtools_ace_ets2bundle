@@ -84,7 +84,7 @@ export class factory {
         );
 
         let body: arkts.BlockStatement | undefined;
-        let modifiers: arkts.Es2pandaModifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_ABSTRACT;
+        let modifiers: arkts.Es2pandaModifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         if (!scope.isDecl) {
             body = arkts.factory.createBlock(PropertyCache.getInstance().getInitializeBody(scope.name));
             modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
@@ -121,7 +121,7 @@ export class factory {
         );
 
         let body: arkts.BlockStatement | undefined;
-        let modifiers: arkts.Es2pandaModifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_ABSTRACT;
+        let modifiers: arkts.Es2pandaModifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         if (!scope.isDecl) {
             body = arkts.factory.createBlock(PropertyCache.getInstance().getUpdateBody(scope.name));
             modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
