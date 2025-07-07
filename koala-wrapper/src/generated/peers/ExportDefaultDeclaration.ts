@@ -32,7 +32,7 @@ import {
 import { Statement } from "./Statement"
 export class ExportDefaultDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 27)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_EXPORT_DEFAULT_DECLARATION)
         super(pointer)
         
     }
@@ -52,6 +52,6 @@ export class ExportDefaultDeclaration extends Statement {
 export function isExportDefaultDeclaration(node: AstNode): node is ExportDefaultDeclaration {
     return node instanceof ExportDefaultDeclaration
 }
-if (!nodeByType.has(27)) {
-    nodeByType.set(27, ExportDefaultDeclaration)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_EXPORT_DEFAULT_DECLARATION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_EXPORT_DEFAULT_DECLARATION, ExportDefaultDeclaration)
 }

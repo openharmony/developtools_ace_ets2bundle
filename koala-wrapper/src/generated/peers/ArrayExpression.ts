@@ -26,55 +26,81 @@ import {
     KNativePointer,
     nodeByType,
     ArktsObject,
-    unpackString
-} from "../../reexport-for-generated"
+    unpackString,
+} from '../../reexport-for-generated';
 
-import { AnnotatedExpression } from "./AnnotatedExpression"
-import { Expression } from "./Expression"
-import { Decorator } from "./Decorator"
-import { ValidationInfo } from "./ValidationInfo"
-import { TypeNode } from "./TypeNode"
+import { AnnotatedExpression } from './AnnotatedExpression';
+import { Expression } from './Expression';
+import { Decorator } from './Decorator';
+import { ValidationInfo } from './ValidationInfo';
+import { TypeNode } from './TypeNode';
 export class ArrayExpression extends AnnotatedExpression {
-     constructor(pointer: KNativePointer) {
-        super(pointer)
-        
+    constructor(pointer: KNativePointer) {
+        super(pointer);
+    }
+    static createArrayExpression(elements: readonly Expression[]): ArrayExpression {
+        return new ArrayExpression(
+            global.generatedEs2panda._CreateArrayExpression(global.context, passNodeArray(elements), elements.length)
+        );
+    }
+    static updateArrayExpression(
+        original: ArrayExpression | undefined,
+        elements: readonly Expression[]
+    ): ArrayExpression {
+        return new ArrayExpression(
+            global.generatedEs2panda._UpdateArrayExpression(
+                global.context,
+                passNode(original),
+                passNodeArray(elements),
+                elements.length
+            )
+        );
     }
     get elements(): readonly Expression[] {
-        return unpackNodeArray(global.generatedEs2panda._ArrayExpressionElementsConst(global.context, this.peer))
+        return unpackNodeArray(global.generatedEs2panda._ArrayExpressionElementsConst(global.context, this.peer));
     }
     /** @deprecated */
     setElements(elements: readonly Expression[]): this {
-        global.generatedEs2panda._ArrayExpressionSetElements(global.context, this.peer, passNodeArray(elements), elements.length)
-        return this
+        global.generatedEs2panda._ArrayExpressionSetElements(
+            global.context,
+            this.peer,
+            passNodeArray(elements),
+            elements.length
+        );
+        return this;
     }
     get isDeclaration(): boolean {
-        return global.generatedEs2panda._ArrayExpressionIsDeclarationConst(global.context, this.peer)
+        return global.generatedEs2panda._ArrayExpressionIsDeclarationConst(global.context, this.peer);
     }
     get isOptional(): boolean {
-        return global.generatedEs2panda._ArrayExpressionIsOptionalConst(global.context, this.peer)
+        return global.generatedEs2panda._ArrayExpressionIsOptionalConst(global.context, this.peer);
     }
     /** @deprecated */
     setDeclaration(): this {
-        global.generatedEs2panda._ArrayExpressionSetDeclaration(global.context, this.peer)
-        return this
+        global.generatedEs2panda._ArrayExpressionSetDeclaration(global.context, this.peer);
+        return this;
     }
     /** @deprecated */
     setOptional(optional_arg: boolean): this {
-        global.generatedEs2panda._ArrayExpressionSetOptional(global.context, this.peer, optional_arg)
-        return this
+        global.generatedEs2panda._ArrayExpressionSetOptional(global.context, this.peer, optional_arg);
+        return this;
     }
     get decorators(): readonly Decorator[] {
-        return unpackNodeArray(global.generatedEs2panda._ArrayExpressionDecoratorsConst(global.context, this.peer))
+        return unpackNodeArray(global.generatedEs2panda._ArrayExpressionDecoratorsConst(global.context, this.peer));
     }
     get typeAnnotation(): TypeNode | undefined {
-        return unpackNode(global.generatedEs2panda._ArrayExpressionTypeAnnotationConst(global.context, this.peer))
+        return unpackNode(global.generatedEs2panda._ArrayExpressionTypeAnnotationConst(global.context, this.peer));
     }
     /** @deprecated */
     setTsTypeAnnotation(typeAnnotation: TypeNode): this {
-        global.generatedEs2panda._ArrayExpressionSetTsTypeAnnotation(global.context, this.peer, passNode(typeAnnotation))
-        return this
+        global.generatedEs2panda._ArrayExpressionSetTsTypeAnnotation(
+            global.context,
+            this.peer,
+            passNode(typeAnnotation)
+        );
+        return this;
     }
 }
 export function isArrayExpression(node: AstNode): node is ArrayExpression {
-    return node instanceof ArrayExpression
+    return global.es2panda._IsArrayExpression(node.peer);
 }

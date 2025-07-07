@@ -36,7 +36,7 @@ import { Es2pandaModifierFlags } from "./../Es2pandaEnums"
 import { ScriptFunction } from "./ScriptFunction"
 export class MethodDefinition extends ClassElement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 47)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION)
         super(pointer)
         
     }
@@ -93,6 +93,6 @@ export class MethodDefinition extends ClassElement {
 export function isMethodDefinition(node: AstNode): node is MethodDefinition {
     return node instanceof MethodDefinition
 }
-if (!nodeByType.has(47)) {
-    nodeByType.set(47, MethodDefinition)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION, MethodDefinition)
 }

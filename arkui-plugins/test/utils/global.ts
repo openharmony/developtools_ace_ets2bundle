@@ -14,15 +14,14 @@
  */
 
 import * as fs from 'fs';
-import * as arkts from '@koalaui/libarkts';
-import { arktsGlobal } from '@koalaui/libarkts/build/lib/es2panda';
 import { CompileFileInfo } from './artkts-config';
+import * as arkts from '@koalaui/libarkts';
 
 function initGlobal(fileInfo: CompileFileInfo, isDebug: boolean = true): void {
     const config = [
         '_',
         '--extension',
-        'sts',
+        'ets',
         '--arktsconfig',
         fileInfo.arktsConfigFile,
         '--output',
@@ -34,7 +33,7 @@ function initGlobal(fileInfo: CompileFileInfo, isDebug: boolean = true): void {
     }
     config.push(fileInfo.filePath);
 
-    arktsGlobal.filePath = fileInfo.filePath;
+    arkts.arktsGlobal.filePath = fileInfo.filePath;
     resetConfig(config);
 
     const source: string = fs.readFileSync(fileInfo.filePath).toString();
@@ -43,48 +42,57 @@ function initGlobal(fileInfo: CompileFileInfo, isDebug: boolean = true): void {
 
 function resetContext(source: string): void {
     try {
-        arktsGlobal.context;
+        arkts.arktsGlobal.context;
     } catch (e) {
         // Do nothing
     } finally {
         const context: arkts.Context = arkts.Context.createFromString(source);
-        arktsGlobal.compilerContext = context;
+        arkts.arktsGlobal.compilerContext = context;
     }
 }
 
 function resetConfig(cmd: string[]): void {
     try {
-        arktsGlobal.config;
+        arkts.arktsGlobal.config;
         destroyConfig();
     } catch (e) {
         // Do nothing
     } finally {
         const arkTSConfig: arkts.Config = arkts.Config.create(cmd);
-        arktsGlobal.config = arkTSConfig.peer;
+        arkts.arktsGlobal.config = arkTSConfig.peer;
     }
 }
 
 function destroyContext(): void {
-    arktsGlobal.es2panda._DestroyContext(arktsGlobal.context);
+    try {
+        arkts.arktsGlobal.clearContext();
+    } catch (e) {
+        // Do nothing
+    }
 }
 
 function destroyConfig(): void {
-    arkts.destroyConfig(arktsGlobal.config);
+    try {
+        arkts.destroyConfig(arkts.arktsGlobal.config);
+    } catch (e) {
+        // Do nothing
+    }
 }
 
 function canProceedToState(state: arkts.Es2pandaContextState): boolean {
     const stateToSkip: arkts.Es2pandaContextState[] = [
         arkts.Es2pandaContextState.ES2PANDA_STATE_SCOPE_INITED,
+        arkts.Es2pandaContextState.ES2PANDA_STATE_BOUND,
+        arkts.Es2pandaContextState.ES2PANDA_STATE_LOWERED,
         arkts.Es2pandaContextState.ES2PANDA_STATE_ASM_GENERATED,
         arkts.Es2pandaContextState.ES2PANDA_STATE_ERROR,
     ];
-
     if (state in stateToSkip) {
         return false;
     }
 
-    const currState = arktsGlobal.es2panda._ContextState(arktsGlobal.context);
+    const currState = arkts.arktsGlobal.es2panda._ContextState(arkts.arktsGlobal.context);
     return currState < state;
 }
 
-export { initGlobal, resetContext, resetConfig, canProceedToState };
+export { initGlobal, resetContext, resetConfig, destroyContext, destroyConfig, canProceedToState };

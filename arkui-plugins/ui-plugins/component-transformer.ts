@@ -34,6 +34,9 @@ import {
     collectPropertyDecorators,
 } from './property-translators/utils';
 import { factory } from './ui-factory';
+import { StructMap } from '../common/program-visitor';
+import { generateTempCallFunction } from './interop';
+import { stringify } from 'querystring';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string;
@@ -50,6 +53,14 @@ interface ComponentContext {
     structMembers: Map<string, arkts.AstNode[]>;
 }
 
+export interface InteropContext {
+    className: string;
+    path: string;
+    line?: number;
+    col?: number;
+    arguments?: arkts.ObjectExpression;
+}
+
 export class ComponentTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
     private componentInterfaceCollection: arkts.TSInterfaceDeclaration[] = [];
@@ -59,6 +70,9 @@ export class ComponentTransformer extends AbstractVisitor {
     private context: ComponentContext = { structMembers: new Map() };
     private isCustomComponentImported: boolean = false;
     private isEntryPointImported: boolean = false;
+    private hasLegacy = false;
+    private legacyStructMap: Map<string, StructMap> = new Map();
+    private legacyCallMap: Map<string, string> = new Map();
 
     constructor(options?: ComponentTransformerOptions) {
         const _options: ComponentTransformerOptions = options ?? {};
@@ -75,6 +89,9 @@ export class ComponentTransformer extends AbstractVisitor {
         this.context = { structMembers: new Map() };
         this.isCustomComponentImported = false;
         this.isEntryPointImported = false;
+        this.hasLegacy = false;
+        this.legacyStructMap = new Map();
+        this.legacyCallMap = new Map();
     }
 
     enter(node: arkts.AstNode) {
@@ -186,7 +203,7 @@ export class ComponentTransformer extends AbstractVisitor {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             arkts.factory.createIdentifier(CustomComponentNames.BUILDCOMPATIBLENODE),
-            arkts.factory.createFunctionExpression(script),
+            script,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
             false
         );
@@ -247,14 +264,14 @@ export class ComponentTransformer extends AbstractVisitor {
         definition: arkts.ClassDefinition,
         newDefinitionBody: arkts.AstNode[]
     ): arkts.ClassDefinition {
-        const staticMethonBody: arkts.AstNode[] = [];
+        const staticMethodBody: arkts.AstNode[] = [];
         const hasExportFlag =
             (node.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT) ===
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
         if (hasExportFlag) {
             const buildCompatibleNode: arkts.MethodDefinition = this.createStaticMethod(definition);
             if (!!buildCompatibleNode) {
-                staticMethonBody.push(buildCompatibleNode);
+                staticMethodBody.push(buildCompatibleNode);
             }
         }
         return arkts.factory.updateClassDefinition(
@@ -281,7 +298,11 @@ export class ComponentTransformer extends AbstractVisitor {
                     ])
                 )
             ),
-            [...newDefinitionBody, ...definition.body, ...staticMethonBody],
+            [
+                ...newDefinitionBody,
+                ...definition.body.map((st: arkts.AstNode) => factory.PreprocessClassPropertyModifier(st)),
+                ...staticMethodBody,
+            ],
             definition.modifiers,
             arkts.classDefinitionFlags(definition) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_FINAL
         );
@@ -307,6 +328,9 @@ export class ComponentTransformer extends AbstractVisitor {
         }
         node.definition.body.map((it) => {
             if (arkts.isClassProperty(it)) {
+                if (hasDecorator(it, DecoratorNames.PROVIDE)) {
+                    factory.processNoAliasProvideVariable(it);
+                }
                 this.context.structMembers.get(className)!.push(...this.createInterfaceInnerMember(it, structInfo));
             }
         });
@@ -336,10 +360,32 @@ export class ComponentTransformer extends AbstractVisitor {
             );
             return [originMember, newMember];
         }
-        if (hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
-            originMember.setAnnotations([annotation('memo')]);
+        if (hasDecorator(member, DecoratorNames.BUILDER_PARAM) && !!originMember.typeAnnotation) {
+            originMember.typeAnnotation.setAnnotations([annotation('memo')]);
         }
         return [originMember];
+    }
+
+    registerMap(map: Map<string, StructMap>): void {
+        this.legacyStructMap = map;
+        this.hasLegacy = true;
+    }
+
+    processImport(node: arkts.ETSImportDeclaration): void {
+        const source = node.source?.str!;
+        const specifiers = node.specifiers;
+        if (this.legacyStructMap.has(source)) {
+            const structMap = this.legacyStructMap.get(source);
+            if (!structMap) {
+                return;
+            }
+            for (const specifier of specifiers) {
+                const name = specifier.local.name;
+                if (structMap[name]) {
+                    this.legacyCallMap.set(name, structMap[name]);
+                }
+            }
+        }
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {
@@ -352,6 +398,32 @@ export class ComponentTransformer extends AbstractVisitor {
             const updateNode = this.processComponent(newNode);
             this.exit(newNode);
             return updateNode;
+        }
+        if (!this.hasLegacy) {
+            return newNode;
+        }
+        if (arkts.isETSImportDeclaration(newNode)) {
+            this.processImport(newNode);
+        }
+        if (arkts.isCallExpression(newNode)) {
+            const ident = newNode.expression;
+            if (!(ident instanceof arkts.Identifier)) {
+                return newNode;
+            }
+            const className = ident.name;
+            if (this.legacyCallMap.has(className)) {
+                const path = this.legacyCallMap.get(className)!;
+                // const pathName = 'path/har1';
+                const args = newNode.arguments;
+                const context: InteropContext = {
+                    className: className,
+                    path: path,
+                    arguments: args && args.length === 1 && args[0] instanceof arkts.ObjectExpression 
+                      ? args[0] 
+                      : undefined
+                };
+                return generateTempCallFunction(context);
+            }
         }
         return newNode;
     }
