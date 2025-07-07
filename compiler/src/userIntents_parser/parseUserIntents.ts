@@ -1561,7 +1561,7 @@ class ParseIntent {
     const cacheSourceMapPath: string =
       path.join(projectConfig.aceProfilePath, 'insight_intent.json'); // The user's intents configuration file
     try {
-      if (this.intentData.length > 0) {
+      if (Object.keys(mergedData).length > 0) {
         fs.writeFileSync(cacheSourceMapPath, JSON.stringify(mergedData, null, 2), 'utf-8');
         fs.writeFileSync(cachePath, JSON.stringify({ 'extractInsightIntents': this.intentData }, null, 2), 'utf-8');
       } else if (fs.existsSync(cacheSourceMapPath)) {
@@ -1573,7 +1573,7 @@ class ParseIntent {
         const rawData: string = fs.readFileSync(fullPath, 'utf8');
         const jsonData: object = JSON.parse(rawData);
         if (jsonData?.module) {
-          jsonData.module.hasInsightIntent = this.intentData.length > 0 ? true : undefined;
+          jsonData.module.hasInsightIntent = Object.keys(mergedData).length > 0 ? true : undefined;
         }
         const updatedJson: string = JSON.stringify(jsonData, null, 2);
         fs.writeFileSync(fullPath, updatedJson, 'utf8');
@@ -1629,13 +1629,13 @@ class ParseIntent {
         'extractInsightIntents': this.intentData
       });
       writeJsonData = jsonData;
-    } else {
+    } else if (this.intentData.length > 0) {
       Object.assign(writeJsonData, {
         'extractInsightIntents': this.intentData
       });
     }
     const mergedData: object = this.mergeHarData(writeJsonData, harIntentDataObj);
-    this.validateIntentIntentName(writeJsonData);
+    this.validateIntentIntentName(mergedData);
     return mergedData;
   }
 
@@ -1686,7 +1686,7 @@ class ParseIntent {
     writeJsonData.insightIntents?.forEach(insightIntent => {
       duplicates.add(insightIntent.intentName);
     });
-    writeJsonData.extractInsightIntents.forEach(item => {
+    writeJsonData.extractInsightIntents?.forEach(item => {
       if (duplicates.has(item.intentName)) {
         const errorMessage: string = `User intents has duplicate intentName param`;
         this.transformLog.push({
