@@ -32,7 +32,7 @@ import {
 import { Literal } from "./Literal"
 export class UndefinedLiteral extends Literal {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 51)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_UNDEFINED_LITERAL)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class UndefinedLiteral extends Literal {
 export function isUndefinedLiteral(node: AstNode): node is UndefinedLiteral {
     return node instanceof UndefinedLiteral
 }
-if (!nodeByType.has(51)) {
-    nodeByType.set(51, UndefinedLiteral)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_UNDEFINED_LITERAL)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_UNDEFINED_LITERAL, UndefinedLiteral)
 }

@@ -34,7 +34,7 @@ import { ScriptFunction } from "./ScriptFunction"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class FunctionDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 34)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_DECLARATION)
         super(pointer)
         
     }
@@ -68,6 +68,6 @@ export class FunctionDeclaration extends Statement {
 export function isFunctionDeclaration(node: AstNode): node is FunctionDeclaration {
     return node instanceof FunctionDeclaration
 }
-if (!nodeByType.has(34)) {
-    nodeByType.set(34, FunctionDeclaration)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_DECLARATION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_DECLARATION, FunctionDeclaration)
 }

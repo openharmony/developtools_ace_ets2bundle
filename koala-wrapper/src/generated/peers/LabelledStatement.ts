@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 import { Identifier } from "./Identifier"
 export class LabelledStatement extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 44)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_LABELLED_STATEMENT)
         super(pointer)
         
     }
@@ -53,6 +53,6 @@ export class LabelledStatement extends Statement {
 export function isLabelledStatement(node: AstNode): node is LabelledStatement {
     return node instanceof LabelledStatement
 }
-if (!nodeByType.has(44)) {
-    nodeByType.set(44, LabelledStatement)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_LABELLED_STATEMENT)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_LABELLED_STATEMENT, LabelledStatement)
 }
