@@ -26,27 +26,29 @@ static std::deque<CallbackEventKind> callbackEventsQueue;
 static std::deque<CallbackBuffer> callbackCallSubqueue;
 static std::deque<InteropInt32> callbackResourceSubqueue;
 
-void enqueueCallback(const CallbackBuffer* event) {
+void enqueueCallback(const CallbackBuffer* event)
+{
     callbackEventsQueue.push_back(Event_CallCallback);
     callbackCallSubqueue.push_back(*event);
 }
 
-void holdManagedCallbackResource(InteropInt32 resourceId) {
+void holdManagedCallbackResource(InteropInt32 resourceId)
+{
     callbackEventsQueue.push_back(Event_HoldManagedResource);
     callbackResourceSubqueue.push_back(resourceId);
 }
 
-void releaseManagedCallbackResource(InteropInt32 resourceId) {
+void releaseManagedCallbackResource(InteropInt32 resourceId)
+{
     callbackEventsQueue.push_back(Event_ReleaseManagedResource);
     callbackResourceSubqueue.push_back(resourceId);
 }
 
-KInt impl_CheckCallbackEvent(KByte* buffer, KInt size) {
+KInt impl_CheckCallbackEvent(KByte* buffer, KInt size)
+{
     KByte* result = (KByte*)buffer;
-    if (needReleaseFront)
-    {
-        switch (callbackEventsQueue.front())
-        {
+    if (needReleaseFront) {
+        switch (callbackEventsQueue.front()) {
             case Event_CallCallback:
                 callbackCallSubqueue.front().resourceHolder.release();
                 callbackCallSubqueue.pop_front();
@@ -74,11 +76,11 @@ KInt impl_CheckCallbackEvent(KByte* buffer, KInt size) {
     memcpy(result, &frontEventKind, 4);
 #endif
 
-    switch (frontEventKind)
-    {
+    switch (frontEventKind) {
         case Event_CallCallback:
 #ifdef __STDC_LIB_EXT1__
-            errno_t res = memcpy_s(result + 4, size, callbackCallSubqueue.front().buffer, sizeof(CallbackBuffer::buffer));
+            errno_t res = memcpy_s(result + 4, size, callbackCallSubqueue.front().buffer,
+                sizeof(CallbackBuffer::buffer));
             if (res != EOK) {
                 return 0;
             }
@@ -107,12 +109,14 @@ KInt impl_CheckCallbackEvent(KByte* buffer, KInt size) {
 }
 KOALA_INTEROP_2(CheckCallbackEvent, KInt, KByte*, KInt)
 
-void impl_ReleaseCallbackResource(InteropInt32 resourceId) {
+void impl_ReleaseCallbackResource(InteropInt32 resourceId)
+{
     releaseManagedCallbackResource(resourceId);
 }
 KOALA_INTEROP_V1(ReleaseCallbackResource, KInt)
 
-void impl_HoldCallbackResource(InteropInt32 resourceId) {
+void impl_HoldCallbackResource(InteropInt32 resourceId)
+{
     holdManagedCallbackResource(resourceId);
 }
 KOALA_INTEROP_V1(HoldCallbackResource, KInt)

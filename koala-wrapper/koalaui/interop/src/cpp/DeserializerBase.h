@@ -198,19 +198,19 @@ inline void WriteToString(std::string *result, const InteropFunction* value)
 template <>
 inline void WriteToString(std::string *result, const InteropMaterialized *value)
 {
-  char hex[20];
-#ifdef __STDC_LIB_EXT1__ 
-  errno_t res = std::snprintf_s(hex, sizeof(hex), "0x%llx", (long long)value->ptr);
-  if (res != EOK) {
-    return;
-  }
-#else
-  std::snprintf(hex, sizeof(hex), "0x%llx", (long long)value->ptr);
-#endif
-  result->append("\"");
-  result->append("Materialized ");
-  result->append(hex);
-  result->append("\"");
+    char hex[20];
+    #ifdef __STDC_LIB_EXT1__ 
+        errno_t res = std::snprintf_s(hex, sizeof(hex), "0x%llx", (long long)value->ptr);
+        if (res != EOK) {
+        return;
+        }
+    #else
+        std::snprintf(hex, sizeof(hex), "0x%llx", (long long)value->ptr);
+    #endif
+    result->append("\"");
+    result->append("Materialized ");
+    result->append(hex);
+    result->append("\"");
 }
 
 // TODO: generate!
@@ -336,29 +336,28 @@ public:
   {
     void *keys = nullptr;
     void *values = nullptr;
-    if (length > 0)
-    {
-      keys = malloc(length * sizeof(K));
-#ifdef __STDC_LIB_EXT1__
-      errno_t res = memset_s(keys, length * sizeof(K), 0, length * sizeof(K));
-      if (res != EOK) {
-          return;
-      }
-#else
-      memset(keys, 0, length * sizeof(K));
-#endif
-      toClean.push_back(keys);
+    if (length > 0) {
+        keys = malloc(length * sizeof(K));
+    #ifdef __STDC_LIB_EXT1__
+        errno_t res = memset_s(keys, length * sizeof(K), 0, length * sizeof(K));
+        if (res != EOK) {
+            return;
+        }
+    #else
+        memset(keys, 0, length * sizeof(K));
+    #endif
+        toClean.push_back(keys);
 
-      values = malloc(length * sizeof(V));
-#ifdef __STDC_LIB_EXT1__
-      errno_t res = memset_s(values, length * sizeof(V), 0, length * sizeof(V));
-      if (res != EOK) {
-          return;
-      }
-#else
-      memset(values, 0, length * sizeof(V));
-#endif
-      toClean.push_back(values);
+        values = malloc(length * sizeof(V));
+    #ifdef __STDC_LIB_EXT1__
+        errno_t res = memset_s(values, length * sizeof(V), 0, length * sizeof(V));
+        if (res != EOK) {
+            return;
+        }
+    #else
+        memset(values, 0, length * sizeof(V));
+    #endif
+        toClean.push_back(values);
     }
     map->size = length;
     map->keys = reinterpret_cast<K *>(keys);
