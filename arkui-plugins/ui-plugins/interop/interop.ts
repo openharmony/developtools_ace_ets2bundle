@@ -21,7 +21,15 @@ import { getCustomComponentOptionsName } from '../utils';
 import { InteropContext } from '../component-transformer';
 import { createVariableLet, initialArgs} from './initstatevar';
 import { createProvideInterop, setAndResetFindProvide } from './provide';
-import { getPropertyESValue, getWrapValue, setPropertyESValue, createEmptyESValue } from './utils';
+import {
+    getPropertyESValue, 
+    getWrapValue, 
+    setPropertyESValue, 
+    createEmptyESValue, 
+    createGlobal, 
+    createELMTID, 
+    createInitReturn
+} from './utils';
 import { ImportCollector } from '../../common/import-collector';
 
 
@@ -66,25 +74,6 @@ function paramsLambdaDeclaration(name: string, args?: arkts.ObjectExpression): a
     return result;
 }
 
-function createInitReturn(componentName: string): arkts.ReturnStatement {
-    return arkts.factory.createReturnStatement(
-        arkts.ObjectExpression.createObjectExpression(
-            arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
-            [
-                arkts.Property.createProperty(
-                    arkts.factory.createIdentifier(InteroperAbilityNames.COMPONENT),
-                    arkts.factory.createIdentifier(InteroperAbilityNames.COMPONENT)
-                ),
-                arkts.Property.createProperty(
-                    arkts.factory.createIdentifier('name'),
-                    arkts.factory.createStringLiteral(componentName)
-                )
-            ],
-            false
-        ),
-    );
-}
-
 function createExtraInfo(properties: string[], value: string[]): arkts.Statement[] {
     const body: arkts.AstNode[] = [];
     body.push(createEmptyESValue(InteroperAbilityNames.EXTRAINFO));
@@ -98,59 +87,6 @@ function createExtraInfo(properties: string[], value: string[]): arkts.Statement
     });
     return body;
 }
-
-
-function createGlobal(): arkts.Statement {
-    return arkts.factory.createVariableDeclaration(
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-        arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
-        [arkts.factory.createVariableDeclarator(
-            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
-            arkts.factory.createIdentifier(InteroperAbilityNames.GLOBAL),
-            arkts.factory.createCallExpression(
-                arkts.factory.createMemberExpression(
-                    arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE),
-                    arkts.factory.createIdentifier('getGlobal'),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
-                ),
-                undefined,
-                undefined
-            )
-        )]
-    );
-}
-
-function createELMTID(): arkts.Statement[] {
-    const body: arkts.Statement[] = [];
-    const viewStackProcessor = getPropertyESValue('viewStackProcessor', InteroperAbilityNames.GLOBAL, 'ViewStackProcessor');
-    body.push(viewStackProcessor);
-    const createId = getPropertyESValue('createId', 'viewStackProcessor', 'AllocateNewElmetIdForNextComponent');
-    body.push(createId);
-    const elmtId = arkts.factory.createVariableDeclaration(
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-        arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
-        [arkts.factory.createVariableDeclarator(
-            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
-            arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID),
-            arkts.factory.createCallExpression(
-                arkts.factory.createMemberExpression(
-                    arkts.factory.createIdentifier('createId'),
-                    arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
-                ),
-                undefined,
-                undefined
-            )
-        )]
-    );
-    body.push(elmtId);
-    return body;
-}
-
 
 function generateTSASExpression(expression: arkts.AstNode): arkts.Expression {
     return arkts.factory.createTSAsExpression(
