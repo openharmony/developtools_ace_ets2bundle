@@ -16,7 +16,6 @@
 #define _DESERIALIZER_BASE_H_
 
 #include <stdint.h>
-#include <cassert>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -24,6 +23,7 @@
 
 #include "interop-types.h"
 #include "interop-logging.h"
+#include "koala-types.h"
 
 void holdManagedCallbackResource(InteropInt32);
 void releaseManagedCallbackResource(InteropInt32);
@@ -198,12 +198,19 @@ inline void WriteToString(std::string *result, const InteropFunction* value)
 template <>
 inline void WriteToString(std::string *result, const InteropMaterialized *value)
 {
-  char hex[20];
-  std::snprintf(hex, sizeof(hex), "0x%llx", (long long)value->ptr);
-  result->append("\"");
-  result->append("Materialized ");
-  result->append(hex);
-  result->append("\"");
+    char hex[20];
+    #ifdef __STDC_LIB_EXT1__ 
+        errno_t res = std::snprintf_s(hex, sizeof(hex), "0x%llx", (long long)value->ptr);
+        if (res != EOK) {
+        return;
+        }
+    #else
+        std::snprintf(hex, sizeof(hex), "0x%llx", (long long)value->ptr);
+    #endif
+    result->append("\"");
+    result->append("Materialized ");
+    result->append(hex);
+    result->append("\"");
 }
 
 // TODO: generate!
@@ -310,7 +317,14 @@ public:
     if (length > 0)
     {
       value = malloc(length * sizeof(E));
+#ifdef __STDC_LIB_EXT1__
+      errno_t res = memset_s(value, length * sizeof(E), 0, length * sizeof(E));
+      if (res != EOK) {
+          return;
+      }
+#else
       memset(value, 0, length * sizeof(E));
+#endif
       toClean.push_back(value);
     }
     array->length = length;
@@ -322,15 +336,28 @@ public:
   {
     void *keys = nullptr;
     void *values = nullptr;
-    if (length > 0)
-    {
-      keys = malloc(length * sizeof(K));
-      memset(keys, 0, length * sizeof(K));
-      toClean.push_back(keys);
+    if (length > 0) {
+        keys = malloc(length * sizeof(K));
+    #ifdef __STDC_LIB_EXT1__
+        errno_t res = memset_s(keys, length * sizeof(K), 0, length * sizeof(K));
+        if (res != EOK) {
+            return;
+        }
+    #else
+        memset(keys, 0, length * sizeof(K));
+    #endif
+        toClean.push_back(keys);
 
-      values = malloc(length * sizeof(V));
-      memset(values, 0, length * sizeof(V));
-      toClean.push_back(values);
+        values = malloc(length * sizeof(V));
+    #ifdef __STDC_LIB_EXT1__
+        errno_t res = memset_s(values, length * sizeof(V), 0, length * sizeof(V));
+        if (res != EOK) {
+            return;
+        }
+    #else
+        memset(values, 0, length * sizeof(V));
+    #endif
+        toClean.push_back(values);
     }
     map->size = length;
     map->keys = reinterpret_cast<K *>(keys);
@@ -343,7 +370,7 @@ public:
   {
     if (position + count > length) {
         fprintf(stderr, "Incorrect serialized data, check for %d, buffer %d position %d\n", count, length, position);
-        assert(false);
+        ASSERT(false);
         abort();
     }
   }
@@ -398,7 +425,14 @@ public:
     check(4);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
     InteropInt32 value;
+#ifdef __STDC_LIB_EXT1__
+    errno_t res = memcpy_s(&value, 4, data + position, 4);
+    if (res != EOK) {
+        return value;
+    }
+#else
     memcpy(&value, data + position, 4);
+#endif
 #else
     auto value = *(InteropInt32 *)(data + position);
 #endif
@@ -410,7 +444,14 @@ public:
     check(8);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
     InteropInt64 value;
+#ifdef __STDC_LIB_EXT1__
+    errno_t res = memcpy_s(&value, 4, data + position, 4);
+    if (res != EOK) {
+        return value;
+    }
+#else
     memcpy(&value, data + position, 4);
+#endif
 #else
     auto value = *(InteropInt64 *)(data + position);
 #endif
@@ -422,7 +463,14 @@ public:
     check(8);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
     InteropInt64 value;
+#ifdef __STDC_LIB_EXT1__
+    errno_t res = memcpy_s(&value, 4, data + position, 4);
+    if (res != EOK) {
+        return value;
+    }
+#else
     memcpy(&value, data + position, 4);
+#endif
 #else
     auto value = *(InteropUInt64 *)(data + position);
 #endif
@@ -434,7 +482,14 @@ public:
     check(4);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
     InteropFloat32 value;
+#ifdef __STDC_LIB_EXT1__
+    errno_t res = memcpy_s(&value, 4, data + position, 4);
+    if (res != EOK) {
+        return value;
+    }
+#else
     memcpy(&value, data + position, 4);
+#endif
 #else
     auto value = *(InteropFloat32 *)(data + position);
 #endif
@@ -446,12 +501,19 @@ public:
     check(8);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
     int64_t value = 0;
+#ifdef __STDC_LIB_EXT1__
+    errno_t res = memcpy_s(&value, 8, data + position, 8);
+    if (res != EOK) {
+        return value;
+    }
+#else
     memcpy(&value, data + position, 8);
+#endif
 #else
     int64_t value = *(int64_t *)(data + position);
 #endif
     position += 8;
-    return reinterpret_cast<InteropNativePointer>(value);
+    return reinterpret_cast<InteropNativePointer>(static_cast<uintptr_t>(value));
   }
   InteropNativePointer readPointerOrDefault(InteropNativePointer defaultValue)
   {
@@ -579,7 +641,14 @@ inline void WriteToString(std::string *result, InteropFloat32 value)
 #if (defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && (__MAC_OS_X_VERSION_MAX_ALLOWED < 130300L))
   // to_chars() is not available on older macOS.
   char buf[20];
+#ifdef __STDC_LIB_EXT1__ 
+  errno_t res = snprintf_s(buf, sizeof buf, "%f", value);
+  if (res != EOK) {
+    return;
+  }
+#else
   snprintf(buf, sizeof buf, "%f", value);
+#endif
   result->append(buf);
 #else
   std::string storage;

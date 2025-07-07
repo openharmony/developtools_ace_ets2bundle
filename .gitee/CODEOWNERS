@@ -26,9 +26,7 @@ compiler/test/ut/ @lixingchi1
 compiler/test/utForPartialUpdate/ @lixingchi1
 compiler/test/utForValidate/ @lixingchi1
 compiler/test/transform_ut/ @lixingchi1
-koala-wrapper/native/src/bridges.cc @keerecles
-koala-wrapper/native/src/common.cc @keerecles
-koala-wrapper/native/src/generated/bridges.cc @keerecles
+koala-wrapper/ @keerecles
 
 # Code owners for ArkCompiler ace_ets2bundle
 
