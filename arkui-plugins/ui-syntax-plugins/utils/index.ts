@@ -517,6 +517,19 @@ export function getFunctionAnnotationUsage(
     );
 }
 
+export function getCallee(callExpression: arkts.CallExpression): arkts.Identifier | undefined {
+    const expression = callExpression.expression;
+    if (arkts.isIdentifier(expression)) {
+        return expression;
+    }
+    if (arkts.isMemberExpression(expression)) {
+        if (arkts.isCallExpression(expression.object)) {
+            return getCallee(expression.object);
+        }
+    }
+    return undefined;
+}
+
 export const TypeFlags = {
     Boolean: 'boolean',
     String: 'string',
@@ -537,5 +550,4 @@ export const TypeFlags = {
     TypeParameter: 'typeParameter',
     Literal: 'literal',
     Union: 'union',
-
 };
