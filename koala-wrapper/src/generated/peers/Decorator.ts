@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 import { Expression } from "./Expression"
 export class Decorator extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 22)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_DECORATOR)
         super(pointer)
         
     }
@@ -50,6 +50,6 @@ export class Decorator extends Statement {
 export function isDecorator(node: AstNode): node is Decorator {
     return node instanceof Decorator
 }
-if (!nodeByType.has(22)) {
-    nodeByType.set(22, Decorator)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_DECORATOR)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_DECORATOR, Decorator)
 }

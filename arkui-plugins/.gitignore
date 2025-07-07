@@ -3,6 +3,7 @@ node_modules/
 
 **/*/dist/
 **/*/build/
+dist/
 build/
 lib/
 
@@ -13,5 +14,6 @@ package-lock.json
 
 coverage/
 **/*/generated
+**/*/report
 
 test/demo/localtest/build_config.json

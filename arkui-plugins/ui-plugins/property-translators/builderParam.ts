@@ -41,19 +41,13 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
         const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
         const mutableThis: arkts.Expression = generateThisBacking(newName);
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(mutableThis, originalName);
-        // const updateStruct: arkts.AstNode = this.generateUpdateStruct(mutableThis, originalName);
         currentStructInfo.initializeBody.push(initializeStruct);
-        // currentStructInfo.updateBody.push(updateStruct);
         arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = createOptionalClassProperty(
-            newName,
-            this.property,
-            '',
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
-        );
+        const field: arkts.ClassProperty = createOptionalClassProperty(newName, this.property, '',
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE, true);
         const thisGetValue: arkts.Expression = generateThisBacking(newName, false, true);
         const thisSetValue: arkts.Expression = generateThisBacking(newName, false, false);
         const getter: arkts.MethodDefinition = this.translateGetter(
@@ -75,7 +69,7 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
         typeAnnotation: arkts.TypeNode | undefined,
         returnValue: arkts.Expression
     ): arkts.MethodDefinition {
-        return createGetter(originalName, typeAnnotation, returnValue);
+        return createGetter(originalName, typeAnnotation, returnValue, true);
     }
 
     translateSetter(
@@ -91,25 +85,18 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
         return arkts.factory.createAssignmentExpression(
             mutableThis,
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.createBlockStatementForOptionalExpression(
-                arkts.factory.createIdentifier('initializers'),
-                originalName
+            arkts.factory.createBinaryExpression(
+                arkts.factory.createBinaryExpression(
+                    factory.createBlockStatementForOptionalExpression(
+                        arkts.factory.createIdentifier('initializers'),
+                        originalName
+                    ),
+                    arkts.factory.createIdentifier('content'),
+                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+                ),
+                this.property.value ?? arkts.factory.createUndefinedLiteral(),
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
             )
-        );
-    }
-
-    generateUpdateStruct(mutableThis: arkts.Expression, originalName: string): arkts.AstNode {
-        const right: arkts.MemberExpression = arkts.factory.createMemberExpression(
-            arkts.factory.createIdentifier('initializers'),
-            arkts.factory.createIdentifier(originalName),
-            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-            false,
-            true
-        );
-        return arkts.factory.createAssignmentExpression(
-            mutableThis,
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            right
         );
     }
 }

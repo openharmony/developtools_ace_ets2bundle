@@ -36,7 +36,7 @@ import { Es2pandaModifierFlags } from "./../Es2pandaEnums"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class ClassProperty extends ClassElement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 17)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_PROPERTY)
         super(pointer)
         
     }
@@ -66,6 +66,6 @@ export class ClassProperty extends ClassElement {
 export function isClassProperty(node: AstNode): node is ClassProperty {
     return node instanceof ClassProperty
 }
-if (!nodeByType.has(17)) {
-    nodeByType.set(17, ClassProperty)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_PROPERTY)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_PROPERTY, ClassProperty)
 }

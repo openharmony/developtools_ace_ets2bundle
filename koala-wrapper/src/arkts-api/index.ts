@@ -56,6 +56,11 @@ export * from "../generated/peers/ETSNewClassInstanceExpression"
 export * from "../generated/peers/ObjectExpression"
 export * from "../generated/peers/Property"
 export * from "../generated/peers/BlockExpression"
+export * from "../generated/peers/TSClassImplements"
+export * from "../generated/peers/BooleanLiteral"
+export * from "../generated/peers/TSArrayType"
+export * from "../generated/peers/ArrayExpression";
+export * from "../generated/peers/ETSNullType";
 
 export * from "./types"
 export * from "./utilities/private"
@@ -72,6 +77,7 @@ export * from "./peers/Context"
 export * from "./peers/Program"
 export * from "./peers/ImportPathManager"
 export * from "./peers/SourcePosition"
+export * from "./peers/SourceRange"
 export * from "./to-be-generated/MemberExpression"
 export * from "./static/globalUtils"
 export { global as arktsGlobal } from "./static/global";
