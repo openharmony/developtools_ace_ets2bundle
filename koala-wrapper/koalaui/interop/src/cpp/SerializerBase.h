@@ -21,17 +21,19 @@
 #include <cstring>
 #include <string>
 #include <memory>
-#include <cassert>
 #include <cstddef>
 #include <vector>
 
 #include "callback-resource.h"
 #include "interop-types.h"
 #include "koala-types.h"
+#include "interop-logging.h"
 
 #ifdef __arm__
 #define KOALA_NO_UNALIGNED_ACCESS 1
 #endif
+
+constexpr int BUFFER_MAX_LEN = 64;
 
 template <typename T>
 inline InteropRuntimeType runtimeType(const T& value) = delete;
@@ -55,7 +57,7 @@ T* allocArray(const std::array<T, size>& ref) {
   std::size_t space = sizeof(buffer) - offset;
   void* ptr = buffer + offset;
   void* aligned_ptr = std::align(alignof(T), sizeof(T) * size, ptr, space);
-  assert(aligned_ptr != nullptr && "Insufficient space or alignment failed!");
+  ASSERT(aligned_ptr != nullptr); // "Insufficient space or alignment failed!"
   offset = (char*)aligned_ptr + sizeof(T) * size - buffer;
   T* array = reinterpret_cast<T*>(aligned_ptr);
   for (size_t i = 0; i < size; ++i) {
@@ -72,10 +74,17 @@ private:
     bool ownData;
     CallbackResourceHolder* resourceHolder;
     void resize(uint32_t newLength) {
-        assert(ownData);
-        assert(newLength > dataLength);
+        ASSERT(ownData);
+        ASSERT(newLength > dataLength);
         auto* newData = reinterpret_cast<uint8_t*>(malloc(newLength));
+#ifdef __STDC_LIB_EXT1__
+        errno_t res = memcpy_s(newData, newLength, data, position);
+        if (res != EOK) {
+            return;
+        }
+#else
         memcpy(newData, data, position);
+#endif
         free(data);
         data = newData;
     }
@@ -112,8 +121,7 @@ public:
             if (ownData) {
                 resize(dataLength * 3 / 2 + 2);
             } else {
-                fprintf(stderr, "Buffer overrun: %d > %d\n", position + more, dataLength);
-                assert(false);
+                INTEROP_FATAL("Buffer overrun: %d > %d\n", position + more, dataLength);
             }
         }
     }
@@ -127,7 +135,14 @@ public:
     void writeInt32(InteropInt32 value) {
         check(4);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
+#ifdef __STDC_LIB_EXT1__
+        errno_t res = memcpy_s(data + position, dataLength, &value, 4);
+        if (res != EOK) {
+            return;
+        }
+#else
         memcpy(data + position, &value, 4);
+#endif
 #else
         *((InteropInt32*)(data + position)) = value;
 #endif
@@ -137,7 +152,14 @@ public:
     void writeInt64(InteropInt64 value) {
         check(8);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
+#ifdef __STDC_LIB_EXT1__
+        errno_t res = memcpy_s(data + position, dataLength, &value, 8);
+        if (res != EOK) {
+            return;
+        }
+#else
         memcpy(data + position, &value, 8);
+#endif
 #else
         *((InteropInt64*)(data + position)) = value;
 #endif
@@ -147,7 +169,14 @@ public:
     void writeUInt64(InteropUInt64 value) {
         check(8);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
+#ifdef __STDC_LIB_EXT1__
+        errno_t res = memcpy_s(data + position, dataLength, &value, 8);
+        if (res != EOK) {
+            return;
+        }
+#else
         memcpy(data + position, &value, 8);
+#endif
 #else
         *((InteropUInt64*)(data + position)) = value;
 #endif
@@ -157,7 +186,14 @@ public:
     void writeFloat32(InteropFloat32 value) {
         check(8);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
+#ifdef __STDC_LIB_EXT1__
+        errno_t res = memcpy_s(data + position, dataLength, &value, 4);
+        if (res != EOK) {
+            return;
+        }
+#else
         memcpy(data + position, &value, 4);
+#endif
 #else
         *((InteropFloat32*)(data + position)) = value;
 #endif
@@ -167,7 +203,14 @@ public:
     void writePointer(InteropNativePointer value) {
         check(8);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
+#ifdef __STDC_LIB_EXT1__
+        errno_t res = memcpy_s(data + position, dataLength, &value64, 8);
+        if (res != EOK) {
+            return;
+        }
+#else
         memcpy(data + position, &value, 8);
+#endif
 #else
         *((int64_t*)(data + position)) = reinterpret_cast<int64_t>(value);
 #endif
@@ -212,7 +255,7 @@ public:
                 writeInt32(value.resource);
                 break;
             case INTEROP_RUNTIME_STRING: {
-                char buf[64];
+                char buf[BUFFER_MAX_LEN];
                 std::string suffix;
                 switch (value.unit) {
                     case 0: suffix = "px"; break;
@@ -221,7 +264,14 @@ public:
                     case 3: suffix = "%"; break;
                     case 4: suffix = "lpx"; break;
                 }
-                snprintf(buf, 64, "%.8f%s", value.value, suffix.c_str());
+#ifdef __STDC_LIB_EXT1__ 
+                errno_t res = snprintf_s(buf, BUFFER_MAX_LEN, "%.8f%s", value.value, suffix.c_str());
+                if (res != EOK) {
+                    return;
+                }
+#else
+                snprintf(buf, BUFFER_MAX_LEN, "%.8f%s", value.value, suffix.c_str());
+#endif
                 InteropString str =  { buf, (InteropInt32) strlen(buf) };
                 writeString(str);
                 break;

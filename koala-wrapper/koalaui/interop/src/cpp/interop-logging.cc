@@ -14,6 +14,11 @@
  */
 #include <string>
 #include <vector>
+#ifdef __cplusplus
+    #include <cstdarg>
+#else
+    #include <stdarg.h>
+#endif
 
 #include "interop-logging.h"
 
@@ -27,7 +32,7 @@ struct Log {
 std::vector<Log*> groupedLogs;
 
 void startGroupedLog(int index) {
-    if (index >= (int)groupedLogs.size()) {
+    if (index >= static_cast<int>(groupedLogs.size())) {
         groupedLogs.resize(index + 1);
         for (int i = 0; i <= index; i++) {
             if (!groupedLogs[i]) groupedLogs[i] = new Log();
@@ -38,27 +43,27 @@ void startGroupedLog(int index) {
 }
 
 void stopGroupedLog(int index) {
-    if (index < (int)groupedLogs.size()) {
+    if (index < static_cast<int>(groupedLogs.size())) {
         groupedLogs[index]->isActive = false;
     }
 }
 
 void appendGroupedLog(int index, const char* str) {
-    if (index < (int)groupedLogs.size()) {
+    if (index < static_cast<int>(groupedLogs.size())) {
         groupedLogs[index]->log.append(str);
     }
 }
 
 const char* getGroupedLog(int index) {
-    if (index < (int)groupedLogs.size()) {
-        auto result = groupedLogs[index]->log.c_str();
-        return result;
+    if (index < static_cast<int>(groupedLogs.size())) {
+        const std::string& log = groupedLogs[index]->log;
+        return log.c_str();
     }
     return "";
 }
 
 int needGroupedLog(int index) {
-    if (index < (int)groupedLogs.size()) {
+    if (index < static_cast<int>(groupedLogs.size())) {
         return groupedLogs[index]->isActive;
     }
     return 0;
