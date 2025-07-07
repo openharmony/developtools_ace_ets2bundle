@@ -865,14 +865,14 @@ KOALA_INTEROP_EXPORT void name(InteropTypeConverter<P0>::InteropType _p0,  \
 
 #define KOALA_INTEROP_THROW(vmContext, object, ...) \
    do { \
-     /* TODO: implement*/  ASSERT(false); \
-     return __VA_ARGS__; \
+        ASSERT(false); \
+        return __VA_ARGS__; \
    } while (0)
 
 #define KOALA_INTEROP_THROW_STRING(vmContext, message, ...) \
    do { \
-     /* TODO: implement*/  ASSERT(false); \
-     return __VA_ARGS__; \
+        ASSERT(false); \
+        return __VA_ARGS__; \
    } while (0)
 
 #endif // CONVERTORS_CJ_H
