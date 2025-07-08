@@ -391,6 +391,8 @@ export const BIND_MENU: string = 'bindMenu';
 export const BIND_CONTEXT_MENU: string = 'bindContextMenu';
 export const NAV_BAR_WIDTH: string = 'navBarWidth';
 export const ARC_LIST_ITEM: string = 'ArcListItem';
+const SCROLL: string = 'Scroll';
+const ZOOM_SCALE: string = 'zoomScale';
 
 export const DOLLAR_BLOCK_INTERFACE: Set<string> = new Set([
   CHECK_BOX, CHECKBOX_GROUP, DATE_PICKER, TIME_PICKER, MENU_ITEM, PANEL, RATING, SIDE_BAR_CONTAINER, STEPPER, SWIPER, TABS, TEXT_PICKER, TOGGLE, SELECT,
@@ -453,7 +455,8 @@ export const PROPERTIES_ADD_DOUBLE_EXCLAMATION: Map<string, Set<string>> = new M
   [SELECT, new Set([SELECTED, VALUE])],
   [CALENDAR, new Set([DATE])],
   [GRID_ITEM, new Set([SELECTED])],
-  [LIST_ITEM, new Set([SELECTED])]
+  [LIST_ITEM, new Set([SELECTED])],
+  [SCROLL, new Set([ZOOM_SCALE])]
 ]);
 
 export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup', REFRESH]);
