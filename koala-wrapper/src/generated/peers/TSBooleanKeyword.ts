@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class TSBooleanKeyword extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_BOOLEAN_KEYWORD)
+        assertValidPeer(pointer, 93)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class TSBooleanKeyword extends TypeNode {
 export function isTSBooleanKeyword(node: AstNode): node is TSBooleanKeyword {
     return node instanceof TSBooleanKeyword
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_BOOLEAN_KEYWORD)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_BOOLEAN_KEYWORD, TSBooleanKeyword)
+if (!nodeByType.has(93)) {
+    nodeByType.set(93, TSBooleanKeyword)
 }

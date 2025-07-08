@@ -16,18 +16,16 @@
 import * as arkts from '@koalaui/libarkts';
 import { factory } from './memo-factory';
 import { AbstractVisitor } from '../common/abstract-visitor';
-import { isSyntheticReturnStatement, ReturnTypeInfo } from './utils';
+import { isSyntheticReturnStatement } from './utils';
 
 export class ReturnTransformer extends AbstractVisitor {
     private skipNode?: arkts.ReturnStatement | arkts.BlockStatement;
     private stableThis: boolean = false;
-    private returnTypeInfo: ReturnTypeInfo | undefined;
 
     reset() {
         super.reset();
         this.skipNode = undefined;
         this.stableThis = false;
-        this.returnTypeInfo = undefined;
     }
 
     skip(syntheticReturnStatement?: arkts.ReturnStatement | arkts.BlockStatement): ReturnTransformer {
@@ -37,11 +35,6 @@ export class ReturnTransformer extends AbstractVisitor {
 
     rewriteThis(stableThis: boolean): ReturnTransformer {
         this.stableThis = stableThis;
-        return this;
-    }
-
-    registerReturnTypeInfo(returnTypeInfo: ReturnTypeInfo): ReturnTransformer {
-        this.returnTypeInfo = returnTypeInfo;
         return this;
     }
 
@@ -65,20 +58,7 @@ export class ReturnTransformer extends AbstractVisitor {
                     node,
                 ]);
             }
-
-            let argument = node.argument;
-            if (
-                !!this.returnTypeInfo?.node &&
-                this.returnTypeInfo.isMemo &&
-                arkts.isArrowFunctionExpression(argument)
-            ) {
-                argument = arkts.factory.updateArrowFunction(
-                    argument,
-                    factory.updateScriptFunctionWithMemoParameters(argument.scriptFunction)
-                );
-            }
-
-            return arkts.factory.updateReturnStatement(node, factory.createRecacheCall(argument));
+            return arkts.factory.updateReturnStatement(node, factory.createRecacheCall(node.argument));
         }
         return node;
     }

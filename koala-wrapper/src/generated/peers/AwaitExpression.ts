@@ -32,7 +32,7 @@ import {
 import { Expression } from "./Expression"
 export class AwaitExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_AWAIT_EXPRESSION)
+        assertValidPeer(pointer, 4)
         super(pointer)
         
     }
@@ -49,6 +49,6 @@ export class AwaitExpression extends Expression {
 export function isAwaitExpression(node: AstNode): node is AwaitExpression {
     return node instanceof AwaitExpression
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_AWAIT_EXPRESSION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_AWAIT_EXPRESSION, AwaitExpression)
+if (!nodeByType.has(4)) {
+    nodeByType.set(4, AwaitExpression)
 }

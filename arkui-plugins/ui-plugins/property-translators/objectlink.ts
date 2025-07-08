@@ -15,28 +15,16 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import {
-    createGetter,
-    DecoratorNames,
-    generateGetOrSetCall,
-    generateThisBacking,
-    generateToRecord,
-    hasDecorator,
-    judgeIfAddWatchFunc,
-} from './utils';
+import { generateToRecord } from './utils';
 import { PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName } from '../../common/arkts-utils';
 import { factory } from './factory';
-import { createOptionalClassProperty } from '../utils';
 
 export class ObjectLinkTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
-        if (!this.ifObservedDecoratedClass()) {
-            throw new Error('@ObjectLink decorated property only accepts @Observed decorated class instance'); // TODO: replace this with proper error message.
-        }
 
         this.cacheTranslatedInitializer(newName, originalName); // TODO: need to release cache after some point...
         return this.translateWithoutInitializer(newName, originalName);
@@ -58,96 +46,53 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
     }
 
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        const initializers = arkts.factory.createTSNonNullExpression(
-            factory.createBlockStatementForOptionalExpression(
-                arkts.factory.createIdentifier('initializers'),
-                originalName
-            )
+        const call = arkts.factory.createCallExpression(
+            arkts.factory.createIdentifier('objectLinkState'),
+            this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
+            []
         );
-
-        const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(originalName), initializers];
-        judgeIfAddWatchFunc(args, this.property);
-
-        const newClass = arkts.factory.createETSNewClassInstanceExpression(
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier('ObjectLinkDecoratedVariable'),
-                    arkts.factory.createTSTypeParameterInstantiation(
-                        this.property.typeAnnotation ? [this.property.typeAnnotation] : []
-                    )
-                )
-            ),
-            args
-        );
-
         return arkts.factory.createAssignmentExpression(
-            generateThisBacking(newName),
+            arkts.factory.createMemberExpression(
+                arkts.factory.createThisExpression(),
+                arkts.factory.createIdentifier(newName),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
+            ),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            newClass
+            call
         );
     }
 
     generateUpdateStruct(newName: string, originalName: string): arkts.AstNode {
-        const binaryItem = arkts.factory.createBinaryExpression(
-            factory.createBlockStatementForOptionalExpression(
-                arkts.factory.createIdentifier('initializers'),
-                originalName
-            ),
-            arkts.factory.createUndefinedLiteral(),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NOT_STRICT_EQUAL
-        );
-        const member: arkts.MemberExpression = arkts.factory.createMemberExpression(
-            generateThisBacking(newName, false, true),
-            arkts.factory.createIdentifier('update'),
+        const test = arkts.factory.createMemberExpression(
+            arkts.factory.createThisExpression(),
+            arkts.factory.createIdentifier(newName),
             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
             false,
             false
         );
-        const nonNullItem = arkts.factory.createTSNonNullExpression(
-            factory.createNonNullOrOptionalMemberExpression('initializers', originalName, false, true)
-        );
-        return arkts.factory.createIfStatement(
-            binaryItem,
-            arkts.factory.createBlock([
-                arkts.factory.createExpressionStatement(
-                    arkts.factory.createCallExpression(member, undefined, [nonNullItem])
-                ),
-            ])
-        );
-    }
 
-    translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = createOptionalClassProperty(
-            newName,
-            this.property,
-            'ObjectLinkDecoratedVariable',
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
-        );
-        const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, 'get');
-        const getter: arkts.MethodDefinition = this.translateGetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisGet
-        );
-        return [field, getter];
-    }
-
-    translateGetter(
-        originalName: string,
-        typeAnnotation: arkts.TypeNode | undefined,
-        returnValue: arkts.Expression
-    ): arkts.MethodDefinition {
-        return createGetter(originalName, typeAnnotation, returnValue);
-    }
-
-    ifObservedDecoratedClass(): boolean {
-        if (this.property.typeAnnotation && arkts.isETSTypeReference(this.property.typeAnnotation)) {
-            const decl = arkts.getDecl(this.property.typeAnnotation.part?.name!);
-            if (arkts.isClassDefinition(decl!) && hasDecorator(decl, DecoratorNames.OBSERVED)) {
-                return true;
-            }
-        }
-        return false;
+        const consequent = arkts.BlockStatement.createBlockStatement([
+            arkts.factory.createExpressionStatement(
+                arkts.factory.createCallExpression(
+                    arkts.factory.createMemberExpression(
+                        arkts.factory.createTSNonNullExpression(test),
+                        arkts.factory.createIdentifier('update'),
+                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                        false,
+                        false
+                    ),
+                    undefined,
+                    [
+                        factory.createBlockStatementForOptionalExpression(
+                            arkts.factory.createIdentifier('initializers'),
+                            originalName
+                        ),
+                    ]
+                )
+            ),
+        ]);
+        return arkts.factory.createExpressionStatement(arkts.factory.createIfStatement(test, consequent));
     }
 }

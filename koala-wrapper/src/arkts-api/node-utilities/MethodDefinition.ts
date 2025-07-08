@@ -19,13 +19,12 @@ import { AstNode } from '../peers/AstNode';
 import { MethodDefinition } from '../types';
 import { updateThenAttach } from '../utilities/private';
 import { Es2pandaMethodDefinitionKind } from '../../generated/Es2pandaEnums';
-import { ScriptFunction } from '../../generated';
 
 export function updateMethodDefinition(
     original: MethodDefinition,
     kind: Es2pandaMethodDefinitionKind,
     key: AstNode,
-    value: ScriptFunction,
+    value: AstNode,
     modifiers: KInt,
     isComputed: boolean
 ): MethodDefinition {

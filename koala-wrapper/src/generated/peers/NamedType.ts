@@ -34,7 +34,7 @@ import { Identifier } from "./Identifier"
 import { TSTypeParameterInstantiation } from "./TSTypeParameterInstantiation"
 export class NamedType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_NAMED_TYPE)
+        assertValidPeer(pointer, 48)
         super(pointer)
         
     }
@@ -72,6 +72,6 @@ export class NamedType extends TypeNode {
 export function isNamedType(node: AstNode): node is NamedType {
     return node instanceof NamedType
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_NAMED_TYPE)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_NAMED_TYPE, NamedType)
+if (!nodeByType.has(48)) {
+    nodeByType.set(48, NamedType)
 }

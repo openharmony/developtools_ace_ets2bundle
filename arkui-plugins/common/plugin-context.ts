@@ -78,7 +78,6 @@ export interface ProjectConfig {
     bundleName: string;
     moduleName: string;
     cachePath: string;
-    frameworkMode?: string;
 }
 
 export type PluginHandlerFunction = () => void;

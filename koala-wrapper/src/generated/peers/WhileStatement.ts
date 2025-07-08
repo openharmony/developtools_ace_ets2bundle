@@ -34,7 +34,7 @@ import { Expression } from "./Expression"
 import { Statement } from "./Statement"
 export class WhileStatement extends LoopStatement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_WHILE_STATEMENT)
+        assertValidPeer(pointer, 152)
         super(pointer)
         
     }
@@ -54,6 +54,6 @@ export class WhileStatement extends LoopStatement {
 export function isWhileStatement(node: AstNode): node is WhileStatement {
     return node instanceof WhileStatement
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_WHILE_STATEMENT)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_WHILE_STATEMENT, WhileStatement)
+if (!nodeByType.has(152)) {
+    nodeByType.set(152, WhileStatement)
 }

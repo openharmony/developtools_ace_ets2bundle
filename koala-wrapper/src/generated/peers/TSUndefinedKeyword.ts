@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class TSUndefinedKeyword extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_UNDEFINED_KEYWORD)
+        assertValidPeer(pointer, 95)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class TSUndefinedKeyword extends TypeNode {
 export function isTSUndefinedKeyword(node: AstNode): node is TSUndefinedKeyword {
     return node instanceof TSUndefinedKeyword
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_UNDEFINED_KEYWORD)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_UNDEFINED_KEYWORD, TSUndefinedKeyword)
+if (!nodeByType.has(95)) {
+    nodeByType.set(95, TSUndefinedKeyword)
 }

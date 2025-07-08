@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
+import * as arkts from '@koalaui/libarkts';
 import { isNumber } from './safe-types';
 import { Plugins, PluginContext, PluginHandler, PluginState, PluginExecutor } from '../../common/plugin-context';
-import * as arkts from '@koalaui/libarkts';
 
 export interface PluginDriver {
     initPlugins(plugins: Plugins[]): void;

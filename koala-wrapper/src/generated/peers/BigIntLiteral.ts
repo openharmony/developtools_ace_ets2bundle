@@ -32,7 +32,7 @@ import {
 import { Literal } from "./Literal"
 export class BigIntLiteral extends Literal {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_BIGINT_LITERAL)
+        assertValidPeer(pointer, 5)
         super(pointer)
         
     }
@@ -49,6 +49,6 @@ export class BigIntLiteral extends Literal {
 export function isBigIntLiteral(node: AstNode): node is BigIntLiteral {
     return node instanceof BigIntLiteral
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_BIGINT_LITERAL)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_BIGINT_LITERAL, BigIntLiteral)
+if (!nodeByType.has(5)) {
+    nodeByType.set(5, BigIntLiteral)
 }

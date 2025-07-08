@@ -15,24 +15,14 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { isAnnotation } from '../../common/arkts-utils';
-import { BuilderLambdaNames, Dollars } from '../utils';
+import { BuilderLambdaNames } from '../utils';
 
 export type BuilderLambdaDeclInfo = {
     isFunctionCall: boolean; // isFunctionCall means it is from $_instantiate.
     params: readonly arkts.Expression[];
-    returnType: arkts.TypeNode | undefined;
 };
-
-export enum BindableDecl {
-    BINDABLE = 'Bindable',
-}
 
 export type BuilderLambdaAstNode = arkts.ScriptFunction | arkts.ETSParameterExpression | arkts.FunctionDeclaration;
-
-export type InstanceCallInfo = {
-    isReceiver: boolean;
-    call: arkts.CallExpression;
-};
 
 /**
  * Used in finding "XXX" in BuilderLambda("XXX")
@@ -61,62 +51,7 @@ export function builderLambdaArgumentName(annotation: arkts.AnnotationUsage): st
  */
 export function isBuilderLambda(node: arkts.AstNode, isExternal?: boolean): boolean {
     const builderLambdaCall: arkts.AstNode | undefined = getDeclForBuilderLambda(node);
-    if (!builderLambdaCall) {
-        return arkts.isCallExpression(node) && node.arguments.length > 0 && isBuilderLambda(node.arguments[0]);
-    }
     return !!builderLambdaCall;
-}
-
-/**
- * Determine whether it is a function with receiver method definition.
- *
- * @param node method definition node
- */
-export function isFunctionWithReceiver(node: arkts.MethodDefinition): boolean {
-    if (node.scriptFunction && arkts.isScriptFunction(node.scriptFunction)) {
-        return node.scriptFunction.hasReceiver;
-    }
-    return false;
-}
-
-/**
- * Determine whether it is a function with receiver call.
- *
- * @param node identifier node
- */
-export function isFunctionWithReceiverCall(node: arkts.Identifier): boolean {
-    const decl: arkts.AstNode | undefined = arkts.getDecl(node);
-    if (decl && arkts.isMethodDefinition(decl)) {
-        return isFunctionWithReceiver(decl);
-    }
-    return false;
-}
-
-/**
- * Determine whether it is a style chained call.
- *
- * @param node call expression node
- */
-export function isStyleChainedCall(node: arkts.CallExpression): boolean {
-    return (
-        arkts.isMemberExpression(node.expression) &&
-        arkts.isIdentifier(node.expression.property) &&
-        arkts.isCallExpression(node.expression.object)
-    );
-}
-
-/**
- * Determine whether it is a style function with receiver call.
- *
- * @param node call expression node
- */
-export function isStyleWithReceiverCall(node: arkts.CallExpression): boolean {
-    return (
-        arkts.isIdentifier(node.expression) &&
-        isFunctionWithReceiverCall(node.expression) &&
-        !!node.arguments.length &&
-        arkts.isCallExpression(node.arguments[0])
-    );
 }
 
 /**
@@ -194,13 +129,6 @@ export function isBuilderLambdaCall(node: arkts.CallExpression | arkts.Identifie
     }
 
     if (arkts.isMethodDefinition(decl)) {
-        if (isFunctionWithReceiver(decl)) {
-            return (
-                arkts.isCallExpression(node) &&
-                node.arguments.length > 0 &&
-                !!getDeclForBuilderLambda(node.arguments[0])
-            );
-        }
         return isBuilderLambdaMethod(decl);
     }
     if (arkts.isFunctionExpression(decl)) {
@@ -297,16 +225,15 @@ export function isParameterPassing(prop: arkts.Property): boolean | undefined {
     );
 }
 
-export function findBuilderLambdaDeclInfo(decl: arkts.AstNode | undefined): BuilderLambdaDeclInfo | undefined {
+export function findBuilderLambdaDeclInfo(node: arkts.CallExpression): BuilderLambdaDeclInfo | undefined {
+    const decl = findBuilderLambdaDecl(node);
     if (!decl) {
         return undefined;
     }
-
     if (arkts.isMethodDefinition(decl)) {
         const params = decl.scriptFunction.params.map((p) => p.clone());
-        const returnType = decl.scriptFunction.returnTypeAnnotation?.clone();
         const isFunctionCall = isBuilderLambdaFunctionCall(decl);
-        return { isFunctionCall, params, returnType };
+        return { isFunctionCall, params };
     }
 
     return undefined;
@@ -330,15 +257,15 @@ export function callIsGoodForBuilderLambda(leaf: arkts.CallExpression): boolean 
     return arkts.isIdentifier(node) || arkts.isMemberExpression(node);
 }
 
-export function isSafeType(type: arkts.TypeNode | undefined): boolean {
-    if (!type) {
-        return false;
+export function builderLambdaType(leaf: arkts.CallExpression): arkts.TypeNode | undefined {
+    const name: string | undefined = builderLambdaTypeName(leaf);
+    if (!name) {
+        return undefined;
     }
-    // type can be generic (not safe) if includes any type params in a type reference.
-    if (arkts.isETSTypeReference(type) && !!type.part && !!type.part.typeParams) {
-        return false;
-    }
-    return true;
+    // TODO: it should be the return type of the function annotated with the @BuilderLambda
+    return arkts.factory.createTypeReference(
+        arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(`${name}Attribute`))
+    );
 }
 
 export function builderLambdaMethodDeclType(method: arkts.MethodDefinition): arkts.TypeNode | undefined {
@@ -377,101 +304,6 @@ export function builderLambdaFunctionName(node: arkts.CallExpression): string | 
         node.expression.property.name === BuilderLambdaNames.ORIGIN_METHOD_NAME
     ) {
         return BuilderLambdaNames.TRANSFORM_METHOD_NAME;
-    }
-    return undefined;
-}
-
-/**
- * Determine whether the node `<type>` is `<bindableDecl>` bindable property.
- *
- * @param type type node
- * @param bindableDecl bindable decalaration name
- */
-export function hasBindableProperty(type: arkts.AstNode, bindableDecl: BindableDecl): boolean {
-    let res: boolean = false;
-    if (arkts.isETSUnionType(type)) {
-        type.types.forEach((item: arkts.TypeNode) => {
-            res = res || hasBindableProperty(item, bindableDecl);
-        });
-    }
-    if (arkts.isETSTypeReference(type)) {
-        res =
-            res ||
-            (!!type.part &&
-                !!type.part.name &&
-                arkts.isIdentifier(type.part.name) &&
-                type.part.name.name === bindableDecl);
-    }
-
-    return res;
-}
-
-/**
- * Determine whether `<value>` is `$$()` call expression node.
- *
- * @param value expression node
- */
-export function isDoubleDollarCall(value: arkts.Expression): boolean {
-    if (
-        arkts.isCallExpression(value) &&
-        value.expression &&
-        arkts.isIdentifier(value.expression) &&
-        value.expression.name
-    ) {
-        return value.expression.name === Dollars.DOLLAR_DOLLAR;
-    }
-    return false;
-}
-
-/**
- * get declaration type from `{xxx: <value>}` or `fun(<value>)`.
- *
- * @param value type node
- */
-export function getDecalTypeFromValue(value: arkts.Expression): arkts.TypeNode {
-    const decl: arkts.AstNode | undefined = arkts.getDecl(value);
-    if (!decl || !arkts.isClassProperty(decl)) {
-        throw new Error('cannot get declaration');
-    }
-    if (isArrayType(decl.typeAnnotation!)) {
-        return getElementTypeFromArray(decl.typeAnnotation!)!;
-    }
-    return decl.typeAnnotation!;
-}
-
-/**
- * Determine whether `<type>` is array type, e.g. `xxx[]` or `Array<xxx>`.
- *
- * @param type type node
- */
-export function isArrayType(type: arkts.TypeNode): boolean {
-    return (
-        arkts.isTSArrayType(type) ||
-        (arkts.isETSTypeReference(type) &&
-            !!type.part &&
-            arkts.isETSTypeReferencePart(type.part) &&
-            !!type.part.name &&
-            arkts.isIdentifier(type.part.name) &&
-            type.part.name.name === 'Array')
-    );
-}
-
-/**
- * get element type from array type node `<arrayType>`.
- *
- * @param arrayType array type node
- */
-export function getElementTypeFromArray(arrayType: arkts.TypeNode): arkts.TypeNode | undefined {
-    if (arkts.isTSArrayType(arrayType)) {
-        return arrayType.elementType?.clone();
-    } else if (
-        arkts.isETSTypeReference(arrayType) &&
-        !!arrayType.part &&
-        arkts.isETSTypeReferencePart(arrayType.part) &&
-        !!arrayType.part.typeParams &&
-        arrayType.part.typeParams.params.length
-    ) {
-        return arrayType.part.typeParams.params[0].clone();
     }
     return undefined;
 }

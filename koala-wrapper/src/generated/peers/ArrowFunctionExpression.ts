@@ -35,7 +35,7 @@ import { TypeNode } from "./TypeNode"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class ArrowFunctionExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ARROW_FUNCTION_EXPRESSION)
+        assertValidPeer(pointer, 0)
         super(pointer)
         
     }
@@ -66,6 +66,6 @@ export class ArrowFunctionExpression extends Expression {
 export function isArrowFunctionExpression(node: AstNode): node is ArrowFunctionExpression {
     return node instanceof ArrowFunctionExpression
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_ARROW_FUNCTION_EXPRESSION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_ARROW_FUNCTION_EXPRESSION, ArrowFunctionExpression)
+if (!nodeByType.has(0)) {
+    nodeByType.set(0, ArrowFunctionExpression)
 }

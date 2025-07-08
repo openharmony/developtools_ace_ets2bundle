@@ -34,7 +34,7 @@ import { Identifier } from "./Identifier"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class ETSModule extends BlockStatement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE)
+        assertValidPeer(pointer, 82)
         super(pointer)
         
     }
@@ -67,6 +67,6 @@ export class ETSModule extends BlockStatement {
 export function isETSModule(node: AstNode): node is ETSModule {
     return node instanceof ETSModule
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE, ETSModule)
+if (!nodeByType.has(82)) {
+    nodeByType.set(82, ETSModule)
 }

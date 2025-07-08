@@ -14,9 +14,11 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import { getInteropPath } from '../../path';
 import { GenSymGenerator } from '../../common/gensym-generator';
 import { factory as UIFactory } from '../ui-factory';
-import { judgeIfAddWatchFunc } from './utils';
+const interop = require(getInteropPath());
+const nullptr = interop.nullptr;
 
 export class factory {
     /**
@@ -229,68 +231,6 @@ export class factory {
                 )
             ),
             args?.length ? args : []
-        );
-    }
-
-    /*
-     * create `this.addProvidedVar<number>(<originName>, <alias>, initializers?.<originalName> ?? <property.value>, <allowOverride>, watchFunc)`.
-     */
-    static generateAddProvideVarCall(
-        originalName: string,
-        property: arkts.ClassProperty,
-        alias: string,
-        allowOverride: boolean = false
-    ): arkts.CallExpression {
-        const args: arkts.Expression[] = [
-            arkts.factory.create1StringLiteral(originalName),
-            arkts.factory.create1StringLiteral(alias),
-            arkts.factory.createBinaryExpression(
-                factory.createBlockStatementForOptionalExpression(
-                    arkts.factory.createIdentifier('initializers'),
-                    originalName
-                ),
-                property.value ?? arkts.factory.createUndefinedLiteral(),
-                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-            ),
-            arkts.factory.createBooleanLiteral(allowOverride),
-        ];
-        judgeIfAddWatchFunc(args, property);
-        return arkts.factory.createCallExpression(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createThisExpression(),
-                arkts.factory.createIdentifier('addProvidedVar'),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
-            property.typeAnnotation ? [property.typeAnnotation.clone()] : undefined,
-            args
-        );
-    }
-
-    /*
-     * create `this.initConsume<number>(<originalName>, <alias>, watchFunc)`.
-     */
-    static generateInitConsumeCall(
-        originalName: string,
-        property: arkts.ClassProperty,
-        alias: string
-    ): arkts.CallExpression {
-        const args: arkts.Expression[] = [
-            arkts.factory.create1StringLiteral(originalName),
-            arkts.factory.create1StringLiteral(alias),
-        ];
-        judgeIfAddWatchFunc(args, property);
-        return arkts.factory.createCallExpression(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createThisExpression(),
-                arkts.factory.createIdentifier('initConsume'),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
-            property.typeAnnotation ? [property.typeAnnotation.clone()] : undefined,
-            args
         );
     }
 }
