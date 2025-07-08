@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef CONVERTORS_ETS_H
+#define CONVERTORS_ETS_H
 
 #ifdef KOALA_ETS_NAPI
 
-#include <assert.h>
 #include <memory>
 #include <vector>
 #include <string>
@@ -1347,3 +1347,5 @@ void getKoalaEtsNapiCallbackDispatcher(ets_class* clazz, ets_method* method);
   } while (0)
 
 #endif // KOALA_ETS_NAPI
+
+#endif // CONVERTORS_ETS_H

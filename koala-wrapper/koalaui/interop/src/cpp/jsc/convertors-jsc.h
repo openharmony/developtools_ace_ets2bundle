@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef CONVERTORS_JSC_H
+#define CONVERTORS_JSC_H
 
 #if defined(linux)
 #include <JavaScriptCore/JavaScript.h> // For IDE completion
@@ -25,9 +26,8 @@
 #include <string>
 #include <iostream>
 
-#include <assert.h>
-
 #include "koala-types.h"
+#include "interop-logging.h"
 
 template <typename ElemType>
 inline ElemType* getTypedElements(JSContextRef context, const JSValueRef arguments) {
@@ -35,7 +35,7 @@ inline ElemType* getTypedElements(JSContextRef context, const JSValueRef argumen
       return nullptr;
   }
   if (JSValueIsUndefined(context, arguments)) {
-      assert(false);
+      ASSERT(false);
       return nullptr;
   }
   JSValueRef exception {};
@@ -46,8 +46,8 @@ inline ElemType* getTypedElements(JSContextRef context, const JSValueRef argumen
 
 template <typename ElemType>
 inline ElemType* getTypedElements(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  assert(index < argumentCount);
-  return getTypedElements<ElemType>(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getTypedElements<ElemType>(context, arguments[index]);
 }
 
 uint8_t* getUInt8Elements(JSContextRef context, const JSValueRef arguments);
@@ -74,86 +74,86 @@ inline Type getArgument(JSContextRef context, size_t argumentCount, const JSValu
 
 template <>
 inline int32_t getArgument<int32_t>(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  assert(index < argumentCount);
-  return getInt32(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getInt32(context, arguments[index]);
 }
 
 template <>
 inline uint32_t getArgument<uint32_t>(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  assert(index < argumentCount);
-  return getUInt32(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getUInt32(context, arguments[index]);
 }
 
 template <>
 inline uint8_t getArgument<uint8_t>(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  assert(index < argumentCount);
-  return getUInt8(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getUInt8(context, arguments[index]);
 }
 
 template <>
 inline KNativePointer getArgument<KNativePointer>(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  assert(index < argumentCount);
-  return getPointer(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getPointer(context, arguments[index]);
 }
 
 template <>
 inline KFloat getArgument<KFloat>(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  assert(index < argumentCount);
-  return getFloat(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getFloat(context, arguments[index]);
 }
 
 template <>
 inline KStringPtr getArgument<KStringPtr>(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  assert(index < argumentCount);
-  return getString(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getString(context, arguments[index]);
 }
 
 template <>
 inline KBoolean getArgument<KBoolean>(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  assert(index < argumentCount);
-  return getBoolean(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getBoolean(context, arguments[index]);
 }
 
 template <>
 inline KInt* getArgument<KInt*>(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  assert(index < argumentCount);
-  return getInt32Elements(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getInt32Elements(context, arguments[index]);
 }
 
 template <>
 inline float* getArgument<float*>(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  assert(index < argumentCount);
-  return getFloat32Elements(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getFloat32Elements(context, arguments[index]);
 }
 
 template <>
 inline KByte* getArgument<KByte*>(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  assert(index < argumentCount);
-  return getByteElements(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getByteElements(context, arguments[index]);
 }
 
 template <>
 inline KStringArray getArgument<KStringArray>(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  assert(index < argumentCount);
-  return getKStringArray(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getKStringArray(context, arguments[index]);
 }
 
 template <>
 inline KUShort* getArgument<KUShort*>(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  assert(index < argumentCount);
-  return getUShortElements(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getUShortElements(context, arguments[index]);
 }
 
 template <>
 inline KNativePointerArray getArgument<KNativePointerArray>(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  assert(index < argumentCount);
-  return getPointerElements(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getPointerElements(context, arguments[index]);
 }
 
 template <>
 inline KShort* getArgument<KShort*>(JSContextRef context, size_t argumentCount, const JSValueRef arguments[], int index) {
-  assert(index < argumentCount);
-  return getShortElements(context, arguments[index]);
+    ASSERT(index < argumentCount);
+    return getShortElements(context, arguments[index]);
 }
 
 JSValueRef makeInt32(JSContextRef context, int32_t value);
@@ -657,7 +657,6 @@ void InitExports(JSGlobalContextRef globalContext);
   } \
   MAKE_JSC_EXPORT(name)
 
-// todo: implement properly
 #define KOALA_INTEROP_CTX_3(name, Ret, P0, P1, P2)                                                                                                                 \
   JSValueRef Jsc_##name(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) \
   {                                                                                                                                                                \
@@ -683,7 +682,6 @@ void InitExports(JSGlobalContextRef globalContext);
   }                                                                                                                                                                \
   MAKE_JSC_EXPORT(name)
 
-// todo: implement properly
 #define KOALA_INTEROP_CTX_V3(name, P0, P1, P2) \
   JSValueRef Jsc_##name(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) { \
     printf("TODO: implement KOALA_INTEROP_CTX_V3 for jsc"); \
@@ -711,12 +709,14 @@ void InitExports(JSGlobalContextRef globalContext);
 
 #define KOALA_INTEROP_THROW(vmContext, object, ...) \
    do { \
-     /* TODO: implement*/ assert(false); \
+     ASSERT(false); \
      return __VA_ARGS__; \
    } while (0)
 
 #define KOALA_INTEROP_THROW_STRING(vmContext, message, ...) \
    do { \
-      assert(false); /* TODO: implement*/ \
+      ASSERT(false); \
      return __VA_ARGS__; \
    } while (0)
+
+#endif // CONVERTORS_JSC_H
