@@ -66,7 +66,14 @@ struct KStringPtrImpl {
         if (data) {
           if (_owned) {
             _value = reinterpret_cast<char*>(malloc(len + 1));
+#ifdef __STDC_LIB_EXT1__
+            errno_t res = memcpy_s(_value, len, data, len);
+            if (res != EOK) {
+              return;
+            }
+#else
             memcpy(_value, data, len);
+#endif
             _value[len] = 0;
           } else {
             _value = const_cast<char*>(data);
@@ -100,7 +107,7 @@ struct KInteropNumber {
       // TODO: boundary check
       if (value == std::floor(value)) {
         result.tag = 102; // ARK_TAG_INT32
-        result.i32 = (int)value;
+        result.i32 = static_cast<int>(value);
       } else {
         result.tag = 103; // ARK_TAG_FLOAT32
         result.f32 = (float)value;
