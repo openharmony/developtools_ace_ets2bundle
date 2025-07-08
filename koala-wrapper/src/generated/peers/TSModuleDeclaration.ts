@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 import { Expression } from "./Expression"
 export class TSModuleDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_MODULE_DECLARATION)
+        assertValidPeer(pointer, 123)
         super(pointer)
         
     }
@@ -59,6 +59,6 @@ export class TSModuleDeclaration extends Statement {
 export function isTSModuleDeclaration(node: AstNode): node is TSModuleDeclaration {
     return node instanceof TSModuleDeclaration
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_MODULE_DECLARATION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_MODULE_DECLARATION, TSModuleDeclaration)
+if (!nodeByType.has(123)) {
+    nodeByType.set(123, TSModuleDeclaration)
 }

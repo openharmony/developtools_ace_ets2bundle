@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 import { Statement } from "./Statement"
 export class BlockExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_BLOCK_EXPRESSION)
+        assertValidPeer(pointer, 155)
         super(pointer)
         
     }
@@ -60,6 +60,6 @@ export class BlockExpression extends Expression {
 export function isBlockExpression(node: AstNode): node is BlockExpression {
     return node instanceof BlockExpression
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_BLOCK_EXPRESSION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_BLOCK_EXPRESSION, BlockExpression)
+if (!nodeByType.has(155)) {
+    nodeByType.set(155, BlockExpression)
 }

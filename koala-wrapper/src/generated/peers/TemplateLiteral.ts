@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 import { TemplateElement } from "./TemplateElement"
 export class TemplateLiteral extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TEMPLATE_LITERAL)
+        assertValidPeer(pointer, 143)
         super(pointer)
         
     }
@@ -49,13 +49,10 @@ export class TemplateLiteral extends Expression {
     get expressions(): readonly Expression[] {
         return unpackNodeArray(global.generatedEs2panda._TemplateLiteralExpressionsConst(global.context, this.peer))
     }
-    get multilineString(): string {
-        return unpackString(global.generatedEs2panda._TemplateLiteralGetMultilineStringConst(global.context, this.peer));
-    }
 }
 export function isTemplateLiteral(node: AstNode): node is TemplateLiteral {
     return node instanceof TemplateLiteral
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TEMPLATE_LITERAL)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TEMPLATE_LITERAL, TemplateLiteral)
+if (!nodeByType.has(143)) {
+    nodeByType.set(143, TemplateLiteral)
 }

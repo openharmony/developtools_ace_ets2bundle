@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 import { Expression } from "./Expression"
 export class ReturnStatement extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_RETURN_STATEMENT)
+        assertValidPeer(pointer, 58)
         super(pointer)
         
     }
@@ -61,6 +61,6 @@ export class ReturnStatement extends Statement {
 export function isReturnStatement(node: AstNode): node is ReturnStatement {
     return node instanceof ReturnStatement
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_RETURN_STATEMENT)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_RETURN_STATEMENT, ReturnStatement)
+if (!nodeByType.has(58)) {
+    nodeByType.set(58, ReturnStatement)
 }

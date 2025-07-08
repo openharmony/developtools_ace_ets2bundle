@@ -34,7 +34,7 @@ import { Expression } from "./Expression"
 import { BlockStatement } from "./BlockStatement"
 export class CatchClause extends TypedStatement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CATCH_CLAUSE)
+        assertValidPeer(pointer, 11)
         super(pointer)
         
     }
@@ -54,6 +54,6 @@ export class CatchClause extends TypedStatement {
 export function isCatchClause(node: AstNode): node is CatchClause {
     return node instanceof CatchClause
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_CATCH_CLAUSE)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_CATCH_CLAUSE, CatchClause)
+if (!nodeByType.has(11)) {
+    nodeByType.set(11, CatchClause)
 }

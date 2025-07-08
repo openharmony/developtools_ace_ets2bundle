@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class TSIndexedAccessType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_INDEXED_ACCESS_TYPE)
+        assertValidPeer(pointer, 130)
         super(pointer)
         
     }
@@ -52,6 +52,6 @@ export class TSIndexedAccessType extends TypeNode {
 export function isTSIndexedAccessType(node: AstNode): node is TSIndexedAccessType {
     return node instanceof TSIndexedAccessType
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_INDEXED_ACCESS_TYPE)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_INDEXED_ACCESS_TYPE, TSIndexedAccessType)
+if (!nodeByType.has(130)) {
+    nodeByType.set(130, TSIndexedAccessType)
 }

@@ -32,7 +32,7 @@ import {
 import { Expression } from "./Expression"
 export class OmittedExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_OMITTED_EXPRESSION)
+        assertValidPeer(pointer, 53)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class OmittedExpression extends Expression {
 export function isOmittedExpression(node: AstNode): node is OmittedExpression {
     return node instanceof OmittedExpression
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_OMITTED_EXPRESSION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_OMITTED_EXPRESSION, OmittedExpression)
+if (!nodeByType.has(53)) {
+    nodeByType.set(53, OmittedExpression)
 }

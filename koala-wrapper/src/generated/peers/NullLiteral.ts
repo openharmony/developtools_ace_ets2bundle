@@ -32,7 +32,7 @@ import {
 import { Literal } from "./Literal"
 export class NullLiteral extends Literal {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_NULL_LITERAL)
+        assertValidPeer(pointer, 50)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class NullLiteral extends Literal {
 export function isNullLiteral(node: AstNode): node is NullLiteral {
     return node instanceof NullLiteral
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_NULL_LITERAL)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_NULL_LITERAL, NullLiteral)
+if (!nodeByType.has(50)) {
+    nodeByType.set(50, NullLiteral)
 }

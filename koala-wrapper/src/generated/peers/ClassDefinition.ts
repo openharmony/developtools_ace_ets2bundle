@@ -44,7 +44,7 @@ import { FunctionExpression } from "./FunctionExpression"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class ClassDefinition extends TypedAstNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DEFINITION)
+        assertValidPeer(pointer, 14)
         super(pointer)
         
     }
@@ -217,6 +217,6 @@ export class ClassDefinition extends TypedAstNode {
 export function isClassDefinition(node: AstNode): node is ClassDefinition {
     return node instanceof ClassDefinition
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DEFINITION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DEFINITION, ClassDefinition)
+if (!nodeByType.has(14)) {
+    nodeByType.set(14, ClassDefinition)
 }

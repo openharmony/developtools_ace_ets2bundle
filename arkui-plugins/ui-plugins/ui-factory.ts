@@ -14,9 +14,8 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { BuilderLambdaNames, CustomComponentNames, hasPropertyInAnnotation, hasNullOrUndefinedType } from './utils';
+import { BuilderLambdaNames, CustomComponentNames } from './utils';
 import { annotation } from '../common/arkts-utils';
-import { DecoratorNames, needDefiniteOrOptionalModifier } from './property-translators/utils';
 
 export class factory {
     /**
@@ -157,9 +156,7 @@ export class factory {
         const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
             source,
             [arkts.factory.createImportSpecifier(imported, local)],
-            importKind,
-            program,
-            arkts.Es2pandaImportFlags.IMPORT_FLAGS_NONE
+            importKind
         );
         arkts.importDeclarationInsert(importDecl, program);
         return;
@@ -182,7 +179,7 @@ export class factory {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
             member.name,
-            member.scriptFunction,
+            arkts.factory.createFunctionExpression(member.scriptFunction),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
             false
         );
@@ -224,64 +221,9 @@ export class factory {
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             updateKey,
-            updateScriptFunction,
+            arkts.factory.createFunctionExpression(updateScriptFunction),
             modifiers,
             false
         );
-    }
-
-    /*
-     * add alias: <property.key.name> to @Provide annotation when no alias in @Provide({...}).
-     */
-    static processNoAliasProvideVariable(property: arkts.ClassProperty): void {
-        let annotations: readonly arkts.AnnotationUsage[] = property.annotations;
-        if (annotations.length === 0) {
-            return;
-        }
-        const newAnnos: arkts.AnnotationUsage[] = annotations.map((anno: arkts.AnnotationUsage) => {
-            if (
-                !!anno.expr &&
-                arkts.isIdentifier(anno.expr) &&
-                anno.expr.name === DecoratorNames.PROVIDE &&
-                !hasPropertyInAnnotation(anno, 'alias') &&
-                property.key &&
-                arkts.isIdentifier(property.key)
-            ) {
-                return arkts.factory.update1AnnotationUsage(anno, anno.expr, [
-                    ...anno.properties,
-                    factory.createAliasClassProperty(property.key),
-                ]);
-            } else {
-                return anno;
-            }
-        });
-        property.setAnnotations(newAnnos);
-    }
-
-    /*
-     * create class property : `alias: <value>`.
-     */
-    static createAliasClassProperty(value: arkts.Identifier): arkts.ClassProperty {
-        return arkts.factory.createClassProperty(
-            arkts.factory.createIdentifier('alias'),
-            arkts.factory.create1StringLiteral(value.name),
-            undefined,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-            false
-        );
-    }
-
-    /*
-     * add optional or definite modifier for class property needs initializing without assignment.
-     */
-    static PreprocessClassPropertyModifier(st: arkts.AstNode): arkts.AstNode {
-        if (arkts.isClassProperty(st) && needDefiniteOrOptionalModifier(st)) {
-            if (st.typeAnnotation && hasNullOrUndefinedType(st.typeAnnotation)) {
-                st.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL;
-            } else {
-                st.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFINITE;
-            }
-        }
-        return st;
     }
 }

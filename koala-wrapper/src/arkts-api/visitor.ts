@@ -13,21 +13,21 @@
  * limitations under the License.
  */
 
-import { global } from './static/global';
-import { factory } from './factory/nodeFactory';
+import { global } from "./static/global"
+import { factory } from "./factory/nodeFactory"
 import {
     Es2pandaClassDefinitionModifiers,
     Es2pandaImportKinds,
     Es2pandaModifierFlags,
-    Es2pandaVariableDeclaratorFlag,
-} from '../generated/Es2pandaEnums';
-import { AstNode } from './peers/AstNode';
-import {
-    isBlockStatement,
-    isConditionalExpression,
-    isTSInterfaceBody,
-    isTSInterfaceDeclaration,
-    isClassDeclaration,
+    Es2pandaVariableDeclaratorFlag
+} from "../generated/Es2pandaEnums"
+import { AstNode } from "./peers/AstNode"
+import { 
+    isBlockStatement, 
+    isConditionalExpression, 
+    isTSInterfaceBody, 
+    isTSInterfaceDeclaration, 
+    isClassDeclaration, 
     isClassDefinition,
     isTSAsExpression,
     isETSImportDeclaration,
@@ -36,24 +36,8 @@ import {
     FunctionSignature,
     Property,
     isClassProperty,
-    isImportDeclaration,
-    isObjectExpression,
-    ObjectExpression,
-    isProperty,
-    Expression,
-    isETSNewClassInstanceExpression,
-    isTemplateLiteral,
-    isBlockExpression,
-    isReturnStatement,
-    isArrayExpression,
-    isTryStatement,
-    isBinaryExpression,
-    isForInStatement,
-    isForUpdateStatement,
-    isForOfStatement,
-    isTSTypeAliasDeclaration,
-    isETSFunctionType,
-} from '../generated';
+    isImportDeclaration
+} from "../generated"
 import {
     isEtsScript,
     isCallExpression,
@@ -66,20 +50,21 @@ import {
     isIfStatement,
     isVariableDeclaration,
     isVariableDeclarator,
-    isArrowFunctionExpression,
-    isAssignmentExpression,
-    isEtsParameterExpression,
-} from './factory/nodeTests';
-import { classDefinitionFlags } from './utilities/public';
-import { Es2pandaAstNodeType } from '../Es2pandaEnums';
+    isArrowFunctionExpression  
+} from "./factory/nodeTests"
+import { 
+    classDefinitionFlags, 
+    hasModifierFlag,
+    classPropertySetOptional
+ } from "./utilities/public"
 
-type Visitor = (node: AstNode) => AstNode;
+type Visitor = (node: AstNode) => AstNode
 
 export interface StructVariableMetadata {
-    name: string;
-    properties: string[];
-    modifiers: Es2pandaModifierFlags;
-    hasStateManagementType?: boolean;
+    name: string,
+    properties: string[],
+    modifiers: Es2pandaModifierFlags,
+    hasStateManagementType?: boolean
 }
 
 export class StructInfo {
@@ -136,49 +121,41 @@ export class GlobalInfo {
 // TODO: rethink (remove as)
 function nodeVisitor<T extends AstNode | undefined>(node: T, visitor: Visitor): T {
     if (node === undefined) {
-        return node;
+        return node
     }
-    return visitor(node) as T;
+    return visitor(node) as T
 }
 
 // TODO: rethink (remove as)
-function nodesVisitor<T extends AstNode, TIn extends readonly T[] | undefined>(
-    nodes: TIn,
-    visitor: Visitor
-): T[] | TIn {
+function nodesVisitor<T extends AstNode, TIn extends readonly T[] | undefined>(nodes: TIn, visitor: Visitor): T[] | TIn {
     if (nodes === undefined) {
-        return nodes;
+        return nodes
     }
-    return nodes.map((node) => visitor(node) as T);
+    return nodes.map(node => visitor(node) as T)
 }
 
-let updated: boolean = false;
-
-export function visitEachChild(node: AstNode, visitor: Visitor): AstNode {
-    updated = false;
-    let script: AstNode = node;
-    script = visitETSModule(script, visitor);
-    script = visitDeclaration(script, visitor);
-    script = visitDefinition(script, visitor);
-    script = visitDefinitionBody(script, visitor);
-    script = visitStatement(script, visitor);
-    script = visitForLoopStatement(script, visitor);
-    script = visitOuterExpression(script, visitor);
-    script = visitInnerExpression(script, visitor);
-    script = visitTrivialExpression(script, visitor);
-    script = visitLiteral(script, visitor);
-    // TODO
-    return visitWithoutUpdate(script, visitor);
+// TODO: apply this to all nodes that does not require updating
+function visitWithoutUpdate<T extends AstNode>(
+    node: T,
+    visitor: Visitor
+): T {
+    if (isImportDeclaration(node)) {
+        nodesVisitor(node.specifiers, visitor);
+    }
+    return node;
 }
 
-function visitOuterExpression(node: AstNode, visitor: Visitor): AstNode {
-    if (updated) {
-        return node;
-    } else if (isBlockExpression(node)) {
-        updated = true;
-        return factory.updateBlockExpression(node, nodesVisitor(node.statements, visitor));
-    } else if (isCallExpression(node)) {
-        updated = true;
+export function visitEachChild(
+    node: AstNode,
+    visitor: Visitor
+): AstNode {
+    if (isEtsScript(node)) {
+        return factory.updateEtsScript(
+            node,
+            nodesVisitor(node.statements, visitor)
+        );
+    }
+    if (isCallExpression(node)) {
         const call = factory.updateCallExpression(
             node,
             nodeVisitor(node.expression, visitor),
@@ -189,155 +166,41 @@ function visitOuterExpression(node: AstNode, visitor: Visitor): AstNode {
             call.setTralingBlock(nodeVisitor(node.trailingBlock, visitor));
         }
         return call;
-    } else if (isArrowFunctionExpression(node)) {
-        updated = true;
-        return factory.updateArrowFunction(node, nodeVisitor(node.scriptFunction, visitor));
-    } else if (isAssignmentExpression(node)) {
-        updated = true;
-        return factory.updateAssignmentExpression(
-            node,
-            nodeVisitor(node.left as Expression, visitor),
-            node.operatorType,
-            nodeVisitor(node.right as Expression, visitor)
-        );
-    } else if (isETSNewClassInstanceExpression(node)) {
-        updated = true;
-        return factory.updateETSNewClassInstanceExpression(
-            node,
-            node.getTypeRef,
-            nodesVisitor(node.getArguments, visitor)
-        );
     }
-    if (isArrayExpression(node)) {
-        updated = true;
-        return factory.updateArrayExpression(node, nodesVisitor(node.elements, visitor));
-    }
-    return node;
-}
-
-function visitInnerExpression(node: AstNode, visitor: Visitor): AstNode {
-    if (updated) {
-        return node;
-    }
-    if (isMemberExpression(node)) {
-        updated = true;
-        return factory.updateMemberExpression(
-            node,
-            nodeVisitor(node.object, visitor),
-            nodeVisitor(node.property, visitor),
-            node.kind,
-            node.computed,
-            node.optional
-        );
-    }
-    if (isConditionalExpression(node)) {
-        updated = true;
-        return factory.updateConditionalExpression(
-            node,
-            nodeVisitor(node.test, visitor),
-            nodeVisitor(node.consequent, visitor),
-            nodeVisitor(node.alternate, visitor)
-        );
-    }
-    if (isTSAsExpression(node)) {
-        updated = true;
-        return factory.updateTSAsExpression(
-            node,
-            nodeVisitor(node.expr, visitor),
-            nodeVisitor(node.typeAnnotation, visitor),
-            node.isConst
-        );
-    }
-    if (isObjectExpression(node)) {
-        updated = true;
-        return factory.updateObjectExpression(
-            node,
-            Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
-            nodesVisitor(node.properties as Property[], visitor),
-            false
-        );
-    }
-    if (isProperty(node)) {
-        updated = true;
-        return factory.updateProperty(node, node.key, nodeVisitor(node.value, visitor));
-    }
-    // TODO
-    return node;
-}
-
-function visitTrivialExpression(node: AstNode, visitor: Visitor): AstNode {
-    if (updated) {
-        return node;
-    }
-    if (isBinaryExpression(node)) {
-        updated = true;
-        return factory.updateBinaryExpression(
-            node,
-            nodeVisitor(node.left, visitor),
-            nodeVisitor(node.right, visitor),
-            node.operatorType
-        );
-    }
-    // TODO
-    return node;
-}
-
-function visitDeclaration(node: AstNode, visitor: Visitor): AstNode {
-    if (updated) {
-        return node;
-    } else if (isFunctionDeclaration(node)) {
-        updated = true;
+    if (isFunctionDeclaration(node)) {
         return factory.updateFunctionDeclaration(
             node,
             nodeVisitor(node.scriptFunction, visitor),
             node.isAnon,
-            node.annotations
-        );
-    } else if (isClassDeclaration(node)) {
-        updated = true;
-        return factory.updateClassDeclaration(node, nodeVisitor(node.definition, visitor));
-    } else if (isStructDeclaration(node)) {
-        updated = true;
-        return factory.updateStructDeclaration(node, nodeVisitor(node.definition, visitor));
-    } else if (isTSInterfaceDeclaration(node)) {
-        updated = true;
-        return factory.updateInterfaceDeclaration(
-            node,
-            nodesVisitor(node.extends, visitor),
-            nodeVisitor(node.id, visitor),
-            nodeVisitor(node.typeParams, visitor),
-            nodeVisitor(node.body, visitor),
-            node.isStatic,
-            // TODO: how do I get it?
-            true
-        );
-    } else if (isVariableDeclaration(node)) {
-        updated = true;
-        return factory.updateVariableDeclaration(
-            node,
-            0,
-            node.declarationKind,
-            nodesVisitor(node.declarators, visitor)
-        );
-    } else if (isTSTypeAliasDeclaration(node)) {
-        updated = true;
-        return factory.updateTSTypeAliasDeclaration(
-            node,
-            node.id,
-            nodeVisitor(node.typeParams, visitor),
-            nodeVisitor(node.typeAnnotation, visitor)
+            node.annotations,
         );
     }
-    // TODO
-    return node;
-}
-
-function visitDefinition(node: AstNode, visitor: Visitor): AstNode {
-    if (updated) {
-        return node;
+    if (isBlockStatement(node)) {
+        return factory.updateBlock(
+            node,
+            nodesVisitor(node.statements, visitor),
+        );
+    }
+    if (isExpressionStatement(node)) {
+        return factory.updateExpressionStatement(
+            node,
+            nodeVisitor(node.expression, visitor)
+        );
+    }
+    if (isClassDeclaration(node)) {
+        return factory.updateClassDeclaration(
+            node,
+            nodeVisitor(node.definition, visitor)
+        );
+    }
+    if (isStructDeclaration(node)) {
+        return factory.updateStructDeclaration(
+            node,
+            nodeVisitor(node.definition, visitor)
+        );
     }
     if (isClassDefinition(node)) {
-        updated = true;
+        // TODO: fix
         return factory.updateClassDefinition(
             node,
             node.ident,
@@ -352,129 +215,24 @@ function visitDefinition(node: AstNode, visitor: Visitor): AstNode {
         );
     }
     if (isMethodDefinition(node)) {
-        updated = true;
+        // TODO: fix
         return factory.updateMethodDefinition(
             node,
             node.kind,
             node.name,
-            nodeVisitor(node.scriptFunction, visitor),
+            factory.createFunctionExpression(
+                // TODO: maybe fix
+                nodeVisitor(node.scriptFunction, visitor)
+            ),
             node.modifiers,
             false
         );
     }
-    if (isTSInterfaceBody(node)) {
-        updated = true;
-        return factory.updateInterfaceBody(node, nodesVisitor(node.body, visitor));
-    }
-    if (isVariableDeclarator(node)) {
-        updated = true;
-        return factory.updateVariableDeclarator(
-            node,
-            global.generatedEs2panda._VariableDeclaratorFlag(global.context, node.peer),
-            nodeVisitor(node.name, visitor),
-            nodeVisitor(node.initializer, visitor)
-        );
-    }
-    return node;
-}
-
-function visitStatement(node: AstNode, visitor: Visitor): AstNode {
-    if (updated) {
-        return node;
-    }
-    if (isBlockStatement(node)) {
-        updated = true;
-        return factory.updateBlock(node, nodesVisitor(node.statements, visitor));
-    }
-    if (isExpressionStatement(node)) {
-        updated = true;
-        return factory.updateExpressionStatement(node, nodeVisitor(node.expression, visitor));
-    }
-    if (isIfStatement(node)) {
-        updated = true;
-        return factory.updateIfStatement(
-            node,
-            nodeVisitor(node.test, visitor),
-            nodeVisitor(node.consequent, visitor),
-            nodeVisitor(node.alternate, visitor)
-        );
-    }
-    if (isReturnStatement(node)) {
-        updated = true;
-        return factory.updateReturnStatement(node, nodeVisitor(node.argument, visitor));
-    }
-    if (isTryStatement(node)) {
-        updated = true;
-        return factory.updateTryStatement(
-            node,
-            nodeVisitor(node.block, visitor),
-            nodesVisitor(node.catchClauses, visitor),
-            nodeVisitor(node.finallyBlock, visitor),
-            [],
-            []
-        );
-    }
-    // TODO
-    return node;
-}
-
-function visitForLoopStatement(node: AstNode, visitor: Visitor): AstNode {
-    if (updated) {
-        return node;
-    }
-    if (isForUpdateStatement(node)) {
-        updated = true;
-        return factory.updateForUpdateStatement(
-            node,
-            nodeVisitor(node.init, visitor),
-            nodeVisitor(node.test, visitor),
-            nodeVisitor(node.update, visitor),
-            nodeVisitor(node.body, visitor)
-        );
-    }
-    if (isForInStatement(node)) {
-        updated = true;
-        return factory.updateForInStatement(
-            node,
-            nodeVisitor(node.left, visitor),
-            nodeVisitor(node.right, visitor),
-            nodeVisitor(node.body, visitor)
-        );
-    }
-    if (isForOfStatement(node)) {
-        updated = true;
-        return factory.updateForOfStatement(
-            node,
-            nodeVisitor(node.left, visitor),
-            nodeVisitor(node.right, visitor),
-            nodeVisitor(node.body, visitor),
-            node.isAwait
-        );
-    }
-    return node;
-}
-
-function visitETSModule(node: AstNode, visitor: Visitor): AstNode {
-    if (updated) {
-        return node;
-    }
-    if (isEtsScript(node)) {
-        updated = true;
-        return factory.updateEtsScript(node, nodesVisitor(node.statements, visitor));
-    }
-    return node;
-}
-
-function visitDefinitionBody(node: AstNode, visitor: Visitor): AstNode {
-    if (updated) {
-        return node;
-    }
     if (isScriptFunction(node)) {
-        updated = true;
         return factory.updateScriptFunction(
             node,
             nodeVisitor(node.body, visitor),
-            factory.createFunctionSignature(
+            FunctionSignature.createFunctionSignature(
                 nodeVisitor(node.typeParams, visitor),
                 nodesVisitor(node.params, visitor),
                 nodeVisitor(node.returnTypeAnnotation, visitor),
@@ -484,8 +242,81 @@ function visitDefinitionBody(node: AstNode, visitor: Visitor): AstNode {
             node.modifiers
         );
     }
+    if (isMemberExpression(node)) {
+        return factory.updateMemberExpression(
+            node,
+            nodeVisitor(node.object, visitor),
+            nodeVisitor(node.property, visitor),
+            node.kind,
+            node.computed,
+            node.optional
+        );
+    }
+    if (isTSInterfaceDeclaration(node)) {
+        return factory.updateInterfaceDeclaration(
+            node,
+            nodesVisitor(node.extends, visitor),
+            nodeVisitor(node.id, visitor),
+            nodeVisitor(node.typeParams, visitor),
+            nodeVisitor(node.body, visitor),
+            node.isStatic,
+            // TODO: how do I get it?
+            true
+        );
+    }
+    if (isTSInterfaceBody(node)) {
+        return factory.updateInterfaceBody(
+            node,
+            nodesVisitor(node.body, visitor)
+        );
+    }
+    if (isIfStatement(node)) {
+        return factory.updateIfStatement(
+            node,
+            nodeVisitor(node.test, visitor),
+            nodeVisitor(node.consequent, visitor),
+            nodeVisitor(node.alternate, visitor),
+        );
+    }
+    if (isConditionalExpression(node)) {
+        return factory.updateConditionalExpression(
+            node,
+            nodeVisitor(node.test, visitor),
+            nodeVisitor(node.consequent, visitor),
+            nodeVisitor(node.alternate, visitor),
+        );
+    }
+    if (isVariableDeclaration(node)) {
+        return factory.updateVariableDeclaration(
+            node,
+            0,
+            node.declarationKind,
+            nodesVisitor(node.declarators, visitor),
+        );
+    }
+    if (isVariableDeclarator(node)) {
+        return factory.updateVariableDeclarator(
+            node,
+            global.generatedEs2panda._VariableDeclaratorFlag(global.context, node.peer),
+            nodeVisitor(node.name, visitor),
+            nodeVisitor(node.initializer, visitor),
+        );
+    }
+    if (isArrowFunctionExpression(node)) {
+        return factory.updateArrowFunction(
+            node,
+            nodeVisitor(node.scriptFunction, visitor),
+        );
+    }
+    if (isTSAsExpression(node)) {
+        return factory.updateTSAsExpression(
+            node,
+            nodeVisitor(node.expr, visitor),
+            nodeVisitor(node.typeAnnotation, visitor),
+            node.isConst
+        );
+    }
     if (isClassProperty(node)) {
-        updated = true;
         return factory.updateClassProperty(
             node,
             node.key,
@@ -495,39 +326,21 @@ function visitDefinitionBody(node: AstNode, visitor: Visitor): AstNode {
             node.isComputed
         );
     }
-    // TODO
-    return node;
-}
-
-function visitLiteral(node: AstNode, visitor: Visitor): AstNode {
-    if (updated) {
-        return node;
-    }
-    if (isTemplateLiteral(node)) {
-        updated = true;
-        return factory.updateTemplateLiteral(
+    if (isClassProperty(node)) {
+        const _node = factory.updateClassProperty(
             node,
-            nodesVisitor(node.quasis, visitor),
-            nodesVisitor(node.expressions, visitor),
-            node.multilineString
+            node.key,
+            nodeVisitor(node.value, visitor),
+            node.typeAnnotation,
+            node.modifiers,
+            node.isComputed
         );
+        if (hasModifierFlag(node, Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL)) {
+            classPropertySetOptional(_node, true);
+        }
+        _node.setAnnotations(node.annotations);
+        return _node;
     }
-    return node;
-}
-
-// TODO: apply this to all nodes that does not require updating
-function visitWithoutUpdate<T extends AstNode>(node: T, visitor: Visitor): T {
-    if (updated) {
-        return node;
-    }
-    if (isImportDeclaration(node)) {
-        nodesVisitor(node.specifiers, visitor);
-    }
-    if (isETSFunctionType(node)) {
-        nodesVisitor(node.params, visitor);
-    }
-    if (isEtsParameterExpression(node)) {
-        nodeVisitor(node.type, visitor);
-    }
-    return node;
+    // TODO
+    return visitWithoutUpdate(node, visitor);
 }

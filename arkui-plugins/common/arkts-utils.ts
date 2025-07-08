@@ -97,13 +97,3 @@ export function updateStructMetadata(
     structInfo.metadata = metadata;
     return structInfo;
 }
-
-export function moveToFront<T>(arr: T[], idx: number): T[] {
-    if (idx < 0 || idx >= arr.length) {
-        throw new Error(`Index ${idx} is out of bounds for array of length ${arr.length}`);
-    }
-
-    const copy = [...arr];
-    const [item] = copy.splice(idx, 1);
-    return [item, ...copy];
-}

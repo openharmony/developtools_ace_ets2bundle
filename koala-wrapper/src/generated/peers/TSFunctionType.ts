@@ -35,7 +35,7 @@ import { TSTypeParameterDeclaration } from "./TSTypeParameterDeclaration"
 import { Expression } from "./Expression"
 export class TSFunctionType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_FUNCTION_TYPE)
+        assertValidPeer(pointer, 125)
         super(pointer)
         
     }
@@ -63,6 +63,6 @@ export class TSFunctionType extends TypeNode {
 export function isTSFunctionType(node: AstNode): node is TSFunctionType {
     return node instanceof TSFunctionType
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_FUNCTION_TYPE)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_FUNCTION_TYPE, TSFunctionType)
+if (!nodeByType.has(125)) {
+    nodeByType.set(125, TSFunctionType)
 }

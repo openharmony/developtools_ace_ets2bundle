@@ -34,7 +34,7 @@ import { Expression } from "./Expression"
 import { Identifier } from "./Identifier"
 export class AnnotationUsage extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ANNOTATION_USAGE)
+        assertValidPeer(pointer, 2)
         super(pointer)
         
     }
@@ -73,6 +73,6 @@ export class AnnotationUsage extends Statement {
 export function isAnnotationUsage(node: AstNode): node is AnnotationUsage {
     return node instanceof AnnotationUsage
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_ANNOTATION_USAGE)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_ANNOTATION_USAGE, AnnotationUsage)
+if (!nodeByType.has(2)) {
+    nodeByType.set(2, AnnotationUsage)
 }

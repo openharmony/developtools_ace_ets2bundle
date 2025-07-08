@@ -34,7 +34,7 @@ import { StringLiteral } from "./StringLiteral"
 import { Identifier } from "./Identifier"
 export class ExportAllDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_EXPORT_ALL_DECLARATION)
+        assertValidPeer(pointer, 26)
         super(pointer)
         
     }
@@ -54,6 +54,6 @@ export class ExportAllDeclaration extends Statement {
 export function isExportAllDeclaration(node: AstNode): node is ExportAllDeclaration {
     return node instanceof ExportAllDeclaration
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_EXPORT_ALL_DECLARATION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_EXPORT_ALL_DECLARATION, ExportAllDeclaration)
+if (!nodeByType.has(26)) {
+    nodeByType.set(26, ExportAllDeclaration)
 }

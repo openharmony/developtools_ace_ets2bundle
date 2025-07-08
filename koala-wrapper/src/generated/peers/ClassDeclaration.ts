@@ -34,7 +34,7 @@ import { ClassDefinition } from "./ClassDefinition"
 import { Decorator } from "./Decorator"
 export class ClassDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DECLARATION)
+        assertValidPeer(pointer, 15)
         super(pointer)
         
     }
@@ -54,6 +54,6 @@ export class ClassDeclaration extends Statement {
 export function isClassDeclaration(node: AstNode): node is ClassDeclaration {
     return node instanceof ClassDeclaration
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DECLARATION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DECLARATION, ClassDeclaration)
+if (!nodeByType.has(15)) {
+    nodeByType.set(15, ClassDeclaration)
 }

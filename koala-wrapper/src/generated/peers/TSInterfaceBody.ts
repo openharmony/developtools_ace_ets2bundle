@@ -32,7 +32,7 @@ import {
 import { Expression } from "./Expression"
 export class TSInterfaceBody extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERFACE_BODY)
+        assertValidPeer(pointer, 132)
         super(pointer)
         
     }
@@ -52,6 +52,6 @@ export class TSInterfaceBody extends Expression {
 export function isTSInterfaceBody(node: AstNode): node is TSInterfaceBody {
     return node instanceof TSInterfaceBody
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERFACE_BODY)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERFACE_BODY, TSInterfaceBody)
+if (!nodeByType.has(132)) {
+    nodeByType.set(132, TSInterfaceBody)
 }
