@@ -17,13 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor, VisitorOptions } from '../common/abstract-visitor';
 import { CustomComponentNames } from './utils';
 import { factory } from './ui-factory';
-import {
-    ARKUI_COMPONENT_IMPORT_NAME,
-    IMPORT_SOURCE_MAP,
-    OUTPUT_DEPENDENCY_MAP,
-    ARKUI_STATEMANAGEMENT_IMPORT_NAME,
-    KIT_ARKUI_NAME,
-} from '../common/predefines';
+import { ARKUI_COMPONENT_IMPORT_NAME, IMPORT_SOURCE_MAP, OUTPUT_DEPENDENCY_MAP } from '../common/predefines';
 import { NameCollector } from './name-collector';
 
 interface MemoImportCollection {
@@ -55,8 +49,6 @@ export class PreprocessorTransformer extends AbstractVisitor {
         this.memoImportCollection = {};
         this.localComponentNames = [];
         this.isMemoImportOnce = false;
-        IMPORT_SOURCE_MAP.clear();
-        IMPORT_SOURCE_MAP.set('arkui.stateManagement.runtime', new Set(['memo', '__memo_context_type', '__memo_id_type']));
     }
 
     isCustomConponentDecl(node: arkts.CallExpression): boolean {
@@ -74,14 +66,8 @@ export class PreprocessorTransformer extends AbstractVisitor {
     }
 
     transformComponentCall(node: arkts.CallExpression): arkts.TSAsExpression | arkts.CallExpression {
-        if (node.arguments.length === 0 && node.trailingBlock) {
-            return arkts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
-                arkts.factory.createUndefinedLiteral(),
-            ]);
-        } else if (arkts.isObjectExpression(node.arguments[0])) {
-            const componentName: string = `${
-                CustomComponentNames.COMPONENT_INTERFACE_PREFIX
-            }${node.expression.dumpSrc()}`;
+        if (arkts.isObjectExpression(node.arguments[0])) {
+            const componentName: string = `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${node.expression.dumpSrc()}`;
             const newArg = arkts.factory.createTSAsExpression(
                 node.arguments[0].clone(),
                 arkts.factory.createTypeReference(
@@ -89,10 +75,9 @@ export class PreprocessorTransformer extends AbstractVisitor {
                 ),
                 true
             );
-            return arkts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
-                newArg,
-                ...node.arguments.slice(1),
-            ]);
+            return arkts.factory
+                .updateCallExpression(node, node.expression, node.typeArguments, [newArg, ...node.arguments.slice(1)])
+                .setTralingBlock(node.trailingBlock);
         } else {
             return node;
         }
@@ -121,7 +106,7 @@ export class PreprocessorTransformer extends AbstractVisitor {
     addDependencesImport(node: arkts.ETSImportDeclaration): void {
         if (!node.source) return;
 
-        const isFromCompImport: boolean = node.source.str === ARKUI_COMPONENT_IMPORT_NAME || node.source.str === KIT_ARKUI_NAME;
+        const isFromCompImport: boolean = node.source.str === ARKUI_COMPONENT_IMPORT_NAME;
         const structCollection: Set<string> = arkts.GlobalInfo.getInfoInstance().getStructCollection();
         node.specifiers.forEach((item: arkts.AstNode) => {
             if (!arkts.isImportSpecifier(item) || !item.imported?.name) return;
@@ -134,14 +119,12 @@ export class PreprocessorTransformer extends AbstractVisitor {
                 this.localComponentNames.push(item.local?.name ?? importName);
             }
 
-            if (structCollection.has(importName)) {
+            if (structCollection.has(importName) && this.isExternal === false) {
                 const interfaceName: string = CustomComponentNames.COMPONENT_INTERFACE_PREFIX + importName;
                 const newImport: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
                     node.source?.clone(),
                     [factory.createAdditionalImportSpecifier(interfaceName, interfaceName)],
-                    arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE,
-                    this.program!,
-                    arkts.Es2pandaImportFlags.IMPORT_FLAGS_NONE
+                    arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE
                 );
                 this.structInterfaceImport.push(newImport);
             } else {
@@ -196,20 +179,9 @@ export class PreprocessorTransformer extends AbstractVisitor {
         // Handling component imports
         const importName: string = node.imported.name;
         const sourceName: string = source.str;
-        if (
-            this.nameCollector.getComponents().includes(importName) &&
-            (sourceName === ARKUI_COMPONENT_IMPORT_NAME || sourceName === KIT_ARKUI_NAME)
-        ) {
-            const newDependencies = [`UI${importName}Attribute`];
+        if (this.nameCollector.getComponents().includes(importName) && sourceName === ARKUI_COMPONENT_IMPORT_NAME) {
+            const newDependencies = [`${importName}Attribute`];
             this.updateOutDependencyMap(importName, newDependencies);
-            this.updateSourceDependencyMap(sourceName, newDependencies);
-        } else if (
-            OUTPUT_DEPENDENCY_MAP.get(importName) &&
-            (sourceName === ARKUI_COMPONENT_IMPORT_NAME ||
-                sourceName === ARKUI_STATEMANAGEMENT_IMPORT_NAME ||
-                sourceName === KIT_ARKUI_NAME)
-        ) {
-            const newDependencies: string[] = OUTPUT_DEPENDENCY_MAP.get(importName) ?? [];
             this.updateSourceDependencyMap(sourceName, newDependencies);
         }
     }
@@ -250,9 +222,7 @@ export class PreprocessorTransformer extends AbstractVisitor {
             const newImport: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
                 arkts.factory.create1StringLiteral(source),
                 [factory.createAdditionalImportSpecifier(item, item)],
-                arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE,
-                this.program!,
-                arkts.Es2pandaImportFlags.IMPORT_FLAGS_NONE
+                arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE
             );
             arkts.importDeclarationInsert(newImport, this.program!);
         });

@@ -35,7 +35,7 @@ import { ClassDefinition } from "./ClassDefinition"
 import { Decorator } from "./Decorator"
 export class TSEnumDeclaration extends TypedStatement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_ENUM_DECLARATION)
+        assertValidPeer(pointer, 87)
         super(pointer)
         
     }
@@ -77,6 +77,6 @@ export class TSEnumDeclaration extends TypedStatement {
 export function isTSEnumDeclaration(node: AstNode): node is TSEnumDeclaration {
     return node instanceof TSEnumDeclaration
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_ENUM_DECLARATION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_ENUM_DECLARATION, TSEnumDeclaration)
+if (!nodeByType.has(87)) {
+    nodeByType.set(87, TSEnumDeclaration)
 }

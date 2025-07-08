@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 import { Expression } from "./Expression"
 export class ETSPackageDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PACKAGE_DECLARATION)
+        assertValidPeer(pointer, 69)
         super(pointer)
         
     }
@@ -47,6 +47,6 @@ export class ETSPackageDeclaration extends Statement {
 export function isETSPackageDeclaration(node: AstNode): node is ETSPackageDeclaration {
     return node instanceof ETSPackageDeclaration
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PACKAGE_DECLARATION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PACKAGE_DECLARATION, ETSPackageDeclaration)
+if (!nodeByType.has(69)) {
+    nodeByType.set(69, ETSPackageDeclaration)
 }

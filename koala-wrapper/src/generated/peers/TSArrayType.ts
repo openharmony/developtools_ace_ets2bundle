@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class TSArrayType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_ARRAY_TYPE)
+        assertValidPeer(pointer, 102)
         super(pointer)
         
     }
@@ -49,6 +49,6 @@ export class TSArrayType extends TypeNode {
 export function isTSArrayType(node: AstNode): node is TSArrayType {
     return node instanceof TSArrayType
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_ARRAY_TYPE)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_ARRAY_TYPE, TSArrayType)
+if (!nodeByType.has(102)) {
+    nodeByType.set(102, TSArrayType)
 }

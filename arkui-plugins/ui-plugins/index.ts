@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { ComponentTransformer } from './component-transformer';
 import { PreprocessorTransformer } from './preprocessor-transform';
 import { CheckedTransformer } from './checked-transformer';
-import { Plugins, PluginContext, ProjectConfig } from '../common/plugin-context';
+import { Plugins, PluginContext } from '../common/plugin-context';
 import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../common/predefines';
 import { debugDump, debugLog, getDumpFileName } from '../common/debug';
@@ -50,7 +50,16 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
             program.programFileNameWithExtension
         );
         arkts.Performance.getInstance().createEvent('ui-parsed');
-        program = parsedProgramVisit(program, this);
+        const componentTransformer = new ComponentTransformer();
+        const preprocessorTransformer = new PreprocessorTransformer();
+        const programVisitor = new ProgramVisitor({
+            pluginName: uiTransform.name,
+            state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
+            visitors: [componentTransformer, preprocessorTransformer],
+            skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+            pluginContext: this,
+        });
+        program = programVisitor.programVisitor(program);
         script = program.astNode;
         arkts.Performance.getInstance().stopEvent('ui-parsed', true);
         debugLog('[AFTER PARSED SCRIPT] script: ', script.dumpSrc());
@@ -67,29 +76,6 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
     }
     console.log('[UI PLUGIN] AFTER PARSED EXIT WITH NO TRANSFORM');
     return script;
-}
-
-function parsedProgramVisit(
-    program: arkts.Program,
-    context: PluginContext,
-    canSkipPhases: boolean = false
-): arkts.Program {
-    if (canSkipPhases) {
-        debugLog('[SKIP PHASE] phase: ui-parsed, moduleName: ', program.moduleName);
-    } else {
-        debugLog('[CANT SKIP PHASE] phase: ui-parsed, moduleName: ', program.moduleName);
-        const componentTransformer = new ComponentTransformer();
-        const preprocessorTransformer = new PreprocessorTransformer();
-        const programVisitor = new ProgramVisitor({
-            pluginName: uiTransform.name,
-            state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
-            visitors: [componentTransformer, preprocessorTransformer],
-            skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
-            pluginContext: context,
-        });
-        program = programVisitor.programVisitor(program);
-    }
-    return program;
 }
 
 function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
@@ -109,7 +95,15 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
             program.programFileNameWithExtension
         );
         arkts.Performance.getInstance().createEvent('ui-checked');
-        program = checkedProgramVisit(program, this);
+        const checkedTransformer = new CheckedTransformer(this.getProjectConfig());
+        const programVisitor = new ProgramVisitor({
+            pluginName: uiTransform.name,
+            state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
+            visitors: [checkedTransformer],
+            skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+            pluginContext: this,
+        });
+        program = programVisitor.programVisitor(program);
         script = program.astNode;
         arkts.Performance.getInstance().stopEvent('ui-checked', true);
         debugLog('[AFTER STRUCT SCRIPT] script: ', script.dumpSrc());
@@ -131,27 +125,4 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
     }
     console.log('[UI PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
     return script;
-}
-
-function checkedProgramVisit(
-    program: arkts.Program,
-    context: PluginContext,
-    canSkipPhases: boolean = false
-): arkts.Program {
-    if (canSkipPhases) {
-        debugLog('[SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
-    } else {
-        debugLog('[CANT SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
-        const projectConfig: ProjectConfig | undefined = context.getProjectConfig();
-        const checkedTransformer = new CheckedTransformer(projectConfig);
-        const programVisitor = new ProgramVisitor({
-            pluginName: uiTransform.name,
-            state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
-            visitors: [checkedTransformer],
-            skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
-            pluginContext: context,
-        });
-        program = programVisitor.programVisitor(program);
-    }
-    return program;
 }

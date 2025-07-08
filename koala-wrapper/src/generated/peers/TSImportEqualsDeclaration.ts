@@ -34,7 +34,7 @@ import { Identifier } from "./Identifier"
 import { Expression } from "./Expression"
 export class TSImportEqualsDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_IMPORT_EQUALS_DECLARATION)
+        assertValidPeer(pointer, 124)
         super(pointer)
         
     }
@@ -57,6 +57,6 @@ export class TSImportEqualsDeclaration extends Statement {
 export function isTSImportEqualsDeclaration(node: AstNode): node is TSImportEqualsDeclaration {
     return node instanceof TSImportEqualsDeclaration
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_IMPORT_EQUALS_DECLARATION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_IMPORT_EQUALS_DECLARATION, TSImportEqualsDeclaration)
+if (!nodeByType.has(124)) {
+    nodeByType.set(124, TSImportEqualsDeclaration)
 }

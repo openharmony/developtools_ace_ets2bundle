@@ -41,45 +41,15 @@ static es2panda_Impl *impl = nullptr;
 
 const char* LIB_ES2PANDA_PUBLIC = LIB_PREFIX "es2panda_public" LIB_SUFFIX;
 
-#ifdef KOALA_WINDOWS
-    const char *SEPARATOR = "\\";
-#else
-    const char *SEPARATOR = "/";
-#endif
-const char *LIB_DIR = "lib";
-
-static std::string ES2PANDA_LIB_PATH;
-
-std::string joinPath(vector<string> &paths)
-{
-    std::string res;
-    for (int i = 0; i < paths.size(); ++i) {
-        if (i == 0) {
-            res = paths[i];
-        } else {
-            res += SEPARATOR + paths[i];
-        }
-    }
-    return res;
-}
-
-void impl_SetUpSoPath(KStringPtr &soPath)
-{
-    ES2PANDA_LIB_PATH = std::string(soPath.c_str());
-}
-KOALA_INTEROP_V1(SetUpSoPath, KStringPtr);
-
 void* FindLibrary() {
-    std::vector<std::string> pathArray;
+    std::string libraryName;
     char* envValue = getenv("PANDA_SDK_PATH");
     if (envValue) {
-        pathArray = {envValue, PLUGIN_DIR, LIB_DIR, LIB_ES2PANDA_PUBLIC};
-    } else if (!ES2PANDA_LIB_PATH.empty()) {
-        pathArray = {ES2PANDA_LIB_PATH, LIB_DIR, LIB_ES2PANDA_PUBLIC};
+        libraryName = std::string(envValue)  + ("/" PLUGIN_DIR "/lib/") + LIB_ES2PANDA_PUBLIC;
     } else {
-        pathArray = {LIB_ES2PANDA_PUBLIC};
+        libraryName = LIB_ES2PANDA_PUBLIC;
     }
-    return loadLibrary(joinPath(pathArray));
+    return loadLibrary(libraryName);
 }
 
 es2panda_Impl *GetImpl() {

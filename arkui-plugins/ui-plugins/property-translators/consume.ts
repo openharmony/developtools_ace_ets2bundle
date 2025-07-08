@@ -16,11 +16,10 @@
 import * as arkts from '@koalaui/libarkts';
 
 import {
-    generateToRecord,
     createGetter,
-    createSetter2,
+    createSetter,
+    generateThisBackingValue,
     generateThisBacking,
-    generateGetOrSetCall,
     getValueInAnnotation,
     DecoratorNames,
 } from './utils';
@@ -28,7 +27,6 @@ import { PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName } from '../../common/arkts-utils';
 import { createOptionalClassProperty } from '../utils';
-import { factory } from './factory';
 
 export class ConsumeTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
@@ -40,12 +38,8 @@ export class ConsumeTranslator extends PropertyTranslator implements Initializer
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
-        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(originalName, newName);
+        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
         currentStructInfo.initializeBody.push(initializeStruct);
-        if (currentStructInfo.isReusable) {
-            const toRecord = generateToRecord(newName, originalName);
-            currentStructInfo.toRecordBody.push(toRecord);
-        }
         arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
@@ -53,23 +47,19 @@ export class ConsumeTranslator extends PropertyTranslator implements Initializer
         const field: arkts.ClassProperty = createOptionalClassProperty(
             newName,
             this.property,
-            'ConsumeDecoratedVariable',
+            'MutableState',
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
-        const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, 'get');
-        const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            generateGetOrSetCall(thisValue, 'set')
-        );
+        const thisValue: arkts.MemberExpression = generateThisBackingValue(newName, false, true);
         const getter: arkts.MethodDefinition = this.translateGetter(
             originalName,
             this.property.typeAnnotation,
-            thisGet
+            thisValue
         );
         const setter: arkts.MethodDefinition = this.translateSetter(
             originalName,
             this.property.typeAnnotation,
-            thisSet
+            thisValue
         );
 
         return [field, getter, setter];
@@ -78,7 +68,7 @@ export class ConsumeTranslator extends PropertyTranslator implements Initializer
     translateGetter(
         originalName: string,
         typeAnnotation: arkts.TypeNode | undefined,
-        returnValue: arkts.Expression
+        returnValue: arkts.MemberExpression
     ): arkts.MethodDefinition {
         return createGetter(originalName, typeAnnotation, returnValue);
     }
@@ -86,18 +76,37 @@ export class ConsumeTranslator extends PropertyTranslator implements Initializer
     translateSetter(
         originalName: string,
         typeAnnotation: arkts.TypeNode | undefined,
-        statement: arkts.AstNode
+        left: arkts.MemberExpression
     ): arkts.MethodDefinition {
-        return createSetter2(originalName, typeAnnotation, statement);
+        const right: arkts.CallExpression = arkts.factory.createCallExpression(
+            arkts.factory.createIdentifier('observableProxy'),
+            undefined,
+            [arkts.factory.createIdentifier('value')]
+        );
+
+        return createSetter(originalName, typeAnnotation, left, right);
     }
 
-    generateInitializeStruct(originalName: string, newName: string): arkts.AstNode {
-        const alias = getValueInAnnotation(this.property, DecoratorNames.CONSUME);
-        const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
-            generateThisBacking(newName),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateInitConsumeCall(originalName, this.property, alias ?? originalName)
+    generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
+        let consumeValueStr: string | undefined = getValueInAnnotation(this.property, DecoratorNames.CONSUME);
+        if (!consumeValueStr) {
+            consumeValueStr = originalName;
+        }
+        const right: arkts.CallExpression = arkts.factory.createCallExpression(
+            arkts.factory.createIdentifier('contextLocal'),
+            this.property.typeAnnotation ? [this.property.typeAnnotation] : undefined,
+            [arkts.factory.create1StringLiteral(consumeValueStr)]
         );
-        return arkts.factory.createExpressionStatement(assign);
+        return arkts.factory.createAssignmentExpression(
+            arkts.factory.createMemberExpression(
+                arkts.factory.createThisExpression(),
+                arkts.factory.createIdentifier(newName),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
+            ),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+            right
+        );
     }
 }

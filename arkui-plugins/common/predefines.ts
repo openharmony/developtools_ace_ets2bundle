@@ -24,18 +24,13 @@ export const EXTERNAL_SOURCE_PREFIX_NAMES: (string | RegExp)[] = [
     /@arkts\..*/,
     /@ohos\.(?!arkui).*/,
     /@system\..*/,
+    /arkui\.(?![Uu]serView$)[A-Z]/, // temporary solution
     /ability\..*/,
 ];
 
-export const EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK: (string | RegExp)[] = [
-    'std',
-    'escompat',
-    /@arkts\..*/
-];
-
 export const ARKUI_COMPONENT_IMPORT_NAME: string = '@ohos.arkui.component';
+
 export const ARKUI_STATEMANAGEMENT_IMPORT_NAME: string = '@ohos.arkui.stateManagement';
-export const KIT_ARKUI_NAME: string = '@kit.ArkUI';
 
 export const EXTERNAL_SOURCE_ALLOWED_IMPORT_INSERT_NAMES: string[] = [
     ARKUI_COMPONENT_IMPORT_NAME,
@@ -43,7 +38,40 @@ export const EXTERNAL_SOURCE_ALLOWED_IMPORT_INSERT_NAMES: string[] = [
 ];
 
 export const IMPORT_SOURCE_MAP: Map<string, Set<string>> = new Map<string, Set<string>>([
-    ['arkui.stateManagement.runtime', new Set(['memo', '__memo_context_type', '__memo_id_type'])]
+    ['@ohos.arkui.component', new Set(['$r', '$rawfile', '_r', '_rawfile'])],
+    [
+        '@ohos.arkui.stateManagement',
+        new Set([
+            'State',
+            'Prop',
+            'Provide',
+            'Consume',
+            'StorageLink',
+            'StorageProp',
+            'LocalStorageLink',
+            'LocalStorageProp',
+            'Watch',
+            'ObjectLink',
+            'StateDecoratedVariable',
+            'MutableState',
+            'contextLocalStateOf',
+            'contextLocal',
+            'observableProxy',
+            'SyncedProperty',
+            'objectLinkState',
+            'propState',
+            'AppStorageLinkState',
+            'StorageLinkState',
+            'DecoratedV1VariableBase',
+            'LinkDecoratedVariable',
+            'PropDecoratedVariable',
+            'StorageLinkDecoratedVariable',
+            'StoragePropDecoratedVariable',
+            'memo',
+            '__memo_context_type',
+            '__memo_id_type',
+        ]),
+    ],
 ]);
 
 export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, string[]>([
@@ -52,43 +80,11 @@ export const OUTPUT_DEPENDENCY_MAP: Map<string, string[]> = new Map<string, stri
     ['State', ['StateDecoratedVariable']],
     ['Link', ['LinkDecoratedVariable', 'DecoratedV1VariableBase']],
     ['Prop', ['PropDecoratedVariable']],
-    ['Provide', ['ProvideDecoratedVariable']],
-    ['Consume', ['ConsumeDecoratedVariable']],
+    ['Provide', ['MutableState', 'contextLocalStateOf', 'observableProxy']],
+    ['Consume', ['MutableState', 'contextLocal', 'observableProxy']],
     ['StorageProp', ['StoragePropDecoratedVariable']],
     ['StorageLink', ['StorageLinkDecoratedVariable']],
     ['LocalStorageLink', ['StorageLinkState', 'MutableState', 'observableProxy']],
-    ['LocalStorageProp', ['StorageLinkState', 'SyncedProperty', 'observableProxy', 'propState']],
-    ['ObjectLink', ['ObjectLinkDecoratedVariable']],
-    ['Observed', ['MutableStateMeta', 'BackingValue', 'setObservationDepth', 'IObservedObject', 'int32', 'WatchIdType', 'SubscribedWatches']],
-    ['Track', ['MutableStateMeta', 'BackingValue', 'setObservationDepth', 'IObservedObject', 'int32', 'WatchIdType', 'SubscribedWatches']],
-    ['$$', ['Bindable']],
+    ['LocalStorageProp', ['StorageLinkState', 'MutableState', 'observableProxy', 'propState']],
+    ['ObjectLink', ['objectLinkState', 'observableProxy', 'SyncedProperty']],
 ]);
-
-
-export enum InteroperAbilityNames {
-    ARKTS_1_1 = '1.1',
-    ARKTS_1_2 = '1.2',
-    ARKUICOMPATIBLE = 'ArkUICompatible',
-    ESVALUE = 'ESValue',
-    ELMTID = 'elmtId',
-    INITEMPTYOBJECT = 'instantiateEmptyObject',
-    SETPROPERTY = 'setProperty',
-    NUMBER = 'number',
-    PARENT = 'parent',
-    INSTANCE = 'instance',
-    PARAM = 'param',
-    EXTRAINFO = 'extraInfo',
-    COMPONENT = 'component',
-    GETPROPERTY = 'getProperty',
-    CONSTRUCTOR = 'constructor',
-    MODULE = 'module',
-    LOAD = 'load',
-    STRUCTOBJECT = 'structObject',
-    INSTANTIATE = 'instantiate',
-    WRAP = 'wrap',
-    WRAPINT = 'wrapInt',
-    WRAPSTRING = 'wrapString',
-    PARAMSLAMBDA = 'paramsLambda',
-    INTEROPCOMPONENT = 'interopComponent',
-    OHMURL = '@normalized:N&entry&com.example.Interop2use1&har1/src/main/ets/components/MainPage&1.0.0',
-}

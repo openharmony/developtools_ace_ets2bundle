@@ -34,7 +34,7 @@ import { TSTypeParameter } from "./TSTypeParameter"
 import { Es2pandaMappedOption } from "./../Es2pandaEnums"
 export class TSMappedType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_MAPPED_TYPE)
+        assertValidPeer(pointer, 114)
         super(pointer)
         
     }
@@ -60,6 +60,6 @@ export class TSMappedType extends TypeNode {
 export function isTSMappedType(node: AstNode): node is TSMappedType {
     return node instanceof TSMappedType
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_MAPPED_TYPE)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_MAPPED_TYPE, TSMappedType)
+if (!nodeByType.has(114)) {
+    nodeByType.set(114, TSMappedType)
 }

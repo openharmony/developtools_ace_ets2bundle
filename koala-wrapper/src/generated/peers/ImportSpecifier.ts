@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 import { Identifier } from "./Identifier"
 export class ImportSpecifier extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_IMPORT_SPECIFIER)
+        assertValidPeer(pointer, 43)
         super(pointer)
         
     }
@@ -53,6 +53,6 @@ export class ImportSpecifier extends Statement {
 export function isImportSpecifier(node: AstNode): node is ImportSpecifier {
     return node instanceof ImportSpecifier
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_IMPORT_SPECIFIER)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_IMPORT_SPECIFIER, ImportSpecifier)
+if (!nodeByType.has(43)) {
+    nodeByType.set(43, ImportSpecifier)
 }

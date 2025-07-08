@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 import { Identifier } from "./Identifier"
 export class TSQualifiedName extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_QUALIFIED_NAME)
+        assertValidPeer(pointer, 129)
         super(pointer)
         
     }
@@ -53,6 +53,6 @@ export class TSQualifiedName extends Expression {
 export function isTSQualifiedName(node: AstNode): node is TSQualifiedName {
     return node instanceof TSQualifiedName
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_QUALIFIED_NAME)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_QUALIFIED_NAME, TSQualifiedName)
+if (!nodeByType.has(129)) {
+    nodeByType.set(129, TSQualifiedName)
 }

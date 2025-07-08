@@ -33,7 +33,7 @@ import { Expression } from "./Expression"
 import { TypeNode } from "./TypeNode"
 export class ETSClassLiteral extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_CLASS_LITERAL)
+        assertValidPeer(pointer, 70)
         super(pointer)
         
     }
@@ -50,6 +50,6 @@ export class ETSClassLiteral extends Expression {
 export function isETSClassLiteral(node: AstNode): node is ETSClassLiteral {
     return node instanceof ETSClassLiteral
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_CLASS_LITERAL)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_CLASS_LITERAL, ETSClassLiteral)
+if (!nodeByType.has(70)) {
+    nodeByType.set(70, ETSClassLiteral)
 }

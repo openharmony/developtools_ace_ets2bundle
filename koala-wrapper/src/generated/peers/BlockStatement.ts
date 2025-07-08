@@ -32,7 +32,7 @@ import {
 import { Statement } from "./Statement"
 export class BlockStatement extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_BLOCK_STATEMENT)
+        assertValidPeer(pointer, 7)
         super(pointer)
         
     }
@@ -59,6 +59,6 @@ export class BlockStatement extends Statement {
 export function isBlockStatement(node: AstNode): node is BlockStatement {
     return node instanceof BlockStatement
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_BLOCK_STATEMENT)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_BLOCK_STATEMENT, BlockStatement)
+if (!nodeByType.has(7)) {
+    nodeByType.set(7, BlockStatement)
 }

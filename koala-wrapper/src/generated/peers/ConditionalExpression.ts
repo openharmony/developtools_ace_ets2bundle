@@ -32,7 +32,7 @@ import {
 import { Expression } from "./Expression"
 export class ConditionalExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CONDITIONAL_EXPRESSION)
+        assertValidPeer(pointer, 19)
         super(pointer)
         
     }
@@ -70,6 +70,6 @@ export class ConditionalExpression extends Expression {
 export function isConditionalExpression(node: AstNode): node is ConditionalExpression {
     return node instanceof ConditionalExpression
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_CONDITIONAL_EXPRESSION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_CONDITIONAL_EXPRESSION, ConditionalExpression)
+if (!nodeByType.has(19)) {
+    nodeByType.set(19, ConditionalExpression)
 }

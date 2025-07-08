@@ -21,6 +21,7 @@ import {
     changeFileExtension,
     ensurePathExists,
     getFileName,
+    getPandaSDKPath,
     getRootPath,
     MOCK_ENTRY_DIR_PATH,
     MOCK_ENTRY_FILE_NAME,
@@ -173,40 +174,26 @@ function traverse(currentDir: string, pathSection: Record<string, string[]>) {
     }
 }
 
-function traverseSDK(currentDir: string, pathSection: Record<string, string[]>, prefix?: string) {
-    const items = fs.readdirSync(currentDir);
-
-    for (const item of items) {
-        const itemPath = path.join(currentDir, item);
-        const stat = fs.statSync(itemPath);
-
-        if (stat.isFile() && !itemPath.endsWith('.d.ets')) {
-            continue;
-        }
-
-        if (stat.isFile() && itemPath.endsWith('.d.ets')) {
-            const basename = path.basename(item, '.d.ets');
-            const name = prefix && prefix !== 'arkui.runtime-api' ? `${prefix}.${basename}` : basename;
-            pathSection[name] = [changeFileExtension(itemPath, '', '.d.ets')];
-        } else if (stat.isDirectory()) {
-            const basename = path.basename(itemPath);
-            const name = prefix && prefix !== 'arkui.runtime-api' ? `${prefix}.${basename}` : basename;
-            traverseSDK(itemPath, pathSection, name);
-        }
-    }
-}
-
 function mockBuildConfig(): BuildConfig {
     return {
         packageName: 'mock',
         compileFiles: [path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, MOCK_ENTRY_FILE_NAME)],
         loaderOutPath: path.resolve(getRootPath(), MOCK_OUTPUT_DIR_PATH),
         cachePath: path.resolve(getRootPath(), MOCK_OUTPUT_CACHE_PATH),
-        pandaSdkPath: global.PANDA_SDK_PATH,
-        buildSdkPath: global.API_PATH,
+        pandaSdkPath: getPandaSDKPath(),
+        buildSdkPath: path.resolve(getRootPath(), MOCK_LOCAL_SDK_DIR_PATH),
         sourceRoots: [getRootPath()],
         moduleRootPath: path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH),
-        dependentModuleList: [],
+        dependentModuleList: [
+            {
+                packageName: '@koalaui/runtime',
+                moduleName: '@koalaui/runtime',
+                moduleType: 'har',
+                modulePath: path.resolve(getRootPath(), RUNTIME_API_PATH),
+                sourceRoots: ['./'],
+                entryFile: 'index.sts',
+            },
+        ],
     };
 }
 
@@ -307,7 +294,7 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
         const pathSection: Record<string, string[]> = {};
         pathSection['std'] = [path.resolve(this.pandaSdkPath, PANDA_SDK_STDLIB_PATH, STDLIB_STD_PATH)];
         pathSection['escompat'] = [path.resolve(this.pandaSdkPath, PANDA_SDK_STDLIB_PATH, STDLIB_ESCOMPAT_PATH)];
-        traverseSDK(this.buildSdkPath, pathSection);
+        traverse(this.buildSdkPath, pathSection);
 
         this.moduleInfos.forEach((moduleInfo: ModuleInfo, moduleRootPath: string) => {
             pathSection[moduleInfo.packageName] = [path.resolve(moduleRootPath, moduleInfo.sourceRoots[0])];

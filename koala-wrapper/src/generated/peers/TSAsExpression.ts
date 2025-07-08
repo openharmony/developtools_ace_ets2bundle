@@ -34,7 +34,7 @@ import { Expression } from "./Expression"
 import { TypeNode } from "./TypeNode"
 export class TSAsExpression extends AnnotatedExpression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_AS_EXPRESSION)
+        assertValidPeer(pointer, 138)
         super(pointer)
         
     }
@@ -72,6 +72,6 @@ export class TSAsExpression extends AnnotatedExpression {
 export function isTSAsExpression(node: AstNode): node is TSAsExpression {
     return node instanceof TSAsExpression
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_AS_EXPRESSION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_AS_EXPRESSION, TSAsExpression)
+if (!nodeByType.has(138)) {
+    nodeByType.set(138, TSAsExpression)
 }

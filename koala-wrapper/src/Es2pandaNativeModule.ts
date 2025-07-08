@@ -78,9 +78,6 @@ export class Es2pandaNativeModule {
     _ContextErrorMessage(context: KPtr): KPtr {
         throw new Error('Not implemented');
     }
-    _GetAllErrorMessages(context: KPtr): KPtr {
-        throw new Error('Not implemented');
-    }
     _AstNodeChildren(context: KPtr, node: KPtr): KPtr {
         throw new Error('Not implemented');
     }
@@ -104,10 +101,6 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
     _CreateContextFromString(config: KPtr, source: String, filename: String): KPtr {
-        throw new Error('Not implemented');
-    }
-    _CreateContextGenerateAbcForExternalSourceFiles(config: KPtr, fileCount: KInt, filenames:
-        string[]): KPtr {
         throw new Error('Not implemented');
     }
     _CreateContextFromFile(config: KPtr, filename: String): KPtr {
@@ -295,13 +288,11 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
     _CreateETSImportDeclaration(
-        context: KNativePointer,
-        importPath: KNativePointer,
-        specifiers: BigUint64Array,
-        specifiersSequenceLength: KInt,
-        importKind: KInt,
-        programPtr: KNativePointer,
-        flags: KInt
+        context: KPtr,
+        source: KPtr,
+        specifiers: KPtrArray,
+        specifiersLen: KInt,
+        importKind: KInt
     ): KNativePointer {
         throw new Error('Not implemented');
     }
@@ -801,58 +792,6 @@ export class Es2pandaNativeModule {
     }
 
     _ETSParserGetGlobalProgramAbsName(context: KNativePointer): KNativePointer {
-        throw new Error('Not implemented');
-    }
-
-    _ImportSpecifierIsRemovableConst(context: KNativePointer, instance: KNativePointer): KBoolean {
-        throw new Error('Not implemented');
-    }
-
-    _ImportSpecifierSetRemovable(context: KNativePointer, instance: KNativePointer): void {
-        throw new Error('Not implemented');
-    }
-
-    _ClassPropertyIsDefaultAccessModifierConst(context: KNativePointer, receiver: KNativePointer): boolean {
-        throw new Error('Not implemented');
-    }
-
-    _AstNodeStartConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error('Not implemented');
-    }
-
-    _AstNodeEndConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error('Not implemented');
-    }
-
-    _ClassVariableDeclaration(context: KNativePointer, classInstance: KNativePointer): KNativePointer {
-        throw new Error('Not implemented');
-    }
- 
-    _IsMethodDefinition(node: KPtr): KBoolean {
-        throw new Error('Not implemented');
-    }
-
-    _AstNodeRangeConst(context: KNativePointer, node: KNativePointer): KNativePointer {
-        throw new Error('CreateFunctionDecl was not overloaded by native module initialization');
-    }
-
-    _SourceRangeStart(context: KNativePointer, range: KNativePointer): KNativePointer {
-        throw new Error('CreateFunctionDecl was not overloaded by native module initialization');
-    }
-
-    _SourceRangeEnd(context: KNativePointer, range: KNativePointer): KNativePointer {
-        throw new Error('CreateFunctionDecl was not overloaded by native module initialization');
-    }
-
-    _CreateSourceRange(context: KNativePointer, start: KNativePointer, end: KNativePointer): KNativePointer {
-        throw new Error('CreateFunctionDecl was not overloaded by native module initialization');
-    }
-
-    _IsArrayExpression(node: KPtr): KBoolean {
-        throw new Error('Not implemented');
-    }
-
-    _SetUpSoPath(soPath: string): void {
         throw new Error('Not implemented');
     }
 }

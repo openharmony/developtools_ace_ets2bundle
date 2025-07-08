@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class TSVoidKeyword extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_VOID_KEYWORD)
+        assertValidPeer(pointer, 94)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class TSVoidKeyword extends TypeNode {
 export function isTSVoidKeyword(node: AstNode): node is TSVoidKeyword {
     return node instanceof TSVoidKeyword
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_VOID_KEYWORD)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_VOID_KEYWORD, TSVoidKeyword)
+if (!nodeByType.has(94)) {
+    nodeByType.set(94, TSVoidKeyword)
 }

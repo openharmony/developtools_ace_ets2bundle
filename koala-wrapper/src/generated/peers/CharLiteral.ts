@@ -32,7 +32,7 @@ import {
 import { Literal } from "./Literal"
 export class CharLiteral extends Literal {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CHAR_LITERAL)
+        assertValidPeer(pointer, 13)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class CharLiteral extends Literal {
 export function isCharLiteral(node: AstNode): node is CharLiteral {
     return node instanceof CharLiteral
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_CHAR_LITERAL)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_CHAR_LITERAL, CharLiteral)
+if (!nodeByType.has(13)) {
+    nodeByType.set(13, CharLiteral)
 }
