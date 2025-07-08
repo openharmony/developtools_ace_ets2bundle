@@ -13,10 +13,11 @@
  * limitations under the License.
  */
 
+import * as arkts from '@koalaui/libarkts';
+import { arktsGlobal } from '@koalaui/libarkts/build/lib/es2panda';
 import { PluginDriver } from './plugin-driver';
 import { PluginContext, PluginExecutor } from '../../common/plugin-context';
 import { EtsglobalRemover } from '../../common/etsglobal-remover';
-import * as arkts from '@koalaui/libarkts';
 
 function restartCompilerUptoState(state: arkts.Es2pandaContextState, restart: boolean): boolean {
     try {
@@ -27,8 +28,8 @@ function restartCompilerUptoState(state: arkts.Es2pandaContextState, restart: bo
 
         if (restart) {
             const srcText = new EtsglobalRemover().visitor(ast).dumpSrc();
-            arkts.arktsGlobal.es2panda._DestroyContext(arkts.arktsGlobal.context);
-            arkts.arktsGlobal.compilerContext = arkts.Context.createFromString(srcText);
+            arktsGlobal.es2panda._DestroyContext(arktsGlobal.context);
+            arktsGlobal.compilerContext = arkts.Context.createFromString(srcText);
         }
 
         arkts.proceedToState(state);
@@ -52,6 +53,8 @@ function insertPlugin(
     }
 
     if (plugin) {
+        pluginContext.setArkTSAst(ast);
+        pluginContext.setArkTSProgram(arktsGlobal.compilerContext.program);
         plugin.handler.apply(pluginContext);
     }
     return true;

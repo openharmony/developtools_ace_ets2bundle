@@ -15,36 +15,10 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { factory } from './memo-factory';
-import {
-    hasMemoAnnotation,
-    hasMemoIntrinsicAnnotation,
-    parametrizedNodeHasReceiver,
-    isMemoTSTypeAliasDeclaration,
-} from './utils';
+import { hasMemoAnnotation, hasMemoIntrinsicAnnotation } from './utils';
 import { AbstractVisitor } from '../common/abstract-visitor';
 
-function isScriptFunctionFromGetter(node: arkts.ScriptFunction): boolean {
-    return (
-        !!node.parent &&
-        !!node.parent.parent &&
-        arkts.isFunctionExpression(node.parent) &&
-        arkts.isMethodDefinition(node.parent.parent) &&
-        node.parent.parent.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET
-    );
-}
-
-function isScriptFunctionFromSetter(node: arkts.ScriptFunction): boolean {
-    return (
-        !!node.parent &&
-        !!node.parent.parent &&
-        arkts.isFunctionExpression(node.parent) &&
-        arkts.isMethodDefinition(node.parent.parent) &&
-        node.parent.parent.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET
-    );
-}
-
 export class SignatureTransformer extends AbstractVisitor {
-    /* Tracking whether should import `__memo_context_type` and `__memo_id_type` */
     public modified = false;
 
     reset(): void {
@@ -58,25 +32,17 @@ export class SignatureTransformer extends AbstractVisitor {
             if (memo) {
                 this.modified = true;
             }
-            const isFromGetter = isScriptFunctionFromGetter(node);
-            const isFromSetter = isScriptFunctionFromSetter(node);
-            const shouldAddMemoParam = memo && !isFromGetter && !isFromSetter;
-            const shouldApplyMemoToParamExpr = memo && isFromSetter;
-            const shouldApplyMemoToReturnType = memo && isFromGetter;
-            const newParams = node.params.map((it) => this.visitor(it, shouldApplyMemoToParamExpr));
             return arkts.factory.updateScriptFunction(
                 node,
                 node.body,
                 arkts.factory.createFunctionSignature(
                     node.typeParams,
-                    shouldAddMemoParam
-                        ? factory.createHiddenParameterIfNotAdded(newParams, parametrizedNodeHasReceiver(node))
-                        : newParams,
+                    [...(memo ? factory.createHiddenParameters() : []), ...node.params.map((it) => this.visitor(it))],
                     node.returnTypeAnnotation
-                        ? this.visitor(node.returnTypeAnnotation, shouldApplyMemoToReturnType)
+                        ? this.visitor(node.returnTypeAnnotation)
                         : memo
-                        ? arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
-                        : undefined,
+                          ? arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
+                          : undefined,
                     node.hasReceiver
                 ),
                 node.flags,
@@ -84,7 +50,7 @@ export class SignatureTransformer extends AbstractVisitor {
             ) as any as T;
         }
         if (arkts.isEtsParameterExpression(node)) {
-            const memo = hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node) || applyMemo;
+            const memo = hasMemoAnnotation(node) || hasMemoIntrinsicAnnotation(node);
             if (!node.type) {
                 if (memo) {
                     console.error(`@memo parameter ${node.identifier.name} without type annotatation`);
@@ -100,12 +66,11 @@ export class SignatureTransformer extends AbstractVisitor {
             if (memo) {
                 this.modified = true;
             }
-            const newParams = node.params.map((it) => this.visitor(it));
             return arkts.factory.updateFunctionType(
                 node,
                 arkts.factory.createFunctionSignature(
                     undefined,
-                    memo ? factory.createHiddenParameterIfNotAdded(newParams) : newParams,
+                    [...(memo ? factory.createHiddenParameters() : []), ...node.params.map((it) => this.visitor(it))],
                     this.visitor(node.returnType!),
                     false
                 ),
@@ -121,26 +86,7 @@ export class SignatureTransformer extends AbstractVisitor {
         if (arkts.isETSUndefinedType(node)) {
             return node as any as T;
         }
-        if (arkts.isETSTypeReference(node) && applyMemo) {
-            if (!node.part || !node.part.name) {
-                console.error(`@memo parameter has no type reference`);
-                throw 'Invalid @memo usage';
-            }
-            const expr = node.part.name;
-            const decl = arkts.getDecl(expr);
-            if (!decl || !arkts.isTSTypeAliasDeclaration(decl)) {
-                console.error(`@memo parameter's type has not been declared`);
-                throw 'Invalid @memo usage';
-            }
-            const memoDecl = isMemoTSTypeAliasDeclaration(decl);
-            if (memoDecl) {
-                return node as any as T;
-            }
-            console.error(`@memo parameter type reference has no @memo type declaration`);
-            throw 'Invalid @memo usage';
-        }
         if (applyMemo) {
-            console.error(`@memo parameter's signature has invalid type`);
             throw 'Invalid @memo usage';
         }
         return node;

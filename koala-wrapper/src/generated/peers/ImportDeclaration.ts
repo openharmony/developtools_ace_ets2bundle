@@ -57,6 +57,6 @@ export class ImportDeclaration extends Statement {
 export function isImportDeclaration(node: AstNode): node is ImportDeclaration {
     return node instanceof ImportDeclaration
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_IMPORT_DECLARATION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_IMPORT_DECLARATION, ImportDeclaration)
+if (!nodeByType.has(39)) {
+    nodeByType.set(39, ImportDeclaration)
 }

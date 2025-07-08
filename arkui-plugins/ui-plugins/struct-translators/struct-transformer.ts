@@ -19,26 +19,25 @@ import { annotation, collect, filterDefined } from '../../common/arkts-utils';
 import { ProjectConfig } from '../../common/plugin-context';
 import { classifyProperty, PropertyTranslator } from '../property-translators';
 import {
-    addMemoAnnotation,
     CustomComponentNames,
     getCustomComponentOptionsName,
     getTypeNameFromTypeParameter,
     getTypeParamsFromClassDecl,
 } from '../utils';
-import { isCustomComponentClass, isKnownMethodDefinition, isEtsGlobalClass, isReourceNode, CustomComponentScopeInfo, findCanAddMemoFromArrowFunction } from './utils';
+import { isCustomComponentClass, isKnownMethodDefinition, isEtsGlobalClass, isReourceNode } from './utils';
 import { factory as uiFactory } from '../ui-factory';
 import { factory } from './factory';
 import { isEntryWrapperClass } from '../entry-translators/utils';
 import { factory as entryFactory } from '../entry-translators/factory';
 import { DecoratorNames, hasDecorator } from '../property-translators/utils';
-import { ScopeInfoCollection } from './utils';
+import { ScopeInfo } from './utils';
 
 function tranformPropertyMembers(
     className: string,
     propertyTranslators: PropertyTranslator[],
     optionsTypeName: string,
     isDecl?: boolean,
-    scope?: CustomComponentScopeInfo
+    scope?: ScopeInfo
 ): arkts.AstNode[] {
     const propertyMembers = propertyTranslators.map((translator) => translator.translateMember());
     const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(className);
@@ -100,7 +99,7 @@ function transformOtherMembersInClass(
 function tranformClassMembers(
     node: arkts.ClassDeclaration,
     isDecl?: boolean,
-    scope?: CustomComponentScopeInfo
+    scope?: ScopeInfo
 ): arkts.ClassDeclaration {
     if (!node.definition) {
         return node;
@@ -155,37 +154,36 @@ function transformResource(
 }
 
 export class StructTransformer extends AbstractVisitor {
-    private scopeInfoCollection: ScopeInfoCollection;
+    private scopeInfos: ScopeInfo[] = [];
     projectConfig: ProjectConfig | undefined;
 
     constructor(projectConfig: ProjectConfig | undefined) {
         super();
         this.projectConfig = projectConfig;
-        this.scopeInfoCollection = { customComponents: [] };
     }
 
     reset(): void {
         super.reset();
-        this.scopeInfoCollection = { customComponents: [] };
+        this.scopeInfos = [];
     }
 
     enter(node: arkts.AstNode): void {
         if (arkts.isClassDeclaration(node) && isCustomComponentClass(node)) {
-            this.scopeInfoCollection.customComponents.push({ name: node.definition!.ident!.name });
+            this.scopeInfos.push({ name: node.definition!.ident!.name });
         }
-        if (arkts.isMethodDefinition(node) && this.scopeInfoCollection.customComponents.length > 0) {
+        if (arkts.isMethodDefinition(node) && this.scopeInfos.length > 0) {
             const name = node.name.name;
-            const scopeInfo = this.scopeInfoCollection.customComponents.pop()!;
+            const scopeInfo = this.scopeInfos.pop()!;
             scopeInfo.hasInitializeStruct ||= name === CustomComponentNames.COMPONENT_INITIALIZE_STRUCT;
             scopeInfo.hasUpdateStruct ||= name === CustomComponentNames.COMPONENT_UPDATE_STRUCT;
             scopeInfo.hasReusableRebind ||= name === CustomComponentNames.REUSABLE_COMPONENT_REBIND_STATE;
-            this.scopeInfoCollection.customComponents.push(scopeInfo);
+            this.scopeInfos.push(scopeInfo);
         }
     }
 
     exit(node: arkts.AstNode): void {
         if (arkts.isClassDeclaration(node) && isCustomComponentClass(node)) {
-            this.scopeInfoCollection.customComponents.pop();
+            this.scopeInfos.pop();
         }
     }
 
@@ -193,10 +191,9 @@ export class StructTransformer extends AbstractVisitor {
         this.enter(beforeChildren);
         const node = this.visitEachChild(beforeChildren);
         if (arkts.isClassDeclaration(node) && isCustomComponentClass(node)) {
-            let scope: CustomComponentScopeInfo | undefined;
-            const scopeInfos: CustomComponentScopeInfo[] = this.scopeInfoCollection.customComponents;
-            if (scopeInfos.length > 0) {
-                scope = scopeInfos[scopeInfos.length - 1];
+            let scope: ScopeInfo | undefined;
+            if (this.scopeInfos.length > 0) {
+                scope = this.scopeInfos[this.scopeInfos.length - 1];
             }
             const newClass: arkts.ClassDeclaration = tranformClassMembers(
                 node,
@@ -212,8 +209,6 @@ export class StructTransformer extends AbstractVisitor {
             return transformEtsGlobalClassMembers(node);
         } else if (arkts.isCallExpression(node) && isReourceNode(node)) {
             return transformResource(node, this.projectConfig);
-        } else if (findCanAddMemoFromArrowFunction(node)) {
-            return addMemoAnnotation(node);
         }
         return node;
     }

@@ -32,7 +32,7 @@ import {
 import { Expression } from "./Expression"
 export class ChainExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CHAIN_EXPRESSION)
+        assertValidPeer(pointer, 12)
         super(pointer)
         
     }
@@ -49,6 +49,6 @@ export class ChainExpression extends Expression {
 export function isChainExpression(node: AstNode): node is ChainExpression {
     return node instanceof ChainExpression
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_CHAIN_EXPRESSION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_CHAIN_EXPRESSION, ChainExpression)
+if (!nodeByType.has(12)) {
+    nodeByType.set(12, ChainExpression)
 }

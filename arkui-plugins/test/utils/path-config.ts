@@ -36,6 +36,14 @@ function getRootPath(): string {
     return path.resolve(__dirname, '..');
 }
 
+function getPandaSDKPath(): string {
+    if (!process.env.ETS2PANDA_PATH) {
+        throw new Error('Environment Error: ets2panda path is not defined');
+    }
+
+    return path.resolve(process.env.ETS2PANDA_PATH);
+}
+
 function changeFileExtension(file: string, targetExt: string, originExt = ''): string {
     const currentExt: string = originExt.length === 0 ? path.extname(file) : originExt;
     const fileWithoutExt: string = file.substring(0, file.lastIndexOf(currentExt));
@@ -61,4 +69,4 @@ function ensurePathExists(filePath: string): void {
     }
 }
 
-export { getRootPath, changeFileExtension, getFileName, ensurePathExists };
+export { getRootPath, getPandaSDKPath, changeFileExtension, getFileName, ensurePathExists };

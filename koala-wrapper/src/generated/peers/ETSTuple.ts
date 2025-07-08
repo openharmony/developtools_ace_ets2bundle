@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class ETSTuple extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TUPLE)
+        assertValidPeer(pointer, 81)
         super(pointer)
         
     }
@@ -77,6 +77,6 @@ export class ETSTuple extends TypeNode {
 export function isETSTuple(node: AstNode): node is ETSTuple {
     return node instanceof ETSTuple
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TUPLE)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TUPLE, ETSTuple)
+if (!nodeByType.has(81)) {
+    nodeByType.set(81, ETSTuple)
 }

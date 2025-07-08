@@ -32,7 +32,7 @@ import {
 import { Statement } from "./Statement"
 export class DebuggerStatement extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_DEBUGGER_STATEMENT)
+        assertValidPeer(pointer, 21)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class DebuggerStatement extends Statement {
 export function isDebuggerStatement(node: AstNode): node is DebuggerStatement {
     return node instanceof DebuggerStatement
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_DEBUGGER_STATEMENT)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_DEBUGGER_STATEMENT, DebuggerStatement)
+if (!nodeByType.has(21)) {
+    nodeByType.set(21, DebuggerStatement)
 }

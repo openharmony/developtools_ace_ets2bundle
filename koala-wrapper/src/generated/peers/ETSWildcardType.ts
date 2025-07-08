@@ -34,7 +34,7 @@ import { ETSTypeReference } from "./ETSTypeReference"
 import { Es2pandaModifierFlags } from "./../Es2pandaEnums"
 export class ETSWildcardType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_WILDCARD_TYPE)
+        assertValidPeer(pointer, 67)
         super(pointer)
         
     }
@@ -51,6 +51,6 @@ export class ETSWildcardType extends TypeNode {
 export function isETSWildcardType(node: AstNode): node is ETSWildcardType {
     return node instanceof ETSWildcardType
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_WILDCARD_TYPE)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_WILDCARD_TYPE, ETSWildcardType)
+if (!nodeByType.has(67)) {
+    nodeByType.set(67, ETSWildcardType)
 }

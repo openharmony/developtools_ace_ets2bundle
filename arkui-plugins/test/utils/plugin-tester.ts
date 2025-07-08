@@ -13,22 +13,13 @@
  * limitations under the License.
  */
 
+import * as arkts from '@koalaui/libarkts';
 import { ArktsConfigBuilder, BuildConfig, CompileFileInfo, MockArktsConfigBuilder, ModuleInfo } from './artkts-config';
 import { MockPluginDriver, PluginDriver, stateName } from './plugin-driver';
 import { isNumber } from './safe-types';
-import {
-    canProceedToState,
-    destroyConfig,
-    destroyContext,
-    initGlobal,
-    resetConfig,
-    resetContext,
-} from './global';
-import { insertPlugin } from './compile';
+import { canProceedToState, initGlobal } from './global';
+import { insertPlugin, restartCompilerUptoState } from './compile';
 import { PluginExecutor, Plugins, PluginState } from '../../common/plugin-context';
-import { TesterCache } from './cache';
-import * as arkts from '@koalaui/libarkts';
-import * as fs from 'fs';
 
 type TestParams = Parameters<typeof test>;
 
@@ -40,12 +31,13 @@ type PluginTestHooks = {
 
 type TestHooks = {
     beforeAll?: Parameters<jest.Lifecycle>;
+    afterAll?: Parameters<jest.Lifecycle>;
     beforeEach?: Parameters<jest.Lifecycle>;
     afterEach?: Parameters<jest.Lifecycle>;
 };
 
 export interface PluginTestContext {
-    scriptSnapshot?: string;
+    script?: arkts.AstNode;
     errors?: string[];
     warnings?: string[];
 }
@@ -59,13 +51,12 @@ class PluginTester {
     private configBuilder: ArktsConfigBuilder;
     private pluginDriver: PluginDriver;
     private describe: string;
-    private cache: TesterCache<PluginTestContext>;
+    private cache?: PluginTestContext;
 
     constructor(describe: string, buildConfig?: BuildConfig) {
         this.describe = describe;
         this.configBuilder = new MockArktsConfigBuilder(buildConfig);
         this.pluginDriver = new MockPluginDriver();
-        this.cache = TesterCache.getInstance();
     }
 
     private loadPluginDriver(plugins: Plugins[]): void {
@@ -79,35 +70,27 @@ class PluginTester {
         pluginHooks: PluginTestHooks,
         plugin?: PluginExecutor
     ): void {
-        let cached: boolean = false;
-        const cacheKey: string = `${testName}-${key}`;
+        if (!this.cache) {
+            this.cache = {};
+        }
         if (index > arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED) {
             return;
         }
         if (canProceedToState(index)) {
+            // TODO: this is a bug from compiler.
+            if (index > arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED) {
+                restartCompilerUptoState(index, true);
+            }
             arkts.proceedToState(index);
         }
         if (plugin) {
             insertPlugin(this.pluginDriver, plugin, index);
-            this.captureContext(cacheKey);
-            cached = true;
+            // TODO: add error/warning handling after plugin
+            this.cache.script = arkts.EtsScript.fromContext();
         }
         const hook: SkipFirstParam<TestParams> | undefined = pluginHooks[key];
         if (!!hook) {
-            if (!cached) this.captureContext(cacheKey);
-            test(testName, hook[0]?.bind(this.cache.get(cacheKey)), hook[1]);
-        }
-    }
-
-    private captureContext(cacheKey: string): void {
-        try {
-            // TODO: add error/warning handling after plugin
-            const context: PluginTestContext = this.cache.get(cacheKey) ?? {};
-            const script: arkts.EtsScript = arkts.EtsScript.fromContext();
-            context.scriptSnapshot = script.dumpSrc();
-            this.cache.set(cacheKey, context);
-        } catch (e) {
-            // Do nothing
+            test(testName, hook[0]?.bind(this.cache), hook[1]);
         }
     }
 
@@ -137,12 +120,12 @@ class PluginTester {
     ): void {
         let shouldStop: boolean = false;
 
+        initGlobal(fileInfo, this.configBuilder.isDebug);
+
         Object.values(arkts.Es2pandaContextState)
             .filter(isNumber)
             .forEach((it) => {
-                if (shouldStop) {
-                    return;
-                }
+                if (shouldStop) return;
                 const state: PluginState = stateName(it);
                 const plugins: PluginExecutor[] | undefined = this.pluginDriver.getSortedPlugins(it);
                 this.proceedToState(
@@ -157,16 +140,8 @@ class PluginTester {
     }
 
     private traverseFile(testName: string, pluginHooks: PluginTestHooks, stopAfter: PluginState): void {
-        let once: boolean = false;
         this.configBuilder.moduleInfos.forEach((moduleInfo) => {
             moduleInfo.compileFileInfos.forEach((fileInfo) => {
-                if (!once) {
-                    initGlobal(fileInfo, this.configBuilder.isDebug);
-                    once = true;
-                } else {
-                    const source: string = fs.readFileSync(fileInfo.filePath).toString();
-                    resetContext(source);
-                }
                 this.singleFileCompile(fileInfo, moduleInfo, testName, pluginHooks, stopAfter);
             });
         });
@@ -183,13 +158,14 @@ class PluginTester {
             this.configBuilder = new MockArktsConfigBuilder(options.buildConfig);
         }
 
-        this.cache.clear();
         this.loadPluginDriver(plugins);
 
-        const that = this;
         describe(this.describe, () => {
             if (testHooks?.beforeAll) {
                 beforeAll(...testHooks.beforeAll);
+            }
+            if (testHooks?.afterAll) {
+                afterAll(...testHooks.afterAll);
             }
             if (testHooks?.beforeEach) {
                 beforeEach(...testHooks.beforeEach);
@@ -197,11 +173,7 @@ class PluginTester {
             if (testHooks?.afterEach) {
                 afterEach(...testHooks.afterEach);
             }
-            afterAll(() => {
-                destroyContext();
-                destroyConfig();
-            });
-            that.traverseFile(testName, pluginHooks, options.stopAfter);
+            this.traverseFile(testName, pluginHooks, options.stopAfter);
         });
     }
 }
