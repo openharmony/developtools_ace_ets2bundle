@@ -6,6 +6,8 @@
     "scrollBarWidth", "edgeEffect", "enableScrollInteraction", "onScrollBegin", "scrollSnap",
     "nestedScroll", "friction", "enablePaging", "initialOffset", "onScrollFrameBegin",
     "onWillScroll", "onDidScroll", "onScrollStart", "onScrollStop", "flingSpeedLimit",
-    "fadingEdge", "clipContent", "onReachStart", "onReachEnd", "backToTop", "onWillStopDragging"
+    "fadingEdge", "clipContent", "onReachStart", "onReachEnd", "backToTop", "onWillStopDragging",
+    "maxZoomScale", "minZoomScale", "zoomScale", "enableBouncesZoom", "onDidZoom", "onZoomStart",
+    "onZoomStop"
   ]
 }
