@@ -17,9 +17,11 @@
         "removeComments": false
     },
     "include": [
+        "./collectors/**/*.ts",
         "./common/**/*.ts",
         "./memo-plugins/**/*.ts",
         "./ui-plugins/**/*.ts",
+        "./ui-syntax-plugins/**/*.ts",
         "./interop-plugins/**/*.ts",
     ],
     "exclude": [

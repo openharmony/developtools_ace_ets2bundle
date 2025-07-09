@@ -1,0 +1,189 @@
+/*
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import * as path from 'path';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
+import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
+import { parseDumpSrc } from '../../../utils/parse-string';
+import { uiNoRecheck, recheck, memoNoRecheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { uiTransform } from '../../../../ui-plugins';
+import { Plugins } from '../../../../common/plugin-context';
+
+const WRAP_BUILDER_DIR_PATH: string = 'wrap-builder';
+
+const buildConfig: BuildConfig = mockBuildConfig();
+buildConfig.compileFiles = [
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, WRAP_BUILDER_DIR_PATH, 'init-with-builder.ets'),
+];
+
+const pluginTester = new PluginTester('test wrap builder init with @Builder function', buildConfig);
+
+const parsedTransform: Plugins = {
+    name: 'parsed transform',
+    parsed: uiTransform().parsed
+};
+
+const expectedUIScript: string = `
+import { memo as memo } from "arkui.stateManagement.runtime";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+import { Component as Component, Text as Text, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Builder as Builder, Column as Column } from "@kit.ArkUI";
+
+let globalBuilder: WrappedBuilder<MyBuilderFuncType>;
+
+function main() {}
+
+globalBuilder = wrapBuilder(myBuilder);
+@memo() function myBuilder(value: string, size: number) {
+  Text(@memo() ((instance: TextAttribute): void => {
+    instance.fontSize(size);
+    return;
+  }), value, undefined, undefined);
+}
+
+
+@memo() type MyBuilderFuncType = @Builder() ((value: string, size: number)=> void);
+
+@Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
+  public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  
+  public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
+  
+  @memo() public build() {
+    Column(undefined, undefined, @memo() (() => {
+      globalBuilder.builder("hello", 50);
+    }));
+  }
+  
+  private constructor() {}
+  
+}
+
+@Component() export interface __Options_ImportStruct {
+  
+}
+`;
+
+function testUITransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedUIScript));
+}
+
+const expectedMemoScript: string = `
+
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
+
+import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Component as Component, Text as Text, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Builder as Builder, Column as Column } from "@kit.ArkUI";
+
+let globalBuilder: WrappedBuilder<MyBuilderFuncType>;
+
+function main() {}
+
+globalBuilder = wrapBuilder(myBuilder);
+@memo() function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number) {
+  const __memo_scope = __memo_context.scope<void>(((__memo_id) + (52041161)), 2);
+  const __memo_parameter_value = __memo_scope.param(0, value), __memo_parameter_size = __memo_scope.param(1, size);
+  if (__memo_scope.unchanged) {
+    __memo_scope.cached;
+    return;
+  }
+  Text(__memo_context, ((__memo_id) + (175145513)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (47330804)), 1);
+    const __memo_parameter_instance = __memo_scope.param(0, instance);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
+      return;
+    }
+    __memo_parameter_instance.value.fontSize(__memo_parameter_size.value);
+    {
+      __memo_scope.recache();
+      return;
+    }
+  }), __memo_parameter_value.value, undefined, undefined);
+  {
+    __memo_scope.recache();
+    return;
+  }
+}
+
+
+@memo() type MyBuilderFuncType = @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
+
+@Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
+  public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
+  
+  public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
+  
+  @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (172572715)), 0);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
+      return;
+    }
+    Column(__memo_context, ((__memo_id) + (213104625)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (211301233)), 0);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      globalBuilder.builder(__memo_context, ((__memo_id) + (137225318)), "hello", 50);
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }));
+    {
+      __memo_scope.recache();
+      return;
+    }
+  }
+  
+  private constructor() {}
+  
+}
+
+@Component() export interface __Options_ImportStruct {
+  
+}
+`;
+
+function testMemoTransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedMemoScript));
+}
+
+pluginTester.run(
+    'test wrap builder init with @Builder function',
+    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    {
+        'checked:ui-no-recheck': [testUITransformer],
+        'checked:memo-no-recheck': [testMemoTransformer],
+    },
+    {
+        stopAfter: 'checked',
+    }
+);

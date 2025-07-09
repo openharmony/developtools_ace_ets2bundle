@@ -33,6 +33,10 @@ export function updateVariableDeclaration(
         return original;
     }
 
-    const update = updateThenAttach(VariableDeclaration.update, attachModifiers);
+    const update = updateThenAttach(
+        VariableDeclaration.update,
+        attachModifiers,
+        (node: VariableDeclaration, original: VariableDeclaration) => node.setAnnotations(original.annotations)
+    );
     return update(original, modifiers, kind, declarators);
 }

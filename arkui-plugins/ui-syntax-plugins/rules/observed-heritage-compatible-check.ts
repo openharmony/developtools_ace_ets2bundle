@@ -1,0 +1,126 @@
+/*
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import * as arkts from '@koalaui/libarkts';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
+import { getIdentifierName, PresetDecorators } from '../utils/index';
+
+class ObservedHeritageCompatibleCheckRule extends AbstractUISyntaxRule {
+  // Record the class name decorated with @Observed and @ObservedV2
+  private observedClasses: string[] = [];
+  private observedV2Classes: string[] = [];
+
+  public setup(): Record<string, string> {
+    return {
+      incompatibleHeritageObservedToObservedV2: `A class decorated by '@Observed' cannot inherit from a class decorated by '@ObservedV2'.`,
+      incompatibleHeritageObservedV2ToObserved: `A class decorated by '@ObservedV2' cannot inherit from a class decorated by '@Observed'.`,
+    };
+  }
+
+  public beforeTransform(): void {
+    this.observedClasses = [];
+    this.observedV2Classes = [];
+  }
+
+  public parsed(node: arkts.AstNode): void {
+    // Check if it's of type "Program".
+    if (arkts.nodeType(node) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
+      this.getObservedDecorator(node, this.observedClasses, this.observedV2Classes);
+    }
+    // Check if the current node is a class declaration
+    if (!arkts.isClassDeclaration(node)) {
+      return;
+    }
+    this.checkInheritanceCompatibility(node, this.observedClasses, this.observedV2Classes);
+  }
+
+  private getObservedDecorator(node: arkts.AstNode, observedClasses: string[], observedV2Classes: string[]): void {
+    for (const child of node.getChildren()) {
+      // Check if it is of the ClassDeclaration type
+      if (arkts.isClassDeclaration(child)) {
+        // Get a list of annotations
+        const annotations = child.definition?.annotations ?? [];
+        // Check for @Observed decorators
+        const hasObservedDecorator = annotations.find((annotation: any) =>
+          annotation.expr.name === PresetDecorators.OBSERVED_V1);
+        // Check if there is a @ObservedV2 decorator
+        const hasObservedV2Decorator = annotations.find((annotation: any) =>
+          annotation.expr.name === PresetDecorators.OBSERVED_V2);
+        // If there is a @Observed decorator, record the class name
+        if (hasObservedDecorator) {
+          const className = child.definition?.ident?.name ?? '';
+          observedClasses.push(className);
+        }
+        // If there is a @ObservedV2 decorator, record the class name
+        if (hasObservedV2Decorator) {
+          const className = child.definition?.ident?.name ?? '';
+          observedV2Classes.push(className);
+        }
+      }
+    }
+  }
+
+  private checkInheritanceCompatibility(
+    node: arkts.ClassDeclaration,
+    observedClasses: string[],
+    observedV2Classes: string[]): void {
+    const observedV1Decorator = node.definition?.annotations?.find(annotations =>
+      annotations.expr &&
+      arkts.isIdentifier(annotations.expr) &&
+      annotations.expr.name === PresetDecorators.OBSERVED_V1
+    );
+    const observedV2Decorator = node.definition?.annotations?.find(annotations =>
+      annotations.expr &&
+      arkts.isIdentifier(annotations.expr) &&
+      annotations.expr.name === PresetDecorators.OBSERVED_V2
+    );
+
+    //Get the name of the superClass
+    if (!node.definition?.super) {
+      return;
+    }
+    if (arkts.isETSTypeReference(node.definition?.super)) {
+      if (!node.definition.super.part) {
+        return;
+      }
+      if (!arkts.isETSTypeReferencePart(node.definition?.super.part)) {
+        return;
+      }
+      if (!node.definition?.super.part.name) {
+        return;
+      }
+      const superClassName = getIdentifierName(node.definition?.super.part.name);
+
+      if (!superClassName) {
+        return;
+      }
+      // Verify that the inheritance relationship is compatible
+      if (observedV1Decorator && observedV2Classes.includes(superClassName)) {
+        this.report({
+          node: observedV1Decorator,
+          message: this.messages.incompatibleHeritageObservedToObservedV2,
+        });
+      }
+      if (observedV2Decorator && observedClasses.includes(superClassName)) {
+        this.report({
+          node: observedV2Decorator,
+          message: this.messages.incompatibleHeritageObservedV2ToObserved,
+        });
+      }
+    }
+  }
+};
+
+export default ObservedHeritageCompatibleCheckRule;

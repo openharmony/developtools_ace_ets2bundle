@@ -53,6 +53,9 @@ def copy_output(options):
     copy_files(os.path.join(options.source_path, 'lib'),
                os.path.join(options.output_path, 'lib'))
 
+    copy_files(os.path.join(options.source_path, '../compiler/components'),
+               os.path.join(options.output_path, 'lib/components'))
+
     copy_files(os.path.join(options.source_path, 'package.json'),
                os.path.join(options.output_path, 'package.json'), True)
 

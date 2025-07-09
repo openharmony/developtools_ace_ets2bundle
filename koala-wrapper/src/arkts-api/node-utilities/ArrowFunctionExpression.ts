@@ -16,6 +16,7 @@
 import { ScriptFunction } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { ArrowFunctionExpression } from '../types';
+import { NodeCache } from '../utilities/nodeCache';
 import { attachModifiers, updateThenAttach } from '../utilities/private';
 
 export function updateArrowFunctionExpression(
@@ -31,5 +32,9 @@ export function updateArrowFunctionExpression(
         attachModifiers,
         (node: ArrowFunctionExpression, original: ArrowFunctionExpression) => node.setAnnotations(original.annotations)
     );
-    return update(original, func);
+    const newNode = update(original, func);
+    if (NodeCache.getInstance().has(original)) {
+        NodeCache.getInstance().refresh(original, newNode);
+    }
+    return newNode;
 }

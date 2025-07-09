@@ -17,4 +17,12 @@ function isNumber(value: any): value is number {
     return typeof value === `number`;
 }
 
-export { isNumber };
+function isString(value: any): value is string {
+    return typeof value === 'string';
+}
+
+function isBitInt(value: any): value is bigint {
+    return typeof value === 'bigint';
+}
+
+export { isNumber, isString, isBitInt };

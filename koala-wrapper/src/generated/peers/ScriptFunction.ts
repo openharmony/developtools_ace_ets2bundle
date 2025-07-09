@@ -40,7 +40,7 @@ import { Es2pandaModifierFlags } from "./../Es2pandaEnums"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class ScriptFunction extends AstNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 59)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_SCRIPT_FUNCTION)
         super(pointer)
         
     }
@@ -149,12 +149,6 @@ export class ScriptFunction extends AstNode {
     get hasThrowStatement(): boolean {
         return global.generatedEs2panda._ScriptFunctionHasThrowStatementConst(global.context, this.peer)
     }
-    get isThrowing(): boolean {
-        return global.generatedEs2panda._ScriptFunctionIsThrowingConst(global.context, this.peer)
-    }
-    get isRethrowing(): boolean {
-        return global.generatedEs2panda._ScriptFunctionIsRethrowingConst(global.context, this.peer)
-    }
     get isDynamic(): boolean {
         return global.generatedEs2panda._ScriptFunctionIsDynamicConst(global.context, this.peer)
     }
@@ -179,7 +173,7 @@ export class ScriptFunction extends AstNode {
     }
     /** @deprecated */
     addModifier(flags: Es2pandaModifierFlags): this {
-        global.generatedEs2panda._ScriptFunctionAddModifier(global.context, this.peer, flags)
+        global.generatedEs2panda._AstNodeAddModifier(global.context, this.peer, flags)
         return this
     }
     get annotations(): readonly AnnotationUsage[] {
@@ -194,6 +188,6 @@ export class ScriptFunction extends AstNode {
 export function isScriptFunction(node: AstNode): node is ScriptFunction {
     return node instanceof ScriptFunction
 }
-if (!nodeByType.has(59)) {
-    nodeByType.set(59, ScriptFunction)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_SCRIPT_FUNCTION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_SCRIPT_FUNCTION, ScriptFunction)
 }
