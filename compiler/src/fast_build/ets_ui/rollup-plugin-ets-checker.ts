@@ -105,7 +105,7 @@ export function etsChecker() {
       const logger = this.share.getLogger('etsChecker');
       const rootFileNames: string[] = [];
       const resolveModulePaths: string[] = [];
-      rootFileNamesCollect(rootFileNames);
+      rootFileNamesCollect(rootFileNames, this.share);
       if (this.share && this.share.projectConfig && this.share.projectConfig.resolveModulePaths &&
         Array.isArray(this.share.projectConfig.resolveModulePaths)) {
         resolveModulePaths.push(...this.share.projectConfig.resolveModulePaths);
