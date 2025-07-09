@@ -17,3 +17,6 @@ export const ARKTS_1_2: string = '1.2';
 export const ARKTS_1_1: string = '1.1';
 export const ARKTS_1_0: string = '1.0';
 export const ARKTS_HYBRID: string = 'hybrid';
+
+export const GEN_ABC_CMD: string = 'genAbcCmd';
+export const GEN_ABC_CMD_FILE_PATH: string = 'genAbcCmd.json';
