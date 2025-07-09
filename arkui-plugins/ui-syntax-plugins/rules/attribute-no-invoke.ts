@@ -14,7 +14,9 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import { getCallee, isBuildInComponent } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
+
 
 class AttributeNoInvokeRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
@@ -24,7 +26,7 @@ class AttributeNoInvokeRule extends AbstractUISyntaxRule {
     }
 
     public parsed(node: arkts.AstNode): void {
-        if (arkts.isExpressionStatement(node) && !arkts.isIdentifier(node.expression) && this.chainJudgment(node)) {
+        if (arkts.isExpressionStatement(node) && !arkts.isIdentifier(node.expression)) {
             this.attributeNoInvoke(node);
         }
     }
@@ -34,7 +36,17 @@ class AttributeNoInvokeRule extends AbstractUISyntaxRule {
         if (!Array.isArray(childNode) || childNode.length < 1) {
             return;
         }
-        if (arkts.isMemberExpression(childNode[0]) && arkts.isIdentifier(childNode[0].property)) {
+        // Determine if the last chained property is an identifier
+        if (!arkts.isMemberExpression(childNode[0]) || !arkts.isIdentifier(childNode[0].property)) {
+            return;
+        }
+        if (!arkts.isCallExpression(childNode[0].object)) {
+            return;
+        }
+        const callee = getCallee(childNode[0].object);
+
+        // Determine whether it is a built-in component
+        if (callee && isBuildInComponent(this.context, callee.name)) {
             this.report({
                 node,
                 message: this.messages.cannotInitializePrivateVariables,
@@ -43,24 +55,6 @@ class AttributeNoInvokeRule extends AbstractUISyntaxRule {
                 },
             });
         }
-    }
-
-    private chainJudgment(node: arkts.AstNode): boolean {
-        let children = node.getChildren();
-        while (true) {
-            if (!children || children.length === 0) {
-                return false;
-            }
-            const firstChild = children[0];
-            if (arkts.isIdentifier(firstChild)) {
-                break;
-            }
-            if (!arkts.isMemberExpression(firstChild) && !arkts.isCallExpression(firstChild)) {
-                return false;
-            }
-            children = firstChild.getChildren();
-        }
-        return true;
     }
 };
 
