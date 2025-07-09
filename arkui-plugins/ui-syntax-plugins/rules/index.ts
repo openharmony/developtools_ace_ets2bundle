@@ -58,6 +58,7 @@ import ObservedObservedV2Rule from './observed-observedV2-check';
 import ObservedV2TraceUsageValidationRule from './observedV2-trace-usage-validation';
 import OnceDecoratorCheckRule from './once-decorator-check';
 import OneDecoratorOnFunctionMethodRule from './one-decorator-on-function-method';
+import PropertyTypeRule from './property-type';
 import ReusableV2DecoratorCheckRule from './reusableV2-decorator-check';
 import VariableInitializationViaComponentConstructorRule from './variable-initialization-via-component-constructor';
 import ComponentComponentV2InitCheckRule from './component-componentV2-init-check';
@@ -107,6 +108,7 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [ObservedV2TraceUsageValidationRule, 'error'],
     [OnceDecoratorCheckRule, 'error'],
     [OneDecoratorOnFunctionMethodRule, 'error'],
+    [PropertyTypeRule, 'error'],
     [ComputedDecoratorCheckRule, 'error'],
     [ComponentComponentV2InitCheckRule, 'error'],
     [ReusableV2DecoratorCheckRule, 'error'],
