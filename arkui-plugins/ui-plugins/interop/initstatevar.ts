@@ -52,7 +52,7 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
             }
             const initParam = processNormal(keyName, value);
             result.push(...initParam);
-        } else if (hasDecorator(keyProperty, DecoratorNames.LINK)) {
+        } else if (hasDecorator(keyProperty, DecoratorNames.LINK) || hasDecorator(keyProperty, DecoratorNames.OBJECT_LINK)) {
             const initParam = processLink(keyName, value, keyType, proxySet);
             result.push(...initParam);
         } else if (hasDecorator(keyProperty, DecoratorNames.CONSUME)) {
@@ -67,7 +67,8 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
         } else if (hasDecorator(keyProperty, DecoratorNames.CONSUME)) {
             throw Error('The @Consume property cannot be assigned.');
         } else {
-            throw Error('Unsupported decorators.');
+            const initParam = processNormal(keyName, value);
+            result.push(...initParam);
         }
     }
     return result;
@@ -118,7 +119,7 @@ function getStateProxy(proxyName: string, stateVar: () => arkts.Expression): ark
  * @param value 
  * @param type 
  * @param proxySet 
- * @returns generate code to process @Link data interoperability
+ * @returns generate code to process @Link, @ObjectLink data interoperability
  */
 export function processLink(keyName: string, value: arkts.Expression, type: arkts.TypeNode, proxySet: Set<string>): arkts.Statement[] {
     const valueDecl = arkts.getDecl(value);
@@ -127,16 +128,10 @@ export function processLink(keyName: string, value: arkts.Expression, type: arkt
         let varName = ((value as arkts.MemberExpression).property as arkts.Identifier).name;
         let proxyName = stateProxy(varName);
         let stateVar = (): arkts.TSNonNullExpression => createBackingFieldExpression(varName);
-        if (hasDecorator(valueDecl, DecoratorNames.STATE) || hasDecorator(valueDecl, DecoratorNames.PROP) ||
-            hasDecorator(valueDecl, DecoratorNames.PROVIDE) || hasDecorator(valueDecl, DecoratorNames.LINK) ||
-            hasDecorator(valueDecl, DecoratorNames.CONSUME)) {
-            if (!proxySet.has(varName)) {
-                proxySet.add(varName);
-                const getProxy = getStateProxy(proxyName, stateVar);
-                result.push(getProxy);
-            }
-        } else {
-            throw Error('unsupported decorator for Link');
+        if (!proxySet.has(varName)) {
+            proxySet.add(varName);
+            const getProxy = getStateProxy(proxyName, stateVar);
+            result.push(getProxy);
         }
         const setParam = setPropertyESValue(
             'param',
