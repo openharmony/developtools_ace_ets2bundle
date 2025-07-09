@@ -42,7 +42,7 @@ struct MyStateSample {
 
 @Component
 struct Child {
-  @Link linkVar: string = ""; // TODO: remove this
+  @Link linkVar: string;
   @Prop propVar: string = "Prop";
 
   changeValue1() {
