@@ -47,6 +47,13 @@ export class MemoFunctionCollector extends AbstractVisitor {
         this._shouldCollectReturn = newValue;
     }
 
+    private disableCollectReturnBeforeCallback(callbackFn: () => void): void {
+        const tempValue = this.shouldCollectReturn;
+        this.shouldCollectReturn = false;
+        callbackFn();
+        this.shouldCollectReturn = tempValue;
+    }
+
     private collectMemoAstNode(node: arkts.AstNode, info: MemoableInfo): void {
         if (checkIsMemoFromMemoableInfo(info, false)) {
             arkts.NodeCache.getInstance().collect(node);
@@ -115,17 +122,17 @@ export class MemoFunctionCollector extends AbstractVisitor {
 
     private visitCallExpression(node: arkts.CallExpression): arkts.AstNode {
         if (arkts.NodeCache.getInstance().has(node)) {
-            this.shouldCollectReturn = false;
-            this.visitEachChild(node);
-            this.shouldCollectReturn = true;
+            this.disableCollectReturnBeforeCallback(() => {
+                this.visitEachChild(node);
+            });
             return node;
         }
         const expr = findIdentifierFromCallee(node.expression);
         const decl = (expr && getDeclResolveAlias(expr)) ?? node.expression;
         if (!decl) {
-            this.shouldCollectReturn = false;
-            this.visitEachChild(node);
-            this.shouldCollectReturn = true;
+            this.disableCollectReturnBeforeCallback(() => {
+                this.visitEachChild(node);
+            });
             return node;
         }
         if (arkts.NodeCache.getInstance().has(decl)) {
@@ -138,9 +145,9 @@ export class MemoFunctionCollector extends AbstractVisitor {
         } else if (arkts.isIdentifier(decl) && !!decl.parent && arkts.isVariableDeclarator(decl.parent)) {
             this.collectCallWithDeclaredIdInVariableDeclarator(node, decl.parent);
         }
-        this.shouldCollectReturn = false;
-        this.visitEachChild(node);
-        this.shouldCollectReturn = true;
+        this.disableCollectReturnBeforeCallback(() => {
+            this.visitEachChild(node);
+        });
         return node;
     }
 
