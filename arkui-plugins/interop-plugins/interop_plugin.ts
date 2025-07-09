@@ -74,8 +74,6 @@ export const interopPlugin: interop.Plugin = {
                 skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
             });
 
-            // script = programVisitor.visitor(script);
-
             debugLog('interopTransform:checked:after:source: ', script.dumpSrc());
             debugLog('interopTransform:checked:after:ast: ', script.dumpJson());
 
