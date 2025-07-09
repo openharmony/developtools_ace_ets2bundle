@@ -21,9 +21,8 @@ import { PresetDecorators, findDecorator } from '../utils';
 const mustInitializeDecorators = [
     PresetDecorators.STATE,
     PresetDecorators.STORAGE_LINK,
-    PresetDecorators.STORAGE_PROP,
+    PresetDecorators.STORAGE_PROP_REF,
     PresetDecorators.LOCAL_STORAGE_LINK,
-    PresetDecorators.LOCAL_STORAGE_PROP,
     PresetDecorators.PROVIDE,
 ];
 // Disables a list of decorators that are initialized locally

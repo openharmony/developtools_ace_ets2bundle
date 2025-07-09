@@ -20,15 +20,14 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
     private static readonly oldV1Decorators: string[] = [
         PresetDecorators.STATE,
-        PresetDecorators.PROP,
+        PresetDecorators.PROP_REF,
         PresetDecorators.LINK,
         PresetDecorators.PROVIDE,
         PresetDecorators.CONSUME,
         PresetDecorators.WATCH,
         PresetDecorators.STORAGE_LINK,
-        PresetDecorators.STORAGE_PROP,
+        PresetDecorators.STORAGE_PROP_REF,
         PresetDecorators.LOCAL_STORAGE_LINK,
-        PresetDecorators.LOCAL_STORAGE_PROP,
         PresetDecorators.OBJECT_LINK,
     ];
 
@@ -45,7 +44,7 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
 
     public setup(): Record<string, string> {
         return {
-            oldAndNewDecoratorsMixUse: `The '@{{decoratorName}}' decorator can only be used in a 'struct' decorated with '@{{component}}'.`,
+            oldAndNewDecoratorsMixUse: `The '@{{decoratorName}}' annotation can only be used in a 'struct' decorated with '@{{component}}'.`,
         };
     }
     public parsed(node: arkts.StructDeclaration): void {

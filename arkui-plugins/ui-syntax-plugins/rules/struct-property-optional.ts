@@ -53,7 +53,7 @@ class StructPropertyOptionalRule extends AbstractUISyntaxRule {
                 const nodeKey = node.key;
                 const nodeValue = node.value;
                 // Check whether the prop decorator has an initial value, and no alarm will be generated if there is an initial value
-                if (decoratorName === PresetDecorators.PROP && nodeKey && !nodeValue) {
+                if (decoratorName === PresetDecorators.PROP_REF && nodeKey && !nodeValue) {
                     this.report({
                         node: nodeKey,
                         message: this.messages.propertyOptional,
