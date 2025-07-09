@@ -41,6 +41,23 @@ function main() {}
         return;
     }
     funcA(__memo_context, ((__memo_id) + (<some_random_number>)));
+    funcWithMemoBuilder(__memo_context, ((__memo_id) + (<some_random_number>)), {
+        builder: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+            if (__memo_scope.unchanged) {
+                __memo_scope.cached;
+                return;
+            }
+            funcWithArg((() => {
+                func();
+                return;
+            }));
+            {
+                __memo_scope.recache();
+                return;
+            }
+        }),
+    });
     {
         __memo_scope.recache();
         return;
@@ -59,6 +76,20 @@ function main() {}
         return;
     }
 }
+@memo() function funcWithMemoBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() memo_arg: MemoBuilder): void {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+    const __memo_parameter_memo_arg = __memo_scope.param(0, memo_arg);
+    if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+    }
+    {
+        __memo_scope.recache();
+        return;
+    }
+}
+function funcWithArg(arg: (()=> void)): void {}
+function func(): void {}
 class A {
     @memo() public foo(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
@@ -73,6 +104,10 @@ class A {
         }
     }
     public constructor() {}
+}
+interface MemoBuilder {
+    @memo() set builder(builder: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))
+    @memo() get builder(): ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)
 }
 `;
 
