@@ -15,9 +15,8 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { ComponentTransformer } from './component-transformer';
-import { PreprocessorTransformer } from './preprocessor-transform';
 import { CheckedTransformer } from './checked-transformer';
-import { Plugins, PluginContext } from '../common/plugin-context';
+import { Plugins, PluginContext, ProjectConfig } from '../common/plugin-context';
 import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../common/predefines';
 import { debugDump, debugLog, getDumpFileName } from '../common/debug';
@@ -36,30 +35,25 @@ export function uiTransform(): Plugins {
 function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
     let script: arkts.EtsScript | undefined;
     console.log('[UI PLUGIN] AFTER PARSED ENTER');
-    const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+    arkts.Performance.getInstance().memoryTrackerPrintCurrent('ArkTS:Parse');
+    arkts.Performance.getInstance().memoryTrackerReset();
+    arkts.Performance.getInstance().startMemRecord('Node:UIPlugin:AfterParse');
+    const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
         script = program.astNode;
         const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
+        const canSkipPhases = program.canSkipPhases();
         debugLog('[BEFORE PARSED SCRIPT] script: ', script.dumpSrc());
         debugDump(
             script.dumpSrc(),
             getDumpFileName(0, 'SRC', 1, 'UI_AfterParse_Begin'),
             true,
             cachePath,
-            program.programFileNameWithExtension
+            program.fileNameWithExtension
         );
         arkts.Performance.getInstance().createEvent('ui-parsed');
-        const componentTransformer = new ComponentTransformer();
-        const preprocessorTransformer = new PreprocessorTransformer();
-        const programVisitor = new ProgramVisitor({
-            pluginName: uiTransform.name,
-            state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
-            visitors: [componentTransformer, preprocessorTransformer],
-            skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
-            pluginContext: this,
-        });
-        program = programVisitor.programVisitor(program);
+        program = parsedProgramVisit(program, this, canSkipPhases);
         script = program.astNode;
         arkts.Performance.getInstance().stopEvent('ui-parsed', true);
         debugLog('[AFTER PARSED SCRIPT] script: ', script.dumpSrc());
@@ -68,9 +62,12 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
             getDumpFileName(0, 'SRC', 2, 'UI_AfterParse_End'),
             true,
             cachePath,
-            program.programFileNameWithExtension
+            program.fileNameWithExtension
         );
         this.setArkTSAst(script);
+        arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:AfterParse');
+        arkts.Performance.getInstance().memoryTrackerReset();
+        arkts.Performance.getInstance().stopMemRecord('Node:UIPlugin:AfterParse');
         console.log('[UI PLUGIN] AFTER PARSED EXIT');
         return script;
     }
@@ -78,32 +75,53 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
     return script;
 }
 
+function parsedProgramVisit(
+    program: arkts.Program,
+    context: PluginContext,
+    canSkipPhases: boolean = false
+): arkts.Program {
+    if (canSkipPhases) {
+        debugLog('[SKIP PHASE] phase: ui-parsed, moduleName: ', program.moduleName);
+    } else {
+        debugLog('[CANT SKIP PHASE] phase: ui-parsed, moduleName: ', program.moduleName);
+        const componentTransformer = new ComponentTransformer({
+            projectConfig: context.getProjectConfig(),
+        });
+        const programVisitor = new ProgramVisitor({
+            pluginName: uiTransform.name,
+            state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
+            visitors: [componentTransformer],
+            skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+            pluginContext: context,
+        });
+        program = programVisitor.programVisitor(program);
+    }
+    return program;
+}
+
 function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
     let script: arkts.EtsScript | undefined;
     console.log('[UI PLUGIN] AFTER CHECKED ENTER');
-    const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+    arkts.Performance.getInstance().memoryTrackerPrintCurrent('ArkTS:Check');
+    arkts.Performance.getInstance().memoryTrackerGetDelta('ArkTS:Check');
+    arkts.Performance.getInstance().memoryTrackerReset();
+    arkts.Performance.getInstance().startMemRecord('Node:UIPlugin:UI-AfterCheck');
+    const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
         script = program.astNode;
         const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
+        const canSkipPhases = program.canSkipPhases();
         debugLog('[BEFORE STRUCT SCRIPT] script: ', script.dumpSrc());
         debugDump(
             script.dumpSrc(),
             getDumpFileName(0, 'SRC', 3, 'UI_AfterCheck_Begin'),
             true,
             cachePath,
-            program.programFileNameWithExtension
+            program.fileNameWithExtension
         );
         arkts.Performance.getInstance().createEvent('ui-checked');
-        const checkedTransformer = new CheckedTransformer(this.getProjectConfig());
-        const programVisitor = new ProgramVisitor({
-            pluginName: uiTransform.name,
-            state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
-            visitors: [checkedTransformer],
-            skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
-            pluginContext: this,
-        });
-        program = programVisitor.programVisitor(program);
+        program = checkedProgramVisit(program, this, canSkipPhases);
         script = program.astNode;
         arkts.Performance.getInstance().stopEvent('ui-checked', true);
         debugLog('[AFTER STRUCT SCRIPT] script: ', script.dumpSrc());
@@ -112,17 +130,40 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
             getDumpFileName(0, 'SRC', 4, 'UI_AfterCheck_End'),
             true,
             cachePath,
-            program.programFileNameWithExtension
+            program.fileNameWithExtension
         );
-        arkts.GlobalInfo.getInfoInstance().reset();
-        arkts.Performance.getInstance().createEvent('ui-recheck');
-        arkts.recheckSubtree(script);
-        arkts.Performance.getInstance().stopEvent('ui-recheck', true);
-        arkts.Performance.getInstance().clearAllEvents();
         this.setArkTSAst(script);
+        arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:UI-AfterCheck');
+        arkts.Performance.getInstance().stopMemRecord('Node:UIPlugin:UI-AfterCheck');
         console.log('[UI PLUGIN] AFTER CHECKED EXIT');
         return script;
     }
     console.log('[UI PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
     return script;
+}
+
+function checkedProgramVisit(
+    program: arkts.Program,
+    context: PluginContext,
+    canSkipPhases: boolean = false
+): arkts.Program {
+    if (canSkipPhases) {
+        debugLog('[SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
+    } else {
+        debugLog('[CANT SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
+        const projectConfig: ProjectConfig | undefined = context.getProjectConfig();
+        if (projectConfig && !projectConfig.appResource) {
+            projectConfig.ignoreError = true;
+        }
+        const checkedTransformer = new CheckedTransformer(projectConfig);
+        const programVisitor = new ProgramVisitor({
+            pluginName: uiTransform.name,
+            state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
+            visitors: [checkedTransformer],
+            skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+            pluginContext: context,
+        });
+        program = programVisitor.programVisitor(program);
+    }
+    return program;
 }

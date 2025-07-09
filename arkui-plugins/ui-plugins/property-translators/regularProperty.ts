@@ -15,23 +15,72 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { createGetter, createSetter } from './utils';
-import { PropertyTranslator } from './base';
+import { createGetter, generateToRecord, generateThisBacking, createSetter2, PropertyCache } from './utils';
+import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName } from '../../common/arkts-utils';
+import { factory } from './factory';
+import { updateArrow, updateNewClassInstanceExpression } from '../customdialog';
 
-export class regularPropertyTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
+export class RegularPropertyTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
-        this.cacheTranslatedInitializer(newName, originalName); // TODO: need to release cache after some point...
+        this.cacheTranslatedInitializer(newName, originalName);
         return this.translateWithoutInitializer(newName, originalName);
     }
 
-    cacheTranslatedInitializer(newName: string, originalName: string): void {}
+    isCustomDialogController(node: arkts.AstNode | undefined): boolean {
+        if ((node instanceof arkts.ETSNewClassInstanceExpression) && (node.getTypeRef instanceof arkts.ETSTypeReference) &&
+        (node.getTypeRef?.part?.name instanceof arkts.Identifier) && (node.getTypeRef?.part?.name?.name === 'CustomDialogController')) {
+            return true;
+        }
+        return false;
+    }
+
+    cacheTranslatedInitializer(newName: string, originalName: string): void {
+        const value = this.property.value;
+        if (this.isCustomDialogController(value)) {
+            const newValue = updateNewClassInstanceExpression(value as arkts.ETSNewClassInstanceExpression, this.property.key?.name, true);
+            const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName, newValue);
+            PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
+        } else {
+            const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName, value);
+            PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
+        }
+        if (!!this.structInfo.annotations?.reusable) {
+            const toRecord = generateToRecord(newName, originalName);
+            PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);
+        }
+    }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        return [this.property];
+        const field: arkts.ClassProperty = factory.createOptionalClassProperty(
+            newName,
+            this.property,
+            undefined,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
+        );
+        const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
+        const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
+            arkts.factory.createAssignmentExpression(
+                thisValue,
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+                arkts.factory.createIdentifier('value')
+            )
+        );
+        const getter: arkts.MethodDefinition = this.translateGetter(
+            originalName,
+            this.property.typeAnnotation,
+            arkts.factory.createTSAsExpression(thisValue, this.property.typeAnnotation, false)
+        );
+        const setter: arkts.MethodDefinition = this.translateSetter(
+            originalName,
+            this.property.typeAnnotation,
+            thisSet
+        );
+
+        return [field, getter, setter];
     }
 
     translateGetter(
@@ -45,23 +94,35 @@ export class regularPropertyTranslator extends PropertyTranslator implements Ini
     translateSetter(
         originalName: string,
         typeAnnotation: arkts.TypeNode | undefined,
-        left: arkts.MemberExpression
+        statement: arkts.AstNode
     ): arkts.MethodDefinition {
-        const right: arkts.Identifier = arkts.factory.createUndefinedLiteral();
-        return createSetter(originalName, typeAnnotation, left, right);
+        return createSetter2(originalName, typeAnnotation, statement);
     }
 
-    generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        return arkts.factory.createAssignmentExpression(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createIdentifier('this'),
-                arkts.factory.createIdentifier(originalName),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
+    generateInitializeStruct(newName: string, originalName: string, value: arkts.Expression): arkts.AstNode {
+        const binaryItem = arkts.factory.createBinaryExpression(
+            factory.createBlockStatementForOptionalExpression(
+                arkts.factory.createIdentifier('initializers'),
+                originalName
             ),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            this.property.value ?? arkts.factory.createUndefinedLiteral()
+            value ?? arkts.factory.createUndefinedLiteral(),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         );
+        const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
+            generateThisBacking(newName),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+            binaryItem
+        );
+        return arkts.factory.createExpressionStatement(assign);
+    }
+}
+
+export class RegularInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+    translateProperty(): T {
+        return this.property;
+    }
+
+    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+        return true;
     }
 }

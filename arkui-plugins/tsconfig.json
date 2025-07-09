@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
-        "target": "es2018",
+        "target": "esnext",
         "lib": ["ESNext", "ESNext.WeakRef", "DOM"],
-        "module": "CommonJS",
+        "module": "esnext",
         "rootDir": ".",
         "baseUrl": ".",
         "outDir": "./lib",
@@ -15,12 +15,16 @@
         "noEmitOnError": true,
         "strict": true,
         "skipLibCheck": true,
-        "removeComments": false
+        "removeComments": false,
+        "isolatedModules": true,
+        "esModuleInterop": true
     },
     "include": [
+        "./collectors/**/*.ts",
         "./common/**/*.ts",
         "./memo-plugins/**/*.ts",
         "./ui-plugins/**/*.ts",
+        "./ui-syntax-plugins/**/*.ts",
         "./interop-plugins/**/*.ts",
         "./path.ts",
         "./test/ut/**/*.ts",

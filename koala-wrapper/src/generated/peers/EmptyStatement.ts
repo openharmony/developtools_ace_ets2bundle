@@ -32,7 +32,7 @@ import {
 import { Statement } from "./Statement"
 export class EmptyStatement extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 25)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_EMPTY_STATEMENT)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class EmptyStatement extends Statement {
 export function isEmptyStatement(node: AstNode): node is EmptyStatement {
     return node instanceof EmptyStatement
 }
-if (!nodeByType.has(25)) {
-    nodeByType.set(25, EmptyStatement)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_EMPTY_STATEMENT)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_EMPTY_STATEMENT, EmptyStatement)
 }

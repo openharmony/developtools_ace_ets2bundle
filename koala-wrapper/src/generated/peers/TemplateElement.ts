@@ -32,7 +32,7 @@ import {
 import { Expression } from "./Expression"
 export class TemplateElement extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 142)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TEMPLATE_ELEMENT)
         super(pointer)
         
     }
@@ -58,6 +58,6 @@ export class TemplateElement extends Expression {
 export function isTemplateElement(node: AstNode): node is TemplateElement {
     return node instanceof TemplateElement
 }
-if (!nodeByType.has(142)) {
-    nodeByType.set(142, TemplateElement)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TEMPLATE_ELEMENT)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TEMPLATE_ELEMENT, TemplateElement)
 }

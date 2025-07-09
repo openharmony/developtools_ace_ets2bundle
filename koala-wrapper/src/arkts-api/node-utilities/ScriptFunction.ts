@@ -16,6 +16,7 @@
 import { FunctionSignature, ScriptFunction } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { AstNode } from '../peers/AstNode';
+import { NodeCache } from '../utilities/nodeCache';
 import { updateThenAttach } from '../utilities/private';
 
 export function updateScriptFunction(
@@ -42,5 +43,9 @@ export function updateScriptFunction(
         (node: ScriptFunction, original: ScriptFunction) => (!!original.id ? node.setIdent(original.id) : node),
         (node: ScriptFunction, original: ScriptFunction) => node.setAnnotations(original.annotations)
     );
-    return update(original, databody, datasignature, datafuncFlags, dataflags);
+    const newNode = update(original, databody, datasignature, datafuncFlags, dataflags);
+    if (NodeCache.getInstance().has(original)) {
+        NodeCache.getInstance().refresh(original, newNode);
+    }
+    return newNode;
 }

@@ -26,6 +26,7 @@ shared_library("es2panda") {
     "./src/bridges.cc",
     "./src/common.cc",
     "./src/generated/bridges.cc",
+    "./src/memoryTracker.cc"
   ]
 
   include_dirs = [
