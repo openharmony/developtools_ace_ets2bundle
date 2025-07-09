@@ -237,7 +237,6 @@ function createComponent(className: string): arkts.Statement[] {
 
 function createWrapperBlock(context: InteropContext, varMap: Map<string, arkts.ClassProperty>,
     updateProp: arkts.Property[]): arkts.BlockStatement {
-    const enableStateManagementInterop = false;
     const className: string = context.className;
     const path: string = context.path;
     const args: arkts.ObjectExpression | undefined = context.arguments;
@@ -248,7 +247,7 @@ function createWrapperBlock(context: InteropContext, varMap: Map<string, arkts.C
     const initial = [
         createGlobal(),
         createEmptyESValue(InteroperAbilityNames.PARAM),
-        ...(enableStateManagementInterop ? createProvideInterop() : [])
+        ...createProvideInterop()
     ];
     const initialArgsStatement = args ? initialArgs(args, varMap, updateProp) : [];
     return arkts.factory.createBlock(
@@ -258,7 +257,7 @@ function createWrapperBlock(context: InteropContext, varMap: Map<string, arkts.C
             ...createExtraInfo(['page'], [path]),
             ...createELMTID(),
             ...createComponent(className),
-            ...(enableStateManagementInterop ? setAndResetFindProvide() : []),
+            ...setAndResetFindProvide(),
             createInitReturn(className)
         ]
     );
@@ -316,6 +315,12 @@ function updateStateVars(updateProp: arkts.Property[]): arkts.Statement[] {
     ];
 }
 
+
+/**
+ * 
+ * @param updateProp 
+ * @returns (instance: ESValue) => { instance.invokeMethod('updateStateVars', updateParam) }
+ */
 function createUpdater(updateProp: arkts.Property[]): arkts.ArrowFunctionExpression {
     const updateState = (updateProp.length !== 0) ? updateStateVars(updateProp) : [];
     return arkts.factory.createArrowFunction(
