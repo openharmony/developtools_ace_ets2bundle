@@ -42,7 +42,7 @@ class ReusableComponentInV2CheckRule extends AbstractUISyntaxRule {
         for (const childNode of node.getChildren()) {
             // Check whether the type is struct
             if (!arkts.isStructDeclaration(childNode)) {
-                return;
+                continue;
             }
             const reusableV1Decorator = getAnnotationUsage(childNode, PresetDecorators.REUSABLE_V1);
             const structName = childNode.definition?.ident?.name;
