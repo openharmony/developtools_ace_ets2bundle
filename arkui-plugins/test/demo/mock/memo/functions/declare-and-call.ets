@@ -29,7 +29,26 @@ function funcB(): void {
     funcA();
 }
 
+interface MemoBuilder {
+    @memo builder: () => void
+}
+
+@memo
+function funcWithMemoBuilder(@memo memo_arg: MemoBuilder): void {}
+
+function funcWithArg(arg: () => void): void {}
+
+function func(): void {}
+
 @memo
 () => {
     funcA();
+    funcWithMemoBuilder({
+        builder: () => {
+            funcWithArg(() => {
+                func();
+                return;
+            });
+        }
+    });
 }
