@@ -260,8 +260,8 @@ export class LegacyTransformer extends AbstractVisitor {
     }
 
     handleWrappedBuilderNode(node: arkts.ETSTypeReference): arkts.ETSTypeReference {
-        if (node.part && arkts.isETSTypeReferencePart(node.part) && node.part.name
-            && arkts.isIdentifier(node.part.name) && node.part.name.name === 'WrappedBuilder') {
+        if (node.part && arkts.isETSTypeReferencePart(node.part) && node.part.name &&
+            arkts.isIdentifier(node.part.name) && node.part.name.name === 'WrappedBuilder') {
             return arkts.factory.createTypeReference(
                 arkts.factory.createTypeReferencePart(
                     arkts.factory.createIdentifier('Any')

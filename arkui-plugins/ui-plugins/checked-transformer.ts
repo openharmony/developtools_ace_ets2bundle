@@ -49,7 +49,6 @@ export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
     private legacyBuilderSet: Set<string> = new Set();
     private needCompatibleComponent : boolean = false;
-    private componentSet = new Set<string>();
     projectConfig: ProjectConfig | undefined;
     aceBuildJson: LoaderJson;
     resourceInfo: ResourceInfo;
@@ -85,7 +84,6 @@ export class CheckedTransformer extends AbstractVisitor {
         super.reset();
         this.scope = { customComponents: [] };
         this.needCompatibleComponent = false;
-        this.componentSet = new Set();
         PropertyCache.getInstance().reset();
         ImportCollector.getInstance().reset();
         DeclarationCollector.getInstance().reset();
@@ -144,16 +142,8 @@ export class CheckedTransformer extends AbstractVisitor {
         return isFrom1_1;
     }
 
-    addComponentSet(node: arkts.ImportDeclaration): void {
-        node.specifiers.forEach(specifier => {
-            if (arkts.isImportSpecifier(specifier) && specifier.imported?.name) {
-                this.componentSet.add(specifier.imported?.name);
-            }
-        });
-    }
-
     addcompatibleComponentImport(node: arkts.EtsScript): void {
-        if (this.needCompatibleComponent && !this.componentSet.has('compatibleComponent')) {
+        if (this.needCompatibleComponent) {
             ImportCollector.getInstance().collectSource('compatibleComponent', 'arkui.component.interop');
             ImportCollector.getInstance().collectImport('compatibleComponent');
         }
@@ -189,7 +179,13 @@ export class CheckedTransformer extends AbstractVisitor {
             const newClass: arkts.ClassDeclaration = structFactory.tranformClassMembers(node, scope);
             this.exit(beforeChildren);
             return newClass;
-        } else if (isEntryWrapperClass(node)) {
+        }
+
+        return this.visitorAstNode(node);
+    }
+
+    visitorAstNode(node: arkts.AstNode): arkts.AstNode {
+        if (isEntryWrapperClass(node)) {
             entryFactory.addMemoToEntryWrapperClassMethods(node);
             return node;
         } else if (arkts.isClassDeclaration(node)) {
@@ -202,10 +198,8 @@ export class CheckedTransformer extends AbstractVisitor {
             return structFactory.tranformInterfaceMembers(node, this.externalSourceName);
         } else if (arkts.isETSNewClassInstanceExpression(node) && isSpecificNewClass(node, CustomDialogNames.CUSTOM_DIALOG_CONTROLLER)) {
             return structFactory.transformCustomDialogController(node);
-        } else if (arkts.isImportDeclaration(node) &&
-            (node.source?.str === '@ohos.arkui.component' || node.source?.str === 'arkui.component.interop')) {
-            this.addComponentSet(node);
         }
+
         if (arkts.isEtsScript(node)) {
             this.addcompatibleComponentImport(node);
             if (ImportCollector.getInstance().importInfos.length > 0) {

@@ -65,12 +65,4 @@ export enum InteropProvideNames {
 export enum builderMethodNames {
     AFTERUPDATEPROPERTY = 'afterUpdateProperty',
     CREATECOMPATIBLENODE = 'createCompatibleNode',
-    CREATEFN = 'createFn',
-}
-
-export enum buildAbilityName {
-    BUILDERVIEWCLASS = 'builderViewClass',
-    BUILDERV2 = 'builderV2',
-    CREATE = 'create',
-    GETVIEWV2CLASS = 'getViewV2Class',
 }
