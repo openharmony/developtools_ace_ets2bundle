@@ -48,9 +48,6 @@ import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
-import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 

@@ -20,7 +20,6 @@ import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName } from '../../common/arkts-utils';
 import { factory } from './factory';
-import { updateArrow, updateNewClassInstanceExpression } from '../customdialog';
 
 export class RegularPropertyTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
@@ -30,24 +29,10 @@ export class RegularPropertyTranslator extends PropertyTranslator implements Ini
         return this.translateWithoutInitializer(newName, originalName);
     }
 
-    isCustomDialogController(node: arkts.AstNode | undefined): boolean {
-        if ((node instanceof arkts.ETSNewClassInstanceExpression) && (node.getTypeRef instanceof arkts.ETSTypeReference) &&
-        (node.getTypeRef?.part?.name instanceof arkts.Identifier) && (node.getTypeRef?.part?.name?.name === 'CustomDialogController')) {
-            return true;
-        }
-        return false;
-    }
-
     cacheTranslatedInitializer(newName: string, originalName: string): void {
-        const value = this.property.value;
-        if (this.isCustomDialogController(value)) {
-            const newValue = updateNewClassInstanceExpression(value as arkts.ETSNewClassInstanceExpression, this.property.key?.name, true);
-            const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName, newValue);
-            PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
-        } else {
-            const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName, value);
-            PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
-        }
+        const value = this.property.value ?? arkts.factory.createUndefinedLiteral();
+        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName, value);
+        PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
         if (!!this.structInfo.annotations?.reusable) {
             const toRecord = generateToRecord(newName, originalName);
             PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);

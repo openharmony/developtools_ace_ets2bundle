@@ -40,10 +40,6 @@ const parsedTransform: Plugins = {
 const expectedScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Text as Text, WrappedBuilder as WrappedBuilder, Column as Column, ForEach as ForEach } from "@kit.ArkUI";
