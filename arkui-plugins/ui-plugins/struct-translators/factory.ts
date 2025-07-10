@@ -1113,6 +1113,9 @@ export class factory {
                 )
             );
         }
+        if (arkts.isArrowFunctionExpression(value)) {
+            return addMemoAnnotation(value);
+        }
         return value;
     }
 

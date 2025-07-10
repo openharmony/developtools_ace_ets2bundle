@@ -91,9 +91,6 @@ export function classifyProperty(
     if (hasDecorator(property, DecoratorNames.BUILDER_PARAM)) {
         return new BuilderParamTranslator({ property, structInfo });
     }
-    if (hasDecorator(property, DecoratorNames.LOCAL)) {
-        return new LocalTranslator({ property, structInfo });
-    }
 
     return new RegularPropertyTranslator({ property, structInfo });
 }
@@ -124,7 +121,7 @@ export function classifyPropertyInInterface(property: arkts.AstNode): InterfaceP
         return new StorageLinkInterfaceTranslator({ property });
     }
     if (StoragePropRefInterfaceTranslator.canBeTranslated(property)) {
-        return new StoragePropInterfaceTranslator({ property });
+        return new StoragePropRefInterfaceTranslator({ property });
     }
     if (LocalStoragePropRefInterfaceTranslator.canBeTranslated(property)) {
         return new LocalStoragePropRefInterfaceTranslator({ property });
@@ -140,9 +137,6 @@ export function classifyPropertyInInterface(property: arkts.AstNode): InterfaceP
     }
     if (ObjectLinkInterfaceTranslator.canBeTranslated(property)) {
         return new ObjectLinkInterfaceTranslator({ property });
-    }
-    if (LocalInterfaceTranslator.canBeTranslated(property)) {
-        return new LocalInterfaceTranslator({ property });
     }
     if (RegularInterfaceTranslator.canBeTranslated(property)) {
         return new RegularInterfaceTranslator({ property });
