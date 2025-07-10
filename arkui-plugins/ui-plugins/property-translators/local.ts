@@ -133,7 +133,7 @@ export class LocalInterfaceTranslator<T extends InterfacePropertyTypes> extends 
 
     /**
      * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
-     * to `StateDecoratedVariable<T> | undefined`.
+     * to `ILocalDecoratedVariable<T> | undefined`.
      *
      * @param method expecting getter with `@Local` and a setter with `@Local` in the overloads.
      */
@@ -143,7 +143,7 @@ export class LocalInterfaceTranslator<T extends InterfacePropertyTypes> extends 
 
     /**
      * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
-     * to `StateDecoratedVariable<T> | undefined`.
+     * to `ILocalDecoratedVariable<T> | undefined`.
      *
      * @param property expecting property with `@Local`.
      */

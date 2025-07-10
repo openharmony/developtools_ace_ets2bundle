@@ -115,7 +115,7 @@ export class PropRefTranslator extends PropertyTranslator implements Initializer
                           false,
                           true
                       ),
-                      this.property.typeAnnotation ? this.property.typeAnnotation.clone() : undefined,
+                      this.property.typeAnnotation?.clone(),
                       false
                   ),
         ];
@@ -150,7 +150,7 @@ export class PropRefTranslator extends PropertyTranslator implements Initializer
                     false,
                     true
                 ),
-                this.property.typeAnnotation ? this.property.typeAnnotation.clone() : undefined,
+                this.property.typeAnnotation?.clone(),
                 false
             ),
         ]);
@@ -180,9 +180,9 @@ export class PropRefInterfaceTranslator<T extends InterfacePropertyTypes> extend
 
     /**
      * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
-     * to `PropDecoratedVariable<T> | undefined`.
+     * to `IPropRefDecoratedVariable<T> | undefined`.
      *
-     * @param method expecting getter with `@Prop` and a setter with `@Prop` in the overloads.
+     * @param method expecting getter with `@PropRef` and a setter with `@PropRef` in the overloads.
      */
     private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
         return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.PROP_REF);
@@ -190,9 +190,9 @@ export class PropRefInterfaceTranslator<T extends InterfacePropertyTypes> extend
 
     /**
      * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
-     * to `PropDecoratedVariable<T> | undefined`.
+     * to `IPropRefDecoratedVariable<T> | undefined`.
      *
-     * @param property expecting property with `@Prop`.
+     * @param property expecting property with `@PropRef`.
      */
     private updateStatePropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
         return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.PROP_REF);

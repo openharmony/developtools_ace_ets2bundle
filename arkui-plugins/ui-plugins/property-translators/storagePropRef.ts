@@ -147,9 +147,9 @@ export class StoragePropRefInterfaceTranslator<
 
     /**
      * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
-     * to `StoragePropDecoratedVariable<T> | undefined`.
+     * to `IStoragePropRefDecoratedVariable<T> | undefined`.
      *
-     * @param method expecting getter with `@StorageProp` and a setter with `@StorageProp` in the overloads.
+     * @param method expecting getter with `@StoragePropRef` and a setter with `@StoragePropRef` in the overloads.
      */
     private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
         return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.STORAGE_PROP_REF);
@@ -157,9 +157,9 @@ export class StoragePropRefInterfaceTranslator<
 
     /**
      * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
-     * to `StoragePropDecoratedVariable<T> | undefined`.
+     * to `IStoragePropRefDecoratedVariable<T> | undefined`.
      *
-     * @param property expecting property with `@StorageProp`.
+     * @param property expecting property with `@StoragePropRef`.
      */
     private updateStatePropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
         return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.STORAGE_PROP_REF);
