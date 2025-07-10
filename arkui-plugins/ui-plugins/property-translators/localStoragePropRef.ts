@@ -146,7 +146,7 @@ export class LocalStoragePropRefInterfaceTranslator<
 
     /**
      * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
-     * to `MutableState<T> | undefined`.
+     * to `ILocalStoragePropRefDecoratedVariable<T> | undefined`.
      *
      * @param method expecting getter with `@LocalStoragePropRef` and a setter with `@LocalStoragePropRef` in the overloads.
      */
@@ -156,7 +156,7 @@ export class LocalStoragePropRefInterfaceTranslator<
 
     /**
      * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
-     * to `MutableState<T> | undefined`.
+     * to `ILocalStoragePropRefDecoratedVariable<T> | undefined`.
      *
      * @param property expecting property with `@LocalStoragePropRef`.
      */
