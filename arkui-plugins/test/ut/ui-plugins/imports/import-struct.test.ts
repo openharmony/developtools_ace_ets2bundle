@@ -40,11 +40,6 @@ const importParsed: Plugins = {
 const pluginTester = new PluginTester('test import transform', buildConfig);
 
 const expectedParsedScript: string = `
-
-import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Text as Text } from "@ohos.arkui.component";
@@ -72,12 +67,7 @@ import { SimpleStruct as SimpleStruct } from "./utils/simple-struct";
 `;
 
 const expectedCheckedScript: string = `
-
 import { memo as memo } from "arkui.stateManagement.runtime";
-
-import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 

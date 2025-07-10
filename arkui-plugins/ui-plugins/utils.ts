@@ -15,7 +15,11 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { matchPrefix } from '../common/arkts-utils';
-import { ARKUI_IMPORT_PREFIX_NAMES, StructDecoratorNames } from '../common/predefines';
+import {
+    ARKUI_IMPORT_PREFIX_NAMES,
+    CUSTOM_DIALOG_CONTROLLER_SOURCE_NAME,
+    StructDecoratorNames,
+} from '../common/predefines';
 import { DeclarationCollector } from '../common/declaration-collector';
 
 export enum CustomComponentNames {
@@ -23,6 +27,7 @@ export enum CustomComponentNames {
     COMPONENT_CONSTRUCTOR_ORI = 'constructor',
     COMPONENT_CLASS_NAME = 'CustomComponent',
     COMPONENT_V2_CLASS_NAME = 'CustomComponentV2',
+    BASE_CUSTOM_DIALOG_NAME = 'BaseCustomDialog',
     COMPONENT_INTERFACE_PREFIX = '__Options_',
     COMPONENT_INITIALIZE_STRUCT = '__initializeStruct',
     COMPONENT_UPDATE_STRUCT = '__updateStruct',
@@ -31,10 +36,18 @@ export enum CustomComponentNames {
     OPTIONS = 'options',
     PAGE_LIFE_CYCLE = 'PageLifeCycle',
     LAYOUT_CALLBACK = 'LayoutCallback',
-    CUSTOMDIALOG_ANNOTATION_NAME = 'CustomDialog',
-    CUSTOMDIALOG_CONTROLLER = 'CustomDialogController',
-    CUSTOMDIALOG_CONTROLLER_OPTIONS = 'CustomDialogControllerOptions',
-    SETDIALOGCONTROLLER_METHOD = '__setDialogController__',
+}
+
+export enum CustomDialogNames {
+    CUSTOM_DIALOG_ANNOTATION_NAME = 'CustomDialog',
+    CUSTOM_DIALOG_CONTROLLER = 'CustomDialogController',
+    CUSTOM_DIALOG_CONTROLLER_OPTIONS = 'CustomDialogControllerOptions',
+    SET_DIALOG_CONTROLLER_METHOD = '__setDialogController__',
+    CONTROLLER = 'controller',
+    OPTIONS_BUILDER = 'builder',
+    BASE_COMPONENT = 'baseComponent',
+    EXTENDABLE_COMPONENT = 'ExtendableComponent',
+    CUSTOM_BUILDER = 'CustomBuilder',
 }
 
 export enum BuilderLambdaNames {
@@ -43,7 +56,7 @@ export enum BuilderLambdaNames {
     TRANSFORM_METHOD_NAME = '_instantiateImpl',
     STYLE_PARAM_NAME = 'style',
     STYLE_ARROW_PARAM_NAME = 'instance',
-    CONTENT_PARAM_NAME = 'content'
+    CONTENT_PARAM_NAME = 'content',
 }
 
 // IMPORT
@@ -156,6 +169,13 @@ type StructAnnoationInfo = {
     isCustomDialog: boolean;
 };
 
+export type ComponentType = {
+    hasComponent: boolean;
+    hasComponentV2: boolean;
+    hasCustomDialog: boolean;
+    hasCustomLayout: boolean;
+};
+
 export function isCustomComponentAnnotation(
     anno: arkts.AnnotationUsage,
     decoratorName: StructDecoratorNames,
@@ -264,7 +284,9 @@ export function isCustomComponentClass(node: arkts.ClassDeclaration, scopeInfo: 
 export function isCustomComponentInterface(node: arkts.TSInterfaceDeclaration): boolean {
     const checkPrefix = !!node.id?.name.startsWith(CustomComponentNames.COMPONENT_INTERFACE_PREFIX);
     const checkComponent = node.annotations.some((anno) =>
-        isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT)
+        isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT) || 
+        isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT_V2) ||
+        isCustomComponentAnnotation(anno, StructDecoratorNames.CUSTOMDIALOG)
     );
     return checkPrefix && checkComponent;
 }
@@ -287,4 +309,46 @@ export function isKnownMethodDefinition(method: arkts.MethodDefinition, name: st
     // For now, we only considered matched method name.
     const isNameMatched: boolean = method.name?.name === name;
     return isNameMatched;
+}
+
+export function isSpecificNewClass(node: arkts.ETSNewClassInstanceExpression, className: string): boolean {
+    if (
+        node.getTypeRef &&
+        arkts.isETSTypeReference(node.getTypeRef) &&
+        node.getTypeRef.part &&
+        arkts.isETSTypeReferencePart(node.getTypeRef.part) &&
+        node.getTypeRef.part.name &&
+        arkts.isIdentifier(node.getTypeRef.part.name) &&
+        node.getTypeRef.part.name.name === className
+    ) {
+        return true;
+    }
+    return false;
+}
+
+export function isCustomDialogControllerOptions(
+    newNode: arkts.TSInterfaceDeclaration,
+    externalSourceName: string | undefined
+): boolean {
+    return (
+        externalSourceName === CUSTOM_DIALOG_CONTROLLER_SOURCE_NAME &&
+        !!newNode.id &&
+        newNode.id.name === CustomDialogNames.CUSTOM_DIALOG_CONTROLLER_OPTIONS
+    );
+}
+
+export function getComponentExtendsName(annotations: CustomComponentAnontations, componentType: ComponentType): string {
+    if (!!annotations.customLayout) {
+        componentType.hasCustomLayout ||= true;
+    }
+    if (!!annotations.customdialog) {
+        componentType.hasCustomDialog ||= true;
+        return CustomComponentNames.BASE_CUSTOM_DIALOG_NAME;
+    } 
+    if (!!annotations.componentV2) {
+        componentType.hasComponentV2 ||= true;
+        return CustomComponentNames.COMPONENT_V2_CLASS_NAME;
+    }
+    componentType.hasComponent ||= true;
+    return CustomComponentNames.COMPONENT_CLASS_NAME;
 }

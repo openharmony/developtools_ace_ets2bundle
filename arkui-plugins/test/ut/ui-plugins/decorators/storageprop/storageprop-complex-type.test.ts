@@ -44,8 +44,6 @@ import { IStoragePropRefDecoratedVariable as IStoragePropRefDecoratedVariable } 
 import { NavInterface as NavInterface } from "arkui.UserView";
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 import { EntryPoint as EntryPoint } from "arkui.UserView";
-import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
 import { StorageProp as StorageProp } from "@ohos.arkui.stateManagement";

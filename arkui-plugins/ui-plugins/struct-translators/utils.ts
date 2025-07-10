@@ -16,7 +16,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as arkts from '@koalaui/libarkts';
-import { CustomComponentInfo } from '../utils';
+import { CustomComponentInfo, CustomDialogNames } from '../utils';
 import { matchPrefix } from '../../common/arkts-utils';
 import {
     ARKUI_IMPORT_PREFIX_NAMES,
@@ -61,6 +61,12 @@ export interface ResourceParameter {
     id: number;
     type: number;
     params: arkts.Expression[];
+}
+
+export interface DialogControllerInfo {
+    controllerName: string;
+    isClassProperty: boolean;
+    parent?: arkts.AstNode;
 }
 
 export function getResourceParams(id: number, type: number, params: arkts.Expression[]): ResourceParameter {
@@ -519,4 +525,76 @@ export function isForEachDecl(node: arkts.MethodDefinition, sourceName: string |
         !!node.scriptFunction &&
         arkts.hasModifierFlag(node.scriptFunction, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
     return isForEach && isMethodDecl && !!sourceName && sourceName === ARKUI_FOREACH_SOURCE_NAME;
+}
+
+export function getCustomDialogController(node: arkts.ClassProperty): string {
+    const key = node.key;
+    let controllerName: string = '';
+    if (!(key && arkts.isIdentifier(key) && node.typeAnnotation)) {
+        return '';
+    }
+    const typeAnno = node.typeAnnotation;
+    if (arkts.isETSUnionType(typeAnno)) {
+        for (const type of typeAnno.types) {
+            if (arkts.isETSTypeReference(type)) {
+                controllerName = hasController(type, key.name);
+            }
+        }
+    } else if (arkts.isETSTypeReference(typeAnno)) {
+        controllerName = hasController(typeAnno, key.name);
+    }
+    return controllerName;
+}
+
+export function hasController(node: arkts.ETSTypeReference, keyName: string): string {
+    const ident = node.part?.name;
+    if (ident && arkts.isIdentifier(ident) && ident.name === CustomDialogNames.CUSTOM_DIALOG_CONTROLLER) {
+        return keyName;
+    }
+    return '';
+}
+
+export function isInvalidDialogControllerOptions(args: readonly arkts.Expression[]): boolean {
+    const firstOptionsParameter: arkts.AstNode = args[0];
+    return (
+        args.length <= 0 ||
+        !(isObjectAsExpression(firstOptionsParameter) || arkts.isObjectExpression(firstOptionsParameter))
+    );
+}
+
+function isObjectAsExpression(param: arkts.AstNode): boolean {
+    return arkts.isTSAsExpression(param) && !!param.expr && arkts.isObjectExpression(param.expr);
+}
+
+export function findBuilderIndexInControllerOptions(properties: readonly arkts.Expression[]): number {
+    return properties.findIndex((item: arkts.Expression) => {
+        return (
+            arkts.isProperty(item) &&
+            !!item.key &&
+            arkts.isIdentifier(item.key) &&
+            item.key.name === CustomDialogNames.OPTIONS_BUILDER
+        );
+    });
+}
+
+export function getControllerName(node: arkts.ETSNewClassInstanceExpression): DialogControllerInfo {
+    let controllerName: string = '';
+    let isClassProperty: boolean = false;
+    let parent: arkts.AstNode | undefined = node.parent;
+    if (!parent) {
+        return { controllerName, isClassProperty };
+    }
+    while (!!parent && !arkts.isClassDefinition(parent)) {
+        if (arkts.isClassProperty(parent) && parent.key && arkts.isIdentifier(parent.key)) {
+            controllerName = parent.key.name;
+            isClassProperty = true;
+            break;
+        } else if (arkts.isVariableDeclarator(parent)) {
+            controllerName = parent.name.name;
+            break;
+        }
+        parent = parent?.parent;
+    }
+
+    return { controllerName, isClassProperty, parent };
 }
