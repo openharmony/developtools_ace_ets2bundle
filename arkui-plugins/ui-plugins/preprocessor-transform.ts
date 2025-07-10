@@ -200,7 +200,7 @@ export class PreprocessorTransformer extends AbstractVisitor {
             this.nameCollector.getComponents().includes(importName) &&
             (sourceName === ARKUI_COMPONENT_IMPORT_NAME || sourceName === KIT_ARKUI_NAME)
         ) {
-            const newDependencies = [`UI${importName}Attribute`];
+            const newDependencies = [`${importName}Attribute`];
             this.updateOutDependencyMap(importName, newDependencies);
             this.updateSourceDependencyMap(sourceName, newDependencies);
         } else if (
