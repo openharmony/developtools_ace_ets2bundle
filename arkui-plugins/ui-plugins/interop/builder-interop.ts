@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { ESValueMethodNames, builderMethodNames, InteroperAbilityNames, buildAbilityName } from './predefines';
+import { ESValueMethodNames, builderMethodNames, InteroperAbilityNames } from './predefines';
 import { 
     createELMTID, 
     createEmptyESValue, 
@@ -56,46 +56,6 @@ function invokeFunctionWithParam(functionName: string, result: string, className
     );
 }
 
-function invokeFunctionWithResult(functionName: string, result: string): arkts.Statement {
-    return arkts.factory.createVariableDeclaration(
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-        arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
-        [arkts.factory.createVariableDeclarator(
-            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
-            arkts.factory.createIdentifier(result),
-            arkts.factory.createCallExpression(
-                arkts.factory.createMemberExpression(
-                    arkts.factory.createIdentifier(functionName),
-                    arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
-                ),
-                undefined,
-                undefined
-            )
-        )]
-    );
-}
-
-function invokeCreateViewV2(functionName: string, param: string): arkts.Statement {
-    return arkts.factory.createExpressionStatement(
-        arkts.factory.createCallExpression(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createIdentifier(functionName),
-                arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
-            undefined,
-            [
-                arkts.factory.createIdentifier(param)
-            ]
-        )
-    );
-}
-
 function invokeAfterUpdateProperty(): arkts.Statement {
     return arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
@@ -112,6 +72,26 @@ function invokeAfterUpdateProperty(): arkts.Statement {
     );
 }
 
+function invokeComponent(): arkts.Statement[] {
+    const viewPU = getPropertyESValue('viewPUCreate', InteroperAbilityNames.GLOBAL, 'viewPUCreate');
+    const create = arkts.factory.createExpressionStatement(
+        arkts.factory.createCallExpression(
+            arkts.factory.createMemberExpression(
+                arkts.factory.createIdentifier('viewPUCreate'),
+                arkts.factory.createIdentifier('invoke'),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
+            ),
+            undefined,
+            [
+                arkts.factory.createIdentifier(InteroperAbilityNames.COMPONENT)
+            ]
+        )
+    );
+    return [viewPU, create];
+}
+
 function createBuilderInitializer(className: string, functionName: string, param: builderParam): arkts.ArrowFunctionExpression {
     const block = arkts.factory.createBlock(
         [
@@ -120,10 +100,7 @@ function createBuilderInitializer(className: string, functionName: string, param
             getPropertyESValue(builderMethodNames.CREATECOMPATIBLENODE, InteroperAbilityNames.GLOBAL, functionName),
             ...param.paramsInfo,
             invokeFunctionWithParam(builderMethodNames.CREATECOMPATIBLENODE, InteroperAbilityNames.COMPONENT, className, param.args),
-            getPropertyESValue(buildAbilityName.BUILDERVIEWCLASS, InteroperAbilityNames.GLOBAL, buildAbilityName.GETVIEWV2CLASS),
-            invokeFunctionWithResult(buildAbilityName.BUILDERVIEWCLASS, buildAbilityName.BUILDERV2),
-            getPropertyESValue(builderMethodNames.CREATEFN, buildAbilityName.BUILDERV2, buildAbilityName.CREATE),
-            invokeCreateViewV2(builderMethodNames.CREATEFN, InteroperAbilityNames.COMPONENT),
+            ...invokeComponent(),
             createInitReturn(className)
         ]
     );
@@ -143,38 +120,35 @@ function createBuilderInitializer(className: string, functionName: string, param
 }
 
 function getUpdateArgs(node: arkts.CallExpression): arkts.Statement[] {
-    let body: arkts.Statement[] = [];
     if (node.arguments.length !== 1) {
         return [];
     }
-    node.arguments.forEach((argument) => {
-        if (arkts.isObjectExpression(argument)) {
-            body?.push(getPropertyESValue('param', InteroperAbilityNames.INSTANCE, 'arg1'));
-            for (const property of argument.properties) {
-                if (!(property instanceof arkts.Property)) {
-                    continue;
-                }
-                const key = property.key;
-                const value = property.value;
-                if (!(key instanceof arkts.Identifier) || value === undefined) {
-                    throw Error('Error arguments in Legacy Builder Function');
-                }
-                body?.push(setPropertyESValue('param', key.name, getWrapValue(value)));
+    let body: arkts.Statement[] = [];
+    let argument = node.arguments[0];
+    if (arkts.isObjectExpression(argument)) {
+        body?.push(getPropertyESValue('param', InteroperAbilityNames.INSTANCE, 'arg1'));
+        for (const property of argument.properties) {
+            if (!(property instanceof arkts.Property)) {
+                continue;
             }
-            const endBody =
-                [
-                    createGlobal(),
-                    getPropertyESValue(builderMethodNames.AFTERUPDATEPROPERTY, 
-                        InteroperAbilityNames.GLOBAL,
-                        builderMethodNames.AFTERUPDATEPROPERTY),
-                    invokeAfterUpdateProperty()
-                ];
-            body?.push(...endBody);
-        } else {
-            body = [];
-            return;
+            const key = property.key;
+            const value = property.value;
+            if (!(key instanceof arkts.Identifier) || value === undefined) {
+                throw Error('Error arguments in Legacy Builder Function');
+            }
+            body?.push(setPropertyESValue('param', key.name, getWrapValue(value)));
         }
-    });
+        const endBody =
+            [
+                createGlobal(),
+                getPropertyESValue(builderMethodNames.AFTERUPDATEPROPERTY,
+                    InteroperAbilityNames.GLOBAL,
+                    builderMethodNames.AFTERUPDATEPROPERTY),
+                invokeAfterUpdateProperty()
+            ];
+        body?.push(...endBody);
+    }
+
     return body;
 }
 
@@ -215,26 +189,31 @@ function getInitArgs(node: arkts.CallExpression): builderParam {
     const body: arkts.Statement[] = [];
     node.arguments.forEach((argument) => {
         if (arkts.isObjectExpression(argument)) {
-            const paramName: string = 'paramObject' + ObjectExpressionNum;
+            processArgument(argument, ObjectExpressionNum, body, args);
             ObjectExpressionNum++;
-            body.push(createEmptyESValue(paramName));
-            for (const property of argument.properties) {
-                if (!(property instanceof arkts.Property)) {
-                    continue;
-                }
-                const key = property.key;
-                const value = property.value;
-                if (!(key instanceof arkts.Identifier) || value === undefined) {
-                    throw Error('Error arguments in Legacy Builder Function');
-                }
-                body.push(setPropertyESValue(paramName, key.name, getWrapValue(value)));
-            }
-            args.push(arkts.factory.createIdentifier(paramName));
         } else {
             args.push(getWrapValue(argument));
         }
     });
     return { args: args, paramsInfo: body };
+}
+
+function processArgument(argument: arkts.ObjectExpression, ObjectExpressionNum:number,
+    body: arkts.Statement[], args: arkts.AstNode[]): void {
+    const paramName: string = 'paramObject' + ObjectExpressionNum;
+    body.push(createEmptyESValue(paramName));
+    for (const property of argument.properties) {
+        if (!(property instanceof arkts.Property)) {
+            continue;
+        }
+        const key = property.key;
+        const value = property.value;
+        if (!(key instanceof arkts.Identifier) || value === undefined) {
+            throw Error('Error arguments in Legacy Builder Function');
+        }
+        body.push(setPropertyESValue(paramName, key.name, getWrapValue(value)));
+    }
+    args.push(arkts.factory.createIdentifier(paramName));
 }
 
 /**

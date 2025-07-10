@@ -64,10 +64,8 @@ compatibleComponent((() => {
     paramObject0.setProperty("a", ESValue.wrap("a23"));
     paramObject0.setProperty("b", ESValue.wrap(this.stateVar));
     let component = createCompatibleNode.invoke(ESValue.wrap(demoBuilder1_1), elmtId, paramObject0);
-    let builderViewClass = global.getProperty("getViewV2Class");
-    let builderV2 = builderViewClass.invoke();
-    let createFn = builderV2.getProperty("create");
-    createFn.invoke(component);
+    let viewPUCreate = global.getProperty("viewPUCreate");
+    viewPUCreate.invoke(component);
     return {
         component: component,
         name: "demoBuilder1_1",
