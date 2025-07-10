@@ -54,6 +54,8 @@ import {
     isTSTypeAliasDeclaration,
     isETSParameterExpression,
     isETSFunctionType,
+    isSwitchStatement,
+    isSwitchCaseStatement,
 } from '../generated';
 import {
     isEtsScript,
@@ -106,6 +108,7 @@ export function visitEachChild(node: AstNode, visitor: Visitor): AstNode {
     script = visitDefinitionBody(script, visitor);
     script = visitStatement(script, visitor);
     script = visitForLoopStatement(script, visitor);
+    script = visitSwitchCaseStatement(script, visitor);
     script = visitOuterExpression(script, visitor);
     script = visitInnerExpression(script, visitor);
     script = visitTrivialExpression(script, visitor);
@@ -393,6 +396,23 @@ function visitForLoopStatement(node: AstNode, visitor: Visitor): AstNode {
             nodeVisitor(node.body, visitor),
             node.isAwait
         );
+    }
+    return node;
+}
+
+function visitSwitchCaseStatement(node: AstNode, visitor: Visitor): AstNode {
+    if (updated) {
+        return node;
+    }
+    if (isSwitchStatement(node)) {
+        return factory.updateSwitchStatement(
+            node,
+            nodeVisitor(node.discriminant, visitor),
+            nodesVisitor(node.cases, visitor)
+        );
+    }
+    if (isSwitchCaseStatement(node)) {
+        return factory.updateSwitchCaseStatement(node, node.test, nodesVisitor(node.consequent, visitor));
     }
     return node;
 }
