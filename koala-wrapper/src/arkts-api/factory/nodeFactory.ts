@@ -81,6 +81,8 @@ import {
     ForUpdateStatement,
     ForInStatement,
     ForOfStatement,
+    SwitchStatement,
+    SwitchCaseStatement,
 } from '../../generated';
 import { Es2pandaModifierFlags } from '../../generated/Es2pandaEnums';
 import { classPropertySetOptional, hasModifierFlag } from '../utilities/public';
@@ -142,6 +144,8 @@ import { updateTSClassImplements } from '../node-utilities/TSClassImplements';
 import { updateForUpdateStatement } from '../node-utilities/ForUpdateStatement';
 import { updateForInStatement } from '../node-utilities/ForInStatement';
 import { updateForOfStatement } from '../node-utilities/ForOfStatement';
+import { updateSwitchStatement } from '../node-utilities/SwitchStatement';
+import { updateSwitchCaseStatement } from '../node-utilities/SwitchCaseStatement';
 
 export const factory = {
     get createIdentifier(): (...args: Parameters<typeof Identifier.create2Identifier>) => Identifier {
@@ -600,6 +604,22 @@ export const factory = {
     },
     get updateForOfStatement(): (...args: Parameters<typeof updateForOfStatement>) => ForOfStatement {
         return updateForOfStatement;
+    },
+    get createSwitchStatement(): (
+        ...args: Parameters<typeof SwitchStatement.createSwitchStatement>
+    ) => SwitchStatement {
+        return SwitchStatement.createSwitchStatement;
+    },
+    get updateSwitchStatement(): (...args: Parameters<typeof updateSwitchStatement>) => SwitchStatement {
+        return updateSwitchStatement;
+    },
+    get createSwitchCaseStatement(): (
+        ...args: Parameters<typeof SwitchCaseStatement.createSwitchCaseStatement>
+    ) => SwitchCaseStatement {
+        return SwitchCaseStatement.createSwitchCaseStatement;
+    },
+    get updateSwitchCaseStatement(): (...args: Parameters<typeof updateSwitchCaseStatement>) => SwitchCaseStatement {
+        return updateSwitchCaseStatement;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {
