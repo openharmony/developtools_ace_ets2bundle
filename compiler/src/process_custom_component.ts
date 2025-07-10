@@ -865,7 +865,7 @@ function getNewArgsForCustomComponent(childParam: ts.Expression[],
 
 function updatePropertyAssignment(newProperties: ts.PropertyAssignment[],
   itemName: string, item: ts.PropertyAssignment, childStructInfo: StructInfo, log: LogInfo[]): void {
-  if (isDoubleNonNullExpression(item.initializer)) {
+  if (isDoubleNonNullExpression(item.initializer) && !moreThanDoubleNonNull(item.initializer)) {
     if (isLeftHandExpression(item.initializer.expression.expression)) {
       const result: Record<string, boolean> = { hasQuestionToken: false };
       traverseExpressionNode(item.initializer.expression.expression, result);
@@ -930,6 +930,10 @@ function createUpdateTwoWayNode(itemName: string, leftHandExpression: ts.Express
 
 function isDoubleNonNullExpression(node: ts.Expression): boolean {
   return node && ts.isNonNullExpression(node) && ts.isNonNullExpression(node.expression);
+}
+
+function moreThanDoubleNonNull(node: ts.Expression): boolean {
+  return node && ts.isNonNullExpression(node) && ts.isNonNullExpression(node.expression) && ts.isNonNullExpression(node.expression.expression);
 }
 
 function isLeftHandExpression(node: ts.Expression): boolean {
@@ -1426,7 +1430,7 @@ function getForbbiddenToInitViaParamType(customComponentName: string,
   const propName: string = node.escapedText.toString();
   if (getCollectionSet(customComponentName, storageLinkCollection).has(propName)) {
     propType = COMPONENT_STORAGE_LINK_DECORATOR;
-  } else if (getCollectionSet(customComponentName, storagePropCollection)) {
+  } else if (getCollectionSet(customComponentName, storagePropCollection).has(propName)) {
     propType = COMPONENT_STORAGE_PROP_DECORATOR;
   } else if (ifLocalStorageLink(customComponentName, propName)) {
     propType = COMPONENT_LOCAL_STORAGE_LINK_DECORATOR;

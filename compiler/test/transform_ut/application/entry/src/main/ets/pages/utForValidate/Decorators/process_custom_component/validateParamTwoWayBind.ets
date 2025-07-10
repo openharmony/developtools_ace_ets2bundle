@@ -41,6 +41,8 @@ struct validateParamTwoWayBind {
       testParamChild2({paramValue: this.aa()?.gloabel_value!!})
       testParamChild2({paramValue: this.bb()!!})
       testParamChild2({paramValue: "hello"!!})
+      testParamChild2({paramValue: "hello"!!!})
+      testParamChild2({paramValue: this.local_value!!!})
     }
   }
 }
