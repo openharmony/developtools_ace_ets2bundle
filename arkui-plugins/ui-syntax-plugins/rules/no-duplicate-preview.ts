@@ -23,7 +23,7 @@ class NoDuplicatePreviewRule extends AbstractUISyntaxRule {
 
   public setup(): Record<string, string> {
     return {
-      duplicateEntry: `A page can contain at most 10 '@Preview' decorators.`,
+      duplicateEntry: `A page can contain at most 10 '@Preview' annotations.`,
     };
   }
 
@@ -52,7 +52,11 @@ class NoDuplicatePreviewRule extends AbstractUISyntaxRule {
         this.reportError(previewDecoratorUsage);
       });
     } else {
-      this.reportError(this.previewDecoratorUsages.at(this.previewDecoratorUsageIndex)!);
+      let previewDecoratorUsage = this.previewDecoratorUsages.at(this.previewDecoratorUsageIndex);
+      if (!previewDecoratorUsage) {
+        return;
+      }
+      this.reportError(previewDecoratorUsage);
     }
     this.previewDecoratorUsageIndex++;
   }

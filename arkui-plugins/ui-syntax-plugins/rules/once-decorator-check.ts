@@ -20,10 +20,10 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
-            invalidUsage: `The '@Once' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`,
+            invalidUsage: `The '@Once' annotation can only be used in a 'struct' decorated with '@ComponentV2'.`,
             invalidMemberDecorate: `'@Once' can only decorate member property.`,
             invalidDecorator: `When a variable decorated with '@Once', it must also be decorated with '@Param'.`,
-            invalidNOtInStruct: `'@Once' decorator can only be used with 'struct'.`
+            invalidNOtInStruct: `'@Once' annotation can only be used with 'struct'.`
         };
     }
 

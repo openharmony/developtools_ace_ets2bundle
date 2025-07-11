@@ -19,12 +19,12 @@ import { PresetDecorators, TypeFlags, getIdentifierName, findDecorator, hasAnnot
 
 const v1DecoratorMustHasType = [
     PresetDecorators.STATE,
-    PresetDecorators.PROP,
+    PresetDecorators.PROP_REF,
     PresetDecorators.LINK,
     PresetDecorators.OBJECT_LINK,
     PresetDecorators.PROVIDE,
     PresetDecorators.CONSUME,
-    PresetDecorators.STORAGE_PROP,
+    PresetDecorators.STORAGE_PROP_REF,
     PresetDecorators.STORAGE_LINK,
     PresetDecorators.WATCH,
 ];
@@ -38,8 +38,8 @@ const v2DecoratorMustHasType = [
 ];
 
 const propertyPropDecorator = [
-    PresetDecorators.PROP,
-    PresetDecorators.STORAGE_PROP,
+    PresetDecorators.PROP_REF,
+    PresetDecorators.STORAGE_PROP_REF,
 ];
 
 const SimpleTypesUnSupported = [
