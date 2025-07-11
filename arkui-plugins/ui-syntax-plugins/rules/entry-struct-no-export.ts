@@ -20,7 +20,7 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 class EntryStructNoExportRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
-            noExportWithEntry: `It's not a recommended way to export struct with '@Entry' decorator, which may cause ACE Engine error in component preview mode.`,
+            noExportWithEntry: `It's not a recommended way to export struct with '@Entry' annotation, which may cause ACE Engine error in component preview mode.`,
         };
     }
 

@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { getAnnotationUsage, PresetDecorators } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-const invalidDecorators = [PresetDecorators.PROP, PresetDecorators.LINK, PresetDecorators.OBJECT_LINK];
+const invalidDecorators = [PresetDecorators.PROP_REF, PresetDecorators.LINK, PresetDecorators.OBJECT_LINK];
 
 class NoPropLinkObjectLinkInEntryRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {

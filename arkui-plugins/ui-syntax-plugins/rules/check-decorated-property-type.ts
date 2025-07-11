@@ -23,15 +23,14 @@ import {
 
 const forbiddenUseStateTypeForDecorators: string[] = [
   PresetDecorators.STATE,
-  PresetDecorators.PROP,
+  PresetDecorators.PROP_REF,
   PresetDecorators.LINK,
   PresetDecorators.PROVIDE,
   PresetDecorators.CONSUME,
   PresetDecorators.OBJECT_LINK,
   PresetDecorators.BUILDER_PARAM,
-  PresetDecorators.STORAGE_PROP,
+  PresetDecorators.STORAGE_PROP_REF,
   PresetDecorators.STORAGE_LINK,
-  PresetDecorators.LOCAL_STORAGE_PROP,
   PresetDecorators.LOCAL_STORAGE_LINK,
 ];
 
@@ -47,10 +46,6 @@ class CheckDecoratedPropertyTypeRule extends AbstractUISyntaxRule {
       return;
     }
     if (!node.definition) {
-      return;
-    }
-    const componentDecorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
-    if (!componentDecorator) {
       return;
     }
     node.definition.body.forEach(member => {

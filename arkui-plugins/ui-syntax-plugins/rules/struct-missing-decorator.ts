@@ -20,7 +20,7 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 class StructMissingDecoratorRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
-            missingComponentDecorator: `Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct '{{structName}}'.`
+            missingComponentDecorator: `Annotation '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct '{{structName}}'.`
         };
     }
 

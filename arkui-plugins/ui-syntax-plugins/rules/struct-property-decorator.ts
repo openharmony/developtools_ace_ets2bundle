@@ -20,21 +20,20 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 const decorators: string[] = [
     PresetDecorators.BUILDER_PARAM,
     PresetDecorators.STATE,
-    PresetDecorators.PROP,
+    PresetDecorators.PROP_REF,
     PresetDecorators.LINK,
     PresetDecorators.OBJECT_LINK,
-    PresetDecorators.STORAGE_PROP,
+    PresetDecorators.STORAGE_PROP_REF,
     PresetDecorators.STORAGE_LINK,
     PresetDecorators.WATCH,
     PresetDecorators.LOCAL_STORAGE_LINK,
-    PresetDecorators.LOCAL_STORAGE_PROP,
     PresetDecorators.REQUIRE,
 ];
 
 class StructPropertyDecoratorRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
-            invalidStaticUsage: `The static variable of struct cannot be used together with built-in decorators.`
+            invalidStaticUsage: `The static variable of struct cannot be used together with built-in annotations.`
         };
     }
 

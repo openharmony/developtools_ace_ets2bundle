@@ -23,7 +23,7 @@ class NoDuplicateEntryRule extends AbstractUISyntaxRule {
 
     public setup(): Record<string, string> {
         return {
-            duplicateEntry: `A page can't contain more then one '@Entry' decorator.`,
+            duplicateEntry: `A page can't contain more then one '@Entry' annotation.`,
         };
     }
 

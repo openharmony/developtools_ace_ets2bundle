@@ -44,7 +44,7 @@ class EntryLocalStorageCheckRule extends AbstractUISyntaxRule {
             const propertyDecorators = getClassPropertyAnnotationNames(body);
             localStorageLinkUsed = propertyDecorators.some(
                 decorator => decorator === PresetDecorators.LOCAL_STORAGE_LINK ||
-                    decorator === PresetDecorators.LOCAL_STORAGE_PROP);
+                    decorator === PresetDecorators.STORAGE_PROP_REF);
         });
 
         // If @LocalStorageLink is used but @Entry(storage) is missing, report error
