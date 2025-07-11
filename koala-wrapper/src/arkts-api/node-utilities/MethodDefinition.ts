@@ -19,12 +19,14 @@ import { AstNode } from '../peers/AstNode';
 import { MethodDefinition } from '../types';
 import { updateThenAttach } from '../utilities/private';
 import { Es2pandaMethodDefinitionKind } from '../../generated/Es2pandaEnums';
+import { ScriptFunction } from '../../generated';
+import { NodeCache } from '../utilities/nodeCache';
 
 export function updateMethodDefinition(
     original: MethodDefinition,
     kind: Es2pandaMethodDefinitionKind,
     key: AstNode,
-    value: AstNode,
+    value: ScriptFunction,
     modifiers: KInt,
     isComputed: boolean
 ): MethodDefinition {
@@ -41,5 +43,9 @@ export function updateMethodDefinition(
     const update = updateThenAttach(MethodDefinition.update, (node: MethodDefinition, original: MethodDefinition) =>
         node.setOverloads(original.overloads)
     );
-    return update(original, kind, key, value, modifiers, isComputed);
+    const newNode = update(original, kind, key, value, modifiers, isComputed);
+    if (NodeCache.getInstance().has(original)) {
+        NodeCache.getInstance().refresh(original, newNode);
+    }
+    return newNode;
 }

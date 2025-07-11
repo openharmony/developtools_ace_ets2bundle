@@ -33,7 +33,7 @@ import { TypeNode } from "./TypeNode"
 import { Expression } from "./Expression"
 export class TSNamedTupleMember extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 135)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_NAMED_TUPLE_MEMBER)
         super(pointer)
         
     }
@@ -56,6 +56,6 @@ export class TSNamedTupleMember extends TypeNode {
 export function isTSNamedTupleMember(node: AstNode): node is TSNamedTupleMember {
     return node instanceof TSNamedTupleMember
 }
-if (!nodeByType.has(135)) {
-    nodeByType.set(135, TSNamedTupleMember)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_NAMED_TUPLE_MEMBER)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_NAMED_TUPLE_MEMBER, TSNamedTupleMember)
 }

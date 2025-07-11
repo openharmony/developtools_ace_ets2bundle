@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class TSThisType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 116)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_THIS_TYPE)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class TSThisType extends TypeNode {
 export function isTSThisType(node: AstNode): node is TSThisType {
     return node instanceof TSThisType
 }
-if (!nodeByType.has(116)) {
-    nodeByType.set(116, TSThisType)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_THIS_TYPE)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_THIS_TYPE, TSThisType)
 }

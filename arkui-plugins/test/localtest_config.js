@@ -16,6 +16,10 @@
 const fs = require('fs');
 const path = require('path');
 
+function changePathToAbsPath(p) {
+  return path.resolve(p);
+}
+
 // 获取当前目录
 const currentDirectory = process.cwd();
 let workSpace = currentDirectory;
@@ -27,25 +31,63 @@ const jsonFilePath = path.join(__dirname, 'demo/localtest/build_config_template.
 const outJsonFilePath = path.join(__dirname, 'demo/localtest/build_config.json');
 
 try {
-    // 读取 JSON 文件内容
-    const data = fs.readFileSync(jsonFilePath, 'utf8');
-    const jsonData = JSON.parse(data);
-    console.log(jsonData)
-    // 处理 baseUrl 字段
-    if (jsonData.buildSdkPath) {
-        jsonData.buildSdkPath = jsonData.buildSdkPath.replace(/workspace/g, workSpace);
-    }
+  // 读取 JSON 文件内容
+  const data = fs.readFileSync(jsonFilePath, 'utf8');
+  const jsonData = JSON.parse(data);
+  console.log(jsonData)
+  // 处理 baseUrl 字段
+  if (jsonData.buildSdkPath) {
+    jsonData.buildSdkPath = jsonData.buildSdkPath.replace(/workspace/g, workSpace);
+  }
 
-    // 处理 plugins 字段
-    if (jsonData.plugins.ui_plugin) {
-      jsonData.plugins.ui_plugin = jsonData.plugins.ui_plugin.replace(/workspace/g, workSpace);
-    }
-    if (jsonData.plugins.memo_plugin) {
-      jsonData.plugins.memo_plugin = jsonData.plugins.memo_plugin.replace(/workspace/g, workSpace);
-    }
+  // 处理 plugins 字段
+  if (jsonData.plugins.ui_syntax_plugin) {
+    jsonData.plugins.ui_syntax_plugin = jsonData.plugins.ui_syntax_plugin.replace(/workspace/g, workSpace);
+  }
+  if (jsonData.plugins.ui_plugin) {
+    jsonData.plugins.ui_plugin = jsonData.plugins.ui_plugin.replace(/workspace/g, workSpace);
+  }
+  if (jsonData.plugins.memo_plugin) {
+    jsonData.plugins.memo_plugin = jsonData.plugins.memo_plugin.replace(/workspace/g, workSpace);
+  }
 
-    // 将修改后的内容写回 JSON 文件
-    fs.writeFileSync(outJsonFilePath, JSON.stringify(jsonData, null, 2), 'utf8');
+  // compileFiles
+  if (jsonData.compileFiles) {
+    jsonData.compileFiles = jsonData.compileFiles.map((file) => changePathToAbsPath(file));
+  }
+
+  // entryFiles
+  if (jsonData.entryFiles) {
+    jsonData.entryFiles = jsonData.entryFiles.map((file) => changePathToAbsPath(file));
+  }
+
+  // moduleRootPath
+  if (jsonData.moduleRootPath) {
+    jsonData.moduleRootPath = changePathToAbsPath(jsonData.moduleRootPath);
+  }
+
+  // sourceRoots
+  if (jsonData.sourceRoots) {
+    jsonData.sourceRoots = jsonData.sourceRoots.map((file) => changePathToAbsPath(file));
+  }
+
+  // loaderOutPath
+  if (jsonData.loaderOutPath) {
+    jsonData.loaderOutPath = changePathToAbsPath(jsonData.loaderOutPath);
+  }
+
+  // loaderOutPath
+  if (jsonData.cachePath) {
+    jsonData.cachePath = changePathToAbsPath(jsonData.cachePath);
+  }
+
+  // appModuleJsonPath
+  if (jsonData.aceModuleJsonPath) {
+    jsonData.aceModuleJsonPath = changePathToAbsPath(jsonData.aceModuleJsonPath);
+  }
+
+  // 将修改后的内容写回 JSON 文件
+  fs.writeFileSync(outJsonFilePath, JSON.stringify(jsonData, null, 2), 'utf8');
 } catch (error) {
-    console.error('处理 JSON 文件时出错:', error);
+  console.error('处理 JSON 文件时出错:', error);
 }

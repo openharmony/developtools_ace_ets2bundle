@@ -34,7 +34,7 @@ import { StringLiteral } from "./StringLiteral"
 import { ExportSpecifier } from "./ExportSpecifier"
 export class ExportNamedDeclaration extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 28)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_EXPORT_NAMED_DECLARATION)
         super(pointer)
         
     }
@@ -69,6 +69,6 @@ export class ExportNamedDeclaration extends Statement {
 export function isExportNamedDeclaration(node: AstNode): node is ExportNamedDeclaration {
     return node instanceof ExportNamedDeclaration
 }
-if (!nodeByType.has(28)) {
-    nodeByType.set(28, ExportNamedDeclaration)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_EXPORT_NAMED_DECLARATION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_EXPORT_NAMED_DECLARATION, ExportNamedDeclaration)
 }

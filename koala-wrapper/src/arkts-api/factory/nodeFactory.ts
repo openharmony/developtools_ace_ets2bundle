@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { updateNodeByNode } from "../utilities/private"
+import { updateNodeByNode } from '../utilities/private';
 import {
     ArrowFunctionExpression,
     AssignmentExpression,
@@ -29,10 +29,10 @@ import {
     StructDeclaration,
     VariableDeclaration,
     VariableDeclarator,
-    ETSStringLiteralType
-} from "../types"
-import { MemberExpression } from "../to-be-generated/MemberExpression"
-import { AstNode } from "../peers/AstNode"
+    ETSStringLiteralType,
+} from '../types';
+import { MemberExpression } from '../to-be-generated/MemberExpression';
+import { AstNode } from '../peers/AstNode';
 import {
     AnnotationUsage,
     BinaryExpression,
@@ -69,373 +69,540 @@ import {
     TSTypeAliasDeclaration,
     ChainExpression,
     BlockExpression,
-    ETSNewClassInstanceExpression
-} from "../../generated"
-import {
-    Es2pandaModifierFlags
-} from "../../generated/Es2pandaEnums"
-import {
-    classPropertySetOptional,
-    hasModifierFlag
-} from "../utilities/public"
-import { updateIdentifier } from "../node-utilities/Identifier"
-import { updateCallExpression } from "../node-utilities/CallExpression"
-import { updateExpressionStatement } from "../node-utilities/ExpressionStatement"
-import { updateMemberExpression } from "../node-utilities/MemberExpression"
-import { updateFunctionDeclaration } from "../node-utilities/FunctionDeclaration"
-import { updateBlockStatement } from "../node-utilities/BlockStatement"
-import { updateArrowFunctionExpression } from "../node-utilities/ArrowFunctionExpression"
-import { updateScriptFunction } from "../node-utilities/ScriptFunction"
-import { updateStringLiteral } from "../node-utilities/StringLiteral"
-import { updateNumberLiteral } from "../node-utilities/NumberLiteral"
-import { updateETSParameterExpression } from "../node-utilities/ETSParameterExpression"
-import { updateTSTypeParameter } from "../node-utilities/TSTypeParameter"
-import { updateTSTypeParameterDeclaration } from "../node-utilities/TSTypeParameterDeclaration"
-import { updateETSPrimitiveType } from "../node-utilities/ETSPrimitiveType"
-import { updateETSTypeReference } from "../node-utilities/ETSTypeReference"
-import { updateETSTypeReferencePart } from "../node-utilities/ETSTypeReferencePart"
-import { updateETSImportDeclaration } from "../node-utilities/ETSImportDeclaration"
-import { updateImportSpecifier } from "../node-utilities/ImportSpecifier"
-import { updateVariableDeclaration } from "../node-utilities/VariableDeclaration"
-import { updateVariableDeclarator } from "../node-utilities/VariableDeclarator"
-import { updateETSUnionType } from "../node-utilities/ETSUnionType"
-import { updateReturnStatement } from "../node-utilities/ReturnStatement"
-import { updateIfStatement } from "../node-utilities/IfStatement"
-import { updateBinaryExpression } from "../node-utilities/BinaryExpression"
-import { updateClassDeclaration } from "../node-utilities/ClassDeclaration"
-import { updateStructDeclaration } from "../node-utilities/StructDeclaration"
-import { updateClassDefinition } from "../node-utilities/ClassDefinition"
-import { updateClassProperty } from "../node-utilities/ClassProperty"
-import { updateETSFunctionType } from "../node-utilities/ETSFunctionType"
-import { updateFunctionExpression } from "../node-utilities/FunctionExpression"
-import { updateMethodDefinition } from "../node-utilities/MethodDefinition"
-import { updateSuperExpression } from "../node-utilities/SuperExpression"
-import { updateTSTypeParameterInstantiation } from "../node-utilities/TSTypeParameterInstantiation"
-import { updateTSInterfaceDeclaration } from "../node-utilities/TSInterfaceDeclaration"
-import { updateTSInterfaceBody } from "../node-utilities/TSInterfaceBody"
-import { updateUndefinedLiteral } from "../node-utilities/UndefinedLiteral"
-import { updateAnnotationUsage } from "../node-utilities/AnnotationUsage"
-import { updateAssignmentExpression } from "../node-utilities/AssignmentExpression"
-import { updateETSUndefinedType } from "../node-utilities/ETSUndefinedType"
-import { updateConditionalExpression } from "../node-utilities/ConditionalExpression"
-import { updateTSAsExpression } from "../node-utilities/TSAsExpression"
-import { updateThisExpression } from "../node-utilities/ThisExpression"
-import { updateTSTypeAliasDeclaration } from "../node-utilities/TSTypeAliasDeclaration"
-import { updateTSNonNullExpression } from "../node-utilities/TSNonNullExpression"
-import { updateChainExpression } from "../node-utilities/ChainExpression"
-import { updateBlockExpression } from "../node-utilities/BlockExpression"
-import { updateNullLiteral } from "../node-utilities/NullLiteral"
-import { updateETSNewClassInstanceExpression } from "../node-utilities/ETSNewClassInstanceExpression"
+    ETSNewClassInstanceExpression,
+    BooleanLiteral,
+    ObjectExpression,
+    Property,
+    TemplateLiteral,
+    ArrayExpression,
+    AnnotationDeclaration,
+    TryStatement,
+    TSClassImplements,
+    ForUpdateStatement,
+    ForInStatement,
+    ForOfStatement,
+} from '../../generated';
+import { Es2pandaModifierFlags } from '../../generated/Es2pandaEnums';
+import { classPropertySetOptional, hasModifierFlag } from '../utilities/public';
+import { updateIdentifier } from '../node-utilities/Identifier';
+import { updateCallExpression } from '../node-utilities/CallExpression';
+import { updateExpressionStatement } from '../node-utilities/ExpressionStatement';
+import { updateMemberExpression } from '../node-utilities/MemberExpression';
+import { updateFunctionDeclaration } from '../node-utilities/FunctionDeclaration';
+import { updateBlockStatement } from '../node-utilities/BlockStatement';
+import { updateArrowFunctionExpression } from '../node-utilities/ArrowFunctionExpression';
+import { updateScriptFunction } from '../node-utilities/ScriptFunction';
+import { updateStringLiteral } from '../node-utilities/StringLiteral';
+import { updateNumberLiteral } from '../node-utilities/NumberLiteral';
+import { updateETSParameterExpression } from '../node-utilities/ETSParameterExpression';
+import { updateTSTypeParameter } from '../node-utilities/TSTypeParameter';
+import { updateTSTypeParameterDeclaration } from '../node-utilities/TSTypeParameterDeclaration';
+import { updateETSPrimitiveType } from '../node-utilities/ETSPrimitiveType';
+import { updateETSTypeReference } from '../node-utilities/ETSTypeReference';
+import { updateETSTypeReferencePart } from '../node-utilities/ETSTypeReferencePart';
+import { updateETSImportDeclaration } from '../node-utilities/ETSImportDeclaration';
+import { updateImportSpecifier } from '../node-utilities/ImportSpecifier';
+import { updateVariableDeclaration } from '../node-utilities/VariableDeclaration';
+import { updateVariableDeclarator } from '../node-utilities/VariableDeclarator';
+import { updateETSUnionType } from '../node-utilities/ETSUnionType';
+import { updateReturnStatement } from '../node-utilities/ReturnStatement';
+import { updateIfStatement } from '../node-utilities/IfStatement';
+import { updateBinaryExpression } from '../node-utilities/BinaryExpression';
+import { updateClassDeclaration } from '../node-utilities/ClassDeclaration';
+import { updateStructDeclaration } from '../node-utilities/StructDeclaration';
+import { updateClassDefinition } from '../node-utilities/ClassDefinition';
+import { updateClassProperty } from '../node-utilities/ClassProperty';
+import { updateETSFunctionType } from '../node-utilities/ETSFunctionType';
+import { updateFunctionExpression } from '../node-utilities/FunctionExpression';
+import { updateMethodDefinition } from '../node-utilities/MethodDefinition';
+import { updateSuperExpression } from '../node-utilities/SuperExpression';
+import { updateTSTypeParameterInstantiation } from '../node-utilities/TSTypeParameterInstantiation';
+import { updateTSInterfaceDeclaration } from '../node-utilities/TSInterfaceDeclaration';
+import { updateTSInterfaceBody } from '../node-utilities/TSInterfaceBody';
+import { updateUndefinedLiteral } from '../node-utilities/UndefinedLiteral';
+import { updateAnnotationUsage, update1AnnotationUsage } from '../node-utilities/AnnotationUsage';
+import { updateAssignmentExpression } from '../node-utilities/AssignmentExpression';
+import { updateETSUndefinedType } from '../node-utilities/ETSUndefinedType';
+import { updateConditionalExpression } from '../node-utilities/ConditionalExpression';
+import { updateTSAsExpression } from '../node-utilities/TSAsExpression';
+import { updateThisExpression } from '../node-utilities/ThisExpression';
+import { updateTSTypeAliasDeclaration } from '../node-utilities/TSTypeAliasDeclaration';
+import { updateTSNonNullExpression } from '../node-utilities/TSNonNullExpression';
+import { updateChainExpression } from '../node-utilities/ChainExpression';
+import { updateBlockExpression } from '../node-utilities/BlockExpression';
+import { updateNullLiteral } from '../node-utilities/NullLiteral';
+import { updateETSNewClassInstanceExpression } from '../node-utilities/ETSNewClassInstanceExpression';
+import { updateObjectExpression } from '../node-utilities/ObjectExpression';
+import { updateProperty } from '../node-utilities/Property';
+import { updateTemplateLiteral } from '../node-utilities/TemplateLiteral';
+import { updateArrayExpression } from '../node-utilities/ArrayExpression';
+import { updateAnnotationDeclaration } from '../node-utilities/AnnotationDeclaration';
+import { updateTryStatement } from '../node-utilities/TryStatement';
+import { updateTSClassImplements } from '../node-utilities/TSClassImplements';
+import { updateForUpdateStatement } from '../node-utilities/ForUpdateStatement';
+import { updateForInStatement } from '../node-utilities/ForInStatement';
+import { updateForOfStatement } from '../node-utilities/ForOfStatement';
 
 export const factory = {
-    get createIdentifier() {
-        return Identifier.create2Identifier
+    get createIdentifier(): (...args: Parameters<typeof Identifier.create2Identifier>) => Identifier {
+        return Identifier.create2Identifier;
     },
-    get updateIdentifier() {
-        return updateIdentifier
+    get updateIdentifier(): (...args: Parameters<typeof updateIdentifier>) => Identifier {
+        return updateIdentifier;
     },
-    get createCallExpression() {
-        return CallExpression.create
+    get createCallExpression(): (...args: Parameters<typeof CallExpression.create>) => CallExpression {
+        return CallExpression.create;
     },
-    get updateCallExpression() {
-        return updateCallExpression
+    get updateCallExpression(): (...args: Parameters<typeof updateCallExpression>) => CallExpression {
+        return updateCallExpression;
     },
-    get createExpressionStatement() {
-        return ExpressionStatement.create
+    get createExpressionStatement(): (...args: Parameters<typeof ExpressionStatement.create>) => ExpressionStatement {
+        return ExpressionStatement.create;
     },
-    get updateExpressionStatement() {
-        return updateExpressionStatement
+    get updateExpressionStatement(): (...args: Parameters<typeof updateExpressionStatement>) => ExpressionStatement {
+        return updateExpressionStatement;
     },
-    get createMemberExpression() {
-        return MemberExpression.create
+    get createMemberExpression(): (...args: Parameters<typeof MemberExpression.create>) => MemberExpression {
+        return MemberExpression.create;
     },
-    get updateMemberExpression() {
-        return updateMemberExpression
+    get updateMemberExpression(): (...args: Parameters<typeof updateMemberExpression>) => MemberExpression {
+        return updateMemberExpression;
     },
-    get createEtsScript() {
-        return EtsScript.createFromSource
+    get createEtsScript(): (...args: Parameters<typeof EtsScript.createFromSource>) => EtsScript {
+        return EtsScript.createFromSource;
     },
-    get updateEtsScript() {
-        return EtsScript.updateByStatements
+    get updateEtsScript(): (...args: Parameters<typeof EtsScript.updateByStatements>) => EtsScript {
+        return EtsScript.updateByStatements;
     },
-    get createFunctionDeclaration() {
-        return FunctionDeclaration.create
+    get createFunctionDeclaration(): (...args: Parameters<typeof FunctionDeclaration.create>) => FunctionDeclaration {
+        return FunctionDeclaration.create;
     },
-    get updateFunctionDeclaration() {
-        return updateFunctionDeclaration
+    get updateFunctionDeclaration(): (...args: Parameters<typeof updateFunctionDeclaration>) => FunctionDeclaration {
+        return updateFunctionDeclaration;
     },
-    get createBlock() {
-        return BlockStatement.createBlockStatement
+    get createBlock(): (...args: Parameters<typeof BlockStatement.createBlockStatement>) => BlockStatement {
+        return BlockStatement.createBlockStatement;
     },
-    get updateBlock() {
-        return updateBlockStatement
+    get updateBlock(): (...args: Parameters<typeof updateBlockStatement>) => BlockStatement {
+        return updateBlockStatement;
     },
-    get createArrowFunction() {
-        return ArrowFunctionExpression.create
+    get createArrowFunction(): (...args: Parameters<typeof ArrowFunctionExpression.create>) => ArrowFunctionExpression {
+        return ArrowFunctionExpression.create;
     },
-    get updateArrowFunction() {
-        return updateArrowFunctionExpression
+    get updateArrowFunction(): (...args: Parameters<typeof updateArrowFunctionExpression>) => ArrowFunctionExpression {
+        return updateArrowFunctionExpression;
     },
-    get createScriptFunction() {
-        return ScriptFunction.createScriptFunction
+    get createScriptFunction(): (...args: Parameters<typeof ScriptFunction.createScriptFunction>) => ScriptFunction {
+        return ScriptFunction.createScriptFunction;
     },
-    get updateScriptFunction() {
-        return updateScriptFunction
+    get updateScriptFunction(): (...args: Parameters<typeof updateScriptFunction>) => ScriptFunction {
+        return updateScriptFunction;
     },
-    get createStringLiteral() {
-        return StringLiteral.create1StringLiteral
+    get createStringLiteral(): (...args: Parameters<typeof StringLiteral.create1StringLiteral>) => StringLiteral {
+        return StringLiteral.create1StringLiteral;
     },
-    get updateStringLiteral() {
-        return updateStringLiteral
+    get updateStringLiteral(): (...args: Parameters<typeof updateStringLiteral>) => StringLiteral {
+        return updateStringLiteral;
     },
-    get create1StringLiteral() {
-        return StringLiteral.create1StringLiteral
+    get create1StringLiteral(): (...args: Parameters<typeof StringLiteral.create1StringLiteral>) => StringLiteral {
+        return StringLiteral.create1StringLiteral;
     },
-    get update1StringLiteral() {
-        return updateStringLiteral
+    get update1StringLiteral(): (...args: Parameters<typeof updateStringLiteral>) => StringLiteral {
+        return updateStringLiteral;
     },
-    get createNumericLiteral() {
-        return NumberLiteral.create
+    get createNumericLiteral(): (...args: Parameters<typeof NumberLiteral.create>) => NumberLiteral {
+        return NumberLiteral.create;
     },
-    get updateNumericLiteral() {
-        return updateNumberLiteral
+    get updateNumericLiteral(): (...args: Parameters<typeof updateNumberLiteral>) => NumberLiteral {
+        return updateNumberLiteral;
     },
-    get createParameterDeclaration() {
-        return ETSParameterExpression.create
+    get createParameterDeclaration(): (
+        ...args: Parameters<typeof ETSParameterExpression.create>
+    ) => ETSParameterExpression {
+        return ETSParameterExpression.create;
     },
-    get updateParameterDeclaration() {
-        return updateETSParameterExpression
+    get updateParameterDeclaration(): (
+        ...args: Parameters<typeof updateETSParameterExpression>
+    ) => ETSParameterExpression {
+        return updateETSParameterExpression;
     },
-    get createTypeParameter() {
-        return TSTypeParameter.createTSTypeParameter
+    get createTypeParameter(): (...args: Parameters<typeof TSTypeParameter.createTSTypeParameter>) => TSTypeParameter {
+        return TSTypeParameter.createTSTypeParameter;
     },
-    get updateTypeParameter() {
-        return updateTSTypeParameter
+    get updateTypeParameter(): (...args: Parameters<typeof updateTSTypeParameter>) => TSTypeParameter {
+        return updateTSTypeParameter;
     },
-    get createTypeParameterDeclaration() {
-        return TSTypeParameterDeclaration.createTSTypeParameterDeclaration
+    get createTypeParameterDeclaration(): (
+        ...args: Parameters<typeof TSTypeParameterDeclaration.createTSTypeParameterDeclaration>
+    ) => TSTypeParameterDeclaration {
+        return TSTypeParameterDeclaration.createTSTypeParameterDeclaration;
     },
-    get updateTypeParameterDeclaration() {
-        return updateTSTypeParameterDeclaration
+    get updateTypeParameterDeclaration(): (
+        ...args: Parameters<typeof updateTSTypeParameterDeclaration>
+    ) => TSTypeParameterDeclaration {
+        return updateTSTypeParameterDeclaration;
     },
-    get createPrimitiveType() {
-        return ETSPrimitiveType.createETSPrimitiveType
+    get createPrimitiveType(): (
+        ...args: Parameters<typeof ETSPrimitiveType.createETSPrimitiveType>
+    ) => ETSPrimitiveType {
+        return ETSPrimitiveType.createETSPrimitiveType;
     },
-    get updatePrimitiveType() {
-        return updateETSPrimitiveType
+    get updatePrimitiveType(): (...args: Parameters<typeof updateETSPrimitiveType>) => ETSPrimitiveType {
+        return updateETSPrimitiveType;
     },
-    get createTypeReference() {
-        return ETSTypeReference.createETSTypeReference
+    get createTypeReference(): (
+        ...args: Parameters<typeof ETSTypeReference.createETSTypeReference>
+    ) => ETSTypeReference {
+        return ETSTypeReference.createETSTypeReference;
     },
-    get updateTypeReference() {
-        return updateETSTypeReference
+    get updateTypeReference(): (...args: Parameters<typeof updateETSTypeReference>) => ETSTypeReference {
+        return updateETSTypeReference;
     },
-    get createTypeReferencePart() {
-        return ETSTypeReferencePart.createETSTypeReferencePart
+    get createTypeReferencePart(): (
+        ...args: Parameters<typeof ETSTypeReferencePart.createETSTypeReferencePart>
+    ) => ETSTypeReferencePart {
+        return ETSTypeReferencePart.createETSTypeReferencePart;
     },
-    get updateTypeReferencePart() {
-        return updateETSTypeReferencePart
+    get updateTypeReferencePart(): (...args: Parameters<typeof updateETSTypeReferencePart>) => ETSTypeReferencePart {
+        return updateETSTypeReferencePart;
     },
-    get createImportDeclaration() {
-        return ETSImportDeclaration.createETSImportDeclaration
+    get createImportDeclaration(): (
+        ...args: Parameters<typeof ETSImportDeclaration.createETSImportDeclaration>
+    ) => ETSImportDeclaration {
+        return ETSImportDeclaration.createETSImportDeclaration;
     },
-    get updateImportDeclaration() {
-        return updateETSImportDeclaration
+    get updateImportDeclaration(): (...args: Parameters<typeof updateETSImportDeclaration>) => ETSImportDeclaration {
+        return updateETSImportDeclaration;
     },
-    get createImportSpecifier() {
-        return ImportSpecifier.createImportSpecifier
+    get createImportSpecifier(): (
+        ...args: Parameters<typeof ImportSpecifier.createImportSpecifier>
+    ) => ImportSpecifier {
+        return ImportSpecifier.createImportSpecifier;
     },
-    get updateImportSpecifier() {
-        return updateImportSpecifier
+    get updateImportSpecifier(): (...args: Parameters<typeof updateImportSpecifier>) => ImportSpecifier {
+        return updateImportSpecifier;
     },
-    get createVariableDeclaration() {
-        return VariableDeclaration.create
+    get createVariableDeclaration(): (...args: Parameters<typeof VariableDeclaration.create>) => VariableDeclaration {
+        return VariableDeclaration.create;
     },
-    get updateVariableDeclaration() {
-        return updateVariableDeclaration
+    get updateVariableDeclaration(): (...args: Parameters<typeof updateVariableDeclaration>) => VariableDeclaration {
+        return updateVariableDeclaration;
     },
-    get createVariableDeclarator() {
-        return VariableDeclarator.create
+    get createVariableDeclarator(): (...args: Parameters<typeof VariableDeclarator.create>) => VariableDeclarator {
+        return VariableDeclarator.create;
     },
-    get updateVariableDeclarator() {
-        return updateVariableDeclarator
+    get updateVariableDeclarator(): (...args: Parameters<typeof updateVariableDeclarator>) => VariableDeclarator {
+        return updateVariableDeclarator;
     },
-    get createUnionType() {
-        return ETSUnionType.createETSUnionType
+    get createUnionType(): (...args: Parameters<typeof ETSUnionType.createETSUnionType>) => ETSUnionType {
+        return ETSUnionType.createETSUnionType;
     },
-    get updateUnionType() {
-        return updateETSUnionType
+    get updateUnionType(): (...args: Parameters<typeof updateETSUnionType>) => ETSUnionType {
+        return updateETSUnionType;
     },
-    get createReturnStatement() {
-        return ReturnStatement.create1ReturnStatement
+    get createReturnStatement(): (
+        ...args: Parameters<typeof ReturnStatement.create1ReturnStatement>
+    ) => ReturnStatement {
+        return ReturnStatement.create1ReturnStatement;
     },
-    get updateReturnStatement() {
-        return updateReturnStatement
+    get updateReturnStatement(): (...args: Parameters<typeof updateReturnStatement>) => ReturnStatement {
+        return updateReturnStatement;
     },
-    get createIfStatement() {
-        return IfStatement.create
+    get createIfStatement(): (...args: Parameters<typeof IfStatement.create>) => IfStatement {
+        return IfStatement.create;
     },
-    get updateIfStatement() {
-        return updateIfStatement
+    get updateIfStatement(): (...args: Parameters<typeof updateIfStatement>) => IfStatement {
+        return updateIfStatement;
     },
-    get createBinaryExpression() {
-        return BinaryExpression.createBinaryExpression
+    get createBinaryExpression(): (
+        ...args: Parameters<typeof BinaryExpression.createBinaryExpression>
+    ) => BinaryExpression {
+        return BinaryExpression.createBinaryExpression;
     },
-    get updateBinaryExpression() {
-        return updateBinaryExpression
+    get updateBinaryExpression(): (...args: Parameters<typeof updateBinaryExpression>) => BinaryExpression {
+        return updateBinaryExpression;
     },
-    get createClassDeclaration() {
-        return ClassDeclaration.createClassDeclaration
+    get createClassDeclaration(): (
+        ...args: Parameters<typeof ClassDeclaration.createClassDeclaration>
+    ) => ClassDeclaration {
+        return ClassDeclaration.createClassDeclaration;
     },
-    get updateClassDeclaration() {
-        return updateClassDeclaration
+    get updateClassDeclaration(): (...args: Parameters<typeof updateClassDeclaration>) => ClassDeclaration {
+        return updateClassDeclaration;
     },
-    get createStructDeclaration() {
-        return StructDeclaration.create
+    get createStructDeclaration(): (...args: Parameters<typeof StructDeclaration.create>) => StructDeclaration {
+        return StructDeclaration.create;
     },
-    get updateStructDeclaration() {
-        return updateStructDeclaration
+    get updateStructDeclaration(): (...args: Parameters<typeof updateStructDeclaration>) => StructDeclaration {
+        return updateStructDeclaration;
     },
-    get createClassDefinition() {
-        return ClassDefinition.createClassDefinition
+    get createClassDefinition(): (
+        ...args: Parameters<typeof ClassDefinition.createClassDefinition>
+    ) => ClassDefinition {
+        return ClassDefinition.createClassDefinition;
     },
-    get updateClassDefinition() {
-        return updateClassDefinition
+    get updateClassDefinition(): (...args: Parameters<typeof updateClassDefinition>) => ClassDefinition {
+        return updateClassDefinition;
     },
-    get createClassProperty() {
-        return ClassProperty.createClassProperty
+    get createClassProperty(): (...args: Parameters<typeof ClassProperty.createClassProperty>) => ClassProperty {
+        return ClassProperty.createClassProperty;
     },
-    get updateClassProperty() {
-        return updateClassProperty
+    get updateClassProperty(): (...args: Parameters<typeof updateClassProperty>) => ClassProperty {
+        return updateClassProperty;
     },
-    get createFunctionType() {
-        return ETSFunctionType.createETSFunctionType
+    get createFunctionType(): (...args: Parameters<typeof ETSFunctionType.createETSFunctionType>) => ETSFunctionType {
+        return ETSFunctionType.createETSFunctionType;
     },
-    get updateFunctionType() {
-        return updateETSFunctionType
+    get updateFunctionType(): (...args: Parameters<typeof updateETSFunctionType>) => ETSFunctionType {
+        return updateETSFunctionType;
     },
-    get createFunctionExpression() {
-        return FunctionExpression.create
+    get createFunctionExpression(): (...args: Parameters<typeof FunctionExpression.create>) => FunctionExpression {
+        return FunctionExpression.create;
     },
-    get updateFunctionExpression() {
-        return updateFunctionExpression
+    get updateFunctionExpression(): (...args: Parameters<typeof updateFunctionExpression>) => FunctionExpression {
+        return updateFunctionExpression;
     },
-    get createMethodDefinition() {
-        return MethodDefinition.create
+    get createMethodDefinition(): (...args: Parameters<typeof MethodDefinition.create>) => MethodDefinition {
+        return MethodDefinition.create;
     },
-    get updateMethodDefinition() {
-        return updateMethodDefinition
+    get updateMethodDefinition(): (...args: Parameters<typeof updateMethodDefinition>) => MethodDefinition {
+        return updateMethodDefinition;
     },
-    get createSuperExpression() {
-        return SuperExpression.createSuperExpression
+    get createSuperExpression(): (
+        ...args: Parameters<typeof SuperExpression.createSuperExpression>
+    ) => SuperExpression {
+        return SuperExpression.createSuperExpression;
     },
-    get updateSuperExpression() {
-        return updateSuperExpression
+    get updateSuperExpression(): (...args: Parameters<typeof updateSuperExpression>) => SuperExpression {
+        return updateSuperExpression;
     },
-    get createTSTypeParameterInstantiation() {
-        return TSTypeParameterInstantiation.createTSTypeParameterInstantiation
+    get createTSTypeParameterInstantiation(): (
+        ...args: Parameters<typeof TSTypeParameterInstantiation.createTSTypeParameterInstantiation>
+    ) => TSTypeParameterInstantiation {
+        return TSTypeParameterInstantiation.createTSTypeParameterInstantiation;
     },
-    get updateTSTypeParameterInstantiation() {
-        return updateTSTypeParameterInstantiation
+    get updateTSTypeParameterInstantiation(): (
+        ...args: Parameters<typeof updateTSTypeParameterInstantiation>
+    ) => TSTypeParameterInstantiation {
+        return updateTSTypeParameterInstantiation;
     },
-    get createInterfaceDeclaration() {
-        return TSInterfaceDeclaration.createTSInterfaceDeclaration
+    get createInterfaceDeclaration(): (
+        ...args: Parameters<typeof TSInterfaceDeclaration.createTSInterfaceDeclaration>
+    ) => TSInterfaceDeclaration {
+        return TSInterfaceDeclaration.createTSInterfaceDeclaration;
     },
-    get updateInterfaceDeclaration() {
-        return updateTSInterfaceDeclaration
+    get updateInterfaceDeclaration(): (
+        ...args: Parameters<typeof updateTSInterfaceDeclaration>
+    ) => TSInterfaceDeclaration {
+        return updateTSInterfaceDeclaration;
     },
-    get createInterfaceBody() {
-        return TSInterfaceBody.createTSInterfaceBody
+    get createInterfaceBody(): (...args: Parameters<typeof TSInterfaceBody.createTSInterfaceBody>) => TSInterfaceBody {
+        return TSInterfaceBody.createTSInterfaceBody;
     },
-    get updateInterfaceBody() {
-        return updateTSInterfaceBody
+    get updateInterfaceBody(): (...args: Parameters<typeof updateTSInterfaceBody>) => TSInterfaceBody {
+        return updateTSInterfaceBody;
     },
-    get createUndefinedLiteral() {
-        return UndefinedLiteral.createUndefinedLiteral
+    get createUndefinedLiteral(): (
+        ...args: Parameters<typeof UndefinedLiteral.createUndefinedLiteral>
+    ) => UndefinedLiteral {
+        return UndefinedLiteral.createUndefinedLiteral;
     },
-    get updateUndefinedLiteral() {
-        return updateUndefinedLiteral
+    get updateUndefinedLiteral(): (...args: Parameters<typeof updateUndefinedLiteral>) => UndefinedLiteral {
+        return updateUndefinedLiteral;
     },
-    get createAnnotationUsage() {
-        return AnnotationUsage.createAnnotationUsage
+    get createAnnotationDeclaration(): (
+        ...args: Parameters<typeof AnnotationDeclaration.create1AnnotationDeclaration>
+    ) => AnnotationDeclaration {
+        return AnnotationDeclaration.create1AnnotationDeclaration;
     },
-    get updateAnnotationUsage() {
-        return updateAnnotationUsage
+    get updateAnnotationDeclaration(): (
+        ...args: Parameters<typeof updateAnnotationDeclaration>
+    ) => AnnotationDeclaration {
+        return updateAnnotationDeclaration;
     },
-    get createAssignmentExpression() {
-        return AssignmentExpression.create
+    get createAnnotationUsage(): (
+        ...args: Parameters<typeof AnnotationUsage.createAnnotationUsage>
+    ) => AnnotationUsage {
+        return AnnotationUsage.createAnnotationUsage;
     },
-    get updateAssignmentExpression() {
-        return updateAssignmentExpression
+    get updateAnnotationUsage(): (...args: Parameters<typeof updateAnnotationUsage>) => AnnotationUsage {
+        return updateAnnotationUsage;
     },
-    get createETSUndefinedType() {
-        return ETSUndefinedType.createETSUndefinedType
+    get create1AnnotationUsage(): (
+        ...args: Parameters<typeof AnnotationUsage.create1AnnotationUsage>
+    ) => AnnotationUsage {
+        return AnnotationUsage.create1AnnotationUsage;
     },
-    get updateETSUndefinedType() {
-        return updateETSUndefinedType
+    get update1AnnotationUsage(): (...args: Parameters<typeof update1AnnotationUsage>) => AnnotationUsage {
+        return update1AnnotationUsage;
     },
-    get createFunctionSignature() {
-        return FunctionSignature.createFunctionSignature
+    get createAssignmentExpression(): (
+        ...args: Parameters<typeof AssignmentExpression.create>
+    ) => AssignmentExpression {
+        return AssignmentExpression.create;
     },
-    get createConditionalExpression() {
-        return ConditionalExpression.createConditionalExpression
+    get updateAssignmentExpression(): (...args: Parameters<typeof updateAssignmentExpression>) => AssignmentExpression {
+        return updateAssignmentExpression;
     },
-    get updateConditionalExpression() {
-        return updateConditionalExpression
+    get createETSUndefinedType(): (
+        ...args: Parameters<typeof ETSUndefinedType.createETSUndefinedType>
+    ) => ETSUndefinedType {
+        return ETSUndefinedType.createETSUndefinedType;
     },
-    get createTSAsExpression() {
-        return TSAsExpression.createTSAsExpression
+    get updateETSUndefinedType(): (...args: Parameters<typeof updateETSUndefinedType>) => ETSUndefinedType {
+        return updateETSUndefinedType;
     },
-    get updateTSAsExpression() {
-        return updateTSAsExpression
+    get createFunctionSignature(): (
+        ...args: Parameters<typeof FunctionSignature.createFunctionSignature>
+    ) => FunctionSignature {
+        return FunctionSignature.createFunctionSignature;
     },
-    get createThisExpression() {
-        return ThisExpression.createThisExpression
+    get createConditionalExpression(): (
+        ...args: Parameters<typeof ConditionalExpression.createConditionalExpression>
+    ) => ConditionalExpression {
+        return ConditionalExpression.createConditionalExpression;
     },
-    get updateThisExpression() {
-        return updateThisExpression
+    get updateConditionalExpression(): (
+        ...args: Parameters<typeof updateConditionalExpression>
+    ) => ConditionalExpression {
+        return updateConditionalExpression;
     },
-    get createTSTypeAliasDeclaration() {
-        return TSTypeAliasDeclaration.createTSTypeAliasDeclaration
+    get createTSAsExpression(): (...args: Parameters<typeof TSAsExpression.createTSAsExpression>) => TSAsExpression {
+        return TSAsExpression.createTSAsExpression;
     },
-    get updateTSTypeAliasDeclaration() {
-        return updateTSTypeAliasDeclaration
+    get updateTSAsExpression(): (...args: Parameters<typeof updateTSAsExpression>) => TSAsExpression {
+        return updateTSAsExpression;
     },
-    get createTSNonNullExpression() {
-        return TSNonNullExpression.createTSNonNullExpression
+    get createThisExpression(): (...args: Parameters<typeof ThisExpression.createThisExpression>) => ThisExpression {
+        return ThisExpression.createThisExpression;
     },
-    get updateTSNonNullExpression() {
-        return updateTSNonNullExpression
+    get updateThisExpression(): (...args: Parameters<typeof updateThisExpression>) => ThisExpression {
+        return updateThisExpression;
     },
-    get createChainExpression() {
-        return ChainExpression.createChainExpression
+    get createTSTypeAliasDeclaration(): (
+        ...args: Parameters<typeof TSTypeAliasDeclaration.createTSTypeAliasDeclaration>
+    ) => TSTypeAliasDeclaration {
+        return TSTypeAliasDeclaration.createTSTypeAliasDeclaration;
     },
-    get updateChainExpression() {
-        return updateChainExpression
+    get updateTSTypeAliasDeclaration(): (
+        ...args: Parameters<typeof updateTSTypeAliasDeclaration>
+    ) => TSTypeAliasDeclaration {
+        return updateTSTypeAliasDeclaration;
     },
-    get createBlockExpression() {
-        return BlockExpression.createBlockExpression
+    get createTSNonNullExpression(): (
+        ...args: Parameters<typeof TSNonNullExpression.createTSNonNullExpression>
+    ) => TSNonNullExpression {
+        return TSNonNullExpression.createTSNonNullExpression;
     },
-    get updateBlockExpression() {
-        return updateBlockExpression
+    get updateTSNonNullExpression(): (...args: Parameters<typeof updateTSNonNullExpression>) => TSNonNullExpression {
+        return updateTSNonNullExpression;
     },
-    get createNullLiteral() {
-        return NullLiteral.createNullLiteral
+    get createChainExpression(): (
+        ...args: Parameters<typeof ChainExpression.createChainExpression>
+    ) => ChainExpression {
+        return ChainExpression.createChainExpression;
     },
-    get updateNullLiteral() {
-        return updateNullLiteral
+    get updateChainExpression(): (...args: Parameters<typeof updateChainExpression>) => ChainExpression {
+        return updateChainExpression;
     },
-    get createETSNewClassInstanceExpression() {
-        return ETSNewClassInstanceExpression.createETSNewClassInstanceExpression
+    get createBlockExpression(): (
+        ...args: Parameters<typeof BlockExpression.createBlockExpression>
+    ) => BlockExpression {
+        return BlockExpression.createBlockExpression;
     },
-    get updateETSNewClassInstanceExpression() {
-        return updateETSNewClassInstanceExpression
+    get updateBlockExpression(): (...args: Parameters<typeof updateBlockExpression>) => BlockExpression {
+        return updateBlockExpression;
     },
-    get createETSStringLiteralType(){
+    get createNullLiteral(): (...args: Parameters<typeof NullLiteral.createNullLiteral>) => NullLiteral {
+        return NullLiteral.createNullLiteral;
+    },
+    get updateNullLiteral(): (...args: Parameters<typeof updateNullLiteral>) => NullLiteral {
+        return updateNullLiteral;
+    },
+    get createETSNewClassInstanceExpression(): (
+        ...args: Parameters<typeof ETSNewClassInstanceExpression.createETSNewClassInstanceExpression>
+    ) => ETSNewClassInstanceExpression {
+        return ETSNewClassInstanceExpression.createETSNewClassInstanceExpression;
+    },
+    get updateETSNewClassInstanceExpression(): (
+        ...args: Parameters<typeof updateETSNewClassInstanceExpression>
+    ) => ETSNewClassInstanceExpression {
+        return updateETSNewClassInstanceExpression;
+    },
+    get createETSStringLiteralType(): (
+        ...args: Parameters<typeof ETSStringLiteralType.create>
+    ) => ETSStringLiteralType {
         return ETSStringLiteralType.create;
+    },
+    get createBooleanLiteral(): (...args: Parameters<typeof BooleanLiteral.createBooleanLiteral>) => BooleanLiteral {
+        return BooleanLiteral.createBooleanLiteral;
+    },
+    get createObjectExpression(): (
+        ...args: Parameters<typeof ObjectExpression.createObjectExpression>
+    ) => ObjectExpression {
+        return ObjectExpression.createObjectExpression;
+    },
+    get updateObjectExpression(): (...args: Parameters<typeof updateObjectExpression>) => ObjectExpression {
+        return updateObjectExpression;
+    },
+    get createProperty(): (...args: Parameters<typeof Property.createProperty>) => Property {
+        return Property.createProperty;
+    },
+    get updateProperty(): (...args: Parameters<typeof updateProperty>) => Property {
+        return updateProperty;
+    },
+    get createTemplateLiteral(): (
+        ...args: Parameters<typeof TemplateLiteral.createTemplateLiteral>
+    ) => TemplateLiteral {
+        return TemplateLiteral.createTemplateLiteral;
+    },
+    get updateTemplateLiteral(): (...args: Parameters<typeof updateTemplateLiteral>) => TemplateLiteral {
+        return updateTemplateLiteral;
+    },
+    get createArrayExpression(): (
+        ...args: Parameters<typeof ArrayExpression.createArrayExpression>
+    ) => ArrayExpression {
+        return ArrayExpression.createArrayExpression;
+    },
+    get updateArrayExpression(): (...args: Parameters<typeof updateArrayExpression>) => ArrayExpression {
+        return updateArrayExpression;
+    },
+    get createTryStatement(): (...args: Parameters<typeof TryStatement.createTryStatement>) => TryStatement {
+        return TryStatement.createTryStatement;
+    },
+    get updateTryStatement(): (...args: Parameters<typeof updateTryStatement>) => TryStatement {
+        return updateTryStatement;
+    },
+    get createTSClassImplements(): (
+        ...args: Parameters<typeof TSClassImplements.createTSClassImplements>
+    ) => TSClassImplements {
+        return TSClassImplements.createTSClassImplements;
+    },
+    get UpdateTSClassImplements(): (...args: Parameters<typeof updateTSClassImplements>) => TSClassImplements {
+        return updateTSClassImplements;
+    },
+    get createForUpdateStatement(): (
+        ...args: Parameters<typeof ForUpdateStatement.createForUpdateStatement>
+    ) => ForUpdateStatement {
+        return ForUpdateStatement.createForUpdateStatement;
+    },
+    get updateForUpdateStatement(): (...args: Parameters<typeof updateForUpdateStatement>) => ForUpdateStatement {
+        return updateForUpdateStatement;
+    },
+    get createForInStatement(): (...args: Parameters<typeof ForInStatement.createForInStatement>) => ForInStatement {
+        return ForInStatement.createForInStatement;
+    },
+    get updateForInStatement(): (...args: Parameters<typeof updateForInStatement>) => ForInStatement {
+        return updateForInStatement;
+    },
+    get createForOfStatement(): (...args: Parameters<typeof ForOfStatement.createForOfStatement>) => ForOfStatement {
+        return ForOfStatement.createForOfStatement;
+    },
+    get updateForOfStatement(): (...args: Parameters<typeof updateForOfStatement>) => ForOfStatement {
+        return updateForOfStatement;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {
-        return TSTypeParameter.createTSTypeParameter(Identifier.create1Identifier(name.name), constraint, defaultType)
+        return TSTypeParameter.createTSTypeParameter(Identifier.create1Identifier(name.name), constraint, defaultType);
     },
-}
+};

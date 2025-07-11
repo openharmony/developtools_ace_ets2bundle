@@ -168,10 +168,6 @@ export function updateNodeByNode<T extends AstNode>(node: T, original: AstNode):
     return node;
 }
 
-export function nodeType(node: AstNode): Es2pandaAstNodeType {
-    return global.generatedEs2panda._AstNodeTypeConst(global.context, passNode(node));
-}
-
 /**
  * @deprecated
  */

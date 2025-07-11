@@ -14,23 +14,27 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import { matchPrefix } from '../common/arkts-utils';
+import { ARKUI_IMPORT_PREFIX_NAMES, StructDecoratorNames } from '../common/predefines';
+import { DeclarationCollector } from '../common/declaration-collector';
 
 export enum CustomComponentNames {
-    ENTRY_ANNOTATION_NAME = 'Entry',
-    COMPONENT_ANNOTATION_NAME = 'Component',
-    RESUABLE_ANNOTATION_NAME = 'Reusable',
     COMPONENT_BUILD_ORI = 'build',
     COMPONENT_CONSTRUCTOR_ORI = 'constructor',
-    COMPONENT_DEFAULT_IMPORT = '@ohos.arkui.component',
     COMPONENT_CLASS_NAME = 'CustomComponent',
+    COMPONENT_V2_CLASS_NAME = 'CustomComponentV2',
     COMPONENT_INTERFACE_PREFIX = '__Options_',
     COMPONENT_INITIALIZE_STRUCT = '__initializeStruct',
     COMPONENT_UPDATE_STRUCT = '__updateStruct',
-    COMPONENT_BUILD = '_build',
-    REUSABLE_COMPONENT_REBIND_STATE = '__rebindStates',
     COMPONENT_INITIALIZERS_NAME = 'initializers',
     BUILDCOMPATIBLENODE = '_buildCompatibleNode',
     OPTIONS = 'options',
+    PAGE_LIFE_CYCLE = 'PageLifeCycle',
+    LAYOUT_CALLBACK = 'LayoutCallback',
+    CUSTOMDIALOG_ANNOTATION_NAME = 'CustomDialog',
+    CUSTOMDIALOG_CONTROLLER = 'CustomDialogController',
+    CUSTOMDIALOG_CONTROLLER_OPTIONS = 'CustomDialogControllerOptions',
+    SETDIALOGCONTROLLER_METHOD = '__setDialogController__',
 }
 
 export enum BuilderLambdaNames {
@@ -39,13 +43,24 @@ export enum BuilderLambdaNames {
     TRANSFORM_METHOD_NAME = '_instantiateImpl',
     STYLE_PARAM_NAME = 'style',
     STYLE_ARROW_PARAM_NAME = 'instance',
-    CONTENT_PARAM_NAME = 'content',
+    CONTENT_PARAM_NAME = 'content'
 }
 
-export enum Dollars {
-    DOLLAR_RESOURCE = '$r',
-    DOLLAR_RAWFILE = '$rawfile',
-    DOLLAR_DOLLAR = '$$',
+// IMPORT
+export function findImportSourceByName(importName: string): string {
+    const source = DeclarationCollector.getInstance().findExternalSourceFromName(importName);
+    if (!source) {
+        throw new Error(`cannot find import source by name: "${importName}".`);
+    }
+    return source;
+}
+
+export function findImportSourceByNode(declNode: arkts.AstNode): string {
+    const source = DeclarationCollector.getInstance().findExternalSourceFromNode(declNode);
+    if (!source) {
+        throw new Error(`cannot find import source by peer.`);
+    }
+    return source;
 }
 
 export function findLocalImport(
@@ -62,22 +77,30 @@ export function findLocalImport(
     return importSpecifier?.local ?? importSpecifier?.imported;
 }
 
-// TODO: currently, we forcely assume initializerOptions is named in pattern __Options_xxx
-export function getCustomComponentNameFromInitializerOptions(name: string): string | undefined {
-    const prefix: string = CustomComponentNames.COMPONENT_INTERFACE_PREFIX;
-    if (name.startsWith(prefix)) {
-        return name.substring(prefix.length);
-    }
-}
-
-export function getCustomComponentOptionsName(className: string): string {
-    return `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${className}`;
-}
-
+// AST NODE
 export function isStatic(node: arkts.AstNode): boolean {
     return node.isStatic;
 }
 
+/**
+ * Determine whether the type node includes null or undefined type.
+ *
+ * @param type type node
+ */
+export function hasNullOrUndefinedType(type: arkts.TypeNode): boolean {
+    let res: boolean = false;
+    if (arkts.isETSUnionType(type)) {
+        type.types.forEach((item: arkts.TypeNode) => {
+            res = res || hasNullOrUndefinedType(item);
+        });
+    }
+    if (arkts.isETSUndefinedType(type) || arkts.isETSNullType(type)) {
+        res = true;
+    }
+    return res;
+}
+
+// TYPE PARAMETER
 export function getTypeParamsFromClassDecl(node: arkts.ClassDeclaration | undefined): readonly arkts.TSTypeParameter[] {
     return node?.definition?.typeParams?.params ?? [];
 }
@@ -86,34 +109,182 @@ export function getTypeNameFromTypeParameter(node: arkts.TSTypeParameter | undef
     return node?.name?.name;
 }
 
-export function createOptionalClassProperty(
-    name: string,
-    property: arkts.ClassProperty,
-    stageManagementIdent: string,
-    modifiers: arkts.Es2pandaModifierFlags
-): arkts.ClassProperty {
-    const newProperty = arkts.factory.createClassProperty(
-        arkts.factory.createIdentifier(name),
-        undefined,
-        stageManagementIdent.length
-            ? createStageManagementType(stageManagementIdent, property)
-            : property.typeAnnotation?.clone(),
-        modifiers,
-        false
-    );
-    return arkts.classPropertySetOptional(newProperty, true);
+// GETTER
+export function getGettersFromClassDecl(definition: arkts.ClassDefinition): arkts.MethodDefinition[] {
+    return definition.body.filter(
+        (member) =>
+            arkts.isMethodDefinition(member) &&
+            arkts.hasModifierFlag(member, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_GETTER)
+    ) as arkts.MethodDefinition[];
 }
 
-export function createStageManagementType(
-    stageManagementIdent: string,
-    property: arkts.ClassProperty
-): arkts.ETSTypeReference {
-    return arkts.factory.createTypeReference(
-        arkts.factory.createTypeReferencePart(
-            arkts.factory.createIdentifier(stageManagementIdent),
-            arkts.factory.createTSTypeParameterInstantiation([
-                property.typeAnnotation ? property.typeAnnotation.clone() : arkts.factory.createETSUndefinedType(),
-            ])
-        )
+// ANNOTATION
+export function hasPropertyInAnnotation(annotation: arkts.AnnotationUsage, propertyName: string): boolean {
+    return !!annotation.properties.find(
+        (annoProp: arkts.AstNode) =>
+            arkts.isClassProperty(annoProp) &&
+            annoProp.key &&
+            arkts.isIdentifier(annoProp.key) &&
+            annoProp.key.name === propertyName
     );
+}
+
+// CUSTOM COMPONENT
+export type CustomComponentInfo = {
+    name: string;
+    isDecl: boolean;
+    annotations: CustomComponentAnontations;
+};
+
+export type CustomComponentAnontations = {
+    component?: arkts.AnnotationUsage;
+    componentV2?: arkts.AnnotationUsage;
+    entry?: arkts.AnnotationUsage;
+    reusable?: arkts.AnnotationUsage;
+    reusableV2?: arkts.AnnotationUsage;
+    customLayout?: arkts.AnnotationUsage;
+    customdialog?: arkts.AnnotationUsage;
+};
+
+type StructAnnoationInfo = {
+    isComponent: boolean;
+    isComponentV2: boolean;
+    isEntry: boolean;
+    isReusable: boolean;
+    isReusableV2: boolean;
+    isCustomLayout: boolean;
+    isCustomDialog: boolean;
+};
+
+export function isCustomComponentAnnotation(
+    anno: arkts.AnnotationUsage,
+    decoratorName: StructDecoratorNames,
+    ignoreDecl?: boolean
+): boolean {
+    if (!(!!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName)) {
+        return false;
+    }
+    if (!ignoreDecl) {
+        const decl = arkts.getDecl(anno.expr);
+        if (!decl) {
+            return false;
+        }
+        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
+            return false;
+        }
+        DeclarationCollector.getInstance().collect(decl);
+    }
+    return true;
+}
+
+export function collectCustomComponentScopeInfo(
+    node: arkts.ClassDeclaration | arkts.StructDeclaration
+): CustomComponentInfo | undefined {
+    const definition: arkts.ClassDefinition | undefined = node.definition;
+    if (!definition || !definition?.ident?.name) {
+        return undefined;
+    }
+    const isStruct = arkts.isStructDeclaration(node);
+    const isDecl: boolean = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
+    const isCustomComponentClassDecl = !isStruct && isDecl;
+    const shouldIgnoreDecl = isStruct || isDecl;
+    if (
+        isCustomComponentClassDecl &&
+        definition.ident.name !== CustomComponentNames.COMPONENT_CLASS_NAME &&
+        definition.ident.name !== CustomComponentNames.COMPONENT_V2_CLASS_NAME
+    ) {
+        return undefined;
+    }
+    let annotations: CustomComponentAnontations = {};
+    if (!isCustomComponentClassDecl) {
+        let isCustomComponent: boolean = false;
+        for (const anno of definition.annotations) {
+            const { isComponent, isComponentV2, isEntry, isReusable, isReusableV2, isCustomLayout, isCustomDialog } =
+                getAnnotationInfoForStruct(anno, shouldIgnoreDecl);
+            isCustomComponent ||= isComponent || isComponentV2 || isCustomDialog;
+            annotations = {
+                ...annotations,
+                ...(isComponent && !annotations?.component && { component: anno }),
+                ...(isComponentV2 && !annotations?.componentV2 && { componentV2: anno }),
+                ...(isEntry && !annotations?.entry && { entry: anno }),
+                ...(isReusable && !annotations?.reusable && { reusable: anno }),
+                ...(isReusableV2 && !annotations?.reusableV2 && { reusableV2: anno }),
+                ...(isCustomLayout && !annotations?.customLayout && { customLayout: anno }),
+                ...(isCustomDialog && !annotations?.reusable && { customdialog: anno }),
+            };
+        }
+        if (!isCustomComponent) {
+            return undefined;
+        }
+    }
+    return {
+        name: definition.ident.name,
+        isDecl,
+        annotations: annotations as CustomComponentAnontations,
+    };
+}
+
+export function getAnnotationInfoForStruct(
+    anno: arkts.AnnotationUsage,
+    shouldIgnoreDecl: boolean
+): StructAnnoationInfo {
+    const isComponent = isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT, shouldIgnoreDecl);
+    const isComponentV2 = isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT_V2, shouldIgnoreDecl);
+    const isEntry = isCustomComponentAnnotation(anno, StructDecoratorNames.ENTRY, shouldIgnoreDecl);
+    const isReusable = isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE, shouldIgnoreDecl);
+    const isReusableV2 = isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE_V2, shouldIgnoreDecl);
+    const isCustomLayout = isCustomComponentAnnotation(anno, StructDecoratorNames.CUSTOM_LAYOUT, shouldIgnoreDecl);
+    const isCustomDialog = isCustomComponentAnnotation(anno, StructDecoratorNames.CUSTOMDIALOG, shouldIgnoreDecl);
+    return { isComponent, isComponentV2, isEntry, isReusable, isReusableV2, isCustomLayout, isCustomDialog };
+}
+
+export function isComponentStruct(node: arkts.StructDeclaration, scopeInfo: CustomComponentInfo): boolean {
+    return scopeInfo.name === node.definition.ident?.name;
+}
+
+/**
+ * Determine whether it is a custom component.
+ *
+ * @param node class declaration node
+ */
+export function isCustomComponentClass(node: arkts.ClassDeclaration, scopeInfo: CustomComponentInfo): boolean {
+    if (!node.definition?.ident?.name) {
+        return false;
+    }
+    const name: string = node.definition.ident.name;
+    if (scopeInfo.isDecl) {
+        return (
+            name === CustomComponentNames.COMPONENT_CLASS_NAME || name === CustomComponentNames.COMPONENT_V2_CLASS_NAME
+        );
+    }
+    return name === scopeInfo.name;
+}
+
+export function isCustomComponentInterface(node: arkts.TSInterfaceDeclaration): boolean {
+    const checkPrefix = !!node.id?.name.startsWith(CustomComponentNames.COMPONENT_INTERFACE_PREFIX);
+    const checkComponent = node.annotations.some((anno) =>
+        isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT)
+    );
+    return checkPrefix && checkComponent;
+}
+
+export function getCustomComponentOptionsName(className: string): string {
+    return `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${className}`;
+}
+
+/**
+ * Determine whether it is method with specified name.
+ *
+ * @param method method definition node
+ * @param name specified method name
+ */
+export function isKnownMethodDefinition(method: arkts.MethodDefinition, name: string): boolean {
+    if (!method || !arkts.isMethodDefinition(method)) {
+        return false;
+    }
+
+    // For now, we only considered matched method name.
+    const isNameMatched: boolean = method.name?.name === name;
+    return isNameMatched;
 }

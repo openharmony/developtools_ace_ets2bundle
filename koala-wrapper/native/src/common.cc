@@ -40,16 +40,50 @@ static es2panda_Impl *impl = nullptr;
 #endif
 
 const char* LIB_ES2PANDA_PUBLIC = LIB_PREFIX "es2panda_public" LIB_SUFFIX;
+constexpr const char* IS_UI_FLAG = "IS_UI_FLAG";
+constexpr const char* NOT_UI_FLAG = "NOT_UI_FLAG";
+const string MODULE_SUFFIX = ".d.ets";
+const string ARKUI = "arkui";
+
+#ifdef KOALA_WINDOWS
+    const char *SEPARATOR = "\\";
+#else
+    const char *SEPARATOR = "/";
+#endif
+const char *LIB_DIR = "lib";
+
+static std::string ES2PANDA_LIB_PATH;
+
+std::string joinPath(vector<string> &paths)
+{
+    std::string res;
+    for (int i = 0; i < paths.size(); ++i) {
+        if (i == 0) {
+            res = paths[i];
+        } else {
+            res += SEPARATOR + paths[i];
+        }
+    }
+    return res;
+}
+
+void impl_SetUpSoPath(KStringPtr &soPath)
+{
+    ES2PANDA_LIB_PATH = std::string(soPath.c_str());
+}
+KOALA_INTEROP_V1(SetUpSoPath, KStringPtr);
 
 void* FindLibrary() {
-    std::string libraryName;
+    std::vector<std::string> pathArray;
     char* envValue = getenv("PANDA_SDK_PATH");
     if (envValue) {
-        libraryName = std::string(envValue)  + ("/" PLUGIN_DIR "/lib/") + LIB_ES2PANDA_PUBLIC;
+        pathArray = {envValue, PLUGIN_DIR, LIB_DIR, LIB_ES2PANDA_PUBLIC};
+    } else if (!ES2PANDA_LIB_PATH.empty()) {
+        pathArray = {ES2PANDA_LIB_PATH, LIB_DIR, LIB_ES2PANDA_PUBLIC};
     } else {
-        libraryName = LIB_ES2PANDA_PUBLIC;
+        pathArray = {LIB_ES2PANDA_PUBLIC};
     }
-    return loadLibrary(libraryName);
+    return loadLibrary(joinPath(pathArray));
 }
 
 es2panda_Impl *GetImpl() {
@@ -97,6 +131,56 @@ inline KUInt unpackUInt(const KByte* bytes) {
         | (bytes[BYTE_3] << BYTE_3_SHIFT)
     );
 }
+
+void impl_MemInitialize()
+{
+    GetImpl()->MemInitialize();
+}
+KOALA_INTEROP_V0(MemInitialize)
+
+void impl_MemFinalize()
+{
+    GetImpl()->MemFinalize();
+}
+KOALA_INTEROP_V0(MemFinalize)
+
+KNativePointer impl_CreateGlobalContext(KNativePointer configPtr, KStringArray externalFileListPtr,
+    KInt fileNum, KBoolean lspUsage)
+{
+    auto config = reinterpret_cast<es2panda_Config*>(configPtr);
+
+    const std::size_t headerLen = 4;
+
+    const char** externalFileList = new const char* [fileNum];
+    std::size_t position = headerLen;
+    std::size_t strLen;
+    for (std::size_t i = 0; i < static_cast<std::size_t>(fileNum); ++i) {
+        strLen = unpackUInt(externalFileListPtr + position);
+        position += headerLen;
+        externalFileList[i] = strdup(std::string(
+            reinterpret_cast<const char*>(externalFileListPtr + position), strLen).c_str());
+        position += strLen;
+    }
+
+    return GetImpl()->CreateGlobalContext(config, externalFileList, fileNum, lspUsage);
+}
+KOALA_INTEROP_4(CreateGlobalContext, KNativePointer, KNativePointer, KStringArray, KInt, KBoolean)
+
+void impl_DestroyGlobalContext(KNativePointer globalContextPtr)
+{
+    auto context = reinterpret_cast<es2panda_GlobalContext*>(globalContextPtr);
+    GetImpl()->DestroyGlobalContext(context);
+}
+KOALA_INTEROP_V1(DestroyGlobalContext, KNativePointer)
+
+KNativePointer impl_CreateCacheContextFromFile(KNativePointer configPtr, KStringPtr& fileName,
+    KNativePointer globalContext, KBoolean isExternal)
+{
+    auto config = reinterpret_cast<es2panda_Config*>(configPtr);
+    auto context = reinterpret_cast<es2panda_GlobalContext*>(globalContext);
+    return GetImpl()->CreateCacheContextFromFile(config, getStringCopy(fileName), context, isExternal);
+}
+KOALA_INTEROP_4(CreateCacheContextFromFile, KNativePointer, KNativePointer, KStringPtr, KNativePointer, KBoolean)
 
 KNativePointer impl_CreateConfig(KInt argc, KStringArray argvPtr) {
     const std::size_t headerLen = 4;
@@ -170,8 +254,20 @@ TODO: NOT FROM API (shouldn't be there)
 -----------------------------------------------------------------------------------------------------------------------------
 */
 
-es2panda_AstNode * cachedParentNode;
-es2panda_Context * cachedContext;
+KNativePointer impl_AstNodeProgram(KNativePointer contextPtr, KNativePointer instancePtr)
+{
+    auto _context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    auto _receiver = reinterpret_cast<es2panda_AstNode*>(instancePtr);
+
+    if (GetImpl()->AstNodeIsProgramConst(_context, _receiver)) {
+        return GetImpl()->ETSModuleProgram(_context, _receiver);
+    }
+    return impl_AstNodeProgram(_context, GetImpl()->AstNodeParent(_context, _receiver));
+}
+KOALA_INTEROP_2(AstNodeProgram, KNativePointer, KNativePointer, KNativePointer)
+
+thread_local es2panda_AstNode *cachedParentNode;
+thread_local es2panda_Context *cachedContext;
 
 static void changeParent(es2panda_AstNode *child)
 {
@@ -206,7 +302,7 @@ KNativePointer impl_AstNodeUpdateChildren(KNativePointer contextPtr, KNativePoin
 }
 KOALA_INTEROP_2(AstNodeUpdateChildren, KNativePointer, KNativePointer, KNativePointer)
 
-std::vector<void*> cachedChildren;
+thread_local std::vector<void*> cachedChildren;
 
 static void visitChild(es2panda_AstNode *node) {
     cachedChildren.emplace_back(node);
@@ -225,6 +321,43 @@ KNativePointer impl_AstNodeChildren(
     return new std::vector(cachedChildren);
 }
 KOALA_INTEROP_2(AstNodeChildren, KNativePointer, KNativePointer, KNativePointer)
+
+static bool isUIHeaderFile(es2panda_Context* context, es2panda_Program* program)
+{
+    auto result = GetImpl()->ProgramFileNameWithExtensionConst(context, program);
+    string fileNameWithExtension(result);
+    result = GetImpl()->ProgramModuleNameConst(context, program);
+    string moduleName(result);
+
+    return fileNameWithExtension.length() >= MODULE_SUFFIX.length()
+        && fileNameWithExtension.substr(fileNameWithExtension.length() - MODULE_SUFFIX.length()) == MODULE_SUFFIX
+        && moduleName.find(ARKUI) != std::string::npos;
+}
+
+KBoolean impl_ProgramCanSkipPhases(KNativePointer context, KNativePointer program)
+{
+    KStringPtr isUiFlag(IS_UI_FLAG);
+    KStringPtr notUiFlag(NOT_UI_FLAG);
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _program = reinterpret_cast<es2panda_Program*>(program);
+    if (isUIHeaderFile(_context, _program)) {
+        return false;
+    }
+    std::size_t sourceLen;
+    const auto externalSources = reinterpret_cast<es2panda_ExternalSource **>
+        (GetImpl()->ProgramExternalSources(_context, _program, &sourceLen));
+    for (std::size_t i = 0; i < sourceLen; ++i) {
+        std::size_t programLen;
+        auto programs = GetImpl()->ExternalSourcePrograms(externalSources[i], &programLen);
+        for (std::size_t j = 0; j < programLen; ++j) {
+            if (isUIHeaderFile(_context, programs[j])) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+KOALA_INTEROP_2(ProgramCanSkipPhases, KBoolean, KNativePointer, KNativePointer)
 
 /*
 -----------------------------------------------------------------------------------------------------------------------------

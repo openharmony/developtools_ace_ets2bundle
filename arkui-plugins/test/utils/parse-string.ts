@@ -14,9 +14,10 @@
  */
 
 function parseDumpSrc(str: string): string {
-    let _str: string = filterSource(str);
+    let _str: string = str;
     _str = cleanCopyRight(_str);
     _str = removeSpaceAndReturn(_str);
+    _str = replaceWithRandomNumber(_str);
 
     return _str;
 }
@@ -28,7 +29,7 @@ function filterSource(text: string): string {
 }
 
 function cleanCopyRight(str: string): string {
-    const copyrightBlockRegex = /(?:\/\*.*Copyright \(c\) [- \d]+ Huawei Device Co\., Ltd\..*\*\/)/gs;
+    const copyrightBlockRegex = /(?:\/\*.*Copyright \([c|C]\) [- \d]+ [\w ]+\., Ltd\..*\*\/)/gs;
 
     return str.replace(copyrightBlockRegex, '');
 }
@@ -36,7 +37,13 @@ function cleanCopyRight(str: string): string {
 function removeSpaceAndReturn(str: string): string {
     const spaceAndReturnRegex = /^[\s\r]+/gm;
 
-    return str.replace(spaceAndReturnRegex, '');
+    return str.replace(spaceAndReturnRegex, '').trim();
 }
 
-export { parseDumpSrc, filterSource, cleanCopyRight, removeSpaceAndReturn };
+function replaceWithRandomNumber(text: string): string {
+    return text
+        .replace(/(?<=__memo_id[\)+]?\s?\+\s?[\(+]?)\d+/g, () => '<some_random_number>')
+        .replace(/(?<=gensym[_%]+)\d+/g, () => '<some_random_number>');
+}
+
+export { parseDumpSrc, filterSource, cleanCopyRight, removeSpaceAndReturn, replaceWithRandomNumber };

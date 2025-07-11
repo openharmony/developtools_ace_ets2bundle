@@ -32,7 +32,7 @@ import {
 import { Literal } from "./Literal"
 export class BooleanLiteral extends Literal {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 8)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_BOOLEAN_LITERAL)
         super(pointer)
         
     }
@@ -49,6 +49,6 @@ export class BooleanLiteral extends Literal {
 export function isBooleanLiteral(node: AstNode): node is BooleanLiteral {
     return node instanceof BooleanLiteral
 }
-if (!nodeByType.has(8)) {
-    nodeByType.set(8, BooleanLiteral)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_BOOLEAN_LITERAL)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_BOOLEAN_LITERAL, BooleanLiteral)
 }
