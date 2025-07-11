@@ -112,6 +112,7 @@ import {
   arkTSEvolutionModuleMap,
   getArkTSEvoDeclFilePath
 } from './process_arkts_evolution';
+import { processInteropUI } from './process_interop_ui';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -1955,4 +1956,5 @@ export function generateDeclarationFileForSTS(rootFileNames: string[]): void {
   }
   fs.mkdirSync(config.outDir, { recursive: true });
   generateInteropDecls(config);
+  processInteropUI(projectConfig.dependentModuleMap?.get(projectConfig.moduleName)?.declgenV2OutPath);
 }

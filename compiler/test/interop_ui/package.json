@@ -1,0 +1,11 @@
+{
+  "name": "interop_ui_test",
+  "version": "0.0.1",
+  "description": "test interop ui",
+  "private": true,
+  "scripts": {
+    "build": "npm run generateDeclarations && ./node_modules/.bin/babel ./src --out-dir lib --extensions .ts",
+    "build:test": "npm run build --prefix ../../../compiler && node ./test.js",
+    "test": "npm run build:test --prefix ./"
+  }
+}
