@@ -755,7 +755,7 @@ function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode
     log.push({
       type: LogType.ERROR,
       message: `In the trailing lambda case, '${name}' must have one and only one property decorated with ` +
-        `'@BuilderParam', and its '@BuilderParam' expects no parameter.`,
+        `'@BuilderParam'.`,
       pos: node.getStart(),
       code: '10905102'
     });
