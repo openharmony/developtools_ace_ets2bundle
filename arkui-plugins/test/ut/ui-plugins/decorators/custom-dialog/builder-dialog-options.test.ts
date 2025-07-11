@@ -110,7 +110,7 @@ function main() {}
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_dialogController = ((({let gensym___50325868 = initializers;
     (((gensym___50325868) == (null)) ? undefined : gensym___50325868.dialogController)})) ?? (new CustomDialogController({
-      builder: (() => {
+      builder: @memo() (() => {
         builder1("nihao");
       }),
       baseComponent: this,

@@ -17,22 +17,22 @@ import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
 import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
-import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
-import { GetterSetter, InitializerConstructor } from './types';
+import { CustomComponentNames } from '../utils';
 import {
     generateToRecord,
     createGetter,
     createSetter2,
-    generateThisBacking,
     generateGetOrSetCall,
+    generateThisBacking,
     collectStateManagementTypeImport,
     hasDecorator,
     PropertyCache,
-    getValueInAnnotation,
 } from './utils';
+import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
+import { GetterSetter, InitializerConstructor } from './types';
 import { factory } from './factory';
 
-export class StorageLinkTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
+export class PropRefTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
@@ -42,48 +42,22 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
     }
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
+        const mutableThis: arkts.Expression = generateThisBacking(newName);
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
         PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
+        const updateStruct: arkts.AstNode = this.generateUpdateStruct(mutableThis, originalName);
+        PropertyCache.getInstance().collectUpdateStruct(this.structInfo.name, [updateStruct]);
         if (!!this.structInfo.annotations?.reusable) {
             const toRecord = generateToRecord(newName, originalName);
             PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);
         }
     }
 
-    generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        const storageLinkValueStr: string | undefined = getValueInAnnotation(
-            this.property,
-            DecoratorNames.STORAGE_LINK
-        );
-        if (!storageLinkValueStr) {
-            throw new Error('StorageLink required only one value!!');
-        }
-
-        const args: arkts.Expression[] = [
-            arkts.factory.createStringLiteral(storageLinkValueStr),
-            arkts.factory.create1StringLiteral(originalName),
-            this.property.value ?? arkts.factory.createUndefinedLiteral(),
-            factory.createTypeFrom(this.property.typeAnnotation),
-        ];
-        factory.judgeIfAddWatchFunc(args, this.property);
-        collectStateManagementTypeImport(StateManagementTypes.STORAGE_LINK_DECORATED);
-        return arkts.factory.createAssignmentExpression(
-            generateThisBacking(newName),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(
-                StateManagementTypes.MAKE_STORAGE_LINK,
-                this.property.typeAnnotation,
-                args,
-                true
-            )
-        );
-    }
-
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field = factory.createOptionalClassProperty(
+        const field: arkts.ClassProperty = factory.createOptionalClassProperty(
             newName,
             this.property,
-            StateManagementTypes.STORAGE_LINK_DECORATED,
+            StateManagementTypes.PROP_REF_DECORATED,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
@@ -101,6 +75,7 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
             this.property.typeAnnotation,
             thisSet
         );
+
         return [field, getter, setter];
     }
 
@@ -119,9 +94,70 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
     ): arkts.MethodDefinition {
         return createSetter2(originalName, typeAnnotation, statement);
     }
+
+    generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
+        const binaryItem = arkts.factory.createBinaryExpression(
+            factory.createBlockStatementForOptionalExpression(
+                arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
+                originalName
+            ),
+            this.property.value ?? arkts.factory.createUndefinedLiteral(),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+        );
+        const args: arkts.Expression[] = [
+            arkts.factory.create1StringLiteral(originalName),
+            this.property.value
+                ? binaryItem
+                : arkts.factory.createTSAsExpression(
+                      factory.createNonNullOrOptionalMemberExpression(
+                          CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
+                          originalName,
+                          false,
+                          true
+                      ),
+                      this.property.typeAnnotation?.clone(),
+                      false
+                  ),
+        ];
+        factory.judgeIfAddWatchFunc(args, this.property);
+        collectStateManagementTypeImport(StateManagementTypes.PROP_REF_DECORATED);
+        const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
+            generateThisBacking(newName),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_PROP_REF,
+                this.property.typeAnnotation,
+                args,
+                true
+            )
+        );
+        return arkts.factory.createExpressionStatement(assign);
+    }
+
+    generateUpdateStruct(mutableThis: arkts.Expression, originalName: string): arkts.AstNode {
+        const member: arkts.MemberExpression = arkts.factory.createMemberExpression(
+            arkts.factory.createTSNonNullExpression(mutableThis),
+            arkts.factory.createIdentifier(StateManagementTypes.UPDATE),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
+        );
+        return factory.createIfInUpdateStruct(originalName, member, [
+            arkts.factory.createTSAsExpression(
+                factory.createNonNullOrOptionalMemberExpression(
+                    CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
+                    originalName,
+                    false,
+                    true
+                ),
+                this.property.typeAnnotation?.clone(),
+                false
+            ),
+        ]);
+    }
 }
 
-export class StorageLinkInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+export class PropRefInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
     translateProperty(): T {
         if (arkts.isMethodDefinition(this.property)) {
             this.modified = true;
@@ -134,9 +170,9 @@ export class StorageLinkInterfaceTranslator<T extends InterfacePropertyTypes> ex
     }
 
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
-        if (arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.STORAGE_LINK)) {
+        if (arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.PROP_REF)) {
             return true;
-        } else if (arkts.isClassProperty(node) && hasDecorator(node, DecoratorNames.STORAGE_LINK)) {
+        } else if (arkts.isClassProperty(node) && hasDecorator(node, DecoratorNames.PROP_REF)) {
             return true;
         }
         return false;
@@ -144,21 +180,21 @@ export class StorageLinkInterfaceTranslator<T extends InterfacePropertyTypes> ex
 
     /**
      * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
-     * to `StorageLinkDecoratedVariable<T> | undefined`.
+     * to `IPropRefDecoratedVariable<T> | undefined`.
      *
-     * @param method expecting getter with `@StorageLink` and a setter with `@StorageLink` in the overloads.
+     * @param method expecting getter with `@PropRef` and a setter with `@PropRef` in the overloads.
      */
     private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
-        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.STORAGE_LINK);
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.PROP_REF);
     }
 
     /**
      * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
-     * to `StorageLinkDecoratedVariable<T> | undefined`.
+     * to `IPropRefDecoratedVariable<T> | undefined`.
      *
-     * @param property expecting property with `@StorageLink`.
+     * @param property expecting property with `@PropRef`.
      */
     private updateStatePropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
-        return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.STORAGE_LINK);
+        return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.PROP_REF);
     }
 }

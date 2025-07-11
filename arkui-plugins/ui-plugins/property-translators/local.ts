@@ -17,26 +17,24 @@ import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
 import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
-import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
-import { GetterSetter, InitializerConstructor } from './types';
 import {
     generateToRecord,
     createGetter,
     createSetter2,
     generateThisBacking,
     generateGetOrSetCall,
-    collectStateManagementTypeImport,
     hasDecorator,
+    collectStateManagementTypeImport,
     PropertyCache,
-    getValueInAnnotation,
 } from './utils';
+import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
+import { GetterSetter, InitializerConstructor } from './types';
 import { factory } from './factory';
 
-export class StorageLinkTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
+export class LocalTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
-
         this.cacheTranslatedInitializer(newName, originalName);
         return this.translateWithoutInitializer(newName, originalName);
     }
@@ -50,40 +48,11 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
         }
     }
 
-    generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        const storageLinkValueStr: string | undefined = getValueInAnnotation(
-            this.property,
-            DecoratorNames.STORAGE_LINK
-        );
-        if (!storageLinkValueStr) {
-            throw new Error('StorageLink required only one value!!');
-        }
-
-        const args: arkts.Expression[] = [
-            arkts.factory.createStringLiteral(storageLinkValueStr),
-            arkts.factory.create1StringLiteral(originalName),
-            this.property.value ?? arkts.factory.createUndefinedLiteral(),
-            factory.createTypeFrom(this.property.typeAnnotation),
-        ];
-        factory.judgeIfAddWatchFunc(args, this.property);
-        collectStateManagementTypeImport(StateManagementTypes.STORAGE_LINK_DECORATED);
-        return arkts.factory.createAssignmentExpression(
-            generateThisBacking(newName),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(
-                StateManagementTypes.MAKE_STORAGE_LINK,
-                this.property.typeAnnotation,
-                args,
-                true
-            )
-        );
-    }
-
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field = factory.createOptionalClassProperty(
+        const field: arkts.ClassProperty = factory.createOptionalClassProperty(
             newName,
             this.property,
-            StateManagementTypes.STORAGE_LINK_DECORATED,
+            StateManagementTypes.LOCAL_DECORATED,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
@@ -101,6 +70,7 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
             this.property.typeAnnotation,
             thisSet
         );
+
         return [field, getter, setter];
     }
 
@@ -119,9 +89,28 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
     ): arkts.MethodDefinition {
         return createSetter2(originalName, typeAnnotation, statement);
     }
+
+    generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
+        const args: arkts.Expression[] = [
+            arkts.factory.create1StringLiteral(originalName),
+            this.property.value ?? arkts.factory.createUndefinedLiteral(),
+        ];
+        collectStateManagementTypeImport(StateManagementTypes.LOCAL_DECORATED);
+        const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
+            generateThisBacking(newName),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_LOCAL,
+                this.property.typeAnnotation,
+                args,
+                true
+            )
+        );
+        return arkts.factory.createExpressionStatement(assign);
+    }
 }
 
-export class StorageLinkInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+export class LocalInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
     translateProperty(): T {
         if (arkts.isMethodDefinition(this.property)) {
             this.modified = true;
@@ -134,9 +123,9 @@ export class StorageLinkInterfaceTranslator<T extends InterfacePropertyTypes> ex
     }
 
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
-        if (arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.STORAGE_LINK)) {
+        if (arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.LOCAL)) {
             return true;
-        } else if (arkts.isClassProperty(node) && hasDecorator(node, DecoratorNames.STORAGE_LINK)) {
+        } else if (arkts.isClassProperty(node) && hasDecorator(node, DecoratorNames.LOCAL)) {
             return true;
         }
         return false;
@@ -144,21 +133,21 @@ export class StorageLinkInterfaceTranslator<T extends InterfacePropertyTypes> ex
 
     /**
      * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
-     * to `StorageLinkDecoratedVariable<T> | undefined`.
+     * to `ILocalDecoratedVariable<T> | undefined`.
      *
-     * @param method expecting getter with `@StorageLink` and a setter with `@StorageLink` in the overloads.
+     * @param method expecting getter with `@Local` and a setter with `@Local` in the overloads.
      */
     private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
-        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.STORAGE_LINK);
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.LOCAL);
     }
 
     /**
      * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
-     * to `StorageLinkDecoratedVariable<T> | undefined`.
+     * to `ILocalDecoratedVariable<T> | undefined`.
      *
-     * @param property expecting property with `@StorageLink`.
+     * @param property expecting property with `@Local`.
      */
     private updateStatePropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
-        return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.STORAGE_LINK);
+        return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.LOCAL);
     }
 }
