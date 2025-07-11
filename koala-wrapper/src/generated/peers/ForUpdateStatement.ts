@@ -16,47 +16,77 @@
 import {
     global,
     passNode,
-    passNodeArray,
-    unpackNonNullableNode,
     unpackNode,
-    unpackNodeArray,
     assertValidPeer,
     AstNode,
-    Es2pandaAstNodeType,
     KNativePointer,
     nodeByType,
-    ArktsObject,
-    unpackString
-} from "../../reexport-for-generated"
+    Es2pandaAstNodeType,
+} from '../../reexport-for-generated';
+import { Expression } from './Expression';
+import { LoopStatement } from './LoopStatement';
+import { Statement } from './Statement';
 
-import { LoopStatement } from "./LoopStatement"
-import { Expression } from "./Expression"
-import { Statement } from "./Statement"
 export class ForUpdateStatement extends LoopStatement {
-     constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 33)
-        super(pointer)
-        
+    constructor(pointer: KNativePointer) {
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_FOR_UPDATE_STATEMENT);
+        super(pointer);
     }
-    static createForUpdateStatement(init?: AstNode, test?: Expression, update?: Expression, body?: Statement): ForUpdateStatement {
-        return new ForUpdateStatement(global.generatedEs2panda._CreateForUpdateStatement(global.context, passNode(init), passNode(test), passNode(update), passNode(body)))
+    static createForUpdateStatement(
+        init?: AstNode,
+        test?: Expression,
+        update?: Expression,
+        body?: Statement
+    ): ForUpdateStatement {
+        return new ForUpdateStatement(
+            global.generatedEs2panda._CreateForUpdateStatement(
+                global.context,
+                passNode(init),
+                passNode(test),
+                passNode(update),
+                passNode(body)
+            )
+        );
     }
+
+    static updateForUpdateStatement(
+        original: ForUpdateStatement,
+        init?: AstNode,
+        test?: Expression,
+        update?: Expression,
+        body?: Statement
+    ): ForUpdateStatement {
+        return new ForUpdateStatement(
+            global.generatedEs2panda._UpdateForUpdateStatement(
+                global.context,
+                passNode(original),
+                passNode(init),
+                passNode(test),
+                passNode(update),
+                passNode(body)
+            )
+        );
+    }
+
     get init(): AstNode | undefined {
-        return unpackNode(global.generatedEs2panda._ForUpdateStatementInitConst(global.context, this.peer))
+        return unpackNode(global.generatedEs2panda._ForUpdateStatementInit(global.context, this.peer));
     }
     get test(): Expression | undefined {
-        return unpackNode(global.generatedEs2panda._ForUpdateStatementTestConst(global.context, this.peer))
+        return unpackNode(global.generatedEs2panda._ForUpdateStatementTest(global.context, this.peer));
     }
     get update(): Expression | undefined {
-        return unpackNode(global.generatedEs2panda._ForUpdateStatementUpdateConst(global.context, this.peer))
+        return unpackNode(global.generatedEs2panda._ForUpdateStatementUpdateConst(global.context, this.peer));
     }
     get body(): Statement | undefined {
-        return unpackNode(global.generatedEs2panda._ForUpdateStatementBodyConst(global.context, this.peer))
+        return unpackNode(global.generatedEs2panda._ForUpdateStatementBody(global.context, this.peer));
     }
+    protected readonly brandForUpdateStatement: undefined;
 }
-export function isForUpdateStatement(node: AstNode): node is ForUpdateStatement {
-    return node instanceof ForUpdateStatement
+
+export function isForUpdateStatement(node: object | undefined): node is ForUpdateStatement {
+    return node instanceof ForUpdateStatement;
 }
-if (!nodeByType.has(33)) {
-    nodeByType.set(33, ForUpdateStatement)
+
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_FOR_UPDATE_STATEMENT)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_FOR_UPDATE_STATEMENT, ForUpdateStatement);
 }

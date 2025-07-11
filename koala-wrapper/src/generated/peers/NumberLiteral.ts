@@ -32,17 +32,14 @@ import {
 import { Literal } from "./Literal"
 export class NumberLiteral extends Literal {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 52)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_NUMBER_LITERAL)
         super(pointer)
         
-    }
-    get str(): string {
-        return unpackString(global.generatedEs2panda._NumberLiteralStrConst(global.context, this.peer))
     }
 }
 export function isNumberLiteral(node: AstNode): node is NumberLiteral {
     return node instanceof NumberLiteral
 }
-if (!nodeByType.has(52)) {
-    nodeByType.set(52, NumberLiteral)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_NUMBER_LITERAL)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_NUMBER_LITERAL, NumberLiteral)
 }

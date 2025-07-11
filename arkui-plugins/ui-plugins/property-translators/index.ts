@@ -15,62 +15,119 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { PropertyTranslator } from './base';
-import { DecoratorNames, hasDecorator } from './utils';
-import { StateTranslator } from './state';
-import { PropTranslator } from './prop';
-import { StorageLinkTranslator } from './storagelink';
-import { LocalStorageLinkTranslator } from './localstoragelink';
-import { LinkTranslator } from './link';
-import { ObjectLinkTranslator } from './objectlink';
-import { LocalStoragePropTranslator } from './localstorageprop';
-import { regularPropertyTranslator } from './regularProperty';
+import { DecoratorNames } from '../../common/predefines';
+import { InterfacePropertyTranslator, PropertyTranslator } from './base';
+import { hasDecorator } from './utils';
+import { StateInterfaceTranslator, StateTranslator } from './state';
+import { PropInterfaceTranslator, PropTranslator } from './prop';
+import { StorageLinkInterfaceTranslator, StorageLinkTranslator } from './storagelink';
+import { LocalStorageLinkInterfaceTranslator, LocalStorageLinkTranslator } from './localstoragelink';
+import { LinkInterfaceTranslator, LinkTranslator } from './link';
+import { ObjectLinkInterfaceTranslator, ObjectLinkTranslator } from './objectlink';
+import { LocalStoragePropInterfaceTranslator, LocalStoragePropTranslator } from './localstorageprop';
+import { RegularInterfaceTranslator, RegularPropertyTranslator } from './regularProperty';
 import { staticPropertyTranslator } from './staticProperty';
-import { isStatic } from '../utils';
-import { StoragePropTranslator } from './storageProp';
-import { ConsumeTranslator } from './consume';
-import { ProvideTranslator } from './provide';
-import { BuilderParamTranslator } from './builderParam';
+import { CustomComponentInfo, isStatic } from '../utils';
+import { StoragePropInterfaceTranslator, StoragePropTranslator } from './storageProp';
+import { ConsumeInterfaceTranslator, ConsumeTranslator } from './consume';
+import { ProvideInterfaceTranslator, ProvideTranslator } from './provide';
+import { BuilderParamInterfaceTranslator, BuilderParamTranslator } from './builderParam';
+import { ObservedTrackTranslator } from './observedTrack';
+import { ClassScopeInfo } from './types';
 
-export { PropertyTranslator };
+export { PropertyTranslator, InterfacePropertyTranslator };
+export type { ClassScopeInfo };
 
-export function classifyProperty(member: arkts.AstNode, structName: string): PropertyTranslator | undefined {
-    if (!arkts.isClassProperty(member)) return undefined;
-    if (isStatic(member)) return new staticPropertyTranslator(member, structName);
+export function classifyProperty(
+    property: arkts.AstNode,
+    structInfo: CustomComponentInfo
+): PropertyTranslator | undefined {
+    if (!arkts.isClassProperty(property)) return undefined;
+    if (isStatic(property)) return new staticPropertyTranslator({ property, structInfo });
 
-    if (hasDecorator(member, DecoratorNames.STATE)) {
-        return new StateTranslator(member, structName);
+    if (hasDecorator(property, DecoratorNames.STATE)) {
+        return new StateTranslator({ property, structInfo });
     }
-    if (hasDecorator(member, DecoratorNames.STORAGE_LINK)) {
-        return new StorageLinkTranslator(member, structName);
+    if (hasDecorator(property, DecoratorNames.STORAGE_LINK)) {
+        return new StorageLinkTranslator({ property, structInfo });
     }
-    if (hasDecorator(member, DecoratorNames.LOCAL_STORAGE_LINK)) {
-        return new LocalStorageLinkTranslator(member, structName);
+    if (hasDecorator(property, DecoratorNames.LOCAL_STORAGE_LINK)) {
+        return new LocalStorageLinkTranslator({ property, structInfo });
     }
-    if (hasDecorator(member, DecoratorNames.LINK)) {
-        return new LinkTranslator(member, structName);
+    if (hasDecorator(property, DecoratorNames.LINK)) {
+        return new LinkTranslator({ property, structInfo });
     }
-    if (hasDecorator(member, DecoratorNames.OBJECT_LINK)) {
-        return new ObjectLinkTranslator(member, structName);
+    if (hasDecorator(property, DecoratorNames.OBJECT_LINK)) {
+        return new ObjectLinkTranslator({ property, structInfo });
     }
-    if (hasDecorator(member, DecoratorNames.LOCAL_STORAGE_PROP)) {
-        return new LocalStoragePropTranslator(member, structName);
+    if (hasDecorator(property, DecoratorNames.LOCAL_STORAGE_PROP)) {
+        return new LocalStoragePropTranslator({ property, structInfo });
     }
-    if (hasDecorator(member, DecoratorNames.STORAGE_PROP)) {
-        return new StoragePropTranslator(member, structName);
+    if (hasDecorator(property, DecoratorNames.STORAGE_PROP)) {
+        return new StoragePropTranslator({ property, structInfo });
     }
-    if (hasDecorator(member, DecoratorNames.PROP)) {
-        return new PropTranslator(member, structName);
+    if (hasDecorator(property, DecoratorNames.PROP)) {
+        return new PropTranslator({ property, structInfo });
     }
-    if (hasDecorator(member, DecoratorNames.PROVIDE)) {
-        return new ProvideTranslator(member, structName);
+    if (hasDecorator(property, DecoratorNames.PROVIDE)) {
+        return new ProvideTranslator({ property, structInfo });
     }
-    if (hasDecorator(member, DecoratorNames.CONSUME)) {
-        return new ConsumeTranslator(member, structName);
+    if (hasDecorator(property, DecoratorNames.CONSUME)) {
+        return new ConsumeTranslator({ property, structInfo });
     }
-    if (hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
-        return new BuilderParamTranslator(member, structName);
+    if (hasDecorator(property, DecoratorNames.BUILDER_PARAM)) {
+        return new BuilderParamTranslator({ property, structInfo });
     }
 
-    return new regularPropertyTranslator(member, structName);
+    return new RegularPropertyTranslator({ property, structInfo });
+}
+
+export function classifyPropertyInInterface(property: arkts.AstNode): InterfacePropertyTranslator | undefined {
+    if (StateInterfaceTranslator.canBeTranslated(property)) {
+        return new StateInterfaceTranslator({ property });
+    }
+    if (LinkInterfaceTranslator.canBeTranslated(property)) {
+        return new LinkInterfaceTranslator({ property });
+    }
+    if (PropInterfaceTranslator.canBeTranslated(property)) {
+        return new PropInterfaceTranslator({ property });
+    }
+    if (ProvideInterfaceTranslator.canBeTranslated(property)) {
+        return new ProvideInterfaceTranslator({ property });
+    }
+    if (ConsumeInterfaceTranslator.canBeTranslated(property)) {
+        return new ConsumeInterfaceTranslator({ property });
+    }
+    if (StoragePropInterfaceTranslator.canBeTranslated(property)) {
+        return new StoragePropInterfaceTranslator({ property });
+    }
+    if (StorageLinkInterfaceTranslator.canBeTranslated(property)) {
+        return new StorageLinkInterfaceTranslator({ property });
+    }
+    if (BuilderParamInterfaceTranslator.canBeTranslated(property)) {
+        return new BuilderParamInterfaceTranslator({ property });
+    }
+    if (LocalStoragePropInterfaceTranslator.canBeTranslated(property)) {
+        return new LocalStoragePropInterfaceTranslator({ property });
+    }
+    if (LocalStorageLinkInterfaceTranslator.canBeTranslated(property)) {
+        return new LocalStorageLinkInterfaceTranslator({ property });
+    }
+    if (ObjectLinkInterfaceTranslator.canBeTranslated(property)) {
+        return new ObjectLinkInterfaceTranslator({ property });
+    }
+    if (RegularInterfaceTranslator.canBeTranslated(property)) {
+        return new RegularInterfaceTranslator({ property });
+    }
+    return undefined;
+}
+
+export function classifyObservedTrack(
+    member: arkts.AstNode,
+    classScopeInfo: ClassScopeInfo
+): ObservedTrackTranslator | undefined {
+    if (!arkts.isClassProperty(member)) {
+        return undefined;
+    }
+    return new ObservedTrackTranslator(member, classScopeInfo);
 }
