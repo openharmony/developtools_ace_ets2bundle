@@ -593,7 +593,8 @@ function checkParamDecorator(propertyDecorator: PropertyDecorator, member: ts.Pr
   }
   if (propertyDecorator.hasRequire && !propertyDecorator.hasParam && !checkHasBuilderParamDecorator(propertyDecorator,
     member, sourceFileNode, structInfo)) {
-    const message: string = 'In a struct decorated with \'@ComponentV2\', \'@Require\' can only be used with \'@Param\'.';
+    const message: string = 'In a struct decorated with \'@ComponentV2\', \'@Require\' can only be used with \'@Param\'' +
+    ' and \'@BuilderParam\'.';
     addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode, { code: '10905325' });
   }
 }

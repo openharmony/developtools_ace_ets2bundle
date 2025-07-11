@@ -22,7 +22,7 @@
         "code": "10905209"
     },
     "@BuilderParam": {
-        "message": "In the trailing lambda case, 'CustomContainer' must have one and only one property decorated with '@BuilderParam', and its '@BuilderParam' expects no parameter.",
+        "message": "In the trailing lambda case, 'CustomContainer' must have one and only one property decorated with '@BuilderParam'.",
         "type": "ERROR",
         "code": "10905102"
     },
@@ -737,12 +737,12 @@
             "code": "10905327"
         },
         {
-            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param'.",
+            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' and '@BuilderParam'.",
             "type": "ERROR",
             "code": "10905325"
         },
         {
-            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param'.",
+            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' and '@BuilderParam'.",
             "type": "ERROR",
             "code": "10905325"
         },
