@@ -41,9 +41,7 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
         const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
         const mutableThis: arkts.Expression = generateThisBacking(newName);
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(mutableThis, originalName);
-        // const updateStruct: arkts.AstNode = this.generateUpdateStruct(mutableThis, originalName);
         currentStructInfo.initializeBody.push(initializeStruct);
-        // currentStructInfo.updateBody.push(updateStruct);
         arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
