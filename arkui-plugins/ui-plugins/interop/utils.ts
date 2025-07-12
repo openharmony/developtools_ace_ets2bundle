@@ -16,7 +16,7 @@
 
 
 import * as arkts from '@koalaui/libarkts';
-import { ESValueMethodNames } from './predefines';
+import { ESValueMethodNames, InteroperAbilityNames } from './predefines';
 
 
 /**
@@ -133,3 +133,91 @@ export function stateProxy(stateVarName: string): string {
     return `__Proxy_${stateVarName}`;
 }
 
+/**
+ * get elmtId
+ * @returns         
+ *      let viewStackProcessor = global.getProperty("ViewStackProcessor");
+ *      let createId = viewStackProcessor.getProperty("AllocateNewElmetIdForNextComponent");
+ *      let elmtId = createId.invoke();
+ */
+export function createELMTID(): arkts.Statement[] {
+    const body: arkts.Statement[] = [];
+    const viewStackProcessor = getPropertyESValue('viewStackProcessor', InteroperAbilityNames.GLOBAL, 'ViewStackProcessor');
+    body.push(viewStackProcessor);
+    const createId = getPropertyESValue('createId', 'viewStackProcessor', 'AllocateNewElmetIdForNextComponent');
+    body.push(createId);
+    const elmtId = arkts.factory.createVariableDeclaration(
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+        arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
+        [arkts.factory.createVariableDeclarator(
+            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
+            arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID),
+            arkts.factory.createCallExpression(
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createIdentifier('createId'),
+                    arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                ),
+                undefined,
+                undefined
+            )
+        )]
+    );
+    body.push(elmtId);
+    return body;
+}
+
+/**
+ * 
+ * @param componentName 
+ * @returns return {
+ *              component: component,
+ *              name: componentName,
+ *          };
+ */
+export function createInitReturn(componentName: string): arkts.ReturnStatement {
+    return arkts.factory.createReturnStatement(
+        arkts.ObjectExpression.createObjectExpression(
+            arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+            [
+                arkts.Property.createProperty(
+                    arkts.factory.createIdentifier(InteroperAbilityNames.COMPONENT),
+                    arkts.factory.createIdentifier(InteroperAbilityNames.COMPONENT)
+                ),
+                arkts.Property.createProperty(
+                    arkts.factory.createIdentifier('name'),
+                    arkts.factory.createStringLiteral(componentName)
+                )
+            ],
+            false
+        ),
+    );
+}
+
+/**
+ * createGlobal 
+ * @returns let global = ESValue.getGlobal();
+ */
+export function createGlobal(): arkts.Statement {
+    return arkts.factory.createVariableDeclaration(
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+        arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
+        [arkts.factory.createVariableDeclarator(
+            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
+            arkts.factory.createIdentifier(InteroperAbilityNames.GLOBAL),
+            arkts.factory.createCallExpression(
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE),
+                    arkts.factory.createIdentifier('getGlobal'),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                ),
+                undefined,
+                undefined
+            )
+        )]
+    );
+}

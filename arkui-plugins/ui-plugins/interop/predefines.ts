@@ -61,3 +61,8 @@ export enum InteropProvideNames {
     SETVIEWPUFINDPROVIDE = 'setViewPUFindProvideInterop',
     FINDPROVIDECALLBACK = 'findProvideInterop',
 }
+
+export enum builderMethodNames {
+    AFTERUPDATEPROPERTY = 'afterUpdateProperty',
+    CREATECOMPATIBLENODE = 'createCompatibleNode',
+}
