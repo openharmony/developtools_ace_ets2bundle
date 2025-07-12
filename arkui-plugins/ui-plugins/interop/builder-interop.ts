@@ -56,11 +56,11 @@ function invokeFunctionWithParam(functionName: string, result: string, className
     );
 }
 
-function invokeAfterUpdateProperty(): arkts.Statement {
+function invokeRunPendingJobs(): arkts.Statement {
     return arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
-                arkts.factory.createIdentifier(builderMethodNames.AFTERUPDATEPROPERTY),
+                arkts.factory.createIdentifier(builderMethodNames.RUNPENDINGJOBS),
                 arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
@@ -141,10 +141,10 @@ function getUpdateArgs(node: arkts.CallExpression): arkts.Statement[] {
         const endBody =
             [
                 createGlobal(),
-                getPropertyESValue(builderMethodNames.AFTERUPDATEPROPERTY,
+                getPropertyESValue(builderMethodNames.RUNPENDINGJOBS,
                     InteroperAbilityNames.GLOBAL,
-                    builderMethodNames.AFTERUPDATEPROPERTY),
-                invokeAfterUpdateProperty()
+                    builderMethodNames.RUNPENDINGJOBS),
+                invokeRunPendingJobs()
             ];
         body?.push(...endBody);
     }
