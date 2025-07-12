@@ -34,7 +34,7 @@ import { ETSTypeReferencePart } from "./ETSTypeReferencePart"
 import { Identifier } from "./Identifier"
 export class ETSTypeReference extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 71)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TYPE_REFERENCE)
         super(pointer)
         
     }
@@ -51,6 +51,6 @@ export class ETSTypeReference extends TypeNode {
 export function isETSTypeReference(node: AstNode): node is ETSTypeReference {
     return node instanceof ETSTypeReference
 }
-if (!nodeByType.has(71)) {
-    nodeByType.set(71, ETSTypeReference)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TYPE_REFERENCE)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TYPE_REFERENCE, ETSTypeReference)
 }

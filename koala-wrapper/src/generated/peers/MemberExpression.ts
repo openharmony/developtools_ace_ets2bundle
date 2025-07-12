@@ -34,7 +34,7 @@ import { Expression } from "./Expression"
 import { Es2pandaMemberExpressionKind } from "./../Es2pandaEnums"
 export class MemberExpression extends MaybeOptionalExpression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 45)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_MEMBER_EXPRESSION)
         super(pointer)
         
     }
@@ -88,6 +88,6 @@ export class MemberExpression extends MaybeOptionalExpression {
 export function isMemberExpression(node: AstNode): node is MemberExpression {
     return node instanceof MemberExpression
 }
-if (!nodeByType.has(45)) {
-    nodeByType.set(45, MemberExpression)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_MEMBER_EXPRESSION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_MEMBER_EXPRESSION, MemberExpression)
 }

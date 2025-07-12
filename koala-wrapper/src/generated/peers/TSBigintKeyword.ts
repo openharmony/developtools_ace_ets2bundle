@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class TSBigintKeyword extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 98)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_BIGINT_KEYWORD)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class TSBigintKeyword extends TypeNode {
 export function isTSBigintKeyword(node: AstNode): node is TSBigintKeyword {
     return node instanceof TSBigintKeyword
 }
-if (!nodeByType.has(98)) {
-    nodeByType.set(98, TSBigintKeyword)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_BIGINT_KEYWORD)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_BIGINT_KEYWORD, TSBigintKeyword)
 }

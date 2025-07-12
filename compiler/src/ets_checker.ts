@@ -118,6 +118,7 @@ import {
   ARKTS_1_2
 } from './fast_build/ark_compiler/interop/pre_define';
 
+
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
   pkgJsonFileHash?: string;

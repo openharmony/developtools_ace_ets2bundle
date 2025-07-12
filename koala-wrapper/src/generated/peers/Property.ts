@@ -34,7 +34,7 @@ import { Es2pandaPropertyKind } from "./../Es2pandaEnums"
 import { ValidationInfo } from "./ValidationInfo"
 export class Property extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 55)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_PROPERTY)
         super(pointer)
         
     }
@@ -75,6 +75,6 @@ export class Property extends Expression {
 export function isProperty(node: AstNode): node is Property {
     return node instanceof Property
 }
-if (!nodeByType.has(55)) {
-    nodeByType.set(55, Property)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_PROPERTY)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_PROPERTY, Property)
 }

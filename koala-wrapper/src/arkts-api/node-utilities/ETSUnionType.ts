@@ -15,6 +15,7 @@
 
 import { ETSUnionType, TypeNode } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
+import { NodeCache } from '../utilities/nodeCache';
 import { attachModifiers, updateThenAttach } from '../utilities/private';
 
 export function updateETSUnionType(original: ETSUnionType, types: readonly TypeNode[]): ETSUnionType {
@@ -23,5 +24,9 @@ export function updateETSUnionType(original: ETSUnionType, types: readonly TypeN
     }
 
     const update = updateThenAttach(ETSUnionType.updateETSUnionType, attachModifiers);
-    return update(original, types);
+    const newNode = update(original, types);
+    if (NodeCache.getInstance().has(original)) {
+        NodeCache.getInstance().refresh(original, newNode);
+    }
+    return newNode;
 }

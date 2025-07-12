@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
- #ifndef COMMON_H
+#ifndef COMMON_H
 #define COMMON_H
 
 #include "dynamic-loader.h"
@@ -32,7 +32,7 @@ string getString(KStringPtr ptr);
 
 char* getStringCopy(KStringPtr& ptr);
 
-inline KUInt unpackUInt(const KByte* bytes);
+KUInt unpackUInt(const KByte* bytes);
 
 es2panda_ContextState intToState(KInt state);
 

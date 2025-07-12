@@ -34,7 +34,7 @@ import { ScriptFunction } from "./ScriptFunction"
 import { Identifier } from "./Identifier"
 export class FunctionExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 35)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_EXPRESSION)
         super(pointer)
         
     }
@@ -63,6 +63,6 @@ export class FunctionExpression extends Expression {
 export function isFunctionExpression(node: AstNode): node is FunctionExpression {
     return node instanceof FunctionExpression
 }
-if (!nodeByType.has(35)) {
-    nodeByType.set(35, FunctionExpression)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_EXPRESSION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_EXPRESSION, FunctionExpression)
 }
