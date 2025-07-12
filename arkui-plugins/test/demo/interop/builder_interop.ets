@@ -75,6 +75,6 @@ compatibleComponent((() => {
     param.setProperty("a", ESValue.wrap("a23"));
     param.setProperty("b", ESValue.wrap(this.stateVar));
     let global = ESValue.getGlobal();
-    let afterUpdateProperty = global.getProperty("afterUpdateProperty");
-    afterUpdateProperty.invoke();
+    let runPendingJobs = global.getProperty("runPendingJobs");
+    runPendingJobs.invoke();
 }));
