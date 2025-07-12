@@ -49,6 +49,7 @@ import { factory as PropertyFactory } from '../property-translators/factory';
 import { AnimationNames, BindableDecl, DecoratorIntrinsicNames, DecoratorNames } from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
 import { addMemoAnnotation, collectMemoableInfoInParameter } from '../../collectors/memo-collectors/utils';
+import { factory as MemoCollectFactory } from '../../collectors/memo-collectors/factory';
 
 export class factory {
     /**
@@ -283,7 +284,10 @@ export class factory {
         if (!expr) {
             return arg;
         }
-        const properties = (expr.properties as arkts.Property[]).map((p) => factory.updatePropertiesInOptions(p));
+        const properties = (expr.properties as arkts.Property[]).map((p) => {
+            MemoCollectFactory.findAndCollectMemoableProperty(p);
+            return factory.updatePropertiesInOptions(p);
+        });
         const updatedExpr: arkts.ObjectExpression = arkts.ObjectExpression.updateObjectExpression(
             expr,
             arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
