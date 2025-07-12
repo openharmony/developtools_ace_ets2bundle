@@ -18,6 +18,7 @@ import { isSameNativeObject } from '../peers/ArktsObject';
 import { updateThenAttach } from '../utilities/private';
 import { classPropertySetOptional, hasModifierFlag } from '../utilities/public';
 import { Es2pandaModifierFlags } from '../../generated/Es2pandaEnums';
+import { NodeCache } from '../utilities/nodeCache';
 
 export function updateClassProperty(
     original: ClassProperty,
@@ -47,5 +48,9 @@ export function updateClassProperty(
             return node;
         }
     );
-    return update(original, key, value, typeAnnotation, modifiers, isComputed);
+    const newNode = update(original, key, value, typeAnnotation, modifiers, isComputed);
+    if (NodeCache.getInstance().has(original)) {
+        NodeCache.getInstance().refresh(original, newNode);
+    }
+    return newNode;
 }

@@ -259,7 +259,6 @@ extern "C" DLL_EXPORT KInt LoadVirtualMachine(KInt vmKind, const char* appClassP
         etsVMOptions.push_back({EtsOptionType::ETS_NO_JIT, nullptr});
         etsVMOptions.push_back({EtsOptionType::ETS_MOBILE_LOG, (void*)ArkMobileLog});
         etsVMOptions.push_back({EtsOptionType::ETS_AOT, nullptr});
-        // etsVMOptions.push_back({EtsOptionType::ETS_LOG_LEVEL, "info"});
         pandaVMArgs.nOptions = etsVMOptions.size();
         pandaVMArgs.options = etsVMOptions.data();
         g_vmEntry.vmKind = PANDA_VM_KIND;

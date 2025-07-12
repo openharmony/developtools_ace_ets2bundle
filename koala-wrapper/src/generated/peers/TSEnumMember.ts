@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 import { Expression } from "./Expression"
 export class TSEnumMember extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 88)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_ENUM_MEMBER)
         super(pointer)
         
     }
@@ -62,6 +62,6 @@ export class TSEnumMember extends Statement {
 export function isTSEnumMember(node: AstNode): node is TSEnumMember {
     return node instanceof TSEnumMember
 }
-if (!nodeByType.has(88)) {
-    nodeByType.set(88, TSEnumMember)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_ENUM_MEMBER)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_ENUM_MEMBER, TSEnumMember)
 }

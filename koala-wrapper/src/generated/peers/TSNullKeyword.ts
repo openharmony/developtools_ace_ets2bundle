@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class TSNullKeyword extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 101)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_NULL_KEYWORD)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class TSNullKeyword extends TypeNode {
 export function isTSNullKeyword(node: AstNode): node is TSNullKeyword {
     return node instanceof TSNullKeyword
 }
-if (!nodeByType.has(101)) {
-    nodeByType.set(101, TSNullKeyword)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_NULL_KEYWORD)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_NULL_KEYWORD, TSNullKeyword)
 }

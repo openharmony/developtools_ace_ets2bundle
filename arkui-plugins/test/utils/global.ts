@@ -13,16 +13,19 @@
  * limitations under the License.
  */
 
-import * as fs from 'fs';
+import fs from 'fs'
 import * as arkts from '@koalaui/libarkts';
-import { arktsGlobal } from '@koalaui/libarkts/build/lib/es2panda';
-import { CompileFileInfo } from './artkts-config';
+import { CompileFileInfo } from './shared-types';
 
-function initGlobal(fileInfo: CompileFileInfo, isDebug: boolean = true): void {
+function createGlobalConfig(
+    fileInfo: CompileFileInfo,
+    isDebug: boolean = true,
+    isUseCache: boolean = true
+): arkts.Config {
     const config = [
         '_',
         '--extension',
-        'sts',
+        'ets',
         '--arktsconfig',
         fileInfo.arktsConfigFile,
         '--output',
@@ -32,59 +35,100 @@ function initGlobal(fileInfo: CompileFileInfo, isDebug: boolean = true): void {
     if (isDebug) {
         config.push('--debug-info');
     }
+    if (!isUseCache) {
+        config.push('--simultaneous');
+    }
     config.push(fileInfo.filePath);
 
-    arktsGlobal.filePath = fileInfo.filePath;
-    resetConfig(config);
+    if (isUseCache) {
+        arkts.MemInitialize();
+    }
+    arkts.arktsGlobal.filePath = fileInfo.filePath;
+    return resetConfig(config);
+}
 
-    const source: string = fs.readFileSync(fileInfo.filePath).toString();
-    resetContext(source);
+function destroyGlobalConfig(config: arkts.Config, isUseCache: boolean = true): void {
+    destroyConfig(config);
+    if (isUseCache) {
+        arkts.MemFinalize();
+    }
+}
+
+function createGlobalContextPtr(config: arkts.Config, files: string[]): number {
+    return arkts.CreateGlobalContext(config.peer, files, files.length, false);
+}
+
+function destroyGlobalContextPtr(globalContextPtr: number): void {
+    arkts.DestroyGlobalContext(globalContextPtr);
+}
+
+function createCacheContextFromFile(
+    config: arkts.Config,
+    filePath: string,
+    globalContextPtr: number,
+    isExternal: boolean
+): arkts.Context {
+    return arkts.Context.createCacheContextFromFile(config.peer, filePath, globalContextPtr, isExternal);
+}
+
+function createContextGenerateAbcForExternalSourceFiles(filePaths: string[]): arkts.Context {
+    return arkts.Context.createContextGenerateAbcForExternalSourceFiles(filePaths);
 }
 
 function resetContext(source: string): void {
     try {
-        arktsGlobal.context;
+        arkts.arktsGlobal.context;
     } catch (e) {
         // Do nothing
     } finally {
         const context: arkts.Context = arkts.Context.createFromString(source);
-        arktsGlobal.compilerContext = context;
+        arkts.arktsGlobal.compilerContext = context;
     }
 }
 
-function resetConfig(cmd: string[]): void {
+function resetConfig(cmd: string[]): arkts.Config {
     try {
-        arktsGlobal.config;
-        destroyConfig();
+        arkts.arktsGlobal.config;
+        destroyConfig(arkts.arktsGlobal.config);
     } catch (e) {
         // Do nothing
     } finally {
-        const arkTSConfig: arkts.Config = arkts.Config.create(cmd);
-        arktsGlobal.config = arkTSConfig.peer;
+        const config = arkts.Config.create(cmd);
+        arkts.arktsGlobal.config = config.peer;
+        return config;
     }
 }
 
-function destroyContext(): void {
-    arktsGlobal.es2panda._DestroyContext(arktsGlobal.context);
-}
-
-function destroyConfig(): void {
-    arkts.destroyConfig(arktsGlobal.config);
-}
-
-function canProceedToState(state: arkts.Es2pandaContextState): boolean {
-    const stateToSkip: arkts.Es2pandaContextState[] = [
-        arkts.Es2pandaContextState.ES2PANDA_STATE_SCOPE_INITED,
-        arkts.Es2pandaContextState.ES2PANDA_STATE_ASM_GENERATED,
-        arkts.Es2pandaContextState.ES2PANDA_STATE_ERROR,
-    ];
-
-    if (state in stateToSkip) {
-        return false;
+function destroyContext(context: arkts.Context): void {
+    try {
+        arkts.arktsGlobal.es2panda._DestroyContext(context.peer);
+    } catch (e) {
+        // Do nothing
     }
-
-    const currState = arktsGlobal.es2panda._ContextState(arktsGlobal.context);
-    return currState < state;
 }
 
-export { initGlobal, resetContext, resetConfig, canProceedToState };
+function destroyConfig(config: arkts.Config): void {
+    try {
+        arkts.destroyConfig(config);
+    } catch (e) {
+        // Do nothing
+    }
+}
+
+function setUpSoPath(pandaSdkPath: string): void {
+    arkts.arktsGlobal.es2panda._SetUpSoPath(pandaSdkPath);
+}
+
+export {
+    createGlobalConfig,
+    destroyGlobalConfig,
+    createGlobalContextPtr,
+    destroyGlobalContextPtr,
+    createCacheContextFromFile,
+    createContextGenerateAbcForExternalSourceFiles,
+    resetContext,
+    resetConfig,
+    destroyContext,
+    destroyConfig,
+    setUpSoPath,
+};
