@@ -63,6 +63,6 @@ export enum InteropProvideNames {
 }
 
 export enum builderMethodNames {
-    AFTERUPDATEPROPERTY = 'afterUpdateProperty',
+    RUNPENDINGJOBS = 'runPendingJobs',
     CREATECOMPATIBLENODE = 'createCompatibleNode',
 }
