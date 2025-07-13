@@ -33,7 +33,7 @@ export function updateClassDefinition(
     ident: Identifier | undefined,
     typeParams: TSTypeParameterDeclaration | undefined,
     superTypeParams: TSTypeParameterInstantiation | undefined,
-    _implements: readonly TSClassImplements[],
+    classImplements: readonly TSClassImplements[],
     ctor: MethodDefinition | undefined,
     superClass: Expression | undefined,
     body: readonly AstNode[],
@@ -44,7 +44,7 @@ export function updateClassDefinition(
         isSameNativeObject(ident, original.ident) &&
         isSameNativeObject(typeParams, original.typeParams) &&
         isSameNativeObject(superTypeParams, original.superTypeParams) &&
-        isSameNativeObject(_implements, original.implements) &&
+        isSameNativeObject(classImplements, original.implements) &&
         isSameNativeObject(superClass, original.super) &&
         isSameNativeObject(body, original.body) &&
         isSameNativeObject(modifiers, original.modifiers) &&
@@ -63,7 +63,7 @@ export function updateClassDefinition(
         ident,
         typeParams,
         superTypeParams,
-        _implements,
+        classImplements,
         undefined,
         superClass,
         body,

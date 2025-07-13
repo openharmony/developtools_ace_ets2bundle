@@ -30,7 +30,7 @@ static bool registerNatives(ets_env *env, const ets_class clazz, const std::vect
     std::vector<EtsNativeMethod> methods;
     methods.reserve(impls.size());
     bool result = true;
-    for (const auto &[name, type, func, flag] : impls) {
+    for (const auto &[name, _, func, flag] : impls) {
         EtsNativeMethod method;
         method.name = name.c_str();
         method.func = func;
