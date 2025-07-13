@@ -223,29 +223,7 @@ function processArgument(argument: arkts.ObjectExpression, ObjectExpressionNum:n
  * @returns After Checked, transform builder/WrappedBuilder -> compatibleComponent
  */
 export function generateBuilderCompatible(node: arkts.CallExpression, moduleName: string): arkts.CallExpression {
-    let functionName;
-    switch (node.arguments.length) {
-        case 0:
-            functionName = 'createCompatibleNodeWithFuncVoid';
-            break;
-        case 1:
-            functionName = 'createCompatibleNodeWithFunc';
-            break;
-        case 2:
-            functionName = 'createCompatibleNodeWithFunc2';
-            break;
-        case 3:
-            functionName = 'createCompatibleNodeWithFunc3';
-            break;
-        case 4:
-            functionName = 'createCompatibleNodeWithFunc4';
-            break;
-        case 5:
-            functionName = 'createCompatibleNodeWithFunc5';
-            break;
-        default:
-            throw Error('Error arguments in Legacy Builder Function');
-    }
+    let functionName = getFunctionName(node);
     let param: builderParam = getInitArgs(node);
     const initializer = createBuilderInitializer(moduleName, functionName, param);
     const updater: arkts.ArrowFunctionExpression = createBuilderUpdate(node);
@@ -260,4 +238,33 @@ export function generateBuilderCompatible(node: arkts.CallExpression, moduleName
     );
     arkts.NodeCache.getInstance().collect(result);
     return result;
+}
+
+function getFunctionName(node: arkts.CallExpression): string {
+    switch (node.arguments.length) {
+        case 0:
+            return 'createCompatibleNodeWithFuncVoid';
+        case 1:
+            return 'createCompatibleNodeWithFunc';
+        case 2:
+            return 'createCompatibleNodeWithFunc2';
+        case 3:
+            return 'createCompatibleNodeWithFunc3';
+        case 4:
+            return 'createCompatibleNodeWithFunc4';
+        case 5:
+            return 'createCompatibleNodeWithFunc5';
+        case 6:
+            return 'createCompatibleNodeWithFunc6';
+        case 7:
+            return 'createCompatibleNodeWithFunc7';
+        case 8:
+            return 'createCompatibleNodeWithFunc8';
+        case 9:
+            return 'createCompatibleNodeWithFunc9';
+        case 10:
+            return 'createCompatibleNodeWithFunc10';
+        default:
+            throw Error('Error arguments in Legacy Builder Function');
+    }
 }
