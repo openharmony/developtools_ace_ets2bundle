@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef COMMON_H_
+#define COMMON_H_
 
 #include "dynamic-loader.h"
 #include "es2panda_lib.h"
@@ -24,16 +24,16 @@
 #include <iostream>
 #include <vector>
 
-using std::string, std::cout, std::endl, std::vector;
+using std::string;
 
 es2panda_Impl *GetImpl();
 
-string getString(KStringPtr ptr);
+string getString(const KStringPtr &ptr);
 
-char* getStringCopy(KStringPtr& ptr);
+char* getStringCopy(const KStringPtr& ptr);
 
 KUInt unpackUInt(const KByte* bytes);
 
 es2panda_ContextState intToState(KInt state);
 
-#endif // COMMON_H
+#endif // COMMON_H_
