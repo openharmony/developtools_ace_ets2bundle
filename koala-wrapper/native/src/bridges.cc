@@ -538,6 +538,7 @@ KNativePointer impl_SourceRangeEnd(KNativePointer context, KNativePointer range)
     return result;
 }
 KOALA_INTEROP_2(SourceRangeEnd, KNativePointer, KNativePointer, KNativePointer)
+
 bool impl_ClassPropertyIsDefaultAccessModifierConst(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);

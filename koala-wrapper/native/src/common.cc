@@ -31,8 +31,10 @@ static es2panda_Impl *impl = nullptr;
 
     #ifdef __x86_64__
         #define PLUGIN_DIR "linux_host_tools"
-    #else
+    #elif defined(__aarch64__)
         #define PLUGIN_DIR "linux_arm64_host_tools"
+    #else
+        #error "Unsupported architecture!"
     #endif
 
     #define LIB_PREFIX "lib"
@@ -107,11 +109,13 @@ es2panda_ContextState intToState(KInt state)
     return es2panda_ContextState(state);
 }
 
-string getString(KStringPtr ptr) {
+string getString(const KStringPtr& ptr)
+{
     return ptr.data();
 }
 
-char* getStringCopy(KStringPtr& ptr) {
+char* getStringCopy(const KStringPtr& ptr)
+{
     return strdup(ptr.c_str());
 }
 

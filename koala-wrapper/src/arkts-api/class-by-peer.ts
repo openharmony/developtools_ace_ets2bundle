@@ -19,7 +19,8 @@ import { global } from './static/global';
 import { KNativePointer, nullptr } from '@koalaui/interop';
 import { AstNode, UnsupportedNode } from './peers/AstNode';
 
-export const nodeByType = new Map<Es2pandaAstNodeType, { new (peer: KNativePointer): AstNode }>([]);
+type AstNodeConstructor = new (peer: KNativePointer) => AstNode;
+export const nodeByType = new Map<Es2pandaAstNodeType, AstNodeConstructor>([]);
 
 const cache = new Map<KNativePointer, AstNode>();
 export function clearNodeCache(): void {
