@@ -98,20 +98,12 @@ import {
   FaultHandler
 } from '../../../gen_aot';
 import {
-  ARKTS_1_2,
   NATIVE_MODULE
 } from '../../../pre_define';
 import {
   sharedModuleSet
 } from '../check_shared_module';
 import { SourceMapGenerator } from '../generate_sourcemap';
-import {
-  addDeclFilesConfig,
-  ArkTSEvolutionModule,
-  getDeclgenBridgeCodePath,
-  pkgDeclFilesConfig,
-  arkTSModuleMap
-} from '../../../process_arkts_evolution';
 import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../../meomry_monitor/memory_define';
 import {
@@ -132,6 +124,19 @@ import {
   stopEvent
  } from '../../../performance';
 import { BytecodeObfuscator } from '../bytecode_obfuscator';
+import {
+  addDeclFilesConfig,
+  ArkTSEvolutionModule,
+  getDeclgenBridgeCodePath,
+  pkgDeclFilesConfig,
+  arkTSModuleMap,
+  isArkTSEvolutionFile,
+  genCachePathForBridgeCode,
+} from '../interop/process_arkts_evolution';
+import {
+  FileManager,
+  isMixCompile
+} from '../interop/interop_manager';
 
 export class ModuleInfo {
   filePath: string;
@@ -184,7 +189,6 @@ export class ModuleMode extends CommonMode {
   abcPaths: string[] = [];
   byteCodeHar: boolean;
   perfReportPath: string;
-  rollupCache: Object;
 
   constructor(rollupObject: Object) {
     super(rollupObject);
@@ -218,7 +222,6 @@ export class ModuleMode extends CommonMode {
     if (this.useNormalizedOHMUrl) {
       this.compileContextInfoPath = this.generateCompileContextInfo(rollupObject);
     }
-    this.rollupCache = rollupObject.cache;
   }
 
   private generateCompileContextInfo(rollupObject: Object): string {
@@ -260,9 +263,10 @@ export class ModuleMode extends CommonMode {
         );
         this.logger.printErrorAndExit(errInfo);
       }
-      const isArkTSEvolution: boolean = metaInfo.language === ARKTS_1_2;
-      const pkgPath: string = isArkTSEvolution ?
-        path.join(getDeclgenBridgeCodePath(metaInfo.pkgName), metaInfo.moduleName) : metaInfo.pkgPath;
+      let pkgPath: string = metaInfo.pkgPath;
+      if (isMixCompile() && isArkTSEvolutionFile(moduleId, metaInfo)) {
+        pkgPath = path.join(getDeclgenBridgeCodePath(metaInfo.pkgName), metaInfo.pkgName);
+      }
       const pkgParams = {
         pkgName: metaInfo.pkgName,
         pkgPath,
@@ -322,9 +326,6 @@ export class ModuleMode extends CommonMode {
   prepareForCompilation(rollupObject: Object, parentEvent: CompileEvent): void {
     const eventPrepareForCompilation = createAndStartEvent(parentEvent, 'preparation for compilation');
     this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
-    if (rollupObject.share.projectConfig.dependentModuleMap) {
-      this.writeDeclFilesConfigJson(rollupObject.share.projectConfig.entryPackageName);
-    }
     this.removeCacheInfo(rollupObject);
     stopEvent(eventPrepareForCompilation);
   }
@@ -529,24 +530,22 @@ export class ModuleMode extends CommonMode {
 
     let moduleName: string = metaInfo.moduleName;
     let recordName: string = '';
-    let cacheFilePath: string = metaInfo.language === ARKTS_1_2 ? originalFilePath :
+    let cacheFilePath: string = isArkTSEvolutionFile(filePath, metaInfo) ? originalFilePath :
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath, metaInfo);
     let packageName: string = '';
 
     if (this.useNormalizedOHMUrl) {
       packageName = metaInfo.pkgName;
-      const isArkTSEvolution: boolean = metaInfo.language === ARKTS_1_2;
-      const pkgPath: string = isArkTSEvolution ?
-        path.join(getDeclgenBridgeCodePath(packageName), metaInfo.moduleName) : metaInfo.pkgPath;
+      let pkgPath: string = metaInfo.pkgPath;
+      if (isMixCompile() && isArkTSEvolutionFile(filePath, metaInfo)) {
+        pkgPath = path.join(getDeclgenBridgeCodePath(metaInfo.pkgName), metaInfo.pkgName);
+      }
       const pkgParams = {
         pkgName: packageName,
         pkgPath,
         isRecordName: true,
       };
       recordName = getNormalizedOhmUrlByFilepath(filePath, this.projectConfig, this.logger, pkgParams, undefined);
-      if (!isArkTSEvolution) {
-        addDeclFilesConfig(originalFilePath, this.projectConfig, this.logger, pkgPath, packageName);
-      }
     } else {
       recordName = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, moduleName);
       if (isPackageModules) {
@@ -613,9 +612,12 @@ export class ModuleMode extends CommonMode {
     }
     if (isNeedPerformanceDotting(this.projectConfig)) {
       this.cmdArgs.push(`--perf-file=${this.perfReportPath}`);
+    if (this.projectConfig.mixCompile) {
+      this.cmdArgs.push('--enable-ets-implements');
     }
   }
-
+  }
+  
   addCacheFileArgs() {
     this.cmdArgs.push('--cache-file');
     this.cmdArgs.push(`"@${this.cacheFilePath}"`);
@@ -650,6 +652,10 @@ export class ModuleMode extends CommonMode {
       });
     }
 
+    for (const [pkgName, fileInfo] of FileManager.glueCodeFileInfos) {
+      filesInfo += `${fileInfo.abstractPath};${fileInfo.recordName};${ESM};${fileInfo.abstractPath};${this.projectConfig.entryPackageName};` +
+      `${false};ts\n`;
+    }
     fs.writeFileSync(this.filesInfoPath, filesInfo, 'utf-8');
   }
 
@@ -709,13 +715,6 @@ export class ModuleMode extends CommonMode {
     // collect data error from subprocess
     let logDataList: Object[] = [];
     let errMsg: string = '';
-    const eventGenDescriptionsForMergedEs2abc = createAndStartEvent(parentEvent, 'generate descriptions for merged es2abc');
-    stopEvent(eventGenDescriptionsForMergedEs2abc);
-
-    if (this.projectConfig.invokeEs2abcByHvigor) {
-      this.rollupCache.set(GEN_ABC_CMD, this.cmdArgs);
-      return;
-    }
     
     const genAbcCmd: string = this.cmdArgs.join(' ');
     let eventGenAbc: CompileEvent;

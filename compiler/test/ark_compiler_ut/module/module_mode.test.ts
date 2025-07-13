@@ -101,6 +101,7 @@ import {
   LogData,
   LogDataFactory
 } from '../../../lib/fast_build/ark_compiler/logger';
+import { arkTSEvolutionModuleMap } from '../../../lib/fast_build/ark_compiler/interop/process_arkts_evolution';
 
 function checkGenerateEs2AbcCmdExpect(cmdArgs: Array<object>, compatibleSdkVersion: string, byteCodeHar: boolean): void {
   const fileThreads: number = cpus();
@@ -788,7 +789,7 @@ mocha.describe('test module_mode file api', function () {
     });
     SourceMapGenerator.cleanSourceMapObject();
   });
-
+  
   mocha.it('3-1-1: test updateCachedSourceMaps under build debug: cacheSourceMapPath not exist', function () {
     this.rollup.build();
     const moduleMode = new ModuleModeMock(this.rollup);

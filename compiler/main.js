@@ -43,6 +43,17 @@ const {
   getLogger
 } = require('log4js');
 
+const {
+  entryFileLanguageInfo,
+  isMixCompile,
+  processAbilityPagesFullPath,
+  transformAbilityPages
+} = require('./lib/fast_build/ark_compiler/interop/interop_manager');
+
+const {
+  ARKTS_1_2
+} = require('./lib/fast_build/ark_compiler/interop/pre_define');
+
 configure({
   appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
   categories: {'default': {appenders: ['ETS'], level: 'info'}}
@@ -150,8 +161,6 @@ function loadEntryObj(projectConfig) {
   initProjectConfig(projectConfig);
   loadMemoryTrackingConfig(projectConfig);
   loadBuildJson();
-  // Initialize hybrid compilation related configuration
-  initMixCompileHar(projectConfig);
   if (process.env.aceManifestPath && aceCompileMode === 'page') {
     setEntryFile(projectConfig);
     setFaTestRunnerFile(projectConfig);
@@ -161,14 +170,6 @@ function loadEntryObj(projectConfig) {
     setAbilityPages(projectConfig);
     setStageTestRunnerFile(projectConfig);
     loadNavigationConfig(aceBuildJson);
-  }
-  
-  /**
-   * In the case of hybrid compilation mode and remote modules
-   * do not perform operations such as page path parsing
-   */
-  if (projectConfig.mixCompile && projectConfig.isRemoteModule) {
-    return;
   }
   if (staticPreviewPage) {
     projectConfig.entryObj['./' + staticPreviewPage] = projectConfig.projectPath + path.sep +
@@ -211,6 +212,9 @@ function loadEntryObj(projectConfig) {
           '. \u001b[39m').message;
       }
     }
+  }
+  if (isMixCompile()) {
+    processAbilityPagesFullPath(abilityPagesFullPath);
   }
 }
 
@@ -274,23 +278,7 @@ function buildManifest(manifest, aceConfigPath) {
 }
 
 function getPackageJsonEntryPath() {
-  /**
-   * adapt to oh_modules compile
-   * origin local module => project/library/src/main/ets
-   * oh_module => project/library/src/main
-   * bcs some oh_module don't contain ets dir
-   */
-
-  const candidatePaths = [
-    path.resolve(projectConfig.projectPath, '../../../', projectConfig.packageJson),
-    path.resolve(projectConfig.projectPath, '../../', projectConfig.packageJson),
-  ];
-  
-  const rootPackageJsonPath =
-    candidatePaths.find(fs.existsSync) ??
-    (() => {
-      throw new Error('package.json not found');
-    })();
+  const rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../' + projectConfig.packageJson);
   if (fs.existsSync(rootPackageJsonPath)) {
     let rootPackageJsonContent;
     try {
@@ -419,9 +407,6 @@ function setIntentEntryPages(projectConfig) {
 }
 
 function setAbilityPages(projectConfig) {
-  if (projectConfig.isRemoteModule) {
-    return;
-  }
   let abilityPages = [];
   if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
     const moduleJson = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());
@@ -505,6 +490,9 @@ function setAbilityFile(projectConfig, abilityPages) {
       projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
       setEntryArrayForObf(entryPageKey);
     } else {
+      if (isMixCompile() && transformAbilityPages(abilityPath)) {
+        return;
+      }
       throw Error(
         `\u001b[31m ERROR: srcEntry file '${projectAbilityPath.replace(/\\/g, '/')}' does not exist. \u001b[39m`
       ).message;
@@ -517,12 +505,16 @@ function readAbilityEntrance(moduleJson) {
   if (moduleJson.module) {
     const moduleSrcEntrance = moduleJson.module.srcEntrance;
     const moduleSrcEntry = moduleJson.module.srcEntry;
+    const isStatic = moduleJson.module?.abilityStageCodeLanguage === ARKTS_1_2;
+
     if (moduleSrcEntry) {
       abilityPages.push(moduleSrcEntry);
       abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntry));
+      entryFileLanguageInfo.set(moduleSrcEntry, isStatic);
     } else if (moduleSrcEntrance) {
       abilityPages.push(moduleSrcEntrance);
       abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
+      entryFileLanguageInfo.set(moduleSrcEntrance, isStatic);
     }
     if (moduleJson.module.abilities && moduleJson.module.abilities.length > 0) {
       setEntrance(moduleJson.module.abilities, abilityPages);
@@ -538,11 +530,14 @@ function readAbilityEntrance(moduleJson) {
 function setEntrance(abilityConfig, abilityPages) {
   if (abilityConfig && abilityConfig.length > 0) {
     abilityConfig.forEach(ability => {
+      const isStatic = ability.codeLanguage === ARKTS_1_2;
       if (ability.srcEntry) {
         abilityPages.push(ability.srcEntry);
+        entryFileLanguageInfo.set(ability.srcEntry, isStatic);
         abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry));
       } else if (ability.srcEntrance) {
         abilityPages.push(ability.srcEntrance);
+        entryFileLanguageInfo.set(ability.srcEntrance, isStatic);
         abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
       }
     });
@@ -1180,27 +1175,6 @@ function initMain() {
   staticPreviewPage = process.env.aceStaticPreview;
   aceCompileMode = process.env.aceCompileMode || 'page';
   abilityConfig.abilityType = process.env.abilityType || 'page';
-}
-
-/**
- * due to some oh_modules is different with the original arkTs module.
- * Some branches were not reached, causing some information to be uninitialized.
- */
-function initMixCompileHar(projectConfig) {
-  projectConfig.isRemoteModule = process.env.isRemoteModule === 'true';
-  projectConfig.mixCompile = process.env.mixCompile === 'true';
-  if (projectConfig.isRemoteModule && projectConfig.mixCompile) {
-    projectConfig.compileHar = true;
-    process.env.compileMode = 'moduleJson';
-    getPackageJsonEntryPath();
-    /**
-     * ets-loader will generate decl file from projectConfig.intentEntry which init in setIntentEntryPages.
-     * aceModuleJsonPath->ark_modules.json
-     * when compile oh_module with ets-loader, aceModuleJsonPath will be undefined.
-     * so projectConfig.intentEntry is empty.
-     */
-    setIntentEntryPages(projectConfig);
-  }
 }
 
 exports.globalProgram = globalProgram;

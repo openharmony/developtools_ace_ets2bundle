@@ -41,16 +41,14 @@ import {
   fileCache,
   getFileContentWithHash
 } from '../../lib/ets_checker';
-import { TS_BUILD_INFO_SUFFIX } from '../../lib/pre_define';
+import { ARKTS_1_1, TS_BUILD_INFO_SUFFIX } from '../../lib/pre_define';
 import {
   globalProgram,
   projectConfig
 } from '../../main';
 import { mkdirsSync } from '../../lib/utils';
-import {
-  arkTSEvolutionModuleMap,
-  cleanUpProcessArkTSEvolutionObj
-} from '../../lib/process_arkts_evolution';
+import { ArkTSEvolutionModule } from './interop/interop_manager.test';
+import { FileManager } from '../../lib/fast_build/ark_compiler/interop/interop_manager';
 
 mocha.describe('test ets_checker file api', function () {
     mocha.before(function () {
@@ -201,37 +199,6 @@ mocha.describe('test ets_checker file api', function () {
         const fileNames: string[] = ['../testdata/testfiles/testGetEmitHost.ts'];
         let program: ts.Program = ts.createProgram(fileNames, compilerOptions);
         expect(program.getEmitHost()).to.not.be.undefined;
-    });
-
-    mocha.it('2-1: test resolveModuleNames parse 1.2 module declaration files', function () {
-        const code: string = 'import { a } from "har";\nconsole.log(a);\n';
-        const moduleNames: string[] = [
-            'har',
-            'har/test'
-        ];
-        arkTSEvolutionModuleMap.set('har', {
-            language: '1.2',
-            packageName: 'har',
-            moduleName: 'har',
-            modulePath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har`,
-            declgenV1OutPath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har/build/default/intermediates/declgen/default/declgenV1`,
-            declgenBridgeCodePath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har/build/default/intermediates/declgen/default/bridgecode`
-        })
-        const filePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/${DEFAULT_ENTRY}/src/main/entryability/test.ets`;
-        const arktsEvoIndexDeclFilePath: string = `${arkTSEvolutionModuleMap.get('har').declgenV1OutPath}/har/Index.d.ets`;
-        const arktsEvoTestDeclFilePath: string = `${arkTSEvolutionModuleMap.get('har').declgenV1OutPath}/har/src/main/ets/test.d.ets`;
-        fs.writeFileSync(filePath, code);
-        mkdirsSync(path.dirname(arktsEvoIndexDeclFilePath));
-        mkdirsSync(path.dirname(arktsEvoTestDeclFilePath));
-        fs.writeFileSync(arktsEvoIndexDeclFilePath, '');
-        fs.writeFileSync(arktsEvoTestDeclFilePath, '');
-        const resolvedModules = resolveModuleNamesMain(moduleNames, filePath);
-        expect(resolvedModules[0].resolvedFileName === arktsEvoIndexDeclFilePath).to.be.true;
-        expect(resolvedModules[1].resolvedFileName === arktsEvoTestDeclFilePath).to.be.true;
-        fs.unlinkSync(filePath);
-        fs.unlinkSync(arktsEvoIndexDeclFilePath);
-        fs.unlinkSync(arktsEvoTestDeclFilePath);
-        cleanUpProcessArkTSEvolutionObj();
     });
 });
 
@@ -482,5 +449,83 @@ mocha.describe('optimize createProgram', () => {
         const secondResult = getFileContentWithHash(testFileName);
         expect(readFileSyncStub.called).to.be.false;
         expect(secondResult).to.equal(firstResult);
+    });
+});
+
+mocha.describe('test interop sdk', function () {
+    let baseUrl;
+    mocha.before(function () {
+        this.rollup = new RollUpPluginMock();
+        this.rollup.build();
+        baseUrl = path.join(this.rollup.share.projectConfig.projectRootPath, './interop_sdk');
+        const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
+        const aliasConfig: Map<string, string> = new Map();
+        const staticSDKDeclPath: Set<string> = new Set([
+            path.join(baseUrl, 'ets1.2interop/declarations/api'),
+        ]);
+        aliasConfig.set('application', path.join(baseUrl, './configs/alias.json'));
+
+        dependentModuleMap.set('application', {
+            language: ARKTS_1_1,
+            packageName: 'application',
+            moduleName: 'application',
+            modulePath: '/MyApplication16/application',
+            declgenV1OutPath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenV1',
+            declgenV2OutPath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenV2',
+            declgenBridgeCodePath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenBridgeCode',
+            declFilesPath: '/MyApplication16/application/build/default/intermediates/declgen/default/decl-fileInfo.json',
+            dynamicFiles: [],
+            staticFiles: [],
+            cachePath: '/MyApplication16/application/build/cache',
+            byteCodeHarInfo: {}
+        });
+        FileManager.cleanFileManagerObject();
+        FileManager.initForTest(
+            dependentModuleMap,
+            aliasConfig,
+            undefined,
+            staticSDKDeclPath,
+            undefined);
+    });
+
+    mocha.after(() => {
+        delete this.rollup;
+    });
+
+    mocha.it('1-1: test use statis alias', function () {
+        this.rollup.build();
+        const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
+        const aliasConfig: Map<string, string> = new Map();
+        const staticSDKDeclPath: Set<string> = new Set([
+            path.join(baseUrl, 'ets1.2interop/declarations/api'),
+        ]);
+        aliasConfig.set('application', path.join(baseUrl, './configs/alias.json'));
+
+        dependentModuleMap.set('application', {
+            language: ARKTS_1_1,
+            packageName: 'application',
+            moduleName: 'application',
+            modulePath: baseUrl,
+            declgenV1OutPath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenV1',
+            declgenV2OutPath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenV2',
+            declgenBridgeCodePath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenBridgeCode',
+            declFilesPath: '/MyApplication16/application/build/default/intermediates/declgen/default/decl-fileInfo.json',
+            dynamicFiles: [],
+            staticFiles: [],
+            cachePath: '/MyApplication16/application/build/cache',
+            byteCodeHarInfo: {}
+        });
+        FileManager.cleanFileManagerObject();
+        FileManager.initForTest(
+            dependentModuleMap,
+            aliasConfig,
+            undefined,
+            staticSDKDeclPath,
+            undefined);
+        FileManager.setMixCompile(true);
+        const filePath = path.join(baseUrl, './source_code/file1.ts');
+        const expectPath = path.join(baseUrl, './ets1.2interop/declarations/api/@ohos.errorCode.d.ets');
+        const resolvedModules = resolveModuleNamesMain(['alias.errcode'], path.join(baseUrl, './source_code/file1.ts'));
+        expect(resolvedModules[0].resolvedFileName === expectPath).to.be.true;
     });
 });
