@@ -173,15 +173,16 @@ class DeclfileProductor {
     }
 
     writeDeclFileInfo(moduleInfo: ArkTSEvolutionModule, mainModuleName: string): void {
-        moduleInfo.dynamicFiles.forEach(file => {
-            this.addDeclFilesConfig(file, mainModuleName, this.projectConfig.bundleName, moduleInfo);
-        });
+      moduleInfo.isNative = moduleInfo.isNative ?? moduleInfo.packageName.endsWith('.so');
+      moduleInfo.dynamicFiles.forEach(file => {
+        this.addDeclFilesConfig(file, mainModuleName, this.projectConfig.bundleName, moduleInfo);
+      });
 
-        const declFilesConfigFile: string = toUnixPath(moduleInfo.declFilesPath);
-        mkdirsSync(path.dirname(declFilesConfigFile));
-        if (this.pkgDeclFilesConfig[moduleInfo.packageName]) {
-            fs.writeFileSync(declFilesConfigFile, JSON.stringify(this.pkgDeclFilesConfig[moduleInfo.packageName], null, 2), 'utf-8');
-        }
+      const declFilesConfigFile: string = toUnixPath(moduleInfo.declFilesPath);
+      mkdirsSync(path.dirname(declFilesConfigFile));
+      if (this.pkgDeclFilesConfig[moduleInfo.packageName]) {
+        fs.writeFileSync(declFilesConfigFile, JSON.stringify(this.pkgDeclFilesConfig[moduleInfo.packageName], null, 2), 'utf-8');
+      }
     }
 
     addDeclFilesConfig(filePath: string, mainModuleName: string, bundleName: string, moduleInfo: ArkTSEvolutionModule): void {
@@ -201,9 +202,12 @@ class DeclfileProductor {
             return;
         }
         // The module name of the entry module of the project during the current compilation process.
-        const normalizedFilePath: string = `${moduleInfo.packageName}/${projectFilePath}`;
+        const normalizedFilePath: string = moduleInfo.isNative
+          ? moduleInfo.moduleName
+          : `${moduleInfo.packageName}/${projectFilePath}`;
         const declPath: string = path.join(toUnixPath(declgenV2OutPath), projectFilePath) + EXTNAME_D_ETS;
-        const ohmUrl: string = `N&${mainModuleName}&${bundleName}&${normalizedFilePath}&${moduleInfo.packageVersion}`;
+        const isNativeFlag = moduleInfo.isNative ? 'Y' : 'N';
+        const ohmUrl: string = `${isNativeFlag}&${mainModuleName}&${bundleName}&${normalizedFilePath}&${moduleInfo.packageVersion}`;
         this.pkgDeclFilesConfig[moduleInfo.packageName].files[projectFilePath] = { declPath, ohmUrl: `@normalized:${ohmUrl}` };
     }
 
