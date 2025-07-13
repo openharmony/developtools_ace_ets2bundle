@@ -19,7 +19,6 @@ import { allFlags, unpackNode, unpackNodeArray, unpackNonNullableNode, unpackStr
 import { throwError } from '../../utils';
 import { Es2pandaModifierFlags } from '../../generated/Es2pandaEnums';
 import { ArktsObject } from './ArktsObject';
-import { Es2pandaAstNodeType } from '../../Es2pandaEnums';
 import { SourcePosition } from './SourcePosition';
 
 export abstract class AstNode extends ArktsObject {
@@ -76,7 +75,7 @@ export abstract class AstNode extends ArktsObject {
 
     public dump(indentation: number = 0): string {
         const children = this.getChildren().map((it) => it.dump(indentation + 1));
-        const msg = `${indentation}_` + ` <mods: ${this.modifiers}>` + this.dumpMessage();
+        const msg = `${indentation}_ <mods: ${this.modifiers}>${this.dumpMessage()}`;
         return '> ' + ' '.repeat(4 * indentation) + msg + '\n' + children.join('');
     }
 
