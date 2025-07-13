@@ -55,7 +55,12 @@ import {
 } from '../../performance';
 import { LINTER_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info';
 import { ErrorCodeModule } from '../../hvigor_error_code/const/error_code_module';
-import { collectArkTSEvolutionModuleInfo } from '../../process_arkts_evolution';
+import { collectArkTSEvolutionModuleInfo } from '../ark_compiler/interop/process_arkts_evolution';
+import {
+  initFileManagerInRollup,
+  isBridgeCode,
+  isMixCompile
+} from '../ark_compiler/interop/interop_manager';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -65,12 +70,13 @@ export function etsChecker() {
   return {
     name: 'etsChecker',
     buildStart() {
-      if (this.share.projectConfig.dependentModuleMap) {
+      if (isMixCompile()) {
         collectArkTSEvolutionModuleInfo(this.share);
       }
       const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ROLLUP_PLUGIN_BUILD_START);
       const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsChecker', 'buildStart');
       const eventServiceChecker = createAndStartEvent(hookEventFactory, 'serviceChecker');
+      initFileManagerInRollup(this.share);
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
         tsWatchEndPromise = new Promise<void>(resolve => {
@@ -109,7 +115,7 @@ export function etsChecker() {
       const logger = this.share.getLogger('etsChecker');
       const rootFileNames: string[] = [];
       const resolveModulePaths: string[] = [];
-      rootFileNamesCollect(rootFileNames);
+      rootFileNamesCollect(rootFileNames, this.share);
       if (this.share && this.share.projectConfig && this.share.projectConfig.resolveModulePaths &&
         Array.isArray(this.share.projectConfig.resolveModulePaths)) {
         resolveModulePaths.push(...this.share.projectConfig.resolveModulePaths);
@@ -166,9 +172,21 @@ function getErrorCodeLogger(code: string, share: Object): Object | undefined {
   return !!share?.getHvigorConsoleLogger ? share?.getHvigorConsoleLogger(code) : undefined;
 }
 
-function rootFileNamesCollect(rootFileNames: string[]): void {
+/**
+ * In mixed compilation scenarios,
+ * hvigor is prevented from stuffing glue code into the code and causing TSC parsing failed.
+ * 
+ * case:
+ *  1.2 File Relative Path Reference 1.1 File
+ *  The 1.2 file is under the glue code path, and the 1.1 file cannot be found in the relative path
+ *  In fact, dependency resolution requires interop decl file
+ */
+function rootFileNamesCollect(rootFileNames: string[], sharedObj: Object): void {
   const entryFiles: string[] = projectConfig.widgetCompile ? Object.values(projectConfig.cardEntryObj) : Object.values(projectConfig.entryObj);
   entryFiles.forEach((fileName: string) => {
+    if (isBridgeCode(fileName, sharedObj?.projectConfig)) {
+      return;
+    }
     rootFileNames.push(path.resolve(fileName));
   });
 }

@@ -1,0 +1,6 @@
+{
+  "alias.errcode": {
+    "originalAPIName": "@ohos.errorCode",
+    "isStatic": "true"
+  }
+}

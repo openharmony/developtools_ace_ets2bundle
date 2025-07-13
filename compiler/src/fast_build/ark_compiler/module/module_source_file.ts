@@ -48,8 +48,6 @@ import {
 } from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
 import {
-  ARKTS_1_2,
-  ESMODULE,
   TRANSFORMED_MOCK_CONFIG,
   USER_DEFINE_MOCK_CONFIG
 } from '../../../pre_define';
@@ -80,11 +78,18 @@ import {
   createAndStartEvent,
   stopEvent
 } from '../../../performance';
+import { PreloadFileModules } from './module_preload_file_utils';
 import {
   getDeclgenBridgeCodePath,
+  isArkTSEvolutionFile,
   writeBridgeCodeFileSyncByNode
-} from '../../../process_arkts_evolution';
-import { PreloadFileModules } from './module_preload_file_utils';
+} from '../interop/process_arkts_evolution';
+import {
+  FileManager,
+  isMixCompile
+} from '../interop/interop_manager';
+import { AliasConfig, FileInfo } from '../interop/type';
+import { ARKTS_1_2 } from '../interop/pre_define';
 
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
@@ -119,7 +124,7 @@ export class ModuleSourceFile {
     if (typeof this.source !== 'string') {
       this.isSourceNode = true;
     }
-    if (metaInfo?.language === ARKTS_1_2) {
+    if (metaInfo?.language === ARKTS_1_2 || (metaInfo && isArkTSEvolutionFile(moduleId, metaInfo))) {
       this.isArkTSEvolution = true;
     }
   }
@@ -442,16 +447,16 @@ export class ModuleSourceFile {
   }
 
   private async writeSourceFile(parentEvent: Object): Promise<void> {
-    if (!this.isArkTSEvolution) {
-      if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
-        await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo,
-          this.moduleId, parentEvent, ModuleSourceFile.logger);
-      } else {
-        await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig,
-          ModuleSourceFile.logger, parentEvent, this.metaInfo);
-      }
+    if (isMixCompile() && this.isArkTSEvolution) {
+      await writeBridgeCodeFileSyncByNode(<ts.SourceFile> this.source, this.moduleId, this.metaInfo);
+      return;
+    }
+    if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
+      await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo,
+        this.moduleId, parentEvent, ModuleSourceFile.logger);
     } else {
-      await writeBridgeCodeFileSyncByNode(<ts.SourceFile> this.source, this.moduleId);
+      await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig,
+        ModuleSourceFile.logger, parentEvent, this.metaInfo);
     }
   }
 
@@ -463,8 +468,19 @@ export class ModuleSourceFile {
     }
     const metaModuleInfo: Object = rollupObject.getModuleInfo(this.moduleId);
     const isNeedPreloadSo = metaModuleInfo?.meta?.needPreloadSo ? metaModuleInfo?.meta?.needPreloadSo : false;
+    let queryResult = undefined;
+    let staticOhmUrl: string | undefined = undefined;
+
+    if (rollupObject.share.projectConfig.mixCompile) {
+      queryResult = FileManager.getInstance().queryOriginApiName(moduleRequest, this.moduleId);
+      staticOhmUrl = this.tryBuildStaticOhmUrl(queryResult, moduleRequest);
+    }
+    if (staticOhmUrl) {
+      return staticOhmUrl;
+    }
+    const api = (queryResult && !queryResult.isStatic) ? queryResult.originalAPIName : moduleRequest;
     const params: OhmUrlParams = {
-      moduleRequest,
+      moduleRequest:api,
       moduleId: this.moduleId,
       config: ModuleSourceFile.projectConfig,
       logger: ModuleSourceFile.logger,
@@ -527,8 +543,8 @@ export class ModuleSourceFile {
         ModuleSourceFile.generateNewMockInfo(moduleRequest, res, rollupObject, importerFile);
         // processing cases of user-defined mock targets
         let mockedTarget: string = toUnixPath(filePath).
-            replace(toUnixPath(rollupObject.share.projectConfig.modulePath), '').
-            replace(`/${rollupObject.share.projectConfig.mockParams.etsSourceRootPath}/`, '');
+          replace(toUnixPath(rollupObject.share.projectConfig.modulePath), '').
+          replace(`/${rollupObject.share.projectConfig.mockParams.etsSourceRootPath}/`, '');
         ModuleSourceFile.generateNewMockInfo(mockedTarget, res, rollupObject, importerFile);
       }
       return res;
@@ -536,10 +552,18 @@ export class ModuleSourceFile {
     return undefined;
   }
 
+  private static generateNormalizedOhmulrForSDkInterop(project: Object, projectFilePath: string): string {
+    const packageName = project.entryPackageName;
+    const bundleName = project.pkgContextInfo[packageName].bundleName;
+    const version = project.pkgContextInfo[packageName].version;
+    return `${bundleName}&${packageName}/${projectFilePath}&${version}`;
+  }
+
   private static spliceNormalizedOhmurl(moduleInfo: Object, filePath: string, importerFile?: string): string {
-    const isArkTSEvolution: boolean = moduleInfo.meta.language === ARKTS_1_2;
-    const pkgPath: string = isArkTSEvolution ?
-      path.join(getDeclgenBridgeCodePath(moduleInfo.meta.pkgName), moduleInfo.meta.moduleName) : moduleInfo.meta.pkgPath;
+    let pkgPath: string = moduleInfo.meta.pkgPath;
+    if (isMixCompile() && isArkTSEvolutionFile(filePath, moduleInfo.meta)) {
+      pkgPath = path.join(getDeclgenBridgeCodePath(moduleInfo.meta.pkgName), moduleInfo.meta.pkgName);
+    }
     const pkgParams = {
       pkgName: moduleInfo.meta.pkgName,
       pkgPath,
@@ -730,6 +754,40 @@ export class ModuleSourceFile {
   public static sortSourceFilesByModuleId(): void {
     ModuleSourceFile.sourceFiles.sort((a, b) => a.moduleId.localeCompare(b.moduleId));
   }
+
+  private tryBuildStaticOhmUrl(queryResult: AliasConfig, moduleRequest: string): string | undefined {
+    if (!queryResult || !queryResult.isStatic) {
+      return undefined;
+    }
+
+    const { originalAPIName } = queryResult;
+    const recordName = ModuleSourceFile.generateNormalizedOhmulrForSDkInterop(
+      ModuleSourceFile.projectConfig,
+      originalAPIName
+    );
+    const moduleName = ModuleSourceFile.projectConfig.
+      pkgContextInfo[ModuleSourceFile.projectConfig.entryPackageName].moduleName;
+    const ohmUrl = `N&${moduleName}&${recordName}`;
+    const glueCodeInfo = FileManager.getInstance().getGlueCodePathByModuleRequest(originalAPIName);
+
+    if (!glueCodeInfo) {
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_FAILED_TO_FIND_GLUD_CODE,
+        ArkTSInternalErrorDescription,
+        `Failed to find glue code for: ${moduleRequest}`
+      );
+      ModuleSourceFile.logger.printErrorAndExit(errInfo);
+    }
+
+    FileManager.glueCodeFileInfos.set(originalAPIName, {
+      recordName: recordName,
+      baseUrl: glueCodeInfo.basePath,
+      abstractPath: glueCodeInfo.fullPath
+    } as FileInfo);
+
+    return `@normalized:${ohmUrl}`;
+  }
+
 
   public static cleanUpObjects(): void {
     ModuleSourceFile.sourceFiles = [];
