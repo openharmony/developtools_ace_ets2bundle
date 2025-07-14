@@ -30,7 +30,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
 
   public setup(): Record<string, string> {
     return {
-      multipleBuiltInDecorators: `The member property or method cannot be decorated by multiple built-in decorators.`,
+      multipleBuiltInDecorators: `The member property or method cannot be decorated by multiple built-in annotations.`,
       paramRequiresRequire: `When a variable decorated with '@Param' is not assigned a default value, it must also be decorated with '@Require'.`,
       requireOnlyWithParam: `In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' or '@BuilderParam'.`,
       localNeedNoInit: `The '{{decoratorName}}' property '{{key}}' in the custom component '{{componentName}}' cannot be initialized here (forbidden to specify).`,

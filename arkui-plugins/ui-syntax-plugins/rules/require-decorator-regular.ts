@@ -20,7 +20,7 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 const allowedDecorators = [
     PresetDecorators.STATE,
     PresetDecorators.PROVIDE,
-    PresetDecorators.PROP,
+    PresetDecorators.PROP_REF,
     PresetDecorators.PARAM,
     PresetDecorators.BUILDER_PARAM
 ];
@@ -28,7 +28,7 @@ const allowedDecorators = [
 class RequireDecoratorRegularRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
-            invalidUsage: `The @Require decorator can only be used on a regular variable or a variable decorated by @State, @Provide, @Prop, @Param, or @BuilderParam.`,
+            invalidUsage: `The @Require annotation can only be used on a regular variable or a variable decorated by @State, @Provide, @Prop, @Param, or @BuilderParam.`,
             invalidPrivateWithRequire: `Property '{{propertyName}}' can not be decorated with both {{decoratorName}} and private.`,
         };
     }

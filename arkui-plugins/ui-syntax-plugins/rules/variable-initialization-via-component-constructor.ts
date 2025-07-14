@@ -25,17 +25,16 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
         [PresetDecorators.REQUIRE],
         [PresetDecorators.REQUIRE, PresetDecorators.STATE],
         [PresetDecorators.REQUIRE, PresetDecorators.PROVIDE],
-        [PresetDecorators.REQUIRE, PresetDecorators.PROP],
+        [PresetDecorators.REQUIRE, PresetDecorators.PROP_REF],
         [PresetDecorators.REQUIRE, PresetDecorators.BUILDER_PARAM],
         [PresetDecorators.REQUIRE, PresetDecorators.PARAM]
     ];
 
     private static readonly notAllowInitInConstructorDecorators: string[][] = [
         [PresetDecorators.STORAGE_LINK],
-        [PresetDecorators.STORAGE_PROP],
+        [PresetDecorators.STORAGE_PROP_REF],
         [PresetDecorators.CONSUME],
         [PresetDecorators.LOCAL_STORAGE_LINK],
-        [PresetDecorators.LOCAL_STORAGE_PROP]
     ];
 
     public setup(): Record<string, string> {

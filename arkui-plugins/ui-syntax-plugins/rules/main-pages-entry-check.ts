@@ -20,7 +20,7 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 class MainPagesEntryCheckRule extends AbstractUISyntaxRule {
   public setup(): Record<string, string> {
     return {
-      mainPagesEntryCheck: `A page configured in 'main_pages. json or build-profile. json5' must have one and only one '@Entry' decorator. `
+      mainPagesEntryCheck: `A page configured in 'main_pages. json or build-profile. json5' must have one and only one '@Entry' annotation. `
     };
   }
   public parsed(node: arkts.StructDeclaration): void {
