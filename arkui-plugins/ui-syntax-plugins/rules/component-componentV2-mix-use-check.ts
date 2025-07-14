@@ -19,14 +19,13 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 const v1ComponentDecorators: string[] = [
   PresetDecorators.STATE,
-  PresetDecorators.PROP,
+  PresetDecorators.PROP_REF,
   PresetDecorators.LINK,
   PresetDecorators.PROVIDE,
   PresetDecorators.CONSUME,
   PresetDecorators.STORAGE_LINK,
-  PresetDecorators.STORAGE_PROP,
+  PresetDecorators.STORAGE_PROP_REF,
   PresetDecorators.LOCAL_STORAGE_LINK,
-  PresetDecorators.LOCAL_STORAGE_PROP,
 ];
 
 class ComponentComponentV2MixUseCheckRule extends AbstractUISyntaxRule {

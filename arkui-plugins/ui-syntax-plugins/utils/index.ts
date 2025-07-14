@@ -91,15 +91,14 @@ export const PresetDecorators = {
     PREVIEW: 'Preview',
     STATE: 'State',
     PARAM: 'Param',
-    PROP: 'Prop',
+    PROP_REF: 'PropRef',
     PROVIDE: 'Provide',
     PROVIDER: 'Provider',
     LINK: 'Link',
     LOCAL: 'Local',
     OBJECT_LINK: 'ObjectLink',
-    STORAGE_PROP: 'StorageProp',
+    STORAGE_PROP_REF: 'StoragePropRef',
     STORAGE_LINK: 'StorageLink',
-    LOCAL_STORAGE_PROP: 'LocalStorageProp',
     LOCAL_STORAGE_LINK: 'LocalStorageLink',
     REQUIRE: 'Require',
     REUSABLE_V1: 'Reusable',
@@ -517,6 +516,19 @@ export function getFunctionAnnotationUsage(
     );
 }
 
+export function getCallee(callExpression: arkts.CallExpression): arkts.Identifier | undefined {
+    const expression = callExpression.expression;
+    if (arkts.isIdentifier(expression)) {
+        return expression;
+    }
+    if (arkts.isMemberExpression(expression)) {
+        if (arkts.isCallExpression(expression.object)) {
+            return getCallee(expression.object);
+        }
+    }
+    return undefined;
+}
+
 export const TypeFlags = {
     Boolean: 'boolean',
     String: 'string',
@@ -537,5 +549,4 @@ export const TypeFlags = {
     TypeParameter: 'typeParameter',
     Literal: 'literal',
     Union: 'union',
-
 };

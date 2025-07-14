@@ -20,7 +20,7 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 class ReusableV2DecoratorCheckRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
-            conflictingDecorators: `The '@Reusable' and '@ReusableV2' decorators cannot be applied simultaneously.`,
+            conflictingDecorators: `The '@Reusable' and '@ReusableV2' annotations cannot be applied simultaneously.`,
             invalidDecoratorUsage: `@ReusableV2 is only applicable to custom components decorated by @ComponentV2.`,
         };
     }

@@ -26,7 +26,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
     return {
       onlyOnGetter: `@Computed can only decorate 'GetAccessor'.`,
       onlyInObservedV2: `The '@Computed' can decorate only member method within a 'class' decorated with ObservedV2.`,
-      componentV2InStruct: `The '@Computed' decorator can only be used in a 'struct' decorated with ComponentV2.`,
+      componentV2InStruct: `The '@Computed' annotation can only be used in a 'struct' decorated with ComponentV2.`,
       noTwoWayBinding: `A property decorated by '@Computed' cannot be used with two-way bind syntax.`,
       computedMethodDefineSet: `A property decorated by '@Computed' cannot define a set method.`
     };
