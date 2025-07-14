@@ -31,14 +31,13 @@ const structOnlyDecorators = [
 // Can only be used with decorators for property
 const propertyOnlyDecorators = [
     PresetDecorators.STATE,
-    PresetDecorators.PROP,
+    PresetDecorators.PROP_REF,
     PresetDecorators.LINK,
     PresetDecorators.PROVIDE,
     PresetDecorators.CONSUME,
     PresetDecorators.STORAGE_LINK,
-    PresetDecorators.STORAGE_PROP,
+    PresetDecorators.STORAGE_PROP_REF,
     PresetDecorators.LOCAL_STORAGE_LINK,
-    PresetDecorators.LOCAL_STORAGE_PROP,
     PresetDecorators.LOCAL,
     PresetDecorators.PARAM,
     PresetDecorators.EVENT,
@@ -54,7 +53,7 @@ const propertyOnlyDecorators = [
 class ValidateDecoratorTargetRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
-            decoratorOnlyWithStruct: `The '@{{decoratorName}}' decorator can only be used with 'struct'.`,
+            decoratorOnlyWithStruct: `The '@{{decoratorName}}' annotation can only be used with 'struct'.`,
             decoratorOnlyWithMemberProperty: `'@{{decoratorName}}' can only decorate member property.`
         };
     }

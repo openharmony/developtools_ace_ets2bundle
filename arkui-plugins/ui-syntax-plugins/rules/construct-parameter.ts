@@ -27,7 +27,7 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 const disallowAssignedDecorators: string[] = [
   PresetDecorators.REGULAR, PresetDecorators.LINK, PresetDecorators.OBJECT_LINK,
   PresetDecorators.BUILDER_PARAM, PresetDecorators.BUILDER, PresetDecorators.STATE,
-  PresetDecorators.PROP, PresetDecorators.PROVIDE, PresetDecorators.CONSUME,
+  PresetDecorators.PROP_REF, PresetDecorators.PROVIDE, PresetDecorators.CONSUME,
   PresetDecorators.BUILDER,
 ];
 // The decorator structure prohibits initializing the assignment list
@@ -35,15 +35,14 @@ const restrictedDecoratorInitializations: Map<string, string[]> = new Map([
   [PresetDecorators.REGULAR, [PresetDecorators.OBJECT_LINK, PresetDecorators.LINK]],
   [PresetDecorators.PROVIDE, [PresetDecorators.REGULAR]],
   [PresetDecorators.CONSUME, [PresetDecorators.REGULAR]],
-  [PresetDecorators.STORAGE_PROP, [PresetDecorators.REGULAR]],
+  [PresetDecorators.STORAGE_PROP_REF, [PresetDecorators.REGULAR]],
   [PresetDecorators.VARIABLE, [PresetDecorators.LINK]],
   [PresetDecorators.LOCAL_STORAGE_LINK, [PresetDecorators.REGULAR]],
-  [PresetDecorators.LOCAL_STORAGE_PROP, [PresetDecorators.REGULAR]],
 ]);
 // When there are multiple Decorators, filter out the Decorators that are not relevant to the rule
 const decoratorsFilter: string[] = [
-  PresetDecorators.PROVIDE, PresetDecorators.CONSUME, PresetDecorators.STORAGE_PROP,
-  PresetDecorators.LOCAL_STORAGE_LINK, PresetDecorators.LOCAL_STORAGE_PROP, PresetDecorators.BUILDER_PARAM,
+  PresetDecorators.PROVIDE, PresetDecorators.CONSUME, PresetDecorators.STORAGE_PROP_REF,
+  PresetDecorators.LOCAL_STORAGE_LINK, PresetDecorators.BUILDER_PARAM,
 ];
 
 class ConstructParameterRule extends AbstractUISyntaxRule {
@@ -207,7 +206,7 @@ class ConstructParameterRule extends AbstractUISyntaxRule {
       return;
     }
     if (arkts.isIdentifier(property.value) && this.regularVariableList.includes(property.value.name)) {
-      this.context.report({
+      this.report({
         node: property,
         message: this.messages.constructParameter,
         data: {
@@ -241,7 +240,7 @@ class ConstructParameterRule extends AbstractUISyntaxRule {
     if (arkts.isIdentifier(property.value)) {
       isBuilder = this.builderFunctionList.includes(property.value.name);
       if (this.builderFunctionList.includes(property.value.name) && childType !== PresetDecorators.BUILDER_PARAM) {
-        this.context.report({
+        this.report({
           node: property,
           message: this.messages.initializerIsBuilder,
           data: {
@@ -252,7 +251,7 @@ class ConstructParameterRule extends AbstractUISyntaxRule {
       }
     }
     if (childType === PresetDecorators.BUILDER_PARAM && !isBuilder && !isBuilderInStruct) {
-      this.context.report({
+      this.report({
         node: property,
         message: this.messages.parameterIsBuilderParam,
         data: {
@@ -298,7 +297,7 @@ class ConstructParameterRule extends AbstractUISyntaxRule {
         }
         if (restrictedDecoratorInitializations.has(parentType) &&
           restrictedDecoratorInitializations.get(parentType)!.includes(childType)) {
-          this.context.report({
+          this.report({
             node: property,
             message: this.messages.constructParameter,
             data: {

@@ -20,8 +20,8 @@ import { PresetDecorators, findDecorator, getClassDeclarationAnnotation } from '
 class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
-            trackOnClassMemberOnly: `The '@Track' decorator can decorate only member variables of a class.`,
-            trackMustUsedWithObserved: `'@Track' cannot be used with classes decorated by '@ObservedV2'. Use the '@Trace' decorator instead.`,
+            trackOnClassMemberOnly: `The '@Track' annotation can decorate only member variables of a class.`,
+            trackMustUsedWithObserved: `'@Track' cannot be used with classes decorated by '@ObservedV2'. Use the '@Trace' annotation instead.`,
         };
     }
 

@@ -24,8 +24,8 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
   public setup(): Record<string, string> {
     return {
       providerAndConsumerOnlyOnProperty: `'@{{decorator}}' can only decorate member property.`,
-      multipleBuiltInDecorators: `The struct member variable can not be decorated by multiple built-in decorators.`,
-      providerAndConsumerOnlyInStruct: `The '@{{decorator}}' decorator can only be used with 'struct'.`,
+      multipleBuiltInDecorators: `The struct member variable can not be decorated by multiple built-in annotations.`,
+      providerAndConsumerOnlyInStruct: `The '@{{decorator}}' annotation can only be used with 'struct'.`,
       forbiddenInitialization: `The '@{{decorator}}' property '{{value}}' in the custom component '{{structName}}' cannot be initialized here (forbidden to specify).`,
     };
   }
