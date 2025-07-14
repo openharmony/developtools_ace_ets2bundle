@@ -33,18 +33,15 @@ import MonitorDecoratorCheckRule from './monitor-decorator-check';
 import NestedRelationshipRule from './nested-relationship';
 import NestedReuseComponentCheckRule from './nested-reuse-component-check';
 import NoChildInButtonRule from './no-child-in-button';
-import NoDuplicateDecoratorsRule from './no-duplicate-decorators';
 import NoDuplicateEntryRule from './no-duplicate-entry';
 import NoDuplicateIdRule from './no-duplicate-id';
 import NoDuplicatePreviewRule from './no-duplicate-preview';
-import NoDuplicateStateManagerRule from './no-duplicate-state-manager';
 import NoPropLinkObjectLinkInEntryRule from './no-prop-link-objectlink-in-entry';
 import NoSameAsBuiltInAttributeRule from './no-same-as-built-in-attribute';
 import ReuseAttributeCheckRule from './reuse-attribute-check';
 import StructMissingDecoratorRule from './struct-missing-decorator';
 import StructPropertyDecoratorRule from './struct-property-decorator';
 import TrackDecoratorCheckRule from './track-decorator-check';
-import TypeDecoratorCheckRule from './type-decorator-check';
 import ValidateBuildInStructRule from './validate-build-in-struct';
 import WrapBuilderCheckRule from './wrap-builder-check';
 import StructPropertyOptionalRule from './struct-property-optional';
@@ -58,6 +55,7 @@ import ObservedObservedV2Rule from './observed-observedV2-check';
 import ObservedV2TraceUsageValidationRule from './observedV2-trace-usage-validation';
 import OnceDecoratorCheckRule from './once-decorator-check';
 import OneDecoratorOnFunctionMethodRule from './one-decorator-on-function-method';
+import PropertyTypeRule from './property-type';
 import ReusableV2DecoratorCheckRule from './reusableV2-decorator-check';
 import VariableInitializationViaComponentConstructorRule from './variable-initialization-via-component-constructor';
 import ComponentComponentV2InitCheckRule from './component-componentV2-init-check';
@@ -86,18 +84,15 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [NestedRelationshipRule, 'error'],
     [NestedReuseComponentCheckRule, 'error'],
     [NoChildInButtonRule, 'error'],
-    [NoDuplicateDecoratorsRule, 'warn'],
     [NoDuplicateEntryRule, 'error'],
     [NoDuplicateIdRule, 'warn'],
     [NoDuplicatePreviewRule, 'error'],
-    [NoDuplicateStateManagerRule, 'error'],
     [NoPropLinkObjectLinkInEntryRule, 'warn'],
     [NoSameAsBuiltInAttributeRule, 'error'],
     [ReuseAttributeCheckRule, 'error'],
     [StructMissingDecoratorRule, 'error'],
     [StructPropertyDecoratorRule, 'error'],
     [TrackDecoratorCheckRule, 'error'],
-    [TypeDecoratorCheckRule, 'error'],
     [ValidateBuildInStructRule, 'error'],
     [WrapBuilderCheckRule, 'error'],
     [StructPropertyOptionalRule, 'warn'],
@@ -107,6 +102,7 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [ObservedV2TraceUsageValidationRule, 'error'],
     [OnceDecoratorCheckRule, 'error'],
     [OneDecoratorOnFunctionMethodRule, 'error'],
+    [PropertyTypeRule, 'error'],
     [ComputedDecoratorCheckRule, 'error'],
     [ComponentComponentV2InitCheckRule, 'error'],
     [ReusableV2DecoratorCheckRule, 'error'],

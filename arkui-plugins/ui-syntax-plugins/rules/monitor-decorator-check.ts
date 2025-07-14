@@ -23,14 +23,14 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
   public setup(): Record<string, string> {
     return {
       monitorUsedAlone:
-        `The member property or method can not be decorated by multiple built-in decorators.`,
+        `The member property or method can not be decorated by multiple built-in annotations.`,
       monitorUsedInObservedV2Class:
         `The '@Monitor' can decorate only member method within a 'class' decorated with @ObservedV2.`,
       monitorUsedInComponentV2Struct:
-        `The '@Monitor' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`,
+        `The '@Monitor' annotation can only be used in a 'struct' decorated with '@ComponentV2'.`,
       monitorDecorateMethod:
         `@Monitor can only decorate method.`,
-      duplicatedMonitor: `Duplicate decorators for method are not allowed.`,
+      duplicatedMonitor: `Duplicate annotations for method are not allowed.`,
     };
   }
 

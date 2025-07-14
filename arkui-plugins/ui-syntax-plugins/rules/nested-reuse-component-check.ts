@@ -49,7 +49,7 @@ class NestedReuseComponentCheckRule extends AbstractUISyntaxRule {
     for (const childNode of node.getChildren()) {
       // Check whether the type is struct
       if (!arkts.isStructDeclaration(childNode)) {
-        return;
+        continue;
       }
       // Get a list of annotations
       const annotationsList = childNode.definition.annotations;

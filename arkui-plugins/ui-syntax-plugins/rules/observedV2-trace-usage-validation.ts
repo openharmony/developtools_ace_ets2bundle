@@ -22,12 +22,12 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
-            observedV2DecoratorError: `The '@ObservedV2' decorator can only be used in 'class'.`,
-            traceDecoratorError: `The '@Trace' decorator can only be used in 'class'.`,
-            traceMemberVariableError: `The '@Trace' decorator can only decorate member variables within a 'class' decorated with '@ObservedV2'.`,
+            observedV2DecoratorError: `The '@ObservedV2' annotation can only be used in 'class'.`,
+            traceDecoratorError: `The '@Trace' annotation can only be used in 'class'.`,
+            traceMemberVariableError: `The '@Trace' annotation can only decorate member variables within a 'class' decorated with '@ObservedV2'.`,
             //The repair logic is different, if there is v1, update to v2
-            traceMustUsedWithObservedV2: `The '@Trace' decorator can only be used within a 'class' decorated with 'ObservedV2'.`,
-            traceMustUsedWithObservedV2Update: `The '@Trace' decorator can only be used within a 'class' decorated with 'ObservedV2'.`,
+            traceMustUsedWithObservedV2: `The '@Trace' annotation can only be used within a 'class' decorated with 'ObservedV2'.`,
+            traceMustUsedWithObservedV2Update: `The '@Trace' annotation can only be used within a 'class' decorated with 'ObservedV2'.`,
         };
     }
 
