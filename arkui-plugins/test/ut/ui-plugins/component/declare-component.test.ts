@@ -38,10 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedParsedcript: string = `
-import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, ResourceStr as ResourceStr, Builder as Builder } from "@ohos.arkui.component";
@@ -84,10 +80,6 @@ import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateM
 import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
-
-import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 

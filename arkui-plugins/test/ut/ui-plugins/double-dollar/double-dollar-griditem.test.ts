@@ -54,10 +54,6 @@ import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent"
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
 
-import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Text as Text, Entry as Entry, Column as Column, Component as Component, $$ as $$, Grid as Grid, GridItem as GridItem } from "@ohos.arkui.component";

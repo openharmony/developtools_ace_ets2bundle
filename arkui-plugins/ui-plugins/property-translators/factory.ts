@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { GenSymGenerator } from '../../common/gensym-generator';
 import { DecoratorNames, DECORATOR_TYPE_MAP, StateManagementTypes } from '../../common/predefines';
 import { factory as UIFactory } from '../ui-factory';
-import { collectStateManagementTypeImport, getValueInAnnotation, hasDecorator, removeDecorator } from './utils';
+import { collectStateManagementTypeImport, getValueInAnnotation, hasDecorator, removeDecorator, generateThisBacking } from './utils';
 import { CustomComponentNames } from '../utils';
 import { addMemoAnnotation, findCanAddMemoFromTypeAnnotation } from '../../collectors/memo-collectors/utils';
 import { annotation } from '../../common/arkts-utils';
@@ -172,26 +172,12 @@ export class factory {
             false,
             [
                 arkts.factory.createExpressionStatement(
-                    arkts.factory.createCallExpression(factory.generateThisCall(callbackName), undefined, [
+                    arkts.factory.createCallExpression(generateThisBacking(callbackName), undefined, [
                         arkts.factory.createIdentifier('_'),
                     ])
                 ),
             ]
         );
-    }
-
-    /*
-     * create this.<name> with optional or nonNullable.
-     */
-    static generateThisCall(name: string, optional: boolean = false, nonNull: boolean = false): arkts.Expression {
-        const member: arkts.Expression = arkts.factory.createMemberExpression(
-            arkts.factory.createThisExpression(),
-            arkts.factory.createIdentifier(`${name}`),
-            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-            false,
-            optional
-        );
-        return nonNull ? arkts.factory.createTSNonNullExpression(member) : member;
     }
 
     /*
