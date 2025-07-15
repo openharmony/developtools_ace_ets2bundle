@@ -259,6 +259,56 @@ export class LegacyTransformer extends AbstractVisitor {
         }
     }
 
+    handleWrappedBuilderNode(node: arkts.ETSTypeReference): arkts.ETSTypeReference {
+        if (node.part && arkts.isETSTypeReferencePart(node.part) && node.part.name &&
+            arkts.isIdentifier(node.part.name) && node.part.name.name === 'WrappedBuilder') {
+            return arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier('Any')
+                )
+            );
+        }
+        return node;
+    }
+
+    // handle WrappedBuilder
+    handleWrappedBuilder(node: arkts.VariableDeclarator): arkts.VariableDeclarator {
+        if (arkts.isIdentifier(node.name) && node.name.typeAnnotation) {
+            let typeAnnotation = node.name.typeAnnotation;
+            // WrappedBuilder<[aa]>[] => Any[]
+            if (arkts.isTSArrayType(typeAnnotation) && typeAnnotation.elementType &&
+                arkts.isETSTypeReference(typeAnnotation.elementType)) {
+                return arkts.factory.updateVariableDeclarator(
+                    node,
+                    node.flag,
+                    arkts.factory.updateIdentifier(
+                        node.name,
+                        node.name.name,
+                        arkts.TSArrayType.updateTSArrayType(
+                            typeAnnotation,
+                            this.handleWrappedBuilderNode(typeAnnotation.elementType)
+                        )
+                    ),
+                    node.initializer
+                );
+            }
+            // WrappedBuilder<[aa]> => Any
+            if (arkts.isETSTypeReference(typeAnnotation)) {
+                return arkts.factory.updateVariableDeclarator(
+                    node,
+                    node.flag,
+                    arkts.factory.updateIdentifier(
+                        node.name,
+                        node.name.name,
+                        this.handleWrappedBuilderNode(typeAnnotation)
+                    ),
+                    node.initializer
+                );
+            }
+        }
+        return node;
+    }
+
     visitor(node: arkts.AstNode): arkts.AstNode {
         this.enter(node);
         const newNode = this.visitEachChild(node);
@@ -284,6 +334,9 @@ export class LegacyTransformer extends AbstractVisitor {
                 const updateNode = this.processConstructor(newNode);
                 return updateNode;
             }
+        }
+        if (arkts.isVariableDeclarator(newNode)) {
+            return this.handleWrappedBuilder(newNode);
         }
         return newNode;
     }
