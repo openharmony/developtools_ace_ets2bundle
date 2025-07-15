@@ -28,37 +28,9 @@ import {
     collectStateManagementTypeImport,
     hasDecorator,
     PropertyCache,
+    getValueInAnnotation,
 } from './utils';
 import { factory } from './factory';
-
-function getStorageLinkValueStr(node: arkts.AstNode): string | undefined {
-    if (!arkts.isClassProperty(node) || !node.value) return undefined;
-
-    return arkts.isStringLiteral(node.value) ? node.value.str : undefined;
-}
-
-function getStorageLinkAnnotationValue(anno: arkts.AnnotationUsage): string | undefined {
-    const isStorageLinkAnnotation: boolean =
-        !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === DecoratorNames.STORAGE_LINK;
-
-    if (isStorageLinkAnnotation && anno.properties.length === 1) {
-        return getStorageLinkValueStr(anno.properties.at(0)!);
-    }
-    return undefined;
-}
-
-function getStorageLinkValueInAnnotation(node: arkts.ClassProperty): string | undefined {
-    const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
-
-    for (let i = 0; i < annotations.length; i++) {
-        const anno: arkts.AnnotationUsage = annotations[i];
-        const str: string | undefined = getStorageLinkAnnotationValue(anno);
-        if (!!str) {
-            return str;
-        }
-    }
-    return undefined;
-}
 
 export class StorageLinkTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
@@ -79,7 +51,10 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
     }
 
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        const storageLinkValueStr: string | undefined = getStorageLinkValueInAnnotation(this.property);
+        const storageLinkValueStr: string | undefined = getValueInAnnotation(
+            this.property,
+            DecoratorNames.STORAGE_LINK
+        );
         if (!storageLinkValueStr) {
             throw new Error('StorageLink required only one value!!');
         }
@@ -88,7 +63,7 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
             arkts.factory.createStringLiteral(storageLinkValueStr),
             arkts.factory.create1StringLiteral(originalName),
             this.property.value ?? arkts.factory.createUndefinedLiteral(),
-            factory.createTypeFrom(this.property.typeAnnotation)
+            factory.createTypeFrom(this.property.typeAnnotation),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         collectStateManagementTypeImport(StateManagementTypes.STORAGE_LINK_DECORATED);

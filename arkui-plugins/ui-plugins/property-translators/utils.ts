@@ -98,7 +98,8 @@ export function needDefiniteOrOptionalModifier(st: arkts.ClassProperty): boolean
         hasDecoratorName(st, DecoratorNames.LINK) ||
         hasDecoratorName(st, DecoratorNames.CONSUME) ||
         hasDecoratorName(st, DecoratorNames.OBJECT_LINK) ||
-        (hasDecoratorName(st, DecoratorNames.PROP) && !st.value)
+        (hasDecoratorName(st, DecoratorNames.PROP) && !st.value) ||
+        (hasDecoratorName(st, DecoratorNames.PROP_REF) && !st.value)
     );
 }
 
@@ -135,15 +136,6 @@ export function findDecoratorInfos(
         }
     }
     return infos;
-}
-
-export function getStateManagementType(decoratorInfo: DecoratorInfo): StateManagementTypes {
-    const decoratorName = decoratorInfo.name;
-    const typeName = DECORATOR_TYPE_MAP.get(decoratorName);
-    if (!!typeName) {
-        return typeName;
-    }
-    return StateManagementTypes.MUTABLE_STATE;
 }
 
 export function collectStateManagementTypeImport(type: StateManagementTypes): void {
@@ -438,3 +430,4 @@ export class PropertyCache {
         this._cache.set(name, { ...this._cache.get(name), toRecordBody: newToRecordBody });
     }
 }
+

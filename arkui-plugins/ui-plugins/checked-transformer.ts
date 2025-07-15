@@ -24,7 +24,6 @@ import { isEntryWrapperClass } from './entry-translators/utils';
 import { ImportCollector } from '../common/import-collector';
 import { DeclarationCollector } from '../common/declaration-collector';
 import { PropertyCache } from './property-translators/utils';
-import { checkCustomDialogController, insertImportDeclaration, transformDeclaration } from './customdialog';
 import { LogCollector } from '../common/log-collector';
 import {
     CustomComponentScopeInfo,
@@ -35,7 +34,13 @@ import {
     ScopeInfoCollection,
     isForEachDecl
 } from './struct-translators/utils';
-import { collectCustomComponentScopeInfo, CustomComponentNames, isCustomComponentClass } from './utils';
+import {
+    collectCustomComponentScopeInfo,
+    CustomComponentNames,
+    CustomDialogNames,
+    isCustomComponentClass,
+    isSpecificNewClass,
+} from './utils';
 import { findAndCollectMemoableNode } from '../collectors/memo-collectors/factory';
 
 export class CheckedTransformer extends AbstractVisitor {
@@ -87,24 +92,6 @@ export class CheckedTransformer extends AbstractVisitor {
         }
     }
 
-    isCustomDialogController(): boolean {
-        if (this.isExternal && this.externalSourceName === 'arkui.component.customDialogController') {
-            return true;
-        }
-        return false;
-    }
-
-    processCustomDialogController(node: arkts.AstNode): arkts.AstNode {
-        if (arkts.isEtsScript(node)) {
-            insertImportDeclaration(this.program);
-        }
-        if (arkts.isClassDeclaration(node) && node.definition && node.definition.ident &&
-            node.definition.ident.name === 'CustomDialogController') {
-            return transformDeclaration(node as arkts.ClassDeclaration);
-        }
-        return node;
-    }
-
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         this.enter(beforeChildren);
         if (arkts.isCallExpression(beforeChildren) && isBuilderLambda(beforeChildren)) {
@@ -119,9 +106,7 @@ export class CheckedTransformer extends AbstractVisitor {
         }
         const node = this.visitEachChild(beforeChildren);
         findAndCollectMemoableNode(node);
-        if (this.isCustomDialogController()) {
-            return this.processCustomDialogController(node);
-        } else if (
+        if (
             arkts.isClassDeclaration(node) &&
             this.scope.customComponents.length > 0 &&
             isCustomComponentClass(node, this.scope.customComponents[this.scope.customComponents.length - 1])
@@ -141,8 +126,8 @@ export class CheckedTransformer extends AbstractVisitor {
             return structFactory.AddArrowTypeForParameter(node);
         } else if (arkts.isTSInterfaceDeclaration(node)) {
             return structFactory.tranformInterfaceMembers(node, this.externalSourceName);
-        } else if (arkts.isBlockStatement(node)) {
-            return checkCustomDialogController(node);
+        } else if (arkts.isETSNewClassInstanceExpression(node) && isSpecificNewClass(node, CustomDialogNames.CUSTOM_DIALOG_CONTROLLER)) {
+            return structFactory.transformCustomDialogController(node);
         }
         if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
             ImportCollector.getInstance().insertCurrentImports(this.program);

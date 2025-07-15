@@ -28,37 +28,9 @@ import {
     collectStateManagementTypeImport,
     hasDecorator,
     PropertyCache,
+    getValueInAnnotation,
 } from './utils';
 import { factory } from './factory';
-
-function getLocalStorageLinkValueStr(node: arkts.AstNode): string | undefined {
-    if (!arkts.isClassProperty(node) || !node.value) return undefined;
-
-    return arkts.isStringLiteral(node.value) ? node.value.str : undefined;
-}
-
-function getLocalStorageLinkAnnotationValue(anno: arkts.AnnotationUsage): string | undefined {
-    const isLocalStorageLinkAnnotation: boolean =
-        !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === DecoratorNames.LOCAL_STORAGE_LINK;
-
-    if (isLocalStorageLinkAnnotation && anno.properties.length === 1) {
-        return getLocalStorageLinkValueStr(anno.properties.at(0)!);
-    }
-    return undefined;
-}
-
-function getLocalStorageLinkValueInAnnotation(node: arkts.ClassProperty): string | undefined {
-    const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
-
-    for (let i = 0; i < annotations.length; i++) {
-        const anno: arkts.AnnotationUsage = annotations[i];
-        const str: string | undefined = getLocalStorageLinkAnnotationValue(anno);
-        if (!!str) {
-            return str;
-        }
-    }
-    return undefined;
-}
 
 export class LocalStorageLinkTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
@@ -79,7 +51,10 @@ export class LocalStorageLinkTranslator extends PropertyTranslator implements In
     }
 
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        const localStorageLinkValueStr: string | undefined = getLocalStorageLinkValueInAnnotation(this.property);
+        const localStorageLinkValueStr: string | undefined = getValueInAnnotation(
+            this.property,
+            DecoratorNames.LOCAL_STORAGE_LINK
+        );
         if (!localStorageLinkValueStr) {
             throw new Error('LocalStorageLink required only one value!!');
         }
@@ -88,7 +63,7 @@ export class LocalStorageLinkTranslator extends PropertyTranslator implements In
             arkts.factory.createStringLiteral(localStorageLinkValueStr),
             arkts.factory.create1StringLiteral(originalName),
             this.property.value ?? arkts.factory.createUndefinedLiteral(),
-            factory.createTypeFrom(this.property.typeAnnotation)
+            factory.createTypeFrom(this.property.typeAnnotation),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         collectStateManagementTypeImport(StateManagementTypes.LOCAL_STORAGE_LINK_DECORATED);

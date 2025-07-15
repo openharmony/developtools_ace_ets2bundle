@@ -18,6 +18,7 @@ import {
     BuilderLambdaNames,
     CustomComponentAnontations,
     CustomComponentNames,
+    CustomDialogNames,
     hasNullOrUndefinedType,
     hasPropertyInAnnotation,
 } from './utils';
@@ -396,5 +397,48 @@ export class factory {
             implementsInfo.push(factory.createClassImplements(CustomComponentNames.LAYOUT_CALLBACK));
         }
         return implementsInfo;
+    }
+
+    /**
+     * create class property node: `<key>:<type>`.
+     *
+     * @param method method definition node
+     */
+    static createPropertyInInterface(key: string, type?: arkts.TypeNode): arkts.ClassProperty {
+        const keyIdent: arkts.Identifier = arkts.factory.createIdentifier(key);
+        return arkts.factory.createClassProperty(
+            keyIdent,
+            undefined,
+            type,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL,
+            false
+        );
+    }
+
+    /**
+     * add `baseComponent: ExtendableComponent` to interface CustomDialogControllerOptions.
+     *
+     * @param method method definition node
+     */
+    static updateCustomDialogOptionsInterface(newNode: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
+        if (!newNode.body?.body || newNode.body?.body.length <= 0) {
+            return newNode;
+        }
+
+        return arkts.factory.updateInterfaceDeclaration(
+            newNode,
+            newNode.extends,
+            newNode.id,
+            newNode.typeParams,
+            arkts.factory.updateInterfaceBody(newNode.body!, [
+                ...newNode.body.body,
+                factory.createPropertyInInterface(
+                    CustomDialogNames.BASE_COMPONENT,
+                    factory.createTypeReferenceFromString(CustomDialogNames.EXTENDABLE_COMPONENT)
+                ),
+            ]),
+            newNode.isStatic,
+            newNode.isFromExternal
+        );
     }
 }

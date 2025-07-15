@@ -48,9 +48,6 @@ import { ImageAttribute as ImageAttribute } from "arkui.component.image";
 
 import { _r as _r } from "arkui.component.resources";
 
-import { LayoutCallback as LayoutCallback } from "arkui.component.customComponent";
-
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 

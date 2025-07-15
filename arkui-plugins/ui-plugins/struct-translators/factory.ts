@@ -15,17 +15,20 @@
 
 import * as arkts from '@koalaui/libarkts';
 import {
+    BuilderLambdaNames,
     CustomComponentNames,
+    CustomDialogNames,
     getCustomComponentOptionsName,
     getGettersFromClassDecl,
     getTypeNameFromTypeParameter,
     getTypeParamsFromClassDecl,
     isCustomComponentInterface,
-    isKnownMethodDefinition
+    isCustomDialogControllerOptions,
+    isKnownMethodDefinition,
 } from '../utils';
 import { factory as uiFactory } from '../ui-factory';
 import { factory as propertyFactory } from '../property-translators/factory';
-import { collect, filterDefined } from '../../common/arkts-utils';
+import { backingField, collect, filterDefined } from '../../common/arkts-utils';
 import {
     classifyObservedTrack,
     classifyProperty,
@@ -47,8 +50,18 @@ import {
     getResourceParams,
     isResourceNode,
     isForEachCall,
+    getCustomDialogController,
+    isInvalidDialogControllerOptions,
+    findBuilderIndexInControllerOptions,
+    getControllerName,
+    DialogControllerInfo,
 } from './utils';
-import { collectStateManagementTypeImport, hasDecorator, PropertyCache } from '../property-translators/utils';
+import {
+    collectStateManagementTypeImport,
+    generateThisBacking,
+    hasDecorator,
+    PropertyCache,
+} from '../property-translators/utils';
 import { ProjectConfig } from '../../common/plugin-context';
 import { ImportCollector } from '../../common/import-collector';
 import {
@@ -59,10 +72,12 @@ import {
     ModuleType,
     StateManagementTypes,
     RESOURCE_TYPE,
+    CUSTOM_DIALOG_CONTROLLER_SOURCE_NAME,
 } from '../../common/predefines';
 import { ObservedTrackTranslator } from '../property-translators/observedTrack';
 import { addMemoAnnotation } from '../../collectors/memo-collectors/utils';
 import { generateArkUICompatible, isArkUICompatible } from '../interop/interop';
+import { GenSymGenerator } from '../../common/gensym-generator';
 
 export class factory {
     /**
@@ -84,7 +99,8 @@ export class factory {
         );
 
         let body: arkts.BlockStatement | undefined;
-        let modifiers: arkts.Es2pandaModifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+        let modifiers: arkts.Es2pandaModifierFlags =
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         if (!scope.isDecl) {
             body = arkts.factory.createBlock(PropertyCache.getInstance().getInitializeBody(scope.name));
             modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
@@ -112,6 +128,54 @@ export class factory {
         );
     }
 
+    static transformControllerInterfaceType(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
+        if (!node.body || node.body.body.length <= 0 || !arkts.isMethodDefinition(node.body.body[0])) {
+            return node;
+        }
+        const updatedBody = arkts.factory.updateInterfaceBody(node.body, [
+            this.updateBuilderType(node.body.body[0]),
+            ...node.body.body.slice(1),
+        ]);
+        return arkts.factory.updateInterfaceDeclaration(
+            node,
+            node.extends,
+            node.id,
+            node.typeParams,
+            updatedBody,
+            node.isStatic,
+            node.isFromExternal
+        );
+    }
+
+    static updateBuilderType(builderNode: arkts.MethodDefinition): arkts.MethodDefinition {
+        const newType: arkts.TypeNode | undefined = uiFactory.createTypeReferenceFromString(
+            CustomDialogNames.CUSTOM_BUILDER
+        );
+        if (builderNode.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
+            const newOverLoads = builderNode.overloads.map((overload) => {
+                if (arkts.isMethodDefinition(overload)) {
+                    return factory.updateBuilderType(overload);
+                }
+                return overload;
+            });
+            builderNode.setOverloads(newOverLoads);
+            if (!!newType) {
+                builderNode.scriptFunction.setReturnTypeAnnotation(newType);
+            }
+        } else if (builderNode.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {
+            const param = builderNode.scriptFunction.params[0] as arkts.ETSParameterExpression;
+            const newParam: arkts.Expression | undefined = arkts.factory.updateParameterDeclaration(
+                param,
+                arkts.factory.createIdentifier(param.identifier.name, newType),
+                param.initializer
+            );
+            if (!!newParam) {
+                return uiFactory.updateMethodDefinition(builderNode, { function: { params: [newParam] } });
+            }
+        }
+        return builderNode;
+    }
+
     /**
      * create __updateStruct method.
      */
@@ -121,7 +185,8 @@ export class factory {
         );
 
         let body: arkts.BlockStatement | undefined;
-        let modifiers: arkts.Es2pandaModifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+        let modifiers: arkts.Es2pandaModifierFlags =
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         if (!scope.isDecl) {
             body = arkts.factory.createBlock(PropertyCache.getInstance().getUpdateBody(scope.name));
             modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
@@ -436,6 +501,16 @@ export class factory {
             classOptionsName ?? getCustomComponentOptionsName(className),
             scope
         );
+        if (hasDecorator(node.definition, DecoratorNames.CUSTOM_DIALOG)) {
+            const dialogControllerProperty: arkts.ClassProperty | undefined = definition.body.find(
+                (item: arkts.AstNode) => arkts.isClassProperty(item) && getCustomDialogController(item).length > 0
+            ) as arkts.ClassProperty | undefined;
+            if (!!dialogControllerProperty) {
+                translatedMembers.push(
+                    this.createCustomDialogMethod(getCustomDialogController(dialogControllerProperty))
+                );
+            }
+        }
         const updateMembers: arkts.AstNode[] = definition.body
             .filter((member) => !arkts.isClassProperty(member))
             .map((member: arkts.AstNode) => factory.transformNonPropertyMembersInClass(member, scope.isDecl));
@@ -523,6 +598,48 @@ export class factory {
         }
     }
 
+    static createCustomDialogMethod(controller: string): arkts.MethodDefinition {
+        const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
+            arkts.factory.createIdentifier(
+                CustomDialogNames.CONTROLLER,
+                uiFactory.createTypeReferenceFromString(CustomDialogNames.CUSTOM_DIALOG_CONTROLLER)
+            ),
+            undefined
+        );
+        const block = arkts.factory.createBlock(
+            controller.length !== 0
+                ? [
+                      arkts.factory.createExpressionStatement(
+                          arkts.factory.createAssignmentExpression(
+                              generateThisBacking(backingField(controller)),
+                              arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+                              arkts.factory.createIdentifier(CustomDialogNames.CONTROLLER)
+                          )
+                      ),
+                  ]
+                : []
+        );
+        const script = arkts.factory.createScriptFunction(
+            block,
+            arkts.FunctionSignature.createFunctionSignature(
+                undefined,
+                [param],
+                arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                false
+            ),
+            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+        );
+
+        return arkts.factory.createMethodDefinition(
+            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+            arkts.factory.createIdentifier(CustomDialogNames.SET_DIALOG_CONTROLLER_METHOD),
+            script,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            false
+        );
+    }
+
     /*
      * Process string Literal type arguments for $r node.
      */
@@ -606,6 +723,9 @@ export class factory {
         }
         if (externalSourceName === ARKUI_COMPONENT_COMMON_SOURCE_NAME && node.id.name === 'CommonMethod') {
             return factory.modifyExternalComponentCommon(node);
+        }
+        if (isCustomDialogControllerOptions(node, externalSourceName)) {
+            return factory.transformControllerInterfaceType(node);
         }
         if (isCustomComponentInterface(node)) {
             return factory.tranformCustomComponentInterfaceMembers(node);
@@ -925,5 +1045,199 @@ export class factory {
             return generateArkUICompatible(node as arkts.CallExpression);
         }
         return node;
+    }
+
+    static transformCustomDialogController(
+        node: arkts.ETSNewClassInstanceExpression
+    ): arkts.ETSNewClassInstanceExpression | arkts.Expression {
+        if (isInvalidDialogControllerOptions(node.getArguments)) {
+            throw new Error('Error CustomDialogOptions');
+        }
+        const optionArg = node.getArguments[0];
+        const options: arkts.ObjectExpression = arkts.isObjectExpression(optionArg)
+            ? optionArg
+            : ((optionArg as arkts.TSAsExpression).expr as arkts.ObjectExpression);
+        const builderIndex: number = findBuilderIndexInControllerOptions(options.properties);
+        if (builderIndex < 0 || !(options.properties[builderIndex] as arkts.Property).value) {
+            throw new Error('Error CustomDialogOptions');
+        }
+        const builder: arkts.Property = options.properties[builderIndex] as arkts.Property;
+        const controllerInfo: DialogControllerInfo = getControllerName(node);
+        const gensymName: string = GenSymGenerator.getInstance().id(controllerInfo.controllerName);
+        const newBuilderValue = this.createDialogBuilderArrow(builder.value!, controllerInfo, gensymName);
+        const newProperty = arkts.factory.updateProperty(builder, builder.key, newBuilderValue);
+        const newObj = arkts.factory.updateObjectExpression(
+            options,
+            arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+            [
+                ...(options.properties as arkts.Property[]).slice(0, builderIndex),
+                newProperty,
+                ...(options.properties as arkts.Property[]).slice(builderIndex + 1),
+                this.createBaseComponent(),
+            ],
+            false
+        );
+        const newOptions = arkts.isTSAsExpression(optionArg)
+            ? arkts.factory.updateTSAsExpression(optionArg, newObj, optionArg.typeAnnotation, optionArg.isConst)
+            : newObj;
+        const typeRef = node.getTypeRef as arkts.ETSTypeReference;
+        const newNode = arkts.factory.updateETSNewClassInstanceExpression(node, typeRef, [newOptions]);
+        if (controllerInfo.parent && arkts.isVariableDeclarator(controllerInfo.parent)) {
+            return factory.createBlockStatementForOptionalExpression(controllerInfo.parent, newNode, gensymName);
+        }
+        return newNode;
+    }
+
+    static createDialogBuilderArrow(
+        value: arkts.Expression,
+        controllerInfo: DialogControllerInfo,
+        gensymName: string
+    ): arkts.Expression {
+        if (
+            arkts.isCallExpression(value) &&
+            arkts.isMemberExpression(value.expression) &&
+            arkts.isIdentifier(value.expression.property) &&
+            value.expression.property.name === BuilderLambdaNames.TRANSFORM_METHOD_NAME
+        ) {
+            return addMemoAnnotation(
+                arkts.factory.createArrowFunction(
+                    uiFactory.createScriptFunction({
+                        body: arkts.factory.createBlock([
+                            arkts.factory.createExpressionStatement(
+                                this.transformCustomDialogComponentCall(value, controllerInfo, gensymName)
+                            ),
+                        ]),
+                        flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                        modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+                    })
+                )
+            );
+        }
+        if (arkts.isArrowFunctionExpression(value)) {
+            return addMemoAnnotation(value);
+        }
+        return value;
+    }
+
+    static transformCustomDialogComponentCall(
+        value: arkts.CallExpression,
+        controllerInfo: DialogControllerInfo,
+        gensymName: string
+    ): arkts.CallExpression {
+        if (value.arguments.length >= 2 && arkts.isArrowFunctionExpression(value.arguments[1])) {
+            const originScript: arkts.ScriptFunction = value.arguments[1].scriptFunction;
+            const newScript: arkts.ScriptFunction = uiFactory.updateScriptFunction(originScript, {
+                body: this.generateInstanceSetController(originScript.body, controllerInfo, gensymName),
+            });
+            return arkts.factory.updateCallExpression(value, value.expression, value.typeArguments, [
+                value.arguments[0],
+                arkts.factory.updateArrowFunction(value.arguments[1], newScript),
+                ...value.arguments.slice(2),
+            ]);
+        }
+        return value;
+    }
+
+    static generateInstanceSetController(
+        body: arkts.AstNode | undefined,
+        controllerInfo: DialogControllerInfo,
+        gensymName: string
+    ): arkts.AstNode | undefined {
+        if (
+            !!body &&
+            arkts.isBlockStatement(body) &&
+            body.statements.length > 0 &&
+            arkts.isReturnStatement(body.statements[0])
+        ) {
+            const instanceIdent: arkts.Identifier = arkts.factory.createIdentifier(
+                BuilderLambdaNames.STYLE_ARROW_PARAM_NAME
+            );
+            return arkts.factory.updateBlock(body, [
+                arkts.factory.createVariableDeclaration(
+                    arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONST,
+                    arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
+                    [
+                        arkts.factory.createVariableDeclarator(
+                            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_CONST,
+                            instanceIdent,
+                            body.statements[0].argument?.clone()
+                        ),
+                    ]
+                ),
+                this.genertateControllerSetCall(instanceIdent, controllerInfo, gensymName),
+                arkts.factory.createReturnStatement(instanceIdent.clone()),
+            ]);
+        }
+        return body;
+    }
+
+    static genertateControllerSetCall(
+        instanceIdent: arkts.Identifier,
+        controllerInfo: DialogControllerInfo,
+        gensymName: string
+    ): arkts.AstNode {
+        return arkts.factory.createExpressionStatement(
+            arkts.factory.createCallExpression(
+                arkts.factory.createMemberExpression(
+                    instanceIdent.clone(),
+                    arkts.factory.createIdentifier(CustomDialogNames.SET_DIALOG_CONTROLLER_METHOD),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                ),
+                undefined,
+                [
+                    arkts.factory.createTSAsExpression(
+                        controllerInfo.isClassProperty
+                            ? generateThisBacking(controllerInfo.controllerName)
+                            : arkts.factory.createIdentifier(gensymName),
+                        uiFactory.createTypeReferenceFromString(CustomDialogNames.CUSTOM_DIALOG_CONTROLLER),
+                        false
+                    ),
+                ]
+            )
+        );
+    }
+
+    static createBaseComponent(): arkts.Property {
+        return arkts.factory.createProperty(
+            arkts.factory.createIdentifier(CustomDialogNames.BASE_COMPONENT),
+            arkts.factory.createThisExpression()
+        );
+    }
+
+    static generateLetVariableDecl(left: arkts.Identifier): arkts.VariableDeclaration {
+        return arkts.factory.createVariableDeclaration(
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
+            [
+                arkts.factory.createVariableDeclarator(
+                    arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
+                    left,
+                    undefined
+                ),
+            ]
+        );
+    }
+
+    static createBlockStatementForOptionalExpression(
+        variableNode: arkts.VariableDeclarator,
+        newNode: arkts.ETSNewClassInstanceExpression,
+        gensymName: string
+    ): arkts.Expression {
+        const statements: arkts.Statement[] = [
+            factory.generateLetVariableDecl(
+                arkts.factory.createIdentifier(gensymName, variableNode.name.typeAnnotation)
+            ),
+            arkts.factory.createExpressionStatement(
+                arkts.factory.createAssignmentExpression(
+                    arkts.factory.createIdentifier(gensymName),
+                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+                    newNode
+                )
+            ),
+            arkts.factory.createExpressionStatement(arkts.factory.createIdentifier(gensymName)),
+        ];
+        return arkts.factory.createBlockExpression(statements);
     }
 }
