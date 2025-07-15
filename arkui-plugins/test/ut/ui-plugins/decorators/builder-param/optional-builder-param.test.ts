@@ -38,6 +38,8 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
+import { ConditionScope as ConditionScope } from "arkui.component.builder";
+import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Entry as Entry, Builder as Builder, BuilderParam as BuilderParam, Column as Column, Text as Text, Row as Row } from "@kit.ArkUI";
@@ -80,12 +82,20 @@ function main() {}
   
   @memo() public build() {
     Row(undefined, undefined, @memo() (() => {
-      if (this.customBuilderParam2) {
-        (this.customBuilderParam2 as (()=> void))();
-      }
-      if (this.customBuilderParam2) {
-        this.customBuilderParam2!();
-      }
+      ConditionScope(@memo() (() => {
+        if (this.customBuilderParam2) {
+          ConditionBranch(@memo() (() => {
+            (this.customBuilderParam2 as (()=> void))();
+          }));
+        }
+      }));
+      ConditionScope(@memo() (() => {
+        if (this.customBuilderParam2) {
+          ConditionBranch(@memo() (() => {
+            this.customBuilderParam2!();
+          }));
+        }
+      }));
       this.customBuilderParam1();
     }));
   }
@@ -136,6 +146,8 @@ function main() {}
 
 const expectedMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+import { ConditionScope as ConditionScope } from "arkui.component.builder";
+import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Entry as Entry, Builder as Builder, BuilderParam as BuilderParam, Column as Column, Text as Text, Row as Row } from "@kit.ArkUI";
@@ -197,12 +209,56 @@ function main() {}
         __memo_scope.cached;
         return;
       }
-      if (this.customBuilderParam2) {
-        (this.customBuilderParam2 as ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))(__memo_context, ((__memo_id) + (241913892)));
-      }
-      if (this.customBuilderParam2) {
-        this.customBuilderParam2!(__memo_context, ((__memo_id) + (137225318)));
-      }
+      ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        if (__memo_scope.unchanged) {
+          __memo_scope.cached;
+          return;
+        }
+        if (this.customBuilderParam2) {
+          ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+            if (__memo_scope.unchanged) {
+              __memo_scope.cached;
+              return;
+            }
+            (this.customBuilderParam2 as ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))(__memo_context, ((__memo_id) + (<some_random_number>)));
+            {
+              __memo_scope.recache();
+              return;
+            }
+          }));
+        }
+        {
+          __memo_scope.recache();
+          return;
+        }
+      }));
+      ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        if (__memo_scope.unchanged) {
+          __memo_scope.cached;
+          return;
+        }
+        if (this.customBuilderParam2) {
+          ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+            if (__memo_scope.unchanged) {
+              __memo_scope.cached;
+              return;
+            }
+            this.customBuilderParam2!(__memo_context, ((__memo_id) + (<some_random_number>)));
+            {
+              __memo_scope.recache();
+              return;
+            }
+          }));
+        }
+        {
+          __memo_scope.recache();
+          return;
+        }
+      }));
       this.customBuilderParam1(__memo_context, ((__memo_id) + (211301233)));
       {
         __memo_scope.recache();

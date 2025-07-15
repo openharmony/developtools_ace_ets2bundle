@@ -41,6 +41,7 @@ export const CUSTOM_DIALOG_CONTROLLER_SOURCE_NAME: string = 'arkui.component.cus
 export const ENTRY_POINT_IMPORT_SOURCE_NAME: string = 'arkui.UserView';
 export const ARKUI_COMPONENT_COMMON_SOURCE_NAME: string = 'arkui.component.common';
 export const ARKUI_FOREACH_SOURCE_NAME: string = 'arkui.component.forEach';
+export const ARKUI_BUILDER_SOURCE_NAME: string = 'arkui.component.builder';
 
 export enum ModuleType {
     HAR = 'har',
@@ -193,6 +194,11 @@ export enum NavigationNames {
     PAGE_PATH = 'pagePath',
     PAGE_FULL_PATH = 'pageFullPath',
     INTEGRATED_HSP = 'integratedHsp',
+}
+
+export enum ConditionNames {
+    CONDITION_SCOPE = 'ConditionScope',
+    CONDITION_BRANCH = 'ConditionBranch',
 }
 
 export const RESOURCE_TYPE: Record<string, number> = {
