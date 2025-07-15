@@ -62,12 +62,14 @@ class NoDuplicatePreviewRule extends AbstractUISyntaxRule {
   }
 
   private reportError(errorNode: arkts.AnnotationUsage): void {
+    let startPosition = errorNode.startPosition;
+    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
     this.report({
       node: errorNode,
       message: this.messages.duplicateEntry,
       fix: () => {
         return {
-          range: [errorNode.startPosition, errorNode.endPosition],
+          range: [startPosition, errorNode.endPosition],
           code: '',
         };
       }

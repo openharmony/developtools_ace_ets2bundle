@@ -71,8 +71,9 @@ class NoPropLinkObjectLinkInEntryRule extends AbstractUISyntaxRule {
                     propertyName,
                 },
                 fix: (annotation) => {
-                    const startPosition = annotation.startPosition;
-                    const endPosition = annotation.endPosition;
+                    let startPosition = annotation.startPosition;
+                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                    let endPosition = annotation.endPosition;
                     return {
                         range: [startPosition, endPosition],
                         code: '',

@@ -48,8 +48,9 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
             node: observedV2Decorator,
             message: this.messages.observedV2DecoratorError,
             fix: (observedV2Decorator) => {
-                const startPosition = observedV2Decorator.startPosition;
-                const endPosition = observedV2Decorator.endPosition;
+                let startPosition = observedV2Decorator.startPosition;
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                let endPosition = observedV2Decorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
                     code: '',
@@ -64,8 +65,9 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
             node: traceDecorator,
             message: this.messages.traceMemberVariableError,
             fix: (traceDecorator) => {
-                const startPosition = traceDecorator.startPosition;
-                const endPosition = traceDecorator.endPosition;
+                let startPosition = traceDecorator.startPosition;
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                let endPosition = traceDecorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
                     code: '',
@@ -100,8 +102,9 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
             node: traceDecorator,
             message: this.messages.traceDecoratorError,
             fix: (traceDecorator) => {
-                const startPosition = traceDecorator.startPosition;
-                const endPosition = traceDecorator.endPosition;
+                let startPosition = traceDecorator.startPosition;
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                let endPosition = traceDecorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
                     code: '',
@@ -135,7 +138,7 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
                 const endPosition = observedDecorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
-                    code: `@${PresetDecorators.OBSERVED_V2}`,
+                    code: `${PresetDecorators.OBSERVED_V2}`,
                 };
             },
         });
