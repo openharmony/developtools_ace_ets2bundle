@@ -45,6 +45,16 @@ export type BuilderLambdaReusableArgInfo = {
 
 export type BuilderLambdaSecondLastArgInfo = BuilderLambdaArgInfo & BuilderLambdaReusableArgInfo;
 
+export type BuilderLambdaConditionBranchInfo = {
+    statements: readonly arkts.Statement[];
+    breakIndex: number;
+};
+
+export type BuilderLambdaChainingCallArgInfo = {
+    arg: arkts.Expression;
+    hasBuilder?: boolean;
+};
+
 export function buildSecondLastArgInfo(
     type: arkts.Identifier | undefined,
     isFunctionCall: boolean
@@ -84,7 +94,7 @@ export function builderLambdaArgumentName(annotation: arkts.AnnotationUsage): st
     return property.value.str;
 }
 
-export function isBuilderLambda(node: arkts.AstNode, nodeDecl?:arkts.AstNode | undefined): boolean {
+export function isBuilderLambda(node: arkts.AstNode, nodeDecl?: arkts.AstNode | undefined): boolean {
     const builderLambdaCall: arkts.AstNode | undefined = getDeclForBuilderLambda(node, nodeDecl);
     if (!builderLambdaCall) {
         return arkts.isCallExpression(node) && node.arguments.length > 0 && isBuilderLambda(node.arguments[0]);
@@ -176,7 +186,10 @@ export function getDeclForBuilderLambdaMethodDecl(node: arkts.AstNode): arkts.As
     return undefined;
 }
 
-export function getDeclForBuilderLambda(node: arkts.AstNode, nodeDecl?:arkts.AstNode | undefined): arkts.AstNode | undefined {
+export function getDeclForBuilderLambda(
+    node: arkts.AstNode,
+    nodeDecl?: arkts.AstNode | undefined
+): arkts.AstNode | undefined {
     if (!node || !arkts.isCallExpression(node)) {
         return undefined;
     }
@@ -207,7 +220,10 @@ export function getDeclForBuilderLambda(node: arkts.AstNode, nodeDecl?:arkts.Ast
     return undefined;
 }
 
-export function isBuilderLambdaCall(node: arkts.CallExpression | arkts.Identifier, nodeDecl?:arkts.AstNode | undefined): boolean {
+export function isBuilderLambdaCall(
+    node: arkts.CallExpression | arkts.Identifier,
+    nodeDecl?: arkts.AstNode | undefined
+): boolean {
     let decl = nodeDecl;
     if (decl === undefined) {
         const expr = arkts.isIdentifier(node) ? node : node.expression;
@@ -542,4 +558,17 @@ export function collectComponentAttributeImport(type: arkts.TypeNode | undefined
         ImportCollector.getInstance().collectSource(attributeName, moduleName);
         ImportCollector.getInstance().collectImport(attributeName);
     }
+}
+
+export function checkIsWithInIfConditionScope(statement: arkts.AstNode): boolean {
+    if (!statement.parent) {
+        return false;
+    }
+    return arkts.isBlockStatement(statement) && arkts.isIfStatement(statement.parent);
+}
+
+export function checkShouldBreakFromStatement(statement: arkts.AstNode): boolean {
+    return (
+        arkts.isReturnStatement(statement) || arkts.isBreakStatement(statement) || arkts.isContinueStatement(statement)
+    );
 }

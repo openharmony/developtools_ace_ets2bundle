@@ -45,6 +45,10 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { ConditionScope as ConditionScope } from "arkui.component.builder";
+
+import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
+
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
@@ -112,13 +116,17 @@ class Message {
         }));
         return;
       }), "Hello", undefined, undefined);
-      if (this.display) {
-        Child._instantiateImpl(undefined, (() => {
-          return new Child();
-        }), {
-          message: new Message("Child"),
-        }, "Child", undefined);
-      }
+      ConditionScope(@memo() (() => {
+        if (this.display) {
+          ConditionBranch(@memo() (() => {
+            Child._instantiateImpl(undefined, (() => {
+              return new Child();
+            }), {
+              message: new Message("Child"),
+            }, "Child", undefined);
+          }));
+        }
+      }));
     }));
   }
   
