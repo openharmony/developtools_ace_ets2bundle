@@ -84,8 +84,8 @@ export function builderLambdaArgumentName(annotation: arkts.AnnotationUsage): st
     return property.value.str;
 }
 
-export function isBuilderLambda(node: arkts.AstNode): boolean {
-    const builderLambdaCall: arkts.AstNode | undefined = getDeclForBuilderLambda(node);
+export function isBuilderLambda(node: arkts.AstNode, nodeDecl?:arkts.AstNode | undefined): boolean {
+    const builderLambdaCall: arkts.AstNode | undefined = getDeclForBuilderLambda(node, nodeDecl);
     if (!builderLambdaCall) {
         return arkts.isCallExpression(node) && node.arguments.length > 0 && isBuilderLambda(node.arguments[0]);
     }
@@ -176,7 +176,7 @@ export function getDeclForBuilderLambdaMethodDecl(node: arkts.AstNode): arkts.As
     return undefined;
 }
 
-export function getDeclForBuilderLambda(node: arkts.AstNode): arkts.AstNode | undefined {
+export function getDeclForBuilderLambda(node: arkts.AstNode, nodeDecl?:arkts.AstNode | undefined): arkts.AstNode | undefined {
     if (!node || !arkts.isCallExpression(node)) {
         return undefined;
     }
@@ -201,15 +201,18 @@ export function getDeclForBuilderLambda(node: arkts.AstNode): arkts.AstNode | un
         currNode = _node.object;
     }
 
-    if (isBuilderLambdaCall(node)) {
+    if (isBuilderLambdaCall(node, nodeDecl)) {
         return node;
     }
     return undefined;
 }
 
-export function isBuilderLambdaCall(node: arkts.CallExpression | arkts.Identifier): boolean {
-    const expr = arkts.isIdentifier(node) ? node : node.expression;
-    const decl = arkts.getDecl(expr);
+export function isBuilderLambdaCall(node: arkts.CallExpression | arkts.Identifier, nodeDecl?:arkts.AstNode | undefined): boolean {
+    let decl = nodeDecl;
+    if (decl === undefined) {
+        const expr = arkts.isIdentifier(node) ? node : node.expression;
+        decl = arkts.getDecl(expr);
+    }
 
     if (!decl) {
         return false;
