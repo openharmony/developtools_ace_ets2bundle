@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-import { updateNodeByNode } from '../utilities/private';
 import {
     ArrowFunctionExpression,
     AssignmentExpression,
@@ -32,7 +31,6 @@ import {
     ETSStringLiteralType,
 } from '../types';
 import { MemberExpression } from '../to-be-generated/MemberExpression';
-import { AstNode } from '../peers/AstNode';
 import {
     AnnotationUsage,
     BinaryExpression,
@@ -84,8 +82,6 @@ import {
     SwitchStatement,
     SwitchCaseStatement,
 } from '../../generated';
-import { Es2pandaModifierFlags } from '../../generated/Es2pandaEnums';
-import { classPropertySetOptional, hasModifierFlag } from '../utilities/public';
 import { updateIdentifier } from '../node-utilities/Identifier';
 import { updateCallExpression } from '../node-utilities/CallExpression';
 import { updateExpressionStatement } from '../node-utilities/ExpressionStatement';
