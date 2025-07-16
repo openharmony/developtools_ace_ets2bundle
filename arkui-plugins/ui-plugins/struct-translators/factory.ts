@@ -320,6 +320,9 @@ export class factory {
      * add headers for animation & @AnimatableExtend in CommonMethod
      */
     static modifyExternalComponentCommon(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
+        if (!node.body) {
+            return node;
+        }
         const animationStart = factory.createAnimationMethod(AnimationNames.ANIMATION_START);
         const animationStop = factory.createAnimationMethod(AnimationNames.ANIMATION_STOP);
         const createOrSetAniProperty = factory.createOrSetAniProperty();

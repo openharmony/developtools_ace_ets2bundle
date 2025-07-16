@@ -29,8 +29,4 @@ export class ImportPathManager extends ArktsObject {
             global.es2panda._ETSParserGetImportPathManager(global.context)
         );
     }
-
-    resolvePath(currentModulePath: string, importPath: string): string {
-        return ''; // TODO: no longer support this.
-    }
 }
