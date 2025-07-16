@@ -135,17 +135,6 @@ class ParseIntent {
   private initInsightIntent(node: ts.ClassDeclaration, metaInfo: object, transformLog: LogInfo[], filePath: string): void {
     this.transformLog = transformLog;
     this.currentNode = node;
-    if (projectConfig.pkgContextInfo) {
-      const errorMessage: string = 'Generating standard OHMUrl failed with useNormalizedOHMUrl configuration not set to true. ';
-      this.transformLog.push({
-        type: LogType.ERROR,
-        message: errorMessage,
-        pos: this.currentNode.getStart(),
-        code: '10101027',
-        description: 'InsightIntent Compiler Error',
-        solutions: ['Set useNormalizedOHMUrl to true in build-profile.json5']
-      });
-    }
     if (!this.isInitCache) {
       if (projectConfig.cachePath) {
         const cacheSourceMapPath: string =
