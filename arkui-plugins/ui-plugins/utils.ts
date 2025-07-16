@@ -212,7 +212,8 @@ export function collectCustomComponentScopeInfo(
     if (
         isCustomComponentClassDecl &&
         definition.ident.name !== CustomComponentNames.COMPONENT_CLASS_NAME &&
-        definition.ident.name !== CustomComponentNames.COMPONENT_V2_CLASS_NAME
+        definition.ident.name !== CustomComponentNames.COMPONENT_V2_CLASS_NAME &&
+        definition.ident.name !== CustomComponentNames.BASE_CUSTOM_DIALOG_NAME
     ) {
         return undefined;
     }
@@ -275,7 +276,9 @@ export function isCustomComponentClass(node: arkts.ClassDeclaration, scopeInfo: 
     const name: string = node.definition.ident.name;
     if (scopeInfo.isDecl) {
         return (
-            name === CustomComponentNames.COMPONENT_CLASS_NAME || name === CustomComponentNames.COMPONENT_V2_CLASS_NAME
+            name === CustomComponentNames.COMPONENT_CLASS_NAME ||
+            name === CustomComponentNames.COMPONENT_V2_CLASS_NAME ||
+            name === CustomComponentNames.BASE_CUSTOM_DIALOG_NAME
         );
     }
     return name === scopeInfo.name;
