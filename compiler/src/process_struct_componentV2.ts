@@ -420,7 +420,7 @@ function createInitNode(propName: string, defaultValue: ts.Expression): ts.Expre
 function parseComponentProperty(node: ts.StructDeclaration, structInfo: StructInfo, log: LogInfo[],
   sourceFileNode: ts.SourceFile): void {
   node.members.forEach((member: ts.ClassElement) => {
-    if (member && member.name && ts.isIdentifier(member.name)) {
+    if (sourceFileNode && member && member.name && ts.isIdentifier(member.name)) {
       validateStmgmtKeywords(member.name.getText(), member.name);
     }
     if (ts.isPropertyDeclaration(member)) {
