@@ -16,17 +16,9 @@
 import {
     global,
     passNode,
-    passNodeArray,
-    unpackNonNullableNode,
     unpackNode,
-    unpackNodeArray,
-    assertValidPeer,
     AstNode,
-    Es2pandaAstNodeType,
-    KNativePointer,
-    nodeByType,
-    ArktsObject,
-    unpackString
+    KNativePointer
 } from "../../reexport-for-generated"
 
 import { Expression } from "./Expression"
