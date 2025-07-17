@@ -394,6 +394,7 @@ export function generateArkUICompatible(node: arkts.CallExpression): arkts.CallE
         [
             initializer,
             updater,
+            arkts.factory.createThisExpression(),
         ]
     );
     arkts.NodeCache.getInstance().collect(result);
