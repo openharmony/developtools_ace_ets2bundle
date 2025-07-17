@@ -324,3 +324,7 @@ export function CreateCacheContextFromFile(
 ): KNativePointer {
     return global.es2panda._CreateCacheContextFromFile(configPtr, passString(filename), globalContext, isExternal);
 }
+
+export function getJsdocStringFromDeclaration(decl: AstNode): string {
+    return withStringResult(global.es2panda._JsdocStringFromDeclaration(global.context, decl.peer)) ?? throwError(`failed to unpack (peer shouldn't be NULLPTR)`);
+}

@@ -16,6 +16,7 @@
 import {
     KNativePointer as KPtr,
     KInt,
+    KStringPtr,
     KBoolean,
     KNativePointer,
     registerNativeModuleLibraryName,
@@ -799,6 +800,9 @@ export class Es2pandaNativeModule {
     _SourcePositionLine(context: KNativePointer, instance: KNativePointer): KInt {
         throw new Error('Not implemented');
     }
+    _SourcePositionCol(context: KNativePointer, instance: KNativePointer): KInt {
+        throw new Error('Not implemented');
+    }
     _CreateETSStringLiteralType(context: KNativePointer, str: String): KNativePointer {
         throw new Error('Not implemented');
     }
@@ -953,6 +957,14 @@ export class Es2pandaNativeModule {
 
     _CallExpressionIsTrailingCallConst(context: KNativePointer, node: KNativePointer): boolean {
         throw new Error('CallExpressionIsTrailingCallConst was not overloaded by native module initialization');
+    }
+
+    _JsdocStringFromDeclaration(context: KNativePointer, decl: KNativePointer): KStringPtr {
+        throw new Error('Not implemented');
+    }
+
+    _ProgramSourceFilePathConst(context: KPtr, decl: KPtr): KNativePointer {
+        throw new Error('Not implemented');
     }
 }
 
