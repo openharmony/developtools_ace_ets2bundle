@@ -503,6 +503,7 @@ export class ModuleSourceFile {
           `Failed to get ModuleInfo, moduleId: ${filePath}`
         );
         ModuleSourceFile.logger.printError(errInfo);
+        ModuleSourceFile.logger.returnErrorFileId(importerFile);
         return undefined;
       }
       if (!targetModuleInfo.meta) {
@@ -512,6 +513,7 @@ export class ModuleSourceFile {
           `Failed to get ModuleInfo properties 'meta', moduleId: ${filePath}`
         );
         ModuleSourceFile.logger.printError(errInfo);
+        ModuleSourceFile.logger.returnErrorFileId(importerFile);
         return undefined;
       }
       let res: string = '';
