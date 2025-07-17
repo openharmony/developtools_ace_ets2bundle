@@ -1483,7 +1483,7 @@ function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComp
   if (node.members) {
     const currentMethodCollection: Set<string> = new Set();
     node.members.forEach(item => {
-      if (item && item.name && ts.isIdentifier(item.name)) {
+      if (uiCheck && item && item.name && ts.isIdentifier(item.name)) {
         validateStmgmtKeywords(item.name.getText(), item.name);
       }
       if (ts.isPropertyDeclaration(item) && ts.isIdentifier(item.name)) {
