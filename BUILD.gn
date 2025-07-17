@@ -170,7 +170,6 @@ ets_loader_sources = [
   "compiler/tsconfig.esm.json",
   "compiler/tsconfig.json",
   "compiler/webpack.config.js",
-  "compiler/config/stmgmtWhiteList.json"
 ]
 
 ohos_copy("ets_loader") {

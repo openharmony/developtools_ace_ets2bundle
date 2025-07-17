@@ -53,8 +53,7 @@ import { isReuseInV2 } from './process_custom_component';
 import { judgeBuilderParamAssignedByBuilder } from './process_component_member';
 import {
   componentCollection,
-  builderParamObjectCollection,
-  validateStmgmtKeywords
+  builderParamObjectCollection
 } from './validate_ui_syntax';
 import logMessageCollection from './log_message_collection';
 import { globalProgram } from '../main';
@@ -420,9 +419,6 @@ function createInitNode(propName: string, defaultValue: ts.Expression): ts.Expre
 function parseComponentProperty(node: ts.StructDeclaration, structInfo: StructInfo, log: LogInfo[],
   sourceFileNode: ts.SourceFile): void {
   node.members.forEach((member: ts.ClassElement) => {
-    if (member && member.name && ts.isIdentifier(member.name)) {
-      validateStmgmtKeywords(member.name.getText(), member.name);
-    }
     if (ts.isPropertyDeclaration(member)) {
       const decorators: readonly ts.Decorator[] = ts.getAllDecorators(member);
       const modifiers: readonly ts.Modifier[] = ts.getModifiers(member);
