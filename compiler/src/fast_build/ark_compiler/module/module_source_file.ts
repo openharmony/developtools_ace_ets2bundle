@@ -568,6 +568,7 @@ export class ModuleSourceFile {
       pkgName: moduleInfo.meta.pkgName,
       pkgPath,
       isRecordName: false,
+      omitModuleName: isMixCompile() && isArkTSEvolutionFile(filePath, moduleInfo.meta),
     };
     const ohmUrl: string =
       getNormalizedOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, pkgParams,

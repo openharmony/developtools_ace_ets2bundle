@@ -102,6 +102,15 @@ import * as ts from 'typescript';
 import {
   PreloadFileModules
 } from './fast_build/ark_compiler/module/module_preload_file_utils';
+import {
+  arkTSEvolutionModuleMap,
+  arkTSHybridModuleMap
+} from './fast_build/ark_compiler/interop/process_arkts_evolution';
+import {
+  FileManager, 
+  isMixCompile
+} from './fast_build/ark_compiler/interop/interop_manager';
+import { ARKTS_1_2 } from './fast_build/ark_compiler/interop/pre_define';
 
 export const SRC_MAIN: string = 'src/main';
 
@@ -111,14 +120,15 @@ export const packageCollection: Map<string, Array<string>> = new Map();
 // Splicing ohmurl or record name based on filePath and context information table.
 export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object,
   pkgParams: Object, importerFile: string): string {
-  const { pkgName, pkgPath, isRecordName } = pkgParams;
+  const { pkgName, pkgPath, isRecordName, omitModuleName } = pkgParams;
   const { projectFilePath, pkgInfo } = getPkgInfo(filePath, projectConfig, logger, pkgPath, pkgName, importerFile);
   const recordName: string = `${pkgInfo.bundleName}&${pkgName}/${projectFilePath}&${pkgInfo.version}`;
   if (isRecordName) {
     // record name style: <bunldName>&<packageName>/entry/ets/xxx/yyy&<version>
     return recordName;
   }
-  return `${pkgInfo.isSO ? 'Y' : 'N'}&${pkgInfo.moduleName}&${recordName}`;
+  const moduleName: string = omitModuleName ? '' : pkgInfo.moduleName;
+  return `${pkgInfo.isSO ? 'Y' : 'N'}&${moduleName}&${recordName}`;
 }
 
 export function getPkgInfo(filePath: string, projectConfig: Object, logger: Object, pkgPath: string,
@@ -414,6 +424,25 @@ function removeSuffix(filePath: string): string {
   return filePath.split(path.sep).join('/').replace(SUFFIX_REG, '');
 }
 
+function adjustModuleNameIfArkTSEvolution(pkgName: string, normalizedPath: string, pkgInfo: Object, projectConfig: Object): string {
+  if (arkTSEvolutionModuleMap.get(pkgName) || arkTSHybridModuleMap.get(pkgName)) {
+    const moduleRootPath: string = projectConfig.modulePathMap[pkgInfo.moduleName];
+    const filePath: string = normalizedPath.replace(pkgName, moduleRootPath);
+
+    const extensions: string[] = ['.ets', '.d.ets'];
+    for (const ext of extensions) {
+      const fullPath: string = filePath + ext;
+      if (fs.existsSync(fullPath)) {
+        const languageVersion = FileManager.getInstance().getLanguageVersionByFilePath(fullPath);
+        if (languageVersion?.languageVersion === ARKTS_1_2) {
+          return '';
+        }
+      }
+    }
+  }
+  return pkgInfo.moduleName;
+}
+
 export function getNormalizedOhmUrlByModuleRequest(moduleInfoByModuleRequest: Object, projectConfig: Object,
   logger?: Object): string {
   const normalizedPath = moduleInfoByModuleRequest.normalizedPath;
@@ -430,7 +459,8 @@ export function getNormalizedOhmUrlByModuleRequest(moduleInfoByModuleRequest: Ob
     return normalizedPath;
   }
   const isSo = pkgInfo.isSO ? 'Y' : 'N';
-  return `@normalized:${isSo}&${pkgInfo.moduleName}&${pkgInfo.bundleName}&${toUnixPath(normalizedPath)}&${pkgInfo.version}`;
+  const moduleName = isMixCompile() ? adjustModuleNameIfArkTSEvolution(pkgName, normalizedPath, pkgInfo, projectConfig) : pkgInfo.moduleName;
+  return `@normalized:${isSo}&${moduleName}&${pkgInfo.bundleName}&${toUnixPath(normalizedPath)}&${pkgInfo.version}`;
 }
 
 export function getNormalizedOhmUrlByAliasName(aliasName: string, projectConfig: Object,
@@ -468,7 +498,8 @@ export function getNormalizedOhmUrlByAliasName(aliasName: string, projectConfig:
     normalizedPath = `${pkgName}${relativePath}`;
   }
   const isSo = pkgInfo.isSO ? 'Y' : 'N';
-  return `@normalized:${isSo}&${pkgInfo.moduleName}&${pkgInfo.bundleName}&${normalizedPath}&${pkgInfo.version}`;
+  const moduleName = isMixCompile() ? adjustModuleNameIfArkTSEvolution(pkgName, normalizedPath, pkgInfo, projectConfig) : pkgInfo.moduleName;
+  return `@normalized:${isSo}&${moduleName}&${pkgInfo.bundleName}&${normalizedPath}&${pkgInfo.version}`;
 }
 
 export function getOhmUrlByByteCodeHar(moduleRequest: string, projectConfig: Object, rollupObject: Object, logger?: Object):
