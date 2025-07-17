@@ -1979,7 +1979,7 @@ function readStmgmtWhiteList(): void {
 export function validateStmgmtKeywords(itemName: string, memberNode: ts.Identifier): void {
   const message: string = `Methods, properties and accessors in structures decorated by '@Component'` +
     ` and '@ComponentV2' cannot have name as '${itemName}'.`;
-  if (stmgmtWhiteList && stmgmtWhiteList.has(itemName)) {
+  if (stmgmtWhiteList.size && stmgmtWhiteList.has(itemName)) {
     transformLog.errors.push({
       message: message,
       pos: memberNode.getStart(),
