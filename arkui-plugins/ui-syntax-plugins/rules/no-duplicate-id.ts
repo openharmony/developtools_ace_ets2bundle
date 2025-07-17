@@ -15,6 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
+import { getCurrentFilePath } from '../utils';
 
 interface IdInfo {
     value: string;
@@ -62,7 +63,7 @@ class NoDuplicateIdRule extends AbstractUISyntaxRule {
                 message: this.messages.duplicateId,
                 data: {
                     id: idInfo.value,
-                    path: this.getPath(node) ?? '',
+                    path: getCurrentFilePath(node) ?? '',
                     line: idInfo.node.startPosition.line().toString(),
                     index: idInfo.node.startPosition.index().toString()
                 }
@@ -71,11 +72,6 @@ class NoDuplicateIdRule extends AbstractUISyntaxRule {
             // Otherwise, record it
             usedIds.set(idInfo.value, idInfo);
         }
-    }
-
-    private getPath(node: arkts.AstNode): string | undefined {
-        const program = arkts.getProgramFromAstNode(node);
-        return program.absName;
     }
 
     private getIdInfo(node: arkts.CallExpression): IdInfo | undefined {

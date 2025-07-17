@@ -14,61 +14,52 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getAnnotationUsage, PresetDecorators } from '../utils';
+import { getAnnotationUsage, getCurrentFilePath, PresetDecorators } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 class MainPagesEntryCheckRule extends AbstractUISyntaxRule {
-  public setup(): Record<string, string> {
-    return {
-      mainPagesEntryCheck: `A page configured in 'main_pages. json or build-profile. json5' must have one and only one '@Entry' annotation. `
-    };
-  }
-  public parsed(node: arkts.StructDeclaration): void {
-    if (!arkts.isEtsScript(node)) {
-      return;
+    public setup(): Record<string, string> {
+        return {
+            mainPagesEntryCheck: `A page configured in 'main_pages. json or build-profile. json5' must have one and only one '@Entry' annotation. `
+        };
     }
-    const currentFilePath = this.getPath();
-    if (!currentFilePath) {
-      return;
-    }
-    if (!this.context.getMainPages().includes(currentFilePath)) {
-      return;
-    }
-    let entryDecoratorCount = 0;
-    // Store the first StructDeclaration
-    let firstStructDeclaration: arkts.AstNode | undefined = undefined;
-    // Traverse all child nodes of the Program
-    for (const child of node.getChildren()) {
-      // Check if it's of type StructDeclaration
-      if (arkts.isStructDeclaration(child)) {
-        if (!firstStructDeclaration) {
-          firstStructDeclaration = child;
+    public parsed(node: arkts.StructDeclaration): void {
+        if (!arkts.isEtsScript(node)) {
+            return;
         }
-        const entryDocoratorUsage = getAnnotationUsage(
-          child,
-          PresetDecorators.ENTRY,
-        );
-        if (entryDocoratorUsage) {
-          ++entryDecoratorCount;
+        const currentFilePath = getCurrentFilePath(node);
+        if (!currentFilePath) {
+            return;
         }
-      }
+        if (!this.context.getMainPages().includes(currentFilePath)) {
+            return;
+        }
+        let entryDecoratorCount = 0;
+        // Store the first StructDeclaration
+        let firstStructDeclaration: arkts.AstNode | undefined = undefined;
+        // Traverse all child nodes of the Program
+        for (const child of node.getChildren()) {
+            // Check if it's of type StructDeclaration
+            if (arkts.isStructDeclaration(child)) {
+                if (!firstStructDeclaration) {
+                    firstStructDeclaration = child;
+                }
+                const entryDocoratorUsage = getAnnotationUsage(
+                    child,
+                    PresetDecorators.ENTRY,
+                );
+                if (entryDocoratorUsage) {
+                    ++entryDecoratorCount;
+                }
+            }
+        }
+        if (entryDecoratorCount === 0) {
+            this.report({
+                node: firstStructDeclaration ? firstStructDeclaration : node,
+                message: this.messages.mainPagesEntryCheck,
+            });
+        }
     }
-    if (entryDecoratorCount === 0) {
-      this.report({
-        node: firstStructDeclaration ? firstStructDeclaration : node,
-        message: this.messages.mainPagesEntryCheck,
-      });
-    }
-  }
-
-  private getPath(): string | undefined {
-    const contextPtr = arkts.arktsGlobal.compilerContext?.peer;
-    if (!!contextPtr) {
-      let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-      return program.globalAbsName;
-    }
-    return undefined;
-  }
 }
 
 export default MainPagesEntryCheckRule;
