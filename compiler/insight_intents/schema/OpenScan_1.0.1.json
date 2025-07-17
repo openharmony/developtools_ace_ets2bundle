@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "扫码",
   "keywords": ["OpenScan"],
+  "domain": "ToolsDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

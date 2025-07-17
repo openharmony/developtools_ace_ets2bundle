@@ -3,6 +3,7 @@
   "intentVersion": "1.0.2",
   "llmDescription": "本地搜索充电桩",
   "keywords": ["SearchChargingStationLocal"],
+  "domain": "LifestyleDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

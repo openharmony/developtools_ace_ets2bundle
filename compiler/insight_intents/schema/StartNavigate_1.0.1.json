@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "开始导航",
   "keywords": ["StartNavigate"],
+  "domain": "NavigationDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {
