@@ -62,7 +62,14 @@ export enum InteropProvideNames {
     FINDPROVIDECALLBACK = 'findProvideInterop',
 }
 
-export enum builderMethodNames {
+export enum BuilderMethodNames {
     RUNPENDINGJOBS = 'runPendingJobs',
     CREATECOMPATIBLENODE = 'createCompatibleNode',
+}
+
+export enum BuilderParams {
+    PARAM_WRAPPED_KEY = 'param_wrapped_key',
+    INSTANCEPARAM = 'instanceParam',
+    PARAM_WRAPPED = 'param_wrapped',
+    PARAM_WRAPPED_IT = 'param_wrapped_it'
 }
