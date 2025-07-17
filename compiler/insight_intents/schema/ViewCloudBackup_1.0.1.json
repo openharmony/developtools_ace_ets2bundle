@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "查看云盘备份",
   "keywords": ["ViewCloudBackup"],
+  "domain": "ToolsDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

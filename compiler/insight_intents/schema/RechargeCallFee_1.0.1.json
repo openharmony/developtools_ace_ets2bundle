@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "充值话费",
   "keywords": ["RechargeCallFee"],
+  "domain": "LifestyleDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

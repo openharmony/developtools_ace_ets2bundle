@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "阅读书籍",
   "keywords": ["ReadBook"],
+  "domain": "BooksDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

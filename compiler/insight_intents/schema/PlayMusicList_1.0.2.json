@@ -3,6 +3,7 @@
   "intentVersion": "1.0.2",
   "llmDescription": "播放歌单",
   "keywords": ["PlayMusicList"],
+  "domain": "MediaDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

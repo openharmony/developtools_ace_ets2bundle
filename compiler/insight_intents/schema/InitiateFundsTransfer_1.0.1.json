@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "发起转账",
   "keywords": ["InitiateFundsTransfer"],
+  "domain": "FinanceDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

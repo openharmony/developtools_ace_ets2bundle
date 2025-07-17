@@ -3,6 +3,7 @@
   "intentVersion": "1.0.2",
   "llmDescription": "设置电动自行车座桶",
   "keywords": ["SetEBicycleSeat"],
+  "domain": "NavigationDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "查看已订酒店信息",
   "keywords": ["ViewHotelAppointmentInfo"],
+  "domain": "TravelDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

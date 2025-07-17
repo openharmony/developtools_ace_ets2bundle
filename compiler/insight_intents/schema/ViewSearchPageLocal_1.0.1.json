@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "打开app搜索页面",
   "keywords": ["ViewSearchPageLocal"],
+  "domain": "ToolsDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

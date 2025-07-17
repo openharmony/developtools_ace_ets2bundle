@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "购买车险",
   "keywords": ["BuyVehicleInsurance"],
+  "domain": "FinanceDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {
