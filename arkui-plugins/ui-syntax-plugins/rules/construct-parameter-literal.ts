@@ -20,7 +20,7 @@ import { getClassPropertyAnnotationNames, getClassPropertyName, getIdentifierNam
 
 class ConstructParameterLiteralRule extends AbstractUISyntaxRule {
     // Record all @Link and @ObjectLink attributes
-    private linkMap: Map<string, string> = new Map();
+    private linkMap: Map<string, Map<string, string>> = new Map();
 
     public setup(): Record<string, string> {
         return {
@@ -37,21 +37,37 @@ class ConstructParameterLiteralRule extends AbstractUISyntaxRule {
         this.checkInitializeWithLiteral(node);
     }
 
+    private addLinkProperty(
+        structName: string,
+        propertyName: string,
+        annotationName: string
+    ): void {
+        if (!this.linkMap.has(structName)) {
+            this.linkMap.set(structName, new Map());
+        }
+        const structProperties = this.linkMap.get(structName);
+        if (!structProperties) {
+            return;
+        }
+        structProperties.set(propertyName, annotationName);
+    }
+
     private recordStructWithLinkDecorators(item: arkts.AstNode, structName: string): void {
         if (!arkts.isClassProperty(item)) {
             return;
         }
         const ClassPropertyAnnotations = getClassPropertyAnnotationNames(item);
 
-        if (!ClassPropertyAnnotations.includes(PresetDecorators.OBJECT_LINK) &&
-            !ClassPropertyAnnotations.includes(PresetDecorators.LINK)) {
+        const classPropertyName = getClassPropertyName(item);
+        if (!classPropertyName) {
             return;
         }
-        const annotationName = getClassPropertyName(item);
-        if (!annotationName) {
-            return;
+        if (ClassPropertyAnnotations.includes(PresetDecorators.OBJECT_LINK)) {
+            this.addLinkProperty(structName, classPropertyName, PresetDecorators.OBJECT_LINK);
         }
-        this.linkMap.set(structName, annotationName);
+        if (ClassPropertyAnnotations.includes(PresetDecorators.LINK)) {
+            this.addLinkProperty(structName, classPropertyName, PresetDecorators.LINK);
+        }
     }
 
     private initMap(node: arkts.AstNode): void {
@@ -85,13 +101,17 @@ class ConstructParameterLiteralRule extends AbstractUISyntaxRule {
         if (!this.linkMap.has(componentName)) {
             return;
         }
+        const structLinkMap = this.linkMap.get(componentName);
+        if (!structLinkMap) {
+            return;
+        }
         node.arguments.forEach((member) => {
             member.getChildren().forEach((property) => {
                 if (!arkts.isProperty(property) || !property.key || !property.value) {
                     return;
                 }
-                const key: string = getIdentifierName(property.key);
-                if (key === '') {
+                const propertyName: string = getIdentifierName(property.key);
+                if (propertyName === '' || !structLinkMap.has(propertyName)) {
                     return;
                 }
                 // If the statement type is single-level MemberExpression or Identifier, construct-parameter is validated.
@@ -102,14 +122,13 @@ class ConstructParameterLiteralRule extends AbstractUISyntaxRule {
                     return;
                 }
                 const initializerName = property.value.dumpSrc().replace(/\(this\)/g, 'this');
-                const parameter: string = this.linkMap.get(componentName)!;
                 this.report({
                     node: property,
                     message: this.messages.initializerIsLiteral,
                     data: {
                         initializerName: initializerName,
-                        parameter: `@${parameter}`,
-                        parameterName: key,
+                        parameter: `@${structLinkMap.get(propertyName)}`,
+                        parameterName: propertyName,
                     },
                 });
             });

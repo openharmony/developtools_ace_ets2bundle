@@ -42,7 +42,6 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private validateOnlyInStruct(node: arkts.AstNode): void {
-
         if (arkts.isClassDeclaration(node)) {
             node.definition?.body.forEach(member => {
                 if (arkts.isClassProperty(member)) {
@@ -80,7 +79,8 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
             node: decorator,
             message: message,
             fix: (decorator) => {
-                const startPosition = decorator.startPosition;
+                let startPosition = decorator.startPosition;
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 const endPosition = decorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
@@ -200,7 +200,8 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
             message: this.messages.invalidUsage,
             fix: () => {
                 if (componentDecoratorUsage) {
-                    const startPosition = componentDecoratorUsage.startPosition;
+                    let startPosition = componentDecoratorUsage.startPosition;
+                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                     const endPosition = componentDecoratorUsage.endPosition;
                     return {
                         range: [startPosition, endPosition],

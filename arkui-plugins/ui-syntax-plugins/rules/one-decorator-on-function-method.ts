@@ -107,7 +107,8 @@ class OneDecoratorOnFunctionMethodRule extends AbstractUISyntaxRule {
             node: annotation,
             message: this.messages.invalidDecorator,
             fix: () => {
-                const startPosition = otherDecorator.startPosition;
+                let startPosition = otherDecorator.startPosition;
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 const endPosition = otherDecorator.endPosition;
                 return {
                     range: [startPosition, endPosition],

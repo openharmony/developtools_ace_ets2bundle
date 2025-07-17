@@ -101,7 +101,7 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
             fix: () => {
                 return {
                     range: [hasComponentV2Decorator.startPosition, hasComponentV2Decorator.endPosition],
-                    code: `@${structDecoratorName}`,
+                    code: structDecoratorName,
                 };
             },
         });
