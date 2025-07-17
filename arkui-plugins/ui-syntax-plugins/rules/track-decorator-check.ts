@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
-import { PresetDecorators, findDecorator, getClassDeclarationAnnotation } from '../utils/index';
+import { PresetDecorators, findDecorator, getClassDeclarationAnnotation, getAnnotationUsage } from '../utils/index';
 
 class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
@@ -52,6 +52,10 @@ class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private checkInvalidTrackAnnotations(node: arkts.StructDeclaration): void {
+        const trackAnnotation = getAnnotationUsage(node, PresetDecorators.TRACK);
+        if (trackAnnotation) {
+            this.reportInvalidTarget(trackAnnotation);
+        }
         // Traverse all members of the struct body
         node.definition.body.forEach((member) => {
             // Check whether it is a member variable
@@ -74,8 +78,9 @@ class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private checkTrackUsedWithObservedV2(node: arkts.ClassDeclaration): void {
-        // Check if the class is decorated with @Observed
+        // Check if the struct is decorated with @Observed
         const observedV2Decorator = getClassDeclarationAnnotation(node, PresetDecorators.OBSERVED_V2);
+
         // Traverse all members of the body class
         node.definition?.body.forEach((member) => {
             // Check whether it is a class attribute
@@ -105,8 +110,9 @@ class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
             node: trackDecorator,
             message: this.messages.trackMustUsedWithObserved,
             fix: (trackDecorator) => {
-                const startPosition = trackDecorator.startPosition;
-                const endPosition = trackDecorator.endPosition;
+                let startPosition = trackDecorator.startPosition;
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                let endPosition = trackDecorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
                     code: '',
@@ -120,8 +126,9 @@ class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
             node: node,
             message: this.messages.trackOnClassMemberOnly,
             fix: (node) => {
-                const startPosition = node.startPosition;
-                const endPosition = node.endPosition;
+                let startPosition = node.startPosition;
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                let endPosition = node.endPosition;
                 return {
                     range: [startPosition, endPosition],
                     code: '',

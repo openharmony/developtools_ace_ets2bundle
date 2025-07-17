@@ -52,7 +52,7 @@ const SimpleTypesUnSupported = [
 
 const ARRAY_TYPES = ['Array', 'Map', 'Set', 'Date'];
 
-const PropErrorType = ['any', 'unknown'];
+const PropErrorType = ['Any', 'unknown'];
 
 class PropertyTypeRule extends AbstractUISyntaxRule {
     private noObservedV2ClassNames: string[] = [];
@@ -323,6 +323,7 @@ class PropertyTypeRule extends AbstractUISyntaxRule {
             return;
         }
         node.getChildren().forEach((member) => {
+            // Only the situation within the component is judged
             if (!arkts.isStructDeclaration(member) || !member.definition.ident) {
                 return;
             }

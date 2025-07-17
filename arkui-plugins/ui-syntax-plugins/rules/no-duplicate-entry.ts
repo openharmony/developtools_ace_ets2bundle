@@ -46,24 +46,34 @@ class NoDuplicateEntryRule extends AbstractUISyntaxRule {
         }
         if (this.entryDecoratorUsageIndex === MAX_ENTRY_DECORATOR_COUNT) {
             const entryDecoratorUsage = this.entryDecoratorUsages.at(0)!;
+            if (!entryDecoratorUsage) {
+                return;
+            }
+            let startPosition = entryDecoratorUsage.startPosition;
+            startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
             this.report({
                 node: entryDecoratorUsage,
                 message: this.messages.duplicateEntry,
                 fix: () => {
                     return {
-                        range: [entryDecoratorUsage.startPosition, entryDecoratorUsage.endPosition],
+                        range: [startPosition, entryDecoratorUsage.endPosition],
                         code: '',
                     };
                 },
             });
         }
         entryDecoratorUsage = this.entryDecoratorUsages.at(this.entryDecoratorUsageIndex)!;
+        if (!entryDecoratorUsage) {
+            return;
+        }
+        let startPosition = entryDecoratorUsage.startPosition;
+        startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
         this.report({
             node: entryDecoratorUsage,
             message: this.messages.duplicateEntry,
             fix: () => {
                 return {
-                    range: [entryDecoratorUsage.startPosition, entryDecoratorUsage.endPosition],
+                    range: [startPosition, entryDecoratorUsage.endPosition],
                     code: '',
                 };
             },
