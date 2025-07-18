@@ -32,7 +32,7 @@ import {
 import { Expression } from "./Expression"
 export class SequenceExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 60)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_SEQUENCE_EXPRESSION)
         super(pointer)
         
     }
@@ -49,6 +49,6 @@ export class SequenceExpression extends Expression {
 export function isSequenceExpression(node: AstNode): node is SequenceExpression {
     return node instanceof SequenceExpression
 }
-if (!nodeByType.has(60)) {
-    nodeByType.set(60, SequenceExpression)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_SEQUENCE_EXPRESSION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_SEQUENCE_EXPRESSION, SequenceExpression)
 }

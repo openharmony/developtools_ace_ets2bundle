@@ -34,7 +34,7 @@ import { TemplateLiteral } from "./TemplateLiteral"
 import { TSTypeParameterInstantiation } from "./TSTypeParameterInstantiation"
 export class TaggedTemplateExpression extends Expression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 141)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TAGGED_TEMPLATE_EXPRESSION)
         super(pointer)
         
     }
@@ -57,6 +57,6 @@ export class TaggedTemplateExpression extends Expression {
 export function isTaggedTemplateExpression(node: AstNode): node is TaggedTemplateExpression {
     return node instanceof TaggedTemplateExpression
 }
-if (!nodeByType.has(141)) {
-    nodeByType.set(141, TaggedTemplateExpression)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TAGGED_TEMPLATE_EXPRESSION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TAGGED_TEMPLATE_EXPRESSION, TaggedTemplateExpression)
 }

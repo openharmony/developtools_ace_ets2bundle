@@ -35,7 +35,7 @@ import { Decorator } from "./Decorator"
 import { ValidationInfo } from "./ValidationInfo"
 export class Identifier extends AnnotatedExpression {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 36)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_IDENTIFIER)
         super(pointer)
         
     }
@@ -153,6 +153,6 @@ export class Identifier extends AnnotatedExpression {
 export function isIdentifier(node: AstNode): node is Identifier {
     return node instanceof Identifier
 }
-if (!nodeByType.has(36)) {
-    nodeByType.set(36, Identifier)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_IDENTIFIER)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_IDENTIFIER, Identifier)
 }

@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class ETSUndefinedType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 63)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_UNDEFINED_TYPE)
         super(pointer)
         
     }
@@ -46,6 +46,6 @@ export class ETSUndefinedType extends TypeNode {
 export function isETSUndefinedType(node: AstNode): node is ETSUndefinedType {
     return node instanceof ETSUndefinedType
 }
-if (!nodeByType.has(63)) {
-    nodeByType.set(63, ETSUndefinedType)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_UNDEFINED_TYPE)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_UNDEFINED_TYPE, ETSUndefinedType)
 }

@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { AbstractVisitor } from '../common/abstract-visitor';
-
+import { ARKUI_DECLARE_LIST } from './arkuiImportList';
 import { debugLog } from '../common/debug';
 
 export class DeclTransformer extends AbstractVisitor {
@@ -55,7 +55,6 @@ export class DeclTransformer extends AbstractVisitor {
         if (arkts.isEtsScript(astNode)) {
             astNode = this.transformImportDecl(astNode);
         }
-
         const node = this.visitEachChild(astNode);
         if (arkts.isStructDeclaration(node)) {
             debugLog(`DeclTransformer:before:flag:${arkts.classDefinitionIsFromStructConst(node.definition!)}`);
@@ -63,27 +62,73 @@ export class DeclTransformer extends AbstractVisitor {
             let newnode = this.processComponent(node);
             debugLog(`DeclTransformer:after:flag:${arkts.classDefinitionIsFromStructConst(newnode.definition!)}`);
             return newnode;
+        } else if (arkts.isETSImportDeclaration(astNode)) {
+            return this.updateImportDeclaration(astNode);
+        } else if (arkts.isMethodDefinition(astNode)) {
+            if (astNode.name?.name === 'build' ) {
+                return this.transformMethodDefinition(astNode);
+            }
+            return astNode;
         }
         return node;
     }
 
-    transformImportDecl(estNode: arkts.AstNode): arkts.AstNode {
-        if (!arkts.isEtsScript(estNode)) {
-            return estNode;
+    transformImportDecl(astNode: arkts.AstNode):arkts.AstNode {
+        if (!arkts.isEtsScript(astNode)) {
+            return astNode;
         }
+        let statements = astNode.statements.filter(node => this.isImportDeclarationNeedFilter(node));
+        return arkts.factory.updateEtsScript(astNode, statements);
+  }
 
-        let statements = estNode.statements
-            .filter((node) => this.isImportDeclarationNeedFilter(node))
-            .map((node) => this.updateImportDeclaration(node));
+    transformMethodDefinition(node: arkts.MethodDefinition): arkts.AstNode {
+        const func: arkts.ScriptFunction = node.scriptFunction;
+        const isFunctionCall: boolean = false;
+        const typeNode: arkts.TypeNode | undefined = node.scriptFunction?.returnTypeAnnotation;
+        const updateFunc = arkts.factory.updateScriptFunction(
+            func,
+            !!func.body && arkts.isBlockStatement(func.body)
+            ? arkts.factory.updateBlock(
+                    func.body,
+                    func.body.statements.filter((st) => false)
+                )
+            : undefined,
+            arkts.FunctionSignature.createFunctionSignature(func.typeParams, func.params, func.returnTypeAnnotation, false),
+            func?.flags,
+            func?.modifiers
+        );
 
-        return arkts.factory.updateEtsScript(estNode, statements);
+        return arkts.factory.updateMethodDefinition(
+            node,
+            node.kind,
+            arkts.factory.updateIdentifier(
+                node.name,
+                node.name?.name
+            ),
+            updateFunc,
+            node.modifiers,
+            false
+        );
+    }
+  
+    isImportDeclarationNeedFilter(astNode: arkts.AstNode):boolean {
+        if (!arkts.isETSImportDeclaration(astNode)) {
+            return true;
+        }
+        return astNode?.source?.str !== '@global.arkui';
     }
 
-    isImportDeclarationNeedFilter(astNode: arkts.AstNode): boolean {
-        return !arkts.isETSImportDeclaration(astNode);
-    }
-
-    updateImportDeclaration(astNode: arkts.AstNode): arkts.AstNode {
+    updateImportDeclaration(astNode: arkts.AstNode):arkts.AstNode {
+        if (!arkts.isETSImportDeclaration(astNode) || astNode?.source?.str !== '@ohos.arkui.component') {
+            return astNode;
+        }
+        astNode.specifiers.forEach((element) => {
+            if (arkts.isImportSpecifier(element)) {
+                if (ARKUI_DECLARE_LIST.has(element.imported?.name as string)) {
+                    arkts.ImportSpecifierSetRemovable(element);
+                }
+            }
+        });
         return astNode;
     }
 }

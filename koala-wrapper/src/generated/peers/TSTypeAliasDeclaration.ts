@@ -37,7 +37,7 @@ import { Decorator } from "./Decorator"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class TSTypeAliasDeclaration extends AnnotatedStatement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 127)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_ALIAS_DECLARATION)
         super(pointer)
         
     }
@@ -87,6 +87,6 @@ export class TSTypeAliasDeclaration extends AnnotatedStatement {
 export function isTSTypeAliasDeclaration(node: AstNode): node is TSTypeAliasDeclaration {
     return node instanceof TSTypeAliasDeclaration
 }
-if (!nodeByType.has(127)) {
-    nodeByType.set(127, TSTypeAliasDeclaration)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_ALIAS_DECLARATION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_ALIAS_DECLARATION, TSTypeAliasDeclaration)
 }
