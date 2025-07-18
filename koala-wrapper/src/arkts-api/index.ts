@@ -65,6 +65,8 @@ export * from '../generated/peers/TryStatement';
 export * from '../generated/peers/ETSNullType';
 export * from '../generated/peers/ETSTuple';
 export * from '../generated/peers/ImportDeclaration'
+export * from '../generated/peers/WhileStatement'
+export * from '../generated/peers/BreakStatement'
 
 export * from './types';
 export * from './utilities/private';
