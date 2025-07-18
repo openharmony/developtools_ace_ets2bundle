@@ -185,7 +185,7 @@ export class CheckedTransformer extends AbstractVisitor {
             entryFactory.addMemoToEntryWrapperClassMethods(node);
             return node;
         } else if (arkts.isClassDeclaration(node)) {
-            return structFactory.transformNormalClass(node);
+            return structFactory.transformNormalClass(node, this.externalSourceName);
         } else if (arkts.isCallExpression(node)) {
             return structFactory.transformCallExpression(node, this.projectConfig, this.resourceInfo);
         } else if (arkts.isMethodDefinition(node) && isForEachDecl(node, this.externalSourceName)) {
