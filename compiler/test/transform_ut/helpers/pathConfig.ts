@@ -324,7 +324,10 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/vaildate_ui_syntax/validate_track_observed',
   'Decorators/vaildate_ui_syntax/validateAccessQualifier',
   'Decorators/vaildate_ui_syntax/validateDifferentMethod',
-  'Decorators/vaildate_ui_syntax/validateDuplicateMethod'
+  'Decorators/vaildate_ui_syntax/validateDuplicateMethod',
+  'Decorators/vaildate_ui_syntax/validateForEachParser',
+  'Decorators/vaildate_ui_syntax/validateRepeatParser',
+  'Decorators/vaildate_ui_syntax/validateLazyForEachParser'
 ]
 
 export const UT_VALIDATE_PAGES_JSBUNDLE: string[] = [

@@ -920,6 +920,21 @@
             "code": "10905119"
         }
     ],
+    "validateForEachParser": {
+        "message": "The property 'props' must specify a type.",
+        "type": "ERROR",
+        "code": "10905305"
+    },
+    "validateRepeatParser": {
+        "message": "The property 'props' must specify a type.",
+        "type": "ERROR",
+        "code": "10905328"
+    },
+    "validateLazyForEachParser": {
+        "message": "The property 'props' must specify a type.",
+        "type": "ERROR",
+        "code": "10905305"
+    },
     "v2ToV1Link": [
         {
             "message": "The property 'link_value' in the custom component 'V1' is missing (mandatory to specify).",
