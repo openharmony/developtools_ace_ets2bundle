@@ -48,6 +48,7 @@ import { nodeByType } from './class-by-peer';
 import { MemberExpression } from './to-be-generated/MemberExpression';
 import {
     AnnotationUsage,
+    ArrayExpression,
     BlockStatement,
     ClassDefinition,
     ETSTypeReference,
@@ -665,9 +666,8 @@ export class MethodDefinition extends AstNode {
         assertValidPeer(peer, Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION);
         super(peer);
         this.kind = global.generatedEs2panda._MethodDefinitionKindConst(global.context, this.peer);
-        this.scriptFunction = unpackNonNullableNode(
-            global.generatedEs2panda._MethodDefinitionFunction(global.context, this.peer)
-        );
+        this.funcExpr = unpackNonNullableNode(global.generatedEs2panda._ClassElementValue(global.context, this.peer));
+        this.scriptFunction = this.funcExpr.scriptFunction;
         assertValidPeer(this.scriptFunction.peer, Es2pandaAstNodeType.AST_NODE_TYPE_SCRIPT_FUNCTION);
 
         // Somehow the scriptFunction cannot attach method's key to its ident after checker
@@ -686,7 +686,7 @@ export class MethodDefinition extends AstNode {
     static create(
         kind: Es2pandaMethodDefinitionKind,
         key: AstNode,
-        value: AstNode,
+        value: ScriptFunction,
         modifiers: KInt,
         isComputed: boolean
     ): MethodDefinition {
@@ -695,7 +695,7 @@ export class MethodDefinition extends AstNode {
                 global.context,
                 kind,
                 passNode(key),
-                passNode(value),
+                passNode(FunctionExpression.create(value)),
                 modifiers,
                 isComputed
             ),
@@ -707,7 +707,7 @@ export class MethodDefinition extends AstNode {
         node: MethodDefinition,
         kind: Es2pandaMethodDefinitionKind,
         key: AstNode,
-        value: AstNode,
+        value: ScriptFunction,
         modifiers: KInt,
         isComputed: boolean
     ): MethodDefinition {
@@ -717,7 +717,7 @@ export class MethodDefinition extends AstNode {
                 node.peer,
                 kind,
                 passNode(key),
-                passNode(value),
+                passNode(FunctionExpression.update(node.funcExpr, value)),
                 modifiers,
                 isComputed
             ),
@@ -747,6 +747,7 @@ export class MethodDefinition extends AstNode {
     readonly kind: Es2pandaMethodDefinitionKind;
     readonly scriptFunction: ScriptFunction;
     readonly name: Identifier;
+    readonly funcExpr: FunctionExpression;
 }
 
 export class VariableDeclaration extends AstNode {
@@ -791,6 +792,22 @@ export class VariableDeclaration extends AstNode {
         global.generatedEs2panda._AstNodeClearModifier(global.context, peer, allFlags);
         global.generatedEs2panda._AstNodeAddModifier(global.context, peer, modifiers);
         return new VariableDeclaration(peer);
+    }
+
+    get annotations(): readonly AnnotationUsage[] {
+        return unpackNodeArray(
+            global.generatedEs2panda._VariableDeclarationAnnotationsConst(global.context, this.peer)
+        );
+    }
+    /** @deprecated */
+    setAnnotations(annotations: readonly AnnotationUsage[]): this {
+        global.generatedEs2panda._VariableDeclarationSetAnnotations(
+            global.context,
+            this.peer,
+            passNodeArray(annotations),
+            annotations.length
+        );
+        return this;
     }
 
     readonly declarationKind: Es2pandaVariableDeclarationKind;
@@ -899,5 +916,6 @@ const pairs: [Es2pandaAstNodeType, { new (peer: KNativePointer): AstNode }][] = 
     [Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TYPE_REFERENCE, ETSTypeReference],
     [Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TYPE_REFERENCE_PART, ETSTypeReferencePart],
     [Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION, ObjectExpression],
+    [Es2pandaAstNodeType.AST_NODE_TYPE_ARRAY_EXPRESSION, ArrayExpression],
 ];
 pairs.forEach(([nodeType, astNode]) => nodeByType.set(nodeType, astNode));

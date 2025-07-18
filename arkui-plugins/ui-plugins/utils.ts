@@ -14,6 +14,8 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import { annotation } from '../common/arkts-utils';
+import { DecoratorNames } from './property-translators/utils';
 
 export enum CustomComponentNames {
     ENTRY_ANNOTATION_NAME = 'Entry',
@@ -21,7 +23,7 @@ export enum CustomComponentNames {
     RESUABLE_ANNOTATION_NAME = 'Reusable',
     COMPONENT_BUILD_ORI = 'build',
     COMPONENT_CONSTRUCTOR_ORI = 'constructor',
-    COMPONENT_DEFAULT_IMPORT = '@ohos.arkui.component',
+    COMPONENT_DEFAULT_IMPORT = 'arkui.component.customComponent',
     COMPONENT_CLASS_NAME = 'CustomComponent',
     COMPONENT_INTERFACE_PREFIX = '__Options_',
     COMPONENT_INITIALIZE_STRUCT = '__initializeStruct',
@@ -40,6 +42,9 @@ export enum BuilderLambdaNames {
     STYLE_PARAM_NAME = 'style',
     STYLE_ARROW_PARAM_NAME = 'instance',
     CONTENT_PARAM_NAME = 'content',
+    ANIMATION_NAME = 'animation',
+    ANIMATION_START = 'animationStart',
+    ANIMATION_STOP = 'animationStop',
 }
 
 export enum Dollars {
@@ -90,14 +95,17 @@ export function createOptionalClassProperty(
     name: string,
     property: arkts.ClassProperty,
     stageManagementIdent: string,
-    modifiers: arkts.Es2pandaModifierFlags
+    modifiers: arkts.Es2pandaModifierFlags,
+    needMemo: boolean = false
 ): arkts.ClassProperty {
+    const newType: arkts.TypeNode | undefined = property.typeAnnotation?.clone();
+    if (needMemo) {
+        newType?.setAnnotations([annotation('memo')]);
+    }
     const newProperty = arkts.factory.createClassProperty(
         arkts.factory.createIdentifier(name),
         undefined,
-        stageManagementIdent.length
-            ? createStageManagementType(stageManagementIdent, property)
-            : property.typeAnnotation?.clone(),
+        stageManagementIdent.length ? createStageManagementType(stageManagementIdent, property) : newType,
         modifiers,
         false
     );
@@ -116,4 +124,76 @@ export function createStageManagementType(
             ])
         )
     );
+}
+
+export function getGettersFromClassDecl(definition: arkts.ClassDefinition): arkts.MethodDefinition[] {
+    return definition.body.filter(
+        (member) =>
+            arkts.isMethodDefinition(member) &&
+            arkts.hasModifierFlag(member, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_GETTER)
+    ) as arkts.MethodDefinition[];
+}
+
+export type MemoAstNode =
+    | arkts.ScriptFunction
+    | arkts.ETSParameterExpression
+    | arkts.ClassProperty
+    | arkts.TSTypeAliasDeclaration
+    | arkts.ETSFunctionType
+    | arkts.ArrowFunctionExpression
+    | arkts.ETSUnionType;
+
+export function isMemoAnnotation(node: arkts.AnnotationUsage, memoName: string): boolean {
+    if (!(node.expr !== undefined && arkts.isIdentifier(node.expr) && node.expr.name === memoName)) {
+        return false;
+    }
+    return true;
+}
+
+export function addMemoAnnotation<T extends MemoAstNode>(node: T, memoName: string = 'memo'): T {
+    if (arkts.isETSUnionType(node)) {
+        const functionType = node.types.find((type) => arkts.isETSFunctionType(type));
+        if (!functionType) {
+            return node;
+        }
+        addMemoAnnotation(functionType, memoName);
+        return node;
+    }
+    const newAnnotations: arkts.AnnotationUsage[] = [
+        ...node.annotations.filter((it) => !isMemoAnnotation(it, memoName)),
+        annotation(memoName),
+    ];
+    if (arkts.isEtsParameterExpression(node)) {
+        node.annotations = newAnnotations;
+        return node;
+    }
+    return node.setAnnotations(newAnnotations) as T;
+}
+
+export function hasPropertyInAnnotation(annotation: arkts.AnnotationUsage, propertyName: string): boolean {
+    return !!annotation.properties.find(
+        (annoProp: arkts.AstNode) =>
+            arkts.isClassProperty(annoProp) &&
+            annoProp.key &&
+            arkts.isIdentifier(annoProp.key) &&
+            annoProp.key.name === propertyName
+    );
+}
+
+/**
+ * Determine whether the type node includes null or undefined type.
+ *
+ * @param type type node
+ */
+export function hasNullOrUndefinedType(type: arkts.TypeNode): boolean {
+    let res: boolean = false;
+    if (arkts.isETSUnionType(type)) {
+        type.types.forEach((item: arkts.TypeNode) => {
+            res = res || hasNullOrUndefinedType(item);
+        });
+    }
+    if (arkts.isETSUndefinedType(type) || arkts.isETSNullType(type)) {
+        res = true;
+    }
+    return res;
 }

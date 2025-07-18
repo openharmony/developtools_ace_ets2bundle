@@ -31,6 +31,8 @@ import { StoragePropTranslator } from './storageProp';
 import { ConsumeTranslator } from './consume';
 import { ProvideTranslator } from './provide';
 import { BuilderParamTranslator } from './builderParam';
+import { ObservedTrackTranslator } from './observedTrack';
+import { ClassScopeInfo } from 'ui-plugins/checked-transformer';
 
 export { PropertyTranslator };
 
@@ -73,4 +75,11 @@ export function classifyProperty(member: arkts.AstNode, structName: string): Pro
     }
 
     return new regularPropertyTranslator(member, structName);
+}
+
+export function classifyObservedTrack(member: arkts.AstNode, classScopeInfo: ClassScopeInfo): ObservedTrackTranslator | undefined {
+    if (!arkts.isClassProperty(member)) {
+        return undefined;
+    }
+    return new ObservedTrackTranslator(member, classScopeInfo);
 }

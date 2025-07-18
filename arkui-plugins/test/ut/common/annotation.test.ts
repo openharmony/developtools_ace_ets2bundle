@@ -13,16 +13,16 @@
  * limitations under the License.
  */
 
-import * as arkts from '@koalaui/libarkts';
 import { PluginTestContext, PluginTester } from '../../utils/plugin-tester';
 import { annotation } from '../../../common/arkts-utils';
+import * as arkts from '@koalaui/libarkts';
 
 const pluginTester = new PluginTester('test arkts-utils');
 
 function testAnnotation(this: PluginTestContext): void {
     const anno: arkts.AnnotationUsage = annotation('State');
     expect(arkts.isAnnotationUsage(anno)).toBeTruthy();
-    expect(anno.dumpSrc()).toBe('@State()');
+    expect(anno.dumpSrc()).toBe('@State() ');
 }
 
 pluginTester.run(
@@ -34,17 +34,5 @@ pluginTester.run(
     },
     {
         stopAfter: 'checked',
-    },
-    {
-        beforeEach: [
-            () => {
-                jest.spyOn(console, 'warn').mockImplementation(() => {});
-            },
-        ],
-        afterEach: [
-            () => {
-                jest.spyOn(console, 'warn').mockRestore();
-            },
-        ],
     }
 );
