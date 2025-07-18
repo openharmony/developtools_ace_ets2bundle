@@ -550,3 +550,8 @@ export const TypeFlags = {
     Literal: 'literal',
     Union: 'union',
 };
+
+export function getCurrentFilePath(node: arkts.AstNode): string | undefined {
+    const program = arkts.getProgramFromAstNode(node);
+    return program.absName;
+}
