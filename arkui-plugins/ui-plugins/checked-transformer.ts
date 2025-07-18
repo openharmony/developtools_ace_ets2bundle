@@ -48,7 +48,6 @@ import { generateBuilderCompatible } from './interop/builder-interop';
 export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
     private legacyBuilderSet: Set<string> = new Set();
-    private needCompatibleComponent : boolean = false;
     projectConfig: ProjectConfig | undefined;
     aceBuildJson: LoaderJson;
     resourceInfo: ResourceInfo;
@@ -83,7 +82,6 @@ export class CheckedTransformer extends AbstractVisitor {
     reset(): void {
         super.reset();
         this.scope = { customComponents: [] };
-        this.needCompatibleComponent = false;
         PropertyCache.getInstance().reset();
         ImportCollector.getInstance().reset();
         DeclarationCollector.getInstance().reset();
@@ -142,11 +140,9 @@ export class CheckedTransformer extends AbstractVisitor {
         return isFrom1_1;
     }
 
-    addcompatibleComponentImport(node: arkts.EtsScript): void {
-        if (this.needCompatibleComponent) {
-            ImportCollector.getInstance().collectSource('compatibleComponent', 'arkui.component.interop');
-            ImportCollector.getInstance().collectImport('compatibleComponent');
-        }
+    addcompatibleComponentImport(): void {
+        ImportCollector.getInstance().collectSource('compatibleComponent', 'arkui.component.interop');
+        ImportCollector.getInstance().collectImport('compatibleComponent');
     }
 
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
@@ -155,7 +151,7 @@ export class CheckedTransformer extends AbstractVisitor {
             const decl = arkts.getDecl(beforeChildren.expression);
             if (arkts.isIdentifier(beforeChildren.expression) && this.isFromBuilder1_1(decl)) {
                 // Builder
-                this.needCompatibleComponent = true;
+                this.addcompatibleComponentImport();
                 return generateBuilderCompatible(beforeChildren, beforeChildren.expression.name);
             } else if (isBuilderLambda(beforeChildren, decl)) {
                 const lambda = builderLambdaFactory.transformBuilderLambda(beforeChildren);
@@ -199,13 +195,11 @@ export class CheckedTransformer extends AbstractVisitor {
         } else if (arkts.isETSNewClassInstanceExpression(node) && isSpecificNewClass(node, CustomDialogNames.CUSTOM_DIALOG_CONTROLLER)) {
             return structFactory.transformCustomDialogController(node);
         }
-        if (arkts.isEtsScript(node)) {
-            this.addcompatibleComponentImport(node);
-            if (ImportCollector.getInstance().importInfos.length > 0) {
-                ImportCollector.getInstance().insertCurrentImports(this.program);
-                LogCollector.getInstance().shouldIgnoreError(this.projectConfig?.ignoreError);
-                LogCollector.getInstance().emitLogInfo();
-            }
+
+        if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
+            ImportCollector.getInstance().insertCurrentImports(this.program);
+            LogCollector.getInstance().shouldIgnoreError(this.projectConfig?.ignoreError);
+            LogCollector.getInstance().emitLogInfo();
         }
         return node;
     }
