@@ -44,10 +44,13 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
+import { ConditionScope as ConditionScope } from "arkui.component.builder";
+
+import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -94,11 +97,17 @@ function main() {}
   
   @memo() public build() {
     Column(undefined, undefined, @memo() (() => {
-      if (((this.count) > (0))) {
-        Text(undefined, (((("You have") + (this.count))) + ("Nuggets left")), undefined, undefined);
-      } else {
-        Text(undefined, "Game over!", undefined, undefined);
-      }
+      ConditionScope(@memo() (() => {
+        if (((this.count) > (0))) {
+          ConditionBranch(@memo() (() => {
+            Text(undefined, (((("You have") + (this.count))) + ("Nuggets left")), undefined, undefined);
+          }));
+        } else {
+          ConditionBranch(@memo() (() => {
+            Text(undefined, "Game over!", undefined, undefined);
+          }));
+        }
+      }));
       Button(@memo() ((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.count -= this.costOfOneAttempt;

@@ -1,0 +1,287 @@
+/*
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import * as path from 'path';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
+import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
+import { parseDumpSrc } from '../../../utils/parse-string';
+import { memoNoRecheck, recheck, uiNoRecheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { uiTransform } from '../../../../ui-plugins';
+import { Plugins } from '../../../../common/plugin-context';
+
+const BUILDER_LAMBDA_DIR_PATH: string = 'builder-lambda';
+
+const buildConfig: BuildConfig = mockBuildConfig();
+buildConfig.compileFiles = [
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, BUILDER_LAMBDA_DIR_PATH, 'if-else-in-content.ets'),
+];
+
+const pluginTester = new PluginTester('test if-else conditions in builder lambda call', buildConfig);
+
+const parsedTransform: Plugins = {
+    name: 'if-else',
+    parsed: uiTransform().parsed,
+};
+
+const expectedUIScript: string = `
+import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
+import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
+import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
+import { Text as Text, Column as Column, Component as Component } from \"@ohos.arkui.component\";
+function main() {}
+@Component() final struct IfElse extends CustomComponent<IfElse, __Options_IfElse> {
+    public __initializeStruct(initializers: (__Options_IfElse | undefined), @memo() content: ((()=> void) | undefined)): void {}
+    public __updateStruct(initializers: (__Options_IfElse | undefined)): void {}
+    @memo() public build() {
+        Column(undefined, undefined, @memo() (() => {
+            ConditionScope(@memo() (() => {
+                if (true) {
+                    ConditionBranch(@memo() (() => {
+                        ConditionScope(@memo() (() => {
+                            if (false) {
+                                ConditionBranch(@memo() (() => {
+                                    Text(undefined, \"if-if\", undefined, undefined);
+                                }));
+                            } else {
+                                ConditionScope(@memo() (() => {
+                                    if (true) {
+                                        ConditionBranch(@memo() (() => {
+                                            Text(undefined, \"if-elseIf\", undefined, undefined);
+                                        }));
+                                    } else {
+                                        ConditionBranch(@memo() (() => {
+                                            Text(undefined, \"if-else\", undefined, undefined);
+                                        }));
+                                    }
+                                }))
+                            }
+                        }));
+                    }));
+                } else {
+                    ConditionScope(@memo() (() => {
+                        if (false) {
+                            ConditionBranch(@memo() (() => {
+                                Text(undefined, \"elseIf\", undefined, undefined);
+                            }));
+                        } else {
+                            ConditionBranch(@memo() (() => {
+                                Text(undefined, \"else\", undefined, undefined);
+                            }));
+                            return;
+                            Text(undefined, \"after-return\", undefined, undefined);
+                        }
+                    }))
+                }
+            }));
+            Text(undefined, \"hello world\", undefined, undefined);
+        }));
+    }
+    private constructor() {}
+}
+@Component() export interface __Options_IfElse {
+}
+`;
+
+function testUITransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedUIScript));
+}
+
+const expectedMemoScript: string = `
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
+import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
+import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
+import { Text as Text, Column as Column, Component as Component } from \"@ohos.arkui.component\";
+function main() {}
+@Component() final struct IfElse extends CustomComponent<IfElse, __Options_IfElse> {
+    public __initializeStruct(initializers: (__Options_IfElse | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
+    public __updateStruct(initializers: (__Options_IfElse | undefined)): void {}
+    @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        if (__memo_scope.unchanged) {
+            __memo_scope.cached;
+            return;
+        }
+        Column(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+            if (__memo_scope.unchanged) {
+                __memo_scope.cached;
+                return;
+            }
+            ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                if (__memo_scope.unchanged) {
+                    __memo_scope.cached;
+                    return;
+                }
+                if (true) {
+                    ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                        if (__memo_scope.unchanged) {
+                            __memo_scope.cached;
+                            return;
+                        }
+                        ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                            if (__memo_scope.unchanged) {
+                                __memo_scope.cached;
+                                return;
+                            }
+                            if (false) {
+                                ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                                    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                                    if (__memo_scope.unchanged) {
+                                        __memo_scope.cached;
+                                        return;
+                                    }
+                                    Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"if-if\", undefined, undefined);
+                                    {
+                                        __memo_scope.recache();
+                                        return;
+                                    }
+                                }));
+                            } else {
+                                ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                                    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                                    if (__memo_scope.unchanged) {
+                                        __memo_scope.cached;
+                                        return;
+                                    }
+                                    if (true) {
+                                        ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                                            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                                            if (__memo_scope.unchanged) {
+                                                __memo_scope.cached;
+                                                return;
+                                            }
+                                            Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"if-elseIf\", undefined, undefined);
+                                            {
+                                                __memo_scope.recache();
+                                                return;
+                                            }
+                                        }));
+                                    } else {
+                                        ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                                            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                                            if (__memo_scope.unchanged) {
+                                                __memo_scope.cached;
+                                                return;
+                                            }
+                                            Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"if-else\", undefined, undefined);
+                                            {
+                                                __memo_scope.recache();
+                                                return;
+                                            }
+                                        }));
+                                    }
+                                    {
+                                        __memo_scope.recache();
+                                        return;
+                                    }
+                                }))
+                            }
+                            {
+                                __memo_scope.recache();
+                                return;
+                            }
+                        }));
+                        {
+                            __memo_scope.recache();
+                            return;
+                        }
+                    }));
+                } else {
+                    ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                        if (__memo_scope.unchanged) {
+                            __memo_scope.cached;
+                            return;
+                        }
+                        if (false) {
+                            ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                                const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                                if (__memo_scope.unchanged) {
+                                    __memo_scope.cached;
+                                    return;
+                                }
+                                Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"elseIf\", undefined, undefined);
+                                {
+                                    __memo_scope.recache();
+                                    return;
+                                }
+                            }));
+                        } else {
+                            ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                                const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                                    if (__memo_scope.unchanged) {
+                                    __memo_scope.cached;
+                                    return;
+                                }
+                                Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"else\", undefined, undefined);
+                                {
+                                    __memo_scope.recache();
+                                    return;
+                                }
+                            }));
+                            return;
+                            Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"after-return\", undefined, undefined);
+                        }
+                        {
+                            __memo_scope.recache();
+                            return;
+                        }
+                    }))
+                }
+                {
+                    __memo_scope.recache();
+                    return;
+                }
+            }));
+            Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"hello world\", undefined, undefined);
+            {
+                __memo_scope.recache();
+                return;
+            }
+        }));
+        {
+            __memo_scope.recache();
+            return;
+        }
+    }
+    private constructor() {}
+}
+@Component() export interface __Options_IfElse {
+}
+`;
+
+function testMemoTransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedMemoScript));
+}
+
+pluginTester.run(
+    'test if-else',
+    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    {
+        'checked:ui-no-recheck': [testUITransformer],
+        'checked:memo-no-recheck': [testMemoTransformer],
+    },
+    {
+        stopAfter: 'checked',
+    }
+);
