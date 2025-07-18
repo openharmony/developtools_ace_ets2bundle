@@ -19,7 +19,7 @@
 import { Entry, Text, Column, Component, Button, ClickEvent } from '@ohos.arkui.component'
 import { State } from '@ohos.arkui.stateManagement'
 import hilog from '@ohos.hilog'
-import { demoBuilder1_1 } from 'har1'
+import { demoBuilder1_1, aa } from 'har1'
 
 @Entry
 @Component
@@ -36,6 +36,8 @@ struct MyStateSample {
         })
       Text(this.stateVar).fontSize(20)
       demoBuilder1_1({ a:"a23", b:this.stateVar})
+      let tmp:aa = { a:"a23", b:this.stateVar}
+      demoBuilder1_1(tmp)
     }
   }
 }
@@ -74,6 +76,38 @@ compatibleComponent((() => {
     let param = instance.getProperty("arg1");
     param.setProperty("a", ESValue.wrap("a23"));
     param.setProperty("b", ESValue.wrap(this.stateVar));
+    let global = ESValue.getGlobal();
+    let runPendingJobs = global.getProperty("runPendingJobs");
+    runPendingJobs.invoke();
+}));
+
+compatibleComponent((() => {
+    let global = ESValue.getGlobal();
+    let viewStackProcessor = global.getProperty("ViewStackProcessor");
+    let createId = viewStackProcessor.getProperty("AllocateNewElmetIdForNextComponent");
+    let elmtId = createId.invoke();
+    let createCompatibleNode = global.getProperty("createCompatibleNodeWithFunc");
+    let component = createCompatibleNode.invoke(ESValue.wrap(demoBuilder1_1), elmtId, ESValue.wrap(tmp));
+    let viewPUCreate = global.getProperty("viewPUCreate");
+    viewPUCreate.invoke(component);
+    return {
+        component: component,
+        name: "demoBuilder1_1",
+    };
+}), ((instance: ESValue) => {
+    let instanceParam = (instance.getProperty("arg1") as ESValue);
+    if (((instanceParam.typeOf()) != ("object"))) {
+      return;
+    }
+    let param_wrapped = ESValue.wrap(tmp);
+    let param_wrapped_it = param_wrapped.keys();
+    while (true) {
+      let param_wrapped_key = param_wrapped_it.next();
+      if (param_wrapped_key.done) {
+        break;
+      }
+      instanceParam.setProperty((param_wrapped_key.value as ESValue), param_wrapped.getProperty((param_wrapped_key.value as ESValue)));
+    }
     let global = ESValue.getGlobal();
     let runPendingJobs = global.getProperty("runPendingJobs");
     runPendingJobs.invoke();
