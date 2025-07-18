@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 import { Identifier } from "./Identifier"
 export class BreakStatement extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_BLOCK_STATEMENT)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_BREAK_STATEMENT)
         super(pointer)
         
     }
@@ -64,6 +64,6 @@ export class BreakStatement extends Statement {
 export function isBreakStatement(node: AstNode): node is BreakStatement {
     return node instanceof BreakStatement
 }
-if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_BLOCK_STATEMENT)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_BLOCK_STATEMENT, BreakStatement)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_BREAK_STATEMENT)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_BREAK_STATEMENT, BreakStatement)
 }

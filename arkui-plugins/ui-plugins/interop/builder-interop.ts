@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { ESValueMethodNames, builderMethodNames, InteroperAbilityNames } from './predefines';
+import { ESValueMethodNames, BuilderMethodNames, InteroperAbilityNames, BuilderParams } from './predefines';
 import { 
     createELMTID, 
     createEmptyESValue, 
@@ -60,7 +60,7 @@ function invokeRunPendingJobs(): arkts.Statement {
     return arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
-                arkts.factory.createIdentifier(builderMethodNames.RUNPENDINGJOBS),
+                arkts.factory.createIdentifier(BuilderMethodNames.RUNPENDINGJOBS),
                 arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
@@ -97,9 +97,9 @@ function createBuilderInitializer(className: string, functionName: string, param
         [
             createGlobal(),
             ...createELMTID(),
-            getPropertyESValue(builderMethodNames.CREATECOMPATIBLENODE, InteroperAbilityNames.GLOBAL, functionName),
+            getPropertyESValue(BuilderMethodNames.CREATECOMPATIBLENODE, InteroperAbilityNames.GLOBAL, functionName),
             ...param.paramsInfo,
-            invokeFunctionWithParam(builderMethodNames.CREATECOMPATIBLENODE, InteroperAbilityNames.COMPONENT, className, param.args),
+            invokeFunctionWithParam(BuilderMethodNames.CREATECOMPATIBLENODE, InteroperAbilityNames.COMPONENT, className, param.args),
             ...invokeComponent(),
             createInitReturn(className)
         ]
@@ -115,6 +115,259 @@ function createBuilderInitializer(className: string, functionName: string, param
             ),
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+        )
+    );
+}
+
+/**
+ * getInstanceParam
+ * @returns  let instanceParam = (instance.getProperty("arg1") as ESValue);
+ */
+function getInstanceParam(): arkts.Statement {
+    return arkts.factory.createVariableDeclaration(
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+        arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
+        [
+            arkts.factory.createVariableDeclarator(
+                arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
+                arkts.factory.createIdentifier(BuilderParams.INSTANCEPARAM),
+                arkts.factory.createTSAsExpression(
+                    arkts.factory.createCallExpression(
+                        arkts.factory.createMemberExpression(
+                            arkts.factory.createIdentifier(InteroperAbilityNames.INSTANCE),
+                            arkts.factory.createIdentifier(ESValueMethodNames.GETPROPERTY),
+                            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                            false,
+                            false
+                        ),
+                        undefined,
+                        [
+                            arkts.factory.createStringLiteral('arg1')
+                        ]
+                    ),
+                    arkts.factory.createTypeReference(
+                        arkts.factory.createTypeReferencePart(
+                            arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE)
+                        )
+                    ),
+                    false
+                )
+            )
+        ]
+    );
+}
+
+/**
+ * instanceParamTypeOf
+ * @returns
+ *  if (((instanceParam.typeOf()) != ("object"))) {
+          return;
+    }
+ */
+function instanceParamTypeOf(): arkts.Statement {
+    return arkts.factory.createIfStatement(
+        arkts.factory.createBinaryExpression(
+            arkts.factory.createCallExpression(
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createIdentifier(BuilderParams.INSTANCEPARAM),
+                    arkts.factory.createIdentifier('typeOf'),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                ),
+                undefined,
+                undefined
+            ), arkts.factory.createStringLiteral('object'), arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NOT_EQUAL
+        ),
+        arkts.factory.createBlock([
+            arkts.factory.createReturnStatement()
+        ])
+    );
+}
+
+/**
+ * getParamWrapped
+ * @param argument param
+ * @returns let param_wrapped = ESValue.wrap(param);
+ */
+function getParamWrapped(argument: arkts.Identifier): arkts.Statement {
+    return arkts.factory.createVariableDeclaration(
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+        arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
+        [
+            arkts.factory.createVariableDeclarator(
+                arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
+                arkts.factory.createIdentifier(BuilderParams.PARAM_WRAPPED),
+                arkts.factory.createCallExpression(
+                    arkts.factory.createMemberExpression(
+                        arkts.factory.createIdentifier('ESValue'),
+                        arkts.factory.createIdentifier('wrap'),
+                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                        false,
+                        false
+                    ),
+                    undefined,
+                    [
+                        argument
+                    ]
+                )
+            )
+        ]
+    );
+}
+
+/**
+ * getItem
+ * @returns let param_wrapped_it = param_wrapped.keys();
+ */
+function getItem(): arkts.Statement {
+    return arkts.factory.createVariableDeclaration(
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+        arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
+        [
+            arkts.factory.createVariableDeclarator(
+                arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
+                arkts.factory.createIdentifier(BuilderParams.PARAM_WRAPPED_IT),
+                arkts.factory.createCallExpression(
+                    arkts.factory.createMemberExpression(
+                        arkts.factory.createIdentifier(BuilderParams.PARAM_WRAPPED),
+                        arkts.factory.createIdentifier('keys'),
+                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                        false,
+                        false
+                    ),
+                    undefined,
+                    undefined
+                )
+            )
+        ]
+    );
+}
+
+function getResult(): arkts.Statement {
+    return arkts.factory.createVariableDeclaration(
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+        arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
+        [
+            arkts.factory.createVariableDeclarator(
+                arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_CONST,
+                arkts.factory.createIdentifier(BuilderParams.PARAM_WRAPPED_KEY),
+                arkts.factory.createCallExpression(
+                    arkts.factory.createMemberExpression(
+                        arkts.factory.createIdentifier(BuilderParams.PARAM_WRAPPED_IT),
+                        arkts.factory.createIdentifier('next'),
+                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                        false,
+                        false
+                    ),
+                    undefined,
+                    undefined
+                )
+            )
+        ]
+    );
+}
+
+function getResultDone(): arkts.Statement {
+    return arkts.factory.createIfStatement(
+        arkts.factory.createMemberExpression(
+            arkts.factory.createIdentifier(BuilderParams.PARAM_WRAPPED_KEY),
+            arkts.factory.createIdentifier('done'),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
+        ),
+        arkts.factory.createBlock([
+            arkts.BreakStatement.createBreakStatement()
+        ])
+    );
+}
+
+function getParamWrappedProperty(): arkts.Statement {
+    return arkts.factory.createCallExpression(
+        arkts.factory.createMemberExpression(
+            arkts.factory.createIdentifier(BuilderParams.PARAM_WRAPPED),
+            arkts.factory.createIdentifier(ESValueMethodNames.GETPROPERTY),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
+        ),
+        undefined,
+        [
+            arkts.factory.createTSAsExpression(
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createIdentifier(BuilderParams.PARAM_WRAPPED_KEY),
+                    arkts.factory.createIdentifier('value'),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                ),
+
+                arkts.factory.createTypeReference(
+                    arkts.factory.createTypeReferencePart(
+                        arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE)
+                    )
+                ),
+                false
+            ),
+        ]
+    );
+}
+
+function setInstanceParam(): arkts.Statement {
+    return arkts.factory.createExpressionStatement(
+        arkts.factory.createCallExpression(
+            arkts.factory.createMemberExpression(
+                arkts.factory.createIdentifier(BuilderParams.INSTANCEPARAM),
+                arkts.factory.createIdentifier(ESValueMethodNames.SETPROPERTY),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
+            ),
+            undefined,
+            [
+                arkts.factory.createTSAsExpression(
+                    arkts.factory.createMemberExpression(
+                        arkts.factory.createIdentifier(BuilderParams.PARAM_WRAPPED_KEY),
+                        arkts.factory.createIdentifier('value'),
+                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                        false,
+                        false
+                    ),
+                    arkts.factory.createTypeReference(
+                        arkts.factory.createTypeReferencePart(
+                            arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE)
+                        )
+                    ),
+                    false
+                ),
+                getParamWrappedProperty()
+            ]
+        )
+    );
+}
+
+/**
+ * getWhile
+ * @returns
+ *  while (true) {
+        let param_wrapped_key = param_wrapped_it.next();
+        if (param_wrapped_key.done) {
+            break;
+        }
+        instanceParam.setProperty((param_wrapped_key.value as ESValue),
+            param_wrapped.getProperty((param_wrapped_key.value as ESValue)));
+    }
+ */
+function getWhile(): arkts.Statement {
+    return arkts.WhileStatement.createWhileStatement(
+        arkts.factory.createBooleanLiteral(true),
+        arkts.factory.createBlock(
+            [
+                getResult(),
+                getResultDone(),
+                setInstanceParam()
+            ]
         )
     );
 }
@@ -141,12 +394,27 @@ function getUpdateArgs(node: arkts.CallExpression): arkts.Statement[] {
         const endBody =
             [
                 createGlobal(),
-                getPropertyESValue(builderMethodNames.RUNPENDINGJOBS,
+                getPropertyESValue(BuilderMethodNames.RUNPENDINGJOBS,
                     InteroperAbilityNames.GLOBAL,
-                    builderMethodNames.RUNPENDINGJOBS),
+                    BuilderMethodNames.RUNPENDINGJOBS),
                 invokeRunPendingJobs()
             ];
         body?.push(...endBody);
+    } else if (arkts.isIdentifier(argument)) {
+        const functionBody =
+        [
+            getInstanceParam(),
+            instanceParamTypeOf(),
+            getParamWrapped(argument),
+            getItem(),
+            getWhile(),
+            createGlobal(),
+            getPropertyESValue(BuilderMethodNames.RUNPENDINGJOBS,
+                InteroperAbilityNames.GLOBAL,
+                BuilderMethodNames.RUNPENDINGJOBS),
+            invokeRunPendingJobs()
+        ];
+        body?.push(...functionBody);
     }
 
     return body;
