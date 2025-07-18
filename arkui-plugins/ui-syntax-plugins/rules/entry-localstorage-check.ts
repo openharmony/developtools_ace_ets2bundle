@@ -34,7 +34,7 @@ class EntryLocalStorageCheckRule extends AbstractUISyntaxRule {
     private checkLocalStorageLink(node: arkts.StructDeclaration): void {
         // Check if @Entry decorator exists with parameter
         const entryDecorator = getAnnotationUsage(node, PresetDecorators.ENTRY);
-        const isStorageUsed = entryDecorator && node.definition.annotations[0].properties[0];
+        const isStorageUsed = entryDecorator && entryDecorator.properties[0];
         // Check if @LocalStorageLink exists
         let localStorageLinkUsed = false;
         node.definition.body.forEach(body => {

@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getIdentifierName, PresetDecorators, getAnnotationName, getAnnotationUsage, BUILD_NAME } from '../utils';
+import { getClassAnnotationUsage, getIdentifierName, PresetDecorators, getAnnotationName, getAnnotationUsage, BUILD_NAME, findDecorator } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
@@ -57,10 +57,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
 
             if (arkts.isMethodDefinition(member)) {
                 const methodName = getIdentifierName(member.name);
-                computedDecorator = member.scriptFunction.annotations?.find(annotation =>
-                    annotation.expr && arkts.isIdentifier(annotation.expr) &&
-                    annotation.expr.name === PresetDecorators.COMPUTED
-                );
+                computedDecorator = findDecorator(member.scriptFunction, PresetDecorators.COMPUTED);
 
                 this.validateComputedMethodKind(member, computedDecorator, methodName);
                 if (member.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {
@@ -77,10 +74,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private validateComputedOnClassProperty(member: arkts.ClassProperty): void {
-        const computedDecorator = member.annotations?.find(annotation =>
-            annotation.expr && arkts.isIdentifier(annotation.expr) &&
-            annotation.expr.name === PresetDecorators.COMPUTED
-        );
+        const computedDecorator = findDecorator(member, PresetDecorators.COMPUTED);
         if (computedDecorator) {
             this.report({
                 node: computedDecorator,
@@ -211,18 +205,14 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private validateClassBody(node: arkts.ClassDeclaration): void {
-        const observedV2Decorator = node.definition?.annotations.find(annotation =>
-            getAnnotationName(annotation) === PresetDecorators.OBSERVED_V2
-        );
+        const observedV2Decorator = getClassAnnotationUsage(node, PresetDecorators.OBSERVED_V2);
+        const observedDecorator = getClassAnnotationUsage(node, PresetDecorators.OBSERVED_V1);
 
         node.definition?.body.forEach((member) => {
             if (arkts.isMethodDefinition(member)) {
 
-                this.validateComputedInClass(node, member, observedV2Decorator);
-                const computedDecorator = member.scriptFunction.annotations?.find(annotation =>
-                    annotation.expr && arkts.isIdentifier(annotation.expr) &&
-                    annotation.expr.name === PresetDecorators.COMPUTED
-                );
+                this.validateComputedInClass(node, member, observedV2Decorator, observedDecorator);
+                const computedDecorator = findDecorator(member.scriptFunction, PresetDecorators.COMPUTED);
                 if (!arkts.isIdentifier(member.name)) {
                     return;
                 }
@@ -250,10 +240,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
         componentV2Decorator: arkts.AnnotationUsage | undefined,
         componentDecorator: arkts.AnnotationUsage | undefined
     ): void {
-        const computedDecorator = member.scriptFunction.annotations?.find(annotation =>
-            annotation.expr && arkts.isIdentifier(annotation.expr) &&
-            annotation.expr.name === PresetDecorators.COMPUTED
-        );
+        const computedDecorator = findDecorator(member.scriptFunction, PresetDecorators.COMPUTED);
         if (computedDecorator && !componentV2Decorator && !componentDecorator) {
             this.report({
                 node: computedDecorator,
@@ -290,12 +277,10 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
         node: arkts.AstNode,
         member: arkts.MethodDefinition,
         observedV2Decorator: arkts.AnnotationUsage | undefined,
+        observedDecorator: arkts.AnnotationUsage | undefined
     ): void {
-        const computedDecorator = member.scriptFunction.annotations?.find(annotation =>
-            annotation.expr && arkts.isIdentifier(annotation.expr) &&
-            annotation.expr.name === PresetDecorators.COMPUTED
-        );
-        if (computedDecorator && !observedV2Decorator &&
+        const computedDecorator = findDecorator(member.scriptFunction, PresetDecorators.COMPUTED);
+        if (computedDecorator && !observedV2Decorator && !observedDecorator &&
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET === member.kind) {
             this.report({
                 node: computedDecorator,
@@ -305,6 +290,22 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
                     return {
                         range: [startPosition, startPosition],
                         code: `@${PresetDecorators.OBSERVED_V2}\n`,
+                    };
+                },
+            });
+        }
+        if (computedDecorator && !observedV2Decorator && observedDecorator &&
+            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET === member.kind) {
+            this.report({
+                node: computedDecorator,
+                message: this.messages.onlyInObservedV2,
+                fix: () => {
+                    let startPosition = observedDecorator.startPosition;
+                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                    const endPosition = observedDecorator.endPosition;
+                    return {
+                        range: [startPosition, endPosition],
+                        code: `@${PresetDecorators.OBSERVED_V2}`,
                     };
                 },
             });
