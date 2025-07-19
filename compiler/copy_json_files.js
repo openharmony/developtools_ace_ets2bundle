@@ -16,9 +16,22 @@
 const fs = require('fs');
 const path = require('path');
 
-copyJsonFiles(process.argv[2], process.argv[3]);
+const { src, dest, ignore } = parseArgs();
+copyJsonFiles(src, dest, ignore);
 
-function copyJsonFiles(src, dest) {
+function parseArgs() {
+  //argv 2: srcDir 3: destDir 4: --ignore 5: ignoreDir
+  const result = { src: process.argv[2], dest: process.argv[3], ignore: null};
+  if (process.argv.length === 6 && process.argv[4] === '--ignore') {
+    result.ignore = path.join(process.argv[5]);
+  }
+  return result;
+}
+
+function copyJsonFiles(src, dest, ignore) {
+  if (src === ignore) {
+    return;
+  }
   if (!fs.existsSync(dest)) {
     fs.mkdirSync(dest, { recursive: true });
   }
@@ -30,7 +43,7 @@ function copyJsonFiles(src, dest) {
 
     const stats = fs.statSync(srcFile);
     if (stats.isDirectory()) {
-      copyJsonFiles(srcFile, destFile);
+      copyJsonFiles(srcFile, destFile, ignore);
     } else if (stats.isFile() && file.endsWith('.json')) {
       fs.copyFileSync(srcFile, destFile);
     }
