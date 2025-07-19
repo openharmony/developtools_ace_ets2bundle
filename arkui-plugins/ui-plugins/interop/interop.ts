@@ -16,11 +16,10 @@
 
 
 import * as arkts from '@koalaui/libarkts';
-import { ESValueMethodNames, InteroperAbilityNames } from './predefines';
+import { BuilderMethodNames, ESValueMethodNames, InteroperAbilityNames } from './predefines';
 import { getCustomComponentOptionsName } from '../utils';
 import { InteropContext } from '../component-transformer';
 import { createVariableLet, initialArgs} from './initstatevar';
-import { createProvideInterop, setAndResetFindProvide } from './provide';
 import {
     getPropertyESValue, 
     getWrapValue, 
@@ -31,6 +30,9 @@ import {
     createInitReturn
 } from './utils';
 import { ImportCollector } from '../../common/import-collector';
+import { factory as uiFactory } from '../ui-factory';
+import { DecoratorNames } from '../../common/predefines';
+import { hasDecorator } from '../property-translators/utils';
 
 
 function paramsLambdaDeclaration(name: string, args?: arkts.ObjectExpression): arkts.Statement[] {
@@ -173,7 +175,6 @@ function createComponent(className: string): arkts.Statement[] {
 
 function createWrapperBlock(context: InteropContext, varMap: Map<string, arkts.ClassProperty>,
     updateProp: arkts.Property[]): arkts.BlockStatement {
-    const enableStateManagementInterop = false;
     const className: string = context.className;
     const path: string = context.path;
     const args: arkts.ObjectExpression | undefined = context.arguments;
@@ -183,8 +184,7 @@ function createWrapperBlock(context: InteropContext, varMap: Map<string, arkts.C
     }
     const initial = [
         createGlobal(),
-        createEmptyESValue(InteroperAbilityNames.PARAM),
-        ...(enableStateManagementInterop ? createProvideInterop() : [])
+        createEmptyESValue(InteroperAbilityNames.PARAM)
     ];
     const initialArgsStatement = args ? initialArgs(args, varMap, updateProp) : [];
     return arkts.factory.createBlock(
@@ -194,7 +194,6 @@ function createWrapperBlock(context: InteropContext, varMap: Map<string, arkts.C
             ...createExtraInfo(['page'], [path]),
             ...createELMTID(),
             ...createComponent(className),
-            ...(enableStateManagementInterop ? setAndResetFindProvide() : []),
             createInitReturn(className)
         ]
     );
@@ -252,6 +251,12 @@ function updateStateVars(updateProp: arkts.Property[]): arkts.Statement[] {
     ];
 }
 
+
+/**
+ * 
+ * @param updateProp 
+ * @returns (instance: ESValue) => { instance.invokeMethod('updateStateVars', updateParam) }
+ */
 function createUpdater(updateProp: arkts.Property[]): arkts.ArrowFunctionExpression {
     const updateState = (updateProp.length !== 0) ? updateStateVars(updateProp) : [];
     return arkts.factory.createArrowFunction(
@@ -284,7 +289,48 @@ function createUpdater(updateProp: arkts.Property[]): arkts.ArrowFunctionExpress
     );
 }
 
-function generateVarMap(node: arkts.Identifier): Map<string, arkts.ClassProperty> {
+function updateArguments(context: InteropContext, name: string): arkts.ObjectExpression {
+    return context.arguments ? arkts.factory.updateObjectExpression(
+        context.arguments,
+        arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+        [
+            ...(context.arguments?.properties as arkts.Property[]),
+            arkts.factory.createProperty(
+                arkts.factory.createIdentifier(name),
+                arkts.factory.createTSAsExpression(
+                    context.content,
+                    arkts.factory.createTypeReference(
+                        arkts.factory.createTypeReferencePart(
+                            arkts.factory.createIdentifier('Function')
+                        )
+                    ),
+                    false
+                )
+            )
+        ],
+        false
+    ) : arkts.factory.createObjectExpression(
+        arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+        [
+            arkts.factory.createProperty(
+                arkts.factory.createIdentifier(name),
+                arkts.factory.createTSAsExpression(
+                    context.content,
+                    arkts.factory.createTypeReference(
+                        arkts.factory.createTypeReferencePart(
+                            arkts.factory.createIdentifier('Function')
+                        )
+                    ),
+                    false
+                )
+            )
+        ],
+        false
+    );
+}
+
+function generateVarMap(context: InteropContext, node: arkts.Identifier): Map<string, arkts.ClassProperty> {
+    let needBuilderParam = !!context.content;
     const decl = arkts.getDecl(node);
     if (!(decl instanceof arkts.ClassDefinition)) {
         throw Error("can't find legacy class declaration");
@@ -296,6 +342,10 @@ function generateVarMap(node: arkts.Identifier): Map<string, arkts.ClassProperty
         if (node instanceof arkts.ClassProperty && node.key instanceof arkts.Identifier) {
             const key = node.key.name;
             result.set(key, node);
+            if (needBuilderParam && hasDecorator(node, DecoratorNames.BUILDER_PARAM)) {
+                context.arguments = updateArguments(context, key);
+                needBuilderParam = false;
+            }
         }
     });
     return result;
@@ -306,7 +356,8 @@ function generateStructInfo(context: InteropContext): arkts.AstNode[] {
         arkts.factory.createStringLiteral(context.path),
         context.line ? arkts.factory.createIdentifier(context.line.toString()) : arkts.factory.createUndefinedLiteral(),
         context.col ? arkts.factory.createIdentifier(context.col.toString()) : arkts.factory.createUndefinedLiteral(),
-        context.arguments ?? arkts.factory.createUndefinedLiteral()
+        context.arguments ?? arkts.factory.createUndefinedLiteral(),
+        context.content ?? arkts.factory.createUndefinedLiteral(),
     ];
     return result;
 
@@ -347,10 +398,10 @@ export function isArkUICompatible(node: arkts.AstNode): boolean {
         node.expression.property.name === 'instantiate_Interop') {
         ImportCollector.getInstance().collectSource(InteroperAbilityNames.ARKUICOMPATIBLE, InteroperAbilityNames.INTEROP);
         ImportCollector.getInstance().collectImport(InteroperAbilityNames.ARKUICOMPATIBLE);
-        ImportCollector.getInstance().collectSource(InteroperAbilityNames.BINDPROVIDEINTEROP, InteroperAbilityNames.INTEROP);
-        ImportCollector.getInstance().collectImport(InteroperAbilityNames.BINDPROVIDEINTEROP);
         ImportCollector.getInstance().collectSource(InteroperAbilityNames.GETCOMPATIBLESTATE, InteroperAbilityNames.INTEROP);
         ImportCollector.getInstance().collectImport(InteroperAbilityNames.GETCOMPATIBLESTATE);
+        ImportCollector.getInstance().collectSource(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER, InteroperAbilityNames.INTEROP);
+        ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER);
         return true;
     }
     return false;
@@ -370,16 +421,18 @@ export function generateArkUICompatible(node: arkts.CallExpression): arkts.CallE
     const line = args[1] instanceof arkts.UndefinedLiteral ? undefined : (args[1] as arkts.NumberLiteral).value;
     const col = args[2] instanceof arkts.UndefinedLiteral ? undefined : (args[2] as arkts.NumberLiteral).value;
     const options = args[3] instanceof arkts.UndefinedLiteral ? undefined : args[3] as arkts.ObjectExpression;
+    const content = args[4] instanceof arkts.UndefinedLiteral ? undefined : args[4] as arkts.ArrowFunctionExpression;
     const context: InteropContext = {
         className: className,
         path: path,
         line: line,
         col: col,
-        arguments: options
+        arguments: options,
+        content: content,
     };
 
-    const varMap: Map<string, arkts.ClassProperty> = generateVarMap(classInterop);
-    const updateProp:arkts.Property[] = [];
+    const varMap: Map<string, arkts.ClassProperty> = generateVarMap(context, classInterop);
+    const updateProp: arkts.Property[] = [];
     const initializer = createInitializer(context, varMap, updateProp);
     const updater = createUpdater(updateProp);
     const result = arkts.factory.updateCallExpression(

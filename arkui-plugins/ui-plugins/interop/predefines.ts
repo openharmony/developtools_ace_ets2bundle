@@ -32,7 +32,6 @@ export enum InteroperAbilityNames {
     PARAMSLAMBDA = 'paramsLambda',
     INTEROPCOMPONENT = 'interopComponent',
     GETCOMPATIBLESTATE = 'getCompatibleState',
-    BINDPROVIDEINTEROP = 'bindCompatibleProvideCallback',
     CREATESTATE = 'createStateVariable',
     INTEROP = 'arkui.component.interop',
 }
@@ -65,6 +64,7 @@ export enum InteropProvideNames {
 export enum BuilderMethodNames {
     RUNPENDINGJOBS = 'runPendingJobs',
     CREATECOMPATIBLENODE = 'createCompatibleNode',
+    TRANSFERCOMPATIBLEBUILDER = 'transferCompatibleBuilder',
 }
 
 export enum BuilderParams {
