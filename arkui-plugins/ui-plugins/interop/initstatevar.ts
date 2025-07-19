@@ -16,7 +16,7 @@
 
 
 import * as arkts from '@koalaui/libarkts';
-import { InteroperAbilityNames } from './predefines';
+import { BuilderMethodNames, InteroperAbilityNames } from './predefines';
 import { annotation, backingField, isAnnotation } from '../../common/arkts-utils';
 import { stateProxy, getWrapValue, setPropertyESValue } from './utils';
 import { hasDecorator } from '../property-translators/utils';
@@ -57,7 +57,7 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
             result.push(...initParam);
         } else if (hasDecorator(keyProperty, DecoratorNames.CONSUME)) {
             throw Error('The @Consume property cannot be assigned.');
-        } else if (hasDecorator(keyProperty, DecoratorNames.PROP)) {
+        } else if (hasDecorator(keyProperty, DecoratorNames.PROP) || hasDecorator(keyProperty, DecoratorNames.OBJECT_LINK)) {
             updateProp.push(property);
             const initParam = processNormal(keyName, value);
             result.push(...initParam);
@@ -66,8 +66,12 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
             result.push(...initParam);
         } else if (hasDecorator(keyProperty, DecoratorNames.CONSUME)) {
             throw Error('The @Consume property cannot be assigned.');
+        } else if (hasDecorator(keyProperty, DecoratorNames.BUILDER_PARAM)) {
+            const initParam = processBuilderParam(keyName, value);
+            result.push(...initParam);
         } else {
-            throw Error('Unsupported decorators.');
+            const initParam = processNormal(keyName, value);
+            result.push(...initParam);
         }
     }
     return result;
@@ -105,8 +109,7 @@ function getStateProxy(proxyName: string, stateVar: () => arkts.Expression): ark
             arkts.factory.createIdentifier(InteroperAbilityNames.GETCOMPATIBLESTATE),
             undefined,
             [
-                stateVar(),
-                arkts.factory.createIdentifier(InteroperAbilityNames.CREATESTATE)
+                stateVar()
             ]
         )
     );
@@ -127,16 +130,10 @@ export function processLink(keyName: string, value: arkts.Expression, type: arkt
         let varName = ((value as arkts.MemberExpression).property as arkts.Identifier).name;
         let proxyName = stateProxy(varName);
         let stateVar = (): arkts.TSNonNullExpression => createBackingFieldExpression(varName);
-        if (hasDecorator(valueDecl, DecoratorNames.STATE) || hasDecorator(valueDecl, DecoratorNames.PROP) ||
-            hasDecorator(valueDecl, DecoratorNames.PROVIDE) || hasDecorator(valueDecl, DecoratorNames.LINK) ||
-            hasDecorator(valueDecl, DecoratorNames.CONSUME)) {
-            if (!proxySet.has(varName)) {
-                proxySet.add(varName);
-                const getProxy = getStateProxy(proxyName, stateVar);
-                result.push(getProxy);
-            }
-        } else {
-            throw Error('unsupported decorator for Link');
+        if (!proxySet.has(varName)) {
+            proxySet.add(varName);
+            const getProxy = getStateProxy(proxyName, stateVar);
+            result.push(getProxy);
         }
         const setParam = setPropertyESValue(
             'param',
@@ -162,6 +159,24 @@ export function processNormal(keyName: string, value: arkts.AstNode): arkts.Stat
         InteroperAbilityNames.PARAM,
         keyName,
         getWrapValue(value)
+    );
+    result.push(setProperty);
+    return result;
+}
+
+export function processBuilderParam(keyName: string, value: arkts.AstNode): arkts.Statement[] {
+    const result: arkts.Statement[] = [];
+    const newValue = arkts.factory.createCallExpression(
+        arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER),
+        undefined,
+        [
+            value
+        ]
+    );
+    const setProperty = setPropertyESValue(
+        InteroperAbilityNames.PARAM,
+        keyName,
+        newValue
     );
     result.push(setProperty);
     return result;

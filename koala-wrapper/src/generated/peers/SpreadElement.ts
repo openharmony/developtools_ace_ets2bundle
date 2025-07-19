@@ -22,46 +22,77 @@ import {
     unpackNodeArray,
     assertValidPeer,
     AstNode,
-    Es2pandaAstNodeType,
     KNativePointer,
     nodeByType,
     ArktsObject,
-    unpackString
-} from "../../reexport-for-generated"
+    unpackString,
+    Es2pandaAstNodeType,
+} from '../../reexport-for-generated';
 
-import { AnnotatedExpression } from "./AnnotatedExpression"
-import { Expression } from "./Expression"
-import { Decorator } from "./Decorator"
-import { ValidationInfo } from "./ValidationInfo"
-import { TypeNode } from "./TypeNode"
+import { AnnotatedExpression } from './AnnotatedExpression';
+import { Decorator } from './Decorator';
+import { Expression } from './Expression';
+import { TypeNode } from './TypeNode';
+import { ValidationInfo } from './ValidationInfo';
+
 export class SpreadElement extends AnnotatedExpression {
-     constructor(pointer: KNativePointer) {
-        super(pointer)
-        
+    constructor(pointer: KNativePointer) {
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_SPREAD_ELEMENT);
+        super(pointer);
+    }
+    static createSpreadElement(nodeType: Es2pandaAstNodeType, argument?: Expression): SpreadElement {
+        const result: SpreadElement = new SpreadElement(
+            global.generatedEs2panda._CreateSpreadElement(global.context, nodeType, passNode(argument))
+        );
+        result.updateChildren();
+        return result;
+    }
+    static updateSpreadElement(
+        original: SpreadElement | undefined,
+        nodeType: Es2pandaAstNodeType,
+        argument?: Expression
+    ): SpreadElement {
+        const result: SpreadElement = new SpreadElement(
+            global.generatedEs2panda._UpdateSpreadElement(
+                global.context,
+                passNode(original),
+                nodeType,
+                passNode(argument)
+            )
+        );
+        result.updateChildren();
+        return result;
     }
     get argument(): Expression | undefined {
-        return unpackNode(global.generatedEs2panda._SpreadElementArgumentConst(global.context, this.peer))
+        return unpackNode(global.generatedEs2panda._SpreadElementArgument(global.context, this.peer));
     }
     get isOptional(): boolean {
-        return global.generatedEs2panda._SpreadElementIsOptionalConst(global.context, this.peer)
+        return global.generatedEs2panda._SpreadElementIsOptionalConst(global.context, this.peer);
     }
     get decorators(): readonly Decorator[] {
-        return unpackNodeArray(global.generatedEs2panda._SpreadElementDecoratorsConst(global.context, this.peer))
+        return unpackNodeArray(global.generatedEs2panda._SpreadElementDecoratorsConst(global.context, this.peer));
     }
     /** @deprecated */
     setOptional(optional_arg: boolean): this {
-        global.generatedEs2panda._SpreadElementSetOptional(global.context, this.peer, optional_arg)
-        return this
+        global.generatedEs2panda._SpreadElementSetOptional(global.context, this.peer, optional_arg);
+        return this;
+    }
+    get validateExpression(): ValidationInfo | undefined {
+        return new ValidationInfo(global.generatedEs2panda._SpreadElementValidateExpression(global.context, this.peer));
     }
     get typeAnnotation(): TypeNode | undefined {
-        return unpackNode(global.generatedEs2panda._SpreadElementTypeAnnotationConst(global.context, this.peer))
+        return unpackNode(global.generatedEs2panda._SpreadElementTypeAnnotationConst(global.context, this.peer));
     }
     /** @deprecated */
-    setTsTypeAnnotation(typeAnnotation: TypeNode): this {
-        global.generatedEs2panda._SpreadElementSetTsTypeAnnotation(global.context, this.peer, passNode(typeAnnotation))
-        return this
+    setTsTypeAnnotation(typeAnnotation?: TypeNode): this {
+        global.generatedEs2panda._SpreadElementSetTsTypeAnnotation(global.context, this.peer, passNode(typeAnnotation));
+        return this;
     }
+    protected readonly brandSpreadElement: undefined;
 }
-export function isSpreadElement(node: AstNode): node is SpreadElement {
-    return node instanceof SpreadElement
+export function isSpreadElement(node: object | undefined): node is SpreadElement {
+    return node instanceof SpreadElement;
+}
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_SPREAD_ELEMENT)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_SPREAD_ELEMENT, SpreadElement);
 }

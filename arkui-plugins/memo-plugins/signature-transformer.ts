@@ -129,8 +129,7 @@ export class SignatureTransformer extends AbstractVisitor {
             const expr = node.part.name;
             const decl = arkts.getDecl(expr);
             if (!decl || !arkts.isTSTypeAliasDeclaration(decl)) {
-                console.error(`@memo parameter's type has not been declared`);
-                throw 'Invalid @memo usage';
+                return node as any as T;
             }
             const memoDecl = isMemoTSTypeAliasDeclaration(decl);
             if (memoDecl) {

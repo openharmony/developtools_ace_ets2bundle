@@ -69,6 +69,7 @@ export interface InteropContext {
     line?: number;
     col?: number;
     arguments?: arkts.ObjectExpression;
+    content?: arkts.ArrowFunctionExpression;
 }
 
 export class ComponentTransformer extends AbstractVisitor {
@@ -507,6 +508,14 @@ export class ComponentTransformer extends AbstractVisitor {
             return node;
         }
         const className = ident.name;
+        const trailingBlock = node.trailingBlock;
+        const content = trailingBlock ? arkts.factory.createArrowFunction(
+            factory.createScriptFunction({
+                body: trailingBlock,
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            })
+        ) : undefined;
         if (this.legacyCallMap.has(className)) {
             const path = this.legacyCallMap.get(className)!;
             const args = node.arguments;
@@ -514,6 +523,7 @@ export class ComponentTransformer extends AbstractVisitor {
                 className: className,
                 path: path,
                 arguments: args && args.length === 1 && args[0] instanceof arkts.ObjectExpression ? args[0] : undefined,
+                content: content
             };
             return generateInstantiateInterop(context);
         }

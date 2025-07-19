@@ -145,8 +145,8 @@ class HandleUIImports {
     const moduleName = 'arkui.component.interop';
     const interopImportName = [
       'compatibleComponent',
-      'bindCompatibleProvideCallback',
-      'getCompatibleState'
+      'getCompatibleState',
+      'transferCompatibleBuilder'
     ];
     const interopImportSpecifiers: ts.ImportSpecifier[] = [];
     interopImportName.forEach((interopName) => {
