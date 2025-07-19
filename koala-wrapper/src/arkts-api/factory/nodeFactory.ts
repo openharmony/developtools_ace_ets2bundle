@@ -81,6 +81,7 @@ import {
     ForOfStatement,
     SwitchStatement,
     SwitchCaseStatement,
+    SpreadElement,
 } from '../../generated';
 import { updateIdentifier } from '../node-utilities/Identifier';
 import { updateCallExpression } from '../node-utilities/CallExpression';
@@ -142,6 +143,7 @@ import { updateForInStatement } from '../node-utilities/ForInStatement';
 import { updateForOfStatement } from '../node-utilities/ForOfStatement';
 import { updateSwitchStatement } from '../node-utilities/SwitchStatement';
 import { updateSwitchCaseStatement } from '../node-utilities/SwitchCaseStatement';
+import { updateSpreadElement } from '../node-utilities/SpreadElement';
 
 export const factory = {
     get createIdentifier(): (...args: Parameters<typeof Identifier.create2Identifier>) => Identifier {
@@ -616,6 +618,12 @@ export const factory = {
     },
     get updateSwitchCaseStatement(): (...args: Parameters<typeof updateSwitchCaseStatement>) => SwitchCaseStatement {
         return updateSwitchCaseStatement;
+    },
+    get createSpreadElement(): (...args: Parameters<typeof SpreadElement.createSpreadElement>) => SpreadElement {
+        return SpreadElement.createSpreadElement;
+    },
+    get updateSpreadElement(): (...args: Parameters<typeof updateSpreadElement>) => SpreadElement {
+        return updateSpreadElement;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {

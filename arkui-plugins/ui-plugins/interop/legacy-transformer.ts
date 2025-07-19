@@ -80,12 +80,14 @@ export class LegacyTransformer extends AbstractVisitor {
         col.setOptional(true);
         const options = this.createParam('options', getCustomComponentOptionsName(name));
         options.setOptional(true);
+        const trailingBlock = this.createParam('trailingBlock', 'Object');
+        trailingBlock.setOptional(true);
 
         const script = arkts.factory.createScriptFunction(
             arkts.factory.createBlock([]),
             arkts.FunctionSignature.createFunctionSignature(
                 undefined,
-                [path, line, col, options],
+                [path, line, col, options, trailingBlock],
                 arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
                 false
             ),

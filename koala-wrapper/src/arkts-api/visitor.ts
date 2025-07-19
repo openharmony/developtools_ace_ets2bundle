@@ -56,6 +56,7 @@ import {
     isETSFunctionType,
     isSwitchStatement,
     isSwitchCaseStatement,
+    isSpreadElement,
 } from '../generated';
 import {
     isEtsScript,
@@ -223,6 +224,10 @@ function visitTrivialExpression(node: AstNode, visitor: Visitor): AstNode {
             nodeVisitor(node.right, visitor),
             node.operatorType
         );
+    }
+    if (isSpreadElement(node)) {
+        const nodeType = global.generatedEs2panda._AstNodeTypeConst(global.context, node.peer);
+        return factory.updateSpreadElement(node, nodeType, nodeVisitor(node.argument, visitor));
     }
     // TODO
     return node;
