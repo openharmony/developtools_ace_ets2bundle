@@ -21,6 +21,7 @@ import {
     isDecoratorAnnotation,
     removeAnnotationByName,
     forEachArgWithParam,
+    annotation,
 } from '../../common/arkts-utils';
 import {
     BuilderLambdaDeclInfo,
@@ -43,10 +44,22 @@ import {
     builderLambdaType,
     BuilderLambdaSecondLastArgInfo,
     buildSecondLastArgInfo,
+    checkShouldBreakFromStatement,
+    checkIsWithInIfConditionScope,
+    BuilderLambdaConditionBranchInfo,
+    BuilderLambdaChainingCallArgInfo,
 } from './utils';
-import { isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
+import { hasDecorator, isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
 import { factory as PropertyFactory } from '../property-translators/factory';
-import { AnimationNames, BindableDecl, DecoratorIntrinsicNames, DecoratorNames } from '../../common/predefines';
+import { factory as UIFactory } from '../ui-factory';
+import {
+    AnimationNames,
+    ARKUI_BUILDER_SOURCE_NAME,
+    BindableDecl,
+    ConditionNames,
+    DecoratorIntrinsicNames,
+    DecoratorNames,
+} from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
 import { addMemoAnnotation, collectMemoableInfoInParameter } from '../../collectors/memo-collectors/utils';
 import { factory as MemoCollectFactory } from '../../collectors/memo-collectors/factory';
@@ -95,24 +108,37 @@ export class factory {
     /*
      * transform arguments in style node.
      */
-    static getTransformedStyle(call: arkts.CallExpression): arkts.Expression[] {
+    static getTransformedStyle(call: arkts.CallExpression): BuilderLambdaChainingCallArgInfo[] {
         const decl = arkts.getDecl(call.expression);
         if (!decl || !arkts.isMethodDefinition(decl)) {
-            return [...call.arguments];
+            return call.arguments.map((arg) => ({ arg }));
         }
-        const type: arkts.AstNode | undefined = arkts.isEtsParameterExpression(decl.scriptFunction.params[0])
-            ? decl.scriptFunction.params[0].type?.clone()
-            : undefined;
-        if (
-            type &&
-            arkts.isTypeNode(type) &&
-            hasBindableProperty(type, BindableDecl.BINDABLE) &&
-            isDoubleDollarCall(call.arguments[0])
-        ) {
-            const bindableArg: arkts.Expression = (call.arguments[0] as arkts.CallExpression).arguments[0];
-            return [factory.updateBindableStyleArguments(bindableArg), ...call.arguments.slice(1)];
-        }
-        return [...call.arguments];
+        const argInfo: BuilderLambdaChainingCallArgInfo[] = [];
+        const args = call.arguments;
+        const params = decl.scriptFunction.params;
+        const isTrailingCall = call.isTrailingCall;
+        forEachArgWithParam(
+            args,
+            params,
+            (arg, param, index) => {
+                const _param = param as arkts.ETSParameterExpression;
+                let hasBindable: boolean = false;
+                let isDoubleDollar: boolean = false;
+                if (index === 0 && !!arg) {
+                    const type = _param.type?.clone();
+                    hasBindable = !!type && hasBindableProperty(type, BindableDecl.BINDABLE);
+                    isDoubleDollar = isDoubleDollarCall(arg);
+                }
+                if (hasBindable && isDoubleDollar && !!arg) {
+                    const bindableArg: arkts.Expression = (arg as arkts.CallExpression).arguments[0];
+                    argInfo.push({ arg: factory.updateBindableStyleArguments(bindableArg) });
+                } else if (!!arg) {
+                    argInfo.push({ arg, hasBuilder: hasDecorator(_param, DecoratorNames.BUILDER) });
+                }
+            },
+            { isTrailingCall }
+        );
+        return argInfo;
     }
 
     /*
@@ -133,7 +159,7 @@ export class factory {
      */
     static createStyleLambdaBody(lambdaBody: arkts.AstNode, callInfo: InstanceCallInfo): arkts.CallExpression {
         if (!callInfo.isReceiver) {
-            const newArgs: arkts.Expression[] = factory.getTransformedStyle(callInfo.call);
+            const argInfos: BuilderLambdaChainingCallArgInfo[] = factory.getTransformedStyle(callInfo.call);
             return arkts.factory.createCallExpression(
                 arkts.factory.createMemberExpression(
                     lambdaBody,
@@ -143,11 +169,11 @@ export class factory {
                     false
                 ),
                 undefined,
-                newArgs.map((arg) => {
-                    if (arkts.isArrowFunctionExpression(arg)) {
-                        return this.processArgArrowFunction(arg);
+                argInfos.map((info) => {
+                    if (arkts.isArrowFunctionExpression(info.arg)) {
+                        return this.processArgArrowFunction(info.arg, info.hasBuilder);
                     }
-                    return arg;
+                    return info.arg;
                 })
             );
         } else {
@@ -249,14 +275,17 @@ export class factory {
      * If a builder lambda's argument is an arrow function,
      * then transform any builder lambda in the function body.
      */
-    static processArgArrowFunction(arg: arkts.ArrowFunctionExpression): arkts.ArrowFunctionExpression {
+    static processArgArrowFunction(
+        arg: arkts.ArrowFunctionExpression,
+        hasBuilder?: boolean
+    ): arkts.ArrowFunctionExpression {
         const func: arkts.ScriptFunction = arg.scriptFunction;
         const updateFunc = arkts.factory.updateScriptFunction(
             func,
             !!func.body && arkts.isBlockStatement(func.body)
                 ? arkts.factory.updateBlock(
                       func.body,
-                      func.body.statements.map((st) => this.updateContentBodyInBuilderLambda(st))
+                      func.body.statements.map((st) => this.updateContentBodyInBuilderLambda(st, hasBuilder))
                   )
                 : undefined,
             arkts.FunctionSignature.createFunctionSignature(
@@ -349,7 +378,7 @@ export class factory {
             return fallback;
         }
         if (arkts.isArrowFunctionExpression(arg)) {
-            const newNode = this.processArgArrowFunction(arg);
+            const newNode = this.processArgArrowFunction(arg, canAddMemo);
             if (canAddMemo) {
                 addMemoAnnotation(newNode);
             }
@@ -414,29 +443,106 @@ export class factory {
     }
 
     /**
-     *  update if-else in trailing lambda contents in a builder lambda call.
+     * update if-else in a builder lambda call's arguments.
      */
-    static updateIfElseContentBodyInBuilderLambda(statement: arkts.AstNode): arkts.AstNode {
+    static updateIfElseContentBodyInBuilderLambda(statement: arkts.AstNode, shouldWrap?: boolean): arkts.AstNode {
         if (arkts.isIfStatement(statement)) {
             const alternate = !!statement.alternate
-                ? this.updateIfElseContentBodyInBuilderLambda(statement.alternate)
+                ? this.updateIfElseContentBodyInBuilderLambda(statement.alternate, shouldWrap)
                 : statement.alternate;
-            const consequence = this.updateIfElseContentBodyInBuilderLambda(statement.consequent);
-            return arkts.factory.updateIfStatement(statement, statement.test, consequence!, alternate);
+            const consequence = this.updateIfElseContentBodyInBuilderLambda(statement.consequent, shouldWrap);
+            const newStatement = arkts.factory.updateIfStatement(statement, statement.test, consequence!, alternate);
+            return !shouldWrap || checkIsWithInIfConditionScope(statement)
+                ? newStatement
+                : this.wrapConditionToBlock([newStatement], ConditionNames.CONDITION_SCOPE);
         }
         if (arkts.isBlockStatement(statement)) {
-            return arkts.factory.updateBlock(
-                statement,
-                statement.statements.map((st) => this.updateContentBodyInBuilderLambda(st))
-            );
+            let { statements, breakIndex } = this.updateConditionBranchInScope(statement.statements, shouldWrap);
+            if (!!shouldWrap && checkIsWithInIfConditionScope(statement)) {
+                const beforeBreak = this.wrapConditionToBlock(
+                    breakIndex > 0 ? statements.slice(0, breakIndex) : statements,
+                    ConditionNames.CONDITION_BRANCH
+                );
+                const afterBreak = breakIndex > 0 ? statements.slice(breakIndex) : [];
+                statements = [beforeBreak, ...afterBreak];
+            }
+            return arkts.factory.updateBlock(statement, statements);
         }
         return statement;
     }
 
     /**
+     * update switch-case in a builder lambda call's arguments.
+     */
+    static updateSwitchCaseContentBodyInBuilderLambda<T extends arkts.SwitchStatement | arkts.SwitchCaseStatement>(
+        statement: T,
+        shouldWrap?: boolean
+    ): T {
+        if (arkts.isSwitchStatement(statement)) {
+            const cases = statement.cases.map((c) => this.updateSwitchCaseContentBodyInBuilderLambda(c, shouldWrap));
+            const newStatement = arkts.factory.updateSwitchStatement(statement, statement.discriminant, cases);
+            return (!shouldWrap
+                ? newStatement
+                : this.wrapConditionToBlock([newStatement], ConditionNames.CONDITION_SCOPE)) as arkts.AstNode as T;
+        }
+        if (arkts.isSwitchCaseStatement(statement)) {
+            let { statements, breakIndex } = this.updateConditionBranchInScope(statement.consequent, shouldWrap);
+            if (shouldWrap) {
+                const beforeBreak = this.wrapConditionToBlock(
+                    breakIndex > 0 ? statements.slice(0, breakIndex) : statements,
+                    ConditionNames.CONDITION_BRANCH
+                );
+                const afterBreak = breakIndex > 0 ? statements.slice(breakIndex) : [];
+                statements = [beforeBreak, ...afterBreak];
+            }
+            return arkts.factory.updateSwitchCaseStatement(statement, statement.test, statements) as T;
+        }
+        return statement;
+    }
+
+    /**
+     * update ConditionBranch in an if-else or swith-case body.
+     * @internal
+     */
+    static updateConditionBranchInScope(
+        statements: readonly arkts.Statement[],
+        shouldWrap?: boolean
+    ): BuilderLambdaConditionBranchInfo {
+        let breakIndex = statements.length - 1;
+        const newStatements = statements.map((st, index) => {
+            if (checkShouldBreakFromStatement(st)) {
+                breakIndex = index;
+            }
+            return this.updateContentBodyInBuilderLambda(st, shouldWrap);
+        });
+        return { statements: newStatements, breakIndex };
+    }
+
+    /**
+     * wrap `ConditionScope` or `ConditionBranch` builder function to the block statements.
+     */
+    static wrapConditionToBlock(statements: readonly arkts.AstNode[], condition: ConditionNames): arkts.AstNode {
+        const contentArg = arkts.factory.createArrowFunction(
+            UIFactory.createScriptFunction({
+                body: arkts.factory.createBlock(statements),
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            })
+        );
+        addMemoAnnotation(contentArg);
+        const newCall = arkts.factory.createCallExpression(arkts.factory.createIdentifier(condition), undefined, [
+            contentArg,
+        ]);
+        arkts.NodeCache.getInstance().collect(newCall);
+        ImportCollector.getInstance().collectSource(condition, ARKUI_BUILDER_SOURCE_NAME);
+        ImportCollector.getInstance().collectImport(condition);
+        return arkts.factory.createExpressionStatement(newCall);
+    }
+
+    /**
      * update trailing lambda contents in a builder lambda call.
      */
-    static updateContentBodyInBuilderLambda(statement: arkts.Statement): arkts.Statement {
+    static updateContentBodyInBuilderLambda(statement: arkts.Statement, hasBuilder?: boolean): arkts.Statement {
         if (
             arkts.isExpressionStatement(statement) &&
             arkts.isCallExpression(statement.expression) &&
@@ -448,7 +554,10 @@ export class factory {
             );
         }
         if (arkts.isIfStatement(statement)) {
-            return this.updateIfElseContentBodyInBuilderLambda(statement);
+            return this.updateIfElseContentBodyInBuilderLambda(statement, hasBuilder);
+        }
+        if (arkts.isSwitchStatement(statement)) {
+            return this.updateSwitchCaseContentBodyInBuilderLambda(statement, hasBuilder);
         }
 
         return statement;
@@ -678,5 +787,68 @@ export class factory {
                 arkts.factory.createTSTypeParameterInstantiation([valueType.clone()])
             )
         );
+    }
+
+    /**
+     * create a `@Builder` function with `@Builder` trailing lambda parameter.
+     */
+    static createBuilderWithTrailingLambdaDecl(
+        name: string,
+        returnTypeAnnotation: arkts.TypeNode
+    ): arkts.MethodDefinition {
+        const key = arkts.factory.createIdentifier(name);
+        const modifiers =
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC |
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE |
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
+        const param = arkts.factory.createParameterDeclaration(
+            arkts.factory.createIdentifier(
+                BuilderLambdaNames.CONTENT_PARAM_NAME,
+                arkts.factory.createFunctionType(
+                    arkts.factory.createFunctionSignature(
+                        undefined,
+                        [],
+                        arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                        false
+                    ),
+                    arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
+                )
+            ),
+            undefined
+        );
+        param.annotations = [annotation(DecoratorNames.BUILDER)];
+        arkts.NodeCache.getInstance().collect(param);
+        const method = UIFactory.createMethodDefinition({
+            key,
+            kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_NONE,
+            function: {
+                key,
+                params: [param],
+                returnTypeAnnotation,
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_NONE,
+                modifiers,
+                annotations: [annotation(DecoratorNames.BUILDER)],
+            },
+            modifiers,
+        });
+        arkts.NodeCache.getInstance().collect(method);
+        return method;
+    }
+
+    /**
+     * add following declared methods at header file:
+     * - `@Builder function ConditionScope(@Builder content: () => void): void;`
+     * - `@Builder function ConditionBranch(@Builder content: () => void): void;`
+     */
+    static addConditionBuilderDecls(): arkts.MethodDefinition[] {
+        const conditionScope = this.createBuilderWithTrailingLambdaDecl(
+            ConditionNames.CONDITION_SCOPE,
+            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
+        );
+        const conditionBranch = this.createBuilderWithTrailingLambdaDecl(
+            ConditionNames.CONDITION_BRANCH,
+            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
+        );
+        return [conditionScope, conditionBranch];
     }
 }
