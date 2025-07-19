@@ -43,7 +43,7 @@ class Index extends ViewPU {
             Image.create({ "id": 0, "type": 30000, params: ['foreground.png'], "bundleName": "com.example.application", "moduleName": "application" });
         }, Image);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Image.create({ "id": 0, "type": 30000, params: [`foreground.png`], "bundleName": "com.example.application", "moduleName": "application" });
+            Image.create({ "id": -1, "type": 30000, params: [`foreground.png`], "bundleName": "com.example.application", "moduleName": "application" });
         }, Image);
         Row.pop();
     }
