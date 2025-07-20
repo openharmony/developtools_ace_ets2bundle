@@ -402,7 +402,9 @@ export class ComponentTransformer extends AbstractVisitor {
                 ),
                 [
                     ...newDefinitionBody,
-                    ...definition.body.map((st: arkts.AstNode) => factory.PreprocessClassPropertyModifier(st, scopeInfo.isDecl)),
+                    ...definition.body.map((st: arkts.AstNode) =>
+                        factory.PreprocessClassPropertyModifier(st, scopeInfo.isDecl)
+                    ),
                     ...staticMethodBody,
                 ],
                 definition.modifiers,
@@ -460,17 +462,20 @@ export class ComponentTransformer extends AbstractVisitor {
             originMember.setAnnotations([buildParamInfo.annotation.clone()]);
             return [originMember];
         }
+        const OnceInfo = infos.find((it) => it.name === DecoratorNames.ONCE);
         const targetInfo = infos.find((it) => DECORATOR_TYPE_MAP.has(it.name));
         if (!!targetInfo) {
             const newName: string = backingField(originalName);
-            const newMember: arkts.ClassProperty = propertyFactory
-                .createOptionalClassProperty(
-                    newName,
-                    member,
-                    undefined,
-                    arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
-                )
-                .setAnnotations([targetInfo.annotation.clone()]);
+            const newMember: arkts.ClassProperty = propertyFactory.createOptionalClassProperty(
+                newName,
+                member,
+                undefined,
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+            );
+            const annos = !!OnceInfo
+                ? [OnceInfo.annotation.clone(), targetInfo.annotation.clone()]
+                : [targetInfo.annotation.clone()];
+            newMember.setAnnotations(annos);
             if (isDecoratorAnnotation(targetInfo.annotation, DecoratorNames.LINK, true)) {
                 this.shouldAddLinkIntrinsic = true;
                 originMember.setAnnotations([annotation(DecoratorIntrinsicNames.LINK)]);

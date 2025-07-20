@@ -31,9 +31,9 @@ import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as BuilderLambdaFactory } from '../builder-lambda-translators/factory';
 import { backingField, collect, filterDefined } from '../../common/arkts-utils';
 import {
-    classifyObservedTrack,
-    classifyProperty,
+    classifyInObservedClass,
     classifyPropertyInInterface,
+    classifyStructMembers,
     ClassScopeInfo,
     InterfacePropertyTranslator,
     PropertyTranslator,
@@ -56,6 +56,8 @@ import {
     findBuilderIndexInControllerOptions,
     getControllerName,
     DialogControllerInfo,
+    ObservedAnnoInfo,
+    getNoTransformationMembersInClass,
 } from './utils';
 import {
     collectStateManagementTypeImport,
@@ -75,10 +77,11 @@ import {
     RESOURCE_TYPE,
     ARKUI_BUILDER_SOURCE_NAME,
 } from '../../common/predefines';
-import { ObservedTrackTranslator } from '../property-translators/observedTrack';
+import { ObservedTranslator } from '../property-translators/index';
 import { addMemoAnnotation } from '../../collectors/memo-collectors/utils';
 import { generateArkUICompatible, isArkUICompatible } from '../interop/interop';
 import { GenSymGenerator } from '../../common/gensym-generator';
+import { MethodTranslator } from 'ui-plugins/property-translators/base';
 
 export class factory {
     /**
@@ -444,7 +447,7 @@ export class factory {
      * transform property members in custom-component class.
      */
     static tranformPropertyMembers(
-        propertyTranslators: PropertyTranslator[],
+        propertyTranslators: (PropertyTranslator | MethodTranslator)[],
         optionsTypeName: string,
         scope: CustomComponentScopeInfo
     ): arkts.AstNode[] {
@@ -497,8 +500,8 @@ export class factory {
             throw new Error('Non Empty className expected for Component');
         }
 
-        const propertyTranslators: PropertyTranslator[] = filterDefined(
-            definition.body.map((it) => classifyProperty(it, scope))
+        const propertyTranslators: (PropertyTranslator | MethodTranslator)[] = filterDefined(
+            definition.body.map((it) => classifyStructMembers(it, scope))
         );
         const translatedMembers: arkts.AstNode[] = this.tranformPropertyMembers(
             propertyTranslators,
@@ -516,7 +519,11 @@ export class factory {
             }
         }
         const updateMembers: arkts.AstNode[] = definition.body
-            .filter((member) => !arkts.isClassProperty(member))
+            .filter(
+                (member) =>
+                    !arkts.isClassProperty(member) &&
+                    !(arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.COMPUTED))
+            )
             .map((member: arkts.AstNode) => factory.transformNonPropertyMembersInClass(member, scope.isDecl));
 
         const updateClassDef: arkts.ClassDefinition = this.updateCustomComponentClass(definition, [
@@ -835,14 +842,23 @@ export class factory {
         return arkts.factory.updateClassDeclaration(node, newClassDef);
     }
 
+    /**
+     * transform class definition with , `@ObservedV2` and `@Trace`, `@Observed` or `@Trace`.
+     */
     static updateObservedTrackClassDef(node: arkts.ClassDefinition): arkts.ClassDefinition {
         const isObserved: boolean = hasDecorator(node, DecoratorNames.OBSERVED);
+        const isObservedV2: boolean = hasDecorator(node, DecoratorNames.OBSERVED_V2);
         const classHasTrack: boolean = node.body.some(
             (member) => arkts.isClassProperty(member) && hasDecorator(member, DecoratorNames.TRACK)
         );
-        if (!isObserved && !classHasTrack) {
+        const classHasTrace: boolean = node.body.some(
+            (member) => arkts.isClassProperty(member) && hasDecorator(member, DecoratorNames.TRACE)
+        );
+        const className: string | undefined = node.ident?.name;
+        if (!className || !(isObserved || classHasTrack || isObservedV2)) {
             return node;
         }
+        const ObservedAnno: ObservedAnnoInfo = { isObserved, classHasTrack, isObservedV2, classHasTrace, className };
         const updateClassDef: arkts.ClassDefinition = arkts.factory.updateClassDefinition(
             node,
             node.ident,
@@ -851,23 +867,15 @@ export class factory {
             [
                 ...node.implements,
                 arkts.TSClassImplements.createTSClassImplements(
-                    arkts.factory.createTypeReference(
-                        arkts.factory.createTypeReferencePart(
-                            arkts.factory.createIdentifier(StateManagementTypes.OBSERVED_OBJECT)
-                        )
-                    )
+                    UIFactory.createTypeReferenceFromString(StateManagementTypes.OBSERVED_OBJECT)
                 ),
                 arkts.TSClassImplements.createTSClassImplements(
-                    arkts.factory.createTypeReference(
-                        arkts.factory.createTypeReferencePart(
-                            arkts.factory.createIdentifier(StateManagementTypes.SUBSCRIBED_WATCHES)
-                        )
-                    )
+                    UIFactory.createTypeReferenceFromString(StateManagementTypes.SUBSCRIBED_WATCHES)
                 ),
             ],
             undefined,
             node.super,
-            factory.observedTrackPropertyMembers(classHasTrack, node, isObserved),
+            factory.observedTrackPropertyMembers(node, ObservedAnno),
             node.modifiers,
             arkts.classDefinitionFlags(node)
         );
@@ -876,38 +884,70 @@ export class factory {
     }
 
     static observedTrackPropertyMembers(
-        classHasTrack: boolean,
         definition: arkts.ClassDefinition,
-        isObserved: boolean
+        ObservedAnno: ObservedAnnoInfo
     ): arkts.AstNode[] {
         const watchMembers: arkts.AstNode[] = PropertyFactory.createWatchMembers();
-        const v1RenderIdMembers: arkts.AstNode[] = PropertyFactory.createV1RenderIdMembers();
-        const conditionalAddRef: arkts.MethodDefinition = PropertyFactory.conditionalAddRef();
+        const v1RenderIdMembers: arkts.AstNode[] = PropertyFactory.createV1RenderIdMembers(ObservedAnno.isObservedV2);
+        const conditionalAddRef: arkts.MethodDefinition = PropertyFactory.conditionalAddRef(ObservedAnno.isObservedV2);
         const getters: arkts.MethodDefinition[] = getGettersFromClassDecl(definition);
         const classScopeInfo: ClassScopeInfo = {
-            isObserved: isObserved,
-            classHasTrack: classHasTrack,
+            isObserved: ObservedAnno.isObserved,
+            classHasTrack: ObservedAnno.classHasTrack,
+            isObservedV2: ObservedAnno.isObservedV2,
+            classHasTrace: ObservedAnno.classHasTrace,
+            className: ObservedAnno.className,
             getters: getters,
         };
-        const propertyTranslators: ObservedTrackTranslator[] = filterDefined(
-            definition.body.map((it) => classifyObservedTrack(it, classScopeInfo))
+        const translators: (ObservedTranslator | MethodTranslator)[] = filterDefined(
+            definition.body.map((it) => classifyInObservedClass(it, classScopeInfo))
         );
-        const propertyMembers = propertyTranslators.map((translator) => translator.translateMember());
-        const nonClassPropertyOrGetter: arkts.AstNode[] = definition.body.filter(
-            (member) =>
-                !arkts.isClassProperty(member) &&
-                !(
-                    arkts.isMethodDefinition(member) &&
-                    arkts.hasModifierFlag(member, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_GETTER)
-                )
-        );
-        return [
+        const metaProperty: arkts.ClassProperty[] = ObservedAnno.classHasTrack
+            ? []
+            : [PropertyFactory.createMetaInObservedClass()];
+        const propertyMembers = translators.map((translator) => translator.translateMember());
+        const restMembers: arkts.AstNode[] = getNoTransformationMembersInClass(definition, ObservedAnno);
+        const returnNodes = [
             ...[...watchMembers, ...v1RenderIdMembers, conditionalAddRef],
-            ...(classHasTrack ? [] : [PropertyFactory.createMetaInObservedClass()]),
+            ...(ObservedAnno.isObserved ? metaProperty : []),
             ...collect(...propertyMembers),
-            ...nonClassPropertyOrGetter,
+            ...restMembers,
             ...classScopeInfo.getters,
         ];
+        return ObservedAnno.isObservedV2
+            ? returnNodes.concat(this.transformObservedV2Constuctor(definition, classScopeInfo.className))
+            : returnNodes;
+    }
+
+    static transformObservedV2Constuctor(definition: arkts.ClassDefinition, className: string): arkts.MethodDefinition {
+        const addConstructorNodes: arkts.AstNode[] = PropertyCache.getInstance().getConstructorBody(className);
+        let originConstructorMethod: arkts.MethodDefinition | undefined = definition.body.find(
+            (it) =>
+                arkts.isMethodDefinition(it) &&
+                isKnownMethodDefinition(it, CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI)
+        ) as arkts.MethodDefinition | undefined;
+        if (!originConstructorMethod) {
+            return UIFactory.createMethodDefinition({
+                key: arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI),
+                function: {
+                    key: arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI),
+                    body: arkts.factory.createBlock(addConstructorNodes),
+                    flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR,
+                    modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
+                },
+                kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
+                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
+            });
+        }
+
+        const originBody = originConstructorMethod.scriptFunction.body as arkts.BlockStatement | undefined;
+        return UIFactory.updateMethodDefinition(originConstructorMethod, {
+            function: {
+                body: originBody
+                    ? arkts.factory.updateBlock(originBody, [...originBody.statements, ...addConstructorNodes])
+                    : arkts.factory.createBlock(addConstructorNodes),
+            },
+        });
     }
 
     /*
