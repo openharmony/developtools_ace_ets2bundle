@@ -1709,6 +1709,14 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.cmdArgs.splice(3, 1);
     checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion, moduleMode.byteCodeHar);
   });
+  mocha.it('10-4: test generateEs2AbcCmd with enable column', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.enableColumnNum = true;
+    const moduleMode = new ModuleHotreloadMode(this.rollup);
+    moduleMode.generateEs2AbcCmd();
+
+    expect(moduleMode.cmdArgs.includes('--enable-release-column')).to.be.true;
+  });
 
   mocha.it('11-1: test addCacheFileArgs under build debug', function () {
     this.rollup.build();

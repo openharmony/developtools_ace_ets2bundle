@@ -74,6 +74,7 @@ export const MERGE_ABC: string ="--merge-abc";
 export const ENABLE_ABC_INPUT: string ="--enable-abc-input";
 export const CACHE_FILE: string ="--cache-file";
 export const SIMBOL_TABLE: string ="--dump-symbol-table";
+export const ENABLE_RELEASE_COLUMN: string ="--enable-release-column";
 export const TARGET_API_VERSION: string = "--target-api-version=";
 export const ARKCONFIG_TS2ABC_PATH: string = 'bin/ark/build/legacy_api8/src/index.js';
 
