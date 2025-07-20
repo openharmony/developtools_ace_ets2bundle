@@ -26,6 +26,7 @@ import {
   BUILD_INFO,
   BUILD_NPM,
   MODULES_ABC,
+  ENABLE_RELEASE_COLUMN,
   ENTRY_LIST,
   OUTPUT,
   FILE_THREADS,
@@ -45,7 +46,8 @@ function checkCmdArgs(cmdArgs: Array<object>, compatibleSdkVersion: string) : vo
   expect(cmdArgs[5] === FILE_THREADS).to.be.true;
   expect(cmdArgs[6] === `\"${fileThreads}\"`).to.be.true;
   expect(cmdArgs[7].indexOf(compatibleSdkVersion) > 0).to.be.true;
-  expect(cmdArgs[8] === MERGE_ABC).to.be.true;
+  expect(cmdArgs[8] === ENABLE_RELEASE_COLUMN).to.be.true;
+  expect(cmdArgs[9] === MERGE_ABC).to.be.true;
 }
 
 mocha.describe('test module_hotfix_mode file api', function () {
@@ -78,5 +80,21 @@ mocha.describe('test module_hotfix_mode file api', function () {
     moduleMode.cmdArgs.shift();
     expect(moduleMode.cmdArgs[0] === DEBUG_INFO).to.be.false;
     checkCmdArgs(moduleMode.cmdArgs,compatibleSdkVersion);
+  });
+
+  mocha.it('1-3: test generateEs2AbcCmdForHotfix enable column under hot fix release', function () {
+    this.rollup.build(RELEASE);
+    this.rollup.share.projectConfig.enableColumnNum = true;
+    const moduleMode = new ModuleHotfixMode(this.rollup);
+    moduleMode.generateEs2AbcCmdForHotfix();
+    expect(moduleMode.cmdArgs.includes('--enable-release-column')).to.be.true;
+  });
+
+  mocha.it('1-4: test generateEs2AbcCmdForHotfix disable column under hot fix release', function () {
+    this.rollup.build(RELEASE);
+    this.rollup.share.projectConfig.enableColumnNum = false;
+    const moduleMode = new ModuleHotfixMode(this.rollup);
+    moduleMode.generateEs2AbcCmdForHotfix();
+    expect(moduleMode.cmdArgs.includes('--enable-release-column')).to.be.false;
   });
 });
