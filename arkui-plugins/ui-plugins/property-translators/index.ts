@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { DecoratorNames } from '../../common/predefines';
-import { InterfacePropertyTranslator, PropertyTranslator } from './base';
+import { InterfacePropertyTranslator, MethodTranslator, PropertyTranslator } from './base';
 import { hasDecorator } from './utils';
 import { StateInterfaceTranslator, StateTranslator } from './state';
 import { PropInterfaceTranslator, PropTranslator } from './prop';
@@ -34,13 +34,32 @@ import { ProvideInterfaceTranslator, ProvideTranslator } from './provide';
 import { BuilderParamInterfaceTranslator, BuilderParamTranslator } from './builderParam';
 import { PropRefInterfaceTranslator, PropRefTranslator } from './propRef';
 import { ObservedTrackTranslator } from './observedTrack';
-import { ClassScopeInfo } from './types';
+import { ClassScopeInfo } from '../struct-translators/utils';
 import { LocalInterfaceTranslator, LocalTranslator } from './local';
 import { StoragePropRefInterfaceTranslator, StoragePropRefTranslator } from './storagePropRef';
 import { LocalStoragePropRefInterfaceTranslator, LocalStoragePropRefTranslator } from './localStoragePropRef';
+import { ObservedV2TraceTranslator } from './observedV2Trace';
+import { ParamInterfaceTranslator, ParamTranslator } from './param';
+import { OnceInterfaceTranslator, OnceTranslator } from './once';
+import { ProviderInterfaceTranslator, ProviderTranslator } from './provider';
+import { ConsumerInterfaceTranslator, ConsumerTranslator } from './consumer';
+import { ComputedTranslator } from './computed';
+import { MonitorTranslator } from './monitor';
 
 export { PropertyTranslator, InterfacePropertyTranslator };
 export type { ClassScopeInfo };
+
+export function classifyStructMembers(
+    member: arkts.AstNode,
+    structInfo: CustomComponentInfo
+): PropertyTranslator | MethodTranslator | undefined {
+    if (arkts.isClassProperty(member)) {
+        return classifyProperty(member, structInfo);
+    } else if (arkts.isMethodDefinition(member)) {
+        return classifyMethod(member, true, structInfo.name);
+    }
+    return undefined;
+}
 
 export function classifyProperty(
     property: arkts.AstNode,
@@ -49,6 +68,25 @@ export function classifyProperty(
     if (!arkts.isClassProperty(property)) return undefined;
     if (isStatic(property)) return new staticPropertyTranslator({ property, structInfo });
 
+    let propertyTranslator: PropertyTranslator | undefined = undefined;
+
+    propertyTranslator = classifyV1Property(property, structInfo);
+    if (!!propertyTranslator) {
+        return propertyTranslator;
+    }
+
+    propertyTranslator = classifyV2Property(property, structInfo);
+    if (!!propertyTranslator) {
+        return propertyTranslator;
+    }
+
+    return new RegularPropertyTranslator({ property, structInfo });
+}
+
+export function classifyV1Property(
+    property: arkts.ClassProperty,
+    structInfo: CustomComponentInfo
+): PropertyTranslator | undefined {
     if (hasDecorator(property, DecoratorNames.STATE)) {
         return new StateTranslator({ property, structInfo });
     }
@@ -92,10 +130,52 @@ export function classifyProperty(
         return new BuilderParamTranslator({ property, structInfo });
     }
 
-    return new RegularPropertyTranslator({ property, structInfo });
+    return undefined;
+}
+
+export function classifyV2Property(
+    property: arkts.ClassProperty,
+    structInfo: CustomComponentInfo
+): PropertyTranslator | undefined {
+    if (hasDecorator(property, DecoratorNames.LOCAL)) {
+        return new LocalTranslator({ property, structInfo });
+    }
+    if (hasDecorator(property, DecoratorNames.ONCE)) {
+        return new OnceTranslator({ property, structInfo });
+    }
+    if (hasDecorator(property, DecoratorNames.PARAM)) {
+        return new ParamTranslator({ property, structInfo });
+    }
+    if (hasDecorator(property, DecoratorNames.PROVIDER)) {
+        return new ProviderTranslator({ property, structInfo });
+    }
+    if (hasDecorator(property, DecoratorNames.CONSUMER)) {
+        return new ConsumerTranslator({ property, structInfo });
+    }
+
+    return undefined;
 }
 
 export function classifyPropertyInInterface(property: arkts.AstNode): InterfacePropertyTranslator | undefined {
+    let interfacePropertyTranslater: InterfacePropertyTranslator | undefined = undefined;
+
+    interfacePropertyTranslater = classifyV1PropertyInInterface(property);
+    if (!!interfacePropertyTranslater) {
+        return interfacePropertyTranslater;
+    }
+
+    interfacePropertyTranslater = classifyV2PropertyInInterface(property);
+    if (!!interfacePropertyTranslater) {
+        return interfacePropertyTranslater;
+    }
+
+    if (RegularInterfaceTranslator.canBeTranslated(property)) {
+        return new RegularInterfaceTranslator({ property });
+    }
+    return undefined;
+}
+
+export function classifyV1PropertyInInterface(property: arkts.AstNode): InterfacePropertyTranslator | undefined {
     if (StateInterfaceTranslator.canBeTranslated(property)) {
         return new StateInterfaceTranslator({ property });
     }
@@ -138,18 +218,68 @@ export function classifyPropertyInInterface(property: arkts.AstNode): InterfaceP
     if (ObjectLinkInterfaceTranslator.canBeTranslated(property)) {
         return new ObjectLinkInterfaceTranslator({ property });
     }
-    if (RegularInterfaceTranslator.canBeTranslated(property)) {
-        return new RegularInterfaceTranslator({ property });
+    return undefined;
+}
+
+export function classifyV2PropertyInInterface(property: arkts.AstNode): InterfacePropertyTranslator | undefined {
+    if (LocalInterfaceTranslator.canBeTranslated(property)) {
+        return new LocalInterfaceTranslator({ property });
+    }
+    if (OnceInterfaceTranslator.canBeTranslated(property)) {
+        return new OnceInterfaceTranslator({ property });
+    }
+    if (ParamInterfaceTranslator.canBeTranslated(property)) {
+        return new ParamInterfaceTranslator({ property });
+    }
+    if (ProviderInterfaceTranslator.canBeTranslated(property)) {
+        return new ProviderInterfaceTranslator({ property });
+    }
+    if (ConsumerInterfaceTranslator.canBeTranslated(property)) {
+        return new ConsumerInterfaceTranslator({ property });
     }
     return undefined;
 }
 
-export function classifyObservedTrack(
-    member: arkts.AstNode,
+export type ObservedTranslator = ObservedV2TraceTranslator | ObservedTrackTranslator;
+
+export function classifyObservedClassProperty(
+    member: arkts.ClassProperty,
     classScopeInfo: ClassScopeInfo
-): ObservedTrackTranslator | undefined {
-    if (!arkts.isClassProperty(member)) {
+): ObservedTranslator | undefined {
+    if (classScopeInfo.isObservedV2) {
+        return new ObservedV2TraceTranslator(member, classScopeInfo);
+    }
+    if (classScopeInfo.isObserved || classScopeInfo.classHasTrack) {
+        return new ObservedTrackTranslator(member, classScopeInfo);
+    }
+    return undefined;
+}
+
+export function classifyMethod(
+    member: arkts.AstNode,
+    isFromStruct: boolean,
+    className: string
+): MethodTranslator | undefined {
+    if (!arkts.isMethodDefinition(member)) {
         return undefined;
     }
-    return new ObservedTrackTranslator(member, classScopeInfo);
+    if (hasDecorator(member, DecoratorNames.COMPUTED)) {
+        return new ComputedTranslator(member, { isFromStruct, className });
+    }
+    if (hasDecorator(member, DecoratorNames.MONITOR)) {
+        return new MonitorTranslator(member, { isFromStruct, className });
+    }
+    return undefined;
+}
+
+export function classifyInObservedClass(
+    member: arkts.AstNode,
+    classScopeInfo: ClassScopeInfo
+): ObservedTranslator | MethodTranslator | undefined {
+    if (arkts.isClassProperty(member)) {
+        return classifyObservedClassProperty(member, classScopeInfo);
+    } else if (arkts.isMethodDefinition(member)) {
+        return classifyMethod(member, false, classScopeInfo.className);
+    }
+    return undefined;
 }

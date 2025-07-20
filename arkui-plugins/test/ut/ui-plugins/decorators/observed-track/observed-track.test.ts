@@ -63,8 +63,6 @@ import { Observed as Observed, Track as Track } from "@ohos.arkui.stateManagemen
 
 function main() {}
 
-
-
 @Observed() class B implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
@@ -98,7 +96,13 @@ function main() {}
   
   @JSONStringifyIgnore() private __meta_trackB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  public constructor() {}
+  @JSONRename({newName:"newProp"}) private __backing_newProp?: boolean;
+  
+  @JSONStringifyIgnore() private __meta_newProp: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  
+  public constructor(newProp: boolean) {
+    this.newProp = newProp;
+  }
   
   public get trackB(): number {
     this.conditionalAddRef(this.__meta_trackB);
@@ -110,6 +114,19 @@ function main() {}
       this.__backing_trackB = newValue;
       this.__meta_trackB.fireChange();
       this.executeOnSubscribingWatches("trackB");
+    }
+  }
+  
+  public get newProp(): boolean {
+    this.conditionalAddRef(this.__meta_newProp);
+    return (this.__backing_newProp as boolean);
+  }
+  
+  public set newProp(newValue: boolean) {
+    if (((this.__backing_newProp) !== (newValue))) {
+      this.__backing_newProp = newValue;
+      this.__meta_newProp.fireChange();
+      this.executeOnSubscribingWatches("newProp");
     }
   }
   

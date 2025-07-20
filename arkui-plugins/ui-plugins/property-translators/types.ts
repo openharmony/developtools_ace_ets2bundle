@@ -32,9 +32,3 @@ export interface InitializerConstructor {
     cacheTranslatedInitializer(newName: string, originalName: string): void;
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[];
 }
-
-export type ClassScopeInfo = {
-    isObserved: boolean;
-    classHasTrack: boolean;
-    getters: arkts.MethodDefinition[]
-};

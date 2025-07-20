@@ -14,13 +14,10 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import {
-    collectStateManagementTypeImport,
-    createGetter,
-    createSetter,
-} from './utils';
-import { CustomComponentInfo } from '../utils';
+import { collectStateManagementTypeImport, createGetter, createSetter } from './utils';
+import { CustomComponentInfo, ClassInfo } from '../utils';
 import { StateManagementTypes } from '../../common/predefines';
+import { ClassScopeInfo } from '../struct-translators/utils';
 
 export interface PropertyTranslatorOptions {
     property: arkts.ClassProperty;
@@ -59,6 +56,31 @@ export abstract class PropertyTranslator {
         collectStateManagementTypeImport(StateManagementTypes.OBSERVABLE_PROXY);
         return createSetter(originalName, typeAnnotation, left, right);
     }
+}
+
+export abstract class MethodTranslator {
+    protected method: arkts.MethodDefinition;
+    protected classInfo: ClassInfo;
+
+    constructor(method: arkts.MethodDefinition, classInfo: ClassInfo) {
+        this.method = method;
+        this.classInfo = classInfo;
+    }
+
+    abstract translateMember(): arkts.AstNode[];
+}
+
+export abstract class ObservedPropertyTranslator {
+    protected property: arkts.ClassProperty;
+    protected classScopeInfo: ClassScopeInfo;
+
+    constructor(property: arkts.ClassProperty, classScopeInfo: ClassScopeInfo) {
+        this.property = property;
+        this.classScopeInfo = classScopeInfo;
+    }
+
+    abstract translateMember(): arkts.AstNode[];
+    abstract createField(originalName: string, newName: string): arkts.ClassProperty[];
 }
 
 export type InterfacePropertyTypes = arkts.MethodDefinition | arkts.ClassProperty;
