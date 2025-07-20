@@ -22,6 +22,7 @@ import {
     DECORATOR_TYPE_MAP,
     StateManagementTypes,
     GetSetTypes,
+    ObservedNames,
 } from '../../common/predefines';
 import {
     addMemoAnnotation,
@@ -32,6 +33,11 @@ import {
 export interface DecoratorInfo {
     annotation: arkts.AnnotationUsage;
     name: DecoratorNames;
+}
+
+export interface OptionalMemberInfo {
+    isCall?: boolean;
+    isNumeric?: boolean;
 }
 
 export function isDecoratorIntrinsicAnnotation(
@@ -99,7 +105,9 @@ export function needDefiniteOrOptionalModifier(st: arkts.ClassProperty): boolean
         hasDecoratorName(st, DecoratorNames.CONSUME) ||
         hasDecoratorName(st, DecoratorNames.OBJECT_LINK) ||
         (hasDecoratorName(st, DecoratorNames.PROP) && !st.value) ||
-        (hasDecoratorName(st, DecoratorNames.PROP_REF) && !st.value)
+        (hasDecoratorName(st, DecoratorNames.PROP_REF) && !st.value) ||
+        (hasDecoratorName(st, DecoratorNames.PARAM) && !st.value) ||
+        (hasDecoratorName(st, DecoratorNames.EVENT) && !st.value)
     );
 }
 
@@ -374,11 +382,17 @@ export function generateToRecord(newName: string, originalName: string): arkts.P
     );
 }
 
+export function removeImplementProperty(originalName: string): string {
+    const prefix = ObservedNames.PROPERTY_PREFIX;
+    return originalName.substring(prefix.length);
+}
+
 // CACHE
 export interface PropertyCachedBody {
     initializeBody?: arkts.AstNode[];
     updateBody?: arkts.AstNode[];
     toRecordBody?: arkts.Property[];
+    constructorBody?: arkts.AstNode[];
 }
 
 export class PropertyCache {
@@ -412,6 +426,10 @@ export class PropertyCache {
         return this._cache.get(name)?.toRecordBody ?? [];
     }
 
+    getConstructorBody(name: string): arkts.AstNode[] {
+        return this._cache.get(name)?.constructorBody ?? [];
+    }
+
     collectInitializeStruct(name: string, initializeStruct: arkts.AstNode[]): void {
         const initializeBody = this._cache.get(name)?.initializeBody ?? [];
         const newInitializeBody = [...initializeBody, ...initializeStruct];
@@ -429,5 +447,10 @@ export class PropertyCache {
         const newToRecordBody = [...toRecordBody, ...toRecord];
         this._cache.set(name, { ...this._cache.get(name), toRecordBody: newToRecordBody });
     }
-}
 
+    collectContructor(name: string, insertedConstructorBody: arkts.AstNode[]): void {
+        const constructorBody = this._cache.get(name)?.constructorBody ?? [];
+        const newConstructorBody = [...constructorBody, ...insertedConstructorBody];
+        this._cache.set(name, { ...this._cache.get(name), constructorBody: newConstructorBody });
+    }
+}

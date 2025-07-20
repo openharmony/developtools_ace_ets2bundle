@@ -441,4 +441,33 @@ export class factory {
             newNode.isFromExternal
         );
     }
+
+    /**
+     * Generate member expression, e.g. `<object>.<property>`.
+     *
+     * @param method method definition node
+     */
+    static generateMemberExpression(object: arkts.AstNode, property: string, optional = false): arkts.MemberExpression {
+        return arkts.factory.createMemberExpression(
+            object,
+            arkts.factory.createIdentifier(property),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            optional
+        );
+    }
+
+    /**
+     * create `<keyName>: <typeName> = <initializers>` as parameter
+     */
+    static createParameterDeclaration(
+        keyName: string,
+        typeName: string,
+        initializers?: arkts.AstNode
+    ): arkts.ETSParameterExpression {
+        return arkts.factory.createParameterDeclaration(
+            arkts.factory.createIdentifier(keyName, this.createTypeReferenceFromString(typeName)),
+            initializers
+        );
+    }
 }

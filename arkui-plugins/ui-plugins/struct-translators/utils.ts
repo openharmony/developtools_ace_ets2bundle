@@ -16,7 +16,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as arkts from '@koalaui/libarkts';
-import { CustomComponentInfo, CustomDialogNames } from '../utils';
+import { CustomComponentInfo, CustomComponentNames, CustomDialogNames, isKnownMethodDefinition } from '../utils';
 import { matchPrefix } from '../../common/arkts-utils';
 import {
     ARKUI_IMPORT_PREFIX_NAMES,
@@ -27,10 +27,12 @@ import {
     RESOURCE_TYPE,
     InnerComponentNames,
     ARKUI_FOREACH_SOURCE_NAME,
+    DecoratorNames,
 } from '../../common/predefines';
 import { DeclarationCollector } from '../../common/declaration-collector';
 import { ProjectConfig } from '../../common/plugin-context';
 import { LogCollector } from '../../common/log-collector';
+import { hasDecorator } from '../../ui-plugins/property-translators/utils';
 
 export type ScopeInfoCollection = {
     customComponents: CustomComponentScopeInfo[];
@@ -68,6 +70,18 @@ export interface DialogControllerInfo {
     isClassProperty: boolean;
     parent?: arkts.AstNode;
 }
+
+export interface ObservedAnnoInfo {
+    className: string;
+    isObserved: boolean;
+    isObservedV2: boolean;
+    classHasTrace: boolean;
+    classHasTrack: boolean;
+}
+
+export type ClassScopeInfo = ObservedAnnoInfo & {
+    getters: arkts.MethodDefinition[];
+};
 
 export function getResourceParams(id: number, type: number, params: arkts.Expression[]): ResourceParameter {
     return { id, type, params };
@@ -597,4 +611,24 @@ export function getControllerName(node: arkts.ETSNewClassInstanceExpression): Di
     }
 
     return { controllerName, isClassProperty, parent };
+}
+
+export function getNoTransformationMembersInClass(
+    definition: arkts.ClassDefinition,
+    ObservedAnno: ObservedAnnoInfo
+): arkts.AstNode[] {
+    return definition.body.filter(
+        (member) =>
+            !arkts.isClassProperty(member) &&
+            !(
+                arkts.isMethodDefinition(member) &&
+                arkts.hasModifierFlag(member, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_GETTER)
+            ) &&
+            !(
+                ObservedAnno.isObservedV2 &&
+                arkts.isMethodDefinition(member) &&
+                (hasDecorator(member, DecoratorNames.COMPUTED) ||
+                    isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI))
+            )
+    );
 }

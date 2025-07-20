@@ -18,9 +18,11 @@ import { matchPrefix } from '../common/arkts-utils';
 import {
     ARKUI_IMPORT_PREFIX_NAMES,
     CUSTOM_DIALOG_CONTROLLER_SOURCE_NAME,
+    DecoratorNames,
     StructDecoratorNames,
 } from '../common/predefines';
 import { DeclarationCollector } from '../common/declaration-collector';
+import { hasDecorator } from './property-translators/utils';
 
 export enum CustomComponentNames {
     COMPONENT_BUILD_ORI = 'build',
@@ -127,7 +129,8 @@ export function getGettersFromClassDecl(definition: arkts.ClassDefinition): arkt
     return definition.body.filter(
         (member) =>
             arkts.isMethodDefinition(member) &&
-            arkts.hasModifierFlag(member, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_GETTER)
+            arkts.hasModifierFlag(member, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_GETTER) &&
+            !hasDecorator(member, DecoratorNames.COMPUTED)
     ) as arkts.MethodDefinition[];
 }
 
@@ -176,6 +179,11 @@ export type ComponentType = {
     hasCustomLayout: boolean;
 };
 
+export type ClassInfo = {
+    className: string;
+    isFromStruct: boolean;
+};
+
 export function isCustomComponentAnnotation(
     anno: arkts.AnnotationUsage,
     decoratorName: StructDecoratorNames,
@@ -212,7 +220,8 @@ export function collectCustomComponentScopeInfo(
     if (
         isCustomComponentClassDecl &&
         definition.ident.name !== CustomComponentNames.COMPONENT_CLASS_NAME &&
-        definition.ident.name !== CustomComponentNames.COMPONENT_V2_CLASS_NAME
+        definition.ident.name !== CustomComponentNames.COMPONENT_V2_CLASS_NAME &&
+        definition.ident.name !== CustomComponentNames.BASE_CUSTOM_DIALOG_NAME
     ) {
         return undefined;
     }
@@ -275,7 +284,9 @@ export function isCustomComponentClass(node: arkts.ClassDeclaration, scopeInfo: 
     const name: string = node.definition.ident.name;
     if (scopeInfo.isDecl) {
         return (
-            name === CustomComponentNames.COMPONENT_CLASS_NAME || name === CustomComponentNames.COMPONENT_V2_CLASS_NAME
+            name === CustomComponentNames.COMPONENT_CLASS_NAME ||
+            name === CustomComponentNames.COMPONENT_V2_CLASS_NAME ||
+            name === CustomComponentNames.BASE_CUSTOM_DIALOG_NAME
         );
     }
     return name === scopeInfo.name;
@@ -283,10 +294,11 @@ export function isCustomComponentClass(node: arkts.ClassDeclaration, scopeInfo: 
 
 export function isCustomComponentInterface(node: arkts.TSInterfaceDeclaration): boolean {
     const checkPrefix = !!node.id?.name.startsWith(CustomComponentNames.COMPONENT_INTERFACE_PREFIX);
-    const checkComponent = node.annotations.some((anno) =>
-        isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT) || 
-        isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT_V2) ||
-        isCustomComponentAnnotation(anno, StructDecoratorNames.CUSTOMDIALOG)
+    const checkComponent = node.annotations.some(
+        (anno) =>
+            isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT) ||
+            isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT_V2) ||
+            isCustomComponentAnnotation(anno, StructDecoratorNames.CUSTOMDIALOG)
     );
     return checkPrefix && checkComponent;
 }
@@ -344,11 +356,19 @@ export function getComponentExtendsName(annotations: CustomComponentAnontations,
     if (!!annotations.customdialog) {
         componentType.hasCustomDialog ||= true;
         return CustomComponentNames.BASE_CUSTOM_DIALOG_NAME;
-    } 
+    }
     if (!!annotations.componentV2) {
         componentType.hasComponentV2 ||= true;
         return CustomComponentNames.COMPONENT_V2_CLASS_NAME;
     }
     componentType.hasComponent ||= true;
     return CustomComponentNames.COMPONENT_CLASS_NAME;
+}
+
+export function computedField(name: string): string {
+    return `__computed_${name}`;
+}
+
+export function monitorField(name: string): string {
+    return `__monitor_${name}`;
 }

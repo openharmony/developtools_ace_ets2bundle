@@ -20,6 +20,11 @@ import { Observed, Track } from "@ohos.arkui.stateManagement"
 class B {
   propB: number = 1
   @Track trackB: number = 2
+  @Track newProp: boolean;
+
+  constructor(newProp: boolean) {
+    this.newProp = newProp;
+  }
 }
 
 @Component
