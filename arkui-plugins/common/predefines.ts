@@ -95,6 +95,28 @@ export enum EntryWrapperNames {
     PARAM = 'param'
 }
 
+export enum ObservedNames {
+    V1_RERENDER_ID = '____V1RenderId',
+    RERENDER_ID = 'renderId',
+    SET_V1_RERENDER_ID = 'setV1RenderId',
+    META = 'meta',
+    CONDITIONAL_ADD_REF = 'conditionalAddRef',
+    ADD_REF = 'addRef',
+    SHOULD_ADD_REF = 'shouldAddRef',
+    NEW_NAME = 'newName',
+    PROPERTY_PREFIX = '<property>',
+    NEW_VALUE = 'newValue',
+    FIRE_CHANGE = 'fireChange',
+    EXECUATE_WATCHES = 'executeOnSubscribingWatches',
+}
+
+export enum MonitorNames {
+    PATH = 'path',
+    VALUE_CALL_CACK = 'valueCallback',
+    I_MONITOR = 'IMonitor',
+    M_PARAM = '_m',
+}
+
 export enum EntryParamNames {
     ENTRY_STORAGE = 'storage',
     ENTRY_USE_SHARED_STORAGE = 'useSharedStorage',
@@ -115,6 +137,7 @@ export enum DecoratorNames {
     CONSUME = 'Consume',
     OBJECT_LINK = 'ObjectLink',
     OBSERVED = 'Observed',
+    OBSERVED_V2 = 'ObservedV2',
     WATCH = 'Watch',
     BUILDER_PARAM = 'BuilderParam',
     BUILDER = 'Builder',
@@ -123,6 +146,7 @@ export enum DecoratorNames {
     LOCAL_STORAGE_LINK = 'LocalStorageLink',
     REUSABLE = 'Reusable',
     TRACK = 'Track',
+    TRACE = 'Trace',
     JSONSTRINGIFYIGNORE = 'JSONStringifyIgnore',
     JSONRENAME = 'JSONRename',
     ANIMATABLE_EXTEND = 'AnimatableExtend',
@@ -130,6 +154,17 @@ export enum DecoratorNames {
     LOCAL = 'Local',
     LOCAL_STORAGE_PROP_REF = 'LocalStoragePropRef',
     STORAGE_PROP_REF = 'StoragePropRef',
+    PARAM = 'Param',
+    ONCE = 'Once',
+    PROVIDER = 'Provider',
+    CONSUMER = 'Consumer',
+    MONITOR = 'Monitor',
+    COMPUTED = 'Computed',
+    EVENT = 'Event',
+}
+
+export enum TypeNames {
+    NULLISH_TYPE = 'NullishType',
 }
 
 export enum DecoratorIntrinsicNames {
@@ -152,6 +187,12 @@ export enum StateManagementTypes {
     PROP_REF_DECORATED = 'IPropRefDecoratedVariable',
     LOCAL_DECORATED = 'ILocalDecoratedVariable',
     LOCAL_STORAGE_PROP_REF_DECORATED = 'ILocalStoragePropRefDecoratedVariable',
+    PARAM_DECORATED = 'IParamDecoratedVariable',
+    ONCE_DECORATED = 'IParamOnceDecoratedVariable',
+    PROVIDER_DECORATED = 'IProviderDecoratedVariable',
+    CONSUMER_DECORATED = 'IConsumerDecoratedVariable',
+    COMPUTED_DECORATED = 'IComputedDecoratedVariable',
+    MONITOR_DECORATED = 'IMonitorDecoratedVariable',
     MUTABLE_STATE_META = 'IMutableStateMeta',
     OBSERVED_OBJECT = 'IObservedObject',
     WATCH_ID_TYPE = 'WatchIdType',
@@ -177,6 +218,14 @@ export enum StateManagementTypes {
     MAKE_OBJECT_LINK = 'makeObjectLink',
     MAKE_SUBSCRIBED_WATCHES = 'makeSubscribedWatches',
     MAKE_MUTABLESTATE_META = 'makeMutableStateMeta',
+    MAKE_PARAM = 'makeParam',
+    MAKE_PARAM_ONCE = 'makeParamOnce',
+    MAKE_PROVIDER = 'makeProvider',
+    MAKE_CONSUMER = 'makeConsumer',
+    MAKE_COMPUTED = 'makeComputed',
+    MAKE_MONITOR = 'makeMonitor',
+    UI_UTILS = 'UIUtils',
+    MAKE_OBSERVED = 'makeObserved',
 }
 
 export enum AnimationNames {
@@ -231,6 +280,10 @@ export const DECORATOR_TYPE_MAP = new Map<DecoratorNames, StateManagementTypes>(
     [DecoratorNames.PROVIDE, StateManagementTypes.PROVIDE_DECORATED],
     [DecoratorNames.CONSUME, StateManagementTypes.CONSUME_DECORATED],
     [DecoratorNames.LOCAL, StateManagementTypes.LOCAL_DECORATED],
+    [DecoratorNames.PARAM, StateManagementTypes.PARAM_DECORATED],
+    [DecoratorNames.ONCE, StateManagementTypes.ONCE_DECORATED],
+    [DecoratorNames.PROVIDER, StateManagementTypes.PROVIDER_DECORATED],
+    [DecoratorNames.CONSUMER, StateManagementTypes.CONSUMER_DECORATED],
 ]);
 
 export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string, string[]>([
@@ -250,6 +303,12 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
     [DecoratorNames.OBJECT_LINK, [StateManagementTypes.OBJECT_LINK_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.LOCAL_STORAGE_LINK, [StateManagementTypes.LOCAL_STORAGE_LINK_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.LOCAL, [StateManagementTypes.LOCAL_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [DecoratorNames.PARAM, [StateManagementTypes.PARAM_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [DecoratorNames.ONCE, [StateManagementTypes.ONCE_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [DecoratorNames.PROVIDER, [StateManagementTypes.PROVIDER_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [DecoratorNames.CONSUMER, [StateManagementTypes.CONSUMER_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [DecoratorNames.COMPUTED, [StateManagementTypes.COMPUTED_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [DecoratorNames.MONITOR, [StateManagementTypes.MONITOR_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [
         DecoratorNames.LOCAL_STORAGE_PROP,
         [
@@ -283,6 +342,24 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
             StateManagementTypes.STATE_MANAGEMENT_FACTORY
         ],
     ],
+    [
+        DecoratorNames.OBSERVED_V2,
+        [
+            StateManagementTypes.MUTABLE_STATE_META,
+            StateManagementTypes.OBSERVED_OBJECT,
+            StateManagementTypes.WATCH_ID_TYPE,
+            StateManagementTypes.RENDER_ID_TYPE,
+            StateManagementTypes.SUBSCRIBED_WATCHES,
+            StateManagementTypes.STATE_MANAGEMENT_FACTORY
+        ],
+    ],
+    [
+        DecoratorNames.TRACE,
+        [
+            StateManagementTypes.STATE_MANAGEMENT_FACTORY,
+            StateManagementTypes.UI_UTILS
+        ],
+    ],
     [DecoratorNames.ANIMATABLE_EXTEND, [AnimationNames.ANIMATABLE_ARITHMETIC]]
 ]);
 
@@ -296,6 +373,7 @@ export const IMPORT_SOURCE_MAP_V2: Map<string, string> = new Map<string, string>
     [StateManagementTypes.STORAGE_LINK_STATE, 'arkui.stateManagement.runtime'],
     [StateManagementTypes.OBSERVABLE_PROXY, 'arkui.stateManagement.runtime'],
     [StateManagementTypes.PROP_STATE, 'arkui.stateManagement.runtime'],
+    [StateManagementTypes.UI_UTILS, 'arkui.stateManagement.utils'],
     [AnimationNames.ANIMATABLE_ARITHMETIC, 'arkui.component.common']
 ]);
 

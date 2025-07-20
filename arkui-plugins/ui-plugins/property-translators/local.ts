@@ -18,7 +18,6 @@ import * as arkts from '@koalaui/libarkts';
 import { backingField, expectName } from '../../common/arkts-utils';
 import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
 import {
-    generateToRecord,
     createGetter,
     createSetter2,
     generateThisBacking,
@@ -42,10 +41,6 @@ export class LocalTranslator extends PropertyTranslator implements InitializerCo
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
         PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
-        if (!!this.structInfo.annotations?.reusable) {
-            const toRecord = generateToRecord(newName, originalName);
-            PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);
-        }
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {

@@ -17,7 +17,6 @@ import * as arkts from '@koalaui/libarkts';
 import { DeclarationCollector } from './declaration-collector';
 import { ARKUI_IMPORT_PREFIX_NAMES, DecoratorNames } from './predefines';
 
-
 /**
  * create and insert `import { <imported> as <local> } from <source>` to the top of script's statements.
  */
@@ -37,6 +36,10 @@ export function createAndInsertImportDeclaration(
     );
     arkts.importDeclarationInsert(importDecl, program);
     return;
+}
+
+export function isNumeric(str: string): boolean {
+    return /^\d+$/.test(str);
 }
 
 export function annotation(name: string): arkts.AnnotationUsage {
