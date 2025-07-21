@@ -2143,9 +2143,6 @@ export class Es2pandaNativeModule {
     _UpdateETSPackageDeclaration(context: KNativePointer, original: KNativePointer, name: KNativePointer): KNativePointer {
         throw new Error("'UpdateETSPackageDeclaration was not overloaded by native module initialization")
     }
-    _CreateETSImportDeclaration(context: KNativePointer, importPath: KNativePointer, specifiers: BigUint64Array, specifiersSequenceLength: KUInt, importKind: KInt): KNativePointer {
-        throw new Error("'CreateETSImportDeclaration was not overloaded by native module initialization")
-    }
     _UpdateETSImportDeclaration(context: KNativePointer, original: KNativePointer, source: KNativePointer, specifiers: BigUint64Array, specifiersSequenceLength: KUInt, importKind: KInt): KNativePointer {
         throw new Error("'UpdateETSImportDeclaration was not overloaded by native module initialization")
     }
@@ -2310,18 +2307,6 @@ export class Es2pandaNativeModule {
     }
     _UpdateEmptyStatement(context: KNativePointer, original: KNativePointer): KNativePointer {
         throw new Error("'UpdateEmptyStatement was not overloaded by native module initialization")
-    }
-    _CreateETSLaunchExpression(context: KNativePointer, expr: KNativePointer): KNativePointer {
-        throw new Error("'CreateETSLaunchExpression was not overloaded by native module initialization")
-    }
-    _UpdateETSLaunchExpression(context: KNativePointer, original: KNativePointer, expr: KNativePointer): KNativePointer {
-        throw new Error("'UpdateETSLaunchExpression was not overloaded by native module initialization")
-    }
-    _ETSLaunchExpressionIsStaticCallConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
-        throw new Error("'ETSLaunchExpressionIsStaticCallConst was not overloaded by native module initialization")
-    }
-    _ETSLaunchExpressionCallConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'ETSLaunchExpressionCallConst was not overloaded by native module initialization")
     }
     _CreateWhileStatement(context: KNativePointer, test: KNativePointer, body: KNativePointer): KNativePointer {
         throw new Error("'CreateWhileStatement was not overloaded by native module initialization")
@@ -3577,6 +3562,16 @@ export class Es2pandaNativeModule {
     _CreateForUpdateStatement(context: KNativePointer, init: KNativePointer, test: KNativePointer, update: KNativePointer, body: KNativePointer): KNativePointer {
         throw new Error("'CreateForUpdateStatement was not overloaded by native module initialization")
     }
+    _UpdateForUpdateStatement(
+        context: KNativePointer,
+        original: KNativePointer,
+        init: KNativePointer,
+        test: KNativePointer,
+        update: KNativePointer,
+        body: KNativePointer
+    ): KNativePointer {
+        throw new Error("'CreateForUpdateStatement was not overloaded by native module initialization");
+    }
     _ForUpdateStatementInit(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'ForUpdateStatementInit was not overloaded by native module initialization")
     }
@@ -3711,5 +3706,17 @@ export class Es2pandaNativeModule {
     }
     _CreateFunctionDecl(context: KNativePointer, name: KStringPtr, node: KNativePointer): KNativePointer {
         throw new Error("'CreateFunctionDecl was not overloaded by native module initialization")
+    }
+    _CreateTryStatement(context: KNativePointer, block: KNativePointer, catchClauses: BigUint64Array, catchClausesSequenceLength: KUInt, finalizer: KNativePointer, finalizerInsertionsLabelPair: BigUint64Array, finalizerInsertionsLabelPairSequenceLength: KUInt, finalizerInsertionsStatement: BigUint64Array, finalizerInsertionsStatementSequenceLength: KUInt): KNativePointer {
+        throw new Error("'CreateTryStatement was not overloaded by native module initialization")
+    }
+    _UpdateTryStatement(context: KNativePointer, original: KNativePointer, block: KNativePointer, catchClauses: BigUint64Array, catchClausesSequenceLength: KUInt, finalizer: KNativePointer, finalizerInsertionsLabelPair: BigUint64Array, finalizerInsertionsLabelPairSequenceLength: KUInt, finalizerInsertionsStatement: BigUint64Array, finalizerInsertionsStatementSequenceLength: KUInt): KNativePointer {
+        throw new Error("'UpdateTryStatement was not overloaded by native module initialization")
+    }
+    _CreateTryStatement1(context: KNativePointer, other: KNativePointer): KNativePointer {
+        throw new Error("'CreateTryStatement1 was not overloaded by native module initialization")
+    }
+    _UpdateTryStatement1(context: KNativePointer, original: KNativePointer, other: KNativePointer): KNativePointer {
+        throw new Error("'UpdateTryStatement1 was not overloaded by native module initialization")
     }
 }

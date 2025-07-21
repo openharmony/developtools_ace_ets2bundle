@@ -40,7 +40,7 @@ import { Es2pandaModifierFlags } from "./../Es2pandaEnums"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class ScriptFunction extends AstNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 59)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_SCRIPT_FUNCTION)
         super(pointer)
         
     }
@@ -194,6 +194,6 @@ export class ScriptFunction extends AstNode {
 export function isScriptFunction(node: AstNode): node is ScriptFunction {
     return node instanceof ScriptFunction
 }
-if (!nodeByType.has(59)) {
-    nodeByType.set(59, ScriptFunction)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_SCRIPT_FUNCTION)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_SCRIPT_FUNCTION, ScriptFunction)
 }

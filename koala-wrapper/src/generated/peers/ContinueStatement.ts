@@ -33,7 +33,7 @@ import { Statement } from "./Statement"
 import { Identifier } from "./Identifier"
 export class ContinueStatement extends Statement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 20)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CONTINUE_STATEMENT)
         super(pointer)
         
     }
@@ -64,6 +64,6 @@ export class ContinueStatement extends Statement {
 export function isContinueStatement(node: AstNode): node is ContinueStatement {
     return node instanceof ContinueStatement
 }
-if (!nodeByType.has(20)) {
-    nodeByType.set(20, ContinueStatement)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_CONTINUE_STATEMENT)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_CONTINUE_STATEMENT, ContinueStatement)
 }

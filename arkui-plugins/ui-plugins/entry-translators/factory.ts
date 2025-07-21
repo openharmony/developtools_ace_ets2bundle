@@ -108,7 +108,7 @@ export class factory {
         const def = arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             key,
-            arkts.factory.createFunctionExpression(entryScript),
+            entryScript,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
             false
         );
@@ -132,7 +132,7 @@ export class factory {
         const def = arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
             key,
-            arkts.factory.createFunctionExpression(entryScript),
+            entryScript,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             false
         );

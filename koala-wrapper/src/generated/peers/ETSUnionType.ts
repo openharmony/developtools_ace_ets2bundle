@@ -32,7 +32,7 @@ import {
 import { TypeNode } from "./TypeNode"
 export class ETSUnionType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 73)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_UNION_TYPE)
         super(pointer)
         
     }
@@ -49,6 +49,6 @@ export class ETSUnionType extends TypeNode {
 export function isETSUnionType(node: AstNode): node is ETSUnionType {
     return node instanceof ETSUnionType
 }
-if (!nodeByType.has(73)) {
-    nodeByType.set(73, ETSUnionType)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_UNION_TYPE)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_UNION_TYPE, ETSUnionType)
 }

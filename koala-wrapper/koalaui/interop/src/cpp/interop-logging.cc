@@ -55,6 +55,10 @@ void appendGroupedLog(int index, const char* str) {
 }
 
 const char* getGroupedLog(int index) {
+    if (index < static_cast<int>(groupedLogs.size())) {
+        const std::string& log = groupedLogs[index]->log;
+        return log.c_str();
+    }
     return "";
 }
 
