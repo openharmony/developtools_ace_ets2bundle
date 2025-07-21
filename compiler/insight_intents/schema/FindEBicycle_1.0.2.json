@@ -3,6 +3,7 @@
   "intentVersion": "1.0.2",
   "llmDescription": "寻找电动车",
   "keywords": ["FindEBicycle"],
+  "domain": "NavigationDomain",
   "parameters": {
     "type": "object",
     "properties": {}

@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "创建新账户",
   "keywords": ["CreateNewAccount"],
+  "domain": "ToolsDomain",
   "parameters": {
     "type": "object",
     "properties": {}

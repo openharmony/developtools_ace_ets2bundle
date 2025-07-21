@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "支付还款",
   "keywords": ["PayRepayment"],
+  "domain": "FinanceDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

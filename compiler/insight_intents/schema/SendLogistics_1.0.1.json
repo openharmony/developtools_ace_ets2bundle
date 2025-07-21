@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "寄快递",
   "keywords": ["SendLogistics"],
+  "domain": "LifestyleDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

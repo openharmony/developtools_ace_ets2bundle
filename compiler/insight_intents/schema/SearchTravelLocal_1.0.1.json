@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "本地搜索旅游攻略",
   "keywords": ["SearchTravelLocal"],
+  "domain": "TravelDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

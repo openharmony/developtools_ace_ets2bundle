@@ -3,6 +3,7 @@
   "intentVersion": "1.0.2",
   "llmDescription": "开始打车",
   "keywords": ["RideHailing"],
+  "domain": "NavigationDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

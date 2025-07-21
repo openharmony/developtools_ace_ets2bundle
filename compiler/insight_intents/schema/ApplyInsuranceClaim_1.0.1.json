@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "申请理赔",
   "keywords": ["ApplyInsuranceClaim"],
+  "domain": "FinanceDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

@@ -1400,7 +1400,7 @@ class ParseIntent {
         intentObj.keywords = schemaObj.keywords;
         intentObj.intentName = schemaObj.intentName;
         intentObj.result = schemaObj.result;
-        intentObj.example = schemaObj.example;
+        intentObj.domain = schemaObj.domain;
       }
     }
   }

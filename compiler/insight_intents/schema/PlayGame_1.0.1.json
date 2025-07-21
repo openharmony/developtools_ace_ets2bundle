@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "玩转游戏",
   "keywords": ["PlayGame"],
+  "domain": "EntertainmentDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {
