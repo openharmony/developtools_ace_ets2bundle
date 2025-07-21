@@ -69,7 +69,16 @@ import {
     TSTypeAliasDeclaration,
     ChainExpression,
     BlockExpression,
-    ETSNewClassInstanceExpression
+    ETSNewClassInstanceExpression,
+    BooleanLiteral,
+    ObjectExpression,
+    Property,
+    TemplateLiteral,
+    ArrayExpression,
+    TryStatement,
+    ForUpdateStatement,
+    ForInStatement,
+    ForOfStatement,
 } from "../../generated"
 import {
     Es2pandaModifierFlags
@@ -114,7 +123,7 @@ import { updateTSTypeParameterInstantiation } from "../node-utilities/TSTypePara
 import { updateTSInterfaceDeclaration } from "../node-utilities/TSInterfaceDeclaration"
 import { updateTSInterfaceBody } from "../node-utilities/TSInterfaceBody"
 import { updateUndefinedLiteral } from "../node-utilities/UndefinedLiteral"
-import { updateAnnotationUsage } from "../node-utilities/AnnotationUsage"
+import { updateAnnotationUsage, update1AnnotationUsage } from "../node-utilities/AnnotationUsage"
 import { updateAssignmentExpression } from "../node-utilities/AssignmentExpression"
 import { updateETSUndefinedType } from "../node-utilities/ETSUndefinedType"
 import { updateConditionalExpression } from "../node-utilities/ConditionalExpression"
@@ -126,6 +135,14 @@ import { updateChainExpression } from "../node-utilities/ChainExpression"
 import { updateBlockExpression } from "../node-utilities/BlockExpression"
 import { updateNullLiteral } from "../node-utilities/NullLiteral"
 import { updateETSNewClassInstanceExpression } from "../node-utilities/ETSNewClassInstanceExpression"
+import { updateObjectExpression } from "../node-utilities/ObjectExpression"
+import { updateProperty } from "../node-utilities/Property"
+import { updateTemplateLiteral } from "../node-utilities/TemplateLiteral"
+import { updateArrayExpression } from "../node-utilities/ArrayExpression";
+import { updateTryStatement } from '../node-utilities/TryStatement';
+import { updateForUpdateStatement } from '../node-utilities/ForUpdateStatement';
+import { updateForInStatement } from '../node-utilities/ForInStatement';
+import { updateForOfStatement } from '../node-utilities/ForOfStatement';
 
 export const factory = {
     get createIdentifier() {
@@ -362,6 +379,12 @@ export const factory = {
     get updateAnnotationUsage() {
         return updateAnnotationUsage
     },
+    get create1AnnotationUsage(): (...args: Parameters<typeof AnnotationUsage.create1AnnotationUsage>) => AnnotationUsage {
+        return AnnotationUsage.create1AnnotationUsage;
+    },
+    get update1AnnotationUsage(): (...args: Parameters<typeof update1AnnotationUsage>) => AnnotationUsage {
+        return update1AnnotationUsage;
+    },
     get createAssignmentExpression() {
         return AssignmentExpression.create
     },
@@ -431,8 +454,61 @@ export const factory = {
     get updateETSNewClassInstanceExpression() {
         return updateETSNewClassInstanceExpression
     },
-    get createETSStringLiteralType(){
+    get createETSStringLiteralType() {
         return ETSStringLiteralType.create;
+    },
+    get createBooleanLiteral(): (...args: Parameters<typeof BooleanLiteral.createBooleanLiteral>) => BooleanLiteral {
+        return BooleanLiteral.createBooleanLiteral;
+    },
+    get createObjectExpression(): (...args: Parameters<typeof ObjectExpression.createObjectExpression>) => ObjectExpression {
+        return ObjectExpression.createObjectExpression;
+    },
+    get updateObjectExpression(): (...args: Parameters<typeof updateObjectExpression>) => ObjectExpression {
+        return updateObjectExpression;
+    },
+    get createProperty(): (...args: Parameters<typeof Property.createProperty>) => Property {
+        return Property.createProperty;
+    },
+    get updateProperty(): (...args: Parameters<typeof updateProperty>) => Property {
+        return updateProperty;
+    },
+    get createTemplateLiteral(): (...args: Parameters<typeof TemplateLiteral.createTemplateLiteral>) => TemplateLiteral {
+        return TemplateLiteral.createTemplateLiteral;
+    },
+    get updateTemplateLiteral(): (...args: Parameters<typeof updateTemplateLiteral>) => TemplateLiteral {
+        return updateTemplateLiteral;
+    },
+    get createArrayExpression(): (...args: Parameters<typeof ArrayExpression.createArrayExpression>) => ArrayExpression {
+        return ArrayExpression.createArrayExpression;
+    },
+    get updateArrayExpression(): (...args: Parameters<typeof updateArrayExpression>) => ArrayExpression {
+        return updateArrayExpression;
+    },
+    get createTryStatement(): (...args: Parameters<typeof TryStatement.createTryStatement>) => TryStatement {
+        return TryStatement.createTryStatement;
+    },
+    get updateTryStatement(): (...args: Parameters<typeof updateTryStatement>) => TryStatement {
+        return updateTryStatement;
+    },
+    get createForUpdateStatement(): (
+        ...args: Parameters<typeof ForUpdateStatement.createForUpdateStatement>
+    ) => ForUpdateStatement {
+        return ForUpdateStatement.createForUpdateStatement;
+    },
+    get updateForUpdateStatement(): (...args: Parameters<typeof updateForUpdateStatement>) => ForUpdateStatement {
+        return updateForUpdateStatement;
+    },
+    get createForInStatement(): (...args: Parameters<typeof ForInStatement.createForInStatement>) => ForInStatement {
+        return ForInStatement.createForInStatement;
+    },
+    get updateForInStatement(): (...args: Parameters<typeof updateForInStatement>) => ForInStatement {
+        return updateForInStatement;
+    },
+    get createForOfStatement(): (...args: Parameters<typeof ForOfStatement.createForOfStatement>) => ForOfStatement {
+        return ForOfStatement.createForOfStatement;
+    },
+    get updateForOfStatement(): (...args: Parameters<typeof updateForOfStatement>) => ForOfStatement {
+        return updateForOfStatement;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {

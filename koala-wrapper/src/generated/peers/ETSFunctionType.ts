@@ -37,7 +37,7 @@ import { Expression } from "./Expression"
 import { TSInterfaceDeclaration } from "./TSInterfaceDeclaration"
 export class ETSFunctionType extends TypeNode {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, 66)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_FUNCTION_TYPE)
         super(pointer)
         
     }
@@ -80,6 +80,6 @@ export class ETSFunctionType extends TypeNode {
 export function isETSFunctionType(node: AstNode): node is ETSFunctionType {
     return node instanceof ETSFunctionType
 }
-if (!nodeByType.has(66)) {
-    nodeByType.set(66, ETSFunctionType)
+if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_FUNCTION_TYPE)) {
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_FUNCTION_TYPE, ETSFunctionType)
 }
