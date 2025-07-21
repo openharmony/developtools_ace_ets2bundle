@@ -135,6 +135,8 @@ action("build_ets_loader_library") {
     rebase_path(_arkts_apis_file_dir, root_build_dir),
     "--build-public-sdk",
     "${sdk_build_public}",
+    "--sdk-build-arkts",
+    "${sdk_build_arkts}",
   ]
 }
 
@@ -157,10 +159,15 @@ action("build_ets_sysResource") {
   ]
 }
 
+main_sources = "compiler/main.js"
+if (sdk_build_arkts) {
+  main_sources = "compiler/src/interop/main.js"
+}
+
 ets_loader_sources = [
   "compiler/compile_plugin.js",
   "compiler/config/obfuscateWhiteList.json5",
-  "compiler/main.js",
+  main_sources,
   "compiler/node_modules",
   "compiler/npm-install.js",
   "compiler/package-lock.json",
