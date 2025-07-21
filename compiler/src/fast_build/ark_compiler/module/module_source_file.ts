@@ -78,13 +78,7 @@ import {
   createAndStartEvent,
   stopEvent
 } from '../../../performance';
-import {
-  getDeclgenBridgeCodePath,
-  writeBridgeCodeFileSyncByNode
-} from '../interop/process_arkts_evolution';
 import { PreloadFileModules } from './module_preload_file_utils';
-import { isMixCompile } from '../interop/interop_manager';
-import { ARKTS_1_2 } from '../interop/pre_define';
 
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
@@ -99,7 +93,6 @@ export class ModuleSourceFile {
   private source: string | ts.SourceFile;
   private metaInfo: Object;
   private isSourceNode: boolean = false;
-  private isArkTSEvolution: boolean = false;
   private static projectConfig: Object;
   private static logger: CommonLogger;
   private static mockConfigInfo: Object = {};
@@ -118,9 +111,6 @@ export class ModuleSourceFile {
     this.metaInfo = metaInfo;
     if (typeof this.source !== 'string') {
       this.isSourceNode = true;
-    }
-    if (metaInfo?.language === ARKTS_1_2) {
-      this.isArkTSEvolution = true;
     }
   }
 
@@ -442,11 +432,6 @@ export class ModuleSourceFile {
   }
 
   private async writeSourceFile(parentEvent: Object): Promise<void> {
-    if (isMixCompile() && this.isArkTSEvolution) {
-      await writeBridgeCodeFileSyncByNode(<ts.SourceFile> this.source, this.moduleId);
-      return;
-    }
-
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
       await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo,
         this.moduleId, parentEvent, ModuleSourceFile.logger);
@@ -540,14 +525,9 @@ export class ModuleSourceFile {
   }
 
   private static spliceNormalizedOhmurl(moduleInfo: Object, filePath: string, importerFile?: string): string {
-    const isArkTSEvolution: boolean = moduleInfo.meta.language === ARKTS_1_2;
-    let pkgPath = moduleInfo.meta.pkgPath;
-    if (isMixCompile() && isArkTSEvolution) {
-      pkgPath = path.join(getDeclgenBridgeCodePath(moduleInfo.meta.pkgName), moduleInfo.meta.moduleName);
-    }
     const pkgParams = {
       pkgName: moduleInfo.meta.pkgName,
-      pkgPath,
+      pkgPath: moduleInfo.meta.pkgPath,
       isRecordName: false,
     };
     const ohmUrl: string =

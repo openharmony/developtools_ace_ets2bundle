@@ -1,3 +1,0 @@
-har22/build/default/cache/default/default@HarCompileArkTS/esmodule/debug/har22/Index.ts;&har22/Index&1.0.0;esm;har22|har22|1.0.0|Index.ts;har22;false
-har22/build/default/cache/default/default@HarCompileArkTS/esmodule/debug/har22/src/main/ets/components/MainPage.ts;&har22/src/main/ets/components/MainPage&1.0.0;esm;har22|har22|1.0.0|src/main/ets/components/MainPage.ts;har22;false
-har22/build/default/cache/default/default@HarCompileArkTS/esmodule/debug/har22/build/default/generated/profile/default/ModuleInfo.js;&har22/build/default/generated/profile/default/ModuleInfo&1.0.0;esm;har22|har22|1.0.0|build/default/generated/profile/default/ModuleInfo.js;har22;false

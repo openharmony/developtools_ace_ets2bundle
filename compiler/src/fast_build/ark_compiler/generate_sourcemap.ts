@@ -60,7 +60,6 @@ import {
   stopEvent
 } from '../../performance';
 import { BytecodeObfuscator } from './bytecode_obfuscator';
-import { isMixCompile } from './interop/interop_manager';
 
 let isShouldSourceMap: boolean = true;
 
@@ -320,12 +319,6 @@ export class SourceMapGenerator {
       this.writeTemp('');
     }
     this.closeFd();
-    if (isMixCompile() && fs.existsSync(this.sourceMapForMergePath)) {
-      fs.unlinkSync(this.sourceMapForMergePath);
-    }
-    if (isMixCompile() && fs.existsSync(this.sourceMapPath)) {
-      fs.copyFileSync(this.sourceMapPath, this.sourceMapForMergePath);
-    }
     if (fs.existsSync(this.cacheSourceMapPath)) {
       fs.unlinkSync(this.cacheSourceMapPath);
     }
@@ -426,12 +419,6 @@ export class SourceMapGenerator {
           this.logger.printErrorAndExit(errInfo);
         }
         fs.copyFileSync(this.sourceMapPath, this.cacheSourceMapPath);
-        if (isMixCompile() && fs.existsSync(this.sourceMapForMergePath)) {
-          fs.unlinkSync(this.sourceMapForMergePath);
-        }
-        if (isMixCompile() && fs.existsSync(this.sourceMapPath)) {
-          fs.copyFileSync(this.sourceMapPath, this.sourceMapForMergePath);
-        }
         stopEvent(eventWriteFile, true);
         this.triggerEndSignal();
       });
