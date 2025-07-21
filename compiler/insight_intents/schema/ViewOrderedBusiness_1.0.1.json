@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "查看已订业务",
   "keywords": ["ViewOrderedBusiness"],
+  "domain": "ToolsDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {

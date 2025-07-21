@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "联系客服",
   "keywords": ["ContactCustomerService"],
+  "domain": "ToolsDomain",
   "parameters": {
     "type": "object",
     "properties": {}

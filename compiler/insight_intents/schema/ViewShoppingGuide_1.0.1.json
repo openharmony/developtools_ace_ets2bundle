@@ -3,6 +3,7 @@
   "intentVersion": "1.0.1",
   "llmDescription": "查看购物攻略",
   "keywords": ["ViewShoppingGuide"],
+  "domain": "ShoppingPlatformsDomain",
   "parameters": {
     "type": "object",
     "propertyNames": {
