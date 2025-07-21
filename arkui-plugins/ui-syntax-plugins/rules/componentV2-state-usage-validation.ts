@@ -40,7 +40,14 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
     public parsed(node: arkts.AstNode): void {
         this.initComponentV2PropertyMap(node, this.componentV2PropertyMap);
         this.checkInitializeRule(node, this.componentV2PropertyMap);
-        if (arkts.isMethodDefinition(node)) {
+        if (arkts.isClassDeclaration(node) && node.definition) {
+            this.checkuseStateDecoratorsWithProperty(node.definition);
+        }
+        if (arkts.isFunctionDeclaration(node) ||
+            arkts.isVariableDeclaration(node) ||
+            arkts.isScriptFunction(node) ||
+            arkts.isTSInterfaceDeclaration(node) ||
+            arkts.isTSTypeAliasDeclaration(node)) {
             // Rule 5: Local, Param, Event decorators must be used with Property
             this.checkuseStateDecoratorsWithProperty(node);
         }
@@ -50,7 +57,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
         this.validateClassPropertyDecorators(node);
     }
 
-    private hasisComponentV2 = (node: arkts.StructDeclaration): boolean => !!getAnnotationUsage(node,
+    private hasComponentV2Annotation = (node: arkts.StructDeclaration): boolean => !!getAnnotationUsage(node,
         PresetDecorators.COMPONENT_V2);
 
     private checkMultipleBuiltInDecorators(member: arkts.ClassProperty,
@@ -120,9 +127,16 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
         }
     };
 
-    private checkuseStateDecoratorsWithProperty(method: arkts.MethodDefinition): void {
-        method.scriptFunction.annotations.forEach(annotation => {
-            if (annotation.expr && arkts.isIdentifier(annotation.expr) && builtInDecorators.includes(annotation.expr.name)) {
+    private checkuseStateDecoratorsWithProperty(
+        node: arkts.FunctionDeclaration |
+            arkts.VariableDeclaration |
+            arkts.ScriptFunction |
+            arkts.TSInterfaceDeclaration |
+            arkts.ClassDefinition |
+            arkts.TSTypeAliasDeclaration): void {
+        node.annotations.forEach(annotation => {
+            if (annotation.expr && arkts.isIdentifier(annotation.expr) &&
+                builtInDecorators.includes(annotation.expr.name)) {
                 const annotationName = annotation.expr.name;
                 this.reportInvalidDecoratorOnMethod(annotation, annotationName);
             }
@@ -148,7 +162,8 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
     }
 
     private validateClassPropertyDecorators(node: arkts.StructDeclaration): void {
-        const isComponentV2 = this.hasisComponentV2(node);
+        this.checkuseStateDecoratorsWithProperty(node.definition);
+        const isComponentV2 = this.hasComponentV2Annotation(node);
         node.definition.body.forEach(member => {
             if (!arkts.isClassProperty(member)) {
                 return;
