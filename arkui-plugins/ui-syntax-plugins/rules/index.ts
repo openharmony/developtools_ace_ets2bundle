@@ -19,6 +19,7 @@ import AttributeNoInvokeRule from './attribute-no-invoke';
 import BuildRootNodeRule from './build-root-node';
 import CheckConstructPrivateParameterRule from './check-construct-private-parameter';
 import CheckDecoratedPropertyTypeRule from './check-decorated-property-type';
+import CheckPropertyModifiersRule from './check-property-modifiers';
 import ComponentComponentV2MixUseCheckRule from './component-componentV2-mix-use-check';
 import ComponentV2MixCheckRule from './componentV2-mix-check';
 import ConstructParameterLiteralRule from './construct-parameter-literal';
@@ -72,6 +73,7 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [BuilderParamDecoratorCheckRule, 'error'],
     [CheckConstructPrivateParameterRule, 'warn'],
     [CheckDecoratedPropertyTypeRule, 'error'],
+    [CheckPropertyModifiersRule, 'warn'],
     [ComponentComponentV2MixUseCheckRule, 'error'],
     [ComponentV2MixCheckRule, 'error'],
     [ConstructParameterLiteralRule, 'warn'],
