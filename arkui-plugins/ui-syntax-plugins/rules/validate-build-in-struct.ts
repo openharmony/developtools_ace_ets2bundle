@@ -112,7 +112,7 @@ class ValidateBuildInStructRule extends AbstractUISyntaxRule {
         const structName = node.definition.ident;
         if (buildFunctionCount === BUILD_FUNCTION_COUNT_INI &&
             statements.length === NOT_STATEMENT_LENGTH) {
-            this.reportMissingBuildInStruct(structName, blockStatement);
+            this.reportMissingBuildInStruct(structName, node);
         }
     }
 
@@ -136,7 +136,7 @@ class ValidateBuildInStructRule extends AbstractUISyntaxRule {
 
     private reportMissingBuildInStruct(
         structName: arkts.Identifier | undefined,
-        blockStatement: arkts.BlockStatement,
+        node: arkts.StructDeclaration,
     ): void {
         if (!structName) {
             return;
@@ -148,11 +148,12 @@ class ValidateBuildInStructRule extends AbstractUISyntaxRule {
                 structName: getIdentifierName(structName),
             },
             fix: () => {
-                const startPosition = blockStatement.startPosition;
+                let startPosition = node.endPosition;
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 const endPosition = startPosition;
                 return {
                     range: [startPosition, endPosition],
-                    code: '{\nbuild() {\n}\n'
+                    code: 'build() {\n}\n'
                 };
             }
         });

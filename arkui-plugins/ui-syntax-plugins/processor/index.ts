@@ -136,6 +136,8 @@ class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
 
     private format(content: string, placeholders: object): string {
         return Object.entries(placeholders).reduce((content, [placehoderName, placehoderValue]) => {
+            // Fixed a bug where $$ was converted to $
+            placehoderValue = placehoderValue.split('$$').join('$$$$');
             return content.replace(`{{${placehoderName}}}`, placehoderValue);
         }, content);
     }
