@@ -150,6 +150,9 @@ class ParseIntent {
         pkgName: metaInfo.pkgName,
         pkgPath: metaInfo.pkgPath
       };
+      if (!projectConfig.pkgContextInfo) {
+        return;
+      }
       const Logger: IntentLogger = IntentLogger.getInstance();
       const recordName: string = getNormalizedOhmUrlByFilepath(filePath, projectConfig, Logger, pkgParams, null);
       if (!this.updatePageIntentObj.has(`@normalized:${recordName}`)) {
@@ -167,7 +170,7 @@ class ParseIntent {
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101001',
+        code: '10110001',
         description: 'InsightIntent Compiler Error',
         solutions: ['Move it to an .ets file']
       });
@@ -199,6 +202,16 @@ class ParseIntent {
     const decoratorSourceFile: string = declarations[0].getSourceFile().fileName;
     const isGlobalPathFlag: boolean = this.isGlobalPath(decoratorSourceFile);
     if (!isGlobalPathFlag) {
+      return;
+    }
+    if (!projectConfig.pkgContextInfo) {
+      const errorMessage: string = 'Failed to generate standard OHMUrl.';
+      this.transformLog.push({
+        type: LogType.ERROR, message: errorMessage, pos: this.currentNode.getStart(),
+        code: '10111027',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Set useNormalizedOHMUrl to true in build-profile.json5']
+      });
       return;
     }
     const Logger: IntentLogger = IntentLogger.getInstance();
@@ -248,7 +261,7 @@ class ParseIntent {
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101002',
+        code: '10110002',
         description: 'InsightIntent Compiler Error',
         solutions: ['Add parentheses after the decorator name']
       });
@@ -285,7 +298,7 @@ class ParseIntent {
           type: LogType.ERROR,
           message: errorMessage,
           pos: this.currentNode.getStart(),
-          code: '10110021',
+          code: '10110020',
           description: 'InsightIntent Compiler Error',
           solutions: ['Remove duplicates']
         });
@@ -420,7 +433,7 @@ class ParseIntent {
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101002',
+        code: '10110002',
         description: 'InsightIntent Compiler Error',
         solutions: ['Add parentheses after the decorator name']
       });
@@ -468,7 +481,7 @@ class ParseIntent {
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101002',
+        code: '10110002',
         description: 'InsightIntent Compiler Error',
         solutions: ['Add parentheses after the decorator name']
       });
@@ -1128,14 +1141,14 @@ class ParseIntent {
     const paramName: keyof T = prop.name.text;
     if (ts.isPropertyAssignment(prop) && ts.isIdentifier(prop.name)) {
       if (!allowedFields.has(paramName)) {
-        const errorMessage: string = `The parameter type does not match the decorator's requirement.`;
+        const errorMessage: string = `Unsupported parameters found in the decorator.`;
         this.transformLog.push({
           type: LogType.ERROR,
           message: errorMessage,
           pos: this.currentNode.getStart(),
-          code: '10110004',
+          code: '10110005',
           description: 'InsightIntent Compiler Error',
-          solutions: ['Adjust the type to match the expected type']
+          solutions: ['Remove any parameters that are not supported.']
         });
         return;
       }
@@ -1144,27 +1157,27 @@ class ParseIntent {
         const symbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(prop.initializer);
         const declaration: ts.Declaration = symbol?.valueDeclaration;
         if (validator && !validator(declaration?.initializer)) {
-          const errorMessage: string = `Unsupported parameters found in the decorator.`;
+          const errorMessage: string = `The parameter type does not match the decorator's requirement.`;
           this.transformLog.push({
             type: LogType.ERROR,
             message: errorMessage,
             pos: this.currentNode.getStart(),
-            code: '10110005',
+            code: '10110004',
             description: 'InsightIntent Compiler Error',
-            solutions: ['Remove any parameters that are not supported']
+            solutions: ['Adjust the type to match the expected type.']
           });
           return;
         }
       } else {
         if (validator && !validator(prop.initializer)) {
-          const errorMessage: string = `Unsupported parameters found in the decorator.`;
+          const errorMessage: string = `The parameter type does not match the decorator's requirement.`;
           this.transformLog.push({
             type: LogType.ERROR,
             message: errorMessage,
             pos: this.currentNode.getStart(),
-            code: '10110005',
+            code: '10110004',
             description: 'InsightIntent Compiler Error',
-            solutions: ['Remove any parameters that are not supported']
+            solutions: ['Adjust the type to match the expected type.']
           });
           return;
         }
