@@ -15,7 +15,14 @@
 
 import { Text, Column, Component, Entry, Button, ClickEvent } from "@ohos.arkui.component"
 import { State, Link, Prop } from "@ohos.arkui.stateManagement"
-import { CustomDialog, CustomDialogController, DismissDialogAction, DismissReason, DialogAlignment, CustomDialogControllerOptions } from "@kit.ArkUI"
+import { 
+  CustomDialog, 
+  CustomDialogController, 
+  DismissDialogAction, 
+  DismissReason, 
+  DialogAlignment, 
+  CustomDialogControllerOptions
+} from "@ohos.arkui.component"
 import hilog from '@ohos.hilog'
 
 @CustomDialog
