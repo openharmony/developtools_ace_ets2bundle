@@ -84,16 +84,7 @@ export class ParamTranslator extends PropertyTranslator implements InitializerCo
                       this.property.value,
                       arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
                   )
-                : arkts.factory.createTSAsExpression(
-                      factory.createNonNullOrOptionalMemberExpression(
-                          CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
-                          originalName,
-                          false,
-                          true
-                      ),
-                      this.property.typeAnnotation?.clone(),
-                      false
-                  ),
+                : factory.generateDefiniteInitializers(this.property.typeAnnotation, originalName),
         ];
         collectStateManagementTypeImport(StateManagementTypes.PARAM_DECORATED);
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(

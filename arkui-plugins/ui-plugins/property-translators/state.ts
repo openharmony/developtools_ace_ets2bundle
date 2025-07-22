@@ -100,7 +100,12 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
             this.property.value ?? arkts.factory.createUndefinedLiteral(),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         );
-        const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(originalName), binaryItem];
+        const args: arkts.Expression[] = [
+            arkts.factory.create1StringLiteral(originalName),
+            this.property.value
+                ? binaryItem
+                : factory.generateDefiniteInitializers(this.property.typeAnnotation, originalName),
+        ];
         factory.judgeIfAddWatchFunc(args, this.property);
         collectStateManagementTypeImport(StateManagementTypes.STATE_DECORATED);
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
