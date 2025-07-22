@@ -119,9 +119,9 @@ function newComponent(className: string): arkts.Statement {
             arkts.factory.createETSNewClassInstanceExpression(
                 arkts.factory.createIdentifier(className),
                 [
-                    generateTSASExpression(getWrapValue(arkts.factory.createUndefinedLiteral())),
+                    arkts.factory.createUndefinedLiteral(),
                     generateTSASExpression(arkts.factory.createIdentifier(InteroperAbilityNames.PARAM)),
-                    generateTSASExpression(getWrapValue(arkts.factory.createUndefinedLiteral())),
+                    arkts.factory.createUndefinedLiteral(),
                     generateTSASExpression(arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID)), 
                     arkts.factory.createTSAsExpression(
                         arkts.factory.createArrowFunction(
