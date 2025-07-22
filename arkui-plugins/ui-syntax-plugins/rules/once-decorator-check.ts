@@ -14,13 +14,12 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getAnnotationUsage, getClassPropertyAnnotationNames, PresetDecorators, findDecorator } from '../utils';
+import { getClassPropertyAnnotationNames, PresetDecorators, findDecorator } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
-            invalidUsage: `The '@Once' annotation can only be used in a 'struct' decorated with '@ComponentV2'.`,
             invalidMemberDecorate: `'@Once' can only decorate member property.`,
             invalidDecorator: `When a variable decorated with '@Once', it must also be decorated with '@Param'.`,
             invalidNOtInStruct: `'@Once' annotation can only be used with 'struct'.`
@@ -34,10 +33,7 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
         this.validateOnlyOnProperty(node);
 
         if (arkts.isStructDeclaration(node)) {
-            // Check if the struct is decorated with @ComponentV2
-            const componentV2DecoratorUsage = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
-            const componentDecoratorUsage = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
-            this.validateDecorator(node, onceDecorator, componentV2DecoratorUsage, componentDecoratorUsage);
+            this.validateDecorator(node, onceDecorator);
         }
     }
 
@@ -101,15 +97,11 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
     private validateDecorator(
         node: arkts.StructDeclaration,
         onceDecorator: arkts.AnnotationUsage | undefined,
-        componentV2DecoratorUsage: arkts.AnnotationUsage | undefined,
-        componentDecoratorUsage: arkts.AnnotationUsage | undefined,
     ): void {
         node.definition?.body.forEach(body => {
             // Check if @Once is used on a property and if @Param is used with
             if (arkts.isClassProperty(body)) {
                 this.validatePropertyAnnotations(body, onceDecorator);
-                // If @Once is used but not in a @ComponentV2 struct, report an error
-                this.invalidComponentUsage(node, body, onceDecorator, componentV2DecoratorUsage, componentDecoratorUsage);
             }
         });
     }
@@ -135,19 +127,6 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
                 );
                 this.reportInvalidDecoratorsWithOnceAndParam(otherDecorators);
             }
-        }
-    }
-
-    private invalidComponentUsage(
-        node: arkts.StructDeclaration,
-        body: arkts.ClassProperty,
-        onceDecorator: arkts.AnnotationUsage | undefined,
-        componentV2DecoratorUsage: arkts.AnnotationUsage | undefined,
-        componentDecoratorUsage: arkts.AnnotationUsage | undefined,
-    ): void {
-        onceDecorator = findDecorator(body, PresetDecorators.ONCE);
-        if (onceDecorator && !componentV2DecoratorUsage) {
-            this.reportInvalidOnceUsage(onceDecorator, node, componentDecoratorUsage);
         }
     }
 
@@ -183,38 +162,6 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
                     range: [startPosition, endPosition],
                     code: ''
                 };
-            }
-        });
-    }
-
-    private reportInvalidOnceUsage(
-        onceDecorator: arkts.AnnotationUsage | undefined,
-        node: arkts.StructDeclaration,
-        componentDecoratorUsage: arkts.AnnotationUsage | undefined,
-    ): void {
-        if (!onceDecorator) {
-            return;
-        }
-        this.report({
-            node: onceDecorator,
-            message: this.messages.invalidUsage,
-            fix: () => {
-                if (componentDecoratorUsage) {
-                    let startPosition = componentDecoratorUsage.startPosition;
-                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
-                    const endPosition = componentDecoratorUsage.endPosition;
-                    return {
-                        range: [startPosition, endPosition],
-                        code: `@${PresetDecorators.COMPONENT_V2}`
-                    };
-                } else {
-                    const startPosition = node.startPosition;
-                    const endPosition = node.startPosition;
-                    return {
-                        range: [startPosition, endPosition],
-                        code: `@${PresetDecorators.COMPONENT_V2}\n`
-                    };
-                }
             }
         });
     }

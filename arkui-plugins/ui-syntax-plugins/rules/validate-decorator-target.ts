@@ -38,16 +38,9 @@ const propertyOnlyDecorators = [
     PresetDecorators.STORAGE_LINK,
     PresetDecorators.STORAGE_PROP_REF,
     PresetDecorators.LOCAL_STORAGE_LINK,
-    PresetDecorators.LOCAL,
-    PresetDecorators.PARAM,
-    PresetDecorators.EVENT,
-    PresetDecorators.PROVIDER,
-    PresetDecorators.CONSUMER,
     PresetDecorators.WATCH,
     PresetDecorators.REQUIRE,
     PresetDecorators.OBJECT_LINK,
-    PresetDecorators.TRACK,
-    PresetDecorators.ONCE
 ];
 
 class ValidateDecoratorTargetRule extends AbstractUISyntaxRule {
@@ -69,7 +62,6 @@ class ValidateDecoratorTargetRule extends AbstractUISyntaxRule {
     private validateDecoratorPropertyOnly(
         node: arkts.AstNode,
     ): void {
-
         if (arkts.isScriptFunction(node) || arkts.isVariableDeclaration(node) || arkts.isTSInterfaceDeclaration(node) ||
             arkts.isTSTypeAliasDeclaration(node)) {
             node.annotations.forEach((annotation) => {
