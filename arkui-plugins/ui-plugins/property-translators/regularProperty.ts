@@ -15,11 +15,19 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { createGetter, generateToRecord, generateThisBacking, createSetter2, PropertyCache } from './utils';
+import {
+    createGetter,
+    generateToRecord,
+    generateThisBacking,
+    createSetter2,
+    PropertyCache,
+    isCustomDialogController,
+} from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName } from '../../common/arkts-utils';
 import { factory } from './factory';
+import { CustomComponentNames } from '../utils';
 
 export class RegularPropertyTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
@@ -31,7 +39,14 @@ export class RegularPropertyTranslator extends PropertyTranslator implements Ini
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const value = this.property.value ?? arkts.factory.createUndefinedLiteral();
-        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName, value);
+        let initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName, value);
+        if (
+            !!this.property.typeAnnotation &&
+            !!this.structInfo.annotations.customdialog &&
+            isCustomDialogController(this.property.typeAnnotation)
+        ) {
+            initializeStruct = this.generateControllerInit(originalName, initializeStruct);
+        }
         PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
         if (!!this.structInfo.annotations?.reusable) {
             const toRecord = generateToRecord(newName, originalName);
@@ -87,7 +102,7 @@ export class RegularPropertyTranslator extends PropertyTranslator implements Ini
     generateInitializeStruct(newName: string, originalName: string, value: arkts.Expression): arkts.AstNode {
         const binaryItem = arkts.factory.createBinaryExpression(
             factory.createBlockStatementForOptionalExpression(
-                arkts.factory.createIdentifier('initializers'),
+                arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
                 originalName
             ),
             value ?? arkts.factory.createUndefinedLiteral(),
@@ -99,6 +114,16 @@ export class RegularPropertyTranslator extends PropertyTranslator implements Ini
             binaryItem
         );
         return arkts.factory.createExpressionStatement(assign);
+    }
+
+    generateControllerInit(originalName: string, initializeStruct: arkts.AstNode): arkts.AstNode {
+        return arkts.factory.createIfStatement(
+            factory.createBlockStatementForOptionalExpression(
+                arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
+                originalName
+            ),
+            arkts.factory.createBlock([initializeStruct])
+        );
     }
 }
 
