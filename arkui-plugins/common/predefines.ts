@@ -161,6 +161,7 @@ export enum DecoratorNames {
     MONITOR = 'Monitor',
     COMPUTED = 'Computed',
     EVENT = 'Event',
+    REQUIRE = 'Require'
 }
 
 export enum TypeNames {
