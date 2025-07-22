@@ -75,8 +75,7 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
             node: decorator,
             message: message,
             fix: (decorator) => {
-                let startPosition = decorator.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                const startPosition = decorator.startPosition;
                 const endPosition = decorator.endPosition;
                 return {
                     range: [startPosition, endPosition],

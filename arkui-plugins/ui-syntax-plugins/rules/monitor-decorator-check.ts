@@ -76,11 +76,9 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 node: monitorDecorator,
                 message: this.messages.monitorUsedInObservedV2Class,
                 fix: () => {
-                    let startPosition = observedV1Decorator.startPosition;
-                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                     return {
-                        range: [startPosition, observedV1Decorator.endPosition],
-                        code: `@${PresetDecorators.OBSERVED_V2}`
+                        range: [observedV1Decorator.startPosition, observedV1Decorator.endPosition],
+                        code: `${PresetDecorators.OBSERVED_V2}`
                     };
                 }
             });
@@ -113,11 +111,9 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 node: monitorDecorator,
                 message: this.messages.monitorUsedInComponentV2Struct,
                 fix: () => {
-                    let startPosition = componentV1Decorator.startPosition;
-                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                     return {
-                        range: [startPosition, componentV1Decorator.endPosition],
-                        code: `@${PresetDecorators.COMPONENT_V2}`
+                        range: [componentV1Decorator.startPosition, componentV1Decorator.endPosition],
+                        code: `${PresetDecorators.COMPONENT_V2}`
                     };
                 }
             });
@@ -179,8 +175,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 const startPositions = conflictingDecorators.map(annotation =>
                     annotation.startPosition);
                 const endPositions = conflictingDecorators.map(annotation => annotation.endPosition);
-                let startPosition = startPositions[0];
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                const startPosition = startPositions[0];
                 const endPosition = endPositions[endPositions.length - 1];
                 return {
                     range: [startPosition, endPosition],
@@ -211,8 +206,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 node: monitorDecorator,
                 message: this.messages.monitorDecorateMethod,
                 fix: () => {
-                    let startPosition = monitorDecorator.startPosition;
-                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                    const startPosition = monitorDecorator.startPosition;
                     const endPosition = monitorDecorator.endPosition;
                     return {
                         range: [startPosition, endPosition],
