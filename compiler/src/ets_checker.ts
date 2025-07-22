@@ -120,6 +120,7 @@ export interface LanguageServiceCache {
   maxFlowDepth?: number;
   preTsImportSendable?: boolean;
   preSkipOhModulesLint?: boolean;
+  preMixCompile?: boolean;
 }
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
@@ -215,7 +216,8 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'skipPathsInKeyForCompilationSettings': reuseLanguageServiceForDepChange,
     'compatibleSdkVersionStage': projectConfig.compatibleSdkVersionStage,
     'compatibleSdkVersion': projectConfig.compatibleSdkVersion,
-    'skipOhModulesLint': skipOhModulesLint
+    'skipOhModulesLint': skipOhModulesLint,
+    'mixCompile': mixCompile
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
@@ -456,14 +458,16 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     cache?.preTsImportSendable !== tsImportSendable;
   const skipOhModulesLintDiff: boolean = (cache?.preSkipOhModulesLint === undefined && !skipOhModulesLint) ? 
     false : cache?.preSkipOhModulesLint !== skipOhModulesLint;
+  const mixCompileDiff: boolean = (cache?.preMixCompile === undefined && !mixCompile) ? 
+    false : cache?.preMixCompile !== mixCompile;
   const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || targetESVersionDiffers ||
-    tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff;
+    tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff || mixCompileDiff;
   if (reuseLanguageServiceForDepChange && hashDiffers && rollupShareObject?.depInfo?.enableIncre) {
     needReCheckForChangedDepUsers = true;
   }
 
   if (!service || shouldRebuild) {
-    rebuildProgram(targetESVersionDiffers, tsImportSendableDiff, maxFlowDepthDiffers, skipOhModulesLintDiff);
+    rebuildProgram(targetESVersionDiffers, tsImportSendableDiff, maxFlowDepthDiffers, skipOhModulesLintDiff, mixCompileDiff);
     service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
   } else {
     // Found language service from cache, update root files
@@ -477,19 +481,20 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     targetESVersion: currentTargetESVersion,
     maxFlowDepth: currentMaxFlowDepth,
     preTsImportSendable: tsImportSendable,
-    preSkipOhModulesLint: skipOhModulesLint
+    preSkipOhModulesLint: skipOhModulesLint,
+    preMixCompile: mixCompile
   };
   setRollupCache(rollupShareObject, projectConfig, cacheKey, newCache);
   return service;
 }
 
 function rebuildProgram(targetESVersionDiffers: boolean | undefined, tsImportSendableDiff: boolean,
-  maxFlowDepthDiffers: boolean | undefined, skipOhModulesLintDiff: boolean): void {
+  maxFlowDepthDiffers: boolean | undefined, skipOhModulesLintDiff: boolean, mixCompileDiff: boolean): void {
   if (targetESVersionDiffers) {
     // If the targetESVersion is changed, we need to delete the build info cahce files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
     targetESVersionChanged = true;
-  } else if (tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff) {
+  } else if (tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff || mixCompileDiff) {
     // When tsImportSendable or maxFlowDepth is changed, we need to delete the build info cahce files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
   }
@@ -550,6 +555,7 @@ export const warnCheckerResult: WarnCheckerResult = { count: 0 };
 export let languageService: ts.LanguageService = null;
 let tsImportSendable: boolean = false;
 let skipOhModulesLint: boolean = false;
+let mixCompile: boolean = false;
 export let maxMemoryInServiceChecker: number = 0;
 export function serviceChecker(rootFileNames: string[], newLogger: Object = null, resolveModulePaths: string[] = null,
   parentEvent?: CompileEvent, rollupShareObject?: Object): void {
@@ -557,6 +563,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   let cacheFile: string = null;
   tsImportSendable = rollupShareObject?.projectConfig.tsImportSendable;
   skipOhModulesLint = rollupShareObject?.projectConfig.skipOhModulesLint;
+  mixCompile = rollupShareObject?.projectConfig.mixCompile;
   if (projectConfig.xtsMode || process.env.watchMode === 'true') {
     if (projectConfig.hotReload) {
       rootFileNames.forEach(fileName => {
