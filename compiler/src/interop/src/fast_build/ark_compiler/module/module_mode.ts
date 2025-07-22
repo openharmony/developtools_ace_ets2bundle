@@ -610,6 +610,11 @@ export class ModuleMode extends CommonMode {
     if (this.projectConfig.allowEtsAnnotations) {
       this.cmdArgs.push('--enable-annotations');
     }
+    // Add column numbers for bytecode instructions in release mode
+    if (!Object.prototype.hasOwnProperty.call(this.projectConfig, 'enableColumnNum') ||
+      this.projectConfig.enableColumnNum) {
+      this.cmdArgs.push('--enable-release-column');
+    }
     if (isNeedPerformanceDotting(this.projectConfig)) {
       this.cmdArgs.push(`--perf-file=${this.perfReportPath}`);
     if (this.projectConfig.mixCompile) {
