@@ -390,8 +390,8 @@ export function generateToRecord(newName: string, originalName: string): arkts.P
 export function isCustomDialogController(type: arkts.TypeNode): boolean {
     if (arkts.isETSUnionType(type)) {
         return !!type.types.find((item: arkts.TypeNode) => {
-            return isCustomDialogController(item)
-        })
+            return isCustomDialogController(item);
+        });
     }
     return (
         !!arkts.isETSTypeReference(type) &&

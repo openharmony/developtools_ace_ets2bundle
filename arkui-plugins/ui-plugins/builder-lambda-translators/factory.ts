@@ -35,8 +35,6 @@ import {
     isBuilderLambdaFunctionCall,
     isSafeType,
     replaceBuilderLambdaDeclMethodName,
-    getDecalTypeFromValue,
-    hasBindableProperty,
     isDoubleDollarCall,
     InstanceCallInfo,
     isStyleChainedCall,
@@ -48,6 +46,7 @@ import {
     checkIsWithInIfConditionScope,
     BuilderLambdaConditionBranchInfo,
     BuilderLambdaChainingCallArgInfo,
+    getArgumentType,
 } from './utils';
 import { hasDecorator, isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
 import { factory as PropertyFactory } from '../property-translators/factory';
@@ -122,14 +121,11 @@ export class factory {
             params,
             (arg, param, index) => {
                 const _param = param as arkts.ETSParameterExpression;
-                let hasBindable: boolean = false;
                 let isDoubleDollar: boolean = false;
                 if (index === 0 && !!arg) {
-                    const type = _param.type?.clone();
-                    hasBindable = !!type && hasBindableProperty(type, BindableDecl.BINDABLE);
                     isDoubleDollar = isDoubleDollarCall(arg);
                 }
-                if (hasBindable && isDoubleDollar && !!arg) {
+                if (isDoubleDollar && !!arg) {
                     const bindableArg: arkts.Expression = (arg as arkts.CallExpression).arguments[0];
                     argInfo.push({ arg: factory.updateBindableStyleArguments(bindableArg) });
                 } else if (!!arg) {
@@ -145,7 +141,7 @@ export class factory {
      * transform bundable arguments in style node, e.g. `Radio().checked($$(this.checked))` => `Radio().checked({value: xxx, onChange: xxx})`.
      */
     static updateBindableStyleArguments(bindableArg: arkts.Expression): arkts.Expression {
-        const valueType: arkts.TypeNode = getDecalTypeFromValue(bindableArg);
+        const valueType: arkts.TypeNode = getArgumentType(bindableArg);
         const objExp: arkts.ObjectExpression = arkts.factory.createObjectExpression(
             arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
             [factory.generateValueProperty(bindableArg), factory.generateOnChangeArrowFunc(bindableArg, valueType)],
@@ -334,8 +330,6 @@ export class factory {
         if (!prop.key || !prop.value || !(decl = arkts.getDecl(prop.key)) || !arkts.isMethodDefinition(decl)) {
             return prop;
         }
-        const returnType: arkts.TypeNode | undefined = decl.scriptFunction.returnTypeAnnotation;
-        const isBindable: boolean = !!returnType && hasBindableProperty(returnType, BindableDecl.BINDABLE);
         let isBuilderParam: boolean = false;
         let isLinkIntrinsic: boolean = false;
         decl.scriptFunction.annotations.forEach((anno) => {
@@ -343,7 +337,7 @@ export class factory {
             isLinkIntrinsic ||= isDecoratorIntrinsicAnnotation(anno, DecoratorIntrinsicNames.LINK);
         });
 
-        if (isBindable && isDoubleDollarCall(prop.value)) {
+        if (isDoubleDollarCall(prop.value)) {
             return factory.updateBindableProperty(prop);
         } else if (isBuilderParam && arkts.isArrowFunctionExpression(prop.value)) {
             addMemoAnnotation(prop.value);
@@ -719,7 +713,7 @@ export class factory {
             prop.value.arguments.length === 1
         ) {
             let bindableArg = prop.value.arguments[0];
-            valueType = getDecalTypeFromValue(bindableArg);
+            valueType = getArgumentType(bindableArg);
             res.push(
                 factory.generateValueProperty(bindableArg),
                 factory.generateOnChangeArrowFunc(bindableArg, valueType)
