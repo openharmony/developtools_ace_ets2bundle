@@ -73,7 +73,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __updateStruct(initializers: (__Options_AnimatablePropertyExample | undefined)): void {}
   
   @memo() public build() {
-    Column(undefined, undefined, (() => {
+    Column(undefined, undefined, @memo() (() => {
       Text(@memo() ((instance: TextAttribute): void => {
         instance.animationStart({
           duration: 2000,

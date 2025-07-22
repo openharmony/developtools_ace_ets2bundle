@@ -54,8 +54,11 @@ function main() {}
 
 @CustomDialog() final struct CustomDialogExample extends BaseCustomDialog<CustomDialogExample, __Options_CustomDialogExample> {
   public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_aaController = ((({let gensym___180078470 = initializers;
-    (((gensym___180078470) == (null)) ? undefined : gensym___180078470.aaController)})) ?? (undefined));
+    if (({let gensym___45519047 = initializers;
+    (((gensym___45519047) == (null)) ? undefined : gensym___45519047.aaController)})) {
+      this.__backing_aaController = ((({let gensym___180078470 = initializers;
+      (((gensym___180078470) == (null)) ? undefined : gensym___180078470.aaController)})) ?? (undefined));
+    }
   }
   
   public __updateStruct(initializers: (__Options_CustomDialogExample | undefined)): void {}
@@ -104,8 +107,8 @@ class DialogControllerV3 extends DialogControllerV2 {
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_dialogController = ((({let gensym___51459619 = initializers;
-    (((gensym___51459619) == (null)) ? undefined : gensym___51459619.dialogController)})) ?? ((new CustomDialogController(({
+    this.__backing_dialogController = ((({let gensym___176924847 = initializers;
+    (((gensym___176924847) == (null)) ? undefined : gensym___176924847.dialogController)})) ?? ((new CustomDialogController(({
       gridCount: 4,
       showInSubWindow: true,
       builder: @memo() (() => {
