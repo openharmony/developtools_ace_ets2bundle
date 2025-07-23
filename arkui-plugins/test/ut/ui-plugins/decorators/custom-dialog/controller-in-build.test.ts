@@ -64,12 +64,15 @@ function main() {}
 
 @CustomDialog() final struct CustomDialogExample extends BaseCustomDialog<CustomDialogExample, __Options_CustomDialogExample> {
   public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_aaController = ((({let gensym___180078470 = initializers;
-    (((gensym___180078470) == (null)) ? undefined : gensym___180078470.aaController)})) ?? (undefined));
-    this.__backing_text = STATE_MGMT_FACTORY.makeState<string>(this, "text", ((({let gensym___135728974 = initializers;
-    (((gensym___135728974) == (null)) ? undefined : gensym___135728974.text)})) ?? ("text")));
-    this.__backing_hh = STATE_MGMT_FACTORY.makeState<string>(this, "hh", ((({let gensym___200130389 = initializers;
-    (((gensym___200130389) == (null)) ? undefined : gensym___200130389.hh)})) ?? ("nihao")));
+    if (({let gensym___45519047 = initializers;
+    (((gensym___45519047) == (null)) ? undefined : gensym___45519047.aaController)})) {
+      this.__backing_aaController = ((({let gensym___180078470 = initializers;
+      (((gensym___180078470) == (null)) ? undefined : gensym___180078470.aaController)})) ?? (undefined));
+    }
+    this.__backing_text = STATE_MGMT_FACTORY.makeState<string>(this, "text", ((({let gensym___217676902 = initializers;
+    (((gensym___217676902) == (null)) ? undefined : gensym___217676902.text)})) ?? ("text")));
+    this.__backing_hh = STATE_MGMT_FACTORY.makeState<string>(this, "hh", ((({let gensym___112288773 = initializers;
+    (((gensym___112288773) == (null)) ? undefined : gensym___112288773.hh)})) ?? ("nihao")));
   }
   
   public __updateStruct(initializers: (__Options_CustomDialogExample | undefined)): void {}
@@ -127,18 +130,18 @@ function main() {}
     Column(undefined, undefined, @memo() (() => {
       Button(@memo() ((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
-          let dialogController: (CustomDialogController | undefined) = ({let gensym___176924847: (CustomDialogController | undefined);
-          gensym___176924847 = new CustomDialogController({
+          let dialogController: (CustomDialogController | undefined) = ({let gensym___220374545: (CustomDialogController | undefined);
+          gensym___220374545 = new CustomDialogController({
             builder: @memo() (() => {
               CustomDialogExample._instantiateImpl(undefined, (() => {
                 const instance = new CustomDialogExample();
-                instance.__setDialogController__((gensym___176924847 as CustomDialogController));
+                instance.__setDialogController__((gensym___220374545 as CustomDialogController));
                 return instance;
               }), {}, undefined);
             }),
             baseComponent: this,
           })
-          gensym___176924847});
+          gensym___220374545});
         })).backgroundColor(0x317aff);
         return;
       }), "click me", undefined, undefined);

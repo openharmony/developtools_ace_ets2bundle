@@ -19,12 +19,12 @@ import { backingField, expectName } from '../../common/arkts-utils';
 import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
 import { CustomComponentNames } from '../utils';
 import {
-    generateToRecord,
+    collectStateManagementTypeImport,
     createGetter,
     createSetter2,
     generateGetOrSetCall,
     generateThisBacking,
-    collectStateManagementTypeImport,
+    generateToRecord,
     hasDecorator,
     PropertyCache,
 } from './utils';

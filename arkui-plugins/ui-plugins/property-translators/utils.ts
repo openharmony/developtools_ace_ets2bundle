@@ -29,6 +29,7 @@ import {
     findCanAddMemoFromParameter,
     findCanAddMemoFromTypeAnnotation,
 } from '../../collectors/memo-collectors/utils';
+import { CustomDialogNames } from '../utils';
 
 export interface DecoratorInfo {
     annotation: arkts.AnnotationUsage;
@@ -317,7 +318,11 @@ export function getValueInProvideAnnotation(node: arkts.ClassProperty): ProvideO
     return undefined;
 }
 
-function getValueInObjectAnnotation(anno: arkts.AnnotationUsage, decoratorName: DecoratorNames, key: string): string | boolean | undefined {
+function getValueInObjectAnnotation(
+    anno: arkts.AnnotationUsage,
+    decoratorName: DecoratorNames,
+    key: string
+): string | boolean | undefined {
     const isSuitableAnnotation: boolean =
         !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName;
     if (!isSuitableAnnotation) {
@@ -379,6 +384,21 @@ export function generateToRecord(newName: string, originalName: string): arkts.P
             ),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         )
+    );
+}
+
+export function isCustomDialogController(type: arkts.TypeNode): boolean {
+    if (arkts.isETSUnionType(type)) {
+        return !!type.types.find((item: arkts.TypeNode) => {
+            return isCustomDialogController(item);
+        });
+    }
+    return (
+        !!arkts.isETSTypeReference(type) &&
+        !!type.part &&
+        !!type.part.name &&
+        arkts.isIdentifier(type.part.name) &&
+        type.part.name.name === CustomDialogNames.CUSTOM_DIALOG_CONTROLLER
     );
 }
 

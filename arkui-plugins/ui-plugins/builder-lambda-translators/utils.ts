@@ -431,31 +431,6 @@ export function builderLambdaFunctionName(node: arkts.CallExpression): string | 
 }
 
 /**
- * Determine whether the node `<type>` is `<bindableDecl>` bindable property.
- *
- * @param type type node
- * @param bindableDecl bindable decalaration name
- */
-export function hasBindableProperty(type: arkts.AstNode, bindableDecl: BindableDecl): boolean {
-    let res: boolean = false;
-    if (arkts.isETSUnionType(type)) {
-        type.types.forEach((item: arkts.TypeNode) => {
-            res = res || hasBindableProperty(item, bindableDecl);
-        });
-    }
-    if (arkts.isETSTypeReference(type)) {
-        res =
-            res ||
-            (!!type.part &&
-                !!type.part.name &&
-                arkts.isIdentifier(type.part.name) &&
-                type.part.name.name === bindableDecl);
-    }
-
-    return res;
-}
-
-/**
  * Determine whether `<value>` is `$$()` call expression node.
  *
  * @param value expression node
@@ -487,16 +462,17 @@ export function isDoubleDollarCall(
 }
 
 /**
- * get declaration type from `{xxx: <value>}` or `fun(<value>)`.
+ * get declaration type from function call argument `fun(<arg>)`.
  *
- * @param value type node
+ * @param arg first argument in call expression.
  */
-export function getDecalTypeFromValue(value: arkts.Expression): arkts.TypeNode {
-    const decl: arkts.AstNode | undefined = arkts.getDecl(value);
+export function getArgumentType(arg: arkts.Expression): arkts.TypeNode {
+    const isArrayElement = arkts.isMemberExpression(arg) && !!arg.property && arkts.isNumberLiteral(arg.property);
+    const decl: arkts.AstNode | undefined = arkts.getDecl(arg);
     if (!decl || !arkts.isClassProperty(decl)) {
         throw new Error('cannot get declaration');
     }
-    if (isArrayType(decl.typeAnnotation!)) {
+    if (isArrayElement) {
         return getElementTypeFromArray(decl.typeAnnotation!)!;
     }
     return decl.typeAnnotation!;
