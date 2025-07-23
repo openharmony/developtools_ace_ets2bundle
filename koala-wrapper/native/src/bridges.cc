@@ -203,6 +203,14 @@ KNativePointer impl_CreateContextFromString(KNativePointer configPtr, KStringPtr
 }
 KOALA_INTEROP_3(CreateContextFromString, KNativePointer, KNativePointer, KStringPtr, KStringPtr)
 
+KNativePointer impl_CreateContextFromStringWithHistory(KNativePointer configPtr, KStringPtr& sourcePtr,
+                                                       KStringPtr& filenamePtr)
+{
+    auto config = reinterpret_cast<es2panda_Config*>(configPtr);
+    return GetImpl()->CreateContextFromStringWithHistory(config, sourcePtr.data(), filenamePtr.data());
+}
+KOALA_INTEROP_3(CreateContextFromStringWithHistory, KNativePointer, KNativePointer, KStringPtr, KStringPtr)
+
 KNativePointer impl_CreateContextFromFile(KNativePointer configPtr, KStringPtr& filenamePtr)
 {
     auto config = reinterpret_cast<es2panda_Config*>(configPtr);
