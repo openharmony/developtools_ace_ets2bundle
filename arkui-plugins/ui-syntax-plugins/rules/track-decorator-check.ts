@@ -111,7 +111,6 @@ class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
             message: this.messages.trackMustUsedWithObserved,
             fix: (trackDecorator) => {
                 let startPosition = trackDecorator.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 let endPosition = trackDecorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
@@ -127,7 +126,6 @@ class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
             message: this.messages.trackOnClassMemberOnly,
             fix: (node) => {
                 let startPosition = node.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 let endPosition = node.endPosition;
                 return {
                     range: [startPosition, endPosition],

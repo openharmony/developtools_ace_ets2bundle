@@ -49,7 +49,6 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
             message: this.messages.observedV2DecoratorError,
             fix: (observedV2Decorator) => {
                 let startPosition = observedV2Decorator.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 let endPosition = observedV2Decorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
@@ -66,7 +65,6 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
             message: this.messages.traceMemberVariableError,
             fix: (traceDecorator) => {
                 let startPosition = traceDecorator.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 let endPosition = traceDecorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
@@ -103,7 +101,6 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
             message: this.messages.traceDecoratorError,
             fix: (traceDecorator) => {
                 let startPosition = traceDecorator.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 let endPosition = traceDecorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
