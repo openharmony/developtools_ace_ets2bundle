@@ -36,7 +36,7 @@ class Meta {
     this.belongModulePath = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/${DEFAULT_ENTRY}`;
     this.hostModulesInfo = [];
     this.moduleName = entryModuleName;
-    this.pkgName = '';
+    this.pkgName = 'entry';
     this.isLocalDependency = true;
     this.isNodeEntryFile = false;
     this.pkgPath = modulePath;
