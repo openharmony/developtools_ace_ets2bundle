@@ -99,12 +99,13 @@ export class factory {
     }
     static updateFunctionTypeWithMemoParameters(
         type: arkts.ETSFunctionType,
-        hasReceiver: boolean = false
+        hasReceiver: boolean = false,
+        newTypeParams?: arkts.TSTypeParameterDeclaration
     ): arkts.ETSFunctionType {
         return arkts.factory.updateFunctionType(
             type,
             arkts.factory.createFunctionSignature(
-                undefined,
+                newTypeParams,
                 factory.createHiddenParameterIfNotAdded(type.params, hasReceiver),
                 type.returnType,
                 false
