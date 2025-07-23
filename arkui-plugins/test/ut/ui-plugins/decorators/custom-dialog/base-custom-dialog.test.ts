@@ -56,7 +56,7 @@ import { Text as Text, Column as Column, Component as Component, Entry as Entry,
 
 import { State as State, Link as Link, Prop as Prop } from "@ohos.arkui.stateManagement";
 
-import { CustomDialog as CustomDialog, CustomDialogController as CustomDialogController, DismissDialogAction as DismissDialogAction, DismissReason as DismissReason, DialogAlignment as DialogAlignment, CustomDialogControllerOptions as CustomDialogControllerOptions } from "@kit.ArkUI";
+import { CustomDialog as CustomDialog, CustomDialogController as CustomDialogController, DismissDialogAction as DismissDialogAction, DismissReason as DismissReason, DialogAlignment as DialogAlignment, CustomDialogControllerOptions as CustomDialogControllerOptions } from "@ohos.arkui.component";
 
 import hilog from "@ohos.hilog";
 
@@ -64,16 +64,19 @@ function main() {}
 
 @CustomDialog() final struct CustomDialogExample extends BaseCustomDialog<CustomDialogExample, __Options_CustomDialogExample> {
   public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_aaController = ((({let gensym___180078470 = initializers;
-    (((gensym___180078470) == (null)) ? undefined : gensym___180078470.aaController)})) ?? (undefined));
-    this.__backing_text = STATE_MGMT_FACTORY.makeState<string>(this, "text", ((({let gensym___135728974 = initializers;
-    (((gensym___135728974) == (null)) ? undefined : gensym___135728974.text)})) ?? ("text")));
-    this.__backing_cancel = ((({let gensym___54390975 = initializers;
-    (((gensym___54390975) == (null)) ? undefined : gensym___54390975.cancel)})) ?? ((() => {})));
-    this.__backing_confirm = ((({let gensym___265534970 = initializers;
-    (((gensym___265534970) == (null)) ? undefined : gensym___265534970.confirm)})) ?? ((() => {})));
-    this.__backing_hh = STATE_MGMT_FACTORY.makeState<string>(this, "hh", ((({let gensym___261031583 = initializers;
-    (((gensym___261031583) == (null)) ? undefined : gensym___261031583.hh)})) ?? ("nihao")));
+    if (({let gensym___45519047 = initializers;
+    (((gensym___45519047) == (null)) ? undefined : gensym___45519047.aaController)})) {
+      this.__backing_aaController = ((({let gensym___180078470 = initializers;
+      (((gensym___180078470) == (null)) ? undefined : gensym___180078470.aaController)})) ?? (undefined));
+    }
+    this.__backing_text = STATE_MGMT_FACTORY.makeState<string>(this, "text", ((({let gensym___217676902 = initializers;
+    (((gensym___217676902) == (null)) ? undefined : gensym___217676902.text)})) ?? ("text")));
+    this.__backing_cancel = ((({let gensym___25471281 = initializers;
+    (((gensym___25471281) == (null)) ? undefined : gensym___25471281.cancel)})) ?? ((() => {})));
+    this.__backing_confirm = ((({let gensym___213253394 = initializers;
+    (((gensym___213253394) == (null)) ? undefined : gensym___213253394.confirm)})) ?? ((() => {})));
+    this.__backing_hh = STATE_MGMT_FACTORY.makeState<string>(this, "hh", ((({let gensym___210200872 = initializers;
+    (((gensym___210200872) == (null)) ? undefined : gensym___210200872.hh)})) ?? ("nihao")));
   }
   
   public __updateStruct(initializers: (__Options_CustomDialogExample | undefined)): void {}
@@ -155,8 +158,8 @@ function main() {}
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_dialogController = ((({let gensym___95501822 = initializers;
-    (((gensym___95501822) == (null)) ? undefined : gensym___95501822.dialogController)})) ?? (new CustomDialogController({
+    this.__backing_dialogController = ((({let gensym___56650533 = initializers;
+    (((gensym___56650533) == (null)) ? undefined : gensym___56650533.dialogController)})) ?? (new CustomDialogController({
       builder: @memo() (() => {
         CustomDialogExample._instantiateImpl(undefined, (() => {
           const instance = new CustomDialogExample();
