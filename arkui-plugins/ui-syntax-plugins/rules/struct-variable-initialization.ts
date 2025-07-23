@@ -41,7 +41,8 @@ class StructVariableInitializationRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
             mustBeInitializedLocally: `The '@{{decoratorName}}' property must be specified a default value.`,
-            prohibitLocalInitialization: `The '@{{decoratorName}}' property cannot be specified a default value.`
+            prohibitLocalInitialization: `The '@{{decoratorName}}' property cannot be specified a default value.`,
+            propRefRequireNoDefault: `The '@PropRef' property with '@Require' cannot be specified a default value.`,
         };
     }
 
@@ -58,6 +59,10 @@ class StructVariableInitializationRule extends AbstractUISyntaxRule {
         const valueExists = !!node.value;
         // Check for the presence of require decorator
         const hasRequire = findDecorator(node, PresetDecorators.REQUIRE);
+        const hasPropRef = findDecorator(node, PresetDecorators.PROP_REF);
+        if (hasPropRef && hasRequire && valueExists) {
+            this.reportPropRefRequireNoDefault(hasPropRef);
+        }
         node.annotations.some(annotation => {
             if (annotation.expr && arkts.isIdentifier(annotation.expr) &&
                 mustInitializeDecorators.includes(annotation.expr.name)) {
@@ -102,6 +107,13 @@ class StructVariableInitializationRule extends AbstractUISyntaxRule {
                 data: { decoratorName },
             });
         }
+    }
+
+    private reportPropRefRequireNoDefault(annotation: arkts.AnnotationUsage): void {
+        this.report({
+            node: annotation,
+            message: this.messages.propRefRequireNoDefault,
+        });
     }
 }
 
