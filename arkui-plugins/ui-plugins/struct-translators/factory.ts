@@ -54,8 +54,6 @@ import {
     getCustomDialogController,
     isInvalidDialogControllerOptions,
     findBuilderIndexInControllerOptions,
-    getControllerName,
-    DialogControllerInfo,
     ObservedAnnoInfo,
     getNoTransformationMembersInClass,
 } from './utils';
@@ -76,6 +74,7 @@ import {
     StateManagementTypes,
     RESOURCE_TYPE,
     ARKUI_BUILDER_SOURCE_NAME,
+    TypeNames,
 } from '../../common/predefines';
 import { ObservedTranslator } from '../property-translators/index';
 import { addMemoAnnotation } from '../../collectors/memo-collectors/utils';
@@ -1106,20 +1105,20 @@ export class factory {
         node: arkts.ETSNewClassInstanceExpression
     ): arkts.ETSNewClassInstanceExpression | arkts.Expression {
         if (isInvalidDialogControllerOptions(node.getArguments)) {
-            throw new Error('Error CustomDialogOptions');
+            return node;
         }
         const optionArg = node.getArguments[0];
         const options: arkts.ObjectExpression = arkts.isObjectExpression(optionArg)
             ? optionArg
             : ((optionArg as arkts.TSAsExpression).expr as arkts.ObjectExpression);
-        const builderIndex: number = findBuilderIndexInControllerOptions(options.properties);
-        if (builderIndex < 0 || !(options.properties[builderIndex] as arkts.Property).value) {
-            throw new Error('Error CustomDialogOptions');
+        const properties = options.properties as arkts.Property[];
+        const builderIndex: number = findBuilderIndexInControllerOptions(properties);
+        if (builderIndex < 0 || !properties.at(builderIndex)!.value) {
+            return node;
         }
-        const builder: arkts.Property = options.properties[builderIndex] as arkts.Property;
-        const controllerInfo: DialogControllerInfo = getControllerName(node);
-        const gensymName: string = GenSymGenerator.getInstance().id(controllerInfo.controllerName);
-        const newBuilderValue = this.createDialogBuilderArrow(builder.value!, controllerInfo, gensymName);
+        const builder: arkts.Property = properties.at(builderIndex)!;
+        const gensymName: string = GenSymGenerator.getInstance().id();
+        const newBuilderValue = this.createDialogBuilderArrow(builder.value!, gensymName);
         const newProperty = arkts.factory.updateProperty(builder, builder.key, newBuilderValue);
         const newObj = arkts.factory.updateObjectExpression(
             options,
@@ -1137,17 +1136,10 @@ export class factory {
             : newObj;
         const typeRef = node.getTypeRef as arkts.ETSTypeReference;
         const newNode = arkts.factory.updateETSNewClassInstanceExpression(node, typeRef, [newOptions]);
-        if (controllerInfo.parent && arkts.isVariableDeclarator(controllerInfo.parent)) {
-            return factory.createBlockStatementForOptionalExpression(controllerInfo.parent, newNode, gensymName);
-        }
-        return newNode;
+        return factory.createBlockStatementForOptionalExpression(newNode, gensymName);
     }
 
-    static createDialogBuilderArrow(
-        value: arkts.Expression,
-        controllerInfo: DialogControllerInfo,
-        gensymName: string
-    ): arkts.Expression {
+    static createDialogBuilderArrow(value: arkts.Expression, gensymName: string): arkts.Expression {
         if (
             arkts.isCallExpression(value) &&
             arkts.isMemberExpression(value.expression) &&
@@ -1159,7 +1151,7 @@ export class factory {
                     UIFactory.createScriptFunction({
                         body: arkts.factory.createBlock([
                             arkts.factory.createExpressionStatement(
-                                this.transformCustomDialogComponentCall(value, controllerInfo, gensymName)
+                                this.transformCustomDialogComponentCall(value, gensymName)
                             ),
                         ]),
                         flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
@@ -1174,15 +1166,11 @@ export class factory {
         return value;
     }
 
-    static transformCustomDialogComponentCall(
-        value: arkts.CallExpression,
-        controllerInfo: DialogControllerInfo,
-        gensymName: string
-    ): arkts.CallExpression {
+    static transformCustomDialogComponentCall(value: arkts.CallExpression, gensymName: string): arkts.CallExpression {
         if (value.arguments.length >= 2 && arkts.isArrowFunctionExpression(value.arguments[1])) {
             const originScript: arkts.ScriptFunction = value.arguments[1].scriptFunction;
             const newScript: arkts.ScriptFunction = UIFactory.updateScriptFunction(originScript, {
-                body: this.generateInstanceSetController(originScript.body, controllerInfo, gensymName),
+                body: this.generateInstanceSetController(originScript.body, gensymName),
             });
             return arkts.factory.updateCallExpression(value, value.expression, value.typeArguments, [
                 value.arguments[0],
@@ -1195,7 +1183,6 @@ export class factory {
 
     static generateInstanceSetController(
         body: arkts.AstNode | undefined,
-        controllerInfo: DialogControllerInfo,
         gensymName: string
     ): arkts.AstNode | undefined {
         if (
@@ -1219,18 +1206,14 @@ export class factory {
                         ),
                     ]
                 ),
-                this.genertateControllerSetCall(instanceIdent, controllerInfo, gensymName),
+                this.genertateControllerSetCall(instanceIdent, gensymName),
                 arkts.factory.createReturnStatement(instanceIdent.clone()),
             ]);
         }
         return body;
     }
 
-    static genertateControllerSetCall(
-        instanceIdent: arkts.Identifier,
-        controllerInfo: DialogControllerInfo,
-        gensymName: string
-    ): arkts.AstNode {
+    static genertateControllerSetCall(instanceIdent: arkts.Identifier, gensymName: string): arkts.AstNode {
         return arkts.factory.createExpressionStatement(
             arkts.factory.createCallExpression(
                 arkts.factory.createMemberExpression(
@@ -1243,9 +1226,7 @@ export class factory {
                 undefined,
                 [
                     arkts.factory.createTSAsExpression(
-                        controllerInfo.isClassProperty
-                            ? generateThisBacking(controllerInfo.controllerName)
-                            : arkts.factory.createIdentifier(gensymName),
+                        arkts.factory.createIdentifier(gensymName),
                         UIFactory.createTypeReferenceFromString(CustomDialogNames.CUSTOM_DIALOG_CONTROLLER),
                         false
                     ),
@@ -1276,13 +1257,12 @@ export class factory {
     }
 
     static createBlockStatementForOptionalExpression(
-        variableNode: arkts.VariableDeclarator,
         newNode: arkts.ETSNewClassInstanceExpression,
         gensymName: string
     ): arkts.Expression {
         const statements: arkts.Statement[] = [
             factory.generateLetVariableDecl(
-                arkts.factory.createIdentifier(gensymName, variableNode.name.typeAnnotation)
+                arkts.factory.createIdentifier(gensymName, UIFactory.createTypeReferenceFromString(TypeNames.ANY))
             ),
             arkts.factory.createExpressionStatement(
                 arkts.factory.createAssignmentExpression(
@@ -1291,7 +1271,13 @@ export class factory {
                     newNode
                 )
             ),
-            arkts.factory.createExpressionStatement(arkts.factory.createIdentifier(gensymName)),
+            arkts.factory.createExpressionStatement(
+                arkts.factory.createTSAsExpression(
+                    arkts.factory.createIdentifier(gensymName),
+                    UIFactory.createTypeReferenceFromString(CustomDialogNames.CUSTOM_DIALOG_CONTROLLER),
+                    false
+                )
+            ),
         ];
         return arkts.factory.createBlockExpression(statements);
     }

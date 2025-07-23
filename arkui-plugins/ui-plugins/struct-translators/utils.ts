@@ -65,12 +65,6 @@ export interface ResourceParameter {
     params: arkts.Expression[];
 }
 
-export interface DialogControllerInfo {
-    controllerName: string;
-    isClassProperty: boolean;
-    parent?: arkts.AstNode;
-}
-
 export interface ObservedAnnoInfo {
     className: string;
     isObserved: boolean;
@@ -589,28 +583,6 @@ export function findBuilderIndexInControllerOptions(properties: readonly arkts.E
             item.key.name === CustomDialogNames.OPTIONS_BUILDER
         );
     });
-}
-
-export function getControllerName(node: arkts.ETSNewClassInstanceExpression): DialogControllerInfo {
-    let controllerName: string = '';
-    let isClassProperty: boolean = false;
-    let parent: arkts.AstNode | undefined = node.parent;
-    if (!parent) {
-        return { controllerName, isClassProperty };
-    }
-    while (!!parent && !arkts.isClassDefinition(parent)) {
-        if (arkts.isClassProperty(parent) && parent.key && arkts.isIdentifier(parent.key)) {
-            controllerName = parent.key.name;
-            isClassProperty = true;
-            break;
-        } else if (arkts.isVariableDeclarator(parent)) {
-            controllerName = parent.name.name;
-            break;
-        }
-        parent = parent?.parent;
-    }
-
-    return { controllerName, isClassProperty, parent };
 }
 
 export function getNoTransformationMembersInClass(

@@ -108,13 +108,15 @@ function main() {}
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_dialogController = ((({let gensym___50325868 = initializers;
-    (((gensym___50325868) == (null)) ? undefined : gensym___50325868.dialogController)})) ?? (new CustomDialogController({
+    this.__backing_dialogController = ((({let gensym___51459619 = initializers;
+    (((gensym___51459619) == (null)) ? undefined : gensym___51459619.dialogController)})) ?? (({let gensym___203542966: Any;
+    gensym___203542966 = new CustomDialogController({
       builder: @memo() (() => {
         builder1("nihao");
       }),
       baseComponent: this,
-    })));
+    })
+    (gensym___203542966 as CustomDialogController)})));
   }
   
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
@@ -139,11 +141,13 @@ function main() {}
 
 @Component() final struct CustomDialogUser2 extends CustomComponent<CustomDialogUser2, __Options_CustomDialogUser2> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser2 | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_dialogController = ((({let gensym___51459619 = initializers;
-    (((gensym___51459619) == (null)) ? undefined : gensym___51459619.dialogController)})) ?? (new CustomDialogController({
+    this.__backing_dialogController = ((({let gensym___176924847 = initializers;
+    (((gensym___176924847) == (null)) ? undefined : gensym___176924847.dialogController)})) ?? (({let gensym___46528967: Any;
+    gensym___46528967 = new CustomDialogController({
       builder: builder2,
       baseComponent: this,
-    })));
+    })
+    (gensym___46528967 as CustomDialogController)})));
   }
   
   public __updateStruct(initializers: (__Options_CustomDialogUser2 | undefined)): void {}
