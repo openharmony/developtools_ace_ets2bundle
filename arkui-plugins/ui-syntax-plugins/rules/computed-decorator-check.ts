@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getClassAnnotationUsage, getIdentifierName, PresetDecorators, getAnnotationName, getAnnotationUsage, BUILD_NAME, findDecorator } from '../utils';
+import { getClassAnnotationUsage, getIdentifierName, PresetDecorators, getAnnotationUsage, BUILD_NAME, findDecorator } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
@@ -80,8 +80,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
                 node: computedDecorator,
                 message: this.messages.onlyOnGetter,
                 fix: (computedDecorator) => {
-                    let startPosition = computedDecorator.startPosition;
-                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                    const startPosition = computedDecorator.startPosition;
                     const endPosition = computedDecorator.endPosition;
                     return {
                         range: [startPosition, endPosition],
@@ -115,8 +114,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
             node: computedDecorator,
             message: this.messages.onlyOnGetter,
             fix: (computedDecorator) => {
-                let startPosition = computedDecorator.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                const startPosition = computedDecorator.startPosition;
                 const endPosition = computedDecorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
@@ -261,12 +259,11 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
                 node: computedDecorator,
                 message: this.messages.componentV2InStruct,
                 fix: () => {
-                    let startPosition = componentDecorator.startPosition;
-                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                    const startPosition = componentDecorator.startPosition;
                     const endPosition = componentDecorator.endPosition;
                     return {
                         range: [startPosition, endPosition],
-                        code: `@${PresetDecorators.COMPONENT_V2}`,
+                        code: `${PresetDecorators.COMPONENT_V2}`,
                     };
                 },
             });
@@ -300,12 +297,11 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
                 node: computedDecorator,
                 message: this.messages.onlyInObservedV2,
                 fix: () => {
-                    let startPosition = observedDecorator.startPosition;
-                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                    const startPosition = observedDecorator.startPosition;
                     const endPosition = observedDecorator.endPosition;
                     return {
                         range: [startPosition, endPosition],
-                        code: `@${PresetDecorators.OBSERVED_V2}`,
+                        code: `${PresetDecorators.OBSERVED_V2}`,
                     };
                 },
             });

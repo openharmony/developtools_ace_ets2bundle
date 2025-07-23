@@ -144,8 +144,7 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
                 decorator: getAnnotationName(decorator)
             },
             fix: () => {
-                let startPosition = otherDecorators.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                const startPosition = otherDecorators.startPosition;
                 const endPosition = otherDecorators.endPosition;
                 return {
                     range: [startPosition, endPosition],
@@ -220,8 +219,7 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
                 decorator: getAnnotationName(decorator),
             },
             fix: (decorator) => {
-                let startPosition = decorator.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                const startPosition = decorator.startPosition;
                 const endPosition = decorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
