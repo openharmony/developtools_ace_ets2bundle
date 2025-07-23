@@ -159,11 +159,12 @@ function main() {}
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_dialogController = ((({let gensym___56650533 = initializers;
-    (((gensym___56650533) == (null)) ? undefined : gensym___56650533.dialogController)})) ?? (new CustomDialogController({
+    (((gensym___56650533) == (null)) ? undefined : gensym___56650533.dialogController)})) ?? (({let gensym___249621102: Any;
+    gensym___249621102 = new CustomDialogController({
       builder: @memo() (() => {
         CustomDialogExample._instantiateImpl(undefined, (() => {
           const instance = new CustomDialogExample();
-          instance.__setDialogController__((this.dialogController as CustomDialogController));
+          instance.__setDialogController__((gensym___249621102 as CustomDialogController));
           return instance;
         }), {
           cancel: (() => {
@@ -188,7 +189,8 @@ function main() {}
       cornerRadius: 10,
       focusable: true,
       baseComponent: this,
-    })));
+    })
+    (gensym___249621102 as CustomDialogController)})));
   }
   
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}

@@ -45,23 +45,14 @@ import { State as State, Require as Require, Prop as Prop, Provide as Provide, P
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public hello: string = "hello";
-  
   @State() public state1: boolean = false;
-  
   @Require() public select100!: string;
-  
   @Require() @State() public select0!: number;
-  
   @Require() @State() public select3?: (number | null);
-  
   @Require() @State() public select4?: undefined;
-  
   @Require() @Prop() public select1!: string;
-  
   @Require() @Provide({alias:"15"}) public select2!: string[];
-  
   @Require() @Provide({alias:"t"}) public select6?: (string[] | undefined | string);
-  
   @Require() @BuilderParam() public builder!: (()=> void);
   
   public build() {}
