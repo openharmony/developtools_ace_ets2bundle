@@ -21,7 +21,6 @@ import {
   projectConfig as mainProjectConfig,
   sdkConfigPrefix
 } from '../main';
-import { compilerOptions } from './ets_checker';
 
 interface ImportInfo {
   defaultImport?: {
@@ -34,7 +33,8 @@ interface ImportInfo {
 interface SymbolInfo {
   filePath: string,
   isDefault: boolean,
-  skipTransform: boolean
+  skipTransform: boolean,
+  exportName?: string
 }
 
 interface SeparatedImportInfos {
@@ -121,7 +121,7 @@ function processDefaultImport(checker: ts.TypeChecker, importMap: Map<string, Im
     if (!resolved) {
       return;
     }
-    const { filePath, isDefault, skipTransform } = resolved;
+    const { filePath, isDefault, skipTransform, exportName } = resolved;
 
     const mapKey = skipTransform ? moduleSpecifier.text : filePath;
 
@@ -137,7 +137,9 @@ function processDefaultImport(checker: ts.TypeChecker, importMap: Map<string, Im
       // fallback: was re-exported as default, but originally named
       importMap.get(mapKey)!.namedImports.push(
         ts.factory.createImportSpecifier(importClause.isTypeOnly,
-          ts.factory.createIdentifier(importClause.name.text), importClause.name)
+          exportName && (exportName !== importClause.name.text) ?
+          ts.factory.createIdentifier(exportName) : ts.factory.createIdentifier(importClause.name.text),
+          importClause.name)
       );
     }
   }
@@ -152,7 +154,7 @@ function processNamedImport(checker: ts.TypeChecker, importMap: Map<string, Impo
       if (!resolved) {
         continue;
       }
-      const { filePath, isDefault, skipTransform } = resolved;
+      const { filePath, isDefault, skipTransform, exportName } = resolved;
       const mapKey = skipTransform ? moduleSpecifier.text : filePath;
 
       if (!importMap.has(mapKey)) {
@@ -165,7 +167,11 @@ function processNamedImport(checker: ts.TypeChecker, importMap: Map<string, Impo
         };
       } else {
         importMap.get(mapKey)!.namedImports.push(
-          ts.factory.createImportSpecifier(element.isTypeOnly, element.propertyName, element.name));
+          ts.factory.createImportSpecifier(element.isTypeOnly,
+            exportName && (exportName !== name) ?
+            ts.factory.createIdentifier(exportName) : element.propertyName,
+            element.name)
+        );
       }
     }
   }
@@ -230,15 +236,15 @@ function genModuleRequst(filePath: string, moduleRequest: string, modulePathMap:
   for (const [_, moduleRootPath] of Object.entries(modulePathMap)) {
     const unixModuleRootPath: string = toUnixPath(moduleRootPath);
     if (unixFilePath.startsWith(unixModuleRootPath + '/')) {
-      return unixFilePath.replace(unixModuleRootPath, moduleRequest).replace(/\.(ets|ts|js)$/, '');
+      return unixFilePath.replace(unixModuleRootPath, moduleRequest).replace(/\.(ets|ts)$/, '');
     }
   }
   return '';
 }
 
 function getRealFilePath(checker: ts.TypeChecker, moduleSpecifier: ts.StringLiteral,
-  exportName: string): SymbolInfo | undefined {
-  const symbol: ts.Symbol | undefined = resolveImportedSymbol(checker, moduleSpecifier, exportName);
+  importName: string): SymbolInfo | undefined {
+  const symbol: ts.Symbol | undefined = resolveImportedSymbol(checker, moduleSpecifier, importName);
   if (!symbol) {
     return undefined;
   }
@@ -247,16 +253,22 @@ function getRealFilePath(checker: ts.TypeChecker, moduleSpecifier: ts.StringLite
   if (!finalSymbol || !finalSymbol.declarations || finalSymbol.declarations.length === 0) {
     return {
       filePath: moduleSpecifier.text,
-      isDefault: exportName === 'default',
+      isDefault: importName === 'default',
       skipTransform: true
     };
   }
 
   const decl: ts.Declaration = finalSymbol.declarations?.[0];
   const filePath = path.normalize(decl.getSourceFile().fileName);
-  const isDefault: boolean = isActuallyDefaultExport(finalSymbol);
-
-  return { filePath, isDefault, skipTransform: false };
+  const [isDefault, exportName] = getDefaultExportName(finalSymbol);
+  if (!isDefault && !exportName) {
+    return {
+      filePath: moduleSpecifier.text,
+      isDefault: importName === 'default',
+      skipTransform: true
+    };
+  }
+  return { filePath, isDefault, skipTransform: false, exportName };
 }
 
 function resolveImportedSymbol(checker: ts.TypeChecker, moduleSpecifier: ts.StringLiteral,
@@ -313,51 +325,62 @@ function resolveAliasedSymbol(symbol: ts.Symbol, checker: ts.TypeChecker): ts.Sy
   return finalSymbol;
 }
 
-function isActuallyDefaultExport(symbol: ts.Symbol): boolean {
+function getDefaultExportName(symbol: ts.Symbol): [boolean, string] {
   const decl = symbol.valueDeclaration ?? symbol.declarations?.[0];
   if (!decl) {
-    return false;
+    return [false, ''];
+  }
+  if (ts.isVariableDeclaration(decl)) {
+    const parent = decl.parent?.parent;
+    if (ts.isVariableStatement(parent) && parent.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)) {
+      return [false, symbol.name];
+    }
   }
   const sourceFile = decl.getSourceFile();
   for (const stmt of sourceFile.statements) {
-    if (isDefaultExportAssignment(stmt, symbol)) {
-      return true;
-    }
-    if (isNamedDefaultExport(stmt, symbol)) {
-      return true;
-    }
-    if (isNamedDefaultDecl(stmt, decl, symbol)) {
-      return true;
+    const result: [boolean, string] | undefined = checkExportAssignment(stmt, symbol.name) ??
+      checkExportDeclaration(stmt, symbol.name) ?? checkNamedExportDeclaration(stmt, decl);
+    if (result !== undefined) {
+      return result;
     }
   }
-  return false;
+  return [false, ''];
 }
 
-function isDefaultExportAssignment(stmt: ts.Statement, symbol: ts.Symbol): boolean {
-  return ts.isExportAssignment(stmt) &&
-         !stmt.isExportEquals &&
-         ts.isIdentifier(stmt.expression) &&
-         stmt.expression.text === symbol.name;
+function checkExportAssignment(stmt: ts.Statement, symbolName: string): [boolean, string] | undefined {
+  if (ts.isExportAssignment(stmt) && !stmt.isExportEquals && ts.isIdentifier(stmt.expression) && stmt.expression.text === symbolName) {
+    return [true, 'default'];
+  }
+  return undefined;
 }
 
-function isNamedDefaultExport(stmt: ts.Statement, symbol: ts.Symbol): boolean {
+function checkExportDeclaration(stmt: ts.Statement, symbolName: string): [boolean, string] | undefined {
   if (!ts.isExportDeclaration(stmt) || !stmt.exportClause || !ts.isNamedExports(stmt.exportClause)) {
-    return false;
+    return undefined;
   }
   for (const specifier of stmt.exportClause.elements) {
-    if (specifier.name.text === 'default' && specifier.propertyName?.text === symbol.name) {
-      return true;
+    if (specifier.name.text === 'default' && specifier.propertyName?.text === symbolName) {
+      return [true, 'default'];
     }
     if (specifier.name.text === 'default' && !specifier.propertyName) {
-      return false;
+      return [false, ''];
+    }
+    if (specifier.name.text !== 'default' && specifier.propertyName?.text === symbolName) {
+      return [false, specifier.name.text];
+    }
+    if (specifier.name.text !== 'default' && specifier.name.text === symbolName) {
+      return [false, symbolName];
     }
   }
-  return false;
+  return undefined;
 }
 
-function isNamedDefaultDecl(stmt: ts.Statement, decl: ts.Declaration, symbol: ts.Symbol): boolean {
-  return symbol.name === 'default' &&
-         (ts.isFunctionDeclaration(stmt) || ts.isClassDeclaration(stmt)) &&
-         stmt.modifiers?.some(m => m.kind === ts.SyntaxKind.DefaultKeyword) &&
-         stmt.name?.text === decl.name?.getText();
+function checkNamedExportDeclaration(stmt: ts.Statement, decl: ts.Declaration): [boolean, string] | undefined {
+  if (stmt.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword) && stmt.name?.text === decl.name?.getText()) {
+    if (stmt.modifiers?.some(m => m.kind === ts.SyntaxKind.DefaultKeyword)) {
+      return [true, 'default'];
+    }
+    return [false, stmt.name?.text];
+  }
+  return undefined;
 }
