@@ -14,11 +14,11 @@
  */
 import fs from 'fs';
 import path from 'path';
+
 import {
   isMixCompile,
   rebuildEntryObj
 } from '../ark_compiler/interop/interop_manager';
-
 const {
   projectConfig,
   loadEntryObj,
