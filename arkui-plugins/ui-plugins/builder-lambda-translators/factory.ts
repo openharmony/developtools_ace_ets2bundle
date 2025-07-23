@@ -502,7 +502,7 @@ export class factory {
         statements: readonly arkts.Statement[],
         shouldWrap?: boolean
     ): BuilderLambdaConditionBranchInfo {
-        let breakIndex = statements.length - 1;
+        let breakIndex = statements.length;
         const newStatements = statements.map((st, index) => {
             if (checkShouldBreakFromStatement(st)) {
                 breakIndex = index;
