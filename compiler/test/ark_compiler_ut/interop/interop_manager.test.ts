@@ -20,7 +20,8 @@ import path from "path";
 import {
   FileManager,
   collectSDKInfo,
-  isBridgeCode
+  isBridgeCode,
+  getBrdigeCodeRootPath
  } from '../../../lib/fast_build/ark_compiler/interop/interop_manager';
 import { ARKTS_1_1, ARKTS_1_2, ARKTS_HYBRID } from '../../../lib/fast_build/ark_compiler/interop/pre_define';
 import { sdkConfigs } from '../../../main';
@@ -308,5 +309,47 @@ mocha.describe('isBridgeCode', function () {
     };
     const filePath = path.resolve('path/one/module.ts');
     expect(isBridgeCode(filePath, config)).to.be.true;
+  });
+});
+
+mocha.describe('test getBrdigeCodeRootPath api', function () {
+  mocha.it('1-1: should return bridgeCodePath from interopConfig when filePath matches moduleRootPath', function () {
+    const filePath = '/a/b/c/file.ts';
+    const mockConfig: InteropConfig = {
+      mixCompile: false,
+      interopModuleInfo: new Map([
+        ['/a/b', {
+          declgenBridgeCodePath: '/bridge/a/b',
+          declgenV1OutPath: '/v1'
+        }]
+      ])
+    };
+
+    const result = getBrdigeCodeRootPath(filePath, mockConfig);
+    expect(result).to.equal('/bridge/a/b');
+  });
+
+  mocha.it('1-2: should return undefined when filePath does not match any moduleRootPath', function () {
+    const filePath = '/x/y/z/file.ts';
+    const mockConfig: InteropConfig = {
+      mixCompile: false,
+      interopModuleInfo: new Map([
+        ['/a/b', {
+          declgenBridgeCodePath: '/bridge/a/b',
+          declgenV1OutPath: '/v1'
+        }]
+      ])
+    };
+
+    const result = getBrdigeCodeRootPath(filePath, mockConfig);
+    expect(result).to.be.undefined;
+  });
+
+  mocha.it('1-3: should return process.env.entryBridgeCodePath when interopConfig is null', function () {
+    process.env.entryBridgeCodePath = '/default/bridge/path';
+    const filePath = '/any/file.ts';
+
+    const result = getBrdigeCodeRootPath(filePath, undefined as any);
+    expect(result).to.equal('/default/bridge/path');
   });
 });

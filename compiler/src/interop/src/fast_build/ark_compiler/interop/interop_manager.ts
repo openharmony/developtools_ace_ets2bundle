@@ -17,14 +17,23 @@ import fs from 'fs';
 import path from 'path';
 
 import {
+  globalModulePaths,
+  initBuildInfo,
+  loadEntryObj,
+  loadModuleInfo,
+  loadWorker,
   projectConfig,
+  readAppResource,
+  readPatchConfig,
+  readWorkerFile,
   sdkConfigs
 } from '../../../../main';
 import { toUnixPath } from '../../../utils';
 import {
   ArkTSEvolutionModule,
   FileInfo,
-  AliasConfig
+  AliasConfig,
+  InteropConfig
 } from './type';
 import {
   hasExistingPaths,
@@ -46,8 +55,11 @@ import {
   ARKTS_1_2,
   ARKTS_HYBRID
 } from './pre_define';
+import { readFirstLineSync } from './utils';
 
 export let entryFileLanguageInfo = new Map();
+export let workerFile = null;
+export let mixCompile = undefined;
 
 export class FileManager {
   private static instance: FileManager | undefined = undefined;
@@ -218,6 +230,7 @@ export class FileManager {
     FileManager.aliasConfig?.clear();
     FileManager.mixCompile = false;
     entryFileLanguageInfo.clear();
+    mixCompile = undefined;
   }
 
   getLanguageVersionByFilePath(filePath: string): {
@@ -433,15 +446,6 @@ export function collectSDKInfo(share: Object): {
   };
 }
 
-function readFirstLineSync(filePath: string): string {
-  const buffer = fs.readFileSync(filePath, 'utf-8');
-  const newlineIndex = buffer.indexOf('\n');
-  if (newlineIndex === -1) {
-    return buffer.trim();
-  }
-  return buffer.substring(0, newlineIndex).trim();
-}
-
 export function isBridgeCode(filePath: string, projectConfig: Object): boolean {
   if (!projectConfig?.mixCompile) {
     return false;
@@ -455,6 +459,9 @@ export function isBridgeCode(filePath: string, projectConfig: Object): boolean {
 }
 
 export function isMixCompile(): boolean {
+  if (typeof mixCompile === 'boolean') {
+    return mixCompile;
+  }
   return process.env.mixCompile === 'true';
 }
 
@@ -545,7 +552,7 @@ export function getApiPathForInterop(apiDirs: string[], languageVersion: string)
   apiDirs.unshift(...staticPaths);
 }
 
-export function rebuildEntryObj(projectConfig: Object): void {
+export function rebuildEntryObj(projectConfig: Object, interopConfig: InteropConfig): void {
   const entryObj = projectConfig.entryObj;
 
   const removeExt = (p: string): string => p.replace(/\.[^/.]+$/, '');
@@ -562,7 +569,7 @@ export function rebuildEntryObj(projectConfig: Object): void {
     if (!firstLine.includes('use static')) {
       newEntry[newKey] = rawPath;
     } else if (rawPath.startsWith(projectConfig.projectRootPath)) {
-      const bridgePath = process.env.entryBridgeCodePath;
+      const bridgePath = getBrdigeCodeRootPath(rawPath, interopConfig);
       if (!bridgePath) {
         const errInfo = LogDataFactory.newInstance(
           ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
@@ -579,4 +586,55 @@ export function rebuildEntryObj(projectConfig: Object): void {
 
     return newEntry;
   }, {} as Record<string, string>);
+}
+
+
+/**
+ * corresponds to compiler/src/fast_build/common/init_config.ts - initConfig()
+ */
+export function initConfigForInterop(interopConfig: InteropConfig): Object {
+  function getEntryObj(): void {
+    loadEntryObj(projectConfig);
+    initBuildInfo();
+    readPatchConfig();
+    loadModuleInfo(projectConfig);
+    workerFile = readWorkerFile();
+    if (!projectConfig.isPreview) {
+      loadWorker(projectConfig, workerFile);
+    }
+    if (isMixCompile()) {
+      rebuildEntryObj(projectConfig, interopConfig);
+      return;
+    }
+    projectConfig.entryObj = Object.keys(projectConfig.entryObj).reduce((newEntry, key) => {
+      const newKey: string = key.replace(/^\.\//, '');
+      newEntry[newKey] = projectConfig.entryObj[key].replace('?entry', '');
+      return newEntry;
+    }, {});
+  }
+  mixCompile = interopConfig.mixCompile;
+  getEntryObj();
+  if (process.env.appResource) {
+    readAppResource(process.env.appResource);
+  }
+  return {
+    entryObj: Object.assign({}, projectConfig.entryObj, projectConfig.otherCompileFiles),
+    cardEntryObj: projectConfig.cardEntryObj,
+    workerFile: workerFile,
+    globalModulePaths: globalModulePaths
+  };
+}
+
+export function getBrdigeCodeRootPath(filePath: string, interopConfig: InteropConfig): string | undefined {
+  if (!interopConfig) {
+    return process.env.entryBridgeCodePath;
+  }
+
+  for (const [moduleRootPath, InteropInfo] of interopConfig.interopModuleInfo) {
+    if (isSubPathOf(filePath, moduleRootPath)) {
+      return InteropInfo.declgenBridgeCodePath;
+    }
+  }
+
+  return undefined;
 }
