@@ -347,8 +347,8 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
       VERSION_CHECK_FUNCTION_NAME, false, undefined, checkSinceValue));
     // TODO: the third param is to be opened
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSCAP_TAG_CHECK_NAME],
-      SYSCAP_TAG_CHECK_WARNING, false, ts.DiagnosticCategory.Warning,
-      CANIUSE_FUNCTION_NAME, false, undefined, checkSyscapAbility));
+      SYSCAP_TAG_CHECK_WARNING, true, ts.DiagnosticCategory.Warning, CANIUSE_FUNCTION_NAME, false, undefined, 
+      checkSyscapAbility, checkSyscapConditionValidCallback));
     if (projectConfig.projectRootPath) {
       const ohosTestDir = ts.sys.resolvePath(path.join(projectConfig.projectRootPath, 'entry', 'src', 'ohosTest'));
       // TODO:fix error type in the feature
@@ -753,6 +753,29 @@ function checkVersionConditionValidCallback(node: ts.CallExpression, specifyFunc
   return false;
 }
 
+/**
+ * syscap condition check, print error message
+ * @param { ts.CallExpression } node
+ * @param { string } specifyFuncName
+ * @param { string } tagValue
+ * @param { ?ts.JSDoc[] } jsDocs
+ * @returns { boolean }
+ */
+function checkSyscapConditionValidCallback(node: ts.CallExpression, specifyFuncName: string, tagValue: string, jsDocs?: ts.JSDoc[]): boolean {
+  if (ts.isIdentifier(node.expression) && node.arguments.length === 1 && node.expression.escapedText.toString() === specifyFuncName) {
+    const expression = node.arguments[0];
+    if (ts.isStringLiteral(expression) && tagValue === expression.text) {
+      return true;
+    } else if (ts.isIdentifier(expression)) {
+      const typeChecker: ts.TypeChecker = globalProgram.program.getTypeChecker();
+      const arguSymbol: ts.Symbol | undefined = typeChecker.getSymbolAtLocation(expression);
+      return arguSymbol && arguSymbol.valueDeclaration && ts.isVariableDeclaration(arguSymbol.valueDeclaration) &&
+        arguSymbol.valueDeclaration.initializer && ts.isStringLiteral(arguSymbol.valueDeclaration.initializer) &&
+        arguSymbol.valueDeclaration.initializer.text === tagValue;
+    }
+  }
+  return false;
+}
 
 /**
  * get minversion
