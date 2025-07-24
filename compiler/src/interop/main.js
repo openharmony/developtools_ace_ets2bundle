@@ -51,7 +51,7 @@ const {
 } = require('./lib/fast_build/ark_compiler/interop/interop_manager');
 
 const {
-  ARKTS_1_2
+  ARKTS_MODE
 } = require('./lib/fast_build/ark_compiler/interop/pre_define');
 
 configure({
@@ -505,7 +505,7 @@ function readAbilityEntrance(moduleJson) {
   if (moduleJson.module) {
     const moduleSrcEntrance = moduleJson.module.srcEntrance;
     const moduleSrcEntry = moduleJson.module.srcEntry;
-    const isStatic = moduleJson.module?.abilityStageCodeLanguage === ARKTS_1_2;
+    const isStatic = moduleJson.module?.arkTSMode === ARKTS_MODE.STATIC;
 
     if (moduleSrcEntry) {
       abilityPages.push(moduleSrcEntry);
@@ -530,7 +530,7 @@ function readAbilityEntrance(moduleJson) {
 function setEntrance(abilityConfig, abilityPages) {
   if (abilityConfig && abilityConfig.length > 0) {
     abilityConfig.forEach(ability => {
-      const isStatic = ability.codeLanguage === ARKTS_1_2;
+      const isStatic = ability.arkTSMode === ARKTS_MODE.STATIC;
       if (ability.srcEntry) {
         abilityPages.push(ability.srcEntry);
         entryFileLanguageInfo.set(ability.srcEntry, isStatic);
