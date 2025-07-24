@@ -99,14 +99,16 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
             arkts.factory.create1StringLiteral(alias),
-            arkts.factory.createBinaryExpression(
-                factory.createBlockStatementForOptionalExpression(
-                    arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-                    originalName
-                ),
-                this.property.value ?? arkts.factory.createUndefinedLiteral(),
-                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-            ),
+            this.property.value
+                ? arkts.factory.createBinaryExpression(
+                      factory.createBlockStatementForOptionalExpression(
+                          arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
+                          originalName
+                      ),
+                      this.property.value ?? arkts.factory.createUndefinedLiteral(),
+                      arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+                  )
+                : factory.generateDefiniteInitializers(this.property.typeAnnotation, originalName),
             arkts.factory.createBooleanLiteral(allowOverride),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);

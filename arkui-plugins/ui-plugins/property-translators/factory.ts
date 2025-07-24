@@ -289,6 +289,22 @@ export class factory {
         );
     }
 
+    /*
+     * create `initializers!.<originalName> as <type>`.
+     */
+    static generateDefiniteInitializers(type: arkts.TypeNode | undefined, originalName: string): arkts.Expression {
+        return arkts.factory.createTSAsExpression(
+            factory.createNonNullOrOptionalMemberExpression(
+                CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
+                originalName,
+                false,
+                true
+            ),
+            type ? type.clone() : undefined,
+            false
+        );
+    }
+
     static judgeIfAddWatchFunc(args: arkts.Expression[], property: arkts.ClassProperty): void {
         if (hasDecorator(property, DecoratorNames.WATCH)) {
             const watchStr: string | undefined = getValueInAnnotation(property, DecoratorNames.WATCH);
