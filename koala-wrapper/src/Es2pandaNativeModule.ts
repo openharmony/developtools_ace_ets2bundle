@@ -893,7 +893,7 @@ export class Es2pandaNativeModule {
     _IsArrayExpression(node: KPtr): KBoolean {
         throw new Error('IsArrayExpression was not overloaded by native module initialization');
     }
-        
+
     _MemInitialize(): void {
         throw new Error('MemInitialize was not overloaded by native module initialization');
     }
@@ -902,7 +902,7 @@ export class Es2pandaNativeModule {
         throw new Error('MemFinalize was not overloaded by native module initialization');
     }
 
-    _CreateGlobalContext(configPtr: KNativePointer, externalFileList: KStringArrayPtr, fileNum: KInt, 
+    _CreateGlobalContext(configPtr: KNativePointer, externalFileList: KStringArrayPtr, fileNum: KInt,
         lspUsage: boolean): KNativePointer {
         throw new Error('CreateGlobalContext was not overloaded by native module initialization');
     }
@@ -920,12 +920,13 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
-    _CreateDiagnosticInfo(context: KNativePointer, kind: KNativePointer, args: string[], argc: number): KNativePointer {
+    _CreateDiagnosticInfo(context: KNativePointer, kind: KNativePointer, args: string[],
+        argc: number, pos: KNativePointer): KNativePointer {
         throw new Error('Not implemented');
     }
 
     _CreateSuggestionInfo(context: KNativePointer, kind: KNativePointer, args: string[],
-        argc: number, substitutionCode: string): KNativePointer {
+        argc: number, substitutionCode: string, range?: KNativePointer): KNativePointer {
         throw new Error('Not implemented');
     }
 
@@ -934,7 +935,7 @@ export class Es2pandaNativeModule {
     }
 
     _LogDiagnosticWithSuggestion(context: KNativePointer, diagnosticInfo: KNativePointer,
-        suggestionInfo?: KNativePointer, range?: KNativePointer): void {
+        suggestionInfo?: KNativePointer): void {
         throw new Error('Not implemented');
     }
 
