@@ -22,6 +22,7 @@ import {
     collectMemoableInfoInVariableDeclarator,
     collectMemoableInfoMapInFunctionParams,
     collectMemoScriptFunctionBody,
+    collectScriptFunctionReturnTypeFromInfo,
     findIdentifierFromCallee,
     getDeclResolveAlias,
     MemoableInfo,
@@ -91,22 +92,22 @@ export class MemoFunctionCollector extends AbstractVisitor {
             return node;
         }
         if (arkts.isArrowFunctionExpression(node.initializer)) {
-            const localInfo = collectMemoableInfoInScriptFunction(node.initializer.scriptFunction);
+            const func = node.initializer.scriptFunction;
+            const localInfo = collectMemoableInfoInScriptFunction(func);
             const shouldCollectParameter =
                 (localInfo.hasBuilder || localInfo.hasMemo) && !localInfo.hasMemoEntry && !localInfo.hasMemoIntrinsic;
             const shouldCollectReturn =
                 localInfo.hasBuilder || localInfo.hasMemo || memoableInfo.hasBuilder || memoableInfo.hasMemo;
-            const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(node.initializer.scriptFunction);
+            const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(func);
+            collectScriptFunctionReturnTypeFromInfo(func, returnMemoableInfo);
             const [paramMemoableInfoMap, gensymCount] = collectMemoableInfoMapInFunctionParams(
-                node.initializer.scriptFunction,
+                func,
                 shouldCollectParameter
             );
-            if (
-                !!node.initializer.scriptFunction.body &&
-                arkts.isBlockStatement(node.initializer.scriptFunction.body)
-            ) {
+            const body = func.body;
+            if (!!body && arkts.isBlockStatement(body)) {
                 collectMemoScriptFunctionBody(
-                    node.initializer.scriptFunction.body,
+                    body,
                     returnMemoableInfo,
                     paramMemoableInfoMap,
                     gensymCount,

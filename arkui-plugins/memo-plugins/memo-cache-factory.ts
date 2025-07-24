@@ -21,6 +21,7 @@ import {
     findUnmemoizedScopeInFunctionBody,
     fixGensymParams,
     getFunctionParamsBeforeUnmemoized,
+    hasMemoAnnotation,
     isVoidType,
     mayAddLastReturn,
     parametrizedNodeHasReceiver,
@@ -51,8 +52,35 @@ export class RewriteFactory {
     }
 
     static rewriteFunctionType(node: arkts.ETSFunctionType, metadata?: CachedMetadata): arkts.ETSFunctionType {
+        const canRewriteType = !metadata?.forbidTypeRewrite;
+        const isWithinTypeParams = !!metadata?.isWithinTypeParams && hasMemoAnnotation(node);
+        if (!canRewriteType && !isWithinTypeParams) {
+            return node;
+        }
         const hasReceiver = metadata?.hasReceiver ?? parametrizedNodeHasReceiver(node);
         return factory.updateFunctionTypeWithMemoParameters(node, hasReceiver);
+    }
+
+    static rewriteETSTypeReference(node: arkts.ETSTypeReference, metadata?: CachedMetadata): arkts.ETSTypeReference {
+        if (!metadata?.isWithinTypeParams) {
+            return node;
+        }
+        const part = node.part;
+        if (!part) {
+            return node;
+        }
+        const typeParams = part.typeParams;
+        if (!typeParams) {
+            return node;
+        }
+        const newTypeParams = arkts.factory.updateTSTypeParameterInstantiation(
+            typeParams,
+            typeParams.params.map((t) => RewriteFactory.rewriteType(t, metadata)!)
+        );
+        return arkts.factory.updateTypeReference(
+            node,
+            arkts.factory.updateTypeReferencePart(part, part.name, newTypeParams, part.previous)
+        );
     }
 
     /**
@@ -64,6 +92,8 @@ export class RewriteFactory {
             newNodeType = RewriteFactory.rewriteFunctionType(newNodeType, metadata);
         } else if (!!newNodeType && arkts.isETSUnionType(newNodeType)) {
             newNodeType = RewriteFactory.rewriteUnionType(newNodeType, metadata);
+        } else if (!!newNodeType && arkts.isETSTypeReference(newNodeType)) {
+            return RewriteFactory.rewriteETSTypeReference(newNodeType, metadata);
         }
         return newNodeType;
     }
@@ -86,7 +116,7 @@ export class RewriteFactory {
         if (!node.type && !node.initializer) {
             return node;
         }
-        node.type = RewriteFactory.rewriteType(node.type as arkts.TypeNode);
+        node.type = RewriteFactory.rewriteType(node.type as arkts.TypeNode, metadata);
         return arkts.factory.updateParameterDeclaration(node, node.identifier, node.initializer);
     }
 
@@ -98,7 +128,7 @@ export class RewriteFactory {
     }
 
     static rewriteClassProperty(node: arkts.ClassProperty, metadata?: CachedMetadata): arkts.ClassProperty {
-        const newType = !!node.typeAnnotation ? RewriteFactory.rewriteType(node.typeAnnotation) : undefined;
+        const newType = !!node.typeAnnotation ? RewriteFactory.rewriteType(node.typeAnnotation, metadata) : undefined;
         const newValue =
             !!node.value && arkts.isArrowFunctionExpression(node.value)
                 ? RewriteFactory.rewriteArrowFunction(node.value, metadata)
@@ -359,8 +389,8 @@ function prepareRewriteScriptFunctionBody(
     hasMemoIntrinsic?: boolean,
     callName?: string,
     hasReceiver?: boolean,
-    isGetter?: boolean, 
-    isSetter?: boolean, 
+    isGetter?: boolean,
+    isSetter?: boolean
 ): arkts.AstNode | undefined {
     if (isGetter || isSetter || isDecl || !node.body || !arkts.isBlockStatement(node.body)) {
         return node.body;
@@ -385,6 +415,7 @@ function prepareRewriteScriptFunctionBody(
 export const rewriteByType = new Map<arkts.Es2pandaAstNodeType, (node: any, ...args: any[]) => arkts.AstNode>([
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_UNION_TYPE, RewriteFactory.rewriteUnionType],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_FUNCTION_TYPE, RewriteFactory.rewriteFunctionType],
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_TYPE_REFERENCE, RewriteFactory.rewriteETSTypeReference],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_ALIAS_DECLARATION, RewriteFactory.rewriteTypeAlias],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PARAMETER_EXPRESSION, RewriteFactory.rewriteParameter],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_PROPERTY, RewriteFactory.rewriteClassProperty],

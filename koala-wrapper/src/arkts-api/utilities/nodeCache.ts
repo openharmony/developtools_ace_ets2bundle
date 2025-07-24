@@ -30,6 +30,8 @@ export interface AstNodeCacheValueMetadata {
     hasReceiver?: boolean;
     isSetter?: boolean;
     isGetter?: boolean;
+    forbidTypeRewrite?: boolean;
+    isWithinTypeParams?: boolean;
     hasMemoSkip?: boolean;
     hasMemoIntrinsic?: boolean;
     hasMemoEntry?: boolean;
