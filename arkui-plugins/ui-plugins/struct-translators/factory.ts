@@ -77,7 +77,11 @@ import {
     TypeNames,
 } from '../../common/predefines';
 import { ObservedTranslator } from '../property-translators/index';
-import { addMemoAnnotation } from '../../collectors/memo-collectors/utils';
+import {
+    addMemoAnnotation,
+    collectMemoableInfoInFunctionReturnType,
+    collectScriptFunctionReturnTypeFromInfo,
+} from '../../collectors/memo-collectors/utils';
 import { generateArkUICompatible, isArkUICompatible } from '../interop/interop';
 import { GenSymGenerator } from '../../common/gensym-generator';
 import { MethodTranslator } from 'ui-plugins/property-translators/base';
@@ -1047,14 +1051,15 @@ export class factory {
         const referenceType = UIFactory.createComplexTypeFromStringAndTypeParameter('Array', [
             argTypeParam.type.clone(),
         ]);
-        const newArrowArg: arkts.ArrowFunctionExpression = arkts.factory.createArrowFunction(
-            UIFactory.createScriptFunction({
-                body: arkts.factory.createBlock([arkts.factory.createReturnStatement(node.arguments[0])]),
-                returnTypeAnnotation: referenceType,
-                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-            })
-        );
+        const newFunc = UIFactory.createScriptFunction({
+            body: arkts.factory.createBlock([arkts.factory.createReturnStatement(node.arguments[0])]),
+            returnTypeAnnotation: referenceType,
+            flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+        });
+        const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(newFunc);
+        collectScriptFunctionReturnTypeFromInfo(newFunc, returnMemoableInfo);
+        const newArrowArg: arkts.ArrowFunctionExpression = arkts.factory.createArrowFunction(newFunc);
         return arkts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
             newArrowArg,
             ...node.arguments.slice(1),

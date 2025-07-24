@@ -47,6 +47,7 @@ interface MemoableAnnotationInfo {
 
 export type MemoableInfo = MemoableAnnotationInfo & {
     hasProperType?: boolean;
+    isWithinTypeParams?: boolean;
 };
 
 export function isMemoAnnotation(node: arkts.AnnotationUsage, memoName: MemoNames): boolean {
@@ -138,14 +139,43 @@ export function collectMemoableInfoInUnionType(node: arkts.AstNode, info?: Memoa
     return currInfo;
 }
 
+function collectMemoableInfoInTypeReferencePart(node: arkts.ETSTypeReferencePart): MemoableInfo {
+    let currInfo: MemoableInfo = {};
+    if (!node.typeParams) {
+        return currInfo;
+    }
+    node.typeParams.params.forEach((t) => {
+        currInfo = {
+            ...currInfo,
+            ...collectMemoableInfoInUnionType(t),
+            ...collectMemoableInfoInFunctionType(t),
+        };
+        if (arkts.isETSTypeReference(t) && !!t.part && !!arkts.isETSTypeReferencePart(t.part)) {
+            currInfo = {
+                ...currInfo,
+                ...collectMemoableInfoInTypeReferencePart(t.part),
+            };
+        }
+    });
+    if (checkIsMemoFromMemoableInfo(currInfo)) {
+        return { isWithinTypeParams: true };
+    }
+    return { isWithinTypeParams: currInfo.isWithinTypeParams };
+}
+
 export function collectMemoableInfoInTypeReference(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {
     let currInfo = info ?? {};
     if (arkts.NodeCache.getInstance().has(node)) {
-        return { ...currInfo, hasMemo: true, hasProperType: true };
+        const metadata = arkts.NodeCache.getInstance().get(node)?.metadata;
+        return { ...currInfo, ...metadata };
     }
     if (!arkts.isETSTypeReference(node) || !node.part || !arkts.isETSTypeReferencePart(node.part)) {
         return currInfo;
     }
+    currInfo = {
+        ...currInfo,
+        ...collectMemoableInfoInTypeReferencePart(node.part),
+    };
     const expr = node.part.name;
     let decl: arkts.AstNode | undefined;
     if (!expr || !(decl = arkts.getDecl(expr))) {
@@ -194,7 +224,8 @@ export function collectMemoableInfoInTypeAlias(node: arkts.AstNode, info?: Memoa
 export function collectMemoableInfoInParameter(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {
     let currInfo = info ?? {};
     if (arkts.NodeCache.getInstance().has(node)) {
-        return { ...currInfo, hasMemo: true, hasProperType: true };
+        const metadata = arkts.NodeCache.getInstance().get(node)?.metadata;
+        return { ...currInfo, ...metadata };
     }
     if (!arkts.isEtsParameterExpression(node)) {
         return currInfo;
@@ -214,6 +245,10 @@ export function collectMemoableInfoInParameter(node: arkts.AstNode, info?: Memoa
             ...currInfo,
             ...collectMemoableInfoInArrowFunction(node.initializer),
         };
+    }
+    if (!!currInfo.isWithinTypeParams) {
+        const forbidTypeRewrite = !checkIsMemoFromMemoableInfo(currInfo);
+        arkts.NodeCache.getInstance().collect(node, { forbidTypeRewrite, isWithinTypeParams: true });
     }
     return currInfo;
 }
@@ -412,6 +447,19 @@ export function collectMemoableInfoInFunctionReturnType(node: arkts.ScriptFuncti
     return {};
 }
 
+export function collectScriptFunctionReturnTypeFromInfo(node: arkts.ScriptFunction, info: MemoableInfo): void {
+    const returnType = node.returnTypeAnnotation;
+    if (!returnType || arkts.NodeCache.getInstance().has(returnType)) {
+        return;
+    }
+    const isMemoReturnType = checkIsMemoFromMemoableInfo(info);
+    const isWithinTypeParams = info.isWithinTypeParams;
+    if (isMemoReturnType || isWithinTypeParams) {
+        const forbidTypeRewrite = !isMemoReturnType;
+        arkts.NodeCache.getInstance().collect(returnType, { forbidTypeRewrite, isWithinTypeParams });
+    }
+}
+
 export function collectGensymDeclarator(declarator: arkts.VariableDeclarator, info: MemoableInfo): void {
     if (!info.hasMemo && !info.hasBuilder) {
         return;
@@ -432,15 +480,13 @@ export function collectGensymDeclarator(declarator: arkts.VariableDeclarator, in
         arrowFunc = alternate;
     }
     if (!!arrowFunc) {
-        const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(arrowFunc.scriptFunction);
-        const [paramMemoableInfoMap, gensymCount] = collectMemoableInfoMapInFunctionParams(arrowFunc.scriptFunction);
-        if (!!arrowFunc.scriptFunction.body && arkts.isBlockStatement(arrowFunc.scriptFunction.body)) {
-            collectMemoScriptFunctionBody(
-                arrowFunc.scriptFunction.body,
-                returnMemoableInfo,
-                paramMemoableInfoMap,
-                gensymCount
-            );
+        const func = arrowFunc.scriptFunction;
+        const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(func);
+        collectScriptFunctionReturnTypeFromInfo(func, returnMemoableInfo);
+        const [paramMemoableInfoMap, gensymCount] = collectMemoableInfoMapInFunctionParams(func);
+        const body = func.body;
+        if (!!body && arkts.isBlockStatement(body)) {
+            collectMemoScriptFunctionBody(body, returnMemoableInfo, paramMemoableInfoMap, gensymCount);
         }
     }
 }
@@ -546,11 +592,11 @@ export function findCanAddMemoFromClassProperty(property: arkts.AstNode): proper
     if (!!memoableInfo.hasMemo && !!memoableInfo.hasProperType) {
         arkts.NodeCache.getInstance().collect(property);
     }
-    return (
-        (!!memoableInfo.hasBuilder || !!memoableInfo.hasBuilderParam) &&
-        !memoableInfo.hasMemo &&
-        !!memoableInfo.hasProperType
-    );
+    const hasBuilderType = !!memoableInfo.hasBuilder || !!memoableInfo.hasBuilderParam;
+    if (!!memoableInfo.isWithinTypeParams) {
+        arkts.NodeCache.getInstance().collect(property, { isWithinTypeParams: true });
+    }
+    return hasBuilderType && !memoableInfo.hasMemo && !!memoableInfo.hasProperType && !memoableInfo.isWithinTypeParams;
 }
 
 /**
@@ -582,22 +628,21 @@ export function findCanAddMemoFromArrowFunction(node: arkts.AstNode): node is ar
     }
     const memoableInfo = collectMemoableInfoInArrowFunction(node);
     const { hasMemoEntry, hasMemoIntrinsic } = memoableInfo;
-    const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(node.scriptFunction);
+    const func = node.scriptFunction;
+    const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(func);
+    collectScriptFunctionReturnTypeFromInfo(func, returnMemoableInfo);
     const [paramMemoableInfoMap, gensymCount] = collectMemoableInfoMapInFunctionParams(
-        node.scriptFunction,
+        func,
         !hasMemoEntry && !hasMemoIntrinsic
     );
-    const isMemoReturnType = checkIsMemoFromMemoableInfo(returnMemoableInfo);
-    if (isMemoReturnType) {
-        arkts.NodeCache.getInstance().collect(node.scriptFunction.returnTypeAnnotation!);
-    }
     const isMemo = checkIsMemoFromMemoableInfo(memoableInfo);
     if (isMemo && !arkts.NodeCache.getInstance().has(node)) {
         arkts.NodeCache.getInstance().collect(node, { hasMemoEntry, hasMemoIntrinsic });
-        if (!!node.scriptFunction.body && arkts.isBlockStatement(node.scriptFunction.body)) {
+        const body = func.body;
+        if (!!body && arkts.isBlockStatement(body)) {
             const disableCollectReturn = hasMemoEntry || hasMemoIntrinsic;
             collectMemoScriptFunctionBody(
-                node.scriptFunction.body,
+                body,
                 returnMemoableInfo,
                 paramMemoableInfoMap,
                 gensymCount,
@@ -634,16 +679,14 @@ export function findCanAddMemoFromMethod(node: arkts.AstNode): node is arkts.Met
     }
     const memoableInfo = collectMemoableInfoInMethod(node);
     const { hasMemoEntry, hasMemoIntrinsic } = memoableInfo;
-    const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(node.scriptFunction);
+    const func = node.scriptFunction;
+    const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(func);
+    collectScriptFunctionReturnTypeFromInfo(func, returnMemoableInfo);
     const [paramMemoableInfoMap, gensymCount] = collectMemoableInfoMapInFunctionParams(
-        node.scriptFunction,
+        func,
         !hasMemoEntry && !hasMemoIntrinsic
     );
     const isMemo = checkIsMemoFromMemoableInfo(memoableInfo);
-    const isMemoReturnType = checkIsMemoFromMemoableInfo(returnMemoableInfo);
-    if (isMemoReturnType) {
-        arkts.NodeCache.getInstance().collect(node.scriptFunction.returnTypeAnnotation!);
-    }
     if (isMemo && !arkts.NodeCache.getInstance().has(node)) {
         const metadata = collectMetadataInMethod(node);
         arkts.NodeCache.getInstance().collect(node, {
@@ -651,10 +694,11 @@ export function findCanAddMemoFromMethod(node: arkts.AstNode): node is arkts.Met
             hasMemoEntry,
             hasMemoIntrinsic,
         });
-        if (!!node.scriptFunction.body && arkts.isBlockStatement(node.scriptFunction.body)) {
+        const body = func.body;
+        if (!!body && arkts.isBlockStatement(body)) {
             const disableCollectReturn = hasMemoEntry || hasMemoIntrinsic;
             collectMemoScriptFunctionBody(
-                node.scriptFunction.body,
+                body,
                 returnMemoableInfo,
                 paramMemoableInfoMap,
                 gensymCount,
@@ -743,15 +787,13 @@ export function collectCallArgsWithMethodParams(arg: arkts.Expression | undefine
     }
     if (checkIsMemoFromMemoableInfo(info) && arkts.isArrowFunctionExpression(arg)) {
         arkts.NodeCache.getInstance().collect(arg);
-        const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(arg.scriptFunction);
-        const [paramMemoableInfoMap, gensymCount] = collectMemoableInfoMapInFunctionParams(arg.scriptFunction);
-        if (!!arg.scriptFunction.body && arkts.isBlockStatement(arg.scriptFunction.body)) {
-            collectMemoScriptFunctionBody(
-                arg.scriptFunction.body,
-                returnMemoableInfo,
-                paramMemoableInfoMap,
-                gensymCount
-            );
+        const func = arg.scriptFunction;
+        const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(func);
+        collectScriptFunctionReturnTypeFromInfo(func, returnMemoableInfo);
+        const [paramMemoableInfoMap, gensymCount] = collectMemoableInfoMapInFunctionParams(func);
+        const body = func.body;
+        if (!!body && arkts.isBlockStatement(body)) {
+            collectMemoScriptFunctionBody(body, returnMemoableInfo, paramMemoableInfoMap, gensymCount);
         }
     }
 }
