@@ -130,7 +130,7 @@ function main() {}
     Column(undefined, undefined, @memo() (() => {
       Button(@memo() ((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
-          let dialogController: (CustomDialogController | undefined) = ({let gensym___220374545: (CustomDialogController | undefined);
+          let dialogController: (CustomDialogController | undefined) = ({let gensym___220374545: Any;
           gensym___220374545 = new CustomDialogController({
             builder: @memo() (() => {
               CustomDialogExample._instantiateImpl(undefined, (() => {
@@ -141,7 +141,7 @@ function main() {}
             }),
             baseComponent: this,
           })
-          gensym___220374545});
+          (gensym___220374545 as CustomDialogController)});
         })).backgroundColor(0x317aff);
         return;
       }), "click me", undefined, undefined);

@@ -161,10 +161,12 @@ export enum DecoratorNames {
     MONITOR = 'Monitor',
     COMPUTED = 'Computed',
     EVENT = 'Event',
+    REQUIRE = 'Require'
 }
 
 export enum TypeNames {
     NULLISH_TYPE = 'NullishType',
+    ANY = 'Any'
 }
 
 export enum DecoratorIntrinsicNames {

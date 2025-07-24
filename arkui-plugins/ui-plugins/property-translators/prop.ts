@@ -108,16 +108,7 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
             arkts.factory.create1StringLiteral(originalName),
             this.property.value
                 ? binaryItem
-                : arkts.factory.createTSAsExpression(
-                      factory.createNonNullOrOptionalMemberExpression(
-                          CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
-                          originalName,
-                          false,
-                          true
-                      ),
-                      this.property.typeAnnotation ? this.property.typeAnnotation.clone() : undefined,
-                      false
-                  ),
+                : factory.generateDefiniteInitializers(this.property.typeAnnotation, originalName),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         collectStateManagementTypeImport(StateManagementTypes.PROP_DECORATED);
