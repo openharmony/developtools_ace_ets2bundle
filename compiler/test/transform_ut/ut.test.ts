@@ -143,8 +143,7 @@ mocha.describe('test UT testcases [non-preview mode]', function () {
 		mocha.it(`1-${index + 1}: test ${utPage}`, function (done) {
 			const sourceFilePath: string = path.resolve(TEST_CASES_PATH, `ut/${utPage}.ets`);
 			const sourceCode: string = fs.readFileSync(sourceFilePath, 'utf-8');
-			
-			const targetFilePath: string = path.resolve(OUTPUTS_PATH, `ut/${utPage}.js.sample`);
+			const targetFilePath: string = resolveWithExtension(OUTPUTS_PATH, 'ut', utPage);
 			const targetCode: string = fs.readFileSync(targetFilePath, 'utf-8');
 
 			storedFileInfo.addFileCacheInfo(sourceFilePath);
@@ -160,3 +159,16 @@ mocha.describe('test UT testcases [non-preview mode]', function () {
 		});
 	});
 });
+
+export function resolveWithExtension(OUTPUTS_PATH: string, directoryName: string, utPage: string): string {
+    const tsPath = path.resolve(OUTPUTS_PATH, `${directoryName}/${utPage}.ts`);
+    if (fs.existsSync(tsPath)) {
+        return tsPath;
+    }
+
+    const jsSamplePath: string = path.resolve(OUTPUTS_PATH, `${directoryName}/${utPage}.js.sample`);
+    if (fs.existsSync(jsSamplePath)) {
+        return jsSamplePath;
+    }
+    throw new Error(`does not exist: ${utPage}.[ts|js.sample]`);
+}
