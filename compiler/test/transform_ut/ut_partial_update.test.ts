@@ -62,7 +62,7 @@ import {
 	parseCode, 
 	sourceReplace 
 } from './helpers/parser';
-
+import { resolveWithExtension } from './ut.test';
 const PROJECT_ROOT: string = path.resolve(__dirname, '../../test/transform_ut');
 const DEFAULT_PROJECT: string = 'application';
 const TEST_CASES_PATH: string = path.resolve(PROJECT_ROOT, DEFAULT_PROJECT, 'entry/src/main/ets/pages');
@@ -144,8 +144,7 @@ mocha.describe('test UT for partial update testcases [non-preview mode]', functi
 		mocha.it(`1-${index + 1}: test ${utPage}`, function (done) {
 			const sourceFilePath: string = path.resolve(TEST_CASES_PATH, `utForPartialUpdate/${utPage}.ets`);
 			const sourceCode: string = fs.readFileSync(sourceFilePath, 'utf-8');
-			
-			const targetFilePath: string = path.resolve(OUTPUTS_PATH, `utForPartialUpdate/${utPage}.js.sample`);
+			const targetFilePath: string = resolveWithExtension(OUTPUTS_PATH, 'utForPartialUpdate', utPage);
 			const targetCode: string = fs.readFileSync(targetFilePath, 'utf-8');
 
 			storedFileInfo.addFileCacheInfo(sourceFilePath);
