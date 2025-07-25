@@ -123,6 +123,8 @@ function initProjectConfig(projectConfig) {
   projectConfig.allowEmptyBundleName = false;
   projectConfig.uiTransformOptimization = false;
   projectConfig.ignoreCrossplatformCheck = false;
+  projectConfig.isolatedDeclarations = false;
+  projectConfig.noCheck = false;
 }
 
 function initProjectPathConfig(projectConfig) {
