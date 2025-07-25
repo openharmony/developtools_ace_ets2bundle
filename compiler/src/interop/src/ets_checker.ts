@@ -224,7 +224,9 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'skipPathsInKeyForCompilationSettings': reuseLanguageServiceForDepChange,
     'compatibleSdkVersionStage': projectConfig.compatibleSdkVersionStage,
     'compatibleSdkVersion': projectConfig.compatibleSdkVersion,
-    'skipOhModulesLint': skipOhModulesLint
+    'skipOhModulesLint': skipOhModulesLint,
+    'isolatedDeclarations': projectConfig.isolatedDeclarations,
+    'noCheck': projectConfig.noCheck,
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
