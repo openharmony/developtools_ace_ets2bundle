@@ -21,7 +21,10 @@ import {
   FileManager,
   collectSDKInfo,
   isBridgeCode,
-  getBrdigeCodeRootPath
+  getBrdigeCodeRootPath,
+  isMixCompile,
+  initConfigForInterop,
+  destroyInterop
  } from '../../../lib/fast_build/ark_compiler/interop/interop_manager';
 import { ARKTS_1_1, ARKTS_1_2, ARKTS_HYBRID } from '../../../lib/fast_build/ark_compiler/interop/pre_define';
 import { sdkConfigs } from '../../../main';
@@ -353,3 +356,20 @@ mocha.describe('test getBrdigeCodeRootPath api', function () {
     expect(result).to.equal('/default/bridge/path');
   });
 });
+
+mocha.describe('test mixCompile',function(){
+  mocha.it('1-1 test mixCompile is false',function(){
+    expect(isMixCompile()).to.be.false;
+  })
+
+  mocha.it('1-2 test mixCompile is true',function(){
+    initConfigForInterop();
+    expect(isMixCompile()).to.be.true;
+  })
+
+  mocha.it('1-3 test mixCompile is false when destroy interop',function(){
+    initConfigForInterop();
+    destroyInterop()
+    expect(isMixCompile()).to.be.false;
+  })
+})

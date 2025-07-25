@@ -119,6 +119,5 @@ export interface InteropInfo {
 }
 
 export interface InteropConfig {
-  mixCompile: boolean;
   interopModuleInfo: Map<string, InteropInfo>;
 }
