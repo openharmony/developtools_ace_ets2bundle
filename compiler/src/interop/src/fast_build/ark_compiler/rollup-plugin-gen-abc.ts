@@ -35,6 +35,7 @@ import {
 import { BytecodeObfuscator } from './bytecode_obfuscator';
 import { PreloadFileModules } from './module/module_preload_file_utils';
 import {
+  destroyInterop,
   FileManager,
   isMixCompile
 } from './interop/interop_manager';
@@ -93,7 +94,7 @@ export function genAbc() {
       BytecodeObfuscator.cleanBcObfuscatorObject();
       PreloadFileModules.cleanUpPreloadSoObjects();
       isMixCompile() && cleanUpProcessArkTSEvolutionObj();
-      isMixCompile() && FileManager.cleanFileManagerObject();
+      isMixCompile() && destroyInterop();
     }
   };
 }

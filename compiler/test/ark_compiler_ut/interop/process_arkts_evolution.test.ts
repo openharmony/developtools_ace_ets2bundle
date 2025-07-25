@@ -44,7 +44,7 @@ mocha.describe('process arkts evolution tests', function () {
     this.rollup.build();
     this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
     this.rollup.share.projectConfig.dependentModuleMap.set('evohar', { language: '1.2' });
-    const throwArkTsCompilerErrorStub = sinon.stub(CommonLogger.getInstance(this.rollup.share), 'printErrorAndExit');
+    const throwArkTsCompilerErrorStub = sinon.stub(CommonLogger.getInstance(this.rollup), 'printErrorAndExit');
     try {
       collectArkTSEvolutionModuleInfo(this.rollup.share);
     } catch (e) {

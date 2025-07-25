@@ -229,8 +229,6 @@ export class FileManager {
     FileManager.glueCodeFileInfos?.clear();
     FileManager.aliasConfig?.clear();
     FileManager.mixCompile = false;
-    entryFileLanguageInfo.clear();
-    mixCompile = undefined;
   }
 
   getLanguageVersionByFilePath(filePath: string): {
@@ -591,6 +589,7 @@ export function rebuildEntryObj(projectConfig: Object, interopConfig: InteropCon
 
 /**
  * corresponds to compiler/src/fast_build/common/init_config.ts - initConfig()
+ * As the entry  for mix compile,so mixCompile status will be set true
  */
 export function initConfigForInterop(interopConfig: InteropConfig): Object {
   function getEntryObj(): void {
@@ -612,7 +611,7 @@ export function initConfigForInterop(interopConfig: InteropConfig): Object {
       return newEntry;
     }, {});
   }
-  mixCompile = interopConfig.mixCompile;
+  mixCompile = true;
   getEntryObj();
   if (process.env.appResource) {
     readAppResource(process.env.appResource);
@@ -637,4 +636,10 @@ export function getBrdigeCodeRootPath(filePath: string, interopConfig: InteropCo
   }
 
   return undefined;
+}
+
+export function destroyInterop(): void {
+  FileManager.cleanFileManagerObject();
+  entryFileLanguageInfo.clear();
+  mixCompile = false;
 }
