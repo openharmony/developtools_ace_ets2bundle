@@ -16,7 +16,12 @@
         "standard"
       ],
       "deps": {
-        "components": [],
+        "components": [
+          "node",
+          "sdk",
+          "ets_frontend",
+          "typescript"
+        ],
         "third_party": [
           "typescript"
         ]
@@ -24,15 +29,24 @@
       "build": {
         "sub_component": [
           "//developtools/ace_ets2bundle:ets_loader_component_config",
-          "//developtools/ace_ets2bundle:ets_loader_deps",
           "//developtools/ace_ets2bundle:ets_loader",
           "//developtools/ace_ets2bundle:ets_loader_library",
-          "//developtools/ace_ets2bundle:ets_loader_syntax",
           "//developtools/ace_ets2bundle:components",
           "//developtools/ace_ets2bundle:server",
           "//developtools/ace_ets2bundle:codegen",
           "//developtools/ace_ets2bundle:ets_loader_declaration",
           "//developtools/ace_ets2bundle:ets_loader_ark_hap"
+        ],
+        "inner_kits": [
+            {
+                "name": "//developtools/ace_ets2bundle/arkui-plugins:ohos_ets_ui_plugins"
+            },
+            {
+                "name": "//developtools/ace_ets2bundle/koala-wrapper:ohos_ets_koala_wrapper"
+            },
+            {
+                "name": "//developtools/ace_ets2bundle:ets_loader_ark_hap"
+            }
         ]
       }
     }
