@@ -120,6 +120,10 @@ export class EtsScript extends AstNode {
             nodes.length
         );
     }
+
+    get isNamespace(): boolean {
+        return global.generatedEs2panda._ETSModuleIsNamespaceConst(global.context, this.peer);
+    }
 }
 
 export class ExpressionStatement extends AstNode {

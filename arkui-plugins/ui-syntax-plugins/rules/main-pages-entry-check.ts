@@ -23,8 +23,8 @@ class MainPagesEntryCheckRule extends AbstractUISyntaxRule {
             mainPagesEntryCheck: `A page configured in 'main_pages. json or build-profile. json5' must have one and only one '@Entry' annotation. `
         };
     }
-    public parsed(node: arkts.StructDeclaration): void {
-        if (!arkts.isEtsScript(node)) {
+    public parsed(node: arkts.AstNode): void {
+        if (!arkts.isEtsScript(node) || node.isNamespace) {
             return;
         }
         const currentFilePath = getCurrentFilePath(node);
@@ -42,7 +42,7 @@ class MainPagesEntryCheckRule extends AbstractUISyntaxRule {
             // Check if it's of type StructDeclaration
             if (arkts.isStructDeclaration(child)) {
                 if (!firstStructDeclaration) {
-                    firstStructDeclaration = child;
+                    firstStructDeclaration = child.definition.ident;
                 }
                 const entryDocoratorUsage = getAnnotationUsage(
                     child,
