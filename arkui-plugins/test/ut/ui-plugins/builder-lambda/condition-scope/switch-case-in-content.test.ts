@@ -14,16 +14,16 @@
  */
 
 import * as path from 'path';
-import { PluginTester } from '../../../utils/plugin-tester';
-import { mockBuildConfig } from '../../../utils/artkts-config';
-import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
-import { parseDumpSrc } from '../../../utils/parse-string';
-import { memoNoRecheck, recheck, uiNoRecheck } from '../../../utils/plugins';
-import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
-import { uiTransform } from '../../../../ui-plugins';
-import { Plugins } from '../../../../common/plugin-context';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
+import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
+import { parseDumpSrc } from '../../../../utils/parse-string';
+import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { uiTransform } from '../../../../../ui-plugins';
+import { Plugins } from '../../../../../common/plugin-context';
 
-const BUILDER_LAMBDA_DIR_PATH: string = 'builder-lambda';
+const BUILDER_LAMBDA_DIR_PATH: string = 'builder-lambda/condition-scope';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [

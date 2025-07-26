@@ -553,7 +553,10 @@ export class factory {
         if (arkts.isSwitchStatement(statement)) {
             return this.updateSwitchCaseContentBodyInBuilderLambda(statement, hasBuilder);
         }
-
+        if (arkts.isBlockStatement(statement)) {
+            const newStatements = statement.statements.map((st) => this.updateContentBodyInBuilderLambda(st, hasBuilder));
+            return arkts.factory.updateBlock(statement, newStatements);
+        }
         return statement;
     }
 
