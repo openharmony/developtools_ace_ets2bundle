@@ -19,10 +19,21 @@ import { Observed, ObjectLink } from "@ohos.arkui.stateManagement"
 @Observed
 class A {}
 
+@Observed
+class B {}
+
 @Component
 struct MyStateSample {
-
   @ObjectLink objectlinkvar: A;
+
+  build() {}
+}
+
+@Component
+struct MyStateSample2 {
+  @ObjectLink objectlinkvar1: A | undefined;
+  @ObjectLink objectlinkvar2: A | B;
+  @ObjectLink objectlinkvar3: A | B | null;
 
   build() {}
 }
