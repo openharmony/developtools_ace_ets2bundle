@@ -540,7 +540,10 @@ export function checkIsWithInIfConditionScope(statement: arkts.AstNode): boolean
     if (!statement.parent) {
         return false;
     }
-    return arkts.isBlockStatement(statement) && arkts.isIfStatement(statement.parent);
+    if (arkts.isIfStatement(statement.parent)) {
+        return arkts.isBlockStatement(statement) || arkts.isIfStatement(statement);
+    }
+    return false;
 }
 
 export function checkShouldBreakFromStatement(statement: arkts.AstNode): boolean {
