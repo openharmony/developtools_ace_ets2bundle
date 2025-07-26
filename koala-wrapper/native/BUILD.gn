@@ -13,11 +13,12 @@
 
 import("//build/ohos.gni")
 
+group("build_es2panda_lib") {
+  external_deps = [ "ets_frontend:ets2panda" ]
+}
+
 shared_library("es2panda") {
-  external_deps = [
-    "ets_frontend:libes2panda_public_headers",
-    "node:node_header_notice"
-  ]
+  deps = [ ":build_es2panda_lib" ]
   sources = [
     "../koalaui/interop/src/cpp/common-interop.cc",
     "../koalaui/interop/src/cpp/interop-logging.cc",
@@ -34,6 +35,8 @@ shared_library("es2panda") {
     "../node_modules/node-api-headers/include",
     "../node_modules/node-addon-api",
     "./include",
+    "//arkcompiler/ets_frontend/ets2panda/public/",
+    "//third_party/node/src",
     rebase_path("$root_gen_dir/arkcompiler/ets_frontend/ets2panda/"),
   ]
 
