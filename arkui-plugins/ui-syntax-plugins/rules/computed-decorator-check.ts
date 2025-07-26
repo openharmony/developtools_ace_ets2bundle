@@ -80,7 +80,8 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
                 node: computedDecorator,
                 message: this.messages.onlyOnGetter,
                 fix: (computedDecorator) => {
-                    const startPosition = computedDecorator.startPosition;
+                    let startPosition = computedDecorator.startPosition;
+                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                     const endPosition = computedDecorator.endPosition;
                     return {
                         range: [startPosition, endPosition],
@@ -114,7 +115,8 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
             node: computedDecorator,
             message: this.messages.onlyOnGetter,
             fix: (computedDecorator) => {
-                const startPosition = computedDecorator.startPosition;
+                let startPosition = computedDecorator.startPosition;
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 const endPosition = computedDecorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
