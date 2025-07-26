@@ -116,6 +116,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
                 message: this.messages.requireOnlyWithParam,
                 fix: (requireDecorator) => {
                     let startPosition = requireDecorator.startPosition;
+                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                     let endPosition = requireDecorator.endPosition;
                     return {
                         range: [startPosition, endPosition],
@@ -150,6 +151,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
             data: { annotationName },
             fix: (annotation) => {
                 let startPosition = annotation.startPosition;
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 let endPosition = annotation.endPosition;
                 return {
                     range: [startPosition, endPosition],
