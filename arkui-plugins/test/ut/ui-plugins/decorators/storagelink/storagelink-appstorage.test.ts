@@ -51,8 +51,8 @@ import { StorageLink as StorageLink, AppStorage as AppStorage } from "@ohos.arku
 
 function main() {}
 
-AppStorage.setOrCreate("PropA", 47, Type.from<number>());
-AppStorage.setOrCreate("PropB", new Data(50), Type.from<Data>());
+AppStorage.setOrCreate("PropA", 47);
+AppStorage.setOrCreate("PropB", new Data(50));
 
 __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   bundleName: "com.example.mock",
@@ -71,8 +71,8 @@ class Data {
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_storageLink = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "PropA", "storageLink", 1, Type.from<number>())
-    this.__backing_storageLinkObject = STATE_MGMT_FACTORY.makeStorageLink<Data>(this, "PropB", "storageLinkObject", new Data(1), Type.from<Data>())
+    this.__backing_storageLink = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "PropA", "storageLink", 1)
+    this.__backing_storageLinkObject = STATE_MGMT_FACTORY.makeStorageLink<Data>(this, "PropB", "storageLinkObject", new Data(1))
   }
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
