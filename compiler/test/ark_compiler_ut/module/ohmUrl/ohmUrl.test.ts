@@ -1516,6 +1516,7 @@ mocha.describe('generate ohmUrl', function () {
     this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
     this.rollup.share.projectConfig.isPreloadSoEnabled = true;
     this.rollup.share.projectConfig.preloadSoFilePath = 'build/default/intermediates/preload/default/preload.json';
+    this.rollup.share.projectConfig.cachePath = 'build/default/intermediates/preload/default/cache';
     const filePath: string = '/testHsp/hsp/src/main/ets/utils/Calc.ets';
     const outFilePath: string = 'build/default/intermediates/preload/default/preload.json';
     const moduleRequest: string = '@ohos.router';
@@ -1554,6 +1555,54 @@ mocha.describe('generate ohmUrl', function () {
     const parsedFileContent = JSON.parse(fileContent.trim().replace(/,$/, ''));
     expect(resultOhmUrl === '@ohos:router').to.be.true;
     expect(fs.existsSync(outFilePath)).to.be.true;
+    expect(parsedFileContent).to.deep.equal(expectedJson);
+  });
+
+  mocha.it('Collect. so libraries referenced in the project and generate JSON files,remove one file', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
+    this.rollup.share.projectConfig.isPreloadSoEnabled = true;
+    this.rollup.share.projectConfig.preloadSoFilePath = 'build/default/intermediates/preload/default/preload.json';
+    this.rollup.share.projectConfig.cachePath = 'build/default/intermediates/preload/default/cache';
+    const filePath: string = '/testHsp/hsp/src/main/ets/utils/Calc.ets';
+    const indexFilePath: string = '/testHsp/hsp/src/main/ets/utils/Index.ets';
+    const outFilePath: string = 'build/default/intermediates/preload/default/preload.json';
+
+    for (let file of [filePath, indexFilePath]) {
+      const moduleInfo = {
+        id: file,
+        meta: {
+          needPreloadSo: true
+        }
+      }
+      this.rollup.moduleInfos.push(moduleInfo);
+    }
+    PreloadFileModules.initialize(this.rollup);
+    PreloadFileModules.preloadEntriesBack = [];
+    const importerFile: string = '/testHsp/hsp/src/main/ets/pages/Index.ets'
+    const moduleSourceFile: string = new ModuleSourceFile();
+    moduleSourceFile.moduleId = filePath;
+    moduleSourceFile.getOhmUrl(this.rollup, '@ohos.router', filePath, importerFile);
+    PreloadFileModules.finalizeWritePreloadSoList();
+
+    PreloadFileModules.preloadEntriesBack = [];
+    const moduleSourceFileIndex: string = new ModuleSourceFile();
+    moduleSourceFileIndex.moduleId = indexFilePath;
+    moduleSourceFileIndex.getOhmUrl(this.rollup, '@kit.LocalizationKit', indexFilePath, importerFile);
+    PreloadFileModules.finalizeWritePreloadSoList();
+
+    const fileContent = fs.readFileSync(outFilePath, 'utf8');
+    const expectedJson = {
+      "systemPreloadHintStartupTasks": [
+        {
+          "name": "@kit.LocalizationKit",
+          "ohmurl": "@ohos:LocalizationKit",
+          "srcEntry": "@kit.LocalizationKit"
+        }
+      ]
+    };
+    // Remove trailing ',' if exists
+    const parsedFileContent = JSON.parse(fileContent.trim().replace(/,$/, ''));
     expect(parsedFileContent).to.deep.equal(expectedJson);
   });
 });
