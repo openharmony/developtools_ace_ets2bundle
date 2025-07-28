@@ -43,7 +43,9 @@ import {
   COMPONENT_USER_INTENTS_DECORATOR_FORM
 } from '../pre_define';
 import { CompileEvent, createAndStartEvent, stopEvent } from '../performance';
-import { LogInfo, LogType } from '../utils';
+import {emitLogInfo, getTransformLog, LogInfo, LogType} from '../utils';
+import {ABILITY_SUBSYSTEM_CODE} from '../../lib/hvigor_error_code/hvigor_error_info';
+import {resetLog, transformLog} from '../process_ui_syntax';
 
 type StaticValue = string | number | boolean | null | undefined | StaticValue[] | { [key: string]: StaticValue };
 
@@ -1617,7 +1619,7 @@ class ParseIntent {
   }
 
   // This method writes the parsed data to a file.
-  public writeUserIntentJsonFile(harIntentDataObj: object): void {
+  public writeUserIntentJsonFile(harIntentDataObj: object, share: object): void {
     const cachePath: string =
       path.join(projectConfig.cachePath, 'insight_compile_cache.json'); // Compiled cache file
     if (!(fs.existsSync(cachePath) || this.intentData.length > 0 || Object.keys(harIntentDataObj).length !== 0)) {
@@ -1656,6 +1658,12 @@ class ParseIntent {
         solutions: ['Check file permissions, free disk space, or restart DevEco Studio']
       });
       return;
+    }
+    const logger = share.getLogger('etsTransform');
+    const hvigorLogger = share.getHvigorConsoleLogger?.(ABILITY_SUBSYSTEM_CODE);
+    if (transformLog && transformLog.errors.length && !projectConfig.ignoreWarning) {
+      emitLogInfo(logger, getTransformLog(transformLog), true, this.currentFilePath, hvigorLogger);
+      resetLog();
     }
   }
 

@@ -16,6 +16,7 @@
 export const ERROR_DESCRIPTION = 'ArkTS Compiler Error';
 export const ARKUI_SUBSYSTEM_CODE = '109'; // ArkUI subsystem coding
 export const LINTER_SUBSYSTEM_CODE = '106'; // Linter subsystem coding
+export const ABILITY_SUBSYSTEM_CODE = '101'; // Ability subsystem coding
 export const ERROR_TYPE_CODE = '05'; // Error Type Code
 export const EXTENSION_CODE = '999'; // Extended Codes Defined by Various Subsystems
 
