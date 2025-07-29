@@ -972,9 +972,14 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
+    _GetCompilationMode(config: KNativePointer): KInt {
+        throw new Error('Not implemented');
+    }
+
     _CreateTypeNodeFromTsType(context: KNativePointer, classInstance: KNativePointer): KNativePointer {
         throw new Error('Not implemented');
     }
+
 }
 
 export function initEs2panda(): Es2pandaNativeModule {
