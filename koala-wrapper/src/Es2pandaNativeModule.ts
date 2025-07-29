@@ -987,6 +987,10 @@ export class Es2pandaNativeModule {
     _ProgramSourceFilePathConst(context: KPtr, decl: KPtr): KNativePointer {
         throw new Error('Not implemented');
     }
+
+    _GetCompilationMode(config: KNativePointer): KInt {
+        throw new Error('Not implemented');
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {
