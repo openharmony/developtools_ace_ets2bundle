@@ -38,7 +38,6 @@ const objectlinkTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test objectlink basic transform', buildConfig);
 
 const expectedScript: string = `
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { IObjectLinkDecoratedVariable as IObjectLinkDecoratedVariable } from "arkui.stateManagement.decorator";
@@ -64,8 +63,6 @@ import { Component as Component } from "@ohos.arkui.component";
 import { Observed as Observed, ObjectLink as ObjectLink } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
-
 
 @Observed() class A implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
@@ -100,10 +97,43 @@ function main() {}
   
 }
 
+@Observed() class B implements IObservedObject, ISubscribedWatches {
+  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  
+  public addWatchSubscriber(watchId: WatchIdType): void {
+    this.subscribedWatches.addWatchSubscriber(watchId);
+  }
+  
+  public removeWatchSubscriber(watchId: WatchIdType): boolean {
+    return this.subscribedWatches.removeWatchSubscriber(watchId);
+  }
+  
+  public executeOnSubscribingWatches(propertyName: string): void {
+    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
+  }
+  
+  @JSONStringifyIgnore() private ____V1RenderId: RenderIdType = 0;
+  
+  public setV1RenderId(renderId: RenderIdType): void {
+    this.____V1RenderId = renderId;
+  }
+  
+  protected conditionalAddRef(meta: IMutableStateMeta): void {
+    if (OBSERVE.shouldAddRef(this.____V1RenderId)) {
+      meta.addRef();
+    }
+  }
+  
+  @JSONStringifyIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  
+  public constructor() {}
+  
+}
+
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", ({let gensym___248819442 = initializers;
-    (((gensym___248819442) == (null)) ? undefined : gensym___248819442.objectlinkvar)})!)
+    this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", (({let gensym___248819442 = initializers;
+    (((gensym___248819442) == (null)) ? undefined : gensym___248819442.objectlinkvar)}) as A))
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {
@@ -125,6 +155,55 @@ function main() {}
   
 }
 
+@Component() final struct MyStateSample2 extends CustomComponent<MyStateSample2, __Options_MyStateSample2> {
+  public __initializeStruct(initializers: (__Options_MyStateSample2 | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_objectlinkvar1 = STATE_MGMT_FACTORY.makeObjectLink<(A | undefined)>(this, "objectlinkvar1", (({let gensym___219806589 = initializers;
+    (((gensym___219806589) == (null)) ? undefined : gensym___219806589.objectlinkvar1)}) as (A | undefined)))
+    this.__backing_objectlinkvar2 = STATE_MGMT_FACTORY.makeObjectLink<(A | B)>(this, "objectlinkvar2", (({let gensym___217261862 = initializers;
+    (((gensym___217261862) == (null)) ? undefined : gensym___217261862.objectlinkvar2)}) as (A | B)))
+    this.__backing_objectlinkvar3 = STATE_MGMT_FACTORY.makeObjectLink<(A | B | null)>(this, "objectlinkvar3", (({let gensym___199257778 = initializers;
+    (((gensym___199257778) == (null)) ? undefined : gensym___199257778.objectlinkvar3)}) as (A | B | null)))
+  }
+  
+  public __updateStruct(initializers: (__Options_MyStateSample2 | undefined)): void {
+    if (((({let gensym___82770935 = initializers;
+    (((gensym___82770935) == (null)) ? undefined : gensym___82770935.objectlinkvar1)})) !== (undefined))) {
+      this.__backing_objectlinkvar1!.update(initializers!.objectlinkvar1!);
+    }
+    if (((({let gensym___225818999 = initializers;
+    (((gensym___225818999) == (null)) ? undefined : gensym___225818999.objectlinkvar2)})) !== (undefined))) {
+      this.__backing_objectlinkvar2!.update(initializers!.objectlinkvar2!);
+    }
+    if (((({let gensym___3063329 = initializers;
+    (((gensym___3063329) == (null)) ? undefined : gensym___3063329.objectlinkvar3)})) !== (undefined))) {
+      this.__backing_objectlinkvar3!.update(initializers!.objectlinkvar3!);
+    }
+  }
+  
+  private __backing_objectlinkvar1?: IObjectLinkDecoratedVariable<(A | undefined)>;
+  
+  public get objectlinkvar1(): (A | undefined) {
+    return this.__backing_objectlinkvar1!.get();
+  }
+  
+  private __backing_objectlinkvar2?: IObjectLinkDecoratedVariable<(A | B)>;
+  
+  public get objectlinkvar2(): (A | B) {
+    return this.__backing_objectlinkvar2!.get();
+  }
+  
+  private __backing_objectlinkvar3?: IObjectLinkDecoratedVariable<(A | B | null)>;
+  
+  public get objectlinkvar3(): (A | B | null) {
+    return this.__backing_objectlinkvar3!.get();
+  }
+  
+  @memo() public build() {}
+  
+  private constructor() {}
+  
+}
+
 @Component() export interface __Options_MyStateSample {
   set objectlinkvar(objectlinkvar: (A | undefined))
   
@@ -132,6 +211,28 @@ function main() {}
   set __backing_objectlinkvar(__backing_objectlinkvar: (IObjectLinkDecoratedVariable<A> | undefined))
   
   get __backing_objectlinkvar(): (IObjectLinkDecoratedVariable<A> | undefined)
+  
+}
+
+@Component() export interface __Options_MyStateSample2 {
+  set objectlinkvar1(objectlinkvar1: ((A | undefined) | undefined))
+  
+  get objectlinkvar1(): ((A | undefined) | undefined)
+  set __backing_objectlinkvar1(__backing_objectlinkvar1: (IObjectLinkDecoratedVariable<(A | undefined)> | undefined))
+  
+  get __backing_objectlinkvar1(): (IObjectLinkDecoratedVariable<(A | undefined)> | undefined)
+  set objectlinkvar2(objectlinkvar2: ((A | B) | undefined))
+  
+  get objectlinkvar2(): ((A | B) | undefined)
+  set __backing_objectlinkvar2(__backing_objectlinkvar2: (IObjectLinkDecoratedVariable<(A | B)> | undefined))
+  
+  get __backing_objectlinkvar2(): (IObjectLinkDecoratedVariable<(A | B)> | undefined)
+  set objectlinkvar3(objectlinkvar3: ((A | B | null) | undefined))
+  
+  get objectlinkvar3(): ((A | B | null) | undefined)
+  set __backing_objectlinkvar3(__backing_objectlinkvar3: (IObjectLinkDecoratedVariable<(A | B | null)> | undefined))
+  
+  get __backing_objectlinkvar3(): (IObjectLinkDecoratedVariable<(A | B | null)> | undefined)
   
 }
 `;

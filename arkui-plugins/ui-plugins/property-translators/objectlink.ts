@@ -34,10 +34,6 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
-        if (!this.ifObservedDecoratedClass()) {
-            throw new Error('@ObjectLink decorated property only accepts @Observed decorated class instance');
-        }
-
         this.cacheTranslatedInitializer(newName, originalName);
         return this.translateWithoutInitializer(newName, originalName);
     }
@@ -54,11 +50,13 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
     }
 
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        const initializers = arkts.factory.createTSNonNullExpression(
+        const initializers = arkts.factory.createTSAsExpression(
             factory.createBlockStatementForOptionalExpression(
                 arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
                 originalName
-            )
+            ),
+            this.property.typeAnnotation,
+            false
         );
         const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(originalName), initializers];
         factory.judgeIfAddWatchFunc(args, this.property);
@@ -117,16 +115,6 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
         returnValue: arkts.Expression
     ): arkts.MethodDefinition {
         return createGetter(originalName, typeAnnotation, returnValue);
-    }
-
-    ifObservedDecoratedClass(): boolean {
-        if (this.property.typeAnnotation && arkts.isETSTypeReference(this.property.typeAnnotation)) {
-            const decl = arkts.getDecl(this.property.typeAnnotation.part?.name!);
-            if (arkts.isClassDefinition(decl!) && hasDecorator(decl, DecoratorNames.OBSERVED)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
 
