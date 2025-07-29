@@ -346,9 +346,13 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
       SINCE_TAG_CHECK_ERROER, false, ts.DiagnosticCategory.Warning,
       VERSION_CHECK_FUNCTION_NAME, false, undefined, checkSinceValue));
     // TODO: the third param is to be opened
-    checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSCAP_TAG_CHECK_NAME],
-      SYSCAP_TAG_CHECK_WARNING, true, ts.DiagnosticCategory.Warning, CANIUSE_FUNCTION_NAME, false, undefined, 
-      checkSyscapAbility, checkSyscapConditionValidCallback));
+    if (projectConfig.deviceTypes && projectConfig.deviceTypes.length > 0) {
+      const fileContent: string = fs.readFileSync(fileName, { encoding: 'utf-8' });
+      const needCanIUseCheck: boolean = /canIUse\(.*\)/.test(fileContent);
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSCAP_TAG_CHECK_NAME],
+        SYSCAP_TAG_CHECK_WARNING, needCanIUseCheck, ts.DiagnosticCategory.Warning, CANIUSE_FUNCTION_NAME, false, undefined,
+        checkSyscapAbility, checkSyscapConditionValidCallback));
+    }
     if (projectConfig.projectRootPath) {
       const ohosTestDir = ts.sys.resolvePath(path.join(projectConfig.projectRootPath, 'entry', 'src', 'ohosTest'));
       // TODO:fix error type in the feature
