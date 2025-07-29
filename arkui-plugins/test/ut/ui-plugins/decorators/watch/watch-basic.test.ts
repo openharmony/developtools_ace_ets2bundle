@@ -167,8 +167,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_storagepropvar = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "prop2", "storagepropvar", "Hello World", Type.from<string>(), ((_: string): void => {
       this.storagePropOnChange(_);
     }))
-    this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", ({let gensym___172556967 = initializers;
-    (((gensym___172556967) == (null)) ? undefined : gensym___172556967.objectlinkvar)})!, ((_: string): void => {
+    this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", (({let gensym___172556967 = initializers;
+    (((gensym___172556967) == (null)) ? undefined : gensym___172556967.objectlinkvar)}) as A), ((_: string): void => {
       this.objectLinkOnChange(_);
     }))
     this.__backing_providevar = STATE_MGMT_FACTORY.makeProvide<string>(this, "providevar", "providevar", ((({let gensym___244584558 = initializers;
