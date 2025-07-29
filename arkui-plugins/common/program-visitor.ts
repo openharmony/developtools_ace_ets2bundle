@@ -16,11 +16,12 @@
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor, VisitorOptions } from './abstract-visitor';
 import { matchPrefix } from './arkts-utils';
-import { debugDump, getDumpFileName } from './debug';
+import { debugDump, debugLog, getDumpFileName } from './debug';
 import { InteroperAbilityNames } from '../ui-plugins/interop/predefines';
 import { PluginContext } from './plugin-context';
 import { LegacyTransformer } from '../ui-plugins/interop/legacy-transformer';
 import { ComponentTransformer } from '../ui-plugins/component-transformer';
+import { ProgramSkipper } from './program-skipper';
 
 export interface ProgramVisitorOptions extends VisitorOptions {
     pluginName: string;
@@ -29,6 +30,7 @@ export interface ProgramVisitorOptions extends VisitorOptions {
     skipPrefixNames: (string | RegExp)[];
     hooks?: ProgramHooks;
     pluginContext?: PluginContext;
+    isFrameworkMode ?: boolean;
 }
 
 export interface ProgramHookConfig {
@@ -73,6 +75,7 @@ export class ProgramVisitor extends AbstractVisitor {
     private pluginContext?: PluginContext;
     private legacyModuleList: string[] = [];
     private legacyStructMap: Map<string, StructMap>;
+    private isFrameworkMode: boolean = false;
 
     constructor(options: ProgramVisitorOptions) {
         super(options);
@@ -85,6 +88,10 @@ export class ProgramVisitor extends AbstractVisitor {
         this.pluginContext = options.pluginContext;
         this.legacyModuleList = [];
         this.legacyStructMap = new Map();
+
+        if (options.isFrameworkMode !== undefined) {
+            this.isFrameworkMode = options.isFrameworkMode;
+        }
     }
 
     reset(): void {
@@ -243,6 +250,12 @@ export class ProgramVisitor extends AbstractVisitor {
     }
 
     visitor(node: arkts.AstNode, program?: arkts.Program, externalSourceName?: string): arkts.EtsScript {
+        if (!this.isFrameworkMode && ProgramSkipper.canSkipProgram(program)) {
+            debugLog('can skip file: ', program?.absName);
+            return node as arkts.EtsScript;
+        }
+        debugLog('cant skip file: ', program?.absName);
+
         let hook: ProgramHookLifeCycle | undefined;
 
         let script: arkts.EtsScript = node as arkts.EtsScript;

@@ -58,8 +58,8 @@ export class ETSImportDeclaration extends ImportDeclaration {
     // get source(): StringLiteral | undefined {
     //     return unpackNode(global.generatedEs2panda._ETSImportDeclarationSourceConst(global.context, this.peer))
     // }
-    get resolvedSource(): StringLiteral | undefined {
-        return unpackNode(global.generatedEs2panda._ETSImportDeclarationResolvedSourceConst(global.context, this.peer))
+    get resolvedSource(): string {
+        return unpackString(global.generatedEs2panda._ETSImportDeclarationResolvedSourceConst(global.context, this.peer));
     }
 }
 export function isETSImportDeclaration(node: AstNode): node is ETSImportDeclaration {
