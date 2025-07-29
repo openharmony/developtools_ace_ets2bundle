@@ -26,7 +26,6 @@ import { SourceMapGenerator } from './generate_sourcemap';
 import { cleanUpUtilsObjects, writeDeclarationFiles } from '../../ark_utils';
 import { cleanUpKitImportObjects } from '../../process_kit_import';
 import { cleanUpFilesList } from './utils';
-import { cleanUpProcessArkTSEvolutionObj } from './interop/process_arkts_evolution';
 import { CommonLogger } from './logger';
 import {
   getHookEventFactory,
@@ -35,7 +34,6 @@ import {
 } from '../../performance';
 import { BytecodeObfuscator } from './bytecode_obfuscator';
 import { PreloadFileModules } from './module/module_preload_file_utils';
-import { isMixCompile } from './interop/interop_manager';
 
 export function genAbc() {
   return {
@@ -88,7 +86,6 @@ export function genAbc() {
       CommonLogger.destroyInstance();
       cleanUpAsyncEvents();
       BytecodeObfuscator.cleanBcObfuscatorObject();
-      isMixCompile() && cleanUpProcessArkTSEvolutionObj();
       PreloadFileModules.cleanUpPreloadSoObjects();
     }
   };
