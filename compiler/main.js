@@ -49,13 +49,6 @@ configure({
 });
 const logger = getLogger('ETS');
 
-const {
-  initMixCompileHar,
-  isRemoteModule,
-  isMixCompile,
-  getRootPackageJsonPath
-} = require('./lib/fast_build/ark_compiler/interop/interop_manager');
-
 let staticPreviewPage = process.env.aceStaticPreview;
 let aceCompileMode = process.env.aceCompileMode || 'page';
 const abilityConfig = {
@@ -157,10 +150,6 @@ function loadEntryObj(projectConfig) {
   initProjectConfig(projectConfig);
   loadMemoryTrackingConfig(projectConfig);
   loadBuildJson();
-  // Initialize hybrid compilation related configuration
-  if (isRemoteModule()) {
-    initMixCompileHar(projectConfig);
-  }
   if (process.env.aceManifestPath && aceCompileMode === 'page') {
     setEntryFile(projectConfig);
     setFaTestRunnerFile(projectConfig);
@@ -172,13 +161,6 @@ function loadEntryObj(projectConfig) {
     loadNavigationConfig(aceBuildJson);
   }
 
-  /**
-   * In the case of hybrid compilation mode and remote modules
-   * do not perform operations such as page path parsing
-   */
-  if (isRemoteModule()) {
-    return;
-  }
   if (staticPreviewPage) {
     projectConfig.entryObj['./' + staticPreviewPage] = projectConfig.projectPath + path.sep +
       staticPreviewPage + '.ets?entry';
@@ -284,9 +266,6 @@ function buildManifest(manifest, aceConfigPath) {
 
 function getPackageJsonEntryPath() {
   let rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../', projectConfig.packageJson);
-  if (isRemoteModule()) {
-    rootPackageJsonPath = getRootPackageJsonPath(projectConfig.projectPath);
-  }
   if (fs.existsSync(rootPackageJsonPath)) {
     let rootPackageJsonContent;
     try {
@@ -415,9 +394,6 @@ function setIntentEntryPages(projectConfig) {
 }
 
 function setAbilityPages(projectConfig) {
-  if (isRemoteModule()) {
-    return;
-  }
   let abilityPages = [];
   if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
     const moduleJson = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());

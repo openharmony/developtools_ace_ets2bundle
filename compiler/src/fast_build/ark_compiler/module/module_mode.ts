@@ -103,11 +103,6 @@ import {
   sharedModuleSet
 } from '../check_shared_module';
 import { SourceMapGenerator } from '../generate_sourcemap';
-import {
-  addDeclFilesConfig,
-  getDeclgenBridgeCodePath,
-  writeDeclFilesConfigJson
-} from '../interop/process_arkts_evolution';
 import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../../meomry_monitor/memory_define';
 import {
@@ -128,11 +123,6 @@ import {
   stopEvent
  } from '../../../performance';
 import { BytecodeObfuscator } from '../bytecode_obfuscator';
-import { isMixCompile } from '../interop/interop_manager';
-import {
-  ARKTS_1_2,
-  GEN_ABC_CMD
-} from '../interop/pre_define';
 
 export class ModuleInfo {
   filePath: string;
@@ -185,7 +175,6 @@ export class ModuleMode extends CommonMode {
   abcPaths: string[] = [];
   byteCodeHar: boolean;
   perfReportPath: string;
-  rollupCache: Object;
 
   constructor(rollupObject: Object) {
     super(rollupObject);
@@ -219,7 +208,6 @@ export class ModuleMode extends CommonMode {
     if (this.useNormalizedOHMUrl) {
       this.compileContextInfoPath = this.generateCompileContextInfo(rollupObject);
     }
-    this.rollupCache = rollupObject.cache;
   }
 
   private generateCompileContextInfo(rollupObject: Object): string {
@@ -261,14 +249,10 @@ export class ModuleMode extends CommonMode {
         );
         this.logger.printErrorAndExit(errInfo);
       }
-      const isArkTSEvolution: boolean = metaInfo.language === ARKTS_1_2;
-      let pkgPath = metaInfo.pkgPath;
-      if (isMixCompile() && isArkTSEvolution) {
-        pkgPath = path.join(getDeclgenBridgeCodePath(metaInfo.pkgName), metaInfo.moduleName);
-      }
+
       const pkgParams = {
         pkgName: metaInfo.pkgName,
-        pkgPath,
+        pkgPath: metaInfo.pkgPath,
         isRecordName: true,
       };
       let recordName: string = getNormalizedOhmUrlByFilepath(moduleId, this.projectConfig, this.logger, pkgParams,
@@ -325,9 +309,6 @@ export class ModuleMode extends CommonMode {
   prepareForCompilation(rollupObject: Object, parentEvent: CompileEvent): void {
     const eventPrepareForCompilation = createAndStartEvent(parentEvent, 'preparation for compilation');
     this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
-    if (isMixCompile()) {
-      writeDeclFilesConfigJson(rollupObject.share.projectConfig.entryPackageName);
-    }
     this.removeCacheInfo(rollupObject);
     stopEvent(eventPrepareForCompilation);
   }
@@ -521,26 +502,18 @@ export class ModuleMode extends CommonMode {
 
     let moduleName: string = metaInfo.moduleName;
     let recordName: string = '';
-    let cacheFilePath: string = metaInfo.language === ARKTS_1_2 ? originalFilePath :
+    let cacheFilePath: string = 
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath, metaInfo);
     let packageName: string = '';
 
     if (this.useNormalizedOHMUrl) {
       packageName = metaInfo.pkgName;
-      const isArkTSEvolution: boolean = metaInfo.language === ARKTS_1_2;
-      let pkgPath = metaInfo.pkgPath;
-      if (isMixCompile() && isArkTSEvolution) {
-        pkgPath = path.join(getDeclgenBridgeCodePath(metaInfo.pkgName), metaInfo.moduleName);
-      }
       const pkgParams = {
         pkgName: packageName,
-        pkgPath,
+        pkgPath: metaInfo.pkgPath,
         isRecordName: true,
       };
       recordName = getNormalizedOhmUrlByFilepath(filePath, this.projectConfig, this.logger, pkgParams, undefined);
-      if (isMixCompile() && !isArkTSEvolution) {
-        addDeclFilesConfig(originalFilePath, this.projectConfig, this.logger, pkgPath, packageName);
-      }
     } else {
       recordName = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, moduleName);
       if (isPackageModules) {
@@ -709,11 +682,6 @@ export class ModuleMode extends CommonMode {
     let logDataList: Object[] = [];
     let errMsg: string = '';
 
-    if (this.projectConfig.invokeEs2abcByHvigor) {
-      this.rollupCache.set(GEN_ABC_CMD, this.cmdArgs);
-      return;
-    }
-    
     const genAbcCmd: string = this.cmdArgs.join(' ');
     let eventGenAbc: CompileEvent;
     try {

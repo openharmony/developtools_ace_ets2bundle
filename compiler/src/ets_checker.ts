@@ -104,14 +104,6 @@ import {
 import { ErrorCodeModule } from './hvigor_error_code/const/error_code_module';
 import { buildErrorInfoFromDiagnostic } from './hvigor_error_code/utils';
 import { concatenateEtsOptions, getExternalComponentPaths } from './external_component_map';
-import {
-  getArkTSEvoDeclFilePath,
-  redirectToDeclFileForInterop
-} from './fast_build/ark_compiler/interop/process_arkts_evolution';
-import {
-  generateDeclarationFileForSTS,
-  isMixCompile, isRemoteModule
-} from './fast_build/ark_compiler/interop/interop_manager';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -612,19 +604,10 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   MemoryMonitor.stopRecordStage(runArkTSLinterRecordInfo);
   ts.PerformanceDotting.stopAdvanced('runArkTSLinterTime');
 
-  /**
-   * isMixCompile and isRemoteMoudle are for interop
-   * default return false
-   */
-  if (process.env.watchMode !== 'true' && !isRemoteModule()) {
+  if (process.env.watchMode !== 'true') {
     const processBuildHaprrecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP);
     processBuildHap(cacheFile, rootFileNames, parentEvent, rollupShareObject);
     MemoryMonitor.stopRecordStage(processBuildHaprrecordInfo);
-  }
-
-  // generate decl file 1.1 -> 1.2 for interop
-  if (isMixCompile()) {
-    generateDeclarationFileForSTS(rootFileNames);
   }
 
   maxMemoryInServiceChecker = process.memoryUsage().heapUsed;
@@ -1167,17 +1150,6 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           } else {
             resolvedModules.push(result.resolvedModule);
           }
-        } else if (isMixCompile() && result.resolvedModule.resolvedFileName &&
-          /\.ets$/.test(result.resolvedModule.resolvedFileName) &&
-          !/\.d\.ets$/.test(result.resolvedModule.resolvedFileName)) {
-          // When result has a value and the path parsed is the source code file path of module 1.2,
-          // the parsing result needs to be modified to the glue code path of module 1.2
-          const queryResult = redirectToDeclFileForInterop(result.resolvedModule.resolvedFileName);
-          if (queryResult) {
-            resolvedModules.push(queryResult);
-          } else {
-            resolvedModules.push(result.resolvedModule);
-          }
         } else {
           resolvedModules.push(result.resolvedModule);
         }
@@ -1222,8 +1194,6 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           path.resolve(__dirname, '../node_modules', moduleName + '/index.js');
         const DETSModulePath: string = path.resolve(path.dirname(containingFile),
           /\.d\.ets$/.test(moduleName) ? moduleName : moduleName + EXTNAME_D_ETS);
-        const arktsEvoDeclFilePath: string = isMixCompile() ?
-            getArkTSEvoDeclFilePath({ moduleRequest: moduleName, resolvedFileName: '' }) : '';
         if (ts.sys.fileExists(modulePath)) {
           resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
         } else if (ts.sys.fileExists(systemDETSModulePath)) {
@@ -1238,8 +1208,6 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           resolvedModules.push(getResolveModule(fileModulePath, '.js'));
         } else if (ts.sys.fileExists(DETSModulePath)) {
           resolvedModules.push(getResolveModule(DETSModulePath, '.d.ets'));
-        } else if (isMixCompile() && ts.sys.fileExists(arktsEvoDeclFilePath)) {
-          resolvedModules.push(getResolveModule(arktsEvoDeclFilePath, '.d.ets'));
         } else {
           let srcIndex: number = 0;
           if (!!projectConfig.projectPath) {

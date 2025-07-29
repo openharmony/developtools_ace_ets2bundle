@@ -506,13 +506,13 @@ async function transform(code: string, id: string) {
       tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
         {
           before: [
-            processUISyntax(null, false, eventEmit, id, this.share, metaInfo),
-            expandAllImportPaths(tsProgram.getTypeChecker(), this),
-            processKitImport(id, metaInfo, eventEmit, true, lazyImportOptions),
             // interopTransform：The hybrid compilation scenario provides the following two capabilities:
             // 1. Support for creating 1.2 type object literals in 1.1 modules
             // 2. Support 1.1 classes to implement 1.2 interfaces
             interopTransform(tsProgram, id, mixCompile),
+            processUISyntax(null, false, eventEmit, id, this.share, metaInfo),
+            expandAllImportPaths(tsProgram.getTypeChecker(), this),
+            processKitImport(id, metaInfo, eventEmit, true, lazyImportOptions),
             collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
               shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))
           ]
@@ -528,11 +528,11 @@ async function transform(code: string, id: string) {
       metaInfo.checker = tsProgram.getTypeChecker();
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
-        [processUISyntax(null, false, eventTransformNodes, id, this.share, metaInfo),
-        // interopTransform：The hybrid compilation scenario provides the following two capabilities:
+        [// interopTransform：The hybrid compilation scenario provides the following two capabilities:
         // 1. Support for creating 1.2 type object literals in 1.1 modules
         // 2. Support 1.1 classes to implement 1.2 interfaces
         interopTransform(tsProgram, id, mixCompile),
+        processUISyntax(null, false, eventTransformNodes, id, this.share, metaInfo),
         expandAllImportPaths(tsProgram.getTypeChecker(), this),
         processKitImport(id, metaInfo, eventTransformNodes, false, lazyImportOptions),
         collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
