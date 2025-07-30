@@ -398,6 +398,7 @@ export class SourceMapGenerator {
     if (this.isNewSourceMap) {
       this.writeModifiedSourceMapToFile(parentEvent);
       this.writeUsedAndUnmodifiedSourceMapToFile(parentEvent);
+      this.checkSourceMapFormat();
       return;
     }
 
@@ -652,5 +653,29 @@ export class SourceMapGenerator {
       SourceMapGenerator.init(rollupObject);
     }
     return SourceMapGenerator.getInstance();
+  }
+
+  public checkSourceMapFormat(): void {
+    if (!fs.existsSync(this.sourceMapPath)) {
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_CHECK_SOURCEMAP_FORMAT_FAILED,
+        ArkTSInternalErrorDescription,
+        `SourceMap file not exist, path: ${this.sourceMapPath}`
+      );
+      this.logger.printErrorAndExit(errInfo);
+      return;
+    }
+
+    try {
+      const content: string = fs.readFileSync(toUnixPath(this.sourceMapPath)).toString();
+      JSON.parse(content);
+    } catch (e) {
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_CHECK_SOURCEMAP_FORMAT_FAILED,
+        ArkTSInternalErrorDescription,
+        `SourceMap content format error, path: ${this.sourceMapPath}`
+      );
+      this.logger.printErrorAndExit(errInfo);
+    }
   }
 }
