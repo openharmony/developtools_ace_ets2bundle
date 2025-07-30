@@ -1983,8 +1983,7 @@ export function validateStmgmtKeywords(itemName: string, memberNode: ts.Identifi
     transformLog.errors.push({
       message: message,
       pos: memberNode.getStart(),
-      type: LogType.ERROR,
-      code: '10905361'
+      type: LogType.WARN
     });
   }
 }
