@@ -56,12 +56,20 @@ import {
   ModuleInfo,
   writeArkguardObfuscatedSourceCode
 } from '../../../ark_utils';
-import { OBFUSCATION_TOOL, red, yellow } from './ark_define';
+import {
+  OBFUSCATION_TOOL,
+  red,
+  yellow,
+  EXTNAME_D_ETS,
+  EXTNAME_D_TS,
+  EXTNAME_PROTO_BIN,
+  EXTNAME_JS,
+  EXTNAME_TS,
+ } from './ark_define';
 import { logger } from '../../../compile_info';
 import { MergedConfig } from '../common/ob_config_resolver';
 import { ModuleSourceFile } from '../module/module_source_file';
 import { readProjectAndLibsSource } from './process_ark_config';
-import { CommonLogger } from '../logger';
 import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../../meomry_monitor/memory_define';
 import { ESMODULE } from '../../../pre_define';
@@ -482,9 +490,60 @@ export async function handlePostObfuscationTasks(
     arkObfuscator.fileContentManager.writeFileNamesMap();
   }
 
+  // enable filename obfuscation will remove redundant files
+  if (projectConfig.obfuscationMergedObConfig?.options?.enableFileNameObfuscation) {
+    const deletedFilesSet: Set<string> | undefined = arkObfuscator?.filePathManager?.getDeletedSourceFilePaths();    
+    removeRedundantFiles(sourceProjectConfig, deletedFilesSet, projectConfig);
+  }
+
   printTimeSumInfo('All files obfuscation:');
   printTimeSumData();
   endFilesEvent(EventList.ALL_FILES_OBFUSCATION);
+}
+
+/**
+ * Remove redundant files 
+ */
+export function removeRedundantFiles(
+  sourceProjectConfig: Object,
+  deletedFilesSet: Set<string> | undefined,
+  projectConfig: Object,
+): void {
+  const obfuscationCacheDir: string | undefined = sourceProjectConfig.obfuscationOptions.obfuscationCacheDir;
+  if (obfuscationCacheDir && deletedFilesSet && obfuscationCacheDir.length > 0 && deletedFilesSet.size > 0) {
+    const isByteHarOrHsp: boolean = projectConfig.compileShared || (projectConfig.compileHar && projectConfig.byteCodeHar);
+    const arkguardNameCache: string = fs.readFileSync(path.join(obfuscationCacheDir, 'nameCache.json'), 'utf8');
+    const nameCacheCollection: Object = JSON.parse(arkguardNameCache);
+    const projectRootPath: string = projectConfig.projectRootPath.replace(/\\/g, '/');
+    const productPath: string = path.resolve(projectConfig.aceModuleBuild, '../etsFortgz');
+    const cachePath: string = projectConfig.cachePath;
+    deletedFilesSet.forEach((deletedFile) => {
+      let deletedFilePath: string = deletedFile.replace(projectRootPath, '').substring(1);
+      let obfName: string | undefined = nameCacheCollection[deletedFilePath]?.obfName;
+      if (!obfName) {
+        return;
+      }
+      let obfNameWithoutExt: string = obfName.substring(0, obfName.lastIndexOf(path.extname(obfName)));
+      let obfCacheFilePath: string = path.join(cachePath, obfNameWithoutExt);
+      removeFile(obfCacheFilePath, EXTNAME_D_ETS);
+      removeFile(obfCacheFilePath, EXTNAME_D_TS);
+      removeFile(obfCacheFilePath, EXTNAME_JS);
+      removeFile(obfCacheFilePath, EXTNAME_TS);
+      removeFile(obfCacheFilePath, EXTNAME_PROTO_BIN);
+      if (isByteHarOrHsp) {
+        let obfProductFilePath: string = path.join(productPath, obfNameWithoutExt);
+        removeFile(obfProductFilePath, EXTNAME_D_ETS);
+        removeFile(obfProductFilePath, EXTNAME_D_TS);
+      }
+    });
+  }
+}
+
+function removeFile(fileWithoutExt: string, ext: string): void {
+  let filePath = toUnixPath(fileWithoutExt + ext);
+  if (fs.existsSync(filePath)) {
+    fs.rmSync(filePath);
+  }
 }
 
 /**
