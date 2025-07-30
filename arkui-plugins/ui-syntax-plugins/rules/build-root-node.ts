@@ -103,7 +103,7 @@ class BuildRootNodeRule extends AbstractUISyntaxRule {
     }
 
     private isContainerComponent(componentName: string): boolean {
-        const loadedContainerComponents = this.context.componentsInfo.containerComponents;
+        const loadedContainerComponents = this.context.componentsInfo?.containerComponents;
         if (!componentName || !loadedContainerComponents) {
             return false;
         }
@@ -134,6 +134,5 @@ class BuildRootNodeRule extends AbstractUISyntaxRule {
         }
     }
 }
-
 
 export default BuildRootNodeRule;
