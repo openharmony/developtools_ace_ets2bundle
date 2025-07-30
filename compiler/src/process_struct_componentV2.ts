@@ -245,7 +245,8 @@ function traverseStructInfo(structInfo: StructInfo,
     }
   }
   for (const param of structInfo.paramDecoratorMap) {
-    if (!structInfo.staticPropertySet.has(param[0])) {
+    if (!structInfo.staticPropertySet.has(param[0]) &&
+      !structInfo.builderParamDecoratorSet.has(param[0])) {
       paramStatementsInStateVarsMethod.push(updateParamNode(param[0]));
     }
   }
