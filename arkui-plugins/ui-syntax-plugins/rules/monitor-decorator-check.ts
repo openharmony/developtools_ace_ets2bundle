@@ -175,7 +175,8 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 const startPositions = conflictingDecorators.map(annotation =>
                     annotation.startPosition);
                 const endPositions = conflictingDecorators.map(annotation => annotation.endPosition);
-                const startPosition = startPositions[0];
+                let startPosition = startPositions[0];
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 const endPosition = endPositions[endPositions.length - 1];
                 return {
                     range: [startPosition, endPosition],
@@ -206,7 +207,8 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 node: monitorDecorator,
                 message: this.messages.monitorDecorateMethod,
                 fix: () => {
-                    const startPosition = monitorDecorator.startPosition;
+                    let startPosition = monitorDecorator.startPosition;
+                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                     const endPosition = monitorDecorator.endPosition;
                     return {
                         range: [startPosition, endPosition],

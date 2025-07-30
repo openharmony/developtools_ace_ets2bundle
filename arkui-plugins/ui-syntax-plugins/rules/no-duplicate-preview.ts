@@ -18,62 +18,63 @@ import { getAnnotationUsage, MAX_PREVIEW_DECORATOR_COUNT, PresetDecorators } fro
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 class NoDuplicatePreviewRule extends AbstractUISyntaxRule {
-  private previewDecoratorUsages: arkts.AnnotationUsage[] = [];
-  private previewDecoratorUsageIndex = 10;
+    private previewDecoratorUsages: arkts.AnnotationUsage[] = [];
+    private previewDecoratorUsageIndex = 10;
 
-  public setup(): Record<string, string> {
-    return {
-      duplicateEntry: `A page can contain at most 10 '@Preview' annotations.`,
-    };
-  }
-
-  public beforeTransform(): void {
-    this.previewDecoratorUsages = [];
-    this.previewDecoratorUsageIndex = 10;
-  }
-
-  public parsed(node: arkts.StructDeclaration): void {
-    if (!arkts.isStructDeclaration(node)) {
-      return;
-    }
-    const previewDecoratorUsage = getAnnotationUsage(
-      node,
-      PresetDecorators.PREVIEW,
-    );
-    if (previewDecoratorUsage) {
-      this.previewDecoratorUsages.push(previewDecoratorUsage);
-    }
-    // If the number of preview decorators is less than 10, no error is reported
-    if (this.previewDecoratorUsages.length <= MAX_PREVIEW_DECORATOR_COUNT) {
-      return;
-    }
-    if (this.previewDecoratorUsageIndex === MAX_PREVIEW_DECORATOR_COUNT) {
-      this.previewDecoratorUsages.forEach((previewDecoratorUsage) => {
-        this.reportError(previewDecoratorUsage);
-      });
-    } else {
-      let previewDecoratorUsage = this.previewDecoratorUsages.at(this.previewDecoratorUsageIndex);
-      if (!previewDecoratorUsage) {
-        return;
-      }
-      this.reportError(previewDecoratorUsage);
-    }
-    this.previewDecoratorUsageIndex++;
-  }
-
-  private reportError(errorNode: arkts.AnnotationUsage): void {
-    let startPosition = errorNode.startPosition;
-    this.report({
-      node: errorNode,
-      message: this.messages.duplicateEntry,
-      fix: () => {
+    public setup(): Record<string, string> {
         return {
-          range: [startPosition, errorNode.endPosition],
-          code: '',
+            duplicateEntry: `A page can contain at most 10 '@Preview' annotations.`,
         };
-      }
-    });
-  }
+    }
+
+    public beforeTransform(): void {
+        this.previewDecoratorUsages = [];
+        this.previewDecoratorUsageIndex = 10;
+    }
+
+    public parsed(node: arkts.StructDeclaration): void {
+        if (!arkts.isStructDeclaration(node)) {
+            return;
+        }
+        const previewDecoratorUsage = getAnnotationUsage(
+            node,
+            PresetDecorators.PREVIEW,
+        );
+        if (previewDecoratorUsage) {
+            this.previewDecoratorUsages.push(previewDecoratorUsage);
+        }
+        // If the number of preview decorators is less than 10, no error is reported
+        if (this.previewDecoratorUsages.length <= MAX_PREVIEW_DECORATOR_COUNT) {
+            return;
+        }
+        if (this.previewDecoratorUsageIndex === MAX_PREVIEW_DECORATOR_COUNT) {
+            this.previewDecoratorUsages.forEach((previewDecoratorUsage) => {
+                this.reportError(previewDecoratorUsage);
+            });
+        } else {
+            let previewDecoratorUsage = this.previewDecoratorUsages.at(this.previewDecoratorUsageIndex);
+            if (!previewDecoratorUsage) {
+                return;
+            }
+            this.reportError(previewDecoratorUsage);
+        }
+        this.previewDecoratorUsageIndex++;
+    }
+
+    private reportError(errorNode: arkts.AnnotationUsage): void {
+        let startPosition = errorNode.startPosition;
+        startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+        this.report({
+            node: errorNode,
+            message: this.messages.duplicateEntry,
+            fix: () => {
+                return {
+                    range: [startPosition, errorNode.endPosition],
+                    code: '',
+                };
+            }
+        });
+    }
 }
 
 export default NoDuplicatePreviewRule;
