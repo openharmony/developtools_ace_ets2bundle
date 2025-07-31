@@ -500,17 +500,13 @@ export class factory {
                 : this.wrapConditionToBlock([newStatement], ConditionNames.CONDITION_SCOPE)) as arkts.AstNode as T;
         }
         if (arkts.isSwitchCaseStatement(statement)) {
-            let { statements, breakIndex } = this.updateConditionBranchInScope(
-                statement.consequent,
-                shouldWrap,
-                stopAtBuilderLambda
-            );
-            if (shouldWrap) {
+            let { statements, breakIndex } = this.updateConditionBranchInScope(statement.consequent, shouldWrap);
+            if (shouldWrap && breakIndex > 0) {
                 const beforeBreak = this.wrapConditionToBlock(
-                    breakIndex > 0 ? statements.slice(0, breakIndex) : statements,
+                    statements.slice(0, breakIndex),
                     ConditionNames.CONDITION_BRANCH
                 );
-                const afterBreak = breakIndex > 0 ? statements.slice(breakIndex) : [];
+                const afterBreak = statements.slice(breakIndex);
                 statements = [beforeBreak, ...afterBreak];
             }
             return arkts.factory.updateSwitchCaseStatement(statement, statement.test, statements) as T;
@@ -590,6 +586,9 @@ export class factory {
                 this.updateContentBodyInBuilderLambda(st, hasBuilder, stopAtBuilderLambda)
             );
             return arkts.factory.updateBlock(statement, newStatements);
+        }
+        if (arkts.isBreakStatement(statement) && statement.parent && arkts.isBlockStatement(statement.parent)) {
+            return arkts.factory.createReturnStatement();
         }
         return statement;
     }
