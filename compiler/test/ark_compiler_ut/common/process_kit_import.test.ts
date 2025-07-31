@@ -25,7 +25,7 @@ import {
   KitInfo
 } from '../../../lib/process_kit_import';
 import { findImportSpecifier } from '../utils/utils';
-import { 
+import {
   ArkTSErrorDescription,
   ErrorCode
 } from '../../../lib/fast_build/ark_compiler/error_code';
@@ -78,14 +78,14 @@ const KIT_STAR_EXPORT_CODE_EXPECT: string =
 const KIT_IMPORT_ERROR_CODE: string =
 'import { Ability } from "@kit.Kit";'
 
-const KIT_UNUSED_TYPE_IMPROT_CODE: string = 
+const KIT_UNUSED_TYPE_IMPROT_CODE: string =
 'import { BusinessError } from "@kit.BasicServicesKit";'
 
 const KIT_UNUSED_TYPE_IMPROT_CODE_EXPECT: string =
 'export {};\n' +
 '//# sourceMappingURL=kitTest.js.map'
 
-const KIT_USED_TYPE_IMPROT_CODE: string = 
+const KIT_USED_TYPE_IMPROT_CODE: string =
 'import { BusinessError } from "@kit.BasicServicesKit";\n' +
 'let e: BusinessError = undefined';
 
@@ -392,7 +392,7 @@ mocha.describe('process Kit Imports tests', function () {
       ArkTSErrorDescription,
       "Can not use empty import(side-effect import) statement with Kit '@kit.ArkUI'.",
       '',
-      ['Please specify imported symbols explicitly. ' + 
+      ['Please specify imported symbols explicitly. ' +
        'For example, import "@kit.ArkUI"; -> import { lang } from "@kit.ArkUI";']
     );
     const hasError = kitTransformLog.errors.some(error =>
@@ -434,7 +434,7 @@ mocha.describe('process Kit Imports tests', function () {
       ArkTSErrorDescription,
       'Namespace import or export of Kit is not supported currently.',
       '',
-      ['Please namespace import or export of Kit replace it with named import or export instead. ' + 
+      ['Please namespace import or export of Kit replace it with named import or export instead. ' +
        'For example, import * as ArkTS from "@kit.ArkUI"; -> import { AlertDialog } from "@kit.ArkUI";']
     );
     const hasError = kitTransformLog.errors.some(error =>
@@ -464,10 +464,10 @@ mocha.describe('process Kit Imports tests', function () {
     const errInfo: LogData = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_EXTERNAL_IDENTIFIER_IMPORT_NOT_ALLOWED_IN_TS_FILE,
       ArkTSErrorDescription,
-      "Identifier 'test' comes from '@ohos.test.d.ets' " + 
+      "Identifier 'test' comes from '@ohos.test.d.ets' " +
       'which can not be imported in .ts file.',
       '',
-      ["Please remove the import statement or change the file extension to .ets."]
+      ['Please remove the import statement or change the file extension to .ets.']
     );
     const hasError = kitTransformLog.errors.some(error =>
       error.message.includes(errInfo.toString())

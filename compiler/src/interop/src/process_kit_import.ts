@@ -40,8 +40,8 @@ import {
   createAndStartEvent,
   stopEvent
 } from './performance';
-import { 
-  ArkTSErrorDescription, 
+import {
+  ArkTSErrorDescription,
   ErrorCode
 } from './fast_build/ark_compiler/error_code';
 import {
@@ -225,10 +225,10 @@ class SpecificerInfo {
       const errInfo: LogData = LogDataFactory.newInstance(
         ErrorCode.ETS2BUNDLE_EXTERNAL_IDENTIFIER_IMPORT_NOT_ALLOWED_IN_TS_FILE,
         ArkTSErrorDescription,
-        `Identifier '${this.importName}' comes from '${this.symbol.source}' ` + 
+        `Identifier '${this.importName}' comes from '${this.symbol.source}' ` +
         'which can not be imported in .ts file.',
         '',
-        ["Please remove the import statement or change the file extension to .ets."]
+        ['Please remove the import statement or change the file extension to .ets.']
       );
       kitTransformLog.errors.push({
         type: LogType.ERROR,
@@ -501,7 +501,7 @@ class NameSpaceKitInfo extends KitInfo {
       ArkTSErrorDescription,
       'Namespace import or export of Kit is not supported currently.',
       '',
-      ['Please namespace import or export of Kit replace it with named import or export instead. ' + 
+      ['Please namespace import or export of Kit replace it with named import or export instead. ' +
        'For example, import * as ArkTS from "@kit.ArkUI"; -> import { AlertDialog } from "@kit.ArkUI";']
     );
     kitTransformLog.errors.push({
@@ -583,10 +583,10 @@ class EmptyImportKitInfo extends KitInfo {
     const errInfo: LogData = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_EXTERNAL_EMPTY_IMPORT_NOT_ALLOWED_WITH_KIT,
       ArkTSErrorDescription,
-      `Can not use empty import(side-effect import) statement with Kit ` + 
+      `Can not use empty import(side-effect import) statement with Kit ` +
       `'${(kitNode.moduleSpecifier as ts.StringLiteral).text.replace(/'|"/g, '')}'.`,
       '',
-      ['Please specify imported symbols explicitly. ' + 
+      ['Please specify imported symbols explicitly. ' +
        'For example, import "@kit.ArkUI"; -> import { lang } from "@kit.ArkUI";']
     );
     kitTransformLog.errors.push({

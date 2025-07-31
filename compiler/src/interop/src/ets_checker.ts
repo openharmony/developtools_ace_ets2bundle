@@ -330,7 +330,7 @@ function createHash(str: string): string {
 
 export function getFileContentWithHash(fileName: string): string {
   let fileContent: string | undefined = fileCache.get(fileName);
-  if (fileContent === undefined) {      
+  if (fileContent === undefined) {
     fileContent = fs.readFileSync(fileName).toString();
     fileCache.set(fileName, fileContent);
     // Provide the hash value for hvigor's remote cache, and let them handle the cleanup.
@@ -368,7 +368,7 @@ let setHashValueByFilePath: Function | undefined = undefined;
 let getHashByFilePath: Function | undefined = undefined;
 
 export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[],
-  parentEvent?: CompileEvent, rollupShareObject?: any): ts.LanguageService {
+  parentEvent?: CompileEvent, rollupShareObject?: Object): ts.LanguageService {
   setHashValueByFilePath = rollupShareObject?.setHashValueByFilePath;
   getHashByFilePath = rollupShareObject?.getHashByFilePath;
   setCompilerOptions(resolveModulePaths);
@@ -450,7 +450,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
 export let targetESVersionChanged: boolean = false;
 
 function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFileNames: string[],
-  rollupShareObject?: any): ts.LanguageService {
+  rollupShareObject?: Object): ts.LanguageService {
   let cacheKey: string = 'service';
   let cache: LanguageServiceCache | undefined = getRollupCache(rollupShareObject, projectConfig, cacheKey);
 
@@ -469,9 +469,9 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const tsImportSendableDiff: boolean = (cache?.preTsImportSendable === undefined && !tsImportSendable) ?
     false :
     cache?.preTsImportSendable !== tsImportSendable;
-  const skipOhModulesLintDiff: boolean = (cache?.preSkipOhModulesLint === undefined && !skipOhModulesLint) ? 
+  const skipOhModulesLintDiff: boolean = (cache?.preSkipOhModulesLint === undefined && !skipOhModulesLint) ?
     false : cache?.preSkipOhModulesLint !== skipOhModulesLint;
-  const mixCompileDiff: boolean = (cache?.preMixCompile === undefined && !mixCompile) ? 
+  const mixCompileDiff: boolean = (cache?.preMixCompile === undefined && !mixCompile) ?
     false : cache?.preMixCompile !== mixCompile;
   const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || targetESVersionDiffers ||
     tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff || mixCompileDiff;
@@ -633,7 +633,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
 
   maxMemoryInServiceChecker = process.memoryUsage().heapUsed;
   // Release the typeChecker early and perform GC in the following scenarios:
-  // In memory-priority mode or default mode, when the preview mode is disabled in a full compilation scenario, 
+  // In memory-priority mode or default mode, when the preview mode is disabled in a full compilation scenario,
   // and it is not a preview, hot reload, or cold reload scenario. The typeChecker is not released early in performance-priority mode.
   let shouldReleaseTypeChecker: boolean = rollupShareObject?.projectConfig?.executionMode !== 'performance' && globalProgram.program &&
     process.env.watchMode !== 'true' && !projectConfig.isPreview && !projectConfig.hotReload && !projectConfig.coldReload;
@@ -955,7 +955,7 @@ function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
   }
 
   // Check for TSC error codes
-  if (flag === ErrorCodeModule.TSC && 
+  if (flag === ErrorCodeModule.TSC &&
     validateUseErrorCodeLogger(ErrorCodeModule.TSC, diagnostic.code)) {
     const errorCode = ts.getErrorCode(diagnostic);
     errorCodeLogger.printError(errorCode);
@@ -963,7 +963,7 @@ function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
   }
 
   // Check for LINTER error codes
-  if (flag === ErrorCodeModule.LINTER || (flag === ErrorCodeModule.TSC && 
+  if (flag === ErrorCodeModule.LINTER || (flag === ErrorCodeModule.TSC &&
     validateUseErrorCodeLogger(ErrorCodeModule.LINTER, diagnostic.code))) {
     const linterErrorInfo: HvigorErrorInfo = transfromErrorCode(diagnostic.code, positionMessage, message);
     errorCodeLogger.printError(linterErrorInfo);
@@ -971,7 +971,7 @@ function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
   }
 
   // Check for ArkUI error codes
-  if (flag === ErrorCodeModule.UI || (flag === ErrorCodeModule.TSC && 
+  if (flag === ErrorCodeModule.UI || (flag === ErrorCodeModule.TSC &&
     validateUseErrorCodeLogger(ErrorCodeModule.UI, diagnostic.code))) {
     const uiErrorInfo: HvigorErrorInfo | undefined = buildErrorInfoFromDiagnostic(
       diagnostic.code, positionMessage, message);
@@ -1025,7 +1025,7 @@ function validateNewExtend(message: string): boolean {
   return false;
 }
 
-function matchMessage(message: string, nameArr: any, reg: RegExp): boolean {
+function matchMessage(message: string, nameArr: Set<string>, reg: RegExp): boolean {
   if (reg.test(message)) {
     const match: string[] = message.match(reg);
     if (match[1] && nameArr.has(match[1])) {
