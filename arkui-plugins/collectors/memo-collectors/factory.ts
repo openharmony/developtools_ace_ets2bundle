@@ -17,6 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import {
     addMemoAnnotation,
     collectMemoFromCallExpression,
+    collectMemoFromNewClass,
     findCanAddMemoFromArrowFunction,
     findCanAddMemoFromClassProperty,
     findCanAddMemoFromMethod,
@@ -80,6 +81,13 @@ export class factory {
         collectMemoFromCallExpression(node);
         return node;
     }
+
+    static findAndCollectMemoableNewClass(
+        node: arkts.ETSNewClassInstanceExpression
+    ): arkts.ETSNewClassInstanceExpression {
+        collectMemoFromNewClass(node);
+        return node;
+    }
 }
 
 type CollectFactoryFn = (node: any) => arkts.AstNode;
@@ -92,4 +100,5 @@ const collectByType = new Map<arkts.Es2pandaAstNodeType, CollectFactoryFn>([
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION, factory.findAndCollectMemoableMethod],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ARROW_FUNCTION_EXPRESSION, factory.findAndCollectMemoableArrowFunction],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CALL_EXPRESSION, factory.findAndCollectMemoableCallExpression],
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_NEW_CLASS_INSTANCE_EXPRESSION, factory.findAndCollectMemoableNewClass],
 ]);
