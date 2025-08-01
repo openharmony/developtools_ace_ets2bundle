@@ -1131,7 +1131,9 @@ mocha.describe('test obfuscate config resolver api', function () {
       }
       const projectConfig = {
         projectRootPath: '',
-        aceModuleBuild: 'test/ark_compiler_ut/testdata/testRemoveFiles/ets'
+        cachePath: '',
+        aceModuleBuild: 'test/ark_compiler_ut/testdata/testRemoveFiles/ets',
+        compileShared: true
       }
       mocha.before(function () {
         if (!fs.existsSync(etsTestDir)) {
