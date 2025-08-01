@@ -710,6 +710,36 @@ export function findCanAddMemoFromMethod(node: arkts.AstNode): node is arkts.Met
 }
 
 /**
+ * Collect `@memo` annotated `arkts.TSTypeParameterInstantiation` node from corresponding call's typeParams.
+ *
+ * @param node `arkts.TSTypeParameterInstantiation` node.
+ */
+export function collectMemoFromTSTypeParameterInstantiation(node: arkts.TSTypeParameterInstantiation): void {
+    node.params.forEach((t) => {
+        const typeInfo = collectMemoableInfoInType(t);
+        if (checkIsMemoFromMemoableInfo(typeInfo)) {
+            arkts.NodeCache.getInstance().collect(t);
+        }
+    });
+}
+
+/**
+ * Collect `@memo` annotated `arkts.ETSNewClassInstanceExpression` node from corresponding new class type reference.
+ *
+ * @param node `arkts.ETSNewClassInstanceExpression` node.
+ */
+export function collectMemoFromNewClass(node: arkts.ETSNewClassInstanceExpression): void {
+    const typeRef = node.getTypeRef;
+    if (!typeRef || !arkts.isETSTypeReference(typeRef)) {
+        return;
+    }
+    const typeInfo = collectMemoableInfoInTypeReference(typeRef);
+    if (typeInfo.isWithinTypeParams) {
+        arkts.NodeCache.getInstance().collect(typeRef, { isWithinTypeParams: true });
+    }
+}
+
+/**
  * Collect `@memo` annotated `arkts.CallExpression` node from corresponding declared method,
  * as well as collect each `@memo` annotated argument from corresponding declared method parameter.
  *
@@ -718,6 +748,10 @@ export function findCanAddMemoFromMethod(node: arkts.AstNode): node is arkts.Met
 export function collectMemoFromCallExpression(node: arkts.CallExpression): void {
     if (arkts.NodeCache.getInstance().has(node)) {
         return;
+    }
+    const typeParams = node.typeParams;
+    if (!!typeParams) {
+        collectMemoFromTSTypeParameterInstantiation(typeParams);
     }
     const expr = findIdentifierFromCallee(node.expression);
     const decl = (expr && getDeclResolveAlias(expr)) ?? node.expression;
