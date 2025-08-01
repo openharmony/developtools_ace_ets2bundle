@@ -51,9 +51,13 @@ import { Builder as Builder, Text as Text, Color as Color, WrappedBuilder as Wra
 import { State as State } from \"@ohos.arkui.stateManagement\";
 let globalBuilder: WrappedBuilder<@Builder() ((value: string, size: number)=> void)>;
 let builderArr: Array<WrappedBuilder<@Builder() ((value: string, size: number)=> void)>>;
+let wrappedBuilder1: WrappedBuilder<@Builder() ((value: string, size: number)=> void)>;
+let wrappedBuilder2: WrappedBuilder<@Builder() ((value: string, size: number)=> void)>;
 function main() {}
 globalBuilder = wrapBuilder(MyBuilder);
 builderArr = [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)];
+wrappedBuilder1 = wrapBuilder<@Builder() ((value: string, size: number)=> void)>(MyBuilder);
+wrappedBuilder2 = new WrappedBuilder<@Builder() ((value: string, size: number)=> void)>(MyBuilder);
 __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     bundleName: \"com.example.mock\",
     moduleName: \"entry\",
@@ -136,9 +140,13 @@ import { Builder as Builder, Text as Text, Color as Color, WrappedBuilder as Wra
 import { State as State } from \"@ohos.arkui.stateManagement\";
 let globalBuilder: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
 let builderArr: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+let wrappedBuilder1: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+let wrappedBuilder2: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
 function main() {}
 globalBuilder = wrapBuilder(MyBuilder);
 builderArr = [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)];
+wrappedBuilder1 = wrapBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(MyBuilder);
+wrappedBuilder2 = new WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(MyBuilder);
 __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     bundleName: \"com.example.mock\",
     moduleName: \"entry\",
