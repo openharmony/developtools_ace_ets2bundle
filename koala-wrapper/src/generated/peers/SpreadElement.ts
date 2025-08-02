@@ -69,9 +69,6 @@ export class SpreadElement extends AnnotatedExpression {
     get isOptional(): boolean {
         return global.generatedEs2panda._SpreadElementIsOptionalConst(global.context, this.peer);
     }
-    get decorators(): readonly Decorator[] {
-        return unpackNodeArray(global.generatedEs2panda._SpreadElementDecoratorsConst(global.context, this.peer));
-    }
     /** @deprecated */
     setOptional(optional_arg: boolean): this {
         global.generatedEs2panda._SpreadElementSetOptional(global.context, this.peer, optional_arg);
