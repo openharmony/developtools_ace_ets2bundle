@@ -50,9 +50,6 @@ export class ObjectExpression extends AnnotatedExpression {
     get isOptional(): boolean {
         return global.generatedEs2panda._ObjectExpressionIsOptionalConst(global.context, this.peer)
     }
-    get decorators(): readonly Decorator[] {
-        return unpackNodeArray(global.generatedEs2panda._ObjectExpressionDecoratorsConst(global.context, this.peer))
-    }
     /** @deprecated */
     setDeclaration(): this {
         global.generatedEs2panda._ObjectExpressionSetDeclaration(global.context, this.peer)
