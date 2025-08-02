@@ -60,7 +60,6 @@ import {
   stopEvent
 } from '../../performance';
 import { BytecodeObfuscator } from './bytecode_obfuscator';
-import { createInterface } from 'readline';
 
 let isShouldSourceMap: boolean = true;
 
@@ -219,23 +218,6 @@ export class SourceMapGenerator {
       path.join(this.projectConfig.cachePath, SOURCEMAPS);
   }
 
-  async *readLines(filePath: string): AsyncGenerator<string> {
-    const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
-    const rl = createInterface({
-      input: fileStream,
-      crlfDelay: Infinity
-    });
-
-    try {
-      for await (const line of rl) {
-        yield line;
-      }
-    } finally {
-      rl.close();
-      fileStream.close();
-    }
-  }
-
   public formatOrigin(key: string, val: object): string {
     return `  "${key}": ${JSON.stringify(val, null, 2).replace(/\n/g, '\n  ')}`;
   }
@@ -349,7 +331,7 @@ export class SourceMapGenerator {
     fs.renameSync(this.sourceMapPathTmp, this.cacheSourceMapPath);
   }
 
-  public async writeUsedAndUnmodifiedSourceMapToFile(parentEvent: CompileEvent | undefined): Promise<void> {
+  public writeUsedAndUnmodifiedSourceMapToFile(parentEvent: CompileEvent | undefined): void {
     const eventMergeCachedSourceMaps = createAndStartEvent(parentEvent, 'merge cached source maps');
     let cacheSourceMapInfo: Object = this.getCacheSourceMapInfo();
     if (!cacheSourceMapInfo.exist) {
@@ -358,9 +340,11 @@ export class SourceMapGenerator {
       return;
     }
 
-    await (async (): Promise<void> => {
+    const cacheFileContent: string = fs.readFileSync(toUnixPath(cacheSourceMapInfo.path)).toString();
+    let lines: string[] = cacheFileContent.split(/\r?\n/);
+    if (lines.length > 0) {
       let compileFileList: Set<string> = this.getCompileFileList();
-      for await (const line of this.readLines(cacheSourceMapInfo.path)) {
+      for (const line of lines) {
         if (line.trim() === '') {
           continue;
         }
@@ -378,8 +362,8 @@ export class SourceMapGenerator {
           this.writeTemp(`\n${this.formatTemp(smObj.key, smObj.val)}`);
         }
       }
-      this.checkAndWriteEnd();
-    })();
+    }
+    this.checkAndWriteEnd();
     stopEvent(eventMergeCachedSourceMaps);
   }
 
