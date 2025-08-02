@@ -85,9 +85,6 @@ export class ArrayExpression extends AnnotatedExpression {
         global.generatedEs2panda._ArrayExpressionSetOptional(global.context, this.peer, optional_arg);
         return this;
     }
-    get decorators(): readonly Decorator[] {
-        return unpackNodeArray(global.generatedEs2panda._ArrayExpressionDecoratorsConst(global.context, this.peer));
-    }
     get typeAnnotation(): TypeNode | undefined {
         return unpackNode(global.generatedEs2panda._ArrayExpressionTypeAnnotationConst(global.context, this.peer));
     }
