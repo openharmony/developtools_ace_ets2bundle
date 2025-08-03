@@ -21,6 +21,7 @@ export enum RuntimeNames {
     __CONTEXT = '__context',
     __ID = '__id',
     __KEY = '__key',
+    ANNOTATION_BUILDER = 'Builder',
     ANNOTATION = 'memo',
     ANNOTATION_ENTRY = 'memo_entry',
     ANNOTATION_INTRINSIC = 'memo_intrinsic',
@@ -42,7 +43,7 @@ export enum RuntimeNames {
     SCOPE = '__memo_scope',
     THIS = 'this',
     VALUE = 'value',
-    EQUAL_T = '=t'
+    EQUAL_T = '=t',
 }
 
 export interface ReturnTypeInfo {
@@ -116,7 +117,9 @@ export type MemoAstNode =
     | arkts.VariableDeclaration;
 
 export function hasMemoAnnotation<T extends MemoAstNode>(node: T): boolean {
-    return node.annotations.some((it) => isMemoAnnotation(it, RuntimeNames.ANNOTATION));
+    return node.annotations.some(
+        (it) => isMemoAnnotation(it, RuntimeNames.ANNOTATION) || isMemoAnnotation(it, RuntimeNames.ANNOTATION_BUILDER)
+    );
 }
 
 export function hasMemoIntrinsicAnnotation<T extends MemoAstNode>(node: T): boolean {
@@ -452,7 +455,7 @@ export function findMemoFromTypeAnnotation(typeAnnotation: arkts.AstNode | undef
     if (arkts.isETSTypeReference(typeAnnotation) && !!typeAnnotation.part && !!typeAnnotation.part.name) {
         let decl: arkts.AstNode | undefined = arkts.getDecl(typeAnnotation.part.name);
         if (!decl || !arkts.isTSTypeAliasDeclaration(decl)) {
-            return false;   
+            return false;
         }
         let isMemo: boolean = hasMemoAnnotation(decl) || hasMemoIntrinsicAnnotation(decl);
         if (!isMemo && !!decl.typeAnnotation) {
