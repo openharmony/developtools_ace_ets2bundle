@@ -43,6 +43,13 @@ struct ImportStruct {
             ForEach((new AB()).bar, (item: string) => {
                 Text(item)
             })
+            ForEach((new AB()).bar, () => {})
+            ForEach<Person>(this.getArray(), () => {})
+            ForEach(new Array<string>('1', '2'), () => {
+                ForEach(new Array<string>('1', '2'), (item: string) => {
+                    Text(item)
+                })
+            })
         }
     }
 }

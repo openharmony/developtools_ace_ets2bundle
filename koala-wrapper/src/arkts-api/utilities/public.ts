@@ -326,3 +326,11 @@ export function CreateCacheContextFromFile(
 ): KNativePointer {
     return global.es2panda._CreateCacheContextFromFile(configPtr, passString(filename), globalContext, isExternal);
 }
+
+export function getTypeNodeFromTsType(node: AstNode): AstNode | undefined {
+    const typeAnnotation = global.es2panda._CreateTypeNodeFromTsType(global.context, node.peer);
+    if (typeAnnotation === nullptr) {
+        return undefined;
+    }
+    return unpackNonNullableNode(typeAnnotation);
+}

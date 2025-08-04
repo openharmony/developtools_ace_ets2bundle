@@ -57,6 +57,7 @@ import {
     findBuilderIndexInControllerOptions,
     ObservedAnnoInfo,
     getNoTransformationMembersInClass,
+    getForEachTypeFromValue,
 } from './utils';
 import {
     collectStateManagementTypeImport,
@@ -1039,23 +1040,23 @@ export class factory {
      * add arrow function type to arguments of call expression.
      */
     static transformCallArguments(node: arkts.CallExpression): arkts.CallExpression {
-        if (!arkts.isArrowFunctionExpression(node.arguments[1])) {
-            return node;
+        let referenceType: arkts.TypeNode | undefined;
+        if (arkts.isArrowFunctionExpression(node.arguments[1])) {
+            const argTypeParam: arkts.Expression = node.arguments[1].scriptFunction.params[0];
+            if (
+                arkts.isEtsParameterExpression(argTypeParam) &&
+                argTypeParam.type &&
+                arkts.isTypeNode(argTypeParam.type)
+            ) {
+                referenceType = UIFactory.createComplexTypeFromStringAndTypeParameter('Array', [
+                    argTypeParam.type.clone(),
+                ]);
+            }
         }
-        const argTypeParam: arkts.Expression = node.arguments[1].scriptFunction.params[0];
-        if (
-            !arkts.isEtsParameterExpression(argTypeParam) ||
-            !argTypeParam.type ||
-            !arkts.isTypeNode(argTypeParam.type)
-        ) {
-            return node;
-        }
-        const referenceType = UIFactory.createComplexTypeFromStringAndTypeParameter('Array', [
-            argTypeParam.type.clone(),
-        ]);
+
         const newFunc = UIFactory.createScriptFunction({
             body: arkts.factory.createBlock([arkts.factory.createReturnStatement(node.arguments[0])]),
-            returnTypeAnnotation: referenceType,
+            returnTypeAnnotation: referenceType ?? this.getReturnTypeWithTsType(node),
             flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
             modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         });
@@ -1066,6 +1067,14 @@ export class factory {
             newArrowArg,
             ...node.arguments.slice(1),
         ]);
+    }
+
+    static getReturnTypeWithTsType(node: arkts.CallExpression): arkts.TypeNode | undefined {
+        const firstArg: arkts.Expression = node.arguments[0];
+        const returnType = node.typeArguments?.length
+            ? UIFactory.createComplexTypeFromStringAndTypeParameter('Array', node.typeArguments)
+            : getForEachTypeFromValue(firstArg);
+        return returnType;
     }
 
     static AddArrowTypeForParameter(node: arkts.MethodDefinition): arkts.MethodDefinition {

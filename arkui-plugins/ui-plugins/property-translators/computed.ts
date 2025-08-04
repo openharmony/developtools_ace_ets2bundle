@@ -18,7 +18,7 @@ import * as arkts from '@koalaui/libarkts';
 import { expectName } from '../../common/arkts-utils';
 import { GetSetTypes, StateManagementTypes } from '../../common/predefines';
 import { computedField } from '../utils';
-import { generateThisBacking, PropertyCache, generateGetOrSetCall, collectStateManagementTypeImport } from './utils';
+import { generateThisBacking, generateGetOrSetCall } from './utils';
 import { MethodTranslator } from './base';
 import { InitializerConstructor } from './types';
 import { factory as UIFactory } from '../ui-factory';

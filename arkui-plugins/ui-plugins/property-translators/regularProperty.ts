@@ -41,9 +41,9 @@ export class RegularPropertyTranslator extends PropertyTranslator implements Ini
         const value = this.property.value ?? arkts.factory.createUndefinedLiteral();
         let initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName, value);
         if (
-            !!this.property.typeAnnotation &&
+            !!this.propertyType &&
             !!this.structInfo.annotations.customdialog &&
-            isCustomDialogController(this.property.typeAnnotation)
+            isCustomDialogController(this.propertyType)
         ) {
             initializeStruct = this.generateControllerInit(originalName, initializeStruct);
         }
@@ -71,14 +71,10 @@ export class RegularPropertyTranslator extends PropertyTranslator implements Ini
         );
         const getter: arkts.MethodDefinition = this.translateGetter(
             originalName,
-            this.property.typeAnnotation,
-            arkts.factory.createTSAsExpression(thisValue, this.property.typeAnnotation, false)
+            this.propertyType,
+            arkts.factory.createTSAsExpression(thisValue, this.propertyType, false)
         );
-        const setter: arkts.MethodDefinition = this.translateSetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisSet
-        );
+        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
 
         return [field, getter, setter];
     }

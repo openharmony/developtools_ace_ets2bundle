@@ -56,7 +56,7 @@ export class ObservedTrackTranslator extends ObservedPropertyTranslator {
         const backingField = arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(newName),
             this.property.value,
-            this.property.typeAnnotation,
+            this.propertyType,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
         );
@@ -106,7 +106,7 @@ export class ObservedTrackTranslator extends ObservedPropertyTranslator {
         const returnMember: arkts.ReturnStatement = arkts.factory.createReturnStatement(
             this.property.value
                 ? backingMember
-                : arkts.factory.createTSAsExpression(backingMember, this.property.typeAnnotation, false)
+                : arkts.factory.createTSAsExpression(backingMember, this.propertyType, false)
         );
         const body = arkts.factory.createBlock([conditionalAddRef, returnMember]);
         return uiFactory.createMethodDefinition({
@@ -114,7 +114,7 @@ export class ObservedTrackTranslator extends ObservedPropertyTranslator {
             key: arkts.factory.createIdentifier(originalName),
             function: {
                 body: body,
-                returnTypeAnnotation: this.property.typeAnnotation,
+                returnTypeAnnotation: this.propertyType,
                 modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
                 flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
             },
@@ -126,7 +126,7 @@ export class ObservedTrackTranslator extends ObservedPropertyTranslator {
         const ifEqualsNewValue: arkts.IfStatement = this.setterIfEqualsNewValue(originalName, newName);
         const body = arkts.factory.createBlock([ifEqualsNewValue]);
         const param = arkts.factory.createParameterDeclaration(
-            arkts.factory.createIdentifier(ObservedNames.NEW_VALUE, this.property.typeAnnotation),
+            arkts.factory.createIdentifier(ObservedNames.NEW_VALUE, this.propertyType),
             undefined
         );
 

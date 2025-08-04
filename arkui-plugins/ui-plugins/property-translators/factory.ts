@@ -32,7 +32,7 @@ import {
     OptionalMemberInfo,
     removeDecorator,
 } from './utils';
-import { CustomComponentNames } from '../utils';
+import { CustomComponentNames, getClassPropertyType } from '../utils';
 import { addMemoAnnotation, findCanAddMemoFromTypeAnnotation } from '../../collectors/memo-collectors/utils';
 import { annotation, isNumeric } from '../../common/arkts-utils';
 
@@ -321,14 +321,17 @@ export class factory {
         modifiers: arkts.Es2pandaModifierFlags,
         needMemo: boolean = false
     ): arkts.ClassProperty {
-        const newType: arkts.TypeNode | undefined = property.typeAnnotation?.clone();
+        const originType = getClassPropertyType(property);
+        const newType: arkts.TypeNode | undefined = !stageManagementType
+            ? property.typeAnnotation ?? UIFactory.createTypeReferenceFromString('Any')
+            : originType;
         if (needMemo && findCanAddMemoFromTypeAnnotation(newType)) {
             addMemoAnnotation(newType);
         }
         const newProperty = arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(name),
             undefined,
-            !!stageManagementType ? factory.createStageManagementType(stageManagementType, property) : newType,
+            !!stageManagementType ? factory.createStageManagementType(stageManagementType, originType) : newType,
             modifiers,
             false
         );
@@ -337,15 +340,13 @@ export class factory {
 
     static createStageManagementType(
         stageManagementType: StateManagementTypes,
-        property: arkts.ClassProperty
+        type: arkts.TypeNode | undefined
     ): arkts.ETSTypeReference {
         collectStateManagementTypeImport(stageManagementType);
         return arkts.factory.createTypeReference(
             arkts.factory.createTypeReferencePart(
                 arkts.factory.createIdentifier(stageManagementType),
-                arkts.factory.createTSTypeParameterInstantiation([
-                    property.typeAnnotation ? property.typeAnnotation.clone() : arkts.factory.createETSUndefinedType(),
-                ])
+                arkts.factory.createTSTypeParameterInstantiation([type ?? arkts.factory.createETSUndefinedType()])
             )
         );
     }

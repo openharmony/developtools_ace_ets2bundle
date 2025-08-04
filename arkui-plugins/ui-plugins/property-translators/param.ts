@@ -54,11 +54,7 @@ export class ParamTranslator extends PropertyTranslator implements InitializerCo
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
         const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
-        const getter: arkts.MethodDefinition = this.translateGetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisGet
-        );
+        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
 
         return [field, getter];
     }
@@ -80,22 +76,19 @@ export class ParamTranslator extends PropertyTranslator implements InitializerCo
             arkts.factory.create1StringLiteral(originalName),
             this.property.value
                 ? arkts.factory.createBinaryExpression(
-                      outInitialize,
+                      this.property.typeAnnotation
+                          ? outInitialize
+                          : arkts.factory.createTSAsExpression(outInitialize, this.propertyType, false),
                       this.property.value,
                       arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
                   )
-                : factory.generateDefiniteInitializers(this.property.typeAnnotation, originalName),
+                : factory.generateDefiniteInitializers(this.propertyType, originalName),
         ];
         collectStateManagementTypeImport(StateManagementTypes.PARAM_DECORATED);
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(
-                StateManagementTypes.MAKE_PARAM,
-                this.property.typeAnnotation,
-                args,
-                true
-            )
+            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_PARAM, this.propertyType, args, true)
         );
         return arkts.factory.createExpressionStatement(assign);
     }
@@ -116,7 +109,7 @@ export class ParamTranslator extends PropertyTranslator implements InitializerCo
                     false,
                     true
                 ),
-                this.property.typeAnnotation ? this.property.typeAnnotation.clone() : undefined,
+                this.propertyType?.clone(),
                 false
             ),
         ]);
