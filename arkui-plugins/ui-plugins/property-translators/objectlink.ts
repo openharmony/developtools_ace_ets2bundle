@@ -55,7 +55,7 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
                 arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
                 originalName
             ),
-            this.property.typeAnnotation,
+            this.propertyType,
             false
         );
         const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(originalName), initializers];
@@ -64,12 +64,7 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
         return arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(
-                StateManagementTypes.MAKE_OBJECT_LINK,
-                this.property.typeAnnotation,
-                args,
-                true
-            )
+            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_OBJECT_LINK, this.propertyType, args, true)
         );
     }
 
@@ -101,11 +96,7 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
         const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
-        const getter: arkts.MethodDefinition = this.translateGetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisGet
-        );
+        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
         return [field, getter];
     }
 

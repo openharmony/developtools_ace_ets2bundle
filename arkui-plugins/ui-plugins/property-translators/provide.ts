@@ -62,16 +62,8 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
             generateGetOrSetCall(thisValue, GetSetTypes.SET)
         );
-        const getter: arkts.MethodDefinition = this.translateGetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisGet
-        );
-        const setter: arkts.MethodDefinition = this.translateSetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisSet
-        );
+        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
+        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
 
         return [field, getter, setter];
     }
@@ -93,6 +85,10 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
     }
 
     generateInitializeStruct(originalName: string, newName: string): arkts.AstNode {
+        const outInitialize = factory.createBlockStatementForOptionalExpression(
+            arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
+            originalName
+        );
         const options: undefined | ProvideOptions = getValueInProvideAnnotation(this.property);
         const alias: string = options?.alias ?? originalName;
         const allowOverride: boolean = options?.allowOverride ?? false;
@@ -101,26 +97,20 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
             arkts.factory.create1StringLiteral(alias),
             this.property.value
                 ? arkts.factory.createBinaryExpression(
-                      factory.createBlockStatementForOptionalExpression(
-                          arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-                          originalName
-                      ),
+                      this.property.typeAnnotation
+                          ? outInitialize
+                          : arkts.factory.createTSAsExpression(outInitialize, this.propertyType, false),
                       this.property.value ?? arkts.factory.createUndefinedLiteral(),
                       arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
                   )
-                : factory.generateDefiniteInitializers(this.property.typeAnnotation, originalName),
+                : factory.generateDefiniteInitializers(this.propertyType, originalName),
             arkts.factory.createBooleanLiteral(allowOverride),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(
-                StateManagementTypes.MAKE_PROVIDE,
-                this.property.typeAnnotation,
-                args,
-                true
-            )
+            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_PROVIDE, this.propertyType, args, true)
         );
         return arkts.factory.createExpressionStatement(assign);
     }
