@@ -31,6 +31,8 @@ function YourBuilder(value: string, size: number) {
 
 let globalBuilder: WrappedBuilder<@Builder (value: string, size: number) => void> = wrapBuilder(MyBuilder);
 let builderArr: WrappedBuilder<@Builder (value: string, size: number) => void>[] = [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]
+let wrappedBuilder1: WrappedBuilder<@Builder (value: string, size: number) => void> = wrapBuilder<@Builder (value: string, size: number) => void>(MyBuilder);
+let wrappedBuilder2: WrappedBuilder<@Builder (value: string, size: number) => void> = new WrappedBuilder<@Builder (value: string, size: number) => void>(MyBuilder);
 
 @Entry
 @Component
