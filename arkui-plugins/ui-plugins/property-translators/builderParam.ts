@@ -38,7 +38,7 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const propertyType = this.property.typeAnnotation;
+        const propertyType = this.propertyType;
         if (!!propertyType && (arkts.isETSFunctionType(propertyType) || arkts.isETSUnionType(propertyType))) {
             addMemoAnnotation(propertyType);
         }

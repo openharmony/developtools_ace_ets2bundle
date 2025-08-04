@@ -56,16 +56,8 @@ export class OnceTranslator extends PropertyTranslator implements InitializerCon
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
             generateGetOrSetCall(thisValue, GetSetTypes.SET)
         );
-        const getter: arkts.MethodDefinition = this.translateGetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisGet
-        );
-        const setter: arkts.MethodDefinition = this.translateSetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisSet
-        );
+        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
+        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
 
         return [field, getter, setter];
     }
@@ -95,7 +87,9 @@ export class OnceTranslator extends PropertyTranslator implements InitializerCon
             arkts.factory.create1StringLiteral(originalName),
             this.property.value
                 ? arkts.factory.createBinaryExpression(
-                      outInitialize,
+                      this.property.typeAnnotation
+                          ? outInitialize
+                          : arkts.factory.createTSAsExpression(outInitialize, this.propertyType, false),
                       this.property.value,
                       arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
                   )
@@ -106,7 +100,7 @@ export class OnceTranslator extends PropertyTranslator implements InitializerCon
                           false,
                           true
                       ),
-                      this.property.typeAnnotation?.clone(),
+                      this.propertyType?.clone(),
                       false
                   ),
         ];
@@ -114,12 +108,7 @@ export class OnceTranslator extends PropertyTranslator implements InitializerCon
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(
-                StateManagementTypes.MAKE_PARAM_ONCE,
-                this.property.typeAnnotation,
-                args,
-                true
-            )
+            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_PARAM_ONCE, this.propertyType, args, true)
         );
         return arkts.factory.createExpressionStatement(assign);
     }

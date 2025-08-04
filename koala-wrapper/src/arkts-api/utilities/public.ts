@@ -330,3 +330,11 @@ export function CreateCacheContextFromFile(
 export function getJsdocStringFromDeclaration(decl: AstNode): string {
     return withStringResult(global.es2panda._JsdocStringFromDeclaration(global.context, decl.peer)) ?? throwError(`failed to unpack (peer shouldn't be NULLPTR)`);
 }
+
+export function getTypeNodeFromTsType(node: AstNode): AstNode | undefined {
+    const typeAnnotation = global.es2panda._CreateTypeNodeFromTsType(global.context, node.peer);
+    if (typeAnnotation === nullptr) {
+        return undefined;
+    }
+    return unpackNonNullableNode(typeAnnotation);
+}

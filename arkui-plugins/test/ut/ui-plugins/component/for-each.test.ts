@@ -110,6 +110,21 @@ class AB {
       }), ((item: string) => {
         Text(undefined, item, undefined, undefined);
       }));
+      ForEach(((): Array<String> => {
+        return new AB().bar;
+      }), (() => {}));
+      ForEach<Person>(((): Array<Person> => {
+        return this.getArray();
+      }), (() => {}));
+      ForEach(((): Array<String> => {
+        return new Array<string>("1", "2");
+      }), (() => {
+        ForEach(((): Array<string> => {
+          return new Array<string>("1", "2");
+        }), ((item: string) => {
+          Text(undefined, item, undefined, undefined);
+        }));
+      }));
     }));
   }
   

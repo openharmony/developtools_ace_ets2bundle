@@ -132,7 +132,7 @@ function main() {}
 @Component() export interface __Options_Child {
   set customBuilderParam2(customBuilderParam2: (((()=> void) | undefined) | undefined))
   
-  get customBuilderParam2(): (((()=> void) | undefined) | undefined)
+  get customBuilderParam2(): ((@memo() (()=> void) | undefined) | undefined)
   set customBuilderParam1(customBuilderParam1: (@memo() (()=> void) | undefined))
   
   get customBuilderParam1(): (@memo() (()=> void) | undefined)
@@ -339,7 +339,7 @@ function main() {}
 @Component() export interface __Options_Child {
   set customBuilderParam2(customBuilderParam2: ((((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | undefined))
   
-  get customBuilderParam2(): ((((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | undefined)
+  get customBuilderParam2(): ((@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | undefined)
   set customBuilderParam1(customBuilderParam1: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined))
   
   get customBuilderParam1(): (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)

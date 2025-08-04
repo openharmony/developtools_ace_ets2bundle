@@ -18,6 +18,7 @@ import { collectStateManagementTypeImport, createGetter, createSetter } from './
 import { CustomComponentInfo, ClassInfo } from '../utils';
 import { StateManagementTypes } from '../../common/predefines';
 import { ClassScopeInfo } from '../struct-translators/utils';
+import { getClassPropertyType } from '../utils';
 
 export interface PropertyTranslatorOptions {
     property: arkts.ClassProperty;
@@ -27,10 +28,12 @@ export interface PropertyTranslatorOptions {
 export abstract class PropertyTranslator {
     protected property: arkts.ClassProperty;
     protected structInfo: CustomComponentInfo;
+    protected propertyType: arkts.TypeNode | undefined;
 
     constructor(options: PropertyTranslatorOptions) {
         this.property = options.property;
         this.structInfo = options.structInfo;
+        this.propertyType = getClassPropertyType(options.property);
     }
 
     abstract translateMember(): arkts.AstNode[];
@@ -73,10 +76,12 @@ export abstract class MethodTranslator {
 export abstract class ObservedPropertyTranslator {
     protected property: arkts.ClassProperty;
     protected classScopeInfo: ClassScopeInfo;
+    protected propertyType: arkts.TypeNode | undefined;
 
     constructor(property: arkts.ClassProperty, classScopeInfo: ClassScopeInfo) {
         this.property = property;
         this.classScopeInfo = classScopeInfo;
+        this.propertyType = getClassPropertyType(this.property);
     }
 
     abstract translateMember(): arkts.AstNode[];
