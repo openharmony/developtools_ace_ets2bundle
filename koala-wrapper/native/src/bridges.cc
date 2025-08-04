@@ -750,3 +750,20 @@ static KNativePointer impl_ProgramSourceFilePathConst(KNativePointer contextPtr,
     return new std::string(result);
 }
 KOALA_INTEROP_2(ProgramSourceFilePathConst, KNativePointer, KNativePointer, KNativePointer);
+
+KNativePointer impl_CreateTypeNodeFromTsType(KNativePointer context, KNativePointer nodePtr)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _nodePtr = reinterpret_cast<es2panda_AstNode*>(nodePtr);
+    auto _tsType = GetImpl()->TypedTsType(_context, _nodePtr);
+    if (_tsType == nullptr) {
+        _tsType = GetImpl()->ExpressionTsType(_context, _nodePtr);
+    }
+    if (_tsType == nullptr) {
+        return nullptr;
+    }
+    const auto _nodeTsType = reinterpret_cast<es2panda_Type*>(_tsType);
+    auto _typeAnnotation = GetImpl()->CreateOpaqueTypeNode(_context, _nodeTsType);
+    return _typeAnnotation;
+}
+KOALA_INTEROP_2(CreateTypeNodeFromTsType, KNativePointer, KNativePointer, KNativePointer);

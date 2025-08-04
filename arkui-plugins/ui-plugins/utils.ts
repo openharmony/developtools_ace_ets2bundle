@@ -372,3 +372,16 @@ export function computedField(name: string): string {
 export function monitorField(name: string): string {
     return `__monitor_${name}`;
 }
+
+export function getClassPropertyType(property: arkts.ClassProperty): arkts.TypeNode | undefined {
+    const type = property.typeAnnotation;
+    if (!!type) {
+        return type;
+    }
+    let value: arkts.Expression | undefined = property.value;
+    let inferredType = value ? arkts.getTypeNodeFromTsType(value) : undefined;
+    if (inferredType && arkts.isTypeNode(inferredType)) {
+        return inferredType;
+    }
+    return undefined;
+}

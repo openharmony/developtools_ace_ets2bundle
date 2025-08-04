@@ -65,16 +65,8 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
             generateGetOrSetCall(thisValue, GetSetTypes.SET)
         );
-        const getter: arkts.MethodDefinition = this.translateGetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisGet
-        );
-        const setter: arkts.MethodDefinition = this.translateSetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisSet
-        );
+        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
+        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
 
         return [field, getter, setter];
     }
@@ -96,31 +88,27 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
     }
 
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
+        const outInitialize = factory.createBlockStatementForOptionalExpression(
+            arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
+            originalName
+        );
         const binaryItem = arkts.factory.createBinaryExpression(
-            factory.createBlockStatementForOptionalExpression(
-                arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-                originalName
-            ),
+            this.property.typeAnnotation
+                ? outInitialize
+                : arkts.factory.createTSAsExpression(outInitialize, this.propertyType, false),
             this.property.value ?? arkts.factory.createUndefinedLiteral(),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         );
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
-            this.property.value
-                ? binaryItem
-                : factory.generateDefiniteInitializers(this.property.typeAnnotation, originalName),
+            this.property.value ? binaryItem : factory.generateDefiniteInitializers(this.propertyType, originalName),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         collectStateManagementTypeImport(StateManagementTypes.PROP_DECORATED);
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(
-                StateManagementTypes.MAKE_PROP,
-                this.property.typeAnnotation,
-                args,
-                true
-            )
+            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_PROP, this.propertyType, args, true)
         );
         return arkts.factory.createExpressionStatement(assign);
     }
@@ -141,7 +129,7 @@ export class PropTranslator extends PropertyTranslator implements InitializerCon
                     false,
                     true
                 ),
-                this.property.typeAnnotation ? this.property.typeAnnotation.clone() : undefined,
+                this.propertyType?.clone(),
                 false
             ),
         ]);
