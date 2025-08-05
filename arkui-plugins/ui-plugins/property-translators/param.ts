@@ -68,21 +68,9 @@ export class ParamTranslator extends PropertyTranslator implements InitializerCo
     }
 
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        const outInitialize: arkts.Expression = factory.createBlockStatementForOptionalExpression(
-            arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-            originalName
-        );
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
-            this.property.value
-                ? arkts.factory.createBinaryExpression(
-                      this.property.typeAnnotation
-                          ? outInitialize
-                          : arkts.factory.createTSAsExpression(outInitialize, this.propertyType, false),
-                      this.property.value,
-                      arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-                  )
-                : factory.generateDefiniteInitializers(this.propertyType, originalName),
+            factory.generateInitializeValue(this.property, this.propertyType, originalName),
         ];
         collectStateManagementTypeImport(StateManagementTypes.PARAM_DECORATED);
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
@@ -109,7 +97,7 @@ export class ParamTranslator extends PropertyTranslator implements InitializerCo
                     false,
                     true
                 ),
-                this.propertyType?.clone(),
+                this.propertyType,
                 false
             ),
         ]);

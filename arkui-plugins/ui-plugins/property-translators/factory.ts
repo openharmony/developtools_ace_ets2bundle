@@ -323,7 +323,7 @@ export class factory {
     ): arkts.ClassProperty {
         const originType = getClassPropertyType(property);
         const newType: arkts.TypeNode | undefined = !stageManagementType
-            ? property.typeAnnotation ?? UIFactory.createTypeReferenceFromString('Any')
+            ? property.typeAnnotation ?? UIFactory.createTypeReferenceFromString(TypeNames.ANY)
             : originType;
         if (needMemo && findCanAddMemoFromTypeAnnotation(newType)) {
             addMemoAnnotation(newType);
@@ -740,6 +740,33 @@ export class factory {
             }
         }
         return method;
+    }
+
+    /**
+     * create external assignment node, e.g. `initializers?.<originalName> ?? <property>.value` or `initializers!.<originalName>!`.
+     *
+     * @param property class property node.
+     * @param propertyType class property type.
+     * @param originalName property name.
+     */
+    static generateInitializeValue(
+        property: arkts.ClassProperty,
+        propertyType: arkts.TypeNode | undefined,
+        originalName: string
+    ): arkts.Expression {
+        const outInitialize: arkts.Expression = factory.createBlockStatementForOptionalExpression(
+            arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
+            originalName
+        );
+        const binaryItem: arkts.Expression = arkts.factory.createBinaryExpression(
+            outInitialize,
+            property.value ?? arkts.factory.createUndefinedLiteral(),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+        );
+        const finalBinary: arkts.Expression = property.typeAnnotation
+            ? binaryItem
+            : arkts.factory.createTSAsExpression(binaryItem, propertyType, false);
+        return property.value ? finalBinary : factory.generateDefiniteInitializers(propertyType, originalName);
     }
 
     /**

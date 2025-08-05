@@ -33,7 +33,6 @@ import { DeclarationCollector } from '../../common/declaration-collector';
 import { ProjectConfig } from '../../common/plugin-context';
 import { LogCollector } from '../../common/log-collector';
 import { hasDecorator } from '../../ui-plugins/property-translators/utils';
-import { addMemoAnnotation } from '../../collectors/memo-collectors/utils';
 
 export type ScopeInfoCollection = {
     customComponents: CustomComponentScopeInfo[];
@@ -604,12 +603,4 @@ export function getNoTransformationMembersInClass(
                     isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI))
             )
     );
-}
-
-export function getForEachTypeFromValue(node: arkts.Expression): arkts.TypeNode | undefined {
-    const type = arkts.getTypeNodeFromTsType(node);
-    if (!type || !arkts.isTypeNode(type)) {
-        return undefined;
-    }
-    return type;
 }
