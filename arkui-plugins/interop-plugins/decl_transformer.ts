@@ -69,6 +69,8 @@ export class DeclTransformer extends AbstractVisitor {
                 return this.transformMethodDefinition(astNode);
             }
             return astNode;
+        } else if (arkts.isClassProperty(astNode)) {
+            astNode.setAnnotations([]);
         }
         return node;
     }
