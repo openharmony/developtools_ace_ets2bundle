@@ -24,11 +24,13 @@ import {
   getBrdigeCodeRootPath,
   isMixCompile,
   initConfigForInterop,
-  destroyInterop
+  destroyInterop,
+  transformModuleNameToRelativePath
  } from '../../../lib/fast_build/ark_compiler/interop/interop_manager';
 import { ARKTS_1_1, ARKTS_1_2, ARKTS_HYBRID } from '../../../lib/fast_build/ark_compiler/interop/pre_define';
 import { sdkConfigs } from '../../../main';
 import { toUnixPath } from '../../../lib/utils';
+import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 
 export interface ArkTSEvolutionModule {
   language: string;
@@ -357,19 +359,64 @@ mocha.describe('test getBrdigeCodeRootPath api', function () {
   });
 });
 
-mocha.describe('test mixCompile',function(){
-  mocha.it('1-1 test mixCompile is false',function(){
+mocha.describe('test mixCompile', function () {
+  mocha.it('1-1 test mixCompile is false', function () {
     expect(isMixCompile()).to.be.false;
   })
 
-  mocha.it('1-2 test mixCompile is true',function(){
-    initConfigForInterop();
+  mocha.it('1-2 test mixCompile is true', function () {
+    this.rollup = new RollUpPluginMock();
+    this.rollup.build();
+    this.rollup.share.projectConfig.mixCompile = true;
+    initConfigForInterop(this.rollup.share);
     expect(isMixCompile()).to.be.true;
   })
 
-  mocha.it('1-3 test mixCompile is false when destroy interop',function(){
-    initConfigForInterop();
+  mocha.it('1-3 test mixCompile is false when destroy interop', function () {
+    this.rollup = new RollUpPluginMock();
+    this.rollup.build();
+    this.rollup.share.projectConfig.mixCompile = true;
+    initConfigForInterop(this.rollup.share);
     destroyInterop()
     expect(isMixCompile()).to.be.false;
   })
+})
+
+mocha.describe('test transformModuleNameToRelativePath api', function () {
+  mocha.before(function () {
+    this.rollup = new RollUpPluginMock();
+    this.rollup.build();
+    this.rollup.share.projectConfig.mixCompile = true;
+    initConfigForInterop(this.rollup.share);
+  });
+
+  mocha.it('1-1 test transformModuleNameToRelativePath when compile common module', function () {
+    this.rollup.share.projectConfig.isOhosTest = false;
+
+    const moduleName = '/a/b/c/src/main/ets/module/file.ets';
+    const result = transformModuleNameToRelativePath(moduleName);
+
+    expect(result).to.equal('./ets/module/file.ets');
+  });
+
+  mocha.it('1-2 test transformModuleNameToRelativePath when compile ohostest', function () {
+    this.rollup.share.projectConfig.isOhosTest = true;
+    initConfigForInterop(this.rollup.share);
+    const moduleName = '/a/b/c/src/ohosTest/ets/module/testfile.ets';
+    const result = transformModuleNameToRelativePath(moduleName);
+
+    expect(result).to.equal('./ets/module/testfile.ets');
+  });
+
+  mocha.it('1-3 test transformModuleNameToRelativePath throws when sourceRoot not in path', function () {
+    this.rollup.share.projectConfig.isOhosTest = false;
+
+    const invalidModuleName = '/a/b/c/invalidroot/ets/module/file.ets';
+
+    expect(() => transformModuleNameToRelativePath(invalidModuleName)).to.throw(Error);
+  });
+
+  mocha.after(() => {
+    delete this.rollup;
+  });
 })
