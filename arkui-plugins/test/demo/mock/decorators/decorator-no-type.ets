@@ -19,6 +19,7 @@ import { Provider, Consumer, Once, Observed, ObservedV2, Trace, Track } from "@o
 
 class Per {
   num: number;
+
   constructor(num: number) {
     this.num = num;
   }
@@ -43,15 +44,17 @@ class RR {
 @Component
 struct Parent {
   @State stateVar1 = new Per(6);
-  @Prop stateVar2 = new Array<number>(3,6,8);
+  @Prop stateVar2 = new Array<number>(3, 6, 8);
   @Provide stateVar3 = StateType.TYPE3;
-  stateVar8 = (sr: string)=>{};
+  stateVar8 = (sr: string) => {
+  };
   stateVar9 = new Date('2025-4-23');
-  @Provide({alias: 'me0', allowOverride: false}) stateVar11113 = true;
+  @Provide({ alias: 'me0', allowOverride: false }) stateVar11113 = true;
   @Provide stateVar11114 = undefined;
   @State stateVar11115 = null;
 
-  build() {}
+  build() {
+  }
 }
 
 @ComponentV2
@@ -60,7 +63,8 @@ struct V2Parent {
   @Local stateVar5 = [true, false];
   @Local stateVar6 = new Array<Per>(new Per(7), new Per(11));
   stateVar7 = [new Per(7), new Per(11)];
-  @Event stateVar8 = (sr: string)=>{};
+  @Event stateVar8 = (sr: string) => {
+  };
   @Param stateVar9 = new Date('2025-4-23');
   @Param stateVar10 = new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]);
   @Once @Param stateVar11 = 0.0;
@@ -69,7 +73,8 @@ struct V2Parent {
   @Provider('var') stateVar11188 = '';
   @Consumer('nihao') stateVar11112 = 50;
 
-  build() {}
+  build() {
+  }
 }
 
 @CustomDialog
@@ -78,7 +83,8 @@ struct CC {
   @Local stateVar5 = [true, false];
   @Local stateVar6 = new Array<Per>(new Per(7), new Per(11));
   stateVar7 = [new Per(7), new Per(11)];
-  @Event stateVar8 = (sr: string)=>{};
+  @Event stateVar8 = (sr: string) => {
+  };
   @Param stateVar9 = new Date('2025-4-23');
   @Param stateVar10 = new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]);
   @Once @Param stateVar11 = 0.0;
@@ -87,5 +93,6 @@ struct CC {
   @Provider('var') stateVar11188 = '';
   @Consumer('nihao') stateVar11112 = 50;
 
-  build() {}
+  build() {
+  }
 }

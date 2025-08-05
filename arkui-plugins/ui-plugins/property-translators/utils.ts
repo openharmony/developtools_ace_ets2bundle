@@ -19,7 +19,6 @@ import { isDecoratorAnnotation } from '../../common/arkts-utils';
 import {
     DecoratorIntrinsicNames,
     DecoratorNames,
-    DECORATOR_TYPE_MAP,
     StateManagementTypes,
     GetSetTypes,
     ObservedNames,
@@ -30,6 +29,7 @@ import {
     findCanAddMemoFromTypeAnnotation,
 } from '../../collectors/memo-collectors/utils';
 import { CustomDialogNames } from '../utils';
+import { ReturnTransformer } from './return-transformer';
 
 export interface DecoratorInfo {
     annotation: arkts.AnnotationUsage;
@@ -64,6 +64,26 @@ export function removeDecorator(
             property.annotations.filter((anno) => !isDecoratorAnnotation(anno, decoratorName, ignoreDecl))
         );
     }
+}
+
+export function getGetterReturnType(method: arkts.MethodDefinition): arkts.TypeNode | undefined {
+    const body = method.scriptFunction.body;
+    if (!body || !arkts.isBlockStatement(body) || body.statements.length <= 0) {
+        return undefined;
+    }
+    let returnType: arkts.TypeNode | undefined = undefined;
+    const returnTransformer = new ReturnTransformer();
+    returnTransformer.visitor(body);
+    const typeArray = returnTransformer.types;
+    if (typeArray.length <= 0) {
+        returnType = undefined;
+    } else if (typeArray.length === 1) {
+        returnType = typeArray.at(0);
+    } else {
+        returnType = arkts.factory.createUnionType(typeArray);
+    }
+    returnTransformer.reset();
+    return returnType?.clone();
 }
 
 /**
