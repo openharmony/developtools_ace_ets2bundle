@@ -120,4 +120,5 @@ export interface InteropInfo {
 
 export interface InteropConfig {
   interopModuleInfo: Map<string, InteropInfo>;
+  projectConfig: Object;
 }

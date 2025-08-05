@@ -76,6 +76,7 @@ export function etsChecker() {
       const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ROLLUP_PLUGIN_BUILD_START);
       const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsChecker', 'buildStart');
       const eventServiceChecker = createAndStartEvent(hookEventFactory, 'serviceChecker');
+      // remove after hvigor use another api
       initFileManagerInRollup(this.share);
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
