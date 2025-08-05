@@ -17,6 +17,10 @@ import * as arkts from '@koalaui/libarkts';
 import { DeclarationCollector } from './declaration-collector';
 import { ARKUI_IMPORT_PREFIX_NAMES, DecoratorNames } from './predefines';
 
+export function coerceToAstNode<T extends arkts.AstNode>(node: arkts.AstNode): T {
+    return node as T;
+}
+
 /**
  * create and insert `import { <imported> as <local> } from <source>` to the top of script's statements.
  */
