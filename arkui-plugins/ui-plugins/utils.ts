@@ -376,10 +376,10 @@ export function monitorField(name: string): string {
 export function getClassPropertyType(property: arkts.ClassProperty): arkts.TypeNode | undefined {
     const type = property.typeAnnotation;
     if (!!type) {
-        return type;
+        return type.clone();
     }
     let value: arkts.Expression | undefined = property.value;
-    let inferredType = value ? arkts.getTypeNodeFromTsType(value) : undefined;
+    let inferredType: arkts.AstNode | undefined = value ? arkts.createTypeNodeFromTsType(value) : undefined;
     if (inferredType && arkts.isTypeNode(inferredType)) {
         return inferredType;
     }

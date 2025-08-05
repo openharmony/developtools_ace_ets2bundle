@@ -39,27 +39,49 @@ const parsedTransform: Plugins = {
 
 const expectedScript: string = `
 import { IConsumerDecoratedVariable as IConsumerDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { IProviderDecoratedVariable as IProviderDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { IParamDecoratedVariable as IParamDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { IParamOnceDecoratedVariable as IParamOnceDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { OBSERVE as OBSERVE } from "arkui.stateManagement.decorator";
+
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
+
 import { UIUtils as UIUtils } from "arkui.stateManagement.utils";
+
 import { IMutableStateMeta as IMutableStateMeta } from "arkui.stateManagement.decorator";
+
 import { RenderIdType as RenderIdType } from "arkui.stateManagement.decorator";
+
 import { WatchIdType as WatchIdType } from "arkui.stateManagement.decorator";
+
 import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.decorator";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
 import { BaseCustomDialog as BaseCustomDialog } from "arkui.component.customComponent";
+
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component, ComponentV2 as ComponentV2, CustomDialog as CustomDialog } from "@ohos.arkui.component";
+
 import { State as State, Prop as Prop, Provide as Provide, Event as Event, Local as Local, Param as Param } from "@ohos.arkui.stateManagement";
+
 import { Provider as Provider, Consumer as Consumer, Once as Once, Observed as Observed, ObservedV2 as ObservedV2, Trace as Trace, Track as Track } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -236,17 +258,17 @@ final class StateType extends BaseEnum<int> {
     this.__backing_stateVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "stateVar1", (((({let gensym___213853607 = initializers;
     (((gensym___213853607) == (null)) ? undefined : gensym___213853607.stateVar1)})) ?? (new Per(6))) as Per));
     this.__backing_stateVar2 = STATE_MGMT_FACTORY.makeProp<Array<Double>>(this, "stateVar2", (((({let gensym___113574154 = initializers;
-    (((gensym___113574154) == (null)) ? undefined : gensym___113574154.stateVar2)}) as Array<Double>)) ?? (new Array<number>(3, 6, 8))));
+    (((gensym___113574154) == (null)) ? undefined : gensym___113574154.stateVar2)})) ?? (new Array<number>(3, 6, 8))) as Array<Double>));
     this.__backing_stateVar3 = STATE_MGMT_FACTORY.makeProvide<StateType>(this, "stateVar3", "stateVar3", (((({let gensym___120612294 = initializers;
-    (((gensym___120612294) == (null)) ? undefined : gensym___120612294.stateVar3)}) as StateType)) ?? (StateType.TYPE3)), false);
+    (((gensym___120612294) == (null)) ? undefined : gensym___120612294.stateVar3)})) ?? (StateType.TYPE3)) as StateType), false);
     this.__backing_stateVar8 = ((({let gensym___188075012 = initializers;
     (((gensym___188075012) == (null)) ? undefined : gensym___188075012.stateVar8)})) ?? (((sr: string) => {})));
     this.__backing_stateVar9 = ((({let gensym___53672736 = initializers;
     (((gensym___53672736) == (null)) ? undefined : gensym___53672736.stateVar9)})) ?? (new Date("2025-4-23")));
     this.__backing_stateVar11113 = STATE_MGMT_FACTORY.makeProvide<Boolean>(this, "stateVar11113", "me0", (((({let gensym___105441066 = initializers;
-    (((gensym___105441066) == (null)) ? undefined : gensym___105441066.stateVar11113)}) as Boolean)) ?? (true)), false);
+    (((gensym___105441066) == (null)) ? undefined : gensym___105441066.stateVar11113)})) ?? (true)) as Boolean), false);
     this.__backing_stateVar11114 = STATE_MGMT_FACTORY.makeProvide<undefined>(this, "stateVar11114", "stateVar11114", (((({let gensym___141950305 = initializers;
-    (((gensym___141950305) == (null)) ? undefined : gensym___141950305.stateVar11114)}) as undefined)) ?? (undefined)), false);
+    (((gensym___141950305) == (null)) ? undefined : gensym___141950305.stateVar11114)})) ?? (undefined)) as undefined), false);
     this.__backing_stateVar11115 = STATE_MGMT_FACTORY.makeState<null>(this, "stateVar11115", (((({let gensym___159362057 = initializers;
     (((gensym___159362057) == (null)) ? undefined : gensym___159362057.stateVar11115)})) ?? (null)) as null));
   }
@@ -346,20 +368,20 @@ final class StateType extends BaseEnum<int> {
 
 @ComponentV2() final struct V2Parent extends CustomComponentV2<V2Parent, __Options_V2Parent> {
   public __initializeStruct(initializers: (__Options_V2Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_stateVar4 = STATE_MGMT_FACTORY.makeParamOnce<Set<String>>(this, "stateVar4", (((({let gensym___130185867 = initializers;
-    (((gensym___130185867) == (null)) ? undefined : gensym___130185867.stateVar4)}) as Set<String>)) ?? (new Set<string>(new Array<string>("aa", "bb")))));
+    this.__backing_stateVar4 = STATE_MGMT_FACTORY.makeParamOnce<Set<String>>(this, "stateVar4", (((({let gensym___73118717 = initializers;
+    (((gensym___73118717) == (null)) ? undefined : gensym___73118717.stateVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))) as Set<String>));
     this.__backing_stateVar5 = STATE_MGMT_FACTORY.makeLocal<Array<Boolean>>(this, "stateVar5", [true, false]);
     this.__backing_stateVar6 = STATE_MGMT_FACTORY.makeLocal<Array<Per>>(this, "stateVar6", new Array<Per>(new Per(7), new Per(11)));
-    this.__backing_stateVar7 = ((({let gensym___32560051 = initializers;
-    (((gensym___32560051) == (null)) ? undefined : gensym___32560051.stateVar7)})) ?? ([new Per(7), new Per(11)]));
-    this.__backing_stateVar8 = ((({let gensym___43839328 = initializers;
-    (((gensym___43839328) == (null)) ? undefined : gensym___43839328.stateVar8)})) ?? (((sr: string) => {})));
-    this.__backing_stateVar9 = STATE_MGMT_FACTORY.makeParam<Date>(this, "stateVar9", (((({let gensym___132256728 = initializers;
-    (((gensym___132256728) == (null)) ? undefined : gensym___132256728.stateVar9)}) as Date)) ?? (new Date("2025-4-23"))));
-    this.__backing_stateVar10 = STATE_MGMT_FACTORY.makeParam<Map<Double,Per>>(this, "stateVar10", (((({let gensym___246390835 = initializers;
-    (((gensym___246390835) == (null)) ? undefined : gensym___246390835.stateVar10)}) as Map<Double,Per>)) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
-    this.__backing_stateVar11 = STATE_MGMT_FACTORY.makeParamOnce<Double>(this, "stateVar11", (((({let gensym___87837183 = initializers;
-    (((gensym___87837183) == (null)) ? undefined : gensym___87837183.stateVar11)}) as Double)) ?? (0.0)));
+    this.__backing_stateVar7 = ((({let gensym___57869708 = initializers;
+    (((gensym___57869708) == (null)) ? undefined : gensym___57869708.stateVar7)})) ?? ([new Per(7), new Per(11)]));
+    this.__backing_stateVar8 = ((({let gensym___248714217 = initializers;
+    (((gensym___248714217) == (null)) ? undefined : gensym___248714217.stateVar8)})) ?? (((sr: string) => {})));
+    this.__backing_stateVar9 = STATE_MGMT_FACTORY.makeParam<Date>(this, "stateVar9", (((({let gensym___78493121 = initializers;
+    (((gensym___78493121) == (null)) ? undefined : gensym___78493121.stateVar9)})) ?? (new Date("2025-4-23"))) as Date));
+    this.__backing_stateVar10 = STATE_MGMT_FACTORY.makeParam<Map<Double,Per>>(this, "stateVar10", (((({let gensym___142105696 = initializers;
+    (((gensym___142105696) == (null)) ? undefined : gensym___142105696.stateVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))) as Map<Double,Per>));
+    this.__backing_stateVar11 = STATE_MGMT_FACTORY.makeParamOnce<Double>(this, "stateVar11", (((({let gensym___198110537 = initializers;
+    (((gensym___198110537) == (null)) ? undefined : gensym___198110537.stateVar11)})) ?? (0.0)) as Double));
     this.__backing_stateVar12 = STATE_MGMT_FACTORY.makeProvider<Per>(this, "stateVar12", "stateVar12", new Per(6));
     this.__backing_stateVar11111 = STATE_MGMT_FACTORY.makeConsumer<"stateVar1">(this, "stateVar11111", "stateVar11111", "stateVar1");
     this.__backing_stateVar11188 = STATE_MGMT_FACTORY.makeProvider<"">(this, "stateVar11188", "var", "");
@@ -367,12 +389,12 @@ final class StateType extends BaseEnum<int> {
   }
   
   public __updateStruct(initializers: (__Options_V2Parent | undefined)): void {
-    if (((({let gensym___78493121 = initializers;
-    (((gensym___78493121) == (null)) ? undefined : gensym___78493121.stateVar9)})) !== (undefined))) {
+    if (((({let gensym___68371156 = initializers;
+    (((gensym___68371156) == (null)) ? undefined : gensym___68371156.stateVar9)})) !== (undefined))) {
       this.__backing_stateVar9!.update((initializers!.stateVar9 as Date));
     }
-    if (((({let gensym___142105696 = initializers;
-    (((gensym___142105696) == (null)) ? undefined : gensym___142105696.stateVar10)})) !== (undefined))) {
+    if (((({let gensym___20754573 = initializers;
+    (((gensym___20754573) == (null)) ? undefined : gensym___20754573.stateVar10)})) !== (undefined))) {
       this.__backing_stateVar10!.update((initializers!.stateVar10 as Map<Double,Per>));
     }
   }
@@ -497,20 +519,20 @@ final class StateType extends BaseEnum<int> {
 
 @CustomDialog() final struct CC extends BaseCustomDialog<CC, __Options_CC> {
   public __initializeStruct(initializers: (__Options_CC | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_stateVar4 = STATE_MGMT_FACTORY.makeParamOnce<Set<String>>(this, "stateVar4", (((({let gensym___108566154 = initializers;
-    (((gensym___108566154) == (null)) ? undefined : gensym___108566154.stateVar4)}) as Set<String>)) ?? (new Set<string>(new Array<string>("aa", "bb")))));
+    this.__backing_stateVar4 = STATE_MGMT_FACTORY.makeParamOnce<Set<String>>(this, "stateVar4", (((({let gensym___177598336 = initializers;
+    (((gensym___177598336) == (null)) ? undefined : gensym___177598336.stateVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))) as Set<String>));
     this.__backing_stateVar5 = STATE_MGMT_FACTORY.makeLocal<Array<Boolean>>(this, "stateVar5", [true, false]);
     this.__backing_stateVar6 = STATE_MGMT_FACTORY.makeLocal<Array<Per>>(this, "stateVar6", new Array<Per>(new Per(7), new Per(11)));
-    this.__backing_stateVar7 = ((({let gensym___260127878 = initializers;
-    (((gensym___260127878) == (null)) ? undefined : gensym___260127878.stateVar7)})) ?? ([new Per(7), new Per(11)]));
-    this.__backing_stateVar8 = ((({let gensym___194944947 = initializers;
-    (((gensym___194944947) == (null)) ? undefined : gensym___194944947.stateVar8)})) ?? (((sr: string) => {})));
-    this.__backing_stateVar9 = STATE_MGMT_FACTORY.makeParam<Date>(this, "stateVar9", (((({let gensym___36667425 = initializers;
-    (((gensym___36667425) == (null)) ? undefined : gensym___36667425.stateVar9)}) as Date)) ?? (new Date("2025-4-23"))));
-    this.__backing_stateVar10 = STATE_MGMT_FACTORY.makeParam<Map<Double,Per>>(this, "stateVar10", (((({let gensym___206357167 = initializers;
-    (((gensym___206357167) == (null)) ? undefined : gensym___206357167.stateVar10)}) as Map<Double,Per>)) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
-    this.__backing_stateVar11 = STATE_MGMT_FACTORY.makeParamOnce<Double>(this, "stateVar11", (((({let gensym___24670165 = initializers;
-    (((gensym___24670165) == (null)) ? undefined : gensym___24670165.stateVar11)}) as Double)) ?? (0.0)));
+    this.__backing_stateVar7 = ((({let gensym___136470640 = initializers;
+    (((gensym___136470640) == (null)) ? undefined : gensym___136470640.stateVar7)})) ?? ([new Per(7), new Per(11)]));
+    this.__backing_stateVar8 = ((({let gensym___59026893 = initializers;
+    (((gensym___59026893) == (null)) ? undefined : gensym___59026893.stateVar8)})) ?? (((sr: string) => {})));
+    this.__backing_stateVar9 = STATE_MGMT_FACTORY.makeParam<Date>(this, "stateVar9", (((({let gensym___121624319 = initializers;
+    (((gensym___121624319) == (null)) ? undefined : gensym___121624319.stateVar9)})) ?? (new Date("2025-4-23"))) as Date));
+    this.__backing_stateVar10 = STATE_MGMT_FACTORY.makeParam<Map<Double,Per>>(this, "stateVar10", (((({let gensym___40863473 = initializers;
+    (((gensym___40863473) == (null)) ? undefined : gensym___40863473.stateVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))) as Map<Double,Per>));
+    this.__backing_stateVar11 = STATE_MGMT_FACTORY.makeParamOnce<Double>(this, "stateVar11", (((({let gensym___101188994 = initializers;
+    (((gensym___101188994) == (null)) ? undefined : gensym___101188994.stateVar11)})) ?? (0.0)) as Double));
     this.__backing_stateVar12 = STATE_MGMT_FACTORY.makeProvider<Per>(this, "stateVar12", "stateVar12", new Per(6));
     this.__backing_stateVar11111 = STATE_MGMT_FACTORY.makeConsumer<"stateVar1">(this, "stateVar11111", "stateVar11111", "stateVar1");
     this.__backing_stateVar11188 = STATE_MGMT_FACTORY.makeProvider<"">(this, "stateVar11188", "var", "");
@@ -518,12 +540,12 @@ final class StateType extends BaseEnum<int> {
   }
   
   public __updateStruct(initializers: (__Options_CC | undefined)): void {
-    if (((({let gensym___45930516 = initializers;
-    (((gensym___45930516) == (null)) ? undefined : gensym___45930516.stateVar9)})) !== (undefined))) {
+    if (((({let gensym___177096870 = initializers;
+    (((gensym___177096870) == (null)) ? undefined : gensym___177096870.stateVar9)})) !== (undefined))) {
       this.__backing_stateVar9!.update((initializers!.stateVar9 as Date));
     }
-    if (((({let gensym___155360999 = initializers;
-    (((gensym___155360999) == (null)) ? undefined : gensym___155360999.stateVar10)})) !== (undefined))) {
+    if (((({let gensym___35982320 = initializers;
+    (((gensym___35982320) == (null)) ? undefined : gensym___35982320.stateVar10)})) !== (undefined))) {
       this.__backing_stateVar10!.update((initializers!.stateVar10 as Map<Double,Per>));
     }
   }
@@ -831,6 +853,7 @@ final class StateType extends BaseEnum<int> {
   get __backing_stateVar11112(): (IConsumerDecoratedVariable<Any> | undefined)
   
 }
+
 `;
 
 function testParsedAndCheckedTransformer(this: PluginTestContext): void {

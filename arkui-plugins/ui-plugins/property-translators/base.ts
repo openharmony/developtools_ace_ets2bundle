@@ -64,10 +64,12 @@ export abstract class PropertyTranslator {
 export abstract class MethodTranslator {
     protected method: arkts.MethodDefinition;
     protected classInfo: ClassInfo;
+    protected returnType: arkts.TypeNode | undefined;
 
     constructor(method: arkts.MethodDefinition, classInfo: ClassInfo) {
         this.method = method;
         this.classInfo = classInfo;
+        this.returnType = this.method.scriptFunction.returnTypeAnnotation?.clone();
     }
 
     abstract translateMember(): arkts.AstNode[];
