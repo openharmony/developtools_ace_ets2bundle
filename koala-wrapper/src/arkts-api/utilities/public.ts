@@ -327,7 +327,7 @@ export function CreateCacheContextFromFile(
     return global.es2panda._CreateCacheContextFromFile(configPtr, passString(filename), globalContext, isExternal);
 }
 
-export function getTypeNodeFromTsType(node: AstNode): AstNode | undefined {
+export function createTypeNodeFromTsType(node: AstNode): AstNode | undefined {
     const typeAnnotation = global.es2panda._CreateTypeNodeFromTsType(global.context, node.peer);
     if (typeAnnotation === nullptr) {
         return undefined;

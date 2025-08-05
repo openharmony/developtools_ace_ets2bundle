@@ -112,7 +112,7 @@ export class ObservedV2TraceTranslator extends ObservedPropertyTranslator {
                 [
                     this.property.value
                         ? observedMember
-                        : arkts.factory.createTSAsExpression(observedMember, this.propertyType?.clone(), false),
+                        : arkts.factory.createTSAsExpression(observedMember, this.propertyType, false),
                 ]
             )
         );

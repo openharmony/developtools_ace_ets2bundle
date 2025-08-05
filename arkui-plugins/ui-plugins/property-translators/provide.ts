@@ -85,25 +85,13 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
     }
 
     generateInitializeStruct(originalName: string, newName: string): arkts.AstNode {
-        const outInitialize = factory.createBlockStatementForOptionalExpression(
-            arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-            originalName
-        );
         const options: undefined | ProvideOptions = getValueInProvideAnnotation(this.property);
         const alias: string = options?.alias ?? originalName;
         const allowOverride: boolean = options?.allowOverride ?? false;
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
             arkts.factory.create1StringLiteral(alias),
-            this.property.value
-                ? arkts.factory.createBinaryExpression(
-                      this.property.typeAnnotation
-                          ? outInitialize
-                          : arkts.factory.createTSAsExpression(outInitialize, this.propertyType, false),
-                      this.property.value ?? arkts.factory.createUndefinedLiteral(),
-                      arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-                  )
-                : factory.generateDefiniteInitializers(this.propertyType, originalName),
+            factory.generateInitializeValue(this.property, this.propertyType, originalName),
             arkts.factory.createBooleanLiteral(allowOverride),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);

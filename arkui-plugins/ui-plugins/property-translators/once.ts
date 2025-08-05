@@ -85,24 +85,7 @@ export class OnceTranslator extends PropertyTranslator implements InitializerCon
         );
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
-            this.property.value
-                ? arkts.factory.createBinaryExpression(
-                      this.property.typeAnnotation
-                          ? outInitialize
-                          : arkts.factory.createTSAsExpression(outInitialize, this.propertyType, false),
-                      this.property.value,
-                      arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-                  )
-                : arkts.factory.createTSAsExpression(
-                      factory.createNonNullOrOptionalMemberExpression(
-                          CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
-                          originalName,
-                          false,
-                          true
-                      ),
-                      this.propertyType?.clone(),
-                      false
-                  ),
+            factory.generateInitializeValue(this.property, this.propertyType, originalName),
         ];
         collectStateManagementTypeImport(StateManagementTypes.ONCE_DECORATED);
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(

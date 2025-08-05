@@ -84,21 +84,9 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
     }
 
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        const binaryItem = arkts.factory.createBinaryExpression(
-            factory.createBlockStatementForOptionalExpression(
-                arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-                originalName
-            ),
-            this.property.value ?? arkts.factory.createUndefinedLiteral(),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-        );
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
-            this.property.value
-                ? this.property.typeAnnotation
-                    ? binaryItem
-                    : arkts.factory.createTSAsExpression(binaryItem, this.propertyType, false)
-                : factory.generateDefiniteInitializers(this.propertyType, originalName),
+            factory.generateInitializeValue(this.property, this.propertyType, originalName)
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         collectStateManagementTypeImport(StateManagementTypes.STATE_DECORATED);

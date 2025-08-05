@@ -166,7 +166,8 @@ export enum DecoratorNames {
 
 export enum TypeNames {
     NULLISH_TYPE = 'NullishType',
-    ANY = 'Any'
+    ANY = 'Any',
+    ARRAY = 'Array',
 }
 
 export enum DecoratorIntrinsicNames {
