@@ -47,11 +47,13 @@ const TRANSFORM_LAZY_IMPORT_CODE: string =
   import test4, { test5 } from "./test4";
   import test6, * as ns6 from "./test6";
   import type dt from "./test7";
+  import testJson from "./testJson.json";
   let a: testType = test + t + test2 + testType + ns3.b + test4 + test5 + test6 + ns6.b + dt;
   let localAbility = new Ability();
   let localFeatureAbility = new k();
   let localAbilityConstant = new AbilityConstant();
   let localAbilityAccessCtrl = new abilityAccessCtrl();
+  let newTestJson = testJson;
 `
 
 const TRANSFORM_LAZY_IMPORT_CODE_EXPECT: string =
@@ -67,11 +69,13 @@ const TRANSFORM_LAZY_IMPORT_CODE_EXPECT: string =
 'import lazy test4, { test5 } from "./test4";\n' +
 'import test6, * as ns6 from "./test6";\n' +
 'import type dt from "./test7";\n' +
+'import testJson from "./testJson.json";\n' +
 'let a: testType = test + t + test2 + testType + ns3.b + test4 + test5 + test6 + ns6.b + dt;\n' +
 'let localAbility = new Ability();\n' +
 'let localFeatureAbility = new k();\n' +
 'let localAbilityConstant = new AbilityConstant();\n' +
-'let localAbilityAccessCtrl = new abilityAccessCtrl();\n';
+'let localAbilityAccessCtrl = new abilityAccessCtrl();\n' +
+'let newTestJson = testJson;\n';
 
 const LAZY_IMPORT_RE_EXPORT_ERROR_TS: string =
 'import lazy { e1 } from "./test1";\n' +

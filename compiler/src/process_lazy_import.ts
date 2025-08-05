@@ -66,6 +66,7 @@ export function transformLazyImport(sourceNode: ts.SourceFile, resolver?: Object
 
 function updateImportDecl(node: ts.ImportDeclaration, resolver: Object): ts.ImportDeclaration {
   const importClause: ts.ImportClause | undefined = node.importClause;
+  const moduleRequest: string = (node.moduleSpecifier! as ts.StringLiteral).text.replace(/'|"/g, '');
   // The following cases do not support lazy-import.
   // case1: import '...'
   // case2: import type { t } from '...' or import type t from '...'
@@ -76,6 +77,10 @@ function updateImportDecl(node: ts.ImportDeclaration, resolver: Object): ts.Impo
   // case4: import * as ns from '...'
   // case5: import y, * as ns from '...'
   if (importClause.namedBindings && ts.isNamespaceImport(importClause.namedBindings)) {
+    return node;
+  }
+  // case6: import ... from 'xxx.json'
+  if (moduleRequest.endsWith('.json')) {
     return node;
   }
   const namedBindings: ts.NamedImportBindings = importClause.namedBindings;
