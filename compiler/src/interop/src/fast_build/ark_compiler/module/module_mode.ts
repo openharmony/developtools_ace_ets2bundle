@@ -613,10 +613,10 @@ export class ModuleMode extends CommonMode {
     }
     if (isNeedPerformanceDotting(this.projectConfig)) {
       this.cmdArgs.push(`--perf-file=${this.perfReportPath}`);
+    }
     if (this.projectConfig.mixCompile) {
       this.cmdArgs.push('--enable-ets-implements');
     }
-  }
   }
   
   addCacheFileArgs() {
