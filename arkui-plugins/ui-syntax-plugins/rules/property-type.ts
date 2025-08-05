@@ -63,7 +63,6 @@ class PropertyTypeRule extends AbstractUISyntaxRule {
 
     public setup(): Record<string, string> {
         return {
-            propertyHasType: `The property '{{propertyName}}' must specify a type.`,
             propertyObjectLink: `'@ObjectLink' cannot be used with this type. Apply it only to classes decorated by '@Observed' or initialized using the return value of 'makeV1Observed'.`,
             propertyProp: `The '@{{decoratorName}}' decorated attribute '{{propertyName}}' must be of the string, number, boolean, enum or object type.`,
             propertyBuilderParam: `'@BuilderParam' property can only be initialized by '@Builder' function or '@Builder' method in struct.`,
@@ -175,34 +174,7 @@ class PropertyTypeRule extends AbstractUISyntaxRule {
         const propertyName = node.key.name;
         // Gets the type of property
         const propertyType = node.typeAnnotation;
-        const mustHasTypeDecorator = node.annotations.some(annotation =>
-            annotation.expr && arkts.isIdentifier(annotation.expr) &&
-            (v1DecoratorMustHasType.includes(annotation.expr.name) ||
-                v2DecoratorMustHasType.includes(annotation.expr.name))
-        );
         const nodeKey = node.key;
-        // Check if there is a type declaration
-        if (!propertyType && nodeKey && mustHasTypeDecorator) {
-            this.report({
-                node: nodeKey,
-                message: this.messages.propertyHasType,
-                data: {
-                    propertyName,
-                },
-            });
-        }
-        if (propertyType &&
-            arkts.nodeType(propertyType) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ERROR_TYPE_NODE &&
-            nodeKey &&
-            mustHasTypeDecorator) {
-            this.report({
-                node: nodeKey,
-                message: this.messages.propertyHasType,
-                data: {
-                    propertyName,
-                },
-            });
-        }
         const objectLinkDecorator = findDecorator(node, PresetDecorators.OBJECT_LINK);
         // Determine whether the property has @Objectlink
         if (objectLinkDecorator && propertyType) {
