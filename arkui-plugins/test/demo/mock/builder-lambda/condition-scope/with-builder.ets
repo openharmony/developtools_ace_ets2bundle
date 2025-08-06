@@ -68,5 +68,9 @@ struct Child {
             Text('within BuilderParam property');
         }
     }
-    build() {}
+    build() {
+        if (true) {
+            Text('within struct build');
+        }
+    }
 }
