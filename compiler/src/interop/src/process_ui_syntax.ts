@@ -177,9 +177,11 @@ export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
 import parseIntent from './userIntents_parser/parseUserIntents';
+import { insertExportsAtTop } from './process_interop_component';
 
-export function processUISyntax(program: ts.Program, ut = false,
-  parentEvent?: CompileEvent, filePath: string = '', share: object = null, metaInfo: Object = {}): Function {
+
+export function processUISyntax(program: ts.Program, ut = false, parentEvent?: CompileEvent,
+  filePath: string = '', share: object = null, metaInfo: Object = {}): Function {
   let entryNodeKey: ts.Expression;
   let eventProcessUISyntax: CompileEvent = undefined;
   return (context: ts.TransformationContext) => {
@@ -220,7 +222,9 @@ export function processUISyntax(program: ts.Program, ut = false,
           return visitEachChildNode;
         }
         const id: number = ++componentInfo.id;
+        console.log('lishihao:processAllNodes visitEachChild');
         node = ts.visitEachChild(node, processAllNodes, context);
+        node = insertExportsAtTop(node);
         if (context.getCompilerOptions().etsAnnotationsEnable) {
           node = ts.getAnnotationTransformer()(context)(node);
         }
