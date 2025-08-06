@@ -15,10 +15,10 @@
 
 import ts from 'typescript';
 import { componentCollection } from './validate_ui_syntax';
-import { OPTIONS, PUSH, VIEWSTACKPROCESSOR } from './pre_define';
+import { COMPATIBLESTATICCOMPONENT, COMPONENT_POP_FUNCTION, GLOBAL_THIS, PUSH, STATICPOINTER, VIEWSTACKPROCESSOR } from './pre_define';
 
 
-function generateExportStatements(): ts.Statement[] {
+function generateGetClassStatements(): ts.Statement[] {
   const statements: ts.Statement[] = [];
   for (const element of componentCollection.arkoalaComponents) {
     const byteCodePath = generateBytecodePathFragement(element[0], element[1]);
@@ -29,10 +29,10 @@ function generateExportStatements(): ts.Statement[] {
       ts.factory.createCallExpression(
           ts.factory.createPropertyAccessExpression(
               ts.factory.createAsExpression(
-                  ts.factory.createIdentifier("globalThis"),
+                  ts.factory.createIdentifier(GLOBAL_THIS),
                   ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
               ),
-              ts.factory.createIdentifier("Panda.getClass")
+              ts.factory.createIdentifier('Panda.getClass')
           ),
           undefined,
           [ts.factory.createStringLiteral(byteCodePath)]
@@ -49,9 +49,14 @@ function generateExportStatements(): ts.Statement[] {
   return statements;
 }
 
-export function insertExportsAtTop(sourceFile: ts.SourceFile): ts.SourceFile {
-    const exportStatements = generateExportStatements();
-    const newStatements = [...exportStatements, ...sourceFile.statements];
+/**
+ * 
+ * @param sourceFile 
+ * @returns const __Options_Child = (globalThis as any).Panda.getClass(...);
+ */
+export function insertGetOptionsAtTop(sourceFile: ts.SourceFile): ts.SourceFile {
+    const getClassStatements = generateGetClassStatements();
+    const newStatements = [...getClassStatements, ...sourceFile.statements];
     return ts.factory.updateSourceFile(sourceFile, newStatements);
 }
 
@@ -69,11 +74,16 @@ export function generateBytecodePathFragement(className: string, filePath: strin
     return `L${targetPath}/${targetPathWithDollar}$__Options_${className}$ObjectLiteral;`;
 }
 
+/**
+ * 
+ * @param objectExpr 
+ * @param options 
+ * @returns (() => { const result = new Child(); result[key] = value; return result; })()
+ */
 export function transformObjectExpression(
   objectExpr: ts.ObjectExpression,
   options: string
 ): ts.Expression {
-  // 创建变量声明: const result = new Child();
   const newExpression = ts.factory.createNewExpression(
     ts.factory.createIdentifier(options),
     undefined,
@@ -95,21 +105,17 @@ export function transformObjectExpression(
     )
   );
 
-  // 处理对象属性，生成 result[key] = value; 语句
   const propertyAssignments: ts.Statement[] = objectExpr.properties.map(prop => {
     if (ts.isPropertyAssignment(prop)) {
-      // 获取属性名（处理标识符和字符串两种形式）
       let propertyName: ts.Expression;
       if (ts.isIdentifier(prop.name)) {
         propertyName = ts.factory.createStringLiteral(prop.name.text);
       } else if (ts.isStringLiteral(prop.name)) {
         propertyName = ts.factory.createStringLiteral(prop.name.text);
       } else {
-        // 处理数字等其他类型的属性名
         propertyName = ts.factory.createStringLiteral(prop.name.getText());
       }
 
-      // 创建 result[key] = value 赋值表达式
       return ts.factory.createExpressionStatement(
         ts.factory.createAssignment(
           ts.factory.createElementAccessExpression(
@@ -120,23 +126,19 @@ export function transformObjectExpression(
         )
       );
     }
-    // 忽略非 PropertyAssignment 类型的属性（如 spread 操作符）
     return null;
   }).filter(Boolean) as ts.Statement[];
 
-  // 创建 return result; 语句
   const returnStatement = ts.factory.createReturnStatement(
     ts.factory.createIdentifier('result')
   );
 
-  // 创建函数体
   const functionBody = ts.factory.createBlock([
     constResult,
     ...propertyAssignments,
     returnStatement
   ], true);
 
-  // 创建箭头函数: () => { ... }
   const arrowFunction = ts.factory.createArrowFunction(
     undefined,
     undefined,
@@ -146,7 +148,6 @@ export function transformObjectExpression(
     functionBody
   );
 
-  // 创建立即执行函数表达式: (() => { ... })()
   return ts.factory.createCallExpression(
     ts.factory.createParenthesizedExpression(arrowFunction),
     undefined,
@@ -154,6 +155,34 @@ export function transformObjectExpression(
   );
 }
 
+function makeStaticFactory(name: string): ts.arrowFunction {
+  return ts.factory.createArrowFunction(
+    undefined,
+    undefined,
+    [],
+    undefined,
+    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+    ts.factory.createBlock(
+      [
+        ts.factory.createReturnStatement(
+          ts.factory.createNewExpression(
+            ts.factory.createIdentifier(name),
+            undefined,
+            []
+          )
+        )
+      ],
+      false
+    )
+  );
+}
+
+/**
+ * 
+ * @param name the name of staticComponent
+ * @param newNode 
+ * @returns let staticPointer = compatibleStaticComponent(() => { return new Child(); });
+ */
 export function createStaticComponent(name: string, newNode: ts.NewExpression): ts.VariableStatement {
   const argument = newNode.arguments;
   const options = argument.length > 2 ? argument[1] : undefined;
@@ -162,41 +191,27 @@ export function createStaticComponent(name: string, newNode: ts.NewExpression): 
     ts.factory.createVariableDeclarationList(
       [
         ts.factory.createVariableDeclaration(
-          ts.factory.createIdentifier('staticPointer'),
+          ts.factory.createIdentifier(STATICPOINTER),
           undefined,
           undefined,
           ts.factory.createCallExpression(
-            ts.factory.createIdentifier('compatibleStaticComponent'),
+            ts.factory.createIdentifier(COMPATIBLESTATICCOMPONENT),
             undefined,
             [
-              ts.factory.createArrowFunction(
-                undefined,
-                undefined,
-                [],
-                undefined,
-                ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-                ts.factory.createBlock(
-                  [
-                    ts.factory.createReturnStatement(
-                      ts.factory.createNewExpression(
-                        ts.factory.createIdentifier(name),
-                        undefined,
-                        []
-                      )
-                    )
-                  ],
-                  false
-                )
-              ),
+              makeStaticFactory(name),
               transformObjectExpression(options, `__Options_${name}`)
             ]
           )
         )
       ]
     )
-  )
+  );
 }
 
+/**
+ * 
+ * @returns ViewStackProcessor.push(staticPointer);
+ */
 export function pushStaticComponent(): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
@@ -206,8 +221,25 @@ export function pushStaticComponent(): ts.ExpressionStatement {
       ),
       undefined,
       [
-        ts.factory.createIdentifier('staticPointer')
+        ts.factory.createIdentifier(STATICPOINTER)
       ]
     )
-  )
+  );
+}
+
+/**
+ * 
+ * @returns ViewStackProcessor.pop();
+ */
+export function popStaticComponent(): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
+        ts.factory.createIdentifier(COMPONENT_POP_FUNCTION)
+      ),
+      undefined,
+      undefined
+    )
+  );
 }

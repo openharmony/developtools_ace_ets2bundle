@@ -815,7 +815,6 @@ function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNo
       const escapedName: string = realSymbol.escapedName.toString().replace(/^("|')/, '').replace(/("|')$/, '');
       if (fs.existsSync(escapedName + '.ets') || fs.existsSync(escapedName + '.ts') &&
         realSymbol.exports && realSymbol.exports instanceof Map) {
-        console.log('Warning: branch getIntegrationNodeInfo');
         getIntegrationNodeInfo(originNode, usedNode, realSymbol.exports, pageInfo, share);
         return;
       }
@@ -947,7 +946,7 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
 
 function parseComponentInImportNode(originNode: ts.StructDeclaration, name: string,
   asComponentName: string, structDecorator: structDecoratorResult, originFile: string, isArkoala: boolean = false): void {
-  if(!isArkoala) {
+  if (!isArkoala) {
     componentCollection.customComponents.add(name);
   } else {
     const filePath = originNode.getSourceFile().fileName;
