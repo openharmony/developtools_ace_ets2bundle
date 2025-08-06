@@ -15,7 +15,9 @@ import("//build/config/components/sdk/interface.gni")
 import("//build/ohos.gni")
 import("//build/ohos/ace/ace.gni")
 import("//build/ohos_var.gni")
-import("//build/templates/bpf/ohos_bpf_config.gni")
+if (!defined(is_arkui_x) || !is_arkui_x) {
+  import("//build/templates/bpf/ohos_bpf_config.gni")
+}
 import("//build/templates/cxx/prebuilt.gni")
 
 ets_loader_lib_dir =
@@ -36,6 +38,9 @@ ets_sysResource = get_label_info(":build_ets_sysResource", "target_out_dir") +
 ets_loader_kit_configs_dir = get_label_info(":build_ets_loader_library",
                                             "target_out_dir") + "/kit_configs"
 ets_component_dep = "sdk:ets_component"
+if (defined(is_arkui_x) && is_arkui_x) {
+  ets_component_dep = "//interface/sdk-js:ets_component"
+}
 ets_component_out_dir = get_label_info(ets_component_dep, "target_out_dir")
 
 action("build_ets_loader_library") {
@@ -46,13 +51,23 @@ action("build_ets_loader_library") {
     ":install_arkguard_tsc_declgen",
     ":server",
   ]
-  external_deps = [
-    "sdk:bundle_arkts_etc",
-    "sdk:bundle_kits_etc",
-    "sdk:ets_component_etc",
-    "sdk:ets_internal_api_etc",
-    "sdk:ohos_declaration_ets_api",
-  ]
+  if (defined(is_arkui_x) && is_arkui_x) {
+    deps += [
+      "//interface/sdk-js:bundle_arkts",
+      "//interface/sdk-js:bundle_kits",
+      "//interface/sdk-js:ets_component",
+      "//interface/sdk-js:ets_internal_api",
+      "//interface/sdk-js:ohos_declaration_ets",
+    ]  
+  } else {
+    external_deps = [
+      "sdk:bundle_arkts_etc",
+      "sdk:bundle_kits_etc",
+      "sdk:ets_component_etc",
+      "sdk:ets_internal_api_etc",
+      "sdk:ohos_declaration_ets_api",
+    ]
+  }
   script = "build_ets_loader_library.py"
   depfile = "$target_gen_dir/$target_name.d"
   outputs = [
@@ -360,10 +375,17 @@ ohos_prebuilt_etc("ets_loader_ark_hap") {
 }
 
 ohos_copy("ohos_declaration_ets_ark") {
-  external_deps = [ "sdk:ohos_declaration_ets_api" ]
-  ets_ark_path = get_label_info("sdk:ohos_declaration_ets_api",
+  if (defined(is_arkui_x) && is_arkui_x) {
+    deps = [ "//interface/sdk-js:ohos_declaration_ets" ]
+    sources =
+      [ root_out_dir + "/ohos_declaration/${sdk_type}/ohos_declaration_ets" ]
+    
+  } else {
+    external_deps = [ "sdk:ohos_declaration_ets_api" ]
+    ets_ark_path = get_label_info("sdk:ohos_declaration_ets_api",
                                 "target_out_dir") + "/../api"
-  sources = [ ets_ark_path ]
+    sources = [ ets_ark_path ]
+  }
   outputs = [ target_out_dir + "/../api" ]
 }
 
