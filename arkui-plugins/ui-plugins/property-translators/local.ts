@@ -24,11 +24,11 @@ import {
     generateGetOrSetCall,
     hasDecorator,
     collectStateManagementTypeImport,
-    PropertyCache,
 } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { factory } from './factory';
+import { PropertyCache } from './cache/propertyCache';
 
 export class LocalTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
