@@ -276,7 +276,7 @@ export class factory {
     }
 
     /*
-     * add headers for animation in UICommonMethod
+     * add headers for animation in CommonMethod
      */
     static modifyExternalComponentCommon(node: arkts.TSInterfaceDeclaration): arkts.AstNode {
         const animationStart = factory.createAnimationMethod(BuilderLambdaNames.ANIMATION_START);
@@ -369,7 +369,7 @@ export class factory {
             externalSourceName === 'arkui.component.common' &&
             arkts.isTSInterfaceDeclaration(node) &&
             !!node.id &&
-            node.id.name === 'UICommonMethod'
+            node.id.name === 'CommonMethod'
         ) {
             return factory.modifyExternalComponentCommon(node);
         } else if (
