@@ -29,6 +29,7 @@ import {
 import { factory as UIFactory } from '../ui-factory';
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as BuilderLambdaFactory } from '../builder-lambda-translators/factory';
+import { BuilderFactory } from '../builder-lambda-translators/builder-factory';
 import { backingField, collect, filterDefined } from '../../common/arkts-utils';
 import {
     classifyInObservedClass,
@@ -479,6 +480,7 @@ export class factory {
             }
             if (isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_BUILD_ORI)) {
                 addMemoAnnotation(member.scriptFunction);
+                return BuilderFactory.rewriteBuilderMethod(member);
             }
             return member;
         }

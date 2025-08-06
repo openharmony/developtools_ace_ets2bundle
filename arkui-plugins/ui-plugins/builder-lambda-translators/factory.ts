@@ -62,6 +62,7 @@ import {
 import { ImportCollector } from '../../common/import-collector';
 import { addMemoAnnotation, collectMemoableInfoInParameter } from '../../collectors/memo-collectors/utils';
 import { factory as MemoCollectFactory } from '../../collectors/memo-collectors/factory';
+import { BuilderFactory } from './builder-factory';
 
 export class factory {
     /**
@@ -310,8 +311,12 @@ export class factory {
             return arg;
         }
         const properties = (expr.properties as arkts.Property[]).map((p) => {
-            MemoCollectFactory.findAndCollectMemoableProperty(p);
-            return factory.updatePropertiesInOptions(p);
+            let property = p;
+            MemoCollectFactory.findAndCollectMemoableProperty(p, (currNode: arkts.Property) => {
+                property = BuilderFactory.rewriteBuilderProperty(currNode);
+                return property;
+            });
+            return factory.updatePropertiesInOptions(property);
         });
         const updatedExpr: arkts.ObjectExpression = arkts.ObjectExpression.updateObjectExpression(
             expr,
@@ -439,19 +444,31 @@ export class factory {
     /**
      * update if-else in a builder lambda call's arguments.
      */
-    static updateIfElseContentBodyInBuilderLambda(statement: arkts.AstNode, shouldWrap?: boolean): arkts.AstNode {
+    static updateIfElseContentBodyInBuilderLambda(
+        statement: arkts.AstNode,
+        shouldWrap?: boolean,
+        stopAtBuilderLambda?: boolean
+    ): arkts.AstNode {
         if (arkts.isIfStatement(statement)) {
             const alternate = !!statement.alternate
-                ? this.updateIfElseContentBodyInBuilderLambda(statement.alternate, shouldWrap)
+                ? this.updateIfElseContentBodyInBuilderLambda(statement.alternate, shouldWrap, stopAtBuilderLambda)
                 : statement.alternate;
-            const consequence = this.updateIfElseContentBodyInBuilderLambda(statement.consequent, shouldWrap);
+            const consequence = this.updateIfElseContentBodyInBuilderLambda(
+                statement.consequent,
+                shouldWrap,
+                stopAtBuilderLambda
+            );
             const newStatement = arkts.factory.updateIfStatement(statement, statement.test, consequence!, alternate);
             return !shouldWrap || checkIsWithInIfConditionScope(statement)
                 ? newStatement
                 : this.wrapConditionToBlock([newStatement], ConditionNames.CONDITION_SCOPE);
         }
         if (arkts.isBlockStatement(statement)) {
-            let { statements, breakIndex } = this.updateConditionBranchInScope(statement.statements, shouldWrap);
+            let { statements, breakIndex } = this.updateConditionBranchInScope(
+                statement.statements,
+                shouldWrap,
+                stopAtBuilderLambda
+            );
             if (!!shouldWrap && checkIsWithInIfConditionScope(statement)) {
                 const beforeBreak = this.wrapConditionToBlock(
                     breakIndex > 0 ? statements.slice(0, breakIndex) : statements,
@@ -470,17 +487,24 @@ export class factory {
      */
     static updateSwitchCaseContentBodyInBuilderLambda<T extends arkts.SwitchStatement | arkts.SwitchCaseStatement>(
         statement: T,
-        shouldWrap?: boolean
+        shouldWrap?: boolean,
+        stopAtBuilderLambda?: boolean
     ): T {
         if (arkts.isSwitchStatement(statement)) {
-            const cases = statement.cases.map((c) => this.updateSwitchCaseContentBodyInBuilderLambda(c, shouldWrap));
+            const cases = statement.cases.map((c) =>
+                this.updateSwitchCaseContentBodyInBuilderLambda(c, shouldWrap, stopAtBuilderLambda)
+            );
             const newStatement = arkts.factory.updateSwitchStatement(statement, statement.discriminant, cases);
             return (!shouldWrap
                 ? newStatement
                 : this.wrapConditionToBlock([newStatement], ConditionNames.CONDITION_SCOPE)) as arkts.AstNode as T;
         }
         if (arkts.isSwitchCaseStatement(statement)) {
-            let { statements, breakIndex } = this.updateConditionBranchInScope(statement.consequent, shouldWrap);
+            let { statements, breakIndex } = this.updateConditionBranchInScope(
+                statement.consequent,
+                shouldWrap,
+                stopAtBuilderLambda
+            );
             if (shouldWrap) {
                 const beforeBreak = this.wrapConditionToBlock(
                     breakIndex > 0 ? statements.slice(0, breakIndex) : statements,
@@ -500,14 +524,15 @@ export class factory {
      */
     static updateConditionBranchInScope(
         statements: readonly arkts.Statement[],
-        shouldWrap?: boolean
+        shouldWrap?: boolean,
+        stopAtBuilderLambda?: boolean
     ): BuilderLambdaConditionBranchInfo {
         let breakIndex = statements.length;
         const newStatements = statements.map((st, index) => {
             if (checkShouldBreakFromStatement(st)) {
                 breakIndex = index;
             }
-            return this.updateContentBodyInBuilderLambda(st, shouldWrap);
+            return this.updateContentBodyInBuilderLambda(st, shouldWrap, stopAtBuilderLambda);
         });
         return { statements: newStatements, breakIndex };
     }
@@ -536,25 +561,34 @@ export class factory {
     /**
      * update trailing lambda contents in a builder lambda call.
      */
-    static updateContentBodyInBuilderLambda(statement: arkts.Statement, hasBuilder?: boolean): arkts.Statement {
+    static updateContentBodyInBuilderLambda(
+        statement: arkts.Statement,
+        hasBuilder?: boolean,
+        stopAtBuilderLambda?: boolean
+    ): arkts.Statement {
         if (
             arkts.isExpressionStatement(statement) &&
             arkts.isCallExpression(statement.expression) &&
             isBuilderLambda(statement.expression)
         ) {
+            if (!!stopAtBuilderLambda) {
+                return statement;
+            }
             return arkts.factory.updateExpressionStatement(
                 statement,
                 this.transformBuilderLambda(statement.expression)
             );
         }
         if (arkts.isIfStatement(statement)) {
-            return this.updateIfElseContentBodyInBuilderLambda(statement, hasBuilder);
+            return this.updateIfElseContentBodyInBuilderLambda(statement, hasBuilder, stopAtBuilderLambda);
         }
         if (arkts.isSwitchStatement(statement)) {
-            return this.updateSwitchCaseContentBodyInBuilderLambda(statement, hasBuilder);
+            return this.updateSwitchCaseContentBodyInBuilderLambda(statement, hasBuilder, stopAtBuilderLambda);
         }
         if (arkts.isBlockStatement(statement)) {
-            const newStatements = statement.statements.map((st) => this.updateContentBodyInBuilderLambda(st, hasBuilder));
+            const newStatements = statement.statements.map((st) =>
+                this.updateContentBodyInBuilderLambda(st, hasBuilder, stopAtBuilderLambda)
+            );
             return arkts.factory.updateBlock(statement, newStatements);
         }
         return statement;

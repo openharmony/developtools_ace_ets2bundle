@@ -83,6 +83,10 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
     }
 
     generateInitializeStruct(mutableThis: arkts.Expression, originalName: string): arkts.AstNode {
+        const value = this.property.value;
+        if (!!value && arkts.isArrowFunctionExpression(value)) {
+            arkts.NodeCache.getInstance().collect(value);
+        }
         return arkts.factory.createAssignmentExpression(
             mutableThis,
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
@@ -95,7 +99,7 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
                     arkts.factory.createIdentifier('content'),
                     arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
                 ),
-                this.property.value ?? arkts.factory.createUndefinedLiteral(),
+                value ?? arkts.factory.createUndefinedLiteral(),
                 arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
             )
         );
