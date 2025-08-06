@@ -32,7 +32,7 @@ import {
     LoaderJson,
     ResourceInfo,
     ScopeInfoCollection,
-    isForEachDecl
+    isForEachDecl,
 } from './struct-translators/utils';
 import {
     collectCustomComponentScopeInfo,
@@ -44,6 +44,7 @@ import {
 import { findAndCollectMemoableNode } from '../collectors/memo-collectors/factory';
 import { InteroperAbilityNames } from './interop/predefines';
 import { generateBuilderCompatible } from './interop/builder-interop';
+import { builderRewriteByType } from './builder-lambda-translators/builder-factory';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
@@ -127,10 +128,10 @@ export class CheckedTransformer extends AbstractVisitor {
         let isFrom1_1 = false;
         if (arkts.isMethodDefinition(decl)) {
             const annotations = decl.scriptFunction.annotations;
-            const decorators: string[] = annotations.map(annotation => {
+            const decorators: string[] = annotations.map((annotation) => {
                 return (annotation.expr as arkts.Identifier).name;
             });
-            decorators.forEach(element => {
+            decorators.forEach((element) => {
                 if (element === 'Builder') {
                     isFrom1_1 = true;
                     return;
@@ -164,8 +165,13 @@ export class CheckedTransformer extends AbstractVisitor {
             );
             return this.visitEachChild(lambda);
         }
-        const node = this.visitEachChild(beforeChildren);
-        findAndCollectMemoableNode(node);
+        let node = this.visitEachChild(beforeChildren);
+        findAndCollectMemoableNode(node, (currNode: arkts.AstNode, nodeType: arkts.Es2pandaAstNodeType) => {
+            if (builderRewriteByType.has(nodeType)) {
+                node = builderRewriteByType.get(nodeType)!(currNode);
+            }
+            return currNode;
+        });
         if (
             arkts.isClassDeclaration(node) &&
             this.scope.customComponents.length > 0 &&
@@ -192,7 +198,10 @@ export class CheckedTransformer extends AbstractVisitor {
             return structFactory.AddArrowTypeForParameter(node);
         } else if (arkts.isTSInterfaceDeclaration(node)) {
             return structFactory.tranformInterfaceMembers(node, this.externalSourceName);
-        } else if (arkts.isETSNewClassInstanceExpression(node) && isSpecificNewClass(node, CustomDialogNames.CUSTOM_DIALOG_CONTROLLER)) {
+        } else if (
+            arkts.isETSNewClassInstanceExpression(node) &&
+            isSpecificNewClass(node, CustomDialogNames.CUSTOM_DIALOG_CONTROLLER)
+        ) {
             return structFactory.transformCustomDialogController(node);
         }
 
