@@ -41,3 +41,5 @@ export type PickNested<T, K extends keyof T> = {
 };
 
 export type PartialNestedExcept<T, K extends keyof T> = PartialNested<Omit<T, K>> & PickNested<T, K>;
+
+export type AstNodePointer = arkts.AstNode['peer'];
