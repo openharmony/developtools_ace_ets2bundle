@@ -128,7 +128,15 @@ function main() {}
     public set myBuilderParam(value: @memo() (()=> void)) {
         this.__backing_myBuilderParam = value;
     }
-    @memo() public build() {}
+    @memo() public build() {
+        ConditionScope(@memo() (() => {
+            if (true) {
+                ConditionBranch(@memo() (() => {
+                    Text(undefined, "within struct build", undefined, undefined);
+                }));
+            }
+        }));
+    }
     private constructor() {}
 }
 @Component() export interface __Options_MyStruct {
@@ -431,6 +439,31 @@ function main() {}
             __memo_scope.cached;
             return;
         }
+        ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+            if (__memo_scope.unchanged) {
+                __memo_scope.cached;
+                return;
+            }
+            if (true) {
+                ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                    if (__memo_scope.unchanged) {
+                        __memo_scope.cached;
+                        return;
+                    }
+                    Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, "within struct build", undefined, undefined);
+                    {
+                        __memo_scope.recache();
+                        return;
+                    }
+                }));
+            }
+            {
+                __memo_scope.recache();
+                return;
+            }
+        }));
         {
             __memo_scope.recache();
             return;
