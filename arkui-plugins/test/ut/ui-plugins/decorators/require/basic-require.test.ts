@@ -76,24 +76,24 @@ import { State as State, Require as Require, Prop as Prop, Provide as Provide, P
   @State() __backing_state1?: boolean;
   select100?: string;
   select0?: number;
-  @State() __backing_select0?: number;
+  @Require() @State() __backing_select0?: number;
   select3?: (number | null);
-  @State() __backing_select3?: (number | null);
+  @Require() @State() __backing_select3?: (number | null);
   select4?: undefined;
-  @State() __backing_select4?: undefined;
+  @Require() @State() __backing_select4?: undefined;
   select1?: string;
-  @Prop() __backing_select1?: string;
+  @Require() @Prop() __backing_select1?: string;
   select2?: string[];
-  @Provide({alias:"15"}) __backing_select2?: string[];
+  @Require() @Provide({alias:"15"}) __backing_select2?: string[];
   select6?: (string[] | undefined | string);
-  @Provide({alias:"t"}) __backing_select6?: (string[] | undefined | string);
+  @Require() @Provide({alias:"t"}) __backing_select6?: (string[] | undefined | string);
   @BuilderParam() builder?: (()=> void);
   
 }
 
 @ComponentV2() export interface __Options_V2222 {
   select1?: string;
-  @Param() __backing_select1?: string;
+  @Require() @Param() __backing_select1?: string;
   
 }
 `;
@@ -283,39 +283,39 @@ function main() {}
   set select0(select0: (number | undefined))
   
   get select0(): (number | undefined)
-  set __backing_select0(__backing_select0: (IStateDecoratedVariable<number> | undefined))
+  @Require() set __backing_select0(__backing_select0: (IStateDecoratedVariable<number> | undefined))
   
-  get __backing_select0(): (IStateDecoratedVariable<number> | undefined)
+  @Require() get __backing_select0(): (IStateDecoratedVariable<number> | undefined)
   set select3(select3: ((number | null) | undefined))
   
   get select3(): ((number | null) | undefined)
-  set __backing_select3(__backing_select3: (IStateDecoratedVariable<(number | null)> | undefined))
+  @Require() set __backing_select3(__backing_select3: (IStateDecoratedVariable<(number | null)> | undefined))
   
-  get __backing_select3(): (IStateDecoratedVariable<(number | null)> | undefined)
+  @Require() get __backing_select3(): (IStateDecoratedVariable<(number | null)> | undefined)
   set select4(select4: (undefined | undefined))
   
   get select4(): (undefined | undefined)
-  set __backing_select4(__backing_select4: (IStateDecoratedVariable<undefined> | undefined))
+  @Require() set __backing_select4(__backing_select4: (IStateDecoratedVariable<undefined> | undefined))
   
-  get __backing_select4(): (IStateDecoratedVariable<undefined> | undefined)
+  @Require() get __backing_select4(): (IStateDecoratedVariable<undefined> | undefined)
   set select1(select1: (string | undefined))
   
   get select1(): (string | undefined)
-  set __backing_select1(__backing_select1: (IPropDecoratedVariable<string> | undefined))
+  @Require() set __backing_select1(__backing_select1: (IPropDecoratedVariable<string> | undefined))
   
-  get __backing_select1(): (IPropDecoratedVariable<string> | undefined)
+  @Require() get __backing_select1(): (IPropDecoratedVariable<string> | undefined)
   set select2(select2: (Array<string> | undefined))
   
   get select2(): (Array<string> | undefined)
-  set __backing_select2(__backing_select2: (IProvideDecoratedVariable<Array<string>> | undefined))
+  @Require() set __backing_select2(__backing_select2: (IProvideDecoratedVariable<Array<string>> | undefined))
   
-  get __backing_select2(): (IProvideDecoratedVariable<Array<string>> | undefined)
+  @Require() get __backing_select2(): (IProvideDecoratedVariable<Array<string>> | undefined)
   set select6(select6: ((Array<string> | undefined | string) | undefined))
   
   get select6(): ((Array<string> | undefined | string) | undefined)
-  set __backing_select6(__backing_select6: (IProvideDecoratedVariable<(Array<string> | undefined | string)> | undefined))
+  @Require() set __backing_select6(__backing_select6: (IProvideDecoratedVariable<(Array<string> | undefined | string)> | undefined))
   
-  get __backing_select6(): (IProvideDecoratedVariable<(Array<string> | undefined | string)> | undefined)
+  @Require() get __backing_select6(): (IProvideDecoratedVariable<(Array<string> | undefined | string)> | undefined)
   set builder(builder: (@memo() (()=> void) | undefined))
   
   get builder(): (@memo() (()=> void) | undefined)
@@ -326,9 +326,9 @@ function main() {}
   set select1(select1: (string | undefined))
   
   get select1(): (string | undefined)
-  set __backing_select1(__backing_select1: (IParamDecoratedVariable<string> | undefined))
+  @Require() set __backing_select1(__backing_select1: (IParamDecoratedVariable<string> | undefined))
   
-  get __backing_select1(): (IParamDecoratedVariable<string> | undefined)
+  @Require() get __backing_select1(): (IParamDecoratedVariable<string> | undefined)
   
 }
 `;
