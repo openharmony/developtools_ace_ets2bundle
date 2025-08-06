@@ -17,11 +17,12 @@ import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
 import { DecoratorNames } from '../../common/predefines';
-import { createGetter, createSetter, generateThisBacking, hasDecorator, removeDecorator, PropertyCache } from './utils';
+import { createGetter, createSetter, generateThisBacking, hasDecorator, removeDecorator } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { factory } from './factory';
 import { addMemoAnnotation, findCanAddMemoFromTypeAnnotation } from '../../collectors/memo-collectors/utils';
+import { PropertyCache } from './cache/propertyCache';
 
 export class BuilderParamTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
