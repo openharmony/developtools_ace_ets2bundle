@@ -151,7 +151,7 @@ function visitOuterExpression(node: AstNode, visitor: Visitor): AstNode {
         updated = true;
         return factory.updateETSNewClassInstanceExpression(
             node,
-            node.getTypeRef,
+            nodeVisitor(node.getTypeRef, visitor),
             nodesVisitor(node.getArguments, visitor)
         );
     }
