@@ -308,25 +308,19 @@ export function collectMemoableInfoInProperty(node: arkts.AstNode, info?: Memoab
         return currInfo;
     }
     const decl = arkts.getDecl(node.key);
-    if (!decl || !arkts.isMethodDefinition(decl)) {
+    if (!decl) {
         return currInfo;
     }
-    const hasReceiver = decl.scriptFunction.hasReceiver;
-    const isSetter = decl.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
-    const isGetter = decl.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET;
-    let newInfo: MemoableInfo = {};
-    if (isSetter && decl.scriptFunction.params.length > 0) {
-        if (hasReceiver && decl.scriptFunction.params.length === 2) {
-            newInfo = collectMemoableInfoInParameter(decl.scriptFunction.params.at(1)!);
-        } else {
-            newInfo = collectMemoableInfoInParameter(decl.scriptFunction.params.at(0)!);
-        }
-    } else if (isGetter) {
-        newInfo = collectMemoableInfoInFunctionReturnType(decl.scriptFunction);
+    if (arkts.isMethodDefinition(decl)) {
+        const newInfo = collectMemoableInfoInMethod(decl);
+        currInfo = { ...currInfo, ...newInfo };
+    } else if (arkts.isClassProperty(decl)) {
+        const newInfo = collectMemoableInfoInClassProperty(decl);
+        currInfo = { ...currInfo, ...newInfo };
     }
-    currInfo = { ...currInfo, ...collectMemoableInfoInScriptFunction(decl.scriptFunction), ...newInfo };
     currInfo.hasProperType = false;
     if (!!node.value && arkts.isArrowFunctionExpression(node.value)) {
+        currInfo.hasProperType = true;
         currInfo = {
             ...currInfo,
             ...collectMemoableInfoInScriptFunction(node.value.scriptFunction),
@@ -578,7 +572,8 @@ export function findCanAddMemoFromProperty(property: arkts.AstNode): property is
     if (!!memoableInfo.hasMemo && !!memoableInfo.hasProperType) {
         arkts.NodeCache.getInstance().collect(property);
     }
-    return !!memoableInfo.hasBuilder && !memoableInfo.hasMemo && !!memoableInfo.hasProperType;
+    const hasBuilder = !!memoableInfo.hasBuilder || !!memoableInfo.hasBuilderParam;
+    return hasBuilder && !memoableInfo.hasMemo && !!memoableInfo.hasProperType;
 }
 
 /**
