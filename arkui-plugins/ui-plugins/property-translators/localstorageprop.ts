@@ -17,10 +17,11 @@ import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
 import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
-import { collectStateManagementTypeImport, generateToRecord, hasDecorator, PropertyCache } from './utils';
+import { collectStateManagementTypeImport, generateToRecord, hasDecorator } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { factory } from './factory';
+import { PropertyCache } from './cache/propertyCache';
 
 function getLocalStorageporpValueStr(node: arkts.AstNode): string | undefined {
     if (!arkts.isClassProperty(node) || !node.value) return undefined;

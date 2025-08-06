@@ -23,7 +23,7 @@ import { isBuilderLambda, isBuilderLambdaMethodDecl } from './builder-lambda-tra
 import { isEntryWrapperClass } from './entry-translators/utils';
 import { ImportCollector } from '../common/import-collector';
 import { DeclarationCollector } from '../common/declaration-collector';
-import { PropertyCache } from './property-translators/utils';
+import { PropertyCache } from './property-translators/cache/propertyCache';
 import { LogCollector } from '../common/log-collector';
 import {
     CustomComponentScopeInfo,
@@ -45,6 +45,7 @@ import { findAndCollectMemoableNode } from '../collectors/memo-collectors/factor
 import { InteroperAbilityNames } from './interop/predefines';
 import { generateBuilderCompatible } from './interop/builder-interop';
 import { builderRewriteByType } from './builder-lambda-translators/builder-factory';
+import { MonitorCache } from './property-translators/cache/monitorCache';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
@@ -84,6 +85,7 @@ export class CheckedTransformer extends AbstractVisitor {
         super.reset();
         this.scope = { customComponents: [] };
         PropertyCache.getInstance().reset();
+        MonitorCache.getInstance().reset();
         ImportCollector.getInstance().reset();
         DeclarationCollector.getInstance().reset();
         LogCollector.getInstance().reset();
