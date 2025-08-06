@@ -132,7 +132,7 @@ import processStructComponentV2, { StructInfo, ParamDecoratorInfo } from './proc
 import constantDefine from './constant_define';
 import createAstNodeUtils from './create_ast_node_utils';
 import logMessageCollection from './log_message_collection';
-import { createStaticComponent, pushStaticComponent } from './process_interop_component';
+import { createStaticComponent, popStaticComponent, pushStaticComponent } from './process_interop_component';
 
 let decoractorMap: Map<string, Map<string, Set<string>>>;
 
@@ -643,16 +643,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
               OBSERVECOMPONENTCREATION2 : OBSERVECOMPONENTCREATION)
         ),
         undefined, isReuseComponentInV2 ? reuseOrCreateArgArr as ts.Expression[] : observeArgArr as ts.Expression[])),
-      isArkoala ? ts.factory.createExpressionStatement(
-        ts.factory.createCallExpression(
-          ts.factory.createPropertyAccessExpression(
-            ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
-            ts.factory.createIdentifier('pop')
-          ),
-          undefined,
-          undefined
-        )
-      ) : undefined
+      isArkoala ? popStaticComponent() : undefined
     ], 
     true
   );
@@ -819,7 +810,7 @@ function createIfCustomComponent(newNode: ts.NewExpression, componentNode: ts.Ca
       ts.factory.createBlock(
         []
       )
-    )
+    );
   }
   return ts.factory.createIfStatement(
     ts.factory.createIdentifier(ISINITIALRENDER),
