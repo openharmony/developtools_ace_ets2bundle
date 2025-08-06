@@ -135,13 +135,13 @@ final class Status extends BaseEnum<int> {
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_arrayA = STATE_MGMT_FACTORY.makeStorageLink<Array<number>>(this, "Prop1", "arrayA", [1, 2, 3], Type.from<Array<number>>())
-    this.__backing_objectA = STATE_MGMT_FACTORY.makeStorageLink<Object>(this, "Prop2", "objectA", {}, Type.from<Object>())
-    this.__backing_dateA = STATE_MGMT_FACTORY.makeStorageLink<Date>(this, "Prop3", "dateA", new Date("2021-08-08"), Type.from<Date>())
-    this.__backing_setA = STATE_MGMT_FACTORY.makeStorageLink<Set<number>>(this, "Prop4", "setA", new Set<number>(), Type.from<Set<number>>())
-    this.__backing_mapA = STATE_MGMT_FACTORY.makeStorageLink<Map<number, string>>(this, "Prop5", "mapA", new Map<number, string>(), Type.from<Map<number, string>>())
-    this.__backing_classA = STATE_MGMT_FACTORY.makeStorageLink<Person>(this, "Prop7", "classA", new Person("John"), Type.from<Person>())
-    this.__backing_enumA = STATE_MGMT_FACTORY.makeStorageLink<Status>(this, "Prop8", "enumA", Status.NotFound, Type.from<Status>())
+    this.__backing_arrayA = STATE_MGMT_FACTORY.makeStorageLink<Array<number>>(this, "Prop1", "arrayA", [1, 2, 3])
+    this.__backing_objectA = STATE_MGMT_FACTORY.makeStorageLink<Object>(this, "Prop2", "objectA", {})
+    this.__backing_dateA = STATE_MGMT_FACTORY.makeStorageLink<Date>(this, "Prop3", "dateA", new Date("2021-08-08"))
+    this.__backing_setA = STATE_MGMT_FACTORY.makeStorageLink<Set<number>>(this, "Prop4", "setA", new Set<number>())
+    this.__backing_mapA = STATE_MGMT_FACTORY.makeStorageLink<Map<number, string>>(this, "Prop5", "mapA", new Map<number, string>())
+    this.__backing_classA = STATE_MGMT_FACTORY.makeStorageLink<Person>(this, "Prop7", "classA", new Person("John"))
+    this.__backing_enumA = STATE_MGMT_FACTORY.makeStorageLink<Status>(this, "Prop8", "enumA", Status.NotFound)
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}

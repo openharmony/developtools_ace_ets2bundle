@@ -63,7 +63,6 @@ export class LocalStoragePropRefTranslator extends PropertyTranslator implements
             arkts.factory.createStringLiteral(localStoragePropRefValueStr),
             arkts.factory.create1StringLiteral(originalName),
             this.property.value ?? arkts.factory.createUndefinedLiteral(),
-            factory.createTypeFrom(this.property.typeAnnotation),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         collectStateManagementTypeImport(StateManagementTypes.LOCAL_STORAGE_PROP_REF_DECORATED);

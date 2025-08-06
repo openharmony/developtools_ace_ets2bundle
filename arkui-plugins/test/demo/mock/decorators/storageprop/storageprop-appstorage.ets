@@ -24,8 +24,8 @@ class Data {
   }
 }
 
-AppStorage.setOrCreate('PropA', 47, Type.from<number>());
-AppStorage.setOrCreate('PropB', new Data(50), Type.from<Data>());
+AppStorage.setOrCreate('PropA', 47);
+AppStorage.setOrCreate('PropB', new Data(50));
 
 @Entry
 @Component
