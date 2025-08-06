@@ -18,17 +18,11 @@ import * as arkts from '@koalaui/libarkts';
 import { backingField, expectName } from '../../common/arkts-utils';
 import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
 import { CustomComponentNames } from '../utils';
-import {
-    createGetter,
-    generateGetOrSetCall,
-    generateThisBacking,
-    generateToRecord,
-    hasDecorator,
-    PropertyCache,
-} from './utils';
+import { createGetter, generateGetOrSetCall, generateThisBacking, generateToRecord, hasDecorator } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { factory } from './factory';
+import { PropertyCache } from './cache/propertyCache';
 
 export class ObjectLinkTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {

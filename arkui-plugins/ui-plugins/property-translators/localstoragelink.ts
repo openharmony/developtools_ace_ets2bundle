@@ -27,10 +27,10 @@ import {
     generateGetOrSetCall,
     collectStateManagementTypeImport,
     hasDecorator,
-    PropertyCache,
     getValueInAnnotation,
 } from './utils';
 import { factory } from './factory';
+import { PropertyCache } from './cache/propertyCache';
 
 export class LocalStorageLinkTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
