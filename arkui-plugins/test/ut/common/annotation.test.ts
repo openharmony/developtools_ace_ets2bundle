@@ -170,6 +170,7 @@ const removeAnnotation: Plugins = {
 };
 
 const expectedParseSnapshot: string = `
+import { Component as Component, ResourceStr as ResourceStr, Builder as Builder } from "@ohos.arkui.component";
 @Retention({policy:\"SOURCE\"}) @interface TestAnno {}
 @TestAnno() type TestType = number;
 @TestAnno() (() => {})
@@ -190,6 +191,7 @@ function testParseAnnotation(this: PluginTestContext): void {
 }
 
 const expectedCheckSnapshot: string = `
+import { Component as Component, ResourceStr as ResourceStr, Builder as Builder } from "@ohos.arkui.component";
 @TestAnno() function main() {}
 @TestAnno() (() => {});
 @Retention({policy:\"SOURCE\"}) @interface TestAnno {}

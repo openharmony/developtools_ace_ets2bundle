@@ -17,6 +17,7 @@ import { ArktsObject } from "./ArktsObject"
 import { global } from "../static/global"
 import { passStringArray } from "../utilities/private"
 import { KNativePointer } from "@koalaui/interop"
+import { Es2pandaCompilationMode } from '../../generated/Es2pandaEnums'
 
 export class Config extends ArktsObject {
     constructor(peer: KNativePointer) {
@@ -47,6 +48,10 @@ export class Config extends ArktsObject {
                 passStringArray(["", "--arktsconfig", "./arktsconfig.json", global.filePath])
             )
         )
+    }
+
+    get compilationMode(): Es2pandaCompilationMode {
+        return global.es2panda._GetCompilationMode(this.peer);
     }
 
     readonly path: string

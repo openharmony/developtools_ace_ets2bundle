@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+import { Component, ResourceStr, Builder} from "@ohos.arkui.component"
+
 @Retention({policy:"SOURCE"}) @interface TestAnno {}
 
 type TestType = number;
