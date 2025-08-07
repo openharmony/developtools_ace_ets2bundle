@@ -154,7 +154,7 @@ export class factory {
     /**
      * create complex type from string and type parameter, e.g. `Set<T>`
      */
-    static createComplexTypeFromStringAndTypeParameter(name: string, params: arkts.TypeNode[]): arkts.TypeNode {
+    static createComplexTypeFromStringAndTypeParameter(name: string, params: readonly arkts.TypeNode[]): arkts.TypeNode {
         return arkts.factory.createTypeReference(
             arkts.factory.createTypeReferencePart(
                 arkts.factory.createIdentifier(name),
