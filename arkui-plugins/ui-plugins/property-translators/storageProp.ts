@@ -73,7 +73,7 @@ export class StoragePropTranslator extends PropertyTranslator implements Initial
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
             factory.generateStateMgmtFactoryCall(
                 StateManagementTypes.MAKE_STORAGE_PROP_REF,
-                this.property.typeAnnotation,
+                this.propertyType,
                 args,
                 true
             )
@@ -92,16 +92,8 @@ export class StoragePropTranslator extends PropertyTranslator implements Initial
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
             generateGetOrSetCall(thisValue, GetSetTypes.SET)
         );
-        const getter: arkts.MethodDefinition = this.translateGetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisGet
-        );
-        const setter: arkts.MethodDefinition = this.translateSetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisSet
-        );
+        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
+        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
         return [field, getter, setter];
     }
 

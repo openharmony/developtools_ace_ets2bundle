@@ -17,12 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
 import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
-import {
-    collectStateManagementTypeImport,
-    generateToRecord,
-    hasDecorator,
-    PropertyCache,
-} from './utils';
+import { collectStateManagementTypeImport, generateToRecord, hasDecorator, PropertyCache } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { factory } from './factory';
@@ -101,16 +96,8 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
             false
         );
 
-        const getter: arkts.MethodDefinition = this.translateGetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisValue
-        );
-        const setter: arkts.MethodDefinition = this.translateSetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisValue
-        );
+        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisValue);
+        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisValue);
         return [field, getter, setter];
     }
 
@@ -128,7 +115,7 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
         );
         const binaryItem = arkts.factory.createCallExpression(
             arkts.factory.createIdentifier(StateManagementTypes.STORAGE_LINK_STATE),
-            this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
+            this.propertyType ? [this.propertyType] : [],
             [
                 insideMember,
                 arkts.factory.createStringLiteral(localStorageporpValueStr),
@@ -138,7 +125,7 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
         collectStateManagementTypeImport(StateManagementTypes.STORAGE_LINK_STATE);
         const call = arkts.factory.createCallExpression(
             arkts.factory.createIdentifier(StateManagementTypes.PROP_STATE),
-            this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
+            this.propertyType ? [this.propertyType] : [],
             [
                 arkts.factory.createMemberExpression(
                     binaryItem,

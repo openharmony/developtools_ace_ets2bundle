@@ -62,16 +62,8 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
             generateGetOrSetCall(thisValue, GetSetTypes.SET)
         );
-        const getter: arkts.MethodDefinition = this.translateGetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisGet
-        );
-        const setter: arkts.MethodDefinition = this.translateSetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisSet
-        );
+        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
+        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
 
         return [field, getter, setter];
     }
@@ -99,28 +91,14 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
             arkts.factory.create1StringLiteral(alias),
-            this.property.value
-                ? arkts.factory.createBinaryExpression(
-                      factory.createBlockStatementForOptionalExpression(
-                          arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-                          originalName
-                      ),
-                      this.property.value ?? arkts.factory.createUndefinedLiteral(),
-                      arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-                  )
-                : factory.generateDefiniteInitializers(this.property.typeAnnotation, originalName),
+            factory.generateInitializeValue(this.property, this.propertyType, originalName),
             arkts.factory.createBooleanLiteral(allowOverride),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(
-                StateManagementTypes.MAKE_PROVIDE,
-                this.property.typeAnnotation,
-                args,
-                true
-            )
+            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_PROVIDE, this.propertyType, args, true)
         );
         return arkts.factory.createExpressionStatement(assign);
     }
