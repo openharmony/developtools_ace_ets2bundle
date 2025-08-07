@@ -24,14 +24,14 @@ const addTSAttributeSet = ['AlphabetIndexer', 'Animator', 'Badge', 'Blank', 'But
   'Canvas', 'Checkbox', 'CheckboxGroup', 'Circle', 'Column', 'ColumnSplit', 'Counter', 'DataPanel', 'DatePicker',
   'Divider', 'Ellipse', 'Flex', 'FormComponent', 'Gauge', 'Grid', 'GridItem', 'GridContainer', 'Image',
   'ImageAnimator', 'IndicatorComponent', 'LazyVGridLayout', 'Line',
-  'List', 'ListItem', 'ListItemGroup', 'LoadingProgress', 'Marquee', 'Navigation',
-  'Navigator', 'Panel', 'Path', 'PatternLock', 'Piece', 'PluginComponent', 'Polygon', 'Polyline', 'Progress',
+  'List', 'ListItem', 'ListItemGroup', 'LoadingProgress', 'Marquee', 'Navigation', 'Navigator',
+  'Panel', 'Path', 'PatternLock', 'Piece', 'PluginComponent', 'Polygon', 'Polyline', 'Progress',
   'QRCode', 'Radio', 'Rating', 'Rect', 'Refresh', 'Row', 'RowSplit', 'Scroll', 'ScrollBar', 'Search',
   'Select', 'Shape', 'Sheet', 'Slider', 'Span', 'Stack', 'Stepper', 'StepperItem', 'Swiper',
   'TabContent', 'Tabs', 'Text', 'TextArea', 'TextClock', 'TextInput', 'TextPicker', 'TextTimer',
   'Toggle', 'Video', 'Web', 'XComponent', 'RichText', 'RemoteWindow', 'WaterFlow', 'FlowItem', 'ImageSpan',
-  'RootScene', 'Screen', 'WindowScene', 'EffectComponent', 'RichEditor', 'ArcSwiper' , 'ArcScrollBar',
-  'ArcList', 'ArcListItem', 'ArcAlphabetIndexer'];
+  'RootScene', 'Screen', 'WindowScene', 'EffectComponent', 'RichEditor', 'ArcAlphabetIndexer', 'ArcList',
+  'ArcListItem', 'ArcSwiper', 'ArcScrollBar'];
 
 generateTargetFile(process.argv[2], process.argv[3]);
 function generateTargetFile(filePath, output) {

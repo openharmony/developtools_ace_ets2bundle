@@ -32,7 +32,7 @@
         "onDidScroll",
         "clipContent",
         "backToTop",
-        "syncLoad",
-        "onWillStopDragging"
+        "onWillStopDragging",
+        "syncLoad"
     ]
 }
