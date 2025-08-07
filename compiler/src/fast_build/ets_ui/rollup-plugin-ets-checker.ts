@@ -112,7 +112,7 @@ export function etsChecker() {
       }
       if (process.env.watchMode === 'true') {
         !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker, this.share);
-        ts.PerformanceDotting.startAdvanced('diagnostic');
+        ts.PerformanceDotting?.startAdvanced('diagnostic');
         if (executedOnce) {
           const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
           timePrinterInstance.setArkTSTimePrintSwitch(false);
@@ -132,7 +132,7 @@ export function etsChecker() {
         const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
           .getSyntacticDiagnostics()
           .concat(globalProgram.builderProgram.getSemanticDiagnostics());
-        ts.PerformanceDotting.stopAdvanced('diagnostic');
+        ts.PerformanceDotting?.stopAdvanced('diagnostic');
         emitBuildInfo();
         let errorCodeLogger: Object | undefined = this.share?.getHvigorConsoleLogger ?
           this.share?.getHvigorConsoleLogger(TSC_SYSTEM_CODE) : undefined;
