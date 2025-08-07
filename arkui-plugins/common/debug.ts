@@ -34,6 +34,39 @@ function mkDir(filePath: string): void {
     fs.mkdirSync(filePath);
 }
 
+export function debugLogAstNode(message: string, node: arkts.AstNode): void {
+    if (!isDebugLog) {
+        return;
+    }
+    console.log(message);
+    console.log(node.dumpSrc());
+}
+
+export function debugDumpAstNode(
+    node: arkts.AstNode,
+    fileName: string,
+    cachePath: string | undefined,
+    programFileName: string): void {
+    if (!isDebugDump) {
+        return;
+    } 
+    const currentDirectory = process.cwd();
+    const modifiedFileName = programFileName.replaceAll('.', '_');
+    const outputDir: string = cachePath
+        ? path.resolve(currentDirectory, cachePath, modifiedFileName)
+        : path.resolve(currentDirectory, 'dist', 'cache', modifiedFileName);
+    const filePath: string = path.resolve(outputDir, fileName);
+    if (!fs.existsSync(outputDir)) {
+        mkDir(outputDir);
+    }
+    try {
+        fs.writeFileSync(filePath, node.dumpSrc(), 'utf8');
+    } catch (error) {
+        console.error('文件操作失败:', error);
+    }
+}
+
+/** @deprecated */
 export function debugDump(
     content: string,
     fileName: string,

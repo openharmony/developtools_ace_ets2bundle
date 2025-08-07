@@ -19,7 +19,7 @@ import { CheckedTransformer } from './checked-transformer';
 import { Plugins, PluginContext, ProjectConfig } from '../common/plugin-context';
 import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../common/predefines';
-import { debugDump, debugLog, getDumpFileName } from '../common/debug';
+import { debugLog } from '../common/debug';
 
 export function uiTransform(): Plugins {
     return {
@@ -42,28 +42,13 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
         script = program.astNode;
-        const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
         const canSkipPhases = program.canSkipPhases();
-        debugLog('[BEFORE PARSED SCRIPT] script: ', script.dumpSrc());
-        debugDump(
-            script.dumpSrc(),
-            getDumpFileName(0, 'SRC', 1, 'UI_AfterParse_Begin'),
-            true,
-            cachePath,
-            program.fileNameWithExtension
-        );
+
         arkts.Performance.getInstance().createEvent('ui-parsed');
         program = parsedProgramVisit(program, this, canSkipPhases);
         script = program.astNode;
         arkts.Performance.getInstance().stopEvent('ui-parsed', true);
-        debugLog('[AFTER PARSED SCRIPT] script: ', script.dumpSrc());
-        debugDump(
-            script.dumpSrc(),
-            getDumpFileName(0, 'SRC', 2, 'UI_AfterParse_End'),
-            true,
-            cachePath,
-            program.fileNameWithExtension
-        );
+
         this.setArkTSAst(script);
         arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:AfterParse');
         arkts.Performance.getInstance().memoryTrackerReset();
@@ -110,28 +95,13 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
         script = program.astNode;
-        const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
         const canSkipPhases = program.canSkipPhases();
-        debugLog('[BEFORE STRUCT SCRIPT] script: ', script.dumpSrc());
-        debugDump(
-            script.dumpSrc(),
-            getDumpFileName(0, 'SRC', 3, 'UI_AfterCheck_Begin'),
-            true,
-            cachePath,
-            program.fileNameWithExtension
-        );
+
         arkts.Performance.getInstance().createEvent('ui-checked');
         program = checkedProgramVisit(program, this, canSkipPhases);
         script = program.astNode;
         arkts.Performance.getInstance().stopEvent('ui-checked', true);
-        debugLog('[AFTER STRUCT SCRIPT] script: ', script.dumpSrc());
-        debugDump(
-            script.dumpSrc(),
-            getDumpFileName(0, 'SRC', 4, 'UI_AfterCheck_End'),
-            true,
-            cachePath,
-            program.fileNameWithExtension
-        );
+
         this.setArkTSAst(script);
         arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:UI-AfterCheck');
         arkts.Performance.getInstance().stopMemRecord('Node:UIPlugin:UI-AfterCheck');

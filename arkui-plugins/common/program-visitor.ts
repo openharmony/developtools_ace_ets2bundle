@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor, VisitorOptions } from './abstract-visitor';
 import { matchPrefix } from './arkts-utils';
-import { debugDump, debugLog, getDumpFileName } from './debug';
+import { getDumpFileName, debugDumpAstNode, debugLog } from './debug';
 import { InteroperAbilityNames } from '../ui-plugins/interop/predefines';
 import { PluginContext } from './plugin-context';
 import { LegacyTransformer } from '../ui-plugins/interop/legacy-transformer';
@@ -126,10 +126,9 @@ export class ProgramVisitor extends AbstractVisitor {
         prefixName: string,
         extensionName: string
     ): void {
-        debugDump(
-            script.dumpSrc(),
+        debugDumpAstNode(
+            script,
             getDumpFileName(this.state, prefixName, undefined, name),
-            true,
             cachePath,
             extensionName
         );
@@ -274,10 +273,9 @@ export class ProgramVisitor extends AbstractVisitor {
             transformer.reset();
             arkts.setAllParents(script);
             if (!transformer.isExternal) {
-                debugDump(
-                    script.dumpSrc(),
+                debugDumpAstNode(
+                    script,
                     getDumpFileName(this.state, this.pluginName, count, transformer.constructor.name),
-                    true,
                     this.pluginContext?.getProjectConfig()?.cachePath,
                     program!.fileNameWithExtension
                 );
