@@ -351,7 +351,7 @@ let setHashValueByFilePath: Function | undefined = undefined;
 let getHashByFilePath: Function | undefined = undefined;
 
 export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[],
-  parentEvent?: CompileEvent, rollupShareObject?: any): ts.LanguageService {
+  parentEvent?: CompileEvent, rollupShareObject?: Object): ts.LanguageService {
   setHashValueByFilePath = rollupShareObject?.setHashValueByFilePath;
   getHashByFilePath = rollupShareObject?.getHashByFilePath;
   setCompilerOptions(resolveModulePaths);
@@ -364,12 +364,12 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
       }
       let fileContent: string = getFileContentWithHash(fileName);
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-        ts.PerformanceDotting.startAdvanced('scriptSnapshot');
+        ts.PerformanceDotting?.startAdvanced('scriptSnapshot');
         appComponentCollection.set(path.join(fileName), new Set());
         let content: string = processContent(fileContent, fileName);
         const extendFunctionInfo: extendInfo[] = [];
         content = instanceInsteadThis(content, fileName, extendFunctionInfo, this.uiProps);
-        ts.PerformanceDotting.stopAdvanced('scriptSnapshot');
+        ts.PerformanceDotting?.stopAdvanced('scriptSnapshot');
         return ts.ScriptSnapshot.fromString(content);
       }
       return ts.ScriptSnapshot.fromString(fileContent);
@@ -583,7 +583,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
   timePrinterInstance.setArkTSTimePrintSwitch(false);
   timePrinterInstance.appendTime(ts.TimePhase.START);
-  ts.PerformanceDotting.startAdvanced('createProgram');
+  ts.PerformanceDotting?.startAdvanced('createProgram');
   const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GET_BUILDER_PROGRAM);
 
   globalProgram.builderProgram = languageService.getBuilderProgram(/*withLinterProgram*/ true);
@@ -592,17 +592,17 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   props = languageService.getProps();
   timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
   MemoryMonitor.stopRecordStage(recordInfo);
-  ts.PerformanceDotting.stopAdvanced('createProgram');
+  ts.PerformanceDotting?.stopAdvanced('createProgram');
 
   collectAllFiles(globalProgram.program, undefined, undefined, rollupShareObject);
   collectFileToIgnoreDiagnostics(rootFileNames);
-  ts.PerformanceDotting.startAdvanced('runArkTSLinterTime');
+  ts.PerformanceDotting?.startAdvanced('runArkTSLinterTime');
   const runArkTSLinterRecordInfo = MemoryMonitor.recordStage(MemoryDefine.RUN_ARK_TS_LINTER);
   const errorCodeLogger: Object | undefined = !!rollupShareObject?.getHvigorConsoleLogger ?
     rollupShareObject?.getHvigorConsoleLogger(LINTER_SUBSYSTEM_CODE) : undefined;
   runArkTSLinter(errorCodeLogger, parentEvent);
   MemoryMonitor.stopRecordStage(runArkTSLinterRecordInfo);
-  ts.PerformanceDotting.stopAdvanced('runArkTSLinterTime');
+  ts.PerformanceDotting?.stopAdvanced('runArkTSLinterTime');
 
   if (process.env.watchMode !== 'true') {
     const processBuildHaprrecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP);
@@ -730,13 +730,13 @@ export function emitBuildInfo(): void {
 
 function processBuildHap(cacheFile: string, rootFileNames: string[], parentEvent: CompileEvent,
   rollupShareObject: Object): void {
-  ts.PerformanceDotting.startAdvanced('diagnostic');
+  ts.PerformanceDotting?.startAdvanced('diagnostic');
   const semanticRecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP_GET_SEMANTIC_DIAGNOSTICS);
   const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
     .getSyntacticDiagnostics()
     .concat(globalProgram.builderProgram.getSemanticDiagnostics());
   MemoryMonitor.stopRecordStage(semanticRecordInfo);
-  ts.PerformanceDotting.stopAdvanced('diagnostic');
+  ts.PerformanceDotting?.stopAdvanced('diagnostic');
   const emitBuildRecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP_EMIT_BUILD_INFO);
   emitBuildInfo();
   let errorCodeLogger: Object | undefined = rollupShareObject?.getHvigorConsoleLogger ?
@@ -1133,7 +1133,7 @@ export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts
 export const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
 
 export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
-  ts.PerformanceDotting.startAdvanced('resolveModuleNames');
+  ts.PerformanceDotting?.startAdvanced('resolveModuleNames');
   const resolvedModules: ts.ResolvedModuleFull[] = [];
   const cacheFileContent: ts.ResolvedModuleFull[] = resolvedModulesCache.get(path.resolve(containingFile));
   if (![...shouldResolvedFiles].length || shouldResolvedFiles.has(path.resolve(containingFile)) ||
@@ -1239,10 +1239,10 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
       createOrUpdateCache(resolvedModules, path.resolve(containingFile));
     }
     resolvedModulesCache.set(path.resolve(containingFile), resolvedModules);
-    ts.PerformanceDotting.stopAdvanced('resolveModuleNames');
+    ts.PerformanceDotting?.stopAdvanced('resolveModuleNames');
     return resolvedModules;
   }
-  ts.PerformanceDotting.stopAdvanced('resolveModuleNames');
+  ts.PerformanceDotting?.stopAdvanced('resolveModuleNames');
   return resolvedModulesCache.get(path.resolve(containingFile));
 }
 
@@ -1668,14 +1668,14 @@ export function runArkTSLinter(errorCodeLogger?: Object | undefined, parentEvent
     buildInfoWriteFile,
     errorCodeLogger);
 
-  ts.PerformanceDotting.startAdvanced('updateErrorFile');
+  ts.PerformanceDotting?.startAdvanced('updateErrorFile');
   if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
     arkTSLinterDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
       updateErrorFileCache(diagnostic);
     });
     timePrinterInstance.appendTime(ts.TimePhase.UPDATE_ERROR_FILE);
   }
-  ts.PerformanceDotting.stopAdvanced('updateErrorFile');
+  ts.PerformanceDotting?.stopAdvanced('updateErrorFile');
   timePrinterInstance.printTimes();
   ts.ArkTSLinterTimePrinter.destroyInstance();
 }
