@@ -59,7 +59,7 @@ export class ObservedV2TraceTranslator extends ObservedPropertyTranslator {
         const backingField = arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(newName),
             this.property.value,
-            this.property.typeAnnotation,
+            this.propertyType,
             this.isStatic
                 ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
                 : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
@@ -112,11 +112,7 @@ export class ObservedV2TraceTranslator extends ObservedPropertyTranslator {
                 [
                     this.property.value
                         ? observedMember
-                        : arkts.factory.createTSAsExpression(
-                              observedMember,
-                              this.property.typeAnnotation?.clone(),
-                              false
-                          ),
+                        : arkts.factory.createTSAsExpression(observedMember, this.propertyType, false),
                 ]
             )
         );
@@ -126,7 +122,7 @@ export class ObservedV2TraceTranslator extends ObservedPropertyTranslator {
             key: arkts.factory.createIdentifier(originalName),
             function: {
                 body: body,
-                returnTypeAnnotation: this.property.typeAnnotation,
+                returnTypeAnnotation: this.propertyType,
                 modifiers: methodModifier,
                 flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
             },
@@ -142,7 +138,7 @@ export class ObservedV2TraceTranslator extends ObservedPropertyTranslator {
         const ifEqualsNewValue: arkts.IfStatement = this.setterIfEqualsNewValue(originalName, newName);
         const body = arkts.factory.createBlock([ifEqualsNewValue]);
         const param = arkts.factory.createParameterDeclaration(
-            arkts.factory.createIdentifier(ObservedNames.NEW_VALUE, this.property.typeAnnotation),
+            arkts.factory.createIdentifier(ObservedNames.NEW_VALUE, this.propertyType),
             undefined
         );
 

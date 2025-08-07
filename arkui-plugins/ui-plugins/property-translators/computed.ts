@@ -18,7 +18,7 @@ import * as arkts from '@koalaui/libarkts';
 import { expectName } from '../../common/arkts-utils';
 import { GetSetTypes, StateManagementTypes } from '../../common/predefines';
 import { computedField } from '../utils';
-import { generateThisBacking, PropertyCache, generateGetOrSetCall, collectStateManagementTypeImport } from './utils';
+import { generateThisBacking, generateGetOrSetCall, getGetterReturnType } from './utils';
 import { MethodTranslator } from './base';
 import { InitializerConstructor } from './types';
 import { factory as UIFactory } from '../ui-factory';
@@ -28,6 +28,9 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.method.name);
         const newName: string = computedField(originalName);
+        if (!this.returnType) {
+            this.returnType = getGetterReturnType(this.method);
+        }
         return this.translateWithoutInitializer(newName, originalName);
     }
 
@@ -38,7 +41,7 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
             arkts.factory.createIdentifier(newName),
             factory.generateStateMgmtFactoryCall(
                 StateManagementTypes.MAKE_COMPUTED,
-                this.method.scriptFunction.returnTypeAnnotation?.clone(),
+                this.returnType,
                 [
                     arkts.factory.createArrowFunction(
                         UIFactory.createScriptFunction({
@@ -58,7 +61,7 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
 
         const originGetter: arkts.MethodDefinition = UIFactory.updateMethodDefinition(this.method, {
             function: {
-                returnTypeAnnotation: this.method.scriptFunction.returnTypeAnnotation?.clone(),
+                returnTypeAnnotation: this.returnType,
                 body: arkts.factory.createBlock([
                     arkts.factory.createReturnStatement(this.generateComputedGet(newName)),
                 ]),
