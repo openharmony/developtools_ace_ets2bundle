@@ -19,18 +19,9 @@ import { acceptNativeObjectArrayResult, unpackString } from "../utilities/privat
 import { KNativePointer } from "@koalaui/interop"
 import { EtsScript } from "../types"
 
-enum SkipPhaseResult {
-    NOT_COMPUTED,
-    CAN_SKIP,
-    CANNOT_SKIP,
-}
-
 export class Program extends ArktsObject {
-    private canSkipPhaseResult: SkipPhaseResult;
-
     constructor(peer: KNativePointer) {
         super(peer);
-        this.canSkipPhaseResult = SkipPhaseResult.NOT_COMPUTED;
     }
 
     get astNode(): EtsScript {
@@ -83,18 +74,7 @@ export class Program extends ArktsObject {
     }
 
     canSkipPhases(): boolean {
-        if (this.canSkipPhaseResult === SkipPhaseResult.CAN_SKIP) {
-            return true;
-        } else if (this.canSkipPhaseResult === SkipPhaseResult.CANNOT_SKIP) {
-            return false;
-        }
-        if (global.es2panda._ProgramCanSkipPhases(global.context, this.peer)) {
-            this.canSkipPhaseResult = SkipPhaseResult.CAN_SKIP;
-            return true;
-        } else {
-            this.canSkipPhaseResult = SkipPhaseResult.CANNOT_SKIP;
-            return false;
-        }
+        return global.es2panda._ProgramCanSkipPhases(global.context, this.peer);
     }
 }
 

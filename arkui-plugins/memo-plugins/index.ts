@@ -21,7 +21,7 @@ import { ReturnTransformer } from './return-transformer';
 import { ParameterTransformer } from './parameter-transformer';
 import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES, EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK } from '../common/predefines';
-import { debugDump, debugLog, getDumpFileName } from '../common/debug';
+import { debugLog } from '../common/debug';
 import { SignatureTransformer } from './signature-transformer';
 import { InternalsTransformer } from './internal-transformer';
 
@@ -43,29 +43,14 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
         let script = program.astNode;
-        debugLog('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
-        const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
         const isFrameworkMode = !!this.getProjectConfig()?.frameworkMode;
         const canSkipPhases = !isFrameworkMode && program.canSkipPhases();
-        debugDump(
-            script.dumpSrc(),
-            getDumpFileName(0, 'SRC', 5, 'MEMO_AfterCheck_Begin'),
-            true,
-            cachePath,
-            program.fileNameWithExtension
-        );
+
         arkts.Performance.getInstance().createEvent('memo-checked');
         program = checkedProgramVisit(program, this, canSkipPhases, isFrameworkMode);
         script = program.astNode;
         arkts.Performance.getInstance().stopEvent('memo-checked', true);
-        debugLog('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
-        debugDump(
-            script.dumpSrc(),
-            getDumpFileName(0, 'SRC', 6, 'MEMO_AfterCheck_End'),
-            true,
-            cachePath,
-            program.fileNameWithExtension
-        );
+        
 
         arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:Memo-AfterCheck');
         arkts.Performance.getInstance().memoryTrackerReset();
