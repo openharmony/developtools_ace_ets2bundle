@@ -60,7 +60,7 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
   
-  private __backing_customBuilderParam2?: (@memo() (()=> void) | undefined);
+  private __backing_customBuilderParam2?: ((()=> void) | undefined);
   
   public get customBuilderParam2(): (@memo() (()=> void) | undefined) {
     return this.__backing_customBuilderParam2;
@@ -177,7 +177,7 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
   
-  private __backing_customBuilderParam2?: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
+  private __backing_customBuilderParam2?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
   
   public get customBuilderParam2(): (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) {
     return this.__backing_customBuilderParam2;

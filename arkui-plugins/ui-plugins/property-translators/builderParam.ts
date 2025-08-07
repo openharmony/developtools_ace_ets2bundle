@@ -38,7 +38,7 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const propertyType = this.property.typeAnnotation;
+        const propertyType = this.propertyType;
         if (!!propertyType && (arkts.isETSFunctionType(propertyType) || arkts.isETSUnionType(propertyType))) {
             addMemoAnnotation(propertyType);
         }
@@ -53,13 +53,13 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
         const thisSetValue: arkts.Expression = generateThisBacking(newName, false, false);
         const getter: arkts.MethodDefinition = this.translateGetter(
             originalName,
-            propertyType?.clone(),
+            propertyType,
             arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL)
                 ? generateThisBacking(newName, false, false)
                 : generateThisBacking(newName, false, true)
         );
         arkts.NodeCache.getInstance().collect(getter);
-        const setter: arkts.MethodDefinition = this.translateSetter(originalName, propertyType?.clone(), thisSetValue);
+        const setter: arkts.MethodDefinition = this.translateSetter(originalName, propertyType, thisSetValue);
         arkts.NodeCache.getInstance().collect(setter);
 
         return [field, getter, setter];

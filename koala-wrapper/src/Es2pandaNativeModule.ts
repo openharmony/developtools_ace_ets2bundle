@@ -959,6 +959,10 @@ export class Es2pandaNativeModule {
     _CallExpressionIsTrailingCallConst(context: KNativePointer, node: KNativePointer): boolean {
         throw new Error('CallExpressionIsTrailingCallConst was not overloaded by native module initialization');
     }
+
+    _CreateTypeNodeFromTsType(context: KNativePointer, classInstance: KNativePointer): KNativePointer {
+        throw new Error('Not implemented');
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {
