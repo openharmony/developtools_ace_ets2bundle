@@ -9,6 +9,6 @@
     "onScrollBarUpdate", "enableScrollInteraction", "fadingEdge", "onScrollStart", "onScroll",
     "onScrollStop", "onWillScroll", "onDidScroll", "cachedCount", "nestedScroll", "friction", 
     "alignItems", "onReachStart", "onReachEnd", "onScrollFrameBegin", "flingSpeedLimit",
-    "clipContent", "backToTop", "focusWrapMode", "syncLoad", "onWillStopDragging"
+    "clipContent", "backToTop", "focusWrapMode", "onWillStopDragging", "syncLoad"
   ]
 }

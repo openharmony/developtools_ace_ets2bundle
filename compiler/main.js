@@ -995,6 +995,9 @@ function isPartialUpdate(metadata, moduleType) {
       if (item.name === 'Api11ArkTSCheckMode' && item.value === 'DoArkTSCheckInCompatibleModeInApi11') {
         partialUpdateConfig.standardArkTSLinter = false;
       }
+      if (item.name === 'ArkoalaPlugin' && item.value === 'true') {
+        projectConfig.useArkoala = true;
+      }
       if (item.name === 'ArkTSVersion') {
         partialUpdateConfig.arkTSVersion = item.value;
       }
@@ -1006,9 +1009,6 @@ function isPartialUpdate(metadata, moduleType) {
       }
       if (item.name === 'SkipArkTSStaticBlocksCheck' && item.value === 'true') {
         partialUpdateConfig.skipArkTSStaticBlocksCheck = true;
-      }
-      if (item.name === 'ArkoalaPlugin' && item.value === 'true') {
-        projectConfig.useArkoala = true;
       }
       if (item.name === 'UseTsHar' && item.value === 'true' && moduleType === 'har') {
         projectConfig.useTsHar = true;

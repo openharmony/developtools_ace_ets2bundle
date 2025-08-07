@@ -73,14 +73,14 @@ function processIntermediateTS(content, filePath, afterProcess) {
       'etsAnnotationsEnable': true
     });
   }
-  const etsFilePath = filePath.replace('.ts', '.ets')
+  const etsFilePath = filePath.replace('.ts', '.ets');
   fs.writeFileSync(etsFilePath, afterProcess.content);
   processModule(etsCheckerCompilerOptions, etsFilePath);
   sourceFile = ModuleSourceFile.getSourceFiles().find((element) => element.moduleId.includes(etsFilePath));
   result = generateIntermediateContent(sourceFile);
   fs.unlinkSync(etsFilePath);
   projectConfig.processTs = false;
-  return result
+  return result;
 }
 
 function expectActual(name, filePath, checkError = false) {
