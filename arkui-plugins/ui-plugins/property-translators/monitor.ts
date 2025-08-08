@@ -16,13 +16,13 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { expectName } from '../../common/arkts-utils';
-import { DecoratorNames, MonitorNames, StateManagementTypes } from '../../common/predefines';
+import { StateManagementTypes } from '../../common/predefines';
 import { monitorField } from '../utils';
-import { generateThisBacking, PropertyCache, collectStateManagementTypeImport } from './utils';
+import { collectStateManagementTypeImport, getValueInMonitorAnnotation } from './utils';
 import { MethodTranslator } from './base';
 import { InitializerConstructor } from './types';
 import { factory as UIFactory } from '../ui-factory';
-import { factory } from './factory';
+import { MonitorCache, MonitorInfo } from './cache/monitorCache';
 
 export class MonitorTranslator extends MethodTranslator implements InitializerConstructor {
     translateMember(): arkts.AstNode[] {
@@ -33,12 +33,16 @@ export class MonitorTranslator extends MethodTranslator implements InitializerCo
     }
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
-        const monitorAssign: arkts.AstNode = this.generateinitAssignment(newName, originalName);
-        if (this.classInfo.isFromStruct) {
-            PropertyCache.getInstance().collectInitializeStruct(this.classInfo.className, [monitorAssign]);
-        } else {
-            PropertyCache.getInstance().collectContructor(this.classInfo.className, [monitorAssign]);
-        }
+        const monitorItem: string[] | undefined = getValueInMonitorAnnotation(
+            this.method.scriptFunction.annotations
+        );
+        const monitorPathsStr: string = !!monitorItem ? monitorItem.join(',') : '';
+        const monitorInfo: MonitorInfo = {
+            monitorItem: monitorItem,
+            originalName: originalName,
+            newName: newName,
+        };
+        MonitorCache.getInstance().collectMonitors(this.classInfo.className, monitorPathsStr, monitorInfo);
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
@@ -55,78 +59,5 @@ export class MonitorTranslator extends MethodTranslator implements InitializerCo
         );
 
         return [field];
-    }
-
-    generateinitAssignment(newName: string, originalName: string): arkts.ExpressionStatement {
-        const monitorItem: string[] | undefined = this.getValueInMonitorAnnotation();
-        const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
-        const right: arkts.CallExpression = factory.generateStateMgmtFactoryCall(
-            StateManagementTypes.MAKE_MONITOR,
-            undefined,
-            [this.generatePathArg(monitorItem), this.generateLambdaArg(originalName)],
-            false
-        );
-        return arkts.factory.createExpressionStatement(
-            arkts.factory.createAssignmentExpression(
-                thisValue,
-                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                right
-            )
-        );
-    }
-
-    generatePathArg(monitorItem: string[] | undefined): arkts.ArrayExpression {
-        if (!monitorItem || monitorItem.length <= 0) {
-            return arkts.factory.createArrayExpression([]);
-        }
-        const params = monitorItem.map((itemName: string) => {
-            return factory.createMonitorPathsInfoParameter(itemName);
-        });
-        return arkts.factory.createArrayExpression(params);
-    }
-
-    generateLambdaArg(originalName: string): arkts.ArrowFunctionExpression {
-        return arkts.factory.createArrowFunction(
-            UIFactory.createScriptFunction({
-                params: [UIFactory.createParameterDeclaration(MonitorNames.M_PARAM, MonitorNames.I_MONITOR)],
-                body: arkts.factory.createBlock([
-                    arkts.factory.createExpressionStatement(
-                        arkts.factory.createCallExpression(generateThisBacking(originalName), undefined, [
-                            arkts.factory.createIdentifier(MonitorNames.M_PARAM),
-                        ])
-                    ),
-                ]),
-                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-            })
-        );
-    }
-
-    getValueInMonitorAnnotation(): string[] | undefined {
-        const annotations: readonly arkts.AnnotationUsage[] = this.method.scriptFunction.annotations;
-        for (let i = 0; i < annotations.length; i++) {
-            const anno: arkts.AnnotationUsage = annotations[i];
-            if (
-                anno.expr &&
-                arkts.isIdentifier(anno.expr) &&
-                anno.expr.name === DecoratorNames.MONITOR &&
-                anno.properties.length === 1
-            ) {
-                return this.getArrayFromAnnoProperty(anno.properties[0]);
-            }
-        }
-        return undefined;
-    }
-
-    getArrayFromAnnoProperty(property: arkts.AstNode): string[] | undefined {
-        if (arkts.isClassProperty(property) && property.value && arkts.isArrayExpression(property.value)) {
-            const resArr: string[] = [];
-            property.value.elements.forEach((item: arkts.Expression) => {
-                if (arkts.isStringLiteral(item)) {
-                    resArr.push(item.str);
-                }
-            });
-            return resArr;
-        }
-        return undefined;
     }
 }
