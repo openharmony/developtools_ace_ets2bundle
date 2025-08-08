@@ -32,8 +32,6 @@ import {
   collectFileToIgnoreDiagnostics,
   TSC_SYSTEM_CODE,
   traverseProgramSourceFiles,
-  arkTsEvolutionModuleMap,
-  cleanUpArkTsEvolutionModuleMap,
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
@@ -76,7 +74,6 @@ export function etsChecker() {
       const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ROLLUP_PLUGIN_BUILD_START);
       const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsChecker', 'buildStart');
       const eventServiceChecker = createAndStartEvent(hookEventFactory, 'serviceChecker');
-      initFileManagerInRollup(this.share);
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
         tsWatchEndPromise = new Promise<void>(resolve => {
