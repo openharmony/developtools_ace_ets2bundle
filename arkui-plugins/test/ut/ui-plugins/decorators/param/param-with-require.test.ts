@@ -131,13 +131,13 @@ class Info {
 
 @ComponentV2() export interface __Options_MiddleComponent {
   info?: Info;
-  @Param() __backing_info?: Info;
+  @Require() @Param() __backing_info?: Info;
   
 }
 
 @ComponentV2() export interface __Options_SubComponent {
   region?: Region;
-  @Param() __backing_region?: Region;
+  @Require() @Param() __backing_region?: Region;
   
 }
 `;
@@ -309,9 +309,9 @@ class Info {
   set info(info: (Info | undefined))
   
   get info(): (Info | undefined)
-  set __backing_info(__backing_info: (IParamDecoratedVariable<Info> | undefined))
+  @Require() set __backing_info(__backing_info: (IParamDecoratedVariable<Info> | undefined))
   
-  get __backing_info(): (IParamDecoratedVariable<Info> | undefined)
+  @Require() get __backing_info(): (IParamDecoratedVariable<Info> | undefined)
   
 }
 
@@ -319,9 +319,9 @@ class Info {
   set region(region: (Region | undefined))
   
   get region(): (Region | undefined)
-  set __backing_region(__backing_region: (IParamDecoratedVariable<Region> | undefined))
+  @Require() set __backing_region(__backing_region: (IParamDecoratedVariable<Region> | undefined))
   
-  get __backing_region(): (IParamDecoratedVariable<Region> | undefined)
+  @Require() get __backing_region(): (IParamDecoratedVariable<Region> | undefined)
   
 }
 `;
