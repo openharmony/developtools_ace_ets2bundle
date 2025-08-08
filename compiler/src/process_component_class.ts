@@ -215,7 +215,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
     }
   });
   members.forEach((item: ts.ClassElement) => {
-    let updateItem: ts.ClassElement;
+    let updateItem: ts.ClassElement | undefined;
     if (ts.isPropertyDeclaration(item)) {
       if (isStaticProperty(item)) {
         newMembers.push(item);
