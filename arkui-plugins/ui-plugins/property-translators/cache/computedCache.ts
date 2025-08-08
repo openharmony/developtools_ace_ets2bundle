@@ -39,7 +39,7 @@ export class ComputedCache {
         this._cache.clear();
     }
 
-    getCachedComputed(className: string): arkts.AstNode[] {
+    getCachedComputed(className: string): arkts.Statement[] {
         if (!this._cache.has(className)) {
             return [];
         }

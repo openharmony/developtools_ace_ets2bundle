@@ -43,7 +43,7 @@ class BuilderParamDecoratorCheckRule extends AbstractUISyntaxRule {
             return;
         }
         node.getChildren().forEach((member) => {
-            if (!arkts.isStructDeclaration(member) || !member.definition.ident) {
+            if (!arkts.isETSStructDeclaration(member) || !member.definition?.ident) {
                 return;
             }
             let count: number = 0;
@@ -72,13 +72,13 @@ class BuilderParamDecoratorCheckRule extends AbstractUISyntaxRule {
             return false;
         }
         let structNode = node.parent;
-        while (!arkts.isMethodDefinition(structNode) || getIdentifierName(structNode.name) !== BUILD_NAME) {
+        while (!arkts.isMethodDefinition(structNode) || getIdentifierName(structNode) !== BUILD_NAME) {
             if (!structNode.parent) {
                 return false;
             }
             structNode = structNode.parent;
         }
-        return arkts.isMethodDefinition(structNode) && getIdentifierName(structNode.name) === BUILD_NAME;
+        return arkts.isMethodDefinition(structNode) && getIdentifierName(structNode) === BUILD_NAME;
     }
 
     private hasBlockStatement(node: arkts.AstNode): boolean {
@@ -118,7 +118,7 @@ class BuilderParamDecoratorCheckRule extends AbstractUISyntaxRule {
             return;
         }
         let structNode = node.parent;
-        while (!arkts.isStructDeclaration(structNode)) {
+        while (!arkts.isETSStructDeclaration(structNode)) {
             if (!structNode.parent) {
                 return;
             }

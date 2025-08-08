@@ -20,11 +20,11 @@ const ETSGLOBAL = 'ETSGLOBAL';
 
 export class EtsglobalRemover extends AbstractVisitor {
     visitor(node: arkts.AstNode): arkts.AstNode {
-        if (arkts.isEtsScript(node)) {
+        if (arkts.isETSModule(node)) {
             const keep = node.statements.filter((it) => {
                 return !(arkts.isClassDeclaration(it) && it.definition?.ident?.name == ETSGLOBAL);
             });
-            return arkts.factory.updateEtsScript(node, keep);
+            return arkts.factory.updateETSModule(node, keep, node.ident, node.getNamespaceFlag(), node.program);
         }
         return node;
     }

@@ -52,6 +52,15 @@ export class Context extends ArktsObject {
         return new Context(global.es2panda._CreateContextFromFile(global.config, passString(filePath)));
     }
 
+    static createFromStringWithHistory(source: string): Context {
+        if (!global.configIsInitialized()) {
+            throwError(`Config not initialized`);
+        }
+        return new Context(
+            global.es2panda._CreateContextFromStringWithHistory(global.config, passString(source), passString(global.filePath))
+        );
+    }
+
     static createCacheFromFile(filePath: string, config: Config, globalContext: GlobalContext, isExternal: boolean) {
         return new Context(
             global.es2panda._CreateCacheContextFromFile(

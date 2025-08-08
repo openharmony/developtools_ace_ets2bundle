@@ -38,16 +38,16 @@ class BuildRootNodeRule extends AbstractUISyntaxRule {
             this.getCustomComponentNames(node);
         }
 
-        if (!arkts.isStructDeclaration(node)) {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
         const entryDecoratorUsage = getAnnotationUsage(node, PresetDecorators.ENTRY);
-        node.definition.body.forEach((member) => {
-            if (!arkts.isMethodDefinition(member) || getIdentifierName(member.name) !== BUILD_NAME) {
+        node.definition?.body.forEach((member) => {
+            if (!arkts.isMethodDefinition(member) || getIdentifierName(member) !== BUILD_NAME) {
                 return;
             }
-            const blockStatement = member.scriptFunction.body;
-            const buildNode = member.scriptFunction.id;
+            const blockStatement = member.function!.body;
+            const buildNode = member.function!.id;
             if (!blockStatement || !arkts.isBlockStatement(blockStatement) || !buildNode) {
                 return;
             }
@@ -75,12 +75,12 @@ class BuildRootNodeRule extends AbstractUISyntaxRule {
     }
 
     private getCustomComponentNames(node: arkts.AstNode): void {
-        if (!arkts.isEtsScript(node)) {
+        if (!arkts.isETSModule(node)) {
             return;
         }
 
         node.statements.forEach((statement) => {
-            if (arkts.isStructDeclaration(statement)) {
+            if (arkts.isETSStructDeclaration(statement)) {
                 const customComponentName = statement.definition.ident?.name;
                 if (customComponentName) {
                     this.customComponentNames.push(customComponentName);

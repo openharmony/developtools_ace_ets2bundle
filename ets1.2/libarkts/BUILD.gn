@@ -105,12 +105,12 @@ if (current_toolchain == host_toolchain) {
 shared_library("es2panda_lib") {
     if (defined(is_arkui_x) && is_arkui_x) {
         deps = [ 
-            "//third_party/bounds_checking_function:libsec_shared",
+            "//third_party/bounds_checking_function:libsec_static",
             "//arkcompiler/ets_frontend/es2panda:es2panda"
         ]
     } else if (!koala_mr.is_rri) {
         external_deps = [
-            "bounds_checking_function:libsec_shared",
+            "bounds_checking_function:libsec_static",
             "ets_frontend:ets2panda"
         ]
     }
@@ -118,6 +118,7 @@ shared_library("es2panda_lib") {
     sources = [
         "${koala_mr.libarkts_path}/native/src/common.cc",
         "${koala_mr.libarkts_path}/native/src/bridges.cc",
+        "${koala_mr.libarkts_path}/native/src/memoryTracker.cc",
 
         "${koala_mr.interop_path}/src/cpp/napi/convertors-napi.cc",
         "${koala_mr.interop_path}/src/cpp/callback-resource.cc",
@@ -329,7 +330,7 @@ npm_cmd("libarkts_compile") {
     }
 }
 
-group("es2panda") {
+group("libarkts_copy") {
     deps = [
         ":es2panda_lib_copy",
         ":libarkts_compile(${host_toolchain})"
@@ -354,6 +355,6 @@ action("libarkts_sdk_copy") {
     ]
     outputs = [ "$target_gen_dir" ]
     deps = [
-        ":es2panda"
+        ":libarkts_copy"
     ]
 }

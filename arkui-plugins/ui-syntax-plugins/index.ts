@@ -22,12 +22,13 @@ import { createUISyntaxRuleProcessor } from './processor';
 import { UISyntaxLinterVisitor } from './transformers/ui-syntax-linter-visitor';
 import rules from './rules';
 import { getConsistentResourceMap, getMainPages, getUIComponents } from '../common/arkts-utils';
-import { debugLog } from '../common/debug';
+import { Debugger, debugLog } from '../common/debug';
 import { Collector } from '../collectors/collector';
 import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../common/predefines';
 import { MetaDataCollector } from '../common/metadata-collector';
 import { ProgramSkipper } from '../common/program-skipper';
+import { NodeCacheFactory } from '../common/node-cache';
 
 
 export function uiSyntaxLinterTransform(): Plugins {
@@ -37,31 +38,31 @@ export function uiSyntaxLinterTransform(): Plugins {
         checked: collectAndLint,
         clean(): void {
             ProgramSkipper.clear();
-            arkts.NodeCacheFactory.getInstance().clear();
+            NodeCacheFactory.getInstance().clear();
         },
     };
 }
 
-function collectAndLint(this: PluginContext): arkts.EtsScript | undefined {
-    let script: arkts.EtsScript | undefined;
-    arkts.Debugger.getInstance().phasesDebugLog('[UI LINTER PLUGIN] AFTER CHECKED ENTER');
+function collectAndLint(this: PluginContext): arkts.ETSModule | undefined {
+    let script: arkts.ETSModule | undefined;
+    Debugger.getInstance().phasesDebugLog('[UI LINTER PLUGIN] AFTER CHECKED ENTER');
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     const isCoding = this.isCoding?.() ?? false;
     if (!isCoding && !!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
-        script = program.astNode;
+        script = program.ast as arkts.ETSModule;
         debugLog('[BEFORE LINTER SCRIPT] script: ', script);
         arkts.Performance.getInstance().createEvent('ui-linter');
         program = checkedProgramVisit(program, this, isCoding);
-        script = program.astNode;
+        script = program.ast as arkts.ETSModule;
         arkts.Performance.getInstance().stopEvent('ui-linter', true);
         debugLog('[AFTER LINTER SCRIPT] script: ', script);
         this.setArkTSAst(script);
         arkts.Performance.getInstance().logDetailedEventInfos(true);
-        arkts.Debugger.getInstance().phasesDebugLog('[UI LINTER PLUGIN] AFTER CHECKED EXIT');
+        Debugger.getInstance().phasesDebugLog('[UI LINTER PLUGIN] AFTER CHECKED EXIT');
         return script;
     }
-    arkts.Debugger.getInstance().phasesDebugLog('[UI LINTER PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
+    Debugger.getInstance().phasesDebugLog('[UI LINTER PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
     return script;
 }
 
@@ -71,11 +72,11 @@ function checkedProgramVisit(
     isCoding: boolean = false
 ): arkts.Program {
     if (isCoding) {
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollect(false);
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollect(false);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollect(false);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollect(false);
     } else {
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollectUpdate(true);
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollectUpdate(true);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollectUpdate(true);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollectUpdate(true);
     }
     const projectConfig = context.getProjectConfig();
     arkts.Performance.getInstance().createDetailedEvent('[UI LINTER PLUGIN] MetadataCollector init');
@@ -103,15 +104,15 @@ function checkedProgramVisit(
         .setConsistentResourceMap(undefined)
         .setMainPages(undefined);
     if (!isCoding) {
-        arkts.NodeCacheFactory.getInstance().perfLog(NodeCacheNames.UI, true);
-        arkts.NodeCacheFactory.getInstance().perfLog(NodeCacheNames.MEMO, true);
+        NodeCacheFactory.getInstance().perfLog(NodeCacheNames.UI, true);
+        NodeCacheFactory.getInstance().perfLog(NodeCacheNames.MEMO, true);
     }
     return program;
 }
 
 
 const visitedPrograms: Set<any> = new Set();
-function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
+function parsedTransform(this: PluginContext): arkts.ETSModule | undefined {
     const isCoding = this.isCoding?.() ?? false;
     if (!isCoding) {
         return undefined;
@@ -132,11 +133,11 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
         return undefined;
     }
     const program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
-    if (visitedPrograms.has(program.peer) || isHeaderFile(program.absName)) {
+    if (visitedPrograms.has(program.peer) || isHeaderFile(program.absoluteName)) {
         return undefined;
     }
     const codingFilePath = this.getCodingFilePath();
-    if (program.absName === codingFilePath) {
+    if (program.absoluteName === codingFilePath) {
         return transformProgram.call(this, transformer, program);
     }
     visitedPrograms.add(program.peer);
@@ -148,8 +149,8 @@ function transformProgram(
     this: PluginContext,
     transformer: UISyntaxLinterVisitor,
     program: arkts.Program
-): arkts.EtsScript {
-    const script = transformer.transform(program.astNode) as arkts.EtsScript;
+): arkts.ETSModule {
+    const script = transformer.transform(program.ast) as arkts.ETSModule;
     this.setArkTSAst(script);
     return script;
 }

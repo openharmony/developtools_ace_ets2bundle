@@ -47,7 +47,7 @@ function _checkReusableComponentInV2(
     if (!fromComponentV2 || !isReusableCall || fromReusableV2) {
         return;
     }
-    const callExpression = arkts.classByPeer<arkts.CallExpression>(metadata.ptr);
+    const callExpression = arkts.unpackNonNullableNode<arkts.CallExpression>(metadata.ptr!);
     this.report({
         node: callExpression,
         level: LogType.WARN,

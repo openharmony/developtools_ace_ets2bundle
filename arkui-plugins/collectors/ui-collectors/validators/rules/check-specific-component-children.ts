@@ -56,13 +56,13 @@ function _checkSpecificComponentChildren(
     node.arguments.forEach((arg) => {
         if (
             !arkts.isArrowFunctionExpression(arg) ||
-            !arg.scriptFunction.body ||
-            !arkts.isBlockStatement(arg.scriptFunction.body)
+            !arg.function.body ||
+            !arkts.isBlockStatement(arg.function.body)
         ) {
             return;
         }
         // Toggle组件类型为`Checkbox`时，不可包含子组件
-        if (toggleType === ToggleType.CHECKBOX && arg.scriptFunction.body.statements.length > 0) {
+        if (toggleType === ToggleType.CHECKBOX && arg.function.body.statements.length > 0) {
             this.report({
                 node: node,
                 level: LogType.ERROR,
@@ -70,7 +70,7 @@ function _checkSpecificComponentChildren(
             });
         }
         // Toggle组件类型为`Button`时，最多允许包含一个子组件
-        if (toggleType === ToggleType.BUTTON && arg.scriptFunction.body.statements.length > SINGLE_CHILD_COMPONENT) {
+        if (toggleType === ToggleType.BUTTON && arg.function.body.statements.length > SINGLE_CHILD_COMPONENT) {
             this.report({
                 node: node,
                 level: LogType.ERROR,

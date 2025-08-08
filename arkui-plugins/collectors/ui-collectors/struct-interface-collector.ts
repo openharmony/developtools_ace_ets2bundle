@@ -21,6 +21,7 @@ import {
     CustomComponentInterfaceRecord,
 } from './records';
 import { NodeCacheNames } from '../../common/predefines';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 export interface StructInterfaceCollectorOptions extends VisitorOptions {
     interfaceRecord: CustomComponentInterfaceRecord;
@@ -56,7 +57,7 @@ export class StructInterfaceCollector extends AbstractVisitor {
             return;
         }
         if (this.canCollectMethodFromInfo(methodInfo)) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodRecord.toJSON());
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodRecord.toJSON());
         }
     }
 

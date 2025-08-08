@@ -75,7 +75,7 @@ function main() {}
   public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___231706081 = initializers;
     (((gensym___231706081) == (null)) ? undefined : gensym___231706081.__options_has_aaController)})) {
-      this.__backing_aaController = initializers!.aaController
+      this.__backing_aaController = initializers!.aaController;
     } else {
       if (!(this.__backing_aaController)) {
         this.__backing_aaController = undefined
@@ -211,7 +211,7 @@ function main() {}
   public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     if (({let gensym___<some_random_number> = initializers;
       (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_aaController)})) {
-      this.__backing_aaController = initializers!.aaController
+      this.__backing_aaController = initializers!.aaController;
     } else {
       if (!(this.__backing_aaController)) {
         this.__backing_aaController = undefined

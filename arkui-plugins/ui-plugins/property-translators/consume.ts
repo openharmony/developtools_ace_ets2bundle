@@ -41,27 +41,28 @@ import {
 } from './base';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
+import { AstNodeCacheValueMetadata, NodeCacheFactory } from '../../common/node-cache';
 
 function initializeStructWithConsumeProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
     }
     const args: arkts.Expression[] = [
-        arkts.factory.create1StringLiteral(originalName),
-        arkts.factory.create1StringLiteral(getValueInAnnotation(this.property, DecoratorNames.CONSUME) ?? originalName),
+        arkts.factory.createStringLiteral(originalName),
+        arkts.factory.createStringLiteral(getValueInAnnotation(this.property, DecoratorNames.CONSUME) ?? originalName),
     ];
     if (this.hasWatch) {
         factory.addWatchFunc(args, this.property);
     }
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata)
+        factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata),
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     return arkts.factory.createExpressionStatement(assign);
 }
@@ -100,7 +101,7 @@ export class ConsumeTranslator extends PropertyTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithConsumeProperty.bind(this)(newName, originalName, metadata);
     }
@@ -125,7 +126,7 @@ export class ConsumeCachedTranslator extends PropertyCachedTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithConsumeProperty.bind(this)(newName, originalName, metadata);
     }
@@ -139,7 +140,7 @@ export class ConsumeInterfaceTranslator<T extends InterfacePropertyTypes> extend
      */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.CONSUME);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.CONSUME);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.CONSUME);
         }

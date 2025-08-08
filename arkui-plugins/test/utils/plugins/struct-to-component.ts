@@ -25,12 +25,12 @@ import { Collector } from '../../../collectors/collector';
  */
 export const structToComponent: Plugins = {
     name: 'struct-to-component',
-    parsed(this: PluginContext): arkts.EtsScript | undefined {
-        let script: arkts.EtsScript | undefined;
+    parsed(this: PluginContext): arkts.ETSModule | undefined {
+        let script: arkts.ETSModule | undefined;
         const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-            script = program.astNode;
+            script = program.ast as arkts.ETSModule;
             const componentTransformer = new ComponentTransformer({
                 projectConfig: this.getProjectConfig(),
             });
@@ -42,7 +42,7 @@ export const structToComponent: Plugins = {
                 pluginContext: this,
             });
             program = programVisitor.programVisitor(program);
-            script = program.astNode;
+            script = program.ast as arkts.ETSModule;
             return script;
         }
         return script;

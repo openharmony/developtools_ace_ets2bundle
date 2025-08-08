@@ -124,8 +124,8 @@ function checkDecoratorInStructMethod<T extends arkts.AstNode = arkts.MethodDefi
         return;
     }
     // 结构体（`struct`）或类（`class`）中的静态变量或静态方法不能与（V2）内置装饰器一起使用
-    if (hasComponentV2 && metadata.annotationInfo?.hasMonitor && node.name) {
-        const propertyNameNode = node.name;
+    if (hasComponentV2 && metadata.annotationInfo?.hasMonitor && node.id) {
+        const propertyNameNode = node.id;
         this.report({
             node: propertyNameNode,
             level: LogType.ERROR,
@@ -144,8 +144,8 @@ function checkDecoratorInClassMethod<T extends arkts.AstNode = arkts.MethodDefin
         return;
     }
     // 结构体（`struct`）或类（`class`）中的静态变量或静态方法不能与（V2）内置装饰器一起使用
-    if (hasObservedV2 && metadata.annotationInfo?.hasMonitor && node.name) {
-        const propertyNameNode = node.name;
+    if (hasObservedV2 && metadata.annotationInfo?.hasMonitor && node.id) {
+        const propertyNameNode = node.id;
         this.report({
             node: propertyNameNode,
             level: LogType.ERROR,

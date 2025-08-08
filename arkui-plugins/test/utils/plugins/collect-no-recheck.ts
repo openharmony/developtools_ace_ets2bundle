@@ -18,23 +18,25 @@ import { PluginContext, Plugins } from '../../../common/plugin-context';
 import { ProgramVisitor } from '../../../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../../../common/predefines';
 import { Collector } from '../../../collectors/collector';
+import { NodeCacheFactory } from '../../../common/node-cache';
+import { TestGlobal } from '../global';
 
 /**
  * AfterCheck cache any node that should be ui-transformed or unmemoized with no recheck AST.
  */
 export const collectNoRecheck: Plugins = {
     name: 'collect-no-recheck',
-    checked(this: PluginContext): arkts.EtsScript | undefined {
-        let script: arkts.EtsScript | undefined;
+    checked(this: PluginContext): arkts.ETSModule | undefined {
+        let script: arkts.ETSModule | undefined;
         const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
-        if ((global.MEMO_CACHE_ENABLED || global.UI_CACHE_ENABLED) && !!contextPtr) {
+        if (((global as TestGlobal).MEMO_CACHE_ENABLED || (global as TestGlobal).UI_CACHE_ENABLED) && !!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-            script = program.astNode;
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollectUpdate(global.UI_UPDATE_ENABLED);
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollectUpdate(global.MEMO_UPDATE_ENABLED);
+            script = program.ast as arkts.ETSModule;
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollectUpdate((global as TestGlobal).UI_UPDATE_ENABLED);
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollectUpdate((global as TestGlobal).MEMO_UPDATE_ENABLED);
             const collector = new Collector({
-                shouldCollectUI: global.UI_CACHE_ENABLED,
-                shouldCollectMemo: global.MEMO_CACHE_ENABLED,
+                shouldCollectUI: (global as TestGlobal).UI_CACHE_ENABLED,
+                shouldCollectMemo: (global as TestGlobal).MEMO_CACHE_ENABLED,
             });
             const programVisitor = new ProgramVisitor({
                 pluginName: collectNoRecheck.name,
@@ -44,7 +46,7 @@ export const collectNoRecheck: Plugins = {
                 pluginContext: this,
             });
             program = programVisitor.programVisitor(program);
-            script = program.astNode;
+            script = program.ast as arkts.ETSModule;
             return script;
         }
         return script;

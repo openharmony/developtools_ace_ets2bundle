@@ -51,13 +51,13 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
             // Rule 5: Local, Param, Event decorators must be used with Property
             this.checkuseStateDecoratorsWithProperty(node);
         }
-        if (!arkts.isStructDeclaration(node)) {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
         this.validateClassPropertyDecorators(node);
     }
 
-    private hasComponentV2Annotation = (node: arkts.StructDeclaration): boolean => !!getAnnotationUsage(node,
+    private hasComponentV2Annotation = (node: arkts.ETSStructDeclaration): boolean => !!getAnnotationUsage(node,
         PresetDecorators.COMPONENT_V2);
 
     private checkMultipleBuiltInDecorators(member: arkts.ClassProperty,
@@ -117,7 +117,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
                 message: this.messages.requireOnlyWithParam,
                 fix: (requireDecorator) => {
                     let startPosition = requireDecorator.startPosition;
-                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                    startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                     let endPosition = requireDecorator.endPosition;
                     return {
                         title: 'Remove the @Require annotation',
@@ -153,7 +153,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
             data: { annotationName },
             fix: (annotation) => {
                 let startPosition = annotation.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                 let endPosition = annotation.endPosition;
                 return {
                     title: 'Remove the annotation',
@@ -164,7 +164,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
         });
     }
 
-    private validateClassPropertyDecorators(node: arkts.StructDeclaration): void {
+    private validateClassPropertyDecorators(node: arkts.ETSStructDeclaration): void {
         this.checkuseStateDecoratorsWithProperty(node.definition);
         const isComponentV2 = this.hasComponentV2Annotation(node);
         node.definition.body.forEach(member => {
@@ -222,7 +222,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
             return;
         }
         node.getChildren().forEach((member) => {
-            if (!arkts.isStructDeclaration(member) || !member.definition.ident ||
+            if (!arkts.isETSStructDeclaration(member) || !member.definition?.ident ||
                 !this.checkDecorator(member.definition.annotations, PresetDecorators.COMPONENT_V2)) {
                 return;
             }
@@ -272,14 +272,14 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
             return;
         }
         let structNode = node.parent;
-        while (!arkts.isStructDeclaration(structNode)) {
+        while (!arkts.isETSStructDeclaration(structNode)) {
             if (!structNode.parent) {
                 return;
             }
             structNode = structNode.parent;
         }
         let parentPropertyMap: Map<string, string[]> = new Map();
-        structNode.definition.body.forEach((property) => {
+        structNode.definition?.body.forEach((property) => {
             if (!arkts.isClassProperty(property)) {
                 return;
             }

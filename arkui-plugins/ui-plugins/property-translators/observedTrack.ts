@@ -43,15 +43,19 @@ export function getterBodyWithObservedTrackProperty(
     newName: string
 ): arkts.BlockStatement {
     const conditionalAddRef = arkts.factory.createExpressionStatement(
-        arkts.factory.createCallExpression(generateThisBacking(ObservedNames.CONDITIONAL_ADD_REF), undefined, [
-            arkts.factory.createMemberExpression(
-                arkts.factory.createThisExpression(),
-                metaIdentifier.bind(this)(originalName),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
-        ])
+        arkts.factory.createCallExpression(generateThisBacking(ObservedNames.CONDITIONAL_ADD_REF), [
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createThisExpression(),
+                    metaIdentifier.bind(this)(originalName),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                ),
+            ],
+            undefined,
+            false,
+            false
+        )
     );
     const backingMember: arkts.Expression = generateThisBacking(newName);
     const returnMember: arkts.ReturnStatement = arkts.factory.createReturnStatement(
@@ -59,7 +63,7 @@ export function getterBodyWithObservedTrackProperty(
             ? backingMember
             : arkts.factory.createTSAsExpression(backingMember, this.propertyType, false)
     );
-    return arkts.factory.createBlock([conditionalAddRef, returnMember]);
+    return arkts.factory.createBlockStatement([conditionalAddRef, returnMember]);
 }
 
 function getterWithObservedTrackProperty(
@@ -90,9 +94,10 @@ function setterWithObservedTrackProperty(
         originalName,
         newName
     );
-    const body = arkts.factory.createBlock([ifEqualsNewValue]);
-    const param = arkts.factory.createParameterDeclaration(
+    const body = arkts.factory.createBlockStatement([ifEqualsNewValue]);
+    const param = arkts.factory.createETSParameterExpression(
         arkts.factory.createIdentifier(ObservedNames.NEW_VALUE, this.propertyType),
+        false,
         undefined
     );
 
@@ -124,8 +129,8 @@ export function setterIfEqualsNewValueWithObservedTrackProperty(
     const setNewValue = arkts.factory.createExpressionStatement(
         arkts.factory.createAssignmentExpression(
             backingValue,
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            arkts.factory.createIdentifier(ObservedNames.NEW_VALUE)
+            arkts.factory.createIdentifier(ObservedNames.NEW_VALUE),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
         )
     );
     const fireChange = arkts.factory.createExpressionStatement(
@@ -143,14 +148,20 @@ export function setterIfEqualsNewValueWithObservedTrackProperty(
                 false,
                 false
             ),
+            [],
             undefined,
-            undefined
+            false,
+            false
         )
     );
     const subscribingWatches = arkts.factory.createExpressionStatement(
-        arkts.factory.createCallExpression(generateThisBacking(ObservedNames.EXECUATE_WATCHES), undefined, [
-            arkts.factory.createStringLiteral(originalName),
-        ])
+        arkts.factory.createCallExpression(generateThisBacking(ObservedNames.EXECUATE_WATCHES), [
+                arkts.factory.createStringLiteral(originalName),
+            ],
+            undefined,
+            false,
+            false
+        )
     );
     return arkts.factory.createIfStatement(
         arkts.factory.createBinaryExpression(
@@ -158,7 +169,7 @@ export function setterIfEqualsNewValueWithObservedTrackProperty(
             arkts.factory.createIdentifier(ObservedNames.NEW_VALUE),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NOT_STRICT_EQUAL
         ),
-        arkts.factory.createBlock([setNewValue, fireChange, subscribingWatches])
+        arkts.factory.createBlockStatement([setNewValue, fireChange, subscribingWatches])
     );
 }
 

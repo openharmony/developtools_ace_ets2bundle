@@ -11,6 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//build/ohos.gni")
+import("//build/config/components/ets_frontend/ets2abc_config.gni")
+
 if (!defined(koala_mr)) {
 # OHOS build tree workaround
     import("../koala_integration.gni")
@@ -20,11 +23,28 @@ if (!koala_mr.is_rri) {
 }
 import("${koala_mr.imports_prefix}/npm.gni")
 
-if (current_toolchain == host_toolchain) {
-    npm_install("install_all") {
-        outputs = [
-            "$target_out_dir/install_all"
-        ]
-        project_path = rebase_path(".")
-    }
+ohos_static_library("libarkts_package") {
+    deps = [
+        "${koala_mr.libarkts_path}:libarkts_copy"
+    ]
+    part_name = "ace_ets2bundle"
+    subsystem_name = "developtools"
+}
+
+ohos_copy("ets2panda_libarkts") {
+  deps = [ "${koala_mr.libarkts_path}:libarkts_sdk_copy" ]
+  sources = [ rebase_path("$target_gen_dir") + "/libarkts" ]
+  outputs = [ target_out_dir + "/$target_name" ]
+  module_source_dir = target_out_dir + "/$target_name"
+  module_install_name = ""
+  subsystem_name = "developtools"
+  part_name = "ace_ets2bundle"
+}
+
+ohos_copy("ohos_ets_libarkts") {
+  deps = [ "${koala_mr.libarkts_path}:libarkts_sdk_copy" ]
+  sources = [ rebase_path("$target_gen_dir") + "/libarkts" ]
+  outputs = [ ohos_ets_libarkts_path ]
+  subsystem_name = "developtools"
+  part_name = "ace_ets2bundle"
 }

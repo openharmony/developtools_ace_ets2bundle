@@ -55,15 +55,17 @@ export function getterBodyWithObservedV2TraceProperty(
                 arkts.factory.createIdentifier(StateManagementTypes.UI_UTILS),
                 StateManagementTypes.MAKE_OBSERVED
             ),
-            undefined,
             [
                 !this.property || this.property.value
                     ? observedMember
                     : arkts.factory.createTSAsExpression(observedMember, this.propertyType, false),
-            ]
+            ],
+            undefined,
+            false,
+            false
         )
     );
-    return arkts.factory.createBlock([createAddRef.bind(this)(originalName, classIdent), returnMember]);
+    return arkts.factory.createBlockStatement([createAddRef.bind(this)(originalName, classIdent), returnMember]);
 }
 
 function getterWithObservedV2TraceProperty(
@@ -100,9 +102,10 @@ function setterWithObservedV2TraceProperty(
         originalName,
         newName
     );
-    const body = arkts.factory.createBlock([ifEqualsNewValue]);
-    const param = arkts.factory.createParameterDeclaration(
+    const body = arkts.factory.createBlockStatement([ifEqualsNewValue]);
+    const param = arkts.factory.createETSParameterExpression(
         arkts.factory.createIdentifier(ObservedNames.NEW_VALUE, this.propertyType),
+        false,
         undefined
     );
     return uiFactory.createMethodDefinition({
@@ -125,9 +128,13 @@ function createAddRef(
 ): arkts.ExpressionStatement {
     const metaName: string = `${StateManagementTypes.META}_${originalName}`;
     const conditionalAddRef = arkts.factory.createExpressionStatement(
-        arkts.factory.createCallExpression(generateThisBacking(ObservedNames.CONDITIONAL_ADD_REF), undefined, [
-            generateThisBacking(metaName),
-        ])
+        arkts.factory.createCallExpression(generateThisBacking(ObservedNames.CONDITIONAL_ADD_REF), [
+                generateThisBacking(metaName),
+            ],
+            undefined,
+            false,
+            false
+        )
     );
     const metaAddRef = arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
@@ -135,8 +142,10 @@ function createAddRef(
                 uiFactory.generateMemberExpression(classIdent.clone(), metaName),
                 ObservedNames.ADD_REF
             ),
+            [],
             undefined,
-            undefined
+            false,
+            false
         )
     );
     return this.isStatic ? metaAddRef : conditionalAddRef;
@@ -156,8 +165,8 @@ export function setterIfEqualsNewValueWithObservedV2TraceProperty(
     const setNewValue = arkts.factory.createExpressionStatement(
         arkts.factory.createAssignmentExpression(
             this.isStatic ? staticBackingValue : backingValue,
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            arkts.factory.createIdentifier(ObservedNames.NEW_VALUE)
+            arkts.factory.createIdentifier(ObservedNames.NEW_VALUE),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
         )
     );
 
@@ -170,15 +179,21 @@ export function setterIfEqualsNewValueWithObservedV2TraceProperty(
                 false,
                 false
             ),
+            [],
             undefined,
-            undefined
+            false,
+            false
         )
     );
 
     const subscribingWatches = arkts.factory.createExpressionStatement(
-        arkts.factory.createCallExpression(generateThisBacking(ObservedNames.EXECUATE_WATCHES), undefined, [
-            arkts.factory.createStringLiteral(originalName),
-        ])
+        arkts.factory.createCallExpression(generateThisBacking(ObservedNames.EXECUATE_WATCHES), [
+                arkts.factory.createStringLiteral(originalName),
+            ],
+            undefined,
+            false,
+            false
+        )
     );
 
     const consequentArr = this.isStatic ? [setNewValue, fireChange] : [setNewValue, fireChange, subscribingWatches];
@@ -188,7 +203,7 @@ export function setterIfEqualsNewValueWithObservedV2TraceProperty(
             arkts.factory.createIdentifier(ObservedNames.NEW_VALUE),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NOT_STRICT_EQUAL
         ),
-        arkts.factory.createBlock(consequentArr)
+        arkts.factory.createBlockStatement(consequentArr)
     );
 }
 

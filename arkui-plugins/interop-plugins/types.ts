@@ -36,12 +36,12 @@ namespace interop {
         dumpSrc(): string;
     }
 
-    export interface EtsScript extends Node {}
+    export interface ETSModule extends Node {}
 
     export interface Plugin {
         name: string;
-        parsed?(context: PluginContext): EtsScript | undefined;
-        checked?(context: PluginContext): EtsScript | undefined;
+        parsed?(context: PluginContext): ETSModule | undefined;
+        checked?(context: PluginContext): ETSModule | undefined;
     }
 
     export type TransfromerName = string & { __TransfromerNameBrand: any };

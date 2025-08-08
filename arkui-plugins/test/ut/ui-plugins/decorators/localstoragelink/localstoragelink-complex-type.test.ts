@@ -146,14 +146,14 @@ final class Status extends BaseEnum<int> {
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_arrayA = STATE_MGMT_FACTORY.makeLocalStorageLink<Array<number>>(this, "Prop1", "arrayA", [1, 2, 3])
-    this.__backing_objectA = STATE_MGMT_FACTORY.makeLocalStorageLink<Object>(this, "Prop2", "objectA", {})
-    this.__backing_dateA = STATE_MGMT_FACTORY.makeLocalStorageLink<Date>(this, "Prop3", "dateA", new Date("2021-08-08"))
-    this.__backing_setA = STATE_MGMT_FACTORY.makeLocalStorageLink<Set<number>>(this, "Prop4", "setA", new Set<number>())
-    this.__backing_mapA = STATE_MGMT_FACTORY.makeLocalStorageLink<Map<number, string>>(this, "Prop5", "mapA", new Map<number, string>())
-    this.__backing_unionA = STATE_MGMT_FACTORY.makeLocalStorageLink<(string | undefined)>(this, "Prop6", "unionA", "")
-    this.__backing_classA = STATE_MGMT_FACTORY.makeLocalStorageLink<Person>(this, "Prop7", "classA", new Person("John"))
-    this.__backing_enumA = STATE_MGMT_FACTORY.makeLocalStorageLink<Status>(this, "Prop8", "enumA", Status.NotFound)
+    this.__backing_arrayA = STATE_MGMT_FACTORY.makeLocalStorageLink<Array<number>>(this, "Prop1", "arrayA", [1, 2, 3]);
+    this.__backing_objectA = STATE_MGMT_FACTORY.makeLocalStorageLink<Object>(this, "Prop2", "objectA", {});
+    this.__backing_dateA = STATE_MGMT_FACTORY.makeLocalStorageLink<Date>(this, "Prop3", "dateA", new Date("2021-08-08"));
+    this.__backing_setA = STATE_MGMT_FACTORY.makeLocalStorageLink<Set<number>>(this, "Prop4", "setA", new Set<number>());
+    this.__backing_mapA = STATE_MGMT_FACTORY.makeLocalStorageLink<Map<number, string>>(this, "Prop5", "mapA", new Map<number, string>());
+    this.__backing_unionA = STATE_MGMT_FACTORY.makeLocalStorageLink<(string | undefined)>(this, "Prop6", "unionA", "");
+    this.__backing_classA = STATE_MGMT_FACTORY.makeLocalStorageLink<Person>(this, "Prop7", "classA", new Person("John"));
+    this.__backing_enumA = STATE_MGMT_FACTORY.makeLocalStorageLink<Status>(this, "Prop8", "enumA", Status.NotFound);
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}

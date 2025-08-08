@@ -37,7 +37,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     public parsed(node: arkts.AstNode): void {
-        if (arkts.isStructDeclaration(node)) {
+        if (arkts.isETSStructDeclaration(node)) {
             this.validateComponentV2InStruct(node);
             this.validateStructBody(node);
         }
@@ -47,17 +47,17 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
         }
     }
 
-    private validateStructBody(node: arkts.StructDeclaration): void {
+    private validateStructBody(node: arkts.ETSStructDeclaration): void {
         let computedDecorator: arkts.AnnotationUsage | undefined;
-        node.definition.body.forEach((member) => {
+        node.definition?.body.forEach((member) => {
             if (arkts.isClassProperty(member)) {
                 this.validateComputedOnClassProperty(member);
                 return;
             }
 
             if (arkts.isMethodDefinition(member)) {
-                const methodName = getIdentifierName(member.name);
-                computedDecorator = findDecorator(member.scriptFunction, PresetDecorators.COMPUTED);
+                const methodName = getIdentifierName(member);
+                computedDecorator = findDecorator(member.function!, PresetDecorators.COMPUTED);
 
                 this.validateComputedMethodKind(member, computedDecorator, methodName);
                 if (member.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {
@@ -81,7 +81,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
                 message: this.messages.onlyOnGetter,
                 fix: (computedDecorator) => {
                     let startPosition = computedDecorator.startPosition;
-                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                    startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                     const endPosition = computedDecorator.endPosition;
                     return {
                         title: 'Remove the annotation',
@@ -117,7 +117,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
             message: this.messages.onlyOnGetter,
             fix: (computedDecorator) => {
                 let startPosition = computedDecorator.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                 const endPosition = computedDecorator.endPosition;
                 return {
                     title: 'Remove the annotation',
@@ -129,7 +129,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private validateBuildMethod(member: arkts.MethodDefinition): void {
-        member.scriptFunction.body?.getChildren().forEach((childNode) => {
+        member.function!.body?.getChildren().forEach((childNode) => {
             if (!arkts.isExpressionStatement(childNode)) {
                 return;
             }
@@ -149,13 +149,13 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private validateCallExpression(currentNode: arkts.CallExpression): void {
-        if (!arkts.isIdentifier(currentNode.expression) || getIdentifierName(currentNode.expression) !== '$$') {
+        if (!arkts.isIdentifier(currentNode.callee) || getIdentifierName(currentNode.callee) !== '$$') {
             return;
         }
 
         currentNode.arguments.forEach((argument) => {
             if (arkts.isMemberExpression(argument)) {
-                const getterName = getIdentifierName(argument.property);
+                const getterName = getIdentifierName(argument.property!);
                 this.reportValidateCallExpression(currentNode, getterName);
             }
         });
@@ -210,18 +210,18 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
 
             if (arkts.isMethodDefinition(member)) {
                 this.validateComputedInClass(node, member, observedV2Decorator, observedDecorator);
-                const computedDecorator = findDecorator(member.scriptFunction, PresetDecorators.COMPUTED);
-                if (!arkts.isIdentifier(member.name)) {
+                const computedDecorator = findDecorator(member.function!, PresetDecorators.COMPUTED);
+                if (!arkts.isIdentifier(member.id)) {
                     return;
                 }
-                const methodName = getIdentifierName(member.name);
+                const methodName = getIdentifierName(member.id);
 
                 this.validateComputedMethodKind(member, computedDecorator, methodName);
             }
         });
     }
 
-    private validateComponentV2InStruct(node: arkts.StructDeclaration): void {
+    private validateComponentV2InStruct(node: arkts.ETSStructDeclaration): void {
         const componentV2Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
         const componentDecorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
 
@@ -233,12 +233,12 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private checkComponentV2InStruct(
-        node: arkts.StructDeclaration | arkts.ClassDeclaration,
+        node: arkts.ETSStructDeclaration | arkts.ClassDeclaration,
         member: arkts.MethodDefinition,
         componentV2Decorator: arkts.AnnotationUsage | undefined,
         componentDecorator: arkts.AnnotationUsage | undefined
     ): void {
-        const computedDecorator = findDecorator(member.scriptFunction, PresetDecorators.COMPUTED);
+        const computedDecorator = findDecorator(member.function!, PresetDecorators.COMPUTED);
         if (computedDecorator && !componentV2Decorator && !componentDecorator) {
             this.report({
                 node: computedDecorator,
@@ -278,7 +278,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
         observedV2Decorator: arkts.AnnotationUsage | undefined,
         observedDecorator: arkts.AnnotationUsage | undefined
     ): void {
-        const computedDecorator = findDecorator(member.scriptFunction, PresetDecorators.COMPUTED);
+        const computedDecorator = findDecorator(member.function!, PresetDecorators.COMPUTED);
         if (computedDecorator && !observedV2Decorator && !observedDecorator &&
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET === member.kind) {
             this.report({

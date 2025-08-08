@@ -57,20 +57,20 @@ class AnnotationVisitor extends AbstractVisitor {
     }
 
     addTestAnnotation(node: AnnotationAstNode): void {
-        if (arkts.isEtsParameterExpression(node)) {
-            node.annotations = [this.testAnnotation()];
+        if (arkts.isETSParameterExpression(node)) {
+            node.setAnnotations([this.testAnnotation()]);
         } else if (arkts.isMethodDefinition(node)) {
-            node.scriptFunction.setAnnotations([this.testAnnotation()]);
+            node.function.setAnnotations([this.testAnnotation()]);
         } else {
             node.setAnnotations([this.testAnnotation()]);
         }
     }
 
     removeTestAnnotation(node: AnnotationAstNode): void {
-        if (arkts.isEtsParameterExpression(node)) {
-            node.annotations = [];
+        if (arkts.isETSParameterExpression(node)) {
+            node.setAnnotations([]);
         } else if (arkts.isMethodDefinition(node)) {
-            node.scriptFunction.setAnnotations([]);
+            node.function.setAnnotations([]);
         } else {
             node.setAnnotations([]);
         }
@@ -81,7 +81,7 @@ class AnnotationVisitor extends AbstractVisitor {
             arkts.isClassDefinition(node) ||
             arkts.isClassProperty(node) ||
             arkts.isMethodDefinition(node) ||
-            arkts.isEtsParameterExpression(node) ||
+            arkts.isETSParameterExpression(node) ||
             arkts.isArrowFunctionExpression(node) ||
             arkts.isMethodDefinition(node) ||
             arkts.isVariableDeclaration(node) ||
@@ -102,8 +102,8 @@ class AnnotationVisitor extends AbstractVisitor {
     }
 }
 
-function addAnnotationTransform(this: PluginContext): arkts.EtsScript | undefined {
-    let script: arkts.EtsScript | undefined;
+function addAnnotationTransform(this: PluginContext): arkts.ETSModule | undefined {
+    let script: arkts.ETSModule | undefined;
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
@@ -116,14 +116,14 @@ function addAnnotationTransform(this: PluginContext): arkts.EtsScript | undefine
             pluginContext: this,
         });
         program = programVisitor.programVisitor(program);
-        script = program.astNode;
+        script = program.ast as arkts.ETSModule;
         return script;
     }
     return script;
 }
 
-function removeAnnotationTransform(this: PluginContext): arkts.EtsScript | undefined {
-    let script: arkts.EtsScript | undefined;
+function removeAnnotationTransform(this: PluginContext): arkts.ETSModule | undefined {
+    let script: arkts.ETSModule | undefined;
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
@@ -136,7 +136,7 @@ function removeAnnotationTransform(this: PluginContext): arkts.EtsScript | undef
             pluginContext: this,
         });
         program = programVisitor.programVisitor(program);
-        script = program.astNode;
+        script = program.ast as arkts.ETSModule;
         return script;
     }
     return script;

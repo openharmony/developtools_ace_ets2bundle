@@ -30,11 +30,11 @@ class StaticParamRequireRule extends AbstractUISyntaxRule {
         this.staticPropertyMap = new Map();
     }
 
-    public parsed(node: arkts.StructDeclaration): void {
+    public parsed(node: arkts.ETSStructDeclaration): void {
         // Check if the current node is the root node
         if (arkts.nodeType(node) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
             node.getChildren().forEach((member) => {
-                if (!arkts.isStructDeclaration(member) || !member.definition.ident || !member.definition.ident.name) {
+                if (!arkts.isETSStructDeclaration(member) || !member.definition.ident || !member.definition.ident.name) {
                     return;
                 }
                 const hasComponentV1 = hasAnnotation(member.definition.annotations, PresetDecorators.COMPONENT_V1);
@@ -45,10 +45,10 @@ class StaticParamRequireRule extends AbstractUISyntaxRule {
                 });
             });
         }
-        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.expression)) {
+        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.callee)) {
             return;
         }
-        const componentName = node.expression.name;
+        const componentName = node.callee.name;
         // If the initialization is for a component with private properties
         if (!this.staticPropertyMap.has(componentName)) {
             return;

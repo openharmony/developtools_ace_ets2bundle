@@ -41,18 +41,19 @@ import { factory } from './factory';
 import { factory as UIFactory } from '../ui-factory';
 import { PropertyCache } from './cache/propertyCache';
 import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { AstNodeCacheValueMetadata, NodeCacheFactory } from '../../common/node-cache';
 
 function factoryCallWithLocalProperty(
     this: BasePropertyTranslator,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata,
+    metadata?: AstNodeCacheValueMetadata,
     isStatic?: boolean
 ): arkts.CallExpression | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
     }
     const args: arkts.Expression[] = [
-        arkts.factory.create1StringLiteral(originalName),
+        arkts.factory.createStringLiteral(originalName),
         this.property.value ?? arkts.factory.createUndefinedLiteral(),
     ];
     collectStateManagementTypeImport(this.stateManagementType);
@@ -70,7 +71,7 @@ function initializeStructWithLocalProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     const factoryCall = factoryCallWithLocalProperty.bind(this)(originalName, metadata);
     if (!factoryCall) {
@@ -78,8 +79,8 @@ function initializeStructWithLocalProperty(
     }
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factoryCall
+        factoryCall,
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     return arkts.factory.createExpressionStatement(assign);
 }
@@ -88,7 +89,7 @@ function fieldWithStaticLocalProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.ClassProperty | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
@@ -105,7 +106,7 @@ function fieldWithStaticLocalProperty(
         false
     );
     if (this.isMemoCached) {
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(field, metadata);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(field, metadata);
     }
     return field;
 }
@@ -115,7 +116,7 @@ function getterWithStaticLocalProperty(
     newName: string,
     originalName: string,
     structName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.MethodDefinition {
     const thisValue: arkts.Expression = UIFactory.generateMemberExpression(
         arkts.factory.createIdentifier(structName),
@@ -131,7 +132,7 @@ function getterWithStaticLocalProperty(
         metadata
     );
     if (this.isMemoCached) {
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(getter, metadata);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(getter, metadata);
     }
     return getter;
 }
@@ -141,7 +142,7 @@ function setterWithStaticLocalProperty(
     newName: string,
     originalName: string,
     structName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.MethodDefinition {
     const thisValue: arkts.Expression = UIFactory.generateMemberExpression(
         arkts.factory.createIdentifier(structName),
@@ -152,7 +153,7 @@ function setterWithStaticLocalProperty(
     );
     const setter: arkts.MethodDefinition = createSetter2(originalName, this.propertyType, thisSet, true);
     if (this.isMemoCached) {
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(setter, metadata);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(setter, metadata);
     }
     return setter;
 }
@@ -178,7 +179,7 @@ export class LocalTranslator extends PropertyTranslator {
         }
     }
 
-    field(newName: string, originalName?: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.ClassProperty {
+    field(newName: string, originalName?: string, metadata?: AstNodeCacheValueMetadata): arkts.ClassProperty {
         if (this.isStatic && !!originalName) {
             const property = fieldWithStaticLocalProperty.bind(this)(newName, originalName, metadata);
             if (!!property) {
@@ -188,14 +189,14 @@ export class LocalTranslator extends PropertyTranslator {
         return super.field(newName, originalName, metadata);
     }
 
-    getter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    getter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         if (this.isStatic) {
             return getterWithStaticLocalProperty.bind(this)(newName, originalName, this.structInfo.name, metadata);
         }
         return super.getter(newName, originalName, metadata);
     }
 
-    setter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    setter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         if (this.isStatic) {
             return setterWithStaticLocalProperty.bind(this)(newName, originalName, this.structInfo.name, metadata);
         }
@@ -205,7 +206,7 @@ export class LocalTranslator extends PropertyTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         if (this.isStatic) {
             return undefined;
@@ -235,7 +236,7 @@ export class LocalCachedTranslator extends PropertyCachedTranslator {
         }
     }
 
-    field(newName: string, originalName?: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.ClassProperty {
+    field(newName: string, originalName?: string, metadata?: AstNodeCacheValueMetadata): arkts.ClassProperty {
         if (this.isStatic && !!originalName) {
             const property = fieldWithStaticLocalProperty.bind(this)(newName, originalName, metadata);
             if (!!property) {
@@ -245,7 +246,7 @@ export class LocalCachedTranslator extends PropertyCachedTranslator {
         return super.field(newName, originalName, metadata);
     }
 
-    getter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    getter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         if (this.isStatic) {
             const structName: string = this.propertyInfo.structInfo?.name!;
             return getterWithStaticLocalProperty.bind(this)(newName, originalName, structName, metadata);
@@ -253,7 +254,7 @@ export class LocalCachedTranslator extends PropertyCachedTranslator {
         return super.getter(newName, originalName, metadata);
     }
 
-    setter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    setter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         if (this.isStatic) {
             const structName: string = this.propertyInfo.structInfo?.name!;
             return setterWithStaticLocalProperty.bind(this)(newName, originalName, structName, metadata);
@@ -264,7 +265,7 @@ export class LocalCachedTranslator extends PropertyCachedTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         if (this.isStatic) {
             return undefined;
@@ -281,7 +282,7 @@ export class LocalInterfaceTranslator<T extends InterfacePropertyTypes> extends 
      */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.LOCAL);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.LOCAL);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.LOCAL);
         }

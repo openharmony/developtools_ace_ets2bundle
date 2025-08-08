@@ -64,6 +64,9 @@ export class Es2pandaNativeModule {
     _CreateContextFromFile(config: KPtr, filename: String): KPtr {
         throw new Error('Not implemented');
     }
+    _CreateContextFromStringWithHistory(config: KPtr, source: String, filename: String): KPtr {
+        throw new Error('Not implemented');
+    }
     _CreateCacheContextFromFile(
         config: KNativePointer,
         sourceFileName: String,
@@ -235,6 +238,15 @@ export class Es2pandaNativeModule {
     _ClassVariableDeclaration(context: KNativePointer, classInstance: KNativePointer): KNativePointer {
         throw new Error('Not implemented');
     }
+    _DeclarationFromProperty(context: KPtr, property: KPtr): KPtr {
+        throw new Error('Not implemented');
+    }
+    _DeclarationFromMemberExpression(context: KPtr, expression: KPtr): KPtr {
+        throw new Error('Not implemented');
+    }
+    _DeclarationFromAstNode(context: KPtr, node: KPtr): KPtr {
+        throw new Error('Not implemented');
+    }
     _ETSParserGetGlobalProgramAbsName(context: KNativePointer): KNativePointer {
         throw new Error('Not implemented');
     }
@@ -300,6 +312,19 @@ export class Es2pandaNativeModule {
     _AstNodeProgram(context: KNativePointer, instance: KNativePointer): KNativePointer {
         throw new Error('Not implemented');
     }
+
+    _AstNodeFindNodeInInnerChild(context: KNativePointer, node: KNativePointer, target: KNativePointer): boolean {
+        throw new Error('Not implemented');
+    }
+
+    _AstNodeFindInnerChild(context: KNativePointer, node: KNativePointer, nodeType: KInt): KNativePointer {
+        throw new Error('Not implemented');
+    }
+
+    _AstNodeFindOuterParent(context: KNativePointer, node: KNativePointer, nodeType: KInt): KNativePointer {
+        throw new Error('Not implemented');
+    }
+
     _CreateContextGenerateAbcForExternalSourceFiles(config: KPtr, fileCount: KInt, filenames: string[]): KPtr {
         throw new Error('Not implemented');
     }

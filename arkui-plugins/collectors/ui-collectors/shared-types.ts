@@ -23,8 +23,8 @@ export interface UICollectMetadata extends VisitorOptions {
 }
 
 export interface StructCollectorInfo extends CustomComponentInfo {
-    propertyInfoMap: Record<AstNodePointer, StructPropertyInfo>;
-    methodInfoMap: Record<AstNodePointer, StructMethodInfo>;
+    propertyInfoMap: Map<AstNodePointer, StructPropertyInfo>;
+    methodInfoMap: Map<AstNodePointer, StructMethodInfo>;
 }
 
 export interface CallRecordInfo {

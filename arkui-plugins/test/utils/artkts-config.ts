@@ -40,7 +40,7 @@ import {
 } from './path-config';
 import { ArkTSConfigContextCache } from './cache';
 import { BuildConfig, CompileFileInfo, DependentModule } from './shared-types';
-import { setUpSoPath } from './global';
+import { initializeLibarkts, TestGlobal } from './global';
 import { ProjectConfig } from '../../common/plugin-context';
 
 export interface ArkTSConfigObject {
@@ -162,10 +162,10 @@ function mockBuildConfig(): BuildConfig {
         compileFiles: [path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, MOCK_ENTRY_FILE_NAME)],
         loaderOutPath: path.resolve(getRootPath(), MOCK_OUTPUT_DIR_PATH),
         cachePath: path.resolve(getRootPath(), MOCK_OUTPUT_CACHE_PATH),
-        pandaSdkPath: global.PANDA_SDK_PATH,
-        apiPath: global.API_PATH,
-        kitsPath: global.KIT_PATH,
-        depAnalyzerPath: path.resolve(global.PANDA_SDK_PATH, MOCK_DEP_ANALYZER_PATH),
+        pandaSdkPath: (global as TestGlobal).PANDA_SDK_PATH,
+        apiPath: (global as TestGlobal).API_PATH,
+        kitsPath: (global as TestGlobal).KIT_PATH,
+        depAnalyzerPath: path.resolve((global as TestGlobal).PANDA_SDK_PATH, MOCK_DEP_ANALYZER_PATH),
         sourceRoots: [getRootPath()],
         moduleRootPath: path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH),
         dependentModuleList: [],
@@ -247,7 +247,7 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
         this.moduleInfos = new Map<string, ModuleInfo>();
         this.mergedAbcFile = path.resolve(this.outputDir, MOCK_OUTPUT_FILE_NAME);
 
-        setUpSoPath(this.pandaSdkPath);
+        initializeLibarkts(this.pandaSdkPath);
         this.generateModuleInfos();
         this.generateArkTSConfigForModules();
         this.cacheArkTSConfig();

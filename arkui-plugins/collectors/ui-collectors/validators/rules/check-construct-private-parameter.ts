@@ -62,7 +62,7 @@ function _checkConstructPrivateParameter(
         if (!propertyPtr || !propertyInfo || !propertyInfo.name || !privateClassProperty.includes(propertyInfo.name)) {
             return;
         }
-        const property = arkts.classByPeer<arkts.Property>(propertyPtr);
+        const property = arkts.unpackNonNullableNode<arkts.Property>(propertyPtr);
         this.report({
             node: property,
             level: LogType.WARN,

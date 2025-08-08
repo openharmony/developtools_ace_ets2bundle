@@ -121,6 +121,20 @@ export abstract class AstNode extends ArktsObject {
         return clonedNode as this;
     }
 
+    public findNodeInInnerChild(node: AstNode): boolean {
+        return global.es2panda._AstNodeFindNodeInInnerChild(global.context, this.peer, node.peer);
+    }
+
+    public findInnerChild<T extends AstNode>(nodeType: Es2pandaAstNodeType): T | undefined {
+        const childNodePeer = global.es2panda._AstNodeFindInnerChild(global.context, this.peer, nodeType);
+        return unpackNode(childNodePeer, nodeType);
+    }
+
+    public findOuterParent<T extends AstNode>(nodeType: Es2pandaAstNodeType): T | undefined {
+        const parentNodePeer = global.es2panda._AstNodeFindOuterParent(global.context, this.peer, nodeType);
+        return unpackNode(parentNodePeer, nodeType);
+    }
+
     public get parent(): AstNode | undefined {
         const parent = global.generatedEs2panda._AstNodeParent(global.context, this.peer);
         return unpackNode(parent);

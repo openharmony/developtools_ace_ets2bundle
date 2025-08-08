@@ -30,7 +30,7 @@ class ComponentComponentV2InitCheckRule extends AbstractUISyntaxRule {
         this.componentV1WithLinkList = [];
     }
 
-    public parsed(node: arkts.StructDeclaration): void {
+    public parsed(node: arkts.ETSStructDeclaration): void {
         this.initComponentV1WithLinkList(node);
         this.checkComponentInitLink(node);
     }
@@ -40,7 +40,7 @@ class ComponentComponentV2InitCheckRule extends AbstractUISyntaxRule {
             return;
         }
         node.getChildren().forEach((member) => {
-            if (!arkts.isStructDeclaration(member) || !member.definition.ident ||
+            if (!arkts.isETSStructDeclaration(member) || !member.definition.ident ||
                 !hasAnnotation(member?.definition.annotations, PresetDecorators.COMPONENT_V1)) {
                 return;
             }
@@ -65,7 +65,7 @@ class ComponentComponentV2InitCheckRule extends AbstractUISyntaxRule {
             return;
         }
         let structNode = node.parent;
-        while (!arkts.isStructDeclaration(structNode)) {
+        while (!arkts.isETSStructDeclaration(structNode)) {
             if (!structNode.parent) {
                 return;
             }

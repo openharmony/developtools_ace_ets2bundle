@@ -40,7 +40,7 @@ export class ProgramSkipper {
     }
 
     private static addEdges(program: arkts.Program): void {
-        for (const statement of program.astNode.statements) {
+        for (const statement of program.ast.statements) {
             if (arkts.isETSImportDeclaration(statement)) {
                 const absName = statement.resolvedSource;
                 if (!absName || !this._absName2programs.has(absName)) {
@@ -56,7 +56,7 @@ export class ProgramSkipper {
     }
 
     private static addProgramToMap(program: arkts.Program): void {
-        const absName = program.absName;
+        const absName = program.absoluteName;
         const name2programs = this._absName2programs.get(absName) || [];
         name2programs.push(program);
         this._absName2programs.set(absName, name2programs);
@@ -75,7 +75,7 @@ export class ProgramSkipper {
         programs.forEach((p) => this.addProgramToMap(p));
         programs.forEach((p) => this.addEdges(p));
         programs.forEach((p) => {
-            const name = p.absName;
+            const name = p.absoluteName;
             if (name.endsWith(LIB_SUFFIX) && name.includes(ARKUI)) {
                 this.dfs(p);
             }
@@ -102,7 +102,7 @@ export class ProgramSkipper {
         }
         if (!this._initedCanSkip) {
             const programs = [
-                ...arkts.arktsGlobal.compilerContext?.program.externalSources.flatMap((s) => s.programs)!,
+                ...arkts.arktsGlobal.compilerContext?.program.getExternalSources().flatMap((s) => s.programs)!,
                 program,
             ];
             this.initCanSkip(programs);

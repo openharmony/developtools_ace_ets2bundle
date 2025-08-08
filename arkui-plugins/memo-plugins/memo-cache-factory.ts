@@ -31,8 +31,9 @@ import {
     PositionalIdTracker,
 } from './utils';
 import { InternalsTransformer } from './internal-transformer';
+import { AstNodeCacheValueMetadata } from '../common/node-cache';
 
-export interface CachedMetadata extends arkts.AstNodeCacheValueMetadata {
+export interface CachedMetadata extends AstNodeCacheValueMetadata {
     internalsTransformer?: InternalsTransformer;
 }
 
@@ -50,7 +51,7 @@ export class RewriteFactory {
     }
 
     static rewriteUnionType(node: arkts.ETSUnionType, metadata?: CachedMetadata): arkts.ETSUnionType {
-        return arkts.factory.updateUnionType(
+        return arkts.factory.updateETSUnionType(
             node,
             node.types.map((nodeType) => {
                 if (arkts.isETSFunctionType(nodeType)) {
@@ -93,9 +94,9 @@ export class RewriteFactory {
             typeParams,
             typeParams.params.map((t) => RewriteFactory.rewriteType(t, metadata)!)
         );
-        return arkts.factory.updateTypeReference(
+        return arkts.factory.updateETSTypeReference(
             node,
-            arkts.factory.updateTypeReferencePart(part, part.name, newTypeParams, part.previous)
+            arkts.factory.updateETSTypeReferencePart(part, part.name, newTypeParams, part.previous)
         );
     }
 
@@ -121,18 +122,18 @@ export class RewriteFactory {
         if (!node.typeAnnotation) {
             return node;
         }
-        const newNodeType = RewriteFactory.rewriteType(node.typeAnnotation);
-        return arkts.factory.updateTSTypeAliasDeclaration(node, node.id, node.typeParams, newNodeType);
+        const newNodeType = RewriteFactory.rewriteType(node.typeAnnotation)!;
+        return arkts.factory.updateTSTypeAliasDeclaration(node, node.id, node.typeParams, newNodeType, node.annotations);
     }
 
     static rewriteParameter(
         node: arkts.ETSParameterExpression,
         metadata?: CachedMetadata
     ): arkts.ETSParameterExpression {
-        if (!node.type && !node.initializer) {
+        if (!node.typeAnnotation && !node.initializer) {
             return node;
         }
-        node.type = RewriteFactory.rewriteType(node.type as arkts.TypeNode, metadata);
+        node.setTypeAnnotation(RewriteFactory.rewriteType(node.typeAnnotation, metadata));        
         return node;
     }
 
@@ -155,17 +156,18 @@ export class RewriteFactory {
             !!node.value && arkts.isArrowFunctionExpression(node.value)
                 ? RewriteFactory.rewriteArrowFunction(node.value, metadata)
                 : node.value;
-        return arkts.factory.updateClassProperty(node, node.key, newValue, newType, node.modifiers, node.isComputed);
+        return arkts.factory.updateClassProperty(node, node.key, newValue, newType, node.modifiers, node.isComputed, node.annotations);
     }
 
     static rewriteArrowFunction(
         node: arkts.ArrowFunctionExpression,
-        metadata?: arkts.AstNodeCacheValueMetadata,
+        metadata?: AstNodeCacheValueMetadata,
         expectReturn?: arkts.TypeNode
     ): arkts.ArrowFunctionExpression {
-        return arkts.factory.updateArrowFunction(
+        return arkts.factory.updateArrowFunctionExpression(
             node,
-            RewriteFactory.rewriteScriptFunction(node.scriptFunction, metadata, expectReturn)
+            RewriteFactory.rewriteScriptFunction(node.function!, metadata, expectReturn),
+            node.annotations
         );
     }
 
@@ -185,7 +187,7 @@ export class RewriteFactory {
         const parameters = getFunctionParamsBeforeUnmemoized(node.params, _hasReceiver);
         const declaredParams: ParamInfo[] = parameters.map((p) => {
             const param = p as arkts.ETSParameterExpression;
-            return { ident: param.identifier, param };
+            return { ident: param.ident!, param };
         });
         const _gensymCount = fixGensymParams(declaredParams, body);
         if (findUnmemoizedScopeInFunctionBody(body, _gensymCount)) {
@@ -195,7 +197,7 @@ export class RewriteFactory {
         const returnType =
             node.returnTypeAnnotation ??
             expectReturn ??
-            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
+            arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
         const _isVoidReturn = isVoidType(returnType);
         const _returnType = _isVoidReturn ? arkts.factory.createETSUndefinedType() : returnType;
         const scopeDeclaration = factory.createScopeDeclaration(
@@ -214,7 +216,7 @@ export class RewriteFactory {
         const lastReturn = mayAddLastReturn(body)
             ? factory.createWrappedReturnStatement(factory.createRecacheCall(), _isVoidReturn)
             : undefined;
-        return arkts.factory.updateBlock(body, [
+        return arkts.factory.updateBlockStatement(body, [
             ...body.statements.slice(0, _gensymCount),
             scopeDeclaration,
             ...(!!memoParametersDeclaration ? [memoParametersDeclaration] : []),
@@ -279,15 +281,18 @@ export class RewriteFactory {
         const newNode = arkts.factory.updateMethodDefinition(
             node,
             node.kind,
-            node.name,
-            RewriteFactory.rewriteScriptFunction(node.scriptFunction, {
-                callName: node.name.name,
-                ...metadata,
-                isSetter,
-                isGetter,
-            }),
+            node.key,
+            arkts.factory.createFunctionExpression(node.id?.clone(),
+                RewriteFactory.rewriteScriptFunction(node.function!, {
+                    callName: node.id?.name,
+                    ...metadata,
+                    isSetter,
+                    isGetter,
+                })
+            ),
             node.modifiers,
-            false
+            false,
+            node.overloads
         );
         return newNode;
     }
@@ -299,14 +304,14 @@ export class RewriteFactory {
         }
         const _hasReceiver = metadata?.hasReceiver;
         let _callName: string | undefined = metadata?.callName;
-        if (!!_callName && arkts.isIdentifier(node.expression)) {
-            _callName = node.expression.name;
+        if (!!_callName && arkts.isIdentifier(node.callee)) {
+            _callName = node.callee.name;
         } else if (
             !!_callName &&
-            arkts.isMemberExpression(node.expression) &&
-            arkts.isIdentifier(node.expression.property)
+            arkts.isMemberExpression(node.callee) &&
+            arkts.isIdentifier(node.callee.property)
         ) {
-            _callName = node.expression.property.name;
+            _callName = node.callee.property.name;
         }
         return factory.insertHiddenArgumentsToCall(
             node,
@@ -339,9 +344,9 @@ export class RewriteFactory {
         node: arkts.VariableDeclarator,
         metadata?: CachedMetadata
     ): arkts.VariableDeclarator {
-        const expectReturnType = findLocalReturnTypeFromTypeAnnotation(node.name.typeAnnotation);
-        const variableType = RewriteFactory.rewriteType(node.name.typeAnnotation);
-        let initializer = node.initializer;
+        const expectReturnType = findLocalReturnTypeFromTypeAnnotation((node.id as arkts.Identifier).typeAnnotation);
+        const variableType = RewriteFactory.rewriteType((node.id as arkts.Identifier).typeAnnotation);
+        let initializer = node.init;
         if (!!initializer && arkts.isConditionalExpression(initializer) && !!initializer.alternate) {
             let alternate = initializer.alternate;
             if (arkts.isTSAsExpression(alternate)) {
@@ -368,7 +373,7 @@ export class RewriteFactory {
         return arkts.factory.updateVariableDeclarator(
             node,
             node.flag,
-            arkts.factory.updateIdentifier(node.name, node.name.name, variableType),
+            arkts.factory.updateIdentifier(node.id as arkts.Identifier, (node.id as arkts.Identifier).name, variableType),
             initializer
         );
     }

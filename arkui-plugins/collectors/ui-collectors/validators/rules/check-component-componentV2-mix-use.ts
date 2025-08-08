@@ -46,7 +46,7 @@ function _checkComponentComponentV2MixUse(
     let expr: arkts.Identifier | undefined;
     expr = findTypeRefIdentFromType(classProperty.typeAnnotation);
     if (!expr && checkIsNewClass(classProperty.value)) {
-        expr = findTypeRefIdentFromType(classProperty.value.getTypeRef);
+        expr = findTypeRefIdentFromType(classProperty.value.typeRef);
     }
     if (!!expr) {
         decl = arkts.getPeerIdentifierDecl(expr.peer);

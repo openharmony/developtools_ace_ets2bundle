@@ -18,19 +18,21 @@ import { PluginContext, Plugins } from '../../../common/plugin-context';
 import { ProgramVisitor } from '../../../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../../../common/predefines';
 import { MemoVisitor } from '../../../collectors/memo-collectors/memo-visitor';
+import { NodeCacheFactory } from '../../../common/node-cache';
+import { TestGlobal } from '../global';
 
 /**
  * AfterCheck before-memo-visit and cache any node that should be unmemoized with no recheck AST.
  */
 export const beforeMemoNoRecheck: Plugins = {
     name: 'before-memo-no-recheck',
-    checked(this: PluginContext): arkts.EtsScript | undefined {
-        let script: arkts.EtsScript | undefined;
+    checked(this: PluginContext): arkts.ETSModule | undefined {
+        let script: arkts.ETSModule | undefined;
         const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
-        if (global.MEMO_CACHE_ENABLED && !!contextPtr) {
+        if ((global as TestGlobal).MEMO_CACHE_ENABLED && !!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-            script = program.astNode;
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollectUpdate(global.MEMO_UPDATE_ENABLED);
+            script = program.ast as arkts.ETSModule;
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollectUpdate((global as TestGlobal).MEMO_UPDATE_ENABLED);
             const memoVisitor = new MemoVisitor();
             const programVisitor = new ProgramVisitor({
                 pluginName: beforeMemoNoRecheck.name,
@@ -40,7 +42,7 @@ export const beforeMemoNoRecheck: Plugins = {
                 pluginContext: this,
             });
             program = programVisitor.programVisitor(program);
-            script = program.astNode;
+            script = program.ast as arkts.ETSModule;
             return script;
         }
         return script;

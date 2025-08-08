@@ -16,7 +16,7 @@
 set -e
 
 if [ "$1" == "--init" ]; then
-    cd ../koala-wrapper
+    cd ../ets1.2/libarkts/
     npm install
     npm run compile
     npm link

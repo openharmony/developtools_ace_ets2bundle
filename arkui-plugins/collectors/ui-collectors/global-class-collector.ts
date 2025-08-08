@@ -19,6 +19,7 @@ import { ARKUI_BUILDER_SOURCE_NAME, NodeCacheNames } from '../../common/predefin
 import { FunctionInfo, FunctionRecord } from './records/function';
 import { FunctionValidator, GlobalPropertyValidator, ValidatorBuilder } from './validators';
 import { GLobalPropertyRecord } from './records';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 export interface GlobalClassCollectorOptions extends VisitorOptions {
     shouldIgnoreDecl?: boolean;
@@ -62,7 +63,7 @@ export class GlobalClassCollector extends AbstractVisitor {
         }
         ValidatorBuilder.build(FunctionValidator).checkIsViolated(node, methodInfo);
         if (this.canCollectMethodFromInfo(methodInfo)) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodRecord.toJSON());
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodRecord.toJSON());
         }
         this.shouldCollectGlobalClass ||= this.canCollectGlobalClassFromMethodInfo(methodInfo);
     }

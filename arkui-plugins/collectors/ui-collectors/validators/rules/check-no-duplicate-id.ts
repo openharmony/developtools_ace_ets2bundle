@@ -81,7 +81,7 @@ function _checkNoDuplicateId(this: BaseValidator<arkts.CallExpression, CallInfo>
             continue;
         }
         // 组件的唯一标识符（ID）不可重复
-        const rootCallee = findRootCallee(chainCall.expression)!;
+        const rootCallee = findRootCallee(chainCall.callee)!;
         const cacheIdInfo = usedIds.get(value);
         if (!!cacheIdInfo && cacheIdInfo.node.peer !== rootCallee.peer) {
             reportDuplicatedId.bind(this)(rootCallee, value);
@@ -100,8 +100,8 @@ function reportDuplicatedId(
     if (!path) {
         return;
     }
-    const line = callee.startPosition.line() + 1;
-    const column = callee.startPosition.col();
+    const line = callee.startPosition.getLine() + 1;
+    const column = callee.startPosition.getCol();
     this.report({
         node: callee,
         level: LogType.WARN,

@@ -123,7 +123,7 @@ function validateObjectLinkPropertyType(
     } else if (
         arkts.nodeType(propertyType) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_STRING_LITERAL_TYPE ||
         arkts.nodeType(propertyType) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_NULL_TYPE ||
-        arkts.nodeType(propertyType) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ERROR_TYPE_NODE ||
+        arkts.nodeType(propertyType) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_BROKEN_TYPE_NODE ||
         arkts.isETSPrimitiveType(propertyType) ||
         arkts.isETSUndefinedType(propertyType)
     ) {
@@ -149,7 +149,7 @@ function areAllUnionMembersNotAnyAndBigint(unionType: arkts.ETSUnionType): boole
     for (const member of members) {
         if (
             typeNodeIsAnyAndBigint(member) === true ||
-            arkts.nodeType(member) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ERROR_TYPE_NODE
+            arkts.nodeType(member) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_BROKEN_TYPE_NODE
         ) {
             return false;
         }
@@ -172,7 +172,7 @@ function isMethodOrFunctionWithBuilderDecorator(node: arkts.Identifier): boolean
     if (
         methodDecl &&
         arkts.isMethodDefinition(methodDecl) &&
-        getAnnotationUsageByName(methodDecl.scriptFunction.annotations, DecoratorNames.BUILDER)
+        getAnnotationUsageByName(methodDecl.function.annotations, DecoratorNames.BUILDER)
     ) {
         return true;
     }
@@ -223,7 +223,7 @@ function areAllUnionMembersValid(unionType: arkts.ETSUnionType): boolean {
         } else if (
             arkts.isETSPrimitiveType(member) ||
             arkts.nodeType(member) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_STRING_LITERAL_TYPE ||
-            arkts.nodeType(member) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ERROR_TYPE_NODE
+            arkts.nodeType(member) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_BROKEN_TYPE_NODE
         ) {
             return false;
         } else if (

@@ -76,34 +76,13 @@ export function coerceToAstNode<T extends arkts.AstNode>(node: arkts.AstNode): T
     return node as T;
 }
 
-/**
- * create and insert `import { <imported> as <local> } from <source>` to the top of script's statements.
- */
-export function createAndInsertImportDeclaration(
-    source: arkts.StringLiteral,
-    imported: arkts.Identifier,
-    local: arkts.Identifier,
-    importKind: arkts.Es2pandaImportKinds,
-    program: arkts.Program
-): void {
-    const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
-        source,
-        [arkts.factory.createImportSpecifier(imported, local)],
-        importKind,
-        program,
-        arkts.Es2pandaImportFlags.IMPORT_FLAGS_NONE
-    );
-    arkts.importDeclarationInsert(importDecl, program);
-    return;
-}
-
 export function isNumeric(str: string): boolean {
     return /^\d+$/.test(str);
 }
 
 export function annotation(name: string): arkts.AnnotationUsage {
     const ident: arkts.Identifier = arkts.factory.createIdentifier(name).setAnnotationUsage();
-    const annotation: arkts.AnnotationUsage = arkts.factory.createAnnotationUsage(ident);
+    const annotation: arkts.AnnotationUsage = arkts.factory.createAnnotationUsage(ident, []);
 
     annotation.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_ANNOTATION_USAGE;
     ident.parent = annotation;

@@ -73,7 +73,7 @@ function main() {}
     if (({let gensym___194626867 = initializers;
     (((gensym___194626867) == (null)) ? undefined : gensym___194626867.__options_has_text1)})) {
       this.__backing_text1 = STATE_MGMT_FACTORY.makeLink<string>(this, "text1", initializers!.__backing_text1!);
-    };
+    }
   }
   
   public __updateStruct(initializers: (__Options_Parant | undefined)): void {}
@@ -127,7 +127,7 @@ function main() {}
     if (({let gensym___55490166 = initializers;
     (((gensym___55490166) == (null)) ? undefined : gensym___55490166.__options_has_childText)})) {
       this.__backing_childText = STATE_MGMT_FACTORY.makeLink<string>(this, "childText", initializers!.__backing_childText!);
-    };
+    }
     this.__backing_childText2 = STATE_MGMT_FACTORY.makeState<string>(this, "childText2", ((({let gensym___95513066 = initializers;
     (((gensym___95513066) == (null)) ? undefined : gensym___95513066.childText2)})) ?? ("sss")));
     this.__backing_childText3 = STATE_MGMT_FACTORY.makePropRef<string>(this, "childText3", (initializers!.childText3 as string));

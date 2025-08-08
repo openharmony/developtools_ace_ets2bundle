@@ -17,6 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor } from '../../common/abstract-visitor';
 import { NodeCacheNames } from '../../common/predefines';
 import { factory as BuilderLambdaFactory } from './factory';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 /**
  * `ConditionScopeVisitor` is used to visit `@Builder` function body to wrap `ConditionScope`/`ConditionBranch`
@@ -58,7 +59,7 @@ export class ConditionScopeVisitor extends AbstractVisitor {
     private enter(node: arkts.AstNode): void {
         if (
             arkts.isVariableDeclarator(node) &&
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)
         ) {
             this._enforceUpdateCondition = true;
         }
@@ -81,12 +82,12 @@ export class ConditionScopeVisitor extends AbstractVisitor {
             const newStatements = node.statements.map((st) =>
                 BuilderLambdaFactory.updateContentBodyInBuilderLambda(st, true, true)
             );
-            return arkts.factory.updateBlock(node, newStatements);
+            return arkts.factory.updateBlockStatement(node, newStatements);
         }
         if (
             arkts.isArrowFunctionExpression(node) &&
-            !arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node) &&
-            !arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node.scriptFunction)
+            !NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node) &&
+            !NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node.function)
         ) {
             this.shouldUpdateCondition = false;
             this._enforceUpdateCondition = false;

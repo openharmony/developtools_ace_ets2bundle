@@ -53,7 +53,7 @@ export type ComponentAttributeInfo = {
 export function findAttributeInfoFromComponentMethod(
     component: arkts.MethodDefinition
 ): ComponentAttributeInfo | undefined {
-    const type = component.scriptFunction.returnTypeAnnotation;
+    const type = component.function.returnTypeAnnotation;
     const name = expectNameInTypeReference(type);
     if (!name) {
         return undefined;
@@ -151,7 +151,7 @@ export function checkIsTrailingLambdaInLastParam(
     }
     const lastParam = params.at(params.length - 1)! as arkts.ETSParameterExpression;
     const hasBuilder = findBuilderName(lastParam, ignoreDecl);
-    return checkIsTrailingLambdaType(lastParam.type, ignoreDecl, hasBuilder);
+    return checkIsTrailingLambdaType(lastParam.typeAnnotation, ignoreDecl, hasBuilder);
 }
 
 /**
@@ -183,13 +183,17 @@ export class InnerComponentFunctionRecord extends BaseRecord<arkts.MethodDefinit
         index: number,
         name: string
     ): arkts.ETSParameterExpression {
-        if (index === 0 && isForEach(name) && !!param.type && arkts.isTypeNode(param.type)) {
-            const lambdaType = arkts.factory.createFunctionType(
-                arkts.FunctionSignature.createFunctionSignature(undefined, [], param.type.clone(), false),
+        if (index === 0 && isForEach(name) && !!param.typeAnnotation && arkts.isTypeNode(param.typeAnnotation)) {
+            const lambdaType = arkts.factory.createETSFunctionType(
+                undefined,
+                [],
+                param.typeAnnotation.clone(),
+                false,
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
             );
-            return arkts.factory.createParameterDeclaration(
-                arkts.factory.createIdentifier(param.identifier.name, lambdaType),
+            return arkts.factory.createETSParameterExpression(
+                arkts.factory.createIdentifier(param.ident!.name, lambdaType),
+                false,
                 undefined
             );
         }
@@ -201,8 +205,8 @@ export class InnerComponentFunctionRecord extends BaseRecord<arkts.MethodDefinit
         if (!attributeInfo) {
             return;
         }
-        const name: string = node.name.name;
-        const func = node.scriptFunction;
+        const name: string = node.id!.name;
+        const func = node.function;
         const hasRestParameter = func.hasRestParameter;
         const hasReceiver = func.hasReceiver;
         const typeParameters = collectTypeRecordFromTypeParameterDeclaration(func.typeParams);

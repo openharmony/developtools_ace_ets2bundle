@@ -14,6 +14,7 @@
  */
 
 #include "common.h"
+#include "memoryTracker.h"
 
 #include <set>
 #include <string>
@@ -107,6 +108,14 @@ KNativePointer impl_CreateContextFromFile(KNativePointer configPtr, KStringPtr& 
 }
 KOALA_INTEROP_2(CreateContextFromFile, KNativePointer, KNativePointer, KStringPtr)
 
+KNativePointer impl_CreateContextFromStringWithHistory(KNativePointer configPtr, KStringPtr& sourcePtr,
+                                                       KStringPtr& filenamePtr)
+{
+    auto config = reinterpret_cast<es2panda_Config*>(configPtr);
+    return GetImpl()->CreateContextFromStringWithHistory(config, sourcePtr.data(), filenamePtr.data());
+}
+KOALA_INTEROP_3(CreateContextFromStringWithHistory, KNativePointer, KNativePointer, KStringPtr, KStringPtr)
+
 KNativePointer impl_SignatureFunction(KNativePointer context, KNativePointer classInstance)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -115,6 +124,125 @@ KNativePointer impl_SignatureFunction(KNativePointer context, KNativePointer cla
     return result;
 }
 KOALA_INTEROP_2(SignatureFunction, KNativePointer, KNativePointer, KNativePointer)
+
+static KNativePointer findPropertyInClassDefinition(KNativePointer context, KNativePointer classInstance, char *keyName)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _instance = reinterpret_cast<es2panda_AstNode*>(classInstance);
+    std::size_t bodySize = 0;
+    const auto _body = GetImpl()->ClassDefinitionBody(_context, _instance, &bodySize);
+    if (_body == nullptr) {
+        return nullptr;
+    }
+    const auto _bodyInstance = reinterpret_cast<es2panda_AstNode**>(_body);
+    for (std::size_t i = 0; i < bodySize; i++) {
+        const auto _member = reinterpret_cast<es2panda_AstNode*>(_bodyInstance[i]);
+        const auto _key = reinterpret_cast<es2panda_AstNode*>(GetImpl()->ClassElementKey(_context, _member));
+        if (strcmp(GetImpl()->IdentifierName(_context, _key), keyName) == 0) {
+            return _member;
+        }
+    }
+    return nullptr;
+}
+
+static KNativePointer findPropertyInTSInterfaceDeclaration(
+    KNativePointer context, KNativePointer classInstance, char *keyName)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _instance = reinterpret_cast<es2panda_AstNode*>(classInstance);
+    const auto _body = GetImpl()->TSInterfaceDeclarationBody(_context, _instance);
+    if (_body == nullptr) {
+        return nullptr;
+    }
+    const auto _bodyInstance = reinterpret_cast<es2panda_AstNode*>(_body);
+    std::size_t bodySize = 0;
+    const auto _bodyBody = GetImpl()->TSInterfaceBodyBodyConst(_context, _bodyInstance, &bodySize);
+    if (_bodyBody == nullptr) {
+        return nullptr;
+    }
+    const auto _bodyBodyInstance = reinterpret_cast<es2panda_AstNode**>(_bodyBody);
+    for (std::size_t i = 0; i < bodySize; i++) {
+        const auto _member = reinterpret_cast<es2panda_AstNode*>(_bodyBodyInstance[i]);
+        const auto _key = reinterpret_cast<es2panda_AstNode*>(GetImpl()->ClassElementKey(_context, _member));
+        if (strcmp(GetImpl()->IdentifierName(_context, _key), keyName) == 0) {
+            return _member;
+        }
+    }
+    return nullptr;
+}
+
+KNativePointer impl_ClassVariableDeclaration(KNativePointer context, KNativePointer classInstance);
+
+KNativePointer impl_DeclarationFromProperty(KNativePointer context, KNativePointer property)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _property = reinterpret_cast<es2panda_AstNode*>(property);
+    auto _key = GetImpl()->PropertyKey(_context, _property);
+    if (_key == nullptr) {
+        return nullptr;
+    }
+    auto _parent = GetImpl()->AstNodeParent(_context, _property);
+    if (_parent == nullptr) {
+        return nullptr;
+    }
+    const auto _parentInstance = reinterpret_cast<es2panda_AstNode*>(_parent);
+    auto _decl = impl_ClassVariableDeclaration(_context, _parentInstance);
+    if (_decl == nullptr) {
+        return nullptr;
+    }
+    const auto _declInstance = reinterpret_cast<es2panda_AstNode*>(_decl);
+    const auto _keyInstance = reinterpret_cast<es2panda_AstNode*>(_key);
+    auto _keyName = GetImpl()->IdentifierName(_context, _keyInstance);
+    if (GetImpl()->IsClassDefinition(_declInstance)) {
+        return findPropertyInClassDefinition(_context, _declInstance, _keyName);
+    }
+    if (GetImpl()->IsTSInterfaceDeclaration(_declInstance)) {
+        return findPropertyInTSInterfaceDeclaration(_context, _declInstance, _keyName);
+    }
+    return nullptr;
+}
+KOALA_INTEROP_2(DeclarationFromProperty, KNativePointer, KNativePointer, KNativePointer);
+
+KNativePointer impl_DeclarationFromMemberExpression(KNativePointer context, KNativePointer nodePtr)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _node = reinterpret_cast<es2panda_AstNode*>(nodePtr);
+    auto _object = GetImpl()->MemberExpressionObject(_context, _node);
+    auto _property = GetImpl()->MemberExpressionProperty(_context, _node);
+    if (_property == nullptr) {
+        return nullptr;
+    }
+    const auto _propertyInstance = reinterpret_cast<es2panda_AstNode*>(_property);
+    if (GetImpl()->IsNumberLiteral(_propertyInstance) && _object != nullptr) {
+        const auto _objectInstance = reinterpret_cast<es2panda_AstNode*>(_object);
+        if (GetImpl()->IsMemberExpression(_objectInstance)) {
+        return impl_DeclarationFromMemberExpression(_context, _objectInstance);
+        }
+        return GetImpl()->DeclarationFromIdentifier(_context, _objectInstance);
+    }
+    if (GetImpl()->IsMemberExpression(_propertyInstance)) {
+        return impl_DeclarationFromMemberExpression(_context, _propertyInstance);
+    }
+    return GetImpl()->DeclarationFromIdentifier(_context, _propertyInstance);
+}
+KOALA_INTEROP_2(DeclarationFromMemberExpression, KNativePointer, KNativePointer, KNativePointer);
+
+KNativePointer impl_DeclarationFromAstNode(KNativePointer context, KNativePointer nodePtr)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _node = reinterpret_cast<es2panda_AstNode*>(nodePtr);
+    if (GetImpl()->IsMemberExpression(_node)) {
+        return impl_DeclarationFromMemberExpression(_context, _node);
+    }
+    if (GetImpl()->IsObjectExpression(_node)) {
+        return impl_ClassVariableDeclaration(_context, _node);
+    }
+    if (GetImpl()->IsProperty(_node)) {
+        return impl_DeclarationFromProperty(_context, _node);
+    }
+    return GetImpl()->DeclarationFromIdentifier(_context, _node);
+}
+KOALA_INTEROP_2(DeclarationFromAstNode, KNativePointer, KNativePointer, KNativePointer);
 
 static KNativePointer impl_ProgramExternalSources(KNativePointer contextPtr, KNativePointer instancePtr)
 {
@@ -566,3 +694,22 @@ KNativePointer impl_CreateTypeNodeFromTsType(KNativePointer context, KNativePoin
     return _typeAnnotation;
 }
 KOALA_INTEROP_2(CreateTypeNodeFromTsType, KNativePointer, KNativePointer, KNativePointer)
+
+MemoryTracker tracker;
+void impl_MemoryTrackerReset(KNativePointer context)
+{
+    tracker.Reset();
+}
+KOALA_INTEROP_V1(MemoryTrackerReset, KNativePointer);
+
+void impl_MemoryTrackerGetDelta(KNativePointer context)
+{
+    tracker.Report(tracker.GetDelta());
+}
+KOALA_INTEROP_V1(MemoryTrackerGetDelta, KNativePointer);
+
+void impl_MemoryTrackerPrintCurrent(KNativePointer context)
+{
+    tracker.Report(GetMemoryStats());
+}
+KOALA_INTEROP_V1(MemoryTrackerPrintCurrent, KNativePointer);

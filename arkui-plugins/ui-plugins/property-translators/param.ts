@@ -80,7 +80,7 @@ export class ParamInterfaceTranslator<T extends InterfacePropertyTypes> extends 
      */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.PARAM);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.PARAM);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.PARAM);
         }

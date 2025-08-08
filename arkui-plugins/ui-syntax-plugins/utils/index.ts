@@ -150,7 +150,7 @@ export function getAnnotationName(annotation: arkts.AnnotationUsage): string {
 }
 
 export function getAnnotationUsage(
-    declaration: arkts.StructDeclaration,
+    declaration: arkts.ETSStructDeclaration,
     annotationName: string
 ): arkts.AnnotationUsage | undefined {
     return declaration.definition.annotations.find(
@@ -365,7 +365,7 @@ export function getAnnotationUsageByName(
 
 export function isStructClassDeclaration(node: arkts.AstNode): node is arkts.ClassDeclaration {
     return (
-        arkts.isClassDeclaration(node) && !!node.definition && arkts.classDefinitionIsFromStructConst(node.definition)
+        arkts.isClassDeclaration(node) && !!node.definition && node.definition.isFromStruct
     );
 }
 
@@ -387,7 +387,7 @@ export function getFunctionAnnotationUsage(
 }
 
 export function getCallee(callExpression: arkts.CallExpression): arkts.Identifier | undefined {
-    const expression = callExpression.expression;
+    const expression = callExpression.callee;
     if (arkts.isIdentifier(expression)) {
         return expression;
     }
@@ -423,5 +423,5 @@ export const TypeFlags = {
 
 export function getCurrentFilePath(node: arkts.AstNode): string | undefined {
     const program = arkts.getProgramFromAstNode(node);
-    return program?.absName;
+    return program.absoluteName;
 }

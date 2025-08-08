@@ -42,8 +42,9 @@ export class BuilderLambdaTransformer extends AbstractVisitor {
             return this.visitEachChild(lambda);
         }
         const node = this.visitEachChild(beforeChildren);
-        if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
-            ImportCollector.getInstance().insertCurrentImports(this.program);
+        if (arkts.isETSModule(node) && ImportCollector.getInstance().importInfos.length > 0) {
+            let imports = ImportCollector.getInstance().getImportStatements();
+            return arkts.factory.updateETSModule(node, [...imports, ...node.statements], node.ident, node.getNamespaceFlag(), node.program);
         }
         return node;
     }

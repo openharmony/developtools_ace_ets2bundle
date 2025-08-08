@@ -47,7 +47,7 @@ class ComponentComponentV2MixUseCheckRule extends AbstractUISyntaxRule {
       this.findAllTSTypeAliasDeclaration(node);
     }
 
-    if (arkts.isStructDeclaration(node)) {
+    if (arkts.isETSStructDeclaration(node)) {
       this.processComponentAnnotations(node);
     }
   }
@@ -109,7 +109,7 @@ class ComponentComponentV2MixUseCheckRule extends AbstractUISyntaxRule {
   }
 
   private processComponentAnnotations(
-    node: arkts.StructDeclaration
+    node: arkts.ETSStructDeclaration
   ): void {
     node.definition.annotations.forEach((anno) => {
       if (!anno.expr) {

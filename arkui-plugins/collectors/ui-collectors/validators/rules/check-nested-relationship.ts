@@ -48,27 +48,27 @@ function _checkNestedRelationship(
         return;
     }
     const componentsInfo = MetaDataCollector.getInstance().componentsInfo;
-    if (!componentsInfo || !metadata.declName || !arkts.isIdentifier(node.expression)) {
+    if (!componentsInfo || !metadata.declName || !arkts.isIdentifier(node.callee)) {
         return;
     }
 
     // Check if there are any restrictions on the node parent component
     if (componentsInfo.validParentComponent.has(metadata.declName)) {
         const parentComponentNames = componentsInfo.validParentComponent.get(metadata.declName)!;
-        checkValidParentComponent.bind(this)(node.expression, metadata.declName, parentComponentNames);
+        checkValidParentComponent.bind(this)(node.callee, metadata.declName, parentComponentNames);
     }
     // Check if the node's sub components have limitations
     if (componentsInfo.validChildComponent.has(metadata.declName)) {
         const childComponentNames = componentsInfo.validChildComponent.get(metadata.declName)!;
-        checkValidChildComponent.bind(this)(node.expression, metadata.declName, childComponentNames);
+        checkValidChildComponent.bind(this)(node.callee, metadata.declName, childComponentNames);
     }
     // Check whether the current node is a single subComponent container
     if (componentsInfo.singleChildComponents.includes(metadata.declName)) {
-        checkSingleChildComponent.bind(this)(node.expression, metadata.declName);
+        checkSingleChildComponent.bind(this)(node.callee, metadata.declName);
     }
     // Check whether the current node is an atomic component
     if (componentsInfo.atomicComponents.includes(metadata.declName)) {
-        checkNoChildComponent.bind(this)(node.expression, metadata.declName);
+        checkNoChildComponent.bind(this)(node.callee, metadata.declName);
     }
 }
 
@@ -85,23 +85,23 @@ function checkValidParentComponent(
     let foundRenderingComponent: boolean = false;
     while (
         !arkts.isCallExpression(curNode) ||
-        !arkts.isIdentifier(curNode.expression) ||
-        !isBuiltInComponent.bind(this)(curNode.expression)
+        !arkts.isIdentifier(curNode.callee) ||
+        !isBuiltInComponent.bind(this)(curNode.callee)
     ) {
         if (!curNode.parent) {
             return;
         }
         if (
             arkts.isCallExpression(curNode) &&
-            arkts.isIdentifier(curNode.expression) &&
-            renderingConrtrolComponents.has(curNode.expression.name)
+            arkts.isIdentifier(curNode.callee) &&
+            renderingConrtrolComponents.has(curNode.callee.name)
         ) {
             foundRenderingComponent = true;
         }
         curNode = curNode.parent;
     }
     // If the parent component of the current component is not within the valid range, an error is reported
-    const parentComponentName = curNode.expression.name;
+    const parentComponentName = curNode.callee.name;
     if (parentComponentNames.includes(parentComponentName)) {
         return;
     }
@@ -136,7 +136,7 @@ function checkValidChildComponent(
     }
     let parentNode = componentIdentifier.parent;
 
-    if (!arkts.isCallExpression(parentNode) || !arkts.isIdentifier(parentNode.expression)) {
+    if (!arkts.isCallExpression(parentNode) || !arkts.isIdentifier(parentNode.callee)) {
         return;
     }
     let reportFlag: boolean = false;
@@ -144,12 +144,12 @@ function checkValidChildComponent(
     parentNode.arguments.forEach((argument) => {
         if (
             !arkts.isArrowFunctionExpression(argument) ||
-            !argument.scriptFunction.body ||
-            !arkts.isBlockStatement(argument.scriptFunction.body)
+            !argument.function.body ||
+            !arkts.isBlockStatement(argument.function.body)
         ) {
             return;
         }
-        argument.scriptFunction.body.statements.forEach((statement) => {
+        argument.function.body.statements.forEach((statement) => {
             const childComponentNode = findChildComponentNode(statement);
             if (!childComponentNode) {
                 return;
@@ -182,19 +182,19 @@ function findChildComponentNode(stmt: arkts.AstNode): arkts.Identifier | undefin
         !arkts.isExpressionStatement(stmt) ||
         !stmt.expression ||
         !arkts.isCallExpression(stmt.expression) ||
-        !stmt.expression.expression
+        !stmt.expression.callee
     ) {
         return undefined;
     }
-    if (arkts.isIdentifier(stmt.expression.expression)) {
-        return stmt.expression.expression;
+    if (arkts.isIdentifier(stmt.expression.callee)) {
+        return stmt.expression.callee;
     }
     if (
-        arkts.isMemberExpression(stmt.expression.expression) &&
-        arkts.isCallExpression(stmt.expression.expression.object) &&
-        arkts.isIdentifier(stmt.expression.expression.object.expression)
+        arkts.isMemberExpression(stmt.expression.callee) &&
+        arkts.isCallExpression(stmt.expression.callee.object) &&
+        arkts.isIdentifier(stmt.expression.callee.object.callee)
     ) {
-        return stmt.expression.expression.object.expression;
+        return stmt.expression.callee.object.callee;
     }
     return undefined;
 }
@@ -228,12 +228,12 @@ function checkSingleChildComponent(
     parentNode.arguments.forEach((argument) => {
         if (
             !arkts.isArrowFunctionExpression(argument) ||
-            !argument.scriptFunction.body ||
-            !arkts.isBlockStatement(argument.scriptFunction.body)
+            !argument.function.body ||
+            !arkts.isBlockStatement(argument.function.body)
         ) {
             return;
         }
-        if (argument.scriptFunction.body.statements.length <= SINGLE_CHILD_COMPONENT) {
+        if (argument.function.body.statements.length <= SINGLE_CHILD_COMPONENT) {
             return;
         }
         this.report({
@@ -260,12 +260,12 @@ function checkNoChildComponent(
     parentNode.arguments.forEach((argument) => {
         if (
             !arkts.isArrowFunctionExpression(argument) ||
-            !argument.scriptFunction.body ||
-            !arkts.isBlockStatement(argument.scriptFunction.body)
+            !argument.function.body ||
+            !arkts.isBlockStatement(argument.function.body)
         ) {
             return;
         }
-        if (argument.scriptFunction.body.statements.length === 0) {
+        if (argument.function.body.statements.length === 0) {
             return;
         }
         this.report({

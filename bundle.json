@@ -49,6 +49,9 @@
             },
             {
                 "name": "//developtools/ace_ets2bundle/arkui-plugins:ui_plugin"
+            },
+            {
+                "name": "//developtools/ace_ets2bundle/ets1.2:ohos_ets_libarkts"
             }
         ]
       }

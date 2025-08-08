@@ -25,7 +25,7 @@ class StructMissingDecoratorRule extends AbstractUISyntaxRule {
     }
 
     public parsed(node: arkts.AstNode): void {
-        if (!arkts.isStructDeclaration(node)) {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
         if (!node.definition) {
@@ -51,7 +51,7 @@ class StructMissingDecoratorRule extends AbstractUISyntaxRule {
         }
     }
 
-    private hasDecorator(node: arkts.StructDeclaration, decorator: string): boolean {
+    private hasDecorator(node: arkts.ETSStructDeclaration, decorator: string): boolean {
         return !!getAnnotationUsage(node, decorator);
     }
 }

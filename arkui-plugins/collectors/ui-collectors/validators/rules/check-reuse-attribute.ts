@@ -50,18 +50,18 @@ function _checkReuseAttribute(this: BaseValidator<arkts.CallExpression, CallInfo
         return;
     }
     if (
-        !arkts.isMemberExpression(node.expression) ||
-        !node.expression.property ||
-        !arkts.isCallExpression(node.expression.object)
+        !arkts.isMemberExpression(node.callee) ||
+        !node.callee.property ||
+        !arkts.isCallExpression(node.callee.object)
     ) {
         return;
     }
     // Gets the reuse or reuseId attribute
-    const decoratedNode = node.expression.property;
+    const decoratedNode = node.callee.property;
     if (!arkts.isIdentifier(decoratedNode)) {
         return;
     }
-    const structDefinition = arkts.classByPeer<arkts.ClassDefinition>(metadata.structDeclInfo.definitionPtr);
+    const structDefinition = arkts.unpackNonNullableNode<arkts.ClassDefinition>(metadata.structDeclInfo.definitionPtr!);
     if (!structDefinition || !structDefinition.parent || !arkts.isClassDeclaration(structDefinition.parent)) {
         return;
     }

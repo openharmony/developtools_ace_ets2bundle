@@ -42,12 +42,10 @@ export class factory {
     }
     static createContextTypesImportDeclaration(program?: arkts.Program): void {
         const source: arkts.StringLiteral = arkts.factory.createStringLiteral(RuntimeNames.MEMO_IMPORT_NAME);
-        const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
+        const importDecl: arkts.ETSImportDeclaration = arkts.factory.createETSImportDeclaration(
             source,
             [factory.createContextTypeImportSpecifier(), factory.createIdTypeImportSpecifier()],
-            arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPE,
-            program!,
-            arkts.Es2pandaImportFlags.IMPORT_FLAGS_NONE
+            arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPES
         );
         // Insert this import at the top of the script's statements.
         if (!program) {
@@ -59,24 +57,26 @@ export class factory {
 
     // Parameters
     static createContextParameter(): arkts.ETSParameterExpression {
-        return arkts.factory.createParameterDeclaration(
+        return arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(
                 RuntimeNames.CONTEXT,
-                arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(RuntimeNames.CONTEXT_TYPE))
+                arkts.factory.createETSTypeReference(
+                    arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier(RuntimeNames.CONTEXT_TYPE))
                 )
             ),
+            false,
             undefined
         );
     }
     static createIdParameter(): arkts.ETSParameterExpression {
-        return arkts.factory.createParameterDeclaration(
+        return arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(
                 RuntimeNames.ID,
-                arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(RuntimeNames.ID_TYPE))
+                arkts.factory.createETSTypeReference(
+                    arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier(RuntimeNames.ID_TYPE))
                 )
             ),
+            false,
             undefined
         );
     }
@@ -102,48 +102,49 @@ export class factory {
         hasReceiver: boolean = false,
         newTypeParams?: arkts.TSTypeParameterDeclaration
     ): arkts.ETSFunctionType {
-        return arkts.factory.updateFunctionType(
+        return arkts.factory.updateETSFunctionType(
             type,
-            arkts.factory.createFunctionSignature(
-                newTypeParams,
-                factory.createHiddenParameterIfNotAdded(type.params, hasReceiver),
-                type.returnType,
-                false
-            ),
-            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
+            newTypeParams,
+            factory.createHiddenParameterIfNotAdded(type.params, hasReceiver),
+            type.returnType,
+            false,
+            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+            type.annotations
         );
     }
     static updateScriptFunctionWithMemoParameters(
         func: arkts.ScriptFunction,
         newBody?: arkts.AstNode | undefined,
         returnType?: arkts.TypeNode | undefined
-    ): arkts.ScriptFunction {
+    ): arkts.ScriptFunction {    
         return arkts.factory.updateScriptFunction(
             func,
             newBody ?? func.body,
-            arkts.factory.createFunctionSignature(
-                func.typeParams,
-                factory.createHiddenParameterIfNotAdded(func.params, parametrizedNodeHasReceiver(func)),
-                returnType ?? func.returnTypeAnnotation,
-                func.hasReceiver
-            ),
+            func.typeParams,
+            factory.createHiddenParameterIfNotAdded(func.params, parametrizedNodeHasReceiver(func)),
+            returnType ?? func.returnTypeAnnotation,
+            func.hasReceiver,
             func.flags,
-            func.modifiers
-        );
+            func.modifierFlags,
+            func.id ?? undefined,
+            func.annotations ?? undefined,
+            func.getSignaturePointer?.() ?? undefined,
+            func.getPreferredReturnTypePointer?.() ?? undefined
+        );        
     }
 
     // Arguments
-    static createContextArgument(): arkts.AstNode {
+    static createContextArgument(): arkts.Expression {
         return arkts.factory.createIdentifier(RuntimeNames.CONTEXT);
     }
-    static createIdArgument(hash: arkts.NumberLiteral | arkts.StringLiteral): arkts.AstNode {
+    static createIdArgument(hash: arkts.NumberLiteral | arkts.StringLiteral): arkts.Expression {
         return arkts.factory.createBinaryExpression(
             arkts.factory.createIdentifier(RuntimeNames.ID),
             hash,
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_PLUS
         );
     }
-    static createHiddenArguments(hash: arkts.NumberLiteral | arkts.StringLiteral): arkts.AstNode[] {
+    static createHiddenArguments(hash: arkts.NumberLiteral | arkts.StringLiteral): arkts.Expression[] {
         return [factory.createContextArgument(), factory.createIdArgument(hash)];
     }
 
@@ -170,14 +171,16 @@ export class factory {
                     false,
                     false
                 ),
-                undefined,
-                [arkts.factory.createNumericLiteral(id), originalIdent]
+                [arkts.factory.createNumberLiteral(id), originalIdent],
+                undefined,  
+                false,       
+                false        
             )
         );
     }
+    
     static createMemoParameterDeclaration(parameters: string[]): arkts.VariableDeclaration {
         return arkts.factory.createVariableDeclaration(
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
             parameters.map((name, id) => {
                 return factory.createMemoParameterDeclarator(id, name);
@@ -193,8 +196,10 @@ export class factory {
             false
         );
     }
+
     static createMemoParameterAccessCall(name: string, passArgs?: arkts.AstNode[]): arkts.CallExpression {
-        const updatedArgs = passArgs ? passArgs : [];
+        const updatedArgs = (passArgs ?? []) as arkts.Expression[];
+    
         return arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
                 factory.createMemoParameterIdentifier(name),
@@ -203,11 +208,13 @@ export class factory {
                 false,
                 false
             ),
-            undefined,
-            [...updatedArgs]
+            updatedArgs,
+            undefined, // typeParams
+            false,     // optional_arg 
+            false      // trailingComma
         );
-    }
-
+    }    
+    
     // Recache
     static createScopeDeclaration(
         returnTypeAnnotation: arkts.TypeNode | undefined,
@@ -215,7 +222,6 @@ export class factory {
         cnt: number
     ): arkts.VariableDeclaration {
         return arkts.factory.createVariableDeclaration(
-            0,
             arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
             [
                 arkts.factory.createVariableDeclarator(
@@ -229,15 +235,21 @@ export class factory {
                             false,
                             false
                         ),
-                        returnTypeAnnotation
+                        [
+                            factory.createIdArgument(hash) as arkts.Expression,
+                            arkts.factory.createNumberLiteral(cnt) as arkts.Expression
+                        ],
+                        arkts.factory.createTSTypeParameterInstantiation(returnTypeAnnotation
                             ? [returnTypeAnnotation]
                             : [arkts.factory.createETSUndefinedType()],
-                        [factory.createIdArgument(hash), arkts.factory.createNumericLiteral(cnt)]
+                        ),
+                        false,
+                        false
                     )
                 ),
             ]
         );
-    }
+    }    
     static createRecacheCall(arg?: arkts.AstNode): arkts.CallExpression {
         return arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
@@ -247,12 +259,14 @@ export class factory {
                 false,
                 false
             ),
-            undefined,
-            arg ? [arg] : undefined
+            arg ? [arg as arkts.Expression] : [],
+            undefined, // typeParams
+            false,     // optional_arg
+            false      // trailingComma
         );
-    }
+    }    
     static createReturnThis(): arkts.BlockStatement {
-        return arkts.factory.createBlock([
+        return arkts.factory.createBlockStatement([
             arkts.factory.createExpressionStatement(factory.createRecacheCall()),
             arkts.factory.createReturnStatement(arkts.factory.createThisExpression()),
         ]);
@@ -269,13 +283,15 @@ export class factory {
                 )
             );
         }
-        return arkts.factory.createBlock([
-            arkts.factory.createMemberExpression(
-                arkts.factory.createIdentifier(RuntimeNames.SCOPE),
-                arkts.factory.createIdentifier(RuntimeNames.INTERNAL_VALUE),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_NONE,
-                false,
-                false
+        return arkts.factory.createBlockStatement([
+            arkts.factory.createExpressionStatement(
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createIdentifier(RuntimeNames.SCOPE),
+                    arkts.factory.createIdentifier(RuntimeNames.INTERNAL_VALUE),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_NONE,
+                    false,
+                    false
+                ),
             ),
             arkts.factory.createReturnStatement(arkts.factory.createThisExpression()),
         ]);
@@ -286,7 +302,7 @@ export class factory {
     ): arkts.IfStatement {
         let returnStatement = syntheticReturnStatement;
         if (isVoidValue && arkts.isReturnStatement(syntheticReturnStatement)) {
-            returnStatement = arkts.factory.createBlock([
+            returnStatement = arkts.factory.createBlockStatement([
                 arkts.factory.createExpressionStatement(syntheticReturnStatement.argument!),
                 arkts.factory.createReturnStatement(),
             ]);
@@ -309,23 +325,30 @@ export class factory {
         if (!isReturnVoid) {
             return arkts.factory.createReturnStatement(argument);
         }
-        return arkts.factory.createBlock([
+        return arkts.factory.createBlockStatement([
             arkts.factory.createExpressionStatement(argument),
             arkts.factory.createReturnStatement(),
         ]);
     }
 
-    // Compute
     static createLambdaWrapper(node: arkts.Expression): arkts.ArrowFunctionExpression {
-        return arkts.factory.createArrowFunction(
+        return arkts.factory.createArrowFunctionExpression(
             arkts.factory.createScriptFunction(
-                arkts.factory.createBlock([arkts.factory.createReturnStatement(node)]),
-                arkts.factory.createFunctionSignature(undefined, [], undefined, false),
+                arkts.factory.createBlockStatement([
+                    arkts.factory.createReturnStatement(node)
+                ]),
+                undefined, // typeParams
+                [],        // params
+                undefined, // returnTypeAnnotation
+                false,     // hasReceiver
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+                undefined, // ident
+                undefined  // annotations
             )
         );
-    }
+    }    
+
     static createComputeExpression(
         hash: arkts.NumberLiteral | arkts.StringLiteral,
         node: arkts.Expression
@@ -338,11 +361,16 @@ export class factory {
                 false,
                 false
             ),
-            undefined,
-            [factory.createIdArgument(hash), factory.createLambdaWrapper(node)]
+            [ // _arguments
+                factory.createIdArgument(hash) as arkts.Expression,
+                factory.createLambdaWrapper(node) as arkts.Expression
+            ],
+            undefined, // typeParams
+            false,     // optional_arg
+            false      // trailingComma
         );
     }
-
+    
     static updateFunctionBody(
         node: arkts.BlockStatement,
         parameters: arkts.ETSParameterExpression[],
@@ -369,7 +397,7 @@ export class factory {
             isVoidValue
         );
         return [
-            arkts.factory.updateBlock(node, [
+            arkts.factory.updateBlockStatement(node, [
                 ...node.statements.slice(0, gensymParamsCount),
                 scopeDeclaration,
                 ...(memoParametersDeclaration ? [memoParametersDeclaration] : []),
@@ -391,7 +419,7 @@ export class factory {
         if (arkts.isETSFunctionType(typeAnnotation)) {
             return factory.updateFunctionTypeWithMemoParameters(typeAnnotation);
         } else if (arkts.isETSUnionType(typeAnnotation)) {
-            return arkts.factory.updateUnionType(
+            return arkts.factory.updateETSUnionType(
                 typeAnnotation,
                 typeAnnotation.types.map((it) => {
                     if (arkts.isETSFunctionType(it)) {
@@ -413,6 +441,15 @@ export class factory {
         if (!!hasReceiver) {
             updatedArguments = moveToFront(updatedArguments, 2);
         }
-        return arkts.factory.updateCallExpression(node, node.expression, node.typeArguments, updatedArguments);
+        const expressionArgs = updatedArguments as arkts.Expression[];
+        return arkts.factory.updateCallExpression(
+            node,
+            node.callee,
+            expressionArgs,
+            node.typeParams,
+            node.isOptional,
+            node.hasTrailingComma,
+            node.trailingBlock
+        );
     }
 }

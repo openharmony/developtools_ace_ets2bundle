@@ -60,23 +60,23 @@ function main() {}
     if (({let gensym___184416899 = initializers;
     (((gensym___184416899) == (null)) ? undefined : gensym___184416899.__options_has_linkVar1)})) {
       this.__backing_linkVar1 = STATE_MGMT_FACTORY.makeLink<string>(this, "linkVar1", initializers!.__backing_linkVar1!);
-    };
+    }
     if (({let gensym___82966591 = initializers;
     (((gensym___82966591) == (null)) ? undefined : gensym___82966591.__options_has_linkVar2)})) {
       this.__backing_linkVar2 = STATE_MGMT_FACTORY.makeLink<number>(this, "linkVar2", initializers!.__backing_linkVar2!);
-    };
+    }
     if (({let gensym___55498955 = initializers;
     (((gensym___55498955) == (null)) ? undefined : gensym___55498955.__options_has_linkVar3)})) {
       this.__backing_linkVar3 = STATE_MGMT_FACTORY.makeLink<boolean>(this, "linkVar3", initializers!.__backing_linkVar3!);
-    };
+    }
     if (({let gensym___231322030 = initializers;
     (((gensym___231322030) == (null)) ? undefined : gensym___231322030.__options_has_linkVar4)})) {
       this.__backing_linkVar4 = STATE_MGMT_FACTORY.makeLink<undefined>(this, "linkVar4", initializers!.__backing_linkVar4!);
-    };
+    }
     if (({let gensym___2576517 = initializers;
     (((gensym___2576517) == (null)) ? undefined : gensym___2576517.__options_has_linkVar5)})) {
       this.__backing_linkVar5 = STATE_MGMT_FACTORY.makeLink<null>(this, "linkVar5", initializers!.__backing_linkVar5!);
-    };
+    }
   }
   
   public __updateStruct(initializers: (__Options_LinkParent | undefined)): void {}

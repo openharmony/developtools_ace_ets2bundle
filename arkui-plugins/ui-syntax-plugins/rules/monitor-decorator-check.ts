@@ -32,7 +32,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     public parsed(node: arkts.AstNode): void {
-        if (!arkts.isClassDeclaration(node) && !arkts.isStructDeclaration(node)) {
+        if (!arkts.isClassDeclaration(node) && !arkts.isETSStructDeclaration(node)) {
             return;
         }
 
@@ -41,7 +41,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             this.checkMonitorInClass(node, monitorDecorator);
         }
 
-        if (monitorDecorator && arkts.isStructDeclaration(node)) {
+        if (monitorDecorator && arkts.isETSStructDeclaration(node)) {
             this.checkMonitorInStruct(node, monitorDecorator);
         }
         this.checkDecorateMethod(node);
@@ -88,7 +88,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private checkMonitorInStruct(
-        node: arkts.StructDeclaration,
+        node: arkts.ETSStructDeclaration,
         monitorDecorator: arkts.AnnotationUsage | undefined,
     ): void {
         if (!monitorDecorator) {
@@ -124,7 +124,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
     }
 
-    private checkDecorator(node: arkts.ClassDeclaration | arkts.StructDeclaration, decoratorName: string): boolean {
+    private checkDecorator(node: arkts.ClassDeclaration | arkts.ETSStructDeclaration, decoratorName: string): boolean {
         return node.definition?.annotations?.some(
             annotation => annotation.expr && arkts.isIdentifier(annotation.expr) &&
                 annotation.expr?.name === decoratorName
@@ -132,7 +132,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private checkMonitorUsage(
-        node: arkts.ClassDeclaration | arkts.StructDeclaration
+        node: arkts.ClassDeclaration | arkts.ETSStructDeclaration
     ): arkts.AnnotationUsage | undefined {
         let monitorUsage: arkts.AnnotationUsage | undefined;
 
@@ -152,7 +152,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private getLocalMonitorUsed(body: arkts.MethodDefinition): arkts.AnnotationUsage | undefined {
-        const localMonitorUsed = body.scriptFunction.annotations?.find(
+        const localMonitorUsed = body.function!.annotations?.find(
             annotation => annotation.expr && arkts.isIdentifier(annotation.expr) &&
                 annotation.expr.name === PresetDecorators.MONITOR
         );
@@ -160,7 +160,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private checkConflictingDecorators(body: arkts.MethodDefinition, localMonitorUsed: arkts.AnnotationUsage): boolean {
-        const conflictingDecorators = body.scriptFunction.annotations?.filter(
+        const conflictingDecorators = body.function!.annotations?.filter(
             annotation => annotation.expr && arkts.isIdentifier(annotation.expr) &&
                 annotation.expr.name !== PresetDecorators.MONITOR
         );
@@ -180,7 +180,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                     annotation.startPosition);
                 const endPositions = conflictingDecorators.map(annotation => annotation.endPosition);
                 let startPosition = startPositions[0];
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                 const endPosition = endPositions[endPositions.length - 1];
                 return {
                     title: 'Remove the annotation',
@@ -191,7 +191,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         });
     }
 
-    private checkDecorateMethod(node: arkts.ClassDeclaration | arkts.StructDeclaration): void {
+    private checkDecorateMethod(node: arkts.ClassDeclaration | arkts.ETSStructDeclaration): void {
         // Check if @Monitor is used on a property (which is not allowed)
         node.definition?.body.forEach((body) => {
             if (!arkts.isClassProperty(body)) {
@@ -213,7 +213,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 message: this.messages.monitorDecorateMethod,
                 fix: () => {
                     let startPosition = monitorDecorator.startPosition;
-                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                    startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                     const endPosition = monitorDecorator.endPosition;
                     return {
                         title: 'Remove the @Monitor annotation',
