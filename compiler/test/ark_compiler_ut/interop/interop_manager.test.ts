@@ -331,7 +331,7 @@ mocha.describe('test getBrdigeCodeRootPath api', function () {
     };
 
     const result = getBrdigeCodeRootPath(filePath, mockConfig);
-    expect(result).to.equal('/bridge/a/b');
+    expect(result.declgenBridgeCodePath).to.equal('/bridge/a/b');
   });
 
   mocha.it('1-2: should return undefined when filePath does not match any moduleRootPath', function () {
@@ -350,12 +350,31 @@ mocha.describe('test getBrdigeCodeRootPath api', function () {
     expect(result).to.be.undefined;
   });
 
-  mocha.it('1-3: should return process.env.entryBridgeCodePath when interopConfig is null', function () {
-    process.env.entryBridgeCodePath = '/default/bridge/path';
+  mocha.it('1-3: should return declgenBridgeCodePath when interopConfig is provided', function () {
     const filePath = '/any/file.ts';
+    this.rollup = new RollUpPluginMock();
+    this.rollup.build();
+    this.rollup.share.projectConfig.mixCompile = true;
 
-    const result = getBrdigeCodeRootPath(filePath, undefined as any);
-    expect(result).to.equal('/default/bridge/path');
+    initConfigForInterop(this.rollup.share);
+
+    const interopInfo = {
+      declgenBridgeCodePath: '/some/bridge/path',
+      declgenV1OutPath: '/some/v1/out/path',
+      packageName: 'test-package',
+      moduleRootPath: ''
+    };
+    const fakeConfig = {
+      interopModuleInfo: new Map<string, typeof interopInfo>([
+        ['/any', { ...interopInfo }]
+      ]),
+      projectConfig: {}
+    };
+
+    const result = getBrdigeCodeRootPath(filePath, fakeConfig as any);
+    destroyInterop();
+
+    expect(result?.declgenBridgeCodePath).to.equal('/some/bridge/path');
   });
 });
 
