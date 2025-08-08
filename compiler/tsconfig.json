@@ -287,9 +287,9 @@
         "RichEditor",
         "Component3D",
         "ContainerSpan",
+        "ArcAlphabetIndexer",
         "ArcSwiper",
         "ArcScrollBar",
-        "ArcAlphabetIndexer",
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
