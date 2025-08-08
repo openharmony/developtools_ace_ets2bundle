@@ -162,6 +162,7 @@
         "onGlobalThemeChanged",
         "getShareLocalStorage",
         "setShareLocalStorage",
-        "propagateToChildren"
+        "propagateToChildren",
+        "__getDecoratorPropertyName__V2View__Internal"
     ]
 }
