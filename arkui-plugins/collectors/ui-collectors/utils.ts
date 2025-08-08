@@ -198,12 +198,12 @@ export function checkIsNameStartWithBackingField(node: arkts.AstNode | undefined
 }
 
 export function checkIsStructFromNode(node: arkts.AstNode, shouldFindStructFlag?: boolean): boolean {
-    if (arkts.isStructDeclaration(node)) {
+    if (arkts.isETSStructDeclaration(node)) {
         return true;
     }
     if (arkts.isClassDeclaration(node) && !!node.definition) {
         if (!!shouldFindStructFlag) {
-            return arkts.classDefinitionIsFromStructConst(node.definition);
+            return node.definition.isFromStruct;
         }
         return true;
     }

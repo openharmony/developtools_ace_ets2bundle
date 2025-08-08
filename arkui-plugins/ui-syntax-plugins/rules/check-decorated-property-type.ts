@@ -41,8 +41,8 @@ class CheckDecoratedPropertyTypeRule extends AbstractUISyntaxRule {
     };
   }
 
-  public parsed(node: arkts.StructDeclaration): void {
-    if (!arkts.isStructDeclaration(node)) {
+  public parsed(node: arkts.ETSStructDeclaration): void {
+    if (!arkts.isETSStructDeclaration(node)) {
       return;
     }
     if (!node.definition) {

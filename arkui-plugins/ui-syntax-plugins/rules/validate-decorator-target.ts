@@ -54,7 +54,7 @@ class ValidateDecoratorTargetRule extends AbstractUISyntaxRule {
     public parsed(node: arkts.AstNode): void {
         this.validateDecoratorPropertyOnly(node);
 
-        if (!arkts.isStructDeclaration(node)) {
+        if (!arkts.isETSStructDeclaration(node)) {
             this.validateDecoratorStructOnly(node);
         }
     }
@@ -72,7 +72,7 @@ class ValidateDecoratorTargetRule extends AbstractUISyntaxRule {
 
     private validateDecoratorStructOnly(node: arkts.AstNode): void {
         // class
-        if (arkts.isClassDeclaration(node)) {
+        if (arkts.isClassDeclaration(node) && !arkts.isETSStructDeclaration(node)) {
             node.definition?.annotations?.forEach((annotation) => {
                 this.validateDecorator(annotation, structOnlyDecorators, this.messages.decoratorOnlyWithStruct);
             });
@@ -94,7 +94,7 @@ class ValidateDecoratorTargetRule extends AbstractUISyntaxRule {
         if (arkts.isMethodDefinition(node) &&
             (node.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET ||
                 node.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET)) {
-            node.scriptFunction.annotations.forEach((annotation) => {
+            node.function!.annotations.forEach((annotation) => {
                 this.validateDecorator(annotation, structOnlyDecorators, this.messages.decoratorOnlyWithStruct);
             });
         }

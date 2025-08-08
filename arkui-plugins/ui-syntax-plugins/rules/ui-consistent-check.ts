@@ -41,7 +41,7 @@ class UiConsistentCheckRule extends AbstractUISyntaxRule {
         };
     }
 
-    public parsed(node: arkts.StructDeclaration): void {
+    public parsed(node: arkts.ETSStructDeclaration): void {
         // Specific Attributes: Check the VP units
         this.checkVpUnit(node);
         // Specific attributes: Check the VP and PX units
@@ -94,7 +94,7 @@ class UiConsistentCheckRule extends AbstractUISyntaxRule {
         }
         let curNode = node;
         try {
-            while (!arkts.isStructDeclaration(curNode)) {
+            while (!arkts.isETSStructDeclaration(curNode)) {
                 if (!curNode.parent) {
                     return false;
                 }
@@ -136,18 +136,18 @@ class UiConsistentCheckRule extends AbstractUISyntaxRule {
     }
 
     private checkVpUnit(node: arkts.AstNode): void {
-        if (!arkts.isCallExpression(node) || !node.expression ||
-            !arkts.isMemberExpression(node.expression) || !node.expression.property) {
+        if (!arkts.isCallExpression(node) || !node.callee ||
+            !arkts.isMemberExpression(node.callee) || !node.callee.property) {
             return;
         }
         // Verify the attribute whose unit is VP
-        if (!arkts.isIdentifier(node.expression.property) ||
-            !UiConsistentCheckRule.checkVpProperties.includes(node.expression.property.name)) {
+        if (!arkts.isIdentifier(node.callee.property) ||
+            !UiConsistentCheckRule.checkVpProperties.includes(node.callee.property.name)) {
             return;
         }
         // Only the content under the UI component and the special decorator is verified
-        if (!this.isInUIComponent(node.expression.property) &&
-            !this.isInSpecificDecorators(node.expression.property)) {
+        if (!this.isInUIComponent(node.callee.property) &&
+            !this.isInSpecificDecorators(node.callee.property)) {
             return;
         }
         // Gets the attribute value text and verifies the formatting
@@ -182,18 +182,18 @@ class UiConsistentCheckRule extends AbstractUISyntaxRule {
     }
 
     private checkVpAndPxUnit(node: arkts.AstNode): void {
-        if (!arkts.isCallExpression(node) || !node.expression ||
-            !arkts.isMemberExpression(node.expression) || !node.expression.property) {
+        if (!arkts.isCallExpression(node) || !node.callee ||
+            !arkts.isMemberExpression(node.callee) || !node.callee.property) {
             return;
         }
         // Verify the attribute whose unit is VP or PX
-        if (!arkts.isIdentifier(node.expression.property) ||
-            !UiConsistentCheckRule.checkVpAndPxProperties.includes(node.expression.property.name)) {
+        if (!arkts.isIdentifier(node.callee.property) ||
+            !UiConsistentCheckRule.checkVpAndPxProperties.includes(node.callee.property.name)) {
             return;
         }
         // Only the content under the UI component and the special decorator is verified
-        if (!this.isInUIComponent(node.expression.property) &&
-            !this.isInSpecificDecorators(node.expression.property)) {
+        if (!this.isInUIComponent(node.callee.property) &&
+            !this.isInSpecificDecorators(node.callee.property)) {
             return;
         }
         // Gets the attribute value text and verifies the formatting
@@ -228,18 +228,18 @@ class UiConsistentCheckRule extends AbstractUISyntaxRule {
     }
 
     private checkColorParams(node: arkts.AstNode): void {
-        if (!arkts.isCallExpression(node) || !node.expression ||
-            !arkts.isMemberExpression(node.expression) || !node.expression.property) {
+        if (!arkts.isCallExpression(node) || !node.callee ||
+            !arkts.isMemberExpression(node.callee) || !node.callee.property) {
             return;
         }
         // Verify the attribute whose type is Color
-        if (!arkts.isIdentifier(node.expression.property) ||
-            !this.isColorProperty(node.expression.property.name)) {
+        if (!arkts.isIdentifier(node.callee.property) ||
+            !this.isColorProperty(node.callee.property.name)) {
             return;
         }
         // Only the content under the UI component and the special decorator is verified
-        if (!this.isInUIComponent(node.expression.property) &&
-            !this.isInSpecificDecorators(node.expression.property)) {
+        if (!this.isInUIComponent(node.callee.property) &&
+            !this.isInSpecificDecorators(node.callee.property)) {
             return;
         }
         // Gets the attribute value text and verifies the formatting

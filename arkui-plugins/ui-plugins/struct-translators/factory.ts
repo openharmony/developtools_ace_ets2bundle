@@ -95,6 +95,7 @@ import { ComputedCache } from '../property-translators/cache/computedCache';
 import { ComponentAttributeCache } from '../builder-lambda-translators/cache/componentAttributeCache';
 import { CustomDialogControllerBuilderCache, CustomDialogControllerCache } from '../memo-collect-cache';
 import { insertInteropComponentImports, isInteropComponent } from '../interop/utils';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 export class factory {
     /**
@@ -139,7 +140,7 @@ export class factory {
         let modifiers: arkts.Es2pandaModifierFlags =
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         if (!scope.isDecl) {
-            body = arkts.factory.createBlock([
+            body = arkts.factory.createBlockStatement([
                 ...ComputedCache.getInstance().getCachedComputed(scope.name),
                 ...PropertyCache.getInstance().getInitializeBody(scope.name),
                 ...MonitorCache.getInstance().getCachedMonitors(scope.name),
@@ -149,21 +150,22 @@ export class factory {
         const scriptFunction: arkts.ScriptFunction = arkts.factory
             .createScriptFunction(
                 body,
-                arkts.FunctionSignature.createFunctionSignature(
-                    undefined,
-                    [UIFactory.createInitializersOptionsParameter(optionsTypeName), UIFactory.createContentParameter()],
-                    arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                    false
-                ),
+                // arkts.FunctionSignature.createFunctionSignature(
+                undefined,
+                [UIFactory.createInitializersOptionsParameter(optionsTypeName), UIFactory.createContentParameter()],
+                arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                false,
+                // ),
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-                modifiers
-            )
-            .setIdent(updateKey);
+                modifiers,
+                updateKey,
+                undefined
+            );
 
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
-            updateKey,
-            scriptFunction,
+            updateKey.clone(),
+            arkts.factory.createFunctionExpression(updateKey.clone(), scriptFunction),
             modifiers,
             false
         );
@@ -206,14 +208,16 @@ export class factory {
             });
             builderNode.setOverloads(newOverLoads);
             if (!!newType) {
-                builderNode.scriptFunction.setReturnTypeAnnotation(newType);
+                builderNode.function!.setReturnTypeAnnotation(newType);
             }
         } else if (builderNode.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {
-            const param = builderNode.scriptFunction.params[0] as arkts.ETSParameterExpression;
-            const newParam: arkts.Expression | undefined = arkts.factory.updateParameterDeclaration(
+            const param = builderNode.function!.params[0] as arkts.ETSParameterExpression;
+            const newParam: arkts.Expression | undefined = arkts.factory.updateETSParameterExpression(
                 param,
-                arkts.factory.createIdentifier(param.identifier.name, newType),
-                param.initializer
+                arkts.factory.createIdentifier(param.ident!.name, newType),
+                false,
+                param.initializer,
+                param.annotations
             );
             if (!!newParam) {
                 return UIFactory.updateMethodDefinition(builderNode, { function: { params: [newParam] } });
@@ -234,28 +238,27 @@ export class factory {
         let modifiers: arkts.Es2pandaModifierFlags =
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         if (!scope.isDecl) {
-            body = arkts.factory.createBlock(PropertyCache.getInstance().getUpdateBody(scope.name));
+            body = arkts.factory.createBlockStatement(PropertyCache.getInstance().getUpdateBody(scope.name) as arkts.Statement[]);
             modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
         }
 
         const scriptFunction: arkts.ScriptFunction = arkts.factory
             .createScriptFunction(
                 body,
-                arkts.FunctionSignature.createFunctionSignature(
-                    undefined,
-                    [UIFactory.createInitializersOptionsParameter(optionsTypeName)],
-                    arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                    false
-                ),
+                undefined,
+                [UIFactory.createInitializersOptionsParameter(optionsTypeName)],
+                arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                false,
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-                modifiers
-            )
-            .setIdent(updateKey);
+                modifiers,
+                updateKey.clone(),
+                undefined
+            );
 
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
-            updateKey,
-            scriptFunction,
+            updateKey.clone(),
+            arkts.factory.createFunctionExpression(updateKey.clone(), scriptFunction),
             modifiers,
             false
         );
@@ -267,30 +270,36 @@ export class factory {
     static createToRecord(optionsTypeName: string, scope: CustomComponentScopeInfo): arkts.MethodDefinition {
         const paramsCasted = factory.generateParamsCasted(optionsTypeName);
         const returnRecord = arkts.factory.createReturnStatement(
-            arkts.ObjectExpression.createObjectExpression(
-                arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
-                PropertyCache.getInstance().getToRecordBody(scope.name),
-                false
+            arkts.factory.createObjectExpression(
+                PropertyCache.getInstance().getToRecordBody(scope.name)
             )
         );
-        const body: arkts.BlockStatement = arkts.factory.createBlock([paramsCasted, returnRecord]);
+        const body: arkts.BlockStatement = arkts.factory.createBlockStatement([paramsCasted, returnRecord]);
 
-        const params = arkts.ETSParameterExpression.create(
+        const params = arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier('params', factory.generateTypeReferenceWithTypeName('Object')),
+            false,
             undefined
         );
 
+        const methodId = arkts.factory.createIdentifier('__toRecord');
+
         const toRecordScriptFunction = arkts.factory.createScriptFunction(
             body,
-            arkts.FunctionSignature.createFunctionSignature(undefined, [params], factory.generateTypeRecord(), false),
+            undefined,
+            [params],
+            factory.generateTypeRecord(),
+            false,
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            methodId,
+            undefined
         );
 
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
-            arkts.factory.createIdentifier('__toRecord'),
-            toRecordScriptFunction,
+            methodId.clone(),
+            arkts.factory.createFunctionExpression(methodId.clone(), toRecordScriptFunction),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OVERRIDE,
             false
         );
@@ -301,7 +310,6 @@ export class factory {
      */
     static generateParamsCasted(optionsTypeName: string): arkts.VariableDeclaration {
         return arkts.factory.createVariableDeclaration(
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
             [
                 arkts.factory.createVariableDeclarator(
@@ -321,8 +329,8 @@ export class factory {
      * generate Record<string, Object> type.
      */
     static generateTypeRecord(): arkts.ETSTypeReference {
-        return arkts.factory.createTypeReference(
-            arkts.factory.createTypeReferencePart(
+        return arkts.factory.createETSTypeReference(
+            arkts.factory.createETSTypeReferencePart(
                 arkts.factory.createIdentifier('Record'),
                 arkts.factory.createTSTypeParameterInstantiation([
                     factory.generateTypeReferenceWithTypeName('string'),
@@ -336,8 +344,8 @@ export class factory {
      * create type reference with type name, e.g. number.
      */
     static generateTypeReferenceWithTypeName(typeName: string): arkts.ETSTypeReference {
-        return arkts.factory.createTypeReference(
-            arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(typeName))
+        return arkts.factory.createETSTypeReference(
+            arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier(typeName))
         );
     }
 
@@ -358,7 +366,8 @@ export class factory {
             definition.super,
             members,
             definition.modifiers,
-            arkts.classDefinitionFlags(definition)
+            arkts.classDefinitionFlags(definition),
+            definition.annotations
         );
     }
 
@@ -399,17 +408,18 @@ export class factory {
      */
     static createAniExtendValueParam(): arkts.ETSParameterExpression {
         const numberType = UIFactory.createTypeReferenceFromString('number');
-        const AnimatableArithmeticType = arkts.factory.createTypeReference(
-            arkts.factory.createTypeReferencePart(
+        const AnimatableArithmeticType = arkts.factory.createETSTypeReference(
+            arkts.factory.createETSTypeReferencePart(
                 arkts.factory.createIdentifier(AnimationNames.ANIMATABLE_ARITHMETIC),
                 arkts.factory.createTSTypeParameterInstantiation([UIFactory.createTypeReferenceFromString('T')])
             )
         );
-        return arkts.factory.createParameterDeclaration(
+        return arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(
                 'value',
-                arkts.factory.createUnionType([numberType, AnimatableArithmeticType])
+                arkts.factory.createETSUnionType([numberType, AnimatableArithmeticType])
             ),
+            false,
             undefined
         );
     }
@@ -418,40 +428,51 @@ export class factory {
      * generate __createOrSetAnimatableProperty(...) for AnimatableExtend
      */
     static createOrSetAniProperty(): arkts.MethodDefinition {
-        const funcNameParam: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
+        const funcNameParam: arkts.ETSParameterExpression = arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier('functionName', UIFactory.createTypeReferenceFromString('string')),
+            false,
             undefined
         );
-        const cbParam = arkts.factory.createParameterDeclaration(
+        const cbParam = arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(
                 'callback',
-                arkts.factory.createFunctionType(
-                    arkts.factory.createFunctionSignature(
-                        undefined,
-                        [factory.createAniExtendValueParam()],
-                        arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                        false
-                    ),
+                arkts.factory.createETSFunctionType(
+                    undefined,
+                    [factory.createAniExtendValueParam()],
+                    arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                    false,
                     arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
                 )
             ),
+            false,
             undefined
         );
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             arkts.factory.createIdentifier(AnimationNames.CREATE_OR_SET_ANIMATABLEPROPERTY),
-            UIFactory.createScriptFunction({
-                typeParams: arkts.factory.createTypeParameterDeclaration(
-                    [arkts.factory.createTypeParameter(arkts.factory.createIdentifier('T'))],
-                    0
-                ),
-                params: [funcNameParam, factory.createAniExtendValueParam(), cbParam],
-                returnTypeAnnotation: arkts.factory.createPrimitiveType(
-                    arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID
-                ),
-                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
-            }),
+            arkts.factory.createFunctionExpression(
+                arkts.factory.createIdentifier(AnimationNames.CREATE_OR_SET_ANIMATABLEPROPERTY),
+                UIFactory.createScriptFunction({
+                    key: arkts.factory.createIdentifier(AnimationNames.CREATE_OR_SET_ANIMATABLEPROPERTY),
+                    typeParams: arkts.factory.createTSTypeParameterDeclaration(
+                        [
+                            arkts.factory.createTypeParameter(
+                                arkts.factory.createIdentifier('T'),
+                                undefined,
+                                undefined,
+                                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+                            )
+                        ],
+                        0
+                    ),
+                    params: [funcNameParam, factory.createAniExtendValueParam(), cbParam],
+                    returnTypeAnnotation: arkts.factory.createETSPrimitiveType(
+                        arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID
+                    ),
+                    flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+                    modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+                })
+            ),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
             false
         );
@@ -462,29 +483,36 @@ export class factory {
      */
     static createAnimationMethod(key: string): arkts.MethodDefinition {
         const aniparams: arkts.Expression[] = [
-            arkts.factory.createParameterDeclaration(
+            arkts.factory.createETSParameterExpression(
                 arkts.factory.createIdentifier(
                     'value',
-                    arkts.factory.createUnionType([
-                        arkts.factory.createTypeReference(
-                            arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('AnimateParam'))
+                    arkts.factory.createETSUnionType([
+                        arkts.factory.createETSTypeReference(
+                            arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier('AnimateParam'))
                         ),
                         arkts.factory.createETSUndefinedType(),
                     ])
                 ),
+                false,
                 undefined
             ),
         ];
+        const keyIdent = arkts.factory.createIdentifier(key);
         const aniFunc = arkts.factory.createScriptFunction(
             undefined,
-            arkts.factory.createFunctionSignature(undefined, aniparams, arkts.TSThisType.createTSThisType(), false),
+            undefined,
+            aniparams,
+            arkts.TSThisType.createTSThisType(),
+            false,
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            keyIdent,
+            undefined
         );
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
-            arkts.factory.createIdentifier(key),
-            aniFunc,
+            keyIdent.clone(),
+            arkts.factory.createFunctionExpression(keyIdent.clone(), aniFunc),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
             false
         );
@@ -519,8 +547,22 @@ export class factory {
         if (arkts.isMethodDefinition(member)) {
             PropertyFactory.addMemoToBuilderClassMethod(member);
             if (isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_BUILD_ORI)) {
-                addMemoAnnotation(member.scriptFunction);
-                return BuilderFactory.rewriteBuilderMethod(member);
+                addMemoAnnotation(member.function);
+                const transformedBuildMethod = BuilderFactory.rewriteBuilderMethod(member);
+                // TODO check if this explicit cache is needed
+                NodeCacheFactory.getInstance()
+                    .getCache(NodeCacheNames.MEMO)
+                    .refresh(member, transformedBuildMethod);
+                NodeCacheFactory.getInstance()
+                    .getCache(NodeCacheNames.MEMO)
+                    .refreshUpdate(member, transformedBuildMethod);
+                NodeCacheFactory.getInstance()
+                    .getCache(NodeCacheNames.MEMO)
+                    .refresh(member.function, transformedBuildMethod.function);
+                NodeCacheFactory.getInstance()
+                    .getCache(NodeCacheNames.MEMO)
+                    .refreshUpdate(member.function, transformedBuildMethod.function);
+                return transformedBuildMethod;
             }
             return member;
         }
@@ -645,10 +687,10 @@ export class factory {
         projectConfig: ProjectConfig | undefined,
         resourceInfo: ResourceInfo
     ): arkts.CallExpression {
-        if (!arkts.isIdentifier(resourceNode.expression) || !projectConfig) {
+        if (!arkts.isIdentifier(resourceNode.callee) || !projectConfig) {
             return resourceNode;
         }
-        const resourceKind: Dollars = resourceNode.expression.name as Dollars;
+        const resourceKind: Dollars = resourceNode.callee.name as Dollars;
         if (arkts.isStringLiteral(resourceNode.arguments[0])) {
             return factory.processStringLiteralResourceNode(
                 resourceNode,
@@ -720,13 +762,14 @@ export class factory {
     ): arkts.MethodDefinition {
         let block: arkts.BlockStatement | undefined = undefined;
         if (!!controller) {
-            block = arkts.factory.createBlock(this.createSetControllerElements(controller));
+            block = arkts.factory.createBlockStatement(this.createSetControllerElements(controller));
         }
-        const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
+        const param: arkts.ETSParameterExpression = arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(
                 CustomDialogNames.CONTROLLER,
                 UIFactory.createTypeReferenceFromString(controllerType ?? CustomDialogNames.CUSTOM_DIALOG_CONTROLLER)
             ),
+            false,
             undefined
         );
         const modifiers = isDecl
@@ -738,7 +781,7 @@ export class factory {
             function: {
                 body: block,
                 params: [param],
-                returnTypeAnnotation: arkts.factory.createPrimitiveType(
+                returnTypeAnnotation: arkts.factory.createETSPrimitiveType(
                     arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID
                 ),
                 hasReceiver: false,
@@ -752,14 +795,14 @@ export class factory {
     /*
      * create assignment expression `this.__backing<controller> = controller`.
      */
-    static createSetControllerElements(controller: string): arkts.AstNode[] {
+    static createSetControllerElements(controller: string): arkts.Statement[] {
         return controller.length !== 0
             ? [
                   arkts.factory.createExpressionStatement(
                       arkts.factory.createAssignmentExpression(
                           generateThisBacking(backingField(controller)),
-                          arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                          arkts.factory.createIdentifier(CustomDialogNames.CONTROLLER)
+                          arkts.factory.createIdentifier(CustomDialogNames.CONTROLLER),
+                          arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
                       )
                   ),
               ]
@@ -820,9 +863,9 @@ export class factory {
                 : Dollars.TRANSFORM_DOLLAR_RAWFILE;
         ImportCollector.getInstance().collectImport(transformedKey);
         const isDynamicBundleOrModule: boolean = isDynamicName(projectConfig);
-        const args: arkts.AstNode[] = [
-            arkts.factory.createNumericLiteral(resourceParams.id),
-            arkts.factory.createNumericLiteral(resourceParams.type),
+        const args: arkts.Expression[] = [
+            arkts.factory.createNumberLiteral(resourceParams.id),
+            arkts.factory.createNumberLiteral(resourceParams.type),
             arkts.factory.createStringLiteral(generateResourceBundleName(projectConfig, isDynamicBundleOrModule)),
             arkts.factory.createStringLiteral(
                 generateResourceModuleName(projectConfig, isDynamicBundleOrModule, resourceModuleName, fromOtherModule)
@@ -832,8 +875,11 @@ export class factory {
         return arkts.factory.updateCallExpression(
             resourceNode,
             arkts.factory.createIdentifier(transformedKey),
+            args,
             undefined,
-            args
+            resourceNode.isOptional,
+            resourceNode.hasTrailingComma,
+            resourceNode.trailingBlock
         );
     }
 
@@ -913,7 +959,7 @@ export class factory {
                 arkts.factory.updateInterfaceBody(node.body!, newBody),
                 node.isStatic,
                 node.isFromExternal
-            );
+            ).setAnnotations(node.annotations);
         }
 
         return node;
@@ -929,10 +975,11 @@ export class factory {
                 member = arkts.factory.updateMethodDefinition(
                     member,
                     member.kind,
-                    member.name,
-                    factory.transformAnimatableExtend(member.scriptFunction),
+                    member.id!,
+                    arkts.factory.createFunctionExpression(member.id?.clone(), factory.transformAnimatableExtend(member.function!)),
                     member.modifiers,
-                    false
+                    false,
+                    member.overloads
                 );
             }
             return member;
@@ -958,7 +1005,8 @@ export class factory {
                 node.definition.super,
                 updatedBody,
                 node.definition.modifiers,
-                arkts.classDefinitionFlags(node.definition)
+                arkts.classDefinitionFlags(node.definition),
+                node.definition.annotations
             )
         );
     }
@@ -1009,7 +1057,8 @@ export class factory {
             node.super,
             factory.observedTrackPropertyMembers(node, ObservedAnno),
             node.modifiers,
-            arkts.classDefinitionFlags(node)
+            arkts.classDefinitionFlags(node),
+            node.annotations
         );
         collectStateManagementTypeImport(StateManagementTypes.OBSERVED_OBJECT);
         return updateClassDef;
@@ -1056,7 +1105,7 @@ export class factory {
     }
 
     static transformObservedV2Constuctor(definition: arkts.ClassDefinition, className: string): arkts.MethodDefinition {
-        const addConstructorNodes: arkts.AstNode[] = MonitorCache.getInstance().getCachedMonitors(className);
+        const addConstructorNodes: arkts.Statement[] = MonitorCache.getInstance().getCachedMonitors(className);
         let originConstructorMethod: arkts.MethodDefinition | undefined = definition.body.find(
             (it) =>
                 arkts.isMethodDefinition(it) &&
@@ -1068,7 +1117,7 @@ export class factory {
                 key: arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI),
                 function: {
                     key: arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI),
-                    body: isDecl ? undefined : arkts.factory.createBlock(addConstructorNodes),
+                    body: isDecl ? undefined : arkts.factory.createBlockStatement(addConstructorNodes),
                     flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR,
                     modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
                 },
@@ -1079,12 +1128,12 @@ export class factory {
         if (isDecl) {
             return originConstructorMethod;
         }
-        const originBody = originConstructorMethod.scriptFunction.body as arkts.BlockStatement | undefined;
+        const originBody = originConstructorMethod.function?.body as arkts.BlockStatement | undefined;
         return UIFactory.updateMethodDefinition(originConstructorMethod, {
             function: {
                 body: originBody
-                    ? arkts.factory.updateBlock(originBody, [...originBody.statements, ...addConstructorNodes])
-                    : arkts.factory.createBlock(addConstructorNodes),
+                    ? arkts.factory.updateBlockStatement(originBody, [...originBody.statements, ...addConstructorNodes])
+                    : arkts.factory.createBlockStatement(addConstructorNodes),
             },
         });
     }
@@ -1098,28 +1147,29 @@ export class factory {
     ): arkts.ArrowFunctionExpression {
         const assignmentExpr = arkts.factory.createExpressionStatement(
             arkts.factory.createAssignmentExpression(
-                param.identifier.clone(),
-                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                arkts.factory.createTSAsExpression(param.identifier.clone(), param.type as arkts.TypeNode, false)
+                param.ident?.clone(),
+                arkts.factory.createTSAsExpression(param.ident?.clone(), param.typeAnnotation, false),
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
             )
         );
         const numberType = UIFactory.createTypeReferenceFromString('number');
-        const AnimatableArithmeticType = arkts.factory.createTypeReference(
-            arkts.factory.createTypeReferencePart(
+        const AnimatableArithmeticType = arkts.factory.createETSTypeReference(
+            arkts.factory.createETSTypeReferencePart(
                 arkts.factory.createIdentifier(AnimationNames.ANIMATABLE_ARITHMETIC),
-                arkts.factory.createTSTypeParameterInstantiation([param.type as arkts.TypeNode])
+                arkts.factory.createTSTypeParameterInstantiation([param.typeAnnotation!])
             )
         );
         ImportCollector.getInstance().collectImport(AnimationNames.ANIMATABLE_ARITHMETIC);
-        return arkts.factory.createArrowFunction(
+        return arkts.factory.createArrowFunctionExpression(
             UIFactory.createScriptFunction({
-                body: arkts.factory.createBlock([assignmentExpr, ...originStatements]),
+                body: arkts.factory.createBlockStatement([assignmentExpr, ...originStatements]),
                 params: [
-                    arkts.factory.createParameterDeclaration(
+                    arkts.factory.createETSParameterExpression(
                         arkts.factory.createIdentifier(
-                            param.identifier.name,
-                            arkts.factory.createUnionType([numberType, AnimatableArithmeticType])
+                            param.ident!.name,
+                            arkts.factory.createETSUnionType([numberType, AnimatableArithmeticType])
                         ),
+                        false,
                         undefined
                     ),
                 ],
@@ -1132,7 +1182,7 @@ export class factory {
      * transform @AnimatableExtend method
      */
     static transformAnimatableExtend(node: arkts.ScriptFunction): arkts.ScriptFunction {
-        if (!arkts.isEtsParameterExpression(node.params[1]) || !node.body || !arkts.isBlockStatement(node.body)) {
+        if (!arkts.isETSParameterExpression(node.params[1]) || !node.body || !arkts.isBlockStatement(node.body)) {
             return node;
         }
         const funcName: arkts.StringLiteral = arkts.factory.createStringLiteral(node.id?.name!);
@@ -1147,25 +1197,27 @@ export class factory {
                     false,
                     false
                 ),
-                undefined,
                 [
                     funcName,
-                    paramValue.identifier,
+                    paramValue.ident!,
                     factory.createAniExtendCbArg(paramValue, originStatements.slice(0, -1)),
-                ]
+                ],
+                undefined,
+                false,
+                false,
             )
         );
         return arkts.factory.updateScriptFunction(
             node,
-            arkts.factory.createBlock([createOrSetStatement, originStatements[originStatements.length - 1]]),
-            arkts.FunctionSignature.createFunctionSignature(
-                node.typeParams,
-                node.params,
-                node.returnTypeAnnotation,
-                node.hasReceiver
-            ),
+            arkts.factory.createBlockStatement([createOrSetStatement, originStatements[originStatements.length - 1]]),
+            node.typeParams,
+            node.params,
+            node.returnTypeAnnotation,
+            node.hasReceiver,
             node.flags,
-            node.modifiers
+            node.modifierFlags,
+            node.id,
+            node.annotations
         );
     }
 
@@ -1188,10 +1240,10 @@ export class factory {
     static transformCustomDialogController(
         node: arkts.ETSNewClassInstanceExpression
     ): arkts.ETSNewClassInstanceExpression | arkts.Expression {
-        if (isInvalidDialogControllerOptions(node.getArguments)) {
+        if (isInvalidDialogControllerOptions(node.arguments)) {
             return node;
         }
-        const optionArg = node.getArguments[0];
+        const optionArg = node.arguments[0];
         const options: arkts.ObjectExpression = arkts.isObjectExpression(optionArg)
             ? optionArg
             : ((optionArg as arkts.TSAsExpression).expr as arkts.ObjectExpression);
@@ -1207,19 +1259,17 @@ export class factory {
         CustomDialogControllerBuilderCache.getInstance().updateAll().reset();
         const newObj = arkts.factory.updateObjectExpression(
             options,
-            arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
             [
                 ...(options.properties as arkts.Property[]).slice(0, builderIndex),
                 builder,
                 ...(options.properties as arkts.Property[]).slice(builderIndex + 1),
                 this.createBaseComponent(),
-            ],
-            false
+            ]
         );
         const newOptions = arkts.isTSAsExpression(optionArg)
             ? arkts.factory.updateTSAsExpression(optionArg, newObj, optionArg.typeAnnotation, optionArg.isConst)
             : newObj;
-        const typeRef = node.getTypeRef as arkts.ETSTypeReference;
+        const typeRef = node.typeRef as arkts.ETSTypeReference;
         const controller = arkts.factory.updateETSNewClassInstanceExpression(node, typeRef, [newOptions]);
         CustomDialogControllerCache.getInstance().collect({ controller });
         return factory.createBlockStatementForOptionalExpression(controller, gensymName);
@@ -1232,14 +1282,14 @@ export class factory {
             arrowFunc = value;
         } else if (
             arkts.isCallExpression(value) &&
-            arkts.isMemberExpression(value.expression) &&
-            arkts.isIdentifier(value.expression.property) &&
-            value.expression.property.name === BuilderLambdaNames.TRANSFORM_METHOD_NAME
+            arkts.isMemberExpression(value.callee) &&
+            arkts.isIdentifier(value.callee.property) &&
+            value.callee.property.name === BuilderLambdaNames.TRANSFORM_METHOD_NAME
         ) {
             call = this.transformCustomDialogComponentCall(value, gensymName);
-            arrowFunc = arkts.factory.createArrowFunction(
+            arrowFunc = arkts.factory.createArrowFunctionExpression(
                 UIFactory.createScriptFunction({
-                    body: arkts.factory.createBlock([arkts.factory.createExpressionStatement(call)]),
+                    body: arkts.factory.createBlockStatement([arkts.factory.createExpressionStatement(call)]),
                     flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
                     modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
                 })
@@ -1254,15 +1304,15 @@ export class factory {
 
     static transformCustomDialogComponentCall(value: arkts.CallExpression, gensymName: string): arkts.CallExpression {
         if (value.arguments.length >= 2 && arkts.isArrowFunctionExpression(value.arguments[1])) {
-            const originScript: arkts.ScriptFunction = value.arguments[1].scriptFunction;
+            const originScript: arkts.ScriptFunction = value.arguments[1].function!;
             const newScript: arkts.ScriptFunction = UIFactory.updateScriptFunction(originScript, {
                 body: this.generateInstanceSetController(originScript.body, gensymName),
             });
-            return arkts.factory.updateCallExpression(value, value.expression, value.typeArguments, [
+            return arkts.factory.updateCallExpression(value, value.callee, [
                 value.arguments[0],
-                arkts.factory.updateArrowFunction(value.arguments[1], newScript),
+                arkts.factory.updateArrowFunctionExpression(value.arguments[1], newScript, value.arguments[1].annotations),
                 ...value.arguments.slice(2),
-            ]);
+            ], value.typeParams, value.isOptional, value.hasTrailingComma, value.trailingBlock);
         }
         return value;
     }
@@ -1280,9 +1330,8 @@ export class factory {
             const instanceIdent: arkts.Identifier = arkts.factory.createIdentifier(
                 BuilderLambdaNames.STYLE_ARROW_PARAM_NAME
             );
-            return arkts.factory.updateBlock(body, [
+            return arkts.factory.updateBlockStatement(body, [
                 arkts.factory.createVariableDeclaration(
-                    arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONST,
                     arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
                     [
                         arkts.factory.createVariableDeclarator(
@@ -1299,7 +1348,7 @@ export class factory {
         return body;
     }
 
-    static genertateControllerSetCall(instanceIdent: arkts.Identifier, gensymName: string): arkts.AstNode {
+    static genertateControllerSetCall(instanceIdent: arkts.Identifier, gensymName: string): arkts.Statement {
         return arkts.factory.createExpressionStatement(
             arkts.factory.createCallExpression(
                 arkts.factory.createMemberExpression(
@@ -1309,28 +1358,32 @@ export class factory {
                     false,
                     false
                 ),
-                undefined,
                 [
                     arkts.factory.createTSAsExpression(
                         arkts.factory.createIdentifier(gensymName),
                         UIFactory.createTypeReferenceFromString(CustomDialogNames.CUSTOM_DIALOG_CONTROLLER),
                         false
                     ),
-                ]
+                ],
+                undefined,
+                false,
+                false,
             )
         );
     }
 
     static createBaseComponent(): arkts.Property {
         return arkts.factory.createProperty(
+            arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
             arkts.factory.createIdentifier(CustomDialogNames.BASE_COMPONENT),
-            arkts.factory.createThisExpression()
+            arkts.factory.createThisExpression(),
+            false,
+            false,
         );
     }
 
     static generateLetVariableDecl(left: arkts.Identifier): arkts.VariableDeclaration {
         return arkts.factory.createVariableDeclaration(
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
             [
                 arkts.factory.createVariableDeclarator(
@@ -1353,8 +1406,8 @@ export class factory {
             arkts.factory.createExpressionStatement(
                 arkts.factory.createAssignmentExpression(
                     arkts.factory.createIdentifier(gensymName),
-                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                    newNode
+                    newNode,
+                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
                 )
             ),
             arkts.factory.createExpressionStatement(

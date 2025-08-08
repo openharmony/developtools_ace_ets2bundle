@@ -49,7 +49,7 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
         this.cannotInitMap = new Map();
     }
 
-    public parsed(node: arkts.StructDeclaration): void {
+    public parsed(node: arkts.ETSStructDeclaration): void {
         this.initMap(node);
         this.checkMustInitialize(node);
         this.checkCannotInitialize(node);
@@ -100,7 +100,7 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
             return;
         }
         node.getChildren().forEach((member) => {
-            if (!arkts.isStructDeclaration(member)) {
+            if (!arkts.isETSStructDeclaration(member)) {
                 return;
             }
             if (!member.definition || !member.definition.ident || !arkts.isIdentifier(member.definition.ident)) {
@@ -136,13 +136,13 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
     }
 
     private checkMustInitialize(node: arkts.AstNode): void {
-        if (!arkts.isCallExpression(node) || !node.expression) {
+        if (!arkts.isCallExpression(node) || !node.callee) {
             return;
         }
-        if (!arkts.isIdentifier(node.expression)) {
+        if (!arkts.isIdentifier(node.callee)) {
             return;
         }
-        const structName: string = getIdentifierName(node.expression);
+        const structName: string = getIdentifierName(node.callee);
         if (!this.mustInitMap.has(structName)) {
             return;
         }
@@ -164,13 +164,13 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
     }
 
     private checkCannotInitialize(node: arkts.AstNode): void {
-        if (!arkts.isCallExpression(node) || !node.expression) {
+        if (!arkts.isCallExpression(node) || !node.callee) {
             return;
         }
-        if (!arkts.isIdentifier(node.expression)) {
+        if (!arkts.isIdentifier(node.callee)) {
             return;
         }
-        const structName: string = getIdentifierName(node.expression);
+        const structName: string = getIdentifierName(node.callee);
         if (!this.cannotInitMap.has(structName)) {
             return;
         }

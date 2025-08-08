@@ -446,15 +446,15 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
     if (({let gensym___14830560 = initializers;
     (((gensym___14830560) == (null)) ? undefined : gensym___14830560.__options_has_builderLink)})) {
       this.__backing_builderLink = STATE_MGMT_FACTORY.makeLink<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderLink", initializers!.__backing_builderLink!);
-    };
+    }
     if (({let gensym___225609674 = initializers;
     (((gensym___225609674) == (null)) ? undefined : gensym___225609674.__options_has_builderLink2)})) {
       this.__backing_builderLink2 = STATE_MGMT_FACTORY.makeLink<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderLink2", initializers!.__backing_builderLink2!);
-    };
+    }
     if (({let gensym___44855388 = initializers;
     (((gensym___44855388) == (null)) ? undefined : gensym___44855388.__options_has_builderLink3)})) {
       this.__backing_builderLink3 = STATE_MGMT_FACTORY.makeLink<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderLink3", initializers!.__backing_builderLink3!);
-    };
+    }
     this.__backing_builderProvide = STATE_MGMT_FACTORY.makeProvide<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderProvide", "builderProvide", ((({let gensym___142246099 = initializers;
     (((gensym___142246099) == (null)) ? undefined : gensym___142246099.builderProvide)})) ?? (MyBuilder)), false);
     this.__backing_builderProvide2 = STATE_MGMT_FACTORY.makeProvide<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderProvide2", "builderProvide2", ((({let gensym___39863061 = initializers;
@@ -464,18 +464,18 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
     this.__backing_builderConsume = STATE_MGMT_FACTORY.makeConsume<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderConsume", "builderConsume");
     this.__backing_builderConsume2 = STATE_MGMT_FACTORY.makeConsume<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderConsume2", "builderConsume2");
     this.__backing_builderConsume3 = STATE_MGMT_FACTORY.makeConsume<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderConsume3", "builderConsume3");
-    this.__backing_builderStorageLink = STATE_MGMT_FACTORY.makeStorageLink<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderStorageLink", MyBuilder)
-    this.__backing_builderStorageLink2 = STATE_MGMT_FACTORY.makeStorageLink<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderStorageLink2", wrapBuilder(MyBuilder))
-    this.__backing_builderStorageLink3 = STATE_MGMT_FACTORY.makeStorageLink<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderStorageLink3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])
-    this.__backing_builderStoragePropRef = STATE_MGMT_FACTORY.makeStoragePropRef<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderStoragePropRef", MyBuilder)
-    this.__backing_builderStoragePropRef2 = STATE_MGMT_FACTORY.makeStoragePropRef<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderStoragePropRef2", wrapBuilder(MyBuilder))
-    this.__backing_builderStoragePropRef3 = STATE_MGMT_FACTORY.makeStoragePropRef<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderStoragePropRef3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])
-    this.__backing_builderLocalStorageLink = STATE_MGMT_FACTORY.makeLocalStorageLink<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderLocalStorageLink", MyBuilder)
-    this.__backing_builderLocalStorageLink2 = STATE_MGMT_FACTORY.makeLocalStorageLink<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderLocalStorageLink2", wrapBuilder(MyBuilder))
-    this.__backing_builderLocalStorageLink3 = STATE_MGMT_FACTORY.makeLocalStorageLink<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderLocalStorageLink3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])
-    this.__backing_builderLocalStoragePropRef = STATE_MGMT_FACTORY.makeLocalStoragePropRef<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderLocalStoragePropRef", MyBuilder)
-    this.__backing_builderLocalStoragePropRef2 = STATE_MGMT_FACTORY.makeLocalStoragePropRef<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderLocalStoragePropRef2", wrapBuilder(MyBuilder))
-    this.__backing_builderLocalStoragePropRef3 = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderLocalStoragePropRef3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])
+    this.__backing_builderStorageLink = STATE_MGMT_FACTORY.makeStorageLink<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderStorageLink", MyBuilder);
+    this.__backing_builderStorageLink2 = STATE_MGMT_FACTORY.makeStorageLink<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderStorageLink2", wrapBuilder(MyBuilder));
+    this.__backing_builderStorageLink3 = STATE_MGMT_FACTORY.makeStorageLink<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderStorageLink3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
+    this.__backing_builderStoragePropRef = STATE_MGMT_FACTORY.makeStoragePropRef<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderStoragePropRef", MyBuilder);
+    this.__backing_builderStoragePropRef2 = STATE_MGMT_FACTORY.makeStoragePropRef<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderStoragePropRef2", wrapBuilder(MyBuilder));
+    this.__backing_builderStoragePropRef3 = STATE_MGMT_FACTORY.makeStoragePropRef<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderStoragePropRef3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
+    this.__backing_builderLocalStorageLink = STATE_MGMT_FACTORY.makeLocalStorageLink<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderLocalStorageLink", MyBuilder);
+    this.__backing_builderLocalStorageLink2 = STATE_MGMT_FACTORY.makeLocalStorageLink<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderLocalStorageLink2", wrapBuilder(MyBuilder));
+    this.__backing_builderLocalStorageLink3 = STATE_MGMT_FACTORY.makeLocalStorageLink<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderLocalStorageLink3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
+    this.__backing_builderLocalStoragePropRef = STATE_MGMT_FACTORY.makeLocalStoragePropRef<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderLocalStoragePropRef", MyBuilder);
+    this.__backing_builderLocalStoragePropRef2 = STATE_MGMT_FACTORY.makeLocalStoragePropRef<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderLocalStoragePropRef2", wrapBuilder(MyBuilder));
+    this.__backing_builderLocalStoragePropRef3 = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderLocalStoragePropRef3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
   }
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {

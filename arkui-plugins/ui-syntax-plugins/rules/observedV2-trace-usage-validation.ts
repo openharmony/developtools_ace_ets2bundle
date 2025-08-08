@@ -49,7 +49,7 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
             message: this.messages.observedV2DecoratorError,
             fix: (observedV2Decorator) => {
                 let startPosition = observedV2Decorator.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                 let endPosition = observedV2Decorator.endPosition;
                 return {
                     title: 'Remove the @ObservedV2 annotation',
@@ -67,7 +67,7 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
             message: this.messages.traceMemberVariableError,
             fix: (traceDecorator) => {
                 let startPosition = traceDecorator.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                 let endPosition = traceDecorator.endPosition;
                 return {
                     title: 'Remove the @Trace annotation',
@@ -81,7 +81,7 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
     private tracePropertyRule(
         currentNode: arkts.AstNode,
         traceDecorator: arkts.AnnotationUsage): void {
-        if (arkts.isStructDeclaration(currentNode)) {
+        if (arkts.isETSStructDeclaration(currentNode)) {
             this.reportTraceDecoratorError(traceDecorator);
         } else if (arkts.isClassDeclaration(currentNode) && currentNode.definition) {
             const observedDecorator = this.getObservedDecorator(currentNode);
@@ -105,7 +105,7 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
             message: this.messages.traceDecoratorError,
             fix: (traceDecorator) => {
                 let startPosition = traceDecorator.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                 let endPosition = traceDecorator.endPosition;
                 return {
                     title: 'Remove the @Trace annotation',
@@ -170,7 +170,7 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
 
     private validateTraceDecoratorUsage(node: arkts.AstNode): void {
         let currentNode = node;
-        if (arkts.isStructDeclaration(node)) {
+        if (arkts.isETSStructDeclaration(node)) {
             // Check whether the current custom component is decorated by the @ObservedV2 decorator
             const observedV2Decorator = getAnnotationUsage(node, PresetDecorators.OBSERVED_V2);
             const traceDecorator = getAnnotationUsage(node, PresetDecorators.TRACE);
@@ -197,12 +197,12 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
         }
         if (arkts.isMethodDefinition(node) && this.isInClassDeclaration(currentNode)) {
             // Check that @Trace is in the correct location
-            const traceDecorator = findDecorator(node.scriptFunction, PresetDecorators.TRACE);
+            const traceDecorator = findDecorator(node.function!, PresetDecorators.TRACE);
             if (traceDecorator) {
                 this.reportTraceMemberVariableError(traceDecorator);
             }
         } else if (arkts.isMethodDefinition(node) && !this.isInClassDeclaration(currentNode)) {
-            const traceDecorator = findDecorator(node.scriptFunction, PresetDecorators.TRACE);
+            const traceDecorator = findDecorator(node.function!, PresetDecorators.TRACE);
             if (traceDecorator) {
                 this.reportTraceDecoratorError(traceDecorator);
             }
@@ -215,7 +215,7 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
         const traceDecorator = findDecorator(node, PresetDecorators.TRACE);
         if (traceDecorator) {
             // Iterate up the parent node to check whether it is a class or a custom component
-            while (!arkts.isStructDeclaration(currentNode) && !arkts.isClassDeclaration(currentNode)) {
+            while (!arkts.isETSStructDeclaration(currentNode) && !arkts.isClassDeclaration(currentNode)) {
                 if (!currentNode.parent) {
                     return;
                 }

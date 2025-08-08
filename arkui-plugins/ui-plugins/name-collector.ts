@@ -69,9 +69,9 @@ export class NameCollector extends AbstractVisitor {
 
         const isComponentBuilder = hasBuilderLambdaAnnotation(node);
         if (!isComponentBuilder) return undefined;
-        if (!node.scriptFunction.id) return undefined;
+        if (!node.function?.id) return undefined;
 
-        return node.scriptFunction;
+        return node.function;
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {

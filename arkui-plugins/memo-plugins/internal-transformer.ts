@@ -32,14 +32,14 @@ export class InternalsTransformer extends AbstractVisitor {
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         const node = this.visitEachChild(beforeChildren);
         if (arkts.isCallExpression(node)) {
-            if (arkts.isIdentifier(node.expression)) {
-                if (node.expression.name === RuntimeNames.__CONTEXT) {
+            if (arkts.isIdentifier(node.callee)) {
+                if (node.callee.name === RuntimeNames.__CONTEXT) {
                     return arkts.factory.createIdentifier(RuntimeNames.CONTEXT, undefined);
                 }
-                if (node.expression.name === RuntimeNames.__ID) {
+                if (node.callee.name === RuntimeNames.__ID) {
                     return arkts.factory.createIdentifier(RuntimeNames.ID, undefined);
                 }
-                if (node.expression.name === RuntimeNames.__KEY) {
+                if (node.callee.name === RuntimeNames.__KEY) {
                     return this.positionalIdTracker.id(RuntimeNames.__KEY);
                 }
             }

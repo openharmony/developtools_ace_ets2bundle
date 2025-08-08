@@ -42,7 +42,8 @@ export class EmitTransformer extends AbstractVisitor {
             undefined,
             node.definition?.body,
             node.definition?.modifiers,
-            arkts.classDefinitionFlags(node.definition) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+            arkts.classDefinitionFlags(node.definition) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            node.definition.annotations
         );
 
         let newDec: arkts.ClassDeclaration = arkts.factory.updateClassDeclaration(node, newDefinition);
@@ -57,7 +58,7 @@ export class EmitTransformer extends AbstractVisitor {
         annotations.forEach((anno)=>{
             const value = getAnnotationValue(anno, DecoratorNames.CONSUME);
             if (arkts.isIdentifier(node.key)) {
-                const property = anno.properties[0];
+                const property = anno.properties[0] as arkts.ClassProperty;
                 anno.setProperties([
                     arkts.factory.updateClassProperty(
                         property,
@@ -65,7 +66,8 @@ export class EmitTransformer extends AbstractVisitor {
                         value ? property.value : arkts.factory.createStringLiteral(node.key.name),
                         property.typeAnnotation,
                         property.modifiers,
-                        false
+                        false,
+                        property.annotations
                     )
                 ]);
             }
@@ -99,7 +101,8 @@ export class EmitTransformer extends AbstractVisitor {
                         arkts.factory.createStringLiteral(aliasValue),
                         allowOverrideProp.typeAnnotation,
                         allowOverrideProp.modifiers,
-                        false
+                        false,
+                        allowOverrideProp.annotations
                     )
                 ]);
             } else {
@@ -110,7 +113,8 @@ export class EmitTransformer extends AbstractVisitor {
                         aliasProp.value,
                         aliasProp.typeAnnotation,
                         aliasProp.modifiers,
-                        false
+                        false,
+                        aliasProp.annotations
                     )
                 ]);
             }
@@ -131,7 +135,7 @@ export class EmitTransformer extends AbstractVisitor {
 
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         const node = this.visitEachChild(beforeChildren);
-        if (arkts.isClassDeclaration(node) && arkts.classDefinitionIsFromStructConst(node.definition!)) {
+        if (arkts.isClassDeclaration(node) && node.definition?.isFromStruct) {
             return this.processComponent(node);
         } else if (arkts.isClassProperty(node)) {
             return this.processClassProperty(node);

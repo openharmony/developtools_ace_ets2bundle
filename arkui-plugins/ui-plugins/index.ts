@@ -17,14 +17,15 @@ import * as arkts from '@koalaui/libarkts';
 import { ComponentTransformer } from './component-transformer';
 import { CheckedTransformer } from './checked-transformer';
 import { Plugins, PluginContext, ProjectConfig } from '../common/plugin-context';
-import { ProgramVisitor } from '../common/program-visitor';
+import { CanSkipPhasesCache, ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../common/predefines';
-import { debugLog } from '../common/debug';
+import { Debugger, debugLog } from '../common/debug';
 import { MetaDataCollector } from '../common/metadata-collector';
 import { ProgramSkipper } from '../common/program-skipper';
 import { ImportCollector } from '../common/import-collector';
 import { DeclarationCollector } from '../common/declaration-collector';
 import { LogCollector } from '../common/log-collector';
+import { NodeCacheFactory } from '../common/node-cache';
 
 export function uiTransform(): Plugins {
     return {
@@ -33,37 +34,36 @@ export function uiTransform(): Plugins {
         checked: checkedTransform,
         clean() {
             ProgramSkipper.clear();
-            arkts.NodeCacheFactory.getInstance().clear();
+            NodeCacheFactory.getInstance().clear();
         },
     };
 }
 
-function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
-    let script: arkts.EtsScript | undefined;
-    arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED ENTER');
+function parsedTransform(this: PluginContext): arkts.ETSModule | undefined {
+    Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED ENTER');
     arkts.Performance.getInstance().memoryTrackerPrintCurrent('ArkTS:Parse');
     arkts.Performance.getInstance().memoryTrackerReset();
     arkts.Performance.getInstance().startMemRecord('Node:UIPlugin:AfterParse');
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
-        script = program.astNode;
-        const canSkipPhases = program.canSkipPhases();
+        let script = program.ast;
+        const canSkipPhases = CanSkipPhasesCache.check(program);
 
         arkts.Performance.getInstance().createEvent('ui-parsed');
         program = parsedProgramVisit(program, this, canSkipPhases);
-        script = program.astNode;
+        script = program.ast;
         arkts.Performance.getInstance().stopEvent('ui-parsed', true);
 
-        this.setArkTSAst(script);
+        this.setArkTSAst(script as arkts.ETSModule);
         arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:AfterParse');
         arkts.Performance.getInstance().memoryTrackerReset();
         arkts.Performance.getInstance().stopMemRecord('Node:UIPlugin:AfterParse');
-        arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED EXIT');
-        return script;
+        Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED EXIT');
+        return script as arkts.ETSModule;
     }
-    arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED EXIT WITH NO TRANSFORM');
-    return script;
+    Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED EXIT WITH NO TRANSFORM');
+    return undefined;
 }
 
 function parsedProgramVisit(
@@ -90,9 +90,8 @@ function parsedProgramVisit(
     return program;
 }
 
-function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
-    let script: arkts.EtsScript | undefined;
-    arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED ENTER');
+function checkedTransform(this: PluginContext): arkts.ETSModule | undefined {
+    Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED ENTER');
     arkts.Performance.getInstance().memoryTrackerPrintCurrent('ArkTS:Check');
     arkts.Performance.getInstance().memoryTrackerGetDelta('ArkTS:Check');
     arkts.Performance.getInstance().memoryTrackerReset();
@@ -101,22 +100,22 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
     const isCoding = this.isCoding?.() ?? false;
     if (!isCoding && !!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
-        script = program.astNode;
-        const canSkipPhases = program.canSkipPhases();
+        let script = program.ast;
+        const canSkipPhases = CanSkipPhasesCache.check(program);
 
         arkts.Performance.getInstance().createEvent('ui-checked');
         program = checkedProgramVisit(program, this, canSkipPhases);
-        script = program.astNode;
+        script = program.ast;
         arkts.Performance.getInstance().stopEvent('ui-checked', true);
 
-        this.setArkTSAst(script);
+        this.setArkTSAst(script as arkts.ETSModule);
         arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:UI-AfterCheck');
         arkts.Performance.getInstance().stopMemRecord('Node:UIPlugin:UI-AfterCheck');
-        arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED EXIT');
-        return script;
+        Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED EXIT');
+        return script as arkts.ETSModule;
     }
-    arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
-    return script;
+    Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
+    return undefined;
 }
 
 function checkedProgramVisit(
@@ -128,14 +127,14 @@ function checkedProgramVisit(
         debugLog('[SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
     } else {
         debugLog('[CANT SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollect(false);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollect(false);
         const projectConfig: ProjectConfig | undefined = context.getProjectConfig();
         if (projectConfig && !projectConfig.appResource) {
             projectConfig.ignoreError = true;
         }
         const checkedTransformer = new CheckedTransformer({
             projectConfig,
-            useCache: arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected(),
+            useCache: NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected(),
         });
         const programVisitor = new ProgramVisitor({
             pluginName: uiTransform.name,
@@ -149,7 +148,7 @@ function checkedProgramVisit(
         ImportCollector.getInstance().reset();
         DeclarationCollector.getInstance().reset();
         LogCollector.getInstance().reset();
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).clear();
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).clear();
     }
     return program;
 }

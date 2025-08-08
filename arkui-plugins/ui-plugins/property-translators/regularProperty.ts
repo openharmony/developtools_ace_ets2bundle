@@ -39,6 +39,7 @@ import { factory as UIFactory } from '../ui-factory';
 import { CustomComponentNames, optionsHasField } from '../utils';
 import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
 import { PropertyFactoryCallTypeCache } from '../memo-collect-cache';
+import { AstNodeCacheValueMetadata, NodeCacheFactory } from '../../common/node-cache';
 
 function initializeStructWithRegularProperty(
     this: BasePropertyTranslator,
@@ -56,8 +57,8 @@ function initializeStructWithRegularProperty(
     );
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        binaryItem
+        binaryItem,
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     return arkts.factory.createExpressionStatement(assign);
 }
@@ -74,28 +75,32 @@ function initializeStructWithCustomDialogControllerInit(
             arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
             optionsHasField(originalName)
         ),
-        arkts.factory.createBlock([
-            arkts.factory.createAssignmentExpression(
-                thisValue,
-                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                UIFactory.generateMemberExpression(
-                    arkts.factory.createTSNonNullExpression(
-                        arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME)
+        arkts.factory.createBlockStatement([
+            arkts.factory.createExpressionStatement(
+                arkts.factory.createAssignmentExpression(
+                    thisValue,
+                    UIFactory.generateMemberExpression(
+                        arkts.factory.createTSNonNullExpression(
+                            arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME)
+                        ),
+                        originalName
                     ),
-                    originalName
-                )
+                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
+                ),
             ),
         ]),
-        arkts.factory.createBlock([
+        arkts.factory.createBlockStatement([
             arkts.factory.createIfStatement(
                 arkts.factory.createUnaryExpression(
                     thisValue,
                     arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_EXCLAMATION_MARK
                 ),
-                arkts.factory.createAssignmentExpression(
-                    thisValue,
-                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                    value
+                arkts.factory.createExpressionStatement(
+                    arkts.factory.createAssignmentExpression(
+                        thisValue,
+                        value,
+                        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
+                    )
                 )
             ),
         ])
@@ -106,7 +111,7 @@ function getterWithRegularProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.MethodDefinition {
     const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
     const getter: arkts.MethodDefinition = createGetter(
@@ -118,7 +123,7 @@ function getterWithRegularProperty(
         metadata
     );
     if (this.isMemoCached) {
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(getter, metadata);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(getter, metadata);
     }
     return getter;
 }
@@ -127,19 +132,19 @@ function setterWithRegularProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.MethodDefinition {
     const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
     const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
         arkts.factory.createAssignmentExpression(
             thisValue,
+            arkts.factory.createIdentifier('value'),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            arkts.factory.createIdentifier('value')
         )
     );
     const setter: arkts.MethodDefinition = createSetter2(originalName, this.propertyType, thisSet);
     if (this.isMemoCached) {
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(setter, metadata);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(setter, metadata);
     }
     return setter;
 }
@@ -147,7 +152,7 @@ function setterWithRegularProperty(
 function getGetterReturnValue(
     this: BasePropertyTranslator,
     thisValue: arkts.Expression,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Expression {
     if (!this.propertyType) {
         return thisValue;
@@ -171,7 +176,7 @@ export class RegularPropertyTranslator extends PropertyTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         let initializeStruct: arkts.Statement | undefined;
         if (
@@ -186,11 +191,11 @@ export class RegularPropertyTranslator extends PropertyTranslator {
         return initializeStruct;
     }
 
-    getter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    getter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         return getterWithRegularProperty.bind(this)(newName, originalName, metadata);
     }
 
-    setter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    setter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         return setterWithRegularProperty.bind(this)(newName, originalName, metadata);
     }
 }
@@ -206,7 +211,7 @@ export class RegularPropertyCachedTranslator extends PropertyCachedTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         let initializeStruct = initializeStructWithRegularProperty.bind(this)(newName, originalName);
         if (
@@ -221,11 +226,11 @@ export class RegularPropertyCachedTranslator extends PropertyCachedTranslator {
         return initializeStruct;
     }
 
-    getter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    getter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         return getterWithRegularProperty.bind(this)(newName, originalName, metadata);
     }
 
-    setter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    setter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         return setterWithRegularProperty.bind(this)(newName, originalName, metadata);
     }
 }

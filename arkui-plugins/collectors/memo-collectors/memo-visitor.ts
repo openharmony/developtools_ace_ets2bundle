@@ -16,11 +16,21 @@
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor } from '../../common/abstract-visitor';
 import { findAndCollectMemoableNode } from './factory';
+import { ImportCollector } from '../../common/import-collector';
 
 export class MemoVisitor extends AbstractVisitor {
+    reset(): void {
+        super.reset()
+        ImportCollector.getInstance().reset();
+    }
+
     visitor(node: arkts.AstNode): arkts.AstNode {
         const newNode = this.visitEachChild(node);
         findAndCollectMemoableNode(newNode);
+        if (arkts.isETSModule(node) && ImportCollector.getInstance().importInfos.length > 0) {
+            let imports = ImportCollector.getInstance().getImportStatements();
+            return arkts.factory.updateETSModule(node, [...imports, ...node.statements], node.ident, node.getNamespaceFlag(), node.program);
+        }
         return newNode;
     }
 }

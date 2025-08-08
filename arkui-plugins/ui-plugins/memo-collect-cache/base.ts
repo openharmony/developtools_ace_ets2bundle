@@ -15,17 +15,18 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { NodeCacheNames } from '../../common/predefines';
+import { AstNodeCacheValueMetadata, NodeCache, NodeCacheFactory } from '../../common/node-cache';
 
 export interface BaseCacheInfo<T extends arkts.AstNode> {
     node: T;
-    metadata?: arkts.AstNodeCacheValueMetadata;
+    metadata?: AstNodeCacheValueMetadata;
 }
 
 export class BaseMemoCollectCache<T extends arkts.AstNode, Info extends BaseCacheInfo<T>> {
     protected _infos: Info[] = [];
 
     protected _updateInfo(info: Info): void {
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(info.node, info.metadata);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(info.node, info.metadata);
     }
 
     get infos(): Info[] {

@@ -9,7 +9,7 @@
     "@koalaui/common": "./common",
     "@koalaui/interop": "./interop",
     "@koalaui/libarkts": "./libarkts",
-    "node-addon-api": "8.0.0",
+    "node-addon-api": "^8.0.0",
     "node-api-headers": "0.0.5"
   },
   "scripts": {

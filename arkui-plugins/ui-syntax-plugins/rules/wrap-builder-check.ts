@@ -30,14 +30,14 @@ class StructNoExtendsRule extends AbstractUISyntaxRule {
         this.builderFunctionNames = [];
     }
 
-    public parsed(node: arkts.StructDeclaration): void {
+    public parsed(node: arkts.ETSStructDeclaration): void {
         this.collectBuilderFunctions(node);
         this.validateWrapBuilderInIdentifier(node);
     }
 
     // Collect all the function names that are decorated with @Builder
     private collectBuilderFunctions(node: arkts.AstNode): void {
-        if (!arkts.isEtsScript(node)) {
+        if (!arkts.isETSModule(node)) {
             return;
         }
         node.statements.forEach((statement) => {
@@ -48,7 +48,7 @@ class StructNoExtendsRule extends AbstractUISyntaxRule {
             if (!buildDecoratorUsage) {
                 return;
             }
-            const functionName = statement.scriptFunction.id?.name;
+            const functionName = statement.function!.id?.name;
             if (!functionName || functionName === '' || this.builderFunctionNames.includes(functionName)) {
                 return;
             }
@@ -57,11 +57,11 @@ class StructNoExtendsRule extends AbstractUISyntaxRule {
     }
 
     private validateWrapBuilderInIdentifier(node: arkts.AstNode): void {
-        if (!arkts.isCallExpression(node) || !node.expression) {
+        if (!arkts.isCallExpression(node) || !node.callee) {
             return;
         }
         // If the current node is not a wrap builder, return
-        if (!arkts.isIdentifier(node.expression) || getIdentifierName(node.expression) !== WRAP_BUILDER) {
+        if (!arkts.isIdentifier(node.callee) || getIdentifierName(node.callee) !== WRAP_BUILDER) {
             return;
         }
         let functionName: string = '';

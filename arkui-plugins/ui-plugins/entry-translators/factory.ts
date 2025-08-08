@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import * as path from 'path';
-import { annotation, createAndInsertImportDeclaration } from '../../common/arkts-utils';
+import { annotation } from '../../common/arkts-utils';
 import {
     CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
     EntryWrapperNames,
@@ -26,6 +26,7 @@ import { ProjectConfig } from '../../common/plugin-context';
 import { factory as uiFactory } from '../ui-factory';
 import { getRelativePagePath } from './utils';
 import { addMemoAnnotation, MemoNames } from '../../collectors/memo-collectors/utils';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 export class factory {
     /**
@@ -49,7 +50,8 @@ export class factory {
             definition.super,
             [...definition.body, factory.generateEntryFunction(classname)],
             definition.modifiers,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            definition.annotations
         );
         return arkts.factory.updateClassDeclaration(node, updateClassDef);
     }
@@ -76,7 +78,8 @@ export class factory {
             definition.super,
             [...definition.body, factory.generateEntryProperty(classname)],
             definition.modifiers,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            definition.annotations
         );
         return arkts.factory.updateClassDeclaration(node, updateClassDef);
     }
@@ -89,28 +92,27 @@ export class factory {
      */
     static generateEntryFunction(name: string): arkts.MethodDefinition {
         const exp = arkts.factory.createExpressionStatement(
-            arkts.factory.createCallExpression(arkts.factory.createIdentifier(name), undefined, [])
+            arkts.factory.createCallExpression(arkts.factory.createIdentifier(name), [], undefined, false, false)
         );
         const key: arkts.Identifier = arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_FUNC);
-        const block = arkts.factory.createBlock([exp]);
+        const block = arkts.factory.createBlockStatement([exp]);
         const entryScript = arkts.factory
             .createScriptFunction(
                 block,
-                arkts.FunctionSignature.createFunctionSignature(
-                    undefined,
-                    [],
-                    arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                    false
-                ),
+                undefined,
+                [],
+                arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                false,
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+                key,
+                undefined
             )
-            .setIdent(key);
 
         const def = arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
-            key,
-            entryScript,
+            key.clone(),
+            arkts.factory.createFunctionExpression(key.clone(), entryScript),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
             false
         );
@@ -120,21 +122,22 @@ export class factory {
 
     static generateConstructor(): arkts.MethodDefinition {
         const key: arkts.Identifier = arkts.factory.createIdentifier('constructor');
-        const block = arkts.factory.createBlock([]);
+        const block = arkts.factory.createBlockStatement([]);
         const entryScript = arkts.factory
             .createScriptFunction(
                 block,
-                arkts.FunctionSignature.createFunctionSignature(undefined, [], undefined, false),
+                undefined, [], undefined, false,
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR |
                     arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_IMPLICIT_SUPER_CALL_NEEDED,
                 arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
-                    arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR
-            )
-            .setIdent(key);
+                    arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
+                key,
+                undefined
+            );
         const def = arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
-            key,
-            entryScript,
+            key.clone(),
+            arkts.factory.createFunctionExpression(key.clone(), entryScript),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             false
         );
@@ -150,29 +153,33 @@ export class factory {
      */
     static generateEntryProperty(name: string): arkts.ClassProperty {
         const exp = arkts.factory.createExpressionStatement(
-            arkts.factory.createCallExpression(arkts.factory.createIdentifier(name), undefined, [])
+            arkts.factory.createCallExpression(arkts.factory.createIdentifier(name), [], undefined, false, false)
         );
         const key: arkts.Identifier = arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_FUNC);
-        const block: arkts.BlockStatement = arkts.factory.createBlock([exp]);
-        const signature: arkts.FunctionSignature = arkts.FunctionSignature.createFunctionSignature(
-            undefined,
-            [],
-            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-            false
-        );
+        const block: arkts.BlockStatement = arkts.factory.createBlockStatement([exp]);
         const entryScript: arkts.ScriptFunction = arkts.factory
             .createScriptFunction(
                 block,
-                signature,
+                undefined,
+                [],
+                arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                false,
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
-            )
-            .setIdent(key);
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+                key,
+                undefined
+            );
 
         const def = arkts.factory.createClassProperty(
             key,
-            arkts.factory.createArrowFunction(entryScript),
-            arkts.factory.createFunctionType(signature, arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW),
+            arkts.factory.createArrowFunctionExpression(entryScript),
+            arkts.factory.createETSFunctionType(
+                undefined,
+                [],
+                arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                false,
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
+            ),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
             false
         );
@@ -194,9 +201,9 @@ export class factory {
                 undefined,
                 undefined,
                 [],
-                undefined,
-                arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(
+                ctor,
+                arkts.factory.createETSTypeReference(
+                    arkts.factory.createETSTypeReferencePart(
                         arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_POINT_CLASS_NAME)
                     )
                 ),
@@ -205,8 +212,7 @@ export class factory {
                     arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_DECLARATION |
                     arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_ID_REQUIRED,
                 arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
-            )
-            .setCtor(ctor as any);
+            );
         const newClass = arkts.factory.createClassDeclaration(definition);
         newClass.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE;
         return newClass;
@@ -221,11 +227,11 @@ export class factory {
         node.definition?.body.forEach((member) => {
             if (
                 arkts.isMethodDefinition(member) &&
-                !!member.scriptFunction.id &&
-                member.scriptFunction.id.name === EntryWrapperNames.ENTRY_FUNC
+                !!member.function!.id &&
+                member.function!.id.name === EntryWrapperNames.ENTRY_FUNC
             ) {
-                addMemoAnnotation(member.scriptFunction);
-                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(member);
+                addMemoAnnotation(member.function);
+                NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(member);
             }
         });
     }
@@ -272,20 +278,20 @@ export class factory {
      * create and insert `import { EntryPoint as EntryPoint } from "arkui.component.customComponent";`
      * to the top of script's statements.
      */
-    static createAndInsertEntryPointImport(program?: arkts.Program) {
-        const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME);
+    static createEntryPointImport(program?: arkts.Program) {
+        const source: arkts.StringLiteral = arkts.factory.createStringLiteral(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME);
         const imported: arkts.Identifier = arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_POINT_CLASS_NAME);
         // Insert this import at the top of the script's statements.
-        if (!program) {
-            throw Error('Failed to insert import: Transformer has no program');
-        }
-        createAndInsertImportDeclaration(
+        return arkts.factory.createETSImportDeclaration(
             source,
-            imported,
-            imported,
-            arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE,
-            program
-        );
+            [
+                arkts.factory.createImportSpecifier(
+                    imported,
+                    imported.clone(),
+                ),
+            ],
+            arkts.Es2pandaImportKinds.IMPORT_KINDS_ALL,
+        )
     }
 
     /**
@@ -311,23 +317,25 @@ export class factory {
         if (useSharedStorage && useSharedStorage.value && arkts.isBooleanLiteral(useSharedStorage.value)) {
             sharedArg = useSharedStorage.value;
         }
-        let storageArg = arkts.factory.createUndefinedLiteral();
+        let storageArg: arkts.Expression = arkts.factory.createUndefinedLiteral();
         if (storage && storage.value && arkts.isStringLiteral(storage.value)) {
             storageArg = arkts.factory.createCallExpression(
                 arkts.factory.createIdentifier(storage.value.str),
+                [],
                 undefined,
-                undefined
+                false,
+                false
             );
         }
         const superCall = arkts.factory.createExpressionStatement(
-            arkts.factory.createCallExpression(arkts.factory.createSuperExpression(), undefined, [
+            arkts.factory.createCallExpression(arkts.factory.createSuperExpression(), [
                 sharedArg,
                 storageArg,
-            ])
+            ], undefined, false, false)
         );
-        if (ctor.scriptFunction.body && arkts.isBlockStatement(ctor.scriptFunction.body)) {
-            ctor.scriptFunction.setBody(
-                arkts.factory.updateBlock(ctor.scriptFunction.body, [...ctor.scriptFunction.body.statements, superCall])
+        if (ctor.function!.body && arkts.isBlockStatement(ctor.function!.body)) {
+            ctor.function!.setBody(
+                arkts.factory.updateBlockStatement(ctor.function!.body, [...ctor.function!.body.statements, superCall])
             );
         }
     }
@@ -338,24 +346,20 @@ export class factory {
     static navInterfaceArg(
         projectConfig: ProjectConfig | undefined,
         fileAbsName: string | undefined
-    ): arkts.TSAsExpression {
+    ): arkts.Expression {
         const projectRoot = projectConfig?.moduleRootPath
             ? path.join(projectConfig.moduleRootPath, 'src', 'main', 'ets')
             : '';
         const pageFullPath = getRelativePagePath(projectConfig?.projectPath ?? '', fileAbsName ?? '');
         const pagePath = getRelativePagePath(projectRoot, fileAbsName ?? '');
         return arkts.factory.createTSAsExpression(
-            arkts.factory.createObjectExpression(
-                arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
-                [
-                    factory.createNavProperty(NavigationNames.BUNDLE_NAME, projectConfig?.bundleName),
-                    factory.createNavProperty(NavigationNames.MODULE_NAME, projectConfig?.moduleName),
-                    factory.createNavProperty(NavigationNames.PAGE_PATH, pagePath),
-                    factory.createNavProperty(NavigationNames.PAGE_FULL_PATH, pageFullPath),
-                    factory.createNavProperty(NavigationNames.INTEGRATED_HSP, projectConfig?.integratedHsp?.toString()),
-                ],
-                false
-            ),
+            arkts.factory.createObjectExpression([
+                factory.createNavProperty(NavigationNames.BUNDLE_NAME, projectConfig?.bundleName),
+                factory.createNavProperty(NavigationNames.MODULE_NAME, projectConfig?.moduleName),
+                factory.createNavProperty(NavigationNames.PAGE_PATH, pagePath),
+                factory.createNavProperty(NavigationNames.PAGE_FULL_PATH, pageFullPath),
+                factory.createNavProperty(NavigationNames.INTEGRATED_HSP, projectConfig?.integratedHsp?.toString()),
+            ]),
             uiFactory.createTypeReferenceFromString(NavigationNames.NAVINTERFACE),
             false
         );
@@ -366,8 +370,11 @@ export class factory {
      */
     static createNavProperty(key: NavigationNames, value: string | undefined): arkts.Property {
         return arkts.factory.createProperty(
+            arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
             arkts.factory.createIdentifier(key),
-            arkts.factory.createStringLiteral(value ?? '')
+            arkts.factory.createStringLiteral(value ?? ''),
+            false,
+            false
         );
     }
 
@@ -388,19 +395,21 @@ export class factory {
                     false,
                     false
                 ),
-                undefined,
                 [
                     arkts.factory.createStringLiteral(entryRouteName ?? ''),
                     arkts.factory.createETSNewClassInstanceExpression(
-                        arkts.factory.createTypeReference(
-                            arkts.factory.createTypeReferencePart(
+                        arkts.factory.createETSTypeReference(
+                            arkts.factory.createETSTypeReferencePart(
                                 arkts.factory.createIdentifier(EntryWrapperNames.WRAPPER_CLASS_NAME)
                             )
                         ),
                         []
                     ),
                     factory.navInterfaceArg(projectConfig, fileAbsName),
-                ]
+                ],
+                undefined,
+                false,
+                false
             )
         );
     }
@@ -413,7 +422,7 @@ export class factory {
             [],
             arkts.factory.createIdentifier(NavigationNames.NAVINTERFACE),
             undefined,
-            arkts.factory.createInterfaceBody([
+            arkts.factory.createTSInterfaceBody([
                 this.createClassProp(NavigationNames.BUNDLE_NAME),
                 this.createClassProp(NavigationNames.MODULE_NAME),
                 this.createClassProp(NavigationNames.PAGE_PATH),
@@ -442,8 +451,9 @@ export class factory {
      * helper for generateRegisterNamedRouter to generate param decl, e.g: `routerName: string`
      */
     static registerRouteParam(name: EntryWrapperNames, type: string): arkts.ETSParameterExpression {
-        return arkts.factory.createParameterDeclaration(
+        return arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(name, uiFactory.createTypeReferenceFromString(type)),
+            false,
             undefined
         );
     }
@@ -461,7 +471,7 @@ export class factory {
             key: arkts.factory.createIdentifier(EntryWrapperNames.REGISTER_NAMED_ROUTER),
             kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             function: {
-                body: arkts.factory.createBlock([]),
+                body: arkts.factory.createBlockStatement([]),
                 params: params,
                 flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
                 modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,

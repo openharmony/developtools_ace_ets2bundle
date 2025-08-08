@@ -26,6 +26,7 @@ import { BuilderLambdaNames, CustomComponentNames, NodeCacheNames } from '../../
 import { AstNodePointer } from '../../common/safe-types';
 import { StructMethodValidator, StructPropertyValidator, ValidatorBuilder } from './validators';
 import { checkIsCustomComponentFromInfo } from './utils';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 export interface StructCollectorOptions extends VisitorOptions {
     structRecord: CustomComponentRecord;
@@ -88,7 +89,7 @@ export class StructCollector extends AbstractVisitor {
         if (!propertyInfo) {
             return;
         }
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, propertyRecord.toJSON());
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, propertyRecord.toJSON());
         ValidatorBuilder.build(StructPropertyValidator).checkIsViolated(node, propertyInfo);
     }
 
@@ -104,7 +105,7 @@ export class StructCollector extends AbstractVisitor {
             return;
         }
         if (this.canCollectMethodFromInfo(methodInfo)) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodRecord.toJSON());
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodRecord.toJSON());
         }
         ValidatorBuilder.build(StructMethodValidator).checkIsViolated(node, methodInfo);
     }

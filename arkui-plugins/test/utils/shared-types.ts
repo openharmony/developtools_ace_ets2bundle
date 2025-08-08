@@ -14,6 +14,7 @@
  */
 
 import type { Plugins, PluginState, ProjectConfig } from '../../common/plugin-context';
+import * as  arkts from '@koalaui/libarkts';
 
 export type PluginTesterId = string | `${string}:${string}`;
 
@@ -82,7 +83,7 @@ export interface JobInfo {
     buildConfig?: BuildConfig;
     projectConfig?: ProjectConfig;
     plugins?: Plugins[];
-    globalContextPtr?: number;
+    globalContextPtr?: arkts.KNativePointer;
     stopAfter?: PluginState;
     filePaths?: string[];
 }

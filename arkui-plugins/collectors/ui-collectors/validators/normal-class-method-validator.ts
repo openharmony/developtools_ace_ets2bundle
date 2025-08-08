@@ -44,7 +44,7 @@ export class NormalClassMethodValidator extends BaseValidator<arkts.MethodDefini
         checkValidateDecoratorTarget.bind(this)(node);
         checkComponentV2StateUsage.bind(this)(node);
 
-        const classNode = arkts.classByPeer<arkts.ClassDefinition>(metadata.classInfo.definitionPtr);
+        const classNode = arkts.unpackNode<arkts.ClassDefinition>(metadata.classInfo.definitionPtr);
         checkComputedDecorator.bind(this)(node, classNode);
     }
 }

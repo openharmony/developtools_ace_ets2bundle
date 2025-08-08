@@ -26,7 +26,7 @@ class ReusableV2DecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     public parsed(node: arkts.AstNode): void {
-        if (!arkts.isStructDeclaration(node)) {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
         if (!node.definition) {
@@ -66,7 +66,7 @@ class ReusableV2DecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private reportInvalidDecoratorUsage(
-        node: arkts.StructDeclaration,
+        node: arkts.ETSStructDeclaration,
         structNode: arkts.Identifier | undefined,
     ): void {
         if (!structNode || !node) {

@@ -25,19 +25,19 @@ class EntryLocalStorageCheckRule extends AbstractUISyntaxRule {
     }
 
     public parsed(node: arkts.AstNode): void {
-        if (!arkts.isStructDeclaration(node)) {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
         this.checkLocalStorageLink(node);
     }
 
-    private checkLocalStorageLink(node: arkts.StructDeclaration): void {
+    private checkLocalStorageLink(node: arkts.ETSStructDeclaration): void {
         // Check if @Entry decorator exists with parameter
         const entryDecorator = getAnnotationUsage(node, PresetDecorators.ENTRY);
         const isStorageUsed = entryDecorator && entryDecorator.properties[0];
         // Check if @LocalStorageLink exists
         let localStorageLinkUsed = false;
-        node.definition.body.forEach(body => {
+        node.definition?.body.forEach(body => {
             if (!arkts.isClassProperty(body)) {
                 return;
             }

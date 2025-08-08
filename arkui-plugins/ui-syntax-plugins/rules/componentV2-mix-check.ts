@@ -25,7 +25,7 @@ class ComponentV2MixCheckRule extends AbstractUISyntaxRule {
   }
 
   public parsed(node: arkts.AstNode): void {
-    if (!arkts.isStructDeclaration(node)) {
+    if (!arkts.isETSStructDeclaration(node)) {
       return;
     }
     const definition = node.definition;

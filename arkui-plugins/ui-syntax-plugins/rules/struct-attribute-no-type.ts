@@ -26,7 +26,7 @@ class StructAttributeNoTypeRule extends AbstractUISyntaxRule {
 
     public parsed(node: arkts.AstNode): void {
         // Check if the current node is a schema declaration
-        if (!arkts.isStructDeclaration(node)) {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
 

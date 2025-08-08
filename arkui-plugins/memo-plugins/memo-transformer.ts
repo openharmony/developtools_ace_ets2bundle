@@ -28,10 +28,10 @@ export interface TransformerOptions {
 }
 
 export default function memoTransformer(userPluginOptions?: TransformerOptions) {
-    return (node0: arkts.EtsScript) => {
+    return (node0: arkts.ETSModule) => {
         const node = (
             userPluginOptions?.removeEtsglobal ? new EtsglobalRemover().visitor(node0) : node0
-        ) as arkts.EtsScript;
+        ) as arkts.ETSModule;
         const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
         const parameterTransformer = new ParameterTransformer({
             positionalIdTracker,
@@ -45,6 +45,6 @@ export default function memoTransformer(userPluginOptions?: TransformerOptions) 
             signatureTransformer,
         });
         factory.createContextTypesImportDeclaration(arkts.arktsGlobal.compilerContext?.program);
-        return functionTransformer.visitor(arkts.factory.updateEtsScript(node, node.statements));
+        return functionTransformer.visitor(arkts.factory.updateETSModule(node, node.statements, node.ident, node.getNamespaceFlag(), node.program));
     };
 }

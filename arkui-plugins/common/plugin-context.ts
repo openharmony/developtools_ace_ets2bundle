@@ -18,10 +18,10 @@ import { FileManager } from './file-manager';
 
 // This is the same plugin-context in the build-system.
 export class PluginContext {
-    private ast: arkts.EtsScript | undefined;
+    private ast: arkts.ETSModule | undefined;
     private program: arkts.Program | undefined;
     private projectConfig: ProjectConfig | undefined;
-    private contextPtr: number | undefined;
+    private contextPtr:  arkts.KNativePointer | undefined;
     private codingFilePath: string | undefined;
     private fileManager: FileManager | undefined;
 
@@ -41,14 +41,14 @@ export class PluginContext {
     /**
      * @deprecated
      */
-    public setArkTSAst(ast: arkts.EtsScript): void {
+    public setArkTSAst(ast: arkts.ETSModule): void {
         this.ast = ast;
     }
 
     /**
      * @deprecated
      */
-    public getArkTSAst(): arkts.EtsScript | undefined {
+    public getArkTSAst(): arkts.ETSModule | undefined {
         return this.ast;
     }
 
@@ -74,11 +74,11 @@ export class PluginContext {
         return this.projectConfig;
     }
 
-    public setContextPtr(ptr: number): void {
+    public setContextPtr(ptr: arkts.KNativePointer): void {
         this.contextPtr = ptr;
     }
 
-    public getContextPtr(): number | undefined {
+    public getContextPtr():  arkts.KNativePointer | undefined {
         return this.contextPtr;
     }
 

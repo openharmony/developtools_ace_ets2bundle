@@ -155,7 +155,7 @@ function checkInvalidObservedV2AndTraceInClassProperty<T extends arkts.AstNode =
     }
     const traceNode = metadata.ignoredAnnotations?.[DecoratorNames.TRACE]!;
     if (!metadata.classInfo?.annotationInfo?.hasObserved) {
-        const classDeclarations = arkts.classByPeer<arkts.ClassDefinition>(metadata.classInfo?.definitionPtr).parent;
+        const classDeclarations = arkts.unpackNonNullableNode<arkts.ClassDefinition>(metadata.classInfo?.definitionPtr!).parent;
         if (classDeclarations) {
             let startPosition = classDeclarations.startPosition;
             this.report({

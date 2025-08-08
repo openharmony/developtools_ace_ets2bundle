@@ -99,14 +99,14 @@ export class CallDeclRecord extends BaseRecord<arkts.AstNode, CallDeclInfo> {
     }
 
     private collectFromMethod(node: arkts.MethodDefinition, isFromLegacy?: boolean): void {
-        this.collectAnnotations(node.scriptFunction.annotations, isFromLegacy);
-        this.declName = node.name.name;
+        this.collectAnnotations(node.function.annotations, isFromLegacy);
+        this.declName = node.id?.name;
         this.modifiers = node.modifiers;
-        this.hasReceiver = node.scriptFunction.hasReceiver;
+        this.hasReceiver = node.function.hasReceiver;
         if (
             !!node.parent &&
             arkts.isMethodDefinition(node.parent) &&
-            node.parent.name.name === BuiltInNames.ETS_GLOBAL_CLASS
+            node.parent.id?.name === BuiltInNames.ETS_GLOBAL_CLASS
         ) {
             this.isDeclFromFunction = true;
         } else {
@@ -115,7 +115,7 @@ export class CallDeclRecord extends BaseRecord<arkts.AstNode, CallDeclInfo> {
     }
 
     private collectFromLegacy(sourceProgram: arkts.Program | undefined): void {
-        const path = sourceProgram?.absName;
+        const path = sourceProgram?.absoluteName;
         if (!path) {
             return;
         }

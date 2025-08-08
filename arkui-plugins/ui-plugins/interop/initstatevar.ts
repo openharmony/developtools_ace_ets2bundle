@@ -98,19 +98,19 @@ function checkArgsV1InteropV2(
     node: arkts.CallExpression,
     isV2: boolean
 ): void {
-    const valueProperty = arkts.getDecl(value);
+    const valueProperty = arkts.getDecl(value) as arkts.ClassProperty;
     let ketType = 'regular';
     let valueType = 'regular';
     if (!(value instanceof arkts.MemberExpression && value.object instanceof arkts.ThisExpression)) {
         return;
     }
-    let valueName = value.property.name;
+    let valueName = (value.property as arkts.Identifier).name;
     let isComponentV2forParent = false;
     if (valueProperty && valueProperty.annotations) {
         valueProperty.annotations.some((annotations) => (valueType = getPropertyType(annotations)));
-        isComponentV2forParent = valueProperty.parent?.annotations?.some(
+        isComponentV2forParent = (valueProperty.parent as arkts.ClassDefinition | undefined)?.annotations?.some(
             (annotation) => annotation.expr instanceof arkts.Identifier && annotation.expr.name === 'ComponentV2'
-        );
+        ) || false;
     }
     if (keyProperty && keyProperty.annotations) {
         keyProperty.annotations.some((annotations) => (ketType = getPropertyType(annotations)));
@@ -143,13 +143,12 @@ export function getPropertyType(anno: arkts.AnnotationUsage): string {
 }
 
 export function logDiagnostic(errorMessage: string, node: arkts.AstNode): void {
-    const diagnosticKind = arkts.DiagnosticKind.create(errorMessage, arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_ERROR);
-    arkts.Diagnostic.logDiagnostic(diagnosticKind, arkts.getStartPosition(node));
+    const diagnosticKind = arkts.createDiagnosticKind(errorMessage, arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_ERROR);
+    arkts.logDiagnostic(diagnosticKind, node.startPosition);
 }
 
-export function createVariableLet(varName: string, expression: arkts.AstNode): arkts.VariableDeclaration {
+export function createVariableLet(varName: string, expression: arkts.Expression): arkts.VariableDeclaration {
     return arkts.factory.createVariableDeclaration(
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
         [
             arkts.factory.createVariableDeclarator(
@@ -178,8 +177,10 @@ function getStateProxy(proxyName: string, stateVar: () => arkts.Expression): ark
         proxyName,
         arkts.factory.createCallExpression(
             arkts.factory.createIdentifier(InteroperAbilityNames.GETCOMPATIBLESTATE),
+            [stateVar()],
             undefined,
-            [stateVar()]
+            false,
+            false
         )
     );
 }
@@ -216,10 +217,11 @@ function processObjectLiteral(
         const createParam = createEmptyESValue(curParam);
         result.push(createParam);
     }
-    target.properties.forEach((property: { key: arkts.Expression; value: arkts.Expression }) => {
+    target.properties.forEach((prop: arkts.Expression) => {
+        const property = prop as arkts.Property
         const paramName = curParam + keyName;
-        const key = property.key;
-        const value = property.value;
+        const key = property.key as arkts.Identifier;
+        const value = property.value!;
         if (arkts.isObjectExpression(value)) {
             processObjectLiteral(value, paramName, result, keyName);
             const setProperty = setPropertyESValue(curParam, key.name, arkts.factory.createIdentifier(paramName));
@@ -271,7 +273,7 @@ export function processLink(
  * @param keyName - The name of the state variable (e.g., state)
  * @returns generate code to process regular data interoperability
  */
-export function processNormal(keyName: string, value: arkts.AstNode): arkts.Statement[] {
+export function processNormal(keyName: string, value: arkts.Expression): arkts.Statement[] {
     const result: arkts.Statement[] = [];
     if (arkts.isObjectExpression(value)) {
         processObjectLiteral(value, InteroperAbilityNames.PARAM, result, keyName);
@@ -291,22 +293,24 @@ export function processNormal(keyName: string, value: arkts.AstNode): arkts.Stat
  * Input: {builderParam: this.builder}
  * Output: param.setProperty("builderParam", transferCompatibleBuilder(this.builder));
  */
-export function processBuilderParam(keyName: string, value: arkts.AstNode): arkts.Statement[] {
+export function processBuilderParam(keyName: string, value: arkts.Expression): arkts.Statement[] {
     const result: arkts.Statement[] = [];
     const needUpdate: boolean = checkUpdatable(value);
     const newValue = arkts.factory.createCallExpression(
         needUpdate
             ? arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER)
             : arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER),
+        [value],
         undefined,
-        [value]
+        false,
+        false
     );
     const setProperty = setPropertyESValue(InteroperAbilityNames.PARAM, keyName, newValue);
     result.push(setProperty);
     return result;
 }
 
-function getIdentifier(value: arkts.AstNode): arkts.identifier | undefined {
+function getIdentifier(value: arkts.AstNode): arkts.Identifier | undefined {
     if (arkts.isIdentifier(value)) {
         return value;
     } else if (
@@ -326,10 +330,10 @@ function checkUpdatable(value: arkts.AstNode): boolean {
         return false;
     }
     const decl = arkts.getDecl(ident) as arkts.MethodDefinition;
-    const script = decl.scriptFunction;
+    const script = decl.function;
     const params = script.params;
-    if (params.length === 1 && arkts.isEtsParameterExpression(params[0])) {
-        const type = params[0].type;
+    if (params.length === 1 && arkts.isETSParameterExpression(params[0])) {
+        const type = params[0].typeAnnotation;
         if (type === undefined) {
             return false;
         }

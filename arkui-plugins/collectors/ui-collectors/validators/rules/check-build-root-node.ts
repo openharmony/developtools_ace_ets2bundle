@@ -51,8 +51,8 @@ function _checkBuildRootNode(
     if (metadata.name !== BUILD_NAME) {
         return;
     }
-    const blockStatement = node.scriptFunction.body;
-    const buildNode = node.scriptFunction.id;
+    const blockStatement = node.function.body;
+    const buildNode = node.function.id;
     if (!blockStatement || !arkts.isBlockStatement(blockStatement) || !buildNode) {
         return;
     }

@@ -15,6 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { NodeCacheNames } from '../../../common/predefines';
+import { NodeCache, NodeCacheFactory } from '../../../common/node-cache';
 
 export interface customDialogControllerBuilderInfo {
     arrowFunc: arkts.ArrowFunctionExpression;
@@ -33,20 +34,20 @@ export class CustomDialogControllerBuilderCache {
     }
 
     private _updateBuilderArrowFunc(arrowFunc: arkts.ArrowFunctionExpression): void {
-        const scriptFunc = arrowFunc.scriptFunction;
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(scriptFunc.peer);
+        const scriptFunc = arrowFunc.function;
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(scriptFunc.peer);
         const body = scriptFunc.body;
         if (!!body) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(body.peer);
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(body.peer);
         }
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(arrowFunc);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(arrowFunc);
     }
 
     private _updateBuilderCall(call?: arkts.CallExpression): void {
         if (!call) {
             return;
         }
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(call);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(call);
     }
 
     get infos(): customDialogControllerBuilderInfo[] {

@@ -130,13 +130,13 @@ final class Status extends BaseEnum<int> {
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_arrayB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Array<number>>(this, "Prop1", "arrayB", [1, 2, 3])
-    this.__backing_objectB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Object>(this, "Prop2", "objectB", {})
-    this.__backing_dateB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Date>(this, "Prop3", "dateB", new Date("2021-09-09"))
-    this.__backing_setB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Set<number>>(this, "Prop4", "setB", new Set<number>())
-    this.__backing_mapB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Map<number, string>>(this, "Prop5", "mapB", new Map<number, string>())
-    this.__backing_classB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Person>(this, "Prop7", "classB", new Person("Kevin"))
-    this.__backing_enumB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Status>(this, "Prop8", "enumB", Status.NotFound)
+    this.__backing_arrayB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Array<number>>(this, "Prop1", "arrayB", [1, 2, 3]);
+    this.__backing_objectB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Object>(this, "Prop2", "objectB", {});
+    this.__backing_dateB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Date>(this, "Prop3", "dateB", new Date("2021-09-09"));
+    this.__backing_setB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Set<number>>(this, "Prop4", "setB", new Set<number>());
+    this.__backing_mapB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Map<number, string>>(this, "Prop5", "mapB", new Map<number, string>());
+    this.__backing_classB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Person>(this, "Prop7", "classB", new Person("Kevin"));
+    this.__backing_enumB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Status>(this, "Prop8", "enumB", Status.NotFound);
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}

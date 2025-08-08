@@ -25,12 +25,12 @@ import { StructTransformer } from '../../../ui-plugins/struct-translators/struct
  */
 export const structNoRecheck: Plugins = {
     name: 'struct-no-recheck',
-    checked(this: PluginContext): arkts.EtsScript | undefined {
-        let script: arkts.EtsScript | undefined;
+    checked(this: PluginContext): arkts.ETSModule | undefined {
+        let script: arkts.ETSModule | undefined;
         const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-            script = program.astNode;
+            script = program.ast as arkts.ETSModule;
             const structTransformer = new StructTransformer(this.getProjectConfig());
             const programVisitor = new ProgramVisitor({
                 pluginName: structNoRecheck.name,
@@ -40,7 +40,7 @@ export const structNoRecheck: Plugins = {
                 pluginContext: this,
             });
             program = programVisitor.programVisitor(program);
-            script = program.astNode;
+            script = program.ast as arkts.ETSModule;
             return script;
         }
         return script;

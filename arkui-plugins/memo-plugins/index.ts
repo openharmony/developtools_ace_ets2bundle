@@ -19,12 +19,13 @@ import { FunctionTransformer } from './function-transformer';
 import { PositionalIdTracker } from './utils';
 import { ReturnTransformer } from './return-transformer';
 import { ParameterTransformer } from './parameter-transformer';
-import { ProgramVisitor } from '../common/program-visitor';
+import { CanSkipPhasesCache, ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES, EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK, NodeCacheNames } from '../common/predefines';
-import { debugLog } from '../common/debug';
+import { Debugger, debugLog } from '../common/debug';
 import { SignatureTransformer } from './signature-transformer';
 import { InternalsTransformer } from './internal-transformer';
 import { ProgramSkipper } from "../common/program-skipper";
+import { NodeCacheFactory } from '../common/node-cache';
 
 export function unmemoizeTransform(): Plugins {
     return {
@@ -32,26 +33,26 @@ export function unmemoizeTransform(): Plugins {
         checked: checkedTransform,
         clean() {
             ProgramSkipper.clear();
-            arkts.NodeCacheFactory.getInstance().clear();
+            NodeCacheFactory.getInstance().clear();
         },
     };
 }
 
-function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
-    arkts.Debugger.getInstance().phasesDebugLog('[MEMO PLUGIN] AFTER CHECKED ENTER');
+function checkedTransform(this: PluginContext): arkts.ETSModule | undefined {
+    Debugger.getInstance().phasesDebugLog('[MEMO PLUGIN] AFTER CHECKED ENTER');
     arkts.Performance.getInstance().memoryTrackerReset();
     arkts.Performance.getInstance().startMemRecord('Node:UIPlugin:Memo-AfterCheck');
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     const isCoding = this.isCoding?.() ?? false;
     if (!isCoding && !!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-        let script = program.astNode;
+        let script = program.ast as arkts.ETSModule;
         const isFrameworkMode = !!this.getProjectConfig()?.frameworkMode;
-        const canSkipPhases = !isFrameworkMode && program.canSkipPhases();
+        const canSkipPhases = !isFrameworkMode && CanSkipPhasesCache.check(program);
 
         arkts.Performance.getInstance().createEvent('memo-checked');
         program = checkedProgramVisit(program, this, canSkipPhases, isFrameworkMode);
-        script = program.astNode;
+        script = program.ast as arkts.ETSModule;
         arkts.Performance.getInstance().stopEvent('memo-checked', true);
 
         arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:Memo-AfterCheck');
@@ -65,10 +66,10 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         arkts.Performance.getInstance().memoryTrackerGetDelta('ArkTS:Recheck');
         arkts.Performance.getInstance().stopMemRecord('Node:ArkTS:Recheck');
         arkts.Performance.getInstance().memoryTrackerPrintCurrent('UIPlugin:End');
-        arkts.Debugger.getInstance().phasesDebugLog('[MEMO PLUGIN] AFTER CHECKED EXIT');
+        Debugger.getInstance().phasesDebugLog('[MEMO PLUGIN] AFTER CHECKED EXIT');
         return script;
     }
-    arkts.Debugger.getInstance().phasesDebugLog('[MEMO PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
+    Debugger.getInstance().phasesDebugLog('[MEMO PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
     return undefined;
 }
 
@@ -96,7 +97,7 @@ function checkedProgramVisit(
             returnTransformer,
             signatureTransformer,
             internalsTransformer,
-            useCache: arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).isCollected(),
+            useCache: NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).isCollected(),
         });
         const skipPrefixNames = isFrameworkMode
             ? EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK
@@ -110,7 +111,7 @@ function checkedProgramVisit(
             isFrameworkMode
         });
         program = programVisitor.programVisitor(program);
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).clear();
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).clear();
     }
     return program;
 }

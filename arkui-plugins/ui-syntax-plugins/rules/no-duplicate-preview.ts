@@ -32,8 +32,8 @@ class NoDuplicatePreviewRule extends AbstractUISyntaxRule {
         this.previewDecoratorUsageIndex = 10;
     }
 
-    public parsed(node: arkts.StructDeclaration): void {
-        if (!arkts.isStructDeclaration(node)) {
+    public parsed(node: arkts.ETSStructDeclaration): void {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
         const previewDecoratorUsage = getAnnotationUsage(
@@ -63,7 +63,7 @@ class NoDuplicatePreviewRule extends AbstractUISyntaxRule {
 
     private reportError(errorNode: arkts.AnnotationUsage): void {
         let startPosition = errorNode.startPosition;
-        startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+        startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
         this.report({
             node: errorNode,
             message: this.messages.duplicateEntry,

@@ -19,9 +19,9 @@ import { factory } from './memo-factory';
 
 export class ImportTransformer extends AbstractVisitor {
     visitor(node: arkts.AstNode): arkts.AstNode {
-        if (node instanceof arkts.EtsScript) {
+        if (arkts.isETSModule(node)) {
             factory.createContextTypesImportDeclaration(arkts.arktsGlobal.compilerContext?.program);
-            return arkts.factory.updateEtsScript(node, node.statements);
+            return arkts.factory.updateETSModule(node, node.statements, node.ident, node.getNamespaceFlag(), node.program);
         }
         return node;
     }

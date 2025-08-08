@@ -26,7 +26,7 @@ class WatchDecoratorFunctionRule extends AbstractUISyntaxRule {
     }
 
     public parsed(node: arkts.AstNode): void {
-        if (!arkts.isStructDeclaration(node)) {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
         // Get all method names
@@ -57,11 +57,11 @@ class WatchDecoratorFunctionRule extends AbstractUISyntaxRule {
     }
 
     // Gets the names of all methods in the struct
-    private getMethodNames(node: arkts.StructDeclaration): string[] {
+    private getMethodNames(node: arkts.ETSStructDeclaration): string[] {
         const methodNames: string[] = [];
-        node.definition.body.forEach((member) => {
-            if (arkts.isMethodDefinition(member) && arkts.isIdentifier(member.name)) {
-                const methodName = getIdentifierName(member.name);
+        node.definition?.body.forEach((member) => {
+            if (arkts.isMethodDefinition(member) && arkts.isIdentifier(member.id)) {
+                const methodName = getIdentifierName(member.id);
                 if (methodName) {
                     methodNames.push(methodName);
                 }
@@ -70,9 +70,9 @@ class WatchDecoratorFunctionRule extends AbstractUISyntaxRule {
         return methodNames;
     }
 
-    private getPrivateNames(node: arkts.StructDeclaration): string[] {
+    private getPrivateNames(node: arkts.ETSStructDeclaration): string[] {
         const privateNames: string[] = [];
-        node.definition.body.forEach((member) => {
+        node.definition?.body.forEach((member) => {
             if (arkts.isClassProperty(member) && isPrivateClassProperty(member)) {
                 const privateName = getClassPropertyName(member);
                 if (privateName) {
@@ -84,11 +84,11 @@ class WatchDecoratorFunctionRule extends AbstractUISyntaxRule {
     }
 
     private validateWatch(
-        node: arkts.StructDeclaration,
+        node: arkts.ETSStructDeclaration,
         methodNames: string[],
         privateNames: string[]
     ): void {
-        node.definition.body.forEach(member => {
+        node.definition?.body.forEach(member => {
             if (!arkts.isClassProperty(member)) {
                 return;
             }
