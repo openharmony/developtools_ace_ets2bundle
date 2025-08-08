@@ -313,45 +313,45 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   set statevar(statevar: (string | undefined))
   
   get statevar(): (string | undefined)
-  set __backing_statevar(__backing_statevar: (IStateDecoratedVariable<string> | undefined))
+  @Watch({value:"stateOnChange"}) set __backing_statevar(__backing_statevar: (IStateDecoratedVariable<string> | undefined))
   
-  get __backing_statevar(): (IStateDecoratedVariable<string> | undefined)
+  @Watch({value:"stateOnChange"}) get __backing_statevar(): (IStateDecoratedVariable<string> | undefined)
   set propvar(propvar: (string | undefined))
   
   get propvar(): (string | undefined)
-  set __backing_propvar(__backing_propvar: (IPropDecoratedVariable<string> | undefined))
+  @Watch({value:"propOnChange"}) set __backing_propvar(__backing_propvar: (IPropDecoratedVariable<string> | undefined))
   
-  get __backing_propvar(): (IPropDecoratedVariable<string> | undefined)
+  @Watch({value:"propOnChange"}) get __backing_propvar(): (IPropDecoratedVariable<string> | undefined)
   @__Link_intrinsic() set linkvar(linkvar: (string | undefined))
   
   @__Link_intrinsic() get linkvar(): (string | undefined)
-  set __backing_linkvar(__backing_linkvar: (LinkSourceType<string> | undefined))
+  @Watch({value:"linkOnChange"}) set __backing_linkvar(__backing_linkvar: (LinkSourceType<string> | undefined))
   
-  get __backing_linkvar(): (LinkSourceType<string> | undefined)
+  @Watch({value:"linkOnChange"}) get __backing_linkvar(): (LinkSourceType<string> | undefined)
   set storagelinkvar(storagelinkvar: (string | undefined))
   
   get storagelinkvar(): (string | undefined)
-  set __backing_storagelinkvar(__backing_storagelinkvar: (IStorageLinkDecoratedVariable<string> | undefined))
+  @Watch({value:"storageLinkOnChange"}) set __backing_storagelinkvar(__backing_storagelinkvar: (IStorageLinkDecoratedVariable<string> | undefined))
   
-  get __backing_storagelinkvar(): (IStorageLinkDecoratedVariable<string> | undefined)
+  @Watch({value:"storageLinkOnChange"}) get __backing_storagelinkvar(): (IStorageLinkDecoratedVariable<string> | undefined)
   set storagepropvar(storagepropvar: (string | undefined))
   
   get storagepropvar(): (string | undefined)
-  set __backing_storagepropvar(__backing_storagepropvar: (IStoragePropRefDecoratedVariable<string> | undefined))
+  @Watch({value:"storagePropOnChange"}) set __backing_storagepropvar(__backing_storagepropvar: (IStoragePropRefDecoratedVariable<string> | undefined))
   
-  get __backing_storagepropvar(): (IStoragePropRefDecoratedVariable<string> | undefined)
+  @Watch({value:"storagePropOnChange"}) get __backing_storagepropvar(): (IStoragePropRefDecoratedVariable<string> | undefined)
   set objectlinkvar(objectlinkvar: (A | undefined))
   
   get objectlinkvar(): (A | undefined)
-  set __backing_objectlinkvar(__backing_objectlinkvar: (IObjectLinkDecoratedVariable<A> | undefined))
+  @Watch({value:"objectLinkOnChange"}) set __backing_objectlinkvar(__backing_objectlinkvar: (IObjectLinkDecoratedVariable<A> | undefined))
   
-  get __backing_objectlinkvar(): (IObjectLinkDecoratedVariable<A> | undefined)
+  @Watch({value:"objectLinkOnChange"}) get __backing_objectlinkvar(): (IObjectLinkDecoratedVariable<A> | undefined)
   set providevar(providevar: (string | undefined))
   
   get providevar(): (string | undefined)
-  set __backing_providevar(__backing_providevar: (IProvideDecoratedVariable<string> | undefined))
+  @Watch({value:"ProvideOnChange"}) set __backing_providevar(__backing_providevar: (IProvideDecoratedVariable<string> | undefined))
   
-  get __backing_providevar(): (IProvideDecoratedVariable<string> | undefined)
+  @Watch({value:"ProvideOnChange"}) get __backing_providevar(): (IProvideDecoratedVariable<string> | undefined)
   
 }
 
@@ -359,9 +359,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   set providevar(providevar: (string | undefined))
   
   get providevar(): (string | undefined)
-  set __backing_providevar(__backing_providevar: (IConsumeDecoratedVariable<string> | undefined))
+  @Watch({value:"ConsumeOnChange"}) set __backing_providevar(__backing_providevar: (IConsumeDecoratedVariable<string> | undefined))
   
-  get __backing_providevar(): (IConsumeDecoratedVariable<string> | undefined)
+  @Watch({value:"ConsumeOnChange"}) get __backing_providevar(): (IConsumeDecoratedVariable<string> | undefined)
   
 }
 

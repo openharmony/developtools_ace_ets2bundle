@@ -92,9 +92,9 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
 
 @ComponentV2() export interface __Options_Child {
   onceParamNum?: number;
-  @Once() @Param() __backing_onceParamNum?: number;
+  @Param() @Once() __backing_onceParamNum?: number;
   onceParamInfo?: Info;
-  @Once() @Param() __backing_onceParamInfo?: Info;
+  @Param() @Once() @Require() __backing_onceParamInfo?: Info;
   
 }
 
@@ -283,9 +283,9 @@ function main() {}
   set onceParamInfo(onceParamInfo: (Info | undefined))
   
   get onceParamInfo(): (Info | undefined)
-  @Param() set __backing_onceParamInfo(__backing_onceParamInfo: (IParamOnceDecoratedVariable<Info> | undefined))
+  @Param() @Require() set __backing_onceParamInfo(__backing_onceParamInfo: (IParamOnceDecoratedVariable<Info> | undefined))
   
-  @Param() get __backing_onceParamInfo(): (IParamOnceDecoratedVariable<Info> | undefined)
+  @Param() @Require() get __backing_onceParamInfo(): (IParamOnceDecoratedVariable<Info> | undefined)
   
 }
 

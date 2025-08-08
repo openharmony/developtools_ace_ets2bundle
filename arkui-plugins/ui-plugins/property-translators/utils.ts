@@ -428,70 +428,30 @@ export function removeImplementProperty(originalName: string): string {
     return originalName.substring(prefix.length);
 }
 
-// CACHE
-export interface PropertyCachedBody {
-    initializeBody?: arkts.AstNode[];
-    updateBody?: arkts.AstNode[];
-    toRecordBody?: arkts.Property[];
-    constructorBody?: arkts.AstNode[];
+export function getValueInMonitorAnnotation(annotations: readonly arkts.AnnotationUsage[]): string[] | undefined {
+    const monitorAnno: arkts.AnnotationUsage | undefined = annotations.find((anno: arkts.AnnotationUsage) => {
+        return (
+            anno.expr &&
+            arkts.isIdentifier(anno.expr) &&
+            anno.expr.name === DecoratorNames.MONITOR &&
+            anno.properties.length === 1
+        );
+    });
+    if (!monitorAnno) {
+        return undefined;
+    }
+    return getArrayFromAnnoProperty(monitorAnno.properties.at(0)!);
 }
 
-export class PropertyCache {
-    private _cache: Map<string, PropertyCachedBody>;
-    private static instance: PropertyCache;
-
-    private constructor() {
-        this._cache = new Map<string, PropertyCachedBody>();
+export function getArrayFromAnnoProperty(property: arkts.AstNode): string[] | undefined {
+    if (!arkts.isClassProperty(property) || !property.value || !arkts.isArrayExpression(property.value)) {
+        return undefined;
     }
-
-    static getInstance(): PropertyCache {
-        if (!this.instance) {
-            this.instance = new PropertyCache();
+    const resArr: string[] = [];
+    property.value.elements.forEach((item: arkts.Expression) => {
+        if (arkts.isStringLiteral(item)) {
+            resArr.push(item.str);
         }
-        return this.instance;
-    }
-
-    reset(): void {
-        this._cache.clear();
-    }
-
-    getInitializeBody(name: string): arkts.AstNode[] {
-        return this._cache.get(name)?.initializeBody ?? [];
-    }
-
-    getUpdateBody(name: string): arkts.AstNode[] {
-        return this._cache.get(name)?.updateBody ?? [];
-    }
-
-    getToRecordBody(name: string): arkts.Property[] {
-        return this._cache.get(name)?.toRecordBody ?? [];
-    }
-
-    getConstructorBody(name: string): arkts.AstNode[] {
-        return this._cache.get(name)?.constructorBody ?? [];
-    }
-
-    collectInitializeStruct(name: string, initializeStruct: arkts.AstNode[]): void {
-        const initializeBody = this._cache.get(name)?.initializeBody ?? [];
-        const newInitializeBody = [...initializeBody, ...initializeStruct];
-        this._cache.set(name, { ...this._cache.get(name), initializeBody: newInitializeBody });
-    }
-
-    collectUpdateStruct(name: string, updateStruct: arkts.AstNode[]): void {
-        const updateBody = this._cache.get(name)?.updateBody ?? [];
-        const newUpdateBody = [...updateBody, ...updateStruct];
-        this._cache.set(name, { ...this._cache.get(name), updateBody: newUpdateBody });
-    }
-
-    collectToRecord(name: string, toRecord: arkts.Property[]): void {
-        const toRecordBody = this._cache.get(name)?.toRecordBody ?? [];
-        const newToRecordBody = [...toRecordBody, ...toRecord];
-        this._cache.set(name, { ...this._cache.get(name), toRecordBody: newToRecordBody });
-    }
-
-    collectContructor(name: string, insertedConstructorBody: arkts.AstNode[]): void {
-        const constructorBody = this._cache.get(name)?.constructorBody ?? [];
-        const newConstructorBody = [...constructorBody, ...insertedConstructorBody];
-        this._cache.set(name, { ...this._cache.get(name), constructorBody: newConstructorBody });
-    }
+    });
+    return resArr;
 }
