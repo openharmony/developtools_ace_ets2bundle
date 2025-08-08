@@ -63,9 +63,10 @@ function transformImportDecl(node: ts.ImportDeclaration, checker: ts.TypeChecker
   const REG_LIB_SO: RegExp = /lib(\S+)\.so/;
   const depName2DepInfo: Object = projectConfig.depName2DepInfo;
   const packageDir: string = projectConfig.packageDir;
-  if (moduleRequest.startsWith('.') || REG_SYSTEM_MODULE.test(moduleRequest.trim()) ||
-    REG_LIB_SO.test(moduleRequest.trim()) || exclude.indexOf(moduleRequest) !== -1 ||
-    (depName2DepInfo && !(depName2DepInfo.has(moduleRequest)))) {
+  const hspNameOhmMap: Object = Object.assign({}, projectConfig.hspNameOhmMap, projectConfig.harNameOhmMap);
+  if (moduleRequest.startsWith('.') || REG_SYSTEM_MODULE.test(moduleRequest.trim()) || REG_LIB_SO.test(moduleRequest.trim()) ||
+    exclude.indexOf(moduleRequest) !== -1 || (depName2DepInfo && !(depName2DepInfo.has(moduleRequest))) ||
+    (hspNameOhmMap && hspNameOhmMap[moduleRequest])) {
     return [];
   }
   const importClause = node.importClause;
