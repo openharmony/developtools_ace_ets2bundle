@@ -26,11 +26,11 @@ import {
     generateGetOrSetCall,
     hasDecorator,
     collectStateManagementTypeImport,
-    PropertyCache,
 } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { factory } from './factory';
+import { PropertyCache } from './cache/propertyCache';
 
 export class StateTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
@@ -86,7 +86,7 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
-            factory.generateInitializeValue(this.property, this.propertyType, originalName)
+            factory.generateInitializeValue(this.property, this.propertyType, originalName),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         collectStateManagementTypeImport(StateManagementTypes.STATE_DECORATED);

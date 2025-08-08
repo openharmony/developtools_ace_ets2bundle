@@ -58,12 +58,7 @@ import {
     ObservedAnnoInfo,
     getNoTransformationMembersInClass,
 } from './utils';
-import {
-    collectStateManagementTypeImport,
-    generateThisBacking,
-    hasDecorator,
-    PropertyCache,
-} from '../property-translators/utils';
+import { collectStateManagementTypeImport, generateThisBacking, hasDecorator } from '../property-translators/utils';
 import { ProjectConfig } from '../../common/plugin-context';
 import { ImportCollector } from '../../common/import-collector';
 import {
@@ -86,6 +81,8 @@ import {
 import { generateArkUICompatible, isArkUICompatible } from '../interop/interop';
 import { GenSymGenerator } from '../../common/gensym-generator';
 import { MethodTranslator } from 'ui-plugins/property-translators/base';
+import { MonitorCache } from '../property-translators/cache/monitorCache';
+import { PropertyCache } from '../property-translators/cache/propertyCache';
 
 export class factory {
     /**
@@ -110,7 +107,10 @@ export class factory {
         let modifiers: arkts.Es2pandaModifierFlags =
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         if (!scope.isDecl) {
-            body = arkts.factory.createBlock(PropertyCache.getInstance().getInitializeBody(scope.name));
+            body = arkts.factory.createBlock([
+                ...PropertyCache.getInstance().getInitializeBody(scope.name),
+                ...MonitorCache.getInstance().getCachedMonitors(scope.name),
+            ]);
             modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
         }
         const scriptFunction: arkts.ScriptFunction = arkts.factory
@@ -919,13 +919,14 @@ export class factory {
             ...restMembers,
             ...classScopeInfo.getters,
         ];
-        return ObservedAnno.isObservedV2
+        const isDecl: boolean = arkts.hasModifierFlag(definition, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
+        return ObservedAnno.isObservedV2 && !isDecl
             ? returnNodes.concat(this.transformObservedV2Constuctor(definition, classScopeInfo.className))
             : returnNodes;
     }
 
     static transformObservedV2Constuctor(definition: arkts.ClassDefinition, className: string): arkts.MethodDefinition {
-        const addConstructorNodes: arkts.AstNode[] = PropertyCache.getInstance().getConstructorBody(className);
+        const addConstructorNodes: arkts.AstNode[] = MonitorCache.getInstance().getCachedMonitors(className);
         let originConstructorMethod: arkts.MethodDefinition | undefined = definition.body.find(
             (it) =>
                 arkts.isMethodDefinition(it) &&

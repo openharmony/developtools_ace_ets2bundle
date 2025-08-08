@@ -808,6 +808,53 @@ export class factory {
             undefined
         );
     }
+    
+    static generateinitAssignment(
+        monitorItem: string[] | undefined,
+        originalName: string,
+        newName: string
+    ): arkts.ExpressionStatement {
+        const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
+        const right: arkts.CallExpression = factory.generateStateMgmtFactoryCall(
+            StateManagementTypes.MAKE_MONITOR,
+            undefined,
+            [this.generatePathArg(monitorItem), this.generateLambdaArg(originalName)],
+            false
+        );
+        return arkts.factory.createExpressionStatement(
+            arkts.factory.createAssignmentExpression(
+                thisValue,
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+                right
+            )
+        );
+    }
+
+    static generatePathArg(monitorItem: string[] | undefined): arkts.ArrayExpression {
+        if (!monitorItem || monitorItem.length <= 0) {
+            return arkts.factory.createArrayExpression([]);
+        }
+        const params = monitorItem.map((itemName: string) => {
+            return factory.createMonitorPathsInfoParameter(itemName);
+        });
+        return arkts.factory.createArrayExpression(params);
+    }
+
+    static generateLambdaArg(originalName: string): arkts.ArrowFunctionExpression {
+        return arkts.factory.createArrowFunction(
+            UIFactory.createScriptFunction({
+                params: [UIFactory.createParameterDeclaration(MonitorNames.M_PARAM, MonitorNames.I_MONITOR)],
+                body: arkts.factory.createBlock([
+                    arkts.factory.createExpressionStatement(
+                        arkts.factory.createCallExpression(generateThisBacking(originalName), undefined, [
+                            arkts.factory.createIdentifier(MonitorNames.M_PARAM),
+                        ])
+                    ),
+                ]),
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+            })
+        );
+    }
 
     static generateMonitorVariable(itemNameSplit: string[]): arkts.Expression {
         const objectFirst: arkts.Expression = generateThisBacking(itemNameSplit[0]);

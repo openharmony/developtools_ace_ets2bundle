@@ -462,7 +462,6 @@ export class ComponentTransformer extends AbstractVisitor {
             originMember.setAnnotations([buildParamInfo.annotation.clone()]);
             return [originMember];
         }
-        const OnceInfo = infos.find((it) => it.name === DecoratorNames.ONCE);
         const targetInfo = infos.find((it) => DECORATOR_TYPE_MAP.has(it.name));
         if (!!targetInfo) {
             const newName: string = backingField(originalName);
@@ -472,10 +471,7 @@ export class ComponentTransformer extends AbstractVisitor {
                 undefined,
                 arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
             );
-            const annos = !!OnceInfo
-                ? [OnceInfo.annotation.clone(), targetInfo.annotation.clone()]
-                : [targetInfo.annotation.clone()];
-            newMember.setAnnotations(annos);
+            newMember.setAnnotations(member.annotations);
             if (isDecoratorAnnotation(targetInfo.annotation, DecoratorNames.LINK, true)) {
                 this.shouldAddLinkIntrinsic = true;
                 originMember.setAnnotations([annotation(DecoratorIntrinsicNames.LINK)]);
