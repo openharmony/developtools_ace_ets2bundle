@@ -38,7 +38,15 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
+
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -94,21 +102,33 @@ class AB {
   }
   
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
       ForEach(((): Array<string> => {
         return this.arr;
       }), ((item: string) => {
-        Text(undefined, item, undefined, undefined);
+        TextImpl(@memo() ((instance: TextAttribute): void => {
+          instance.setTextOptions(item, undefined).applyAttributesFinish();
+          return;
+        }), undefined);
       }));
       ForEach(((): Array<Person> => {
         return this.getArray();
       }), ((item: Person) => {
-        Text(undefined, item.name, undefined, undefined);
+        TextImpl(@memo() ((instance: TextAttribute): void => {
+          instance.setTextOptions(item.name, undefined).applyAttributesFinish();
+          return;
+        }), undefined);
       }));
       ForEach(((): Array<string> => {
         return new AB().bar;
       }), ((item: string) => {
-        Text(undefined, item, undefined, undefined);
+        TextImpl(@memo() ((instance: TextAttribute): void => {
+          instance.setTextOptions(item, undefined).applyAttributesFinish();
+          return;
+        }), undefined);
       }));
       ForEach(((): Array<String> => {
         return new AB().bar;
@@ -122,7 +142,10 @@ class AB {
         ForEach(((): Array<string> => {
           return new Array<string>("1", "2");
         }), ((item: string) => {
-          Text(undefined, item, undefined, undefined);
+          TextImpl(@memo() ((instance: TextAttribute): void => {
+            instance.setTextOptions(item, undefined).applyAttributesFinish();
+            return;
+          }), undefined);
         }));
       }));
     }));

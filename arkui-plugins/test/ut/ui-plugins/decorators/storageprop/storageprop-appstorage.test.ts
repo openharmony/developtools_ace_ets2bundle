@@ -42,9 +42,15 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IStoragePropRefDecoratedVariable as IStoragePropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { NavInterface as NavInterface } from "arkui.UserView";
 
@@ -110,19 +116,22 @@ class Data {
   }
   
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Text(@memo() ((instance: TextAttribute): void => {
-        instance.onClick(((e: ClickEvent) => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`From AppStorage \${this.storageProp}\`, undefined).onClick(((e: ClickEvent) => {
           this.storageProp += 1;
-        }));
+        })).applyAttributesFinish();
         return;
-      }), \`From AppStorage \${this.storageProp}\`, undefined, undefined);
-      Text(@memo() ((instance: TextAttribute): void => {
-        instance.onClick(((e: ClickEvent) => {
+      }), undefined);
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`From AppStorage \${this.storagePropObject.code}\`, undefined).onClick(((e: ClickEvent) => {
           this.storagePropObject.code += 1;
-        }));
+        })).applyAttributesFinish();
         return;
-      }), \`From AppStorage \${this.storagePropObject.code}\`, undefined, undefined);
+      }), undefined);
     }));
   }
   

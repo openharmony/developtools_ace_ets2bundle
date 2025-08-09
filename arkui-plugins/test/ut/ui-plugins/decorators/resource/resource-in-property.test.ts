@@ -38,7 +38,13 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+import { ImageAttribute as ImageAttribute } from "arkui.component.image";
+import { ImageImpl as ImageImpl } from "arkui.component.image";
 import { memo as memo } from "arkui.stateManagement.runtime";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+import { TextImpl as TextImpl } from "arkui.component.text";
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { _rawfile as _rawfile } from "arkui.component.resources";
 import { _r as _r } from "arkui.component.resources";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
@@ -73,10 +79,22 @@ i = _r(16777216, 10003, "com.example.mock", "entry");
   }
   
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Text(undefined, this.str, undefined, undefined);
-      Text(undefined, i, undefined, undefined);
-      Image(undefined, this.icon, undefined, undefined);
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(this.str, undefined).applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(i, undefined).applyAttributesFinish();
+        return;
+      }), undefined);
+      ImageImpl(@memo() ((instance: ImageAttribute): void => {
+        instance.setImageOptions(this.icon, undefined).applyAttributesFinish();
+        return;
+      }), undefined);
     }));
   }
   private constructor() {}
