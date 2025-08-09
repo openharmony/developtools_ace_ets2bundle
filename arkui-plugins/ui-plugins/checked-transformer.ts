@@ -19,7 +19,11 @@ import { factory as structFactory } from './struct-translators/factory';
 import { factory as builderLambdaFactory } from './builder-lambda-translators/factory';
 import { factory as entryFactory } from './entry-translators/factory';
 import { AbstractVisitor } from '../common/abstract-visitor';
-import { isBuilderLambda, isBuilderLambdaMethodDecl } from './builder-lambda-translators/utils';
+import {
+    ComponentAttributeCache,
+    isBuilderLambda,
+    isBuilderLambdaMethodDecl,
+} from './builder-lambda-translators/utils';
 import { isEntryWrapperClass } from './entry-translators/utils';
 import { ImportCollector } from '../common/import-collector';
 import { DeclarationCollector } from '../common/declaration-collector';
@@ -86,6 +90,7 @@ export class CheckedTransformer extends AbstractVisitor {
         this.scope = { customComponents: [] };
         PropertyCache.getInstance().reset();
         MonitorCache.getInstance().reset();
+        ComponentAttributeCache.getInstance().reset();
         ImportCollector.getInstance().reset();
         DeclarationCollector.getInstance().reset();
         LogCollector.getInstance().reset();
@@ -161,10 +166,7 @@ export class CheckedTransformer extends AbstractVisitor {
                 return this.visitEachChild(lambda);
             }
         } else if (arkts.isMethodDefinition(beforeChildren) && isBuilderLambdaMethodDecl(beforeChildren)) {
-            const lambda = builderLambdaFactory.transformBuilderLambdaMethodDecl(
-                beforeChildren,
-                this.externalSourceName
-            );
+            const lambda = builderLambdaFactory.transformBuilderLambdaMethodDecl(beforeChildren);
             return this.visitEachChild(lambda);
         }
         let node = this.visitEachChild(beforeChildren);

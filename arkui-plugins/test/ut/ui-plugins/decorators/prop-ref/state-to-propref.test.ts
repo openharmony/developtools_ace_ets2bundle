@@ -44,13 +44,23 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
+
+import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
 import { ConditionScope as ConditionScope } from "arkui.component.builder";
 
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -96,24 +106,33 @@ function main() {}
   }
   
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
       ConditionScope(@memo() (() => {
         if (((this.count) > (0))) {
           ConditionBranch(@memo() (() => {
-            Text(undefined, (((("You have") + (this.count))) + ("Nuggets left")), undefined, undefined);
+            TextImpl(@memo() ((instance: TextAttribute): void => {
+              instance.setTextOptions((((("You have") + (this.count))) + ("Nuggets left")), undefined).applyAttributesFinish();
+              return;
+            }), undefined);
           }));
         } else {
           ConditionBranch(@memo() (() => {
-            Text(undefined, "Game over!", undefined, undefined);
+            TextImpl(@memo() ((instance: TextAttribute): void => {
+              instance.setTextOptions("Game over!", undefined).applyAttributesFinish();
+              return;
+            }), undefined);
           }));
         }
       }));
-      Button(@memo() ((instance: ButtonAttribute): void => {
-        instance.onClick(((e: ClickEvent) => {
+      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+        instance.setButtonOptions("Try again", undefined).onClick(((e: ClickEvent) => {
           this.count -= this.costOfOneAttempt;
-        }));
+        })).applyAttributesFinish();
         return;
-      }), "Try again", undefined, undefined);
+      }), undefined);
     }));
   }
   
@@ -140,20 +159,26 @@ function main() {}
   }
   
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Text(undefined, (((("Grant") + (this.countDownStartValue))) + ("nuggets to play.")), undefined, undefined);
-      Button(@memo() ((instance: ButtonAttribute): void => {
-        instance.onClick(((e: ClickEvent) => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions((((("Grant") + (this.countDownStartValue))) + ("nuggets to play.")), undefined).applyAttributesFinish();
+        return;
+      }), undefined);
+      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+        instance.setButtonOptions("+1 - Nuggets in New Game", undefined).onClick(((e: ClickEvent) => {
           this.countDownStartValue += 1;
-        }));
+        })).applyAttributesFinish();
         return;
-      }), "+1 - Nuggets in New Game", undefined, undefined);
-      Button(@memo() ((instance: ButtonAttribute): void => {
-        instance.onClick(((e: ClickEvent) => {
+      }), undefined);
+      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+        instance.setButtonOptions("-1 - Nuggets in New Game", undefined).onClick(((e: ClickEvent) => {
           this.countDownStartValue -= 1;
-        }));
+        })).applyAttributesFinish();
         return;
-      }), "-1 - Nuggets in New Game", undefined, undefined);
+      }), undefined);
       CountDownComponent._instantiateImpl(undefined, (() => {
         return new CountDownComponent();
       }), {
