@@ -504,25 +504,15 @@ export class factory {
         if (!className) {
             throw new Error('Non Empty className expected for Component');
         }
-
+        const body: readonly arkts.AstNode[] = definition.body;
         const propertyTranslators: (PropertyTranslator | MethodTranslator)[] = filterDefined(
-            definition.body.map((it) => classifyStructMembers(it, scope))
+            body.map((it) => classifyStructMembers(it, scope))
         );
         const translatedMembers: arkts.AstNode[] = this.tranformPropertyMembers(
             propertyTranslators,
             classOptionsName ?? getCustomComponentOptionsName(className),
             scope
         );
-        if (hasDecorator(node.definition, DecoratorNames.CUSTOM_DIALOG)) {
-            const dialogControllerProperty: arkts.ClassProperty | undefined = definition.body.find(
-                (item: arkts.AstNode) => arkts.isClassProperty(item) && getCustomDialogController(item).length > 0
-            ) as arkts.ClassProperty | undefined;
-            if (!!dialogControllerProperty) {
-                translatedMembers.push(
-                    this.createCustomDialogMethod(getCustomDialogController(dialogControllerProperty))
-                );
-            }
-        }
         const updateMembers: arkts.AstNode[] = definition.body
             .filter(
                 (member) =>
@@ -535,7 +525,29 @@ export class factory {
             ...translatedMembers,
             ...updateMembers,
         ]);
+        if (
+            !!scope.annotations.customdialog ||
+            (scope.isDecl && scope.name === CustomComponentNames.BASE_CUSTOM_DIALOG_NAME)
+        ) {
+            updateClassDef.addProperties(factory.addControllerSetMethod(scope.isDecl, body));
+        }
         return arkts.factory.updateClassDeclaration(node, updateClassDef);
+    }
+
+    /**
+     * add `__setDialogController__` method in `@CustomDialog` component.
+     */
+    static addControllerSetMethod(isDecl: boolean, body: readonly arkts.AstNode[]): arkts.MethodDefinition[] {
+        if (isDecl) {
+            return [this.createCustomDialogMethod(isDecl)];
+        }
+        const dialogControllerProperty: arkts.ClassProperty | undefined = body.find(
+            (item: arkts.AstNode) => arkts.isClassProperty(item) && getCustomDialogController(item).length > 0
+        ) as arkts.ClassProperty | undefined;
+        if (!!dialogControllerProperty) {
+            return [this.createCustomDialogMethod(isDecl, getCustomDialogController(dialogControllerProperty))];
+        }
+        return [];
     }
 
     /**
@@ -614,7 +626,11 @@ export class factory {
         }
     }
 
-    static createCustomDialogMethod(controller: string): arkts.MethodDefinition {
+    static createCustomDialogMethod(isDecl: boolean, controller?: string): arkts.MethodDefinition {
+        let block: arkts.BlockStatement | undefined = undefined;
+        if (!!controller) {
+            block = arkts.factory.createBlock(this.createSetControllerElements(controller));
+        }
         const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
             arkts.factory.createIdentifier(
                 CustomDialogNames.CONTROLLER,
@@ -622,38 +638,41 @@ export class factory {
             ),
             undefined
         );
-        const block = arkts.factory.createBlock(
-            controller.length !== 0
-                ? [
-                      arkts.factory.createExpressionStatement(
-                          arkts.factory.createAssignmentExpression(
-                              generateThisBacking(backingField(controller)),
-                              arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                              arkts.factory.createIdentifier(CustomDialogNames.CONTROLLER)
-                          )
-                      ),
-                  ]
-                : []
-        );
-        const script = arkts.factory.createScriptFunction(
-            block,
-            arkts.FunctionSignature.createFunctionSignature(
-                undefined,
-                [param],
-                arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                false
-            ),
-            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
-        );
+        const modifiers = isDecl
+            ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE
+            : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
+        return UIFactory.createMethodDefinition({
+            key: arkts.factory.createIdentifier(CustomDialogNames.SET_DIALOG_CONTROLLER_METHOD),
+            kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+            function: {
+                body: block,
+                params: [param],
+                returnTypeAnnotation: arkts.factory.createPrimitiveType(
+                    arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID
+                ),
+                hasReceiver: false,
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+                modifiers: modifiers,
+            },
+            modifiers: modifiers,
+        });
+    }
 
-        return arkts.factory.createMethodDefinition(
-            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
-            arkts.factory.createIdentifier(CustomDialogNames.SET_DIALOG_CONTROLLER_METHOD),
-            script,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
-            false
-        );
+    /*
+     * create assignment expression `this.__backing<controller> = controller`.
+     */
+    static createSetControllerElements(controller: string): arkts.AstNode[] {
+        return controller.length !== 0
+            ? [
+                  arkts.factory.createExpressionStatement(
+                      arkts.factory.createAssignmentExpression(
+                          generateThisBacking(backingField(controller)),
+                          arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+                          arkts.factory.createIdentifier(CustomDialogNames.CONTROLLER)
+                      )
+                  ),
+              ]
+            : [];
     }
 
     /*
