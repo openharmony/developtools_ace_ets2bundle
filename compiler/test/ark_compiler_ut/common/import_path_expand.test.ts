@@ -295,13 +295,106 @@ const EXPECT_3_5 = `import { A } from "testPkg";
 A();
 `;
 
+const CASE_4_1_TEST = `import { A } from './relativePath';
+A();`;
+const CASE_4_1_FILES = {
+  'relativePath.ts': `export function A() {}`
+};
+const EXPECT_4_1 = `import { A } from './relativePath';
+A();
+`;
+
+const CASE_4_2_TEST = `import { A } from '@ohos.system';
+A();`;
+const CASE_4_2_FILES = {
+  'system.ts': `export function A() {}`
+};
+const EXPECT_4_2 = `import { A } from '@ohos.system';
+A();
+`;
+
+const CASE_4_3_TEST = `import { A } from 'libtest.so';
+A();`;
+const CASE_4_3_FILES = {
+  'libtest.so': `export function A() {}`
+};
+const EXPECT_4_3 = `import { A } from 'libtest.so';
+A();
+`;
+
+const CASE_4_4_TEST = `import { A } from 'unknownPkg';
+A();`;
+const CASE_4_4_FILES = {
+  'unknownPkg.ts': `export function A() {}`
+};
+const EXPECT_4_4 = `import { A } from 'unknownPkg';
+A();
+`;
+
+const CASE_4_5_TEST = `import { A } from 'hspPkg';
+A();`;
+const CASE_4_5_FILES = {
+  'hspPkg.ts': `export function A() {}`
+};
+const EXPECT_4_5 = `import { A } from 'hspPkg';
+A();
+`;
+
+// 新增测试用例：测试新加的判断条件
+const CASE_4_6_TEST = `import { A } from 'harPkg';
+A();`;
+const CASE_4_6_FILES = {
+  'harPkg.ts': `export function A() {}`
+};
+const EXPECT_4_6 = `import { A } from 'harPkg';
+A();
+`;
+
+const CASE_4_7_TEST = `import { A } from 'excludePkg';
+A();`;
+const CASE_4_7_FILES = {
+  'excludePkg.ts': `export function A() {}`
+};
+const EXPECT_4_7 = `import { A } from 'excludePkg';
+A();
+`;
+
+const CASE_4_8_TEST = `import { A } from '@system.system';
+A();`;
+const CASE_4_8_FILES = {
+  'system.ts': `export function A() {}`
+};
+const EXPECT_4_8 = `import { A } from '@system.system';
+A();
+`;
+
+const CASE_4_9_TEST = `import { A } from '@kit.system';
+A();`;
+const CASE_4_9_FILES = {
+  'kit.ts': `export function A() {}`
+};
+const EXPECT_4_9 = `import { A } from '@kit.system';
+A();
+`;
+
+const CASE_4_10_TEST = `import { A } from '@arkts.system';
+A();`;
+const CASE_4_10_FILES = {
+  'arkts.ts': `export function A() {}`
+};
+const EXPECT_4_10 = `import { A } from '@arkts.system';
+A();
+`;
+
 const baseConfig = { enable: true, exclude: [] };
 const rollupObejct =  {
   share: {
     projectConfig: {
       expandImportPath: baseConfig,
       depName2DepInfo: new Map(),
-      packageDir: 'oh_modules' 
+      packageDir: 'oh_modules',
+      hspNameOhmMap: {},
+      harNameOhmMap: {}
     }
   }
 };
@@ -448,5 +541,111 @@ mocha.describe('test import_path_expand file api', () => {
     const result = printer.printFile(transformed);
 
     expect(result === EXPECT_3_5).to.be.true;
+  });
+
+  mocha.it('4-1: should preserve relative path import (starts with .)', () => {
+    const { program, testSourceFile } = createMultiSymbolProgram(CASE_4_1_TEST, CASE_4_1_FILES, '');
+    const transformed = ts.transform(testSourceFile, [expandAllImportPaths(program.getTypeChecker(), rollupObejct)],
+      program.getCompilerOptions()).transformed[0];
+    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    const result = printer.printFile(transformed);
+
+    expect(result === EXPECT_4_1).to.be.true;
+  });
+
+  mocha.it('4-2: should preserve system module import (@ohos.system)', () => {
+    const { program, testSourceFile } = createMultiSymbolProgram(CASE_4_2_TEST, CASE_4_2_FILES, '');
+    const transformed = ts.transform(testSourceFile, [expandAllImportPaths(program.getTypeChecker(), rollupObejct)],
+      program.getCompilerOptions()).transformed[0];
+    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    const result = printer.printFile(transformed);
+
+    expect(result === EXPECT_4_2).to.be.true;
+  });
+
+  mocha.it('4-3: should preserve lib*.so module import', () => {
+    const { program, testSourceFile } = createMultiSymbolProgram(CASE_4_3_TEST, CASE_4_3_FILES, '');
+    const transformed = ts.transform(testSourceFile, [expandAllImportPaths(program.getTypeChecker(), rollupObejct)],
+      program.getCompilerOptions()).transformed[0];
+    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    const result = printer.printFile(transformed);
+
+    expect(result === EXPECT_4_3).to.be.true;
+  });
+
+  mocha.it('4-4: should preserve import when module not in depName2DepInfo', () => {
+    const { program, testSourceFile } = createMultiSymbolProgram(CASE_4_4_TEST, CASE_4_4_FILES, '');
+    const transformed = ts.transform(testSourceFile, [expandAllImportPaths(program.getTypeChecker(), rollupObejct)],
+      program.getCompilerOptions()).transformed[0];
+    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    const result = printer.printFile(transformed);
+
+    expect(result === EXPECT_4_4).to.be.true;
+  });
+
+  mocha.it('4-5: should preserve import when module in hspNameOhmMap', () => {
+    rollupObejct.share.projectConfig.hspNameOhmMap = { 'hspPkg': 'hspPkg.ohm' };
+    const { program, testSourceFile } = createMultiSymbolProgram(CASE_4_5_TEST, CASE_4_5_FILES, '');
+    const transformed = ts.transform(testSourceFile, [expandAllImportPaths(program.getTypeChecker(), rollupObejct)],
+      program.getCompilerOptions()).transformed[0];
+    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    const result = printer.printFile(transformed);
+
+    expect(result === EXPECT_4_5).to.be.true;
+    rollupObejct.share.projectConfig.hspNameOhmMap = {};
+  });
+
+  mocha.it('4-6: should preserve import when module in harNameOhmMap', () => {
+    rollupObejct.share.projectConfig.harNameOhmMap = { 'harPkg': 'harPkg.ohm' };
+    const { program, testSourceFile } = createMultiSymbolProgram(CASE_4_6_TEST, CASE_4_6_FILES, '');
+    const transformed = ts.transform(testSourceFile, [expandAllImportPaths(program.getTypeChecker(), rollupObejct)],
+      program.getCompilerOptions()).transformed[0];
+    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    const result = printer.printFile(transformed);
+
+    expect(result === EXPECT_4_6).to.be.true;
+    rollupObejct.share.projectConfig.harNameOhmMap = {};
+  });
+
+  mocha.it('4-7: should preserve import when module in exclude list', () => {
+    rollupObejct.share.projectConfig.expandImportPath.exclude = ['excludePkg'];
+    const { program, testSourceFile } = createMultiSymbolProgram(CASE_4_7_TEST, CASE_4_7_FILES, '');
+    const transformed = ts.transform(testSourceFile, [expandAllImportPaths(program.getTypeChecker(), rollupObejct)],
+      program.getCompilerOptions()).transformed[0];
+    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    const result = printer.printFile(transformed);
+
+    expect(result === EXPECT_4_7).to.be.true;
+    rollupObejct.share.projectConfig.expandImportPath.exclude = [];
+  });
+
+  mocha.it('4-8: should preserve import when module starts with @system', () => {
+    const { program, testSourceFile } = createMultiSymbolProgram(CASE_4_8_TEST, CASE_4_8_FILES, '');
+    const transformed = ts.transform(testSourceFile, [expandAllImportPaths(program.getTypeChecker(), rollupObejct)],
+      program.getCompilerOptions()).transformed[0];
+    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    const result = printer.printFile(transformed);
+
+    expect(result === EXPECT_4_8).to.be.true;
+  });
+
+  mocha.it('4-9: should preserve import when module starts with @kit', () => {
+    const { program, testSourceFile } = createMultiSymbolProgram(CASE_4_9_TEST, CASE_4_9_FILES, '');
+    const transformed = ts.transform(testSourceFile, [expandAllImportPaths(program.getTypeChecker(), rollupObejct)],
+      program.getCompilerOptions()).transformed[0];
+    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    const result = printer.printFile(transformed);
+
+    expect(result === EXPECT_4_9).to.be.true;
+  });
+
+  mocha.it('4-10: should preserve import when module starts with @arkts', () => {
+    const { program, testSourceFile } = createMultiSymbolProgram(CASE_4_10_TEST, CASE_4_10_FILES, '');
+    const transformed = ts.transform(testSourceFile, [expandAllImportPaths(program.getTypeChecker(), rollupObejct)],
+      program.getCompilerOptions()).transformed[0];
+    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    const result = printer.printFile(transformed);
+
+    expect(result === EXPECT_4_10).to.be.true;
   });
 });
