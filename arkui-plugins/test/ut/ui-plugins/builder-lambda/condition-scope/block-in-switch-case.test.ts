@@ -39,9 +39,13 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ConditionScope as ConditionScope } from "arkui.component.builder";
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
 import { memo as memo } from "arkui.stateManagement.runtime";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+import { TextImpl as TextImpl } from "arkui.component.text";
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Text as Text, Column as Column, Component as Component } from "@ohos.arkui.component";
 
@@ -66,41 +70,67 @@ function main() {}
   }
   
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
       ConditionScope(@memo() (() => {
         switch (this.num) {
           case 0: {
             break;
           }
           case 1: {
-            break;
-            Text(undefined, "111", undefined, undefined);
+            ConditionBranch(@memo() (() => {
+              TextImpl(@memo() ((instance: TextAttribute): void => {
+                instance.setTextOptions("111", undefined).applyAttributesFinish();
+                return;
+              }), undefined);
+            }));
           }
           case 2: {
-            break;
-            Text(undefined, "111", undefined, undefined);
+            ConditionBranch(@memo() (() => {
+              {
+                TextImpl(@memo() ((instance: TextAttribute): void => {
+                  instance.setTextOptions("111", undefined).applyAttributesFinish();
+                  return;
+                }), undefined);
+              }
+            }));
           }
           case 3: {
             ConditionBranch(@memo() (() => {
               {
-                Text(undefined, "111", undefined, undefined);
+                TextImpl(@memo() ((instance: TextAttribute): void => {
+                  instance.setTextOptions("111", undefined).applyAttributesFinish();
+                  return;
+                }), undefined);
               }
             }));
             break;
-            Text(undefined, "111", undefined, undefined);
+            TextImpl(@memo() ((instance: TextAttribute): void => {
+              instance.setTextOptions("111", undefined).applyAttributesFinish();
+              return;
+            }), undefined);
           }
           case 4: {
             ConditionBranch(@memo() (() => {
               {
-                Text(undefined, "111", undefined, undefined);
+                TextImpl(@memo() ((instance: TextAttribute): void => {
+                  instance.setTextOptions("111", undefined).applyAttributesFinish();
+                  return;
+                }), undefined);
                 return;
               }
             }));
+            break;
           }
           case 5: {
             ConditionBranch(@memo() (() => {
               {
-                Text(undefined, "111", undefined, undefined);
+                TextImpl(@memo() ((instance: TextAttribute): void => {
+                  instance.setTextOptions("111", undefined).applyAttributesFinish();
+                  return;
+                }), undefined);
               }
             }));
             break;
@@ -111,13 +141,29 @@ function main() {}
                 return;
               }
             }));
+            break;
+          }
+          case 7: {
+            ConditionBranch(@memo() (() => {
+              {
+                return;
+                TextImpl(@memo() ((instance: TextAttribute): void => {
+                  instance.setTextOptions("111", undefined).applyAttributesFinish();
+                  return;
+                }), undefined);
+              }
+            }));
+            break;
           }
           default: {
             break;
           }
         }
       }));
-      Text(undefined, "hello world", undefined, undefined);
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions("hello world", undefined).applyAttributesFinish();
+        return;
+      }), undefined);
     }));
   }
   
@@ -139,15 +185,14 @@ function testUITransformer(this: PluginTestContext): void {
 
 const expectedMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ConditionScope as ConditionScope } from "arkui.component.builder";
-
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
-
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+import { TextImpl as TextImpl } from "arkui.component.text";
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
 import { Text as Text, Column as Column, Component as Component } from "@ohos.arkui.component";
 
 function main() {}
@@ -171,19 +216,31 @@ function main() {}
   }
   
   @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (10737008)), 0);
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (261239291)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    Column(__memo_context, ((__memo_id) + (7513933)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (235688754)), 0);
+    ColumnImpl(__memo_context, ((__memo_id) + (112404751)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (9185155)), 1);
+      const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
       }
-      ConditionScope(__memo_context, ((__memo_id) + (10971338)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (220324446)), 0);
+      __memo_parameter_instance.value.setColumnOptions(undefined).applyAttributesFinish();
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (147868395)), 0);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      ConditionScope(__memo_context, ((__memo_id) + (186113)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (186336799)), 0);
         if (__memo_scope.unchanged) {
           __memo_scope.cached;
           return;
@@ -193,32 +250,32 @@ function main() {}
             break;
           }
           case 1: {
-            break;
-            Text(__memo_context, ((__memo_id) + (9185155)), undefined, "111", undefined, undefined);
-          }
-          case 2: {
-            break;
-            Text(__memo_context, ((__memo_id) + (246501778)), undefined, "111", undefined, undefined);
-          }
-          case 3: {
             ConditionBranch(__memo_context, ((__memo_id) + (27357263)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
               const __memo_scope = __memo_context.scope<void>(((__memo_id) + (78642435)), 0);
               if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
               }
-              {
-                Text(__memo_context, ((__memo_id) + (235279187)), undefined, "111", undefined, undefined);
-              }
+              TextImpl(__memo_context, ((__memo_id) + (235279187)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                const __memo_scope = __memo_context.scope<void>(((__memo_id) + (246501778)), 1);
+                const __memo_parameter_instance = __memo_scope.param(0, instance);
+                if (__memo_scope.unchanged) {
+                  __memo_scope.cached;
+                  return;
+                }
+                __memo_parameter_instance.value.setTextOptions("111", undefined).applyAttributesFinish();
+                {
+                  __memo_scope.recache();
+                  return;
+                }
+              }), undefined);
               {
                 __memo_scope.recache();
                 return;
               }
             }));
-            break;
-            Text(__memo_context, ((__memo_id) + (222088696)), undefined, "111", undefined, undefined);
           }
-          case 4: {
+          case 2: {
             ConditionBranch(__memo_context, ((__memo_id) + (220977109)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
               const __memo_scope = __memo_context.scope<void>(((__memo_id) + (91459184)), 0);
               if (__memo_scope.unchanged) {
@@ -226,20 +283,115 @@ function main() {}
                 return;
               }
               {
-                Text(__memo_context, ((__memo_id) + (241855776)), undefined, "111", undefined, undefined);
+                TextImpl(__memo_context, ((__memo_id) + (241855776)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                  const __memo_scope = __memo_context.scope<void>(((__memo_id) + (222088696)), 1);
+                  const __memo_parameter_instance = __memo_scope.param(0, instance);
+                  if (__memo_scope.unchanged) {
+                    __memo_scope.cached;
+                    return;
+                  }
+                  __memo_parameter_instance.value.setTextOptions("111", undefined).applyAttributesFinish();
+                  {
+                    __memo_scope.recache();
+                    return;
+                  }
+                }), undefined);
+              }
+              {
+                __memo_scope.recache();
                 return;
               }
             }));
           }
-          case 5: {
-            ConditionBranch(__memo_context, ((__memo_id) + (214575380)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-              const __memo_scope = __memo_context.scope<void>(((__memo_id) + (225601197)), 0);
+          case 3: {
+            ConditionBranch(__memo_context, ((__memo_id) + (143235624)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+              const __memo_scope = __memo_context.scope<void>(((__memo_id) + (214575380)), 0);
               if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
               }
               {
-                Text(__memo_context, ((__memo_id) + (240873793)), undefined, "111", undefined, undefined);
+                TextImpl(__memo_context, ((__memo_id) + (225601197)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                  const __memo_scope = __memo_context.scope<void>(((__memo_id) + (240873793)), 1);
+                  const __memo_parameter_instance = __memo_scope.param(0, instance);
+                  if (__memo_scope.unchanged) {
+                    __memo_scope.cached;
+                    return;
+                  }
+                  __memo_parameter_instance.value.setTextOptions("111", undefined).applyAttributesFinish();
+                  {
+                    __memo_scope.recache();
+                    return;
+                  }
+                }), undefined);
+              }
+              {
+                __memo_scope.recache();
+                return;
+              }
+            }));
+            break;
+            TextImpl(__memo_context, ((__memo_id) + (220324446)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+              const __memo_scope = __memo_context.scope<void>(((__memo_id) + (5873742)), 1);
+              const __memo_parameter_instance = __memo_scope.param(0, instance);
+              if (__memo_scope.unchanged) {
+                __memo_scope.cached;
+                return;
+              }
+              __memo_parameter_instance.value.setTextOptions("111", undefined).applyAttributesFinish();
+              {
+                __memo_scope.recache();
+                return;
+              }
+            }), undefined);
+          }
+          case 4: {
+            ConditionBranch(__memo_context, ((__memo_id) + (7513933)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+              const __memo_scope = __memo_context.scope<void>(((__memo_id) + (235688754)), 0);
+              if (__memo_scope.unchanged) {
+                __memo_scope.cached;
+                return;
+              }
+              {
+                TextImpl(__memo_context, ((__memo_id) + (72849900)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                  const __memo_scope = __memo_context.scope<void>(((__memo_id) + (10971338)), 1);
+                  const __memo_parameter_instance = __memo_scope.param(0, instance);
+                  if (__memo_scope.unchanged) {
+                    __memo_scope.cached;
+                    return;
+                  }
+                  __memo_parameter_instance.value.setTextOptions("111", undefined).applyAttributesFinish();
+                  {
+                    __memo_scope.recache();
+                    return;
+                  }
+                }), undefined);
+                return;
+              }
+            }));
+            break;
+          }
+          case 5: {
+            ConditionBranch(__memo_context, ((__memo_id) + (58475451)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+              const __memo_scope = __memo_context.scope<void>(((__memo_id) + (257250368)), 0);
+              if (__memo_scope.unchanged) {
+                __memo_scope.cached;
+                return;
+              }
+              {
+                TextImpl(__memo_context, ((__memo_id) + (264582197)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                  const __memo_scope = __memo_context.scope<void>(((__memo_id) + (138238536)), 1);
+                  const __memo_parameter_instance = __memo_scope.param(0, instance);
+                  if (__memo_scope.unchanged) {
+                    __memo_scope.cached;
+                    return;
+                  }
+                  __memo_parameter_instance.value.setTextOptions("111", undefined).applyAttributesFinish();
+                  {
+                    __memo_scope.recache();
+                    return;
+                  }
+                }), undefined);
               }
               {
                 __memo_scope.recache();
@@ -249,8 +401,8 @@ function main() {}
             break;
           }
           case 6: {
-            ConditionBranch(__memo_context, ((__memo_id) + (5873742)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-              const __memo_scope = __memo_context.scope<void>(((__memo_id) + (143235624)), 0);
+            ConditionBranch(__memo_context, ((__memo_id) + (60292460)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+              const __memo_scope = __memo_context.scope<void>(((__memo_id) + (21099142)), 0);
               if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
@@ -259,6 +411,37 @@ function main() {}
                 return;
               }
             }));
+            break;
+          }
+          case 7: {
+            ConditionBranch(__memo_context, ((__memo_id) + (34940192)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+              const __memo_scope = __memo_context.scope<void>(((__memo_id) + (15961624)), 0);
+              if (__memo_scope.unchanged) {
+                __memo_scope.cached;
+                return;
+              }
+              {
+                return;
+                TextImpl(__memo_context, ((__memo_id) + (123392926)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                  const __memo_scope = __memo_context.scope<void>(((__memo_id) + (181839521)), 1);
+                  const __memo_parameter_instance = __memo_scope.param(0, instance);
+                  if (__memo_scope.unchanged) {
+                    __memo_scope.cached;
+                    return;
+                  }
+                  __memo_parameter_instance.value.setTextOptions("111", undefined).applyAttributesFinish();
+                  {
+                    __memo_scope.recache();
+                    return;
+                  }
+                }), undefined);
+              }
+              {
+                __memo_scope.recache();
+                return;
+              }
+            }));
+            break;
           }
           default: {
             break;
@@ -269,7 +452,19 @@ function main() {}
           return;
         }
       }));
-      Text(__memo_context, ((__memo_id) + (72849900)), undefined, "hello world", undefined, undefined);
+      TextImpl(__memo_context, ((__memo_id) + (262734369)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (229820618)), 1);
+        const __memo_parameter_instance = __memo_scope.param(0, instance);
+        if (__memo_scope.unchanged) {
+          __memo_scope.cached;
+          return;
+        }
+        __memo_parameter_instance.value.setTextOptions("hello world", undefined).applyAttributesFinish();
+        {
+          __memo_scope.recache();
+          return;
+        }
+      }), undefined);
       {
         __memo_scope.recache();
         return;
