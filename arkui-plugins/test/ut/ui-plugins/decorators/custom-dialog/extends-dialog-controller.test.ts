@@ -79,10 +79,6 @@ function main() {}
     this.__backing_aaController = value;
   }
   
-  public __setDialogController__(controller: CustomDialogController): void {
-    this.__backing_aaController = controller;
-  }
-  
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -92,6 +88,9 @@ function main() {}
   
   private constructor() {}
   
+  public __setDialogController__(controller: CustomDialogController): void {
+    this.__backing_aaController = controller;
+  }
 }
 
 class DialogControllerV2 extends CustomDialogController {
