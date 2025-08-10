@@ -572,7 +572,7 @@ export function getOhmUrlByExternalPackage(moduleRequest: string, projectConfig:
         const ohmName: string = externalPkgMap[externalPkgName].substring(0, idx);
         if (moduleInfoByModuleRequest) {
           // when useNormalizedOHMUrl=false, and packageName combines with directory to import file, OhmUrl is supposed to end with "index"
-          const relativePathByModuleRequest: string = moduleInfoByModuleRequest.normalizedPath.split(SRC_MAIN)[1];
+          const relativePathByModuleRequest: string = toUnixPath(moduleInfoByModuleRequest.normalizedPath).split(SRC_MAIN)[1];
           // "@bundle:bundleName/lib" + "/ets/pages/page1"
           return ohmName + relativePathByModuleRequest;
         }
