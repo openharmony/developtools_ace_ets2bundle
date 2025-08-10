@@ -15,9 +15,15 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { isAnnotation, matchPrefix } from '../../common/arkts-utils';
-import { BuilderLambdaNames, isCustomComponentAnnotation } from '../utils';
+import { BuilderLambdaNames, expectNameInTypeReference, isCustomComponentAnnotation } from '../utils';
 import { DeclarationCollector } from '../../common/declaration-collector';
-import { ARKUI_IMPORT_PREFIX_NAMES, BindableDecl, Dollars, StructDecoratorNames } from '../../common/predefines';
+import {
+    ARKUI_IMPORT_PREFIX_NAMES,
+    BindableDecl,
+    Dollars,
+    InnerComponentAttributes,
+    StructDecoratorNames,
+} from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
 import {
     collectTypeRecordFromParameter,
@@ -37,6 +43,7 @@ export type BuilderLambdaDeclInfo = {
     returnType: arkts.TypeNode | undefined;
     moduleName: string;
     hasReceiver?: boolean;
+    isFromCommonMethod?: boolean;
 };
 
 export type BuilderLambdaStyleBodyInfo = {
@@ -368,29 +375,58 @@ export function findBuilderLambdaDeclInfo(decl: arkts.AstNode | undefined): Buil
     if (!moduleName) {
         return undefined;
     }
-    if (arkts.isMethodDefinition(decl)) {
-        const name = decl.name.name;
-        const params = decl.scriptFunction.params.map((p) => p.clone());
-        const returnType = decl.scriptFunction.returnTypeAnnotation?.clone();
-        const isFunctionCall = isBuilderLambdaFunctionCall(decl);
-        const hasReceiver = decl.scriptFunction.hasReceiver;
-        return { name, isFunctionCall, params, returnType, moduleName, hasReceiver };
+    if (!arkts.isMethodDefinition(decl)) {
+        return undefined;
     }
-
-    return undefined;
+    const func = decl.scriptFunction;
+    const nameNode = decl.name;
+    const originType = func.returnTypeAnnotation;
+    const params = func.params.map((p) => p.clone());
+    const isFunctionCall = isBuilderLambdaFunctionCall(nameNode);
+    const hasReceiver = func.hasReceiver;
+    const isFromCommonMethod = isFunctionCall && findComponentAttributeFromCommonMethod(originType);
+    const returnType = originType?.clone();
+    const name = nameNode.name;
+    return { name, isFunctionCall, params, returnType, moduleName, hasReceiver, isFromCommonMethod };
 }
 
-export function isBuilderLambdaFunctionCall(decl: arkts.AstNode | undefined): boolean {
-    if (!decl) {
+export function findComponentAttributeFromCommonMethod(attrType: arkts.TypeNode | undefined): boolean {
+    const nameNode = expectNameInTypeReference(attrType);
+    if (!nameNode) {
         return false;
     }
-    if (arkts.isMethodDefinition(decl)) {
-        return (
-            decl.name.name !== BuilderLambdaNames.ORIGIN_METHOD_NAME &&
-            decl.name.name !== BuilderLambdaNames.TRANSFORM_METHOD_NAME
-        );
+    const decl = arkts.getDecl(nameNode);
+    return findCommonMethodInterfaceInExtends(decl);
+}
+
+export function findCommonMethodInterfaceInExtends(interfaceNode: arkts.AstNode | undefined): boolean {
+    if (!interfaceNode || !arkts.isTSInterfaceDeclaration(interfaceNode)) {
+        return false;
     }
-    return false;
+    const nameNode = interfaceNode.id;
+    if (!nameNode) {
+        return false;
+    }
+    const extendNodes = interfaceNode.extends;
+    if (extendNodes.length === 0) {
+        return nameNode.name === InnerComponentAttributes.COMMON_METHOD;
+    }
+    return extendNodes.some((node) => {
+        const name = expectNameInTypeReference(node.expr);
+        const decl = !!name ? arkts.getDecl(name) : undefined;
+        return findCommonMethodInterfaceInExtends(decl);
+    });
+}
+
+export function isBuilderLambdaFunctionCall(nameNode: arkts.Identifier | undefined): boolean {
+    if (!nameNode) {
+        return false;
+    }
+    const name = nameNode.name;
+    return (
+        name !== BuilderLambdaNames.ORIGIN_METHOD_NAME &&
+        name !== BuilderLambdaNames.TRANSFORM_METHOD_NAME
+    );
 }
 
 export function callIsGoodForBuilderLambda(leaf: arkts.CallExpression): boolean {
