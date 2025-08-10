@@ -82,6 +82,7 @@ import {
     SwitchStatement,
     SwitchCaseStatement,
     SpreadElement,
+    BreakStatement,
 } from '../../generated';
 import { updateIdentifier } from '../node-utilities/Identifier';
 import { updateCallExpression } from '../node-utilities/CallExpression';
@@ -144,6 +145,7 @@ import { updateForOfStatement } from '../node-utilities/ForOfStatement';
 import { updateSwitchStatement } from '../node-utilities/SwitchStatement';
 import { updateSwitchCaseStatement } from '../node-utilities/SwitchCaseStatement';
 import { updateSpreadElement } from '../node-utilities/SpreadElement';
+import { updateBreakStatement } from '../node-utilities/BreakStatement';
 
 export const factory = {
     get createIdentifier(): (...args: Parameters<typeof Identifier.create2Identifier>) => Identifier {
@@ -624,6 +626,12 @@ export const factory = {
     },
     get updateSpreadElement(): (...args: Parameters<typeof updateSpreadElement>) => SpreadElement {
         return updateSpreadElement;
+    },
+    get createBreakStatement(): (...args: Parameters<typeof BreakStatement.createBreakStatement>) => BreakStatement {
+        return BreakStatement.createBreakStatement;
+    },
+    get updateBreakStatement(): (...args: Parameters<typeof updateBreakStatement>) => BreakStatement {
+        return updateBreakStatement;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {
