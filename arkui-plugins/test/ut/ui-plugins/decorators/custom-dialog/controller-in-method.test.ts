@@ -67,14 +67,13 @@ function main() {}
     this.__backing_aaController = value;
   }
   
-  public __setDialogController__(controller: CustomDialogController): void {
-    this.__backing_aaController = controller;
-  }
-  
   @memo() public build() {}
   
   private constructor() {}
-  
+    
+  public __setDialogController__(controller: CustomDialogController): void {
+    this.__backing_aaController = controller;
+  }
 }
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {

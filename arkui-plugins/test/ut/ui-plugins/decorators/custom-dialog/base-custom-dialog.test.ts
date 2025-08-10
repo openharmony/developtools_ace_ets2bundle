@@ -131,10 +131,6 @@ function main() {}
     this.__backing_hh!.set(value);
   }
   
-  public __setDialogController__(controller: CustomDialogController): void {
-    this.__backing_aaController = controller;
-  }
-  
   @memo() public build() {
     Column(undefined, undefined, @memo() (() => {
       Text(@memo() ((instance: TextAttribute): void => {
@@ -154,6 +150,9 @@ function main() {}
   
   private constructor() {}
   
+  public __setDialogController__(controller: CustomDialogController): void {
+    this.__backing_aaController = controller;
+  }
 }
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
