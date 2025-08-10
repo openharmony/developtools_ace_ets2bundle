@@ -25,10 +25,8 @@ struct SwitchCase {
                 case 0:
                     break;
                 case 1:
-                    break;
                     Text('111');
                 case 2:
-                    break;
                     {
                         Text('111');
                     }
@@ -53,6 +51,11 @@ struct SwitchCase {
                 case 6:
                     {
                         break;
+                    }
+                case 7:
+                    {
+                        break;
+                        Text('111');
                     }
                 default:
                     break;
