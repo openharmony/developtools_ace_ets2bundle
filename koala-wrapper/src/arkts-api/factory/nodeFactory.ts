@@ -86,6 +86,7 @@ import {
     ETSNullType,
     TSThisType,
     TSQualifiedName,
+    BreakStatement,
 } from '../../generated';
 import { updateIdentifier } from '../node-utilities/Identifier';
 import { updateCallExpression } from '../node-utilities/CallExpression';
@@ -152,6 +153,7 @@ import { updateTSArrayType } from '../node-utilities/TSArrayType';
 import { updateETSNullType } from '../node-utilities/ETSNullType';
 import { updateTSThisType } from '../node-utilities/TSThisType';
 import { updateTSQualifiedName } from '../node-utilities/TSQualifiedName';
+import { updateBreakStatement } from '../node-utilities/BreakStatement';
 
 export const factory = {
     get createIdentifier(): (...args: Parameters<typeof Identifier.create2Identifier>) => Identifier {
@@ -656,6 +658,12 @@ export const factory = {
     },
     get updateTSQualifiedName(): (...args: Parameters<typeof updateTSQualifiedName>) => TSQualifiedName {
         return updateTSQualifiedName;
+    },
+    get createBreakStatement(): (...args: Parameters<typeof BreakStatement.createBreakStatement>) => BreakStatement {
+        return BreakStatement.createBreakStatement;
+    },
+    get updateBreakStatement(): (...args: Parameters<typeof updateBreakStatement>) => BreakStatement {
+        return updateBreakStatement;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {
