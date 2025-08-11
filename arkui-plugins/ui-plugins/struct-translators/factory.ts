@@ -506,7 +506,7 @@ export class factory {
         }
         const body: readonly arkts.AstNode[] = definition.body;
         const propertyTranslators: (PropertyTranslator | MethodTranslator)[] = filterDefined(
-            body.map((it) => classifyStructMembers(it, scope))
+            body.map((member) => classifyStructMembers(member, scope))
         );
         const translatedMembers: arkts.AstNode[] = this.tranformPropertyMembers(
             propertyTranslators,
