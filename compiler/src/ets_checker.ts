@@ -53,7 +53,8 @@ import {
   TS_BUILD_INFO_SUFFIX,
   HOT_RELOAD_BUILD_INFO_SUFFIX,
   WATCH_COMPILER_BUILD_INFO_SUFFIX,
-  COMPONENT_STYLES_DECORATOR
+  COMPONENT_STYLES_DECORATOR,
+  COMPONENT_LOCAL_BUILDER_DECORATOR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -1459,7 +1460,8 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFuncti
   }
   if (ts.isMethodDeclaration(node) && node.name.getText() === COMPONENT_BUILD_FUNCTION ||
     (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) &&
-    hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
+    hasDecorator(node, COMPONENT_BUILDER_DECORATOR) ||
+    ts.isMethodDeclaration(node) && hasDecorator(node, COMPONENT_LOCAL_BUILDER_DECORATOR)) {
     if (node.body && node.body.statements && node.body.statements.length) {
       const checkProp: ts.NodeArray<ts.Statement> = node.body.statements;
       checkProp.forEach((item, index) => {
