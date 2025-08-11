@@ -387,3 +387,18 @@ export function getClassPropertyType(property: arkts.ClassProperty): arkts.TypeN
     }
     return undefined;
 }
+
+export function expectNameInTypeReference(node: arkts.TypeNode | undefined): arkts.Identifier | undefined {
+    if (!node || !arkts.isETSTypeReference(node)) {
+        return undefined;
+    }
+    const part = node.part;
+    if (!part || !arkts.isETSTypeReferencePart(part)) {
+        return undefined;
+    }
+    const nameNode = part.name;
+    if (!nameNode || !arkts.isIdentifier(nameNode)) {
+        return undefined;
+    }
+    return nameNode;
+}
