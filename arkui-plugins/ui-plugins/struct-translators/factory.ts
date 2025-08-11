@@ -953,8 +953,7 @@ export class factory {
             ...restMembers,
             ...classScopeInfo.getters,
         ];
-        const isDecl: boolean = arkts.hasModifierFlag(definition, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
-        return ObservedAnno.isObservedV2 && !isDecl
+        return ObservedAnno.isObservedV2
             ? returnNodes.concat(this.transformObservedV2Constuctor(definition, classScopeInfo.className))
             : returnNodes;
     }
@@ -966,12 +965,13 @@ export class factory {
                 arkts.isMethodDefinition(it) &&
                 isKnownMethodDefinition(it, CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI)
         ) as arkts.MethodDefinition | undefined;
+        const isDecl: boolean = arkts.hasModifierFlag(definition, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
         if (!originConstructorMethod) {
             return UIFactory.createMethodDefinition({
                 key: arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI),
                 function: {
                     key: arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI),
-                    body: arkts.factory.createBlock(addConstructorNodes),
+                    body: isDecl ? undefined : arkts.factory.createBlock(addConstructorNodes),
                     flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR,
                     modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
                 },
@@ -979,7 +979,9 @@ export class factory {
                 modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
             });
         }
-
+        if (isDecl) {
+            return originConstructorMethod;
+        }
         const originBody = originConstructorMethod.scriptFunction.body as arkts.BlockStatement | undefined;
         return UIFactory.updateMethodDefinition(originConstructorMethod, {
             function: {
