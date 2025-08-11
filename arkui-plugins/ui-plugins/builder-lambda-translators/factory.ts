@@ -476,7 +476,7 @@ export class factory {
         lambdaBodyInfo: BuilderLambdaStyleBodyInfo,
         declInfo: BuilderLambdaDeclInfo
     ): (arkts.AstNode | undefined)[] {
-        const { isFunctionCall, params, returnType, moduleName } = declInfo;
+        const { isFunctionCall, params, returnType, moduleName, isFromCommonMethod } = declInfo;
         const type: arkts.Identifier | undefined = builderLambdaType(leaf);
         const args: (arkts.AstNode | undefined)[] = [];
         const modifiedArgs: (arkts.AstNode | undefined)[] = [];
@@ -507,7 +507,12 @@ export class factory {
             },
             { isTrailingCall }
         );
-        const lambdaBody = this.addOptionsArgsToLambdaBodyInStyleArg(lambdaBodyInfo, modifiedArgs, typeArguments);
+        const lambdaBody = this.addOptionsArgsToLambdaBodyInStyleArg(
+            lambdaBodyInfo,
+            modifiedArgs,
+            typeArguments,
+            isFromCommonMethod
+        );
         const typeNode = !isFunctionCall && !!type ? UIFactory.createTypeReferenceFromString(type.name) : returnType;
         const styleArg = this.createStyleArgInBuilderLambda(lambdaBody, typeNode, moduleName);
         args.unshift(styleArg);
@@ -520,14 +525,15 @@ export class factory {
     static addOptionsArgsToLambdaBodyInStyleArg(
         lambdaBodyInfo: BuilderLambdaStyleBodyInfo,
         args: (arkts.AstNode | undefined)[],
-        typeArguments: readonly arkts.TypeNode[] | undefined
+        typeArguments: readonly arkts.TypeNode[] | undefined,
+        shouldApplyAttribute: boolean = true
     ): arkts.CallExpression | arkts.Identifier | undefined {
         const { lambdaBody, initCallPtr } = lambdaBodyInfo;
         if (!lambdaBody) {
             return undefined;
         }
         if (!initCallPtr || arkts.isIdentifier(lambdaBody)) {
-            return this.addApplyAttributesFinishToLambdaBodyEnd(lambdaBody);
+            return this.addApplyAttributesFinishToLambdaBodyEnd(lambdaBody, shouldApplyAttribute);
         }
         const styleInternalsVisitor = new StyleInternalsVisitor();
         const newLambdaBody = styleInternalsVisitor
@@ -535,15 +541,19 @@ export class factory {
             .registerInitCallArgs(filterDefined(args))
             .registerInitCallTypeArguments(typeArguments)
             .visitor(lambdaBody) as arkts.CallExpression | arkts.Identifier;
-        return this.addApplyAttributesFinishToLambdaBodyEnd(newLambdaBody);
+        return this.addApplyAttributesFinishToLambdaBodyEnd(newLambdaBody, shouldApplyAttribute);
     }
 
     /**
      * add `.applyAttributesFinish()` at the end of style argument body.
      */
     static addApplyAttributesFinishToLambdaBodyEnd(
-        lambdaBody: arkts.CallExpression | arkts.Identifier
+        lambdaBody: arkts.CallExpression | arkts.Identifier,
+        shouldApplyAttribute: boolean = true
     ): arkts.CallExpression | arkts.Identifier {
+        if (!shouldApplyAttribute) {
+            return lambdaBody;
+        }
         return arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
                 lambdaBody,
@@ -747,8 +757,9 @@ export class factory {
      * transform `@ComponentBuilder` in declared methods.
      */
     static transformBuilderLambdaMethodDecl(node: arkts.MethodDefinition): arkts.MethodDefinition {
+        const nameNode: arkts.Identifier | undefined = node.name;
         const func: arkts.ScriptFunction = node.scriptFunction;
-        const isFunctionCall: boolean = isBuilderLambdaFunctionCall(node);
+        const isFunctionCall: boolean = isBuilderLambdaFunctionCall(nameNode);
         if (isFunctionCall) {
             ComponentAttributeCache.getInstance().collect(node);
         }
@@ -760,7 +771,7 @@ export class factory {
             node,
             [this.createStyleArgInBuilderLambdaDecl(typeNode, isFunctionCall)],
             removeAnnotationByName(func.annotations, BuilderLambdaNames.ANNOTATION_NAME),
-            replaceBuilderLambdaDeclMethodName(node.name.name)
+            replaceBuilderLambdaDeclMethodName(nameNode.name)
         ).setOverloads(newOverloads);
         arkts.NodeCache.getInstance().collect(newNode);
         return newNode;
