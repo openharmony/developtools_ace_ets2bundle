@@ -172,7 +172,7 @@ export const stateObjectCollection: Set<string> = new Set();
 export class UpdateResult {
   private itemUpdate: boolean = false;
   private ctorUpdate: boolean = false;
-  private properity: ts.PropertyDeclaration;
+  private properity: ts.PropertyDeclaration | undefined;
   private ctor: ts.ConstructorDeclaration;
   private variableGet: ts.GetAccessorDeclaration;
   private variableSet: ts.SetAccessorDeclaration;
@@ -183,7 +183,7 @@ export class UpdateResult {
   private decoratorName: string;
   private stateVarsParams: ts.Statement;
 
-  public setProperity(updateItem: ts.PropertyDeclaration): void {
+  public setProperity(updateItem: ts.PropertyDeclaration | undefined): void {
     this.itemUpdate = true;
     this.properity = updateItem;
   }
@@ -237,7 +237,7 @@ export class UpdateResult {
     return this.ctorUpdate;
   }
 
-  public getProperity(): ts.PropertyDeclaration {
+  public getProperity(): ts.PropertyDeclaration | undefined {
     return this.properity;
   }
 
