@@ -43,7 +43,7 @@ export function expandAllImportPaths(checker: ts.TypeChecker, rollupObejct: Obje
     const visitor: ts.Visitor = (node: ts.Node): ts.VisitResult<ts.Node> => {
       if (ts.isImportDeclaration(node)) {
         const result: ts.ImportDeclaration[] = transformImportDecl(node, checker, exclude,
-          rollupObejct.share.projectConfig);
+          Object.assign(rollupObejct.share.projectConfig, rollupObejct.share.arkProjectConfig));
         return result.length > 0 ? result : node;
       }
       return node;
