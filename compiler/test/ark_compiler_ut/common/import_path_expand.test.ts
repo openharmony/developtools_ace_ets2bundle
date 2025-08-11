@@ -393,6 +393,8 @@ const rollupObejct =  {
       expandImportPath: baseConfig,
       depName2DepInfo: new Map(),
       packageDir: 'oh_modules',
+    },
+    arkProjectConfig: {
       hspNameOhmMap: {},
       harNameOhmMap: {}
     }
@@ -584,7 +586,7 @@ mocha.describe('test import_path_expand file api', () => {
   });
 
   mocha.it('4-5: should preserve import when module in hspNameOhmMap', () => {
-    rollupObejct.share.projectConfig.hspNameOhmMap = { 'hspPkg': 'hspPkg.ohm' };
+    rollupObejct.share.arkProjectConfig.hspNameOhmMap = { 'hspPkg': 'hspPkg.ohm' };
     const { program, testSourceFile } = createMultiSymbolProgram(CASE_4_5_TEST, CASE_4_5_FILES, '');
     const transformed = ts.transform(testSourceFile, [expandAllImportPaths(program.getTypeChecker(), rollupObejct)],
       program.getCompilerOptions()).transformed[0];
@@ -592,11 +594,11 @@ mocha.describe('test import_path_expand file api', () => {
     const result = printer.printFile(transformed);
 
     expect(result === EXPECT_4_5).to.be.true;
-    rollupObejct.share.projectConfig.hspNameOhmMap = {};
+    rollupObejct.share.arkProjectConfig.hspNameOhmMap = {};
   });
 
   mocha.it('4-6: should preserve import when module in harNameOhmMap', () => {
-    rollupObejct.share.projectConfig.harNameOhmMap = { 'harPkg': 'harPkg.ohm' };
+    rollupObejct.share.arkProjectConfig.harNameOhmMap = { 'harPkg': 'harPkg.ohm' };
     const { program, testSourceFile } = createMultiSymbolProgram(CASE_4_6_TEST, CASE_4_6_FILES, '');
     const transformed = ts.transform(testSourceFile, [expandAllImportPaths(program.getTypeChecker(), rollupObejct)],
       program.getCompilerOptions()).transformed[0];
@@ -604,7 +606,7 @@ mocha.describe('test import_path_expand file api', () => {
     const result = printer.printFile(transformed);
 
     expect(result === EXPECT_4_6).to.be.true;
-    rollupObejct.share.projectConfig.harNameOhmMap = {};
+    rollupObejct.share.arkProjectConfig.harNameOhmMap = {};
   });
 
   mocha.it('4-7: should preserve import when module in exclude list', () => {
