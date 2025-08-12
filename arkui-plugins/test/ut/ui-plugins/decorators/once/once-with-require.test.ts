@@ -112,19 +112,9 @@ import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateM
 
 import { IParamOnceDecoratedVariable as IParamOnceDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
-import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
-
-import { ButtonImpl as ButtonImpl } from "arkui.component.button";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { TextAttribute as TextAttribute } from "arkui.component.text";
-
-import { TextImpl as TextImpl } from "arkui.component.text";
-
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -222,24 +212,15 @@ function main() {}
   }
   
   @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
-      return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(\`Child onceParamNum: \${this.onceParamNum}\`, undefined).applyAttributesFinish();
-        return;
-      }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(\`Child onceParamInfo: \${this.onceParamInfo.name}\`, undefined).applyAttributesFinish();
-        return;
-      }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("changeOnceParamNum", undefined).onClick(((e) => {
+    Column(undefined, undefined, @memo() (() => {
+      Text(undefined, \`Child onceParamNum: \${this.onceParamNum}\`, undefined, undefined);
+      Text(undefined, \`Child onceParamInfo: \${this.onceParamInfo.name}\`, undefined, undefined);
+      Button(@memo() ((instance: ButtonAttribute): void => {
+        instance.onClick(((e) => {
           (this.onceParamNum++);
-        })).applyAttributesFinish();
+        }));
         return;
-      }), undefined);
+      }), "changeOnceParamNum", undefined, undefined);
     }));
   }
   
@@ -276,18 +257,9 @@ function main() {}
   }
   
   @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
-      return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(\`Parent localNum: \${this.localNum}\`, undefined).applyAttributesFinish();
-        return;
-      }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(\`Parent localInfo: \${this.localInfo.name}\`, undefined).applyAttributesFinish();
-        return;
-      }), undefined);
+    Column(undefined, undefined, @memo() (() => {
+      Text(undefined, \`Parent localNum: \${this.localNum}\`, undefined, undefined);
+      Text(undefined, \`Parent localInfo: \${this.localInfo.name}\`, undefined, undefined);
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {
