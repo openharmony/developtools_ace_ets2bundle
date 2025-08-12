@@ -73,16 +73,15 @@ function main() {}
     this.__backing_aaController = value;
   }
   
-  public __setDialogController__(controller: CustomDialogController): void {
-    this.__backing_aaController = controller;
-  }
-  
   @memo() public build() {
     Column(undefined, undefined, @memo() (() => {}));
   }
   
   private constructor() {}
   
+  public __setDialogController__(controller: CustomDialogController): void {
+    this.__backing_aaController = controller;
+  }
 }
 
 class DialogControllerV2 extends CustomDialogController {
