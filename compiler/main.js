@@ -192,7 +192,8 @@ function loadEntryObj(projectConfig) {
             // Collect the file paths in main_pages.json
             setEntryArrayForObf(sourcePath);
           } else {
-            throw Error(`\u001b[31m ERROR: page '${fileName.replace(/\\/g, '/')}' does not exist. \u001b[39m`)
+            throw Error('\u001b[31m10906403 ArkTS Compiler Error' + '\n' +
+              'Error Message: ' + `Page '${fileName.replace(/\\/g, '/')}' does not exist. \u001b[39m`)
               .message;
           }
         });
