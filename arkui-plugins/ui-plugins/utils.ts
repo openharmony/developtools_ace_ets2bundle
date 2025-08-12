@@ -240,7 +240,7 @@ export function collectCustomComponentScopeInfo(
                 ...(isReusable && !annotations?.reusable && { reusable: anno }),
                 ...(isReusableV2 && !annotations?.reusableV2 && { reusableV2: anno }),
                 ...(isCustomLayout && !annotations?.customLayout && { customLayout: anno }),
-                ...(isCustomDialog && !annotations?.reusable && { customdialog: anno }),
+                ...(isCustomDialog && !annotations?.customdialog && { customdialog: anno }),
             };
         }
         if (!isCustomComponent) {
