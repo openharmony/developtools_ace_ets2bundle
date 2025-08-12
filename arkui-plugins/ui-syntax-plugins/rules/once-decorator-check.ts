@@ -27,13 +27,12 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     public parsed(node: arkts.AstNode): void {
-        let onceDecorator: arkts.AnnotationUsage | undefined;
 
         this.validateOnlyInStruct(node);
         this.validateOnlyOnProperty(node);
 
         if (arkts.isStructDeclaration(node)) {
-            this.validateDecorator(node, onceDecorator);
+            this.validateDecorator(node);
         }
     }
 
@@ -75,7 +74,8 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
             node: decorator,
             message: message,
             fix: (decorator) => {
-                const startPosition = decorator.startPosition;
+                let startPosition = decorator.startPosition;
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 const endPosition = decorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
@@ -95,71 +95,44 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
 
     private validateDecorator(
         node: arkts.StructDeclaration,
-        onceDecorator: arkts.AnnotationUsage | undefined,
     ): void {
         node.definition?.body.forEach(body => {
             // Check if @Once is used on a property and if @Param is used with
             if (arkts.isClassProperty(body)) {
-                this.validatePropertyAnnotations(body, onceDecorator);
+                this.validatePropertyAnnotations(body);
             }
         });
     }
 
     private validatePropertyAnnotations(
-        body: arkts.ClassProperty,
-        onceDecorator: arkts.AnnotationUsage | undefined
+        body: arkts.ClassProperty
     ): void {
         const propertyAnnotations = getClassPropertyAnnotationNames(body);
-        onceDecorator = findDecorator(body, PresetDecorators.ONCE);
+        const onceDecorator = findDecorator(body, PresetDecorators.ONCE);
         if (onceDecorator) {
             const isParamUsed = propertyAnnotations.includes(PresetDecorators.PARAM);
-            // If @Once is found, check if @Param is also used
+            // If @Once is found, check if @Param is not used
             if (!isParamUsed) {
                 this.reportMissingParamWithOnce(onceDecorator);
-            } else {
-                // If both @Once and @Param are used, check for other
-                // incompatible decorators
-                const otherDecorators = body.annotations?.find(annotation =>
-                    annotation.expr && arkts.isIdentifier(annotation.expr) &&
-                    annotation.expr.name !== PresetDecorators.ONCE &&
-                    annotation.expr.name !== PresetDecorators.PARAM
-                );
-                this.reportInvalidDecoratorsWithOnceAndParam(otherDecorators);
             }
         }
     }
 
-    private reportMissingParamWithOnce(onceDecorator: arkts.AnnotationUsage | undefined): void {
+    private reportMissingParamWithOnce(
+        onceDecorator: arkts.AnnotationUsage | undefined
+    ): void {
         if (!onceDecorator) {
             return;
         }
         this.report({
             node: onceDecorator,
             message: this.messages.invalidDecorator,
-            fix: (onceDecorator) => {
+            fix: () => {
                 const startPosition = onceDecorator.endPosition;
                 const endPosition = onceDecorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
                     code: `@${PresetDecorators.PARAM}`
-                };
-            }
-        });
-    }
-
-    private reportInvalidDecoratorsWithOnceAndParam(otherDecorators: arkts.AnnotationUsage | undefined): void {
-        if (!otherDecorators) {
-            return;
-        }
-        this.report({
-            node: otherDecorators,
-            message: this.messages.invalidDecorator,
-            fix: (otherDecorators) => {
-                const startPosition = otherDecorators.startPosition;
-                const endPosition = otherDecorators.endPosition;
-                return {
-                    range: [startPosition, endPosition],
-                    code: ''
                 };
             }
         });
