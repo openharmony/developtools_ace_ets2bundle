@@ -925,6 +925,11 @@
             "instance": "ContainerSpanInstance"
           },
           {
+            "name": "ArcAlphabetIndexer",
+            "type": "ArcAlphabetIndexerAttribute",
+            "instance": "ArcAlphabetIndexerInstance"
+          },
+          {
             "name": "ArcSwiper",
             "type": "ArcSwiperAttribute",
             "instance": "ArcSwiperInstance"
@@ -933,11 +938,6 @@
             "name": "ArcScrollBar",
             "type": "ArcScrollBarAttribute",
             "instance": "ArcScrollBarInstance"
-          },
-          {
-            "name": "ArcAlphabetIndexer",
-            "type": "ArcAlphabetIndexerAttribute",
-            "instance": "ArcAlphabetIndexerInstance"
           },
         ]
       },
