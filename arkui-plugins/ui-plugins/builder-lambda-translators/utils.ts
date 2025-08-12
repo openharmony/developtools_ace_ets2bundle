@@ -15,40 +15,16 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { isAnnotation, matchPrefix } from '../../common/arkts-utils';
-import { BuilderLambdaNames, expectNameInTypeReference, isCustomComponentAnnotation } from '../utils';
+import { BuilderLambdaNames, isCustomComponentAnnotation } from '../utils';
 import { DeclarationCollector } from '../../common/declaration-collector';
-import {
-    ARKUI_IMPORT_PREFIX_NAMES,
-    BindableDecl,
-    Dollars,
-    InnerComponentAttributes,
-    StructDecoratorNames,
-} from '../../common/predefines';
+import { ARKUI_IMPORT_PREFIX_NAMES, BindableDecl, Dollars, StructDecoratorNames } from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
-import {
-    collectTypeRecordFromParameter,
-    collectTypeRecordFromTypeParameterDeclaration,
-    collectTypeRecordFromTypeParameterInstatiation,
-    ParameterRecord,
-    TypeParameterTypeRecord,
-    TypeRecord,
-} from '../../collectors/utils/collect-types';
-import { hasMemoAnnotation } from '../../collectors/memo-collectors/utils';
-import { AstNodePointer } from 'common/safe-types';
 
 export type BuilderLambdaDeclInfo = {
-    name: string;
     isFunctionCall: boolean; // isFunctionCall means it is from $_instantiate.
     params: readonly arkts.Expression[];
     returnType: arkts.TypeNode | undefined;
     moduleName: string;
-    hasReceiver?: boolean;
-    isFromCommonMethod?: boolean;
-};
-
-export type BuilderLambdaStyleBodyInfo = {
-    lambdaBody: arkts.Identifier | arkts.CallExpression | undefined;
-    initCallPtr: AstNodePointer | undefined;
 };
 
 export type BuilderLambdaAstNode = arkts.ScriptFunction | arkts.ETSParameterExpression | arkts.FunctionDeclaration;
@@ -375,58 +351,27 @@ export function findBuilderLambdaDeclInfo(decl: arkts.AstNode | undefined): Buil
     if (!moduleName) {
         return undefined;
     }
-    if (!arkts.isMethodDefinition(decl)) {
-        return undefined;
+    if (arkts.isMethodDefinition(decl)) {
+        const params = decl.scriptFunction.params.map((p) => p.clone());
+        const returnType = decl.scriptFunction.returnTypeAnnotation?.clone();
+        const isFunctionCall = isBuilderLambdaFunctionCall(decl);
+        return { isFunctionCall, params, returnType, moduleName };
     }
-    const func = decl.scriptFunction;
-    const nameNode = decl.name;
-    const originType = func.returnTypeAnnotation;
-    const params = func.params.map((p) => p.clone());
-    const isFunctionCall = isBuilderLambdaFunctionCall(nameNode);
-    const hasReceiver = func.hasReceiver;
-    const isFromCommonMethod = isFunctionCall && findComponentAttributeFromCommonMethod(originType);
-    const returnType = originType?.clone();
-    const name = nameNode.name;
-    return { name, isFunctionCall, params, returnType, moduleName, hasReceiver, isFromCommonMethod };
+
+    return undefined;
 }
 
-export function findComponentAttributeFromCommonMethod(attrType: arkts.TypeNode | undefined): boolean {
-    const nameNode = expectNameInTypeReference(attrType);
-    if (!nameNode) {
+export function isBuilderLambdaFunctionCall(decl: arkts.AstNode | undefined): boolean {
+    if (!decl) {
         return false;
     }
-    const decl = arkts.getDecl(nameNode);
-    return findCommonMethodInterfaceInExtends(decl);
-}
-
-export function findCommonMethodInterfaceInExtends(interfaceNode: arkts.AstNode | undefined): boolean {
-    if (!interfaceNode || !arkts.isTSInterfaceDeclaration(interfaceNode)) {
-        return false;
+    if (arkts.isMethodDefinition(decl)) {
+        return (
+            decl.name.name !== BuilderLambdaNames.ORIGIN_METHOD_NAME &&
+            decl.name.name !== BuilderLambdaNames.TRANSFORM_METHOD_NAME
+        );
     }
-    const nameNode = interfaceNode.id;
-    if (!nameNode) {
-        return false;
-    }
-    const extendNodes = interfaceNode.extends;
-    if (extendNodes.length === 0) {
-        return nameNode.name === InnerComponentAttributes.COMMON_METHOD;
-    }
-    return extendNodes.some((node) => {
-        const name = expectNameInTypeReference(node.expr);
-        const decl = !!name ? arkts.getDecl(name) : undefined;
-        return findCommonMethodInterfaceInExtends(decl);
-    });
-}
-
-export function isBuilderLambdaFunctionCall(nameNode: arkts.Identifier | undefined): boolean {
-    if (!nameNode) {
-        return false;
-    }
-    const name = nameNode.name;
-    return (
-        name !== BuilderLambdaNames.ORIGIN_METHOD_NAME &&
-        name !== BuilderLambdaNames.TRANSFORM_METHOD_NAME
-    );
+    return false;
 }
 
 export function callIsGoodForBuilderLambda(leaf: arkts.CallExpression): boolean {
@@ -473,7 +418,7 @@ export function builderLambdaFunctionName(node: arkts.CallExpression): string | 
         return undefined;
     }
     if (arkts.isIdentifier(node.expression)) {
-        return getTransformedComponentName(node.expression.name);
+        return node.expression.name;
     }
     if (
         arkts.isMemberExpression(node.expression) &&
@@ -599,155 +544,4 @@ export function checkIsWithInIfConditionScope(statement: arkts.AstNode): boolean
         return arkts.isBlockStatement(statement) || arkts.isIfStatement(statement);
     }
     return false;
-}
-
-/**
- * check whether the last parameter is trailing lambda in components.
- */
-export function checkIsTrailingLambdaInLastParam(params: readonly arkts.Expression[]): boolean {
-    if (params.length === 0) {
-        return false;
-    }
-    const lastParam = params.at(params.length - 1)! as arkts.ETSParameterExpression;
-    return hasMemoAnnotation(lastParam) && lastParam.identifier.name === BuilderLambdaNames.COMPONENT_PARAM_ORI;
-}
-
-/**
- * remove any parameters except possible last trailing lambda parameter in components.
- */
-export function filterParamsExpectTrailingLambda(params: readonly arkts.Expression[]): readonly arkts.Expression[] {
-    if (checkIsTrailingLambdaInLastParam(params)) {
-        return [params.at(params.length - 1)!];
-    }
-    return [];
-}
-
-/**
- * check whether interface is `XXXAttribute` that implies the component's attribute interface.
- */
-export function isComponentAttributeInterface(node: arkts.AstNode): node is arkts.TSInterfaceDeclaration {
-    if (!ComponentAttributeCache.getInstance().isCollected()) {
-        return false;
-    }
-    if (!arkts.isTSInterfaceDeclaration(node) || !node.id) {
-        return false;
-    }
-    return ComponentAttributeCache.getInstance().attributeName === node.id.name;
-}
-
-/**
- * get set method name for components.
- */
-export function getDeclaredSetAttribtueMethodName(componentName: string): string {
-    return `set${componentName}Options`;
-}
-
-/**
- * get after-transformed component name
- */
-export function getTransformedComponentName(componentName: string): string {
-    return `${componentName}Impl`;
-}
-
-// CACHE
-export interface ComponentRecord {
-    name: string;
-    attributeRecords: ParameterRecord[];
-    typeParams?: TypeParameterTypeRecord[];
-    hasRestParameter?: boolean;
-    hasReceiver?: boolean;
-    hasLastTrailingLambda?: boolean;
-}
-
-export class ComponentAttributeCache {
-    private _cache: Map<string, ComponentRecord>;
-    private _attributeName: string | undefined;
-    private _attributeTypeParams: TypeRecord[] | undefined;
-    private _isCollected: boolean = false;
-    private static instance: ComponentAttributeCache;
-
-    private constructor() {
-        this._cache = new Map<string, ComponentRecord>();
-    }
-
-    static getInstance(): ComponentAttributeCache {
-        if (!this.instance) {
-            this.instance = new ComponentAttributeCache();
-        }
-        return this.instance;
-    }
-
-    private collectAttributeName(type: arkts.TypeNode | undefined): string | undefined {
-        if (
-            !type ||
-            !arkts.isETSTypeReference(type) ||
-            !type.part ||
-            !type.part.name ||
-            !arkts.isIdentifier(type.part.name)
-        ) {
-            return;
-        }
-        this._attributeName = type.part.name.name;
-        if (type.part.typeParams) {
-            this._attributeTypeParams = collectTypeRecordFromTypeParameterInstatiation(type.part.typeParams);
-        }
-    }
-
-    get attributeName(): string | undefined {
-        return this._attributeName;
-    }
-
-    get attributeTypeParams(): TypeRecord[] | undefined {
-        return this._attributeTypeParams;
-    }
-
-    reset(): void {
-        this._cache.clear();
-        this._attributeName = undefined;
-        this._attributeTypeParams = undefined;
-        this._isCollected = false;
-    }
-
-    isCollected(): boolean {
-        return this._isCollected;
-    }
-
-    collect(node: arkts.MethodDefinition): void {
-        this.collectAttributeName(node.scriptFunction.returnTypeAnnotation);
-        if (!this._attributeName) {
-            return;
-        }
-        const name: string = node.name.name;
-        const hasRestParameter = node.scriptFunction.hasRestParameter;
-        const hasReceiver = node.scriptFunction.hasReceiver;
-        const typeParams = collectTypeRecordFromTypeParameterDeclaration(node.scriptFunction.typeParams);
-        const params = node.scriptFunction.params as arkts.ETSParameterExpression[];
-        const attributeRecords: ParameterRecord[] = [];
-        const hasLastTrailingLambda = checkIsTrailingLambdaInLastParam(params);
-        params.forEach((p, index) => {
-            if (index === params.length - 1 && hasLastTrailingLambda) {
-                return;
-            }
-            const record = collectTypeRecordFromParameter(p);
-            attributeRecords.push(record);
-        });
-        const componentRecord: ComponentRecord = {
-            name,
-            attributeRecords,
-            typeParams,
-            hasRestParameter,
-            hasReceiver,
-            hasLastTrailingLambda,
-        };
-        this._cache.set(name, componentRecord);
-        this._isCollected = true;
-    }
-
-    getComponentRecord(name: string): ComponentRecord | undefined {
-        return this._cache.get(name);
-    }
-
-    getAllComponentRecords(): ComponentRecord[] {
-        return Array.from(this._cache.values());
-    }
 }

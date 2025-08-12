@@ -38,15 +38,9 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
-
-import { ButtonImpl as ButtonImpl } from "arkui.component.button";
-
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -227,34 +221,31 @@ function main() {}
   }
   
   @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
-      return;
-    }), @memo() (() => {
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("change name", undefined).onClick(((e) => {
+    Column(undefined, undefined, @memo() (() => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
+        instance.onClick(((e) => {
           this.info.name = "Jack";
-        })).applyAttributesFinish();
+        }));
         return;
-      }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("change age", undefined).onClick(((e) => {
+      }), "change name", undefined, undefined);
+      Button(@memo() ((instance: ButtonAttribute): void => {
+        instance.onClick(((e) => {
           this.info.age = 26;
-        })).applyAttributesFinish();
+        }));
         return;
-      }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("change region", undefined).onClick(((e) => {
+      }), "change age", undefined, undefined);
+      Button(@memo() ((instance: ButtonAttribute): void => {
+        instance.onClick(((e) => {
           this.info.region = "South";
-        })).applyAttributesFinish();
+        }));
         return;
-      }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("change job", undefined).onClick(((e) => {
+      }), "change region", undefined, undefined);
+      Button(@memo() ((instance: ButtonAttribute): void => {
+        instance.onClick(((e) => {
           this.info.job = "Driver";
-        })).applyAttributesFinish();
+        }));
         return;
-      }), undefined);
+      }), "change job", undefined, undefined);
     }));
   }
   

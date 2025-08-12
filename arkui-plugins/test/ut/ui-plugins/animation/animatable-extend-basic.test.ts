@@ -39,15 +39,10 @@ const animatableExtendTransform: Plugins = {
 const pluginTester = new PluginTester('test basic animatableExtend transform', buildConfig);
 
 const expectedScript: string = `
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
-
-import { TextImpl as TextImpl } from "arkui.component.text";
-
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { NavInterface as NavInterface } from "arkui.UserView";
 
@@ -78,12 +73,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __updateStruct(initializers: (__Options_AnimatablePropertyExample | undefined)): void {}
   
   @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
-      return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions("AnimatableProperty", undefined).animationStart({
+    Column(undefined, undefined, @memo() (() => {
+      Text(@memo() ((instance: TextAttribute): void => {
+        instance.animationStart({
           duration: 2000,
           curve: Curve.Ease,
         }).backgroundColor(Color.Red).animationStop({
@@ -95,9 +87,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         }).fontSize(20).animationStop({
           duration: 2000,
           curve: Curve.Ease,
-        }).width("100%").applyAttributesFinish();
+        }).width("100%");
         return;
-      }), undefined);
+      }), "AnimatableProperty", undefined, undefined);
     }));
   }
   

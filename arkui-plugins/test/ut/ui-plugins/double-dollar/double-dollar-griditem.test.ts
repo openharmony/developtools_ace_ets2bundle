@@ -42,25 +42,11 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
-import { GridAttribute as GridAttribute } from "arkui.component.grid";
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { GridItemAttribute as GridItemAttribute } from "arkui.component.gridItem";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
-import { TextAttribute as TextAttribute } from "arkui.component.text";
-
-import { TextImpl as TextImpl } from "arkui.component.text";
-
 import { Bindable as Bindable } from "arkui.component.common";
-
-import { GridItemImpl as GridItemImpl } from "arkui.component.gridItem";
-
-import { GridImpl as GridImpl } from "arkui.component.grid";
-
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { NavInterface as NavInterface } from "arkui.UserView";
 
@@ -107,41 +93,29 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
-      return;
-    }), @memo() (() => {
-      GridImpl(@memo() ((instance: GridAttribute): void => {
-        instance.setGridOptions(undefined, undefined).applyAttributesFinish();
-        return;
-      }), @memo() (() => {
-        GridItemImpl(@memo() ((instance: GridItemAttribute): void => {
-          instance.setGridItemOptions(undefined).selected(({
+    Column(undefined, undefined, @memo() (() => {
+      Grid(undefined, undefined, undefined, @memo() (() => {
+        GridItem(@memo() ((instance: GridItemAttribute): void => {
+          instance.selected(({
             value: this.boo,
             onChange: ((value: boolean) => {
               this.boo = value;
             }),
-          } as Bindable<boolean>)).applyAttributesFinish();
+          } as Bindable<boolean>));
           return;
-        }), @memo() (() => {
-          TextImpl(@memo() ((instance: TextAttribute): void => {
-            instance.setTextOptions("nihao", undefined).applyAttributesFinish();
-            return;
-          }), undefined);
+        }), undefined, @memo() (() => {
+          Text(undefined, "nihao", undefined, undefined);
         }));
-        GridItemImpl(@memo() ((instance: GridItemAttribute): void => {
-          instance.setGridItemOptions(undefined).selected(({
+        GridItem(@memo() ((instance: GridItemAttribute): void => {
+          instance.selected(({
             value: c,
             onChange: ((value: boolean) => {
               c = value;
             }),
-          } as Bindable<boolean>)).applyAttributesFinish();
+          } as Bindable<boolean>));
           return;
-        }), @memo() (() => {
-          TextImpl(@memo() ((instance: TextAttribute): void => {
-            instance.setTextOptions("nihao", undefined).applyAttributesFinish();
-            return;
-          }), undefined);
+        }), undefined, @memo() (() => {
+          Text(undefined, "nihao", undefined, undefined);
         }));
       }));
     }));

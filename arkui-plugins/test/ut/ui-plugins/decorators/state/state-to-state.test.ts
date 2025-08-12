@@ -38,19 +38,13 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { TextAttribute as TextAttribute } from "arkui.component.text";
-
-import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -90,10 +84,7 @@ class Per {
   }
   
   @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
-      return;
-    }), @memo() (() => {
+    Column(undefined, undefined, @memo() (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {
@@ -125,10 +116,7 @@ class Per {
   }
   
   @memo() public build() {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
-      instance.setTextOptions(this.childVar1.str, undefined).applyAttributesFinish();
-      return;
-    }), undefined);
+    Text(undefined, this.childVar1.str, undefined, undefined);
   }
   
   private constructor() {}

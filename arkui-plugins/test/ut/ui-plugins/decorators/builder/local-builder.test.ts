@@ -36,15 +36,11 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
-import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -60,24 +56,21 @@ function main() {}
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
   
   @memo() public showTextBuilder() {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
-      instance.setTextOptions("Hello World", undefined).fontSize(30).applyAttributesFinish();
+    Text(@memo() ((instance: TextAttribute): void => {
+      instance.fontSize(30);
       return;
-    }), undefined);
+    }), "Hello World", undefined, undefined);
   }
   
   @memo() public showTextValueBuilder(param: string) {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
-      instance.setTextOptions(param, undefined).fontSize(30).applyAttributesFinish();
+    Text(@memo() ((instance: TextAttribute): void => {
+      instance.fontSize(30);
       return;
-    }), undefined);
+    }), param, undefined, undefined);
   }
   
   @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
-      return;
-    }), @memo() (() => {
+    Column(undefined, undefined, @memo() (() => {
       this.showTextBuilder();
       this.showTextValueBuilder("Hello @Builder");
     }));
