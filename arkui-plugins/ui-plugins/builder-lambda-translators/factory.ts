@@ -42,7 +42,6 @@ import {
     builderLambdaType,
     BuilderLambdaSecondLastArgInfo,
     buildSecondLastArgInfo,
-    checkShouldBreakFromStatement,
     checkIsWithInIfConditionScope,
     BuilderLambdaConditionBranchInfo,
     BuilderLambdaChainingCallArgInfo,
@@ -63,6 +62,7 @@ import { ImportCollector } from '../../common/import-collector';
 import { addMemoAnnotation, collectMemoableInfoInParameter } from '../../collectors/memo-collectors/utils';
 import { factory as MemoCollectFactory } from '../../collectors/memo-collectors/factory';
 import { BuilderFactory } from './builder-factory';
+import { ConditionBreakCache } from './cache/conditionBreakCache';
 
 export class factory {
     /**
@@ -500,22 +500,32 @@ export class factory {
                 : this.wrapConditionToBlock([newStatement], ConditionNames.CONDITION_SCOPE)) as arkts.AstNode as T;
         }
         if (arkts.isSwitchCaseStatement(statement)) {
-            let { statements, breakIndex } = this.updateConditionBranchInScope(
-                statement.consequent,
-                shouldWrap,
-                stopAtBuilderLambda
-            );
-            if (shouldWrap) {
+            let { statements, breakIndex } = this.updateConditionBranchInScope(statement.consequent, shouldWrap);
+            if (shouldWrap && breakIndex > 0) {
+                const hasBreak = breakIndex !== statements.length;
                 const beforeBreak = this.wrapConditionToBlock(
-                    breakIndex > 0 ? statements.slice(0, breakIndex) : statements,
+                    statements.slice(0, breakIndex),
                     ConditionNames.CONDITION_BRANCH
                 );
-                const afterBreak = breakIndex > 0 ? statements.slice(breakIndex) : [];
-                statements = [beforeBreak, ...afterBreak];
+                const afterBreak = statements.slice(hasBreak ? breakIndex + 1 : breakIndex);
+                const breakStatement = this.createBreakBetweenConditionStatements();
+                statements = [beforeBreak, ...breakStatement, ...afterBreak];
             }
+            ConditionBreakCache.getInstance().reset();
             return arkts.factory.updateSwitchCaseStatement(statement, statement.test, statements) as T;
         }
         return statement;
+    }
+
+    static createBreakBetweenConditionStatements(): arkts.AstNode[] {
+        const cache = ConditionBreakCache.getInstance();
+        if (cache.shouldBreak) {
+            return [arkts.factory.createBreakStatement()];
+        }
+        if (cache.shouldReturn) {
+            return [arkts.factory.createReturnStatement()];
+        }
+        return [];
     }
 
     /**
@@ -529,7 +539,7 @@ export class factory {
     ): BuilderLambdaConditionBranchInfo {
         let breakIndex = statements.length;
         const newStatements = statements.map((st, index) => {
-            if (checkShouldBreakFromStatement(st)) {
+            if (ConditionBreakCache.getInstance().collect(st)) {
                 breakIndex = index;
             }
             return this.updateContentBodyInBuilderLambda(st, shouldWrap, stopAtBuilderLambda);
@@ -590,6 +600,10 @@ export class factory {
                 this.updateContentBodyInBuilderLambda(st, hasBuilder, stopAtBuilderLambda)
             );
             return arkts.factory.updateBlock(statement, newStatements);
+        }
+        if (arkts.isBreakStatement(statement) && statement.parent && arkts.isBlockStatement(statement.parent)) {
+            ConditionBreakCache.getInstance().collectBreak();
+            return arkts.factory.createReturnStatement();
         }
         return statement;
     }
