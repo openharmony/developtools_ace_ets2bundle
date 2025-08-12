@@ -80,7 +80,8 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
                 node: computedDecorator,
                 message: this.messages.onlyOnGetter,
                 fix: (computedDecorator) => {
-                    const startPosition = computedDecorator.startPosition;
+                    let startPosition = computedDecorator.startPosition;
+                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                     const endPosition = computedDecorator.endPosition;
                     return {
                         range: [startPosition, endPosition],
@@ -114,7 +115,8 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
             node: computedDecorator,
             message: this.messages.onlyOnGetter,
             fix: (computedDecorator) => {
-                const startPosition = computedDecorator.startPosition;
+                let startPosition = computedDecorator.startPosition;
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 const endPosition = computedDecorator.endPosition;
                 return {
                     range: [startPosition, endPosition],
@@ -152,28 +154,19 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
         currentNode.arguments.forEach((argument) => {
             if (arkts.isMemberExpression(argument)) {
                 const getterName = getIdentifierName(argument.property);
-                this.reportValidateCallExpression(currentNode, argument, getterName);
+                this.reportValidateCallExpression(currentNode, getterName);
             }
         });
     }
 
     private reportValidateCallExpression(
         currentNode: arkts.CallExpression,
-        argument: arkts.MemberExpression,
         getterName: string
     ): void {
         if (this.computedGetters.has(getterName)) {
             this.report({
                 node: currentNode,
                 message: this.messages.noTwoWayBinding,
-                fix: (currentNode) => {
-                    const startPosition = currentNode.startPosition;
-                    const endPosition = currentNode.endPosition;
-                    return {
-                        range: [startPosition, endPosition],
-                        code: argument.dumpSrc(),
-                    };
-                },
             });
         }
     }
