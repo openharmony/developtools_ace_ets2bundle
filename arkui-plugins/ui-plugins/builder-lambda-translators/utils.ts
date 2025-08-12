@@ -601,12 +601,6 @@ export function checkIsWithInIfConditionScope(statement: arkts.AstNode): boolean
     return false;
 }
 
-export function checkShouldBreakFromStatement(statement: arkts.AstNode): boolean {
-    return (
-        arkts.isReturnStatement(statement) || arkts.isBreakStatement(statement) || arkts.isContinueStatement(statement)
-    );
-}
-
 /**
  * check whether the last parameter is trailing lambda in components.
  */
