@@ -7,7 +7,6 @@
     "./test"
   ],
   "scripts": {
-    "local:install": "chmod 777 ./npm_preinstall.sh && ./npm_preinstall.sh --init",
     "compile:plugins": "./node_modules/.bin/babel . --out-dir lib --extensions .ts",
     "compile:clean": "rm -rf lib",
     "clean:test": "rm -rf dist && rm -rf coverage",
