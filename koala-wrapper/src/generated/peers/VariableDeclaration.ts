@@ -52,9 +52,6 @@ export class VariableDeclaration extends Statement {
     get kind(): Es2pandaVariableDeclarationKind {
         return global.generatedEs2panda._VariableDeclarationKindConst(global.context, this.peer)
     }
-    get decorators(): readonly Decorator[] {
-        return unpackNodeArray(global.generatedEs2panda._VariableDeclarationDecoratorsConst(global.context, this.peer))
-    }
     get annotations(): readonly AnnotationUsage[] {
         return unpackNodeArray(global.generatedEs2panda._VariableDeclarationAnnotationsConst(global.context, this.peer))
     }

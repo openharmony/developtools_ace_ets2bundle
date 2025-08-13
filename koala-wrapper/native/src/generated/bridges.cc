@@ -649,16 +649,6 @@ KBoolean impl_TSEnumDeclarationIsConstConst(KNativePointer context, KNativePoint
 }
 KOALA_INTEROP_2(TSEnumDeclarationIsConstConst, KBoolean, KNativePointer, KNativePointer);
 
-KNativePointer impl_TSEnumDeclarationDecoratorsConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    std::size_t length;
-    auto result = GetImpl()->TSEnumDeclarationDecoratorsConst(_context, _receiver, &length);
-    return (void*)new std::vector<void*>(result, result + length);
-}
-KOALA_INTEROP_2(TSEnumDeclarationDecoratorsConst, KNativePointer, KNativePointer, KNativePointer);
-
 KNativePointer impl_CreateTSNeverKeyword(KNativePointer context)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -765,16 +755,6 @@ KBoolean impl_ObjectExpressionIsOptionalConst(KNativePointer context, KNativePoi
     return result;
 }
 KOALA_INTEROP_2(ObjectExpressionIsOptionalConst, KBoolean, KNativePointer, KNativePointer);
-
-KNativePointer impl_ObjectExpressionDecoratorsConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    std::size_t length;
-    auto result = GetImpl()->ObjectExpressionDecoratorsConst(_context, _receiver, &length);
-    return (void*)new std::vector<void*>(result, result + length);
-}
-KOALA_INTEROP_2(ObjectExpressionDecoratorsConst, KNativePointer, KNativePointer, KNativePointer);
 
 KNativePointer impl_ObjectExpressionValidateExpression(KNativePointer context, KNativePointer receiver)
 {
@@ -1271,16 +1251,6 @@ KBoolean impl_ClassElementIsPrivateElementConst(KNativePointer context, KNativeP
 }
 KOALA_INTEROP_2(ClassElementIsPrivateElementConst, KBoolean, KNativePointer, KNativePointer);
 
-KNativePointer impl_ClassElementDecoratorsConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    std::size_t length;
-    auto result = GetImpl()->ClassElementDecoratorsConst(_context, _receiver, &length);
-    return (void*)new std::vector<void*>(result, result + length);
-}
-KOALA_INTEROP_2(ClassElementDecoratorsConst, KNativePointer, KNativePointer, KNativePointer);
-
 KBoolean impl_ClassElementIsComputedConst(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -1289,16 +1259,6 @@ KBoolean impl_ClassElementIsComputedConst(KNativePointer context, KNativePointer
     return result;
 }
 KOALA_INTEROP_2(ClassElementIsComputedConst, KBoolean, KNativePointer, KNativePointer);
-
-void impl_ClassElementAddDecorator(KNativePointer context, KNativePointer receiver, KNativePointer decorator)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    const auto _decorator = reinterpret_cast<es2panda_AstNode*>(decorator);
-    GetImpl()->ClassElementAddDecorator(_context, _receiver, _decorator);
-    return ;
-}
-KOALA_INTEROP_V3(ClassElementAddDecorator, KNativePointer, KNativePointer, KNativePointer);
 
 KInt impl_ClassElementToPrivateFieldKindConst(KNativePointer context, KNativePointer receiver, KBoolean isStatic)
 {
@@ -1968,16 +1928,6 @@ KNativePointer impl_TSInterfaceDeclarationExtendsConst(KNativePointer context, K
 }
 KOALA_INTEROP_2(TSInterfaceDeclarationExtendsConst, KNativePointer, KNativePointer, KNativePointer);
 
-KNativePointer impl_TSInterfaceDeclarationDecoratorsConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    std::size_t length;
-    auto result = GetImpl()->TSInterfaceDeclarationDecoratorsConst(_context, _receiver, &length);
-    return (void*)new std::vector<void*>(result, result + length);
-}
-KOALA_INTEROP_2(TSInterfaceDeclarationDecoratorsConst, KNativePointer, KNativePointer, KNativePointer);
-
 KNativePointer impl_TSInterfaceDeclarationGetAnonClass(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -2078,16 +2028,6 @@ KInt impl_VariableDeclarationKindConst(KNativePointer context, KNativePointer re
     return result;
 }
 KOALA_INTEROP_2(VariableDeclarationKindConst, KInt, KNativePointer, KNativePointer);
-
-KNativePointer impl_VariableDeclarationDecoratorsConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    std::size_t length;
-    auto result = GetImpl()->VariableDeclarationDecoratorsConst(_context, _receiver, &length);
-    return (void*)new std::vector<void*>(result, result + length);
-}
-KOALA_INTEROP_2(VariableDeclarationDecoratorsConst, KNativePointer, KNativePointer, KNativePointer);
 
 KNativePointer impl_VariableDeclarationGetDeclaratorByNameConst(KNativePointer context, KNativePointer receiver, KStringPtr& name)
 {
@@ -2668,16 +2608,6 @@ KNativePointer impl_TSTypeAliasDeclarationTypeParamsConst(KNativePointer context
     return (void*)result;
 }
 KOALA_INTEROP_2(TSTypeAliasDeclarationTypeParamsConst, KNativePointer, KNativePointer, KNativePointer);
-
-KNativePointer impl_TSTypeAliasDeclarationDecoratorsConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    std::size_t length;
-    auto result = GetImpl()->TSTypeAliasDeclarationDecoratorsConst(_context, _receiver, &length);
-    return (void*)new std::vector<void*>(result, result + length);
-}
-KOALA_INTEROP_2(TSTypeAliasDeclarationDecoratorsConst, KNativePointer, KNativePointer, KNativePointer);
 
 void impl_TSTypeAliasDeclarationSetTypeParameters(KNativePointer context, KNativePointer receiver, KNativePointer typeParams)
 {
@@ -3999,16 +3929,6 @@ void impl_ArrayExpressionSetOptional(KNativePointer context, KNativePointer rece
     return ;
 }
 KOALA_INTEROP_V3(ArrayExpressionSetOptional, KNativePointer, KNativePointer, KBoolean);
-
-KNativePointer impl_ArrayExpressionDecoratorsConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    std::size_t length;
-    auto result = GetImpl()->ArrayExpressionDecoratorsConst(_context, _receiver, &length);
-    return (void*)new std::vector<void*>(result, result + length);
-}
-KOALA_INTEROP_2(ArrayExpressionDecoratorsConst, KNativePointer, KNativePointer, KNativePointer);
 
 KBoolean impl_ArrayExpressionConvertibleToArrayPattern(KNativePointer context, KNativePointer receiver)
 {
@@ -7781,16 +7701,6 @@ KBoolean impl_SpreadElementIsOptionalConst(KNativePointer context, KNativePointe
 }
 KOALA_INTEROP_2(SpreadElementIsOptionalConst, KBoolean, KNativePointer, KNativePointer);
 
-KNativePointer impl_SpreadElementDecoratorsConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    std::size_t length;
-    auto result = GetImpl()->SpreadElementDecoratorsConst(_context, _receiver, &length);
-    return (void*)new std::vector<void*>(result, result + length);
-}
-KOALA_INTEROP_2(SpreadElementDecoratorsConst, KNativePointer, KNativePointer, KNativePointer);
-
 void impl_SpreadElementSetOptional(KNativePointer context, KNativePointer receiver, KBoolean optional_arg)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -8968,16 +8878,6 @@ void impl_IdentifierSetName(KNativePointer context, KNativePointer receiver, KSt
 }
 KOALA_INTEROP_V3(IdentifierSetName, KNativePointer, KNativePointer, KStringPtr);
 
-KNativePointer impl_IdentifierDecoratorsConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    std::size_t length;
-    auto result = GetImpl()->IdentifierDecoratorsConst(_context, _receiver, &length);
-    return (void*)new std::vector<void*>(result, result + length);
-}
-KOALA_INTEROP_2(IdentifierDecoratorsConst, KNativePointer, KNativePointer, KNativePointer);
-
 KBoolean impl_IdentifierIsErrorPlaceHolderConst(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -10088,16 +9988,6 @@ KNativePointer impl_ClassDeclarationDefinitionConst(KNativePointer context, KNat
     return (void*)result;
 }
 KOALA_INTEROP_2(ClassDeclarationDefinitionConst, KNativePointer, KNativePointer, KNativePointer);
-
-KNativePointer impl_ClassDeclarationDecoratorsConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    std::size_t length;
-    auto result = GetImpl()->ClassDeclarationDecoratorsConst(_context, _receiver, &length);
-    return (void*)new std::vector<void*>(result, result + length);
-}
-KOALA_INTEROP_2(ClassDeclarationDecoratorsConst, KNativePointer, KNativePointer, KNativePointer);
 
 KNativePointer impl_CreateTSIndexedAccessType(KNativePointer context, KNativePointer objectType, KNativePointer indexType)
 {

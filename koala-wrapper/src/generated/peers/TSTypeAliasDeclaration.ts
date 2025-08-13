@@ -59,9 +59,6 @@ export class TSTypeAliasDeclaration extends AnnotatedStatement {
     get typeParams(): TSTypeParameterDeclaration | undefined {
         return unpackNode(global.generatedEs2panda._TSTypeAliasDeclarationTypeParamsConst(global.context, this.peer))
     }
-    get decorators(): readonly Decorator[] {
-        return unpackNodeArray(global.generatedEs2panda._TSTypeAliasDeclarationDecoratorsConst(global.context, this.peer))
-    }
     /** @deprecated */
     setTypeParameters(typeParams: TSTypeParameterDeclaration): this {
         global.generatedEs2panda._TSTypeAliasDeclarationSetTypeParameters(global.context, this.peer, passNode(typeParams))
