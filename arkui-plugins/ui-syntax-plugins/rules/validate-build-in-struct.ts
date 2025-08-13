@@ -91,6 +91,7 @@ class ValidateBuildInStructRule extends AbstractUISyntaxRule {
                     const startPosition = member.startPosition;
                     const endPosition = member.endPosition;
                     return {
+                        title: 'Remove the duplicate build function.',
                         range: [startPosition, endPosition],
                         code: ``
                     };
@@ -127,6 +128,7 @@ class ValidateBuildInStructRule extends AbstractUISyntaxRule {
                 const startPosition = param.startPosition;
                 const endPosition = param.endPosition;
                 return {
+                    title: 'Remove the parmeters of the build function',
                     range: [startPosition, endPosition],
                     code: ''
                 };
@@ -152,6 +154,7 @@ class ValidateBuildInStructRule extends AbstractUISyntaxRule {
                 startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 const endPosition = startPosition;
                 return {
+                    title: 'Add a build function to the custom component',
                     range: [startPosition, endPosition],
                     code: 'build() {\n}\n'
                 };

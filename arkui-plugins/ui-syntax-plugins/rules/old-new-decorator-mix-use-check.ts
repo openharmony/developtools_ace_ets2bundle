@@ -91,6 +91,8 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
         structDecoratorName: string
     ): void {
         let propertyDecoratorName = getAnnotationName(errorDecorator);
+        const curStructDecoratorName = structDecoratorName ===
+            PresetDecorators.COMPONENT_V2 ? PresetDecorators.COMPONENT_V1 : PresetDecorators.COMPONENT_V2;
         this.report({
             node: errorDecorator,
             message: this.messages.oldAndNewDecoratorsMixUse,
@@ -100,6 +102,7 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
             },
             fix: () => {
                 return {
+                    title: `Change @${curStructDecoratorName} to @${structDecoratorName}`,
                     range: [hasComponentV2Decorator.startPosition, hasComponentV2Decorator.endPosition],
                     code: structDecoratorName,
                 };
@@ -121,6 +124,7 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
             },
             fix: () => {
                 return {
+                    title: 'Add @ComponentV2 annotation',
                     range: [structNode.startPosition, structNode.startPosition],
                     code: `@${PresetDecorators.COMPONENT_V2}\n`,
                 };
