@@ -223,9 +223,6 @@ export class Es2pandaNativeModule {
     _TSEnumDeclarationIsConstConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'TSEnumDeclarationIsConstConst was not overloaded by native module initialization")
     }
-    _TSEnumDeclarationDecoratorsConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'TSEnumDeclarationDecoratorsConst was not overloaded by native module initialization")
-    }
     _CreateTSNeverKeyword(context: KNativePointer): KNativePointer {
         throw new Error("'CreateTSNeverKeyword was not overloaded by native module initialization")
     }
@@ -258,9 +255,6 @@ export class Es2pandaNativeModule {
     }
     _ObjectExpressionIsOptionalConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'ObjectExpressionIsOptionalConst was not overloaded by native module initialization")
-    }
-    _ObjectExpressionDecoratorsConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'ObjectExpressionDecoratorsConst was not overloaded by native module initialization")
     }
     _ObjectExpressionValidateExpression(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'ObjectExpressionValidateExpression was not overloaded by native module initialization")
@@ -418,14 +412,8 @@ export class Es2pandaNativeModule {
     _ClassElementIsPrivateElementConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'ClassElementIsPrivateElementConst was not overloaded by native module initialization")
     }
-    _ClassElementDecoratorsConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'ClassElementDecoratorsConst was not overloaded by native module initialization")
-    }
     _ClassElementIsComputedConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'ClassElementIsComputedConst was not overloaded by native module initialization")
-    }
-    _ClassElementAddDecorator(context: KNativePointer, receiver: KNativePointer, decorator: KNativePointer): void {
-        throw new Error("'ClassElementAddDecorator was not overloaded by native module initialization")
     }
     _ClassElementToPrivateFieldKindConst(context: KNativePointer, receiver: KNativePointer, isStatic: KBoolean): KInt {
         throw new Error("'ClassElementToPrivateFieldKindConst was not overloaded by native module initialization")
@@ -652,9 +640,6 @@ export class Es2pandaNativeModule {
     _TSInterfaceDeclarationExtendsConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'TSInterfaceDeclarationExtendsConst was not overloaded by native module initialization")
     }
-    _TSInterfaceDeclarationDecoratorsConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'TSInterfaceDeclarationDecoratorsConst was not overloaded by native module initialization")
-    }
     _TSInterfaceDeclarationGetAnonClass(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'TSInterfaceDeclarationGetAnonClass was not overloaded by native module initialization")
     }
@@ -684,9 +669,6 @@ export class Es2pandaNativeModule {
     }
     _VariableDeclarationKindConst(context: KNativePointer, receiver: KNativePointer): KInt {
         throw new Error("'VariableDeclarationKindConst was not overloaded by native module initialization")
-    }
-    _VariableDeclarationDecoratorsConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'VariableDeclarationDecoratorsConst was not overloaded by native module initialization")
     }
     _VariableDeclarationGetDeclaratorByNameConst(context: KNativePointer, receiver: KNativePointer, name: KStringPtr): KNativePointer {
         throw new Error("'VariableDeclarationGetDeclaratorByNameConst was not overloaded by native module initialization")
@@ -864,9 +846,6 @@ export class Es2pandaNativeModule {
     }
     _TSTypeAliasDeclarationTypeParamsConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'TSTypeAliasDeclarationTypeParamsConst was not overloaded by native module initialization")
-    }
-    _TSTypeAliasDeclarationDecoratorsConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'TSTypeAliasDeclarationDecoratorsConst was not overloaded by native module initialization")
     }
     _TSTypeAliasDeclarationSetTypeParameters(context: KNativePointer, receiver: KNativePointer, typeParams: KNativePointer): void {
         throw new Error("'TSTypeAliasDeclarationSetTypeParameters was not overloaded by native module initialization")
@@ -1275,9 +1254,6 @@ export class Es2pandaNativeModule {
     }
     _ArrayExpressionSetOptional(context: KNativePointer, receiver: KNativePointer, optional_arg: KBoolean): void {
         throw new Error("'ArrayExpressionSetOptional was not overloaded by native module initialization")
-    }
-    _ArrayExpressionDecoratorsConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'ArrayExpressionDecoratorsConst was not overloaded by native module initialization")
     }
     _ArrayExpressionConvertibleToArrayPattern(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'ArrayExpressionConvertibleToArrayPattern was not overloaded by native module initialization")
@@ -2473,9 +2449,6 @@ export class Es2pandaNativeModule {
     _SpreadElementIsOptionalConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'SpreadElementIsOptionalConst was not overloaded by native module initialization")
     }
-    _SpreadElementDecoratorsConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'SpreadElementDecoratorsConst was not overloaded by native module initialization")
-    }
     _SpreadElementSetOptional(context: KNativePointer, receiver: KNativePointer, optional_arg: KBoolean): void {
         throw new Error("'SpreadElementSetOptional was not overloaded by native module initialization")
     }
@@ -2839,9 +2812,6 @@ export class Es2pandaNativeModule {
     _IdentifierSetName(context: KNativePointer, receiver: KNativePointer, newName: KStringPtr): void {
         throw new Error("'IdentifierSetName was not overloaded by native module initialization")
     }
-    _IdentifierDecoratorsConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'IdentifierDecoratorsConst was not overloaded by native module initialization")
-    }
     _IdentifierIsErrorPlaceHolderConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'IdentifierIsErrorPlaceHolderConst was not overloaded by native module initialization")
     }
@@ -3189,9 +3159,6 @@ export class Es2pandaNativeModule {
     }
     _ClassDeclarationDefinitionConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'ClassDeclarationDefinitionConst was not overloaded by native module initialization")
-    }
-    _ClassDeclarationDecoratorsConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'ClassDeclarationDecoratorsConst was not overloaded by native module initialization")
     }
     _CreateTSIndexedAccessType(context: KNativePointer, objectType: KNativePointer, indexType: KNativePointer): KNativePointer {
         throw new Error("'CreateTSIndexedAccessType was not overloaded by native module initialization")
