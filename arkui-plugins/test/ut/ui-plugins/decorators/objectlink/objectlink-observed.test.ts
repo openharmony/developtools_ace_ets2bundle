@@ -43,15 +43,9 @@ import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateM
 
 import { IObjectLinkDecoratedVariable as IObjectLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
-
-import { ButtonImpl as ButtonImpl } from "arkui.component.button";
-
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -206,16 +200,13 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
-      return;
-    }), @memo() (() => {
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("child increase the day by 1", undefined).onClick(((e: ClickEvent) => {
+    Column(undefined, undefined, @memo() (() => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
+        instance.onClick(((e: ClickEvent) => {
           this.data.setDate(((this.data.getDate()) + (1)));
-        })).applyAttributesFinish();
+        }));
         return;
-      }), undefined);
+      }), "child increase the day by 1", undefined, undefined);
     }));
   }
   
@@ -242,28 +233,25 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
-      return;
-    }), @memo() (() => {
+    Column(undefined, undefined, @memo() (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {
         label: "date",
         data: this.newData.data,
       }, undefined, undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("parent update the new date", undefined).onClick(((e: ClickEvent) => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
+        instance.onClick(((e: ClickEvent) => {
           this.newData.data = new DateClass("2023-07-07");
-        })).applyAttributesFinish();
+        }));
         return;
-      }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("ViewB: this.newData = new NewDate(new DateClass('2023-08-20'))", undefined).onClick(((e: ClickEvent) => {
+      }), "parent update the new date", undefined, undefined);
+      Button(@memo() ((instance: ButtonAttribute): void => {
+        instance.onClick(((e: ClickEvent) => {
           this.newData = new NewDate(new DateClass("2023-08-20"));
-        })).applyAttributesFinish();
+        }));
         return;
-      }), undefined);
+      }), "ViewB: this.newData = new NewDate(new DateClass('2023-08-20'))", undefined, undefined);
     }));
   }
   

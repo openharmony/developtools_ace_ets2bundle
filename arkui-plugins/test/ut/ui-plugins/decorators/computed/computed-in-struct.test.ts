@@ -42,23 +42,9 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
-import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
-
-import { ButtonImpl as ButtonImpl } from "arkui.component.button";
-
-import { DividerAttribute as DividerAttribute } from "arkui.component.divider";
-
-import { DividerImpl as DividerImpl } from "arkui.component.divider";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { TextAttribute as TextAttribute } from "arkui.component.text";
-
-import { TextImpl as TextImpl } from "arkui.component.text";
-
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
@@ -118,42 +104,24 @@ function main() {}
   }
   
   @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
-      return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(((((this.lastName) + (" "))) + (this.firstName)), undefined).applyAttributesFinish();
-        return;
-      }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(((((this.lastName) + (" "))) + (this.firstName)), undefined).applyAttributesFinish();
-        return;
-      }), undefined);
-      DividerImpl(@memo() ((instance: DividerAttribute): void => {
-        instance.setDividerOptions().applyAttributesFinish();
-        return;
-      }));
-      TextImpl(@memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(this.fullName, undefined).applyAttributesFinish();
-        return;
-      }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(this.fullName, undefined).applyAttributesFinish();
-        return;
-      }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("changed lastName", undefined).onClick(((e) => {
+    Column(undefined, undefined, @memo() (() => {
+      Text(undefined, ((((this.lastName) + (" "))) + (this.firstName)), undefined, undefined);
+      Text(undefined, ((((this.lastName) + (" "))) + (this.firstName)), undefined, undefined);
+      Divider(undefined);
+      Text(undefined, this.fullName, undefined, undefined);
+      Text(undefined, this.fullName, undefined, undefined);
+      Button(@memo() ((instance: ButtonAttribute): void => {
+        instance.onClick(((e) => {
           this.lastName += "a";
-        })).applyAttributesFinish();
+        }));
         return;
-      }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("changed age", undefined).onClick(((e) => {
+      }), "changed lastName", undefined, undefined);
+      Button(@memo() ((instance: ButtonAttribute): void => {
+        instance.onClick(((e) => {
           (this.age++);
-        })).applyAttributesFinish();
+        }));
         return;
-      }), undefined);
+      }), "changed age", undefined, undefined);
     }));
   }
   
