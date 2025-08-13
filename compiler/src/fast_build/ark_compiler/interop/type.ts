@@ -37,6 +37,11 @@ export interface Params {
   tasks: taskInfo[];
 }
 
+export interface CodeInput {
+    fileName: string;
+    content: string;
+}
+
 export interface ProjectConfig {
   cachePath: string;
   bundleName: string;
@@ -54,6 +59,7 @@ interface taskInfo {
   packageName: string;
   buildTask: BuildType;
   mainModuleName?: string;
+  codeInputs?: CodeInput[];
 }
 
 export interface AliasConfig {
@@ -73,6 +79,15 @@ export interface RunnerParms {
   inputFiles: string[];
   outDir: string;
   rootDir: string;
+  customResolveModuleNames?: (moduleName: string[], containingFile: string) => ts.ResolvedModuleFull[];
+  customCompilerOptions?: ts.CompilerOptions;
+  includePaths?: string[];
+}
+
+export interface CodeInputParams {
+  codeInputs: CodeInput[];
+  outDir: string;
+  rootDir?: string;
   customResolveModuleNames?: (moduleName: string[], containingFile: string) => ts.ResolvedModuleFull[];
   customCompilerOptions?: ts.CompilerOptions;
   includePaths?: string[];
