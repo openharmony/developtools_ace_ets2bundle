@@ -1,8 +1,8 @@
 {
   "plugins": {
-    "ui_syntax_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/ui-syntax-plugins/index",
-    "ui_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/ui-plugins/index",
-    "memo_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/memo-plugins/index"
+    "ui_syntax_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/static/build-tools/ui-plugins/lib/ui-syntax-plugins/index",
+    "ui_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/static/build-tools/ui-plugins/lib/ui-plugins/index",
+    "memo_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/static/build-tools/ui-plugins/lib/memo-plugins/index"
   },
   "compileFiles": [
     "./demo/localtest/entry/src/main/ets/pages/new.ets",
@@ -27,7 +27,7 @@
   "useNormalizedOHMUrl": true,
   "buildType": "build",
   "packageName": "entry",
-  "buildSdkPath": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/",
+  "buildSdkPath": "workspace/out/sdk/ohos-sdk/linux/ets/static/",
   "sourceRoots": [
     "./"
   ],

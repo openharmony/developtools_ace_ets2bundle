@@ -405,7 +405,7 @@ export function collectSDKInfo(share: Object): {
 } {
   const dynamicSDKPath: Set<string> = new Set();
   const staticInteroSDKBasePath = process.env.staticInteroSDKBasePath ||
-    path.resolve(share.projectConfig.etsLoaderPath, '../../../ets1.2/build-tools/interop');
+    path.resolve(share.projectConfig.etsLoaderPath, '../../../static/build-tools/interop');
   const staticSDKInteropDecl: Set<string> = new Set([
     path.resolve(staticInteroSDKBasePath, './declarations/kits'),
     path.resolve(staticInteroSDKBasePath, './declarations/api'),
@@ -424,8 +424,8 @@ export function collectSDKInfo(share: Object): {
 
   if (process.env.externalApiPaths) {
     const externalApiPaths = path.resolve(process.env.externalApiPaths, '../');
-    staticSDKGlueCodePath.add(path.resolve(externalApiPaths, './ets1.2/interop/bridge'));
-    staticSDKInteropDecl.add(path.resolve(externalApiPaths, './ets1.2/interop/declarations'));
+    staticSDKGlueCodePath.add(path.resolve(externalApiPaths, './static/interop/bridge'));
+    staticSDKInteropDecl.add(path.resolve(externalApiPaths, './static/interop/declarations'));
   }
 
   dynamicSDKPath.add(declarationsPath);
