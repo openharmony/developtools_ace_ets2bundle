@@ -23,6 +23,8 @@ import {
 import { 
     ArkTSEvolutionModule,
     BuildType,
+    CodeInput,
+    CodeInputParams,
     DeclFilesConfig,
     DECLGEN_CACHE_FILE,
     Params,
@@ -34,7 +36,7 @@ import path from 'path';
 import * as ts from 'typescript';
 import { EXTNAME_D_ETS, EXTNAME_JS } from '../common/ark_define';
 import { getRealModulePath } from '../../system_api/api_check_utils';
-import { generateInteropDecls } from 'declgen/build/src/generateInteropDecls';
+import { generateInteropDecls, generateInteropDeclsFromCode } from 'declgen/build/src/generateInteropDecls';
 import { calculateFileHash } from '../utils';
 import { processInteropUI } from '../../../process_interop_ui';
 
@@ -47,7 +49,11 @@ export function run(param: Params): boolean {
             return;
         }
         if (task.buildTask === BuildType.DECLGEN) {
-            DeclfileProductor.getInstance().runDeclgen(moduleInfo);
+            if (task.codeInputs && task.codeInputs.length > 0) {
+                DeclfileProductor.getInstance().runDeclgenFromCode(moduleInfo, task.codeInputs);
+            } else {
+                DeclfileProductor.getInstance().runDeclgen(moduleInfo);
+            }
         } else if (task.buildTask === BuildType.INTEROP_CONTEXT) {
             DeclfileProductor.getInstance().writeDeclFileInfo(moduleInfo, task.mainModuleName);
         } else if (task.buildTask === BuildType.BYTE_CODE_HAR) {
@@ -170,6 +176,24 @@ class DeclfileProductor {
             ...hashMap
         };
         fs.writeFileSync(cachePath, JSON.stringify(newCache, null, 2));
+    }
+
+    runDeclgenFromCode(moduleInfo: ArkTSEvolutionModule, codeInputs: CodeInput[]): void {
+        const config: CodeInputParams = {
+            codeInputs: codeInputs,
+            outDir: moduleInfo.declgenV2OutPath,
+            rootDir: moduleInfo.modulePath,
+            customResolveModuleNames: resolveModuleNames,
+            customCompilerOptions: DeclfileProductor.compilerOptions,
+            includePaths: [moduleInfo.modulePath]
+        };
+
+        if (!fs.existsSync(config.outDir)) {
+            fs.mkdirSync(config.outDir, { recursive: true });
+        }
+
+        generateInteropDeclsFromCode(config);
+        processInteropUI(FileManager.arkTSModuleMap.get(moduleInfo.packageName)?.declgenV2OutPath);
     }
 
     writeDeclFileInfo(moduleInfo: ArkTSEvolutionModule, mainModuleName: string): void {
