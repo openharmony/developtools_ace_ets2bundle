@@ -334,3 +334,7 @@ export function createTypeNodeFromTsType(node: AstNode): AstNode | undefined {
     }
     return unpackNonNullableNode(typeAnnotation);
 }
+
+export function getJsdocStringFromDeclaration(decl: AstNode): string {
+    return withStringResult(global.es2panda._JsdocStringFromDeclaration(global.context, decl.peer)) ?? throwError(`failed to unpack (peer shouldn't be NULLPTR)`);
+}

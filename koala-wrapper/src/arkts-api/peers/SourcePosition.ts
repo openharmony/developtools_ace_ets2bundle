@@ -35,4 +35,8 @@ export class SourcePosition extends ArktsObject {
     line(): number {
         return global.es2panda._SourcePositionLine(global.context, this.peer);
     }
+
+    col(): number {
+        return global.es2panda._SourcePositionCol(global.context, this.peer);
+    }
 }

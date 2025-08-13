@@ -73,6 +73,10 @@ export class Program extends ArktsObject {
     get moduleName(): string {
         return unpackString(global.es2panda._ProgramModuleNameConst(global.context, this.peer));
     }
+    
+    get sourceFilePath(): string {
+        return unpackString(global.es2panda._ProgramSourceFilePathConst(global.context, this.peer));
+    }
 
     isASTLowered(): boolean {
         return global.es2panda._ProgramIsASTLoweredConst(global.context, this.peer);
