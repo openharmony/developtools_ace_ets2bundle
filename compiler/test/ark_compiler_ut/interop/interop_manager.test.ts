@@ -49,22 +49,22 @@ mocha.describe('test interop_manager file api', function () {
   mocha.before(function () {
     const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
     const dynamicSDKPath: Set<string> = new Set([
-      '/sdk/default/openharmony/ets/ets1.1/api',
-      '/sdk/default/openharmony/ets/ets1.1/arkts',
-      '/sdk/default/openharmony/ets/ets1.1/kits',
-      '/sdk/default/openharmony/ets/ets1.1/build-tools/ets-loader/declarations',
-      '/sdk/default/openharmony/ets/ets1.1/build-tools/ets-loader/component',
-      '/sdk/default/openharmony/ets/ets1.1/build-tools/components'
+      '/sdk/default/openharmony/ets/dynamic/api',
+      '/sdk/default/openharmony/ets/dynamic/arkts',
+      '/sdk/default/openharmony/ets/dynamic/kits',
+      '/sdk/default/openharmony/ets/dynamic/build-tools/ets-loader/declarations',
+      '/sdk/default/openharmony/ets/dynamic/build-tools/ets-loader/component',
+      '/sdk/default/openharmony/ets/dynamic/build-tools/components'
     ]);
     const staticSDKDeclPath: Set<string> = new Set([
-      '/sdk/default/openharmony/ets/ets1.2interop/declarations/kit',
-      '/sdk/default/openharmony/ets/ets1.2interop/declarations/api',
-      '/sdk/default/openharmony/ets/ets1.2interop/declarations/arkts'
+      '/sdk/default/openharmony/ets/static-interop/declarations/kit',
+      '/sdk/default/openharmony/ets/static-interop/declarations/api',
+      '/sdk/default/openharmony/ets/static-interop/declarations/arkts'
     ]);
     const staticSDKGlueCodePath: Set<string> = new Set([
-      '/sdk/default/openharmony/ets/ets1.2interop/bridge/kit',
-      '/sdk/default/openharmony/ets/ets1.2interop/bridge/api',
-      '/sdk/default/openharmony/ets/ets1.2interop/bridge/arkts'
+      '/sdk/default/openharmony/ets/static-interop/bridge/kit',
+      '/sdk/default/openharmony/ets/static-interop/bridge/api',
+      '/sdk/default/openharmony/ets/static-interop/bridge/arkts'
     ]);
     dependentModuleMap.set('application', {
       language: ARKTS_1_1,
@@ -139,35 +139,35 @@ mocha.describe('test interop_manager file api', function () {
   });
 
   mocha.it('1-1: test SDK path', function() {
-    const filePath = '/sdk/default/openharmony/ets/ets1.1/api/TestAPI.ets';
+    const filePath = '/sdk/default/openharmony/ets/dynamic/api/TestAPI.ets';
     const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
     expect(result?.languageVersion).to.equal(ARKTS_1_1);
     expect(result?.pkgName).to.equal('SDK');
   });
 
   mocha.it('1-2: test ets-loader/declarations path', function() {
-    const filePath = '/sdk/default/openharmony/ets/ets1.1/build-tools/ets-loader/declarations/TestAPI.ets';
+    const filePath = '/sdk/default/openharmony/ets/dynamic/build-tools/ets-loader/declarations/TestAPI.ets';
     const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
     expect(result?.languageVersion).to.equal(ARKTS_1_1);
     expect(result?.pkgName).to.equal('SDK');
   });
   
   mocha.it('1-3: test ets-loader/component path', function() {
-    const filePath = '/sdk/default/openharmony/ets/ets1.1/build-tools/ets-loader/component/TestAPI.d.ts';
+    const filePath = '/sdk/default/openharmony/ets/dynamic/build-tools/ets-loader/component/TestAPI.d.ts';
     const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
     expect(result?.languageVersion).to.equal(ARKTS_1_1);
     expect(result?.pkgName).to.equal('SDK');
   });
   
   mocha.it('1-4: test SDK glue code path', function() {
-    const filePath = '/sdk/default/openharmony/ets/ets1.2interop/bridge/arkts/TestAPI.d.ts';
+    const filePath = '/sdk/default/openharmony/ets/static-interop/bridge/arkts/TestAPI.d.ts';
     const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
     expect(result?.languageVersion).to.equal(ARKTS_1_2);
     expect(result?.pkgName).to.equal('SDK');
   });
 
   mocha.it('1-5: test SDK interop decl path', function() {
-    const filePath = '/sdk/default/openharmony/ets/ets1.2interop/declarations/kit/TestAPI.d.ts';
+    const filePath = '/sdk/default/openharmony/ets/static-interop/declarations/kit/TestAPI.d.ts';
     const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
     expect(result?.languageVersion).to.equal(ARKTS_1_2);
     expect(result?.pkgName).to.equal('SDK');
@@ -255,15 +255,15 @@ mocha.describe('test interop_manager file api', function () {
       });
     });
     const expectedStaticInteropDecl = new Set([
-      '/ets1.2/build-tools/interop/declarations/kits',
-      '/ets1.2/build-tools/interop/declarations/api',
-      '/ets1.2/build-tools/interop/declarations/arkts'
+      '/static/build-tools/interop/declarations/kits',
+      '/static/build-tools/interop/declarations/api',
+      '/static/build-tools/interop/declarations/arkts'
     ]);
 
     const expectedStaticGlueCode = new Set([
-      '/ets1.2/build-tools/interop/bridge/kits',
-      '/ets1.2/build-tools/interop/bridge/api',
-      '/ets1.2/build-tools/interop/bridge/arkts'
+      '/static/build-tools/interop/bridge/kits',
+      '/static/build-tools/interop/bridge/api',
+      '/static/build-tools/interop/bridge/arkts'
     ]);
     expect([...result.dynamicSDKPath]).to.have.deep.members([...expectedDynamicSDKPath]);
     expect([...result.staticSDKInteropDecl]).to.have.deep.members([...expectedStaticInteropDecl]);
