@@ -64,6 +64,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 message: this.messages.monitorUsedInObservedV2Class,
                 fix: () => {
                     return {
+                        title: 'Add @ObservedV2 annotation',
                         range: [node.startPosition, node.startPosition],
                         code: `@${PresetDecorators.OBSERVED_V2}\n`
                     };
@@ -77,6 +78,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 message: this.messages.monitorUsedInObservedV2Class,
                 fix: () => {
                     return {
+			title: 'Change @Observed to @ObservedV2',
                         range: [observedV1Decorator.startPosition, observedV1Decorator.endPosition],
                         code: `${PresetDecorators.OBSERVED_V2}`
                     };
@@ -99,6 +101,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 node: monitorDecorator,
                 message: this.messages.monitorUsedInComponentV2Struct,
                 fix: () => ({
+                    title: 'Add @ComponentV2 annotation',
                     range: [node.startPosition, node.startPosition],
                     code: `@${PresetDecorators.COMPONENT_V2}\n`
                 })
@@ -112,6 +115,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 message: this.messages.monitorUsedInComponentV2Struct,
                 fix: () => {
                     return {
+                        title: 'Change @Component to @ComponentV2',
                         range: [componentV1Decorator.startPosition, componentV1Decorator.endPosition],
                         code: `${PresetDecorators.COMPONENT_V2}`
                     };
@@ -179,6 +183,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 const endPosition = endPositions[endPositions.length - 1];
                 return {
+                    title: 'Remove the annotation',
                     range: [startPosition, endPosition],
                     code: ''
                 };
@@ -211,6 +216,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                     startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                     const endPosition = monitorDecorator.endPosition;
                     return {
+                        title: 'Remove the @Monitor annotation',
                         range: [startPosition, endPosition],
                         code: '',
                     };

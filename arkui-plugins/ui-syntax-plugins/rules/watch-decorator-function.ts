@@ -158,6 +158,7 @@ class WatchDecoratorFunctionRule extends AbstractUISyntaxRule {
                 const startPosition = member.endPosition;
                 const endPosition = member.endPosition;
                 return {
+                    title: 'Add a watch function to the custom component',
                     range: [startPosition, endPosition],
                     code: `\n${parameterName}(){\n}`,
                 };
@@ -181,6 +182,7 @@ class WatchDecoratorFunctionRule extends AbstractUISyntaxRule {
                 const startPosition = parameters.startPosition;
                 const endPosition = parameters.endPosition;
                 return {
+                    title: 'Remove the parameters',
                     range: [startPosition, endPosition],
                     code: ``,
                 };
