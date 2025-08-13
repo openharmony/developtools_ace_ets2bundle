@@ -46,19 +46,9 @@ import { LinkSourceType as LinkSourceType } from "arkui.stateManagement.decorato
 
 import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
-import { DatePickerAttribute as DatePickerAttribute } from "arkui.component.datePicker";
-
-import { DatePickerImpl as DatePickerImpl } from "arkui.component.datePicker";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
-
-import { ButtonImpl as ButtonImpl } from "arkui.component.button";
-
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { NavInterface as NavInterface } from "arkui.UserView";
 
@@ -104,30 +94,24 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
-      return;
-    }), @memo() (() => {
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("child increase the year by 1", undefined).onClick(((e: ClickEvent) => {
+    Column(undefined, undefined, @memo() (() => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
+        instance.onClick(((e: ClickEvent) => {
           this.selectedDate.setFullYear(((this.selectedDate.getFullYear()) + (1)));
-        })).applyAttributesFinish();
+        }));
         return;
-      }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("child update the new date", undefined).margin(10).onClick(((e: ClickEvent) => {
+      }), "child increase the year by 1", undefined, undefined);
+      Button(@memo() ((instance: ButtonAttribute): void => {
+        instance.margin(10).onClick(((e: ClickEvent) => {
           this.selectedDate = new Date("2023-09-09");
-        })).applyAttributesFinish();
+        }));
         return;
-      }), undefined);
-      DatePickerImpl(@memo() ((instance: DatePickerAttribute): void => {
-        instance.setDatePickerOptions({
-          start: new Date("1970-1-1"),
-          end: new Date("2100-1-1"),
-          selected: this.selectedDate,
-        }).applyAttributesFinish();
-        return;
-      }), undefined);
+      }), "child update the new date", undefined, undefined);
+      DatePicker(undefined, {
+        start: new Date("1970-1-1"),
+        end: new Date("2100-1-1"),
+        selected: this.selectedDate,
+      }, undefined);
     }));
   }
   
@@ -154,30 +138,24 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
-      return;
-    }), @memo() (() => {
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("parent increase the month by 1", undefined).margin(10).onClick(((e: ClickEvent) => {
+    Column(undefined, undefined, @memo() (() => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
+        instance.margin(10).onClick(((e: ClickEvent) => {
           this.parentSelectedDate.setMonth(((this.parentSelectedDate.getMonth()) + (1)));
-        })).applyAttributesFinish();
+        }));
         return;
-      }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("parent update the new date", undefined).margin(10).onClick(((e: ClickEvent) => {
+      }), "parent increase the month by 1", undefined, undefined);
+      Button(@memo() ((instance: ButtonAttribute): void => {
+        instance.margin(10).onClick(((e: ClickEvent) => {
           this.parentSelectedDate = new Date("2023-07-07");
-        })).applyAttributesFinish();
+        }));
         return;
-      }), undefined);
-      DatePickerImpl(@memo() ((instance: DatePickerAttribute): void => {
-        instance.setDatePickerOptions({
-          start: new Date("1970-1-1"),
-          end: new Date("2100-1-1"),
-          selected: this.parentSelectedDate,
-        }).applyAttributesFinish();
-        return;
-      }), undefined);
+      }), "parent update the new date", undefined, undefined);
+      DatePicker(undefined, {
+        start: new Date("1970-1-1"),
+        end: new Date("2100-1-1"),
+        selected: this.parentSelectedDate,
+      }, undefined);
       DateComponent._instantiateImpl(undefined, (() => {
         return new DateComponent();
       }), {

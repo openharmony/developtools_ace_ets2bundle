@@ -69,10 +69,6 @@ import { SimpleStruct as SimpleStruct } from "./utils/simple-struct";
 const expectedCheckedScript: string = `
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { TextAttribute as TextAttribute } from "arkui.component.text";
-
-import { TextImpl as TextImpl } from "arkui.component.text";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Text as Text } from "@ohos.arkui.component";
@@ -100,10 +96,7 @@ function main() {}
     SimpleStruct._instantiateImpl(undefined, (() => {
       return new SimpleStruct();
     }), undefined, undefined, @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions("a", undefined).applyAttributesFinish();
-        return;
-      }), undefined);
+      Text(undefined, "a", undefined, undefined);
     }));
   }
   

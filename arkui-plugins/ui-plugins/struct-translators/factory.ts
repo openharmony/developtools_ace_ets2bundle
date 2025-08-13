@@ -59,7 +59,6 @@ import {
     getNoTransformationMembersInClass,
 } from './utils';
 import { collectStateManagementTypeImport, generateThisBacking, hasDecorator } from '../property-translators/utils';
-import { ComponentAttributeCache, isComponentAttributeInterface } from '../builder-lambda-translators/utils';
 import { ProjectConfig } from '../../common/plugin-context';
 import { ImportCollector } from '../../common/import-collector';
 import {
@@ -326,10 +325,7 @@ export class factory {
     }
 
     /**
-     * add following declared methods in `CommonMethod` interface:
-     * - `animationStart` and `animationStop` for `Animation` component;
-     * - `__createOrSetAnimatableProperty` for `@AnimatableExtend` function with receiver;
-     * - `applyAttributesFinish` for component's style set options method.
+     * add headers for animation & @AnimatableExtend in CommonMethod
      */
     static modifyExternalComponentCommon(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
         if (!node.body) {
@@ -338,9 +334,7 @@ export class factory {
         const animationStart = factory.createAnimationMethod(AnimationNames.ANIMATION_START);
         const animationStop = factory.createAnimationMethod(AnimationNames.ANIMATION_STOP);
         const createOrSetAniProperty = factory.createOrSetAniProperty();
-        const applyAttributesFinish = BuilderLambdaFactory.createDeclaredApplyAttributesFinish();
         const updatedBody = arkts.factory.updateInterfaceBody(node.body!, [
-            applyAttributesFinish,
             animationStart,
             animationStop,
             createOrSetAniProperty,
@@ -762,9 +756,8 @@ export class factory {
         if (!node.id || !node.body) {
             return node;
         }
-        const newNode = factory.tranformInterfaceBuildMember(node);
-        if (externalSourceName === ARKUI_COMPONENT_COMMON_SOURCE_NAME && newNode.id!.name === 'CommonMethod') {
-            return factory.modifyExternalComponentCommon(newNode);
+        if (externalSourceName === ARKUI_COMPONENT_COMMON_SOURCE_NAME && node.id.name === 'CommonMethod') {
+            return factory.modifyExternalComponentCommon(node);
         }
         if (isCustomDialogControllerOptions(node, externalSourceName)) {
             return factory.transformControllerInterfaceType(node);
@@ -772,10 +765,7 @@ export class factory {
         if (isCustomComponentInterface(node)) {
             return factory.tranformCustomComponentInterfaceMembers(node);
         }
-        if (isComponentAttributeInterface(newNode)) {
-            return BuilderLambdaFactory.addDeclaredSetMethodsInAttributeInterface(newNode);
-        }
-        return newNode;
+        return factory.tranformInterfaceBuildMember(node);
     }
 
     static tranformInterfaceBuildMember(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
@@ -844,14 +834,9 @@ export class factory {
             }
             return member;
         });
-        if (ComponentAttributeCache.getInstance().isCollected()) {
-            const record = ComponentAttributeCache.getInstance().getAllComponentRecords().at(0)!;
-            const name = ComponentAttributeCache.getInstance().attributeName!;
-            const typeParams = ComponentAttributeCache.getInstance().attributeTypeParams;
-            updatedBody.push(BuilderLambdaFactory.createDeclaredComponentFunctionFromRecord(record, name, typeParams));
-        }
+        let newStatements: arkts.AstNode[] = [];
         if (externalSourceName === ARKUI_BUILDER_SOURCE_NAME) {
-            updatedBody.push(...BuilderLambdaFactory.addConditionBuilderDecls());
+            newStatements.push(...BuilderLambdaFactory.addConditionBuilderDecls());
         }
         return arkts.factory.updateClassDeclaration(
             node,
@@ -863,7 +848,7 @@ export class factory {
                 node.definition.implements,
                 undefined,
                 node.definition.super,
-                updatedBody,
+                [...updatedBody, ...newStatements],
                 node.definition.modifiers,
                 arkts.classDefinitionFlags(node.definition)
             )

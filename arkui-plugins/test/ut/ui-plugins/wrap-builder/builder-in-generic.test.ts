@@ -41,10 +41,8 @@ const expectedUIScript: string = `
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from \"arkui.stateManagement.decorator\";
 import { IStateDecoratedVariable as IStateDecoratedVariable } from \"arkui.stateManagement.decorator\";
 import { RowAttribute as RowAttribute } from \"arkui.component.row\";
-import { RowImpl as RowImpl } from "arkui.component.row";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 import { TextAttribute as TextAttribute } from \"arkui.component.text\";
-import { TextImpl as TextImpl } from "arkui.component.text";
 import { NavInterface as NavInterface } from \"arkui.UserView\";
 import { PageLifeCycle as PageLifeCycle } from \"arkui.component.customComponent\";
 import { EntryPoint as EntryPoint } from \"arkui.UserView\";
@@ -64,16 +62,16 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     integratedHsp: \"false\",
 } as NavInterface));
 @memo() function MyBuilder(value: string, size: number) {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
+    Text(@memo() ((instance: TextAttribute): void => {
+        instance.fontSize(size);
         return;
-    }), undefined);
+    }), value, undefined, undefined);
 }
 @memo() function YourBuilder(value: string, size: number) {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink).applyAttributesFinish();
+    Text(@memo() ((instance: TextAttribute): void => {
+        instance.fontSize(size).fontColor(Color.Pink);
         return;
-    }), undefined);
+    }), value, undefined, undefined);
 }
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
     public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
@@ -89,10 +87,10 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
         this.__backing_message!.set(value);
     }
     @memo() public build() {
-        RowImpl(@memo() ((instance: RowAttribute): void => {
-            instance.setRowOptions(undefined).height(\"100%\").applyAttributesFinish();
+        Row(@memo() ((instance: RowAttribute): void => {
+            instance.height(\"100%\");
             return;
-        }), @memo() (() => {
+        }), undefined, @memo() (() => {
             globalBuilder(this.message, 50);
             ForEach(((): Array<@Builder() ((value: string, size: number)=> void)> => {
                 return builderArr;
@@ -128,10 +126,8 @@ import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from \"arkui.stateManagement.decorator\";
 import { IStateDecoratedVariable as IStateDecoratedVariable } from \"arkui.stateManagement.decorator\";
 import { RowAttribute as RowAttribute } from \"arkui.component.row\";
-import { RowImpl as RowImpl } from "arkui.component.row";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 import { TextAttribute as TextAttribute } from \"arkui.component.text\";
-import { TextImpl as TextImpl } from "arkui.component.text";
 import { NavInterface as NavInterface } from \"arkui.UserView\";
 import { PageLifeCycle as PageLifeCycle } from \"arkui.component.customComponent\";
 import { EntryPoint as EntryPoint } from \"arkui.UserView\";
@@ -157,19 +153,19 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
         __memo_scope.cached;
         return;
     }
-    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+    Text(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
-        __memo_parameter_instance.value.setTextOptions(__memo_parameter_value.value, undefined).fontSize(__memo_parameter_size.value).applyAttributesFinish();
+        __memo_parameter_instance.value.fontSize(__memo_parameter_size.value);
         {
             __memo_scope.recache();
             return;
         }
-    }), undefined);
+    }), __memo_parameter_value.value, undefined, undefined);
     {
         __memo_scope.recache();
         return;
@@ -182,19 +178,19 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
         __memo_scope.cached;
         return;
     }
-    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+    Text(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
-        __memo_parameter_instance.value.setTextOptions(__memo_parameter_value.value, undefined).fontSize(__memo_parameter_size.value).fontColor(Color.Pink).applyAttributesFinish();
+        __memo_parameter_instance.value.fontSize(__memo_parameter_size.value).fontColor(Color.Pink);
         {
             __memo_scope.recache();
             return;
         }
-    }), undefined);
+    }), __memo_parameter_value.value, undefined, undefined);
     {
         __memo_scope.recache();
         return;
@@ -219,19 +215,19 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             __memo_scope.cached;
             return;
         }
-        RowImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: RowAttribute): void => {
+        Row(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: RowAttribute): void => {
             const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
             const __memo_parameter_instance = __memo_scope.param(0, instance);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
             }
-            __memo_parameter_instance.value.setRowOptions(undefined).height("100%").applyAttributesFinish();
+            __memo_parameter_instance.value.height(\"100%\");
             {
                 __memo_scope.recache();
                 return;
             }
-        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        }), undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;

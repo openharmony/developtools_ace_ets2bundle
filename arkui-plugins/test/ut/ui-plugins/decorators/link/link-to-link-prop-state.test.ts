@@ -48,15 +48,8 @@ import { LinkSourceType as LinkSourceType } from "arkui.stateManagement.decorato
 
 import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { TextInputAttribute as TextInputAttribute } from "arkui.component.textInput";
-
-import { TextInputImpl as TextInputImpl } from "arkui.component.textInput";
-
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -87,16 +80,10 @@ function main() {}
   }
   
   @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
-      return;
-    }), @memo() (() => {
-      TextInputImpl(@memo() ((instance: TextInputAttribute): void => {
-        instance.setTextInputOptions({
-          text: this.text1,
-        }).applyAttributesFinish();
-        return;
-      }), undefined);
+    Column(undefined, undefined, @memo() (() => {
+      TextInput(undefined, {
+        text: this.text1,
+      }, undefined);
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {
@@ -177,12 +164,9 @@ function main() {}
   }
   
   @memo() public build() {
-    TextInputImpl(@memo() ((instance: TextInputAttribute): void => {
-      instance.setTextInputOptions({
-        text: this.childText,
-      }).applyAttributesFinish();
-      return;
-    }), undefined);
+    TextInput(undefined, {
+      text: this.childText,
+    }, undefined);
   }
   
   private constructor() {}

@@ -127,10 +127,6 @@ export enum InnerComponentNames {
     FOR_EACH = 'ForEach',
 }
 
-export enum InnerComponentAttributes {
-    COMMON_METHOD = 'CommonMethod',
-}
-
 export enum DecoratorNames {
     STATE = 'State',
     STORAGE_LINK = 'StorageLink',
