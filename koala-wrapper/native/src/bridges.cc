@@ -417,6 +417,14 @@ KInt impl_SourcePositionLine(KNativePointer context, KNativePointer instance)
 }
 KOALA_INTEROP_2(SourcePositionLine, KInt, KNativePointer, KNativePointer);
 
+KInt impl_SourcePositionCol(KNativePointer context, KNativePointer instance)
+{
+    auto&& _context_ = reinterpret_cast<es2panda_Context *>(context);
+    auto&& _instance_ = reinterpret_cast<es2panda_SourcePosition *>(instance);
+    return GetImpl()->SourcePositionCol(_context_, _instance_);
+}
+KOALA_INTEROP_2(SourcePositionCol, KInt, KNativePointer, KNativePointer);
+
 KNativePointer impl_CreateSourceRange(KNativePointer context, KNativePointer start, KNativePointer end)
 {
     auto&& _context_ = reinterpret_cast<es2panda_Context *>(context);
@@ -739,3 +747,23 @@ KNativePointer impl_CreateTypeNodeFromTsType(KNativePointer context, KNativePoin
     return _typeAnnotation;
 }
 KOALA_INTEROP_2(CreateTypeNodeFromTsType, KNativePointer, KNativePointer, KNativePointer);
+
+static KNativePointer impl_JsdocStringFromDeclaration(KNativePointer contextPtr, KNativePointer decl)
+{
+    auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    auto node = reinterpret_cast<es2panda_AstNode*>(decl);
+    
+    auto result = GetImpl()->JsdocStringFromDeclaration(context, node);
+    return new std::string(result);
+}
+KOALA_INTEROP_2(JsdocStringFromDeclaration, KNativePointer, KNativePointer, KNativePointer);
+
+static KNativePointer impl_ProgramSourceFilePathConst(KNativePointer contextPtr, KNativePointer instancePtr)
+{
+    auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    auto program = reinterpret_cast<es2panda_Program*>(instancePtr);
+
+    auto result = GetImpl()->ProgramSourceFilePathConst(context, program);
+    return new std::string(result);
+}
+KOALA_INTEROP_2(ProgramSourceFilePathConst, KNativePointer, KNativePointer, KNativePointer);
