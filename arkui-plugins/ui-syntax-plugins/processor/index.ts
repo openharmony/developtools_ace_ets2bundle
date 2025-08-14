@@ -82,6 +82,7 @@ class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
             const suggestionInfo: arkts.SuggestionInfo = arkts.SuggestionInfo.create(
                 suggestionKind,
                 fixSuggestion.code,
+                fixSuggestion.title ? fixSuggestion.title : '',
                 sourceRange
             );
             arkts.Diagnostic.logDiagnosticWithSuggestion(diagnosticInfo, suggestionInfo);
