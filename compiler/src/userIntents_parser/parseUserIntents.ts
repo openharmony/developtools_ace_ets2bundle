@@ -55,6 +55,11 @@ interface methodParametersInfo {
   args: ts.NodeArray<ts.Expression>;
 }
 
+interface schemaVerifyType {
+  type: string;
+  isEntity?: boolean;
+}
+
 class ParseIntent {
   private checker: ts.TypeChecker;
   public intentData: object[];
@@ -249,7 +254,7 @@ class ParseIntent {
         'decoratorType': COMPONENT_USER_INTENTS_DECORATOR_FORM
       });
       this.analyzeDecoratorArgs(args, intentObj, intentFormInfoChecker);
-      const properties: Record<string, string> = this.parseClassNode(node, intentObj.intentName);
+      const properties: Record<string, schemaVerifyType> = this.parseClassNode(node, intentObj.intentName, COMPONENT_USER_INTENTS_DECORATOR_FORM);
       this.processFormInfo(node, this.currentFilePath, pkgParams, intentObj);
       this.schemaValidateSync(properties, intentObj.parameters);
       this.createObfuscation(node);
@@ -283,7 +288,7 @@ class ParseIntent {
       });
       delete intentObj.decoratorClass;
       this.analyzeDecoratorArgs(args, intentObj, IntentEntityInfoChecker);
-      const properties: Record<string, string> = this.parseClassNode(node, undefined);
+      const properties: Record<string, schemaVerifyType> = this.parseClassNode(node, undefined, COMPONENT_USER_INTENTS_DECORATOR_ENTITY);
       const entityId: string = this.getEntityId(node);
       Object.assign(properties, {
         'entityId': entityId
@@ -468,7 +473,7 @@ class ParseIntent {
         'decoratorType': COMPONENT_USER_INTENTS_DECORATOR_ENTRY
       });
       this.analyzeDecoratorArgs<IntentEntryInfo>(args, intentObj, intentEntryInfoChecker);
-      const properties: Record<string, string> = this.parseClassNode(node, intentObj.intentName);
+      const properties: Record<string, schemaVerifyType> = this.parseClassNode(node, intentObj.intentName, COMPONENT_USER_INTENTS_DECORATOR_ENTRY);
       this.schemaValidateSync(properties, intentObj.parameters);
       this.analyzeBaseClass(node, pkgParams, intentObj, COMPONENT_USER_INTENTS_DECORATOR_ENTRY);
       this.createObfuscation(node);
@@ -804,12 +809,19 @@ class ParseIntent {
       genericName = genericSymbol.getName();
       genericSource = genericSymbol.declarations?.[0]?.getSourceFile().fileName;
       recordGenericSource = path.relative(projectConfig.moduleName, genericSource).replace(/\\/g, '/');
+      if (this.entityOwnerMap.has(intentObj.intentName)) {
+        const entityNames: string[] = this.entityOwnerMap.get(intentObj.intentName);
+        entityNames.push(genericName);
+        this.entityOwnerMap.set(intentObj.intentName, entityNames);
+      } else {
+        this.entityOwnerMap.set(intentObj.intentName, [genericName]);
+      }
     } else {
       genericName = this.checker.typeToString(genericType);
       const parentTypeNode: ts.Node = arg.parent;
       if (ts.isTypeReferenceNode(parentTypeNode)) {
-        const contextualType: ts.Type = this.checker.getContextualType(parentTypeNode);
-        const symbol: ts.Type = contextualType?.getSymbol();
+        const contextualType: ts.Type = this.checker.getTypeAtLocation(parentTypeNode);
+        const symbol: ts.Symbol = contextualType?.getSymbol();
         genericSource = symbol?.declarations?.[0]?.getSourceFile().fileName;
       }
       if (!genericSource && this.isPrimitiveType(genericType)) {
@@ -821,13 +833,6 @@ class ParseIntent {
         'typeName': genericName,
         'definitionFilePath': recordGenericSource
       });
-    if (this.entityOwnerMap.has(intentObj.intentName)) {
-      const entityNames: string[] = this.entityOwnerMap.get(intentObj.intentName);
-      entityNames.push(genericName);
-      this.entityOwnerMap.set(intentObj.intentName, entityNames);
-    } else {
-      this.entityOwnerMap.set(intentObj.intentName, [genericName]);
-    }
     ClassInheritanceInfo.generics.push(generic);
   }
 
@@ -839,12 +844,12 @@ class ParseIntent {
     ) !== 0;
   }
 
-  private parseClassNode(node: ts.ClassDeclaration, intentName: string): Record<string, string> {
-    const mergedObject: Record<string, string> = {};
+  private parseClassNode(node: ts.ClassDeclaration, intentName: string, decoratorType: string): Record<string, schemaVerifyType> {
+    const mergedObject: Record<string, schemaVerifyType> = {};
     const type: ts.Type = this.checker.getTypeAtLocation(node);
     const propertiesOfType: ts.Symbol[] = this.checker.getPropertiesOfType(type);
     propertiesOfType.forEach((prop) => {
-      const objItem: Record<string, string> = this.processProperty(prop, intentName);
+      const objItem: Record<string, schemaVerifyType> = this.processProperty(prop, intentName, decoratorType);
       Object.assign(mergedObject, objItem);
     });
     return mergedObject;
@@ -868,22 +873,38 @@ class ParseIntent {
     return entityId;
   }
 
-  private processProperty(prop: ts.Symbol, intentName: string): Record<string, string> {
+  private processProperty(prop: ts.Symbol, intentName: string, decoratorType: string): Record<string, schemaVerifyType> {
     const propType: ts.Type = this.checker.getTypeOfSymbol(prop);
     const { category } = this.getTypeCategory(propType);
-    const obj: Record<string, string> = {};
+    const obj: Record<string, schemaVerifyType> = {};
     const propName: string = prop.getName();
+    const entryBlackList: string[] = ['executeMode', 'context', 'windowStage', 'uiExtensionSession', 'onExecute'];
+    const formBlackList: string[] = ['context'];
+    if (decoratorType === COMPONENT_USER_INTENTS_DECORATOR_ENTRY && entryBlackList.includes(propName)) {
+      return obj;
+    } else if (decoratorType === COMPONENT_USER_INTENTS_DECORATOR_ENTRY && formBlackList.includes(propName)) {
+      return obj;
+    }
+    const tempschemaVerifyType: schemaVerifyType = {
+      type: '',
+      isEntity: false
+    };
     if (category === 'object') {
+      tempschemaVerifyType.type = 'object';
       if (this.isEntity(propType, intentName)) {
-        obj[propName] = 'object';
+        tempschemaVerifyType.isEntity = true;
       }
     } else if (category === 'array') {
       if (this.isEntity(propType, intentName)) {
-        obj[propName] = 'array';
+        tempschemaVerifyType.type = 'array';
+        tempschemaVerifyType.isEntity = true;
       }
     } else {
-      obj[propName] = this.checker.typeToString(propType);
+      tempschemaVerifyType.type = this.checker.typeToString(propType);
     }
+    Object.assign(obj, {
+      [propName]: tempschemaVerifyType
+    });
     return obj;
   }
 
@@ -891,7 +912,6 @@ class ParseIntent {
     let propDeclaration: ts.Declaration;
     let elementType: ts.Type | undefined;
     const typeSymbol: ts.Symbol = propType.getSymbol();
-    const propertyClassName: string = typeSymbol.getName();
     if (this.isArrayType(propType)) {
       elementType = (propType as ts.TypeReference).typeArguments?.[0];
       propDeclaration = elementType.getSymbol()?.getDeclarations()[0];
@@ -1424,14 +1444,14 @@ class ParseIntent {
     });
   }
 
-  private schemaValidationRequiredRule(schemaData: Record<string, string>, schemaObj: object): void {
+  private schemaValidationRequiredRule(schemaData: Record<string, schemaVerifyType>, schemaObj: object): void {
     const reqData: Map<string, boolean> = new Map();
     schemaObj.required.forEach(key => reqData.set(key, true));
     if (schemaObj.properties) {
       const paramsSchema: object = schemaObj.properties;
       const keyArr: string[] = Object.keys(paramsSchema);
       keyArr.forEach(key => {
-        if (!schemaData[key]?.type && reqData.get(key)) {
+        if (!schemaData[key] && reqData.get(key)) {
           const errorMessage: string = `A required field in the class property is missing.`;
           this.transformLog.push({
             type: LogType.ERROR,
@@ -1447,7 +1467,7 @@ class ParseIntent {
     }
   }
 
-  private schemaPropertiesValidation(schemaData: Record<string, string>, schemaObj: object): void {
+  private schemaPropertiesValidation(schemaData: Record<string, schemaVerifyType>, schemaObj: object): void {
     if (schemaObj.properties) {
       Object.entries(schemaObj.properties).forEach(([key, value]) => {
         if ((schemaData[key]?.type && value.type !== schemaData[key].type) ||
@@ -1467,7 +1487,7 @@ class ParseIntent {
     }
   }
 
-  private schemaValidateRules(schemaData: Record<string, string>, schemaObj: object): void {
+  private schemaValidateRules(schemaData: Record<string, schemaVerifyType>, schemaObj: object): void {
     const schemaKeys: string[] = Object.keys(schemaData);
     if (schemaObj.oneOf) {
       let count: number = 0;
@@ -1519,7 +1539,7 @@ class ParseIntent {
     }
   }
 
-  private schemaValidateSync(schemaData: Record<string, string>, schemaObj: object): void {
+  private schemaValidateSync(schemaData: Record<string, schemaVerifyType>, schemaObj: object): void {
     if (!schemaObj) {
       return;
     }
@@ -1555,7 +1575,7 @@ class ParseIntent {
     this.schemaValidateRules(schemaData, schemaObj);
   }
 
-  private schemaAdditionalPropertiesValidation(schemaData, schemaProps): void {
+  private schemaAdditionalPropertiesValidation(schemaData: Record<string, schemaVerifyType>, schemaProps: object): void {
     for (const key of Object.keys(schemaData)) {
       if (!schemaProps[key]) {
         const errorMessage: string = `The class property includes parameters not defined in the JSON Schema.`;
@@ -1597,19 +1617,19 @@ class ParseIntent {
       return;
     }
     this.processEntityOwnerMap();
-    const intentNameMappingMap = new Map();
+    const intentNameMappingMap: Map<string, object> = new Map();
     this.intentData.forEach(data => {
       intentNameMappingMap.set(data.intentName, data);
     });
-    for (const [intentName, entityIds] of this.entityOwnerMap.entries()) {
+    for (const [intentName, entityClassNames] of this.entityOwnerMap.entries()) {
       const targetIntent: object = intentNameMappingMap.get(intentName);
       if (!targetIntent) {
         continue;
       }
       const matchedEntities: object[] = [];
-      entityIds.forEach(id => {
-        if (this.entityMap.has(id)) {
-          matchedEntities.push(this.entityMap.get(id));
+      entityClassNames.forEach(entityClassName => {
+        if (this.entityMap.has(entityClassName)) {
+          matchedEntities.push(this.entityMap.get(entityClassName));
         }
       });
       if (matchedEntities.length !== 0) {
@@ -1622,17 +1642,23 @@ class ParseIntent {
   public writeUserIntentJsonFile(harIntentDataObj: object, share: object): void {
     const cachePath: string =
       path.join(projectConfig.cachePath, 'insight_compile_cache.json'); // Compiled cache file
-    if (!(fs.existsSync(cachePath) || this.intentData.length > 0 || Object.keys(harIntentDataObj).length !== 0)) {
+    if (!projectConfig.aceProfilePath || !(fs.existsSync(cachePath) || this.intentData.length > 0 || Object.keys(harIntentDataObj).length !== 0)) {
       return;
     }
-    this.verifyInheritanceChain();
     const mergedData: object = this.processIntentData(harIntentDataObj);
-    const cacheSourceMapPath: string =
-      path.join(projectConfig.aceProfilePath, 'insight_intent.json'); // The user's intents configuration file
+    const cacheSourceMapPath: string = path.join(projectConfig.aceProfilePath, 'insight_intent.json'); // The user's intents configuration file
     try {
       if (Object.keys(mergedData).length > 0) {
+        const cacheContent: object = {
+          'extractInsightIntents': this.intentData,
+          'entityOwnerMap': Object.fromEntries(this.entityOwnerMap.entries()),
+          'entityMap': Object.fromEntries(this.entityMap.entries()),
+          'heritageClassSet': Object.fromEntries(this.heritageClassSet.entries()),
+          'entityHeritageClassSet': Object.fromEntries(this.EntityHeritageClassSet.entries()),
+          'entityExtendsMap': Object.fromEntries(this.EntityExtendsMap.entries())
+        };
         fs.writeFileSync(cacheSourceMapPath, JSON.stringify(mergedData, null, 2), 'utf-8');
-        fs.writeFileSync(cachePath, JSON.stringify({ 'extractInsightIntents': this.intentData }, null, 2), 'utf-8');
+        fs.writeFileSync(cachePath, JSON.stringify(cacheContent, null, 2), 'utf-8');
       } else if (fs.existsSync(cacheSourceMapPath)) {
         fs.unlinkSync(cacheSourceMapPath);
       }
@@ -1650,9 +1676,7 @@ class ParseIntent {
     } catch (e) {
       const errorMessage: string = `Failed to write to the intent configuration file.`;
       this.transformLog.push({
-        type: LogType.ERROR,
-        message: errorMessage,
-        pos: this.currentNode.getStart(),
+        type: LogType.ERROR, message: errorMessage, pos: this.currentNode.getStart(),
         code: '10110025',
         description: 'InsightIntent Compiler Error',
         solutions: ['Check file permissions, free disk space, or restart DevEco Studio']
@@ -1667,20 +1691,63 @@ class ParseIntent {
     }
   }
 
-  private processIntentData(harIntentDataObj: object): object {
-    this.matchEntities();
-    if (!projectConfig.aceProfilePath) {
-      const errorMessage: string = `Internal error: aceProject not found due to project configuration issues.`;
-      this.transformLog.push({
-        type: LogType.ERROR,
-        message: errorMessage,
-        pos: this.currentNode.getStart(),
-        code: '10110026',
-        description: 'InsightIntent Compiler Error',
-        solutions: ["Verify the project's compile configuration"]
-      });
-      return null;
+  private processUpdateEntities(cacheDataObj: object): void {
+    const decoratorFileMapping: Set<string> = new Set(this.updatePageIntentObj.keys());
+    if (cacheDataObj.entityOwnerMap && Object.keys(cacheDataObj.entityOwnerMap || {}).length > 0) {
+      const cacheEntityOwnerMap: Map<string, string[]> = cacheDataObj.entityOwnerMap as Map<string, string[]>;
+      for (const [intentName, entityClassNames] of Object.entries(cacheEntityOwnerMap)) {
+        if (!this.entityOwnerMap.has(intentName)) {
+          this.entityOwnerMap.set(intentName, entityClassNames);
+        }
+      }
     }
+    if (cacheDataObj.entityMap && Object.keys(cacheDataObj.entityMap || {}).length > 0) {
+      const cacheEntityMap: Map<string, object> = cacheDataObj.entityMap as Map<string, object>;
+      for (const [className, entityObj] of Object.entries(cacheEntityMap)) {
+        if (!decoratorFileMapping.has(entityObj.decoratorFile)) {
+          this.entityMap.set(entityObj.className, entityObj);
+        }
+      }
+    }
+    this.processUpdateHeritageVerify(cacheDataObj);
+    this.intentData.map(userIntent => {
+      if (userIntent.entities) {
+        delete userIntent.entities;
+      }
+    });
+  }
+
+  private processUpdateHeritageVerify(cacheDataObj: object): void {
+    const decoratorFileMapping: Set<string> = new Set(this.updatePageIntentObj.keys());
+    if (cacheDataObj.heritageClassSet && Object.keys(cacheDataObj.heritageClassSet || {}).length > 0) {
+      const cacheHeritageClassSet: Set<string> = cacheDataObj.heritageClassSet as Set<string>;
+      for (const entityPathInfo of Object.values(cacheHeritageClassSet)) {
+        const decoratorFilePath: string = entityPathInfo.split('_').pop();
+        if (!decoratorFileMapping.has(decoratorFilePath)) {
+          this.heritageClassSet.add(entityPathInfo);
+        }
+      }
+    }
+    if (cacheDataObj.entityHeritageClassSet && Object.keys(cacheDataObj.entityHeritageClassSet || {}).length > 0) {
+      const cacheEntityExtendsMap: Set<string> = cacheDataObj.entityHeritageClassSet as Set<string>;
+      for (const entityPathInfo of Object.values(cacheEntityExtendsMap)) {
+        const decoratorFilePath: string = entityPathInfo.split('_').pop();
+        if (decoratorFileMapping.has(decoratorFilePath)) {
+          this.EntityHeritageClassSet.add(entityPathInfo);
+        }
+      }
+    }
+    if (cacheDataObj.entityExtendsMap && Object.keys(cacheDataObj.entityExtendsMap || {}).length > 0) {
+      const cacheEntityExtendsMap: Map<string, string> = cacheDataObj.entityExtendsMap as Map<string, string>;
+      for (const [baseClassName, parentClassName] of Object.entries(cacheEntityExtendsMap)) {
+        if (!this.EntityExtendsMap.has(baseClassName)) {
+          this.EntityExtendsMap.set(baseClassName, parentClassName);
+        }
+      }
+    }
+  }
+
+  private processIntentData(harIntentDataObj: object): object {
     const cacheSourceMapPath: string =
       path.join(projectConfig.aceProfilePath, 'insight_intent.json'); // The user's intents configuration file
     const cachePath: string = path.join(projectConfig.cachePath, 'insight_compile_cache.json'); // Compiled cache file
@@ -1697,7 +1764,10 @@ class ParseIntent {
         insightIntents.push(...insightIntent);
       });
       this.intentData = insightIntents;
+      this.processUpdateEntities(cacheDataObj);
     }
+    this.verifyInheritanceChain();
+    this.matchEntities();
     let writeJsonData: object = {};
     if (fs.existsSync(cacheSourceMapPath)) {
       const originIntents: string = fs.readFileSync(cacheSourceMapPath, 'utf8');
