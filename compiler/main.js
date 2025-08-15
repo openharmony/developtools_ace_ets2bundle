@@ -155,6 +155,7 @@ function loadEntryObj(projectConfig) {
     setFaTestRunnerFile(projectConfig);
   }
   if (process.env.aceModuleJsonPath) {
+    setStartupPagesForObf(projectConfig);
     setIntentEntryPages(projectConfig);
     setAbilityPages(projectConfig);
     setStageTestRunnerFile(projectConfig);
@@ -206,11 +207,42 @@ function loadEntryObj(projectConfig) {
   }
 }
 
+function readJsonFile(filePath) {
+  try {
+    if (filePath && fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath).toString());
+    }
+  } catch (e) {
+    throw Error('\x1B[31m' + `BUIDERROR: the ${filePath} file format is invalid.` +
+      '\x1B[39m').message;
+  }
+  return null;
+}
+
+function setStartupPagesForObf(projectConfig) {
+  const moduleJson = readJsonFile(projectConfig.aceModuleJsonPath);
+  if (moduleJson && moduleJson.module && moduleJson.module.appStartup) {
+    const startupFileName = `${moduleJson.module.appStartup.replace(/\$profile\:/, '')}.json`;
+    const startupFilePath = path.resolve(projectConfig.aceProfilePath, startupFileName);
+    const startupConfig = readJsonFile(startupFilePath);
+    if (!startupConfig) {
+      return;
+    }
+    setEntryArrayForObf(startupConfig.configEntry);
+    startupConfig.startupTasks.forEach(task => {
+      if (task.srcEntry) {
+        setEntryArrayForObf(task.srcEntry);
+      }
+    });
+  }
+}
+
 function loadNavigationConfig(aceBuildJson) {
   if (aceBuildJson && aceBuildJson.routerMap && Array.isArray(aceBuildJson.routerMap)) {
     aceBuildJson.routerMap.forEach((item) => {
       if (item.pageSourceFile && (item.name || item.name === '') && item.buildFunction) {
         const filePath = path.resolve(item.pageSourceFile);
+        setEntryArrayForObf(filePath);
         const storedFileInfo = getStoredFileInfo();
         if (storedFileInfo.routerInfo.has(filePath)) {
           storedFileInfo.routerInfo.get(filePath).push({name: item.name, buildFunction: item.buildFunction});
@@ -1186,3 +1218,4 @@ exports.resetGlobalProgram = resetGlobalProgram;
 exports.setEntryArrayForObf = setEntryArrayForObf;
 exports.getPackageJsonEntryPath = getPackageJsonEntryPath;
 exports.setIntentEntryPages = setIntentEntryPages;
+exports.setStartupPagesForObf = setStartupPagesForObf;
