@@ -1,0 +1,14 @@
+{
+    "startupTasks": [
+        {
+            "srcEntry": "pages/test0"
+        },
+        {
+            "srcEntry": "pages/test1"
+        },
+        {
+            "srcEntry": "pages/test2"
+        }
+    ],
+    "configEntry": "pages/mainPage"
+}
