@@ -161,10 +161,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         this.linkOnChange(_);
       }));
     };
-    this.__backing_storagelinkvar = STATE_MGMT_FACTORY.makeStorageLink<string>(this, "prop1", "storagelinkvar", "Hello World", Type.from<string>(), ((_: string): void => {
+    this.__backing_storagelinkvar = STATE_MGMT_FACTORY.makeStorageLink<string>(this, "prop1", "storagelinkvar", "Hello World", ((_: string): void => {
       this.storageLinkOnChange(_);
     }))
-    this.__backing_storagepropvar = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "prop2", "storagepropvar", "Hello World", Type.from<string>(), ((_: string): void => {
+    this.__backing_storagepropvar = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "prop2", "storagepropvar", "Hello World", ((_: string): void => {
       this.storagePropOnChange(_);
     }))
     this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", (({let gensym___172556967 = initializers;
