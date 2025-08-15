@@ -176,24 +176,28 @@ export function createGetter(
     name: string,
     type: arkts.TypeNode | undefined,
     returns: arkts.Expression,
-    needMemo: boolean = false
+    needMemo: boolean = false,
+    isStatic: boolean = false
 ): arkts.MethodDefinition {
     const returnType: arkts.TypeNode | undefined = type?.clone();
     if (needMemo && findCanAddMemoFromTypeAnnotation(returnType)) {
         addMemoAnnotation(returnType);
     }
     const body = arkts.factory.createBlock([arkts.factory.createReturnStatement(returns)]);
+    const modifiers = isStatic
+        ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
+        : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
     const scriptFunction = arkts.factory.createScriptFunction(
         body,
         arkts.FunctionSignature.createFunctionSignature(undefined, [], returnType, false),
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+        modifiers
     );
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET,
         arkts.factory.createIdentifier(name),
         scriptFunction,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+        modifiers,
         false
     );
 }
@@ -240,25 +244,29 @@ export function createSetter(
 export function createSetter2(
     name: string,
     type: arkts.TypeNode | undefined,
-    statement: arkts.AstNode
+    statement: arkts.AstNode,
+    isStatic: boolean = false
 ): arkts.MethodDefinition {
     const body = arkts.factory.createBlock([statement]);
     const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
         arkts.factory.createIdentifier('value', type?.clone()),
         undefined
     );
+    const modifiers = isStatic
+        ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
+        : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
     const scriptFunction = arkts.factory.createScriptFunction(
         body,
         arkts.FunctionSignature.createFunctionSignature(undefined, [param], undefined, false),
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_SETTER,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+        modifiers
     );
 
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET,
         arkts.factory.createIdentifier(name),
         scriptFunction,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+        modifiers,
         false
     );
 }
