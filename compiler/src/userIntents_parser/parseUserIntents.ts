@@ -882,7 +882,7 @@ class ParseIntent {
     const formBlackList: string[] = ['context'];
     if (decoratorType === COMPONENT_USER_INTENTS_DECORATOR_ENTRY && entryBlackList.includes(propName)) {
       return obj;
-    } else if (decoratorType === COMPONENT_USER_INTENTS_DECORATOR_ENTRY && formBlackList.includes(propName)) {
+    } else if (decoratorType === COMPONENT_USER_INTENTS_DECORATOR_FORM && formBlackList.includes(propName)) {
       return obj;
     }
     const tempschemaVerifyType: schemaVerifyType = {
