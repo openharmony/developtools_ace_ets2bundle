@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { getClassPropertyAnnotationNames, hasAnnotation, PresetDecorators } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-const decorators: string[] = [
+const v1Decorators: string[] = [
     PresetDecorators.BUILDER_PARAM,
     PresetDecorators.STATE,
     PresetDecorators.PROP_REF,
@@ -30,6 +30,16 @@ const decorators: string[] = [
     PresetDecorators.REQUIRE,
 ];
 
+const v2Decorators: string[] = [
+    PresetDecorators.PARAM,
+    PresetDecorators.ONCE,
+    PresetDecorators.EVENT,
+    PresetDecorators.PROVIDER,
+    PresetDecorators.CONSUMER,
+    PresetDecorators.MONITOR,
+    PresetDecorators.REQUIRE,
+];
+
 class StructPropertyDecoratorRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
@@ -38,15 +48,22 @@ class StructPropertyDecoratorRule extends AbstractUISyntaxRule {
     }
 
     public parsed(node: arkts.AstNode): void {
-        if (!arkts.isStructDeclaration(node)) {
-            return;
+        if (arkts.isStructDeclaration(node)) {
+            const hasComponentV1 = hasAnnotation(node.definition.annotations, PresetDecorators.COMPONENT_V1);
+            const hasComponentV2 = hasAnnotation(node.definition.annotations, PresetDecorators.COMPONENT_V2);
+            this.checkInvalidStaticPropertyDecorations(node, hasComponentV1, hasComponentV2);
+            if (hasComponentV2) {
+                this.checkInvalidStaticMethodDecorations(node);
+            }
         }
-        const hasComponentV1 = hasAnnotation(node.definition.annotations, PresetDecorators.COMPONENT_V1);
-        this.checkInvalidStaticPropertyDecorations(node, hasComponentV1);
+        if (arkts.isClassDeclaration(node)) {
+            this.checkInvalidStaticMethodDecorations(node);
+        }
     }
 
     private hasPropertyDecorator(
         member: arkts.ClassProperty,
+        decorators: String[]
     ): boolean {
         const annotationName = getClassPropertyAnnotationNames(member);
         return decorators.some(decorator =>
@@ -54,16 +71,43 @@ class StructPropertyDecoratorRule extends AbstractUISyntaxRule {
         );
     }
 
-    private checkInvalidStaticPropertyDecorations(node: arkts.StructDeclaration, hasComponentV1: boolean): void {
+    private checkInvalidStaticPropertyDecorations(
+        node: arkts.StructDeclaration,
+        hasComponentV1: boolean,
+        hasComponentV2: boolean
+    ): void {
         node.definition.body.forEach((member) => {
             // Errors are reported when the node type is static ClassProperty,
-            if (!arkts.isClassProperty(member) || !member.key) {
+            if (!arkts.isClassProperty(member) || !member.key || !member.isStatic) {
                 return;
             }
-            if (!hasComponentV1 || !member.isStatic || !this.hasPropertyDecorator(member)) {
+            if (hasComponentV1 && this.hasPropertyDecorator(member, v1Decorators) ||
+                hasComponentV2 && this.hasPropertyDecorator(member, v2Decorators)) {
+                const propertyNameNode = member.key;
+                this.report({
+                    node: propertyNameNode,
+                    message: this.messages.invalidStaticUsage
+                });
+            }
+        });
+    }
+
+    private checkInvalidStaticMethodDecorations(node: arkts.ClassDeclaration | arkts.StructDeclaration): void {
+        node.definition?.body.forEach((member) => {
+            // Errors are reported when the node type is static Method,
+            if (!arkts.isMethodDefinition(member) || !member.name || !member.isStatic) {
                 return;
             }
-            const propertyNameNode = member.key;
+            const hasMonitor = member.funcExpr.scriptFunction.annotations.some(annotation => {
+                if (!annotation.expr || !arkts.isIdentifier(annotation.expr)) {
+                    return false;
+                }
+                return annotation.expr.name === PresetDecorators.MONITOR;
+            });
+            if (!hasMonitor) {
+                return;
+            }
+            const propertyNameNode = member.name;
             this.report({
                 node: propertyNameNode,
                 message: this.messages.invalidStaticUsage
