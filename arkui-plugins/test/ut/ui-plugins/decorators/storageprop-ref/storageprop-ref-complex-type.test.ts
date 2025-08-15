@@ -131,13 +131,13 @@ final class Status extends BaseEnum<int> {
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_arrayB = STATE_MGMT_FACTORY.makeStoragePropRef<Array<number>>(this, "Prop1", "arrayB", [1, 2, 3], Type.from<Array<number>>())
-    this.__backing_objectB = STATE_MGMT_FACTORY.makeStoragePropRef<Object>(this, "Prop2", "objectB", {}, Type.from<Object>())
-    this.__backing_dateB = STATE_MGMT_FACTORY.makeStoragePropRef<Date>(this, "Prop3", "dateB", new Date("2021-09-09"), Type.from<Date>())
-    this.__backing_setB = STATE_MGMT_FACTORY.makeStoragePropRef<Set<number>>(this, "Prop4", "setB", new Set<number>(), Type.from<Set<number>>())
-    this.__backing_mapB = STATE_MGMT_FACTORY.makeStoragePropRef<Map<number, string>>(this, "Prop5", "mapB", new Map<number, string>(), Type.from<Map<number, string>>())
-    this.__backing_classB = STATE_MGMT_FACTORY.makeStoragePropRef<Person>(this, "Prop7", "classB", new Person("Kevin"), Type.from<Person>())
-    this.__backing_enumB = STATE_MGMT_FACTORY.makeStoragePropRef<Status>(this, "Prop8", "enumB", Status.NotFound, Type.from<Status>())
+    this.__backing_arrayB = STATE_MGMT_FACTORY.makeStoragePropRef<Array<number>>(this, "Prop1", "arrayB", [1, 2, 3])
+    this.__backing_objectB = STATE_MGMT_FACTORY.makeStoragePropRef<Object>(this, "Prop2", "objectB", {})
+    this.__backing_dateB = STATE_MGMT_FACTORY.makeStoragePropRef<Date>(this, "Prop3", "dateB", new Date("2021-09-09"))
+    this.__backing_setB = STATE_MGMT_FACTORY.makeStoragePropRef<Set<number>>(this, "Prop4", "setB", new Set<number>())
+    this.__backing_mapB = STATE_MGMT_FACTORY.makeStoragePropRef<Map<number, string>>(this, "Prop5", "mapB", new Map<number, string>())
+    this.__backing_classB = STATE_MGMT_FACTORY.makeStoragePropRef<Person>(this, "Prop7", "classB", new Person("Kevin"))
+    this.__backing_enumB = STATE_MGMT_FACTORY.makeStoragePropRef<Status>(this, "Prop8", "enumB", Status.NotFound)
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}

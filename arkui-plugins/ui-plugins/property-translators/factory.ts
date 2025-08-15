@@ -789,25 +789,6 @@ export class factory {
         }
         return property;
     }
-
-    /**
-     * create `Type.from<xxx>()` when translating `@StorageLink`, `@StorageProp`, `@LocalStorageLink`
-     *
-     * @param typeAnnotation expecting property's original type annotation.
-     */
-    static createTypeFrom(typeAnnotation: arkts.TypeNode | undefined): arkts.CallExpression {
-        return arkts.factory.createCallExpression(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createIdentifier('Type'),
-                arkts.factory.createIdentifier('from'),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
-            typeAnnotation ? [typeAnnotation] : undefined,
-            undefined
-        );
-    }
     
     static generateinitAssignment(
         monitorItem: string[] | undefined,

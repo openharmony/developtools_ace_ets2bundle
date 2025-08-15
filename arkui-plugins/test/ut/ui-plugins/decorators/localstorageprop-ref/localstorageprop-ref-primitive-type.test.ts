@@ -54,11 +54,11 @@ function main() {}
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_numB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<number>(this, "Prop1", "numB", 43, Type.from<number>())
-    this.__backing_stringB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<string>(this, "Prop2", "stringB", "BB", Type.from<string>())
-    this.__backing_booleanB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<boolean>(this, "Prop3", "booleanB", false, Type.from<boolean>())
-    this.__backing_undefinedB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<undefined>(this, "Prop4", "undefinedB", undefined, Type.from<undefined>())
-    this.__backing_nullB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<null>(this, "Prop5", "nullB", null, Type.from<null>())
+    this.__backing_numB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<number>(this, "Prop1", "numB", 43)
+    this.__backing_stringB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<string>(this, "Prop2", "stringB", "BB")
+    this.__backing_booleanB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<boolean>(this, "Prop3", "booleanB", false)
+    this.__backing_undefinedB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<undefined>(this, "Prop4", "undefinedB", undefined)
+    this.__backing_nullB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<null>(this, "Prop5", "nullB", null)
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
