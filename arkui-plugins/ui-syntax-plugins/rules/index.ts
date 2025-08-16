@@ -41,6 +41,7 @@ import NoDuplicatePreviewRule from './no-duplicate-preview';
 import NoPropLinkObjectLinkInEntryRule from './no-prop-link-objectlink-in-entry';
 import NoSameAsBuiltInAttributeRule from './no-same-as-built-in-attribute';
 import ReuseAttributeCheckRule from './reuse-attribute-check';
+import StaticParamRequireRule from './static-param-require';
 import StructMissingDecoratorRule from './struct-missing-decorator';
 import StructPropertyDecoratorRule from './struct-property-decorator';
 import TrackDecoratorCheckRule from './track-decorator-check';
@@ -94,6 +95,7 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [NoPropLinkObjectLinkInEntryRule, 'warn'],
     [NoSameAsBuiltInAttributeRule, 'error'],
     [ReuseAttributeCheckRule, 'error'],
+    [StaticParamRequireRule, 'warn'],
     [StructMissingDecoratorRule, 'error'],
     [StructPropertyDecoratorRule, 'error'],
     [TrackDecoratorCheckRule, 'error'],
@@ -117,7 +119,7 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [WatchDecoratorFunctionRule, 'error'],
     [WatchDecoratorRegularRule, 'error'],
     [OldNewDecoratorMixUseCheckRule, 'error'],
-    [RequireDecoratorRegularRule, 'error'],
+    [RequireDecoratorRegularRule, 'warn'],
     [ReusableComponentInV2CheckRule, 'warn'],
     [SpecificComponentChildrenRule, 'error'],
 ];
