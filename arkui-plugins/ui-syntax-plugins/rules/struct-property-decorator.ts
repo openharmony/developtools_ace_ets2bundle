@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getClassPropertyAnnotationNames, PresetDecorators } from '../utils';
+import { getClassPropertyAnnotationNames, hasAnnotation, PresetDecorators } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 const decorators: string[] = [
@@ -41,7 +41,8 @@ class StructPropertyDecoratorRule extends AbstractUISyntaxRule {
         if (!arkts.isStructDeclaration(node)) {
             return;
         }
-        this.checkInvalidStaticPropertyDecorations(node);
+        const hasComponentV1 = hasAnnotation(node.definition.annotations, PresetDecorators.COMPONENT_V1);
+        this.checkInvalidStaticPropertyDecorations(node, hasComponentV1);
     }
 
     private hasPropertyDecorator(
@@ -53,18 +54,20 @@ class StructPropertyDecoratorRule extends AbstractUISyntaxRule {
         );
     }
 
-    private checkInvalidStaticPropertyDecorations(node: arkts.StructDeclaration,): void {
+    private checkInvalidStaticPropertyDecorations(node: arkts.StructDeclaration, hasComponentV1: boolean): void {
         node.definition.body.forEach((member) => {
-            // Errors are reported when the node type is ClassProperty,
-            if (arkts.isClassProperty(member)) {
-                const propertyNameNode = member.key;
-                if ((member.isStatic && this.hasPropertyDecorator(member)) && propertyNameNode) {
-                    this.report({
-                        node: propertyNameNode,
-                        message: this.messages.invalidStaticUsage
-                    });
-                }
+            // Errors are reported when the node type is static ClassProperty,
+            if (!arkts.isClassProperty(member) || !member.key) {
+                return;
             }
+            if (!hasComponentV1 || !member.isStatic || !this.hasPropertyDecorator(member)) {
+                return;
+            }
+            const propertyNameNode = member.key;
+            this.report({
+                node: propertyNameNode,
+                message: this.messages.invalidStaticUsage
+            });
         });
     }
 }
