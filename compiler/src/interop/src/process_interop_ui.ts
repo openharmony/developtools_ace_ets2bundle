@@ -129,6 +129,21 @@ class HandleUIImports {
       this.AddUIImports(result);
     }
 
+    if (ts.isMethodDeclaration(result) && !result.type) {
+      const voidTypeAnnotation = ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword);
+      return ts.factory.updateMethodDeclaration(
+        result,
+        result.modifiers,
+        result.asteriskToken,
+        result.name,
+        result.questionToken,
+        result.typeParameters,
+        result.parameters,
+        voidTypeAnnotation,
+        result.body
+      );
+    }
+
     return result;
   }
 
