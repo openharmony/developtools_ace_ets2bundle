@@ -37,6 +37,10 @@ const parsedTransform: Plugins = {
 
 const expectedScript: string = `
 
+import { makeBuilderParameterProxy as makeBuilderParameterProxy } from "arkui.component.builder";
+
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+
 import { RowAttribute as RowAttribute } from "arkui.component.row";
 
 import { RowImpl as RowImpl } from "arkui.component.row";
@@ -61,7 +65,7 @@ function main() {}
   }), undefined);
 }
 
-@memo() function overBuilder(params: Tmp) {
+@memo() function overBuilder(@MemoSkip() params: Tmp) {
   RowImpl(@memo() ((instance: RowAttribute): void => {
     instance.setRowOptions(undefined).applyAttributesFinish();
     return;
@@ -92,9 +96,11 @@ class Tmp {
       return;
     }), @memo() (() => {
       showTextBuilder();
-      overBuilder({
-        paramA1: "Hello",
-      });
+      overBuilder(makeBuilderParameterProxy<Tmp>({}, new Map<string, (()=> Any)>([["paramA1", (() => {
+        return "Hello";
+      })]]), ((gensym___<some_random_number>: Tmp) => {
+        gensym___<some_random_number>.paramA1 = "Hello";
+      })));
     }));
   }
   
