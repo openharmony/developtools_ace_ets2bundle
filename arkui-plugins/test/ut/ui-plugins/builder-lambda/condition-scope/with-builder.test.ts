@@ -38,6 +38,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
@@ -54,7 +55,7 @@ function main() {}
         }
     }));
 }
-@memo() function ParamBuilder(@Builder() @memo() gensym%%_<some_random_number>?: (()=> void)): void {
+@memo() function ParamBuilder(@Builder() @memo() @MemoSkip() gensym%%_<some_random_number>?: (()=> void)): void {
     let param: (()=> void) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : ((() => {
         ConditionScope(@memo() (() => {
             if (true) {
@@ -156,6 +157,7 @@ function testUITransformer(this: PluginTestContext): void {
 
 const expectedMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
@@ -199,7 +201,7 @@ function main() {}
         return;
     }
 }
-@memo() function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Builder() @memo() gensym%%_<some_random_number>?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+@memo() function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Builder() @memo() @MemoSkip() gensym%%_<some_random_number>?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
     let param: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : (((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
@@ -236,13 +238,12 @@ function main() {}
             return;
         }
     }) as ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)));
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
-    const __memo_parameter_param = __memo_scope.param(0, param);
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
     }
-    __memo_parameter_param.value(__memo_context, ((__memo_id) + (<some_random_number>)));
+    param(__memo_context, ((__memo_id) + (<some_random_number>)));
     {
         __memo_scope.recache();
         return;

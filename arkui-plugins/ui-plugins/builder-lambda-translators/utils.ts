@@ -249,8 +249,8 @@ export function isBuilderLambdaCall(
         }
         return isBuilderLambdaMethod(decl);
     }
-    if (arkts.isFunctionExpression(decl)) {
-        return hasBuilderLambdaAnnotation(decl.scriptFunction);
+    if (arkts.isFunctionExpression(decl) && !!decl.function) {
+        return hasBuilderLambdaAnnotation(decl.function);
     }
     return false;
 }
@@ -312,8 +312,8 @@ export function findBuilderLambdaInCall(
     if (arkts.isMethodDefinition(decl)) {
         return findBuilderLambdaInMethod(decl);
     }
-    if (arkts.isFunctionExpression(decl)) {
-        return findBuilderLambdaAnnotation(decl.scriptFunction);
+    if (arkts.isFunctionExpression(decl) && !!decl.function) {
+        return findBuilderLambdaAnnotation(decl.function);
     }
     return undefined;
 }
@@ -549,4 +549,72 @@ export function checkIsWithInIfConditionScope(statement: arkts.AstNode): boolean
         return arkts.isBlockStatement(statement) || arkts.isIfStatement(statement);
     }
     return false;
+}
+
+function findClassInstanceFromType(
+    typeAnnotation: arkts.TypeNode | undefined
+): arkts.TSInterfaceDeclaration | arkts.ClassDefinition | undefined {
+    if (!typeAnnotation || !arkts.isETSTypeReference(typeAnnotation)) {
+        return undefined;
+    }
+    const part = typeAnnotation.part;
+    if (!part) {
+        return undefined;
+    }
+    const ident = part.name;
+    if (!ident || !arkts.isIdentifier(ident)) {
+        return undefined;
+    }
+    const decl = arkts.getDecl(ident);
+    if (!decl) {
+        return undefined;
+    }
+    if (!arkts.isTSInterfaceDeclaration(decl) && !arkts.isClassDefinition(decl)) {
+        return undefined;
+    }
+    return decl;
+}
+
+function findClassInstanceFromObject(
+    objectExpr: arkts.ObjectExpression
+): arkts.TSInterfaceDeclaration | arkts.ClassDefinition | undefined {
+    const decl = arkts.getPeerObjectDecl(objectExpr.peer);
+    if (!decl) {
+        return undefined;
+    }
+    if (!arkts.isTSInterfaceDeclaration(decl) && !arkts.isClassDefinition(decl)) {
+        return undefined;
+    }
+    return decl;
+}
+
+export function findClassInstanceFromCallArgument(
+    arg: arkts.TSAsExpression | arkts.ObjectExpression
+): arkts.TSInterfaceDeclaration | arkts.ClassDefinition | undefined {
+    if (arkts.isTSAsExpression(arg)) {
+        const expr = arg.expr;
+        if (!expr || !arkts.isObjectExpression(expr)) {
+            return undefined;
+        }
+        const typeAnnotation = arg.typeAnnotation;
+        return findClassInstanceFromType(typeAnnotation);
+    }
+    if (arkts.isObjectExpression(arg)) {
+        return findClassInstanceFromObject(arg);
+    }
+    return undefined;
+}
+
+export function flatObjectExpressionToEntries(
+    object: arkts.ObjectExpression
+): [arkts.Identifier, arkts.Expression | undefined][] {
+    const entries: [arkts.Identifier, arkts.Expression | undefined][] = [];
+    (object.properties as arkts.Property[]).forEach((p) => {
+        const key = p.key;
+        if (!key || !arkts.isIdentifier(key)) {
+            return;
+        }
+        entries.push([key, p.value]);
+    });
+    return entries;
 }

@@ -184,7 +184,10 @@ export class factory {
         rewriteFn?: RewriteAfterFoundFn<T>
     ): T {
         const _node = coerceToAstNode<arkts.CallExpression>(node);
-        collectMemoFromCallExpression(_node);
+        const found = collectMemoFromCallExpression(_node);
+        if (found && !!rewriteFn) {
+            return rewriteFn(node, arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CALL_EXPRESSION);
+        }
         return node;
     }
 

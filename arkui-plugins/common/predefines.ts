@@ -160,6 +160,8 @@ export enum TypeNames {
     NULLISH_TYPE = 'NullishType',
     ANY = 'Any',
     ARRAY = 'Array',
+    MAP = 'Map',
+    STRING = 'string',
 }
 
 export enum DecoratorIntrinsicNames {
@@ -220,6 +222,7 @@ export enum StateManagementTypes {
     MAKE_MONITOR = 'makeMonitor',
     UI_UTILS = 'UIUtils',
     MAKE_OBSERVED = 'makeObserved',
+    MAKE_BUILDER_PARAM_PROXY = 'makeBuilderParameterProxy',
 }
 
 export enum AnimationNames {

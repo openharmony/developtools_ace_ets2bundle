@@ -57,6 +57,8 @@ import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
@@ -72,7 +74,7 @@ const wBuilder: WrappedBuilder<MyBuilderFuncType> = wrapBuilder(overBuilder);
 function main() {}
 
 
-@memo() function overBuilder(param: (()=> Tmp)) {
+@memo() function overBuilder(@MemoSkip() param: (()=> Tmp)) {
   Column(undefined, undefined, @memo() (() => {
     Text(undefined, \`wrapBuildervalue:\${param().paramA2}\`, undefined, undefined);
   }));
@@ -206,6 +208,8 @@ import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
@@ -221,9 +225,8 @@ const wBuilder: WrappedBuilder<MyBuilderFuncType> = wrapBuilder(overBuilder);
 function main() {}
 
 
-@memo() function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, param: (()=> Tmp)) {
-  const __memo_scope = __memo_context.scope<void>(((__memo_id) + (133793681)), 1);
-  const __memo_parameter_param = __memo_scope.param(0, param);
+@memo() function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() param: (()=> Tmp)) {
+  const __memo_scope = __memo_context.scope<void>(((__memo_id) + (133793681)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
     return;
@@ -234,7 +237,7 @@ function main() {}
       __memo_scope.cached;
       return;
     }
-    Text(__memo_context, ((__memo_id) + (47330804)), undefined, \`wrapBuildervalue:\${__memo_parameter_param.value().paramA2}\`, undefined, undefined);
+    Text(__memo_context, ((__memo_id) + (47330804)), undefined, \`wrapBuildervalue:\${param().paramA2}\`, undefined, undefined);
     {
       __memo_scope.recache();
       return;
