@@ -27,6 +27,7 @@ export enum RuntimeNames {
     ANNOTATION_INTRINSIC = 'memo_intrinsic',
     ANNOTATION_STABLE = 'memo_stable',
     ANNOTATION_SKIP = 'memo_skip',
+    ANNOTATION_SKIP_UI = 'MemoSkip',
     COMPUTE = 'compute',
     CONTEXT = '__memo_context',
     CONTEXT_TYPE = '__memo_context_type',
@@ -111,8 +112,16 @@ export class PositionalIdTracker {
     }
 }
 
-export function isMemoAnnotation(node: arkts.AnnotationUsage, memoName: RuntimeNames): boolean {
-    return node.expr !== undefined && arkts.isIdentifier(node.expr) && node.expr.name === memoName;
+export function isMemoAnnotation(node: arkts.AnnotationUsage, memoName: RuntimeNames | RuntimeNames[]): boolean {
+    const expr = node.expr;
+    if (expr === undefined || !arkts.isIdentifier(expr)) {
+        return false;
+    }
+    const name = expr.name;
+    if (Array.isArray(memoName)) {
+        return memoName.includes(name as RuntimeNames);
+    }
+    return memoName === name;
 }
 
 export type MemoAstNode =
@@ -126,8 +135,8 @@ export type MemoAstNode =
     | arkts.VariableDeclaration;
 
 export function hasMemoAnnotation<T extends MemoAstNode>(node: T): boolean {
-    return node.annotations.some(
-        (it) => isMemoAnnotation(it, RuntimeNames.ANNOTATION) || isMemoAnnotation(it, RuntimeNames.ANNOTATION_BUILDER)
+    return node.annotations.some((it) =>
+        isMemoAnnotation(it, [RuntimeNames.ANNOTATION, RuntimeNames.ANNOTATION_BUILDER])
     );
 }
 
@@ -144,7 +153,9 @@ export function hasMemoStableAnnotation(node: arkts.ClassDefinition): boolean {
 }
 
 export function hasMemoSkipAnnotation(node: arkts.ETSParameterExpression): boolean {
-    return node.annotations.some((it) => isMemoAnnotation(it, RuntimeNames.ANNOTATION_SKIP));
+    return node.annotations.some((it) =>
+        isMemoAnnotation(it, [RuntimeNames.ANNOTATION_SKIP, RuntimeNames.ANNOTATION_SKIP_UI])
+    );
 }
 
 export function removeMemoAnnotation<T extends MemoAstNode>(node: T): T {
@@ -653,6 +664,6 @@ function isThisParam(node: arkts.Expression | undefined): boolean {
     return node.identifier?.isReceiver ?? false;
 }
 
-export function filterMemoSkipParams(params: readonly arkts.Expression[]): readonly arkts.Expression[] {
-    return params.filter((p) => !hasMemoSkipAnnotation(p as arkts.ETSParameterExpression));
+export function filterMemoSkipParams(paramInfos: ParamInfo[]): ParamInfo[] {
+    return paramInfos.filter((p) => !hasMemoSkipAnnotation(p.param));
 }

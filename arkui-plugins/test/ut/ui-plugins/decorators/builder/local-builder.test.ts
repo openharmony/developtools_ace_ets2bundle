@@ -40,6 +40,8 @@ import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
@@ -66,7 +68,7 @@ function main() {}
     }), undefined);
   }
   
-  @memo() public showTextValueBuilder(param: string) {
+  @memo() public showTextValueBuilder(@MemoSkip() param: string) {
     TextImpl(@memo() ((instance: TextAttribute): void => {
       instance.setTextOptions(param, undefined).fontSize(30).applyAttributesFinish();
       return;
