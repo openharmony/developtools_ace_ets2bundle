@@ -41,6 +41,7 @@ const expectedUIScript: string = `
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from \"arkui.stateManagement.decorator\";
 import { IStateDecoratedVariable as IStateDecoratedVariable } from \"arkui.stateManagement.decorator\";
 import { RowAttribute as RowAttribute } from \"arkui.component.row\";
+import { RowImpl as RowImpl } from "arkui.component.row";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 import { TextAttribute as TextAttribute } from \"arkui.component.text\";
 import { TextImpl as TextImpl } from "arkui.component.text";
@@ -53,15 +54,15 @@ import { State as State } from "@ohos.arkui.stateManagement";
 @memo() let globalBuilder: @Builder() ((value: string, size: number)=> void);
 let builderArr: Array<@Builder() ((value: string, size: number)=> void)>;
 function main() {}
-@memo() function MyBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
-    Text(@memo() ((instance: TextAttribute): void => {
-        instance.fontSize(size);
+@memo() function MyBuilder(value: string, size: number) {
+    TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
         return;
     }), value, undefined, undefined);
 }
-@memo() function YourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
-    Text(@memo() ((instance: TextAttribute): void => {
-        instance.fontSize(size).fontColor(Color.Pink);
+@memo() function YourBuilder(value: string, size: number) {
+    TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink).applyAttributesFinish();
         return;
     }), value, undefined, undefined);
 }
@@ -144,6 +145,7 @@ import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from \"arkui.stateManagement.decorator\";
 import { IStateDecoratedVariable as IStateDecoratedVariable } from \"arkui.stateManagement.decorator\";
 import { RowAttribute as RowAttribute } from \"arkui.component.row\";
+import { RowImpl as RowImpl } from "arkui.component.row";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 import { TextAttribute as TextAttribute } from \"arkui.component.text\";
 import { TextImpl as TextImpl } from "arkui.component.text";
@@ -156,8 +158,9 @@ import { State as State } from \"@ohos.arkui.stateManagement\";
 @memo() let globalBuilder: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
 let builderArr: Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
 function main() {}
-@memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
+@memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number) {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
+    const __memo_parameter_value = __memo_scope.param(0, value), __memo_parameter_size = __memo_scope.param(1, size);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
@@ -169,7 +172,7 @@ function main() {}
             __memo_scope.cached;
             return;
         }
-        __memo_parameter_instance.value.fontSize(__memo_parameter_size.value);
+        __memo_parameter_instance.value.setTextOptions(__memo_parameter_value.value, undefined).fontSize(__memo_parameter_size.value).applyAttributesFinish();
         {
             __memo_scope.recache();
             return;
@@ -180,8 +183,9 @@ function main() {}
         return;
     }
 }
-@memo() function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
+@memo() function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number) {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
+    const __memo_parameter_value = __memo_scope.param(0, value), __memo_parameter_size = __memo_scope.param(1, size);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
@@ -193,7 +197,7 @@ function main() {}
             __memo_scope.cached;
             return;
         }
-        __memo_parameter_instance.value.fontSize(__memo_parameter_size.value).fontColor(Color.Pink);
+        __memo_parameter_instance.value.setTextOptions(__memo_parameter_value.value, undefined).fontSize(__memo_parameter_size.value).fontColor(Color.Pink).applyAttributesFinish();
         {
             __memo_scope.recache();
             return;
