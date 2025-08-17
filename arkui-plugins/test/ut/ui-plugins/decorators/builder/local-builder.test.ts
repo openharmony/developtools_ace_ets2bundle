@@ -68,7 +68,7 @@ function main() {}
     }), undefined);
   }
   
-  @memo() public showTextValueBuilder(param: string) {
+  @memo() public showTextValueBuilder(@MemoSkip() param: string) {
     TextImpl(@memo() ((instance: TextAttribute): void => {
       instance.setTextOptions(param, undefined).fontSize(30).applyAttributesFinish();
       return;
