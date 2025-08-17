@@ -38,6 +38,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
@@ -47,7 +48,7 @@ let globalBuilder: WrappedBuilder<MyBuilderFuncType>;
 
 function main() {}
 
-@memo() function myBuilder(value: string, size: number) {
+@memo() function myBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   Text(@memo() ((instance: TextAttribute): void => {
     instance.fontSize(size);
     return;
@@ -86,6 +87,8 @@ const expectedMemoScript: string = `
 
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
 
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
@@ -98,9 +101,8 @@ let globalBuilder: WrappedBuilder<MyBuilderFuncType>;
 
 function main() {}
 
-@memo() function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number) {
-  const __memo_scope = __memo_context.scope<void>(((__memo_id) + (52041161)), 2);
-  const __memo_parameter_value = __memo_scope.param(0, value), __memo_parameter_size = __memo_scope.param(1, size);
+@memo() function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+  const __memo_scope = __memo_context.scope<void>(((__memo_id) + (52041161)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
     return;
@@ -112,7 +114,7 @@ function main() {}
       __memo_scope.cached;
       return;
     }
-    __memo_parameter_instance.value.fontSize(__memo_parameter_size.value);
+    __memo_parameter_instance.value.fontSize(size);
     {
       __memo_scope.recache();
       return;

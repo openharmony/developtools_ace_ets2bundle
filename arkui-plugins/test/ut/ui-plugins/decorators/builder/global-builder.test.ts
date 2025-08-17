@@ -37,6 +37,10 @@ const parsedTransform: Plugins = {
 
 const expectedScript: string = `
 
+import { makeBuilderParameterProxy as makeBuilderParameterProxy } from "arkui.component.builder";
+
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 
@@ -51,7 +55,7 @@ function main() {}
   Text(undefined, "Hello World", undefined, undefined);
 }
 
-@memo() function overBuilder(params: Tmp) {
+@memo() function overBuilder(@MemoSkip() params: Tmp) {
   Row(undefined, undefined, @memo() (() => {
     Text(undefined, (("UseStateVarByReference: ") + (params.paramA1)), undefined, undefined);
   }));
@@ -73,9 +77,11 @@ class Tmp {
   @memo() public build() {
     Row(undefined, undefined, @memo() (() => {
       showTextBuilder();
-      overBuilder({
-        paramA1: "Hello",
-      });
+      overBuilder(makeBuilderParameterProxy<Tmp>({}, new Map<string, (()=> Any)>([["paramA1", (() => {
+        return "Hello";
+      })]]), ((gensym___<some_random_number>: Tmp) => {
+        gensym___<some_random_number>.paramA1 = "Hello";
+      })));
     }));
   }
 
