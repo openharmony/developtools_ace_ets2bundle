@@ -112,4 +112,13 @@ export interface FileInfo {
   baseUrl: string;
   abstractPath: string;
 }
-export const DECLGEN_CACHE_FILE = 'declgen_cache.json';
+
+export interface InteropInfo {
+  declgenBridgeCodePath: string;
+  declgenV1OutPath: string;
+}
+
+export interface InteropConfig {
+  interopModuleInfo: Map<string, InteropInfo>;
+  projectConfig: Object;
+}
