@@ -57,9 +57,13 @@ import {
 } from './pre_define';
 import { readFirstLineSync } from './utils';
 
-export let entryFileLanguageInfo = new Map();
+let entryFileLanguageInfo = new Map();
 export let workerFile = null;
 export let mixCompile = undefined;
+
+export function setEntryFileLanguage(filePath: string, language: string): void {
+  entryFileLanguageInfo.set(filePath, language);
+}
 
 export class FileManager {
   private static instance: FileManager | undefined = undefined;
@@ -72,7 +76,7 @@ export class FileManager {
   static mixCompile: boolean = false;
   static glueCodeFileInfos: Map<string, FileInfo> = new Map();
   static isInteropSDKEnabled: boolean = false;
-  static sharedObj: Object | undefined = undefined;
+  interopConfig: InteropConfig | undefined = undefined;
 
   private constructor() { }
 
@@ -113,12 +117,16 @@ export class FileManager {
     return FileManager.instance;
   }
 
-  public static setRollUpObj(shared: Object): void {
-    FileManager.sharedObj = shared;
-  }
-
   public static setMixCompile(mixCompile: boolean): void {
     FileManager.mixCompile = mixCompile;
+  }
+
+  public setInteropConfig(interopConfig: InteropConfig): void {
+    this.interopConfig = interopConfig;
+  }
+
+  public getInteropConfig(): InteropConfig {
+    return this.interopConfig;
   }
 
   private static initLanguageVersionFromDependentModuleMap(
@@ -313,11 +321,7 @@ export class FileManager {
   }
 
   private static logError(error: LogData): void {
-    if (FileManager.sharedObj) {
-      CommonLogger.getInstance(FileManager.sharedObj).printErrorAndExit(error);
-    } else {
-      console.error(error.toString());
-    }
+    console.error(error.toString());
   }
 
   private static matchSDKPath(path: string): {
@@ -380,22 +384,22 @@ export class FileManager {
   }
 }
 
-export function initFileManagerInRollup(share: Object): void {
-  if (!share.projectConfig.mixCompile) {
+export function initFileManagerInRollup(InteropConfig: InteropConfig): void {
+  if (!isMixCompile()) {
     return;
   }
 
   FileManager.mixCompile = true;
-  const sdkInfo = collectSDKInfo(share);
+  const sdkInfo = collectSDKInfo(InteropConfig);
 
   FileManager.init(
-    share.projectConfig.dependentModuleMap,
-    share.projectConfig.aliasPaths,
+    InteropConfig.projectConfig.dependentModuleMap,
+    InteropConfig.projectConfig.aliasPaths,
     sdkInfo.dynamicSDKPath,
     sdkInfo.staticSDKInteropDecl,
     sdkInfo.staticSDKGlueCodePath
   );
-  FileManager.setRollUpObj(share);
+  FileManager.getInstance().setInteropConfig(InteropConfig);
 }
 
 export function collectSDKInfo(share: Object): {
@@ -498,7 +502,7 @@ export function processAbilityPagesFullPath(abilityPagesFullPath: Set<string>): 
 
 
 export function transformAbilityPages(abilityPath: string): boolean {
-  const entryBridgeCodePath = process.env.entryBridgeCodePath;
+  const entryBridgeCodePath = getBrdigeCodeRootPath(abilityPath, FileManager.getInstance().getInteropConfig());
   if (!entryBridgeCodePath) {
     const errInfo = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
@@ -521,9 +525,12 @@ export function transformAbilityPages(abilityPath: string): boolean {
   return false;
 }
 
-function transformModuleNameToRelativePath(moduleName): string {
+export function transformModuleNameToRelativePath(filePath: string): string {
   let defaultSourceRoot = 'src/main';
-  const normalizedModuleName = moduleName.replace(/\\/g, '/');
+  if (FileManager.getInstance().getInteropConfig()?.projectConfig?.isOhosTest) {
+    defaultSourceRoot = 'src/ohosTest';
+  }
+  const normalizedModuleName = filePath.replace(/\\/g, '/');
   const normalizedRoot = defaultSourceRoot.replace(/\\/g, '/');
 
   const rootIndex = normalizedModuleName.indexOf(`/${normalizedRoot}/`);
@@ -532,14 +539,15 @@ function transformModuleNameToRelativePath(moduleName): string {
       ErrorCode.ETS2BUNDLE_INTERNAL_WRONG_MODULE_NAME_FROM_ACEMODULEJSON,
       ArkTSInternalErrorDescription,
       `defaultSourceRoot '${defaultSourceRoot}' not found ` +
-      `when process moduleName '${moduleName}'`
+      `when process moduleName '${filePath}'`
     );
     throw Error(errInfo.toString());
   }
 
-  const relativePath = normalizedModuleName.slice(rootIndex + normalizedRoot.length + 1);
+  const relativePath = normalizedModuleName.slice(rootIndex + normalizedRoot.length + 1).replace(/^\/+/, '');
   return './' + relativePath;
 }
+
 
 export function getApiPathForInterop(apiDirs: string[], languageVersion: string): void {
   if (languageVersion !== ARKTS_1_2) {
@@ -592,6 +600,8 @@ export function rebuildEntryObj(projectConfig: Object, interopConfig: InteropCon
  * As the entry  for mix compile,so mixCompile status will be set true
  */
 export function initConfigForInterop(interopConfig: InteropConfig): Object {
+  initFileManagerInRollup(interopConfig);
+
   function getEntryObj(): void {
     loadEntryObj(projectConfig);
     initBuildInfo();
@@ -643,3 +653,4 @@ export function destroyInterop(): void {
   entryFileLanguageInfo.clear();
   mixCompile = false;
 }
+
