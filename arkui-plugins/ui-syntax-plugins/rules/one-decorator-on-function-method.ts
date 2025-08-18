@@ -111,6 +111,7 @@ class OneDecoratorOnFunctionMethodRule extends AbstractUISyntaxRule {
                 startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 const endPosition = otherDecorator.endPosition;
                 return {
+                    title: 'Remove the annotation',
                     range: [startPosition, endPosition],
                     code: ``
                 };

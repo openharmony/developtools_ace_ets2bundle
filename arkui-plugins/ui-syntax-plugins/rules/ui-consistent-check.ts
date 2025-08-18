@@ -130,7 +130,7 @@ class UiConsistentCheckRule extends AbstractUISyntaxRule {
     }
 
     private isColorProperty(propertyName: string): boolean {
-        // If the attribute name contains  'ResourceColor', 'Color', 'Resource', 'string', it is mabe a color property
+        // If the attribute name contains  'ResourceColor', 'Color', 'Resource', 'string', it is maybe a color property
         return propertyName.includes(UiConsistentCheckRule.resourceColorType) ||
             UiConsistentCheckRule.colorUnionTypes.some(str => propertyName.includes(str));
     }
@@ -165,13 +165,16 @@ class UiConsistentCheckRule extends AbstractUISyntaxRule {
             if (!resources || resources.length < 1) {
                 return;
             }
+            const propertyValue = (argNode as arkts.StringLiteral).str;
+            const targetValue = `$r('sys.float.${resources[0].resourceName}')`;
             this.report({
                 node: argNode,
                 message: this.messages.vpSizeWarning,
                 fix: () => {
                     return {
+                        title: `change ${propertyValue} to ${targetValue}`,
                         range: [argNode.startPosition, argNode.endPosition],
-                        code: `$r('sys.float.${resources[0].resourceName}')`,
+                        code: `${targetValue}`,
                     };
                 }
             });
@@ -208,13 +211,16 @@ class UiConsistentCheckRule extends AbstractUISyntaxRule {
             if (!resources || resources.length < 1) {
                 return;
             }
+            const propertyValue = (argNode as arkts.StringLiteral).str;
+            const targetValue = `$r('sys.float.${resources[0].resourceName}')`;
             this.report({
                 node: argNode,
                 message: this.messages.vpAndPxSizeWarning,
                 fix: () => {
                     return {
+                        title: `change ${propertyValue} to ${targetValue}`,
                         range: [argNode.startPosition, argNode.endPosition],
-                        code: `$r('sys.float.${resources[0].resourceName}')`,
+                        code: `${targetValue}`,
                     };
                 }
             });
@@ -249,13 +255,16 @@ class UiConsistentCheckRule extends AbstractUISyntaxRule {
             if (!resources || resources.length < 1) {
                 return;
             }
+            const propertyValue = (argNode as arkts.StringLiteral).str;
+            const targetValue = `$r('sys.color.${resources[0].resourceName}')`;
             this.report({
                 node: argNode,
                 message: this.messages.colorConsistentWarning,
                 fix: () => {
                     return {
+                        title: `change ${propertyValue} to ${targetValue}`,
                         range: [argNode.startPosition, argNode.endPosition],
-                        code: `$r('sys.color.${resources[0].resourceName}')`,
+                        code: `${targetValue}`,
                     };
                 }
             });

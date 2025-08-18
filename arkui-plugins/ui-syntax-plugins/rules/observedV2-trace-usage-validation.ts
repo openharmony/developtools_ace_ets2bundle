@@ -52,6 +52,7 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
                 startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 let endPosition = observedV2Decorator.endPosition;
                 return {
+                    title: 'Remove the @ObservedV2 annotation',
                     range: [startPosition, endPosition],
                     code: '',
                 };
@@ -69,6 +70,7 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
                 startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 let endPosition = traceDecorator.endPosition;
                 return {
+                    title: 'Remove the @Trace annotation',
                     range: [startPosition, endPosition],
                     code: '',
                 };
@@ -106,6 +108,7 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
                 startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 let endPosition = traceDecorator.endPosition;
                 return {
+                    title: 'Remove the @Trace annotation',
                     range: [startPosition, endPosition],
                     code: '',
                 };
@@ -121,6 +124,7 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
             fix: () => {
                 const startPosition = currentNode.startPosition;
                 return {
+                    title: 'Add @ObservedV2 annotation',
                     range: [startPosition, startPosition],
                     code: `@${PresetDecorators.OBSERVED_V2}\n`,
                 };
@@ -137,6 +141,7 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
                 const startPosition = observedDecorator.startPosition;
                 const endPosition = observedDecorator.endPosition;
                 return {
+                    title: 'Change @Observed to @ObservedV2',
                     range: [startPosition, endPosition],
                     code: `${PresetDecorators.OBSERVED_V2}`,
                 };
