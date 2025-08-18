@@ -21,6 +21,7 @@ export type FixSuggestion = {
     range: [start: arkts.SourcePosition, end: arkts.SourcePosition];
     title?: string;
     code: string;
+    title?: string;
 };
 
 export type ReportOptions = {

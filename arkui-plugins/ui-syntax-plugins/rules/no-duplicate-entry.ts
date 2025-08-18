@@ -56,6 +56,7 @@ class NoDuplicateEntryRule extends AbstractUISyntaxRule {
                 message: this.messages.duplicateEntry,
                 fix: () => {
                     return {
+                        title: 'Remove the duplicate \'Entry\' annotation',
                         range: [startPosition, entryDecoratorUsage.endPosition],
                         code: '',
                     };
@@ -73,6 +74,7 @@ class NoDuplicateEntryRule extends AbstractUISyntaxRule {
             message: this.messages.duplicateEntry,
             fix: () => {
                 return {
+                    title: 'Remove the duplicate \'Entry\' annotation',
                     range: [startPosition, entryDecoratorUsage.endPosition],
                     code: '',
                 };
