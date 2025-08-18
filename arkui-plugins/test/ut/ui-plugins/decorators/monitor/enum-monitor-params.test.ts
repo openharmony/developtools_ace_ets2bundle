@@ -263,7 +263,7 @@ final class MonitorNames extends BaseEnum<String> {
   
   @memo() public build() {}
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

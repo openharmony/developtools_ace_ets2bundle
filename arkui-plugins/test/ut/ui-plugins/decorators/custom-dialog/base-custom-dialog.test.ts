@@ -148,7 +148,7 @@ function main() {}
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
   public __setDialogController__(controller: CustomDialogController): void {
     this.__backing_aaController = controller;
@@ -233,7 +233,7 @@ function main() {}
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

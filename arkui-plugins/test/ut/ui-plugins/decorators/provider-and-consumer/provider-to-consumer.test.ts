@@ -72,7 +72,7 @@ const data: Array<User> = [new User("Json", 10), new User("Eric", 15)];
 
 function main() {}
 
-
+data = [new User("Json", 10), new User("Eric", 15)];
 
 @ObservedV2() class User implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
@@ -179,7 +179,7 @@ function main() {}
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -220,7 +220,7 @@ function main() {}
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

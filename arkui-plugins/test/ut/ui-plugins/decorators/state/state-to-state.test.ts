@@ -93,7 +93,7 @@ class Per {
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -119,7 +119,7 @@ class Per {
     Text(undefined, this.childVar1.str, undefined, undefined);
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
