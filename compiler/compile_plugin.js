@@ -28,7 +28,24 @@ const { generateConsumerObConfigFile } = require('./lib/fast_build/ark_compiler/
 const { etsStandaloneChecker } = require('./lib/ets_checker');
 const { memoryMonitor } = require('./lib/fast_build/meomry_monitor/rollup-plugin-memory-monitor');
 
+let initConfigForInterop = (interopConfig) => {
+  return {};
+};
+
+try {
+  ({ initConfigForInterop } = require('./lib/fast_build/ark_compiler/interop/interop_manager'));
+} catch (err) {
+  if (err.code !== 'MODULE_NOT_FOUND') {
+    throw err;
+  }
+}
+
+function initInteropConfig(interopConfig) {
+  return initConfigForInterop(interopConfig);
+}
+
 exports.initConfig = initConfig;
+exports.initInteropConfig = initInteropConfig;
 exports.getCleanConfig = getCleanConfig;
 exports.generateConsumerObConfigFile = generateConsumerObConfigFile;
 exports.etsStandaloneChecker = etsStandaloneChecker;

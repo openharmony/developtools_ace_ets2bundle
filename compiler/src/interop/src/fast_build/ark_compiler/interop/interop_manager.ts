@@ -17,14 +17,23 @@ import fs from 'fs';
 import path from 'path';
 
 import {
+  globalModulePaths,
+  initBuildInfo,
+  loadEntryObj,
+  loadModuleInfo,
+  loadWorker,
   projectConfig,
+  readAppResource,
+  readPatchConfig,
+  readWorkerFile,
   sdkConfigs
 } from '../../../../main';
 import { toUnixPath } from '../../../utils';
 import {
   ArkTSEvolutionModule,
   FileInfo,
-  AliasConfig
+  AliasConfig,
+  InteropConfig
 } from './type';
 import {
   hasExistingPaths,
@@ -46,8 +55,15 @@ import {
   ARKTS_1_2,
   ARKTS_HYBRID
 } from './pre_define';
+import { readFirstLineSync } from './utils';
 
-export let entryFileLanguageInfo = new Map();
+let entryFileLanguageInfo = new Map();
+export let workerFile = null;
+export let mixCompile = undefined;
+
+export function setEntryFileLanguage(filePath: string, language: string): void {
+  entryFileLanguageInfo.set(filePath, language);
+}
 
 export class FileManager {
   private static instance: FileManager | undefined = undefined;
@@ -60,7 +76,7 @@ export class FileManager {
   static mixCompile: boolean = false;
   static glueCodeFileInfos: Map<string, FileInfo> = new Map();
   static isInteropSDKEnabled: boolean = false;
-  static sharedObj: Object | undefined = undefined;
+  interopConfig: InteropConfig | undefined = undefined;
 
   private constructor() { }
 
@@ -101,12 +117,16 @@ export class FileManager {
     return FileManager.instance;
   }
 
-  public static setRollUpObj(shared: Object): void {
-    FileManager.sharedObj = shared;
-  }
-
   public static setMixCompile(mixCompile: boolean): void {
     FileManager.mixCompile = mixCompile;
+  }
+
+  public setInteropConfig(interopConfig: InteropConfig): void {
+    this.interopConfig = interopConfig;
+  }
+
+  public getInteropConfig(): InteropConfig {
+    return this.interopConfig;
   }
 
   private static initLanguageVersionFromDependentModuleMap(
@@ -217,7 +237,6 @@ export class FileManager {
     FileManager.glueCodeFileInfos?.clear();
     FileManager.aliasConfig?.clear();
     FileManager.mixCompile = false;
-    entryFileLanguageInfo.clear();
   }
 
   getLanguageVersionByFilePath(filePath: string): {
@@ -302,11 +321,7 @@ export class FileManager {
   }
 
   private static logError(error: LogData): void {
-    if (FileManager.sharedObj) {
-      CommonLogger.getInstance(FileManager.sharedObj).printErrorAndExit(error);
-    } else {
-      console.error(error.toString());
-    }
+    console.error(error.toString());
   }
 
   private static matchSDKPath(path: string): {
@@ -369,22 +384,22 @@ export class FileManager {
   }
 }
 
-export function initFileManagerInRollup(share: Object): void {
-  if (!share.projectConfig.mixCompile) {
+export function initFileManagerInRollup(InteropConfig: InteropConfig): void {
+  if (!isMixCompile()) {
     return;
   }
 
   FileManager.mixCompile = true;
-  const sdkInfo = collectSDKInfo(share);
+  const sdkInfo = collectSDKInfo(InteropConfig);
 
   FileManager.init(
-    share.projectConfig.dependentModuleMap,
-    share.projectConfig.aliasPaths,
+    InteropConfig.projectConfig.dependentModuleMap,
+    InteropConfig.projectConfig.aliasPaths,
     sdkInfo.dynamicSDKPath,
     sdkInfo.staticSDKInteropDecl,
     sdkInfo.staticSDKGlueCodePath
   );
-  FileManager.setRollUpObj(share);
+  FileManager.getInstance().setInteropConfig(InteropConfig);
 }
 
 export function collectSDKInfo(share: Object): {
@@ -433,15 +448,6 @@ export function collectSDKInfo(share: Object): {
   };
 }
 
-function readFirstLineSync(filePath: string): string {
-  const buffer = fs.readFileSync(filePath, 'utf-8');
-  const newlineIndex = buffer.indexOf('\n');
-  if (newlineIndex === -1) {
-    return buffer.trim();
-  }
-  return buffer.substring(0, newlineIndex).trim();
-}
-
 export function isBridgeCode(filePath: string, projectConfig: Object): boolean {
   if (!projectConfig?.mixCompile) {
     return false;
@@ -455,6 +461,9 @@ export function isBridgeCode(filePath: string, projectConfig: Object): boolean {
 }
 
 export function isMixCompile(): boolean {
+  if (typeof mixCompile === 'boolean') {
+    return mixCompile;
+  }
   return process.env.mixCompile === 'true';
 }
 
@@ -493,7 +502,7 @@ export function processAbilityPagesFullPath(abilityPagesFullPath: Set<string>): 
 
 
 export function transformAbilityPages(abilityPath: string): boolean {
-  const entryBridgeCodePath = process.env.entryBridgeCodePath;
+  const entryBridgeCodePath = getBrdigeCodeRootPath(abilityPath, FileManager.getInstance().getInteropConfig());
   if (!entryBridgeCodePath) {
     const errInfo = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
@@ -516,9 +525,12 @@ export function transformAbilityPages(abilityPath: string): boolean {
   return false;
 }
 
-function transformModuleNameToRelativePath(moduleName): string {
+export function transformModuleNameToRelativePath(filePath: string): string {
   let defaultSourceRoot = 'src/main';
-  const normalizedModuleName = moduleName.replace(/\\/g, '/');
+  if (FileManager.getInstance().getInteropConfig()?.projectConfig?.isOhosTest) {
+    defaultSourceRoot = 'src/ohosTest';
+  }
+  const normalizedModuleName = filePath.replace(/\\/g, '/');
   const normalizedRoot = defaultSourceRoot.replace(/\\/g, '/');
 
   const rootIndex = normalizedModuleName.indexOf(`/${normalizedRoot}/`);
@@ -527,14 +539,15 @@ function transformModuleNameToRelativePath(moduleName): string {
       ErrorCode.ETS2BUNDLE_INTERNAL_WRONG_MODULE_NAME_FROM_ACEMODULEJSON,
       ArkTSInternalErrorDescription,
       `defaultSourceRoot '${defaultSourceRoot}' not found ` +
-      `when process moduleName '${moduleName}'`
+      `when process moduleName '${filePath}'`
     );
     throw Error(errInfo.toString());
   }
 
-  const relativePath = normalizedModuleName.slice(rootIndex + normalizedRoot.length + 1);
+  const relativePath = normalizedModuleName.slice(rootIndex + normalizedRoot.length + 1).replace(/^\/+/, '');
   return './' + relativePath;
 }
+
 
 export function getApiPathForInterop(apiDirs: string[], languageVersion: string): void {
   if (languageVersion !== ARKTS_1_2) {
@@ -545,7 +558,7 @@ export function getApiPathForInterop(apiDirs: string[], languageVersion: string)
   apiDirs.unshift(...staticPaths);
 }
 
-export function rebuildEntryObj(projectConfig: Object): void {
+export function rebuildEntryObj(projectConfig: Object, interopConfig: InteropConfig): void {
   const entryObj = projectConfig.entryObj;
 
   const removeExt = (p: string): string => p.replace(/\.[^/.]+$/, '');
@@ -562,7 +575,7 @@ export function rebuildEntryObj(projectConfig: Object): void {
     if (!firstLine.includes('use static')) {
       newEntry[newKey] = rawPath;
     } else if (rawPath.startsWith(projectConfig.projectRootPath)) {
-      const bridgePath = process.env.entryBridgeCodePath;
+      const bridgePath = getBrdigeCodeRootPath(rawPath, interopConfig);
       if (!bridgePath) {
         const errInfo = LogDataFactory.newInstance(
           ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
@@ -580,3 +593,64 @@ export function rebuildEntryObj(projectConfig: Object): void {
     return newEntry;
   }, {} as Record<string, string>);
 }
+
+
+/**
+ * corresponds to compiler/src/fast_build/common/init_config.ts - initConfig()
+ * As the entry  for mix compile,so mixCompile status will be set true
+ */
+export function initConfigForInterop(interopConfig: InteropConfig): Object {
+  initFileManagerInRollup(interopConfig);
+
+  function getEntryObj(): void {
+    loadEntryObj(projectConfig);
+    initBuildInfo();
+    readPatchConfig();
+    loadModuleInfo(projectConfig);
+    workerFile = readWorkerFile();
+    if (!projectConfig.isPreview) {
+      loadWorker(projectConfig, workerFile);
+    }
+    if (isMixCompile()) {
+      rebuildEntryObj(projectConfig, interopConfig);
+      return;
+    }
+    projectConfig.entryObj = Object.keys(projectConfig.entryObj).reduce((newEntry, key) => {
+      const newKey: string = key.replace(/^\.\//, '');
+      newEntry[newKey] = projectConfig.entryObj[key].replace('?entry', '');
+      return newEntry;
+    }, {});
+  }
+  mixCompile = true;
+  getEntryObj();
+  if (process.env.appResource) {
+    readAppResource(process.env.appResource);
+  }
+  return {
+    entryObj: Object.assign({}, projectConfig.entryObj, projectConfig.otherCompileFiles),
+    cardEntryObj: projectConfig.cardEntryObj,
+    workerFile: workerFile,
+    globalModulePaths: globalModulePaths
+  };
+}
+
+export function getBrdigeCodeRootPath(filePath: string, interopConfig: InteropConfig): string | undefined {
+  if (!interopConfig) {
+    return process.env.entryBridgeCodePath;
+  }
+
+  for (const [moduleRootPath, InteropInfo] of interopConfig.interopModuleInfo) {
+    if (isSubPathOf(filePath, moduleRootPath)) {
+      return InteropInfo.declgenBridgeCodePath;
+    }
+  }
+
+  return undefined;
+}
+
+export function destroyInterop(): void {
+  FileManager.cleanFileManagerObject();
+  entryFileLanguageInfo.clear();
+  mixCompile = false;
+}
+
