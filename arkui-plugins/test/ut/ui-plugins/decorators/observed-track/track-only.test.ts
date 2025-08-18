@@ -122,7 +122,7 @@ class C implements IObservedObject, ISubscribedWatches {
   
   @memo() public build() {}
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

@@ -5,13 +5,7 @@
     "memo_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/memo-plugins/index"
   },
   "compileFiles": [
-    "./demo/localtest/entry/src/main/ets/pages/new.ets",
-    "./demo/localtest/entry/src/main/ets/pages/testa.ets",
-    "./demo/localtest/entry/src/main/ets/pages/testb.ets",
-    "./demo/localtest/entry/src/main/ets/pages/testc.ets",
-    "./demo/localtest/entry/src/main/ets/pages/testd.ets",
-    "./demo/localtest/entry/src/main/ets/pages/teste.ets",
-    "./demo/localtest/entry/src/main/ets/pages/pack/test1.ets"
+    "./demo/localtest/entry/src/main/ets/pages/new.ets"
   ],
   "entryFiles": [
     "./demo/localtest/entry/src/main/ets/pages/new.ets"

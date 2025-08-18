@@ -57,6 +57,9 @@ import {
     isSwitchStatement,
     isSwitchCaseStatement,
     isSpreadElement,
+    isClassStaticBlock,
+    isFunctionExpression,
+    FunctionExpression,
 } from '../generated';
 import {
     isEtsScript,
@@ -76,6 +79,7 @@ import {
 } from './factory/nodeTests';
 import { classDefinitionFlags } from './utilities/public';
 import { Es2pandaAstNodeType } from '../Es2pandaEnums';
+import { updateFunctionExpression } from './node-utilities/FunctionExpression';
 
 type Visitor = (node: AstNode) => AstNode;
 
@@ -461,6 +465,16 @@ function visitDefinitionBody(node: AstNode, visitor: Visitor): AstNode {
             node.typeAnnotation,
             node.modifiers,
             node.isComputed
+        );
+    }
+    if (isClassStaticBlock(node) && !!node.value) {
+        updated = true;
+        return factory.updateClassStaticBlock(
+            node,
+            updateFunctionExpression(
+                node.value as FunctionExpression,
+                nodeVisitor(node.function, visitor)
+            )
         );
     }
     // TODO

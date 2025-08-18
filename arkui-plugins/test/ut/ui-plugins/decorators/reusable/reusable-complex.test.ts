@@ -135,7 +135,7 @@ class Message {
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -180,7 +180,7 @@ class Message {
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

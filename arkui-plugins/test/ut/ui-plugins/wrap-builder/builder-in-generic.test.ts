@@ -54,15 +54,6 @@ import { State as State } from \"@ohos.arkui.stateManagement\";
 @memo() let globalBuilder: @Builder() ((value: string, size: number)=> void);
 let builderArr: Array<@Builder() ((value: string, size: number)=> void)>;
 function main() {}
-globalBuilder = MyBuilder;
-builderArr = [MyBuilder, YourBuilder];
-__EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
-    bundleName: \"com.example.mock\",
-    moduleName: \"entry\",
-    pagePath: \"../../../wrap-builder/builder-in-generic\",
-    pageFullPath: \"test/demo/mock/wrap-builder/builder-in-generic\",
-    integratedHsp: \"false\",
-} as NavInterface));
 @memo() function MyBuilder(value: string, size: number) {
     TextImpl(@memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
@@ -75,6 +66,15 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
         return;
     }), undefined);
 }
+globalBuilder = MyBuilder;
+builderArr = [MyBuilder, YourBuilder];
+__EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
+    bundleName: \"com.example.mock\",
+    moduleName: \"entry\",
+    pagePath: \"../../../wrap-builder/builder-in-generic\",
+    pageFullPath: \"test/demo/mock/wrap-builder/builder-in-generic\",
+    integratedHsp: \"false\",
+} as NavInterface));
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
     public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
         this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, \"message\", ((({let gensym___<some_random_number> = initializers;
@@ -101,7 +101,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             }));
         }));
     }
-    private constructor() {}
+    public constructor() {}
 }
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
     set message(message: (string | undefined))
@@ -141,15 +141,6 @@ import { State as State } from \"@ohos.arkui.stateManagement\";
 @memo() let globalBuilder: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
 let builderArr: Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
 function main() {}
-globalBuilder = MyBuilder;
-builderArr = [MyBuilder, YourBuilder];
-__EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
-    bundleName: \"com.example.mock\",
-    moduleName: \"entry\",
-    pagePath: \"../../../wrap-builder/builder-in-generic\",
-    pageFullPath: \"test/demo/mock/wrap-builder/builder-in-generic\",
-    integratedHsp: \"false\",
-} as NavInterface));
 @memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number) {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
     const __memo_parameter_value = __memo_scope.param(0, value), __memo_parameter_size = __memo_scope.param(1, size);
@@ -200,6 +191,15 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
         return;
     }
 }
+globalBuilder = MyBuilder;
+builderArr = [MyBuilder, YourBuilder];
+__EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
+    bundleName: \"com.example.mock\",
+    moduleName: \"entry\",
+    pagePath: \"../../../wrap-builder/builder-in-generic\",
+    pageFullPath: \"test/demo/mock/wrap-builder/builder-in-generic\",
+    integratedHsp: \"false\",
+} as NavInterface));
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
     public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
         this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, \"message\", ((({let gensym___<some_random_number> = initializers;
@@ -263,7 +263,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             return;
         }
     }
-    private constructor() {}
+    public constructor() {}
 }
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
     set message(message: (string | undefined))

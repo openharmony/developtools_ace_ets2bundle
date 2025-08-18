@@ -21,7 +21,6 @@ import {
     EtsScript,
     ExpressionStatement,
     FunctionDeclaration,
-    FunctionExpression,
     IfStatement,
     MethodDefinition,
     NumberLiteral,
@@ -46,6 +45,7 @@ import {
     ETSTypeReferencePart,
     ETSUndefinedType,
     ETSUnionType,
+    FunctionExpression,
     FunctionSignature,
     Identifier,
     ImportSpecifier,
@@ -87,6 +87,7 @@ import {
     ETSNullType,
     TSThisType,
     TSQualifiedName,
+    ClassStaticBlock,
 } from '../../generated';
 import { updateIdentifier } from '../node-utilities/Identifier';
 import { updateCallExpression } from '../node-utilities/CallExpression';
@@ -154,6 +155,7 @@ import { updateTSArrayType } from '../node-utilities/TSArrayType';
 import { updateETSNullType } from '../node-utilities/ETSNullType';
 import { updateTSThisType } from '../node-utilities/TSThisType';
 import { updateTSQualifiedName } from '../node-utilities/TSQualifiedName';
+import { updateClassStaticBlock } from '../node-utilities/ClassStaticBlock';
 
 export const factory = {
     get createIdentifier(): (...args: Parameters<typeof Identifier.create2Identifier>) => Identifier {
@@ -368,8 +370,10 @@ export const factory = {
     get updateFunctionType(): (...args: Parameters<typeof updateETSFunctionType>) => ETSFunctionType {
         return updateETSFunctionType;
     },
-    get createFunctionExpression(): (...args: Parameters<typeof FunctionExpression.create>) => FunctionExpression {
-        return FunctionExpression.create;
+    get createFunctionExpression(): (
+        ...args: Parameters<typeof FunctionExpression.createFunctionExpression>
+    ) => FunctionExpression {
+        return FunctionExpression.createFunctionExpression;
     },
     get updateFunctionExpression(): (...args: Parameters<typeof updateFunctionExpression>) => FunctionExpression {
         return updateFunctionExpression;
@@ -664,6 +668,14 @@ export const factory = {
     },
     get updateTSQualifiedName(): (...args: Parameters<typeof updateTSQualifiedName>) => TSQualifiedName {
         return updateTSQualifiedName;
+    },
+    get createClassStaticBlock(): (
+        ...args: Parameters<typeof ClassStaticBlock.createClassStaticBlock>
+    ) => ClassStaticBlock {
+        return ClassStaticBlock.createClassStaticBlock;
+    },
+    get updateClassStaticBlock(): (...args: Parameters<typeof updateClassStaticBlock>) => ClassStaticBlock {
+        return updateClassStaticBlock;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {

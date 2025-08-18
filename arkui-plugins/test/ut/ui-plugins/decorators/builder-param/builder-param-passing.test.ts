@@ -78,7 +78,7 @@ function main() {}
     this.customBuilderParam();
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -122,7 +122,7 @@ function main() {}
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -193,7 +193,7 @@ function main() {}
     }
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -309,7 +309,7 @@ function main() {}
     }
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

@@ -135,7 +135,7 @@ function main() {}
   
   @memo() public build() {}
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

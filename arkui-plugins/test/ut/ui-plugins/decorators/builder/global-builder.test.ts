@@ -98,7 +98,7 @@ class Tmp {
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

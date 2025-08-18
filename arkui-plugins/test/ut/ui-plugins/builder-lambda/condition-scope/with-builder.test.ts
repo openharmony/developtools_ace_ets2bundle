@@ -76,6 +76,7 @@ function main() {}
     }) as (()=> void)));
     param();
 }
+wBuilder = wrapBuilder(ParamBuilder);
 @Component() final struct MyStruct extends CustomComponent<MyStruct, __Options_MyStruct> {
     public __initializeStruct(initializers: (__Options_MyStruct | undefined), @memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_MyStruct | undefined)): void {}
@@ -127,7 +128,7 @@ function main() {}
             }, undefined, undefined);
         }));
     }
-    private constructor() {}
+    public constructor() {}
 }
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
     public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
@@ -165,7 +166,7 @@ function main() {}
             }
         }));
     }
-    private constructor() {}
+    public constructor() {}
 }
 @Component() export interface __Options_MyStruct {
 }
@@ -301,6 +302,7 @@ function main() {}
         return;
     }
 }
+wBuilder = wrapBuilder(ParamBuilder);
 @Component() final struct MyStruct extends CustomComponent<MyStruct, __Options_MyStruct> {
     public __initializeStruct(initializers: (__Options_MyStruct | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_MyStruct | undefined)): void {}
@@ -487,7 +489,7 @@ function main() {}
             return;
         }
     }
-    private constructor() {}
+    public constructor() {}
 }
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
     public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
@@ -597,7 +599,7 @@ function main() {}
             return;
         }
     }
-    private constructor() {}
+    public constructor() {}
 }
 @Component() export interface __Options_MyStruct {
 }

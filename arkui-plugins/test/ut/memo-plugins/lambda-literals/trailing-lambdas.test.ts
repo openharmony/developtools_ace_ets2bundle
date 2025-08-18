@@ -34,6 +34,31 @@ const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
+@memo() function bar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, f?: (()=> void)): void {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+    const __memo_parameter_f = __memo_scope.param(0, f);
+    if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+    }
+    {
+        __memo_scope.recache();
+        return;
+    }
+}
+function par(f?: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
+@memo() function kar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() f?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+    const __memo_parameter_f = __memo_scope.param(0, f);
+    if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+    }
+    {
+        __memo_scope.recache();
+        return;
+    }
+}
 @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
@@ -100,31 +125,6 @@ function main() {}
         return;
     }
 });
-@memo() function bar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, f?: (()=> void)): void {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
-    const __memo_parameter_f = __memo_scope.param(0, f);
-    if (__memo_scope.unchanged) {
-        __memo_scope.cached;
-        return;
-    }
-    {
-        __memo_scope.recache();
-        return;
-    }
-}
-function par(f?: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
-@memo() function kar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() f?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
-    const __memo_parameter_f = __memo_scope.param(0, f);
-    if (__memo_scope.unchanged) {
-        __memo_scope.cached;
-        return;
-    }
-    {
-        __memo_scope.recache();
-        return;
-    }
-}
 class A {
     @memo() public foo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, p?: (()=> void)): void {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
