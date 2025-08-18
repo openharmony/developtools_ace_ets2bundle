@@ -44,7 +44,7 @@ const {
 } = require('log4js');
 
 const {
-  entryFileLanguageInfo,
+  setEntryFileLanguage,
   isMixCompile,
   processAbilityPagesFullPath,
   transformAbilityPages
@@ -512,11 +512,11 @@ function readAbilityEntrance(moduleJson) {
     if (moduleSrcEntry) {
       abilityPages.push(moduleSrcEntry);
       abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntry));
-      entryFileLanguageInfo.set(moduleSrcEntry, isStatic);
+      setEntryFileLanguage(moduleSrcEntry, isStatic);
     } else if (moduleSrcEntrance) {
       abilityPages.push(moduleSrcEntrance);
       abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
-      entryFileLanguageInfo.set(moduleSrcEntrance, isStatic);
+      setEntryFileLanguage(moduleSrcEntrance, isStatic);
     }
     if (moduleJson.module.abilities && moduleJson.module.abilities.length > 0) {
       setEntrance(moduleJson.module.abilities, abilityPages);
@@ -535,11 +535,11 @@ function setEntrance(abilityConfig, abilityPages) {
       const isStatic = ability.arkTSMode === ARKTS_MODE.STATIC;
       if (ability.srcEntry) {
         abilityPages.push(ability.srcEntry);
-        entryFileLanguageInfo.set(ability.srcEntry, isStatic);
+        setEntryFileLanguage(ability.srcEntry, isStatic);
         abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry));
       } else if (ability.srcEntrance) {
         abilityPages.push(ability.srcEntrance);
-        entryFileLanguageInfo.set(ability.srcEntrance, isStatic);
+        setEntryFileLanguage(ability.srcEntrance, isStatic);
         abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
       }
     });
