@@ -44,14 +44,14 @@ const {
 } = require('log4js');
 
 const {
-  entryFileLanguageInfo,
+  setEntryFileLanguage,
   isMixCompile,
   processAbilityPagesFullPath,
   transformAbilityPages
 } = require('./lib/fast_build/ark_compiler/interop/interop_manager');
 
 const {
-  ARKTS_1_2
+  ARKTS_MODE
 } = require('./lib/fast_build/ark_compiler/interop/pre_define');
 
 configure({
@@ -123,6 +123,8 @@ function initProjectConfig(projectConfig) {
   projectConfig.allowEmptyBundleName = false;
   projectConfig.uiTransformOptimization = false;
   projectConfig.ignoreCrossplatformCheck = false;
+  projectConfig.isolatedDeclarations = false;
+  projectConfig.noCheck = false;
 }
 
 function initProjectPathConfig(projectConfig) {
@@ -505,16 +507,16 @@ function readAbilityEntrance(moduleJson) {
   if (moduleJson.module) {
     const moduleSrcEntrance = moduleJson.module.srcEntrance;
     const moduleSrcEntry = moduleJson.module.srcEntry;
-    const isStatic = moduleJson.module?.abilityStageCodeLanguage === ARKTS_1_2;
+    const isStatic = moduleJson.module?.arkTSMode === ARKTS_MODE.STATIC;
 
     if (moduleSrcEntry) {
       abilityPages.push(moduleSrcEntry);
       abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntry));
-      entryFileLanguageInfo.set(moduleSrcEntry, isStatic);
+      setEntryFileLanguage(moduleSrcEntry, isStatic);
     } else if (moduleSrcEntrance) {
       abilityPages.push(moduleSrcEntrance);
       abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
-      entryFileLanguageInfo.set(moduleSrcEntrance, isStatic);
+      setEntryFileLanguage(moduleSrcEntrance, isStatic);
     }
     if (moduleJson.module.abilities && moduleJson.module.abilities.length > 0) {
       setEntrance(moduleJson.module.abilities, abilityPages);
@@ -530,14 +532,14 @@ function readAbilityEntrance(moduleJson) {
 function setEntrance(abilityConfig, abilityPages) {
   if (abilityConfig && abilityConfig.length > 0) {
     abilityConfig.forEach(ability => {
-      const isStatic = ability.codeLanguage === ARKTS_1_2;
+      const isStatic = ability.arkTSMode === ARKTS_MODE.STATIC;
       if (ability.srcEntry) {
         abilityPages.push(ability.srcEntry);
-        entryFileLanguageInfo.set(ability.srcEntry, isStatic);
+        setEntryFileLanguage(ability.srcEntry, isStatic);
         abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry));
       } else if (ability.srcEntrance) {
         abilityPages.push(ability.srcEntrance);
-        entryFileLanguageInfo.set(ability.srcEntrance, isStatic);
+        setEntryFileLanguage(ability.srcEntrance, isStatic);
         abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
       }
     });
