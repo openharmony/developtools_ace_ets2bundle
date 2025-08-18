@@ -19,6 +19,7 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 class BuilderParamDecoratorCheckRule extends AbstractUISyntaxRule {
     private structNameWithMultiplyBuilderParam: string[] = [];
+    private structNameWithoutBuilderParam: string[] = [];
 
     public setup(): Record<string, string> {
         return {
@@ -59,6 +60,9 @@ class BuilderParamDecoratorCheckRule extends AbstractUISyntaxRule {
             });
             if (count > 1) {
                 this.structNameWithMultiplyBuilderParam.push(structName);
+            }
+            if (count === 0) {
+                this.structNameWithoutBuilderParam.push(structName);
             }
         });
     }
@@ -105,13 +109,14 @@ class BuilderParamDecoratorCheckRule extends AbstractUISyntaxRule {
         if (!arkts.isCallExpression(parentNode)) {
             return;
         }
-        if (!arkts.isIdentifier(node) || !this.structNameWithMultiplyBuilderParam.includes(getIdentifierName(node))) {
+        let structName: string = getIdentifierName(node);
+        if (!arkts.isIdentifier(node) || !(this.structNameWithMultiplyBuilderParam.includes(structName) ||
+            this.structNameWithoutBuilderParam.includes(structName))) {
             return;
         }
         if (!this.hasBlockStatement(node)) {
             return;
         }
-        let structName: string = getIdentifierName(node);
         let structNode = node.parent;
         while (!arkts.isStructDeclaration(structNode)) {
             if (!structNode.parent) {
