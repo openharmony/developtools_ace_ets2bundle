@@ -149,7 +149,7 @@ interface trackInterface {
   
   @memo() public build() {}
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

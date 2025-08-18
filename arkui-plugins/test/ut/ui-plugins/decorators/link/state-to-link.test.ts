@@ -115,7 +115,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -164,7 +164,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

@@ -190,7 +190,7 @@ class G extends A {
   
   @memo() public build() {}
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

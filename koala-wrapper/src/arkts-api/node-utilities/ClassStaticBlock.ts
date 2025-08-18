@@ -13,15 +13,16 @@
  * limitations under the License.
  */
 
-import { ScriptFunction, FunctionExpression } from '../../generated';
+import { ClassStaticBlock, Expression } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { attachModifiers, updateThenAttach } from '../utilities/private';
 
-export function updateFunctionExpression(original: FunctionExpression, func?: ScriptFunction): FunctionExpression {
-    if (isSameNativeObject(func, original.function)) {
+export function updateClassStaticBlock(original: ClassStaticBlock, value?: Expression): ClassStaticBlock {
+    if (isSameNativeObject(value, original.value)) {
         return original;
     }
 
-    const update = updateThenAttach(FunctionExpression.updateFunctionExpression, attachModifiers);
-    return update(original, func);
+    const update = updateThenAttach(ClassStaticBlock.updateClassStaticBlock, attachModifiers);
+    const newNode = update(original, value);
+    return newNode;
 }
