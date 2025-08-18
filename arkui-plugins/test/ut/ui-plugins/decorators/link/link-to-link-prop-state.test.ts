@@ -108,7 +108,7 @@ function main() {}
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -185,7 +185,7 @@ function main() {}
     }), undefined);
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

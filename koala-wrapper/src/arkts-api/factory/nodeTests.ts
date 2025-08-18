@@ -21,7 +21,6 @@ import {
     EtsScript,
     ExpressionStatement,
     FunctionDeclaration,
-    FunctionExpression,
     IfStatement,
     MethodDefinition,
     StructDeclaration,
@@ -63,10 +62,6 @@ export function isArrowFunctionExpression(node: AstNode): node is ArrowFunctionE
 
 export function isStructDeclaration(node: AstNode): node is StructDeclaration {
     return node instanceof StructDeclaration;
-}
-
-export function isFunctionExpression(node: AstNode): node is FunctionExpression {
-    return node instanceof FunctionExpression;
 }
 
 export function isEtsParameterExpression(node: AstNode): node is ETSParameterExpression {

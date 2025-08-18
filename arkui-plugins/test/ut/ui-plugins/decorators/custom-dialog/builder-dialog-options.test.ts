@@ -142,7 +142,7 @@ function main() {}
     }), @memo() (() => {}));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -176,7 +176,7 @@ function main() {}
     }), @memo() (() => {}));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

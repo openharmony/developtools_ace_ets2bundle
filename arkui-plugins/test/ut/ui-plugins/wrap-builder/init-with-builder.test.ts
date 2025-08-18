@@ -50,7 +50,6 @@ let globalBuilder: WrappedBuilder<MyBuilderFuncType>;
 
 function main() {}
 
-globalBuilder = wrapBuilder(myBuilder);
 @memo() function myBuilder(value: string, size: number) {
   TextImpl(@memo() ((instance: TextAttribute): void => {
     instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
@@ -58,6 +57,7 @@ globalBuilder = wrapBuilder(myBuilder);
   }), undefined);
 }
 
+globalBuilder = wrapBuilder(myBuilder);
 
 @memo() type MyBuilderFuncType = @Builder() ((value: string, size: number)=> void);
 
@@ -75,7 +75,7 @@ globalBuilder = wrapBuilder(myBuilder);
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -110,7 +110,6 @@ let globalBuilder: WrappedBuilder<MyBuilderFuncType>;
 
 function main() {}
 
-globalBuilder = wrapBuilder(myBuilder);
 @memo() function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number) {
   const __memo_scope = __memo_context.scope<void>(((__memo_id) + (52041161)), 2);
   const __memo_parameter_value = __memo_scope.param(0, value), __memo_parameter_size = __memo_scope.param(1, size);
@@ -137,6 +136,7 @@ globalBuilder = wrapBuilder(myBuilder);
   }
 }
 
+globalBuilder = wrapBuilder(myBuilder);
 
 @memo() type MyBuilderFuncType = @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
 
@@ -181,7 +181,7 @@ globalBuilder = wrapBuilder(myBuilder);
     }
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

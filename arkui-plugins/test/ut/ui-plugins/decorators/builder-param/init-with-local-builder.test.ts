@@ -82,7 +82,7 @@ function main() {}
     this.customBuilderParam2("hello");
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -174,7 +174,7 @@ function main() {}
     }
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

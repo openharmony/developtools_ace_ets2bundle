@@ -94,7 +94,7 @@ class ABB {
   
   @memo() public build() {}
   
-  private constructor() {}
+  public constructor() {}
   
   static {
     

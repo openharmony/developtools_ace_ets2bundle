@@ -282,7 +282,7 @@ final class StateType extends BaseEnum<int> {
   
   @memo() public build() {}
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
