@@ -114,6 +114,7 @@ class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
                 startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 let endPosition = trackDecorator.endPosition;
                 return {
+                    title: 'Remove the annotation',
                     range: [startPosition, endPosition],
                     code: '',
                 };
@@ -130,6 +131,7 @@ class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
                 startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 let endPosition = node.endPosition;
                 return {
+                    title: 'Remove the annotation',
                     range: [startPosition, endPosition],
                     code: '',
                 };

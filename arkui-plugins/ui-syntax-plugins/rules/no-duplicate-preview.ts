@@ -69,6 +69,7 @@ class NoDuplicatePreviewRule extends AbstractUISyntaxRule {
             message: this.messages.duplicateEntry,
             fix: () => {
                 return {
+                    title: 'Remove the duplicate \'Preview\' annotation',
                     range: [startPosition, errorNode.endPosition],
                     code: '',
                 };

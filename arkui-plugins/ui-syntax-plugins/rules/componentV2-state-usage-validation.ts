@@ -94,6 +94,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
                 fix: (memberKey) => {
                     const startPosition = memberKey.startPosition;
                     return {
+                        title: 'Add @Require annotation',
                         range: [startPosition, startPosition],
                         code: `@${PresetDecorators.REQUIRE} `,
                     };
@@ -119,6 +120,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
                     startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                     let endPosition = requireDecorator.endPosition;
                     return {
+                        title: 'Remove the @Require annotation',
                         range: [startPosition, endPosition],
                         code: '',
                     };
@@ -154,6 +156,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
                 startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 let endPosition = annotation.endPosition;
                 return {
+                    title: 'Remove the annotation',
                     range: [startPosition, endPosition],
                     code: '',
                 };
@@ -325,6 +328,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
                 },
                 fix: (property) => {
                     return {
+                        title: 'Remove the property',
                         range: [property.startPosition, property.endPosition],
                         code: '',
                     };
@@ -342,6 +346,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
                 },
                 fix: (property) => {
                     return {
+                        title: 'Remove the property',
                         range: [property.startPosition, property.endPosition],
                         code: '',
                     };

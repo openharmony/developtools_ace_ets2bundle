@@ -90,6 +90,7 @@ class ReuseAttributeCheckRule extends AbstractUISyntaxRule {
                 const startPosition = structNode.startPosition;
                 const endPosition = structNode.endPosition;
                 return {
+                    title: 'Change reuse to reuseId',
                     range: [startPosition, endPosition],
                     code: ReuseConstants.REUSE_ID,
                 };
@@ -108,6 +109,7 @@ class ReuseAttributeCheckRule extends AbstractUISyntaxRule {
                 const startPosition = structNode.startPosition;
                 const endPosition = structNode.endPosition;
                 return {
+                    title: 'Change reuseId to reuse',
                     range: [startPosition, endPosition],
                     code: ReuseConstants.REUSE,
                 };
