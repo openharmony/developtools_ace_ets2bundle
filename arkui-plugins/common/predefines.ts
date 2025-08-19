@@ -212,6 +212,7 @@ export enum StateManagementTypes {
     MAKE_PROP = 'makeProp',
     MAKE_PROP_REF = 'makePropRef',
     MAKE_LOCAL = 'makeLocal',
+    MAKE_STATIC_LOCAL = 'makeStaticLocal',
     MAKE_STORAGE_PROP_REF = 'makeStoragePropRef',
     MAKE_LOCAL_STORAGE_PROP_REF = 'makeLocalStoragePropRef',
     MAKE_STORAGE_LINK = 'makeStorageLink',
