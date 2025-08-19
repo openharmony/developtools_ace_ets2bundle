@@ -23,6 +23,7 @@ import {
     loadNativeModuleLibrary,
     KDouble,
     KStringArrayPtr,
+    KUInt,
 } from '@koalaui/interop';
 import { Es2pandaNativeModule as GeneratedEs2pandaNativeModule } from './generated/Es2pandaNativeModule';
 import * as path from 'path';
@@ -817,6 +818,17 @@ export class Es2pandaNativeModule {
 
     _ClassDefinitionSetFromStructModifier(context: KNativePointer, instance: KNativePointer): void {
         throw new Error('Not implemented');
+    }
+    
+    _CreateClassDefinition3(context: KNativePointer, ident: KNativePointer, typeParams: KNativePointer, superTypeParams: KNativePointer, _implements: BigUint64Array, _implementsSequenceLength: KUInt, ctor: KNativePointer, superClass: KNativePointer, body: BigUint64Array, bodySequenceLength: KUInt, modifiers: KInt, flags: KInt, lang: KInt): KNativePointer {
+        throw new Error("'CreateClassDefinition was not overloaded by native module initialization")
+    }
+    _UpdateClassDefinition3(context: KNativePointer, original: KNativePointer, ident: KNativePointer, typeParams: KNativePointer, superTypeParams: KNativePointer, _implements: BigUint64Array, _implementsSequenceLength: KUInt, ctor: KNativePointer, superClass: KNativePointer, body: BigUint64Array, bodySequenceLength: KUInt, modifiers: KInt, flags: KInt, lang: KInt): KNativePointer {
+        throw new Error("'UpdateClassDefinition was not overloaded by native module initialization")
+    }
+    
+    _ClassDefinitionLanguageConst(context: KNativePointer, receiver: KNativePointer): KInt {
+        throw new Error("'ClassDefinitionLanguageConst was not overloaded by native module initialization")
     }
 
     _ProgramFileNameConst(context: KPtr, program: KPtr): KNativePointer {

@@ -158,7 +158,8 @@ export class LegacyTransformer extends AbstractVisitor {
             definition.super,
             [...definition.body, instantiate_Interop],
             definition.modifiers,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            arkts.Es2pandaLanguage.JS
         );
 
         if (arkts.isStructDeclaration(node)) {
