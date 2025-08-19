@@ -19,6 +19,7 @@ import { UISyntaxRuleComponents } from 'ui-syntax-plugins/utils';
 
 export type FixSuggestion = {
     range: [start: arkts.SourcePosition, end: arkts.SourcePosition];
+    title?: string;
     code: string;
 };
 
