@@ -148,6 +148,7 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
                 startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 const endPosition = otherDecorators.endPosition;
                 return {
+                    title: 'Remove other annotations',
                     range: [startPosition, endPosition],
                     code: '',
                 };
@@ -224,6 +225,7 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
                 startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 const endPosition = decorator.endPosition;
                 return {
+                    title: 'Remove the annotation',
                     range: [startPosition, endPosition],
                     code: '',
                 };
@@ -286,6 +288,7 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
                     const startPosition = parent.startPosition;
                     const endPosition = parent.endPosition;
                     return {
+                        title: 'Remove the property',
                         range: [startPosition, endPosition],
                         code: '',
                     };
@@ -309,6 +312,7 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
                     const startPosition = parent.startPosition;
                     const endPosition = parent.endPosition;
                     return {
+                        title: 'Remove the property',
                         range: [startPosition, endPosition],
                         code: '',
                     };

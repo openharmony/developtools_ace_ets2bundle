@@ -75,6 +75,7 @@ class NoPropLinkObjectLinkInEntryRule extends AbstractUISyntaxRule {
                     startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                     let endPosition = annotation.endPosition;
                     return {
+                        title: 'Remove the annotation',
                         range: [startPosition, endPosition],
                         code: '',
                     };
