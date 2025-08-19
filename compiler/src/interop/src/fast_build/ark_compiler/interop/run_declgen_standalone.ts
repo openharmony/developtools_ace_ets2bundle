@@ -24,11 +24,11 @@ import {
     ArkTSEvolutionModule,
     BuildType,
     DeclFilesConfig,
-    DECLGEN_CACHE_FILE,
     Params,
     ProjectConfig,
     RunnerParms
 } from './type';
+import { DECLGEN_CACHE_FILE } from './pre_define';
 import fs from 'fs';
 import path from 'path';
 import * as ts from 'typescript';
