@@ -892,7 +892,7 @@ export class factory {
                         UIFactory.createScriptFunction({
                             flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
                             body: arkts.factory.createBlock([arkts.factory.createReturnStatement(monitorVariable)]),
-                            returnTypeAnnotation: UIFactory.createTypeReferenceFromString(TypeNames.NULLISH_TYPE),
+                            returnTypeAnnotation: UIFactory.createTypeReferenceFromString(TypeNames.ANY),
                         })
                     )
                 ),
