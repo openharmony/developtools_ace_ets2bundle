@@ -177,7 +177,7 @@ function main() {}
   public constructor() {
     this.__monitor_onNameChange = STATE_MGMT_FACTORY.makeMonitor([{
       path: "name",
-      valueCallback: ((): NullishType => {
+      valueCallback: ((): Any => {
         return this.name;
       }),
     }], ((_m: IMonitor) => {
@@ -185,7 +185,7 @@ function main() {}
     }));
     this.__monitor_onAgeChange = STATE_MGMT_FACTORY.makeMonitor([{
       path: "age",
-      valueCallback: ((): NullishType => {
+      valueCallback: ((): Any => {
         return this.age;
       }),
     }], ((_m: IMonitor) => {
@@ -193,12 +193,12 @@ function main() {}
     }));
     this.__monitor_onChange = STATE_MGMT_FACTORY.makeMonitor([{
       path: "region",
-      valueCallback: ((): NullishType => {
+      valueCallback: ((): Any => {
         return this.region;
       }),
     }, {
       path: "job",
-      valueCallback: ((): NullishType => {
+      valueCallback: ((): Any => {
         return this.job;
       }),
     }], ((_m: IMonitor) => {
