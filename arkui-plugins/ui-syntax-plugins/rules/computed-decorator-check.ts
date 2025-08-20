@@ -84,6 +84,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
                     startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                     const endPosition = computedDecorator.endPosition;
                     return {
+                        title: 'Remove the annotation',
                         range: [startPosition, endPosition],
                         code: '',
                     };
@@ -119,6 +120,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
                 startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 const endPosition = computedDecorator.endPosition;
                 return {
+                    title: 'Remove the annotation',
                     range: [startPosition, endPosition],
                     code: '',
                 };
@@ -188,6 +190,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
                 const startPosition = node.startPosition;
                 const endPosition = node.endPosition;
                 return {
+                    title: 'Remove the set method',
                     range: [startPosition, endPosition],
                     code: '',
                 };
@@ -240,6 +243,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
                     const startPosition = node.startPosition;
                     const endPosition = node.startPosition;
                     return {
+                        title: 'Add @ComponentV2 annotation',
                         range: [startPosition, endPosition],
                         code: `@${PresetDecorators.COMPONENT_V2}\n`,
                     };
@@ -255,6 +259,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
                     const startPosition = componentDecorator.startPosition;
                     const endPosition = componentDecorator.endPosition;
                     return {
+                        title: 'Change @Component to @ComponentV2',
                         range: [startPosition, endPosition],
                         code: `${PresetDecorators.COMPONENT_V2}`,
                     };
@@ -278,6 +283,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
                 fix: () => {
                     const startPosition = node.startPosition;
                     return {
+                        title: 'Add @ObservedV2 annotation',
                         range: [startPosition, startPosition],
                         code: `@${PresetDecorators.OBSERVED_V2}\n`,
                     };
@@ -293,6 +299,7 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
                     const startPosition = observedDecorator.startPosition;
                     const endPosition = observedDecorator.endPosition;
                     return {
+                        title: 'Change @Observed to @ObservedV2',
                         range: [startPosition, endPosition],
                         code: `${PresetDecorators.OBSERVED_V2}`,
                     };

@@ -78,6 +78,7 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
                 startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
                 const endPosition = decorator.endPosition;
                 return {
+                    title: 'Remove the annotation',
                     range: [startPosition, endPosition],
                     code: '',
                 };
@@ -131,6 +132,7 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
                 const startPosition = onceDecorator.endPosition;
                 const endPosition = onceDecorator.endPosition;
                 return {
+                    title: 'Add @Param annotation',
                     range: [startPosition, endPosition],
                     code: `@${PresetDecorators.PARAM}`
                 };
