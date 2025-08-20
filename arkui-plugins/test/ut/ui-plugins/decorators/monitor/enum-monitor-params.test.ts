@@ -27,10 +27,10 @@ const STATE_DIR_PATH: string = 'decorators/monitor';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, STATE_DIR_PATH, 'monitor-params.ets'),
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, STATE_DIR_PATH, 'enum-monitor-params.ets'),
 ];
 
-const pluginTester = new PluginTester('test @Monitor decorator parameters transformation', buildConfig);
+const pluginTester = new PluginTester('test @Monitor decorator enum parameters transformation', buildConfig);
 
 const parsedTransform: Plugins = {
     name: 'parsedTrans',
@@ -60,53 +60,12 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
-import { ComponentV2 as ComponentV2, Column as Column, Button as Button } from "@ohos.arkui.component";
+import { ComponentV2 as ComponentV2 } from "@ohos.arkui.component";
 
 import { Monitor as Monitor, IMonitor as IMonitor, ObservedV2 as ObservedV2, Trace as Trace, Local as Local } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-
-
-class AAA {
-  public aaa: BBB = new BBB();
-  
-  public constructor() {}
-  
-}
-
-class BBB {
-  public bbb: CCC = new CCC();
-  
-  public constructor() {}
-  
-}
-
-class CCC {
-  public ccc: Array<DDD> = new Array<DDD>(new DDD(10), new DDD(12), new DDD(16));
-  
-  public constructor() {}
-  
-}
-
-class DDD {
-  public dd: Array<number>;
-  
-  public constructor(dd: number) {
-    this.dd = [];
-    for (let i = 4;((i) < (dd));(i++)) {
-      this.dd.push(i);
-    }
-  }
-  
-}
-
-class EEE {
-  public ee: FFF = new FFF();
-  
-  public constructor() {}
-  
-}
 
 class FFF {
   public ff: GGG = new GGG();
@@ -117,6 +76,74 @@ class FFF {
 
 class GGG {
   public constructor() {}
+  
+}
+
+final class MonitorNames extends BaseEnum<String> {
+  private readonly #ordinal: int;
+  
+  private static <cctor>() {}
+  
+  public constructor(ordinal: int, value: String) {
+    super(value);
+    this.#ordinal = ordinal;
+  }
+  
+  public static readonly name1: MonitorNames = new MonitorNames(0, "strArr.0");
+  
+  public static readonly name2: MonitorNames = new MonitorNames(1, "name");
+  
+  public static readonly name3: MonitorNames = new MonitorNames(2, "strArr.0");
+  
+  public static readonly name4: MonitorNames = new MonitorNames(3, "varF.ff");
+  
+  private static readonly #NamesArray: String[] = ["name1", "name2", "name3", "name4"];
+  
+  private static readonly #StringValuesArray: String[] = ["strArr.0", "name", "strArr.0", "varF.ff"];
+  
+  private static readonly #ItemsArray: MonitorNames[] = [MonitorNames.name1, MonitorNames.name2, MonitorNames.name3, MonitorNames.name4];
+  
+  public getName(): String {
+    return MonitorNames.#NamesArray[this.#ordinal];
+  }
+  
+  public static getValueOf(name: String): MonitorNames {
+    for (let i = 0;((i) < (MonitorNames.#NamesArray.length));(++i)) {
+      if (((name) == (MonitorNames.#NamesArray[i]))) {
+        return MonitorNames.#ItemsArray[i];
+      }
+    }
+    throw new Error((("No enum constant MonitorNames.") + (name)));
+  }
+  
+  public static fromValue(value: String): MonitorNames {
+    for (let i = 0;((i) < (MonitorNames.#StringValuesArray.length));(++i)) {
+      if (((value) == (MonitorNames.#StringValuesArray[i]))) {
+        return MonitorNames.#ItemsArray[i];
+      }
+    }
+    throw new Error((("No enum MonitorNames with value ") + (value)));
+  }
+  
+  public valueOf(): String {
+    return MonitorNames.#StringValuesArray[this.#ordinal];
+  }
+  
+  public toString(): String {
+    return MonitorNames.#StringValuesArray[this.#ordinal];
+  }
+  
+  public static values(): MonitorNames[] {
+    return MonitorNames.#ItemsArray;
+  }
+  
+  public getOrdinal(): int {
+    return this.#ordinal;
+  }
+  
+  public static $_get(e: MonitorNames): String {
+    return e.getName();
+  }
   
 }
 
@@ -149,23 +176,9 @@ class GGG {
   
   @JSONStringifyIgnore() private __meta_strArr: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  @JSONRename({newName:"job"}) private __backing_job: AAA = new AAA();
+  private __monitor_changeCCC: (IMonitorDecoratedVariable | undefined);
   
-  @JSONStringifyIgnore() private __meta_job: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
-  public age: number = 25;
-  
-  private __monitor_onNameChange: (IMonitorDecoratedVariable | undefined);
-  
-  private __monitor_onAgeChange: (IMonitorDecoratedVariable | undefined);
-  
-  private __monitor_onJobChange: (IMonitorDecoratedVariable | undefined);
-  
-  @Monitor({value:["name"]}) public onNameChange(monitor: IMonitor) {}
-  
-  @Monitor({value:["strArr.0", "age"]}) public onAgeChange(monitor: IMonitor) {}
-  
-  @Monitor({value:["job.aaa.bbb.ccc.1.dd.0"]}) public onJobChange(monitor: IMonitor) {}
+  @Monitor({value:[MonitorNames.name1, MonitorNames.name2, MonitorNames.name3]}) public changeCCC(monitor: IMonitor) {}
   
   public get name(): string {
     this.conditionalAddRef(this.__meta_name);
@@ -193,55 +206,26 @@ class GGG {
     }
   }
   
-  public get job(): AAA {
-    this.conditionalAddRef(this.__meta_job);
-    return UIUtils.makeObserved(this.__backing_job);
-  }
-  
-  public set job(newValue: AAA) {
-    if (((this.__backing_job) !== (newValue))) {
-      this.__backing_job = newValue;
-      this.__meta_job.fireChange();
-      this.executeOnSubscribingWatches("job");
-    }
-  }
-  
   public constructor() {
-    this.__monitor_onNameChange = STATE_MGMT_FACTORY.makeMonitor([{
-      path: "name",
-      valueCallback: ((): Any => {
-        return this.name;
-      }),
-    }], ((_m: IMonitor) => {
-      this.onNameChange(_m);
-    }));
-    this.__monitor_onAgeChange = STATE_MGMT_FACTORY.makeMonitor([{
+    this.__monitor_changeCCC = STATE_MGMT_FACTORY.makeMonitor([{
       path: "strArr.0",
       valueCallback: ((): Any => {
         return ({let gensym___127309370 = this.strArr;
         (((gensym___127309370) == (null)) ? undefined : gensym___127309370.$_get(0))});
       }),
     }, {
-      path: "age",
+      path: "name",
       valueCallback: ((): Any => {
-        return this.age;
+        return this.name;
+      }),
+    }, {
+      path: "strArr.0",
+      valueCallback: ((): Any => {
+        return ({let gensym___214506040 = this.strArr;
+        (((gensym___214506040) == (null)) ? undefined : gensym___214506040.$_get(0))});
       }),
     }], ((_m: IMonitor) => {
-      this.onAgeChange(_m);
-    }));
-    this.__monitor_onJobChange = STATE_MGMT_FACTORY.makeMonitor([{
-      path: "job.aaa.bbb.ccc.1.dd.0",
-      valueCallback: ((): Any => {
-        return ({let gensym___1661894 = ({let gensym___87426618 = ({let gensym___223024592 = ({let gensym___215921992 = ({let gensym___22088104 = ({let gensym___245550938 = this.job;
-        (((gensym___245550938) == (null)) ? undefined : gensym___245550938.aaa)});
-        (((gensym___22088104) == (null)) ? undefined : gensym___22088104.bbb)});
-        (((gensym___215921992) == (null)) ? undefined : gensym___215921992.ccc)});
-        (((gensym___223024592) == (null)) ? undefined : gensym___223024592.$_get(1))});
-        (((gensym___87426618) == (null)) ? undefined : gensym___87426618.dd)});
-        (((gensym___1661894) == (null)) ? undefined : gensym___1661894.$_get(0))});
-      }),
-    }], ((_m: IMonitor) => {
-      this.onJobChange(_m);
+      this.changeCCC(_m);
     }));
   }
   
@@ -249,67 +233,33 @@ class GGG {
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
   public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_per = STATE_MGMT_FACTORY.makeLocal<EEE>(this, "per", new EEE());
-    this.__backing_v1 = STATE_MGMT_FACTORY.makeLocal<boolean>(this, "v1", true);
-    this.__backing_numArr = STATE_MGMT_FACTORY.makeLocal<Array<string>>(this, "numArr", ["1", "3", "5"]);
-    this.__monitor_onPerChange = STATE_MGMT_FACTORY.makeMonitor([{
-      path: "per.ee.ff",
+    this.__backing_varF = STATE_MGMT_FACTORY.makeLocal<FFF>(this, "varF", new FFF());
+    this.__monitor_changeEEE = STATE_MGMT_FACTORY.makeMonitor([{
+      path: "varF.ff",
       valueCallback: ((): Any => {
-        return ({let gensym___164069504 = ({let gensym___239523226 = this.per;
-        (((gensym___239523226) == (null)) ? undefined : gensym___239523226.ee)});
-        (((gensym___164069504) == (null)) ? undefined : gensym___164069504.ff)});
-      }),
-    }, {
-      path: "v1",
-      valueCallback: ((): Any => {
-        return this.v1;
-      }),
-    }, {
-      path: "numArr.1",
-      valueCallback: ((): Any => {
-        return ({let gensym___124152275 = this.numArr;
-        (((gensym___124152275) == (null)) ? undefined : gensym___124152275.$_get(1))});
+        return ({let gensym___55756901 = this.varF;
+        (((gensym___55756901) == (null)) ? undefined : gensym___55756901.ff)});
       }),
     }], ((_m: IMonitor) => {
-      this.onPerChange(_m);
+      this.changeEEE(_m);
     }));
   }
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
   
-  private __backing_per?: ILocalDecoratedVariable<EEE>;
+  private __backing_varF?: ILocalDecoratedVariable<FFF>;
   
-  public get per(): EEE {
-    return this.__backing_per!.get();
+  public get varF(): FFF {
+    return this.__backing_varF!.get();
   }
   
-  public set per(value: EEE) {
-    this.__backing_per!.set(value);
+  public set varF(value: FFF) {
+    this.__backing_varF!.set(value);
   }
   
-  private __backing_v1?: ILocalDecoratedVariable<boolean>;
+  private __monitor_changeEEE: (IMonitorDecoratedVariable | undefined);
   
-  public get v1(): boolean {
-    return this.__backing_v1!.get();
-  }
-  
-  public set v1(value: boolean) {
-    this.__backing_v1!.set(value);
-  }
-  
-  private __backing_numArr?: ILocalDecoratedVariable<Array<string>>;
-  
-  public get numArr(): Array<string> {
-    return this.__backing_numArr!.get();
-  }
-  
-  public set numArr(value: Array<string>) {
-    this.__backing_numArr!.set(value);
-  }
-  
-  private __monitor_onPerChange: (IMonitorDecoratedVariable | undefined);
-  
-  @Monitor({value:["per.ee.ff", "v1", "numArr.1"]}) public onPerChange(monitor: IMonitor) {}
+  @Monitor({value:[MonitorNames.name4]}) public changeEEE(monitor: IMonitor) {}
   
   @memo() public build() {}
   
@@ -318,27 +268,14 @@ class GGG {
 }
 
 @ComponentV2() export interface __Options_Index {
-  set per(per: (EEE | undefined))
+  set varF(varF: (FFF | undefined))
   
-  get per(): (EEE | undefined)
-  set __backing_per(__backing_per: (ILocalDecoratedVariable<EEE> | undefined))
+  get varF(): (FFF | undefined)
+  set __backing_varF(__backing_varF: (ILocalDecoratedVariable<FFF> | undefined))
   
-  get __backing_per(): (ILocalDecoratedVariable<EEE> | undefined)
-  set v1(v1: (boolean | undefined))
-  
-  get v1(): (boolean | undefined)
-  set __backing_v1(__backing_v1: (ILocalDecoratedVariable<boolean> | undefined))
-  
-  get __backing_v1(): (ILocalDecoratedVariable<boolean> | undefined)
-  set numArr(numArr: (Array<string> | undefined))
-  
-  get numArr(): (Array<string> | undefined)
-  set __backing_numArr(__backing_numArr: (ILocalDecoratedVariable<Array<string>> | undefined))
-  
-  get __backing_numArr(): (ILocalDecoratedVariable<Array<string>> | undefined)
+  get __backing_varF(): (ILocalDecoratedVariable<FFF> | undefined)
   
 }
-
 `;
 
 function testParsedAndCheckedTransformer(this: PluginTestContext): void {
@@ -346,7 +283,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 }
 
 pluginTester.run(
-    'test @Monitor decorator parameters transformation',
+    'test @Monitor decorator enum parameters transformation',
     [parsedTransform, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],

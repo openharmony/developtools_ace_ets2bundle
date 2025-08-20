@@ -65,12 +65,12 @@ function main() {}
     this.__backing_age = STATE_MGMT_FACTORY.makeLocal<number>(this, "age", 24);
     this.__monitor_onStrChange = STATE_MGMT_FACTORY.makeMonitor([{
       path: "message",
-      valueCallback: ((): NullishType => {
+      valueCallback: ((): Any => {
         return this.message;
       }),
     }, {
       path: "name",
-      valueCallback: ((): NullishType => {
+      valueCallback: ((): Any => {
         return this.name;
       }),
     }], ((_m: IMonitor) => {
