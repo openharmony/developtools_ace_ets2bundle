@@ -38,9 +38,13 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+import { TextImpl as TextImpl } from "arkui.component.text";
 import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder } from \"@ohos.arkui.component\";
 const wBuilder = wrapBuilder(ParamBuilder);
@@ -49,7 +53,10 @@ function main() {}
     ConditionScope(@memo() (() => {
         if (true) {
             ConditionBranch(@memo() (() => {
-                Text(undefined, \"within Builder function\", undefined, undefined);
+                TextImpl(@memo() ((instance: TextAttribute): void => {
+                    instance.setTextOptions("within Builder function", undefined).applyAttributesFinish();
+                    return;
+                }), undefined);
             }));
         }
     }));
@@ -59,7 +66,10 @@ function main() {}
         ConditionScope(@memo() (() => {
             if (true) {
                 ConditionBranch(@memo() (() => {
-                    Text(undefined, \"within Builder parameter\", undefined, undefined);
+                    TextImpl(@memo() ((instance: TextAttribute): void => {
+                        instance.setTextOptions("within Builder parameter", undefined).applyAttributesFinish();
+                        return;
+                    }), undefined);
                 }));
             }
         }));
@@ -73,18 +83,27 @@ function main() {}
         ConditionScope(@memo() (() => {
             if (true) {
                 ConditionBranch(@memo() (() => {
-                    Text(undefined, \"within Builder method\", undefined, undefined);
+                    TextImpl(@memo() ((instance: TextAttribute): void => {
+                        instance.setTextOptions("within Builder method", undefined).applyAttributesFinish();
+                        return;
+                    }), undefined);
                 }));
             }
         }));
     }
     @memo() public build() {
-        Column(undefined, undefined, @memo() (() => {
+        ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+            instance.setColumnOptions(undefined).applyAttributesFinish();
+            return;
+        }), @memo() (() => {
             wBuilder.builder(@Builder() (() => {
                 ConditionScope(@memo() (() => {
                     if (true) {
                         ConditionBranch(@memo() (() => {
-                            Text(undefined, \"with Builder lambda\", undefined, undefined);
+                            TextImpl(@memo() ((instance: TextAttribute): void => {
+                                instance.setTextOptions("with Builder lambda", undefined).applyAttributesFinish();
+                                return;
+                            }), undefined);
                         }));
                     }
                 }));
@@ -96,7 +115,10 @@ function main() {}
                     ConditionScope(@memo() (() => {
                         if (true) {
                             ConditionBranch(@memo() (() => {
-                                Text(undefined, \"within Builder property\", undefined, undefined);
+                                TextImpl(@memo() ((instance: TextAttribute): void => {
+                                    instance.setTextOptions("within Builder property", undefined).applyAttributesFinish();
+                                    return;
+                                }), undefined);
                             }));
                         }
                     }));
@@ -114,7 +136,10 @@ function main() {}
                 ConditionScope(@memo() (() => {
                     if (true) {
                     ConditionBranch(@memo() (() => {
-                        Text(undefined, \"within BuilderParam property\", undefined, undefined);
+                        TextImpl(@memo() ((instance: TextAttribute): void => {
+                            instance.setTextOptions("within BuilderParam property", undefined).applyAttributesFinish();
+                            return;
+                        }), undefined);
                     }));
                 }
             }));
@@ -132,7 +157,10 @@ function main() {}
         ConditionScope(@memo() (() => {
             if (true) {
                 ConditionBranch(@memo() (() => {
-                    Text(undefined, "within struct build", undefined, undefined);
+                    TextImpl(@memo() ((instance: TextAttribute): void => {
+                        instance.setTextOptions("within struct build", undefined).applyAttributesFinish();
+                        return;
+                    }), undefined);
                 }));
             }
         }));
@@ -153,9 +181,13 @@ function testUITransformer(this: PluginTestContext): void {
 
 const expectedMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+import { TextImpl as TextImpl } from "arkui.component.text";
 import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder } from \"@ohos.arkui.component\";
 const wBuilder = wrapBuilder(ParamBuilder);
@@ -179,7 +211,19 @@ function main() {}
                     __memo_scope.cached;
                     return;
                 }
-                Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"within Builder function\", undefined, undefined);
+                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                    const __memo_parameter_instance = __memo_scope.param(0, instance);
+                    if (__memo_scope.unchanged) {
+                        __memo_scope.cached;
+                        return;
+                    }
+                    __memo_parameter_instance.value.setTextOptions("within Builder function", undefined).applyAttributesFinish();
+                    {
+                        __memo_scope.recache();
+                        return;
+                    }
+                }), undefined);
                 {
                     __memo_scope.recache();
                     return;
@@ -216,7 +260,19 @@ function main() {}
                         __memo_scope.cached;
                         return;
                     }
-                    Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"within Builder parameter\", undefined, undefined);
+                    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                        const __memo_parameter_instance = __memo_scope.param(0, instance);
+                        if (__memo_scope.unchanged) {
+                            __memo_scope.cached;
+                            return;
+                        }
+                        __memo_parameter_instance.value.setTextOptions("within Builder parameter", undefined).applyAttributesFinish();
+                        {
+                            __memo_scope.recache();
+                            return;
+                        }
+                    }), undefined);
                     {
                         __memo_scope.recache();
                         return;
@@ -267,7 +323,19 @@ function main() {}
                         __memo_scope.cached;
                         return;
                     }
-                    Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"within Builder method\", undefined, undefined);
+                    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                        const __memo_parameter_instance = __memo_scope.param(0, instance);
+                        if (__memo_scope.unchanged) {
+                            __memo_scope.cached;
+                            return;
+                        }
+                        __memo_parameter_instance.value.setTextOptions("within Builder method", undefined).applyAttributesFinish();
+                        {
+                            __memo_scope.recache();
+                            return;
+                        }
+                    }), undefined);
                     {
                         __memo_scope.recache();
                         return;
@@ -290,7 +358,19 @@ function main() {}
             __memo_scope.cached;
             return;
         }
-        Column(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+            const __memo_parameter_instance = __memo_scope.param(0, instance);
+            if (__memo_scope.unchanged) {
+                __memo_scope.cached;
+                return;
+            }
+            __memo_parameter_instance.value.setColumnOptions(undefined).applyAttributesFinish();
+            {
+                __memo_scope.recache();
+                return;
+            }
+        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -315,7 +395,19 @@ function main() {}
                                 __memo_scope.cached;
                                 return;
                             }
-                            Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"with Builder lambda\", undefined, undefined);
+                            TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                                const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                const __memo_parameter_instance = __memo_scope.param(0, instance);
+                                if (__memo_scope.unchanged) {
+                                    __memo_scope.cached;
+                                    return;
+                                }
+                                __memo_parameter_instance.value.setTextOptions("with Builder lambda", undefined).applyAttributesFinish();
+                                {
+                                    __memo_scope.recache();
+                                    return;
+                                }
+                            }), undefined);
                             {
                                 __memo_scope.recache();
                                 return;
@@ -354,7 +446,19 @@ function main() {}
                                     __memo_scope.cached;
                                     return;
                                 }
-                                Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"within Builder property\", undefined, undefined);
+                                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                                    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                    const __memo_parameter_instance = __memo_scope.param(0, instance);
+                                    if (__memo_scope.unchanged) {
+                                        __memo_scope.cached;
+                                        return;
+                                    }
+                                    __memo_parameter_instance.value.setTextOptions("within Builder property", undefined).applyAttributesFinish();
+                                    {
+                                        __memo_scope.recache();
+                                        return;
+                                    }
+                                }), undefined);
                                 {
                                     __memo_scope.recache();
                                     return;
@@ -407,7 +511,19 @@ function main() {}
                                 __memo_scope.cached;
                                 return;
                             }
-                            Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"within BuilderParam property\", undefined, undefined);
+                            TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                                const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                const __memo_parameter_instance = __memo_scope.param(0, instance);
+                                if (__memo_scope.unchanged) {
+                                    __memo_scope.cached;
+                                    return;
+                                }
+                                __memo_parameter_instance.value.setTextOptions("within BuilderParam property", undefined).applyAttributesFinish();
+                                {
+                                    __memo_scope.recache();
+                                    return;
+                                }
+                            }), undefined);
                             {
                                 __memo_scope.recache();
                                 return;
@@ -452,7 +568,19 @@ function main() {}
                         __memo_scope.cached;
                         return;
                     }
-                    Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, "within struct build", undefined, undefined);
+                    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                        const __memo_parameter_instance = __memo_scope.param(0, instance);
+                        if (__memo_scope.unchanged) {
+                            __memo_scope.cached;
+                            return;
+                        }
+                        __memo_parameter_instance.value.setTextOptions("within struct build", undefined).applyAttributesFinish();
+                        {
+                            __memo_scope.recache();
+                            return;
+                        }
+                    }), undefined);
                     {
                         __memo_scope.recache();
                         return;
