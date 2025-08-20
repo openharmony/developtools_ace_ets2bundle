@@ -15,12 +15,14 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { createGetter, createSetter } from './utils';
+import { createGetter, createSetter, hasDecorator } from './utils';
 import { PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName } from '../../common/arkts-utils';
+import { isStatic } from '../../ui-plugins/utils';
+import { DecoratorNames } from '../../common/predefines';
 
-export class staticPropertyTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
+export class StaticPropertyTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
@@ -48,5 +50,9 @@ export class staticPropertyTranslator extends PropertyTranslator implements Init
     ): arkts.MethodDefinition {
         const right: arkts.Identifier = arkts.factory.createIdentifier('value');
         return createSetter(originalName, typeAnnotation, left, right);
+    }
+
+    static canBeStaticTranslate(node: arkts.ClassProperty): boolean {
+        return isStatic(node) && !hasDecorator(node, DecoratorNames.LOCAL);
     }
 }
