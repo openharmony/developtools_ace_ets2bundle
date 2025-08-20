@@ -83,6 +83,10 @@ import {
     SwitchCaseStatement,
     SpreadElement,
     BreakStatement,
+    TSArrayType,
+    ETSNullType,
+    TSThisType,
+    TSQualifiedName,
 } from '../../generated';
 import { updateIdentifier } from '../node-utilities/Identifier';
 import { updateCallExpression } from '../node-utilities/CallExpression';
@@ -146,6 +150,10 @@ import { updateSwitchStatement } from '../node-utilities/SwitchStatement';
 import { updateSwitchCaseStatement } from '../node-utilities/SwitchCaseStatement';
 import { updateSpreadElement } from '../node-utilities/SpreadElement';
 import { updateBreakStatement } from '../node-utilities/BreakStatement';
+import { updateTSArrayType } from '../node-utilities/TSArrayType';
+import { updateETSNullType } from '../node-utilities/ETSNullType';
+import { updateTSThisType } from '../node-utilities/TSThisType';
+import { updateTSQualifiedName } from '../node-utilities/TSQualifiedName';
 
 export const factory = {
     get createIdentifier(): (...args: Parameters<typeof Identifier.create2Identifier>) => Identifier {
@@ -632,6 +640,30 @@ export const factory = {
     },
     get updateBreakStatement(): (...args: Parameters<typeof updateBreakStatement>) => BreakStatement {
         return updateBreakStatement;
+    },
+    get createTSArrayType(): (...args: Parameters<typeof TSArrayType.createTSArrayType>) => TSArrayType {
+        return TSArrayType.createTSArrayType;
+    },
+    get updateTSArrayType(): (...args: Parameters<typeof updateTSArrayType>) => TSArrayType {
+        return updateTSArrayType;
+    },
+    get createETSNullType(): (...args: Parameters<typeof ETSNullType.createETSNullType>) => ETSNullType {
+        return ETSNullType.createETSNullType;
+    },
+    get updateETSNullType(): (...args: Parameters<typeof updateETSNullType>) => ETSNullType {
+        return updateETSNullType;
+    },
+    get createTSThisType(): (...args: Parameters<typeof TSThisType.createTSThisType>) => TSThisType {
+        return TSThisType.createTSThisType;
+    },
+    get updateTSThisType(): (...args: Parameters<typeof updateTSThisType>) => TSThisType {
+        return updateTSThisType;
+    },
+    get createTSQualifiedName(): (...args: Parameters<typeof TSQualifiedName.createTSQualifiedName>) => TSQualifiedName {
+        return TSQualifiedName.createTSQualifiedName;
+    },
+    get updateTSQualifiedName(): (...args: Parameters<typeof updateTSQualifiedName>) => TSQualifiedName {
+        return updateTSQualifiedName;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {

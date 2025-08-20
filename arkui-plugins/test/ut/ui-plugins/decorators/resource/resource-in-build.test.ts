@@ -40,11 +40,31 @@ const parsedTransform: Plugins = {
 const expectedScript: string = `
 import { _rawfile as _rawfile } from "arkui.component.resources";
 
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
 import { ImageAnimatorAttribute as ImageAnimatorAttribute } from "arkui.component.imageAnimator";
+
+import { ImageAnimatorImpl as ImageAnimatorImpl } from "arkui.component.imageAnimator";
+
+import { SelectAttribute as SelectAttribute } from "arkui.component.select";
+
+import { SelectImpl as SelectImpl } from "arkui.component.select";
+
+import { TextInputAttribute as TextInputAttribute } from "arkui.component.textInput";
+
+import { TextInputImpl as TextInputImpl } from "arkui.component.textInput";
+
+import { ImageAttribute as ImageAttribute } from "arkui.component.image";
+
+import { ImageImpl as ImageImpl } from "arkui.component.image";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { ImageAttribute as ImageAttribute } from "arkui.component.image";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { _r as _r } from "arkui.component.resources";
 
@@ -106,40 +126,61 @@ function main() {}
   }
   
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Text(undefined, _r(16777216, 10003, "com.example.mock", "entry"), undefined, undefined);
-      Image(undefined, _rawfile(0, 30000, "com.example.mock", "entry", "app.mock.txt"), undefined, undefined);
-      TextInput(undefined, {
-        text: _r(16777220, 10003, "com.example.mock", "entry"),
-      }, undefined);
-      Text(undefined, _r(-1, -1, "com.example.mock", "entry", this.str1), undefined, undefined);
-      Text(undefined, _r(-1, -1, "com.example.mock", "entry", this.str2), undefined, undefined);
-      Select(undefined, new Array<SelectOption>({
-        value: "aaa",
-        icon: _r(16777223, 20000, "com.example.mock", "entry"),
-      }, {
-        value: "bbb",
-        icon: _r(16777223, 20000, "com.example.mock", "entry"),
-      }, {
-        value: "ccc",
-        icon: _r(16777223, 20000, "com.example.mock", "entry"),
-      }, {
-        value: "ddd",
-        icon: _r(16777223, 20000, "com.example.mock", "entry"),
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(_r(16777216, 10003, "com.example.mock", "entry"), undefined).applyAttributesFinish();
+        return;
       }), undefined);
-      Image(@memo() ((instance: ImageAttribute): void => {
-        instance.margin(({
+      ImageImpl(@memo() ((instance: ImageAttribute): void => {
+        instance.setImageOptions(_rawfile(0, 30000, "com.example.mock", "entry", "app.mock.txt"), undefined).applyAttributesFinish();
+        return;
+      }), undefined);
+      TextInputImpl(@memo() ((instance: TextInputAttribute): void => {
+        instance.setTextInputOptions({
+          text: _r(16777220, 10003, "com.example.mock", "entry"),
+        }).applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(_r(-1, -1, "com.example.mock", "entry", this.str1), undefined).applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(_r(-1, -1, "com.example.mock", "entry", this.str2), undefined).applyAttributesFinish();
+        return;
+      }), undefined);
+      SelectImpl(@memo() ((instance: SelectAttribute): void => {
+        instance.setSelectOptions(new Array<SelectOption>({
+          value: "aaa",
+          icon: _r(16777223, 20000, "com.example.mock", "entry"),
+        }, {
+          value: "bbb",
+          icon: _r(16777223, 20000, "com.example.mock", "entry"),
+        }, {
+          value: "ccc",
+          icon: _r(16777223, 20000, "com.example.mock", "entry"),
+        }, {
+          value: "ddd",
+          icon: _r(16777223, 20000, "com.example.mock", "entry"),
+        })).applyAttributesFinish();
+        return;
+      }), undefined);
+      ImageImpl(@memo() ((instance: ImageAttribute): void => {
+        instance.setImageOptions(_r(16777217, 20000, "com.example.mock", "entry"), undefined).margin(({
           top: _r(16777222, 10002, "com.example.mock", "entry"),
           bottom: _r(16777222, 10002, "com.example.mock", "entry"),
-        } as Margin));
+        } as Margin)).applyAttributesFinish();
         return;
-      }), _r(16777217, 20000, "com.example.mock", "entry"), undefined, undefined);
-      ImageAnimator(@memo() ((instance: ImageAnimatorAttribute): void => {
-        instance.images([{
+      }), undefined);
+      ImageAnimatorImpl(@memo() ((instance: ImageAnimatorAttribute): void => {
+        instance.setImageAnimatorOptions().images([{
           src: _r(16777217, 20000, "com.example.mock", "entry"),
         }, {
           src: _r(16777225, 20000, "com.example.mock", "entry"),
-        }]);
+        }]).applyAttributesFinish();
         return;
       }));
     }));

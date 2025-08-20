@@ -56,7 +56,11 @@ import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateMan
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -269,7 +273,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public ProvideOnChange(propName: string) {}
   
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), undefined, undefined, undefined);
