@@ -177,6 +177,8 @@ export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
 import parseIntent from './userIntents_parser/parseUserIntents';
+import { insertGetOptionsAtTop } from './process_interop_component';
+
 
 export function processUISyntax(program: ts.Program, ut = false,
   parentEvent?: CompileEvent, filePath: string = '', share: object = null, metaInfo: Object = {}): Function {
@@ -221,6 +223,8 @@ export function processUISyntax(program: ts.Program, ut = false,
         }
         const id: number = ++componentInfo.id;
         node = ts.visitEachChild(node, processAllNodes, context);
+        // for interop
+        node = insertGetOptionsAtTop(node);
         if (context.getCompilerOptions().etsAnnotationsEnable) {
           node = ts.getAnnotationTransformer()(context)(node);
         }
