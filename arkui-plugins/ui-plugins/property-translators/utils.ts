@@ -451,7 +451,22 @@ export function getArrayFromAnnoProperty(property: arkts.AstNode): string[] | un
     property.value.elements.forEach((item: arkts.Expression) => {
         if (arkts.isStringLiteral(item)) {
             resArr.push(item.str);
+        } else if (arkts.isMemberExpression(item)) {
+            const res: string | undefined = getMonitorStrFromMemberExpr(item);
+            !!res && resArr.push(res);
         }
     });
     return resArr;
+}
+
+function getMonitorStrFromMemberExpr(node: arkts.MemberExpression): string | undefined {
+    const decl: arkts.AstNode | undefined = arkts.getDecl(node.property);
+    if (!decl || !arkts.isClassProperty(decl) || !decl.value || !arkts.isETSNewClassInstanceExpression(decl.value)) {
+        return undefined;
+    }
+    const args: readonly arkts.Expression[] = decl.value.getArguments;
+    if (args.length >= 2 && arkts.isStringLiteral(args[1])) {
+        return args[1].str;
+    }
+    return undefined;
 }
