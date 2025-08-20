@@ -72,9 +72,6 @@ class ComponentComponentV2InitCheckRule extends AbstractUISyntaxRule {
             structNode = structNode.parent;
         }
         if (getAnnotationUsage(structNode, PresetDecorators.COMPONENT_V2) !== undefined) {
-            if (!node.parent) {
-                return;
-            }
             const parentNode = node.parent;
             this.report({
                 node: parentNode,
