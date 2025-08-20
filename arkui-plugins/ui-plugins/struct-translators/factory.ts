@@ -88,6 +88,7 @@ import { PropertyCache } from '../property-translators/cache/propertyCache';
 export class factory {
     /**
      * update class `constructor` to private.
+     * @deprecated
      */
     static setStructConstructorToPrivate(member: arkts.MethodDefinition): arkts.MethodDefinition {
         member.modifiers &= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
@@ -481,9 +482,6 @@ export class factory {
     static transformNonPropertyMembersInClass(member: arkts.AstNode, isDecl?: boolean): arkts.AstNode {
         if (arkts.isMethodDefinition(member)) {
             PropertyFactory.addMemoToBuilderClassMethod(member);
-            if (isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI) && !isDecl) {
-                return this.setStructConstructorToPrivate(member);
-            }
             if (isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_BUILD_ORI)) {
                 addMemoAnnotation(member.scriptFunction);
                 return BuilderFactory.rewriteBuilderMethod(member);
