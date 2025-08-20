@@ -26,8 +26,8 @@ import { LinkInterfaceTranslator, LinkTranslator } from './link';
 import { ObjectLinkInterfaceTranslator, ObjectLinkTranslator } from './objectlink';
 import { LocalStoragePropInterfaceTranslator, LocalStoragePropTranslator } from './localstorageprop';
 import { RegularInterfaceTranslator, RegularPropertyTranslator } from './regularProperty';
-import { staticPropertyTranslator } from './staticProperty';
-import { CustomComponentInfo, isStatic } from '../utils';
+import { StaticPropertyTranslator } from './staticProperty';
+import { CustomComponentInfo } from '../utils';
 import { StoragePropInterfaceTranslator, StoragePropTranslator } from './storageProp';
 import { ConsumeInterfaceTranslator, ConsumeTranslator } from './consume';
 import { ProvideInterfaceTranslator, ProvideTranslator } from './provide';
@@ -66,8 +66,9 @@ export function classifyProperty(
     structInfo: CustomComponentInfo
 ): PropertyTranslator | undefined {
     if (!arkts.isClassProperty(property)) return undefined;
-    if (isStatic(property)) return new staticPropertyTranslator({ property, structInfo });
-
+    if (StaticPropertyTranslator.canBeStaticTranslate(property)) {
+        return new StaticPropertyTranslator({ property, structInfo });
+    }
     let propertyTranslator: PropertyTranslator | undefined = undefined;
 
     propertyTranslator = classifyV1Property(property, structInfo);

@@ -25,12 +25,25 @@ import {
     hasDecorator,
     collectStateManagementTypeImport,
 } from './utils';
-import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
+import {
+    InterfacePropertyTranslator,
+    InterfacePropertyTypes,
+    PropertyTranslator,
+    PropertyTranslatorOptions,
+} from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { factory } from './factory';
+import { factory as UIFactory } from '../ui-factory';
 import { PropertyCache } from './cache/propertyCache';
 
 export class LocalTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
+    private isStatic: boolean;
+
+    constructor(options: PropertyTranslatorOptions) {
+        super(options);
+        this.isStatic = this.property.isStatic;
+    }
+
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
@@ -39,18 +52,17 @@ export class LocalTranslator extends PropertyTranslator implements InitializerCo
     }
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
-        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
-        PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
+        if (!this.isStatic) {
+            const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
+            PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
+        }
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = factory.createOptionalClassProperty(
-            newName,
-            this.property,
-            StateManagementTypes.LOCAL_DECORATED,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
-        );
-        const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
+        const field: arkts.ClassProperty = this.createPropertyField(newName, originalName);
+        const thisValue: arkts.Expression = this.isStatic
+            ? UIFactory.generateMemberExpression(arkts.factory.createIdentifier(this.structInfo.name), newName)
+            : generateThisBacking(newName, false, true);
         const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
             generateGetOrSetCall(thisValue, GetSetTypes.SET)
@@ -61,12 +73,29 @@ export class LocalTranslator extends PropertyTranslator implements InitializerCo
         return [field, getter, setter];
     }
 
+    createPropertyField(newName: string, originalName: string): arkts.ClassProperty {
+        return this.isStatic
+            ? arkts.factory.createClassProperty(
+                  arkts.factory.createIdentifier(newName),
+                  this.generateInitializeValue(originalName),
+                  factory.createStageManagementType(StateManagementTypes.LOCAL_DECORATED, this.propertyType),
+                  arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+                  false
+              )
+            : factory.createOptionalClassProperty(
+                  newName,
+                  this.property,
+                  StateManagementTypes.LOCAL_DECORATED,
+                  arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
+              );
+    }
+
     translateGetter(
         originalName: string,
         typeAnnotation: arkts.TypeNode | undefined,
         returnValue: arkts.Expression
     ): arkts.MethodDefinition {
-        return createGetter(originalName, typeAnnotation, returnValue);
+        return createGetter(originalName, typeAnnotation, returnValue, false, this.isStatic);
     }
 
     translateSetter(
@@ -74,21 +103,31 @@ export class LocalTranslator extends PropertyTranslator implements InitializerCo
         typeAnnotation: arkts.TypeNode | undefined,
         statement: arkts.AstNode
     ): arkts.MethodDefinition {
-        return createSetter2(originalName, typeAnnotation, statement);
+        return createSetter2(originalName, typeAnnotation, statement, this.isStatic);
     }
 
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
+        collectStateManagementTypeImport(StateManagementTypes.LOCAL_DECORATED);
+        const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
+            generateThisBacking(newName),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+            this.generateInitializeValue(originalName)
+        );
+        return arkts.factory.createExpressionStatement(assign);
+    }
+
+    generateInitializeValue(originalName: string): arkts.Expression {
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
             this.property.value ?? arkts.factory.createUndefinedLiteral(),
         ];
         collectStateManagementTypeImport(StateManagementTypes.LOCAL_DECORATED);
-        const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
-            generateThisBacking(newName),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_LOCAL, this.propertyType, args, true)
+        return factory.generateStateMgmtFactoryCall(
+            this.isStatic ? StateManagementTypes.MAKE_STATIC_LOCAL : StateManagementTypes.MAKE_LOCAL,
+            this.propertyType,
+            args,
+            this.isStatic ? false : true
         );
-        return arkts.factory.createExpressionStatement(assign);
     }
 }
 

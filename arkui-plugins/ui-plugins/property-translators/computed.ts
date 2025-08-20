@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 
 import { expectName } from '../../common/arkts-utils';
 import { GetSetTypes, StateManagementTypes } from '../../common/predefines';
-import { computedField } from '../utils';
+import { ClassInfo, computedField } from '../utils';
 import { generateThisBacking, generateGetOrSetCall, getGetterReturnType } from './utils';
 import { MethodTranslator } from './base';
 import { InitializerConstructor } from './types';
@@ -25,6 +25,13 @@ import { factory as UIFactory } from '../ui-factory';
 import { factory } from './factory';
 
 export class ComputedTranslator extends MethodTranslator implements InitializerConstructor {
+    private isStatic: boolean;
+
+    constructor(method: arkts.MethodDefinition, classInfo: ClassInfo) {
+        super(method, classInfo);
+        this.isStatic = this.method.isStatic;
+    }
+
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.method.name);
         const newName: string = computedField(originalName);
@@ -37,6 +44,7 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
     cacheTranslatedInitializer(newName: string): void {}
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
+        const modifiers = this.isStatic ? this.method.modifiers : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
         const field: arkts.ClassProperty = arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(newName),
             factory.generateStateMgmtFactoryCall(
@@ -46,7 +54,7 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
                     arkts.factory.createArrowFunction(
                         UIFactory.createScriptFunction({
                             body: this.method.scriptFunction.body?.clone(),
-                            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+                            modifiers: modifiers,
                             flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
                         })
                     ),
@@ -55,7 +63,7 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
                 false
             ),
             undefined,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+            modifiers,
             false
         );
 
@@ -72,7 +80,9 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
     }
 
     generateComputedGet(newName: string): arkts.CallExpression {
-        const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
+        const thisValue: arkts.Expression = this.isStatic
+            ? UIFactory.generateMemberExpression(arkts.factory.createIdentifier(this.classInfo.className), newName)
+            : generateThisBacking(newName, false, true);
         return generateGetOrSetCall(thisValue, GetSetTypes.GET);
     }
 }
