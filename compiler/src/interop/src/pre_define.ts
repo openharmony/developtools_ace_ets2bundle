@@ -657,6 +657,7 @@ export const IS_INITIAL_ITEM = 'isInitialItem';
 export const MY_IDS = 'myIds';
 export const COMPONENT_CALL: string = 'componentCall';
 
+
 export const TS_BUILD_INFO_SUFFIX = '.tsbuildinfo';
 export const ARKTS_LINTER_BUILD_INFO_SUFFIX = 'inversedArkTsLinter.tsbuildinfo';
 export const HOT_RELOAD_BUILD_INFO_SUFFIX = 'hotReload.tsbuildinfo';
@@ -668,3 +669,6 @@ export const ARKTS_MODULE_PREFIX: string = '@arkts';
 export const ARKTS_MODULE_NAME: string = 'arkts';
 export const COLD_RELOAD_MODE: string = 'coldReload';
 export const INTEGRATED_HSP: string = 'integratedHsp';
+
+export const COMPATIBLESTATICCOMPONENT: string = 'compatibleStaticComponent';
+export const STATICPOINTER = 'staticPointer';
