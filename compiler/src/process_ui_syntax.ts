@@ -171,12 +171,12 @@ import {
   createAndStartEvent,
   stopEvent
 } from './performance';
+import parseIntent from './userIntents_parser/parseUserIntents';
 
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
-import parseIntent from './userIntents_parser/parseUserIntents';
 
 export function processUISyntax(program: ts.Program, ut = false,
   parentEvent?: CompileEvent, filePath: string = '', share: object = null, metaInfo: Object = {}): Function {
