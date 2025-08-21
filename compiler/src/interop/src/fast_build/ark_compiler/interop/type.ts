@@ -116,6 +116,8 @@ export interface FileInfo {
 export interface InteropInfo {
   declgenBridgeCodePath: string;
   declgenV1OutPath: string;
+  packageName: string;
+  moduleRootPath: string;
 }
 
 export interface InteropConfig {
