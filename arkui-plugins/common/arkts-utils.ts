@@ -16,6 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import { DeclarationCollector } from './declaration-collector';
 import { ARKUI_IMPORT_PREFIX_NAMES, DecoratorNames } from './predefines';
+import * as fs from 'fs';
 
 export function coerceToAstNode<T extends arkts.AstNode>(node: arkts.AstNode): T {
     return node as T;
@@ -177,4 +178,20 @@ export function forEachArgWithParam(
     const lastIndex = isTrailingCall ? argLen - 1 : maxLen - 1;
     const lastArg = args.at(lastIndex);
     callbackFn(lastArg, lastParam, maxLen - 1);
+}
+
+export function toUnixPath(path: string): string {
+    return path.replace(/\\/g, '/');
+}
+
+export function readFirstLineSync(filePath: string): string | null {
+    const fd = fs.openSync(filePath, 'r');
+    const buffer = Buffer.alloc(256);
+    const bytesRead = fs.readSync(fd, buffer, 0, buffer.length, 0);
+    fs.closeSync(fd);
+
+    const content = buffer.toString('utf-8', 0, bytesRead);
+    const firstLine = content.split(/\r?\n/, 1)[0].trim();
+
+    return firstLine;
 }
