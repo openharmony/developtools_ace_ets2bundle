@@ -234,24 +234,23 @@ export class ParameterTransformer extends AbstractVisitor {
     }
 
     private updateVariableReDeclarationFromParam(node: arkts.VariableDeclaration): arkts.VariableDeclaration {
-        const that = this;
         return arkts.factory.updateVariableDeclaration(
             node,
             node.modifiers,
             node.declarationKind,
             node.declarators.map((declarator) => {
-                if (that.rewriteMemoInfos?.has(declarator.name.originalPeer)) {
-                    const memoInfo = that.rewriteMemoInfos.get(declarator.name.originalPeer)!;
-                    return that.updateParamReDeclare(declarator, memoInfo);
+                if (this.rewriteMemoInfos?.has(declarator.name.originalPeer)) {
+                    const memoInfo = this.rewriteMemoInfos.get(declarator.name.originalPeer)!;
+                    return this.updateParamReDeclare(declarator, memoInfo);
                 }
                 if (!!declarator.initializer && arkts.isIdentifier(declarator.initializer)) {
                     const decl = arkts.getPeerDecl(declarator.initializer.originalPeer);
-                    if (decl && that.rewriteIdentifiers?.has(decl.peer)) {
+                    if (decl && this.rewriteIdentifiers?.has(decl.peer)) {
                         return arkts.factory.updateVariableDeclarator(
                             declarator,
                             declarator.flag,
                             declarator.name,
-                            that.rewriteIdentifiers.get(decl.peer)!()
+                            this.rewriteIdentifiers.get(decl.peer)!()
                         );
                     }
                 }
