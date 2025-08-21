@@ -26,45 +26,73 @@ import {
     KNativePointer,
     nodeByType,
     ArktsObject,
-    unpackString
-} from "../../reexport-for-generated"
+    unpackString,
+} from '../../reexport-for-generated';
+import { ImportDeclaration } from './ImportDeclaration';
+import { ImportSource } from './ImportSource';
+import { Es2pandaImportKinds } from './../Es2pandaEnums';
+import { StringLiteral } from './StringLiteral';
+import { Es2pandaImportFlags } from './../../Es2pandaEnums';
 
-import { ImportDeclaration } from "./ImportDeclaration"
-import { ImportSource } from "./ImportSource"
-import { Es2pandaImportKinds } from "./../Es2pandaEnums"
-import { StringLiteral } from "./StringLiteral"
-import { Es2pandaImportFlags } from "./../../Es2pandaEnums"
 export class ETSImportDeclaration extends ImportDeclaration {
-     constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_IMPORT_DECLARATION)
-        super(pointer)
-        
+    constructor(pointer: KNativePointer) {
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_IMPORT_DECLARATION);
+        super(pointer);
     }
-    static createETSImportDeclaration(source: StringLiteral | undefined, specifiers: readonly AstNode[], importKind: Es2pandaImportKinds, program: ArktsObject, flags: Es2pandaImportFlags): ETSImportDeclaration {
-        return new ETSImportDeclaration(global.es2panda._CreateETSImportDeclaration(global.context, passNode(source), passNodeArray(specifiers), specifiers.length, importKind, passNode(program), flags))
+    static createETSImportDeclaration(
+        source: StringLiteral | undefined,
+        specifiers: readonly AstNode[],
+        importKind: Es2pandaImportKinds,
+        program: ArktsObject,
+        flags: Es2pandaImportFlags
+    ): ETSImportDeclaration {
+        return new ETSImportDeclaration(
+            global.es2panda._CreateETSImportDeclaration(
+                global.context,
+                passNode(source),
+                passNodeArray(specifiers),
+                specifiers.length,
+                importKind,
+                passNode(program),
+                flags
+            )
+        );
     }
-    static updateETSImportDeclaration(original: ETSImportDeclaration | undefined, source: StringLiteral | undefined, specifiers: readonly AstNode[], importKind: Es2pandaImportKinds): ETSImportDeclaration {
-        return new ETSImportDeclaration(global.generatedEs2panda._UpdateETSImportDeclaration(global.context, passNode(original), passNode(source), passNodeArray(specifiers), specifiers.length, importKind))
+    static updateETSImportDeclaration(
+        original: ETSImportDeclaration | undefined,
+        source: StringLiteral | undefined,
+        specifiers: readonly AstNode[],
+        importKind: Es2pandaImportKinds
+    ): ETSImportDeclaration {
+        return new ETSImportDeclaration(
+            global.generatedEs2panda._UpdateETSImportDeclaration(
+                global.context,
+                passNode(original),
+                passNode(source),
+                passNodeArray(specifiers),
+                specifiers.length,
+                importKind
+            )
+        );
     }
     get hasDecl(): boolean {
-        return global.generatedEs2panda._ETSImportDeclarationHasDeclConst(global.context, this.peer)
+        return global.generatedEs2panda._ETSImportDeclarationHasDeclConst(global.context, this.peer);
     }
     get isPureDynamic(): boolean {
-        return global.generatedEs2panda._ETSImportDeclarationIsPureDynamicConst(global.context, this.peer)
+        return global.generatedEs2panda._ETSImportDeclarationIsPureDynamicConst(global.context, this.peer);
     }
     get assemblerName(): string {
-        return unpackString(global.generatedEs2panda._ETSImportDeclarationAssemblerNameConst(global.context, this.peer))
+        return unpackString(
+            global.generatedEs2panda._ETSImportDeclarationAssemblerNameConst(global.context, this.peer)
+        );
     }
-    // get source(): StringLiteral | undefined {
-    //     return unpackNode(global.generatedEs2panda._ETSImportDeclarationSourceConst(global.context, this.peer))
-    // }
     get resolvedSource(): StringLiteral | undefined {
-        return unpackNode(global.generatedEs2panda._ETSImportDeclarationResolvedSourceConst(global.context, this.peer))
+        return unpackNode(global.generatedEs2panda._ETSImportDeclarationResolvedSourceConst(global.context, this.peer));
     }
 }
 export function isETSImportDeclaration(node: AstNode): node is ETSImportDeclaration {
-    return node instanceof ETSImportDeclaration
+    return node instanceof ETSImportDeclaration;
 }
 if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_IMPORT_DECLARATION)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_IMPORT_DECLARATION, ETSImportDeclaration)
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_ETS_IMPORT_DECLARATION, ETSImportDeclaration);
 }
