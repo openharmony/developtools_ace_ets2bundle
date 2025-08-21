@@ -26,13 +26,13 @@ import {
     nodeByType,
     ArktsObject,
     unpackString,
-    Es2pandaAstNodeType
-} from "../../reexport-for-generated"
+    Es2pandaAstNodeType,
+} from '../../reexport-for-generated';
+import { BlockStatement } from './BlockStatement';
+import { CatchClause } from './CatchClause';
+import { LabelPair } from './LabelPair';
+import { Statement } from './Statement';
 
-import { BlockStatement } from "./BlockStatement"
-import { CatchClause } from "./CatchClause"
-import { LabelPair } from "./LabelPair"
-import { Statement } from "./Statement"
 export class TryStatement extends Statement {
     constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TRY_STATEMENT)
