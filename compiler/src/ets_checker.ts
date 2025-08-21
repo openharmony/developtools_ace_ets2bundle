@@ -110,7 +110,6 @@ export interface LanguageServiceCache {
   service?: ts.LanguageService;
   pkgJsonFileHash?: string;
   targetESVersion?: ts.ScriptTarget;
-  types?: string[];
   maxFlowDepth?: number;
   preTsImportSendable?: boolean;
   preSkipOhModulesLint?: boolean;
@@ -438,34 +437,30 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   let service: ts.LanguageService | undefined = cache?.service;
   const currentHash: string | undefined = rollupShareObject?.projectConfig?.pkgJsonFileHash;
   const currentTargetESVersion: ts.ScriptTarget = compilerOptions.target;
-  const currentTypes: string[] | undefined = compilerOptions.types;
   const currentMaxFlowDepth: number | undefined = compilerOptions.maxFlowDepth;
   const lastHash: string | undefined = cache?.pkgJsonFileHash;
   const lastTargetESVersion: ts.ScriptTarget | undefined = cache?.targetESVersion;
-  const lastTypes: string[] | undefined = cache?.types;
   const lastMaxFlowDepth: number | undefined = cache?.maxFlowDepth;
   const hashDiffers: boolean | undefined = currentHash && lastHash && currentHash !== lastHash;
   const shouldRebuildForDepDiffers: boolean | undefined = reuseLanguageServiceForDepChange ?
     (hashDiffers && !rollupShareObject?.depInfo?.enableIncre) : hashDiffers;
   const targetESVersionDiffers: boolean | undefined = lastTargetESVersion && currentTargetESVersion && lastTargetESVersion !== currentTargetESVersion;
-  const typesDiff: boolean | undefined = !areEqualArrays(lastTypes, currentTypes);
   const maxFlowDepthDiffers: boolean | undefined = lastMaxFlowDepth && currentMaxFlowDepth && lastMaxFlowDepth !== currentMaxFlowDepth;
   const tsImportSendableDiff: boolean = (cache?.preTsImportSendable === undefined && !tsImportSendable) ?
     false :
     cache?.preTsImportSendable !== tsImportSendable;
-  const skipOhModulesLintDiff: boolean = (cache?.preSkipOhModulesLint === undefined && !skipOhModulesLint) ?
+  const skipOhModulesLintDiff: boolean = (cache?.preSkipOhModulesLint === undefined && !skipOhModulesLint) ? 
     false : cache?.preSkipOhModulesLint !== skipOhModulesLint;
-  const mixCompileDiff: boolean = (cache?.preMixCompile === undefined && !mixCompile) ?
+  const mixCompileDiff: boolean = (cache?.preMixCompile === undefined && !mixCompile) ? 
     false : cache?.preMixCompile !== mixCompile;
   const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || targetESVersionDiffers ||
-    tsImportSendableDiff || typesDiff || maxFlowDepthDiffers || skipOhModulesLintDiff || mixCompileDiff;
-  const onlyDeleteBuildInfoCache: boolean | undefined = tsImportSendableDiff || typesDiff || maxFlowDepthDiffers || skipOhModulesLintDiff || mixCompileDiff;
+    tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff || mixCompileDiff;
   if (reuseLanguageServiceForDepChange && hashDiffers && rollupShareObject?.depInfo?.enableIncre) {
     needReCheckForChangedDepUsers = true;
   }
 
   if (!service || shouldRebuild) {
-    rebuildProgram(targetESVersionDiffers, onlyDeleteBuildInfoCache);
+    rebuildProgram(targetESVersionDiffers, tsImportSendableDiff, maxFlowDepthDiffers, skipOhModulesLintDiff, mixCompileDiff);
     service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
   } else {
     // Found language service from cache, update root files
@@ -477,7 +472,6 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     service: service,
     pkgJsonFileHash: currentHash,
     targetESVersion: currentTargetESVersion,
-    types: currentTypes,
     maxFlowDepth: currentMaxFlowDepth,
     preTsImportSendable: tsImportSendable,
     preSkipOhModulesLint: skipOhModulesLint,
@@ -487,33 +481,14 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   return service;
 }
 
-export function areEqualArrays(lastArray: string[] | undefined, currentArray: string[] | undefined): boolean {
-  if (!lastArray || !currentArray) {
-    return lastArray === currentArray;
-  }
-
-  const currentSet = new Set(currentArray);
-  const lastSet = new Set(lastArray);
-
-  if (lastSet.size !== currentSet.size) {
-    return false;
-  }
-
-  for (const item of lastSet) {
-    if (!currentSet.has(item)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function rebuildProgram(targetESVersionDiffers: boolean | undefined, onlyDeleteBuildInfoCache: boolean | undefined): void {
+function rebuildProgram(targetESVersionDiffers: boolean | undefined, tsImportSendableDiff: boolean,
+  maxFlowDepthDiffers: boolean | undefined, skipOhModulesLintDiff: boolean, mixCompileDiff: boolean): void {
   if (targetESVersionDiffers) {
     // If the targetESVersion is changed, we need to delete the build info cahce files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
     targetESVersionChanged = true;
-  } else if (onlyDeleteBuildInfoCache) {
-    // When tsImportSendable or types or maxFlowDepth or skipOhModuleslint or mixCompile is changed, we need to delete the build info cahce files
+  } else if (tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff || mixCompileDiff) {
+    // When tsImportSendable or maxFlowDepth is changed, we need to delete the build info cahce files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
   }
 }
