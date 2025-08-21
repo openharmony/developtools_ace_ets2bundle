@@ -1608,6 +1608,15 @@ export const whiteList: Set<string> = new Set([
   'vp2px',
 ]);
 
+export const stateManagementWhiteList: string[] = [
+  'LocalStorage',
+  'AppStorage',
+  'PersistentStorage',
+  'Environment',
+  'AppStorageV2',
+  'PersistenceV2',
+];
+
 export const decoratorsWhiteList: string[] = [
   'State',
   'Prop',
@@ -1623,4 +1632,16 @@ export const decoratorsWhiteList: string[] = [
   'Consume',
   'Watch',
   'Require',
+];
+
+export const decoratorsV2WhiteList: string[] = [
+  'Local',
+  'Param',
+  'Event',
+  'Provider',
+  'Consumer',
+  'ObservedV2',
+  'Computed',
+  'Monitor',
+  'Once',
 ];

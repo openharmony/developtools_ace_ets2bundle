@@ -20,10 +20,17 @@ import { EXTNAME_D_ETS } from './pre_define';
 import {
   whiteList,
   decoratorsWhiteList,
+  decoratorsV2WhiteList,
+  stateManagementWhiteList,
 } from './import_whiteList';
 
 const fs = require('fs');
 const path = require('path');
+
+const OHOS_ARKUI_STATEMANAGEMENT: string = '@ohos.arkui.stateManagement';
+const OHOS_ARKUI_COMPONENT: string = '@ohos.arkui.component';
+const ARKUI_EXTEND: string = 'Extend';
+const ARKUI_STYLES: string = 'Styles';
 
 function getDeclgenFiles(dir: string, filePaths: string[] = []) {
   const files = fs.readdirSync(dir);
@@ -114,7 +121,7 @@ class HandleUIImports {
       const moduleSpecifier = node.moduleSpecifier;
       if (ts.isStringLiteral(moduleSpecifier)) {
         const modulePath = moduleSpecifier.text;
-        if (['@ohos.arkui.stateManagement', '@ohos.arkui.component'].includes(modulePath)) {
+        if ([OHOS_ARKUI_STATEMANAGEMENT, OHOS_ARKUI_COMPONENT].includes(modulePath)) {
           return node;
         }
       }
@@ -126,7 +133,7 @@ class HandleUIImports {
     if (ts.isIdentifier(result) && !this.shouldSkipIdentifier(result)) {
       this.interfacesNeedToImport.add(result.text);
     } else if (ts.isSourceFile(result)) {
-      this.AddUIImports(result);
+      this.addUIImports(result);
     }
 
     if (ts.isMethodDeclaration(result) && !result.type) {
@@ -183,7 +190,7 @@ class HandleUIImports {
     return compImportDeclaration;
   }
 
-  private AddUIImports(node: ts.SourceFile): void {
+  private addUIImports(node: ts.SourceFile): void {
     const compImportSpecifiers: ts.ImportSpecifier[] = [];
     const stateImportSpecifiers: ts.ImportSpecifier[] = [];
 
@@ -192,7 +199,8 @@ class HandleUIImports {
         return;
       }
       const identifier = ts.factory.createIdentifier(interfaceName);
-      if (decoratorsWhiteList.includes(interfaceName)) {
+      if ([...decoratorsWhiteList, ...decoratorsV2WhiteList, ...stateManagementWhiteList]
+        .includes(interfaceName)) {
         stateImportSpecifiers.push(ts.factory.createImportSpecifier(false, undefined, identifier));
       } else {
         compImportSpecifiers.push(ts.factory.createImportSpecifier(false, undefined, identifier));
@@ -203,7 +211,7 @@ class HandleUIImports {
       const newStatements = [...node.statements];
 
       if (compImportSpecifiers.length) {
-        const moduleName = '@ohos.arkui.component';
+        const moduleName = OHOS_ARKUI_COMPONENT;
         const compImportDeclaration = ts.factory.createImportDeclaration(
           undefined,
           ts.factory.createImportClause(false,
@@ -219,7 +227,7 @@ class HandleUIImports {
       }
 
       if (stateImportSpecifiers.length) {
-        const moduleName = '@ohos.arkui.stateManagement';
+        const moduleName = OHOS_ARKUI_STATEMANAGEMENT;
         const stateImportDeclaration = ts.factory.createImportDeclaration(
           undefined,
           ts.factory.createImportClause(false,
@@ -299,7 +307,7 @@ class HandleUIImports {
 
   private shouldSkipIdentifier(identifier: ts.Identifier): boolean {
     const name = identifier.text;
-    const skippedList = new Set<string>(['Extend', 'Styles']);
+    const skippedList = new Set<string>([ARKUI_EXTEND, ARKUI_STYLES]);
 
     if (skippedList.has(name)) {
       return true;
@@ -317,11 +325,7 @@ class HandleUIImports {
       }
     }
 
-    if (this.interfacesNeedToImport.has(name)) {
-      return true;
-    }
-
-    return false;
+    return this.interfacesNeedToImport.has(name);
   }
 
   private extractImportedNames(sourceFile: ts.SourceFile): void {
