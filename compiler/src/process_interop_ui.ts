@@ -20,6 +20,8 @@ import { EXTNAME_D_ETS } from './pre_define';
 import {
   whiteList,
   decoratorsWhiteList,
+  decoratorsV2WhiteList,
+  stateManagementWhiteList,
 } from './import_whiteList';
 
 const fs = require('fs');
@@ -134,6 +136,21 @@ class HandleUIImports {
       this.addUIImports(result);
     }
 
+    if (ts.isMethodDeclaration(result) && !result.type) {
+      const voidTypeAnnotation = ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword);
+      return ts.factory.updateMethodDeclaration(
+        result,
+        result.modifiers,
+        result.asteriskToken,
+        result.name,
+        result.questionToken,
+        result.typeParameters,
+        result.parameters,
+        voidTypeAnnotation,
+        result.body
+      );
+    }
+
     return result;
   }
 
@@ -182,7 +199,8 @@ class HandleUIImports {
         return;
       }
       const identifier = ts.factory.createIdentifier(interfaceName);
-      if (decoratorsWhiteList.includes(interfaceName)) {
+      if ([...decoratorsWhiteList, ...decoratorsV2WhiteList, ...stateManagementWhiteList]
+        .includes(interfaceName)) {
         stateImportSpecifiers.push(ts.factory.createImportSpecifier(false, undefined, identifier));
       } else {
         compImportSpecifiers.push(ts.factory.createImportSpecifier(false, undefined, identifier));
