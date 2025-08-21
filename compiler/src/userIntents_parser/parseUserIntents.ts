@@ -34,7 +34,7 @@ import fs from 'fs';
 import json5 from 'json5';
 import { ProjectCollections } from 'arkguard';
 import {
-  COMPONENT_USER_INTENTS_DECORATOR,
+  COMPONENT_USER_INTENTS_DECORATOR_LINK,
   COMPONENT_USER_INTENTS_DECORATOR_ENTITY,
   COMPONENT_USER_INTENTS_DECORATOR_ENTRY,
   COMPONENT_USER_INTENTS_DECORATOR_FUNCTION,
@@ -44,7 +44,7 @@ import {
 } from '../pre_define';
 import { CompileEvent, createAndStartEvent, stopEvent } from '../performance';
 import {emitLogInfo, getTransformLog, LogInfo, LogType} from '../utils';
-import {ABILITY_SUBSYSTEM_CODE} from '../../lib/hvigor_error_code/hvigor_error_info';
+import {ABILITY_SUBSYSTEM_CODE} from '../hvigor_error_code/hvigor_error_info';
 import {resetLog, transformLog} from '../process_ui_syntax';
 
 type StaticValue = string | number | boolean | null | undefined | StaticValue[] | { [key: string]: StaticValue };
@@ -110,7 +110,7 @@ class ParseIntent {
     node: ts.ClassDeclaration, metaInfo: object, filePath: string, eventOrEventFactory: CompileEvent | undefined, transformLog: LogInfo[]): ts.Node {
     this.initInsightIntent(node, metaInfo, transformLog, filePath);
     const eventParseIntentTime: CompileEvent | undefined = createAndStartEvent(eventOrEventFactory, 'parseIntentTime');
-    const definedDecorators: string[] = [COMPONENT_USER_INTENTS_DECORATOR, COMPONENT_USER_INTENTS_DECORATOR_ENTRY,
+    const definedDecorators: string[] = [COMPONENT_USER_INTENTS_DECORATOR_LINK, COMPONENT_USER_INTENTS_DECORATOR_ENTRY,
       COMPONENT_USER_INTENTS_DECORATOR_FUNCTION, COMPONENT_USER_INTENTS_DECORATOR_PAGE, COMPONENT_USER_INTENTS_DECORATOR_ENTITY,
       COMPONENT_USER_INTENTS_DECORATOR_FORM];
     if (ts.isClassDeclaration(node) && !this.hasDecorator(node, [COMPONENT_USER_INTENTS_DECORATOR_FUNCTION])) {
@@ -183,6 +183,16 @@ class ParseIntent {
       });
       return;
     }
+    if (!projectConfig.pkgContextInfo) {
+      const errorMessage: string = 'Failed to generate standard OHMUrl.';
+      this.transformLog.push({
+        type: LogType.ERROR, message: errorMessage, pos: this.currentNode.getStart(),
+        code: '10111027',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Set useNormalizedOHMUrl to true in build-profile.json5']
+      });
+      return;
+    }
     const pkgParams: object = {
       pkgName: metaInfo.pkgName,
       pkgPath: metaInfo.pkgPath
@@ -211,16 +221,6 @@ class ParseIntent {
     if (!isGlobalPathFlag) {
       return;
     }
-    if (!projectConfig.pkgContextInfo) {
-      const errorMessage: string = 'Failed to generate standard OHMUrl.';
-      this.transformLog.push({
-        type: LogType.ERROR, message: errorMessage, pos: this.currentNode.getStart(),
-        code: '10111027',
-        description: 'InsightIntent Compiler Error',
-        solutions: ['Set useNormalizedOHMUrl to true in build-profile.json5']
-      });
-      return;
-    }
     const Logger: IntentLogger = IntentLogger.getInstance();
     const recordName: string = getNormalizedOhmUrlByFilepath(filepath, projectConfig, Logger, pkgParams, null);
     const intentObj: object = {
@@ -228,7 +228,7 @@ class ParseIntent {
       'decoratorClass': node.name.text
     };
     const originalDecorator: string = '@' + decorator.expression.expression.getText();
-    if (originalDecorator === COMPONENT_USER_INTENTS_DECORATOR) {
+    if (originalDecorator === COMPONENT_USER_INTENTS_DECORATOR_LINK) {
       this.handleLinkDecorator(intentObj, node, decorator);
     } else if (originalDecorator === COMPONENT_USER_INTENTS_DECORATOR_ENTRY) {
       this.handleEntryDecorator(intentObj, node, decorator, pkgParams);
@@ -427,7 +427,7 @@ class ParseIntent {
       Object.assign(intentObj, {
         'bundleName': projectConfig.bundleName,
         'moduleName': projectConfig.moduleName,
-        'decoratorType': COMPONENT_USER_INTENTS_DECORATOR
+        'decoratorType': COMPONENT_USER_INTENTS_DECORATOR_LINK
       });
       this.createObfuscation(node);
       if (this.isUpdateCompile) {
@@ -572,14 +572,14 @@ class ParseIntent {
     if (!projectConfig.modulePathMap) {
       return;
     }
-      const jsonStr: string = fs.readFileSync(moduleJsonPath, 'utf8');
-      const obj: object = json5.parse(jsonStr);
-      if (obj.module?.abilities) {
-        this.moduleJsonInfo.set('abilities', obj.module.abilities);
-      }
-      if (obj.module?.extensionAbilities) {
-        this.moduleJsonInfo.set('extensionAbilities', obj.module.extensionAbilities);
-      }
+    const jsonStr: string = fs.readFileSync(moduleJsonPath, 'utf8');
+    const obj: object = json5.parse(jsonStr);
+    if (obj.module?.abilities) {
+      this.moduleJsonInfo.set('abilities', obj.module.abilities);
+    }
+    if (obj.module?.extensionAbilities) {
+      this.moduleJsonInfo.set('extensionAbilities', obj.module.extensionAbilities);
+    }
   }
 
   private validatePagePath(intentObj: object, pkgParams: object): void {
@@ -1675,7 +1675,7 @@ class ParseIntent {
       }
     } catch (e) {
       const errorMessage: string = `Failed to write to the intent configuration file.`;
-      this.transformLog.push({
+      transformLog.errors.push({
         type: LogType.ERROR, message: errorMessage, pos: this.currentNode.getStart(),
         code: '10110025',
         description: 'InsightIntent Compiler Error',
@@ -1836,7 +1836,7 @@ class ParseIntent {
     writeJsonData.extractInsightIntents?.forEach(item => {
       if (duplicates.has(item.intentName)) {
         const errorMessage: string = `Duplicate intentName definitions found.`;
-        this.transformLog.push({
+        transformLog.errors.push({
           type: LogType.ERROR,
           message: errorMessage,
           pos: this.currentNode.getStart(),
