@@ -67,18 +67,26 @@ function reportTraceMemberVariableError(context: UISyntaxRuleContext, hasTraceDe
 }
 
 function tracePerportyRule(
-  context: UISyntaxRuleContext,
-  currentNode: arkts.AstNode,
-  hasTraceDecorator: arkts.AnnotationUsage): void {
-  if (arkts.isStructDeclaration(currentNode)) {
-    reportTraceDecoratorError(context, hasTraceDecorator);
-  } else if (arkts.isClassDeclaration(currentNode)) {
-    // The '@Trace' decorator can only be used in a 'class' decorated with '@ObservedV2'
-    if (!currentNode.definition?.annotations?.some((annotation: any) => annotation.expr.name ===
-      PresetDecorators.OBSERVED_V2)) {
-      reportTraceInObservedV2Error(context, hasTraceDecorator, currentNode);
+    context: UISyntaxRuleContext,
+    currentNode: arkts.AstNode,
+    hasTraceDecorator: arkts.AnnotationUsage
+): void {
+    if (arkts.isStructDeclaration(currentNode)) {
+        reportTraceDecoratorError(context, hasTraceDecorator);
+    } else if (arkts.isClassDeclaration(currentNode)) {
+        // The '@Trace' decorator can only be used in a 'class' decorated with '@ObservedV2'
+        if (
+            !currentNode.definition?.annotations?.some((annotation: arkts.AnnotationUsage) => {
+                return (
+                    !!annotation.expr &&
+                    arkts.isIdentifier(annotation.expr) &&
+                    annotation.expr.name === PresetDecorators.OBSERVED_V2
+                );
+            })
+        ) {
+            reportTraceInObservedV2Error(context, hasTraceDecorator, currentNode);
+        }
     }
-  }
 }
 
 function reportTraceDecoratorError(context: UISyntaxRuleContext, hasTraceDecorator: arkts.AnnotationUsage)
