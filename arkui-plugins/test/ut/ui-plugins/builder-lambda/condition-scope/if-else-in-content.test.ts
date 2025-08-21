@@ -115,7 +115,7 @@ function main() {}
             }), undefined);
         }));
     }
-    private constructor() {}
+    public constructor() {}
 }
 @Component() export interface __Options_IfElse {
 }
@@ -366,7 +366,7 @@ function main() {}
             return;
         }
     }
-    private constructor() {}
+    public constructor() {}
 }
 @Component() export interface __Options_IfElse {
 }

@@ -94,6 +94,7 @@ function main() {}
   }));
 }
 
+wBuilder = wrapBuilder(overBuilder);
 
 @Observed() class Tmp implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
@@ -182,7 +183,7 @@ function main() {}
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -297,6 +298,7 @@ function main() {}
   }
 }
 
+wBuilder = wrapBuilder(overBuilder);
 
 @Observed() class Tmp implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
@@ -421,7 +423,7 @@ function main() {}
     }
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

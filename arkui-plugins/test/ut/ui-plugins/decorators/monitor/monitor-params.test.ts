@@ -313,7 +313,7 @@ class GGG {
   
   @memo() public build() {}
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

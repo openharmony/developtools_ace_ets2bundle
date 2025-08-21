@@ -112,7 +112,7 @@ function main() {}
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -143,7 +143,7 @@ function main() {}
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -319,7 +319,7 @@ function main() {}
     }
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -404,7 +404,7 @@ function main() {}
     }
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
