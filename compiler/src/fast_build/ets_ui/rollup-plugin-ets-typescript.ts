@@ -417,7 +417,7 @@ async function transform(code: string, id: string) {
     const result: ts.TranspileOutput = ts.transpileModule(newContent, {
       compilerOptions: compilerOptions,
       fileName: id,
-      transformers: { before: [processUISyntax(null, false, null, id, metaInfo)] }
+      transformers: { before: [processUISyntax(null, false, undefined, id, null, metaInfo)] }
     });
 
     resetCollection();
