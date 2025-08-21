@@ -242,7 +242,7 @@ class Info {
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -285,7 +285,7 @@ class Info {
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -319,7 +319,7 @@ class Info {
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

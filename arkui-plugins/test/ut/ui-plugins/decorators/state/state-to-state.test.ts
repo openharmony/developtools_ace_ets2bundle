@@ -102,7 +102,7 @@ class Per {
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -131,7 +131,7 @@ class Per {
     }), undefined);
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

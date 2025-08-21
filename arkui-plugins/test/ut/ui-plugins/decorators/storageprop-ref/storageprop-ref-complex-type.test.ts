@@ -214,7 +214,7 @@ final class Status extends BaseEnum<int> {
   
   @memo() public build() {}
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

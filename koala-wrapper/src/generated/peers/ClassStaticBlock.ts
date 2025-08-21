@@ -34,20 +34,27 @@ import { Expression } from "./Expression"
 import { ScriptFunction } from "./ScriptFunction"
 export class ClassStaticBlock extends ClassElement {
      constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_STATIC_BLOCK)
-        super(pointer)
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_STATIC_BLOCK);
+        super(pointer);
         
     }
     static createClassStaticBlock(value?: Expression): ClassStaticBlock {
-        return new ClassStaticBlock(global.generatedEs2panda._CreateClassStaticBlock(global.context, passNode(value)))
+        return new ClassStaticBlock(global.generatedEs2panda._CreateClassStaticBlock(global.context, passNode(value)));
     }
     static updateClassStaticBlock(original?: ClassStaticBlock, value?: Expression): ClassStaticBlock {
-        return new ClassStaticBlock(global.generatedEs2panda._UpdateClassStaticBlock(global.context, passNode(original), passNode(value)))
+        return new ClassStaticBlock(global.generatedEs2panda._UpdateClassStaticBlock(global.context, passNode(original), passNode(value)));
     }
+    get function(): ScriptFunction | undefined {
+        return unpackNode(global.generatedEs2panda._ClassStaticBlockFunction(global.context, this.peer));
+    }
+    get name(): string {
+        return unpackString(global.generatedEs2panda._ClassStaticBlockNameConst(global.context, this.peer));
+    }
+    protected readonly brandClassStaticBlock: undefined;
 }
 export function isClassStaticBlock(node: AstNode): node is ClassStaticBlock {
-    return node instanceof ClassStaticBlock
+    return node instanceof ClassStaticBlock;
 }
 if (!nodeByType.has(Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_STATIC_BLOCK)) {
-    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_STATIC_BLOCK, ClassStaticBlock)
+    nodeByType.set(Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_STATIC_BLOCK, ClassStaticBlock);
 }

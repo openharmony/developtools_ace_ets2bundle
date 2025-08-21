@@ -484,7 +484,7 @@ export class FunctionDeclaration extends AstNode {
     readonly isAnon: boolean;
 }
 
-export class FunctionExpression extends AstNode {
+class FunctionExpression extends AstNode {
     constructor(peer: KPtr) {
         assertValidPeer(peer, Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_EXPRESSION);
         super(peer);

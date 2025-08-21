@@ -118,7 +118,7 @@ function main() {}
             }), undefined);
         }));
     }
-    private constructor() {}
+    public constructor() {}
 }
 @Component() export interface __Options_SwitchCase {
     set num(num: (string | undefined))
@@ -347,7 +347,7 @@ function main() {}
             return;
         }
     }
-    private constructor() {}
+    public constructor() {}
 }
 @Component() export interface __Options_SwitchCase {
     set num(num: (string | undefined))
