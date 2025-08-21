@@ -190,3 +190,11 @@ export enum Es2pandaImportFlags {
     IMPORT_FLAGS_DEFAULT_IMPORT,
     IMPORT_FLAGS_IMPLICIT_PACKAGE_IMPORT,
 }
+
+export enum Es2pandaLanguage {
+    AS = 0,
+    JS = 1,
+    TS = 2,
+    ETS = 3,
+    COUNT = 4
+}
