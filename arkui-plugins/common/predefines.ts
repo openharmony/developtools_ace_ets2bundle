@@ -394,3 +394,9 @@ export enum GenSymPrefix {
     INTRINSIC = 'gensym%%',
     UI = 'gensym__'
 }
+
+export enum LANGUAGE_VERSION {
+    ARKTS_1_2 = '1.2',
+    ARKTS_1_1 = '1.1',
+    ARKTS_HYBRID = 'hybrid',
+};

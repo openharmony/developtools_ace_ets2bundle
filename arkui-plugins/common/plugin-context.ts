@@ -14,6 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import { FileManager } from './file-manager';
 
 // This is the same plugin-context in the build-system.
 export class PluginContext {
@@ -22,6 +23,7 @@ export class PluginContext {
     private projectConfig: ProjectConfig | undefined;
     private contextPtr: number | undefined;
     private codingFilePath: string | undefined;
+    private fileManager: FileManager | undefined;
 
     constructor() {
         this.ast = undefined;
@@ -29,6 +31,11 @@ export class PluginContext {
         this.projectConfig = undefined;
         this.contextPtr = undefined;
         this.codingFilePath = undefined;
+        this.fileManager = undefined;
+    }
+
+    public getFileManager(): FileManager | undefined {
+        return this.fileManager;
     }
 
     /**
@@ -151,3 +158,7 @@ export type PluginExecutor = {
     name: string;
     handler: PluginHandlerFunction;
 };
+
+export interface BuildConfig {
+    compileFiles: string[];
+}
