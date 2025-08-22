@@ -20,6 +20,56 @@
 #include <mutex>
 #include "memoryTracker.h"
 
+KInt impl_ClassDefinitionLanguageConst(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    auto result = GetImpl()->ClassDefinitionLanguageConst(_context, _receiver);
+    return result;
+}
+KOALA_INTEROP_2(ClassDefinitionLanguageConst, KInt, KNativePointer, KNativePointer);
+
+KNativePointer impl_CreateClassDefinition3(KNativePointer context, KNativePointer ident, KNativePointer typeParams, KNativePointer superTypeParams, KNativePointerArray _implements, KUInt _implementsSequenceLength, KNativePointer ctor, KNativePointer superClass, KNativePointerArray body, KUInt bodySequenceLength, KInt modifiers, KInt flags, KInt lang)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _ident = reinterpret_cast<es2panda_AstNode*>(ident);
+    const auto _typeParams = reinterpret_cast<es2panda_AstNode*>(typeParams);
+    const auto _superTypeParams = reinterpret_cast<es2panda_AstNode*>(superTypeParams);
+    const auto __implements = reinterpret_cast<es2panda_AstNode**>(_implements);
+    const auto __implementsSequenceLength = static_cast<KUInt>(_implementsSequenceLength);
+    const auto _ctor = reinterpret_cast<es2panda_AstNode*>(ctor);
+    const auto _superClass = reinterpret_cast<es2panda_AstNode*>(superClass);
+    const auto _body = reinterpret_cast<es2panda_AstNode**>(body);
+    const auto _bodySequenceLength = static_cast<KUInt>(bodySequenceLength);
+    const auto _modifiers = static_cast<Es2pandaClassDefinitionModifiers>(modifiers);
+    const auto _flags = static_cast<Es2pandaModifierFlags>(flags);
+    const auto _lang = static_cast<Es2pandaLanguage>(lang);
+    auto result = GetImpl()->CreateClassDefinition3(_context, _ident, _typeParams, _superTypeParams, __implements, __implementsSequenceLength, _ctor, _superClass, _body, _bodySequenceLength, _modifiers, _flags, _lang);
+    return result;
+}
+KOALA_INTEROP_13(CreateClassDefinition3, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointerArray, KUInt, KNativePointer, KNativePointer, KNativePointerArray, KUInt, KInt, KInt, KInt);
+
+KNativePointer impl_UpdateClassDefinition3(KNativePointer context, KNativePointer original, KNativePointer ident, KNativePointer typeParams, KNativePointer superTypeParams, KNativePointerArray _implements, KUInt _implementsSequenceLength, KNativePointer ctor, KNativePointer superClass, KNativePointerArray body, KUInt bodySequenceLength, KInt modifiers, KInt flags, KInt lang)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _original = reinterpret_cast<es2panda_AstNode*>(original);
+    const auto _ident = reinterpret_cast<es2panda_AstNode*>(ident);
+    const auto _typeParams = reinterpret_cast<es2panda_AstNode*>(typeParams);
+    const auto _superTypeParams = reinterpret_cast<es2panda_AstNode*>(superTypeParams);
+    const auto __implements = reinterpret_cast<es2panda_AstNode**>(_implements);
+    const auto __implementsSequenceLength = static_cast<KUInt>(_implementsSequenceLength);
+    const auto _ctor = reinterpret_cast<es2panda_AstNode*>(ctor);
+    const auto _superClass = reinterpret_cast<es2panda_AstNode*>(superClass);
+    const auto _body = reinterpret_cast<es2panda_AstNode**>(body);
+    const auto _bodySequenceLength = static_cast<KUInt>(bodySequenceLength);
+    const auto _modifiers = static_cast<Es2pandaClassDefinitionModifiers>(modifiers);
+    const auto _flags = static_cast<Es2pandaModifierFlags>(flags);
+    const auto _lang = static_cast<Es2pandaLanguage>(lang);
+    auto result = GetImpl()->UpdateClassDefinition3(_context, _original, _ident, _typeParams, _superTypeParams, __implements, __implementsSequenceLength, _ctor, _superClass, _body, _bodySequenceLength, _modifiers, _flags, _lang);
+    return result;
+}
+KOALA_INTEROP_14(UpdateClassDefinition3, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointerArray, KUInt, KNativePointer, KNativePointer, KNativePointerArray, KUInt, KInt, KInt, KInt);
+
 KBoolean impl_ClassDefinitionIsFromStructConst(KNativePointer contextPtr, KNativePointer instancePtr)
 {
     auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
