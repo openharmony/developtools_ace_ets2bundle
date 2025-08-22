@@ -114,7 +114,7 @@ class Data {
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

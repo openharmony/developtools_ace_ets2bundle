@@ -75,7 +75,7 @@ function main() {}
             }));
         }));
     }
-    private constructor() {}
+    public constructor() {}
 }
 @Component() export interface __Options_A {
 }
@@ -205,7 +205,7 @@ function main() {}
             return;
         }
     }
-    private constructor() {}
+    public constructor() {}
 }
 @Component() export interface __Options_A {
 }

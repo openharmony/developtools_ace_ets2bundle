@@ -79,7 +79,7 @@ i = _r(16777216, 10003, "com.example.mock", "entry");
       Image(undefined, this.icon, undefined, undefined);
     }));
   }
-  private constructor() {}
+  public constructor() {}
   
 }
 

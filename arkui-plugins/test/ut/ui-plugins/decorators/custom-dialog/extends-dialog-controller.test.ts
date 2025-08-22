@@ -77,7 +77,7 @@ function main() {}
     Column(undefined, undefined, @memo() (() => {}));
   }
   
-  private constructor() {}
+  public constructor() {}
   
   public __setDialogController__(controller: CustomDialogController): void {
     this.__backing_aaController = controller;
@@ -148,7 +148,7 @@ class DialogControllerV3 extends DialogControllerV2 {
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

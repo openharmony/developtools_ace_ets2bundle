@@ -128,7 +128,7 @@ class AB {
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

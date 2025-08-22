@@ -127,7 +127,7 @@ class BooleanClass {
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

@@ -99,7 +99,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   @memo() public build() {}
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
