@@ -22,7 +22,6 @@ export const EXTERNAL_SOURCE_PREFIX_NAMES: (string | RegExp)[] = [
     'bundleManager',
     'commonEvent',
     /@arkts\..*/,
-    /@ohos\.(?!arkui).*/,
     /@system\..*/,
     /ability\..*/,
 ];
