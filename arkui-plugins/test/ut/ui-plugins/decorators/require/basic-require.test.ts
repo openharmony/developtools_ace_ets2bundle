@@ -239,7 +239,7 @@ function main() {}
   
   @memo() public build() {}
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -263,7 +263,7 @@ function main() {}
   
   @memo() public build() {}
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

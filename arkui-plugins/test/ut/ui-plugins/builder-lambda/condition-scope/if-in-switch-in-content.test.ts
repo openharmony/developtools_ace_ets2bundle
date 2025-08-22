@@ -100,7 +100,7 @@ function main() {}
             }));
         }));
     }
-    private constructor() {}
+    public constructor() {}
 }
 @Component() export interface __Options_IfInSwitch {
     set num(num: (string | undefined))
@@ -274,7 +274,7 @@ function main() {}
             return;
         }
     }
-    private constructor() {}
+    public constructor() {}
 }
 @Component() export interface __Options_IfInSwitch {
     set num(num: (string | undefined))

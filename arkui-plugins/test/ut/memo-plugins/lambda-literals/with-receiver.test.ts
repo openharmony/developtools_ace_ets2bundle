@@ -36,6 +36,45 @@ import { memo as memo } from \"arkui.stateManagement.runtime\";
 
 function main() {}
 
+@memo() function fullName(this: Person, __memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
+    const __memo_parameter_this = __memo_scope.param(0, this), __memo_parameter_arg = __memo_scope.param(1, arg);
+    if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+    }
+    {
+        __memo_scope.recache();
+        return;
+    }
+}
+
+@memo() function foo(this: A, __memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
+    const __memo_parameter_this = __memo_scope.param(0, this), __memo_parameter_arg = __memo_scope.param(1, arg);
+    if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+    }
+    {
+        __memo_scope.recache();
+        return;
+    }
+}
+
+@memo() function goo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, a: A, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
+    const __memo_parameter_a = __memo_scope.param(0, a), __memo_parameter_arg = __memo_scope.param(1, arg);
+    if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+    }
+    {
+        __memo_scope.recache();
+        return;
+    }
+}
+
 @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
@@ -95,45 +134,6 @@ function main() {}
         return;
     }
 });
-
-@memo() function fullName(this: Person, __memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
-    const __memo_parameter_this = __memo_scope.param(0, this), __memo_parameter_arg = __memo_scope.param(1, arg);
-    if (__memo_scope.unchanged) {
-        __memo_scope.cached;
-        return;
-    }
-    {
-        __memo_scope.recache();
-        return;
-    }
-}
-
-@memo() function foo(this: A, __memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
-    const __memo_parameter_this = __memo_scope.param(0, this), __memo_parameter_arg = __memo_scope.param(1, arg);
-    if (__memo_scope.unchanged) {
-        __memo_scope.cached;
-        return;
-    }
-    {
-        __memo_scope.recache();
-        return;
-    }
-}
-
-@memo() function goo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, a: A, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
-    const __memo_parameter_a = __memo_scope.param(0, a), __memo_parameter_arg = __memo_scope.param(1, arg);
-    if (__memo_scope.unchanged) {
-        __memo_scope.cached;
-        return;
-    }
-    {
-        __memo_scope.recache();
-        return;
-    }
-}
 
 class Person {
     public constructor() {}

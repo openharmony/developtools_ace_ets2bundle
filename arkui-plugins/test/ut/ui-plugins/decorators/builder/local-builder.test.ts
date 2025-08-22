@@ -76,7 +76,7 @@ function main() {}
     }));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

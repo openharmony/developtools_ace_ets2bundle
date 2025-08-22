@@ -69,7 +69,7 @@ function main() {}
   
   @memo() public build() {}
   
-  private constructor() {}
+  public constructor() {}
     
   public __setDialogController__(controller: CustomDialogController): void {
     this.__backing_aaController = controller;
@@ -140,7 +140,7 @@ function main() {}
   
   @memo() public build() {}
   
-  private constructor() {}
+  public constructor() {}
   
 }
 

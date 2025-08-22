@@ -137,7 +137,7 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
-  public static __backing_localVar1: ILocalDecoratedVariable<string> = STATE_MGMT_FACTORY.makeLocal<string>(null, "localVar1", "stateVar1");
+  public static __backing_localVar1: ILocalDecoratedVariable<string> = STATE_MGMT_FACTORY.makeStaticLocal<string>("localVar1", "stateVar1");
   
   public static get localVar1(): string {
     return Parent.__backing_localVar1.get();
@@ -147,7 +147,7 @@ function main() {}
     Parent.__backing_localVar1.set(value);
   }
   
-  public static __backing_localVar2: ILocalDecoratedVariable<number> = STATE_MGMT_FACTORY.makeLocal<number>(null, "localVar2", 50);
+  public static __backing_localVar2: ILocalDecoratedVariable<number> = STATE_MGMT_FACTORY.makeStaticLocal<number>("localVar2", 50);
   
   public static get localVar2(): number {
     return Parent.__backing_localVar2.get();
@@ -167,7 +167,7 @@ function main() {}
   
   @memo() public build() {}
   
-  private constructor() {}
+  public constructor() {}
   
   static {
     

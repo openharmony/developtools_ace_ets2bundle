@@ -135,7 +135,7 @@ function main() {}
     Column(undefined, undefined, @memo() (() => {}));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
@@ -166,7 +166,7 @@ function main() {}
     Column(undefined, undefined, @memo() (() => {}));
   }
   
-  private constructor() {}
+  public constructor() {}
   
 }
 
