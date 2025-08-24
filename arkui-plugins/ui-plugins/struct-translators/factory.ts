@@ -25,6 +25,7 @@ import {
     isCustomComponentInterface,
     isCustomDialogControllerOptions,
     isKnownMethodDefinition,
+    isStatic,
 } from '../utils';
 import { factory as UIFactory } from '../ui-factory';
 import { factory as PropertyFactory } from '../property-translators/factory';
@@ -57,6 +58,7 @@ import {
     findBuilderIndexInControllerOptions,
     ObservedAnnoInfo,
     getNoTransformationMembersInClass,
+    isComputedMethod,
 } from './utils';
 import { collectStateManagementTypeImport, generateThisBacking, hasDecorator } from '../property-translators/utils';
 import { ComponentAttributeCache, isComponentAttributeInterface } from '../builder-lambda-translators/utils';
@@ -517,18 +519,13 @@ export class factory {
             classOptionsName ?? getCustomComponentOptionsName(className),
             scope
         );
-        const updateMembers: arkts.AstNode[] = definition.body
-            .filter(
-                (member) =>
-                    !arkts.isClassProperty(member) &&
-                    !(arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.COMPUTED))
-            )
+        const updateMembers: arkts.AstNode[] = body
+            .filter((member) => !arkts.isClassProperty(member) && !isComputedMethod(member))
             .map((member: arkts.AstNode) => factory.transformNonPropertyMembersInClass(member, scope.isDecl));
-
-        const updateClassDef: arkts.ClassDefinition = this.updateCustomComponentClass(definition, [
-            ...translatedMembers,
-            ...updateMembers,
-        ]);
+        const updateClassDef: arkts.ClassDefinition = this.updateCustomComponentClass(
+            definition,
+            factory.addClassStaticBlock([...translatedMembers, ...updateMembers], body)
+        );
         if (
             !!scope.annotations.customdialog ||
             (scope.isDecl && scope.name === CustomComponentNames.BASE_CUSTOM_DIALOG_NAME)
@@ -536,6 +533,21 @@ export class factory {
             updateClassDef.addProperties(factory.addControllerSetMethod(scope.isDecl, body));
         }
         return arkts.factory.updateClassDeclaration(node, updateClassDef);
+    }
+
+    /**
+     * Determine whether a class static block needs to be added.
+     */
+    static addClassStaticBlock(members: arkts.AstNode[], body: readonly arkts.AstNode[]): arkts.AstNode[] {
+        const staticBlock = body.find((item: arkts.AstNode) => arkts.isClassStaticBlock(item));
+        if (staticBlock) {
+            return members;
+        }
+        const classHasStaticComputed = body.find((item: arkts.AstNode) => isComputedMethod(item) && isStatic(item));
+        if (classHasStaticComputed) {
+            members.push(UIFactory.createClassStaticBlock());
+        }
+        return members;
     }
 
     /**
@@ -936,21 +948,25 @@ export class factory {
             className: ObservedAnno.className,
             getters: getters,
         };
+        const body: readonly arkts.AstNode[] = definition.body;
         const translators: (ObservedTranslator | MethodTranslator)[] = filterDefined(
-            definition.body.map((it) => classifyInObservedClass(it, classScopeInfo))
+            body.map((it) => classifyInObservedClass(it, classScopeInfo))
         );
         const metaProperty: arkts.ClassProperty[] = ObservedAnno.classHasTrack
             ? []
             : [PropertyFactory.createMetaInObservedClass()];
         const propertyMembers = translators.map((translator) => translator.translateMember());
         const restMembers: arkts.AstNode[] = getNoTransformationMembersInClass(definition, ObservedAnno);
-        const returnNodes = [
-            ...[...watchMembers, ...v1RenderIdMembers, conditionalAddRef],
-            ...(ObservedAnno.isObserved ? metaProperty : []),
-            ...collect(...propertyMembers),
-            ...restMembers,
-            ...classScopeInfo.getters,
-        ];
+        const returnNodes = factory.addClassStaticBlock(
+            [
+                ...[...watchMembers, ...v1RenderIdMembers, conditionalAddRef],
+                ...(ObservedAnno.isObserved ? metaProperty : []),
+                ...collect(...propertyMembers),
+                ...restMembers,
+                ...classScopeInfo.getters,
+            ],
+            body
+        );
         return ObservedAnno.isObservedV2
             ? returnNodes.concat(this.transformObservedV2Constuctor(definition, classScopeInfo.className))
             : returnNodes;
