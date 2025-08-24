@@ -40,3 +40,26 @@ struct Parent {
 
   build() {}
 }
+
+@ComponentV2
+struct Parent2 {
+  @Computed
+  static get fullName(): string {
+    return Name.firstName + ' ' + Name.lastName;
+  }
+
+  @Computed
+  static get fullName2(): string {
+    return Parent.localVar1;
+  }
+
+  build() {}
+}
+
+@ObservedV2
+class Name2 {
+  @Computed
+  static get fullName(): string {
+    return Name.firstName + ' ' + Name.lastName;
+  }
+}

@@ -574,6 +574,10 @@ function isObjectAsExpression(param: arkts.AstNode): boolean {
     return arkts.isTSAsExpression(param) && !!param.expr && arkts.isObjectExpression(param.expr);
 }
 
+export function isComputedMethod(node: arkts.AstNode): boolean {
+    return arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.COMPUTED);
+}
+
 export function findBuilderIndexInControllerOptions(properties: readonly arkts.Expression[]): number {
     return properties.findIndex((item: arkts.Expression) => {
         return (
