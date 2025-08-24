@@ -174,6 +174,72 @@ function main() {}
   }
 }
 
+@ComponentV2() final struct Parent2 extends CustomComponentV2<Parent2, __Options_Parent2> {
+  public __initializeStruct(initializers: (__Options_Parent2 | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  
+  public __updateStruct(initializers: (__Options_Parent2 | undefined)): void {}
+  
+  public static __computed_fullName = STATE_MGMT_FACTORY.makeComputed<string>((() => {
+    return ((((Name.firstName) + (" "))) + (Name.lastName));
+  }), "fullName");
+  
+  @Computed() public static get fullName(): string {
+    return Parent2.__computed_fullName.get();
+  }
+  
+  public static __computed_fullName2 = STATE_MGMT_FACTORY.makeComputed<string>((() => {
+    return Parent.localVar1;
+  }), "fullName2");
+  
+  @Computed() public static get fullName2(): string {
+    return Parent2.__computed_fullName2.get();
+  }
+  
+  @memo() public build() {}
+  
+  public constructor() {}
+  
+  static {
+    
+  }
+}
+
+@ObservedV2() class Name2 implements IObservedObject, ISubscribedWatches {
+  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  
+  public addWatchSubscriber(watchId: WatchIdType): void {
+    this.subscribedWatches.addWatchSubscriber(watchId);
+  }
+  
+  public removeWatchSubscriber(watchId: WatchIdType): boolean {
+    return this.subscribedWatches.removeWatchSubscriber(watchId);
+  }
+  
+  public executeOnSubscribingWatches(propertyName: string): void {
+    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
+  }
+  
+  public setV1RenderId(renderId: RenderIdType): void {}
+  
+  protected conditionalAddRef(meta: IMutableStateMeta): void {
+    meta.addRef();
+  }
+  
+  public static __computed_fullName = STATE_MGMT_FACTORY.makeComputed<string>((() => {
+    return ((((Name.firstName) + (" "))) + (Name.lastName));
+  }), "fullName");
+  
+  @Computed() public static get fullName(): string {
+    return Name2.__computed_fullName.get();
+  }
+  
+  static {
+    
+  }
+  public constructor() {}
+  
+}
+
 @ComponentV2() export interface __Options_Parent {
   set localVar1(localVar1: (string | undefined))
   
@@ -187,6 +253,10 @@ function main() {}
   set __backing_localVar2(__backing_localVar2: (ILocalDecoratedVariable<number> | undefined))
   
   get __backing_localVar2(): (ILocalDecoratedVariable<number> | undefined)
+  
+}
+
+@ComponentV2() export interface __Options_Parent2 {
   
 }
 `;

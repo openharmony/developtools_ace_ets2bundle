@@ -23,7 +23,7 @@ import {
     hasPropertyInAnnotation,
 } from './utils';
 import { PartialExcept, PartialNested, PartialNestedExcept } from '../common/safe-types';
-import { DecoratorNames } from '../common/predefines';
+import { ArkTsDefaultNames, DecoratorNames } from '../common/predefines';
 import { needDefiniteOrOptionalModifier } from './property-translators/utils';
 import { addMemoAnnotation } from '../collectors/memo-collectors/utils';
 
@@ -468,6 +468,24 @@ export class factory {
         return arkts.factory.createParameterDeclaration(
             arkts.factory.createIdentifier(keyName, this.createTypeReferenceFromString(typeName)),
             initializers
+        );
+    }
+
+    /**
+     * create class static block, e.g. `static {}`.
+     */
+    static createClassStaticBlock(): arkts.ClassStaticBlock {
+        return arkts.factory.createClassStaticBlock(
+            arkts.factory.createFunctionExpression(
+                factory.createScriptFunction({
+                    key: arkts.factory.createIdentifier(ArkTsDefaultNames.DEFAULT_STATIC_BLOCK_NAME),
+                    body: arkts.factory.createBlock([]),
+                    modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+                    flags:
+                        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_STATIC_BLOCK |
+                        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_EXPRESSION,
+                })
+            )
         );
     }
 }
