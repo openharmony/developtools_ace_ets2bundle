@@ -57,7 +57,7 @@ function createTransformer(
             return undefined;
         }
         const program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-        if (visitedPrograms.has(program.peer)) {
+        if (visitedPrograms.has(program.peer) || isHeaderFile(program.absName)) {
             return undefined;
         }
         const isCoding = this.isCoding?.() ?? false;
@@ -94,7 +94,7 @@ function transformExternalSources(
         }
         const programs = externalSource.programs;
         for (const program of programs) {
-            if (visitedPrograms.has(program.peer)) {
+            if (visitedPrograms.has(program.peer) || isHeaderFile(program.absName)) {
                 continue;
             }
             const script = transformer.transform(program.astNode) as arkts.EtsScript;
@@ -112,4 +112,8 @@ function transformProgram(
     const script = transformer.transform(program.astNode) as arkts.EtsScript;
     this.setArkTSAst(script);
     return script;
+}
+
+function isHeaderFile(fileName: string): boolean {
+    return fileName.endsWith('.d.ets');
 }
