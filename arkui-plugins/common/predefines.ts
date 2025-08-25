@@ -16,14 +16,8 @@
 export const EXTERNAL_SOURCE_PREFIX_NAMES: (string | RegExp)[] = [
     'std',
     'escompat',
-    'security',
-    'application',
-    'permissions',
-    'bundleManager',
-    'commonEvent',
     /@arkts\..*/,
     /@system\..*/,
-    /ability\..*/,
 ];
 
 export const EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK: (string | RegExp)[] = [
