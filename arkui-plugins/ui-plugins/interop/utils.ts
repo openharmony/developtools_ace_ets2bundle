@@ -87,7 +87,7 @@ export function setPropertyESValue(object: string, key: string, value: arkts.Ast
             undefined,
             [
                 arkts.factory.createStringLiteral(key),
-                value
+                value.clone()
             ]
         )
     );
