@@ -212,6 +212,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'skipOhModulesLint': skipOhModulesLint,
     'mixCompile': mixCompile,
     'isCompileJsHar': isCompileJsHar(),
+    'moduleRootPath': projectConfig.moduleRootPath,
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
