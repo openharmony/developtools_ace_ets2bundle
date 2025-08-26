@@ -89,19 +89,6 @@ class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
         } else {
             arkts.Diagnostic.logDiagnostic(diagnosticKind, arkts.getStartPosition(options.node));
         }
-
-        // todo
-        const position = arkts.getStartPosition(options.node);
-        if (options.fix) {
-            const suggestion = options.fix(options.node);
-            console.log(`syntax-${options.level ?? 'error'}: ${message}  (${position.index()},${position.line()})`);
-            console.log(
-                `range: (${suggestion.range[0].index()}, ${suggestion.range[0].line()}) - (${suggestion.range[1].index()}, ${suggestion.range[1].line()})`,
-                `code: ${suggestion.code}`
-            );
-        } else {
-            console.log(`syntax-${options.level ?? 'error'}: ${message}  (${position.index()},${position.line()})`);
-        }
     }
 
     getMainPages(): string[] {
