@@ -20,14 +20,31 @@ import { factory as BuilderLambdaFactory } from './factory';
 /**
  * `ConditionScopeVisitor` is used to visit `@Builder` function body to wrap `ConditionScope`/`ConditionBranch`
  * to if-else or switch-case statements.
- * 
+ *
  * @internal
  */
 export class ConditionScopeVisitor extends AbstractVisitor {
     private static instance: ConditionScopeVisitor;
+    private _enforceUpdateCondition: boolean = false;
+    private _shouldUpdateCondition: boolean = true;
 
     private constructor() {
         super();
+    }
+
+    private get shouldUpdateCondition(): boolean {
+        if (this._enforceUpdateCondition) {
+            return true;
+        }
+        return this._shouldUpdateCondition;
+    }
+
+    private set shouldUpdateCondition(newValue: boolean) {
+        if (this._enforceUpdateCondition) {
+            this._shouldUpdateCondition = true;
+            return;
+        }
+        this._shouldUpdateCondition = newValue;
     }
 
     static getInstance(): ConditionScopeVisitor {
@@ -37,18 +54,38 @@ export class ConditionScopeVisitor extends AbstractVisitor {
         return this.instance;
     }
 
+    private enter(node: arkts.AstNode): void {
+        if (arkts.isVariableDeclarator(node) && arkts.NodeCache.getInstance().has(node)) {
+            this._enforceUpdateCondition = true;
+        }
+    }
+
+    reset(): void {
+        this._enforceUpdateCondition = false;
+        this._shouldUpdateCondition = true;
+    }
+
     visitor(node: arkts.AstNode): arkts.AstNode {
-        if (arkts.isIfStatement(node)) {
+        this.enter(node);
+        if (arkts.isIfStatement(node) && this.shouldUpdateCondition) {
             return BuilderLambdaFactory.updateIfElseContentBodyInBuilderLambda(node, true, true);
         }
-        if (arkts.isSwitchStatement(node)) {
+        if (arkts.isSwitchStatement(node) && this.shouldUpdateCondition) {
             return BuilderLambdaFactory.updateSwitchCaseContentBodyInBuilderLambda(node, true, true);
         }
-        if (arkts.isBlockStatement(node)) {
+        if (arkts.isBlockStatement(node) && this.shouldUpdateCondition) {
             const newStatements = node.statements.map((st) =>
                 BuilderLambdaFactory.updateContentBodyInBuilderLambda(st, true, true)
             );
             return arkts.factory.updateBlock(node, newStatements);
+        }
+        if (
+            arkts.isArrowFunctionExpression(node) &&
+            !arkts.NodeCache.getInstance().has(node) &&
+            !arkts.NodeCache.getInstance().has(node.scriptFunction)
+        ) {
+            this.shouldUpdateCondition = false;
+            this._enforceUpdateCondition = false;
         }
         return this.visitEachChild(node);
     }
