@@ -80,4 +80,6 @@ export class global {
         global._config = undefined;
         global.configObj = undefined;
     }
+
+    public static validatePeerTypes = false;
 }

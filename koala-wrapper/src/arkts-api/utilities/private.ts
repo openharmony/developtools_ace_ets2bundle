@@ -41,9 +41,11 @@ export function assertValidPeer(peer: KPtr, expectedKind: Es2pandaAstNodeType): 
     if (peer === nullptr) {
         throwError(`invalid peer`);
     }
-    const peerType = global.generatedEs2panda._AstNodeTypeConst(global.context, peer);
-    if (peerType !== expectedKind) {
-        throwError(`expected: ${Es2pandaAstNodeType[expectedKind]}, got: ${Es2pandaAstNodeType[peerType]}`);
+    if (global.validatePeerTypes) {
+        const peerType = global.generatedEs2panda._AstNodeTypeConst(global.context, peer);
+        if (peerType !== expectedKind) {
+            throwError(`expected: ${Es2pandaAstNodeType[expectedKind]}, got: ${Es2pandaAstNodeType[peerType]}`);
+        }
     }
 }
 
