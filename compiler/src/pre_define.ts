@@ -66,6 +66,12 @@ export const REUSABLE_V2_INNER_DECORATOR: string = '__ReusableV2_Inner_Decorator
 export const REUSE_ATTRIBUTE: string = 'reuse';
 
 export const COMPONENT_USER_INTENTS_DECORATOR_PAGE: string = '@InsightIntentPage';
+export const COMPONENT_USER_INTENTS_DECORATOR_LINK: string = '@InsightIntentLink';
+export const COMPONENT_USER_INTENTS_DECORATOR_ENTRY: string = '@InsightIntentEntry';
+export const COMPONENT_USER_INTENTS_DECORATOR_FUNCTION: string = '@InsightIntentFunction';
+export const COMPONENT_USER_INTENTS_DECORATOR_METHOD: string = '@InsightIntentFunctionMethod';
+export const COMPONENT_USER_INTENTS_DECORATOR_ENTITY: string = '@InsightIntentEntity';
+export const COMPONENT_USER_INTENTS_DECORATOR_FORM: string = '@InsightIntentForm';
 
 export const COMPONENT_DECORATORS_PARAMS: Set<string> = new Set([COMPONENT_CONSUME_DECORATOR,
   COMPONENT_STORAGE_PROP_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR, COMPONENT_PROVIDE_DECORATOR,
@@ -95,12 +101,6 @@ export const COMPONENT_STYLES_DECORATOR: string = '@Styles';
 export const COMPONENT_ANIMATABLE_EXTEND_DECORATOR: string = '@AnimatableExtend';
 export const COMPONENT_CONCURRENT_DECORATOR: string = '@Concurrent';
 export const COMPONENT_SENDABLE_DECORATOR: string = '@Sendable';
-export const COMPONENT_USER_INTENTS_DECORATOR: string = '@InsightIntentLink';
-export const COMPONENT_USER_INTENTS_DECORATOR_ENTRY: string = '@InsightIntentEntry';
-export const COMPONENT_USER_INTENTS_DECORATOR_FUNCTION: string = '@InsightIntentFunction';
-export const COMPONENT_USER_INTENTS_DECORATOR_METHOD: string = '@InsightIntentFunctionMethod';
-export const COMPONENT_USER_INTENTS_DECORATOR_ENTITY: string = '@InsightIntentEntity';
-export const COMPONENT_USER_INTENTS_DECORATOR_FORM: string = '@InsightIntentForm';
 export const CHECK_COMPONENT_EXTEND_DECORATOR: string = 'Extend';
 export const STRUCT_CONTEXT_METHOD_DECORATORS: Set<string> = new Set([COMPONENT_BUILDER_DECORATOR,
   COMPONENT_STYLES_DECORATOR, COMPONENT_LOCAL_BUILDER_DECORATOR]);
