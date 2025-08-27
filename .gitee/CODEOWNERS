@@ -26,7 +26,7 @@ compiler/test/ut/ @lixingchi1
 compiler/test/utForPartialUpdate/ @lixingchi1
 compiler/test/utForValidate/ @lixingchi1
 compiler/test/transform_ut/ @lixingchi1
-koala-wrapper/ @VictorS67
+koala-wrapper/ @VictorS67 @youzhi92
 
 # Code owners for ArkCompiler ace_ets2bundle
 

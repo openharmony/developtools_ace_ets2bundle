@@ -254,6 +254,10 @@ export enum ConditionNames {
     CONDITION_BRANCH = 'ConditionBranch',
 }
 
+export enum ArkTsDefaultNames {
+    DEFAULT_STATIC_BLOCK_NAME = '<cctor>',
+}
+
 export const RESOURCE_TYPE: Record<string, number> = {
     color: 10001,
     float: 10002,
