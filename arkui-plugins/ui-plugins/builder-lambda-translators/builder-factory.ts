@@ -33,7 +33,11 @@ export class BuilderFactory {
         const conditionScopeVisitor = ConditionScopeVisitor.getInstance();
         funcBody = arkts.factory.updateBlock(
             funcBody,
-            funcBody.statements.map((st) => conditionScopeVisitor.visitor(st))
+            funcBody.statements.map((st) => {
+                const newNode = conditionScopeVisitor.visitor(st);
+                conditionScopeVisitor.reset();
+                return newNode;
+            })
         );
         return UIFactory.updateScriptFunction(_node, { body: funcBody });
     }
