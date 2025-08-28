@@ -772,7 +772,7 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], parentEvent
           if ((/\.d\.e?ts$/).test(moduleFile)) {
             generateSourceFilesInHar(moduleFile, fs.readFileSync(moduleFile, 'utf-8'), path.extname(moduleFile),
               projectConfig, projectConfig.modulePathMap);
-          } else if ((/\.e?ts$/).test(moduleFile)) {
+          } else if ((/\.e?ts$/).test(moduleFile) && !toUnixPath(moduleFile).includes('/oh_modules/')) {
             emit = undefined;
             let sourcefile = globalProgram.program.getSourceFile(moduleFile);
             if (sourcefile) {
@@ -790,8 +790,16 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], parentEvent
 }
 
 function printDeclarationDiagnostics(errorCodeLogger?: Object | undefined): void {
-  globalProgram.builderProgram.getDeclarationDiagnostics().forEach((diagnostic: ts.Diagnostic) => {
-    printDiagnostic(diagnostic, ErrorCodeModule.TSC, errorCodeLogger);
+  globalProgram.program.getSourceFiles().forEach((sourceFile: ts.SourceFile) => {
+    if ((/\.d\.e?ts$/).test(sourceFile.fileName) || (/\.js$/).test(sourceFile.fileName)) {
+      return;
+    }
+    if (toUnixPath(sourceFile.fileName).includes('/oh_modules/')) {
+      return;
+    }
+    globalProgram.builderProgram.getDeclarationDiagnostics(sourceFile).forEach((diagnostic: ts.Diagnostic) => {
+      printDiagnostic(diagnostic, ErrorCodeModule.TSC, errorCodeLogger);
+    });
   });
 }
 
