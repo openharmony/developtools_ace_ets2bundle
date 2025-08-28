@@ -747,7 +747,7 @@ export function processResourceData(node: ts.CallExpression, filePath: string,
     const resourceData: string[] = (node.arguments[0] as ts.StringLiteral).text.trim().split('.');
     const isResourceModule: boolean = resourceData.length && /^\[.*\]$/g.test(resourceData[0]);
     if (node.expression.getText() === RESOURCE_RAWFILE) {
-      isResourcefile(node, previewLog, isResourceModule, isTemplateString, isCorrectResources);
+      isResourcefile(node, previewLog, isResourceModule, isTemplateString, isCorrectResources, filePath);
       if (isCorrectResources.booleanValue) {
         resourcePreviewMessage(previewLog);
         return createResourceParamWithVariable(node, -1, RESOURCE_TYPE.rawfile);
@@ -815,7 +815,7 @@ function getResourceDataNode(node: ts.CallExpression, previewLog: {isAccelerateP
 }
 
 function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, isResourceModule: boolean,
-  isTemplateString: boolean, isCorrectResources: isCorrectResourcesType): void {
+  isTemplateString: boolean, isCorrectResources: isCorrectResourcesType, filePath: string): void {
   if (!isResourceModule && process.env.rawFileResource && !storedFileInfo.resourcesArr.has(node.arguments[0].text) &&
     !previewLog.isAcceleratePreview && process.env.compileMode === 'moduleJson') {
     isTemplateString && (isCorrectResources.booleanValue = true);
@@ -825,6 +825,11 @@ function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePrevie
       pos: node.getStart(),
       code: '10904333'
     });
+  } else if (!isResourceModule && process.env.rawFileResource) {
+    if (!storedFileInfo.resourcesForFiles.has(filePath)) {
+      storedFileInfo.resourcesForFiles.set(filePath, []);
+    }
+    storedFileInfo.resourcesForFiles.get(filePath).push(node.arguments[0].text);
   }
 }
 
