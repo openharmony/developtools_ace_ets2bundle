@@ -161,8 +161,7 @@ export class RewriteFactory {
         const _hasReceiver = hasReceiver ?? node.hasReceiver;
         const _callName = callName ?? node.id?.name;
         const parameters = getFunctionParamsBeforeUnmemoized(node.params, _hasReceiver);
-        const filteredParameters = filterMemoSkipParams(parameters);
-        const declaredParams: ParamInfo[] = filteredParameters.map((p) => {
+        const declaredParams: ParamInfo[] = parameters.map((p) => {
             const param = p as arkts.ETSParameterExpression;
             return { ident: param.identifier, param };
         });
@@ -170,6 +169,7 @@ export class RewriteFactory {
         if (findUnmemoizedScopeInFunctionBody(body, _gensymCount)) {
             return body;
         }
+        const filteredParams = filterMemoSkipParams(declaredParams);
         const returnType =
             node.returnTypeAnnotation ??
             expectReturn ??
@@ -178,10 +178,10 @@ export class RewriteFactory {
         const scopeDeclaration = factory.createScopeDeclaration(
             returnType,
             positionalIdTracker.id(_callName),
-            declaredParams.length
+            filteredParams.length
         );
-        const memoParametersDeclaration = node.params.length
-            ? factory.createMemoParameterDeclaration(declaredParams.map((p) => p.ident.name))
+        const memoParametersDeclaration = filteredParams.length
+            ? factory.createMemoParameterDeclaration(filteredParams.map((p) => p.ident.name))
             : undefined;
         const syntheticReturnStatement = factory.createSyntheticReturnStatement(false);
         const unchangedCheck = factory.createIfStatementWithSyntheticReturnStatement(
