@@ -19,16 +19,13 @@ import { DecoratorNames } from '../../common/predefines';
 import { InterfacePropertyTranslator, MethodTranslator, PropertyTranslator } from './base';
 import { hasDecorator } from './utils';
 import { StateInterfaceTranslator, StateTranslator } from './state';
-import { PropInterfaceTranslator, PropTranslator } from './prop';
 import { StorageLinkInterfaceTranslator, StorageLinkTranslator } from './storagelink';
 import { LocalStorageLinkInterfaceTranslator, LocalStorageLinkTranslator } from './localstoragelink';
 import { LinkInterfaceTranslator, LinkTranslator } from './link';
 import { ObjectLinkInterfaceTranslator, ObjectLinkTranslator } from './objectlink';
-import { LocalStoragePropInterfaceTranslator, LocalStoragePropTranslator } from './localstorageprop';
 import { RegularInterfaceTranslator, RegularPropertyTranslator } from './regularProperty';
 import { StaticPropertyTranslator } from './staticProperty';
 import { CustomComponentInfo } from '../utils';
-import { StoragePropInterfaceTranslator, StoragePropTranslator } from './storageProp';
 import { ConsumeInterfaceTranslator, ConsumeTranslator } from './consume';
 import { ProvideInterfaceTranslator, ProvideTranslator } from './provide';
 import { BuilderParamInterfaceTranslator, BuilderParamTranslator } from './builderParam';
@@ -103,20 +100,11 @@ export function classifyV1Property(
     if (hasDecorator(property, DecoratorNames.OBJECT_LINK)) {
         return new ObjectLinkTranslator({ property, structInfo });
     }
-    if (hasDecorator(property, DecoratorNames.LOCAL_STORAGE_PROP)) {
-        return new LocalStoragePropTranslator({ property, structInfo });
-    }
     if (hasDecorator(property, DecoratorNames.LOCAL_STORAGE_PROP_REF)) {
         return new LocalStoragePropRefTranslator({ property, structInfo });
     }
-    if (hasDecorator(property, DecoratorNames.STORAGE_PROP)) {
-        return new StoragePropTranslator({ property, structInfo });
-    }
     if (hasDecorator(property, DecoratorNames.STORAGE_PROP_REF)) {
         return new StoragePropRefTranslator({ property, structInfo });
-    }
-    if (hasDecorator(property, DecoratorNames.PROP)) {
-        return new PropTranslator({ property, structInfo });
     }
     if (hasDecorator(property, DecoratorNames.PROP_REF)) {
         return new PropRefTranslator({ property, structInfo });
@@ -183,9 +171,6 @@ export function classifyV1PropertyInInterface(property: arkts.AstNode): Interfac
     if (LinkInterfaceTranslator.canBeTranslated(property)) {
         return new LinkInterfaceTranslator({ property });
     }
-    if (PropInterfaceTranslator.canBeTranslated(property)) {
-        return new PropInterfaceTranslator({ property });
-    }
     if (PropRefInterfaceTranslator.canBeTranslated(property)) {
         return new PropRefInterfaceTranslator({ property });
     }
@@ -194,9 +179,6 @@ export function classifyV1PropertyInInterface(property: arkts.AstNode): Interfac
     }
     if (ConsumeInterfaceTranslator.canBeTranslated(property)) {
         return new ConsumeInterfaceTranslator({ property });
-    }
-    if (StoragePropInterfaceTranslator.canBeTranslated(property)) {
-        return new StoragePropInterfaceTranslator({ property });
     }
     if (StorageLinkInterfaceTranslator.canBeTranslated(property)) {
         return new StorageLinkInterfaceTranslator({ property });
@@ -209,9 +191,6 @@ export function classifyV1PropertyInInterface(property: arkts.AstNode): Interfac
     }
     if (BuilderParamInterfaceTranslator.canBeTranslated(property)) {
         return new BuilderParamInterfaceTranslator({ property });
-    }
-    if (LocalStoragePropInterfaceTranslator.canBeTranslated(property)) {
-        return new LocalStoragePropInterfaceTranslator({ property });
     }
     if (LocalStorageLinkInterfaceTranslator.canBeTranslated(property)) {
         return new LocalStorageLinkInterfaceTranslator({ property });
