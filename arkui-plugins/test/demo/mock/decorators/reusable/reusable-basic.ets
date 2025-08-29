@@ -19,7 +19,7 @@ import { State, PropRef } from "@ohos.arkui.stateManagement"
 @Component
 struct MyStateSample {
   build() {
-    Child({ num: 5 } )
+    Child({ num1: 5 } )
   }
 }
 
