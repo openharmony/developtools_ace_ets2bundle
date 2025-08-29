@@ -86,7 +86,7 @@ import { CustomComponent as CustomComponent } from "arkui.component.customCompon
 
 import { Component as Component, Entry as Entry, Column as Column } from "@ohos.arkui.component";
 
-import { State as State, PropRef as PropRef, StorageLink as StorageLink, StorageProp as StorageProp, Link as Link, Watch as Watch, ObjectLink as ObjectLink, Observed as Observed, Track as Track, Provide as Provide, Consume as Consume } from "@ohos.arkui.stateManagement";
+import { State as State, PropRef as PropRef, StorageLink as StorageLink, StoragePropRef as StoragePropRef, Link as Link, Watch as Watch, ObjectLink as ObjectLink, Observed as Observed, Track as Track, Provide as Provide, Consume as Consume } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
