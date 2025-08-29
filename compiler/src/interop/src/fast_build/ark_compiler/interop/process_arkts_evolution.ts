@@ -357,15 +357,14 @@ function createObjectLiteralVisitor(rootNode: ts.SourceFile, context: ts.Transfo
     if (!contextualType) {
       return ts.visitEachChild(node, visitor, context);
     }
-    const isRecordType: boolean = contextualType.aliasSymbol?.escapedName === 'Record' &&
-      (typeof typeChecker.isStaticRecord === 'function' && typeChecker.isStaticRecord(contextualType));
+    const isRecordType: boolean = typeof typeChecker.isStaticRecord === 'function' && typeChecker.isStaticRecord(contextualType);
     const finalType: ts.Type = unwrapType(node, contextualType);
     const decl : ts.Declaration = (finalType.symbol?.declarations || finalType.aliasSymbol?.declarations)?.[0];
     
     let className: string;
     let tmpObjName: string;
     if (!isRecordType) {
-      if (!decl || !isFromArkTSEvolutionModule(decl)) {
+      if (!decl || !isFromArkTSEvolutionModule(decl) || (!ts.isClassDeclaration(decl) && !ts.isInterfaceDeclaration(decl))) {
         return ts.visitEachChild(node, visitor, context);
       }
       className = finalType.symbol?.name || finalType.aliasSymbol?.name;
