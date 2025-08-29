@@ -1,0 +1,5 @@
+{
+    "module": {
+        "appStartup": "$profile:startupConfig"
+    }
+}

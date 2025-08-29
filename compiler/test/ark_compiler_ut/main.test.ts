@@ -16,8 +16,9 @@
 import mocha from 'mocha';
 import fs from 'fs';
 import { expect } from 'chai';
+import path from "path";
 
-import { setEntryArrayForObf, projectConfig } from '../../main';
+import { setEntryArrayForObf, projectConfig, setStartupPagesForObf } from '../../main';
 
 mocha.describe('test main file api', function () {
     mocha.it('1-1: test setEntryArrayForObf', function () {
@@ -35,5 +36,16 @@ mocha.describe('test main file api', function () {
         expect(projectConfig.entryArrayForObf[1]).to.equal('worker/Worker');
         expect(projectConfig.entryArrayForObf[2]).to.equal('index');
         expect(projectConfig.entryArrayForObf[3]).to.equal('');
+    });
+
+    mocha.it('1-2: test setStartupPagesForObf', function () {
+        projectConfig.aceModuleJsonPath = path.join(__dirname, '../../test/ark_compiler_ut/testdata/obfuscation/collectEntryFile/ark_module.json');
+        projectConfig.aceProfilePath =  path.join(__dirname, '../../test/ark_compiler_ut/testdata/obfuscation/collectEntryFile');
+        projectConfig.entryArrayForObf = [];
+        setStartupPagesForObf(projectConfig);
+        expect(projectConfig.entryArrayForObf[0]).to.equal('pages/mainPage');
+        expect(projectConfig.entryArrayForObf[1]).to.equal('pages/test0');
+        expect(projectConfig.entryArrayForObf[2]).to.equal('pages/test1');
+        expect(projectConfig.entryArrayForObf[3]).to.equal('pages/test2');
     });
 });
