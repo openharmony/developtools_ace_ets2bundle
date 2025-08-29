@@ -38,6 +38,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedAfterUIScript: string = `
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
@@ -75,7 +76,7 @@ function main() {}
   
   @memo() public doNothingBuilder() {}
   
-  @memo() public doNothingBuilder2(str: string) {}
+  @memo() public doNothingBuilder2(@MemoSkip() str: string) {}
   
   @memo() public build() {
     this.customBuilderParam();
@@ -99,6 +100,7 @@ function main() {}
 
 const expectedAfterMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
@@ -147,9 +149,8 @@ function main() {}
     }
   }
   
-  @memo() public doNothingBuilder2(__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string) {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (76253767)), 1);
-    const __memo_parameter_str = __memo_scope.param(0, str);
+  @memo() public doNothingBuilder2(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() str: string) {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (76253767)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
