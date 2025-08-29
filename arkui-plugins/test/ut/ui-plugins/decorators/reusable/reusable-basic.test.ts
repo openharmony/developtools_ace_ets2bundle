@@ -63,8 +63,8 @@ function main() {}
     Child._instantiateImpl(undefined, (() => {
       return new Child();
     }), {
-      num: 5,
-      __options_has_num: true,
+      num1: 5,
+      __options_has_num1: true,
     }, "Child", undefined);
   }
   
