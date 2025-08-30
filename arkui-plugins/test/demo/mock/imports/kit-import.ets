@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { PropRef, Column, Entry } from "@kit.ArkUI";
+import { Prop, Column, Entry } from "@kit.ArkUI";
 import { Text, Component, ClickEvent } from "@ohos.arkui.component";
 import { State } from "@ohos.arkui.stateManagement";
 import { Button } from "arkui.component.button";
@@ -23,7 +23,7 @@ import hilog from "@ohos.hilog";
 @Component
 struct A {
   @State a: string = "str";
-  @PropRef b: string;
+  @Prop b: string;
 
   build() {
     Column() {

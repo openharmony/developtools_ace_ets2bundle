@@ -13,22 +13,15 @@
  * limitations under the License.
  */
  
-import { Component, Reusable} from "@ohos.arkui.component"
-import { State, Prop } from "@ohos.arkui.stateManagement" 
+import { Component, Entry } from "@ohos.arkui.component"  // TextAttribute should be insert by ui-plugins
+import { StorageProp } from "@ohos.arkui.stateManagement"
 
+@Entry
 @Component
 struct MyStateSample {
-  build() {
-    Child({ num: 5 } )
-  }
-}
+  @StorageProp('Prop1') numB: number = 43;
+  @StorageProp('Prop2') stringB: string = 'BB';
+  @StorageProp('Prop3') booleanB: boolean = false;
 
-@Component
-@Reusable
-struct Child {
-  @Prop num: number = 1
-  @State num1: number = 2
-  build() {
-      
-  }
+  build() {}
 }
