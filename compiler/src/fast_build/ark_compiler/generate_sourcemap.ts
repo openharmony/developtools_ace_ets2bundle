@@ -81,8 +81,8 @@ export class SourceMapGenerator {
   private logger: CommonLogger;
   private isFirstAppend: boolean = true;
   private isCompileSingle: boolean = false;
-  private originFd: number;
-  private tempFd: number;
+  private originFileEdited: boolean = false;
+  private tempFileEdited: boolean = false;
 
   public sourceMapKeyMappingForObf: Map<string, string> = new Map();
 
@@ -227,7 +227,7 @@ export class SourceMapGenerator {
   }
 
   public writeOrigin(content: string): void {
-    if (!this.originFd) {
+    if (!this.originFileEdited) {
       if (fs.existsSync(this.sourceMapPath)) {
         fs.unlinkSync(this.sourceMapPath);
       }
@@ -235,13 +235,13 @@ export class SourceMapGenerator {
       if (!fs.existsSync(sourceMapPathDir)) {
         fs.mkdirSync(sourceMapPathDir, { recursive: true });
       }
-      this.originFd = fs.openSync(this.sourceMapPath, 'a');
+      this.originFileEdited = true;
     }
-    fs.appendFileSync(this.originFd, content, { encoding: 'utf8' });
+    fs.appendFileSync(this.sourceMapPath, content, 'utf8');
   }
 
   public writeTemp(content: string): void {
-    if (!this.tempFd) {
+    if (!this.tempFileEdited) {
       if (fs.existsSync(this.sourceMapPathTmp)) {
         fs.unlinkSync(this.sourceMapPathTmp);
       }
@@ -249,20 +249,14 @@ export class SourceMapGenerator {
       if (!fs.existsSync(sourceMapPathTmpDir)) {
         fs.mkdirSync(sourceMapPathTmpDir, { recursive: true });
       }
-      this.tempFd = fs.openSync(this.sourceMapPathTmp, 'a');
+      this.tempFileEdited = true;
     }
-    fs.appendFileSync(this.tempFd, content, { encoding: 'utf8' });
+    fs.appendFileSync(this.sourceMapPathTmp, content, 'utf8');
   }
 
-  public closeFd(): void {
-    if (this.originFd) {
-      fs.closeSync(this.originFd);
-      this.originFd = undefined;
-    }
-    if (this.tempFd) {
-      fs.closeSync(this.tempFd);
-      this.tempFd = undefined;
-    }
+  public resetFileEdited(): void {
+    this.originFileEdited = false;
+    this.tempFileEdited = false;
   }
 
   public convertSourceMapToCache(maps: Object): string {
@@ -318,7 +312,7 @@ export class SourceMapGenerator {
     if (!fs.existsSync(this.sourceMapPathTmp)) {
       this.writeTemp('');
     }
-    this.closeFd();
+    this.resetFileEdited();
     if (fs.existsSync(this.cacheSourceMapPath)) {
       fs.unlinkSync(this.cacheSourceMapPath);
     }
@@ -625,7 +619,7 @@ export class SourceMapGenerator {
 
   public static cleanSourceMapObject(): void {
     if (this.instance) {
-      this.instance.closeFd();
+      this.instance.resetFileEdited();
       this.instance.keyCache.clear();
       this.instance.sourceMaps = undefined;
       this.instance = undefined;
