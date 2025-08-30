@@ -14,7 +14,7 @@
  */
 
 import { Component, Column, TextInput } from "@ohos.arkui.component"
-import { Link, State, Prop } from "@ohos.arkui.stateManagement"
+import { Link, State, PropRef } from "@ohos.arkui.stateManagement"
 
 @Component
 struct Parant {
@@ -32,8 +32,8 @@ struct Parant {
 struct Child {
   @Link childText: string;
   @State childText2: string = 'sss';
-  @Prop childText3: string;
-  @Prop childText4: string = 'cc';
+  @PropRef childText3: string;
+  @PropRef childText4: string = 'cc';
 
   build() {
     TextInput({ text: this.childText })

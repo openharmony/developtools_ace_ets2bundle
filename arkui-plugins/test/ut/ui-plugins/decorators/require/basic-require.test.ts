@@ -41,7 +41,7 @@ const expectedParsedScript: string = `
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, ComponentV2 as ComponentV2, BuilderParam as BuilderParam } from "@ohos.arkui.component";
-import { State as State, Require as Require, Prop as Prop, Provide as Provide, Param as Param } from "@ohos.arkui.stateManagement";
+import { State as State, Require as Require, Provide as Provide, Param as Param } from "@ohos.arkui.stateManagement";
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public hello: string = "hello";
@@ -50,7 +50,6 @@ import { State as State, Require as Require, Prop as Prop, Provide as Provide, P
   @Require() @State() public select0!: number;
   @Require() @State() public select3?: (number | null);
   @Require() @State() public select4?: undefined;
-  @Require() @Prop() public select1!: string;
   @Require() @Provide({alias:"15"}) public select2!: string[];
   @Require() @Provide({alias:"t"}) public select6?: (string[] | undefined | string);
   @Require() @BuilderParam() public builder!: (()=> void);
@@ -81,8 +80,6 @@ import { State as State, Require as Require, Prop as Prop, Provide as Provide, P
   @Require() @State() __backing_select3?: (number | null);
   select4?: undefined;
   @Require() @State() __backing_select4?: undefined;
-  select1?: string;
-  @Require() @Prop() __backing_select1?: string;
   select2?: string[];
   @Require() @Provide({alias:"15"}) __backing_select2?: string[];
   select6?: (string[] | undefined | string);
@@ -101,14 +98,13 @@ import { State as State, Require as Require, Prop as Prop, Provide as Provide, P
 const expectedCheckedScript: string = `
 import { IParamDecoratedVariable as IParamDecoratedVariable } from "arkui.stateManagement.decorator";
 import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.stateManagement.decorator";
-import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, ComponentV2 as ComponentV2, BuilderParam as BuilderParam } from "@ohos.arkui.component";
-import { State as State, Require as Require, Prop as Prop, Provide as Provide, Param as Param } from "@ohos.arkui.stateManagement";
+import { State as State, Require as Require, Provide as Provide, Param as Param } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
@@ -123,19 +119,13 @@ function main() {}
     this.__backing_select0 = STATE_MGMT_FACTORY.makeState<number>(this, "select0", (initializers!.select0 as number));
     this.__backing_select3 = STATE_MGMT_FACTORY.makeState<(number | null)>(this, "select3", (initializers!.select3 as (number | null)));
     this.__backing_select4 = STATE_MGMT_FACTORY.makeState<undefined>(this, "select4", (initializers!.select4 as undefined));
-    this.__backing_select1 = STATE_MGMT_FACTORY.makeProp<string>(this, "select1", (initializers!.select1 as string));
     this.__backing_select2 = STATE_MGMT_FACTORY.makeProvide<Array<string>>(this, "select2", "15", (initializers!.select2 as Array<string>), false);
     this.__backing_select6 = STATE_MGMT_FACTORY.makeProvide<(Array<string> | undefined | string)>(this, "select6", "t", (initializers!.select6 as (Array<string> | undefined | string)), false);
     this.__backing_builder = ((((({let gensym___57081607 = initializers;
     (((gensym___57081607) == (null)) ? undefined : gensym___57081607.builder)})) ?? (content))) ?? (undefined))
   }
   
-  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {
-    if (((({let gensym___171969630 = initializers;
-    (((gensym___171969630) == (null)) ? undefined : gensym___171969630.select1)})) !== (undefined))) {
-      this.__backing_select1!.update((initializers!.select1 as string));
-    }
-  }
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   private __backing_hello?: string;
   
@@ -195,16 +185,6 @@ function main() {}
   
   public set select4(value: undefined) {
     this.__backing_select4!.set(value);
-  }
-  
-  private __backing_select1?: IPropDecoratedVariable<string>;
-  
-  public get select1(): string {
-    return this.__backing_select1!.get();
-  }
-  
-  public set select1(value: string) {
-    this.__backing_select1!.set(value);
   }
   
   private __backing_select2?: IProvideDecoratedVariable<Array<string>>;
@@ -298,12 +278,6 @@ function main() {}
   @Require() set __backing_select4(__backing_select4: (IStateDecoratedVariable<undefined> | undefined))
   
   @Require() get __backing_select4(): (IStateDecoratedVariable<undefined> | undefined)
-  set select1(select1: (string | undefined))
-  
-  get select1(): (string | undefined)
-  @Require() set __backing_select1(__backing_select1: (IPropDecoratedVariable<string> | undefined))
-  
-  @Require() get __backing_select1(): (IPropDecoratedVariable<string> | undefined)
   set select2(select2: (Array<string> | undefined))
   
   get select2(): (Array<string> | undefined)
