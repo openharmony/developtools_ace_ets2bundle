@@ -52,6 +52,8 @@ import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { OBSERVE as OBSERVE } from "arkui.stateManagement.decorator";
@@ -78,12 +80,11 @@ import { CustomComponent as CustomComponent } from "arkui.component.customCompon
 
 import { Component as Component, ComponentV2 as ComponentV2, CustomDialog as CustomDialog } from "@ohos.arkui.component";
 
-import { State as State, Provide as Provide, Event as Event, Local as Local, Param as Param } from "@ohos.arkui.stateManagement";
+import { State as State, Prop as Prop, Provide as Provide, Event as Event, Local as Local, Param as Param } from "@ohos.arkui.stateManagement";
 
 import { Provider as Provider, Consumer as Consumer, Once as Once, Observed as Observed, ObservedV2 as ObservedV2, Trace as Trace, Track as Track } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
 
 class Per {
   public num: number;
@@ -256,6 +257,8 @@ final class StateType extends BaseEnum<int> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_stateVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "stateVar1", (((({let gensym___213853607 = initializers;
     (((gensym___213853607) == (null)) ? undefined : gensym___213853607.stateVar1)})) ?? (new Per(6))) as Per));
+    this.__backing_stateVar2 = STATE_MGMT_FACTORY.makeProp<Array<Double>>(this, "stateVar2", (((({let gensym___113574154 = initializers;
+    (((gensym___113574154) == (null)) ? undefined : gensym___113574154.stateVar2)})) ?? (new Array<number>(3, 6, 8))) as Array<Double>));
     this.__backing_stateVar3 = STATE_MGMT_FACTORY.makeProvide<StateType>(this, "stateVar3", "stateVar3", (((({let gensym___120612294 = initializers;
     (((gensym___120612294) == (null)) ? undefined : gensym___120612294.stateVar3)})) ?? (StateType.TYPE3)) as StateType), false);
     this.__backing_stateVar8 = ((({let gensym___188075012 = initializers;
@@ -270,7 +273,12 @@ final class StateType extends BaseEnum<int> {
     (((gensym___159362057) == (null)) ? undefined : gensym___159362057.stateVar11115)})) ?? (null)) as null));
   }
   
-  public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+  public __updateStruct(initializers: (__Options_Parent | undefined)): void {
+    if (((({let gensym___130780487 = initializers;
+    (((gensym___130780487) == (null)) ? undefined : gensym___130780487.stateVar2)})) !== (undefined))) {
+      this.__backing_stateVar2!.update((initializers!.stateVar2 as Array<Double>));
+    }
+  }
   
   private __backing_stateVar1?: IStateDecoratedVariable<Per>;
   
@@ -280,6 +288,16 @@ final class StateType extends BaseEnum<int> {
   
   public set stateVar1(value: Per) {
     this.__backing_stateVar1!.set(value);
+  }
+  
+  private __backing_stateVar2?: IPropDecoratedVariable<Array<Double>>;
+  
+  public get stateVar2(): Array<Double> {
+    return this.__backing_stateVar2!.get();
+  }
+  
+  public set stateVar2(value: Array<Double>) {
+    this.__backing_stateVar2!.set(value);
   }
   
   private __backing_stateVar3?: IProvideDecoratedVariable<StateType>;
@@ -657,6 +675,12 @@ final class StateType extends BaseEnum<int> {
   set __backing_stateVar1(__backing_stateVar1: (IStateDecoratedVariable<Any> | undefined))
   
   get __backing_stateVar1(): (IStateDecoratedVariable<Any> | undefined)
+  set stateVar2(stateVar2: (Any | undefined))
+  
+  get stateVar2(): (Any | undefined)
+  set __backing_stateVar2(__backing_stateVar2: (IPropDecoratedVariable<Any> | undefined))
+  
+  get __backing_stateVar2(): (IPropDecoratedVariable<Any> | undefined)
   set stateVar3(stateVar3: (Any | undefined))
   
   get stateVar3(): (Any | undefined)

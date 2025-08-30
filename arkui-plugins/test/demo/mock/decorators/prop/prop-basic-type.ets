@@ -12,23 +12,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { Component, Reusable} from "@ohos.arkui.component"
-import { State, Prop } from "@ohos.arkui.stateManagement" 
+
+import { Component } from "@ohos.arkui.component"
+import { Prop } from "@ohos.arkui.stateManagement"
 
 @Component
-struct MyStateSample {
-  build() {
-    Child({ num: 5 } )
-  }
-}
+struct PropParent {
+  @Prop propVar1: string = 'propVar1';
+  @Prop propVar2: number = 50;
+  @Prop propVar3: boolean = true;
+  @Prop propVar4: undefined = undefined;
+  @Prop propVar5: null = null;
 
-@Component
-@Reusable
-struct Child {
-  @Prop num: number = 1
-  @State num1: number = 2
   build() {
-      
   }
 }

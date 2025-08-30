@@ -125,6 +125,7 @@ export function needDefiniteOrOptionalModifier(st: arkts.ClassProperty): boolean
         hasDecoratorName(st, DecoratorNames.LINK) ||
         hasDecoratorName(st, DecoratorNames.CONSUME) ||
         hasDecoratorName(st, DecoratorNames.OBJECT_LINK) ||
+        (hasDecoratorName(st, DecoratorNames.PROP) && !st.value) ||
         (hasDecoratorName(st, DecoratorNames.PROP_REF) && !st.value) ||
         (hasDecoratorName(st, DecoratorNames.PARAM) && !st.value) ||
         (hasDecoratorName(st, DecoratorNames.EVENT) && !st.value) ||
