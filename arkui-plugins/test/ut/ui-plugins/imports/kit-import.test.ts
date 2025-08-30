@@ -46,7 +46,7 @@ import { EntryPoint as EntryPoint } from "arkui.UserView";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
-import { PropRef as PropRef, Column as Column, Entry as Entry } from "@kit.ArkUI";
+import { Prop as Prop, Column as Column, Entry as Entry } from "@kit.ArkUI";
 
 import { Text as Text, Component as Component, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 
@@ -59,7 +59,7 @@ import hilog from "@ohos.hilog";
 @Entry() @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
   @State() public a: string = "str";
   
-  @PropRef() public b!: string;
+  @Prop() public b!: string;
   
   public build() {
     Column(){
@@ -76,7 +76,7 @@ import hilog from "@ohos.hilog";
   a?: string;
   @State() __backing_a?: string;
   b?: string;
-  @PropRef() __backing_b?: string;
+  @Prop() __backing_b?: string;
   
 }
 
@@ -99,7 +99,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 const expectedCheckedScript: string = `
 
-import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
+import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
@@ -127,7 +127,7 @@ import { EntryPoint as EntryPoint } from "arkui.UserView";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
-import { PropRef as PropRef, Column as Column, Entry as Entry } from "@kit.ArkUI";
+import { Prop as Prop, Column as Column, Entry as Entry } from "@kit.ArkUI";
 
 import { Text as Text, Component as Component, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 
@@ -151,7 +151,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __initializeStruct(initializers: (__Options_A | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_a = STATE_MGMT_FACTORY.makeState<string>(this, "a", ((({let gensym___94024326 = initializers;
     (((gensym___94024326) == (null)) ? undefined : gensym___94024326.a)})) ?? ("str")));
-    this.__backing_b = STATE_MGMT_FACTORY.makePropRef<string>(this, "b", (initializers!.b as string));
+    this.__backing_b = STATE_MGMT_FACTORY.makeProp<string>(this, "b", (initializers!.b as string));
   }
   
   public __updateStruct(initializers: (__Options_A | undefined)): void {
@@ -171,7 +171,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_a!.set(value);
   }
   
-  private __backing_b?: IPropRefDecoratedVariable<string>;
+  private __backing_b?: IPropDecoratedVariable<string>;
   
   public get b(): string {
     return this.__backing_b!.get();
@@ -211,9 +211,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   set b(b: (string | undefined))
   
   get b(): (string | undefined)
-  set __backing_b(__backing_b: (IPropRefDecoratedVariable<string> | undefined))
+  set __backing_b(__backing_b: (IPropDecoratedVariable<string> | undefined))
   
-  get __backing_b(): (IPropRefDecoratedVariable<string> | undefined)
+  get __backing_b(): (IPropDecoratedVariable<string> | undefined)
   
 }
 

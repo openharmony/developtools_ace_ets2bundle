@@ -38,7 +38,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
+import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -62,7 +62,7 @@ import { CustomComponent as CustomComponent } from "arkui.component.customCompon
 
 import { Component as Component, Column as Column, TextInput as TextInput } from "@ohos.arkui.component";
 
-import { Link as Link, State as State, PropRef as PropRef } from "@ohos.arkui.stateManagement";
+import { Link as Link, State as State, Prop as Prop } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
@@ -120,8 +120,8 @@ function main() {}
     };
     this.__backing_childText2 = STATE_MGMT_FACTORY.makeState<string>(this, "childText2", ((({let gensym___95513066 = initializers;
     (((gensym___95513066) == (null)) ? undefined : gensym___95513066.childText2)})) ?? ("sss")));
-    this.__backing_childText3 = STATE_MGMT_FACTORY.makePropRef<string>(this, "childText3", (initializers!.childText3 as string));
-    this.__backing_childText4 = STATE_MGMT_FACTORY.makePropRef<string>(this, "childText4", ((({let gensym___162028107 = initializers;
+    this.__backing_childText3 = STATE_MGMT_FACTORY.makeProp<string>(this, "childText3", (initializers!.childText3 as string));
+    this.__backing_childText4 = STATE_MGMT_FACTORY.makeProp<string>(this, "childText4", ((({let gensym___162028107 = initializers;
     (((gensym___162028107) == (null)) ? undefined : gensym___162028107.childText4)})) ?? ("cc")));
   }
   
@@ -156,7 +156,7 @@ function main() {}
     this.__backing_childText2!.set(value);
   }
   
-  private __backing_childText3?: IPropRefDecoratedVariable<string>;
+  private __backing_childText3?: IPropDecoratedVariable<string>;
   
   public get childText3(): string {
     return this.__backing_childText3!.get();
@@ -166,7 +166,7 @@ function main() {}
     this.__backing_childText3!.set(value);
   }
   
-  private __backing_childText4?: IPropRefDecoratedVariable<string>;
+  private __backing_childText4?: IPropDecoratedVariable<string>;
   
   public get childText4(): string {
     return this.__backing_childText4!.get();
@@ -217,15 +217,15 @@ function main() {}
   set childText3(childText3: (string | undefined))
   
   get childText3(): (string | undefined)
-  set __backing_childText3(__backing_childText3: (IPropRefDecoratedVariable<string> | undefined))
+  set __backing_childText3(__backing_childText3: (IPropDecoratedVariable<string> | undefined))
   
-  get __backing_childText3(): (IPropRefDecoratedVariable<string> | undefined)
+  get __backing_childText3(): (IPropDecoratedVariable<string> | undefined)
   set childText4(childText4: (string | undefined))
   
   get childText4(): (string | undefined)
-  set __backing_childText4(__backing_childText4: (IPropRefDecoratedVariable<string> | undefined))
+  set __backing_childText4(__backing_childText4: (IPropDecoratedVariable<string> | undefined))
   
-  get __backing_childText4(): (IPropRefDecoratedVariable<string> | undefined)
+  get __backing_childText4(): (IPropDecoratedVariable<string> | undefined)
   
 }
 `;
