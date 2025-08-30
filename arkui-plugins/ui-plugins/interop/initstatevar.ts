@@ -18,7 +18,7 @@
 import * as arkts from '@koalaui/libarkts';
 import { BuilderMethodNames, InteroperAbilityNames } from './predefines';
 import { annotation, backingField, isAnnotation } from '../../common/arkts-utils';
-import { stateProxy, getWrapValue, setPropertyESValue } from './utils';
+import { stateProxy, getWrapValue, setPropertyESValue, createEmptyESValue } from './utils';
 import { hasDecorator } from '../property-translators/utils';
 import { DecoratorNames } from '../../common/predefines';
 
@@ -116,12 +116,65 @@ function getStateProxy(proxyName: string, stateVar: () => arkts.Expression): ark
 }
 
 /**
+ * Processes a nested object literal and generates code to instantiate and populate it using ESValue methods.
  * 
- * @param keyName 
- * @param value 
- * @param type 
- * @param proxySet 
+ * Converts a nested object structure into a sequence of statements that:
+ * 1. Instantiate empty objects via `ESValue.instantiateEmptyObject()`
+ * 2. Sets properties on these objects using `setProperty()`
+ * 3. Nests objects by assigning child objects as properties of parent objects
+ * 
+ * @param target - A nested object literal (e.g., { b: { c: { d: '1' }, cc: { d: '1' } } })
+ * @returns Generated code statements that reconstruct the input object using ESValue APIs
+ * @example
+ * Input: { b: { c: { d: '1' }, cc: { d: '1' } } }
+ * Output: 
+ * let param0 = ESValue.instantiateEmptyObject();
+ * let param00 = ESValue.instantiateEmptyObject();
+ * param00.setProperty("d", ESValue.wrap("1"));
+ * param0.setProperty("c", param00);
+ * let param01 = ESValue.instantiateEmptyObject();
+ * param01.setProperty("d", ESValue.wrap("1"));
+ * param0.setProperty("cc", param01);
+ * param.setProperty("b", param0);
+ */
+function processObjectLiteral(target: arkts.ObjectExpression, curParam: string, result: arkts.Statement[], keyName: string): void {
+    if (curParam !== InteroperAbilityNames.PARAM) {
+        const createParam = createEmptyESValue(curParam);
+        result.push(createParam);
+    }
+    target.properties.forEach((property: { key: arkts.Expression; value: arkts.Expression; }) => {
+        const paramName = curParam + keyName;
+        const key = property.key;
+        const value = property.value;
+        if (arkts.isObjectExpression(value)) {
+            processObjectLiteral(value, paramName, result, keyName);
+            const setProperty = setPropertyESValue(
+                curParam,
+                key.name,
+                arkts.factory.createIdentifier(paramName)
+            );
+            result.push(setProperty);
+        } else {
+            const setProperty = setPropertyESValue(
+                curParam,
+                key.name,
+                getWrapValue(value)
+            );
+            result.push(setProperty);
+        }
+    });
+}
+
+
+/**
+ * 
+ * @param keyName - The name of the state variable (e.g., state)
  * @returns generate code to process @Link data interoperability
+ * @example
+ * Input: {link: this.state}
+ * Output:
+ * let __Proxy_state = getCompatibleState(this.state);
+ * param.setProperty("link", __Proxy_state);
  */
 export function processLink(keyName: string, value: arkts.Expression, type: arkts.TypeNode, proxySet: Set<string>): arkts.Statement[] {
     const valueDecl = arkts.getDecl(value);
@@ -149,21 +202,33 @@ export function processLink(keyName: string, value: arkts.Expression, type: arkt
 
 /**
  * 
- * @param keyName 
- * @param value 
+ * @param keyName - The name of the state variable (e.g., state)
  * @returns generate code to process regular data interoperability
  */
 export function processNormal(keyName: string, value: arkts.AstNode): arkts.Statement[] {
     const result: arkts.Statement[] = [];
-    const setProperty = setPropertyESValue(
-        InteroperAbilityNames.PARAM,
-        keyName,
-        getWrapValue(value)
-    );
-    result.push(setProperty);
+    if (arkts.isObjectExpression(value)) {
+        processObjectLiteral(value, InteroperAbilityNames.PARAM, result, keyName);
+    } else {
+        const setProperty = setPropertyESValue(
+            InteroperAbilityNames.PARAM,
+            keyName,
+            getWrapValue(value)
+        );
+        result.push(setProperty);
+    }
     return result;
 }
 
+/**
+ * 
+ * @param keyName 
+ * @param value 
+ * @returns generate code to process @BuilderParam interoperability
+ * @example
+ * Input: {builderParam: this.builder}
+ * Output: param.setProperty("builderParam", transferCompatibleBuilder(this.builder));
+ */
 export function processBuilderParam(keyName: string, value: arkts.AstNode): arkts.Statement[] {
     const result: arkts.Statement[] = [];
     const newValue = arkts.factory.createCallExpression(
