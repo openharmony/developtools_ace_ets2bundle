@@ -52,7 +52,7 @@ import { LinkSourceType as LinkSourceType } from "arkui.stateManagement.decorato
 
 import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
+import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -87,7 +87,7 @@ import { CustomComponent as CustomComponent } from "arkui.component.customCompon
 
 import { Component as Component, Entry as Entry, Column as Column } from "@ohos.arkui.component";
 
-import { State as State, Prop as Prop, StorageLink as StorageLink, StorageProp as StorageProp, Link as Link, Watch as Watch, ObjectLink as ObjectLink, Observed as Observed, Track as Track, Provide as Provide, Consume as Consume } from "@ohos.arkui.stateManagement";
+import { State as State, PropRef as PropRef, StorageLink as StorageLink, StoragePropRef as StoragePropRef, Link as Link, Watch as Watch, ObjectLink as ObjectLink, Observed as Observed, Track as Track, Provide as Provide, Consume as Consume } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
@@ -155,7 +155,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     (((gensym___76198660) == (null)) ? undefined : gensym___76198660.statevar)})) ?? ("Hello World")), ((_: string): void => {
       this.stateOnChange(_);
     }));
-    this.__backing_propvar = STATE_MGMT_FACTORY.makeProp<string>(this, "propvar", ((({let gensym___241486692 = initializers;
+    this.__backing_propvar = STATE_MGMT_FACTORY.makePropRef<string>(this, "propvar", ((({let gensym___241486692 = initializers;
     (((gensym___241486692) == (null)) ? undefined : gensym___241486692.propvar)})) ?? ("Hello World")), ((_: string): void => {
       this.propOnChange(_);
     }));
@@ -202,7 +202,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_statevar!.set(value);
   }
   
-  private __backing_propvar?: IPropDecoratedVariable<string>;
+  private __backing_propvar?: IPropRefDecoratedVariable<string>;
   
   public get propvar(): string {
     return this.__backing_propvar!.get();
@@ -326,9 +326,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   set propvar(propvar: (string | undefined))
   
   get propvar(): (string | undefined)
-  @Watch({value:"propOnChange"}) set __backing_propvar(__backing_propvar: (IPropDecoratedVariable<string> | undefined))
+  @Watch({value:"propOnChange"}) set __backing_propvar(__backing_propvar: (IPropRefDecoratedVariable<string> | undefined))
   
-  @Watch({value:"propOnChange"}) get __backing_propvar(): (IPropDecoratedVariable<string> | undefined)
+  @Watch({value:"propOnChange"}) get __backing_propvar(): (IPropRefDecoratedVariable<string> | undefined)
   @__Link_intrinsic() set linkvar(linkvar: (string | undefined))
   
   @__Link_intrinsic() get linkvar(): (string | undefined)

@@ -14,12 +14,12 @@
  */
 
 import { Component, ResourceStr, Builder} from "@ohos.arkui.component"
-import { Prop, State } from "@ohos.arkui.stateManagement"
+import { PropRef, State } from "@ohos.arkui.stateManagement"
 
 @Component
 export declare struct SwipeRefresher {
-  @Prop content?: ResourceStr;
-  @Prop isLoading: boolean;
+  @PropRef content?: ResourceStr;
+  @PropRef isLoading: boolean;
   @State code: number;
 
   @Builder build(): void;
