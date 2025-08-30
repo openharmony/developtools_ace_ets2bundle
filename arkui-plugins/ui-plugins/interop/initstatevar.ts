@@ -137,17 +137,17 @@ function getStateProxy(proxyName: string, stateVar: () => arkts.Expression): ark
  * param0.setProperty("cc", param01);
  * param.setProperty("b", param0);
  */
-function processObjectLiteral(target: arkts.ObjectExpression, curParam: string, result: arkts.Statement[]): void {
+function processObjectLiteral(target: arkts.ObjectExpression, curParam: string, result: arkts.Statement[], keyName: string): void {
     if (curParam !== InteroperAbilityNames.PARAM) {
         const createParam = createEmptyESValue(curParam);
         result.push(createParam);
     }
-    target.properties.forEach((property: { key: arkts.Expression; value: arkts.Expression; }, index: string) => {
-        const paramName = curParam + index;
+    target.properties.forEach((property: { key: arkts.Expression; value: arkts.Expression; }) => {
+        const paramName = curParam + keyName;
         const key = property.key;
         const value = property.value;
         if (arkts.isObjectExpression(value)) {
-            processObjectLiteral(value, paramName, result);
+            processObjectLiteral(value, paramName, result, keyName);
             const setProperty = setPropertyESValue(
                 curParam,
                 key.name,
@@ -208,7 +208,7 @@ export function processLink(keyName: string, value: arkts.Expression, type: arkt
 export function processNormal(keyName: string, value: arkts.AstNode): arkts.Statement[] {
     const result: arkts.Statement[] = [];
     if (arkts.isObjectExpression(value)) {
-        processObjectLiteral(value, InteroperAbilityNames.PARAM, result);
+        processObjectLiteral(value, InteroperAbilityNames.PARAM, result, keyName);
     } else {
         const setProperty = setPropertyESValue(
             InteroperAbilityNames.PARAM,
