@@ -197,3 +197,19 @@ export function attachModifiers<T extends AstNode>(node: T, original: T): T {
     node.modifiers = original.modifiers;
     return node;
 }
+
+export function traverseASTSync(
+    left: AstNode,
+    right: AstNode,
+    callbackFn: (left: AstNode, right: AstNode) => boolean
+): void {
+    const shouldStop = callbackFn(left, right);
+    if (shouldStop) {
+        return;
+    }
+    const leftChildren = left.getChildren();
+    const rightChildren = right.getChildren();
+    for (let i = 0; i < leftChildren.length; i++) {
+        traverseASTSync(leftChildren[i], rightChildren[i], callbackFn);
+    }
+}
