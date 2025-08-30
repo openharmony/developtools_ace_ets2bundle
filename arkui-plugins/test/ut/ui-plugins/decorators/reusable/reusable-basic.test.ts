@@ -38,19 +38,23 @@ const reusableTransform: Plugins = {
 const pluginTester = new PluginTester('test basic reusable', buildConfig);
 
 const expectedScript: string = `
-import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
-
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
+import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
+
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Reusable as Reusable } from "@ohos.arkui.component";
 
-import { State as State } from "@ohos.arkui.stateManagement";
+import { State as State, Prop as Prop } from "@ohos.arkui.stateManagement";
 
 function main() {}
+
 
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
@@ -62,7 +66,7 @@ function main() {}
     Child._instantiateImpl(undefined, (() => {
       return new Child();
     }), {
-      num1: 5,
+      num: 5,
     }, "Child", undefined);
   }
   
@@ -72,17 +76,35 @@ function main() {}
 
 @Component() @Reusable() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_num = STATE_MGMT_FACTORY.makeProp<number>(this, "num", ((({let gensym___83257243 = initializers;
+    (((gensym___83257243) == (null)) ? undefined : gensym___83257243.num)})) ?? (1)));
     this.__backing_num1 = STATE_MGMT_FACTORY.makeState<number>(this, "num1", ((({let gensym___24398512 = initializers;
     (((gensym___24398512) == (null)) ? undefined : gensym___24398512.num1)})) ?? (2)));
   }
   
-  public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+  public __updateStruct(initializers: (__Options_Child | undefined)): void {
+    if (((({let gensym___108716469 = initializers;
+    (((gensym___108716469) == (null)) ? undefined : gensym___108716469.num)})) !== (undefined))) {
+      this.__backing_num!.update((initializers!.num as number));
+    }
+  }
   
   public override constructor __toRecord(params: Object): Record<string, Object> {
     const paramsCasted = (params as __Options_Child);
     return {
+      "num": ((paramsCasted.num) ?? (new Object())),
       "num1": ((paramsCasted.num1) ?? (new Object())),
     };
+  }
+  
+  private __backing_num?: IPropDecoratedVariable<number>;
+  
+  public get num(): number {
+    return this.__backing_num!.get();
+  }
+  
+  public set num(value: number) {
+    this.__backing_num!.set(value);
   }
   
   private __backing_num1?: IStateDecoratedVariable<number>;
@@ -106,6 +128,12 @@ function main() {}
 }
 
 @Component() @Reusable() export interface __Options_Child {
+  set num(num: (number | undefined))
+  
+  get num(): (number | undefined)
+  set __backing_num(__backing_num: (IPropDecoratedVariable<number> | undefined))
+  
+  get __backing_num(): (IPropDecoratedVariable<number> | undefined)
   set num1(num1: (number | undefined))
   
   get num1(): (number | undefined)
