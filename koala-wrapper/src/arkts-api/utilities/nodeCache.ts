@@ -18,6 +18,7 @@ import { Es2pandaAstNodeType } from '../../Es2pandaEnums';
 import { AstNode, UnsupportedNode } from '../peers/AstNode';
 import { global } from '../static/global';
 import { getOrPut, nodeByType } from '../class-by-peer';
+import { traverseASTSync } from './private';
 
 export interface AstNodeCacheValue {
     peer: KNativePointer;
@@ -35,6 +36,22 @@ export interface AstNodeCacheValueMetadata {
     hasMemoSkip?: boolean;
     hasMemoIntrinsic?: boolean;
     hasMemoEntry?: boolean;
+}
+
+export function copyCacheToClonedNode(original: AstNode, cloned: AstNode, shouldRefresh?: boolean): void {
+    const traverseCallbackFn = (_original: AstNode, _cloned: AstNode): boolean => {
+        if (!NodeCache.getInstance().has(_original)) {
+            return false;
+        }
+        if (shouldRefresh) {
+            NodeCache.getInstance().refresh(_original, _cloned);
+        } else {
+            const value = NodeCache.getInstance().get(_original)!;
+            NodeCache.getInstance().collect(_cloned, value.metadata);
+        }
+        return false;
+    };
+    traverseASTSync(original, cloned, traverseCallbackFn);
 }
 
 export class NodeCache {
