@@ -55,6 +55,11 @@ export type BuilderLambdaChainingCallArgInfo = {
     hasBuilder?: boolean;
 };
 
+export type OptionsPropertyInfo = {
+    isBuilderParam: boolean;
+    isLinkIntrinsic: boolean;
+};
+
 export function buildSecondLastArgInfo(
     type: arkts.Identifier | undefined,
     isFunctionCall: boolean
