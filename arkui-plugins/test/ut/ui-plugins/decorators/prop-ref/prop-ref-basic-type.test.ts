@@ -69,24 +69,24 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_PropParent | undefined)): void {
-    if (((({let gensym___67969738 = initializers;
-    (((gensym___67969738) == (null)) ? undefined : gensym___67969738.propVar1)})) !== (undefined))) {
+    if (({let gensym___222986222 = initializers;
+    (((gensym___222986222) == (null)) ? undefined : gensym___222986222.__options_has_propVar1)})) {
       this.__backing_propVar1!.update((initializers!.propVar1 as string));
     }
-    if (((({let gensym___52350476 = initializers;
-    (((gensym___52350476) == (null)) ? undefined : gensym___52350476.propVar2)})) !== (undefined))) {
+    if (({let gensym___178023537 = initializers;
+    (((gensym___178023537) == (null)) ? undefined : gensym___178023537.__options_has_propVar2)})) {
       this.__backing_propVar2!.update((initializers!.propVar2 as number));
     }
-    if (((({let gensym___103864283 = initializers;
-    (((gensym___103864283) == (null)) ? undefined : gensym___103864283.propVar3)})) !== (undefined))) {
+    if (({let gensym___221361445 = initializers;
+    (((gensym___221361445) == (null)) ? undefined : gensym___221361445.__options_has_propVar3)})) {
       this.__backing_propVar3!.update((initializers!.propVar3 as boolean));
     }
-    if (((({let gensym___175155715 = initializers;
-    (((gensym___175155715) == (null)) ? undefined : gensym___175155715.propVar4)})) !== (undefined))) {
+    if (({let gensym___22732558 = initializers;
+    (((gensym___22732558) == (null)) ? undefined : gensym___22732558.__options_has_propVar4)})) {
       this.__backing_propVar4!.update((initializers!.propVar4 as undefined));
     }
-    if (((({let gensym___134530703 = initializers;
-    (((gensym___134530703) == (null)) ? undefined : gensym___134530703.propVar5)})) !== (undefined))) {
+    if (({let gensym___143875977 = initializers;
+    (((gensym___143875977) == (null)) ? undefined : gensym___143875977.__options_has_propVar5)})) {
       this.__backing_propVar5!.update((initializers!.propVar5 as null));
     }
   }
@@ -154,31 +154,46 @@ function main() {}
   set __backing_propVar1(__backing_propVar1: (IPropRefDecoratedVariable<string> | undefined))
 
   get __backing_propVar1(): (IPropRefDecoratedVariable<string> | undefined)
+  set __options_has_propVar1(__options_has_propVar1: (boolean | undefined))
+  
+  get __options_has_propVar1(): (boolean | undefined)
   set propVar2(propVar2: (number | undefined))
 
   get propVar2(): (number | undefined)
   set __backing_propVar2(__backing_propVar2: (IPropRefDecoratedVariable<number> | undefined))
 
   get __backing_propVar2(): (IPropRefDecoratedVariable<number> | undefined)
+  set __options_has_propVar2(__options_has_propVar2: (boolean | undefined))
+  
+  get __options_has_propVar2(): (boolean | undefined)
   set propVar3(propVar3: (boolean | undefined))
 
   get propVar3(): (boolean | undefined)
   set __backing_propVar3(__backing_propVar3: (IPropRefDecoratedVariable<boolean> | undefined))
 
   get __backing_propVar3(): (IPropRefDecoratedVariable<boolean> | undefined)
+  set __options_has_propVar3(__options_has_propVar3: (boolean | undefined))
+  
+  get __options_has_propVar3(): (boolean | undefined)
   set propVar4(propVar4: (undefined | undefined))
 
   get propVar4(): (undefined | undefined)
   set __backing_propVar4(__backing_propVar4: (IPropRefDecoratedVariable<undefined> | undefined))
 
   get __backing_propVar4(): (IPropRefDecoratedVariable<undefined> | undefined)
+  set __options_has_propVar4(__options_has_propVar4: (boolean | undefined))
+  
+  get __options_has_propVar4(): (boolean | undefined)
   set propVar5(propVar5: (null | undefined))
 
   get propVar5(): (null | undefined)
   set __backing_propVar5(__backing_propVar5: (IPropRefDecoratedVariable<null> | undefined))
 
   get __backing_propVar5(): (IPropRefDecoratedVariable<null> | undefined)
-
+  set __options_has_propVar5(__options_has_propVar5: (boolean | undefined))
+  
+  get __options_has_propVar5(): (boolean | undefined)
+  
 }
 `;
 

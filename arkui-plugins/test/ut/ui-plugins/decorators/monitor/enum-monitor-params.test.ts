@@ -274,7 +274,10 @@ final class MonitorNames extends BaseEnum<String> {
   set __backing_varF(__backing_varF: (ILocalDecoratedVariable<FFF> | undefined))
 
   get __backing_varF(): (ILocalDecoratedVariable<FFF> | undefined)
-
+  set __options_has_varF(__options_has_varF: (boolean | undefined))
+  
+  get __options_has_varF(): (boolean | undefined)
+  
 }
 `;
 

@@ -54,8 +54,6 @@ import { State as State } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-
-
 class Per {
   public str: string;
 
@@ -89,6 +87,7 @@ class Per {
         return new Child();
       }), {
         childVar1: this.parentVar1,
+        __options_has_childVar1: true,
       }, undefined, undefined);
     }));
   }
@@ -130,7 +129,10 @@ class Per {
   set __backing_parentVar1(__backing_parentVar1: (IStateDecoratedVariable<Per> | undefined))
 
   get __backing_parentVar1(): (IStateDecoratedVariable<Per> | undefined)
-
+  set __options_has_parentVar1(__options_has_parentVar1: (boolean | undefined))
+  
+  get __options_has_parentVar1(): (boolean | undefined)
+  
 }
 
 @Component() export interface __Options_Child {
@@ -140,7 +142,10 @@ class Per {
   set __backing_childVar1(__backing_childVar1: (IStateDecoratedVariable<Per> | undefined))
 
   get __backing_childVar1(): (IStateDecoratedVariable<Per> | undefined)
-
+  set __options_has_childVar1(__options_has_childVar1: (boolean | undefined))
+  
+  get __options_has_childVar1(): (boolean | undefined)
+  
 }
 `;
 

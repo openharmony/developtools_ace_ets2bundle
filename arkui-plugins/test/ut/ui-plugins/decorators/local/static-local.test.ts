@@ -108,19 +108,28 @@ class ABB {
   set __backing_localVar1(__backing_localVar1: (ILocalDecoratedVariable<string> | undefined))
 
   get __backing_localVar1(): (ILocalDecoratedVariable<string> | undefined)
+  set __options_has_localVar1(__options_has_localVar1: (boolean | undefined))
+  
+  get __options_has_localVar1(): (boolean | undefined)
   set localVar2(localVar2: (number | undefined))
 
   get localVar2(): (number | undefined)
   set __backing_localVar2(__backing_localVar2: (ILocalDecoratedVariable<number> | undefined))
 
   get __backing_localVar2(): (ILocalDecoratedVariable<number> | undefined)
+  set __options_has_localVar2(__options_has_localVar2: (boolean | undefined))
+  
+  get __options_has_localVar2(): (boolean | undefined)
   set localVar3(localVar3: (ABB | undefined))
 
   get localVar3(): (ABB | undefined)
   set __backing_localVar3(__backing_localVar3: (ILocalDecoratedVariable<ABB> | undefined))
 
   get __backing_localVar3(): (ILocalDecoratedVariable<ABB> | undefined)
-
+  set __options_has_localVar3(__options_has_localVar3: (boolean | undefined))
+  
+  get __options_has_localVar3(): (boolean | undefined)
+  
 }
 `;
 

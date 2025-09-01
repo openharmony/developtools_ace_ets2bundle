@@ -106,10 +106,16 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     public constructor() {}
 }
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
-    set message(message: (string | undefined))
-    get message(): (string | undefined)
-    set __backing_message(__backing_message: (IStateDecoratedVariable<string> | undefined))
-    get __backing_message(): (IStateDecoratedVariable<string> | undefined)
+  set message(message: (string | undefined))
+  
+  get message(): (string | undefined)
+  set __backing_message(__backing_message: (IStateDecoratedVariable<string> | undefined))
+  
+  get __backing_message(): (IStateDecoratedVariable<string> | undefined)
+  set __options_has_message(__options_has_message: (boolean | undefined))
+  
+  get __options_has_message(): (boolean | undefined)
+  
 }
 class __EntryWrapper extends EntryPoint {
     @memo() public entry(): void {
@@ -270,10 +276,16 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     public constructor() {}
 }
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
-    set message(message: (string | undefined))
-    get message(): (string | undefined)
-    set __backing_message(__backing_message: (IStateDecoratedVariable<string> | undefined))
-    get __backing_message(): (IStateDecoratedVariable<string> | undefined)
+  set message(message: (string | undefined))
+  
+  get message(): (string | undefined)
+  set __backing_message(__backing_message: (IStateDecoratedVariable<string> | undefined))
+  
+  get __backing_message(): (IStateDecoratedVariable<string> | undefined)
+  set __options_has_message(__options_has_message: (boolean | undefined))
+  
+  get __options_has_message(): (boolean | undefined)
+  
 }
 class __EntryWrapper extends EntryPoint {
     @memo() public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {

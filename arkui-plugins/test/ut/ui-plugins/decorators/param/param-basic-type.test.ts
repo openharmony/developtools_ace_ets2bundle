@@ -67,24 +67,24 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {
-    if (((({let gensym___99629634 = initializers;
-    (((gensym___99629634) == (null)) ? undefined : gensym___99629634.paramVar1)})) !== (undefined))) {
+    if (({let gensym___160055409 = initializers;
+    (((gensym___160055409) == (null)) ? undefined : gensym___160055409.__options_has_paramVar1)})) {
       this.__backing_paramVar1!.update((initializers!.paramVar1 as string));
     }
-    if (((({let gensym___68516859 = initializers;
-    (((gensym___68516859) == (null)) ? undefined : gensym___68516859.paramVar2)})) !== (undefined))) {
+    if (({let gensym___2437677 = initializers;
+    (((gensym___2437677) == (null)) ? undefined : gensym___2437677.__options_has_paramVar2)})) {
       this.__backing_paramVar2!.update((initializers!.paramVar2 as number));
     }
-    if (((({let gensym___96937083 = initializers;
-    (((gensym___96937083) == (null)) ? undefined : gensym___96937083.paramVar3)})) !== (undefined))) {
+    if (({let gensym___113817398 = initializers;
+    (((gensym___113817398) == (null)) ? undefined : gensym___113817398.__options_has_paramVar3)})) {
       this.__backing_paramVar3!.update((initializers!.paramVar3 as boolean));
     }
-    if (((({let gensym___151087626 = initializers;
-    (((gensym___151087626) == (null)) ? undefined : gensym___151087626.paramVar4)})) !== (undefined))) {
+    if (({let gensym___69812855 = initializers;
+    (((gensym___69812855) == (null)) ? undefined : gensym___69812855.__options_has_paramVar4)})) {
       this.__backing_paramVar4!.update((initializers!.paramVar4 as undefined));
     }
-    if (((({let gensym___127163363 = initializers;
-    (((gensym___127163363) == (null)) ? undefined : gensym___127163363.paramVar5)})) !== (undefined))) {
+    if (({let gensym___184913887 = initializers;
+    (((gensym___184913887) == (null)) ? undefined : gensym___184913887.__options_has_paramVar5)})) {
       this.__backing_paramVar5!.update((initializers!.paramVar5 as null));
     }
   }
@@ -132,31 +132,46 @@ function main() {}
   set __backing_paramVar1(__backing_paramVar1: (IParamDecoratedVariable<string> | undefined))
 
   get __backing_paramVar1(): (IParamDecoratedVariable<string> | undefined)
+  set __options_has_paramVar1(__options_has_paramVar1: (boolean | undefined))
+  
+  get __options_has_paramVar1(): (boolean | undefined)
   set paramVar2(paramVar2: (number | undefined))
 
   get paramVar2(): (number | undefined)
   set __backing_paramVar2(__backing_paramVar2: (IParamDecoratedVariable<number> | undefined))
 
   get __backing_paramVar2(): (IParamDecoratedVariable<number> | undefined)
+  set __options_has_paramVar2(__options_has_paramVar2: (boolean | undefined))
+  
+  get __options_has_paramVar2(): (boolean | undefined)
   set paramVar3(paramVar3: (boolean | undefined))
 
   get paramVar3(): (boolean | undefined)
   set __backing_paramVar3(__backing_paramVar3: (IParamDecoratedVariable<boolean> | undefined))
 
   get __backing_paramVar3(): (IParamDecoratedVariable<boolean> | undefined)
+  set __options_has_paramVar3(__options_has_paramVar3: (boolean | undefined))
+  
+  get __options_has_paramVar3(): (boolean | undefined)
   set paramVar4(paramVar4: (undefined | undefined))
 
   get paramVar4(): (undefined | undefined)
   set __backing_paramVar4(__backing_paramVar4: (IParamDecoratedVariable<undefined> | undefined))
 
   get __backing_paramVar4(): (IParamDecoratedVariable<undefined> | undefined)
+  set __options_has_paramVar4(__options_has_paramVar4: (boolean | undefined))
+  
+  get __options_has_paramVar4(): (boolean | undefined)
   set paramVar5(paramVar5: (null | undefined))
 
   get paramVar5(): (null | undefined)
   set __backing_paramVar5(__backing_paramVar5: (IParamDecoratedVariable<null> | undefined))
 
   get __backing_paramVar5(): (IParamDecoratedVariable<null> | undefined)
-
+  set __options_has_paramVar5(__options_has_paramVar5: (boolean | undefined))
+  
+  get __options_has_paramVar5(): (boolean | undefined)
+  
 }
 `;
 

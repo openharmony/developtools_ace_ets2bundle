@@ -52,7 +52,7 @@ import { LinkSourceType as LinkSourceType } from "arkui.stateManagement.decorato
 
 import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
+import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -78,12 +78,11 @@ import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent"
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
 
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Entry as Entry, Column as Column } from "@ohos.arkui.component";
 
-import { State as State, Prop as Prop, StorageLink as StorageLink, StorageProp as StorageProp, Link as Link, Watch as Watch, ObjectLink as ObjectLink, Observed as Observed, Track as Track, Provide as Provide, Consume as Consume } from "@ohos.arkui.stateManagement";
+import { State as State, PropRef as PropRef, StorageLink as StorageLink, StorageProp as StorageProp, Link as Link, Watch as Watch, ObjectLink as ObjectLink, Observed as Observed, Track as Track, Provide as Provide, Consume as Consume } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
@@ -151,12 +150,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     (((gensym___76198660) == (null)) ? undefined : gensym___76198660.statevar)})) ?? ("Hello World")), ((_: string): void => {
       this.stateOnChange(_);
     }));
-    this.__backing_propvar = STATE_MGMT_FACTORY.makeProp<string>(this, "propvar", ((({let gensym___241486692 = initializers;
+    this.__backing_propvar = STATE_MGMT_FACTORY.makePropRef<string>(this, "propvar", ((({let gensym___241486692 = initializers;
     (((gensym___241486692) == (null)) ? undefined : gensym___241486692.propvar)})) ?? ("Hello World")), ((_: string): void => {
       this.propOnChange(_);
     }));
     if (({let gensym___165820150 = initializers;
-    (((gensym___165820150) == (null)) ? undefined : gensym___165820150.__backing_linkvar)})) {
+    (((gensym___165820150) == (null)) ? undefined : gensym___165820150.__options_has_linkvar)})) {
       this.__backing_linkvar = STATE_MGMT_FACTORY.makeLink<string>(this, "linkvar", initializers!.__backing_linkvar!, ((_: string): void => {
         this.linkOnChange(_);
       }));
@@ -178,13 +177,13 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {
-    if (((({let gensym___220608839 = initializers;
-    (((gensym___220608839) == (null)) ? undefined : gensym___220608839.propvar)})) !== (undefined))) {
+    if (({let gensym___122439192 = initializers;
+    (((gensym___122439192) == (null)) ? undefined : gensym___122439192.__options_has_propvar)})) {
       this.__backing_propvar!.update((initializers!.propvar as string));
     }
-    if (((({let gensym___164966179 = initializers;
-    (((gensym___164966179) == (null)) ? undefined : gensym___164966179.objectlinkvar)})) !== (undefined))) {
-      this.__backing_objectlinkvar!.update(initializers!.objectlinkvar!);
+    if (({let gensym___94896492 = initializers;
+    (((gensym___94896492) == (null)) ? undefined : gensym___94896492.__options_has_objectlinkvar)})) {
+      this.__backing_objectlinkvar!.update((initializers!.objectlinkvar as A));
     }
   }
   
@@ -198,7 +197,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_statevar!.set(value);
   }
   
-  private __backing_propvar?: IPropDecoratedVariable<string>;
+  private __backing_propvar?: IPropRefDecoratedVariable<string>;
   
   public get propvar(): string {
     return this.__backing_propvar!.get();
@@ -316,42 +315,63 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   @Watch({value:"stateOnChange"}) set __backing_statevar(__backing_statevar: (IStateDecoratedVariable<string> | undefined))
 
   @Watch({value:"stateOnChange"}) get __backing_statevar(): (IStateDecoratedVariable<string> | undefined)
+  set __options_has_statevar(__options_has_statevar: (boolean | undefined))
+  
+  get __options_has_statevar(): (boolean | undefined)
   set propvar(propvar: (string | undefined))
   
   get propvar(): (string | undefined)
-  @Watch({value:"propOnChange"}) set __backing_propvar(__backing_propvar: (IPropDecoratedVariable<string> | undefined))
+  @Watch({value:"propOnChange"}) set __backing_propvar(__backing_propvar: (IPropRefDecoratedVariable<string> | undefined))
   
-  @Watch({value:"propOnChange"}) get __backing_propvar(): (IPropDecoratedVariable<string> | undefined)
+  @Watch({value:"propOnChange"}) get __backing_propvar(): (IPropRefDecoratedVariable<string> | undefined)
+  set __options_has_propvar(__options_has_propvar: (boolean | undefined))
+  
+  get __options_has_propvar(): (boolean | undefined)
   @__Link_intrinsic() set linkvar(linkvar: (string | undefined))
   
   @__Link_intrinsic() get linkvar(): (string | undefined)
   @Watch({value:"linkOnChange"}) set __backing_linkvar(__backing_linkvar: (LinkSourceType<string> | undefined))
   
   @Watch({value:"linkOnChange"}) get __backing_linkvar(): (LinkSourceType<string> | undefined)
+  set __options_has_linkvar(__options_has_linkvar: (boolean | undefined))
+  
+  get __options_has_linkvar(): (boolean | undefined)
   set storagelinkvar(storagelinkvar: (string | undefined))
   
   get storagelinkvar(): (string | undefined)
   @Watch({value:"storageLinkOnChange"}) set __backing_storagelinkvar(__backing_storagelinkvar: (IStorageLinkDecoratedVariable<string> | undefined))
   
   @Watch({value:"storageLinkOnChange"}) get __backing_storagelinkvar(): (IStorageLinkDecoratedVariable<string> | undefined)
+  set __options_has_storagelinkvar(__options_has_storagelinkvar: (boolean | undefined))
+  
+  get __options_has_storagelinkvar(): (boolean | undefined)
   set storagepropvar(storagepropvar: (string | undefined))
   
   get storagepropvar(): (string | undefined)
   @Watch({value:"storagePropOnChange"}) set __backing_storagepropvar(__backing_storagepropvar: (IStoragePropRefDecoratedVariable<string> | undefined))
   
   @Watch({value:"storagePropOnChange"}) get __backing_storagepropvar(): (IStoragePropRefDecoratedVariable<string> | undefined)
+  set __options_has_storagepropvar(__options_has_storagepropvar: (boolean | undefined))
+  
+  get __options_has_storagepropvar(): (boolean | undefined)
   set objectlinkvar(objectlinkvar: (A | undefined))
   
   get objectlinkvar(): (A | undefined)
   @Watch({value:"objectLinkOnChange"}) set __backing_objectlinkvar(__backing_objectlinkvar: (IObjectLinkDecoratedVariable<A> | undefined))
   
   @Watch({value:"objectLinkOnChange"}) get __backing_objectlinkvar(): (IObjectLinkDecoratedVariable<A> | undefined)
+  set __options_has_objectlinkvar(__options_has_objectlinkvar: (boolean | undefined))
+  
+  get __options_has_objectlinkvar(): (boolean | undefined)
   set providevar(providevar: (string | undefined))
 
   get providevar(): (string | undefined)
   @Watch({value:"ProvideOnChange"}) set __backing_providevar(__backing_providevar: (IProvideDecoratedVariable<string> | undefined))
 
   @Watch({value:"ProvideOnChange"}) get __backing_providevar(): (IProvideDecoratedVariable<string> | undefined)
+  set __options_has_providevar(__options_has_providevar: (boolean | undefined))
+  
+  get __options_has_providevar(): (boolean | undefined)
   
 }
 
@@ -362,6 +382,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   @Watch({value:"ConsumeOnChange"}) set __backing_providevar(__backing_providevar: (IConsumeDecoratedVariable<string> | undefined))
 
   @Watch({value:"ConsumeOnChange"}) get __backing_providevar(): (IConsumeDecoratedVariable<string> | undefined)
+  set __options_has_providevar(__options_has_providevar: (boolean | undefined))
+  
+  get __options_has_providevar(): (boolean | undefined)
   
 }
 

@@ -136,7 +136,10 @@ class AB {
   set arr(arr: (Array<string> | undefined))
 
   get arr(): (Array<string> | undefined)
-
+  set __options_has_arr(__options_has_arr: (boolean | undefined))
+  
+  get __options_has_arr(): (boolean | undefined)
+  
 }
 `;
 

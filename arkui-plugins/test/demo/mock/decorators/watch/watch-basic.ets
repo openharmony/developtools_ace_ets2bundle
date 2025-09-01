@@ -14,7 +14,7 @@
  */
 
 import { Component, Entry, Column } from "@ohos.arkui.component"
-import { State, Prop, StorageLink, StorageProp, Link, Watch, ObjectLink, Observed, Track, Provide, Consume } from "@ohos.arkui.stateManagement"
+import { State, PropRef, StorageLink, StorageProp, Link, Watch, ObjectLink, Observed, Track, Provide, Consume } from "@ohos.arkui.stateManagement"
 
 @Observed
 class A {
@@ -26,7 +26,7 @@ class A {
 @Component
 struct MyStateSample {
   @State @Watch('stateOnChange') statevar: string = 'Hello World';
-  @Prop @Watch('propOnChange') propvar: string = 'Hello World';
+  @PropRef @Watch('propOnChange') propvar: string = 'Hello World';
   @Link @Watch('linkOnChange') linkvar: string;
   @StorageLink('prop1') @Watch('storageLinkOnChange') storagelinkvar: string = 'Hello World';
   @StorageProp('prop2') @Watch('storagePropOnChange') storagepropvar: string = 'Hello World';
