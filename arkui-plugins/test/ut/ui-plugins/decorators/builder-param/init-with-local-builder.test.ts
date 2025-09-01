@@ -90,9 +90,15 @@ function main() {}
   set customBuilderParam(customBuilderParam: (@memo() (()=> void) | undefined))
   
   get customBuilderParam(): (@memo() (()=> void) | undefined)
+  set __options_has_customBuilderParam(__options_has_customBuilderParam: (boolean | undefined))
+  
+  get __options_has_customBuilderParam(): (boolean | undefined)
   set customBuilderParam2(customBuilderParam2: (@memo() ((str: string)=> void) | undefined))
   
   get customBuilderParam2(): (@memo() ((str: string)=> void) | undefined)
+  set __options_has_customBuilderParam2(__options_has_customBuilderParam2: (boolean | undefined))
+  
+  get __options_has_customBuilderParam2(): (boolean | undefined)
   
 }
 `;
@@ -182,9 +188,15 @@ function main() {}
   set customBuilderParam(customBuilderParam: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined))
   
   get customBuilderParam(): (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
+  set __options_has_customBuilderParam(__options_has_customBuilderParam: (boolean | undefined))
+  
+  get __options_has_customBuilderParam(): (boolean | undefined)
   set customBuilderParam2(customBuilderParam2: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) | undefined))
   
   get customBuilderParam2(): (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) | undefined)
+  set __options_has_customBuilderParam2(__options_has_customBuilderParam2: (boolean | undefined))
+  
+  get __options_has_customBuilderParam2(): (boolean | undefined)
   
 }
 `;

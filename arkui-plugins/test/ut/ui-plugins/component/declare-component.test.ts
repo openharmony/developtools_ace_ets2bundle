@@ -42,12 +42,12 @@ import { CustomComponent as CustomComponent } from "arkui.component.customCompon
 
 import { Component as Component, ResourceStr as ResourceStr, Builder as Builder } from "@ohos.arkui.component";
 
-import { Prop as Prop, State as State } from "@ohos.arkui.stateManagement";
+import { PropRef as PropRef, State as State } from "@ohos.arkui.stateManagement";
 
 @Component() export declare final struct SwipeRefresher extends CustomComponent<SwipeRefresher, __Options_SwipeRefresher> {
-  @Prop() public content?: (ResourceStr | undefined);
+  @PropRef() public content?: (ResourceStr | undefined);
   
-  @Prop() public isLoading: boolean;
+  @PropRef() public isLoading: boolean;
   
   @State() public code: number;
   
@@ -61,11 +61,14 @@ import { Prop as Prop, State as State } from "@ohos.arkui.stateManagement";
 
 @Component() export declare interface __Options_SwipeRefresher {
   content?: (ResourceStr | undefined);
-  @Prop() __backing_content?: (ResourceStr | undefined);
+  @PropRef() __backing_content?: (ResourceStr | undefined);
+  __options_has_content?: boolean;
   isLoading?: boolean;
-  @Prop() __backing_isLoading?: boolean;
+  @PropRef() __backing_isLoading?: boolean;
+  __options_has_isLoading?: boolean;
   code?: number;
   @State() __backing_code?: number;
+  __options_has_code?: boolean;
   
 }
 `;
@@ -77,7 +80,7 @@ function testParsedTransformer(this: PluginTestContext): void {
 const expectedCheckedScript: string = `
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
+import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
@@ -85,14 +88,14 @@ import { CustomComponent as CustomComponent } from "arkui.component.customCompon
 
 import { Component as Component, ResourceStr as ResourceStr, Builder as Builder } from "@ohos.arkui.component";
 
-import { Prop as Prop, State as State } from "@ohos.arkui.stateManagement";
+import { PropRef as PropRef, State as State } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
 @Component() export declare final struct SwipeRefresher extends CustomComponent<SwipeRefresher, __Options_SwipeRefresher> {
-  @Prop() public content?: (ResourceStr | undefined);
+  @PropRef() public content?: (ResourceStr | undefined);
   
-  @Prop() public isLoading: boolean;
+  @PropRef() public isLoading: boolean;
   
   @State() public code: number;
   
@@ -108,21 +111,30 @@ function main() {}
   set content(content: ((ResourceStr | undefined) | undefined))
   
   get content(): ((ResourceStr | undefined) | undefined)
-  set __backing_content(__backing_content: (IPropDecoratedVariable<(ResourceStr | undefined)> | undefined))
+  set __backing_content(__backing_content: (IPropRefDecoratedVariable<(ResourceStr | undefined)> | undefined))
   
-  get __backing_content(): (IPropDecoratedVariable<(ResourceStr | undefined)> | undefined)
+  get __backing_content(): (IPropRefDecoratedVariable<(ResourceStr | undefined)> | undefined)
+  set __options_has_content(__options_has_content: (boolean | undefined))
+  
+  get __options_has_content(): (boolean | undefined)
   set isLoading(isLoading: (boolean | undefined))
   
   get isLoading(): (boolean | undefined)
-  set __backing_isLoading(__backing_isLoading: (IPropDecoratedVariable<boolean> | undefined))
+  set __backing_isLoading(__backing_isLoading: (IPropRefDecoratedVariable<boolean> | undefined))
   
-  get __backing_isLoading(): (IPropDecoratedVariable<boolean> | undefined)
+  get __backing_isLoading(): (IPropRefDecoratedVariable<boolean> | undefined)
+  set __options_has_isLoading(__options_has_isLoading: (boolean | undefined))
+  
+  get __options_has_isLoading(): (boolean | undefined)
   set code(code: (number | undefined))
   
   get code(): (number | undefined)
   set __backing_code(__backing_code: (IStateDecoratedVariable<number> | undefined))
   
   get __backing_code(): (IStateDecoratedVariable<number> | undefined)
+  set __options_has_code(__options_has_code: (boolean | undefined))
+  
+  get __options_has_code(): (boolean | undefined)
   
 }
 `;

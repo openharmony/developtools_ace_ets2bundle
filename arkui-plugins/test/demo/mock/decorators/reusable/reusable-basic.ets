@@ -14,7 +14,7 @@
  */
  
 import { Component, Reusable} from "@ohos.arkui.component"
-import { State, Prop } from "@ohos.arkui.stateManagement" 
+import { State, PropRef } from "@ohos.arkui.stateManagement" 
 
 @Component
 struct MyStateSample {
@@ -26,7 +26,7 @@ struct MyStateSample {
 @Component
 @Reusable
 struct Child {
-  @Prop num: number = 1
+  @PropRef num: number = 1
   @State num1: number = 2
   build() {
       

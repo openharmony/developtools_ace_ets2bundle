@@ -67,7 +67,6 @@ import { Computed as Computed, Local as Local } from "@ohos.arkui.stateManagemen
 function main() {}
 
 
-
 @ObservedV2() class Name implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
@@ -212,15 +211,24 @@ function main() {}
   set __backing_firstName(__backing_firstName: (ILocalDecoratedVariable<string> | undefined))
   
   get __backing_firstName(): (ILocalDecoratedVariable<string> | undefined)
+  set __options_has_firstName(__options_has_firstName: (boolean | undefined))
+  
+  get __options_has_firstName(): (boolean | undefined)
   set lastName(lastName: (string | undefined))
   
   get lastName(): (string | undefined)
   set __backing_lastName(__backing_lastName: (ILocalDecoratedVariable<string> | undefined))
   
   get __backing_lastName(): (ILocalDecoratedVariable<string> | undefined)
+  set __options_has_lastName(__options_has_lastName: (boolean | undefined))
+  
+  get __options_has_lastName(): (boolean | undefined)
   set age(age: (number | undefined))
   
   get age(): (number | undefined)
+  set __options_has_age(__options_has_age: (boolean | undefined))
+  
+  get __options_has_age(): (boolean | undefined)
   
 }
 `;

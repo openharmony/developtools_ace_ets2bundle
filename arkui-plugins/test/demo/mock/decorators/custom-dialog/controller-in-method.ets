@@ -14,7 +14,6 @@
  */
 
 import { Component, CustomDialog, CustomDialogController } from "@ohos.arkui.component"
-import hilog from '@ohos.hilog'
 
 @CustomDialog
 struct CustomDialogExample {
