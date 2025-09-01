@@ -85,9 +85,18 @@ i = _r(16777216, 10003, "com.example.mock", "entry");
 
 @Component() export interface __Options_ResourceComponent {
   set str(str: (Resource | undefined))
+  
   get str(): (Resource | undefined)
+  set __options_has_str(__options_has_str: (boolean | undefined))
+  
+  get __options_has_str(): (boolean | undefined)
   set icon(icon: (Resource | undefined))
+  
   get icon(): (Resource | undefined)
+  set __options_has_icon(__options_has_icon: (boolean | undefined))
+  
+  get __options_has_icon(): (boolean | undefined)
+  
 }
 `;
 

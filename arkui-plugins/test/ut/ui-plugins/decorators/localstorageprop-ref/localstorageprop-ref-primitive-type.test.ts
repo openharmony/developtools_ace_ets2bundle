@@ -126,31 +126,46 @@ function main() {}
   set __backing_numB(__backing_numB: (ILocalStoragePropRefDecoratedVariable<number> | undefined))
 
   get __backing_numB(): (ILocalStoragePropRefDecoratedVariable<number> | undefined)
+  set __options_has_numB(__options_has_numB: (boolean | undefined))
+  
+  get __options_has_numB(): (boolean | undefined)
   set stringB(stringB: (string | undefined))
 
   get stringB(): (string | undefined)
   set __backing_stringB(__backing_stringB: (ILocalStoragePropRefDecoratedVariable<string> | undefined))
 
   get __backing_stringB(): (ILocalStoragePropRefDecoratedVariable<string> | undefined)
+  set __options_has_stringB(__options_has_stringB: (boolean | undefined))
+  
+  get __options_has_stringB(): (boolean | undefined)
   set booleanB(booleanB: (boolean | undefined))
 
   get booleanB(): (boolean | undefined)
   set __backing_booleanB(__backing_booleanB: (ILocalStoragePropRefDecoratedVariable<boolean> | undefined))
 
   get __backing_booleanB(): (ILocalStoragePropRefDecoratedVariable<boolean> | undefined)
+  set __options_has_booleanB(__options_has_booleanB: (boolean | undefined))
+  
+  get __options_has_booleanB(): (boolean | undefined)
   set undefinedB(undefinedB: (undefined | undefined))
 
   get undefinedB(): (undefined | undefined)
   set __backing_undefinedB(__backing_undefinedB: (ILocalStoragePropRefDecoratedVariable<undefined> | undefined))
 
   get __backing_undefinedB(): (ILocalStoragePropRefDecoratedVariable<undefined> | undefined)
+  set __options_has_undefinedB(__options_has_undefinedB: (boolean | undefined))
+  
+  get __options_has_undefinedB(): (boolean | undefined)
   set nullB(nullB: (null | undefined))
 
   get nullB(): (null | undefined)
   set __backing_nullB(__backing_nullB: (ILocalStoragePropRefDecoratedVariable<null> | undefined))
 
   get __backing_nullB(): (ILocalStoragePropRefDecoratedVariable<null> | undefined)
-
+  set __options_has_nullB(__options_has_nullB: (boolean | undefined))
+  
+  get __options_has_nullB(): (boolean | undefined)
+  
 }
 `;
 

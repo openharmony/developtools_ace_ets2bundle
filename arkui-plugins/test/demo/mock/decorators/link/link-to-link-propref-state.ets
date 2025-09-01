@@ -13,15 +13,29 @@
  * limitations under the License.
  */
 
-import { Component, Entry } from "@ohos.arkui.component"  // TextAttribute should be insert by ui-plugins
-import { StorageProp } from "@ohos.arkui.stateManagement"
+import { Component, Column, TextInput } from "@ohos.arkui.component"
+import { Link, State, PropRef } from "@ohos.arkui.stateManagement"
 
-@Entry
 @Component
-struct MyStateSample {
-  @StorageProp('Prop1') numB: number = 43;
-  @StorageProp('Prop2') stringB: string = 'BB';
-  @StorageProp('Prop3') booleanB: boolean = false;
+struct Parant {
+  @Link text1: string;
 
-  build() {}
+  build() {
+    Column() {
+      TextInput({ text: this.text1 })
+      Child({ childText: this.text1, childText2: this.text1, childText3: this.text1, childText4: this.text1 })
+    }
+  }
+}
+
+@Component
+struct Child {
+  @Link childText: string;
+  @State childText2: string = 'sss';
+  @PropRef childText3: string;
+  @PropRef childText4: string = 'cc';
+
+  build() {
+    TextInput({ text: this.childText })
+  }
 }

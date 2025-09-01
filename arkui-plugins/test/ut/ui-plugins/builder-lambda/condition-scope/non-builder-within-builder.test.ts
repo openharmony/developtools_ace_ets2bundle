@@ -41,11 +41,12 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
 import { Component as Component, Builder as Builder } from \"@ohos.arkui.component\";
 function main() {}
-@memo() function TestComponent(init: TestInitCallback, update: TestUpdateCallback): void {}
+@memo() function TestComponent(@MemoSkip() init: TestInitCallback, @MemoSkip() update: TestUpdateCallback): void {}
 type TestInitCallback = (()=> void);
 type TestUpdateCallback = (()=> void);
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {

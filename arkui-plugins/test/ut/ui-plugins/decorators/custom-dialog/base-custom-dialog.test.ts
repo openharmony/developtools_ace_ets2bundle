@@ -169,9 +169,11 @@ function main() {}
           cancel: (() => {
             this.onCancel();
           }),
+          __options_has_cancel: true,
           confirm: (() => {
             this.onAccept();
           }),
+          __options_has_confirm: true,
         }, undefined);
       }),
       cancel: this.existApp,
@@ -241,32 +243,50 @@ function main() {}
   set aaController(aaController: ((CustomDialogController | undefined) | undefined))
 
   get aaController(): ((CustomDialogController | undefined) | undefined)
+  set __options_has_aaController(__options_has_aaController: (boolean | undefined))
+  
+  get __options_has_aaController(): (boolean | undefined)
   set text(text: (string | undefined))
 
   get text(): (string | undefined)
   set __backing_text(__backing_text: (IStateDecoratedVariable<string> | undefined))
 
   get __backing_text(): (IStateDecoratedVariable<string> | undefined)
+  set __options_has_text(__options_has_text: (boolean | undefined))
+  
+  get __options_has_text(): (boolean | undefined)
   set cancel(cancel: ((()=> void) | undefined))
 
   get cancel(): ((()=> void) | undefined)
+  set __options_has_cancel(__options_has_cancel: (boolean | undefined))
+  
+  get __options_has_cancel(): (boolean | undefined)
   set confirm(confirm: ((()=> void) | undefined))
 
   get confirm(): ((()=> void) | undefined)
+  set __options_has_confirm(__options_has_confirm: (boolean | undefined))
+  
+  get __options_has_confirm(): (boolean | undefined)
   set hh(hh: (string | undefined))
 
   get hh(): (string | undefined)
   set __backing_hh(__backing_hh: (IStateDecoratedVariable<string> | undefined))
 
   get __backing_hh(): (IStateDecoratedVariable<string> | undefined)
-
+  set __options_has_hh(__options_has_hh: (boolean | undefined))
+  
+  get __options_has_hh(): (boolean | undefined)
+  
 }
 
 @Component() export interface __Options_CustomDialogUser {
   set dialogController(dialogController: ((CustomDialogController | null) | undefined))
 
   get dialogController(): ((CustomDialogController | null) | undefined)
-
+  set __options_has_dialogController(__options_has_dialogController: (boolean | undefined))
+  
+  get __options_has_dialogController(): (boolean | undefined)
+  
 }
 `;
 

@@ -38,7 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
@@ -46,7 +45,6 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 import { LinkSourceType as LinkSourceType } from "arkui.stateManagement.decorator";
 
 import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateManagement.decorator";
-
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -56,28 +54,26 @@ import { Link as Link } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-
-
 @Component() final struct LinkParent extends CustomComponent<LinkParent, __Options_LinkParent> {
   public __initializeStruct(initializers: (__Options_LinkParent | undefined), @memo() content: ((()=> void) | undefined)): void {
-    if (({let gensym___11910109 = initializers;
-    (((gensym___11910109) == (null)) ? undefined : gensym___11910109.__backing_linkVar1)})) {
+    if (({let gensym___184416899 = initializers;
+    (((gensym___184416899) == (null)) ? undefined : gensym___184416899.__options_has_linkVar1)})) {
       this.__backing_linkVar1 = STATE_MGMT_FACTORY.makeLink<string>(this, "linkVar1", initializers!.__backing_linkVar1!);
     };
-    if (({let gensym___181684045 = initializers;
-    (((gensym___181684045) == (null)) ? undefined : gensym___181684045.__backing_linkVar2)})) {
+    if (({let gensym___82966591 = initializers;
+    (((gensym___82966591) == (null)) ? undefined : gensym___82966591.__options_has_linkVar2)})) {
       this.__backing_linkVar2 = STATE_MGMT_FACTORY.makeLink<number>(this, "linkVar2", initializers!.__backing_linkVar2!);
     };
-    if (({let gensym___24446313 = initializers;
-    (((gensym___24446313) == (null)) ? undefined : gensym___24446313.__backing_linkVar3)})) {
+    if (({let gensym___55498955 = initializers;
+    (((gensym___55498955) == (null)) ? undefined : gensym___55498955.__options_has_linkVar3)})) {
       this.__backing_linkVar3 = STATE_MGMT_FACTORY.makeLink<boolean>(this, "linkVar3", initializers!.__backing_linkVar3!);
     };
-    if (({let gensym___167989826 = initializers;
-    (((gensym___167989826) == (null)) ? undefined : gensym___167989826.__backing_linkVar4)})) {
+    if (({let gensym___231322030 = initializers;
+    (((gensym___231322030) == (null)) ? undefined : gensym___231322030.__options_has_linkVar4)})) {
       this.__backing_linkVar4 = STATE_MGMT_FACTORY.makeLink<undefined>(this, "linkVar4", initializers!.__backing_linkVar4!);
     };
-    if (({let gensym___157566097 = initializers;
-    (((gensym___157566097) == (null)) ? undefined : gensym___157566097.__backing_linkVar5)})) {
+    if (({let gensym___2576517 = initializers;
+    (((gensym___2576517) == (null)) ? undefined : gensym___2576517.__options_has_linkVar5)})) {
       this.__backing_linkVar5 = STATE_MGMT_FACTORY.makeLink<null>(this, "linkVar5", initializers!.__backing_linkVar5!);
     };
   }
@@ -149,31 +145,46 @@ function main() {}
   set __backing_linkVar1(__backing_linkVar1: (LinkSourceType<string> | undefined))
 
   get __backing_linkVar1(): (LinkSourceType<string> | undefined)
+  set __options_has_linkVar1(__options_has_linkVar1: (boolean | undefined))
+  
+  get __options_has_linkVar1(): (boolean | undefined)
   @__Link_intrinsic() set linkVar2(linkVar2: (number | undefined))
 
   @__Link_intrinsic() get linkVar2(): (number | undefined)
   set __backing_linkVar2(__backing_linkVar2: (LinkSourceType<number> | undefined))
 
   get __backing_linkVar2(): (LinkSourceType<number> | undefined)
+  set __options_has_linkVar2(__options_has_linkVar2: (boolean | undefined))
+  
+  get __options_has_linkVar2(): (boolean | undefined)
   @__Link_intrinsic() set linkVar3(linkVar3: (boolean | undefined))
 
   @__Link_intrinsic() get linkVar3(): (boolean | undefined)
   set __backing_linkVar3(__backing_linkVar3: (LinkSourceType<boolean> | undefined))
 
   get __backing_linkVar3(): (LinkSourceType<boolean> | undefined)
+  set __options_has_linkVar3(__options_has_linkVar3: (boolean | undefined))
+  
+  get __options_has_linkVar3(): (boolean | undefined)
   @__Link_intrinsic() set linkVar4(linkVar4: (undefined | undefined))
 
   @__Link_intrinsic() get linkVar4(): (undefined | undefined)
   set __backing_linkVar4(__backing_linkVar4: (LinkSourceType<undefined> | undefined))
 
   get __backing_linkVar4(): (LinkSourceType<undefined> | undefined)
+  set __options_has_linkVar4(__options_has_linkVar4: (boolean | undefined))
+  
+  get __options_has_linkVar4(): (boolean | undefined)
   @__Link_intrinsic() set linkVar5(linkVar5: (null | undefined))
 
   @__Link_intrinsic() get linkVar5(): (null | undefined)
   set __backing_linkVar5(__backing_linkVar5: (LinkSourceType<null> | undefined))
 
   get __backing_linkVar5(): (LinkSourceType<null> | undefined)
-
+  set __options_has_linkVar5(__options_has_linkVar5: (boolean | undefined))
+  
+  get __options_has_linkVar5(): (boolean | undefined)
+  
 }
 `;
 
