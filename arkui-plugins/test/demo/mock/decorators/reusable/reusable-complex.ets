@@ -38,7 +38,6 @@ struct Index {
           this.display = !this.display;
         })
       if (this.display) {
-        // 如果只有一个复用的组件，可以不用设置reuseId
         Child({ message: new Message('Child') })
       }
     }
@@ -52,10 +51,7 @@ struct Index {
 struct Child {
   @State message: Message = new Message('AboutToReuse');
 
-  aboutToReuse(params: Record<string, ESObject>) {
-    console.info("Recycle ====Child==");
-    //this.message = params.message as Message;
-  }
+  aboutToReuse(params: Record<string, ESObject>) {}
 
   build() {
     Column() {

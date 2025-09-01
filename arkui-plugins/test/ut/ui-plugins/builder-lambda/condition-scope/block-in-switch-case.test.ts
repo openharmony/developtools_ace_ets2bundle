@@ -175,6 +175,9 @@ function main() {}
   set num(num: (int | undefined))
   
   get num(): (int | undefined)
+  set __options_has_num(__options_has_num: (boolean | undefined))
+  
+  get __options_has_num(): (boolean | undefined)
   
 }
 `;
@@ -484,6 +487,9 @@ function main() {}
   set num(num: (int | undefined))
   
   get num(): (int | undefined)
+  set __options_has_num(__options_has_num: (boolean | undefined))
+  
+  get __options_has_num(): (boolean | undefined)
   
 }
 `;

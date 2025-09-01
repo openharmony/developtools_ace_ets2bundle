@@ -158,52 +158,52 @@ final class PropType extends BaseEnum<int> {
   }
   
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {
-    if (((({let gensym___67969738 = initializers;
-    (((gensym___67969738) == (null)) ? undefined : gensym___67969738.propVar1)})) !== (undefined))) {
+    if (({let gensym___222986222 = initializers;
+    (((gensym___222986222) == (null)) ? undefined : gensym___222986222.__options_has_propVar1)})) {
       this.__backing_propVar1!.update((initializers!.propVar1 as Per));
     }
-    if (((({let gensym___52350476 = initializers;
-    (((gensym___52350476) == (null)) ? undefined : gensym___52350476.propVar2)})) !== (undefined))) {
+    if (({let gensym___178023537 = initializers;
+    (((gensym___178023537) == (null)) ? undefined : gensym___178023537.__options_has_propVar2)})) {
       this.__backing_propVar2!.update((initializers!.propVar2 as Array<number>));
     }
-    if (((({let gensym___103864283 = initializers;
-    (((gensym___103864283) == (null)) ? undefined : gensym___103864283.propVar3)})) !== (undefined))) {
+    if (({let gensym___221361445 = initializers;
+    (((gensym___221361445) == (null)) ? undefined : gensym___221361445.__options_has_propVar3)})) {
       this.__backing_propVar3!.update((initializers!.propVar3 as PropType));
     }
-    if (((({let gensym___175155715 = initializers;
-    (((gensym___175155715) == (null)) ? undefined : gensym___175155715.propVar4)})) !== (undefined))) {
+    if (({let gensym___22732558 = initializers;
+    (((gensym___22732558) == (null)) ? undefined : gensym___22732558.__options_has_propVar4)})) {
       this.__backing_propVar4!.update((initializers!.propVar4 as Set<string>));
     }
-    if (((({let gensym___134530703 = initializers;
-    (((gensym___134530703) == (null)) ? undefined : gensym___134530703.propVar5)})) !== (undefined))) {
+    if (({let gensym___143875977 = initializers;
+    (((gensym___143875977) == (null)) ? undefined : gensym___143875977.__options_has_propVar5)})) {
       this.__backing_propVar5!.update((initializers!.propVar5 as Array<boolean>));
     }
-    if (((({let gensym___211600890 = initializers;
-    (((gensym___211600890) == (null)) ? undefined : gensym___211600890.propVar6)})) !== (undefined))) {
+    if (({let gensym___21159249 = initializers;
+    (((gensym___21159249) == (null)) ? undefined : gensym___21159249.__options_has_propVar6)})) {
       this.__backing_propVar6!.update((initializers!.propVar6 as Array<Per>));
     }
-    if (((({let gensym___124229427 = initializers;
-    (((gensym___124229427) == (null)) ? undefined : gensym___124229427.propVar7)})) !== (undefined))) {
+    if (({let gensym___198355044 = initializers;
+    (((gensym___198355044) == (null)) ? undefined : gensym___198355044.__options_has_propVar7)})) {
       this.__backing_propVar7!.update((initializers!.propVar7 as Array<Per>));
     }
-    if (((({let gensym___248056380 = initializers;
-    (((gensym___248056380) == (null)) ? undefined : gensym___248056380.propVar8)})) !== (undefined))) {
+    if (({let gensym___52710109 = initializers;
+    (((gensym___52710109) == (null)) ? undefined : gensym___52710109.__options_has_propVar8)})) {
       this.__backing_propVar8!.update((initializers!.propVar8 as ((sr: string)=> void)));
     }
-    if (((({let gensym___55399278 = initializers;
-    (((gensym___55399278) == (null)) ? undefined : gensym___55399278.propVar9)})) !== (undefined))) {
+    if (({let gensym___202931084 = initializers;
+    (((gensym___202931084) == (null)) ? undefined : gensym___202931084.__options_has_propVar9)})) {
       this.__backing_propVar9!.update((initializers!.propVar9 as Date));
     }
-    if (((({let gensym___125042885 = initializers;
-    (((gensym___125042885) == (null)) ? undefined : gensym___125042885.propVar10)})) !== (undefined))) {
+    if (({let gensym___211158796 = initializers;
+    (((gensym___211158796) == (null)) ? undefined : gensym___211158796.__options_has_propVar10)})) {
       this.__backing_propVar10!.update((initializers!.propVar10 as Map<number, Per>));
     }
-    if (((({let gensym___2015283 = initializers;
-    (((gensym___2015283) == (null)) ? undefined : gensym___2015283.propVar11)})) !== (undefined))) {
+    if (({let gensym___109526633 = initializers;
+    (((gensym___109526633) == (null)) ? undefined : gensym___109526633.__options_has_propVar11)})) {
       this.__backing_propVar11!.update((initializers!.propVar11 as (string | number)));
     }
-    if (((({let gensym___39009414 = initializers;
-    (((gensym___39009414) == (null)) ? undefined : gensym___39009414.propVar12)})) !== (undefined))) {
+    if (({let gensym___33495086 = initializers;
+    (((gensym___33495086) == (null)) ? undefined : gensym___33495086.__options_has_propVar12)})) {
       this.__backing_propVar12!.update((initializers!.propVar12 as (Set<string> | Per)));
     }
   }
@@ -341,72 +341,108 @@ final class PropType extends BaseEnum<int> {
   set __backing_propVar1(__backing_propVar1: (IPropRefDecoratedVariable<Per> | undefined))
   
   get __backing_propVar1(): (IPropRefDecoratedVariable<Per> | undefined)
+  set __options_has_propVar1(__options_has_propVar1: (boolean | undefined))
+  
+  get __options_has_propVar1(): (boolean | undefined)
   set propVar2(propVar2: (Array<number> | undefined))
   
   get propVar2(): (Array<number> | undefined)
   set __backing_propVar2(__backing_propVar2: (IPropRefDecoratedVariable<Array<number>> | undefined))
   
   get __backing_propVar2(): (IPropRefDecoratedVariable<Array<number>> | undefined)
+  set __options_has_propVar2(__options_has_propVar2: (boolean | undefined))
+  
+  get __options_has_propVar2(): (boolean | undefined)
   set propVar3(propVar3: (PropType | undefined))
   
   get propVar3(): (PropType | undefined)
   set __backing_propVar3(__backing_propVar3: (IPropRefDecoratedVariable<PropType> | undefined))
   
   get __backing_propVar3(): (IPropRefDecoratedVariable<PropType> | undefined)
+  set __options_has_propVar3(__options_has_propVar3: (boolean | undefined))
+  
+  get __options_has_propVar3(): (boolean | undefined)
   set propVar4(propVar4: (Set<string> | undefined))
   
   get propVar4(): (Set<string> | undefined)
   set __backing_propVar4(__backing_propVar4: (IPropRefDecoratedVariable<Set<string>> | undefined))
   
   get __backing_propVar4(): (IPropRefDecoratedVariable<Set<string>> | undefined)
+  set __options_has_propVar4(__options_has_propVar4: (boolean | undefined))
+  
+  get __options_has_propVar4(): (boolean | undefined)
   set propVar5(propVar5: (Array<boolean> | undefined))
   
   get propVar5(): (Array<boolean> | undefined)
   set __backing_propVar5(__backing_propVar5: (IPropRefDecoratedVariable<Array<boolean>> | undefined))
   
   get __backing_propVar5(): (IPropRefDecoratedVariable<Array<boolean>> | undefined)
+  set __options_has_propVar5(__options_has_propVar5: (boolean | undefined))
+  
+  get __options_has_propVar5(): (boolean | undefined)
   set propVar6(propVar6: (Array<Per> | undefined))
   
   get propVar6(): (Array<Per> | undefined)
   set __backing_propVar6(__backing_propVar6: (IPropRefDecoratedVariable<Array<Per>> | undefined))
   
   get __backing_propVar6(): (IPropRefDecoratedVariable<Array<Per>> | undefined)
+  set __options_has_propVar6(__options_has_propVar6: (boolean | undefined))
+  
+  get __options_has_propVar6(): (boolean | undefined)
   set propVar7(propVar7: (Array<Per> | undefined))
   
   get propVar7(): (Array<Per> | undefined)
   set __backing_propVar7(__backing_propVar7: (IPropRefDecoratedVariable<Array<Per>> | undefined))
   
   get __backing_propVar7(): (IPropRefDecoratedVariable<Array<Per>> | undefined)
+  set __options_has_propVar7(__options_has_propVar7: (boolean | undefined))
+  
+  get __options_has_propVar7(): (boolean | undefined)
   set propVar8(propVar8: (((sr: string)=> void) | undefined))
   
   get propVar8(): (((sr: string)=> void) | undefined)
   set __backing_propVar8(__backing_propVar8: (IPropRefDecoratedVariable<((sr: string)=> void)> | undefined))
   
   get __backing_propVar8(): (IPropRefDecoratedVariable<((sr: string)=> void)> | undefined)
+  set __options_has_propVar8(__options_has_propVar8: (boolean | undefined))
+  
+  get __options_has_propVar8(): (boolean | undefined)
   set propVar9(propVar9: (Date | undefined))
   
   get propVar9(): (Date | undefined)
   set __backing_propVar9(__backing_propVar9: (IPropRefDecoratedVariable<Date> | undefined))
   
   get __backing_propVar9(): (IPropRefDecoratedVariable<Date> | undefined)
+  set __options_has_propVar9(__options_has_propVar9: (boolean | undefined))
+  
+  get __options_has_propVar9(): (boolean | undefined)
   set propVar10(propVar10: (Map<number, Per> | undefined))
   
   get propVar10(): (Map<number, Per> | undefined)
   set __backing_propVar10(__backing_propVar10: (IPropRefDecoratedVariable<Map<number, Per>> | undefined))
   
   get __backing_propVar10(): (IPropRefDecoratedVariable<Map<number, Per>> | undefined)
+  set __options_has_propVar10(__options_has_propVar10: (boolean | undefined))
+  
+  get __options_has_propVar10(): (boolean | undefined)
   set propVar11(propVar11: ((string | number) | undefined))
   
   get propVar11(): ((string | number) | undefined)
   set __backing_propVar11(__backing_propVar11: (IPropRefDecoratedVariable<(string | number)> | undefined))
   
   get __backing_propVar11(): (IPropRefDecoratedVariable<(string | number)> | undefined)
+  set __options_has_propVar11(__options_has_propVar11: (boolean | undefined))
+  
+  get __options_has_propVar11(): (boolean | undefined)
   set propVar12(propVar12: ((Set<string> | Per) | undefined))
   
   get propVar12(): ((Set<string> | Per) | undefined)
   set __backing_propVar12(__backing_propVar12: (IPropRefDecoratedVariable<(Set<string> | Per)> | undefined))
   
   get __backing_propVar12(): (IPropRefDecoratedVariable<(Set<string> | Per)> | undefined)
+  set __options_has_propVar12(__options_has_propVar12: (boolean | undefined))
+  
+  get __options_has_propVar12(): (boolean | undefined)
   
 }
 `;

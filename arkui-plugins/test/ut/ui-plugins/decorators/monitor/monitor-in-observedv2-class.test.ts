@@ -266,6 +266,9 @@ function main() {}
   set info(info: (Info | undefined))
   
   get info(): (Info | undefined)
+  set __options_has_info(__options_has_info: (boolean | undefined))
+  
+  get __options_has_info(): (boolean | undefined)
   
 }
 `;
