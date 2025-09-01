@@ -225,7 +225,7 @@ function setStartupPagesForObf(projectConfig) {
     const startupFileName = `${moduleJson.module.appStartup.replace(/\$profile\:/, '')}.json`;
     const startupFilePath = path.resolve(projectConfig.aceProfilePath, startupFileName);
     const startupConfig = readJsonFile(startupFilePath);
-    if (startupConfig) {
+    if (!startupConfig) {
       return;
     }
     setEntryArrayForObf(startupConfig.configEntry);
