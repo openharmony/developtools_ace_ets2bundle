@@ -14,7 +14,11 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { BuilderLambdaNames, inferTypeFromValue } from '../utils';
+import {
+    BuilderLambdaNames,
+    inferTypeFromValue,
+    optionsHasField,
+} from '../utils';
 import {
     backingField,
     filterDefined,
@@ -22,6 +26,7 @@ import {
     removeAnnotationByName,
     forEachArgWithParam,
     annotation,
+    collect,
 } from '../../common/arkts-utils';
 import {
     BuilderLambdaDeclInfo,
@@ -53,6 +58,7 @@ import {
     ComponentRecord,
     getTransformedComponentName,
     flatObjectExpressionToEntries,
+    OptionsPropertyInfo,
 } from './utils';
 import { hasDecorator, isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
 import { BuilderFactory } from './builder-factory';
@@ -373,7 +379,10 @@ export class factory {
     /**
      * transform options argument in a builder lambda call.
      */
-    static processOptionsArg<T extends arkts.TSAsExpression | arkts.ObjectExpression>(arg: T): T {
+    static processOptionsArg<T extends arkts.TSAsExpression | arkts.ObjectExpression>(
+        arg: T,
+        declInfo?: BuilderLambdaDeclInfo
+    ): T {
         let expr: arkts.ObjectExpression | undefined;
         if (arkts.isTSAsExpression(arg) && !!arg.expr && arkts.isObjectExpression(arg.expr)) {
             expr = arg.expr;
@@ -389,12 +398,12 @@ export class factory {
                 property = BuilderFactory.rewriteBuilderProperty(currNode);
                 return property;
             });
-            return factory.updatePropertiesInOptions(property);
+            return factory.updatePropertiesInOptions(property, declInfo);
         });
         const updatedExpr: arkts.ObjectExpression = arkts.ObjectExpression.updateObjectExpression(
             expr,
             arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
-            properties,
+            collect(...properties),
             false
         );
         if (arkts.isTSAsExpression(arg)) {
@@ -403,37 +412,60 @@ export class factory {
         return updatedExpr as T;
     }
 
-    static updatePropertiesInOptions(prop: arkts.Property): arkts.Property {
-        let decl: arkts.AstNode | undefined;
-        if (!prop.key || !prop.value || !(decl = arkts.getDecl(prop.key)) || !arkts.isMethodDefinition(decl)) {
-            return prop;
+    static updatePropertiesInOptions(prop: arkts.Property, declInfo?: BuilderLambdaDeclInfo): arkts.Property[] {
+        const key: arkts.AstNode | undefined = prop.key;
+        const value: arkts.Expression | undefined = prop.value;
+        if (!key || !arkts.isIdentifier(key) || !value) {
+            return [prop];
+        }
+        const propertyDecl: arkts.AstNode | undefined = arkts.getDecl(key);
+        if (!propertyDecl || !arkts.isMethodDefinition(propertyDecl)) {
+            return [prop];
         }
         let isBuilderParam: boolean = false;
         let isLinkIntrinsic: boolean = false;
-        decl.scriptFunction.annotations.forEach((anno) => {
+        propertyDecl.scriptFunction.annotations.forEach((anno) => {
             isBuilderParam ||= isDecoratorAnnotation(anno, DecoratorNames.BUILDER_PARAM);
             isLinkIntrinsic ||= isDecoratorIntrinsicAnnotation(anno, DecoratorIntrinsicNames.LINK);
         });
+        return factory.updateSpecificProperties(prop, key, value, { isBuilderParam, isLinkIntrinsic }, declInfo);
+    }
 
-        if (isDoubleDollarCall(prop.value)) {
-            return factory.updateBindableProperty(prop);
-        } else if (isBuilderParam && arkts.isArrowFunctionExpression(prop.value)) {
-            addMemoAnnotation(prop.value);
-            return prop;
+    static updateSpecificProperties(
+        prop: arkts.Property,
+        key: arkts.Identifier,
+        value: arkts.Expression,
+        propertyInfo: OptionsPropertyInfo,
+        declInfo?: BuilderLambdaDeclInfo
+    ): arkts.Property[] {
+        const keyName: string = key.name;
+        let newProperty: arkts.Property = prop;
+        if (isDoubleDollarCall(value)) {
+            newProperty = factory.updateBindableProperty(prop);
+        } else if (propertyInfo.isBuilderParam && arkts.isArrowFunctionExpression(value)) {
+            addMemoAnnotation(value);
+            newProperty = prop;
         } else if (
-            isLinkIntrinsic &&
-            arkts.isIdentifier(prop.key) &&
-            arkts.isMemberExpression(prop.value) &&
-            arkts.isThisExpression(prop.value.object) &&
-            arkts.isIdentifier(prop.value.property)
+            propertyInfo.isLinkIntrinsic &&
+            arkts.isMemberExpression(value) &&
+            arkts.isThisExpression(value.object) &&
+            arkts.isIdentifier(value.property)
         ) {
-            return arkts.Property.updateProperty(
+            newProperty = arkts.factory.updateProperty(
                 prop,
-                arkts.factory.createIdentifier(backingField(prop.key.name)),
-                factory.updateBackingMember(prop.value, prop.value.property.name)
+                arkts.factory.createIdentifier(backingField(keyName)),
+                factory.updateBackingMember(value, value.property.name)
             );
         }
-        return prop;
+        return declInfo?.isFunctionCall
+            ? [newProperty]
+            : [
+                  newProperty,
+                  arkts.factory.createProperty(
+                      arkts.factory.createIdentifier(optionsHasField(keyName)),
+                      arkts.factory.createBooleanLiteral(true)
+                  ),
+              ];
     }
 
     /**
@@ -443,7 +475,8 @@ export class factory {
     static createOrUpdateArgInBuilderLambda(
         fallback: arkts.AstNode | undefined,
         arg: arkts.Expression | undefined,
-        canAddMemo?: boolean
+        canAddMemo?: boolean,
+        declInfo?: BuilderLambdaDeclInfo
     ): arkts.AstNode | undefined {
         if (!arg) {
             return fallback;
@@ -457,7 +490,7 @@ export class factory {
         }
         // this is too optimistic to check if this is an options argument...
         if (arkts.isTSAsExpression(arg) || arkts.isObjectExpression(arg)) {
-            return this.processOptionsArg(arg);
+            return this.processOptionsArg(arg, declInfo);
         }
         return arg;
     }
@@ -500,7 +533,7 @@ export class factory {
                     const memoableInfo = collectMemoableInfoInParameter(param);
                     const canAddMemo = checkIsMemoFromMemoableInfo(memoableInfo, false);
                     const fallback = arkts.factory.createUndefinedLiteral();
-                    modifiedArg = this.createOrUpdateArgInBuilderLambda(fallback, arg, canAddMemo);
+                    modifiedArg = this.createOrUpdateArgInBuilderLambda(fallback, arg, canAddMemo, declInfo);
                 }
                 const shouldInsertToArgs = !isFunctionCall || (index === params.length - 1 && hasLastTrailingLambda);
                 if (shouldInsertToArgs) {

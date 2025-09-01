@@ -21,6 +21,7 @@ import {
     CustomDialogNames,
     hasNullOrUndefinedType,
     hasPropertyInAnnotation,
+    optionsHasField,
 } from './utils';
 import { PartialExcept, PartialNested, PartialNestedExcept } from '../common/safe-types';
 import { ArkTsDefaultNames, DecoratorNames } from '../common/predefines';
@@ -494,5 +495,20 @@ export class factory {
                 })
             )
         );
+    }
+
+    /**
+     * create `__Options_has_<name>` class property.
+     */
+    static createOptionsHasMember(name: string): arkts.ClassProperty {
+        const optionsHasMember: arkts.ClassProperty = arkts.factory.createClassProperty(
+            arkts.factory.createIdentifier(optionsHasField(name)),
+            undefined,
+            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_BOOLEAN),
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            false
+        );
+        arkts.classPropertySetOptional(optionsHasMember, true);
+        return optionsHasMember;
     }
 }
