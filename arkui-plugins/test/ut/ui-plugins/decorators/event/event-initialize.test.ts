@@ -90,15 +90,20 @@ import { Event as Event, Param as Param, Local as Local } from "@ohos.arkui.stat
 @ComponentV2() export interface __Options_Child {
   index?: number;
   @Param() __backing_index?: number;
+  __options_has_index?: boolean;
   changeIndex?: ((val: number)=> void);
+  __options_has_changeIndex?: boolean;
   testEvent?: ((val: number)=> number);
+  __options_has_testEvent?: boolean;
   testEvent2?: ((val: number)=> number);
+  __options_has_testEvent2?: boolean;
   
 }
 
 @ComponentV2() export interface __Options_Index {
   index?: number;
   @Local() __backing_index?: number;
+  __options_has_index?: boolean;
   
 }
 `;
@@ -143,8 +148,8 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {
-    if (((({let gensym___91647805 = initializers;
-    (((gensym___91647805) == (null)) ? undefined : gensym___91647805.index)})) !== (undefined))) {
+    if (({let gensym___90897897 = initializers;
+    (((gensym___90897897) == (null)) ? undefined : gensym___90897897.__options_has_index)})) {
       this.__backing_index!.update((initializers!.index as number));
     }
   }
@@ -230,10 +235,12 @@ function main() {}
         return new Child();
       }), {
         index: this.index,
+        __options_has_index: true,
         changeIndex: ((val: number) => {
           this.index = val;
           console.log(\`in changeIndex \${this.index}\`);
         }),
+        __options_has_changeIndex: true,
       }, undefined, undefined);
     }));
   }
@@ -249,15 +256,27 @@ function main() {}
   set __backing_index(__backing_index: (IParamDecoratedVariable<number> | undefined))
   
   get __backing_index(): (IParamDecoratedVariable<number> | undefined)
+  set __options_has_index(__options_has_index: (boolean | undefined))
+  
+  get __options_has_index(): (boolean | undefined)
   set changeIndex(changeIndex: (((val: number)=> void) | undefined))
   
   get changeIndex(): (((val: number)=> void) | undefined)
+  set __options_has_changeIndex(__options_has_changeIndex: (boolean | undefined))
+  
+  get __options_has_changeIndex(): (boolean | undefined)
   set testEvent(testEvent: (((val: number)=> number) | undefined))
   
   get testEvent(): (((val: number)=> number) | undefined)
+  set __options_has_testEvent(__options_has_testEvent: (boolean | undefined))
+  
+  get __options_has_testEvent(): (boolean | undefined)
   set testEvent2(testEvent2: (((val: number)=> number) | undefined))
   
   get testEvent2(): (((val: number)=> number) | undefined)
+  set __options_has_testEvent2(__options_has_testEvent2: (boolean | undefined))
+  
+  get __options_has_testEvent2(): (boolean | undefined)
   
 }
 
@@ -268,6 +287,9 @@ function main() {}
   set __backing_index(__backing_index: (ILocalDecoratedVariable<number> | undefined))
   
   get __backing_index(): (ILocalDecoratedVariable<number> | undefined)
+  set __options_has_index(__options_has_index: (boolean | undefined))
+  
+  get __options_has_index(): (boolean | undefined)
   
 }
 `;

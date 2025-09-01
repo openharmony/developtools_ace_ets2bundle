@@ -52,8 +52,6 @@ import { Param as Param } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-
-
 class Per {
   public num: number;
   
@@ -160,52 +158,52 @@ final class StateType extends BaseEnum<int> {
   }
   
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {
-    if (((({let gensym___99629634 = initializers;
-    (((gensym___99629634) == (null)) ? undefined : gensym___99629634.paramVar1)})) !== (undefined))) {
+    if (({let gensym___160055409 = initializers;
+    (((gensym___160055409) == (null)) ? undefined : gensym___160055409.__options_has_paramVar1)})) {
       this.__backing_paramVar1!.update((initializers!.paramVar1 as Per));
     }
-    if (((({let gensym___68516859 = initializers;
-    (((gensym___68516859) == (null)) ? undefined : gensym___68516859.paramVar2)})) !== (undefined))) {
+    if (({let gensym___2437677 = initializers;
+    (((gensym___2437677) == (null)) ? undefined : gensym___2437677.__options_has_paramVar2)})) {
       this.__backing_paramVar2!.update((initializers!.paramVar2 as Array<number>));
     }
-    if (((({let gensym___96937083 = initializers;
-    (((gensym___96937083) == (null)) ? undefined : gensym___96937083.paramVar3)})) !== (undefined))) {
+    if (({let gensym___113817398 = initializers;
+    (((gensym___113817398) == (null)) ? undefined : gensym___113817398.__options_has_paramVar3)})) {
       this.__backing_paramVar3!.update((initializers!.paramVar3 as StateType));
     }
-    if (((({let gensym___151087626 = initializers;
-    (((gensym___151087626) == (null)) ? undefined : gensym___151087626.paramVar4)})) !== (undefined))) {
+    if (({let gensym___69812855 = initializers;
+    (((gensym___69812855) == (null)) ? undefined : gensym___69812855.__options_has_paramVar4)})) {
       this.__backing_paramVar4!.update((initializers!.paramVar4 as Set<string>));
     }
-    if (((({let gensym___127163363 = initializers;
-    (((gensym___127163363) == (null)) ? undefined : gensym___127163363.paramVar5)})) !== (undefined))) {
+    if (({let gensym___184913887 = initializers;
+    (((gensym___184913887) == (null)) ? undefined : gensym___184913887.__options_has_paramVar5)})) {
       this.__backing_paramVar5!.update((initializers!.paramVar5 as Array<boolean>));
     }
-    if (((({let gensym___67758341 = initializers;
-    (((gensym___67758341) == (null)) ? undefined : gensym___67758341.paramVar6)})) !== (undefined))) {
+    if (({let gensym___22345724 = initializers;
+    (((gensym___22345724) == (null)) ? undefined : gensym___22345724.__options_has_paramVar6)})) {
       this.__backing_paramVar6!.update((initializers!.paramVar6 as Array<Per>));
     }
-    if (((({let gensym___248313276 = initializers;
-    (((gensym___248313276) == (null)) ? undefined : gensym___248313276.paramVar7)})) !== (undefined))) {
+    if (({let gensym___35909170 = initializers;
+    (((gensym___35909170) == (null)) ? undefined : gensym___35909170.__options_has_paramVar7)})) {
       this.__backing_paramVar7!.update((initializers!.paramVar7 as Array<Per>));
     }
-    if (((({let gensym___215432014 = initializers;
-    (((gensym___215432014) == (null)) ? undefined : gensym___215432014.paramVar8)})) !== (undefined))) {
+    if (({let gensym___221406315 = initializers;
+    (((gensym___221406315) == (null)) ? undefined : gensym___221406315.__options_has_paramVar8)})) {
       this.__backing_paramVar8!.update((initializers!.paramVar8 as ((sr: string)=> void)));
     }
-    if (((({let gensym___69570417 = initializers;
-    (((gensym___69570417) == (null)) ? undefined : gensym___69570417.paramVar9)})) !== (undefined))) {
+    if (({let gensym___76379892 = initializers;
+    (((gensym___76379892) == (null)) ? undefined : gensym___76379892.__options_has_paramVar9)})) {
       this.__backing_paramVar9!.update((initializers!.paramVar9 as Date));
     }
-    if (((({let gensym___121882834 = initializers;
-    (((gensym___121882834) == (null)) ? undefined : gensym___121882834.paramVar10)})) !== (undefined))) {
+    if (({let gensym___223285288 = initializers;
+    (((gensym___223285288) == (null)) ? undefined : gensym___223285288.__options_has_paramVar10)})) {
       this.__backing_paramVar10!.update((initializers!.paramVar10 as Map<number, Per>));
     }
-    if (((({let gensym___56641620 = initializers;
-    (((gensym___56641620) == (null)) ? undefined : gensym___56641620.paramVar11)})) !== (undefined))) {
+    if (({let gensym___34579549 = initializers;
+    (((gensym___34579549) == (null)) ? undefined : gensym___34579549.__options_has_paramVar11)})) {
       this.__backing_paramVar11!.update((initializers!.paramVar11 as (string | number)));
     }
-    if (((({let gensym___51325313 = initializers;
-    (((gensym___51325313) == (null)) ? undefined : gensym___51325313.paramVar12)})) !== (undefined))) {
+    if (({let gensym___181593007 = initializers;
+    (((gensym___181593007) == (null)) ? undefined : gensym___181593007.__options_has_paramVar12)})) {
       this.__backing_paramVar12!.update((initializers!.paramVar12 as (Set<string> | Per)));
     }
   }
@@ -295,72 +293,108 @@ final class StateType extends BaseEnum<int> {
   set __backing_paramVar1(__backing_paramVar1: (IParamDecoratedVariable<Per> | undefined))
   
   get __backing_paramVar1(): (IParamDecoratedVariable<Per> | undefined)
+  set __options_has_paramVar1(__options_has_paramVar1: (boolean | undefined))
+  
+  get __options_has_paramVar1(): (boolean | undefined)
   set paramVar2(paramVar2: (Array<number> | undefined))
   
   get paramVar2(): (Array<number> | undefined)
   set __backing_paramVar2(__backing_paramVar2: (IParamDecoratedVariable<Array<number>> | undefined))
   
   get __backing_paramVar2(): (IParamDecoratedVariable<Array<number>> | undefined)
+  set __options_has_paramVar2(__options_has_paramVar2: (boolean | undefined))
+  
+  get __options_has_paramVar2(): (boolean | undefined)
   set paramVar3(paramVar3: (StateType | undefined))
   
   get paramVar3(): (StateType | undefined)
   set __backing_paramVar3(__backing_paramVar3: (IParamDecoratedVariable<StateType> | undefined))
   
   get __backing_paramVar3(): (IParamDecoratedVariable<StateType> | undefined)
+  set __options_has_paramVar3(__options_has_paramVar3: (boolean | undefined))
+  
+  get __options_has_paramVar3(): (boolean | undefined)
   set paramVar4(paramVar4: (Set<string> | undefined))
   
   get paramVar4(): (Set<string> | undefined)
   set __backing_paramVar4(__backing_paramVar4: (IParamDecoratedVariable<Set<string>> | undefined))
   
   get __backing_paramVar4(): (IParamDecoratedVariable<Set<string>> | undefined)
+  set __options_has_paramVar4(__options_has_paramVar4: (boolean | undefined))
+  
+  get __options_has_paramVar4(): (boolean | undefined)
   set paramVar5(paramVar5: (Array<boolean> | undefined))
   
   get paramVar5(): (Array<boolean> | undefined)
   set __backing_paramVar5(__backing_paramVar5: (IParamDecoratedVariable<Array<boolean>> | undefined))
   
   get __backing_paramVar5(): (IParamDecoratedVariable<Array<boolean>> | undefined)
+  set __options_has_paramVar5(__options_has_paramVar5: (boolean | undefined))
+  
+  get __options_has_paramVar5(): (boolean | undefined)
   set paramVar6(paramVar6: (Array<Per> | undefined))
   
   get paramVar6(): (Array<Per> | undefined)
   set __backing_paramVar6(__backing_paramVar6: (IParamDecoratedVariable<Array<Per>> | undefined))
   
   get __backing_paramVar6(): (IParamDecoratedVariable<Array<Per>> | undefined)
+  set __options_has_paramVar6(__options_has_paramVar6: (boolean | undefined))
+  
+  get __options_has_paramVar6(): (boolean | undefined)
   set paramVar7(paramVar7: (Array<Per> | undefined))
   
   get paramVar7(): (Array<Per> | undefined)
   set __backing_paramVar7(__backing_paramVar7: (IParamDecoratedVariable<Array<Per>> | undefined))
   
   get __backing_paramVar7(): (IParamDecoratedVariable<Array<Per>> | undefined)
+  set __options_has_paramVar7(__options_has_paramVar7: (boolean | undefined))
+  
+  get __options_has_paramVar7(): (boolean | undefined)
   set paramVar8(paramVar8: (((sr: string)=> void) | undefined))
   
   get paramVar8(): (((sr: string)=> void) | undefined)
   set __backing_paramVar8(__backing_paramVar8: (IParamDecoratedVariable<((sr: string)=> void)> | undefined))
   
   get __backing_paramVar8(): (IParamDecoratedVariable<((sr: string)=> void)> | undefined)
+  set __options_has_paramVar8(__options_has_paramVar8: (boolean | undefined))
+  
+  get __options_has_paramVar8(): (boolean | undefined)
   set paramVar9(paramVar9: (Date | undefined))
   
   get paramVar9(): (Date | undefined)
   set __backing_paramVar9(__backing_paramVar9: (IParamDecoratedVariable<Date> | undefined))
   
   get __backing_paramVar9(): (IParamDecoratedVariable<Date> | undefined)
+  set __options_has_paramVar9(__options_has_paramVar9: (boolean | undefined))
+  
+  get __options_has_paramVar9(): (boolean | undefined)
   set paramVar10(paramVar10: (Map<number, Per> | undefined))
   
   get paramVar10(): (Map<number, Per> | undefined)
   set __backing_paramVar10(__backing_paramVar10: (IParamDecoratedVariable<Map<number, Per>> | undefined))
   
   get __backing_paramVar10(): (IParamDecoratedVariable<Map<number, Per>> | undefined)
+  set __options_has_paramVar10(__options_has_paramVar10: (boolean | undefined))
+  
+  get __options_has_paramVar10(): (boolean | undefined)
   set paramVar11(paramVar11: ((string | number) | undefined))
   
   get paramVar11(): ((string | number) | undefined)
   set __backing_paramVar11(__backing_paramVar11: (IParamDecoratedVariable<(string | number)> | undefined))
   
   get __backing_paramVar11(): (IParamDecoratedVariable<(string | number)> | undefined)
+  set __options_has_paramVar11(__options_has_paramVar11: (boolean | undefined))
+  
+  get __options_has_paramVar11(): (boolean | undefined)
   set paramVar12(paramVar12: ((Set<string> | Per) | undefined))
   
   get paramVar12(): ((Set<string> | Per) | undefined)
   set __backing_paramVar12(__backing_paramVar12: (IParamDecoratedVariable<(Set<string> | Per)> | undefined))
   
   get __backing_paramVar12(): (IParamDecoratedVariable<(Set<string> | Per)> | undefined)
+  set __options_has_paramVar12(__options_has_paramVar12: (boolean | undefined))
+  
+  get __options_has_paramVar12(): (boolean | undefined)
   
 }
 `;

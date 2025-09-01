@@ -131,12 +131,18 @@ class Data {
   set __backing_storageLink(__backing_storageLink: (IStorageLinkDecoratedVariable<number> | undefined))
   
   get __backing_storageLink(): (IStorageLinkDecoratedVariable<number> | undefined)
+  set __options_has_storageLink(__options_has_storageLink: (boolean | undefined))
+  
+  get __options_has_storageLink(): (boolean | undefined)
   set storageLinkObject(storageLinkObject: (Data | undefined))
   
   get storageLinkObject(): (Data | undefined)
   set __backing_storageLinkObject(__backing_storageLinkObject: (IStorageLinkDecoratedVariable<Data> | undefined))
   
   get __backing_storageLinkObject(): (IStorageLinkDecoratedVariable<Data> | undefined)
+  set __options_has_storageLinkObject(__options_has_storageLinkObject: (boolean | undefined))
+  
+  get __options_has_storageLinkObject(): (boolean | undefined)
   
 }
 

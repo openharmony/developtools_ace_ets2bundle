@@ -95,30 +95,43 @@ enum PropType {
 @Component() export interface __Options_Parent {
   conVar1?: Per;
   @Consume() __backing_conVar1?: Per;
+  __options_has_conVar1?: boolean;
   conVar2?: Array<number>;
   @Consume() __backing_conVar2?: Array<number>;
+  __options_has_conVar2?: boolean;
   conVar3?: PropType;
   @Consume() __backing_conVar3?: PropType;
+  __options_has_conVar3?: boolean;
   conVar4?: Set<string>;
   @Consume() __backing_conVar4?: Set<string>;
+  __options_has_conVar4?: boolean;
   conVar5?: boolean[];
   @Consume() __backing_conVar5?: boolean[];
+  __options_has_conVar5?: boolean;
   conVar6?: Array<Per>;
   @Consume() __backing_conVar6?: Array<Per>;
+  __options_has_conVar6?: boolean;
   conVar7?: Per[];
   @Consume() __backing_conVar7?: Per[];
+  __options_has_conVar7?: boolean;
   conVar8?: ((sr: string)=> void);
   @Consume() __backing_conVar8?: ((sr: string)=> void);
+  __options_has_conVar8?: boolean;
   conVar9?: Date;
   @Consume() __backing_conVar9?: Date;
+  __options_has_conVar9?: boolean;
   conVar10?: Map<number, Per>;
   @Consume() __backing_conVar10?: Map<number, Per>;
+  __options_has_conVar10?: boolean;
   conVar11?: (string | number);
   @Consume() __backing_conVar11?: (string | number);
+  __options_has_conVar11?: boolean;
   conVar12?: (Set<string> | Per);
   @Consume() __backing_conVar12?: (Set<string> | Per);
+  __options_has_conVar12?: boolean;
   conVar13?: (Set<string> | null);
   @Consume() __backing_conVar13?: (Set<string> | null);
+  __options_has_conVar13?: boolean;
   
 }
 `;
@@ -379,78 +392,117 @@ final class PropType extends BaseEnum<int> {
   set __backing_conVar1(__backing_conVar1: (IConsumeDecoratedVariable<Per> | undefined))
   
   get __backing_conVar1(): (IConsumeDecoratedVariable<Per> | undefined)
+  set __options_has_conVar1(__options_has_conVar1: (boolean | undefined))
+  
+  get __options_has_conVar1(): (boolean | undefined)
   set conVar2(conVar2: (Array<number> | undefined))
   
   get conVar2(): (Array<number> | undefined)
   set __backing_conVar2(__backing_conVar2: (IConsumeDecoratedVariable<Array<number>> | undefined))
   
   get __backing_conVar2(): (IConsumeDecoratedVariable<Array<number>> | undefined)
+  set __options_has_conVar2(__options_has_conVar2: (boolean | undefined))
+  
+  get __options_has_conVar2(): (boolean | undefined)
   set conVar3(conVar3: (PropType | undefined))
   
   get conVar3(): (PropType | undefined)
   set __backing_conVar3(__backing_conVar3: (IConsumeDecoratedVariable<PropType> | undefined))
   
   get __backing_conVar3(): (IConsumeDecoratedVariable<PropType> | undefined)
+  set __options_has_conVar3(__options_has_conVar3: (boolean | undefined))
+  
+  get __options_has_conVar3(): (boolean | undefined)
   set conVar4(conVar4: (Set<string> | undefined))
   
   get conVar4(): (Set<string> | undefined)
   set __backing_conVar4(__backing_conVar4: (IConsumeDecoratedVariable<Set<string>> | undefined))
   
   get __backing_conVar4(): (IConsumeDecoratedVariable<Set<string>> | undefined)
+  set __options_has_conVar4(__options_has_conVar4: (boolean | undefined))
+  
+  get __options_has_conVar4(): (boolean | undefined)
   set conVar5(conVar5: (Array<boolean> | undefined))
   
   get conVar5(): (Array<boolean> | undefined)
   set __backing_conVar5(__backing_conVar5: (IConsumeDecoratedVariable<Array<boolean>> | undefined))
   
   get __backing_conVar5(): (IConsumeDecoratedVariable<Array<boolean>> | undefined)
+  set __options_has_conVar5(__options_has_conVar5: (boolean | undefined))
+  
+  get __options_has_conVar5(): (boolean | undefined)
   set conVar6(conVar6: (Array<Per> | undefined))
   
   get conVar6(): (Array<Per> | undefined)
   set __backing_conVar6(__backing_conVar6: (IConsumeDecoratedVariable<Array<Per>> | undefined))
   
   get __backing_conVar6(): (IConsumeDecoratedVariable<Array<Per>> | undefined)
+  set __options_has_conVar6(__options_has_conVar6: (boolean | undefined))
+  
+  get __options_has_conVar6(): (boolean | undefined)
   set conVar7(conVar7: (Array<Per> | undefined))
   
   get conVar7(): (Array<Per> | undefined)
   set __backing_conVar7(__backing_conVar7: (IConsumeDecoratedVariable<Array<Per>> | undefined))
   
   get __backing_conVar7(): (IConsumeDecoratedVariable<Array<Per>> | undefined)
+  set __options_has_conVar7(__options_has_conVar7: (boolean | undefined))
+  
+  get __options_has_conVar7(): (boolean | undefined)
   set conVar8(conVar8: (((sr: string)=> void) | undefined))
   
   get conVar8(): (((sr: string)=> void) | undefined)
   set __backing_conVar8(__backing_conVar8: (IConsumeDecoratedVariable<((sr: string)=> void)> | undefined))
   
   get __backing_conVar8(): (IConsumeDecoratedVariable<((sr: string)=> void)> | undefined)
+  set __options_has_conVar8(__options_has_conVar8: (boolean | undefined))
+  
+  get __options_has_conVar8(): (boolean | undefined)
   set conVar9(conVar9: (Date | undefined))
   
   get conVar9(): (Date | undefined)
   set __backing_conVar9(__backing_conVar9: (IConsumeDecoratedVariable<Date> | undefined))
   
   get __backing_conVar9(): (IConsumeDecoratedVariable<Date> | undefined)
+  set __options_has_conVar9(__options_has_conVar9: (boolean | undefined))
+  
+  get __options_has_conVar9(): (boolean | undefined)
   set conVar10(conVar10: (Map<number, Per> | undefined))
   
   get conVar10(): (Map<number, Per> | undefined)
   set __backing_conVar10(__backing_conVar10: (IConsumeDecoratedVariable<Map<number, Per>> | undefined))
   
   get __backing_conVar10(): (IConsumeDecoratedVariable<Map<number, Per>> | undefined)
+  set __options_has_conVar10(__options_has_conVar10: (boolean | undefined))
+  
+  get __options_has_conVar10(): (boolean | undefined)
   set conVar11(conVar11: ((string | number) | undefined))
   
   get conVar11(): ((string | number) | undefined)
   set __backing_conVar11(__backing_conVar11: (IConsumeDecoratedVariable<(string | number)> | undefined))
   
   get __backing_conVar11(): (IConsumeDecoratedVariable<(string | number)> | undefined)
+  set __options_has_conVar11(__options_has_conVar11: (boolean | undefined))
+  
+  get __options_has_conVar11(): (boolean | undefined)
   set conVar12(conVar12: ((Set<string> | Per) | undefined))
   
   get conVar12(): ((Set<string> | Per) | undefined)
   set __backing_conVar12(__backing_conVar12: (IConsumeDecoratedVariable<(Set<string> | Per)> | undefined))
   
   get __backing_conVar12(): (IConsumeDecoratedVariable<(Set<string> | Per)> | undefined)
+  set __options_has_conVar12(__options_has_conVar12: (boolean | undefined))
+  
+  get __options_has_conVar12(): (boolean | undefined)
   set conVar13(conVar13: ((Set<string> | null) | undefined))
   
   get conVar13(): ((Set<string> | null) | undefined)
   set __backing_conVar13(__backing_conVar13: (IConsumeDecoratedVariable<(Set<string> | null)> | undefined))
   
   get __backing_conVar13(): (IConsumeDecoratedVariable<(Set<string> | null)> | undefined)
+  set __options_has_conVar13(__options_has_conVar13: (boolean | undefined))
+  
+  get __options_has_conVar13(): (boolean | undefined)
   
 }
 `;

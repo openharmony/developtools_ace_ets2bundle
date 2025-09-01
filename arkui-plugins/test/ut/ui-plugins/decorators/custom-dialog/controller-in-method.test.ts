@@ -42,7 +42,6 @@ import { memo as memo } from "arkui.stateManagement.runtime";
 import { BaseCustomDialog as BaseCustomDialog } from "arkui.component.customComponent";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, CustomDialog as CustomDialog, CustomDialogController as CustomDialogController } from "@ohos.arkui.component";
-import hilog from "@ohos.hilog";
 
 function main() {}
 
@@ -70,7 +69,7 @@ function main() {}
   @memo() public build() {}
   
   public constructor() {}
-    
+  
   public __setDialogController__(controller: CustomDialogController): void {
     this.__backing_aaController = controller;
   }
@@ -148,6 +147,9 @@ function main() {}
   set aaController(aaController: ((CustomDialogController | undefined) | undefined))
   
   get aaController(): ((CustomDialogController | undefined) | undefined)
+  set __options_has_aaController(__options_has_aaController: (boolean | undefined))
+  
+  get __options_has_aaController(): (boolean | undefined)
   
 }
 
@@ -155,6 +157,9 @@ function main() {}
   set dialogController(dialogController: ((CustomDialogController | null) | undefined))
   
   get dialogController(): ((CustomDialogController | null) | undefined)
+  set __options_has_dialogController(__options_has_dialogController: (boolean | undefined))
+  
+  get __options_has_dialogController(): (boolean | undefined)
   
 }
 `;

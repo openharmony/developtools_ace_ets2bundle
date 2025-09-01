@@ -96,7 +96,7 @@ class Tmp {
       return;
     }), @memo() (() => {
       showTextBuilder();
-      overBuilder(makeBuilderParameterProxy<Tmp>({}, new Map<string, (()=> Any)>([["paramA1", (() => {
+      overBuilder(makeBuilderParameterProxy<Tmp>({}, new Map<string, (()=> Any)>([["paramA1", ((): Any => {
         return "Hello";
       })]]), ((gensym___<some_random_number>: Tmp) => {
         gensym___<some_random_number>.paramA1 = "Hello";

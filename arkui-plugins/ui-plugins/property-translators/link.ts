@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
 import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
-import { CustomComponentNames } from '../utils';
+import { CustomComponentNames, optionsHasField } from '../utils';
 import {
     generateToRecord,
     createGetter,
@@ -53,7 +53,7 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
     generateInitializeStruct(newName: string, originalName: string) {
         const test = factory.createBlockStatementForOptionalExpression(
             arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-            newName
+            optionsHasField(originalName)
         );
 
         const args: arkts.Expression[] = [

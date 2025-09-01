@@ -44,7 +44,6 @@ import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.st
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component } from "@ohos.arkui.component";
@@ -168,48 +167,72 @@ function main() {}
   set __backing_count(__backing_count: (IProvideDecoratedVariable<(string | undefined)> | undefined))
   
   get __backing_count(): (IProvideDecoratedVariable<(string | undefined)> | undefined)
+  set __options_has_count(__options_has_count: (boolean | undefined))
+  
+  get __options_has_count(): (boolean | undefined)
   set count1(count1: ((string | undefined) | undefined))
   
   get count1(): ((string | undefined) | undefined)
   set __backing_count1(__backing_count1: (IProvideDecoratedVariable<(string | undefined)> | undefined))
   
   get __backing_count1(): (IProvideDecoratedVariable<(string | undefined)> | undefined)
+  set __options_has_count1(__options_has_count1: (boolean | undefined))
+  
+  get __options_has_count1(): (boolean | undefined)
   set count2(count2: ((string | undefined) | undefined))
   
   get count2(): ((string | undefined) | undefined)
   set __backing_count2(__backing_count2: (IProvideDecoratedVariable<(string | undefined)> | undefined))
   
   get __backing_count2(): (IProvideDecoratedVariable<(string | undefined)> | undefined)
+  set __options_has_count2(__options_has_count2: (boolean | undefined))
+  
+  get __options_has_count2(): (boolean | undefined)
   set count3(count3: ((string | undefined) | undefined))
   
   get count3(): ((string | undefined) | undefined)
   set __backing_count3(__backing_count3: (IProvideDecoratedVariable<(string | undefined)> | undefined))
   
   get __backing_count3(): (IProvideDecoratedVariable<(string | undefined)> | undefined)
+  set __options_has_count3(__options_has_count3: (boolean | undefined))
+  
+  get __options_has_count3(): (boolean | undefined)
   set count4(count4: ((string | undefined) | undefined))
   
   get count4(): ((string | undefined) | undefined)
   set __backing_count4(__backing_count4: (IProvideDecoratedVariable<(string | undefined)> | undefined))
   
   get __backing_count4(): (IProvideDecoratedVariable<(string | undefined)> | undefined)
+  set __options_has_count4(__options_has_count4: (boolean | undefined))
+  
+  get __options_has_count4(): (boolean | undefined)
   set count5(count5: ((string | undefined) | undefined))
   
   get count5(): ((string | undefined) | undefined)
   set __backing_count5(__backing_count5: (IProvideDecoratedVariable<(string | undefined)> | undefined))
   
   get __backing_count5(): (IProvideDecoratedVariable<(string | undefined)> | undefined)
+  set __options_has_count5(__options_has_count5: (boolean | undefined))
+  
+  get __options_has_count5(): (boolean | undefined)
   set count6(count6: ((string | undefined) | undefined))
   
   get count6(): ((string | undefined) | undefined)
   set __backing_count6(__backing_count6: (IProvideDecoratedVariable<(string | undefined)> | undefined))
   
   get __backing_count6(): (IProvideDecoratedVariable<(string | undefined)> | undefined)
+  set __options_has_count6(__options_has_count6: (boolean | undefined))
+  
+  get __options_has_count6(): (boolean | undefined)
   set count7(count7: ((string | undefined) | undefined))
   
   get count7(): ((string | undefined) | undefined)
   set __backing_count7(__backing_count7: (IProvideDecoratedVariable<(string | undefined)> | undefined))
   
   get __backing_count7(): (IProvideDecoratedVariable<(string | undefined)> | undefined)
+  set __options_has_count7(__options_has_count7: (boolean | undefined))
+  
+  get __options_has_count7(): (boolean | undefined)
   
 }
 `;

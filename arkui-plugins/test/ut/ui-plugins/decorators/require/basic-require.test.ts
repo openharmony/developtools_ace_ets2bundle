@@ -41,18 +41,27 @@ const expectedParsedScript: string = `
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, ComponentV2 as ComponentV2, BuilderParam as BuilderParam } from "@ohos.arkui.component";
-import { State as State, Require as Require, Prop as Prop, Provide as Provide, Param as Param } from "@ohos.arkui.stateManagement";
+import { State as State, Require as Require, PropRef as PropRef, Provide as Provide, Param as Param } from "@ohos.arkui.stateManagement";
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public hello: string = "hello";
+  
   @State() public state1: boolean = false;
+  
   @Require() public select100!: string;
+  
   @Require() @State() public select0!: number;
+  
   @Require() @State() public select3?: (number | null);
+  
   @Require() @State() public select4?: undefined;
-  @Require() @Prop() public select1!: string;
+  
+  @Require() @PropRef() public select1!: string;
+  
   @Require() @Provide({alias:"15"}) public select2!: string[];
+  
   @Require() @Provide({alias:"t"}) public select6?: (string[] | undefined | string);
+  
   @Require() @BuilderParam() public builder!: (()=> void);
   
   public build() {}
@@ -72,28 +81,39 @@ import { State as State, Require as Require, Prop as Prop, Provide as Provide, P
 
 @Component() export interface __Options_MyStateSample {
   hello?: string;
+  __options_has_hello?: boolean;
   state1?: boolean;
   @State() __backing_state1?: boolean;
+  __options_has_state1?: boolean;
   select100?: string;
+  __options_has_select100?: boolean;
   select0?: number;
   @Require() @State() __backing_select0?: number;
+  __options_has_select0?: boolean;
   select3?: (number | null);
   @Require() @State() __backing_select3?: (number | null);
+  __options_has_select3?: boolean;
   select4?: undefined;
   @Require() @State() __backing_select4?: undefined;
+  __options_has_select4?: boolean;
   select1?: string;
-  @Require() @Prop() __backing_select1?: string;
+  @Require() @PropRef() __backing_select1?: string;
+  __options_has_select1?: boolean;
   select2?: string[];
   @Require() @Provide({alias:"15"}) __backing_select2?: string[];
+  __options_has_select2?: boolean;
   select6?: (string[] | undefined | string);
   @Require() @Provide({alias:"t"}) __backing_select6?: (string[] | undefined | string);
+  __options_has_select6?: boolean;
   @BuilderParam() builder?: (()=> void);
+  __options_has_builder?: boolean;
   
 }
 
 @ComponentV2() export interface __Options_V2222 {
   select1?: string;
   @Require() @Param() __backing_select1?: string;
+  __options_has_select1?: boolean;
   
 }
 `;
@@ -101,14 +121,14 @@ import { State as State, Require as Require, Prop as Prop, Provide as Provide, P
 const expectedCheckedScript: string = `
 import { IParamDecoratedVariable as IParamDecoratedVariable } from "arkui.stateManagement.decorator";
 import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.stateManagement.decorator";
-import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
+import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, ComponentV2 as ComponentV2, BuilderParam as BuilderParam } from "@ohos.arkui.component";
-import { State as State, Require as Require, Prop as Prop, Provide as Provide, Param as Param } from "@ohos.arkui.stateManagement";
+import { State as State, Require as Require, PropRef as PropRef, Provide as Provide, Param as Param } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
@@ -123,16 +143,16 @@ function main() {}
     this.__backing_select0 = STATE_MGMT_FACTORY.makeState<number>(this, "select0", (initializers!.select0 as number));
     this.__backing_select3 = STATE_MGMT_FACTORY.makeState<(number | null)>(this, "select3", (initializers!.select3 as (number | null)));
     this.__backing_select4 = STATE_MGMT_FACTORY.makeState<undefined>(this, "select4", (initializers!.select4 as undefined));
-    this.__backing_select1 = STATE_MGMT_FACTORY.makeProp<string>(this, "select1", (initializers!.select1 as string));
+    this.__backing_select1 = STATE_MGMT_FACTORY.makePropRef<string>(this, "select1", (initializers!.select1 as string));
     this.__backing_select2 = STATE_MGMT_FACTORY.makeProvide<Array<string>>(this, "select2", "15", (initializers!.select2 as Array<string>), false);
     this.__backing_select6 = STATE_MGMT_FACTORY.makeProvide<(Array<string> | undefined | string)>(this, "select6", "t", (initializers!.select6 as (Array<string> | undefined | string)), false);
-    this.__backing_builder = ((((({let gensym___57081607 = initializers;
-    (((gensym___57081607) == (null)) ? undefined : gensym___57081607.builder)})) ?? (content))) ?? (undefined))
+    this.__backing_builder = ((((({let gensym___63603867 = initializers;
+    (((gensym___63603867) == (null)) ? undefined : gensym___63603867.builder)})) ?? (content))) ?? (undefined))
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {
-    if (((({let gensym___171969630 = initializers;
-    (((gensym___171969630) == (null)) ? undefined : gensym___171969630.select1)})) !== (undefined))) {
+    if (({let gensym___77985515 = initializers;
+    (((gensym___77985515) == (null)) ? undefined : gensym___77985515.__options_has_select1)})) {
       this.__backing_select1!.update((initializers!.select1 as string));
     }
   }
@@ -197,7 +217,7 @@ function main() {}
     this.__backing_select4!.set(value);
   }
   
-  private __backing_select1?: IPropDecoratedVariable<string>;
+  private __backing_select1?: IPropRefDecoratedVariable<string>;
   
   public get select1(): string {
     return this.__backing_select1!.get();
@@ -249,8 +269,8 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_V2222 | undefined)): void {
-    if (((({let gensym___155019449 = initializers;
-    (((gensym___155019449) == (null)) ? undefined : gensym___155019449.select1)})) !== (undefined))) {
+    if (({let gensym___8595130 = initializers;
+    (((gensym___8595130) == (null)) ? undefined : gensym___8595130.__options_has_select1)})) {
       this.__backing_select1!.update((initializers!.select1 as string));
     }
   }
@@ -271,54 +291,84 @@ function main() {}
   set hello(hello: (string | undefined))
   
   get hello(): (string | undefined)
+  set __options_has_hello(__options_has_hello: (boolean | undefined))
+  
+  get __options_has_hello(): (boolean | undefined)
   set state1(state1: (boolean | undefined))
   
   get state1(): (boolean | undefined)
   set __backing_state1(__backing_state1: (IStateDecoratedVariable<boolean> | undefined))
   
   get __backing_state1(): (IStateDecoratedVariable<boolean> | undefined)
+  set __options_has_state1(__options_has_state1: (boolean | undefined))
+  
+  get __options_has_state1(): (boolean | undefined)
   set select100(select100: (string | undefined))
   
   get select100(): (string | undefined)
+  set __options_has_select100(__options_has_select100: (boolean | undefined))
+  
+  get __options_has_select100(): (boolean | undefined)
   set select0(select0: (number | undefined))
   
   get select0(): (number | undefined)
   @Require() set __backing_select0(__backing_select0: (IStateDecoratedVariable<number> | undefined))
   
   @Require() get __backing_select0(): (IStateDecoratedVariable<number> | undefined)
+  set __options_has_select0(__options_has_select0: (boolean | undefined))
+  
+  get __options_has_select0(): (boolean | undefined)
   set select3(select3: ((number | null) | undefined))
   
   get select3(): ((number | null) | undefined)
   @Require() set __backing_select3(__backing_select3: (IStateDecoratedVariable<(number | null)> | undefined))
   
   @Require() get __backing_select3(): (IStateDecoratedVariable<(number | null)> | undefined)
+  set __options_has_select3(__options_has_select3: (boolean | undefined))
+  
+  get __options_has_select3(): (boolean | undefined)
   set select4(select4: (undefined | undefined))
   
   get select4(): (undefined | undefined)
   @Require() set __backing_select4(__backing_select4: (IStateDecoratedVariable<undefined> | undefined))
   
   @Require() get __backing_select4(): (IStateDecoratedVariable<undefined> | undefined)
+  set __options_has_select4(__options_has_select4: (boolean | undefined))
+  
+  get __options_has_select4(): (boolean | undefined)
   set select1(select1: (string | undefined))
   
   get select1(): (string | undefined)
-  @Require() set __backing_select1(__backing_select1: (IPropDecoratedVariable<string> | undefined))
+  @Require() set __backing_select1(__backing_select1: (IPropRefDecoratedVariable<string> | undefined))
   
-  @Require() get __backing_select1(): (IPropDecoratedVariable<string> | undefined)
+  @Require() get __backing_select1(): (IPropRefDecoratedVariable<string> | undefined)
+  set __options_has_select1(__options_has_select1: (boolean | undefined))
+  
+  get __options_has_select1(): (boolean | undefined)
   set select2(select2: (Array<string> | undefined))
   
   get select2(): (Array<string> | undefined)
   @Require() set __backing_select2(__backing_select2: (IProvideDecoratedVariable<Array<string>> | undefined))
   
   @Require() get __backing_select2(): (IProvideDecoratedVariable<Array<string>> | undefined)
+  set __options_has_select2(__options_has_select2: (boolean | undefined))
+  
+  get __options_has_select2(): (boolean | undefined)
   set select6(select6: ((Array<string> | undefined | string) | undefined))
   
   get select6(): ((Array<string> | undefined | string) | undefined)
   @Require() set __backing_select6(__backing_select6: (IProvideDecoratedVariable<(Array<string> | undefined | string)> | undefined))
   
   @Require() get __backing_select6(): (IProvideDecoratedVariable<(Array<string> | undefined | string)> | undefined)
+  set __options_has_select6(__options_has_select6: (boolean | undefined))
+  
+  get __options_has_select6(): (boolean | undefined)
   set builder(builder: (@memo() (()=> void) | undefined))
   
   get builder(): (@memo() (()=> void) | undefined)
+  set __options_has_builder(__options_has_builder: (boolean | undefined))
+  
+  get __options_has_builder(): (boolean | undefined)
   
 }
 
@@ -329,6 +379,9 @@ function main() {}
   @Require() set __backing_select1(__backing_select1: (IParamDecoratedVariable<string> | undefined))
   
   @Require() get __backing_select1(): (IParamDecoratedVariable<string> | undefined)
+  set __options_has_select1(__options_has_select1: (boolean | undefined))
+  
+  get __options_has_select1(): (boolean | undefined)
   
 }
 `;
