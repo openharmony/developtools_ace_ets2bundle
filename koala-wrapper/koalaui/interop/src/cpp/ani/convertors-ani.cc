@@ -36,7 +36,7 @@ static bool registerNatives(ani_env *env, const ani_class clazz, const std::vect
         method.pointer = func;
         method.signature = (flag & ANI_SLOW_NATIVE_FLAG) == 0 ? FAST_NATIVE_PREFIX : nullptr;
         if (registerByOne) {
-            result &= env->Class_BindNativeMethods(clazz, &method, 1) == ANI_OK;
+            result &= env->Class_BindStaticNativeMethods(clazz, &method, 1) == ANI_OK;
             ani_boolean isError = false;
             env->ExistUnhandledError(&isError);
             if (isError) {
@@ -48,7 +48,8 @@ static bool registerNatives(ani_env *env, const ani_class clazz, const std::vect
         }
     }
     if (!registerByOne) {
-        result = env->Class_BindNativeMethods(clazz, methods.data(), static_cast<ani_size>(methods.size())) == ANI_OK;
+        result = env->Class_BindStaticNativeMethods(clazz, methods.data(),
+                                                    static_cast<ani_size>(methods.size())) == ANI_OK;
     }
     return registerByOne ? true : result;
 }
