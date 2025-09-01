@@ -32,7 +32,7 @@ import {
     OptionalMemberInfo,
     removeDecorator,
 } from './utils';
-import { CustomComponentNames, getClassPropertyType } from '../utils';
+import { CustomComponentNames, getClassPropertyType, optionsHasField } from '../utils';
 import { addMemoAnnotation, findCanAddMemoFromTypeAnnotation } from '../../collectors/memo-collectors/utils';
 import { annotation, isNumeric } from '../../common/arkts-utils';
 
@@ -273,13 +273,10 @@ export class factory {
         member: arkts.Expression,
         args: arkts.AstNode[]
     ): arkts.IfStatement {
-        const binaryItem = arkts.factory.createBinaryExpression(
-            factory.createBlockStatementForOptionalExpression(
-                arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-                originalName
-            ),
-            arkts.factory.createUndefinedLiteral(),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NOT_STRICT_EQUAL
+        const initializers = arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME);
+        const binaryItem = factory.createBlockStatementForOptionalExpression(
+            initializers,
+            optionsHasField(originalName)
         );
         return arkts.factory.createIfStatement(
             binaryItem,
