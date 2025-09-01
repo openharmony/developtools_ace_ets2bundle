@@ -52,15 +52,13 @@ import { CustomComponent as CustomComponent } from "arkui.component.customCompon
 
 import { Text as Text, Column as Column, Component as Component, Button as Button, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 
-import { State as State, Link as Link, Prop as Prop } from "@ohos.arkui.stateManagement";
+import { State as State } from "@ohos.arkui.stateManagement";
 
 import { CustomDialog as CustomDialog, CustomDialogController as CustomDialogController, CustomDialogControllerOptions as CustomDialogControllerOptions } from "@kit.ArkUI";
 
 import hilog from "@ohos.hilog";
 
 function main() {}
-
-
 
 @CustomDialog() final struct CustomDialogExample extends BaseCustomDialog<CustomDialogExample, __Options_CustomDialogExample> {
   public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @memo() content: ((()=> void) | undefined)): void {
@@ -134,7 +132,7 @@ function main() {}
             builder: @memo() (() => {
               CustomDialogExample._instantiateImpl(undefined, (() => {
                 const instance = new CustomDialogExample();
-                instance.__setDialogController__((gensym___220374545 as CustomDialogController));
+                instance.__setDialogController__((gensym___90667230 as CustomDialogController));
                 return instance;
               }), {}, undefined);
             }),
@@ -155,18 +153,27 @@ function main() {}
   set aaController(aaController: ((CustomDialogController | undefined) | undefined))
   
   get aaController(): ((CustomDialogController | undefined) | undefined)
+  set __options_has_aaController(__options_has_aaController: (boolean | undefined))
+  
+  get __options_has_aaController(): (boolean | undefined)
   set text(text: (string | undefined))
   
   get text(): (string | undefined)
   set __backing_text(__backing_text: (IStateDecoratedVariable<string> | undefined))
   
   get __backing_text(): (IStateDecoratedVariable<string> | undefined)
+  set __options_has_text(__options_has_text: (boolean | undefined))
+  
+  get __options_has_text(): (boolean | undefined)
   set hh(hh: (string | undefined))
   
   get hh(): (string | undefined)
   set __backing_hh(__backing_hh: (IStateDecoratedVariable<string> | undefined))
   
   get __backing_hh(): (IStateDecoratedVariable<string> | undefined)
+  set __options_has_hh(__options_has_hh: (boolean | undefined))
+  
+  get __options_has_hh(): (boolean | undefined)
   
 }
 

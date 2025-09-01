@@ -72,8 +72,6 @@ const data: Array<User> = [new User("Json", 10), new User("Eric", 15)];
 
 function main() {}
 
-data = [new User("Json", 10), new User("Eric", 15)];
-
 @ObservedV2() class User implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
@@ -231,6 +229,9 @@ data = [new User("Json", 10), new User("Eric", 15)];
   set __backing_users(__backing_users: (IProviderDecoratedVariable<Array<User>> | undefined))
   
   get __backing_users(): (IProviderDecoratedVariable<Array<User>> | undefined)
+  set __options_has_users(__options_has_users: (boolean | undefined))
+  
+  get __options_has_users(): (boolean | undefined)
   
 }
 
@@ -241,6 +242,9 @@ data = [new User("Json", 10), new User("Eric", 15)];
   set __backing_users(__backing_users: (IConsumerDecoratedVariable<Array<User>> | undefined))
   
   get __backing_users(): (IConsumerDecoratedVariable<Array<User>> | undefined)
+  set __options_has_users(__options_has_users: (boolean | undefined))
+  
+  get __options_has_users(): (boolean | undefined)
   
 }
 `;

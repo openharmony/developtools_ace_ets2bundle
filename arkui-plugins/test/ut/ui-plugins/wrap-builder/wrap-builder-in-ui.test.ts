@@ -65,8 +65,6 @@ function main() {}
   }), value, undefined, undefined);
 }
 
-globalBuilderArr = [wrapBuilder(myBuilder), wrapBuilder(yourBuilder)];
-
 @memo() type MyBuilderFuncType = @Builder() ((value: string, size: number)=> void);
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
@@ -168,8 +166,6 @@ function main() {}
     return;
   }
 }
-
-globalBuilderArr = [wrapBuilder(myBuilder), wrapBuilder(yourBuilder)];
 
 @memo() type MyBuilderFuncType = @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
 

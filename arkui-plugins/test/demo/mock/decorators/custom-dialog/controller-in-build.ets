@@ -14,7 +14,7 @@
  */
 
 import { Text, Column, Component, Button, ClickEvent } from "@ohos.arkui.component"
-import { State, Link, Prop } from "@ohos.arkui.stateManagement"
+import { State } from "@ohos.arkui.stateManagement"
 import { CustomDialog, CustomDialogController, CustomDialogControllerOptions } from "@kit.ArkUI"
 import hilog from '@ohos.hilog'
 

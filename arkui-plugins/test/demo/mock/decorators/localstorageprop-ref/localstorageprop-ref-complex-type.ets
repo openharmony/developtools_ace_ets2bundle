@@ -13,7 +13,7 @@
  * limitations under the License.
  */
  
-import { Component } from "@ohos.arkui.component"  // TextAttribute should be insert by ui-plugins
+import { Component } from "@ohos.arkui.component"
 import { LocalStoragePropRef } from "@ohos.arkui.stateManagement"
 
 class Person{
