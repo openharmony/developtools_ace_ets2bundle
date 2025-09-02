@@ -50,58 +50,6 @@ import {
     FunctionExpression,
     Identifier,
     IfStatement,
-    isArrayExpression,
-    isArrowFunctionExpression,
-    isAssignmentExpression,
-    isBinaryExpression,
-    isBlockExpression,
-    isBlockStatement,
-    isCallExpression,
-    isChainExpression,
-    isClassDeclaration,
-    isClassDefinition,
-    isClassProperty,
-    isConditionalExpression,
-    isDoWhileStatement,
-    isETSFunctionType,
-    isETSImportDeclaration,
-    isETSModule,
-    isETSNewClassInstanceExpression,
-    isETSParameterExpression,
-    isETSStructDeclaration,
-    isETSTuple,
-    isETSTypeReference,
-    isETSTypeReferencePart,
-    isETSUnionType,
-    isExpressionStatement,
-    isForInStatement,
-    isForOfStatement,
-    isForUpdateStatement,
-    isFunctionDeclaration,
-    isFunctionExpression,
-    isIdentifier,
-    isIfStatement,
-    isMemberExpression,
-    isMethodDefinition,
-    isObjectExpression,
-    isProperty,
-    isReturnStatement,
-    isScriptFunction,
-    isSwitchCaseStatement,
-    isSwitchStatement,
-    isTemplateLiteral,
-    isTryStatement,
-    isTSAsExpression,
-    isTSInterfaceBody,
-    isTSInterfaceDeclaration,
-    isTSNonNullExpression,
-    isTSTypeAliasDeclaration,
-    isTSTypeParameterDeclaration,
-    isTSTypeParameterInstantiation,
-    isUpdateExpression,
-    isVariableDeclaration,
-    isVariableDeclarator,
-    isWhileStatement,
     MemberExpression,
     MethodDefinition,
     ObjectExpression,
@@ -129,8 +77,8 @@ import {
     VariableDeclaration,
     VariableDeclarator,
     WhileStatement
-} from "../generated"
-import { Es2pandaAstNodeType, Es2pandaImportKinds } from "../generated/Es2pandaEnums"
+} from "../../generated"
+import { Es2pandaAstNodeType, Es2pandaImportKinds, Es2pandaLanguage } from "../../generated/Es2pandaEnums"
 import { factory } from "./factory/nodeFactory"
 import { AstNode } from "./peers/AstNode"
 import { global } from "./static/global"
@@ -232,6 +180,7 @@ function visitETSModule(node: ETSModule, visitor: Visitor) {
                 newStatements,
                 newIdent,
                 node.getNamespaceFlag(),
+                Es2pandaLanguage.ETS,
                 node.program,
             )
             result.onUpdate(node)
@@ -245,24 +194,12 @@ function visitETSModule(node: ETSModule, visitor: Visitor) {
 function visitCallExpression(node: CallExpression, visitor: Visitor) {
     global.updateTracker.push()
     const newCallee = nodeVisitor(node.callee, visitor)
-    const oldArguments = node.arguments
-    const newArguments: readonly Expression[] = nodesVisitor(oldArguments, visitor)
+    const newArguments: readonly Expression[] = nodesVisitor(node.arguments, visitor)
     const newTypeParams = nodeVisitor(node.typeParams, visitor)
     const newTrailingBlock = nodeVisitor(node.trailingBlock, visitor)
     if (global.updateTracker.check()) {
-        if (!isSameNativeObject(newArguments, oldArguments)) {
-            const result = factory.createCallExpression(
-                newCallee,
-                newArguments,
-                newTypeParams,
-                node.isOptional,
-                node.hasTrailingComma,
-                newTrailingBlock,
-            )
-            result.onUpdate(node)
-            return result
-        }
         node.setCallee(newCallee)
+        node.setArguments(newArguments)
         node.setTypeParams(newTypeParams)
         node.setTrailingBlock(newTrailingBlock)
     }

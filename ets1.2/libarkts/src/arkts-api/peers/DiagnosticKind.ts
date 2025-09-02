@@ -13,13 +13,11 @@
  * limitations under the License.
  */
 
-import { KNativePointer } from "@koalaui/interop"
-import { global } from "../static/global"
-import { OpaqueTypeNode } from "../../../generated"
-import { Es2pandaAstNodeType } from "../../../generated/Es2pandaEnums"
+import { KNativePointer } from "@koalaui/interop";
+import { ArktsObject } from "./ArktsObject"
 
-export function createOpaqueTypeNode(
-    typePointer: KNativePointer
-): OpaqueTypeNode {
-    return new OpaqueTypeNode(global.es2panda._Checker_CreateOpaqueTypeNode(global.context, typePointer), Es2pandaAstNodeType.AST_NODE_TYPE_OPAQUE_TYPE_NODE)
+export class DiagnosticKind extends ArktsObject {
+  constructor(peer: KNativePointer) {
+    super(peer);
+  }
 }

@@ -519,7 +519,7 @@ class ObservableArray<T> extends Array<T> {
         return super.slice(start, end)
     }
 
-    override lastIndexOf(searchElement: T, fromIndex: int): int {
+    override lastIndexOf(searchElement: T, fromIndex?: int): int {
         this.handler?.onAccess()
         return super.lastIndexOf(searchElement, fromIndex)
     }

@@ -17,7 +17,7 @@ import { KNativePointer } from "@koalaui/interop"
 import { ArktsObject } from "./ArktsObject"
 import { global } from "../static/global"
 import { Config } from "./Config"
-import { ArkTsConfig } from "../../generated"
+import { ArkTsConfig } from "../../../generated"
 
 export class Options extends ArktsObject {
     constructor(peer: KNativePointer) {

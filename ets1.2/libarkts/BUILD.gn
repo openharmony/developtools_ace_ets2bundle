@@ -30,7 +30,6 @@ shared_library("es2panda_lib") {
     sources = [
         "$libarkts_root/native/src/common.cc",
         "$libarkts_root/native/src/bridges.cc",
-        "$libarkts_root/native/src/generated/bridges.cc",
 
         "$interop_root/src/cpp/napi/convertors-napi.cc",
         "$interop_root/src/cpp/callback-resource.cc",
@@ -50,7 +49,7 @@ shared_library("es2panda_lib") {
 
         "$node_modules_dir/node-api-headers/include",
         "$node_modules_dir/node-addon-api",
-        
+
         # "//arkcompiler/ets_frontend/ets2panda/public/",
         # rebase_path("$root_gen_dir/arkcompiler/ets_frontend/ets2panda/"),
     ]
@@ -64,8 +63,10 @@ shared_library("es2panda_lib") {
 
     deps = [
         "$ui2abc_root:ui2abc_install(${host_toolchain})",
-        ":regenerate(${host_toolchain})"
+        ":regenerate_and_copy",
     ]
+    #sources += get_target_outputs(deps[1]) // FIXME: cannot find target
+    sources += [ "$target_out_dir/generated/native/bridges.cc" ]
 
     configs -= [ "//build/config/compiler:compiler" ]
 
@@ -195,6 +196,15 @@ action("es2panda_lib_copy") {
         "--current-os", current_os,
         "--current-cpu", current_cpu
     ]
+}
+
+# The generated bridges.cc doesn't exist at configure step and
+# should be linked with a target that creates it. As outputs cannot
+# point outside target_out_dir - make a copy target.
+copy("regenerate_and_copy") {
+    sources = [  "$libarkts_root/generated/native/bridges.cc", ]
+    outputs = [  "$target_out_dir/generated/native/bridges.cc", ]
+    deps = [ ":regenerate(${host_toolchain})", ]
 }
 
 if (current_toolchain == host_toolchain) {

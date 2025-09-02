@@ -87,13 +87,71 @@
                 interface: "es2panda_Impl",
                 methods: [
                     "LogSyntaxError", "LogWarning", "LogTypeError", // wrong idl
-                    "DestroyContext", // cleanup arena (Improve: move this cleanup to another method) 
+                    "DestroyContext", // cleanup arena (Improve: move this cleanup to another method)
+
+                    // Handwritten bridges
+                    "AstNodeRebind",
+                    "ConfigGetOptions",
+                    "CreateCacheContextFromFile",
+                    "CreateContextFromFile",
+                    "CreateContextFromString",
+                    "CreateContextGenerateAbcForExternalSourceFiles",
+                    "CreateDiagnosticInfo",
+                    "CreateDiagnosticKind",
+                    "CreateGlobalContext",
+                    "CreateSuggestionInfo",
+                    "DestroyGlobalContext",
+                    "SourcePositionCol",
+                    "ExternalSourceName",
+                    "ExternalSourcePrograms",
+                    "GenerateTsDeclarationsFromContext",
+                    "LogDiagnostic",
                 ],
             },
             {
                 interface: "MethodDefinition",
                 methods: [
                     "GetOverloadInfo",  // return type is wrong
+                ]
+            },
+            {
+                interface: "Decl", // handwritten bridge
+                methods: [
+                    "Node"
+                ]
+            },
+            {
+                interface: "ETSParser", // handwritten bridge
+                methods: [
+                    "BuildImportDeclaration",
+                    "CreateExpression",
+                    "GetGlobalProgramAbsName",
+                    "GetImportPathManager",
+                ]
+            },
+            {
+                interface: "Program", // handwritten bridge
+                methods: [
+                    "DirectExternalSources",
+                    "ExternalSources",
+                ]
+            },
+            {
+                interface: "Scope", // handwritten bridge
+                methods: [
+                    "SetParent",
+                ]
+            },
+            {
+                interface: "Signature", // handwritten bridge
+                methods: [
+                    "Function",
+                ]
+            },
+            {
+                interface: "TSInterfaceBody", // handwritten bridge
+                methods: [
+                    "BodyPtr",
                 ]
             },
             {
@@ -193,9 +251,13 @@
             name: "ArrowFunctionExpression",
             methods: [
                 {
+                    name: "Function",
+                    types: ["returnType"]
+                },
+                {
                     name: "FunctionConst",
                     types: ["returnType"]
-                }
+                },
             ]
         },
         {
@@ -282,6 +344,10 @@
             name: "MethodDefinition",
             methods: [
                 {
+                    name: "Function",
+                    types: ["returnType"]
+                },
+                {
                     name: "FunctionConst",
                     types: ["returnType"]
                 },
@@ -359,6 +425,10 @@
                     definition: "extension_ScriptFunctionSetSignaturePointer",
                 },
                 {
+                    name: "getParamsCasted",
+                    definition: "extension_ScriptFunctionGetParamsCasted",
+                },
+                {
                     name: "getPreferredReturnTypePointer",
                     definition: "extension_ScriptFunctionGetPreferredReturnTypePointer",
                 },
@@ -394,6 +464,10 @@
             interface: "Program",
             methods: [
                 {
+                    name: "getAstCasted",
+                    definition: "extension_ProgramGetAstCasted",
+                },
+                {
                     name: "getExternalSources",
                     definition: "extension_ProgramGetExternalSources",
                 },
@@ -411,6 +485,10 @@
                     definition: "extension_SourcePositionGetCol",
                 },
                 {
+                    name: "getIndex",
+                    definition: "extension_SourcePositionGetIndex",
+                },
+                {
                     name: "toString",
                     definition: "extension_SourcePositionToString",
                 },
@@ -422,6 +500,15 @@
                 {
                     name: "value",
                     definition: "extension_NumberLiteralValue",
+                },
+            ],
+        },
+        {
+            interface: "ETSFunctionType",
+            methods: [
+                {
+                    name: "getParamsCasted",
+                    definition: "extension_ETSFunctionTypeGetParamsCasted",
                 },
             ],
         },

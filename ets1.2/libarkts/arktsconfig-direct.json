@@ -11,7 +11,7 @@
         },
         "plugins": [
             {
-                "transform": "../memo-plugin",
+                "transform": "../memo-plugin-ng",
                 "state": "checked",
                 "name": "memo"
             }

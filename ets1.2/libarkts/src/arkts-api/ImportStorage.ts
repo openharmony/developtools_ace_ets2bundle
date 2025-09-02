@@ -14,10 +14,10 @@
  */
 
 import { KNativePointer } from "@koalaui/interop"
-import { ETSModule, ImportDeclaration, isETSImportDeclaration, Program, Statement } from "../generated"
+import { ETSModule, ImportDeclaration, isETSImportDeclaration, Program, Statement } from "../../generated"
 import { passNode, passNodeArray, unpackNonNullableNode } from "./utilities/private"
 import { global } from "./static/global"
-import { Es2pandaImportFlags, Es2pandaImportKinds } from "../generated/Es2pandaEnums"
+import { Es2pandaImportFlags, Es2pandaImportKinds } from "../../generated/Es2pandaEnums"
 import { factory } from "./factory/nodeFactory"
 
 export class ImportStorage {

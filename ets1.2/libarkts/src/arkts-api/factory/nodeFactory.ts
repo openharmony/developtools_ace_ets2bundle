@@ -18,20 +18,22 @@ import {
     CallExpression,
     ClassDefinition,
     ClassProperty,
+    ClassStaticBlock,
     ETSImportDeclaration,
     ETSModule,
     ETSStructDeclaration,
     ETSTuple,
     ETSTypeReferencePart,
+    Identifier,
     MemberExpression,
     ObjectExpression,
     TryStatement,
     TSTypeParameter,
     VariableDeclarator,
-} from "../../generated"
-import { factory as generatedFactory } from "../../generated/factory"
-import { createScriptFunction, updateScriptFunction } from "../node-utilities/ScriptFunction"
-import { updateCallExpression } from "../node-utilities/CallExpression"
+} from "../../../generated"
+import { factory as generatedFactory } from "../../../generated/factory"
+import { createScriptFunction, inplaceUpdateScriptFunction, updateScriptFunction } from "../node-utilities/ScriptFunction"
+import { inplaceUpdateCallExpression, updateCallExpression } from "../node-utilities/CallExpression"
 import { createNumberLiteral, updateNumberLiteral } from "../node-utilities/NumberLiteral"
 import { updateMemberExpression } from "../node-utilities/MemberExpression"
 import { createETSParameterExpression, updateETSParameterExpression } from "../node-utilities/ETSParameterExpression"
@@ -39,7 +41,7 @@ import { updateTSTypeParameter } from "../node-utilities/TSTypeParameter"
 import { updateETSTypeReferencePart } from "../node-utilities/TSTypeReferencePart"
 import { updateETSImportDeclaration } from "../node-utilities/ETSImportDeclaration"
 import { updateVariableDeclarator } from "../node-utilities/VariableDeclarator"
-import { updateClassDefinition } from "../node-utilities/ClassDefinition"
+import { createClassDefinition, updateClassDefinition } from "../node-utilities/ClassDefinition"
 import { updateETSStructDeclaration } from "../node-utilities/ETSStructDeclaration"
 import { updateClassProperty } from "../node-utilities/ClassProperty"
 import { createETSFunctionType, updateETSFunctionType } from "../node-utilities/ETSFunctionType"
@@ -57,17 +59,22 @@ import { createOpaqueTypeNode } from "../node-utilities/OpaqueTypeNode"
 export const factory = {
     ...generatedFactory,
 
-    createETSModule: ETSModule.createETSModule,
+    createIdentifier: Identifier.create2Identifier,
+    updateIdentifier:  Identifier.update2Identifier,
+
+    createETSModule: ETSModule.create1ETSModule,
     updateETSModule,
 
     createCallExpression: CallExpression.createCallExpression,
     updateCallExpression,
+    inplaceUpdateCallExpression,
 
     createMemberExpression: MemberExpression.createMemberExpression,
     updateMemberExpression,
 
     createScriptFunction,
     updateScriptFunction,
+    inplaceUpdateScriptFunction,
 
     createNumberLiteral,
     updateNumberLiteral,
@@ -90,8 +97,9 @@ export const factory = {
     createETSStructDeclaration: ETSStructDeclaration.createETSStructDeclaration,
     updateETSStructDeclaration,
 
-    createClassDefinition: ClassDefinition.createClassDefinition,
+    createClassDefinition,
     updateClassDefinition,
+    update3ClassDefinition: ClassDefinition.update3ClassDefinition,
 
     createClassProperty: ClassProperty.createClassProperty,
     updateClassProperty,
@@ -124,6 +132,9 @@ export const factory = {
     updateBlockStatement,
 
     updateInterfaceBody : generatedFactory.updateTSInterfaceBody,
+
+    createClassStaticBlock: ClassStaticBlock.createClassStaticBlock,
+    updateClassStaticBlock: ClassStaticBlock.updateClassStaticBlock,
 
     createOpaqueTypeNode,
 }

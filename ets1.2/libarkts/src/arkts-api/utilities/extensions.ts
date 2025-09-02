@@ -13,21 +13,23 @@
  * limitations under the License.
  */
 
-import { KInt, KNativePointer } from "@koalaui/interop"
+import { KNativePointer, KUInt } from "@koalaui/interop"
 import type {
     ClassDefinition,
+    ETSFunctionType,
     ETSModule,
+    ETSParameterExpression,
     Expression,
     MethodDefinition,
     NumberLiteral,
     Program,
     ScriptFunction,
     SourcePosition,
-} from "../../generated"
+} from "../../../generated"
 import { ExternalSource } from "../peers/ExternalSource"
-import { Es2pandaModuleFlag } from "../../generated/Es2pandaEnums"
+import { Es2pandaAstNodeType, Es2pandaModuleFlag } from "../../../generated/Es2pandaEnums"
 import { global } from "../static/global"
-import { acceptNativeObjectArrayResult, passNodeArray } from "./private"
+import { acceptNativeObjectArrayResult, passNodeArray, unpackNodeArray, unpackNonNullableNode } from "./private"
 import type { AstNode } from "../peers/AstNode"
 
 export function extension_ETSModuleGetNamespaceFlag(this: ETSModule): Es2pandaModuleFlag {
@@ -64,6 +66,11 @@ export function extension_ScriptFunctionSetSignaturePointer(this: ScriptFunction
     global.es2panda._Checker_ScriptFunctionSetSignature(global.context, this.peer, signaturePointer)
 }
 
+// Improve: weird API
+export function extension_ScriptFunctionGetParamsCasted(this: ScriptFunction): readonly ETSParameterExpression[] {
+    return unpackNodeArray<ETSParameterExpression>(global.generatedEs2panda._ScriptFunctionParams(global.context, this.peer), Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PARAMETER_EXPRESSION)
+}
+
 // Improve: perhaps "preferredReturnType" stuff can be removed later if "signature" is always enough
 export function extension_ScriptFunctionGetPreferredReturnTypePointer(this: ScriptFunction): KNativePointer {
     return global.es2panda._Checker_ScriptFunctionGetPreferredReturnType(global.context, this.peer)
@@ -82,6 +89,11 @@ export function extension_ExpressionSetPreferredTypePointer(this: Expression, ty
     global.es2panda._Checker_ExpressionSetPreferredType(global.context, this.peer, typePointer)
 }
 
+// Improve: weird API
+export function extension_ProgramGetAstCasted(this: Program): ETSModule {
+    return unpackNonNullableNode<ETSModule>(global.generatedEs2panda._ProgramAst(global.context, this.peer), Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE)
+}
+
 // Improve: generate methods with string[] args or return type
 export function extension_ProgramGetExternalSources(this: Program): ExternalSource[] {
     return acceptNativeObjectArrayResult<ExternalSource>(
@@ -91,13 +103,18 @@ export function extension_ProgramGetExternalSources(this: Program): ExternalSour
 }
 
 // Improve: SourcePositionLine is global in idl
-export function extension_SourcePositionGetLine(this: SourcePosition): KInt {
+export function extension_SourcePositionGetLine(this: SourcePosition): KUInt {
     return global.generatedEs2panda._SourcePositionLine(global.context, this.peer)
 }
 
 // Improve: SourcePositionCol is not described in idl
-export function extension_SourcePositionGetCol(this: SourcePosition): KInt {
+export function extension_SourcePositionGetCol(this: SourcePosition): KUInt {
     return global.es2panda._SourcePositionCol(global.context, this.peer)
+}
+
+// Improve: SourcePositionIndex is global in idl
+export function extension_SourcePositionGetIndex(this: SourcePosition): KUInt {
+    return global.generatedEs2panda._SourcePositionIndex(global.context, this.peer)
 }
 
 export function extension_SourcePositionToString(this: SourcePosition): string {
@@ -110,11 +127,11 @@ export function extension_NumberLiteralValue(this: NumberLiteral): number {
 }
 
 // Improve: weird API
-export function extension_ScriptFunctionSetParams(this: ScriptFunction, params: readonly Expression[]): void {
-    global.es2panda._ScriptFunctionSetParams(global.context, this.peer, passNodeArray(params), params.length)
+export function extension_ClassDefinitionSetBody(this: ClassDefinition, body: readonly AstNode[]): void {
+    global.es2panda._ClassDefinitionSetBody(global.context, this.peer, passNodeArray(body), body.length)
 }
 
 // Improve: weird API
-export function extension_ClassDefinitionSetBody(this: ClassDefinition, body: readonly AstNode[]): void {
-    global.es2panda._ClassDefinitionSetBody(global.context, this.peer, passNodeArray(body), body.length)
+export function extension_ETSFunctionTypeGetParamsCasted(this: ETSFunctionType): readonly ETSParameterExpression[] {
+    return unpackNodeArray<ETSParameterExpression>(global.generatedEs2panda._ETSFunctionTypeParamsConst(global.context, this.peer), Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PARAMETER_EXPRESSION)
 }

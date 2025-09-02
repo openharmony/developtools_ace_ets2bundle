@@ -14,7 +14,7 @@
  */
 
 import { ArktsObject } from "./ArktsObject"
-import { Program } from "../../generated"
+import { Program } from "../../../generated"
 import { global } from "../static/global"
 import { passString, passStringArray } from "../utilities/private"
 import { KNativePointer, nullptr, KBoolean } from "@koalaui/interop"
@@ -39,7 +39,7 @@ export class Context extends ArktsObject {
             )
         )
     }
-    
+
     /** @deprecated Use {@link createCacheFromFile} instead */
     static createCacheContextFromFile(
         configPtr: KNativePointer,
@@ -88,7 +88,7 @@ export class Context extends ArktsObject {
             this.peer = nullptr
         }
     }
-    
+
     /** @deprecated */
     static destroyAndRecreate(ast: AstNode): Context {
         console.log('[TS WRAPPER] DESTROY AND RECREATE');

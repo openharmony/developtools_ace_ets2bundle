@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-import { ETSModule, Identifier, Program, Statement } from "../../generated"
+import { ETSModule, Identifier, Program, Statement } from "../../../generated"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
-import { Es2pandaModuleFlag } from "../../generated/Es2pandaEnums"
+import { Es2pandaLanguage, Es2pandaModuleFlag } from "../../../generated/Es2pandaEnums"
 
 export function updateETSModule(
     original: ETSModule,
@@ -33,10 +33,11 @@ export function updateETSModule(
         return original
     }
     return updateNodeByNode(
-        ETSModule.createETSModule(
+        ETSModule.create1ETSModule(
             statementList,
             ident,
             flag,
+            Es2pandaLanguage.ETS,
             program,
         ),
         original,

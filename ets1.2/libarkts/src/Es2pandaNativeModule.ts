@@ -24,10 +24,10 @@ import {
     KUInt,
     KStringArrayPtr,
 } from "@koalaui/interop"
-import { Es2pandaNativeModule as GeneratedEs2pandaNativeModule, KNativePointerArray } from "./generated/Es2pandaNativeModule"
+import { Es2pandaNativeModule as GeneratedEs2pandaNativeModule, KNativePointerArray } from "../generated/Es2pandaNativeModule"
 import * as path from "path"
 import * as fs from "fs"
-import { Es2pandaPluginDiagnosticType } from "./generated/Es2pandaEnums"
+import { Es2pandaPluginDiagnosticType } from "../generated/Es2pandaEnums"
 
 // Improve: this type should be in interop
 export type KPtrArray = BigUint64Array
@@ -129,7 +129,7 @@ export class Es2pandaNativeModule {
     _ETSParserGetImportPathManager(context: KNativePointer): KPtr {
         throw new Error("Not implemented");
     }
-    _SourcePositionCol(context: KNativePointer, instance: KNativePointer): KInt {
+    _SourcePositionCol(context: KNativePointer, instance: KNativePointer): KUInt {
         throw new Error("Not implemented");
     }
     _ConfigGetOptions(config: KNativePointer): KNativePointer {
@@ -225,6 +225,18 @@ export class Es2pandaNativeModule {
     }
 
     _CreateTypeNodeFromTsType(context: KNativePointer, classInstance: KNativePointer): KNativePointer {
+        throw new Error('Not implemented');
+    }
+
+    _MemoryTrackerReset(context: KNativePointer): void {
+        throw new Error('Not implemented');
+    }
+
+    _MemoryTrackerGetDelta(context: KNativePointer): void {
+        throw new Error('Not implemented');
+    }
+
+    _MemoryTrackerPrintCurrent(context: KNativePointer): void {
         throw new Error('Not implemented');
     }
 }

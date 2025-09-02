@@ -24,7 +24,7 @@ import {
     withStringArray
 } from "@koalaui/interop"
 import { NativePtrDecoder } from "./nativePtrDecoder"
-import { Es2pandaAstNodeType, Es2pandaModifierFlags, Es2pandaScriptFunctionFlags } from "../../generated/Es2pandaEnums"
+import { Es2pandaAstNodeType, Es2pandaModifierFlags, Es2pandaScriptFunctionFlags } from "../../../generated/Es2pandaEnums"
 import { nodeFrom } from "../class-by-peer"
 import { AstNode } from "../peers/AstNode"
 import { ArktsObject } from "../peers/ArktsObject"
@@ -68,31 +68,31 @@ export function acceptNativeObjectArrayResult<T extends ArktsObject>(arrayObject
     return new NativePtrDecoder().decode(arrayObject).map(factory);
 }
 
-export function unpackNonNullableNode<T extends AstNode>(peer: KNativePointer): T {
+export function unpackNonNullableNode<T extends AstNode>(peer: KNativePointer, typeHint?: Es2pandaAstNodeType): T {
     if (peer === nullptr) {
         throwError('peer is NULLPTR (maybe you should use unpackNode)')
     }
-    return nodeFrom(peer)
+    return nodeFrom(peer, typeHint)
 }
 
-export function unpackNode<T extends AstNode>(peer: KNativePointer): T | undefined {
+export function unpackNode<T extends AstNode>(peer: KNativePointer, typeHint?: Es2pandaAstNodeType): T | undefined {
     if (peer === nullptr) {
         return undefined
     }
-    return nodeFrom<T>(peer)
+    return nodeFrom<T>(peer, typeHint)
 }
 
 export function passNode(node: ArktsObject | undefined): KNativePointer {
     return node?.peer ?? nullptr
 }
 
-export function unpackNodeArray<T extends AstNode>(nodesPtr: KNativePointer): T[] {
+export function unpackNodeArray<T extends AstNode>(nodesPtr: KNativePointer, typeHint?: Es2pandaAstNodeType): T[] {
     if (nodesPtr === nullptr) {
-        throwError('nodesPtr is NULLPTR (maybe you should use unpackNodeArray)')
+        return []
     }
     return new NativePtrDecoder()
         .decode(nodesPtr)
-        .map((peer: KNativePointer) => unpackNonNullableNode(peer))
+        .map((peer: KNativePointer) => unpackNonNullableNode(peer, typeHint))
 }
 
 export function passNodeArray(nodes: readonly ArktsObject[] | undefined): BigUint64Array {
@@ -102,20 +102,6 @@ export function passNodeArray(nodes: readonly ArktsObject[] | undefined): BigUin
             ?.map(node => BigInt(node.peer))
         ?? []
     )
-}
-
-export function unpackNonNullableObject<T extends ArktsObject>(type: { new (peer: KNativePointer): T }, peer: KNativePointer): T {
-    if (peer === nullptr) {
-        throwError('peer is NULLPTR (maybe you should use unpackObject)')
-    }
-    return new type(peer)
-}
-
-export function unpackObject<T extends ArktsObject>(type: { new (peer: KNativePointer): T }, peer: KNativePointer): T | undefined {
-    if (peer === nullptr) {
-        return undefined
-    }
-    return new type(peer)
 }
 
 export function unpackString(peer: KNativePointer): string {

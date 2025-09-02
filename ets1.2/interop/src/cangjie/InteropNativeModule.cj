@@ -42,8 +42,8 @@ foreign {
         func CheckCallbackEvent(buffer: KSerializerBuffer, bufferLength: Int32): Int32
         func StdStringToString(cstring: UInt64): CString
         func IncrementNumber(input: Float64): Float64
-        func CallCallback(callbackKind: Int32, args: KSerializerBuffer, argsSize: Int32): Unit
-        func CallCallbackSync(callbackKind: Int32, args: KSerializerBuffer, argsSize: Int32): Unit
+        func CallCallback(apikind:Int32, callbackKind: Int32, args: KSerializerBuffer, argsSize: Int32): Unit
+        func CallCallbackSync(apikind:Int32, callbackKind: Int32, args: KSerializerBuffer, argsSize: Int32): Unit
         func CallCallbackResourceHolder(holder: UInt64, resourceId: Int32): Unit
         func CallCallbackResourceReleaser(releaser: UInt64, resourceId: Int32): Unit
         func CallForeignVM(foreignContext: UInt64, kind: Int32, data: CPointer<UInt8>, length: Int32): Int32
@@ -131,10 +131,10 @@ public open class InteropNativeModule {
             return result
         }
     }
-    public static func _StringData(ptr1: UInt64, array: Array<UInt8>, arrayLength: Int32): Unit {
+    public static func _StringData(ptr1: UInt64, arr: Array<UInt8>, arrayLength: Int32): Unit {
         unsafe {
             let handle_1 = acquireArrayRawData(arr)
-            StringData(ptr1, handle_1.pointer, i)
+            StringData(ptr1, handle_1.pointer, arrayLength)
             releaseArrayRawData(handle_1)
         }
     }
@@ -152,7 +152,7 @@ public open class InteropNativeModule {
             return result
         }
     }
-    public static func _ManagedStringWrite(str1: String, array: pointer, arrayLength: Int32, arg: Int32): Int32 {
+    public static func _ManagedStringWrite(str1: String, arr: pointer, arrLength: Int32, arg: Int32): Int32 {
         unsafe {
             let str1 =  LibC.mallocCString(str1)
             let result = ManagedStringWrite(str1, arr, arrLength, arg)
@@ -190,14 +190,14 @@ public open class InteropNativeModule {
             return result
         }
     }
-    public static func _CallCallback(callbackKind: Int32, args: KSerializerBuffer, argsSize: Int32): Unit {
+    public static func _CallCallback(apikind: Int32, callbackKind: Int32, args: KSerializerBuffer, argsSize: Int32): Unit {
         unsafe {
-            CallCallback(callbackKind, args, argsSize)
+            CallCallback(apikind, callbackKind, args, argsSize)
         }
     }
-    public static func _CallCallbackSync(callbackKind: Int32, args: KSerializerBuffer, argsSize: Int32): Unit {
+    public static func _CallCallbackSync(apikind: Int32, callbackKind: Int32, args: KSerializerBuffer, argsSize: Int32): Unit {
         unsafe {
-            CallCallbackSync(callbackKind, args, argsSize)
+            CallCallbackSync(apikind, callbackKind, args, argsSize)
         }
     }
     public static func _CallCallbackResourceHolder(holder: UInt64, resourceId: Int32): Unit {

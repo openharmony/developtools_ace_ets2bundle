@@ -74,6 +74,8 @@ public open class SerializerBase {
     private var _buffer: pointer
     private var _length: Int32
 
+    private static var pool: ArrayList<SerializerBase> = ArrayList<SerializerBase>(8){i => SerializerBase()}
+
     private static var customSerializers: ?CustomSerializer = Option.None
     static func registerCustomSerializer(serializer: CustomSerializer) {
         // Improve:
@@ -84,6 +86,7 @@ public open class SerializerBase {
         this._buffer = InteropNativeModule._Malloc(length)
         this._length = length
     }
+    private static var poolTop = 0
 
     private static func writeu8(_buffer: pointer, offset: Int32, length: Int32, value: Int32): Unit {
         InteropNativeModule._WriteByte(_buffer, Int64(offset), Int64(length), value)
@@ -92,9 +95,20 @@ public open class SerializerBase {
         return InteropNativeModule._ReadByte(_buffer, Int64(offset), Int64(length))
     }
 
+    public static func hold() {
+        if (SerializerBase.poolTop == SerializerBase.pool.size) {
+            throw Exception("Pool empty! Release one of taken serializers")
+        }
+        SerializerBase.poolTop += 1
+        return SerializerBase.pool[SerializerBase.poolTop - 1]
+    }
     public open func release() {
         this.releaseResources()
         this.position = 0
+        // if (refEq(this, SerializerBase.pool[SerializerBase.poolTop - 1])) {
+        //     throw Exception("Serializers should be release in LIFO order")
+        // }
+        SerializerBase.poolTop -= 1;
     }
     private func releaseResources() {
         if (this.heldResourcesCount == 0) {

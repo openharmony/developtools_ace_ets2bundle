@@ -16,7 +16,7 @@
 import { global } from "../static/global"
 import { acceptNativeObjectArrayResult, unpackString } from "../utilities/private"
 import { KNativePointer, nullptr } from "@koalaui/interop"
-import { Program } from "../../generated"
+import { Program } from "../../../generated"
 import { ArktsObject } from "./ArktsObject"
 
 export class ExternalSource extends ArktsObject {

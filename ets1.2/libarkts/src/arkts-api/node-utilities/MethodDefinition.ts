@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-import { Expression, MethodDefinition } from "../../generated"
+import { Expression, MethodDefinition } from "../../../generated"
 import {
     Es2pandaMethodDefinitionKind,
     Es2pandaModifierFlags,
-} from "../../generated/Es2pandaEnums"
+} from "../../../generated/Es2pandaEnums"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
 

@@ -22,30 +22,11 @@ export {
     unpackNodeArray,
     passNodeArray,
     unpackNode,
-    unpackNonNullableObject,
     unpackString,
-    unpackObject,
     assertValidPeer,
     updateNodeByNode
 } from "./arkts-api/utilities/private"
 export { nodeByType } from "./arkts-api/class-by-peer"
 export { global } from "./arkts-api/static/global"
-export { Es2pandaMemberExpressionKind } from "./generated/Es2pandaEnums"
-export {
-    extension_ETSModuleGetNamespaceFlag,
-    extension_MethodDefinitionOnUpdate,
-    extension_MethodDefinitionSetChildrenParentPtr,
-    extension_ScriptFunctionGetSignaturePointer,
-    extension_ScriptFunctionSetSignaturePointer,
-    extension_ScriptFunctionGetPreferredReturnTypePointer,
-    extension_ScriptFunctionSetPreferredReturnTypePointer,
-    extension_ExpressionGetPreferredTypePointer,
-    extension_ExpressionSetPreferredTypePointer,
-    extension_ProgramGetExternalSources,
-    extension_SourcePositionGetCol,
-    extension_SourcePositionGetLine,
-    extension_SourcePositionToString,
-    extension_NumberLiteralValue,
-    extension_ScriptFunctionSetParams,
-    extension_ClassDefinitionSetBody,
-} from "./arkts-api/utilities/extensions"
+export { Es2pandaMemberExpressionKind } from "../generated/Es2pandaEnums"
+export * from "./arkts-api/utilities/extensions"

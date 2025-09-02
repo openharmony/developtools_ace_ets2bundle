@@ -16,11 +16,11 @@
 import { throwError } from "../../utils"
 import { KNativePointer, nullptr } from "@koalaui/interop"
 import { initEs2panda, Es2pandaNativeModule, initGeneratedEs2panda } from "../../Es2pandaNativeModule"
-import { Es2pandaNativeModule as GeneratedEs2pandaNativeModule } from "../../generated/Es2pandaNativeModule"
+import { Es2pandaNativeModule as GeneratedEs2pandaNativeModule } from "../../../generated/Es2pandaNativeModule"
 import { initInterop, InteropNativeModule } from "../../InteropNativeModule"
 import { Context } from "../peers/Context"
 import { Profiler } from "./profiler"
-import { ArkTsConfig } from "../../generated"
+import { ArkTsConfig } from "../../../generated"
 import { Config } from '../peers/Config';
 
 export class UpdateTracker {

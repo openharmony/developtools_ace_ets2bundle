@@ -13,15 +13,15 @@
  * limitations under the License.
  */
 
-export * from "../generated/Es2pandaEnums"
-export * from "../generated"
+export * from "../../generated/Es2pandaEnums"
+export * from "../../generated"
 
+export * from "./utilities/performance"
 export * from "./utilities/private"
 export * from "./utilities/public"
 export * from "./factory/nodeFactory"
 export * from "./visitor"
 export * from "./AbstractVisitor"
-export * from "./ChainExpressionFilter"
 export * from "./plugins"
 export * from "./ImportStorage"
 export * from "./ProgramProvider"
@@ -32,6 +32,7 @@ export * from "./peers/Context"
 export { GlobalContext } from "./peers/Context"
 export * from "./peers/ExternalSource"
 export * from "./peers/Options"
+export * from "./peers/DiagnosticKind"
 export * from "./node-utilities/ArkTsConfig"
 export * from "./node-utilities/Program"
 export * from "./peers/ImportPathManager"

@@ -15,7 +15,7 @@
 
 import * as fs from "node:fs"
 import * as path from "node:path"
-import { Program } from "./generated"
+import { Program } from "../generated"
 import { global } from "./arkts-api/static/global"
 
 export class Tracer {
@@ -28,7 +28,7 @@ export class Tracer {
         Tracer.traceDir = path.join(outDir, 'trace')
         fs.rmSync(Tracer.traceDir, { force: true, recursive: true })
         const globalTraceFile = path.join(Tracer.traceDir, '.global.txt')
-        
+
         Tracer.GlobalTracer = new Tracer(globalTraceFile)
         Tracer.pushContext('tracer')
         traceGlobal(() => `Trace file created at ${globalTraceFile}`, true)

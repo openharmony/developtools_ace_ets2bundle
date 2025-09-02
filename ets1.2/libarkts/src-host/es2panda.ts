@@ -61,7 +61,9 @@ function parseCommandLineArgs(): CommandLineOptions {
     if (!fileArg) {
         reportErrorAndExit(`Either --file option or file argument is required`)
     }
-    const files = fileArg.split(/[ :]/g).map((it: string) => path.resolve(it))
+    const files = fileArg.split(/[ :]/g)
+        .map(it => it.startsWith("'") ? it.slice(1, -1) : it)
+        .map((it: string) => path.resolve(it))
     const configPath = path.resolve(cliOptions.arktsconfig)
     const outputArg = cliOptions.output
     const outputs = outputArg.split(':').map((it: string) => path.resolve(it))

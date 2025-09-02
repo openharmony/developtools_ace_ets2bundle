@@ -27,10 +27,36 @@
 #include "interop-logging.h"
 #include "interop-utils.h"
 
+inline static ani_env* getEnv() {
+  ani_vm* vms[] = {nullptr};
+  ani_size vmCount = 0;
+  ANI_GetCreatedVMs(vms, sizeof(vms)/sizeof(ani_vm*), &vmCount);
+
+  if (vmCount == 0 || !vms[0])
+    return nullptr;
+
+  ani_env* res = nullptr;
+  vms[0]->GetEnv(ANI_VERSION_1, &res);
+  return res;
+}
+
+inline static void printErrorStack() {
+  auto *env = getEnv();
+  if (!env)
+      return;
+
+  ani_boolean isError = false;
+  env->ExistUnhandledError(&isError);
+  if (isError) {
+    env->DescribeError();
+  }
+}
+
 #define CHECK_ANI_FATAL(result)                                                                  \
 do {                                                                                             \
   ani_status ___res___ = (result);                                                               \
   if (___res___ != ANI_OK) {                                                                     \
+    printErrorStack();                                                                           \
     INTEROP_FATAL("ANI function failed (status: %d) at " __FILE__ ": %d", ___res___,  __LINE__); \
   }                                                                                              \
 }                                                                                                \
@@ -209,7 +235,7 @@ struct InteropTypeConverter<KStringPtr> {
     static InteropType convertTo(ani_env* env, const KStringPtr& value) {
       ani_string result = nullptr;
       int length = value.length();
-      CHECK_ANI_FATAL(env->String_NewUTF8(value.c_str(), length > 0 ? length - 1 /* drop zero terminator */ : 0, &result));
+      CHECK_ANI_FATAL(env->String_NewUTF8(value.c_str(), length, &result));
       return result;
     }
     static void release(ani_env* env, InteropType value, const KStringPtr& converted) {}

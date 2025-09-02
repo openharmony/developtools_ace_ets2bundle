@@ -29,13 +29,20 @@ typedef struct kotlin_KType kotlin_KType;
 typedef struct {
   kotlin_KNativePtr pinned;
 } kotlin_kref_VMLoaderApplication;
-typedef struct {
-  kotlin_KNativePtr pinned;
-} kotlin_kref_PeerNodeStub;
 
-typedef kotlin_kref_VMLoaderApplication (*application_create_t)(const char* appUrl, const char* appParams);
+typedef kotlin_kref_VMLoaderApplication (*application_create_t)(const char* appUrl, const char* appParams, kotlin_KBoolean useNativeLog);
+typedef const char* (*application_emit_event_t)(kotlin_kref_VMLoaderApplication app, kotlin_KInt type, kotlin_KInt target, kotlin_KInt arg0, kotlin_KInt arg1);
 typedef kotlin_KBoolean (*application_enter_t)(kotlin_kref_VMLoaderApplication app);
-typedef kotlin_kref_PeerNodeStub (*application_start_t)(kotlin_kref_VMLoaderApplication app);
+typedef kotlin_KLong (*application_start_t)(kotlin_kref_VMLoaderApplication app, kotlin_KInt loopIterations);
+typedef void (*set_user_view_factory_t)(void);
+
+typedef struct {
+  /* Service functions. */
+  void (*DisposeStablePointer)(kotlin_KNativePtr ptr);
+  void (*DisposeString)(const char* string);
+} kotlin_ExportedSymbols;
+
+typedef kotlin_ExportedSymbols* (*kotlin_exported_symbols_t)(void);
 
 #ifdef __cplusplus
 }  /* extern "C" */

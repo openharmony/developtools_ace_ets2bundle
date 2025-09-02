@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { AnnotationUsage, ClassProperty, Expression, TypeNode } from "../../generated"
-import { Es2pandaModifierFlags } from "../../generated/Es2pandaEnums"
+import { AnnotationUsage, ClassProperty, Expression, TypeNode } from "../../../generated"
+import { Es2pandaModifierFlags } from "../../../generated/Es2pandaEnums"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
 

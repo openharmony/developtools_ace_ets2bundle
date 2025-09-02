@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { BlockStatement, CallExpression, Expression, TSTypeParameterInstantiation } from "../../generated"
+import { BlockStatement, CallExpression, Expression, TSTypeParameterInstantiation } from "../../../generated"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
 
@@ -39,4 +39,36 @@ export function updateCallExpression(
         CallExpression.createCallExpression(callee, _arguments, typeParams, optional_arg, trailingComma, trailingBlock),
         original
     )
+}
+
+export function inplaceUpdateCallExpression(
+    original: CallExpression,
+    callee: Expression | undefined,
+    _arguments: readonly Expression[],
+    typeParams: TSTypeParameterInstantiation | undefined,
+    optional_arg: boolean = false,
+    trailingComma: boolean = false,
+    trailingBlock: BlockStatement | undefined = undefined,
+) {
+    if (!isSameNativeObject(optional_arg, original.isOptional)
+     || !isSameNativeObject(trailingComma, original.hasTrailingComma)
+    ) {
+        // unlikely
+        console.log(`Did not managed to update call expression ${callee?.dumpSrc()} inplace!`)
+        const result = CallExpression.createCallExpression(
+            callee,
+            _arguments,
+            typeParams,
+            optional_arg,
+            trailingComma,
+            trailingBlock
+        )
+        result.onUpdate(original)
+        return result
+    }
+    original.setCallee(callee)
+    original.setArguments(_arguments)
+    original.setTypeParams(typeParams)
+    original.setTrailingBlock(trailingBlock)
+    return original
 }

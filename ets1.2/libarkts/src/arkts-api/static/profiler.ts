@@ -15,7 +15,7 @@
 
 import * as fs from "fs"
 import * as path from "path"
-import { Es2pandaContextState } from "../../generated/Es2pandaEnums"
+import { Es2pandaContextState } from "../../../generated/Es2pandaEnums"
 import { global } from "./global"
 
 const PERFORMANCE_DATA_DIR = "./performance-results/"
@@ -148,7 +148,7 @@ export class Profiler implements PerformanceData {
         const outDir = path.resolve(global.arktsconfig!.outDir, PERFORMANCE_DATA_DIR)
         fs.mkdirSync(outDir, { recursive: true })
         const outFilePath = path.resolve(outDir, path.basename(this.filePath)) + ".json"
-    
+
         const data: PerformanceDataFile = { data: [this as PerformanceData] }
         if (!fs.existsSync(outFilePath)) {
             fs.writeFileSync(outFilePath, JSON.stringify(data))

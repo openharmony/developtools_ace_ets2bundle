@@ -510,12 +510,16 @@ extern "C" DLL_EXPORT KInt LoadVirtualMachine(KInt vmKind, const char* bootFiles
         g_vmEntry.vmKind = vmKind;
         (void)vm;
 
-        application_create_t application_create = (application_create_t)findSymbol(handle, "application_create");
-        application_start_t application_start = (application_start_t)findSymbol(handle, "application_start");
-        application_enter_t application_enter = (application_enter_t)findSymbol(handle, "application_enter");
-        g_vmEntry.create = (void*)application_create;
-        g_vmEntry.start = (void*)application_start;
-        g_vmEntry.enter = (void*)application_enter;
+        kotlin_exported_symbols_t kotlin_exported_symbols = (kotlin_exported_symbols_t)findSymbol(handle, "kotlin_koala_symbols");
+        env = kotlin_exported_symbols();
+
+        set_user_view_factory_t set_user_view_factory = (set_user_view_factory_t)findSymbol(handle, "set_user_view_factory");
+        set_user_view_factory();
+
+        g_vmEntry.create = findSymbol(handle, "application_create");
+        g_vmEntry.start = findSymbol(handle, "application_start");
+        g_vmEntry.enter = findSymbol(handle, "application_enter");
+        g_vmEntry.emitEvent = findSymbol(handle, "application_emit_event");
 
         result = 0;
     }
@@ -880,11 +884,12 @@ extern "C" DLL_EXPORT KNativePointer StartApplication(const char* appUrl, const 
         application_create_t application_create = (application_create_t)g_vmEntry.create;
         application_start_t application_start = (application_start_t)g_vmEntry.start;
 
-        kotlin_kref_VMLoaderApplication app = application_create(appUrl, appParams);
+        bool useNativeLog = false;
+        kotlin_kref_VMLoaderApplication app = application_create(appUrl, appParams, useNativeLog);
         g_vmEntry.app = app.pinned;
 
-        kotlin_kref_PeerNodeStub root = application_start(app);
-        return root.pinned;
+        kotlin_KLong root = application_start(app, loopIterations);
+        return reinterpret_cast<KNativePointer>(root);
     }
 #endif
 
@@ -1049,6 +1054,23 @@ extern "C" DLL_EXPORT const char* EmitEvent(const KInt type, const KInt target, 
             return "-1";
         }
         return buffer;
+    }
+#endif
+
+#ifdef KOALA_KOTLIN
+    if (g_vmEntry.vmKind == KOTLIN_KIND) {
+        kotlin_kref_VMLoaderApplication app = { .pinned = g_vmEntry.app };
+        application_emit_event_t application_emit_event = (application_emit_event_t)g_vmEntry.emitEvent;
+        const char *kotlinString = application_emit_event(app, type, target, arg0, arg1);
+
+        size_t bufferSize = interop_strlen(kotlinString) + 1;
+        char *result = (char*)malloc(bufferSize);
+        interop_strcpy(result, bufferSize, kotlinString);
+
+        kotlin_ExportedSymbols *env = reinterpret_cast<kotlin_ExportedSymbols*>(g_vmEntry.env);
+        env->DisposeString(kotlinString);
+
+        return result;
     }
 #endif
     return "-1";

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { ArkTsConfig } from "../../generated"
+import { ArkTsConfig } from "../../../generated"
 import { traceGlobal } from "../../tracer"
 
 export function dumpArkTsConfigInfo(arkTsConfig: ArkTsConfig) {
