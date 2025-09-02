@@ -113,6 +113,7 @@ export interface LanguageServiceCache {
   maxFlowDepth?: number;
   preTsImportSendable?: boolean;
   preSkipOhModulesLint?: boolean;
+  preEnableStrictCheckOHModule?: boolean;
   preMixCompile?: boolean;
 }
 
@@ -211,6 +212,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'compatibleSdkVersionStage': projectConfig.compatibleSdkVersionStage,
     'compatibleSdkVersion': projectConfig.compatibleSdkVersion,
     'skipOhModulesLint': skipOhModulesLint,
+    'enableStrictCheckOHModule': enableStrictCheckOHModule,
     'mixCompile': mixCompile,
     'isCompileJsHar': isCompileJsHar(),
     'moduleRootPath': projectConfig.moduleRootPath,
@@ -454,21 +456,19 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     (hashDiffers && !rollupShareObject?.depInfo?.enableIncre) : hashDiffers;
   const targetESVersionDiffers: boolean | undefined = lastTargetESVersion && currentTargetESVersion && lastTargetESVersion !== currentTargetESVersion;
   const maxFlowDepthDiffers: boolean | undefined = lastMaxFlowDepth && currentMaxFlowDepth && lastMaxFlowDepth !== currentMaxFlowDepth;
-  const tsImportSendableDiff: boolean = (cache?.preTsImportSendable === undefined && !tsImportSendable) ?
-    false :
-    cache?.preTsImportSendable !== tsImportSendable;
-  const skipOhModulesLintDiff: boolean = (cache?.preSkipOhModulesLint === undefined && !skipOhModulesLint) ? 
-    false : cache?.preSkipOhModulesLint !== skipOhModulesLint;
-  const mixCompileDiff: boolean = (cache?.preMixCompile === undefined && !mixCompile) ? 
-    false : cache?.preMixCompile !== mixCompile;
+  const tsImportSendableDiff: boolean = checkValueDiff(cache?.preTsImportSendable, tsImportSendable);
+  const skipOhModulesLintDiff: boolean = checkValueDiff(cache?.preSkipOhModulesLint, skipOhModulesLint);
+  const enableStrictCheckOHModuleDiff: boolean = checkValueDiff(cache?.preEnableStrictCheckOHModule, enableStrictCheckOHModule);
+  const mixCompileDiff: boolean = checkValueDiff(cache?.preMixCompile, mixCompile);
   const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || targetESVersionDiffers ||
-    tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff || mixCompileDiff;
+    tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff || enableStrictCheckOHModuleDiff || mixCompileDiff;
   if (reuseLanguageServiceForDepChange && hashDiffers && rollupShareObject?.depInfo?.enableIncre) {
     needReCheckForChangedDepUsers = true;
   }
 
   if (!service || shouldRebuild) {
-    rebuildProgram(targetESVersionDiffers, tsImportSendableDiff, maxFlowDepthDiffers, skipOhModulesLintDiff, mixCompileDiff);
+    rebuildProgram(targetESVersionChanged, tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff ||
+      enableStrictCheckOHModuleDiff || mixCompileDiff);
     service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
   } else {
     // Found language service from cache, update root files
@@ -489,13 +489,22 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   return service;
 }
 
-function rebuildProgram(targetESVersionDiffers: boolean | undefined, tsImportSendableDiff: boolean,
-  maxFlowDepthDiffers: boolean | undefined, skipOhModulesLintDiff: boolean, mixCompileDiff: boolean): void {
+/**
+ * compare cache value and current value, check if they are different
+ * @param cacheValue cache value
+ * @param currentValue current value
+ * @returns true if they are different, false otherwise
+ */
+function checkValueDiff(cacheValue: boolean | undefined, currentValue: boolean): boolean {
+  return !(cacheValue === undefined && !currentValue) && cacheValue !== currentValue;
+}
+
+function rebuildProgram(targetESVersionDiffers: boolean, languageSwithchDiffers: boolean): void {
   if (targetESVersionDiffers) {
     // If the targetESVersion is changed, we need to delete the build info cahce files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
     targetESVersionChanged = true;
-  } else if (tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff || mixCompileDiff) {
+  } else if (languageSwithchDiffers) {
     // When tsImportSendable or maxFlowDepth is changed, we need to delete the build info cahce files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
   }
@@ -556,6 +565,7 @@ export const warnCheckerResult: WarnCheckerResult = { count: 0 };
 export let languageService: ts.LanguageService = null;
 let tsImportSendable: boolean = false;
 let skipOhModulesLint: boolean = false;
+let enableStrictCheckOHModule: boolean = false;
 let mixCompile: boolean = false;
 export let maxMemoryInServiceChecker: number = 0;
 export function serviceChecker(rootFileNames: string[], newLogger: Object = null, resolveModulePaths: string[] = null,
@@ -564,6 +574,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   let cacheFile: string = null;
   tsImportSendable = rollupShareObject?.projectConfig.tsImportSendable;
   skipOhModulesLint = rollupShareObject?.projectConfig.skipOhModulesLint;
+  enableStrictCheckOHModule = rollupShareObject?.projectConfig.enableStrictCheckOHModule;
   mixCompile = rollupShareObject?.projectConfig.mixCompile;
   if (projectConfig.xtsMode || process.env.watchMode === 'true') {
     if (projectConfig.hotReload) {
