@@ -316,6 +316,10 @@
         "type": "ERROR",
         "code": "10905108"
     },
+    "ExtendInnerComponents": {
+        "message": "'testExtend' parameter cannot be passed in the '@Extend' decorator.",
+        "type": "WARN"
+    },
     "UnknownSrc": {
         "message": "Unknown resource source 'hap'.",
         "type": "ERROR",
