@@ -119,18 +119,27 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   set __backing_numA(__backing_numA: (ILocalStorageLinkDecoratedVariable<number> | undefined))
   
   get __backing_numA(): (ILocalStorageLinkDecoratedVariable<number> | undefined)
+  set __options_has_numA(__options_has_numA: (boolean | undefined))
+  
+  get __options_has_numA(): (boolean | undefined)
   set stringA(stringA: (string | undefined))
   
   get stringA(): (string | undefined)
   set __backing_stringA(__backing_stringA: (ILocalStorageLinkDecoratedVariable<string> | undefined))
   
   get __backing_stringA(): (ILocalStorageLinkDecoratedVariable<string> | undefined)
+  set __options_has_stringA(__options_has_stringA: (boolean | undefined))
+  
+  get __options_has_stringA(): (boolean | undefined)
   set booleanA(booleanA: (boolean | undefined))
   
   get booleanA(): (boolean | undefined)
   set __backing_booleanA(__backing_booleanA: (ILocalStorageLinkDecoratedVariable<boolean> | undefined))
   
   get __backing_booleanA(): (ILocalStorageLinkDecoratedVariable<boolean> | undefined)
+  set __options_has_booleanA(__options_has_booleanA: (boolean | undefined))
+  
+  get __options_has_booleanA(): (boolean | undefined)
   
 }
 

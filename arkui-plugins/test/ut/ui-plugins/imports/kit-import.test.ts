@@ -46,7 +46,7 @@ import { EntryPoint as EntryPoint } from "arkui.UserView";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
-import { Prop as Prop, Column as Column, Entry as Entry } from "@kit.ArkUI";
+import { PropRef as PropRef, Column as Column, Entry as Entry } from "@kit.ArkUI";
 
 import { Text as Text, Component as Component, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 
@@ -59,7 +59,7 @@ import hilog from "@ohos.hilog";
 @Entry() @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
   @State() public a: string = "str";
   
-  @Prop() public b!: string;
+  @PropRef() public b!: string;
   
   public build() {
     Column(){
@@ -75,8 +75,10 @@ import hilog from "@ohos.hilog";
 @Entry() @Component() export interface __Options_A {
   a?: string;
   @State() __backing_a?: string;
+  __options_has_a?: boolean;
   b?: string;
-  @Prop() __backing_b?: string;
+  @PropRef() __backing_b?: string;
+  __options_has_b?: boolean;
   
 }
 
@@ -98,8 +100,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 `;
 
 const expectedCheckedScript: string = `
-
-import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
+import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
@@ -127,7 +128,7 @@ import { EntryPoint as EntryPoint } from "arkui.UserView";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
-import { Prop as Prop, Column as Column, Entry as Entry } from "@kit.ArkUI";
+import { PropRef as PropRef, Column as Column, Entry as Entry } from "@kit.ArkUI";
 
 import { Text as Text, Component as Component, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 
@@ -151,12 +152,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __initializeStruct(initializers: (__Options_A | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_a = STATE_MGMT_FACTORY.makeState<string>(this, "a", ((({let gensym___94024326 = initializers;
     (((gensym___94024326) == (null)) ? undefined : gensym___94024326.a)})) ?? ("str")));
-    this.__backing_b = STATE_MGMT_FACTORY.makeProp<string>(this, "b", (initializers!.b as string));
+    this.__backing_b = STATE_MGMT_FACTORY.makePropRef<string>(this, "b", (initializers!.b as string));
   }
   
   public __updateStruct(initializers: (__Options_A | undefined)): void {
-    if (((({let gensym___81454501 = initializers;
-    (((gensym___81454501) == (null)) ? undefined : gensym___81454501.b)})) !== (undefined))) {
+    if (({let gensym___146630597 = initializers;
+    (((gensym___146630597) == (null)) ? undefined : gensym___146630597.__options_has_b)})) {
       this.__backing_b!.update((initializers!.b as string));
     }
   }
@@ -171,7 +172,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_a!.set(value);
   }
   
-  private __backing_b?: IPropDecoratedVariable<string>;
+  private __backing_b?: IPropRefDecoratedVariable<string>;
   
   public get b(): string {
     return this.__backing_b!.get();
@@ -208,12 +209,18 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   set __backing_a(__backing_a: (IStateDecoratedVariable<string> | undefined))
   
   get __backing_a(): (IStateDecoratedVariable<string> | undefined)
+  set __options_has_a(__options_has_a: (boolean | undefined))
+  
+  get __options_has_a(): (boolean | undefined)
   set b(b: (string | undefined))
   
   get b(): (string | undefined)
-  set __backing_b(__backing_b: (IPropDecoratedVariable<string> | undefined))
+  set __backing_b(__backing_b: (IPropRefDecoratedVariable<string> | undefined))
   
-  get __backing_b(): (IPropDecoratedVariable<string> | undefined)
+  get __backing_b(): (IPropRefDecoratedVariable<string> | undefined)
+  set __options_has_b(__options_has_b: (boolean | undefined))
+  
+  get __options_has_b(): (boolean | undefined)
   
 }
 

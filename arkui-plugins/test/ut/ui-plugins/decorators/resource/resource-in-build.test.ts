@@ -192,11 +192,24 @@ function main() {}
 
 @Component() export interface __Options_ResourceComponent {
   set str1(str1: (string | undefined))
+  
   get str1(): (string | undefined)
+  set __options_has_str1(__options_has_str1: (boolean | undefined))
+  
+  get __options_has_str1(): (boolean | undefined)
   set str2(str2: (string | undefined))
+  
   get str2(): (string | undefined)
+  set __options_has_str2(__options_has_str2: (boolean | undefined))
+  
+  get __options_has_str2(): (boolean | undefined)
   set numbers(numbers: (Array<string> | undefined))
+  
   get numbers(): (Array<string> | undefined)
+  set __options_has_numbers(__options_has_numbers: (boolean | undefined))
+  
+  get __options_has_numbers(): (boolean | undefined)
+  
 }
 `;
 

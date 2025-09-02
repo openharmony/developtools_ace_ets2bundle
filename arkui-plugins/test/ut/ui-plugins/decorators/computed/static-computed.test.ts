@@ -64,6 +64,7 @@ import { Computed as Computed, ObservedV2 as ObservedV2, Trace as Trace, Local a
 
 function main() {}
 
+
 @ObservedV2() class Name implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
@@ -247,12 +248,18 @@ function main() {}
   set __backing_localVar1(__backing_localVar1: (ILocalDecoratedVariable<string> | undefined))
   
   get __backing_localVar1(): (ILocalDecoratedVariable<string> | undefined)
+  set __options_has_localVar1(__options_has_localVar1: (boolean | undefined))
+  
+  get __options_has_localVar1(): (boolean | undefined)
   set localVar2(localVar2: (number | undefined))
   
   get localVar2(): (number | undefined)
   set __backing_localVar2(__backing_localVar2: (ILocalDecoratedVariable<number> | undefined))
   
   get __backing_localVar2(): (ILocalDecoratedVariable<number> | undefined)
+  set __options_has_localVar2(__options_has_localVar2: (boolean | undefined))
+  
+  get __options_has_localVar2(): (boolean | undefined)
   
 }
 

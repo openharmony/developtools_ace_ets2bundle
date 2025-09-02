@@ -126,30 +126,45 @@ function main() {}
   set __backing_localVar1(__backing_localVar1: (ILocalDecoratedVariable<string> | undefined))
   
   get __backing_localVar1(): (ILocalDecoratedVariable<string> | undefined)
+  set __options_has_localVar1(__options_has_localVar1: (boolean | undefined))
+  
+  get __options_has_localVar1(): (boolean | undefined)
   set localVar2(localVar2: (number | undefined))
   
   get localVar2(): (number | undefined)
   set __backing_localVar2(__backing_localVar2: (ILocalDecoratedVariable<number> | undefined))
   
   get __backing_localVar2(): (ILocalDecoratedVariable<number> | undefined)
+  set __options_has_localVar2(__options_has_localVar2: (boolean | undefined))
+  
+  get __options_has_localVar2(): (boolean | undefined)
   set localVar3(localVar3: (boolean | undefined))
   
   get localVar3(): (boolean | undefined)
   set __backing_localVar3(__backing_localVar3: (ILocalDecoratedVariable<boolean> | undefined))
   
   get __backing_localVar3(): (ILocalDecoratedVariable<boolean> | undefined)
+  set __options_has_localVar3(__options_has_localVar3: (boolean | undefined))
+  
+  get __options_has_localVar3(): (boolean | undefined)
   set localVar4(localVar4: (undefined | undefined))
   
   get localVar4(): (undefined | undefined)
   set __backing_localVar4(__backing_localVar4: (ILocalDecoratedVariable<undefined> | undefined))
   
   get __backing_localVar4(): (ILocalDecoratedVariable<undefined> | undefined)
+  set __options_has_localVar4(__options_has_localVar4: (boolean | undefined))
+  
+  get __options_has_localVar4(): (boolean | undefined)
   set localVar5(localVar5: (null | undefined))
   
   get localVar5(): (null | undefined)
   set __backing_localVar5(__backing_localVar5: (ILocalDecoratedVariable<null> | undefined))
   
   get __backing_localVar5(): (ILocalDecoratedVariable<null> | undefined)
+  set __options_has_localVar5(__options_has_localVar5: (boolean | undefined))
+  
+  get __options_has_localVar5(): (boolean | undefined)
   
 }
 `;
