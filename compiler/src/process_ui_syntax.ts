@@ -80,7 +80,8 @@ import {
   PAGE_FULL_PATH,
   LENGTH,
   PUV2_VIEW_BASE,
-  CONTEXT_STACK
+  CONTEXT_STACK,
+  CHECK_COMPONENT_EXTEND_DECORATOR
 } from './pre_define';
 import {
   componentInfo,
@@ -131,7 +132,8 @@ import {
   GLOBAL_STYLE_FUNCTION,
   INTERFACE_NODE_SET,
   ID_ATTRS,
-  GLOBAL_CUSTOM_BUILDER_METHOD
+  GLOBAL_CUSTOM_BUILDER_METHOD,
+  INNER_COMPONENT_NAMES
 } from './component_map';
 import {
   resources,
@@ -1280,6 +1282,16 @@ function parseExtendNode(node: ts.CallExpression, extendResult: ExtendResult, ch
         message: `'@${extendResult.decoratorName}' should have one and only one parameter.`,
         pos: node.getStart(),
         code: '10905108'
+      });
+    }
+    if (checkArguments && CHECK_EXTEND_DECORATORS.includes(extendResult.decoratorName) &&
+      node.arguments && node.arguments.length === 1 && ts.isIdentifier(node.arguments[0]) &&
+      !INNER_COMPONENT_NAMES.has(node.arguments[0].getText())) {
+      transformLog.errors.push({
+        type: LogType.WARN,
+        message: `'${node.arguments[0].getText()}' parameter cannot be` +
+          ` passed in the '@${extendResult.decoratorName}' decorator.`,
+        pos: node.getStart()
       });
     }
   }
