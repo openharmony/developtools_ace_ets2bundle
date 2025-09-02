@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { Identifier, TSTypeParameter, TypeNode } from "../../generated"
-import { Es2pandaModifierFlags } from "../../generated/Es2pandaEnums"
+import { Identifier, TSTypeParameter, TypeNode } from "../../../generated"
+import { Es2pandaModifierFlags } from "../../../generated/Es2pandaEnums"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
 

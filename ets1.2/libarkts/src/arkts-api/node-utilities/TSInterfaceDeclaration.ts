@@ -13,12 +13,8 @@
  * limitations under the License.
  */
 
-import {
-    TSInterfaceDeclaration, TSInterfaceHeritage
-} from "../../generated"
-import {
-    Es2pandaModifierFlags,
-} from "../../generated/Es2pandaEnums"
+import { TSInterfaceDeclaration, TSInterfaceHeritage } from "../../../generated"
+import { Es2pandaLanguage, Es2pandaModifierFlags, } from "../../../generated/Es2pandaEnums"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
 import { AstNode } from "../peers/AstNode"
@@ -32,13 +28,14 @@ export function createTSInterfaceDeclaration(
     isExternal: boolean,
     modifierFlags?: Es2pandaModifierFlags,
 ): TSInterfaceDeclaration {
-    return TSInterfaceDeclaration.createTSInterfaceDeclaration(
+    return TSInterfaceDeclaration.create1TSInterfaceDeclaration(
         _extends,
         id,
         typeParams,
         body,
         isStatic,
         isExternal,
+        Es2pandaLanguage.ETS,
         modifierFlags,
     )
 }

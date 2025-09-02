@@ -24,8 +24,9 @@ is_cross = get_option('cross_compile')
 
 sources = [
     './src/common.cc',
+    './src/memoryTracker.cc',
     './src/bridges.cc',
-    './src/generated/bridges.cc',
+    '../generated/native/bridges.cc',
     get_option('interop_src_dir') / 'common-interop.cc',
     get_option('interop_src_dir') / 'callback-resource.cc',
     get_option('interop_src_dir') / 'interop-logging.cc',

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { AnnotatedExpression, AnnotationUsage, ETSParameterExpression, Expression, TypeNode } from "../../generated"
+import { AnnotatedExpression, AnnotationUsage, ETSParameterExpression, Expression, TypeNode } from "../../../generated"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
 

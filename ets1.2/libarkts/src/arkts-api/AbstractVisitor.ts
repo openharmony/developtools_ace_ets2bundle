@@ -15,7 +15,7 @@
 
 import { AstNode } from "./peers/AstNode"
 import { visitEachChild } from "./visitor"
-import { Program } from "../generated"
+import { Program } from "../../generated"
 
 export interface VisitorOptions {
     program?: Program

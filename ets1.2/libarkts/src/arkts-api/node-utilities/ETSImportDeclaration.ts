@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-import { ETSImportDeclaration, StringLiteral } from "../../generated"
+import { ETSImportDeclaration, StringLiteral } from "../../../generated"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
 import { AstNode } from "../peers/AstNode"
-import { Es2pandaImportKinds } from "../../generated/Es2pandaEnums"
+import { Es2pandaImportKinds } from "../../../generated/Es2pandaEnums"
 
 export function updateETSImportDeclaration(
     original: ETSImportDeclaration,

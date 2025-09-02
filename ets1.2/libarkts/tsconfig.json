@@ -3,12 +3,13 @@
     "compilerOptions": {
         "outDir": "build",
         "baseUrl": ".",
-        "rootDir": "./src",
+        "rootDir": ".",
         "module": "esnext",
         "tsBuildInfoFile": "./build/tsconfig.tsbuildinfo"
     },
     "include": [
-        "./src/**/*.ts"
+        "./src/**/*.ts",
+        "./generated/**/*.ts"
     ],
     "exclude": [
         "./src/ts-api/**/*.ts"

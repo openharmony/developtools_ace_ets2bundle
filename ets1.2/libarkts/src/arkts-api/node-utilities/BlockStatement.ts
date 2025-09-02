@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { BlockStatement, Statement } from "../../generated"
+import { BlockStatement, Statement } from "../../../generated"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
 

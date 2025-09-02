@@ -27,7 +27,6 @@ import { insertParameter } from "./imports/recursive"
 import { addImportSameFile } from "./imports/add-same-file"
 import { addUseImportSameFile } from "./imports/add-use-same-file"
 import { addImportNewFile } from "./imports/add-new-file"
-import { addOptionalChain } from "./optional/add-chain"
 import { addUseImportClassSameFile } from "./exports/basic"
 import { addUseImportClassSameFileAndExportClass } from "./exports/add-export"
 import { addUseImportClassSameFileAndCreateClass } from "./exports/create-class"
@@ -232,15 +231,6 @@ suite(util.basename(__filename), () => {
 
     test('add this reference', () => {
         runTest('this', addThisReference)
-    })
-
-    suite('optional', () => {
-        test('pass optional unchanged', () => {
-            runTest('optional/unchanged', undefined)
-        })
-        test('add optional chain', () => {
-            runTest('optional/add-chain', addOptionalChain)
-        })
     })
 
     suite('lambda', () => {

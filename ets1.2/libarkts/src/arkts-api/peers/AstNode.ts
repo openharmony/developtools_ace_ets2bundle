@@ -17,9 +17,9 @@ import { isNullPtr, KInt, KNativePointer, nullptr } from "@koalaui/interop"
 import { global } from "../static/global"
 import { allFlags, unpackNode, unpackNodeArray, unpackNonNullableNode, unpackString } from "../utilities/private"
 import { throwError } from "../../utils"
-import { Es2pandaAstNodeType, Es2pandaModifierFlags } from "../../generated/Es2pandaEnums"
+import { Es2pandaAstNodeType, Es2pandaModifierFlags } from "../../../generated/Es2pandaEnums"
 import { ArktsObject } from "./ArktsObject"
-import { SourcePosition } from "../../generated/peers/SourcePosition"
+import { SourcePosition } from "../../../generated/peers/SourcePosition"
 import { NodeCache } from "../node-cache"
 
 export abstract class AstNode extends ArktsObject {
@@ -32,7 +32,6 @@ export abstract class AstNode extends ArktsObject {
         }
         super(peer)
         this.astNodeType = astNodeType
-        this.setChildrenParentPtr()
         NodeCache.addToCache(peer, this)
     }
 
@@ -47,6 +46,10 @@ export abstract class AstNode extends ArktsObject {
 
     public set originalPeer(peer: KNativePointer) {
         global.generatedEs2panda._AstNodeSetOriginalNode(global.context, this.peer, peer)
+    }
+
+    public get original(): this {
+        return unpackNonNullableNode(this.originalPeer)
     }
 
     public getChildren(): readonly AstNode[] {
@@ -117,7 +120,7 @@ export abstract class AstNode extends ArktsObject {
         clonedNode.parent = undefined;
         return clonedNode as this;
     }
-    
+
     public get parent(): AstNode | undefined {
         const parent = global.generatedEs2panda._AstNodeParent(global.context, this.peer);
         return unpackNode(parent);
@@ -135,7 +138,7 @@ export abstract class AstNode extends ArktsObject {
         global.generatedEs2panda._AstNodeClearModifier(global.context, this.peer, allFlags)
         global.generatedEs2panda._AstNodeAddModifier(global.context, this.peer, flags ?? Es2pandaModifierFlags.MODIFIER_FLAGS_NONE)
     }
-    
+
     /** @deprecated Use {@link modifierFlags} instead */
     public get modifiers(): KInt {
         return this.modifierFlags
@@ -171,7 +174,7 @@ export abstract class AstNode extends ArktsObject {
     public get isStatic(): boolean {
         return global.generatedEs2panda._AstNodeIsStaticConst(global.context, this.peer);
     }
-    
+
     public get startPosition(): SourcePosition {
         return new SourcePosition(global.generatedEs2panda._AstNodeStartConst(global.context, this.peer));
     }

@@ -22,11 +22,27 @@ import {
     TSClassImplements,
     TSTypeParameterDeclaration,
     TSTypeParameterInstantiation
-} from "../../generated"
+} from "../../../generated"
 import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
 import { AstNode } from "../peers/AstNode"
-import { Es2pandaClassDefinitionModifiers, Es2pandaModifierFlags } from "../../generated/Es2pandaEnums"
+import {
+    Es2pandaClassDefinitionModifiers,
+    Es2pandaLanguage,
+    Es2pandaModifierFlags
+} from "../../../generated/Es2pandaEnums"
+
+export function createClassDefinition(
+    ident: Identifier | undefined,
+    typeParams: TSTypeParameterDeclaration | undefined,
+    superTypeParams: TSTypeParameterInstantiation | undefined,
+    _implements: readonly TSClassImplements[],
+    ctor: MethodDefinition | undefined,
+    superClass: Expression | undefined,
+    body: readonly AstNode[],
+    modifiers: Es2pandaClassDefinitionModifiers,
+    flags: Es2pandaModifierFlags, annotations?: readonly AnnotationUsage[]): ClassDefinition {
+    return ClassDefinition.create3ClassDefinition(ident, typeParams, superTypeParams, _implements, ctor, superClass, body, modifiers, flags, Es2pandaLanguage.ETS, annotations)
+}
 
 export function updateClassDefinition(
     original: ClassDefinition,
@@ -54,19 +70,18 @@ export function updateClassDefinition(
     ) {
         return original
     }
-    return updateNodeByNode(
-        ClassDefinition.createClassDefinition(
-            ident,
-            typeParams,
-            superTypeParams,
-            _implements,
-            ctor,
-            superClass,
-            body,
-            modifiers,
-            flags,
-            annotations,
-        ),
-        original
+    return ClassDefinition.update3ClassDefinition(
+        original,
+        ident,
+        typeParams,
+        superTypeParams,
+        _implements,
+        ctor,
+        superClass,
+        body,
+        modifiers,
+        flags,
+        Es2pandaLanguage.ETS,
+        annotations,
     )
 }

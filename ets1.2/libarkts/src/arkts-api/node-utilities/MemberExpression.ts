@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-import { Expression, MemberExpression } from "../../generated"
+import { Expression, MemberExpression } from "../../../generated"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
-import { Es2pandaMemberExpressionKind } from "../../generated/Es2pandaEnums"
+import { Es2pandaMemberExpressionKind } from "../../../generated/Es2pandaEnums"
 
 export function updateMemberExpression(
     original: MemberExpression,

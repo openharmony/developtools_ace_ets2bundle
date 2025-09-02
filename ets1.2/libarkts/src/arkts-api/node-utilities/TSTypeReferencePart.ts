@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { ETSTypeReferencePart, Expression, TSTypeParameterInstantiation } from "../../generated"
+import { ETSTypeReferencePart, Expression, TSTypeParameterInstantiation } from "../../../generated"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
 

@@ -14,10 +14,10 @@
  */
 
 import { global } from "../static/global"
-import { NumberLiteral } from "../../generated"
+import { NumberLiteral } from "../../../generated"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
-import { Es2pandaAstNodeType } from "../../generated/Es2pandaEnums"
+import { Es2pandaAstNodeType } from "../../../generated/Es2pandaEnums"
 
 export function createNumberLiteral(
     value: number

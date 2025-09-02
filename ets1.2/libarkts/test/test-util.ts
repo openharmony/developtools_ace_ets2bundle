@@ -70,7 +70,6 @@ export function ARKTS_TEST_ASSERTION(node: arkts.ETSModule, source: string, stat
     const ast = node.dumpJson()
     const src = node.dumpSrc()
     const dump = node.dump()
-    global.es2panda._DestroyContext(global.context)
 
     try {
         const script = arkts.createETSModuleFromSource(source, finalState)

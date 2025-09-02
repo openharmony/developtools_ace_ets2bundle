@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-import { AssignmentExpression, Expression } from "../../generated"
+import { AssignmentExpression, Expression } from "../../../generated"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
-import { Es2pandaAstNodeType, Es2pandaTokenType } from "../../generated/Es2pandaEnums"
+import { Es2pandaAstNodeType, Es2pandaTokenType } from "../../../generated/Es2pandaEnums"
 
 export function createAssignmentExpression(
     left: Expression | undefined,

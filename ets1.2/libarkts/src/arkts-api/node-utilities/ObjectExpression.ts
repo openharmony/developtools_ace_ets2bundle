@@ -14,10 +14,10 @@
  */
 
 import { KNativePointer } from "@koalaui/interop"
-import { ObjectExpression, Expression } from "../../generated"
+import { ObjectExpression, Expression } from "../../../generated"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
-import { Es2pandaAstNodeType } from "../../generated/Es2pandaEnums"
+import { Es2pandaAstNodeType } from "../../../generated/Es2pandaEnums"
 
 export function createObjectExpression(
     properties: readonly Expression[],

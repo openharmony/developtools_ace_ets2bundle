@@ -107,7 +107,7 @@ import { testFunction as testFunction } from "./library";
 
 function main() {}
 
-
+console.log("test");
 `,
         `invalid result: ${program.ast.dumpSrc()}`)
 
@@ -180,7 +180,7 @@ import { testFunctionChanged as testFunctionChanged } from "./library";
 
 function main() {}
 
-
+testFunctionChanged();
 `,
         `invalid result: ${program.ast.dumpSrc()}`)
 

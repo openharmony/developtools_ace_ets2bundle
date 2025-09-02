@@ -15,7 +15,7 @@
 
 import { KNativePointer } from "@koalaui/interop"
 import { defaultFilter, listPrograms } from "./plugins"
-import { Program } from "../generated"
+import { Program } from "../../generated"
 
 export class ProgramProvider {
     // Improve: migrate to wrappers instead of pointers

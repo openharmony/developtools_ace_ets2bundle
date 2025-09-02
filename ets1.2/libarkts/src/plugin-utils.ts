@@ -18,7 +18,6 @@ import {
     PluginContext,
     ImportStorage,
     arktsGlobal,
-    ChainExpressionFilter,
     ProgramTransformer,
     Program,
     ProgramProvider,
@@ -80,9 +79,6 @@ export function runTransformerOnProgram(program: Program, options: CompilationOp
     // Run the plugin itself
     transform?.(program, options, pluginContext)
 
-    // Run some common plugins that should be run after plugin usage and depends on the current state
-    stateSpecificPostFilters(program, options.state)
-
     // Update internal import information based on import modification by plugin
     importStorage.update()
 
@@ -114,12 +110,6 @@ export function runTransformer(prog: Program, state: Es2pandaContextState, trans
 
         // Proceed to the next program
         currentProgram = provider.next()
-    }
-}
-
-function stateSpecificPostFilters(program: Program, state: Es2pandaContextState) {
-    if (state == Es2pandaContextState.ES2PANDA_STATE_CHECKED) {
-        program.setAst(new ChainExpressionFilter().visitor(program.ast))
     }
 }
 

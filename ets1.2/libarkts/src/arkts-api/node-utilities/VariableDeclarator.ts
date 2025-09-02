@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { Expression, VariableDeclarator } from "../../generated"
-import { Es2pandaVariableDeclaratorFlag } from "../../generated/Es2pandaEnums"
+import { Expression, VariableDeclarator } from "../../../generated"
+import { Es2pandaVariableDeclaratorFlag } from "../../../generated/Es2pandaEnums"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
 

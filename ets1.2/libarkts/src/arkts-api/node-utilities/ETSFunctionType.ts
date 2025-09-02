@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { AnnotationUsage, ETSFunctionType, Expression, FunctionSignature, TSTypeParameterDeclaration, TypeNode } from "../../generated"
-import { Es2pandaScriptFunctionFlags } from "../../generated/Es2pandaEnums"
+import { AnnotationUsage, ETSFunctionType, Expression, FunctionSignature, TSTypeParameterDeclaration, TypeNode } from "../../../generated"
+import { Es2pandaScriptFunctionFlags } from "../../../generated/Es2pandaEnums"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
 

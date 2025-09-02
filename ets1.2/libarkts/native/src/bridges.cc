@@ -19,6 +19,10 @@
 #include <string>
 #include <mutex>
 
+/** XXX: If you add or remove methods that exist in C API,
+ * please change generator/options.json5 accordingly.
+ */
+
 KNativePointer impl_AstNodeRebind(KNativePointer contextPtr, KNativePointer nodePtr)
 {
     auto context = reinterpret_cast<es2panda_Context*>(contextPtr);

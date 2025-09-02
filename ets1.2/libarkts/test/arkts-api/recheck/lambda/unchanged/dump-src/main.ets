@@ -8,8 +8,8 @@ function foo(): void {
 }
 
 function hasTrailing(first?: string, trailing?: (()=> void)): void {
-  ({let gensym%%_1040 = trailing;
-  (((gensym%%_1040) == (null)) ? undefined : gensym%%_1040())});
+  ({let gensym%%_865 = trailing;
+  (((gensym%%_865) == (null)) ? undefined : gensym%%_865())});
 }
 
 function bar(zzz: string): void {

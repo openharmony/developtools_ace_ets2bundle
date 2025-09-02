@@ -21,9 +21,9 @@ import {
     ScriptFunction,
     TSTypeParameterDeclaration,
     TypeNode
-} from "../../generated"
+} from "../../../generated"
 import { AstNode } from "../peers/AstNode"
-import { Es2pandaModifierFlags, Es2pandaScriptFunctionFlags } from "../../generated/Es2pandaEnums"
+import { Es2pandaLanguage, Es2pandaModifierFlags, Es2pandaScriptFunctionFlags } from "../../../generated/Es2pandaEnums"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
 import { KNativePointer } from "@koalaui/interop"
@@ -41,7 +41,7 @@ export function createScriptFunction(
     signaturePointer?: KNativePointer,
     preferredReturnTypePointer?: KNativePointer,
 ) {
-    const res = ScriptFunction.createScriptFunction(
+    const res = ScriptFunction.create1ScriptFunction(
         databody,
         FunctionSignature.createFunctionSignature(
             typeParams,
@@ -51,6 +51,7 @@ export function createScriptFunction(
         ),
         datafuncFlags,
         dataflags,
+        Es2pandaLanguage.ETS,
         ident,
         annotations,
     )
@@ -107,4 +108,50 @@ export function updateScriptFunction(
         ),
         original
     )
+}
+
+export function inplaceUpdateScriptFunction(
+    original: ScriptFunction,
+    databody: AstNode | undefined,
+    typeParams: TSTypeParameterDeclaration | undefined,
+    params: readonly Expression[],
+    returnTypeAnnotation: TypeNode | undefined,
+    hasReceiver: boolean,
+    datafuncFlags: Es2pandaScriptFunctionFlags,
+    dataflags: Es2pandaModifierFlags,
+    ident: Identifier | undefined,
+    annotations: readonly AnnotationUsage[] | undefined,
+    signaturePointer?: KNativePointer,
+    preferredReturnTypePointer?: KNativePointer,
+) {
+    if (!isSameNativeObject(typeParams, original.typeParams)
+     || !isSameNativeObject(hasReceiver, original.hasReceiver)
+     || !isSameNativeObject(datafuncFlags, original.flags)) {
+        // unlikely
+        console.log(`Did not managed to update script function ${ident?.name} inplace!`)
+        const result = createScriptFunction(
+            databody,
+            typeParams,
+            params,
+            returnTypeAnnotation,
+            hasReceiver,
+            datafuncFlags,
+            dataflags,
+            ident,
+            annotations,
+            signaturePointer,
+            preferredReturnTypePointer,
+        )
+        result.onUpdate(original)
+        return result
+    }
+    original.setBody(databody)
+    original.setParams(params)
+    original.setReturnTypeAnnotation(returnTypeAnnotation)
+    original.modifierFlags = dataflags
+    if (ident) original.setIdent(ident)
+    if (annotations) original.setAnnotations(annotations)
+    if (signaturePointer) original.setSignaturePointer(signaturePointer)
+    if (preferredReturnTypePointer) original.setPreferredReturnTypePointer(preferredReturnTypePointer)
+    return original
 }

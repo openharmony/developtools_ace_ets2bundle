@@ -15,12 +15,11 @@
 
 import { global } from "../static/global"
 import { isNumber, throwError, withWarning } from "../../utils"
-import { KNativePointer, nullptr, KInt} from "@koalaui/interop"
-import { passNode, passNodeArray, unpackNodeArray, unpackNonNullableNode, passString, unpackString, nodeType } from "./private"
-import { Es2pandaContextState, Es2pandaModifierFlags, Es2pandaMethodDefinitionKind, Es2pandaPrimitiveType, Es2pandaScriptFunctionFlags, Es2pandaAstNodeType } from "../../generated/Es2pandaEnums"
+import { KNativePointer, nullptr, KInt, KUInt} from "@koalaui/interop"
+import { passNode, unpackNodeArray, unpackNonNullableNode, passString, unpackString, passStringArray, unpackNode } from "./private"
+import { Es2pandaContextState, Es2pandaModifierFlags, Es2pandaMethodDefinitionKind, Es2pandaAstNodeType, Es2pandaPluginDiagnosticType } from "../../../generated/Es2pandaEnums"
 import type { AstNode } from "../peers/AstNode"
-import { SourcePosition } from "../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
+import { DiagnosticInfo, Identifier, isConditionalExpression, SourcePosition, SourceRange, SuggestionInfo, VariableDeclarator } from "../../../generated"
 import {
     type AnnotationUsage,
     ClassDefinition,
@@ -32,7 +31,6 @@ import {
     isScriptFunction,
     isIdentifier,
     isETSModule,
-    ImportSpecifier,
     Program,
     isObjectExpression,
     ETSImportDeclaration,
@@ -43,17 +41,17 @@ import {
     MemberExpression,
     isMethodDefinition,
     TypeNode,
-} from "../../generated"
+} from "../../../generated"
 import { Config } from "../peers/Config"
 import { Context } from "../peers/Context"
 import { NodeCache } from "../node-cache"
-import { listPrograms } from "../plugins"
 import { factory } from "../factory/nodeFactory"
 import { traceGlobal } from "../../tracer"
+import { DiagnosticKind } from "../peers/DiagnosticKind"
 
 /**
  * Improve: Replace or remove with better naming
- * 
+ *
  * @deprecated
  */
 export function createETSModuleFromContext(): ETSModule {
@@ -72,7 +70,7 @@ export function createETSModuleFromContext(): ETSModule {
 /**
  * Now used only in tests
  * Improve: Remove or replace with better method
- * 
+ *
  * @deprecated
  */
 export function createETSModuleFromSource(
@@ -230,6 +228,26 @@ export function getPeerDecl(peer: KNativePointer): AstNode | undefined {
         return undefined
     }
     return unpackNonNullableNode(decl)
+}
+
+export function declarationFromIdentifier(node: Identifier): AstNode | undefined {
+    return unpackNode(global.generatedEs2panda._DeclarationFromIdentifier(global.context, node.peer))
+}
+
+export function resolveGensymVariableDeclaratorForDefaultParam(node: VariableDeclarator): Identifier | undefined {
+    const init = node.init
+    if (isConditionalExpression(init) && isIdentifier(init.consequent) && init.consequent.name.startsWith("gensym%%_")) {
+        return init.consequent
+    }
+    return undefined
+}
+
+export function resolveGensymVariableDeclaratorForOptionalCall(node: VariableDeclarator): Identifier | undefined {
+    const init = node.init
+    if (isIdentifier(node.id) && node.id.name.startsWith("gensym%%_") && isIdentifier(init)) {
+        return init
+    }
+    return undefined
 }
 
 export function getPeerObjectDecl(peer: KNativePointer): AstNode | undefined {
@@ -394,4 +412,40 @@ export function generateStaticDeclarationsFromContext(outputPath: string): KInt 
         global.context,
         passString(outputPath)
     );
+}
+
+export function createTypeNodeFromTsType(node: AstNode): AstNode | undefined {
+    const typeAnnotation = global.es2panda._CreateTypeNodeFromTsType(global.context, node.peer);
+    if (typeAnnotation === nullptr) {
+        return undefined;
+    }
+    return unpackNonNullableNode(typeAnnotation);
+}
+
+export function createSourcePosition(index: KUInt, line: KUInt): SourcePosition {
+    return new SourcePosition(global.generatedEs2panda._CreateSourcePosition(global.context, index, line))
+}
+
+export function createSourceRange(start: SourcePosition, end: SourcePosition): SourceRange {
+    return new SourceRange(global.generatedEs2panda._CreateSourceRange(global.context, start.peer, end.peer))
+}
+
+export function createDiagnosticInfo(kind: DiagnosticKind, position: SourcePosition, ...args: string[]): DiagnosticInfo {
+    return new DiagnosticInfo(global.es2panda._CreateDiagnosticInfo(global.context, kind.peer, passStringArray(args), args.length, position.peer))
+}
+
+export function createSuggestionInfo(kind: DiagnosticKind, substitutionCode: string, title: string, range: SourceRange, ...args: string[]): SuggestionInfo {
+    return new SuggestionInfo(global.es2panda._CreateSuggestionInfo(global.context, kind.peer, passStringArray(args), args.length, substitutionCode, title, range.peer))
+}
+
+export function createDiagnosticKind(message: string, type: Es2pandaPluginDiagnosticType): DiagnosticKind {
+    return new DiagnosticKind(global.es2panda._CreateDiagnosticKind(global.context, message, type));
+}
+
+export function logDiagnostic(kind: DiagnosticKind, pos: SourcePosition, ...args: string[]): void {
+    global.es2panda._LogDiagnostic(global.context, kind.peer, passStringArray(args), args.length, pos.peer);
+}
+
+export function logDiagnosticWithSuggestion(diagnosticInfo: DiagnosticInfo, suggestionInfo: SuggestionInfo): void {
+    global.generatedEs2panda._LogDiagnosticWithSuggestion(global.context, diagnosticInfo.peer, suggestionInfo.peer);
 }

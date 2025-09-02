@@ -1,11 +1,12 @@
 {
     "name": "@koalaui/interop",
-    "version": "1.7.9+devel",
+    "version": "1.7.10+devel",
     "description": "",
     "workspaces": [
         "../incremental/build-common",
         "../incremental/compat",
-        "../incremental/common"
+        "../incremental/common",
+        "../ui2abc/fast-arktsc"
     ],
     "files": [
         "build/lib/src/**/*.js",
@@ -97,7 +98,7 @@
     "keywords": [],
     "dependencies": {
         "@types/node": "^18.0.0",
-        "@koalaui/common": "1.7.9+devel"
+        "@koalaui/common": "1.7.10+devel"
     },
     "devDependencies": {
         "@ohos/hypium": "1.0.6",
@@ -107,7 +108,6 @@
         "eslint": "^8.13.0",
         "eslint-plugin-unused-imports": "^2.0.0",
         "source-map-support": "^0.5.21",
-        "@koalaui/ets-tsc": "4.9.5-r5",
-        "@koalaui/fast-arktsc": "1.5.15"
+        "@koalaui/ets-tsc": "4.9.5-r5"
     }
 }

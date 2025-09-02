@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { Es2pandaContextState } from "../generated/Es2pandaEnums"
-import { Program } from "../generated"
+import { Es2pandaContextState } from "../../generated/Es2pandaEnums"
+import { Program } from "../../generated"
 import { ExternalSource } from "./peers/ExternalSource"
 import { KNativePointer } from "@koalaui/interop"
 import { global } from "./static/global"

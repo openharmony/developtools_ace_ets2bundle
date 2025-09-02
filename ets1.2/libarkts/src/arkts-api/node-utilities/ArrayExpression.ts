@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { Es2pandaAstNodeType } from "../../generated/Es2pandaEnums"
-import { ArrayExpression, Expression } from "../../generated"
+import { Es2pandaAstNodeType } from "../../../generated/Es2pandaEnums"
+import { ArrayExpression, Expression } from "../../../generated"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
 

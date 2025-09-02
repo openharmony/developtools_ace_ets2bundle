@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { ETSTuple, TypeNode } from "../../generated"
+import { ETSTuple, TypeNode } from "../../../generated"
 import { isSameNativeObject } from "../peers/ArktsObject"
 import { updateNodeByNode } from "../utilities/private"
 

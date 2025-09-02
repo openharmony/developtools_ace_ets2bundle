@@ -16,7 +16,7 @@
 // koala-wrapper compatibility helpers
 
 import { KNativePointer } from "@koalaui/interop"
-import { ETSModule } from "../generated"
+import { ETSModule } from "../../generated"
 import { createETSModuleFromContext } from "./utilities/public"
 import { global } from "./static/global"
 

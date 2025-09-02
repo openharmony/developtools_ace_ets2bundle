@@ -46,6 +46,11 @@ template <>
 inline InteropRuntimeType runtimeType(const InteropMaterialized& value) {
   return INTEROP_RUNTIME_OBJECT;
 }
+template<>
+inline InteropRuntimeType runtimeType(const InteropObject& value)
+{
+    return INTEROP_RUNTIME_OBJECT;
+}
 
 static const std::size_t buffer_size = 1024 * 1024; // 1 MB
 static std::size_t offset = 0;

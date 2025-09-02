@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Program } from "../../generated"
+import { Program } from "../../../generated"
 import { traceGlobal } from "../../tracer"
 
 export function dumpProgramInfo(program: Program) {

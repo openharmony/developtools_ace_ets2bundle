@@ -22,12 +22,12 @@ interface_sdk-js
 **/*.abc
 cachegrind.out.*
 perf.data*
-/ui2abc/memo-plugin/tests/out
+/ui2abc/memo-plugin-ng/tests/out
 *.tsbuildinfo
 ui2abc/libarkts/lib
-ui2abc/memo-plugin/lib
-ui2abc/ui-plugins/lib
-incremetal-cj/runtime/ck
+ui2abc/memo-plugin-ng/lib
+ui2abc/ui-plugins-ng/lib
+incremetal-cj/runtime/callsitekey
 .rollup.cache
 tsconfig.tsbuildinfo
 *.meta.json
