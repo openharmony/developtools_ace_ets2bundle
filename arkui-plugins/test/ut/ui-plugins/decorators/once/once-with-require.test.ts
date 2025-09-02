@@ -93,16 +93,20 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
 @ComponentV2() export interface __Options_Child {
   onceParamNum?: number;
   @Param() @Once() __backing_onceParamNum?: number;
+  __options_has_onceParamNum?: boolean;
   onceParamInfo?: Info;
   @Param() @Once() @Require() __backing_onceParamInfo?: Info;
+  __options_has_onceParamInfo?: boolean;
   
 }
 
 @ComponentV2() export interface __Options_Index {
   localNum?: number;
   @Local() __backing_localNum?: number;
+  __options_has_localNum?: boolean;
   localInfo?: Info;
   @Local() __backing_localInfo?: Info;
+  __options_has_localInfo?: boolean;
   
 }
 `;
@@ -292,7 +296,9 @@ function main() {}
         return new Child();
       }), {
         onceParamNum: this.localNum,
+        __options_has_onceParamNum: true,
         onceParamInfo: this.localInfo,
+        __options_has_onceParamInfo: true,
       }, undefined, undefined);
     }));
   }
@@ -308,12 +314,18 @@ function main() {}
   @Param() set __backing_onceParamNum(__backing_onceParamNum: (IParamOnceDecoratedVariable<number> | undefined))
   
   @Param() get __backing_onceParamNum(): (IParamOnceDecoratedVariable<number> | undefined)
+  set __options_has_onceParamNum(__options_has_onceParamNum: (boolean | undefined))
+  
+  get __options_has_onceParamNum(): (boolean | undefined)
   set onceParamInfo(onceParamInfo: (Info | undefined))
   
   get onceParamInfo(): (Info | undefined)
   @Param() @Require() set __backing_onceParamInfo(__backing_onceParamInfo: (IParamOnceDecoratedVariable<Info> | undefined))
   
   @Param() @Require() get __backing_onceParamInfo(): (IParamOnceDecoratedVariable<Info> | undefined)
+  set __options_has_onceParamInfo(__options_has_onceParamInfo: (boolean | undefined))
+  
+  get __options_has_onceParamInfo(): (boolean | undefined)
   
 }
 
@@ -324,12 +336,18 @@ function main() {}
   set __backing_localNum(__backing_localNum: (ILocalDecoratedVariable<number> | undefined))
   
   get __backing_localNum(): (ILocalDecoratedVariable<number> | undefined)
+  set __options_has_localNum(__options_has_localNum: (boolean | undefined))
+  
+  get __options_has_localNum(): (boolean | undefined)
   set localInfo(localInfo: (Info | undefined))
   
   get localInfo(): (Info | undefined)
   set __backing_localInfo(__backing_localInfo: (ILocalDecoratedVariable<Info> | undefined))
   
   get __backing_localInfo(): (ILocalDecoratedVariable<Info> | undefined)
+  set __options_has_localInfo(__options_has_localInfo: (boolean | undefined))
+  
+  get __options_has_localInfo(): (boolean | undefined)
   
 }
 `;

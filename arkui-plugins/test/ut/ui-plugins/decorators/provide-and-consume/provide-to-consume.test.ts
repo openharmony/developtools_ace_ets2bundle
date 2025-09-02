@@ -80,16 +80,20 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
 @Component() export interface __Options_Child {
   num?: number;
   @Consume() __backing_num?: number;
+  __options_has_num?: boolean;
   str?: string;
   @Consume({value:"ss"}) __backing_str?: string;
+  __options_has_str?: boolean;
   
 }
 
 @Component() export interface __Options_Parent {
   num?: number;
   @Provide({alias:"num"}) __backing_num?: number;
+  __options_has_num?: boolean;
   str?: string;
   @Provide({alias:"ss"}) __backing_str?: string;
+  __options_has_str?: boolean;
   
 }
 `;
@@ -118,8 +122,6 @@ import { Component as Component, Column as Column, Text as Text } from "@ohos.ar
 import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
-
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
@@ -229,12 +231,18 @@ function main() {}
   set __backing_num(__backing_num: (IConsumeDecoratedVariable<number> | undefined))
   
   get __backing_num(): (IConsumeDecoratedVariable<number> | undefined)
+  set __options_has_num(__options_has_num: (boolean | undefined))
+  
+  get __options_has_num(): (boolean | undefined)
   set str(str: (string | undefined))
   
   get str(): (string | undefined)
   set __backing_str(__backing_str: (IConsumeDecoratedVariable<string> | undefined))
   
   get __backing_str(): (IConsumeDecoratedVariable<string> | undefined)
+  set __options_has_str(__options_has_str: (boolean | undefined))
+  
+  get __options_has_str(): (boolean | undefined)
   
 }
 
@@ -245,12 +253,18 @@ function main() {}
   set __backing_num(__backing_num: (IProvideDecoratedVariable<number> | undefined))
   
   get __backing_num(): (IProvideDecoratedVariable<number> | undefined)
+  set __options_has_num(__options_has_num: (boolean | undefined))
+  
+  get __options_has_num(): (boolean | undefined)
   set str(str: (string | undefined))
   
   get str(): (string | undefined)
   set __backing_str(__backing_str: (IProvideDecoratedVariable<string> | undefined))
   
   get __backing_str(): (IProvideDecoratedVariable<string> | undefined)
+  set __options_has_str(__options_has_str: (boolean | undefined))
+  
+  get __options_has_str(): (boolean | undefined)
   
 }
 `;

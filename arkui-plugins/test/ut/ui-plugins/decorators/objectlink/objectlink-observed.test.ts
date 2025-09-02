@@ -183,9 +183,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {
-    if (((({let gensym___232946400 = initializers;
-    (((gensym___232946400) == (null)) ? undefined : gensym___232946400.data)})) !== (undefined))) {
-      this.__backing_data!.update(initializers!.data!);
+    if (({let gensym___237646022 = initializers;
+    (((gensym___237646022) == (null)) ? undefined : gensym___237646022.__options_has_data)})) {
+      this.__backing_data!.update((initializers!.data as DateClass));
     }
   }
   
@@ -250,7 +250,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         return new Child();
       }), {
         label: "date",
+        __options_has_label: true,
         data: this.newData.data,
+        __options_has_data: true,
       }, undefined, undefined);
       ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("parent update the new date", undefined).onClick(((e: ClickEvent) => {
@@ -275,12 +277,18 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   set label(label: (string | undefined))
   
   get label(): (string | undefined)
+  set __options_has_label(__options_has_label: (boolean | undefined))
+  
+  get __options_has_label(): (boolean | undefined)
   set data(data: (DateClass | undefined))
   
   get data(): (DateClass | undefined)
   set __backing_data(__backing_data: (IObjectLinkDecoratedVariable<DateClass> | undefined))
   
   get __backing_data(): (IObjectLinkDecoratedVariable<DateClass> | undefined)
+  set __options_has_data(__options_has_data: (boolean | undefined))
+  
+  get __options_has_data(): (boolean | undefined)
   
 }
 
@@ -291,6 +299,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   set __backing_newData(__backing_newData: (IStateDecoratedVariable<NewDate> | undefined))
   
   get __backing_newData(): (IStateDecoratedVariable<NewDate> | undefined)
+  set __options_has_newData(__options_has_newData: (boolean | undefined))
+  
+  get __options_has_newData(): (boolean | undefined)
   
 }
 

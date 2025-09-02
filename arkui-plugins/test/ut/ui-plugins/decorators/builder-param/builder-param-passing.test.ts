@@ -103,6 +103,7 @@ function main() {}
         return new Child();
       }), {
         customBuilderParam: this.componentBuilder,
+        __options_has_customBuilderParam: true,
       }, undefined, undefined);
       Child._instantiateImpl(undefined, (() => {
         return new Child();
@@ -110,6 +111,7 @@ function main() {}
         customBuilderParam: @memo() (() => {
           this.componentBuilder();
         }),
+        __options_has_customBuilderParam: true,
       }, undefined, undefined);
       Child._instantiateImpl(undefined, (() => {
         return new Child();
@@ -130,6 +132,9 @@ function main() {}
   set customBuilderParam(customBuilderParam: (@memo() (()=> void) | undefined))
   
   get customBuilderParam(): (@memo() (()=> void) | undefined)
+  set __options_has_customBuilderParam(__options_has_customBuilderParam: (boolean | undefined))
+  
+  get __options_has_customBuilderParam(): (boolean | undefined)
   
 }
 
@@ -255,6 +260,7 @@ function main() {}
         return new Child();
       }), {
         customBuilderParam: this.componentBuilder,
+        __options_has_customBuilderParam: true,
       }, undefined, undefined);
       Child._instantiateImpl(__memo_context, ((__memo_id) + (218979098)), undefined, (() => {
         return new Child();
@@ -271,6 +277,7 @@ function main() {}
             return;
           }
         }),
+        __options_has_customBuilderParam: true,
       }, undefined, undefined);
       Child._instantiateImpl(__memo_context, ((__memo_id) + (213687742)), undefined, (() => {
         return new Child();
@@ -317,6 +324,9 @@ function main() {}
   set customBuilderParam(customBuilderParam: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined))
   
   get customBuilderParam(): (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
+  set __options_has_customBuilderParam(__options_has_customBuilderParam: (boolean | undefined))
+  
+  get __options_has_customBuilderParam(): (boolean | undefined)
   
 }
 

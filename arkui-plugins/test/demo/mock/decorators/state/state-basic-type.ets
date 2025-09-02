@@ -14,7 +14,7 @@
  */
 
 import { Component } from "@ohos.arkui.component"
-import { State} from "@ohos.arkui.stateManagement"
+import { State } from "@ohos.arkui.stateManagement"
 
 @Component
 struct Parent {

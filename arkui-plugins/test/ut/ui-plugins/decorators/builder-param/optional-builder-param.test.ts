@@ -139,6 +139,7 @@ function main() {}
         customBuilderParam2: @memo() (() => {
           this.componentBuilder();
         }),
+        __options_has_customBuilderParam2: true,
       }, undefined, undefined);
     }));
   }
@@ -151,9 +152,15 @@ function main() {}
   set customBuilderParam2(customBuilderParam2: (((()=> void) | undefined) | undefined))
   
   get customBuilderParam2(): (((()=> void) | undefined) | undefined)
+  set __options_has_customBuilderParam2(__options_has_customBuilderParam2: (boolean | undefined))
+  
+  get __options_has_customBuilderParam2(): (boolean | undefined)
   set customBuilderParam1(customBuilderParam1: (@memo() (()=> void) | undefined))
   
   get customBuilderParam1(): (@memo() (()=> void) | undefined)
+  set __options_has_customBuilderParam1(__options_has_customBuilderParam1: (boolean | undefined))
+  
+  get __options_has_customBuilderParam1(): (boolean | undefined)
   
 }
 
@@ -392,6 +399,7 @@ function main() {}
             return;
           }
         }),
+        __options_has_customBuilderParam2: true,
       }, undefined, undefined);
       {
         __memo_scope.recache();
@@ -412,9 +420,15 @@ function main() {}
   set customBuilderParam2(customBuilderParam2: ((((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | undefined))
   
   get customBuilderParam2(): ((((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | undefined)
+  set __options_has_customBuilderParam2(__options_has_customBuilderParam2: (boolean | undefined))
+  
+  get __options_has_customBuilderParam2(): (boolean | undefined)
   set customBuilderParam1(customBuilderParam1: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined))
   
   get customBuilderParam1(): (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
+  set __options_has_customBuilderParam1(__options_has_customBuilderParam1: (boolean | undefined))
+  
+  get __options_has_customBuilderParam1(): (boolean | undefined)
   
 }
 

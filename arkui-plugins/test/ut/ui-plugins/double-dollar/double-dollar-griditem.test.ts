@@ -79,7 +79,6 @@ let c: boolean;
 function main() {}
 
 c = false;
-
 __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   bundleName: "com.example.mock",
   moduleName: "entry",
@@ -158,6 +157,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   set __backing_boo(__backing_boo: (IStateDecoratedVariable<boolean> | undefined))
   
   get __backing_boo(): (IStateDecoratedVariable<boolean> | undefined)
+  set __options_has_boo(__options_has_boo: (boolean | undefined))
+  
+  get __options_has_boo(): (boolean | undefined)
   
 }
 

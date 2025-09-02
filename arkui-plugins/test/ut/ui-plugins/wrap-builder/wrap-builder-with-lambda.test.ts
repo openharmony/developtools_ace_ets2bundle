@@ -96,8 +96,6 @@ function main() {}
   }));
 }
 
-wBuilder = wrapBuilder(overBuilder);
-
 @Observed() class Tmp implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
@@ -196,6 +194,9 @@ wBuilder = wrapBuilder(overBuilder);
   set __backing_label(__backing_label: (IStateDecoratedVariable<Tmp> | undefined))
   
   get __backing_label(): (IStateDecoratedVariable<Tmp> | undefined)
+  set __options_has_label(__options_has_label: (boolean | undefined))
+  
+  get __options_has_label(): (boolean | undefined)
   
 }
 `;
@@ -300,8 +301,6 @@ function main() {}
     return;
   }
 }
-
-wBuilder = wrapBuilder(overBuilder);
 
 @Observed() class Tmp implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
@@ -437,6 +436,9 @@ wBuilder = wrapBuilder(overBuilder);
   set __backing_label(__backing_label: (IStateDecoratedVariable<Tmp> | undefined))
   
   get __backing_label(): (IStateDecoratedVariable<Tmp> | undefined)
+  set __options_has_label(__options_has_label: (boolean | undefined))
+  
+  get __options_has_label(): (boolean | undefined)
   
 }
 `;

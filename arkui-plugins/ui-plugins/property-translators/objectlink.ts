@@ -70,13 +70,15 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
             false,
             false
         );
-        const nonNullItem = arkts.factory.createTSNonNullExpression(
+        const nonNullItem = arkts.factory.createTSAsExpression(
             factory.createNonNullOrOptionalMemberExpression(
                 CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
                 originalName,
                 false,
                 true
-            )
+            ),
+            this.propertyType,
+            false
         );
         return factory.createIfInUpdateStruct(originalName, member, [nonNullItem]);
     }
