@@ -61,10 +61,12 @@ export function transformForModule(code: string, id: string): string {
   const eventTransformForModule = createAndStartEvent(hookEventFactory, 'transform for module');
   const {
     autoLazyImport,
-    reExportCheckMode
+    reExportCheckMode,
+    autoLazyFilter
   }: LazyImportOptions = {
     autoLazyImport: this.share.projectConfig?.autoLazyImport ?? false,
-    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? reExportNoCheckMode
+    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? reExportNoCheckMode,
+    autoLazyFilter: this.share.projectConfig?.autoLazyFilter ?? {}
   };
   if (this.share.projectConfig.compileMode === ESMODULE) {
     const metaInfo: Object = this.getModuleInfo(id).meta;
@@ -72,7 +74,7 @@ export function transformForModule(code: string, id: string): string {
     if (isTsOrEtsSourceFile(id) && shouldETSOrTSFileTransformToJS(id, projectConfig, metaInfo)) {
       preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, metaInfo, eventTransformForModule);
       // when ets/ts -> js, we need to convert lazy-import based on the js code generated after tsc conversion
-      code = processJsCodeLazyImport(id, code, autoLazyImport, reExportCheckMode);
+      code = processJsCodeLazyImport(id, code, autoLazyImport, reExportCheckMode, metaInfo, autoLazyFilter);
       const newSourceFileRecordInfo = MemoryMonitor.recordStage(MemoryDefine.MODULE_SOURCE_FILE_NEW_SOURCE_FILE);
       ModuleSourceFile.newSourceFile(id, code, metaInfo, projectConfig.singleFileEmit);
       MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);
@@ -81,7 +83,7 @@ export function transformForModule(code: string, id: string): string {
     if (isJsSourceFile(id) || isJsonSourceFile(id)) {
       let code: string = this.getModuleInfo(id).originalCode;
       if (isJsSourceFile(id)) {
-        code = processJsCodeLazyImport(id, code, autoLazyImport, reExportCheckMode);
+        code = processJsCodeLazyImport(id, code, autoLazyImport, reExportCheckMode, metaInfo, autoLazyFilter);
         if (projectConfig.compatibleSdkVersion <= 10) {
           const transformedResult: object = transformJsByBabelPlugin(code, eventTransformForModule);
           code = transformedResult.code;

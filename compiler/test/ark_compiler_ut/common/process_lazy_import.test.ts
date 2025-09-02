@@ -103,6 +103,92 @@ const LAZY_IMPORT_RE_EXPORT_ERROR_JS: string =
 'export { e2, a3 };\n' +
 'export { d1, d2, a4, e5, componentUtils, k1, uiObserver, lazy };';
 
+const TRANSFORM_LAZY_IMPORT_CODE_INCLUDE_LIST =
+`
+  import { test } from "./test";
+  import { test1 as t } from "./test1";
+  import { Ability } from "@kit.AbilityKit";
+  import { featureAbility as k } from "@kit.AbilityKit";
+  import { AbilityConstant, abilityAccessCtrl } from "@kit.AbilityKit";
+  import test2 from "./test2";
+  import type { testType } from "./testType";
+  import * as ns3 from "./test3";
+  import test4, { test5 } from "./test4";
+  import test6, * as ns6 from "./test6";
+  import type dt from "./test7";
+  import testJson from "./testJson.json";
+  let a: testType = test + t + test2 + testType + ns3.b + test4 + test5 + test6 + ns6.b + dt;
+  let localAbility = new Ability();
+  let localFeatureAbility = new k();
+  let localAbilityConstant = new AbilityConstant();
+  let localAbilityAccessCtrl = new abilityAccessCtrl();
+  let newTestJson = testJson;
+`
+
+const TRANSFORM_LAZY_IMPORT_CODE_INCLUDE_LIST_EXPECT: string =
+'import lazy { test } from "./test";\n' +
+'import lazy { test1 as t } from "./test1";\n' +
+'import lazy Ability from "@ohos.app.ability.Ability";\n' +
+'import lazy k from "@ohos.ability.featureAbility";\n' +
+'import lazy AbilityConstant from "@ohos.app.ability.AbilityConstant";\n' +
+'import lazy abilityAccessCtrl from "@ohos.abilityAccessCtrl";\n' +
+'import lazy test2 from "./test2";\n' +
+'import type { testType } from "./testType";\n' +
+'import * as ns3 from "./test3";\n' +
+'import lazy test4, { test5 } from "./test4";\n' +
+'import test6, * as ns6 from "./test6";\n' +
+'import type dt from "./test7";\n' +
+'import testJson from "./testJson.json";\n' +
+'let a: testType = test + t + test2 + testType + ns3.b + test4 + test5 + test6 + ns6.b + dt;\n' +
+'let localAbility = new Ability();\n' +
+'let localFeatureAbility = new k();\n' +
+'let localAbilityConstant = new AbilityConstant();\n' +
+'let localAbilityAccessCtrl = new abilityAccessCtrl();\n' +
+'let newTestJson = testJson;\n';
+
+const TRANSFORM_LAZY_IMPORT_CODE_EXCLUDE_LIST =
+`
+  import { test } from "./test";
+  import { test1 as t } from "./test1";
+  import { Ability } from "@kit.AbilityKit";
+  import { featureAbility as k } from "@kit.AbilityKit";
+  import { AbilityConstant, abilityAccessCtrl } from "@kit.AbilityKit";
+  import test2 from "./test2";
+  import type { testType } from "./testType";
+  import * as ns3 from "./test3";
+  import test4, { test5 } from "./test4";
+  import test6, * as ns6 from "./test6";
+  import type dt from "./test7";
+  import testJson from "./testJson.json";
+  let a: testType = test + t + test2 + testType + ns3.b + test4 + test5 + test6 + ns6.b + dt;
+  let localAbility = new Ability();
+  let localFeatureAbility = new k();
+  let localAbilityConstant = new AbilityConstant();
+  let localAbilityAccessCtrl = new abilityAccessCtrl();
+  let newTestJson = testJson;
+`
+
+const TRANSFORM_LAZY_IMPORT_CODE_EXCLUDE_LIST_EXPECT: string =
+'import { test } from "./test";\n' +
+'import { test1 as t } from "./test1";\n' +
+'import Ability from "@ohos.app.ability.Ability";\n' +
+'import k from "@ohos.ability.featureAbility";\n' +
+'import AbilityConstant from "@ohos.app.ability.AbilityConstant";\n' +
+'import abilityAccessCtrl from "@ohos.abilityAccessCtrl";\n' +
+'import test2 from "./test2";\n' +
+'import type { testType } from "./testType";\n' +
+'import * as ns3 from "./test3";\n' +
+'import test4, { test5 } from "./test4";\n' +
+'import test6, * as ns6 from "./test6";\n' +
+'import type dt from "./test7";\n' +
+'import testJson from "./testJson.json";\n' +
+'let a: testType = test + t + test2 + testType + ns3.b + test4 + test5 + test6 + ns6.b + dt;\n' +
+'let localAbility = new Ability();\n' +
+'let localFeatureAbility = new k();\n' +
+'let localAbilityConstant = new AbilityConstant();\n' +
+'let localAbilityAccessCtrl = new abilityAccessCtrl();\n' +
+'let newTestJson = testJson;\n';
+
 const compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 compilerOptions['moduleResolution'] = 'nodenext';
@@ -124,7 +210,7 @@ mocha.describe('process Lazy Imports tests', function () {
       fileName: 'test.ets',
       transformers: {
         before: [
-          processKitImport('test.ets', undefined, undefined, true, { autoLazyImport: true, reExportCheckMode: reExportNoCheckMode })
+          processKitImport('test.ets', undefined, undefined, true, { autoLazyImport: true, reExportCheckMode: reExportNoCheckMode, autoLazyFilter: {} })
         ]
       }
     });
@@ -156,7 +242,7 @@ mocha.describe('process Lazy Imports tests', function () {
       fileName: 'no.ets',
       transformers: {
         before: [
-          processKitImport('no.ets', undefined, undefined, true, { autoLazyImport: false, reExportCheckMode: reExportNoCheckMode })
+          processKitImport('no.ets', undefined, undefined, true, { autoLazyImport: false, reExportCheckMode: reExportNoCheckMode, autoLazyFilter: {} })
         ]
       }
     });
@@ -227,7 +313,7 @@ mocha.describe('process Lazy Imports tests', function () {
       fileName: "kitTest.ts",
       transformers: {
         before: [
-          processKitImport('kitTest.ts', undefined, undefined, true, { autoLazyImport: false, reExportCheckMode: 'strict' })
+          processKitImport('kitTest.ts', undefined, undefined, true, { autoLazyImport: false, reExportCheckMode: 'strict', autoLazyFilter: {} })
         ]
       }
     });
@@ -258,7 +344,7 @@ mocha.describe('process Lazy Imports tests', function () {
       fileName: "kitTest.ts",
       transformers: {
         before: [
-          processKitImport('kitTest.ts', undefined, undefined, true, { autoLazyImport: false, reExportCheckMode: 'strict' })
+          processKitImport('kitTest.ts', undefined, undefined, true, { autoLazyImport: false, reExportCheckMode: 'strict', autoLazyFilter: {} })
         ]
       }
     });
@@ -282,7 +368,7 @@ mocha.describe('process Lazy Imports tests', function () {
       fileName: "kitTest.ts",
       transformers: {
         before: [
-          processKitImport('kitTest.ts', undefined, undefined, true, { autoLazyImport: false, reExportCheckMode: 'compatible' })
+          processKitImport('kitTest.ts', undefined, undefined, true, { autoLazyImport: false, reExportCheckMode: 'compatible', autoLazyFilter: {} })
         ]
       }
     });
@@ -306,7 +392,7 @@ mocha.describe('process Lazy Imports tests', function () {
       fileName: "kitTest.ts",
       transformers: {
         before: [
-          processKitImport('kitTest.ts', undefined, undefined, true, { autoLazyImport: true, reExportCheckMode: 'compatible' })
+          processKitImport('kitTest.ts', undefined, undefined, true, { autoLazyImport: true, reExportCheckMode: 'compatible', autoLazyFilter: {} })
         ]
       }
     });
@@ -407,6 +493,9 @@ mocha.describe('process Lazy Imports tests', function () {
     };
 
     const fileNames = Object.keys(files);
+    const metaInfo: Object = {
+      pkgName: 'test',
+    };
 
     const compilerHost = ts.createCompilerHost({}, true);
     const getFileKey = (filePath: string) => path.basename(filePath);
@@ -458,7 +547,7 @@ mocha.describe('process Lazy Imports tests', function () {
       }
     };
 
-    const transformed = transformLazyImport(originalSource, mockResolver);
+    const transformed = transformLazyImport(metaInfo, originalSource, {}, mockResolver);
 
     const importDecl = transformed.statements.find(ts.isImportDeclaration)!;
     const specifiers = (importDecl.importClause!.namedBindings as ts.NamedImports).elements;
@@ -467,5 +556,57 @@ mocha.describe('process Lazy Imports tests', function () {
       const transformedSymbol = checker.getSymbolAtLocation(spec.name);
       expect(transformedSymbol).to.exist;
     }
+  });
+
+  mocha.it('4-1: test autoLazyImport supports exclude list and include list: include list', function () {
+    projectConfig.processTs = true;
+    const metaInfo: Object = {
+      pkgName: 'entry',
+    };
+    ts.transpileModule(TRANSFORM_LAZY_IMPORT_CODE_INCLUDE_LIST, {
+      compilerOptions: compilerOptions,
+      fileName: 'entry_test.ets',
+      transformers: {
+        before: [
+          processKitImport('entry_test.ets', metaInfo, undefined, true,
+            { autoLazyImport: true, reExportCheckMode: reExportNoCheckMode, autoLazyFilter: { include: ['entry'] } })
+        ]
+      }
+    });
+    const sourceFile: ts.SourceFile = ModuleSourceFile.getSourceFiles().find(element => element.moduleId === 'entry_test.ets');
+    const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    // @ts-ignore
+    const writer: ts.EmitTextWriter = ts.createTextWriter(
+      // @ts-ignore
+      ts.getNewLineCharacter({ newLine: ts.NewLineKind.LineFeed, removeComments: false }));
+    printer.writeFile(sourceFile.source, writer, undefined);
+    expect(writer.getText() === TRANSFORM_LAZY_IMPORT_CODE_INCLUDE_LIST_EXPECT).to.be.true;
+    projectConfig.processTs = false;
+  });
+
+  mocha.it('4-2: test autoLazyImport supports exclude list and include list: exclude list', function () {
+    projectConfig.processTs = true;
+    const metaInfo: Object = {
+      pkgName: 'lib',
+    };
+    ts.transpileModule(TRANSFORM_LAZY_IMPORT_CODE_EXCLUDE_LIST, {
+      compilerOptions: compilerOptions,
+      fileName: 'lib_test.ets',
+      transformers: {
+        before: [
+          processKitImport('lib_test.ets', metaInfo, undefined, true,
+            { autoLazyImport: true, reExportCheckMode: reExportNoCheckMode, autoLazyFilter: { exclude: ['lib'] } })
+        ]
+      }
+    });
+    const sourceFile: ts.SourceFile = ModuleSourceFile.getSourceFiles().find(element => element.moduleId === 'lib_test.ets');
+    const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    // @ts-ignore
+    const writer: ts.EmitTextWriter = ts.createTextWriter(
+      // @ts-ignore
+      ts.getNewLineCharacter({ newLine: ts.NewLineKind.LineFeed, removeComments: false }));
+    printer.writeFile(sourceFile.source, writer, undefined);
+    expect(writer.getText() === TRANSFORM_LAZY_IMPORT_CODE_EXCLUDE_LIST_EXPECT).to.be.true;
+    projectConfig.processTs = false;
   });
 });

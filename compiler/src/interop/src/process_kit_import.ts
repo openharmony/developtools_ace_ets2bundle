@@ -77,8 +77,8 @@ const KEEPTS = '// @keepTs';
 */
 export function processKitImport(id: string, metaInfo: Object, parentEvent: CompileEvent,
   shouldReturnOriginalNode: boolean = true,
-  lazyImportOptions: LazyImportOptions = { autoLazyImport: false, reExportCheckMode: reExportNoCheckMode }): Function {
-  const { autoLazyImport, reExportCheckMode } = lazyImportOptions;
+  lazyImportOptions: LazyImportOptions = { autoLazyImport: false, reExportCheckMode: reExportNoCheckMode, autoLazyFilter: {} }): Function {
+  const { autoLazyImport, reExportCheckMode, autoLazyFilter } = lazyImportOptions;
   return (context: ts.TransformationContext) => {
     const visitor: ts.Visitor = node => {
       // only transform static import/export declaration
@@ -143,7 +143,7 @@ export function processKitImport(id: string, metaInfo: Object, parentEvent: Comp
         // eg. import { xxx } form "xxx" --> import lazy { xxx } form "xxx"
         let processedNode: ts.SourceFile =
           ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
-        processedNode = <ts.SourceFile> (autoLazyImport ? transformLazyImport(processedNode, resolver) : processedNode);
+          processedNode = <ts.SourceFile> (autoLazyImport ? transformLazyImport(metaInfo, processedNode, autoLazyFilter, resolver) : processedNode);
         lazyImportReExportCheck(processedNode, reExportCheckMode);
         ModuleSourceFile.newSourceFile(id, processedNode, metaInfo, projectConfig.singleFileEmit);
         MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);
