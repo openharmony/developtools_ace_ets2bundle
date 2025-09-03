@@ -52,7 +52,6 @@ import {
     ResourceParameter,
     getResourceParams,
     isResourceNode,
-    isForEachCall,
     getCustomDialogController,
     isInvalidDialogControllerOptions,
     findBuilderIndexInControllerOptions,
@@ -82,13 +81,7 @@ import {
     CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
 } from '../../common/predefines';
 import { ObservedTranslator } from '../property-translators/index';
-import {
-    addMemoAnnotation,
-    collectMemoableInfoInFunctionReturnType,
-    collectScriptFunctionReturnTypeFromInfo,
-} from '../../collectors/memo-collectors/utils';
 import { generateArkUICompatible } from '../interop/interop';
-import { GenSymGenerator } from '../../common/gensym-generator';
 import { MetaDataCollector } from '../../common/metadata-collector';
 import { ComponentAttributeCache } from '../builder-lambda-translators/cache/componentAttributeCache';
 import { MethodTranslator } from '../property-translators/base';
@@ -96,6 +89,8 @@ import { MonitorCache } from '../property-translators/cache/monitorCache';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
 import { ComputedCache } from '../property-translators/cache/computedCache';
 import { isInteropComponent } from '../interop/utils';
+import { addMemoAnnotation } from '../../collectors/memo-collectors/utils';
+import { GenSymGenerator } from '../../common/gensym-generator';
 
 export class factory {
     /**
@@ -1109,76 +1104,6 @@ export class factory {
         );
     }
 
-    /*
-     * add arrow function type to arguments of call expression.
-     */
-    static transformCallArguments(node: arkts.CallExpression): arkts.CallExpression {
-        const newFunc = UIFactory.createScriptFunction({
-            body: arkts.factory.createBlock([arkts.factory.createReturnStatement(node.arguments[0])]),
-            returnTypeAnnotation: this.getReturnTypeWithArrowParameter(node) ?? this.getReturnTypeWithTsType(node),
-            flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-        });
-        const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(newFunc);
-        collectScriptFunctionReturnTypeFromInfo(newFunc, returnMemoableInfo);
-        const newArrowArg: arkts.ArrowFunctionExpression = arkts.factory.createArrowFunction(newFunc);
-        return arkts.factory.updateCallExpression(node, node.expression, node.typeArguments, [
-            newArrowArg,
-            ...node.arguments.slice(1),
-        ]);
-    }
-
-    static getReturnTypeWithArrowParameter(node: arkts.CallExpression): arkts.TypeNode | undefined {
-        const secondArg: arkts.Expression = node.arguments[1];
-        if (!arkts.isArrowFunctionExpression(secondArg) || secondArg.scriptFunction.params.length <= 0) {
-            return undefined;
-        }
-        const argTypeParam: arkts.Expression = secondArg.scriptFunction.params[0];
-        if (!arkts.isEtsParameterExpression(argTypeParam)) {
-            return undefined;
-        }
-        const type: arkts.AstNode | undefined = argTypeParam.type;
-        if (type && arkts.isTypeNode(type)) {
-            return UIFactory.createComplexTypeFromStringAndTypeParameter(TypeNames.ARRAY, [type.clone()]);
-        }
-        return undefined;
-    }
-
-    static getReturnTypeWithTsType(node: arkts.CallExpression): arkts.TypeNode | undefined {
-        if (node.typeArguments?.length) {
-            return UIFactory.createComplexTypeFromStringAndTypeParameter(TypeNames.ARRAY, node.typeArguments);
-        }
-        const firstArg: arkts.Expression = node.arguments[0];
-        const type = arkts.createTypeNodeFromTsType(firstArg);
-        if (!type || !arkts.isTypeNode(type)) {
-            return undefined;
-        }
-        return type;
-    }
-
-    static AddArrowTypeForParameter(node: arkts.MethodDefinition): arkts.MethodDefinition {
-        if (node.scriptFunction.params.length < 2) {
-            return node;
-        }
-        const paramFirst = node.scriptFunction.params[0];
-        if (!arkts.isEtsParameterExpression(paramFirst) || !paramFirst.type || !arkts.isTypeNode(paramFirst.type)) {
-            return node;
-        }
-        const script = UIFactory.updateScriptFunction(node.scriptFunction, {
-            params: [
-                arkts.factory.createParameterDeclaration(
-                    arkts.factory.createIdentifier(
-                        paramFirst.identifier.name,
-                        UIFactory.createLambdaFunctionType([], paramFirst.type)
-                    ),
-                    undefined
-                ),
-                ...node.scriptFunction.params.slice(1),
-            ],
-        });
-        return arkts.factory.updateMethodDefinition(node, node.kind, node.name, script, node.modifiers, false);
-    }
-
     static transformCallExpression(
         node: arkts.CallExpression,
         projectConfig: ProjectConfig | undefined,
@@ -1187,9 +1112,6 @@ export class factory {
     ): arkts.CallExpression {
         if (arkts.isCallExpression(node) && isResourceNode(node)) {
             return this.transformResource(node, projectConfig, resourceInfo);
-        }
-        if (arkts.isCallExpression(node) && isForEachCall(node)) {
-            return this.transformCallArguments(node);
         }
         if (isInteropComponent(node)) {
             return generateArkUICompatible(node as arkts.CallExpression, globalBuilder);
