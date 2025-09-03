@@ -37,7 +37,7 @@ export function updateETSModule(
             statementList,
             ident,
             flag,
-            Es2pandaLanguage.ETS,
+            Es2pandaLanguage.LANGUAGE_ETS,
             program,
         ),
         original,

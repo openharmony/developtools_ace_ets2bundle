@@ -41,7 +41,7 @@ export function createClassDefinition(
     body: readonly AstNode[],
     modifiers: Es2pandaClassDefinitionModifiers,
     flags: Es2pandaModifierFlags, annotations?: readonly AnnotationUsage[]): ClassDefinition {
-    return ClassDefinition.create3ClassDefinition(ident, typeParams, superTypeParams, _implements, ctor, superClass, body, modifiers, flags, Es2pandaLanguage.ETS, annotations)
+    return ClassDefinition.create3ClassDefinition(ident, typeParams, superTypeParams, _implements, ctor, superClass, body, modifiers, flags, Es2pandaLanguage.LANGUAGE_ETS, annotations)
 }
 
 export function updateClassDefinition(
@@ -81,7 +81,7 @@ export function updateClassDefinition(
         body,
         modifiers,
         flags,
-        Es2pandaLanguage.ETS,
+        Es2pandaLanguage.LANGUAGE_ETS,
         annotations,
     )
 }
