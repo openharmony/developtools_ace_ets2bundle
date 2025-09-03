@@ -1124,6 +1124,8 @@ export function initVisitsTable() {
     visitsTable[Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_STATIC_BLOCK] = visitClassStaticBlock
 }
 
+initVisitsTable()
+
 export function visitEachChild(
     node: AstNode,
     visitor: Visitor
