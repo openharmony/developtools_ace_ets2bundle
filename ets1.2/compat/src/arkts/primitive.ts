@@ -16,43 +16,43 @@
 import { float32, float64, int32, int64 } from "./types"
 
 export function float32to64(value: float32): float64 {
-    return value.toDouble()
+    return Float.toDouble(value)
 }
 export function float32toInt32(value: float32): int32 {
-    return value.toInt()
+    return Float.toInt(value)
 }
 export function float32toInt64(value: float32): int64 {
-    return value.toLong()
+    return Float.toLong(value)
 }
 
 export function float64to32(value: float64): float32 {
-    return value.toFloat()
+    return Double.toFloat(value)
 }
 export function float64toInt32(value: float64): int32 {
-    return value.toInt()
+    return Double.toInt(value)
 }
 export function float64toInt64(value: float64): int64 {
-    return value.toLong()
+    return Double.toLong(value)
 }
 
 export function int32toFloat32(value: int32): float32 {
-    return value.toFloat()
+    return Int.toFloat(value)
 }
 export function int32toFloat64(value: int32): float64 {
-    return value.toDouble()
+    return Int.toDouble(value)
 }
 export function int32to64(value: int32): int64 {
-    return value.toLong()
+    return Int.toLong(value)
 }
 
 export function int64toFloat32(value: int64): float32 {
-    return value.toFloat()
+    return Long.toFloat(value)
 }
 export function int64toFloat64(value: int64): float64 {
-    return value.toDouble()
+    return Long.toDouble(value)
 }
 export function int64to32(value: int64): int32 {
-    return value.toInt()
+    return Long.toInt(value)
 }
 
 export function asFloat64(value: string): float64 {
