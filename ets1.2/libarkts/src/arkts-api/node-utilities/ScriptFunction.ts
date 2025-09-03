@@ -51,7 +51,7 @@ export function createScriptFunction(
         ),
         datafuncFlags,
         dataflags,
-        Es2pandaLanguage.ETS,
+        Es2pandaLanguage.LANGUAGE_ETS,
         ident,
         annotations,
     )

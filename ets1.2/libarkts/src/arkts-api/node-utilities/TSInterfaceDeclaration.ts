@@ -35,7 +35,7 @@ export function createTSInterfaceDeclaration(
         body,
         isStatic,
         isExternal,
-        Es2pandaLanguage.ETS,
+        Es2pandaLanguage.LANGUAGE_ETS,
         modifierFlags,
     )
 }

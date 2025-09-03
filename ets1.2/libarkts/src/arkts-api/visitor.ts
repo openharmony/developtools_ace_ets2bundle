@@ -180,7 +180,7 @@ function visitETSModule(node: ETSModule, visitor: Visitor) {
                 newStatements,
                 newIdent,
                 node.getNamespaceFlag(),
-                Es2pandaLanguage.ETS,
+                Es2pandaLanguage.LANGUAGE_ETS,
                 node.program,
             )
             result.onUpdate(node)
