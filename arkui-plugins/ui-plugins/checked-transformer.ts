@@ -19,11 +19,7 @@ import { factory as structFactory } from './struct-translators/factory';
 import { factory as builderLambdaFactory } from './builder-lambda-translators/factory';
 import { factory as entryFactory } from './entry-translators/factory';
 import { AbstractVisitor } from '../common/abstract-visitor';
-import {
-    ComponentAttributeCache,
-    isBuilderLambda,
-    isBuilderLambdaMethodDecl,
-} from './builder-lambda-translators/utils';
+import { isBuilderLambda, isBuilderLambdaMethodDecl } from './builder-lambda-translators/utils';
 import { isEntryWrapperClass } from './entry-translators/utils';
 import { ImportCollector } from '../common/import-collector';
 import { DeclarationCollector } from '../common/declaration-collector';
@@ -36,7 +32,6 @@ import {
     LoaderJson,
     ResourceInfo,
     ScopeInfoCollection,
-    isForEachDecl,
 } from './struct-translators/utils';
 import {
     collectCustomComponentScopeInfo,
@@ -50,6 +45,8 @@ import { InteroperAbilityNames } from './interop/predefines';
 import { generateBuilderCompatible } from './interop/builder-interop';
 import { builderRewriteByType } from './builder-lambda-translators/builder-factory';
 import { MonitorCache } from './property-translators/cache/monitorCache';
+import { ComponentAttributeCache } from './builder-lambda-translators/cache/componentAttributeCache';
+import { MetaDataCollector } from '../common/metadata-collector';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
@@ -83,6 +80,13 @@ export class CheckedTransformer extends AbstractVisitor {
                 this.legacyBuilderSet.add(moduleName);
             }
         }
+    }
+
+    init(): void {
+        MetaDataCollector.getInstance()
+            .setProjectConfig(this.projectConfig)
+            .setAbsName(this.program?.absName)
+            .setExternalSourceName(this.externalSourceName);
     }
 
     reset(): void {
@@ -198,8 +202,6 @@ export class CheckedTransformer extends AbstractVisitor {
             return structFactory.transformNormalClass(node, this.externalSourceName);
         } else if (arkts.isCallExpression(node)) {
             return structFactory.transformCallExpression(node, this.projectConfig, this.resourceInfo);
-        } else if (arkts.isMethodDefinition(node) && isForEachDecl(node, this.externalSourceName)) {
-            return structFactory.AddArrowTypeForParameter(node);
         } else if (arkts.isTSInterfaceDeclaration(node)) {
             return structFactory.tranformInterfaceMembers(node, this.externalSourceName);
         } else if (
