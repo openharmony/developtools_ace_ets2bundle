@@ -203,6 +203,7 @@ import {
   concatenateEtsOptions,
   getExternalComponentPaths
 } from './external_component_map';
+import { updateInteropObjectLiteralxpression } from './process_interop_builder';
 
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
@@ -612,30 +613,33 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
   if (node.expression && ts.isCallExpression(node.expression)) {
     let newNode: ts.Expression = builderCallNode(node.expression);
     newNode.expression.questionDotToken = node.expression.questionDotToken;
-    if (node.expression.arguments && node.expression.arguments.length === 1 && ts.isObjectLiteralExpression(node.expression.arguments[0])) {
-      return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
-        node.expression,
-        newNode,
-        undefined,
-        [ts.factory.createCallExpression(
-          ts.factory.createIdentifier(BUILDER_PARAM_PROXY),
+    if (node.expression.arguments && node.expression.arguments.length === 1) {
+      if (ts.isObjectLiteralExpression(node.expression.arguments[0])) {
+        return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
+          node.expression,
+          newNode,
           undefined,
-          [
-            ts.factory.createStringLiteral(name),
-            traverseBuilderParams(node.expression.arguments[0], isBuilder)
-          ]
-        )]
-      ));
-    } else {
-      return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
-        node.expression,
-        newNode,
-        undefined,
-        !(projectConfig.optLazyForEach && (storedFileInfo.processLazyForEach &&
-          storedFileInfo.lazyForEachInfo.forEachParameters || isBuilder)) ? node.expression.arguments :
-          [...node.expression.arguments, ts.factory.createNull(), ts.factory.createIdentifier(MY_IDS)]
-      ));
+          [ts.factory.createCallExpression(
+            ts.factory.createIdentifier(BUILDER_PARAM_PROXY),
+            undefined,
+            [
+              ts.factory.createStringLiteral(name),
+              traverseBuilderParams(node.expression.arguments[0], isBuilder)
+            ]
+          )]
+        ));
+      } else if (ts.isParenthesizedExpression(node.expression.arguments[0]) && ts.isCommaListExpression(node.expression.arguments[0].expression)) {
+        return updateInteropObjectLiteralxpression(node.expression, newNode, name);
+      }
     }
+    return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
+      node.expression,
+      newNode,
+      undefined,
+      !(projectConfig.optLazyForEach && (storedFileInfo.processLazyForEach &&
+        storedFileInfo.lazyForEachInfo.forEachParameters || isBuilder)) ? node.expression.arguments :
+        [...node.expression.arguments, ts.factory.createNull(), ts.factory.createIdentifier(MY_IDS)]
+    ));
   }
   return undefined;
 }
