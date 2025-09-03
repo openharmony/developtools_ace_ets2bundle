@@ -40,6 +40,8 @@ const parsedTransform: Plugins = {
 const expectedCheckedScript: string = `
 import { IConsumerDecoratedVariable as IConsumerDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
+
 import { DividerAttribute as DividerAttribute } from "arkui.component.divider";
 
 import { DividerImpl as DividerImpl } from "arkui.component.divider";
@@ -47,6 +49,8 @@ import { DividerImpl as DividerImpl } from "arkui.component.divider";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
+
+import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 
 import { IProviderDecoratedVariable as IProviderDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -81,12 +85,12 @@ import { ComponentV2 as ComponentV2, DragEvent as DragEvent, Button as Button, C
 import { Provider as Provider, Consumer as Consumer, Local as Local, ObservedV2 as ObservedV2, Trace as Trace } from "@ohos.arkui.stateManagement";
 
 const data: Array<User> = [new User("Json", 10), new User("Eric", 15)];
-
 function main() {}
+
 
 @ObservedV2() class User implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
-
+  
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
   }
@@ -106,13 +110,13 @@ function main() {}
   }
 
   @JSONRename({newName:"name"}) private __backing_name?: string;
-
+  
   @JSONStringifyIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-
+  
   @JSONRename({newName:"age"}) private __backing_age?: number;
-
+  
   @JSONStringifyIgnore() private __meta_age: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-
+  
   public get name(): string {
     this.conditionalAddRef(this.__meta_name);
     return UIUtils.makeObserved((this.__backing_name as string));
@@ -154,7 +158,7 @@ function main() {}
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   private __backing_users?: IProviderDecoratedVariable<Array<User>>;
-
+  
   public get users(): Array<User> {
     return this.__backing_users!.get();
   }
@@ -204,7 +208,7 @@ function main() {}
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
 
   private __backing_users?: IConsumerDecoratedVariable<Array<User>>;
-
+  
   public get users(): Array<User> {
     return this.__backing_users!.get();
   }
@@ -218,26 +222,29 @@ function main() {}
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
     }), @memo() (() => {
-      ForEach<User>(((): Array<User> => {
-        return this.users;
-      }), ((item: User) => {
-        ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
-          instance.setColumnOptions(undefined).applyAttributesFinish();
-          return;
-        }), @memo() (() => {
-          TextImpl(@memo() ((instance: TextAttribute): void => {
-            instance.setTextOptions(\`name: \${item.name}\`, undefined).fontSize(30).applyAttributesFinish();
+      ForEachImpl<User>(@memo() ((instance: ForEachAttribute): void => {
+        instance.setForEachOptions<User>(((): Array<User> => {
+          return this.users;
+        }), @memo() ((item: User) => {
+          ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+            instance.setColumnOptions(undefined).applyAttributesFinish();
             return;
-          }), undefined);
-          TextImpl(@memo() ((instance: TextAttribute): void => {
-            instance.setTextOptions(\`age: \${item.age}\`, undefined).fontSize(30).applyAttributesFinish();
-            return;
-          }), undefined);
-          DividerImpl(@memo() ((instance: DividerAttribute): void => {
-            instance.setDividerOptions().applyAttributesFinish();
-            return;
+          }), @memo() (() => {
+            TextImpl(@memo() ((instance: TextAttribute): void => {
+              instance.setTextOptions(\`name: \${item.name}\`, undefined).fontSize(30).applyAttributesFinish();
+              return;
+            }), undefined);
+            TextImpl(@memo() ((instance: TextAttribute): void => {
+              instance.setTextOptions(\`age: \${item.age}\`, undefined).fontSize(30).applyAttributesFinish();
+              return;
+            }), undefined);
+            DividerImpl(@memo() ((instance: DividerAttribute): void => {
+              instance.setDividerOptions().applyAttributesFinish();
+              return;
+            }));
           }));
-        }));
+        }), undefined);
+        return;
       }));
     }));
   }
@@ -247,28 +254,26 @@ function main() {}
 }
 
 @ComponentV2() export interface __Options_Parent {
+  get users(): (Array<User> | undefined)
   set users(users: (Array<User> | undefined))
-
+  
   get users(): (Array<User> | undefined)
   set __backing_users(__backing_users: (IProviderDecoratedVariable<Array<User>> | undefined))
-
+  
   get __backing_users(): (IProviderDecoratedVariable<Array<User>> | undefined)
   set __options_has_users(__options_has_users: (boolean | undefined))
-  
-  get __options_has_users(): (boolean | undefined)
   
 }
 
 @ComponentV2() export interface __Options_Child {
+  get users(): (Array<User> | undefined)
   set users(users: (Array<User> | undefined))
-
+  
   get users(): (Array<User> | undefined)
   set __backing_users(__backing_users: (IConsumerDecoratedVariable<Array<User>> | undefined))
-
+  
   get __backing_users(): (IConsumerDecoratedVariable<Array<User>> | undefined)
   set __options_has_users(__options_has_users: (boolean | undefined))
-  
-  get __options_has_users(): (boolean | undefined)
   
 }
 `;

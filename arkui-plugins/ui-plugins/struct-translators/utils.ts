@@ -133,17 +133,6 @@ export function isResourceNode(node: arkts.CallExpression, ignoreDecl: boolean =
     return true;
 }
 
-export function isForEachCall(node: arkts.CallExpression): boolean {
-    if (
-        arkts.isIdentifier(node.expression) &&
-        node.expression.name === InnerComponentNames.FOR_EACH &&
-        node.arguments.length >= 2
-    ) {
-        return true;
-    }
-    return false;
-}
-
 /**
  * Initializes routerInfo which maps absolute file paths to corresponding build functions
  *
@@ -562,20 +551,6 @@ export function isDynamicName(projectConfig: ProjectConfig): boolean {
     const isByteCodeHar: boolean = projectConfig.moduleType === ModuleType.HAR && projectConfig.byteCodeHar;
     const uiTransformOptimization: boolean = !!projectConfig.uiTransformOptimization;
     return uiTransformOptimization ? uiTransformOptimization : isByteCodeHar;
-}
-
-/**
- * Determine whether the node is ForEach method declaration.
- *
- * @param node method definition node.
- * @param sourceName external source name.
- */
-export function isForEachDecl(node: arkts.MethodDefinition, sourceName: string | undefined): boolean {
-    const isForEach: boolean = !!node.name && node.name.name === InnerComponentNames.FOR_EACH;
-    const isMethodDecl: boolean =
-        !!node.scriptFunction &&
-        arkts.hasModifierFlag(node.scriptFunction, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
-    return isForEach && isMethodDecl && !!sourceName && sourceName === ARKUI_FOREACH_SOURCE_NAME;
 }
 
 export function getCustomDialogController(node: arkts.ClassProperty): string {
