@@ -623,6 +623,7 @@ export const RESERT = 'reset';
 export const TS_NOCHECK: string = '// @ts-nocheck';
 
 export const BUILDER_PARAM_PROXY: string = 'makeBuilderParameterProxy';
+export const BUILDER_PARAM_PROXY_INTEROP: string = 'makeBuilderParameterProxyInterop';
 export const BUILDER_TYPE: string = 'BuilderType';
 
 export const FUNCTION: string = 'function';
