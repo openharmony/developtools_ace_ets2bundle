@@ -53,7 +53,7 @@ export {
     int8Array,
     errorAsString,
     unsafeCast,
-    CoroutineLocalValue,
+    WorkerLocalValue,
     scheduleCoroutine,
     memoryStats,
     launchJob
