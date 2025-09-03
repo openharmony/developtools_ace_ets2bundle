@@ -1031,6 +1031,7 @@ export function processAnimateToOrImmediately(node: ts.CallExpression): ts.CallE
 function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
   decoratorName: string): ts.FunctionDeclaration {
   const componentName: string = isExtendFunction(node, { decoratorName: '', componentName: '' }, true);
+  checkExtendNode(node, componentName, log);
   if (componentName && node.body && !node.body.statements.length && decoratorName === COMPONENT_EXTEND_DECORATOR) {
     const statementArray: ts.Statement[] = [];
     const bodynode: ts.Block = ts.visitEachChild(node.body, traverseExtendExpression, contextGlobal);
@@ -1298,6 +1299,57 @@ function parseExtendNode(node: ts.CallExpression, extendResult: ExtendResult, ch
   if (node.arguments.length && ts.isIdentifier(node.arguments[0])) {
     extendResult.componentName = node.arguments[0].escapedText.toString();
   }
+}
+
+function checkExtendNode(node: ts.FunctionDeclaration, componentName: string,
+  log: LogInfo[]): void {
+  const componentInstance: string = `${componentName}Instance`;
+  if (node.body && node.body.statements && node.body.statements.length > 1) {
+    validateExtendFunctionFormat(log, node.body.statements[0]);
+    return;
+  }
+  if (node.body && node.body.statements && node.body.statements.length === 1 &&
+    ts.isExpressionStatement(node.body.statements[0])) {
+    !validateComponentInstance(node.body.statements[0], componentInstance) &&
+      validateExtendFunctionFormat(log, node.body.statements[0]);
+    return;
+  }
+  if (node.body && node.body.statements && node.body.statements.length === 1 &&
+    !ts.isExpressionStatement(node.body.statements[0])) {
+    validateExtendFunctionFormat(log, node.body.statements[0]);
+    return;
+  }
+}
+
+function validateComponentInstance(node: ts.ExpressionStatement, targetInstanceName: string): boolean {
+  if (!ts.isCallExpression(node.expression)) {
+    return false;
+  }
+  const instanceName: string = findInstanceIdentifier(node.expression);
+  return instanceName === targetInstanceName;
+}
+
+function findInstanceIdentifier(node: ts.CallExpression): string {
+  let instanceName: string = '';
+  if (!ts.isPropertyAccessExpression(node.expression)) {
+    return instanceName;
+  }
+  const newNode: ts.PropertyAccessExpression = node.expression;
+  if (ts.isIdentifier(newNode.expression)) {
+    instanceName = newNode.expression.escapedText.toString();
+    return instanceName;
+  } else if (ts.isCallExpression(newNode.expression)) {
+    instanceName = findInstanceIdentifier(newNode.expression);
+  }
+  return instanceName;
+}
+
+function validateExtendFunctionFormat(log: LogInfo[], block: ts.Statement): void {
+  log.push({
+    message: `Only UI component syntax can be written here.`,
+    type: LogType.WARN,
+    pos: block.getStart()
+  });
 }
 
 function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext,

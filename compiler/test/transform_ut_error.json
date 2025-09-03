@@ -320,6 +320,16 @@
         "message": "'testExtend' parameter cannot be passed in the '@Extend' decorator.",
         "type": "WARN"
     },
+    "ExtendUISyntax": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "WARN"
+        },
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "WARN"
+        }
+    ],
     "UnknownSrc": {
         "message": "Unknown resource source 'hap'.",
         "type": "ERROR",
