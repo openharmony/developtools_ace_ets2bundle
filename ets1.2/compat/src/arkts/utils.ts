@@ -39,16 +39,4 @@ export function launchJob(task: () => void): Promise<Any> {
     return taskpool.execute(task)
 }
 
-export class CoroutineLocalValue<T> {
-    private map = new containers.ConcurrentHashMap<int, T>
-    get(): T | undefined {
-        return this.map.get(CoroutineExtras.getWorkerId())
-    }
-    set(value: T | undefined) {
-        if (value) {
-            this.map.set(CoroutineExtras.getWorkerId(), value)
-        } else {
-            this.map.delete(CoroutineExtras.getWorkerId())
-        }
-    }
-}
+export type WorkerLocalValue<T> = WorkerLocal<T>
