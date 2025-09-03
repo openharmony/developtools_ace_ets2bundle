@@ -38,20 +38,22 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
-import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from \"arkui.stateManagement.decorator\";
-import { IStateDecoratedVariable as IStateDecoratedVariable } from \"arkui.stateManagement.decorator\";
-import { RowAttribute as RowAttribute } from \"arkui.component.row\";
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+import { RowAttribute as RowAttribute } from "arkui.component.row";
+import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
+import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 import { RowImpl as RowImpl } from "arkui.component.row";
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
-import { TextAttribute as TextAttribute } from \"arkui.component.text\";
+import { memo as memo } from "arkui.stateManagement.runtime";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
-import { NavInterface as NavInterface } from \"arkui.UserView\";
-import { PageLifeCycle as PageLifeCycle } from \"arkui.component.customComponent\";
-import { EntryPoint as EntryPoint } from \"arkui.UserView\";
-import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
-import { Builder as Builder, Text as Text, Color as Color, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Entry as Entry, Component as Component, Row as Row, ForEach as ForEach } from \"@ohos.arkui.component\";
-import { State as State } from \"@ohos.arkui.stateManagement\";
+import { NavInterface as NavInterface } from "arkui.UserView";
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
+import { EntryPoint as EntryPoint } from "arkui.UserView";
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+import { Builder as Builder, Text as Text, Color as Color, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Entry as Entry, Component as Component, Row as Row, ForEach as ForEach } from "@ohos.arkui.component";
+import { State as State } from "@ohos.arkui.stateManagement";
 @memo() let globalBuilder: @Builder() ((value: string, size: number)=> void);
 let builderArr: Array<@Builder() ((value: string, size: number)=> void)>;
 function main() {}
@@ -91,15 +93,18 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     }
     @memo() public build() {
         RowImpl(@memo() ((instance: RowAttribute): void => {
-            instance.setRowOptions(undefined).height(\"100%\").applyAttributesFinish();
-            return;
+          instance.setRowOptions(undefined).height("100%").applyAttributesFinish();
+          return;
         }), @memo() (() => {
-            globalBuilder(this.message, 50);
-            ForEach(((): Array<@Builder() ((value: string, size: number)=> void)> => {
-                return builderArr;
-            }), ((@memo() item: @Builder() ((value: string, size: number)=> void)) => {
-                item(\"Hello World\", 30);
-            }));
+          globalBuilder.builder(this.message, 50);
+          ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+            instance.setForEachOptions(((): Array<WrappedBuilder<@Builder() ((value: string, size: number)=> void)>> => {
+              return builderArr;
+            }), @memo() ((item: WrappedBuilder<@Builder() ((value: string, size: number)=> void)>) => {
+              item.builder("Hello World", 30);
+            }), undefined);
+            return;
+          }));
         }));
     }
     public constructor() {}
@@ -221,45 +226,57 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             __memo_scope.cached;
             return;
         }
-        RowImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: RowAttribute): void => {
-            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+        RowImpl(__memo_context, ((__memo_id) + (136716185)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: RowAttribute): void => {
+          const __memo_scope = __memo_context.scope<void>(((__memo_id) + (46726221)), 1);
+          const __memo_parameter_instance = __memo_scope.param(0, instance);
+          if (__memo_scope.unchanged) {
+            __memo_scope.cached;
+            return;
+          }
+          __memo_parameter_instance.value.setRowOptions(undefined).height("100%").applyAttributesFinish();
+          {
+            __memo_scope.recache();
+            return;
+          }
+        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+          const __memo_scope = __memo_context.scope<void>(((__memo_id) + (54078781)), 0);
+          if (__memo_scope.unchanged) {
+            __memo_scope.cached;
+            return;
+          }
+          globalBuilder.builder(__memo_context, ((__memo_id) + (76711614)), this.message, 50);
+          ForEachImpl(__memo_context, ((__memo_id) + (213687742)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
+            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (192802443)), 1);
             const __memo_parameter_instance = __memo_scope.param(0, instance);
             if (__memo_scope.unchanged) {
+              __memo_scope.cached;
+              return;
+            }
+            __memo_parameter_instance.value.setForEachOptions(((): Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> => {
+              return builderArr;
+            }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
+              const __memo_scope = __memo_context.scope<void>(((__memo_id) + (223657391)), 1);
+              const __memo_parameter_item = __memo_scope.param(0, item);
+              if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
-            }
-            __memo_parameter_instance.value.setRowOptions(undefined).height("100%").applyAttributesFinish();
-            {
+              }
+              item.builder(__memo_context, ((__memo_id) + (218979098)), "Hello World", 30);
+              {
                 __memo_scope.recache();
                 return;
-            }
-        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
-            if (__memo_scope.unchanged) {
-                __memo_scope.cached;
-                return;
-            }
-            globalBuilder(__memo_context, ((__memo_id) + (<some_random_number>)), this.message, 50);
-            ForEach(__memo_context, ((__memo_id) + (<some_random_number>)), ((): Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> => {
-                return builderArr;
-            }), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() item: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) => {
-                const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
-                const __memo_parameter_item = __memo_scope.param(0, item);
-                if (__memo_scope.unchanged) {
-                    __memo_scope.cached;
-                    return;
-                }
-                __memo_parameter_item.value(__memo_context, ((__memo_id) + (<some_random_number>)), \"Hello World\", 30);
-                {
-                    __memo_scope.recache();
-                    return;
-                }
-            }));
-            {
-                __memo_scope.recache();
-                return;
-            }
-        }));
+              }
+            }), undefined);
+        {
+          __memo_scope.recache();
+          return;
+        }
+      }));
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }));
         {
             __memo_scope.recache();
             return;

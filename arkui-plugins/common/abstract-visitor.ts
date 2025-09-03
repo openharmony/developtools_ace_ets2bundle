@@ -43,6 +43,8 @@ export abstract class AbstractVisitor implements VisitorOptions {
 
     abstract visitor(node: arkts.AstNode): arkts.AstNode;
 
+    init(): void {}
+
     reset(): void {
         this.indentation = 0;
     }
