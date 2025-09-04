@@ -50,14 +50,15 @@ void oh_sk_file_log(oh_sk_log_type type, const char* msg, ...) {
         size_t len = interop_strlen(KOALAUI_OHOS_LOG_ROOT) + 100;
         path = new char[len];
         APPLY_LOG_FILE_PATTERN(path, len, lt, ms, getpid());
-        mkdir(KOALAUI_OHOS_LOG_ROOT, 0777);
+        mkdir(KOALAUI_OHOS_LOG_ROOT, ACCESSPERMS);
     }
 
     std::unique_ptr<FILE, decltype(&fclose)> file(fopen(path, "a"), fclose);
     if (!file) return;
 
+    constexpr auto US_IN_MS{1000};
     fprintf(file.get(), "%02d-%02d %02d:%02d:%02d.%03lld %s koala: ",
-            lt.tm_mon + 1, lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec, ms.tv_usec / 1000,
+            lt.tm_mon + 1, lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec, static_cast<long long>(ms.tv_usec / US_IN_MS),
             oh_sk_log_type_str(type));
 
     va_list args;
