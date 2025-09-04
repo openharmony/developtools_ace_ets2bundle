@@ -74,7 +74,8 @@ private:
 public:
     SerializerBase(CallbackResourceHolder* resourceHolder = nullptr):
         position(0), ownData(true), resourceHolder(resourceHolder) {
-        this->dataLength = 256;
+        constexpr auto DEFAULT_INITIAL_DATA_SIZE{256};
+        this->dataLength = DEFAULT_INITIAL_DATA_SIZE;
         this->data = reinterpret_cast<uint8_t*>(malloc(this->dataLength));
         if (!this->data) {
             INTEROP_FATAL("Cannot allocate memory");
@@ -109,7 +110,9 @@ public:
     inline void check(int more) {
         if (position + more > dataLength) {
             if (ownData) {
-                resize((position + more) * 3 / 2 + 2);
+                constexpr auto NUM_2{2};
+                constexpr auto NUM_3{3};
+                resize((position + more) * NUM_3 / NUM_2 + NUM_2);
             } else {
                 INTEROP_FATAL("Buffer overrun: %d > %d\n", position + more, dataLength);
             }
@@ -224,7 +227,7 @@ public:
 
     void writeBuffer(InteropBuffer interopBuffer) {
         writeCallbackResource(interopBuffer.resource);
-        writePointer((void*)interopBuffer.data);
+        writePointer(static_cast<void*>(interopBuffer.data));
         writeInt64(interopBuffer.length);
     }
 

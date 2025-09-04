@@ -83,7 +83,7 @@ struct KStringPtrImpl {
         if (!_owned) return;
         // Ignore old content.
         if (_value && _owned) free(_value);
-        _value = reinterpret_cast<char*>(malloc(size + 1));
+        _value = reinterpret_cast<char*>(malloc(_length + 1));
         if (!_value) {
           INTEROP_FATAL("Cannot allocate memory");
         }

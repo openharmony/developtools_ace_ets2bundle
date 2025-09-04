@@ -58,8 +58,7 @@
  *
  * @since 8
  */
-#include <stdarg.h>
-#include <stdbool.h>
+#include <cstdarg>
 
 #ifdef __cplusplus
 extern "C" {

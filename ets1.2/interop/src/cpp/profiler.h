@@ -70,7 +70,8 @@ class InteropProfiler {
             auto ns = a.second.time;
             auto count = a.second.count;
             char buffer[1024];
-            interop_snprintf(buffer, sizeof buffer, "for %s[%lld]: %.01f%% (%lld)\n", a.first.c_str(), (long long)count, (double)ns / total * 100.0, (long long)ns);
+            constexpr auto PERCENT_100{100};
+            interop_snprintf(buffer, sizeof buffer, "for %s[%lld]: %.01f%% (%lld)\n", a.first.c_str(), (long long)count, (double)ns / total * PERCENT_100, (long long)ns);
             result += buffer;
         });
         return result;

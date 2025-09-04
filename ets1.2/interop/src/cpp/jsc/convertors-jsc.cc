@@ -144,12 +144,14 @@ static JSValueRef u64ToBigInt(JSContextRef context, uint64_t value) {
         JSValueMakeNumber(context, (double) (value >> 32)),
         JSValueMakeNumber(context, (double) (value & 0xFFFFFFFF)),
     };
-    bigint = JSObjectCallAsFunction(context, bigIntFromParts, nullptr, 2, parts, nullptr);
+    contexpr auto ARGUMENT_COUNT{sizeof(parts)/sizeof(parts[0])};
+    bigint = JSObjectCallAsFunction(context, bigIntFromParts, nullptr, ARGUMENT_COUNT, parts, nullptr);
 #else
     char buffer[128] = {0};
     interop_snprintf(buffer, sizeof(buffer) - 1, "%zun", static_cast<size_t>(value));
     JSStringRef script = JSStringCreateWithUTF8CString(buffer);
-    bigint = JSEvaluateScript(context, script, nullptr, nullptr, 0, nullptr);
+    contexpr auto ARGUMENT_COUNT{0};
+    bigint = JSEvaluateScript(context, script, nullptr, nullptr, ARGUMENT_COUNT, nullptr);
     JSStringRelease(script);
 #endif
     return bigint;

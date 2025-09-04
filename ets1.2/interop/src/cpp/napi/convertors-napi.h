@@ -659,8 +659,8 @@ public:
     const std::vector<std::pair<std::string, napi_type_t>>& getMethods(const std::string& module);
 };
 
-#define __QUOTE(x) #x
-#define QUOTE(x) __QUOTE(x)
+#define QUOTE2(x) #x
+#define QUOTE(x) QUOTE2(x)
 
 #ifdef _MSC_VER
 #define MAKE_NODE_EXPORT(module, name)                                  \

@@ -15,6 +15,7 @@
 #ifndef _DESERIALIZER_BASE_H_
 #define _DESERIALIZER_BASE_H_
 
+#include <limits>
 #include <stdint.h>
 #include <cstring>
 #include <string>
@@ -564,7 +565,9 @@ inline void WriteToString(std::string *result, InteropFloat64 value)
   result->append(buf);
 #else
   std::string storage;
-  storage.resize(20);
+  constexpr auto BUF_SIZE{20};
+  static_assert(BUF_SIZE >= std::numeric_limits<InteropFloat64>::max_digits10, "O-ou!");
+  storage.resize(BUF_SIZE);
   // We use to_chars() to avoid locale issues.
   auto rc = std::to_chars(storage.data(), storage.data() + storage.size(), value);
   storage.resize(rc.ptr - storage.data());
