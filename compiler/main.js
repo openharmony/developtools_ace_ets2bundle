@@ -72,6 +72,8 @@ let sdkConfigPrefix = 'ohos|system|kit|arkts';
 let ohosSystemModulePaths = [];
 let ohosSystemModuleSubDirPaths = [];
 let allModulesPaths = [];
+let externalApiCheckPlugin = new Map();
+
 
 function initProjectConfig(projectConfig) {
   initProjectPathConfig(projectConfig);
@@ -760,6 +762,19 @@ function filterWorker(workerPath) {
   sdkConfigs = [...defaultSdkConfigs, ...extendSdkConfigs];
 })();
 
+function collectExternalApiCheckPlugin(sdkConfig, sdkPath) {
+  const pluginConfigs = sdkConfig.apiCheckPlugin;
+  pluginConfigs.forEach(config => {
+    const pluginPrefix = sdkConfig.osName + '/' + config.tag;
+    config.path = path.resolve(sdkPath, config.path);
+    if (externalApiCheckPlugin.get(pluginPrefix)) {
+      externalApiCheckPlugin.set(pluginPrefix, externalApiCheckPlugin.get(pluginPrefix).push(...pluginConfigs));
+    } else {
+      externalApiCheckPlugin.set(pluginPrefix, [...pluginConfigs]);
+    }
+  });
+}
+
 function collectExternalModules(sdkPaths) {
   for (let i = 0; i < sdkPaths.length; i++) {
     const sdkPath = sdkPaths[i];
@@ -770,6 +785,10 @@ function collectExternalModules(sdkPaths) {
     const sdkConfig = JSON.parse(fs.readFileSync(sdkConfigPath, 'utf-8'));
     if (!sdkConfig.apiPath) {
       continue;
+    }
+
+    if (sdkConfig.apiCheckPlugin && sdkConfig.apiCheckPlugin.length > 0) {
+      collectExternalApiCheckPlugin(sdkConfig, sdkPath);
     }
     let externalApiPathArray = [];
     if (Array.isArray(sdkConfig.apiPath)) {
@@ -1096,6 +1115,7 @@ function resetMain() {
   ohosSystemModulePaths = [];
   ohosSystemModuleSubDirPaths = [];
   allModulesPaths = [];
+  externalApiCheckPlugin = new Map();
 }
 
 function resetAbilityConfig() {
@@ -1186,3 +1206,5 @@ exports.resetGlobalProgram = resetGlobalProgram;
 exports.setEntryArrayForObf = setEntryArrayForObf;
 exports.getPackageJsonEntryPath = getPackageJsonEntryPath;
 exports.setIntentEntryPages = setIntentEntryPages;
+exports.externalApiCheckPlugin = externalApiCheckPlugin;
+
