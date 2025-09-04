@@ -356,6 +356,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           storedFileInfo.processBuilder = false;
           storedFileInfo.processGlobalBuilder = false;
         } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
+          parseStylesNode(node, transformLog.errors);
           if (node.parameters.length === 0) {
             node = undefined;
           } else {
@@ -1304,19 +1305,20 @@ function parseExtendNode(node: ts.CallExpression, extendResult: ExtendResult, ch
 function checkExtendNode(node: ts.FunctionDeclaration, componentName: string,
   log: LogInfo[]): void {
   const componentInstance: string = `${componentName}Instance`;
-  if (node.body && node.body.statements && node.body.statements.length > 1) {
-    validateExtendFunctionFormat(log, node.body.statements[0]);
+  if (node.body && ts.isBlock(node.body) && node.body.statements &&
+    node.body.statements.length > 1) {
+    validateUIFunctionFormat(log, node.body.statements[0]);
     return;
   }
-  if (node.body && node.body.statements && node.body.statements.length === 1 &&
-    ts.isExpressionStatement(node.body.statements[0])) {
+  if (node.body && ts.isBlock(node.body) && node.body.statements &&
+    node.body.statements.length === 1 && ts.isExpressionStatement(node.body.statements[0])) {
     !validateComponentInstance(node.body.statements[0], componentInstance) &&
-      validateExtendFunctionFormat(log, node.body.statements[0]);
+      validateUIFunctionFormat(log, node.body.statements[0]);
     return;
   }
-  if (node.body && node.body.statements && node.body.statements.length === 1 &&
-    !ts.isExpressionStatement(node.body.statements[0])) {
-    validateExtendFunctionFormat(log, node.body.statements[0]);
+  if (node.body && ts.isBlock(node.body) && node.body.statements &&
+    node.body.statements.length === 1 && !ts.isExpressionStatement(node.body.statements[0])) {
+    validateUIFunctionFormat(log, node.body.statements[0]);
     return;
   }
 }
@@ -1344,12 +1346,24 @@ function findInstanceIdentifier(node: ts.CallExpression): string {
   return instanceName;
 }
 
-function validateExtendFunctionFormat(log: LogInfo[], block: ts.Statement): void {
+function validateUIFunctionFormat(log: LogInfo[], block: ts.Statement): void {
   log.push({
     message: `Only UI component syntax can be written here.`,
     type: LogType.WARN,
     pos: block.getStart()
   });
+}
+
+export function parseStylesNode(node: ts.FunctionDeclaration | ts.MethodDeclaration, log: LogInfo[]): void {
+  const commonInstance: string = 'CommonInstance';
+  if (node.body && ts.isBlock(node.body) && node.body.statements && node.body.statements.length) {
+    if (node.body.statements.length === 1 && ts.isExpressionStatement(node.body.statements[0])) {
+      !validateComponentInstance(node.body.statements[0], commonInstance) &&
+        validateUIFunctionFormat(log, node.body.statements[0]);
+      return;
+    }
+    validateUIFunctionFormat(log, node.body.statements[0]);
+  }
 }
 
 function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext,

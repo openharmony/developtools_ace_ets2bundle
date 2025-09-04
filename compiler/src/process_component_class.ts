@@ -153,7 +153,8 @@ import {
 import {
   builderTypeParameter,
   initializeMYIDS,
-  globalBuilderParamAssignment
+  globalBuilderParamAssignment,
+  parseStylesNode
 } from './process_ui_syntax';
 import constantDefine from './constant_define';
 import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
@@ -626,6 +627,7 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
       storedFileInfo.processBuilder = false;
       storedFileInfo.processLocalBuilder = false;
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
+      parseStylesNode(node, log);
       if (node.parameters && node.parameters.length === 0) {
         if (ts.isBlock(node.body) && node.body.statements && node.body.statements.length) {
           INNER_STYLE_FUNCTION.set(name, node.body);
