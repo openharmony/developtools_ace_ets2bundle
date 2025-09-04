@@ -189,6 +189,12 @@ void impl_InvokeFinalizer(KNativePointer obj, KNativePointer finalizer) {
 }
 KOALA_INTEROP_V2(InvokeFinalizer, KNativePointer, KNativePointer)
 
+KInteropReturnBuffer impl_GetPtrVector(KNativePointer ptr) {
+    auto vector = reinterpret_cast<std::vector<void*>*>(ptr);
+    return KInteropReturnBuffer::from(*vector, nullptr);
+}
+KOALA_INTEROP_1(GetPtrVector, KInteropReturnBuffer, KNativePointer)
+
 KInt impl_GetPtrVectorSize(KNativePointer ptr) {
     return reinterpret_cast<std::vector<void*>*>(ptr)->size();
 }

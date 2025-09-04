@@ -184,22 +184,35 @@ struct InteropTypeConverter<KVMObjectHandle> {
     }
 };
 
+inline napi_typedarray_type getNapiType(KInt size)
+{
+    switch (size) {
+        case 1: return napi_uint8_array;
+        case 2: return napi_uint16_array;
+        case 4: return napi_uint32_array;
+        case 8: return napi_biguint64_array;
+        default: break;
+    }
+    return napi_uint8_array;
+}
+
 template<>
 struct InteropTypeConverter<KInteropReturnBuffer> {
     using InteropType = napi_value;
     static inline KInteropReturnBuffer convertFrom(napi_env env, InteropType value) = delete;
     static void disposer(napi_env env, void* data, void* hint) {
       KInteropReturnBuffer* bufferCopy = (KInteropReturnBuffer*)hint;
-      bufferCopy->dispose(bufferCopy->data, bufferCopy->length);
+      // todo: Should the dispose signature contain length? It is not common for libc
+      // and removing it can avoid an extra allocation.
+      bufferCopy->dispose ? bufferCopy->dispose(bufferCopy->data, bufferCopy->length) : (void)0;
       delete bufferCopy;
     }
     static InteropType convertTo(napi_env env, KInteropReturnBuffer value) {
       napi_value result = nullptr;
       napi_value arrayBuffer = nullptr;
-      auto clone = new KInteropReturnBuffer();
-      *clone = value;
-      napi_create_external_arraybuffer(env, value.data, value.length, disposer, clone, &arrayBuffer);
-      napi_create_typedarray(env, napi_uint8_array, value.length, arrayBuffer, 0, &result);
+      auto clone = new KInteropReturnBuffer(value);
+      napi_create_external_arraybuffer(env, value.data, value.length * value.elementSize, disposer, clone, &arrayBuffer);
+      napi_create_typedarray(env, getNapiType(value.elementSize), value.length, arrayBuffer, 0, &result);
       return result;
     }
     static inline void release(napi_env env, InteropType value, const KInteropReturnBuffer& converted) = delete;
@@ -333,7 +346,6 @@ template <>
 inline napi_typedarray_type getNapiType<KNativePointer>() {
   return napi_biguint64_array;
 }
-
 napi_valuetype getValueTypeChecked(napi_env env, napi_value value);
 bool isTypedArray(napi_env env, napi_value value);
 

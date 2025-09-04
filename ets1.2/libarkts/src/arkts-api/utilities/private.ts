@@ -24,6 +24,7 @@ import {
     withStringArray
 } from "@koalaui/interop"
 import { NativePtrDecoder } from "./nativePtrDecoder"
+//import { OptimizedNativePtrDecoder as NativePtrDecoder } from "./nativePtrDecoder"
 import { Es2pandaAstNodeType, Es2pandaModifierFlags, Es2pandaScriptFunctionFlags } from "../../../generated/Es2pandaEnums"
 import { nodeFrom } from "../class-by-peer"
 import { AstNode } from "../peers/AstNode"
@@ -65,6 +66,12 @@ export function assertValidPeer(peer: KPtr, expectedKind: Es2pandaAstNodeType): 
 }
 
 export function acceptNativeObjectArrayResult<T extends ArktsObject>(arrayObject: KNativePointer, factory: (instance: KNativePointer) => T): T[] {
+    // For OptimizedNativePtrDecoder
+    //const decoded = new NativePtrDecoder().decode(arrayObject)
+    //return decoded.reduce((prev, curr) => {
+    //    prev.push(factory(curr))
+    //    return prev
+    //}, [] as T[])
     return new NativePtrDecoder().decode(arrayObject).map(factory);
 }
 
@@ -90,6 +97,12 @@ export function unpackNodeArray<T extends AstNode>(nodesPtr: KNativePointer, typ
     if (nodesPtr === nullptr) {
         return []
     }
+    // For OptimizedNativePtrDecoder
+    //const decoded = new NativePtrDecoder().decode(nodesPtr)
+    //return decoded.reduce((prev, curr) => {
+    //    prev.push(unpackNonNullableNode(curr, typeHint))
+    //    return prev
+    //}, [] as T[])
     return new NativePtrDecoder()
         .decode(nodesPtr)
         .map((peer: KNativePointer) => unpackNonNullableNode(peer, typeHint))
