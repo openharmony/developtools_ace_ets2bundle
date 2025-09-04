@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <string.h>
 #include <cmath>
+#include <vector>
 
 #include "interop-types.h"
 #include "interop-utils.h"
@@ -234,6 +235,13 @@ struct KInteropReturnBuffer {
   KInt length;
   KNativePointer data;
   void (*dispose)(KNativePointer data, KInt length);
+  KInt elementSize = 1;
+
+  template<typename T>
+  static KInteropReturnBuffer from(std::vector<T> const& v, decltype(dispose) dispose)
+  {
+    return { (KInt)v.size(), (KNativePointer)v.data(), dispose, (KInt)sizeof(T) };
+  }
 };
 
 typedef _InteropVMContext *KVMContext;

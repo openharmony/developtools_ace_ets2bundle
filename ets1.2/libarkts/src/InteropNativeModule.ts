@@ -37,6 +37,9 @@ export class InteropNativeModule {
     _InvokeFinalizer(ptr: KPtr, finalizer: KPtr): void {
         throw new Error("Not implemented")
     }
+    _GetPtrVector(ptr: KPtr): BigUint64Array {
+        throw new Error("Not implemented")
+    }
     _GetPtrVectorSize(ptr: KPtr): KInt {
         throw new Error("Not implemented")
     }

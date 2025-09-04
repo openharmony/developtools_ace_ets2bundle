@@ -67,3 +67,20 @@ export class NativePtrDecoder extends ArrayDecoder<pointer> {
         return global.interop._GetPtrVectorElement(blob, index)
     }
 }
+
+// This decoder uses a napi's external buffer and
+// it is not efficient for small arraya(guessing, less than 10)
+export class OptimizedNativePtrDecoder {
+    disposeArray(blob: pointer): void {
+        // Improve:
+    }
+    decode(blob: pointer): BigUint64Array {
+        return global.interop._GetPtrVector(blob)
+    }
+    decodeAndCopy(blob: pointer): Array<pointer> {
+        const data = global.interop._GetPtrVector(blob)
+        const result = Array.from(data)
+        this.disposeArray(blob)
+        return result
+    }
+}
