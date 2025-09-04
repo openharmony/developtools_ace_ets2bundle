@@ -94,23 +94,23 @@ struct KStringPtrImpl {
         assign(data, data ? interop_strlen(data) : 0);
     }
 
-    void assign(const char* data, int len) {
+    void assign(const char* data, int length) {
         if (_value && _owned) free(_value);
         if (data) {
           if (_owned) {
-            _value = reinterpret_cast<char*>(malloc(len + 1));
+            _value = reinterpret_cast<char*>(malloc(length + 1));
             if (!_value) {
               INTEROP_FATAL("Cannot allocate memory");
             }
-            interop_memcpy(_value, len, data, len);
-            _value[len] = 0;
+            interop_memcpy(_value, length, data, length);
+            _value[length] = 0;
           } else {
             _value = const_cast<char*>(data);
           }
         } else {
             _value = nullptr;
         }
-        _length = len;
+        _length = length;
     }
 
   protected:

@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifdef CONVERTORS_ANI_H
 
 #ifdef KOALA_ANI
 
@@ -1902,3 +1903,5 @@ ani_env* getKoalaANIContext(void* hint);
   } while (0)
 
 #endif // KOALA_ANI
+
+#endif // CONVERTORS_ANI_H

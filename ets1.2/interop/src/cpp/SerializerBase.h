@@ -52,24 +52,6 @@ inline InteropRuntimeType runtimeType(const InteropObject& value)
     return INTEROP_RUNTIME_OBJECT;
 }
 
-static const std::size_t buffer_size = 1024 * 1024; // 1 MB
-static std::size_t offset = 0;
-alignas(std::max_align_t) static char buffer[buffer_size];
-
-template <typename T, std::size_t size>
-T* allocArray(const std::array<T, size>& ref) {
-  std::size_t space = sizeof(buffer) - offset;
-  void* ptr = buffer + offset;
-  void* aligned_ptr = std::align(alignof(T), sizeof(T) * size, ptr, space);
-  ASSERT(aligned_ptr != nullptr && "Insufficient space or alignment failed!");
-  offset = (char*)aligned_ptr + sizeof(T) * size - buffer;
-  T* array = reinterpret_cast<T*>(aligned_ptr);
-  for (size_t i = 0; i < size; ++i) {
-    new (&array[i]) T(ref[i]);
-  }
-  return array;
-}
-
 class SerializerBase {
 private:
     uint8_t* data;
@@ -136,8 +118,8 @@ public:
 
     void writeInt8(InteropInt8 value) {
         check(1);
-        *((InteropInt8*)(data + position)) = value;
-        position += 1;
+        *(reinterpret_cast<InteropInt8*>(data + position)) = value;
+        position += sizeof(value);
     }
 
     void writeInt32(InteropInt32 value) {
@@ -145,7 +127,7 @@ public:
 #ifdef KOALA_NO_UNALIGNED_ACCESS
         interop_memcpy(data + position, dataLength, &value, sizeof(value));
 #else
-        *((InteropInt32*)(data + position)) = value;
+        *(reinterpret_cast<InteropInt32*>(data + position)) = value;
 #endif
         position += sizeof(value);
     }
@@ -155,7 +137,7 @@ public:
 #ifdef KOALA_NO_UNALIGNED_ACCESS
         interop_memcpy(data + position, dataLength, &value, sizeof(value));
 #else
-        *((InteropInt64*)(data + position)) = value;
+        *(reinterpret_cast<InteropInt64*>(data + position)) = value;
 #endif
         position += sizeof(value);
     }
@@ -165,7 +147,7 @@ public:
 #ifdef KOALA_NO_UNALIGNED_ACCESS
         interop_memcpy(data + position, dataLength, &value, sizeof(value));
 #else
-        *((InteropUInt64*)(data + position)) = value;
+        *(reinterpret_cast<InteropUInt64*>(data + position)) = value;
 #endif
         position += sizeof(value);
     }
@@ -175,7 +157,7 @@ public:
 #ifdef KOALA_NO_UNALIGNED_ACCESS
         interop_memcpy(data + position, dataLength, &value, sizeof(value));
 #else
-        *((InteropFloat32*)(data + position)) = value;
+        *(reinterpret_cast<InteropFloat32*>(data + position)) = value;
 #endif
         position += sizeof(value);
     }
@@ -185,9 +167,9 @@ public:
 #ifdef KOALA_NO_UNALIGNED_ACCESS
         interop_memcpy(data + position, dataLength, &value, sizeof(value));
 #else
-        *((InteropFloat64*)(data + position)) = value;
+        *(reinterpret_cast<InteropFloat64*>(data + position)) = value;
 #endif
-        position += 8;
+        position += sizeof(value);
     }
 
     void writePointer(InteropNativePointer value) {
@@ -196,7 +178,7 @@ public:
 #ifdef KOALA_NO_UNALIGNED_ACCESS
         interop_memcpy(data + position, dataLength, &value64, sizeof(value64));
 #else
-        *((int64_t*)(data + position)) = value64;
+        *(reinterpret_cast<int64_t*>(data + position)) = value64;
 #endif
         position += sizeof(value64);
     }
@@ -215,7 +197,7 @@ public:
     void writeString(InteropString value) {
         writeInt32(value.length + 1);
         check(value.length + 1);
-        interop_strcpy((char*)(data + position), dataLength, value.chars);
+        interop_strcpy(reinterpret_cast<char*>(data + position), dataLength, value.chars);
         position += value.length + 1;
     }
 
@@ -240,10 +222,10 @@ public:
         // Improve: implement
     }
 
-    void writeBuffer(InteropBuffer buffer) {
-        writeCallbackResource(buffer.resource);
-        writePointer((void*)buffer.data);
-        writeInt64(buffer.length);
+    void writeBuffer(InteropBuffer interopBuffer) {
+        writeCallbackResource(interopBuffer.resource);
+        writePointer((void*)interopBuffer.data);
+        writeInt64(interopBuffer.length);
     }
 
     KInteropReturnBuffer toReturnBuffer() {
