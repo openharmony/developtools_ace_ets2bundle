@@ -83,25 +83,6 @@ inline InteropFunction makeArkFunctionFromId(InteropInt32 id) {
   return result;
 }
 
-inline const char *getUnitName(int value)
-{
-  switch (value)
-  {
-  case 0:
-    return "px";
-  case 1:
-    return "vp";
-  case 2:
-    return "fp";
-  case 3:
-    return "%";
-  case 4:
-    return "lpx";
-  default:
-    return "<unknown>";
-  }
-}
-
 template <typename T>
 inline void convertor(T value) = delete;
 
@@ -336,9 +317,7 @@ public:
   void check(int32_t count)
   {
     if (position + count > length) {
-        fprintf(stderr, "Incorrect serialized data, check for %d, buffer %d position %d\n", count, length, position);
-        ASSERT(false);
-        abort();
+        INTEROP_FATAL("Incorrect serialized data, check for %d, buffer %d position %d\n", count, length, position);
     }
   }
 
@@ -472,7 +451,7 @@ public:
   }
   InteropNumber readNumber()
   {
-    check(5);
+    check(sizeof(int8_t) + sizeof(int32_t));
     InteropNumber result;
     result.tag = readTag();
     if (result.tag == InteropTag::INTEROP_TAG_INT32)
