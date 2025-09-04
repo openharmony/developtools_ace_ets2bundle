@@ -443,46 +443,6 @@ struct __ani_interaction_api {
     ani_status (*FindEnum)(ani_env *env, const char *enum_descriptor, ani_enum *result);
 
     /**
-     * @brief Finds a namespace within a module by its descriptor.
-     *
-     * This function locates a namespace within the specified module based on its descriptor.
-     *
-     * @param[in] env A pointer to the environment structure.
-     * @param[in] module The module to search within.
-     * @param[in] namespace_descriptor The descriptor of the namespace to find.
-     * @param[out] result A pointer to the namespace object.
-     * @return Returns a status code of type `ani_status` indicating success or failure.
-     */
-    ani_status (*Module_FindNamespace)(ani_env *env, ani_module module, const char *namespace_descriptor,
-                                       ani_namespace *result);
-
-    /**
-     * @brief Finds a class within a module by its descriptor.
-     *
-     * This function locates a class within the specified module based on its descriptor.
-     *
-     * @param[in] env A pointer to the environment structure.
-     * @param[in] module The module to search within.
-     * @param[in] class_descriptor The descriptor of the class to find.
-     * @param[out] result A pointer to the class object.
-     * @return Returns a status code of type `ani_status` indicating success or failure.
-     */
-    ani_status (*Module_FindClass)(ani_env *env, ani_module module, const char *class_descriptor, ani_class *result);
-
-    /**
-     * @brief Finds an enum within a module by its descriptor.
-     *
-     * This function locates an enum within the specified module based on its descriptor.
-     *
-     * @param[in] env A pointer to the environment structure.
-     * @param[in] module The module to search within.
-     * @param[in] enum_descriptor The descriptor of the enum to find.
-     * @param[out] result A pointer to the enum object.
-     * @return Returns a status code of type `ani_status` indicating success or failure.
-     */
-    ani_status (*Module_FindEnum)(ani_env *env, ani_module module, const char *enum_descriptor, ani_enum *result);
-
-    /**
      * @brief Finds a function within a module by its name and signature.
      *
      * This function locates a function within the specified module based on its name and signature.
@@ -509,46 +469,6 @@ struct __ani_interaction_api {
      * @return Returns a status code of type `ani_status` indicating success or failure.
      */
     ani_status (*Module_FindVariable)(ani_env *env, ani_module module, const char *name, ani_variable *result);
-
-    /**
-     * @brief Finds a namespace within another namespace by its descriptor.
-     *
-     * This function locates a namespace within the specified parent namespace based on its descriptor.
-     *
-     * @param[in] env A pointer to the environment structure.
-     * @param[in] ns The parent namespace to search within.
-     * @param[in] namespace_descriptor The descriptor of the namespace to find.
-     * @param[out] result A pointer to the namespace object.
-     * @return Returns a status code of type `ani_status` indicating success or failure.
-     */
-    ani_status (*Namespace_FindNamespace)(ani_env *env, ani_namespace ns, const char *namespace_descriptor,
-                                          ani_namespace *result);
-
-    /**
-     * @brief Finds a class within a namespace by its descriptor.
-     *
-     * This function locates a class within the specified namespace based on its descriptor.
-     *
-     * @param[in] env A pointer to the environment structure.
-     * @param[in] ns The namespace to search within.
-     * @param[in] class_descriptor The descriptor of the class to find.
-     * @param[out] result A pointer to the class object.
-     * @return Returns a status code of type `ani_status` indicating success or failure.
-     */
-    ani_status (*Namespace_FindClass)(ani_env *env, ani_namespace ns, const char *class_descriptor, ani_class *result);
-
-    /**
-     * @brief Finds an enum within a namespace by its descriptor.
-     *
-     * This function locates an enum within the specified namespace based on its descriptor.
-     *
-     * @param[in] env A pointer to the environment structure.
-     * @param[in] ns The namespace to search within.
-     * @param[in] enum_descriptor The descriptor of the enum to find.
-     * @param[out] result A pointer to the enum object.
-     * @return Returns a status code of type `ani_status` indicating success or failure.
-     */
-    ani_status (*Namespace_FindEnum)(ani_env *env, ani_namespace ns, const char *enum_descriptor, ani_enum *result);
 
     /**
      * @brief Finds a function within a namespace by its name and signature.
@@ -963,7 +883,7 @@ struct __ani_interaction_api {
     ani_status (*Array_GetLength)(ani_env *env, ani_array array, ani_size *result);
 
     /**
-     * @brief Creates a new array of booleans.
+     * @brief This function is deprecated, please use Array_New instead. Creates a new array of booleans.
      *
      * This function creates a new array of the specified length for boolean values.
      *
@@ -971,11 +891,13 @@ struct __ani_interaction_api {
      * @param[in] length The length of the array to be created.
      * @param[out] result A pointer to store the created array.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_New_Boolean)(ani_env *env, ani_size length, ani_array_boolean *result);
 
     /**
-     * @brief Creates a new array of characters.
+     * @brief This function is deprecated, please use Array_New instead. Creates a new array of characters.
      *
      * This function creates a new array of the specified length for character values.
      *
@@ -983,11 +905,13 @@ struct __ani_interaction_api {
      * @param[in] length The length of the array to be created.
      * @param[out] result A pointer to store the created array.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_New_Char)(ani_env *env, ani_size length, ani_array_char *result);
 
     /**
-     * @brief Creates a new array of bytes.
+     * @brief This function is deprecated, please use Array_New instead. Creates a new array of bytes.
      *
      * This function creates a new array of the specified length for byte values.
      *
@@ -995,11 +919,13 @@ struct __ani_interaction_api {
      * @param[in] length The length of the array to be created.
      * @param[out] result A pointer to store the created array.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_New_Byte)(ani_env *env, ani_size length, ani_array_byte *result);
 
     /**
-     * @brief Creates a new array of shorts.
+     * @brief This function is deprecated, please use Array_New instead. Creates a new array of shorts.
      *
      * This function creates a new array of the specified length for short integer values.
      *
@@ -1007,11 +933,13 @@ struct __ani_interaction_api {
      * @param[in] length The length of the array to be created.
      * @param[out] result A pointer to store the created array.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_New_Short)(ani_env *env, ani_size length, ani_array_short *result);
 
     /**
-     * @brief Creates a new array of integers.
+     * @brief This function is deprecated, please use Array_New instead. Creates a new array of integers.
      *
      * This function creates a new array of the specified length for integer values.
      *
@@ -1019,11 +947,13 @@ struct __ani_interaction_api {
      * @param[in] length The length of the array to be created.
      * @param[out] result A pointer to store the created array.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_New_Int)(ani_env *env, ani_size length, ani_array_int *result);
 
     /**
-     * @brief Creates a new array of long integers.
+     * @brief This function is deprecated, please use Array_New instead. Creates a new array of long integers.
      *
      * This function creates a new array of the specified length for long integer values.
      *
@@ -1031,11 +961,13 @@ struct __ani_interaction_api {
      * @param[in] length The length of the array to be created.
      * @param[out] result A pointer to store the created array.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_New_Long)(ani_env *env, ani_size length, ani_array_long *result);
 
     /**
-     * @brief Creates a new array of floats.
+     * @brief This function is deprecated, please use Array_New instead. Creates a new array of floats.
      *
      * This function creates a new array of the specified length for float values.
      *
@@ -1043,11 +975,13 @@ struct __ani_interaction_api {
      * @param[in] length The length of the array to be created.
      * @param[out] result A pointer to store the created array.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_New_Float)(ani_env *env, ani_size length, ani_array_float *result);
 
     /**
-     * @brief Creates a new array of doubles.
+     * @brief This function is deprecated, please use Array_New instead. Creates a new array of doubles.
      *
      * This function creates a new array of the specified length for double values.
      *
@@ -1055,11 +989,14 @@ struct __ani_interaction_api {
      * @param[in] length The length of the array to be created.
      * @param[out] result A pointer to store the created array.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_New_Double)(ani_env *env, ani_size length, ani_array_double *result);
 
     /**
-     * @brief Retrieves a region of boolean values from an array.
+     * @brief This function is deprecated, please use Array_Get instead. Retrieves a region of boolean values from an
+     * array.
      *
      * This function retrieves a portion of the specified boolean array into a native buffer.
      *
@@ -1069,12 +1006,15 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to retrieve.
      * @param[out] native_buffer A buffer to store the retrieved boolean values.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_GetRegion_Boolean)(ani_env *env, ani_array_boolean array, ani_size offset, ani_size length,
                                           ani_boolean *native_buffer);
 
     /**
-     * @brief Retrieves a region of character values from an array.
+     * @brief This function is deprecated, please use Array_Get instead. Retrieves a region of character values from an
+     * array.
      *
      * This function retrieves a portion of the specified character array into a native buffer.
      *
@@ -1084,12 +1024,15 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to retrieve.
      * @param[out] native_buffer A buffer to store the retrieved character values.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_GetRegion_Char)(ani_env *env, ani_array_char array, ani_size offset, ani_size length,
                                        ani_char *native_buffer);
 
     /**
-     * @brief Retrieves a region of byte values from an array.
+     * @brief This function is deprecated, please use Array_Get instead. Retrieves a region of byte values from an
+     * array.
      *
      * This function retrieves a portion of the specified byte array into a native buffer.
      *
@@ -1099,12 +1042,15 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to retrieve.
      * @param[out] native_buffer A buffer to store the retrieved byte values.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_GetRegion_Byte)(ani_env *env, ani_array_byte array, ani_size offset, ani_size length,
                                        ani_byte *native_buffer);
 
     /**
-     * @brief Retrieves a region of short values from an array.
+     * @brief This function is deprecated, please use Array_Get instead. Retrieves a region of short values from an
+     * array.
      *
      * This function retrieves a portion of the specified short array into a native buffer.
      *
@@ -1114,12 +1060,15 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to retrieve.
      * @param[out] native_buffer A buffer to store the retrieved short values.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_GetRegion_Short)(ani_env *env, ani_array_short array, ani_size offset, ani_size length,
                                         ani_short *native_buffer);
 
     /**
-     * @brief Retrieves a region of integer values from an array.
+     * @brief This function is deprecated, please use Array_Get instead. Retrieves a region of integer values from an
+     * array.
      *
      * This function retrieves a portion of the specified integer array into a native buffer.
      *
@@ -1129,12 +1078,15 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to retrieve.
      * @param[out] native_buffer A buffer to store the retrieved integer values.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_GetRegion_Int)(ani_env *env, ani_array_int array, ani_size offset, ani_size length,
                                       ani_int *native_buffer);
 
     /**
-     * @brief Retrieves a region of long integer values from an array.
+     * @brief This function is deprecated, please use Array_Get instead. Retrieves a region of long integer values from
+     * an array.
      *
      * This function retrieves a portion of the specified long integer array into a native buffer.
      *
@@ -1144,12 +1096,15 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to retrieve.
      * @param[out] native_buffer A buffer to store the retrieved long integer values.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_GetRegion_Long)(ani_env *env, ani_array_long array, ani_size offset, ani_size length,
                                        ani_long *native_buffer);
 
     /**
-     * @brief Retrieves a region of float values from an array.
+     * @brief This function is deprecated, please use Array_Get instead. Retrieves a region of float values from an
+     * array.
      *
      * This function retrieves a portion of the specified float array into a native buffer.
      *
@@ -1159,12 +1114,15 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to retrieve.
      * @param[out] native_buffer A buffer to store the retrieved float values.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_GetRegion_Float)(ani_env *env, ani_array_float array, ani_size offset, ani_size length,
                                         ani_float *native_buffer);
 
     /**
-     * @brief Retrieves a region of double values from an array.
+     * @brief This function is deprecated, please use Array_Get instead. Retrieves a region of double values from an
+     * array.
      *
      * This function retrieves a portion of the specified double array into a native buffer.
      *
@@ -1174,12 +1132,14 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to retrieve.
      * @param[out] native_buffer A buffer to store the retrieved double values.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_GetRegion_Double)(ani_env *env, ani_array_double array, ani_size offset, ani_size length,
                                          ani_double *native_buffer);
 
     /**
-     * @brief Sets a region of boolean values in an array.
+     * @brief This function is deprecated, please use Array_Set instead. Sets a region of boolean values in an array.
      *
      * This function sets a portion of the specified boolean array using a native buffer.
      *
@@ -1189,12 +1149,14 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to set.
      * @param[in] native_buffer A buffer containing the boolean values to set.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_SetRegion_Boolean)(ani_env *env, ani_array_boolean array, ani_size offset, ani_size length,
                                           const ani_boolean *native_buffer);
 
     /**
-     * @brief Sets a region of character values in an array.
+     * @brief This function is deprecated, please use Array_Set instead. Sets a region of character values in an array.
      *
      * This function sets a portion of the specified character array using a native buffer.
      *
@@ -1204,12 +1166,14 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to set.
      * @param[in] native_buffer A buffer containing the character values to set.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_SetRegion_Char)(ani_env *env, ani_array_char array, ani_size offset, ani_size length,
                                        const ani_char *native_buffer);
 
     /**
-     * @brief Sets a region of byte values in an array.
+     * @brief This function is deprecated, please use Array_Set instead. Sets a region of byte values in an array.
      *
      * This function sets a portion of the specified byte array using a native buffer.
      *
@@ -1219,12 +1183,14 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to set.
      * @param[in] native_buffer A buffer containing the byte values to set.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_SetRegion_Byte)(ani_env *env, ani_array_byte array, ani_size offset, ani_size length,
                                        const ani_byte *native_buffer);
 
     /**
-     * @brief Sets a region of short values in an array.
+     * @brief This function is deprecated, please use Array_Set instead. Sets a region of short values in an array.
      *
      * This function sets a portion of the specified short array using a native buffer.
      *
@@ -1234,12 +1200,14 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to set.
      * @param[in] native_buffer A buffer containing the short values to set.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_SetRegion_Short)(ani_env *env, ani_array_short array, ani_size offset, ani_size length,
                                         const ani_short *native_buffer);
 
     /**
-     * @brief Sets a region of integer values in an array.
+     * @brief This function is deprecated, please use Array_Set instead. Sets a region of integer values in an array.
      *
      * This function sets a portion of the specified integer array using a native buffer.
      *
@@ -1249,12 +1217,15 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to set.
      * @param[in] native_buffer A buffer containing the integer values to set.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_SetRegion_Int)(ani_env *env, ani_array_int array, ani_size offset, ani_size length,
                                       const ani_int *native_buffer);
 
     /**
-     * @brief Sets a region of long integer values in an array.
+     * @brief This function is deprecated, please use Array_Set instead. Sets a region of long integer values in an
+     * array.
      *
      * This function sets a portion of the specified long integer array using a native buffer.
      *
@@ -1264,12 +1235,14 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to set.
      * @param[in] native_buffer A buffer containing the long integer values to set.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_SetRegion_Long)(ani_env *env, ani_array_long array, ani_size offset, ani_size length,
                                        const ani_long *native_buffer);
 
     /**
-     * @brief Sets a region of float values in an array.
+     * @brief This function is deprecated, please use Array_Set instead. Sets a region of float values in an array.
      *
      * This function sets a portion of the specified float array using a native buffer.
      *
@@ -1279,12 +1252,14 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to set.
      * @param[in] native_buffer A buffer containing the float values to set.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_SetRegion_Float)(ani_env *env, ani_array_float array, ani_size offset, ani_size length,
                                         const ani_float *native_buffer);
 
     /**
-     * @brief Sets a region of double values in an array.
+     * @brief This function is deprecated, please use Array_Set instead. Sets a region of double values in an array.
      *
      * This function sets a portion of the specified double array using a native buffer.
      *
@@ -1294,12 +1269,14 @@ struct __ani_interaction_api {
      * @param[in] length The number of elements to set.
      * @param[in] native_buffer A buffer containing the double values to set.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_SetRegion_Double)(ani_env *env, ani_array_double array, ani_size offset, ani_size length,
                                          const ani_double *native_buffer);
 
     /**
-     * @brief Creates a new array of references.
+     * @brief This function is deprecated, please use Array_New instead. Creates a new array of references.
      *
      * This function creates a new array of references, optionally initializing it with an array of references.
      *
@@ -1309,12 +1286,15 @@ struct __ani_interaction_api {
      * @param[in] initial_element An optional reference to initialize the array. Can be null.
      * @param[out] result A pointer to store the created array of references.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_New_Ref)(ani_env *env, ani_type type, ani_size length, ani_ref initial_element,
                                 ani_array_ref *result);
 
     /**
-     * @brief Sets a reference at a specific index in an array.
+     * @brief This function is deprecated, please use Array_Set instead. Sets a reference at a specific index in an
+     * array.
      *
      * This function sets the value of a reference at the specified index in the array.
      *
@@ -1323,11 +1303,14 @@ struct __ani_interaction_api {
      * @param[in] index The index at which to set the reference.
      * @param[in] ref The reference to set at the specified index.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_Set_Ref)(ani_env *env, ani_array_ref array, ani_size index, ani_ref ref);
 
     /**
-     * @brief Retrieves a reference from a specific index in an array.
+     * @brief This function is deprecated, please use Array_Get instead. Retrieves a reference from a specific index in
+     * an array.
      *
      * This function retrieves the value of a reference at the specified index in the array.
      *
@@ -1336,6 +1319,8 @@ struct __ani_interaction_api {
      * @param[in] index The index from which to retrieve the reference.
      * @param[out] result A pointer to store the retrieved reference.
      * @return Returns a status code of type `ani_status` indicating success or failure.
+     *
+     * @deprecated
      */
     ani_status (*Array_Get_Ref)(ani_env *env, ani_array_ref array, ani_size index, ani_ref *result);
 
@@ -6331,18 +6316,6 @@ struct __ani_env {
     {
         return c_api->FindEnum(this, enum_descriptor, result);
     }
-    ani_status Module_FindNamespace(ani_module module, const char *namespace_descriptor, ani_namespace *result)
-    {
-        return c_api->Module_FindNamespace(this, module, namespace_descriptor, result);
-    }
-    ani_status Module_FindClass(ani_module module, const char *class_descriptor, ani_class *result)
-    {
-        return c_api->Module_FindClass(this, module, class_descriptor, result);
-    }
-    ani_status Module_FindEnum(ani_module module, const char *enum_descriptor, ani_enum *result)
-    {
-        return c_api->Module_FindEnum(this, module, enum_descriptor, result);
-    }
     ani_status Module_FindFunction(ani_module module, const char *name, const char *signature, ani_function *result)
     {
         return c_api->Module_FindFunction(this, module, name, signature, result);
@@ -6350,18 +6323,6 @@ struct __ani_env {
     ani_status Module_FindVariable(ani_module module, const char *name, ani_variable *result)
     {
         return c_api->Module_FindVariable(this, module, name, result);
-    }
-    ani_status Namespace_FindNamespace(ani_namespace ns, const char *namespace_descriptor, ani_namespace *result)
-    {
-        return c_api->Namespace_FindNamespace(this, ns, namespace_descriptor, result);
-    }
-    ani_status Namespace_FindClass(ani_namespace ns, const char *class_descriptor, ani_class *result)
-    {
-        return c_api->Namespace_FindClass(this, ns, class_descriptor, result);
-    }
-    ani_status Namespace_FindEnum(ani_namespace ns, const char *enum_descriptor, ani_enum *result)
-    {
-        return c_api->Namespace_FindEnum(this, ns, enum_descriptor, result);
     }
     ani_status Namespace_FindFunction(ani_namespace ns, const char *name, const char *signature, ani_function *result)
     {
