@@ -92,6 +92,7 @@ function main() {}
       return new SimpleStruct();
     }), {
       message: "str1",
+      __options_has_message: true,
     }, undefined, undefined);
     SimpleStruct._instantiateImpl(undefined, (() => {
       return new SimpleStruct();

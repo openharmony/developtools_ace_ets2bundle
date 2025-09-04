@@ -52,8 +52,6 @@ import { StoragePropRef as StoragePropRef } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-
-
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_numB = STATE_MGMT_FACTORY.makeStoragePropRef<number>(this, "Prop1", "numB", 43)
@@ -128,30 +126,45 @@ function main() {}
   set __backing_numB(__backing_numB: (IStoragePropRefDecoratedVariable<number> | undefined))
   
   get __backing_numB(): (IStoragePropRefDecoratedVariable<number> | undefined)
+  set __options_has_numB(__options_has_numB: (boolean | undefined))
+  
+  get __options_has_numB(): (boolean | undefined)
   set stringB(stringB: (string | undefined))
   
   get stringB(): (string | undefined)
   set __backing_stringB(__backing_stringB: (IStoragePropRefDecoratedVariable<string> | undefined))
   
   get __backing_stringB(): (IStoragePropRefDecoratedVariable<string> | undefined)
+  set __options_has_stringB(__options_has_stringB: (boolean | undefined))
+  
+  get __options_has_stringB(): (boolean | undefined)
   set booleanB(booleanB: (boolean | undefined))
   
   get booleanB(): (boolean | undefined)
   set __backing_booleanB(__backing_booleanB: (IStoragePropRefDecoratedVariable<boolean> | undefined))
   
   get __backing_booleanB(): (IStoragePropRefDecoratedVariable<boolean> | undefined)
+  set __options_has_booleanB(__options_has_booleanB: (boolean | undefined))
+  
+  get __options_has_booleanB(): (boolean | undefined)
   set undefinedB(undefinedB: (undefined | undefined))
   
   get undefinedB(): (undefined | undefined)
   set __backing_undefinedB(__backing_undefinedB: (IStoragePropRefDecoratedVariable<undefined> | undefined))
   
   get __backing_undefinedB(): (IStoragePropRefDecoratedVariable<undefined> | undefined)
+  set __options_has_undefinedB(__options_has_undefinedB: (boolean | undefined))
+  
+  get __options_has_undefinedB(): (boolean | undefined)
   set nullB(nullB: (null | undefined))
   
   get nullB(): (null | undefined)
   set __backing_nullB(__backing_nullB: (IStoragePropRefDecoratedVariable<null> | undefined))
   
   get __backing_nullB(): (IStoragePropRefDecoratedVariable<null> | undefined)
+  set __options_has_nullB(__options_has_nullB: (boolean | undefined))
+  
+  get __options_has_nullB(): (boolean | undefined)
   
 }
 `;

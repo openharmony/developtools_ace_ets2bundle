@@ -157,18 +157,27 @@ function main() {}
   set __backing_message(__backing_message: (ILocalDecoratedVariable<string> | undefined))
   
   get __backing_message(): (ILocalDecoratedVariable<string> | undefined)
+  set __options_has_message(__options_has_message: (boolean | undefined))
+  
+  get __options_has_message(): (boolean | undefined)
   set name(name: (string | undefined))
   
   get name(): (string | undefined)
   set __backing_name(__backing_name: (ILocalDecoratedVariable<string> | undefined))
   
   get __backing_name(): (ILocalDecoratedVariable<string> | undefined)
+  set __options_has_name(__options_has_name: (boolean | undefined))
+  
+  get __options_has_name(): (boolean | undefined)
   set age(age: (number | undefined))
   
   get age(): (number | undefined)
   set __backing_age(__backing_age: (ILocalDecoratedVariable<number> | undefined))
   
   get __backing_age(): (ILocalDecoratedVariable<number> | undefined)
+  set __options_has_age(__options_has_age: (boolean | undefined))
+  
+  get __options_has_age(): (boolean | undefined)
   
 }
 `;

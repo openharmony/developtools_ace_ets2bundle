@@ -42,20 +42,17 @@ import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateM
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
-import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
+import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
-
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Reusable as Reusable } from "@ohos.arkui.component";
 
-import { State as State, Prop as Prop } from "@ohos.arkui.stateManagement";
+import { State as State, PropRef as PropRef } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
-
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {}
@@ -66,7 +63,8 @@ function main() {}
     Child._instantiateImpl(undefined, (() => {
       return new Child();
     }), {
-      num: 5,
+      num1: 5,
+      __options_has_num1: true,
     }, "Child", undefined);
   }
   
@@ -76,15 +74,15 @@ function main() {}
 
 @Component() @Reusable() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_num = STATE_MGMT_FACTORY.makeProp<number>(this, "num", ((({let gensym___83257243 = initializers;
+    this.__backing_num = STATE_MGMT_FACTORY.makePropRef<number>(this, "num", ((({let gensym___83257243 = initializers;
     (((gensym___83257243) == (null)) ? undefined : gensym___83257243.num)})) ?? (1)));
     this.__backing_num1 = STATE_MGMT_FACTORY.makeState<number>(this, "num1", ((({let gensym___24398512 = initializers;
     (((gensym___24398512) == (null)) ? undefined : gensym___24398512.num1)})) ?? (2)));
   }
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {
-    if (((({let gensym___108716469 = initializers;
-    (((gensym___108716469) == (null)) ? undefined : gensym___108716469.num)})) !== (undefined))) {
+    if (({let gensym___111600432 = initializers;
+    (((gensym___111600432) == (null)) ? undefined : gensym___111600432.__options_has_num)})) {
       this.__backing_num!.update((initializers!.num as number));
     }
   }
@@ -97,7 +95,7 @@ function main() {}
     };
   }
   
-  private __backing_num?: IPropDecoratedVariable<number>;
+  private __backing_num?: IPropRefDecoratedVariable<number>;
   
   public get num(): number {
     return this.__backing_num!.get();
@@ -131,15 +129,21 @@ function main() {}
   set num(num: (number | undefined))
   
   get num(): (number | undefined)
-  set __backing_num(__backing_num: (IPropDecoratedVariable<number> | undefined))
+  set __backing_num(__backing_num: (IPropRefDecoratedVariable<number> | undefined))
   
-  get __backing_num(): (IPropDecoratedVariable<number> | undefined)
+  get __backing_num(): (IPropRefDecoratedVariable<number> | undefined)
+  set __options_has_num(__options_has_num: (boolean | undefined))
+  
+  get __options_has_num(): (boolean | undefined)
   set num1(num1: (number | undefined))
   
   get num1(): (number | undefined)
   set __backing_num1(__backing_num1: (IStateDecoratedVariable<number> | undefined))
   
   get __backing_num1(): (IStateDecoratedVariable<number> | undefined)
+  set __options_has_num1(__options_has_num1: (boolean | undefined))
+  
+  get __options_has_num1(): (boolean | undefined)
   
 }
 `;

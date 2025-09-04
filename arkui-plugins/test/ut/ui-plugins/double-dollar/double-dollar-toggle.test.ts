@@ -138,12 +138,18 @@ class BooleanClass {
   set __backing_boo(__backing_boo: (IStateDecoratedVariable<Array<boolean>> | undefined))
   
   get __backing_boo(): (IStateDecoratedVariable<Array<boolean>> | undefined)
+  set __options_has_boo(__options_has_boo: (boolean | undefined))
+  
+  get __options_has_boo(): (boolean | undefined)
   set booClass(booClass: (BooleanClass | undefined))
   
   get booClass(): (BooleanClass | undefined)
   set __backing_booClass(__backing_booClass: (IStateDecoratedVariable<BooleanClass> | undefined))
   
   get __backing_booClass(): (IStateDecoratedVariable<BooleanClass> | undefined)
+  set __options_has_booClass(__options_has_booClass: (boolean | undefined))
+  
+  get __options_has_booClass(): (boolean | undefined)
   
 }
 `;

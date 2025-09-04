@@ -137,15 +137,24 @@ function main() {}
   set aaController(aaController: ((CustomDialogController | undefined) | undefined))
   
   get aaController(): ((CustomDialogController | undefined) | undefined)
+  set __options_has_aaController(__options_has_aaController: (boolean | undefined))
+  
+  get __options_has_aaController(): (boolean | undefined)
   set text(text: (string | undefined))
   
   get text(): (string | undefined)
   set __backing_text(__backing_text: (IStateDecoratedVariable<string> | undefined))
   
   get __backing_text(): (IStateDecoratedVariable<string> | undefined)
+  set __options_has_text(__options_has_text: (boolean | undefined))
+  
+  get __options_has_text(): (boolean | undefined)
   set hh(hh: (string | undefined))
   
   get hh(): (string | undefined)
+  set __options_has_hh(__options_has_hh: (boolean | undefined))
+  
+  get __options_has_hh(): (boolean | undefined)
   
 }
 
@@ -153,6 +162,9 @@ function main() {}
   set dialogController(dialogController: ((CustomDialogController | null) | undefined))
   
   get dialogController(): ((CustomDialogController | null) | undefined)
+  set __options_has_dialogController(__options_has_dialogController: (boolean | undefined))
+  
+  get __options_has_dialogController(): (boolean | undefined)
   
 }
 
@@ -160,6 +172,9 @@ function main() {}
   set dialogController(dialogController: ((CustomDialogController | null) | undefined))
   
   get dialogController(): ((CustomDialogController | null) | undefined)
+  set __options_has_dialogController(__options_has_dialogController: (boolean | undefined))
+  
+  get __options_has_dialogController(): (boolean | undefined)
   
 }
 `;

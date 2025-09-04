@@ -44,7 +44,6 @@ import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.st
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component } from "@ohos.arkui.component";
@@ -293,72 +292,108 @@ final class PropType extends BaseEnum<int> {
   set __backing_provideVar1(__backing_provideVar1: (IProvideDecoratedVariable<Per> | undefined))
   
   get __backing_provideVar1(): (IProvideDecoratedVariable<Per> | undefined)
+  set __options_has_provideVar1(__options_has_provideVar1: (boolean | undefined))
+  
+  get __options_has_provideVar1(): (boolean | undefined)
   set provideVar2(provideVar2: (Array<number> | undefined))
   
   get provideVar2(): (Array<number> | undefined)
   set __backing_provideVar2(__backing_provideVar2: (IProvideDecoratedVariable<Array<number>> | undefined))
   
   get __backing_provideVar2(): (IProvideDecoratedVariable<Array<number>> | undefined)
+  set __options_has_provideVar2(__options_has_provideVar2: (boolean | undefined))
+  
+  get __options_has_provideVar2(): (boolean | undefined)
   set provideVar3(provideVar3: (PropType | undefined))
   
   get provideVar3(): (PropType | undefined)
   set __backing_provideVar3(__backing_provideVar3: (IProvideDecoratedVariable<PropType> | undefined))
   
   get __backing_provideVar3(): (IProvideDecoratedVariable<PropType> | undefined)
+  set __options_has_provideVar3(__options_has_provideVar3: (boolean | undefined))
+  
+  get __options_has_provideVar3(): (boolean | undefined)
   set provideVar4(provideVar4: (Set<string> | undefined))
   
   get provideVar4(): (Set<string> | undefined)
   set __backing_provideVar4(__backing_provideVar4: (IProvideDecoratedVariable<Set<string>> | undefined))
   
   get __backing_provideVar4(): (IProvideDecoratedVariable<Set<string>> | undefined)
+  set __options_has_provideVar4(__options_has_provideVar4: (boolean | undefined))
+  
+  get __options_has_provideVar4(): (boolean | undefined)
   set provideVar5(provideVar5: (Array<boolean> | undefined))
   
   get provideVar5(): (Array<boolean> | undefined)
   set __backing_provideVar5(__backing_provideVar5: (IProvideDecoratedVariable<Array<boolean>> | undefined))
   
   get __backing_provideVar5(): (IProvideDecoratedVariable<Array<boolean>> | undefined)
+  set __options_has_provideVar5(__options_has_provideVar5: (boolean | undefined))
+  
+  get __options_has_provideVar5(): (boolean | undefined)
   set provideVar6(provideVar6: (Array<Per> | undefined))
   
   get provideVar6(): (Array<Per> | undefined)
   set __backing_provideVar6(__backing_provideVar6: (IProvideDecoratedVariable<Array<Per>> | undefined))
   
   get __backing_provideVar6(): (IProvideDecoratedVariable<Array<Per>> | undefined)
+  set __options_has_provideVar6(__options_has_provideVar6: (boolean | undefined))
+  
+  get __options_has_provideVar6(): (boolean | undefined)
   set provideVar7(provideVar7: (Array<Per> | undefined))
   
   get provideVar7(): (Array<Per> | undefined)
   set __backing_provideVar7(__backing_provideVar7: (IProvideDecoratedVariable<Array<Per>> | undefined))
   
   get __backing_provideVar7(): (IProvideDecoratedVariable<Array<Per>> | undefined)
+  set __options_has_provideVar7(__options_has_provideVar7: (boolean | undefined))
+  
+  get __options_has_provideVar7(): (boolean | undefined)
   set provideVar8(provideVar8: (((sr: string)=> void) | undefined))
   
   get provideVar8(): (((sr: string)=> void) | undefined)
   set __backing_provideVar8(__backing_provideVar8: (IProvideDecoratedVariable<((sr: string)=> void)> | undefined))
   
   get __backing_provideVar8(): (IProvideDecoratedVariable<((sr: string)=> void)> | undefined)
+  set __options_has_provideVar8(__options_has_provideVar8: (boolean | undefined))
+  
+  get __options_has_provideVar8(): (boolean | undefined)
   set provideVar9(provideVar9: (Date | undefined))
   
   get provideVar9(): (Date | undefined)
   set __backing_provideVar9(__backing_provideVar9: (IProvideDecoratedVariable<Date> | undefined))
   
   get __backing_provideVar9(): (IProvideDecoratedVariable<Date> | undefined)
+  set __options_has_provideVar9(__options_has_provideVar9: (boolean | undefined))
+  
+  get __options_has_provideVar9(): (boolean | undefined)
   set provideVar10(provideVar10: (Map<number, Per> | undefined))
   
   get provideVar10(): (Map<number, Per> | undefined)
   set __backing_provideVar10(__backing_provideVar10: (IProvideDecoratedVariable<Map<number, Per>> | undefined))
   
   get __backing_provideVar10(): (IProvideDecoratedVariable<Map<number, Per>> | undefined)
+  set __options_has_provideVar10(__options_has_provideVar10: (boolean | undefined))
+  
+  get __options_has_provideVar10(): (boolean | undefined)
   set provideVar11(provideVar11: ((string | number) | undefined))
   
   get provideVar11(): ((string | number) | undefined)
   set __backing_provideVar11(__backing_provideVar11: (IProvideDecoratedVariable<(string | number)> | undefined))
   
   get __backing_provideVar11(): (IProvideDecoratedVariable<(string | number)> | undefined)
+  set __options_has_provideVar11(__options_has_provideVar11: (boolean | undefined))
+  
+  get __options_has_provideVar11(): (boolean | undefined)
   set provideVar12(provideVar12: ((Set<string> | Per) | undefined))
   
   get provideVar12(): ((Set<string> | Per) | undefined)
   set __backing_provideVar12(__backing_provideVar12: (IProvideDecoratedVariable<(Set<string> | Per)> | undefined))
   
   get __backing_provideVar12(): (IProvideDecoratedVariable<(Set<string> | Per)> | undefined)
+  set __options_has_provideVar12(__options_has_provideVar12: (boolean | undefined))
+  
+  get __options_has_provideVar12(): (boolean | undefined)
   
 }
 `;

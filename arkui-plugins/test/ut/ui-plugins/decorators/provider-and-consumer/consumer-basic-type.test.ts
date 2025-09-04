@@ -128,30 +128,45 @@ function main() {}
   set __backing_consumerVar1(__backing_consumerVar1: (IConsumerDecoratedVariable<string> | undefined))
   
   get __backing_consumerVar1(): (IConsumerDecoratedVariable<string> | undefined)
+  set __options_has_consumerVar1(__options_has_consumerVar1: (boolean | undefined))
+  
+  get __options_has_consumerVar1(): (boolean | undefined)
   set consumerVar2(consumerVar2: (number | undefined))
   
   get consumerVar2(): (number | undefined)
   set __backing_consumerVar2(__backing_consumerVar2: (IConsumerDecoratedVariable<number> | undefined))
   
   get __backing_consumerVar2(): (IConsumerDecoratedVariable<number> | undefined)
+  set __options_has_consumerVar2(__options_has_consumerVar2: (boolean | undefined))
+  
+  get __options_has_consumerVar2(): (boolean | undefined)
   set consumerVar3(consumerVar3: (boolean | undefined))
   
   get consumerVar3(): (boolean | undefined)
   set __backing_consumerVar3(__backing_consumerVar3: (IConsumerDecoratedVariable<boolean> | undefined))
   
   get __backing_consumerVar3(): (IConsumerDecoratedVariable<boolean> | undefined)
+  set __options_has_consumerVar3(__options_has_consumerVar3: (boolean | undefined))
+  
+  get __options_has_consumerVar3(): (boolean | undefined)
   set consumerVar4(consumerVar4: (undefined | undefined))
   
   get consumerVar4(): (undefined | undefined)
   set __backing_consumerVar4(__backing_consumerVar4: (IConsumerDecoratedVariable<undefined> | undefined))
   
   get __backing_consumerVar4(): (IConsumerDecoratedVariable<undefined> | undefined)
+  set __options_has_consumerVar4(__options_has_consumerVar4: (boolean | undefined))
+  
+  get __options_has_consumerVar4(): (boolean | undefined)
   set consumerVar5(consumerVar5: (null | undefined))
   
   get consumerVar5(): (null | undefined)
   set __backing_consumerVar5(__backing_consumerVar5: (IConsumerDecoratedVariable<null> | undefined))
   
   get __backing_consumerVar5(): (IConsumerDecoratedVariable<null> | undefined)
+  set __options_has_consumerVar5(__options_has_consumerVar5: (boolean | undefined))
+  
+  get __options_has_consumerVar5(): (boolean | undefined)
   
 }
 `;
