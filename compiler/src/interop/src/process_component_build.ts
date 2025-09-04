@@ -203,7 +203,7 @@ import {
   concatenateEtsOptions,
   getExternalComponentPaths
 } from './external_component_map';
-import { updateInteropObjectLiteralxpression } from './process_interop_builder';
+import { isStaticObjectLiteral, updateInteropObjectLiteralxpression } from './process_interop_builder';
 
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
@@ -628,7 +628,7 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
             ]
           )]
         ));
-      } else if (ts.isParenthesizedExpression(node.expression.arguments[0]) && ts.isCommaListExpression(node.expression.arguments[0].expression)) {
+      } else if (isStaticObjectLiteral(node.expression.arguments[0])) {
         return updateInteropObjectLiteralxpression(node.expression, newNode, name);
       }
     }

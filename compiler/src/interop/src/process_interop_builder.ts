@@ -16,6 +16,17 @@
 import ts from 'typescript';
 import { BUILDER_PARAM_PROXY_INTEROP } from './pre_define';
 
+export function isStaticObjectLiteral(node: ts.Expression): boolean {
+  if (ts.isParenthesizedExpression(node) && ts.isCommaListExpression(node.expression)) {
+    const list = node.expression.elements;
+    const lastNode = list[list.length - 1];
+    if (ts.isIdentifier(lastNode) && lastNode.text.startsWith('tmpObj')) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function processObjectLiteral(properties: ts.ObjectLiteralElementLike[], node: ts.ParenthesizedExpression): void {
   const list = (node.expression as ts.CommaListExpression).elements;
   list.forEach(node => {
@@ -31,22 +42,10 @@ function processObjectLiteral(properties: ts.ObjectLiteralElementLike[], node: t
             [],
             undefined,
             ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-            ts.factory.createParenthesizedExpression(ts.factory.createConditionalExpression(
-              ts.factory.createElementAccessExpression(
-                ts.factory.createThis(),
-                ts.factory.createStringLiteral('__' + name)
-              ),
-              ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-              ts.factory.createElementAccessExpression(
-                ts.factory.createThis(),
-                ts.factory.createStringLiteral('__' + name)
-              ),
-              ts.factory.createToken(ts.SyntaxKind.ColonToken),
-              ts.factory.createElementAccessExpression(
-                ts.factory.createThis(),
-                ts.factory.createStringLiteral(name)
-              )
-            ))
+            ts.factory.createElementAccessExpression(
+              ts.factory.createThis(),
+              ts.factory.createStringLiteral(name)
+            )
           )
         ));
       } else {
@@ -71,20 +70,9 @@ export function updateInteropObjectLiteralxpression(origin: ts.CallExpression, n
       undefined,
       [
         ts.factory.createStringLiteral(name),
+        origin.arguments[0],
         ts.factory.createObjectLiteralExpression(properties),
-        makeArrow(origin.arguments[0] as ts.ParenthesizedExpression)
       ]
     )]
   ));
-}
-
-function makeArrow(node: ts.ParenthesizedExpression): ts.ArrowFunction {
-  return ts.factory.createArrowFunction(
-    undefined,
-    undefined,
-    [],
-    undefined,
-    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-    node
-  );
 }
