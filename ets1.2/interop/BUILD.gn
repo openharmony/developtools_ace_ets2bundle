@@ -11,16 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//build/config/components/ets_frontend/ets2abc_config.gni")
-import("//build/ohos.gni")
-import("//foundation/arkui/ace_engine/ace_config.gni")
-import("//foundation/arkui/ace_engine/frameworks/bridge/arkts_frontend/koala_mirror/gn/npm_util.gni")
-
-koala_root = ".."
-interop_root = ""
-
-node_version = "v16.20.2"
-host_arch = "${host_os}-${host_cpu}"
+if (!defined(koala_mr)) {
+    # OHOS build tree workaround
+    import("../../koala_integration.gni")
+}
+if (!koala_mr.is_rri) {
+    import("//build/config/components/ets_frontend/ets2abc_config.gni")
+    import("//build/ohos.gni")
+    import("//foundation/arkui/ace_engine/ace_config.gni")
+}
+import("${koala_mr.imports_prefix}/npm.gni")
 
 if (current_toolchain == host_toolchain) {
     npm_install("interop_install") {
@@ -39,17 +39,19 @@ npm_cmd("interop.abc") {
     run_tasks = [ "build" ]
 
     deps = [
-        "$koala_root/ui2abc:ui2abc"
+        "${koala_mr.ui2abc_path}:ui2abc"
     ]
 
-    external_deps = [
-        ets2abc_build_deps,
-        static_linker_build_deps
-    ]
+    if (!koala_mr.is_rri) {
+        external_deps = [
+            ets2abc_build_deps,
+            static_linker_build_deps
+        ]
+    }
 }
 
 group("interop") {
     deps = [
-      "$interop_root:interop.abc"
+        "${koala_mr.interop_path}:interop.abc"
     ]
 }

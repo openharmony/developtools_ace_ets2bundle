@@ -19,11 +19,6 @@ import shutil
 import subprocess
 import sys
 
-def get_compiler_name(os_name, cpu_name):
-    if (os_name == 'mingw' and cpu_name == 'x86_64'):
-        return 'mingw_x86_64'
-    return 'clang_x64'
-
 def library_ext(os_name, cpu_name):
     if (os_name == 'mingw' and cpu_name == 'x86_64'):
         return 'dll'
@@ -53,19 +48,12 @@ def run_cmd(cmd, execution_path=None):
 
 
 def copy_output(options):
-
-    compiler = get_compiler_name(options.current_os, options.current_cpu)
     library_extention = library_ext(options.current_os, options.current_cpu)
 
     from_path = options.from_path
     to_path = options.to_path
 
-    head_dir, tail_dir = os.path.split(from_path)
-    if (tail_dir == compiler):
-        from_path = head_dir
-
-
-    copy_files(os.path.join(from_path, f'{compiler}/libes2panda_lib.{library_extention}'),
+    copy_files(os.path.join(from_path, f'libes2panda_lib.{library_extention}'),
             os.path.join(to_path, 'build/native/build/es2panda.node'), True)
 
 
