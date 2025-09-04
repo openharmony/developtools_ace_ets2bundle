@@ -78,16 +78,18 @@ struct KStringPtrImpl {
     char* data() const { return _value; }
     int length() const { return _length; }
 
-    void resize(int size) {
-        _length = size;
+    void resize(int length) {
+        _length = length;
         if (!_owned) return;
         // Ignore old content.
         if (_value && _owned) free(_value);
-        _value = reinterpret_cast<char*>(malloc(_length + 1));
+        // G.MEM.01: Memory alloc size "length" should be checked.
+        auto memSize{static_cast<std::size_t>(std::max(0, length + 1))};
+        _value = reinterpret_cast<char*>(malloc(memSize));
         if (!_value) {
           INTEROP_FATAL("Cannot allocate memory");
         }
-        _value[size] = 0;
+        _value[length] = 0;
     }
 
     void assign(const char* data) {
@@ -98,7 +100,9 @@ struct KStringPtrImpl {
         if (_value && _owned) free(_value);
         if (data) {
           if (_owned) {
-            _value = reinterpret_cast<char*>(malloc(length + 1));
+            // G.MEM.01: Memory alloc size "length" should be checked.
+            auto memSize{static_cast<std::size_t>(std::max(0, length + 1))};
+            _value = reinterpret_cast<char*>(malloc(memSize));
             if (!_value) {
               INTEROP_FATAL("Cannot allocate memory");
             }
