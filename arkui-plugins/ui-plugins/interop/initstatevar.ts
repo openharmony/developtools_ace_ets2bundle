@@ -231,7 +231,9 @@ export function processNormal(keyName: string, value: arkts.AstNode): arkts.Stat
  */
 export function processBuilderParam(keyName: string, value: arkts.AstNode): arkts.Statement[] {
     const result: arkts.Statement[] = [];
+    const needUpdate: boolean = checkUpdatable(value);
     const newValue = arkts.factory.createCallExpression(
+        needUpdate ? arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER) :
         arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER),
         undefined,
         [
@@ -245,4 +247,59 @@ export function processBuilderParam(keyName: string, value: arkts.AstNode): arkt
     );
     result.push(setProperty);
     return result;
+}
+
+function getIdentifier(value: arkts.AstNode): arkts.identifier | undefined {
+    if (arkts.isIdentifier(value)) {
+        return value;
+    } else if (arkts.isMemberExpression(value) && arkts.isThisExpression(value.object) && arkts.isIdentifier(value.property)) {
+        return value.property;
+    } else {
+        return undefined;
+    }
+}
+
+function checkUpdatable(value: arkts.AstNode): boolean {
+    const ident = getIdentifier(value);
+    if (ident === undefined) {
+        return false;
+    }
+    const decl = arkts.getDecl(ident) as arkts.MethodDefinition;
+    const script = decl.scriptFunction;
+    const params = script.params;
+    if (params.length === 1 && arkts.isEtsParameterExpression(params[0])) {
+        const type = params[0].type;
+        if (type === undefined) {
+            return false;
+        }
+        if (arkts.isETSUnionType(type)) {
+            for (const element of type.types) {
+                if (isNonBuiltinType(element)) {
+                    return true;
+                }
+            }
+        } else if (isNonBuiltinType(type)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function isNonBuiltinType(type: arkts.AstNode): boolean {
+    if (!arkts.isETSTypeReference(type)) {
+        return false;
+    }
+    const ident = type.part?.name;
+    if (ident && arkts.isIdentifier(ident)) {
+        const decl = arkts.getDecl(ident);
+        if (!decl) {
+            return false;
+        }
+        const moduleName = arkts.getProgramFromAstNode(decl).moduleName;
+        if (moduleName === 'escompat') {
+            return false;
+        }
+        return true;
+    }
+    return false;
 }
