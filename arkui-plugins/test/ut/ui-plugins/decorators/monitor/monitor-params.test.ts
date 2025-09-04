@@ -324,21 +324,29 @@ class GGG {
   set __backing_per(__backing_per: (ILocalDecoratedVariable<EEE> | undefined))
   
   get __backing_per(): (ILocalDecoratedVariable<EEE> | undefined)
+  set __options_has_per(__options_has_per: (boolean | undefined))
+  
+  get __options_has_per(): (boolean | undefined)
   set v1(v1: (boolean | undefined))
   
   get v1(): (boolean | undefined)
   set __backing_v1(__backing_v1: (ILocalDecoratedVariable<boolean> | undefined))
   
   get __backing_v1(): (ILocalDecoratedVariable<boolean> | undefined)
+  set __options_has_v1(__options_has_v1: (boolean | undefined))
+  
+  get __options_has_v1(): (boolean | undefined)
   set numArr(numArr: (Array<string> | undefined))
   
   get numArr(): (Array<string> | undefined)
   set __backing_numArr(__backing_numArr: (ILocalDecoratedVariable<Array<string>> | undefined))
   
   get __backing_numArr(): (ILocalDecoratedVariable<Array<string>> | undefined)
+  set __options_has_numArr(__options_has_numArr: (boolean | undefined))
+  
+  get __options_has_numArr(): (boolean | undefined)
   
 }
-
 `;
 
 function testParsedAndCheckedTransformer(this: PluginTestContext): void {

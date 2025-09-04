@@ -66,7 +66,6 @@ function main() {}
     }) as (()=> void)));
     param();
 }
-wBuilder = wrapBuilder(ParamBuilder);
 @Component() final struct MyStruct extends CustomComponent<MyStruct, __Options_MyStruct> {
     public __initializeStruct(initializers: (__Options_MyStruct | undefined), @memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_MyStruct | undefined)): void {}
@@ -103,6 +102,7 @@ wBuilder = wrapBuilder(ParamBuilder);
                     }));
                     this.myBuilderMethod();
                 }),
+                __options_has_myBuilderParam: true,
             }, undefined, undefined);
         }));
     }
@@ -143,8 +143,10 @@ wBuilder = wrapBuilder(ParamBuilder);
 @Component() export interface __Options_MyStruct {
 }
 @Component() export interface __Options_Child {
-    set myBuilderParam(myBuilderParam: (@memo() (()=> void) | undefined))
-    get myBuilderParam(): (@memo() (()=> void) | undefined)
+  set myBuilderParam(myBuilderParam: (@memo() (()=> void) | undefined))
+  get myBuilderParam(): (@memo() (()=> void) | undefined)
+  set __options_has_myBuilderParam(__options_has_myBuilderParam: (boolean | undefined))
+  get __options_has_myBuilderParam(): (boolean | undefined)
 }
 `;
 
@@ -246,7 +248,6 @@ function main() {}
         return;
     }
 }
-wBuilder = wrapBuilder(ParamBuilder);
 @Component() final struct MyStruct extends CustomComponent<MyStruct, __Options_MyStruct> {
     public __initializeStruct(initializers: (__Options_MyStruct | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_MyStruct | undefined)): void {}
@@ -374,6 +375,7 @@ wBuilder = wrapBuilder(ParamBuilder);
                         return;
                     }
                 }),
+                __options_has_myBuilderParam: true,
             }, undefined, undefined);
             {
                 __memo_scope.recache();
@@ -476,8 +478,10 @@ wBuilder = wrapBuilder(ParamBuilder);
 @Component() export interface __Options_MyStruct {
 }
 @Component() export interface __Options_Child {
-    set myBuilderParam(myBuilderParam: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined))
-    get myBuilderParam(): (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
+  set myBuilderParam(myBuilderParam: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined))
+  get myBuilderParam(): (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
+  set __options_has_myBuilderParam(__options_has_myBuilderParam: (boolean | undefined))
+  get __options_has_myBuilderParam(): (boolean | undefined)
 }
 `;
 

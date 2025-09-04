@@ -103,8 +103,13 @@ function main() {}
     public constructor() {}
 }
 @Component() export interface __Options_IfInSwitch {
-    set num(num: (string | undefined))
-    get num(): (string | undefined)
+  set num(num: (string | undefined))
+  
+  get num(): (string | undefined)
+  set __options_has_num(__options_has_num: (boolean | undefined))
+  
+  get __options_has_num(): (boolean | undefined)
+  
 }
 `;
 
@@ -277,8 +282,13 @@ function main() {}
     public constructor() {}
 }
 @Component() export interface __Options_IfInSwitch {
-    set num(num: (string | undefined))
-    get num(): (string | undefined)
+  set num(num: (string | undefined))
+  
+  get num(): (string | undefined)
+  set __options_has_num(__options_has_num: (boolean | undefined))
+  
+  get __options_has_num(): (boolean | undefined)
+  
 }
 `;
 

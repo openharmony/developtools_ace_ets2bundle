@@ -14,7 +14,7 @@
  */
 
 import { Component, ComponentV2, CustomDialog } from "@ohos.arkui.component"
-import { State, Prop, Provide, Event, Local, Param } from "@ohos.arkui.stateManagement"
+import { State, PropRef, Provide, Event, Local, Param } from "@ohos.arkui.stateManagement"
 import { Provider, Consumer, Once, Observed, ObservedV2, Trace, Track } from "@ohos.arkui.stateManagement"
 
 class Per {
@@ -44,7 +44,7 @@ class RR {
 @Component
 struct Parent {
   @State stateVar1 = new Per(6);
-  @Prop stateVar2 = new Array<number>(3, 6, 8);
+  @PropRef stateVar2 = new Array<number>(3, 6, 8);
   @Provide stateVar3 = StateType.TYPE3;
   stateVar8 = (sr: string) => {
   };

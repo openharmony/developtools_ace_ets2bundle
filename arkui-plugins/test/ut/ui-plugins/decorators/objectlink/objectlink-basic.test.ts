@@ -137,9 +137,9 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {
-    if (((({let gensym___97362509 = initializers;
-    (((gensym___97362509) == (null)) ? undefined : gensym___97362509.objectlinkvar)})) !== (undefined))) {
-      this.__backing_objectlinkvar!.update(initializers!.objectlinkvar!);
+    if (({let gensym___71090848 = initializers;
+    (((gensym___71090848) == (null)) ? undefined : gensym___71090848.__options_has_objectlinkvar)})) {
+      this.__backing_objectlinkvar!.update((initializers!.objectlinkvar as A));
     }
   }
   
@@ -166,17 +166,17 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample2 | undefined)): void {
-    if (((({let gensym___82770935 = initializers;
-    (((gensym___82770935) == (null)) ? undefined : gensym___82770935.objectlinkvar1)})) !== (undefined))) {
-      this.__backing_objectlinkvar1!.update(initializers!.objectlinkvar1!);
+    if (({let gensym___180637479 = initializers;
+    (((gensym___180637479) == (null)) ? undefined : gensym___180637479.__options_has_objectlinkvar1)})) {
+      this.__backing_objectlinkvar1!.update((initializers!.objectlinkvar1 as (A | undefined)));
     }
-    if (((({let gensym___225818999 = initializers;
-    (((gensym___225818999) == (null)) ? undefined : gensym___225818999.objectlinkvar2)})) !== (undefined))) {
-      this.__backing_objectlinkvar2!.update(initializers!.objectlinkvar2!);
+    if (({let gensym___76030692 = initializers;
+    (((gensym___76030692) == (null)) ? undefined : gensym___76030692.__options_has_objectlinkvar2)})) {
+      this.__backing_objectlinkvar2!.update((initializers!.objectlinkvar2 as (A | B)));
     }
-    if (((({let gensym___3063329 = initializers;
-    (((gensym___3063329) == (null)) ? undefined : gensym___3063329.objectlinkvar3)})) !== (undefined))) {
-      this.__backing_objectlinkvar3!.update(initializers!.objectlinkvar3!);
+    if (({let gensym___49815838 = initializers;
+    (((gensym___49815838) == (null)) ? undefined : gensym___49815838.__options_has_objectlinkvar3)})) {
+      this.__backing_objectlinkvar3!.update((initializers!.objectlinkvar3 as (A | B | null)));
     }
   }
   
@@ -211,6 +211,9 @@ function main() {}
   set __backing_objectlinkvar(__backing_objectlinkvar: (IObjectLinkDecoratedVariable<A> | undefined))
   
   get __backing_objectlinkvar(): (IObjectLinkDecoratedVariable<A> | undefined)
+  set __options_has_objectlinkvar(__options_has_objectlinkvar: (boolean | undefined))
+  
+  get __options_has_objectlinkvar(): (boolean | undefined)
   
 }
 
@@ -221,18 +224,27 @@ function main() {}
   set __backing_objectlinkvar1(__backing_objectlinkvar1: (IObjectLinkDecoratedVariable<(A | undefined)> | undefined))
   
   get __backing_objectlinkvar1(): (IObjectLinkDecoratedVariable<(A | undefined)> | undefined)
+  set __options_has_objectlinkvar1(__options_has_objectlinkvar1: (boolean | undefined))
+  
+  get __options_has_objectlinkvar1(): (boolean | undefined)
   set objectlinkvar2(objectlinkvar2: ((A | B) | undefined))
   
   get objectlinkvar2(): ((A | B) | undefined)
   set __backing_objectlinkvar2(__backing_objectlinkvar2: (IObjectLinkDecoratedVariable<(A | B)> | undefined))
   
   get __backing_objectlinkvar2(): (IObjectLinkDecoratedVariable<(A | B)> | undefined)
+  set __options_has_objectlinkvar2(__options_has_objectlinkvar2: (boolean | undefined))
+  
+  get __options_has_objectlinkvar2(): (boolean | undefined)
   set objectlinkvar3(objectlinkvar3: ((A | B | null) | undefined))
   
   get objectlinkvar3(): ((A | B | null) | undefined)
   set __backing_objectlinkvar3(__backing_objectlinkvar3: (IObjectLinkDecoratedVariable<(A | B | null)> | undefined))
   
   get __backing_objectlinkvar3(): (IObjectLinkDecoratedVariable<(A | B | null)> | undefined)
+  set __options_has_objectlinkvar3(__options_has_objectlinkvar3: (boolean | undefined))
+  
+  get __options_has_objectlinkvar3(): (boolean | undefined)
   
 }
 `;
