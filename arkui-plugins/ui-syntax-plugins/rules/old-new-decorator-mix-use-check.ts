@@ -47,10 +47,16 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
             oldAndNewDecoratorsMixUse: `The '@{{decoratorName}}' annotation can only be used in a 'struct' decorated with '@{{component}}'.`,
         };
     }
-    public parsed(node: arkts.StructDeclaration): void {
-        if (!arkts.isStructDeclaration(node)) {
-            return;
+
+    public parsed(node: arkts.StructDeclaration | arkts.ClassDeclaration): void {
+        if (arkts.isStructDeclaration(node)) {
+            this.handleStructDeclaration(node);
+        } else if (arkts.isClassDeclaration(node)) {
+            this.handleClassDeclaration(node);
         }
+    }
+
+    private handleStructDeclaration(node: arkts.StructDeclaration): void {
         // Gets the decorator version of a custom component
         const componentV2Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
         const componentDecorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
@@ -70,6 +76,24 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
             // Check that the old decorator is used for component v1
             if (oldDecorator && !componentDecorator && componentV2Decorator) {
                 this.reportErrorAndChangeDecorator(oldDecorator, componentV2Decorator, PresetDecorators.COMPONENT_V1);
+            }
+        });
+    }
+
+    private handleClassDeclaration(node: arkts.ClassDeclaration): void {
+        node.definition?.body.forEach((property) => {
+            if (!arkts.isClassProperty(property)) {
+                return;
+            }
+            const newDecorator = this.findPropertyDecorator(property, OldNewDecoratorMixUseCheckRule.newV2decorators);
+            const oldDecorator = this.findPropertyDecorator(property, OldNewDecoratorMixUseCheckRule.oldV1Decorators);
+            // Check that the new decorator is not used in struct
+            if (newDecorator) {
+                this.reportError(newDecorator, PresetDecorators.COMPONENT_V2);
+            }
+            // Check that the old decorator is not used in struct
+            if (oldDecorator) {
+                this.reportError(oldDecorator, PresetDecorators.COMPONENT_V1);
             }
         });
     }
@@ -125,6 +149,18 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
                     code: `@${PresetDecorators.COMPONENT_V2}\n`,
                 };
             },
+        });
+    }
+
+    private reportError(errorDecorator: arkts.AnnotationUsage, componentName: string): void {
+        const propertyDecoratorName = getAnnotationName(errorDecorator);
+        this.report({
+            node: errorDecorator,
+            message: this.messages.oldAndNewDecoratorsMixUse,
+            data: {
+                decoratorName: propertyDecoratorName,
+                component: componentName
+            }
         });
     }
 }
