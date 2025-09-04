@@ -53,7 +53,8 @@ void appendGroupedLog(int index, const char* str) {
 
 const char* getGroupedLog(int index) {
     if (index < static_cast<int>(groupedLogs.size())) {
-        return groupedLogs[index]->log.c_str();
+        // G.STD.04-CPP: Do not hold pointer returned from std::string c_str() method.
+        return std::move(groupedLogs[index]->log.c_str());
     }
     return "";
 }
