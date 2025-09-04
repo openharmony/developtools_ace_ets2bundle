@@ -12,7 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifdef CONVERTORS_ANI_H
+#ifndef CONVERTORS_ANI_H
+#define CONVERTORS_ANI_H
 
 #ifdef KOALA_ANI
 
