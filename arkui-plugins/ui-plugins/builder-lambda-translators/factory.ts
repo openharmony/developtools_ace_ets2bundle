@@ -14,11 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import {
-    BuilderLambdaNames,
-    inferTypeFromValue,
-    optionsHasField,
-} from '../utils';
+import { BuilderLambdaNames, inferTypeFromValue, optionsHasField } from '../utils';
 import {
     backingField,
     filterDefined,
@@ -54,8 +50,6 @@ import {
     BuilderLambdaStyleBodyInfo,
     getDeclaredSetAttribtueMethodName,
     checkIsTrailingLambdaInLastParam,
-    ComponentAttributeCache,
-    ComponentRecord,
     getTransformedComponentName,
     flatObjectExpressionToEntries,
     OptionsPropertyInfo,
@@ -81,11 +75,15 @@ import { GenSymGenerator } from '../../common/gensym-generator';
 import {
     addMemoAnnotation,
     checkIsMemoFromMemoableInfo,
+    collectMemoableInfoInFunctionReturnType,
     collectMemoableInfoInParameter,
+    collectScriptFunctionReturnTypeFromInfo,
 } from '../../collectors/memo-collectors/utils';
 import { TypeRecord } from '../../collectors/utils/collect-types';
 import { StyleInternalsVisitor } from './style-internals-visitor';
 import { ConditionBreakCache } from './cache/conditionBreakCache';
+import { ComponentAttributeCache, ComponentRecord } from './cache/componentAttributeCache';
+import { isForEach } from './utils';
 
 export class factory {
     /**
@@ -98,7 +96,9 @@ export class factory {
         newName: string | undefined
     ): arkts.MethodDefinition {
         const func: arkts.ScriptFunction = node.scriptFunction;
-        const isFunctionCall: boolean = node.name.name !== BuilderLambdaNames.ORIGIN_METHOD_NAME;
+        const ident: arkts.Identifier = node.name;
+        const name: string = ident.name;
+        const isFunctionCall: boolean = name !== BuilderLambdaNames.ORIGIN_METHOD_NAME;
         const newParams: arkts.Expression[] = [...prefixArgs, ...func.params];
         const updateFunc = arkts.factory
             .updateScriptFunction(
@@ -118,7 +118,7 @@ export class factory {
         return arkts.factory.updateMethodDefinition(
             node,
             node.kind,
-            arkts.factory.updateIdentifier(node.name, newName ?? node.name.name),
+            arkts.factory.updateIdentifier(ident, newName ?? name),
             isFunctionCall ? updateFunc : addMemoAnnotation(updateFunc),
             node.modifiers,
             false
@@ -533,7 +533,8 @@ export class factory {
                     const memoableInfo = collectMemoableInfoInParameter(param);
                     const canAddMemo = checkIsMemoFromMemoableInfo(memoableInfo, false);
                     const fallback = arkts.factory.createUndefinedLiteral();
-                    modifiedArg = this.createOrUpdateArgInBuilderLambda(fallback, arg, canAddMemo, declInfo);
+                    const updatedArg = this.createOrUpdateArgInBuilderLambda(fallback, arg, canAddMemo, declInfo);
+                    modifiedArg = factory.processModifiedArg(updatedArg, index, leaf.arguments, moduleName, type?.name);
                 }
                 const shouldInsertToArgs = !isFunctionCall || (index === params.length - 1 && hasLastTrailingLambda);
                 if (shouldInsertToArgs) {
@@ -554,6 +555,64 @@ export class factory {
         const styleArg = this.createStyleArgInBuilderLambda(lambdaBody, typeNode, moduleName);
         args.unshift(styleArg);
         return args;
+    }
+
+    /**
+     * process `@ComponentBuilder` call arguments for some specific transformation.
+     */
+    static processModifiedArg(
+        modifiedArg: arkts.AstNode | undefined,
+        index: number | undefined,
+        args: readonly arkts.Expression[],
+        moduleName: string,
+        name: string | undefined
+    ): arkts.AstNode | undefined {
+        if (index === 0 && isForEach(name, moduleName) && !!modifiedArg && arkts.isExpression(modifiedArg)) {
+            const newFunc = UIFactory.createScriptFunction({
+                body: arkts.factory.createBlock([arkts.factory.createReturnStatement(modifiedArg)]),
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                returnTypeAnnotation:
+                    factory.getReturnTypeFromArrowParameter(args) ?? factory.getReturnTypeFromTsType(modifiedArg),
+                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            });
+            const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(newFunc);
+            collectScriptFunctionReturnTypeFromInfo(newFunc, returnMemoableInfo);
+            return arkts.factory.createArrowFunction(newFunc);
+        }
+        return modifiedArg;
+    }
+
+    /**
+     * get return type from the second parameter of `ForEach` component.
+     */
+    static getReturnTypeFromArrowParameter(args: readonly arkts.Expression[]): arkts.TypeNode | undefined {
+        if (
+            args.length <= 1 ||
+            !arkts.isArrowFunctionExpression(args[1]) ||
+            args[1].scriptFunction.params.length <= 0
+        ) {
+            return undefined;
+        }
+        const argTypeParam: arkts.Expression = args[1].scriptFunction.params[0];
+        if (!arkts.isEtsParameterExpression(argTypeParam)) {
+            return undefined;
+        }
+        const type: arkts.AstNode | undefined = argTypeParam.type;
+        if (type && arkts.isTypeNode(type)) {
+            return UIFactory.createComplexTypeFromStringAndTypeParameter(TypeNames.ARRAY, [type.clone()]);
+        }
+        return undefined;
+    }
+
+    /**
+     * get return type from the TsType of value.
+     */
+    static getReturnTypeFromTsType(node: arkts.AstNode): arkts.TypeNode | undefined {
+        const type = arkts.createTypeNodeFromTsType(node);
+        if (!type || !arkts.isTypeNode(type)) {
+            return undefined;
+        }
+        return type;
     }
 
     /**
