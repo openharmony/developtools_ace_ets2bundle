@@ -168,7 +168,8 @@ class HandleUIImports {
     const interopImportName = [
       'compatibleComponent',
       'getCompatibleState',
-      'transferCompatibleBuilder'
+      'transferCompatibleBuilder',
+      'transferCompatibleUpdatableBuilder'
     ];
     const interopImportSpecifiers: ts.ImportSpecifier[] = [];
     interopImportName.forEach((interopName) => {
