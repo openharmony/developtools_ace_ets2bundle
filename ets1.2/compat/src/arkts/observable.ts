@@ -244,7 +244,6 @@ export function observableProxy<Value>(value: Value, parent?: ObservableHandler,
             throw new Error(`Class '${valueType.getName()}' must contain a default constructor`)
         }
     }
-
     return value as Value
 }
 
@@ -276,7 +275,9 @@ class CustomProxyHandler<T extends Object> extends proxy.DefaultProxyHandler<T> 
             observable.removeChild(super.get(target, name))
             value = observableProxy(value, observable, ObservableHandler.contains(observable))
         }
-        return super.set(target, name, value)
+        const result = super.set(target, name, value)
+        observable?.onModify(name)
+        return result
     }
 }
 
@@ -312,8 +313,8 @@ class ObservableArray<T> extends Array<T> {
     }
 
     override set length(length: int) {
-        this.handler?.onModify()
         super.length = length
+        this.handler?.onModify()
     }
 
     override at(index: int): T | undefined {
@@ -329,93 +330,98 @@ class ObservableArray<T> extends Array<T> {
     override $_set(index: int, value: T): void {
         const handler = this.handler
         if (handler) {
-            handler.onModify()
             handler.removeChild(super.$_get(index))
             value = observableProxy(value, handler)
         }
         super.$_set(index, value)
+        handler?.onModify()
     }
 
     override copyWithin(target: int, start: int, end: int): this {
-        this.handler?.onModify()
         super.copyWithin(target, start, end)
+        this.handler?.onModify()
         return this
     }
 
     override fill(value: T, start: int, end: int): this {
         const handler = this.handler
         if (handler) {
-            handler.onModify()
             value = observableProxy(value, handler)
         }
         super.fill(value, start, end)
+        handler?.onModify()
         return this
     }
 
     override pop(): T | undefined {
         const handler = this.handler
-        handler?.onModify()
         const result = super.pop()
-        if (result) handler?.removeChild(result)
+        handler?.onModify()
+        if (result) {
+            handler?.removeChild(result)
+        }
         return result
     }
 
     override pushArray(...items: T[]): number {
         const handler = this.handler
         if (handler) {
-            handler.onModify()
             proxyChildrenOnly(items, handler)
         }
-        return super.pushArray(...items)
+        const result = super.pushArray(...items)
+        handler?.onModify()
+        return result
     }
 
     override pushOne(value: T): number {
         const handler = this.handler
         if (handler) {
-            handler.onModify()
             value = observableProxy(value, handler)
         }
-        return super.pushOne(value)
+        const result = super.pushOne(value)
+        handler?.onModify()
+        return result
     }
 
     override pushECMA(...items: T[]): number {
         const handler = this.handler
         if (handler) {
-            handler.onModify()
             proxyChildrenOnly(items, handler)
         }
-        return super.pushECMA(...items)
+        const result = super.pushECMA(...items)
+        handler?.onModify()
+        return result
     }
 
     override reverse(): this {
-        this.handler?.onModify()
         super.reverse()
+        this.handler?.onModify()
         return this
     }
 
     override shift(): T | undefined {
         const handler = this.handler
-        handler?.onModify()
         const result = super.shift()
         if (result) handler?.removeChild(result)
+        handler?.onModify()
         return result
     }
 
     override sort(comparator?: (a: T, b: T) => number): this {
-        this.handler?.onModify()
         super.sort(comparator)
+        this.handler?.onModify()
         return this
     }
 
     override splice(index: int, count: int, ...items: T[]): Array<T> {
         const handler = this.handler
         if (handler) {
-            handler.onModify()
             proxyChildrenOnly(items, handler)
             const result = super.splice(index, count, ...items)
             for (let i = 0; i < result.length; i++) {
                 handler.removeChild(result[i])
             }
+            handler.onModify()
             return result
         }
         return super.splice(index, count, ...items)
@@ -424,10 +430,11 @@ class ObservableArray<T> extends Array<T> {
     override unshift(...items: T[]): number {
         const handler = this.handler
         if (handler) {
-            handler.onModify()
             proxyChildrenOnly(items, handler)
         }
-        return super.unshift(...items)
+        const result = super.unshift(...items)
+        handler?.onModify()
+        return result
     }
 
     override keys(): IterableIterator<Number> {
@@ -622,34 +629,35 @@ class ObservableMap<T, V> extends Map<T, V> {
     override set(key: T, value: V): this {
         const handler = this.handler
         if (handler) {
-            handler.onModify()
             const prev = super.get(key)
             if (prev) handler.removeChild(prev)
             value = observableProxy(value, handler)
         }
         super.set(key, value)
+        handler?.onModify()
         return this
     }
 
     override delete(key: T): boolean {
         const handler = this.handler
         if (handler) {
-            handler.onModify()
             const value = super.get(key)
             if (value) handler.removeChild(value)
         }
-        return super.delete(key)
+        const result = super.delete(key)
+        handler?.onModify()
+        return result
     }
 
     override clear() {
         const handler = this.handler
         if (handler) {
-            handler.onModify()
             for (let value of super.values()) {
                 handler!.removeChild(value)
             }
         }
         super.clear()
+        handler?.onModify()
     }
 
     override keys(): IterableIterator<T> {
@@ -721,35 +729,37 @@ class ObservableSet<T> extends Set<T> {
     override add(value: T): this {
         const handler = this.handler
         let observable = value
+        let modified = !this.elements.has(value)
         if (handler) {
-            if (!this.elements.has(value)) handler.onModify()
             const prev = this.elements.get(value)
             if (prev) handler.removeChild(prev)
             observable = observableProxy(value)
         }
         this.elements.set(value, observable)
+        if (modified) handler?.onModify()
         return this
     }
 
     override delete(value: T): boolean {
         const handler = this.handler
         if (handler) {
-            handler.onModify()
             const prev = this.elements.get(value)
             if (prev) handler.removeChild(prev)
         }
-        return this.elements.delete(value)
+        const result = this.elements.delete(value)
+        handler?.onModify()
+        return result
     }
 
     override clear() {
         const handler = this.handler
         if (handler) {
-            handler.onModify()
             for (let value of this.elements.values()) {
                 handler!.removeChild(value)
             }
         }
         this.elements.clear()
+        handler?.onModify()
     }
 
     override keys(): IterableIterator<T> {
@@ -872,13 +882,14 @@ class ObservableDate extends Date {
     }
 
     override setDate(value: byte) {
-        this.handler?.onModify()
         super.setDate(value)
+        this.handler?.onModify()
     }
 
     override setDate(value: number): number {
+        const result = super.setDate(value)
         this.handler?.onModify()
-        return super.setDate(value)
+        return result
     }
 
     override getUTCDate(): number {
@@ -887,13 +898,14 @@ class ObservableDate extends Date {
     }
 
     override setUTCDate(value: byte) {
-        this.handler?.onModify()
         super.setUTCDate(value)
+        this.handler?.onModify()
     }
 
     override setUTCDate(value: number): number {
+        const result = super.setUTCDate(value)
         this.handler?.onModify()
-        return super.setUTCDate(value)
+        return result
     }
 
     override getDay(): number {
@@ -902,8 +914,8 @@ class ObservableDate extends Date {
     }
 
     override setDay(value: byte) {
-        this.handler?.onModify()
         super.setDay(value)
+        this.handler?.onModify()
     }
 
     override getUTCDay(): number {
@@ -912,13 +924,14 @@ class ObservableDate extends Date {
     }
 
     override setUTCDay(value: byte) {
-        this.handler?.onModify()
         super.setUTCDay(value)
+        this.handler?.onModify()
     }
 
     override setUTCDay(value: number): number {
+        const result = super.setUTCDay(value)
         this.handler?.onModify()
-        return super.setUTCDay(value)
+        return result
     }
 
     override getMonth(): number {
@@ -927,13 +940,14 @@ class ObservableDate extends Date {
     }
 
     override setMonth(value: int) {
-        this.handler?.onModify()
         super.setMonth(value)
+        this.handler?.onModify()
     }
 
     override setMonth(value: number, date?: number): number {
+        const result = super.setMonth(value, date)
         this.handler?.onModify()
-        return super.setMonth(value, date)
+        return result
     }
 
     override getUTCMonth(): number {
@@ -942,13 +956,14 @@ class ObservableDate extends Date {
     }
 
     override setUTCMonth(value: int) {
-        this.handler?.onModify()
         super.setUTCMonth(value)
+        this.handler?.onModify()
     }
 
     override setUTCMonth(value: number, date?: number): number {
+        const result = super.setUTCMonth(value, date)
         this.handler?.onModify()
-        return super.setUTCMonth(value, date)
+        return result
     }
 
     override getYear(): int {
@@ -957,13 +972,13 @@ class ObservableDate extends Date {
     }
 
     override setYear(value: int) {
-        this.handler?.onModify()
         super.setYear(value)
+        this.handler?.onModify()
     }
 
     override setYear(value: number) {
-        this.handler?.onModify()
         super.setYear(value)
+        this.handler?.onModify()
     }
 
     override getFullYear(): number {
@@ -972,13 +987,14 @@ class ObservableDate extends Date {
     }
 
     override setFullYear(value: number, month?: number, date?: number): number {
+        const result = super.setFullYear(value, month, date)
         this.handler?.onModify()
-        return super.setFullYear(value, month, date)
+        return result
     }
 
     override setFullYear(value: int) {
-        this.handler?.onModify()
         super.setFullYear(value)
+        this.handler?.onModify()
     }
 
     override getUTCFullYear(): number {
@@ -987,13 +1003,14 @@ class ObservableDate extends Date {
     }
 
     override setUTCFullYear(value: number, month?: number, date?: number): number {
+        const result = super.setUTCFullYear(value, month, date)
         this.handler?.onModify()
-        return super.setUTCFullYear(value, month, date)
+        return result
     }
 
     override setUTCFullYear(value: int) {
-        this.handler?.onModify()
         super.setUTCFullYear(value)
+        this.handler?.onModify()
     }
 
     override getTime(): number {
@@ -1002,13 +1019,14 @@ class ObservableDate extends Date {
     }
 
     override setTime(value: long) {
-        this.handler?.onModify()
         super.setTime(value)
+        this.handler?.onModify()
     }
 
     override setTime(value: number): number {
+        const result = super.setTime(value)
         this.handler?.onModify()
-        return super.setTime(value)
+        return result
     }
 
     override getHours(): number {
@@ -1017,13 +1035,14 @@ class ObservableDate extends Date {
     }
 
     override setHours(value: number, min?: number, sec?: number, ms?: number): number {
+        const result = super.setHours(value, min, sec, ms)
         this.handler?.onModify()
-        return super.setHours(value, min, sec, ms)
+        return result
     }
 
     override setHours(value: byte) {
-        this.handler?.onModify()
         super.setHours(value)
+        this.handler?.onModify()
     }
 
     override getUTCHours(): number {
@@ -1032,13 +1051,14 @@ class ObservableDate extends Date {
     }
 
     override setUTCHours(value: number, min?: number, sec?: number, ms?: number): number {
+        const result = super.setUTCHours(value, min, sec, ms)
         this.handler?.onModify()
-        return super.setUTCHours(value, min, sec, ms)
+        return result
     }
 
     override setUTCHours(value: byte) {
-        this.handler?.onModify()
         super.setUTCHours(value)
+        this.handler?.onModify()
     }
 
     override getMilliseconds(): number {
@@ -1047,13 +1067,14 @@ class ObservableDate extends Date {
     }
 
     override setMilliseconds(value: short) {
-        this.handler?.onModify()
         super.setMilliseconds(value)
+        this.handler?.onModify()
     }
 
     override setMilliseconds(value: number): number {
+        const result = super.setMilliseconds(value)
         this.handler?.onModify()
-        return super.setMilliseconds(value)
+        return result
     }
 
     override getUTCMilliseconds(): number {
@@ -1062,13 +1083,14 @@ class ObservableDate extends Date {
     }
 
     override setUTCMilliseconds(value: short) {
-        this.handler?.onModify()
         super.setUTCMilliseconds(value)
+        this.handler?.onModify()
     }
 
     override setUTCMilliseconds(value: number): number {
+        const result = super.setUTCMilliseconds(value)
         this.handler?.onModify()
-        return super.setUTCMilliseconds(value)
+        return result
     }
 
     override getSeconds(): number {
@@ -1077,13 +1099,14 @@ class ObservableDate extends Date {
     }
 
     override setSeconds(value: byte) {
-        this.handler?.onModify()
         super.setSeconds(value)
+        this.handler?.onModify()
     }
 
     override setSeconds(value: number, ms?: number): number {
+        const result = super.setSeconds(value, ms)
         this.handler?.onModify()
-        return super.setSeconds(value, ms)
+        return result
     }
 
     override getUTCSeconds(): number {
@@ -1092,13 +1115,14 @@ class ObservableDate extends Date {
     }
 
     override setUTCSeconds(value: byte) {
-        this.handler?.onModify()
         super.setUTCSeconds(value)
+        this.handler?.onModify()
     }
 
     override setUTCSeconds(value: number, ms?: number): number {
+        const result = super.setUTCSeconds(value, ms)
         this.handler?.onModify()
-        return super.setUTCSeconds(value, ms)
+        return result
     }
 
     override getMinutes(): number {
@@ -1107,13 +1131,14 @@ class ObservableDate extends Date {
     }
 
     override setMinutes(value: byte) {
-        this.handler?.onModify()
         super.setMinutes(value)
+        this.handler?.onModify()
     }
 
     override setMinutes(value: number, sec?: Number, ms?: number): number {
+        const result = super.setMinutes(value, sec, ms)
         this.handler?.onModify()
-        return super.setMinutes(value, sec, ms)
+        return result
     }
 
     override getUTCMinutes(): number {
@@ -1122,13 +1147,14 @@ class ObservableDate extends Date {
     }
 
     override setUTCMinutes(value: byte) {
-        this.handler?.onModify()
         super.setUTCMinutes(value)
+        this.handler?.onModify()
     }
 
     override setUTCMinutes(value: number, sec?: Number, ms?: number): number {
+        const result = super.setUTCMinutes(value, sec, ms)
         this.handler?.onModify()
-        return super.setUTCMinutes(value, sec, ms)
+        return result
     }
 }
 
