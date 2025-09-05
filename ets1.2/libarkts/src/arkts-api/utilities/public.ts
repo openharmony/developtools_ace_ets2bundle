@@ -449,3 +449,7 @@ export function logDiagnostic(kind: DiagnosticKind, pos: SourcePosition, ...args
 export function logDiagnosticWithSuggestion(diagnosticInfo: DiagnosticInfo, suggestionInfo: SuggestionInfo): void {
     global.generatedEs2panda._LogDiagnosticWithSuggestion(global.context, diagnosticInfo.peer, suggestionInfo.peer);
 }
+
+export function filterNodes(node: AstNode, filter: string): AstNode[] {
+    return unpackNodeArray(global.es2panda._FilterNodes(global.context, passNode(node), filter))
+}
