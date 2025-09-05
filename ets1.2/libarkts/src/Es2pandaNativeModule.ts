@@ -23,6 +23,7 @@ import {
     KDouble,
     KUInt,
     KStringArrayPtr,
+    KStringPtr,
 } from "@koalaui/interop"
 import { Es2pandaNativeModule as GeneratedEs2pandaNativeModule, KNativePointerArray } from "../generated/Es2pandaNativeModule"
 import * as path from "path"
@@ -175,6 +176,9 @@ export class Es2pandaNativeModule {
         throw new Error("Not implemented")
     }
     _ClassDefinitionSetBody(context: KNativePointer, receiver: KNativePointer, body: BigUint64Array, bodyLength: KUInt): void {
+        throw new Error("Not implemented")
+    }
+    _FilterNodes(context: KNativePointer, root: KNativePointer, filters: KStringPtr): KNativePointer {
         throw new Error("Not implemented")
     }
 

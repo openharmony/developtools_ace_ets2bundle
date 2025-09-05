@@ -527,7 +527,7 @@ KInt impl_GetCompilationMode(KNativePointer configPtr)
     auto _options = const_cast<es2panda_Options *>(GetImpl()->ConfigGetOptions(_config));
     return GetImpl()->OptionsUtilGetCompilationModeConst(nullptr, _options);
 }
-KOALA_INTEROP_1(GetCompilationMode, KInt, KNativePointer);
+KOALA_INTEROP_1(GetCompilationMode, KInt, KNativePointer)
 
 KNativePointer impl_CreateTypeNodeFromTsType(KNativePointer context, KNativePointer nodePtr)
 {
@@ -544,4 +544,4 @@ KNativePointer impl_CreateTypeNodeFromTsType(KNativePointer context, KNativePoin
     auto _typeAnnotation = GetImpl()->CreateOpaqueTypeNode(_context, _nodeTsType);
     return _typeAnnotation;
 }
-KOALA_INTEROP_2(CreateTypeNodeFromTsType, KNativePointer, KNativePointer, KNativePointer);
+KOALA_INTEROP_2(CreateTypeNodeFromTsType, KNativePointer, KNativePointer, KNativePointer)

@@ -15,6 +15,10 @@
 
 #include <common.h>
 #include <utility>
+#include <sstream>
+#include <vector>
+#include <iterator>
+
 #include "interop-types.h"
 
 using std::string, std::cout, std::endl, std::vector;
@@ -343,7 +347,7 @@ void impl_AstNodeOnUpdate(KNativePointer context, KNativePointer newNode, KNativ
 }
 KOALA_INTEROP_V3(AstNodeOnUpdate, KNativePointer, KNativePointer, KNativePointer)
 
-std::vector<void*> cachedChildren;
+static thread_local std::vector<es2panda_AstNode*> cachedChildren;
 
 static void visitChild(es2panda_AstNode *node)
 {
@@ -362,7 +366,110 @@ KNativePointer impl_AstNodeChildren(
     GetImpl()->AstNodeIterateConst(context, node, visitChild);
     return StageArena::clone(cachedChildren);
 }
-KOALA_INTEROP_2(AstNodeChildren, KNativePointer, KNativePointer, KNativePointer)
+KOALA_INTEROP_2(AstNodeChildren, KNativePointer, KNativePointer, KNativePointer);
+
+struct Pattern {
+    es2panda_Context* context;
+    std::string key;
+    std::string value;
+    es2panda_Impl* impl;
+
+    Pattern(es2panda_Context* context, const std::string& part): context(context), impl(GetImpl()){
+        std::istringstream stream(part);
+        std::getline(stream, key, '=');
+        std::getline(stream, value, '=');
+    }
+    bool match(es2panda_AstNode* node) {
+        if (key == "type") {
+            auto type = impl->AstNodeTypeConst(context, node);
+            switch (type) {
+                case Es2pandaAstNodeType::AST_NODE_TYPE_METHOD_DEFINITION:
+                    return value == "method";
+                case Es2pandaAstNodeType::AST_NODE_TYPE_STRUCT_DECLARATION:
+                    return value == "struct";
+                default:
+                    return false;
+            }
+        }
+        if (key == "annotation") {
+            std::size_t length = 0;
+            Es2pandaAstNodeType type = impl->AstNodeTypeConst(context, node);
+            es2panda_AstNode** result = nullptr;
+            switch (type) {
+                case Es2pandaAstNodeType::AST_NODE_TYPE_METHOD_DEFINITION: {
+                    auto function = impl->MethodDefinitionFunction(context, node);
+                    result = impl->FunctionDeclarationAnnotations(context, function, &length);
+                    break;
+                }
+                case Es2pandaAstNodeType::AST_NODE_TYPE_FUNCTION_DECLARATION:
+                    result = impl->FunctionDeclarationAnnotations(context, node, &length);
+                    break;
+                case Es2pandaAstNodeType::AST_NODE_TYPE_CLASS_PROPERTY:
+                    result = impl->ClassPropertyAnnotations(context, node, &length);
+                    break;
+                default:
+                    return false;
+            }
+            bool found = false;
+            for (std::size_t i = 0; i < length && result; i++) {
+                es2panda_AstNode* ident = impl->AnnotationUsageIrGetBaseNameConst(context, result[i]);
+                const char* name = impl->IdentifierNameConst(context, ident);
+                found |= (value == name);
+            }
+            return found;
+        }
+        return false;
+    }
+};
+
+struct Matcher {
+    es2panda_Context* context;
+    const char* query;
+    std::vector<Pattern> patterns;
+    es2panda_Impl* impl;
+    Matcher(es2panda_Context* context, const char* query) : context(context), query(query), impl(GetImpl()) {
+        std::istringstream stream(query);
+        std::string item;
+        while (std::getline(stream, item, ';')) {
+            patterns.emplace_back(Pattern(context, item));
+        }
+    }
+    bool match(es2panda_AstNode* node) {
+        bool result = true;
+        for (auto pattern: patterns) {
+            result &= pattern.match(node);
+        }
+        return result;
+    }
+};
+
+KNativePointer impl_FilterNodes(KNativePointer context, KNativePointer node, const KStringPtr& filters)
+{
+    auto _node = reinterpret_cast<es2panda_AstNode*>(node);
+    auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const char* _filters = filters.c_str();
+    std::vector<es2panda_AstNode*> result;
+    es2panda_Impl* impl = GetImpl();
+    Matcher matcher(_context, _filters);
+    std::vector<es2panda_AstNode*> queue;
+    queue.push_back(_node);
+    while (queue.size() > 0) {
+        auto* current = queue.back();
+        queue.pop_back();
+        if (matcher.match(current)) {
+            result.push_back(current);
+        } else {
+            impl->AstNodeIterateConst(_context, current, visitChild);
+            // We want to retain match order, so add children in reverse order.
+            for (auto it = cachedChildren.rbegin(); it != cachedChildren.rend(); ++it) {
+                queue.push_back(*it);
+            }
+            cachedChildren.clear();
+        }
+    }
+    return StageArena::cloneVector(result.data(), result.size());
+}
+KOALA_INTEROP_3(FilterNodes, KNativePointer, KNativePointer, KNativePointer, KStringPtr)
 
 /*
 -----------------------------------------------------------------------------------------------------------------------------
