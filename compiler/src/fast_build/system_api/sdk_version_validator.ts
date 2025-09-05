@@ -18,9 +18,6 @@ import {
   projectConfig
 } from '../../../main';
 import {
-  VersionValidationResult,
-  VersionValidationFunction,
-  compareVersionsWithPointSystem,
   getVersionValidationFunction
 } from './api_check_utils'
 
@@ -144,234 +141,290 @@ export class SdkVersionValidator {
 
   private isSdkComparisonHelper(expression: ts.Expression): boolean {
     const expressionText = expression.getText();
-
-    const runtimeType =  projectConfig.runtimeOS;
+  
+    const runtimeType = projectConfig.runtimeOS;
     const matchedEntry = Array.from(this.deviceInfoChecker.entries())
-        .find(([api]) => expressionText.includes(api));
+      .find(([api]) => expressionText.includes(api));
     if (!matchedEntry) {
       return false;
     }
-
-    const [matchedApi, validPackagePaths] = matchedEntry;
+  
+    const [matchedApi, validPackagePath] = matchedEntry;
     if (runtimeType === this.openSourceRuntime && matchedApi === this.closeSourceDeviceInfo) {
       return false;
     }
-
+  
     const parts = this.extractComparisonParts(expression, matchedApi);
     if (!parts) {
       return false
     }
-
-    if (!this.validateSdkVersionCompatibility(parts.operator, parts.value, matchedApi, runtimeType)){
+  
+    if (!this.validateSdkVersionCompatibility(parts.operator, parts.value, matchedApi, runtimeType, parts.apiPosition)) {
       return false
     }
-
+  
     // Try to resolve the actual identifier used for this API in the expression
     const apiIdentifier = this.findValidImportApiIdentifier(expression, matchedApi);
-
-    // Validate that the identifier comes from one of the allowed SDK package paths
-    return apiIdentifier
-        ? this.isValidSdkDeclaration(apiIdentifier, validPackagePaths)
-        : false;
-  }
-
-/**
- * Extracts comparison parts from a binary expression and resolves declaration values.
- * If the comparison value has a declaration (e.g., variable/constant), returns the declaration value.
- * 
- * @param expression - The binary expression to analyze
- * @param matchedApi - The API identifier to match against
- * @returns Object with operator and resolved value, or undefined if invalid
- */
-private extractComparisonParts(
-  expression: ts.Expression,
-  matchedApi: string
-): { operator: string; value: string } | undefined {
-  if (!ts.isBinaryExpression(expression)) {
-    return undefined;
-  }
-
-  const operator = expression.operatorToken.getText();
-  const left = expression.left.getText();
-  const right = expression.right.getText();
-
-  let targetValue: string;
-  let valueExpression: ts.Expression;
-
-  // Determine which side contains the API and get the comparison value
-  if (left.includes(matchedApi)) {
-    targetValue = right;
-    valueExpression = expression.right;
-  } else if (right.includes(matchedApi)) {
-    targetValue = left;
-    valueExpression = expression.left;
-  } else {
-    return undefined;
-  }
-
-  // Try to resolve declaration value if it exists
-  const resolvedValue = this.resolveDeclarationValue(valueExpression, targetValue);
-
-  return { operator, value: resolvedValue };
-}
-
-/**
- * Resolves the declaration value of an expression if it exists.
- * If the expression is a variable/constant reference, returns its declared value.
- * Otherwise, returns the original text value.
- * 
- * @param expression - The expression to resolve
- * @param fallbackValue - The fallback text value if resolution fails
- * @returns The resolved declaration value or fallback value
- */
-private resolveDeclarationValue(expression: ts.Expression, fallbackValue: string): string {
-  if (!this.typeChecker) {
-    return fallbackValue;
-  }
-
-  try {
-    // Only resolve if the expression is an identifier (variable/constant reference)
-    if (!ts.isIdentifier(expression)) {
-      return fallbackValue;
-    }
-
-    const symbol = this.typeChecker.getSymbolAtLocation(expression);
-    if (!symbol?.declarations?.length) {
-      return fallbackValue;
-    }
-
-    const declaration = symbol.declarations[0];
-    
-    // Handle variable declarations with initializers
-    if (ts.isVariableDeclaration(declaration) && declaration.initializer) {
-      return this.extractValueFromInitializer(declaration.initializer);
-    }
-
-    // Handle const assertions and other declaration types
-    if (ts.isBindingElement(declaration) && declaration.initializer) {
-      return this.extractValueFromInitializer(declaration.initializer);
-    }
-
-    return fallbackValue;
-  } catch (error) {
-    // If resolution fails, return the original value
-    return fallbackValue;
-  }
-}
-
-/**
- * Extracts the actual value from a variable initializer expression.
- * Handles literals, numeric values, and string values.
- * 
- * @param initializer - The initializer expression
- * @returns The extracted value as string
- */
-private extractValueFromInitializer(initializer: ts.Expression): string {
-  // Handle numeric literals
-  if (ts.isNumericLiteral(initializer)) {
-    return initializer.text;
-  }
-
-  // Handle string literals (remove quotes)
-  if (ts.isStringLiteral(initializer)) {
-    return initializer.text;
-  }
-
-  // Handle boolean literals
-  if (initializer.kind === ts.SyntaxKind.TrueKeyword) {
-    return 'true';
-  }
-  if (initializer.kind === ts.SyntaxKind.FalseKeyword) {
-    return 'false';
-  }
-
-  // Handle other expression types by returning their text
-  return initializer.getText();
-}
-
-/** Validates SDK version compatibility by comparing operator, value, and API type.
- * 
- * @param operator - Comparison operator from the expression
- * @param value - Version value to compare against
- * @param matchedApi - The matched API identifier
- * @param runtimeType - Runtime environment type (HarmonyOS or OpenHarmony)
- * @returns True if SDK version is compatible, false otherwise
- */
-private validateSdkVersionCompatibility(
-  operator: string,
-  value: string,
-  matchedApi: string,
-  runtimeType: string
-): boolean {
-  // Handle OpenHarmony runtime with direct comparison
-  if (runtimeType === this.openSourceRuntime) {
-    return this.sdkOpenSourceComparison(operator, value, matchedApi);
-  }
-
-  const versionChecker = getVersionValidationFunction();
-  const triggerScene = matchedApi === this.openSourceDeviceInfo ? 1 : 2;
   
-  const validationResult = versionChecker(this.minSinceVersion, value, triggerScene);
-  return validationResult.result;
-}
-
-/**
- * Compares SDK version with open source device info to determine if version check is valid.
- * 
- * Logic: If the condition ensures that the SDK version meets or exceeds the minimum required version,
- * then the check is considered valid (returns true).
- * 
- * Examples:
- * - deviceInfo.sdkApiVersion > 15 with sinceVersion 16: Valid (ensures >= 16)
- * - deviceInfo.sdkApiVersion < 16 with sinceVersion 16: Invalid (ensures < 16, not meeting requirement)
- * - deviceInfo.sdkApiVersion >= 16 with sinceVersion 16: Valid (ensures >= 16)
- * 
- * @param operator - Comparison operator from the condition
- * @param value - The value being compared against in the condition
- * @param matchedApi - The matched API identifier
- * @returns True if the condition ensures minimum version requirement is met
- */
-private sdkOpenSourceComparison(operator: string, value: string, matchedApi: string): boolean {
-  const minRequiredVersion = Number(this.minSinceVersion);
-  const comparisonValue = Number(value);
-
-  switch (operator) {
-    case ">":
-      // deviceInfo.sdkApiVersion > 15 with sinceVersion 16
-      // Ensures SDK version is at least 16 (15 + 1), so valid
-      return comparisonValue >= minRequiredVersion - 1;
-
-    case ">=":
-      // deviceInfo.sdkApiVersion >= 16 with sinceVersion 16
-      // Ensures SDK version is at least 16, so valid
-      return comparisonValue >= minRequiredVersion;
-
-    case "<":
-      // deviceInfo.sdkApiVersion < 16 with sinceVersion 16
-      // Ensures SDK version is less than 16, so invalid (doesn't meet requirement)
-      return false;
-
-    case "<=":
-      // deviceInfo.sdkApiVersion <= 15 with sinceVersion 16
-      // Ensures SDK version is at most 15, so invalid (doesn't meet requirement)
-      return false;
-
-    case "==":
-    case "===":
-      // deviceInfo.sdkApiVersion === 16 with sinceVersion 16
-      // Ensures SDK version is exactly 16, so valid if matches or exceeds requirement
-      return comparisonValue >= minRequiredVersion;
-
-    case "!=":
-    case "!==":
-      // deviceInfo.sdkApiVersion !== 15 with sinceVersion 16
-      // This doesn't guarantee meeting the requirement, so invalid
-      return false;
-
-    default:
-      throw new Error(`Unsupported operator: ${operator}`);
+    // Validate that the identifier comes from the allowed SDK package path
+    return apiIdentifier
+      ? this.isValidSdkDeclaration(apiIdentifier, validPackagePath)
+      : false;
   }
-}
+  
+  /**
+   * Extracts comparison parts from a binary expression and resolves declaration values.
+   * Also determines which side of the comparison contains the API.
+   * 
+   * @param expression - The binary expression to analyze
+   * @param matchedApi - The API identifier to match against
+   * @returns Object with operator, resolved value, and API position, or undefined if invalid
+   */
+  private extractComparisonParts(
+    expression: ts.Expression,
+    matchedApi: string
+  ): { operator: string; value: string; apiPosition: 'left' | 'right' } | undefined {
+    if (!ts.isBinaryExpression(expression)) {
+      return undefined;
+    }
+  
+    const operator = expression.operatorToken.getText();
+    const left = expression.left.getText();
+    const right = expression.right.getText();
+  
+    let targetValue: string;
+    let valueExpression: ts.Expression;
+    let apiPosition: 'left' | 'right';
+  
+    // Determine which side contains the API and get the comparison value
+    if (left.includes(matchedApi)) {
+      targetValue = right;
+      valueExpression = expression.right;
+      apiPosition = 'left';
+    } else if (right.includes(matchedApi)) {
+      targetValue = left;
+      valueExpression = expression.left;
+      apiPosition = 'right';
+    } else {
+      return undefined;
+    }
+  
+    // Try to resolve declaration value if it exists
+    const resolvedValue = this.resolveDeclarationValue(valueExpression, targetValue);
+  
+    return { operator, value: resolvedValue, apiPosition };
+  }
+  
+  /**
+   * Resolves the declaration value of an expression if it exists.
+   * If the expression is a variable/constant reference, returns its declared value.
+   * Otherwise, returns the original text value.
+   * 
+   * @param expression - The expression to resolve
+   * @param fallbackValue - The fallback text value if resolution fails
+   * @returns The resolved declaration value or fallback value
+   */
+  private resolveDeclarationValue(expression: ts.Expression, fallbackValue: string): string {
+    if (!this.typeChecker) {
+      return fallbackValue;
+    }
+  
+    try {
+      // Only resolve if the expression is an identifier (variable/constant reference)
+      if (!ts.isIdentifier(expression)) {
+        return fallbackValue;
+      }
+  
+      const symbol = this.typeChecker.getSymbolAtLocation(expression);
+      if (!symbol?.declarations?.length) {
+        return fallbackValue;
+      }
+  
+      const declaration = symbol.declarations[0];
+      
+      // Handle variable declarations with initializers
+      if (ts.isVariableDeclaration(declaration) && declaration.initializer) {
+        return this.extractValueFromInitializer(declaration.initializer);
+      }
+  
+      // Handle const assertions and other declaration types
+      if (ts.isBindingElement(declaration) && declaration.initializer) {
+        return this.extractValueFromInitializer(declaration.initializer);
+      }
+  
+      return fallbackValue;
+    } catch (error) {
+      // If resolution fails, return the original value
+      return fallbackValue;
+    }
+  }
+  
+  /**
+   * Extracts the actual value from a variable initializer expression.
+   * Handles literals, numeric values, and string values.
+   * 
+   * @param initializer - The initializer expression
+   * @returns The extracted value as string
+   */
+  private extractValueFromInitializer(initializer: ts.Expression): string {
+    // Handle numeric literals
+    if (ts.isNumericLiteral(initializer)) {
+      return initializer.text;
+    }
+  
+    // Handle string literals (remove quotes)
+    if (ts.isStringLiteral(initializer)) {
+      return initializer.text;
+    }
+  
+    // Handle boolean literals
+    if (initializer.kind === ts.SyntaxKind.TrueKeyword) {
+      return 'true';
+    }
+    if (initializer.kind === ts.SyntaxKind.FalseKeyword) {
+      return 'false';
+    }
+  
+    // Handle other expression types by returning their text
+    return initializer.getText();
+  }
+  
+  /**
+   * Validates SDK version compatibility by comparing operator, value, and API type.
+   * 
+   * @param operator - Comparison operator from the expression
+   * @param value - Version value to compare against
+   * @param matchedApi - The matched API identifier
+   * @param runtimeType - Runtime environment type (OpenHarmony or Other)
+   * @param apiPosition - Position of API in comparison: 'left' or 'right'
+   * @returns True if SDK version is compatible, false otherwise
+   */
+  private validateSdkVersionCompatibility(
+    operator: string,
+    value: string,
+    matchedApi: string,
+    runtimeType: string,
+    apiPosition: 'left' | 'right'
+  ): boolean {
+    const comparisonValue = Number(value);
+    // comparisonValue should conform to the integer format.
+    if (!Number.isInteger(comparisonValue)) {
+      return false;
+    }
+    // Adjust comparison values based on operators
+    const assignedSdkVersion = this.calculateAssignedSdkVersion(operator, comparisonValue, apiPosition);
+
+    // Handle OpenHarmony runtime with direct comparison
+
+    if (runtimeType === this.openSourceRuntime) {
+      return this.sdkOpenSourceComparison(comparisonValue);
+    }
+  
+    // Handle other runtime with version validation function
+    const versionChecker = getVersionValidationFunction();
+    const triggerScene = matchedApi === this.openSourceDeviceInfo ? 1 : 2;
+    
+    const validationResult = versionChecker(this.minSinceVersion, assignedSdkVersion.toString(), triggerScene);
+    return validationResult.result;
+  }
+  
+  /**
+   * Compares SDK version using value assignment logic to determine if version check is valid.
+   * 
+   * Logic: Determines what value the SDK version would have based on the condition,
+   * then compares that assigned value with the minimum required version.
+   * 
+   * Examples:
+   * - sdkVersion > 15: SDK gets value 16, compare 16 >= minSince
+   * - sdkVersion >= 16: SDK gets value 16, compare 16 >= minSince  
+   * - sdkVersion < 16: SDK gets value 15, compare 15 >= minSince
+   * - 16 < sdkVersion: SDK gets value 17, compare 17 >= minSince (flipped logic)
+   * 
+   * @param assignedSdkVersion - The value being compared against in the condition
+   * @returns True if the assigned SDK version meets the minimum requirement
+   */
+  private sdkOpenSourceComparison(
+    assignedSdkVersion: number
+  ): boolean {
+    const minRequiredVersion = Number(this.minSinceVersion);
+    
+    if (!Number.isInteger(minRequiredVersion) || assignedSdkVersion === null) {
+      return false;
+    }
+  
+    // Compare the assigned SDK version with minimum requirement
+    return assignedSdkVersion >= minRequiredVersion;
+  }
+  
+  /**
+   * Calculates what value the SDK version would have based on the comparison condition.
+   * 
+   * @param operator - Comparison operator
+   * @param comparisonValue - Value being compared against
+   * @param apiPosition - Whether API is on left or right side
+   * @returns Assigned SDK version value, or null if indeterminate
+   */
+  private calculateAssignedSdkVersion(
+    operator: string, 
+    comparisonValue: number, 
+    apiPosition: 'left' | 'right'
+  ): number | null {
+    // Flip operator if API is on the right side
+    const effectiveOperator = apiPosition === 'right' ? this.flipOperator(operator) : operator;
+  
+    switch (effectiveOperator) {
+      case ">":
+        // sdkVersion > 15 → SDK version would be at least 16
+        return comparisonValue + 1;
+  
+      case ">=":
+        // sdkVersion >= 16 → SDK version would be at least 16
+        return comparisonValue;
+  
+      case "<":
+        // sdkVersion < 16 → SDK version would be at most 15
+        return comparisonValue - 1;
+  
+      case "<=":
+        // sdkVersion <= 15 → SDK version would be at most 15
+        return comparisonValue;
+  
+      case "==":
+      case "===":
+        // sdkVersion === 16 → SDK version would be exactly 16
+        return comparisonValue;
+  
+      case "!=":
+      case "!==":
+        // sdkVersion !== 15 → Cannot determine specific value
+        return null;
+  
+      default:
+        return null;
+    }
+  }
+  
+  /**
+   * Flips comparison operators for when API is on the right side of comparison.
+   * 
+   * @param operator - Original operator
+   * @returns Flipped operator
+   */
+  private flipOperator(operator: string): string {
+    switch (operator) {
+      case ">": return "<";
+      case "<": return ">";
+      case ">=": return "<=";
+      case "<=": return ">=";
+      case "==":
+      case "===":
+      case "!=":
+      case "!==":
+        return operator; // These don't need flipping
+      default:
+        return operator;
+    }
+  }
 
   private findValidImportApiIdentifier(expression: ts.Expression, api: string): ts.Identifier | undefined {
     if (ts.isBinaryExpression(expression)) {

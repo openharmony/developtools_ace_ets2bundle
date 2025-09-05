@@ -32,7 +32,6 @@ import {
   LogInfo,
   IFileLog,
   CurrentProcessFile,
-  compilerOptions
 } from '../../utils';
 import { type ResolveModuleInfo } from '../../ets_checker';
 import {
@@ -615,6 +614,9 @@ function checkSinceValue(
  * @returns Version validation function (external or default)
  */
 export function getVersionValidationFunction(): VersionValidationFunction {
+  if (projectConfig.originCompatibleSdkVersion?.toString() === undefined) {
+    return compareVersionsWithPointSystem;
+  }
   const pluginKey = getPluginKey(projectConfig.runtimeOS, SINCE_TAG_NAME);
   const plugins = externalApiCheckPlugin.get(pluginKey);
   
@@ -649,23 +651,17 @@ export function compareVersionsWithPointSystem(
   targetVersion: string,
   _triggerScene: number
 ): VersionValidationResult {
-  const versionFormatRegex = /^(?:\d{0,2}|\d\.\d\.\d)$/;
-
   // Validate version format
-  if (!versionFormatRegex.test(sinceVersion) || !versionFormatRegex.test(targetVersion)) {
+  if (!isCompliantSince(sinceVersion) || !isCompliantSince(targetVersion)) {
     return {
-      result: false,
+      result: true,
       message: "Invalid version number format"
     };
   }
-
-  // Compare version numbers
-  const sinceVersionNumber = getVersionNumber(sinceVersion);
-  const targetVersionNumber = getVersionNumber(targetVersion);
-  const isTargetGreater = sinceVersionNumber < targetVersionNumber;
+  const isTargetGreater = comparePointVersion(targetVersion, sinceVersion);
 
   return {
-    result: isTargetGreater,
+    result: isTargetGreater == 1,
     message: isTargetGreater ? "API version requirement not met" : "Version requirement satisfied"
   };
 }
@@ -687,18 +683,6 @@ export interface VersionValidationResult {
 }
 
 /**
- * 是否需要使用拓展SDK自定义校验接口
- * @param { string } pluginKey prefix/tagname
- * @returns { boolean }
- */
-function isExternalApiCheck(pluginKey: string): boolean {
-  if (externalApiCheckPlugin.get(pluginKey)) {
-    return true;
-  }
-  return false;
-}
-
-/**
  * 获取externalApiCheckPlugin的key
  * @param { string } apiFilePath
  * @param { string } tagName
@@ -712,10 +696,26 @@ function getPluginKey(apiFilePath: string, tagName: string): string {
 }
 
 /**
+ * Confirm compliance since
+ * Only major version can be passed in, such as "19";
+ * major and minor version can be passed in, such as "19.1"; major minor and patch
+ * patch version can be passed in, such as "19.1.2"
+ * the major version be from 1-999
+ * the minor version be from 0-999
+ * the patch version be from 0-999
+ * 
+ * @param {string} since
+ * @return {boolean}
+ */
+function isCompliantSince(since: string): boolean {
+  return /^(?!0\d)[1-9]\d{0,2}(?:\.[1-9]\d{0,2}|\.0){0,2}$\d{0,2}$/.test(since);
+}
+
+/**
  * Determine the necessity of syscap check.
- * @param jsDocTags
- * @param config
- * @returns
+ * @param jsDocTags 
+ * @param config 
+ * @returns 
  */
 export function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
   let currentSyscapValue: string = '';
@@ -905,7 +905,7 @@ function checkSyscapConditionValidCallback(node: ts.CallExpression, specifyFuncN
 
 /**
  * get minversion
- * @param { ts.JSDoc[] } jsDocs
+ * @param { ts.JSDoc[] } jsDocs 
  * @returns string
  */
 function getMinVersion(jsDocs: ts.JSDoc[]): string {
@@ -925,17 +925,25 @@ function getMinVersion(jsDocs: ts.JSDoc[]): string {
   return minVersion;
 }
 
-function getVersionNumber(version: string): number {
-  const parenMatch = version.match(/\((\d+)\)/);
-  if (parenMatch) return parseInt(parenMatch[1], 10);
-
-  const parts = version.split('.');
-  return parseInt(parts[parts.length - 1], 10);
-}
-
+/**
+ * compare point version
+ * @param { string } firstVersion 
+ * @param { string } secondVersion 
+ * @returns { number }
+ */
 function comparePointVersion(firstVersion: string, secondVersion: string): number {
-  const firstNum = getVersionNumber(firstVersion);
-  const secondNum = getVersionNumber(secondVersion);
+  const firstPointVersion = firstVersion.split('.');
+  const secondPointVersion = secondVersion.split('.');
+  for (let i = 0; i < 3; i++) {
+    const part1 = parseInt(firstPointVersion[i] || '0', 10);
+    const part2 = parseInt(secondPointVersion[i] || '0', 10);
 
-  return firstNum > secondNum ? 1 : -1;
+    if (part1 < part2) {
+      return -1;
+    }
+    if (part1 > part2) {
+      return 1;
+    }
+  }
+  return 0;
 }
