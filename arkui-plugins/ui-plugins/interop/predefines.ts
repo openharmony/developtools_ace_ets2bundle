@@ -65,6 +65,7 @@ export enum BuilderMethodNames {
     RUNPENDINGJOBS = 'runPendingJobs',
     CREATECOMPATIBLENODE = 'createCompatibleNode',
     TRANSFERCOMPATIBLEBUILDER = 'transferCompatibleBuilder',
+    TRANSFERCOMPATIBLEUPDATABLEBUILDER = 'transferCompatibleUpdatableBuilder',
 }
 
 export enum BuilderParams {
