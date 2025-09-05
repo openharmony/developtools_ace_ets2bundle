@@ -270,7 +270,6 @@ export class ProgramVisitor extends AbstractVisitor {
                 transformer.registerMap(this.legacyStructMap);
             }
             this.visitTransformer(transformer, script, externalSourceName, program);
-            transformer.reset();
             arkts.setAllParents(script);
             if (!transformer.isExternal) {
                 debugDumpAstNode(
@@ -308,7 +307,9 @@ export class ProgramVisitor extends AbstractVisitor {
         transformer.isExternal = !!externalSourceName;
         transformer.externalSourceName = externalSourceName;
         transformer.program = program;
+        transformer.init();
         const newScript = transformer.visitor(script) as arkts.EtsScript;
+        transformer.reset();
         return newScript;
     }
 }

@@ -81,10 +81,13 @@ function main() {}
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
   
   @memo() public testBuilder() {
-    ForEach(((): Array<WrappedBuilder<MyBuilderFuncType>> => {
-      return globalBuilderArr;
-    }), ((item: WrappedBuilder<MyBuilderFuncType>) => {
-      item.builder("hello world", 39);
+    ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+      instance.setForEachOptions(((): Array<WrappedBuilder<MyBuilderFuncType>> => {
+        return globalBuilderArr;
+      }), @memo() ((item: WrappedBuilder<MyBuilderFuncType>) => {
+        item.builder("hello world", 39);
+      }), undefined);
+      return;
     }));
   }
   
@@ -192,21 +195,33 @@ function main() {}
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
   
   @memo() public testBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (194881372)), 0);
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (102938669)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    ForEach(__memo_context, ((__memo_id) + (218979098)), ((): Array<WrappedBuilder<MyBuilderFuncType>> => {
-      return globalBuilderArr;
-    }), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<MyBuilderFuncType>) => {
-      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (76711614)), 1);
-      const __memo_parameter_item = __memo_scope.param(0, item);
+    ForEachImpl(__memo_context, ((__memo_id) + (223657391)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (218979098)), 1);
+      const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
       }
-      __memo_parameter_item.value.builder(__memo_context, ((__memo_id) + (46726221)), "hello world", 39);
+      __memo_parameter_instance.value.setForEachOptions(((): Array<WrappedBuilder<MyBuilderFuncType>> => {
+        return globalBuilderArr;
+      }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<MyBuilderFuncType>) => {
+        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (76711614)), 1);
+        const __memo_parameter_item = __memo_scope.param(0, item);
+        if (__memo_scope.unchanged) {
+          __memo_scope.cached;
+          return;
+        }
+        item.builder(__memo_context, ((__memo_id) + (46726221)), "hello world", 39);
+        {
+          __memo_scope.recache();
+          return;
+        }
+      }), undefined);
       {
         __memo_scope.recache();
         return;
@@ -219,13 +234,13 @@ function main() {}
   }
   
   @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (142886843)), 0);
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (245938697)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    ColumnImpl(__memo_context, ((__memo_id) + (54078781)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
-      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+    ColumnImpl(__memo_context, ((__memo_id) + (78055758)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (213687742)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -237,12 +252,12 @@ function main() {}
         return;
       }
     }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (213687742)), 0);
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (136716185)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
       }
-      this.testBuilder(__memo_context, ((__memo_id) + (192802443)));
+      this.testBuilder(__memo_context, ((__memo_id) + (54078781)));
       {
         __memo_scope.recache();
         return;

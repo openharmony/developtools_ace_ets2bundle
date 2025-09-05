@@ -20,6 +20,7 @@ import { Plugins, PluginContext, ProjectConfig } from '../common/plugin-context'
 import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../common/predefines';
 import { debugLog } from '../common/debug';
+import { MetaDataCollector } from '../common/metadata-collector';
 
 export function uiTransform(): Plugins {
     return {
@@ -134,6 +135,7 @@ function checkedProgramVisit(
             pluginContext: context,
         });
         program = programVisitor.programVisitor(program);
+        MetaDataCollector.getInstance().reset();
     }
     return program;
 }

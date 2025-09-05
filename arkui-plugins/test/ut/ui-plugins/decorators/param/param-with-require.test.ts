@@ -158,11 +158,15 @@ import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateM
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ButtonImpl as ButtonImpl } from "arkui.component.button";
+
+import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
@@ -175,12 +179,9 @@ import { Param as Param, Require as Require, Local as Local } from "@ohos.arkui.
 function main() {}
 
 
-
 class Region {
   public x: number;
-  
   public y: number;
-  
   public constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
@@ -190,11 +191,8 @@ class Region {
 
 class Info {
   public name: string;
-  
   public age: number;
-  
   public region: Region;
-  
   public constructor(name: string, age: number, x: number, y: number) {
     this.name = name;
     this.age = age;
@@ -211,7 +209,6 @@ class Info {
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
   
   private __backing_infoList?: ILocalDecoratedVariable<Array<Info>>;
-  
   public get infoList(): Array<Info> {
     return this.__backing_infoList!.get();
   }
@@ -225,15 +222,18 @@ class Info {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
     }), @memo() (() => {
-      ForEach<Info>(((): Array<Info> => {
-        return this.infoList;
-      }), ((info: Info) => {
-        MiddleComponent._instantiateImpl(undefined, (() => {
-          return new MiddleComponent();
-        }), {
-          info: info,
-          __options_has_info: true,
-        }, undefined, undefined);
+      ForEachImpl<Info>(@memo() ((instance: ForEachAttribute): void => {
+        instance.setForEachOptions<Info>(((): Array<Info> => {
+          return this.infoList;
+        }), @memo() ((info: Info) => {
+          MiddleComponent._instantiateImpl(undefined, (() => {
+            return new MiddleComponent();
+          }), {
+            info: info,
+            __options_has_info: true,
+          }, undefined, undefined);
+        }), undefined);
+        return;
       }));
       ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("change", undefined).onClick(((e) => {
@@ -263,7 +263,6 @@ class Info {
   }
   
   private __backing_info?: IParamDecoratedVariable<Info>;
-  
   public get info(): Info {
     return this.__backing_info!.get();
   }
@@ -307,7 +306,6 @@ class Info {
   }
   
   private __backing_region?: IParamDecoratedVariable<Region>;
-  
   public get region(): Region {
     return this.__backing_region!.get();
   }
@@ -329,41 +327,32 @@ class Info {
 }
 
 @ComponentV2() export interface __Options_Index {
-  set infoList(infoList: (Array<Info> | undefined))
-  
   get infoList(): (Array<Info> | undefined)
-  set __backing_infoList(__backing_infoList: (ILocalDecoratedVariable<Array<Info>> | undefined))
-  
+  set infoList(infoList: (Array<Info> | undefined))
   get __backing_infoList(): (ILocalDecoratedVariable<Array<Info>> | undefined)
-  set __options_has_infoList(__options_has_infoList: (boolean | undefined))
-  
+  set __backing_infoList(__backing_infoList: (ILocalDecoratedVariable<Array<Info>> | undefined))
   get __options_has_infoList(): (boolean | undefined)
+  set __options_has_infoList(__options_has_infoList: (boolean | undefined))
   
 }
 
 @ComponentV2() export interface __Options_MiddleComponent {
-  set info(info: (Info | undefined))
-  
   get info(): (Info | undefined)
-  @Require() set __backing_info(__backing_info: (IParamDecoratedVariable<Info> | undefined))
-  
+  set info(info: (Info | undefined))
   @Require() get __backing_info(): (IParamDecoratedVariable<Info> | undefined)
-  set __options_has_info(__options_has_info: (boolean | undefined))
-  
+  @Require() set __backing_info(__backing_info: (IParamDecoratedVariable<Info> | undefined))
   get __options_has_info(): (boolean | undefined)
+  set __options_has_info(__options_has_info: (boolean | undefined))
   
 }
 
 @ComponentV2() export interface __Options_SubComponent {
-  set region(region: (Region | undefined))
-  
   get region(): (Region | undefined)
-  @Require() set __backing_region(__backing_region: (IParamDecoratedVariable<Region> | undefined))
-  
+  set region(region: (Region | undefined))
   @Require() get __backing_region(): (IParamDecoratedVariable<Region> | undefined)
-  set __options_has_region(__options_has_region: (boolean | undefined))
-  
+  @Require() set __backing_region(__backing_region: (IParamDecoratedVariable<Region> | undefined))
   get __options_has_region(): (boolean | undefined)
+  set __options_has_region(__options_has_region: (boolean | undefined))
   
 }
 `;

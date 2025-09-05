@@ -38,13 +38,17 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
+import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
 
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
@@ -55,22 +59,16 @@ import { Component as Component, Text as Text, WrappedBuilder as WrappedBuilder,
 function main() {}
 
 interface Person {
-  set name(name: string)
-  
   get name(): string
-  set age(age: number)
-  
+  set name(name: string)
   get age(): number
-  
+  set age(age: number)
 }
 
 class AB {
   public per: string = "hello";
-  
   public bar: Array<string> = new Array<string>("xx", "yy", "zz");
-  
   public constructor() {}
-  
 }
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
@@ -82,7 +80,6 @@ class AB {
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
   
   private __backing_arr?: Array<string>;
-  
   public get arr(): Array<string> {
     return (this.__backing_arr as Array<string>);
   }
@@ -106,47 +103,68 @@ class AB {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
     }), @memo() (() => {
-      ForEach(((): Array<string> => {
-        return this.arr;
-      }), ((item: string) => {
-        TextImpl(@memo() ((instance: TextAttribute): void => {
-          instance.setTextOptions(item, undefined).applyAttributesFinish();
-          return;
-        }), undefined);
-      }));
-      ForEach(((): Array<Person> => {
-        return this.getArray();
-      }), ((item: Person) => {
-        TextImpl(@memo() ((instance: TextAttribute): void => {
-          instance.setTextOptions(item.name, undefined).applyAttributesFinish();
-          return;
-        }), undefined);
-      }));
-      ForEach(((): Array<string> => {
-        return new AB().bar;
-      }), ((item: string) => {
-        TextImpl(@memo() ((instance: TextAttribute): void => {
-          instance.setTextOptions(item, undefined).applyAttributesFinish();
-          return;
-        }), undefined);
-      }));
-      ForEach(((): Array<String> => {
-        return new AB().bar;
-      }), (() => {}));
-      ForEach<Person>(((): Array<Person> => {
-        return this.getArray();
-      }), (() => {}));
-      ForEach(((): Array<String> => {
-        return new Array<string>("1", "2");
-      }), (() => {
-        ForEach(((): Array<string> => {
-          return new Array<string>("1", "2");
-        }), ((item: string) => {
+      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+        instance.setForEachOptions(((): Array<string> => {
+          return this.arr;
+        }), @memo() ((item: string) => {
           TextImpl(@memo() ((instance: TextAttribute): void => {
             instance.setTextOptions(item, undefined).applyAttributesFinish();
             return;
           }), undefined);
-        }));
+        }), undefined);
+        return;
+      }));
+      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+        instance.setForEachOptions(((): Array<Person> => {
+          return this.getArray();
+        }), @memo() ((item: Person) => {
+          TextImpl(@memo() ((instance: TextAttribute): void => {
+            instance.setTextOptions(item.name, undefined).applyAttributesFinish();
+            return;
+          }), undefined);
+        }), undefined);
+        return;
+      }));
+      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+        instance.setForEachOptions(((): Array<string> => {
+          return new AB().bar;
+        }), @memo() ((item: string) => {
+          TextImpl(@memo() ((instance: TextAttribute): void => {
+            instance.setTextOptions(item, undefined).applyAttributesFinish();
+            return;
+          }), undefined);
+        }), undefined);
+        return;
+      }));
+      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+        instance.setForEachOptions(((): Array<String> => {
+          return new AB().bar;
+        }), @memo() (() => {}), undefined);
+        return;
+      }));
+      ForEachImpl<Person>(@memo() ((instance: ForEachAttribute): void => {
+        instance.setForEachOptions<Person>(((): Array<Person> => {
+          return this.getArray();
+        }), @memo() (() => {}), undefined);
+        return;
+      }));
+      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+        instance.setForEachOptions(((): Array<String> => {
+          return new Array<string>("1", "2");
+        }), @memo() (() => {
+          ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+            instance.setForEachOptions(((): Array<string> => {
+              return new Array<string>("1", "2");
+            }), @memo() ((item: string) => {
+              TextImpl(@memo() ((instance: TextAttribute): void => {
+                instance.setTextOptions(item, undefined).applyAttributesFinish();
+                return;
+              }), undefined);
+            }), undefined);
+            return;
+          }));
+        }), undefined);
+        return;
       }));
     }));
   }
@@ -156,12 +174,10 @@ class AB {
 }
 
 @Component() export interface __Options_ImportStruct {
-  set arr(arr: (Array<string> | undefined))
-  
   get arr(): (Array<string> | undefined)
-  set __options_has_arr(__options_has_arr: (boolean | undefined))
-  
+  set arr(arr: (Array<string> | undefined))
   get __options_has_arr(): (boolean | undefined)
+  set __options_has_arr(__options_has_arr: (boolean | undefined))
   
 }
 `;
