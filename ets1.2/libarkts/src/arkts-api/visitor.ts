@@ -526,6 +526,7 @@ function visitTSInterfaceDeclaration(node: TSInterfaceDeclaration, visitor: Visi
     const newIdent = nodeVisitor(node.id, visitor)
     const newTypeParams = nodeVisitor(node.typeParams, visitor)
     const newBody = nodeVisitor(node.body, visitor)
+    const newAnnotations: readonly AnnotationUsage[] = nodesVisitor(node.annotations, visitor)
     if (global.updateTracker.check()) {
         const result = factory.createInterfaceDeclaration(
             newExtends,
@@ -537,6 +538,7 @@ function visitTSInterfaceDeclaration(node: TSInterfaceDeclaration, visitor: Visi
             node.modifierFlags,
         )
         result.onUpdate(node)
+        result.setAnnotations(newAnnotations)
         return result
     }
     return node
