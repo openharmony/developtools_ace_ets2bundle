@@ -317,7 +317,7 @@ export class SdkVersionValidator {
     // Handle OpenHarmony runtime with direct comparison
 
     if (runtimeType === this.openSourceRuntime) {
-      return this.sdkOpenSourceComparison(comparisonValue);
+      return this.sdkOpenSourceComparison(assignedSdkVersion);
     }
   
     // Handle other runtime with version validation function
