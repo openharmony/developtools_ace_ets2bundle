@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { updateNodeByNode } from "../utilities/private"
+import { updateNodeByNode } from '../utilities/private';
 import {
     ArrowFunctionExpression,
     AssignmentExpression,
@@ -29,10 +29,10 @@ import {
     StructDeclaration,
     VariableDeclaration,
     VariableDeclarator,
-    ETSStringLiteralType
-} from "../types"
-import { MemberExpression } from "../to-be-generated/MemberExpression"
-import { AstNode } from "../peers/AstNode"
+    ETSStringLiteralType,
+} from '../types';
+import { MemberExpression } from '../to-be-generated/MemberExpression';
+import { AstNode } from '../peers/AstNode';
 import {
     AnnotationUsage,
     BinaryExpression,
@@ -79,66 +79,61 @@ import {
     ForUpdateStatement,
     ForInStatement,
     ForOfStatement,
-} from "../../generated"
-import {
-    Es2pandaModifierFlags
-} from "../../generated/Es2pandaEnums"
-import {
-    classPropertySetOptional,
-    hasModifierFlag
-} from "../utilities/public"
-import { updateIdentifier } from "../node-utilities/Identifier"
-import { updateCallExpression } from "../node-utilities/CallExpression"
-import { updateExpressionStatement } from "../node-utilities/ExpressionStatement"
-import { updateMemberExpression } from "../node-utilities/MemberExpression"
-import { updateFunctionDeclaration } from "../node-utilities/FunctionDeclaration"
-import { updateBlockStatement } from "../node-utilities/BlockStatement"
-import { updateArrowFunctionExpression } from "../node-utilities/ArrowFunctionExpression"
-import { updateScriptFunction } from "../node-utilities/ScriptFunction"
-import { updateStringLiteral } from "../node-utilities/StringLiteral"
-import { updateNumberLiteral } from "../node-utilities/NumberLiteral"
-import { updateETSParameterExpression } from "../node-utilities/ETSParameterExpression"
-import { updateTSTypeParameter } from "../node-utilities/TSTypeParameter"
-import { updateTSTypeParameterDeclaration } from "../node-utilities/TSTypeParameterDeclaration"
-import { updateETSPrimitiveType } from "../node-utilities/ETSPrimitiveType"
-import { updateETSTypeReference } from "../node-utilities/ETSTypeReference"
-import { updateETSTypeReferencePart } from "../node-utilities/ETSTypeReferencePart"
-import { updateETSImportDeclaration } from "../node-utilities/ETSImportDeclaration"
-import { updateImportSpecifier } from "../node-utilities/ImportSpecifier"
-import { updateVariableDeclaration } from "../node-utilities/VariableDeclaration"
-import { updateVariableDeclarator } from "../node-utilities/VariableDeclarator"
-import { updateETSUnionType } from "../node-utilities/ETSUnionType"
-import { updateReturnStatement } from "../node-utilities/ReturnStatement"
-import { updateIfStatement } from "../node-utilities/IfStatement"
-import { updateBinaryExpression } from "../node-utilities/BinaryExpression"
-import { updateClassDeclaration } from "../node-utilities/ClassDeclaration"
-import { updateStructDeclaration } from "../node-utilities/StructDeclaration"
-import { updateClassDefinition } from "../node-utilities/ClassDefinition"
-import { updateClassProperty } from "../node-utilities/ClassProperty"
-import { updateETSFunctionType } from "../node-utilities/ETSFunctionType"
-import { updateFunctionExpression } from "../node-utilities/FunctionExpression"
-import { updateMethodDefinition } from "../node-utilities/MethodDefinition"
-import { updateSuperExpression } from "../node-utilities/SuperExpression"
-import { updateTSTypeParameterInstantiation } from "../node-utilities/TSTypeParameterInstantiation"
-import { updateTSInterfaceDeclaration } from "../node-utilities/TSInterfaceDeclaration"
-import { updateTSInterfaceBody } from "../node-utilities/TSInterfaceBody"
-import { updateUndefinedLiteral } from "../node-utilities/UndefinedLiteral"
-import { updateAnnotationUsage, update1AnnotationUsage } from "../node-utilities/AnnotationUsage"
-import { updateAssignmentExpression } from "../node-utilities/AssignmentExpression"
-import { updateETSUndefinedType } from "../node-utilities/ETSUndefinedType"
-import { updateConditionalExpression } from "../node-utilities/ConditionalExpression"
-import { updateTSAsExpression } from "../node-utilities/TSAsExpression"
-import { updateThisExpression } from "../node-utilities/ThisExpression"
-import { updateTSTypeAliasDeclaration } from "../node-utilities/TSTypeAliasDeclaration"
-import { updateTSNonNullExpression } from "../node-utilities/TSNonNullExpression"
-import { updateChainExpression } from "../node-utilities/ChainExpression"
-import { updateBlockExpression } from "../node-utilities/BlockExpression"
-import { updateNullLiteral } from "../node-utilities/NullLiteral"
-import { updateETSNewClassInstanceExpression } from "../node-utilities/ETSNewClassInstanceExpression"
-import { updateObjectExpression } from "../node-utilities/ObjectExpression"
-import { updateProperty } from "../node-utilities/Property"
-import { updateTemplateLiteral } from "../node-utilities/TemplateLiteral"
-import { updateArrayExpression } from "../node-utilities/ArrayExpression";
+} from '../../generated';
+import { Es2pandaModifierFlags } from '../../generated/Es2pandaEnums';
+import { classPropertySetOptional, hasModifierFlag } from '../utilities/public';
+import { updateIdentifier } from '../node-utilities/Identifier';
+import { updateCallExpression } from '../node-utilities/CallExpression';
+import { updateExpressionStatement } from '../node-utilities/ExpressionStatement';
+import { updateMemberExpression } from '../node-utilities/MemberExpression';
+import { updateFunctionDeclaration } from '../node-utilities/FunctionDeclaration';
+import { updateBlockStatement } from '../node-utilities/BlockStatement';
+import { updateArrowFunctionExpression } from '../node-utilities/ArrowFunctionExpression';
+import { updateScriptFunction } from '../node-utilities/ScriptFunction';
+import { updateStringLiteral } from '../node-utilities/StringLiteral';
+import { updateNumberLiteral } from '../node-utilities/NumberLiteral';
+import { updateETSParameterExpression } from '../node-utilities/ETSParameterExpression';
+import { updateTSTypeParameter } from '../node-utilities/TSTypeParameter';
+import { updateTSTypeParameterDeclaration } from '../node-utilities/TSTypeParameterDeclaration';
+import { updateETSPrimitiveType } from '../node-utilities/ETSPrimitiveType';
+import { updateETSTypeReference } from '../node-utilities/ETSTypeReference';
+import { updateETSTypeReferencePart } from '../node-utilities/ETSTypeReferencePart';
+import { updateETSImportDeclaration } from '../node-utilities/ETSImportDeclaration';
+import { updateImportSpecifier } from '../node-utilities/ImportSpecifier';
+import { updateVariableDeclaration } from '../node-utilities/VariableDeclaration';
+import { updateVariableDeclarator } from '../node-utilities/VariableDeclarator';
+import { updateETSUnionType } from '../node-utilities/ETSUnionType';
+import { updateReturnStatement } from '../node-utilities/ReturnStatement';
+import { updateIfStatement } from '../node-utilities/IfStatement';
+import { updateBinaryExpression } from '../node-utilities/BinaryExpression';
+import { updateClassDeclaration } from '../node-utilities/ClassDeclaration';
+import { updateStructDeclaration } from '../node-utilities/StructDeclaration';
+import { updateClassDefinition } from '../node-utilities/ClassDefinition';
+import { updateClassProperty } from '../node-utilities/ClassProperty';
+import { updateETSFunctionType } from '../node-utilities/ETSFunctionType';
+import { updateFunctionExpression } from '../node-utilities/FunctionExpression';
+import { updateMethodDefinition } from '../node-utilities/MethodDefinition';
+import { updateSuperExpression } from '../node-utilities/SuperExpression';
+import { updateTSTypeParameterInstantiation } from '../node-utilities/TSTypeParameterInstantiation';
+import { updateTSInterfaceDeclaration } from '../node-utilities/TSInterfaceDeclaration';
+import { updateTSInterfaceBody } from '../node-utilities/TSInterfaceBody';
+import { updateUndefinedLiteral } from '../node-utilities/UndefinedLiteral';
+import { updateAnnotationUsage, update1AnnotationUsage } from '../node-utilities/AnnotationUsage';
+import { updateAssignmentExpression } from '../node-utilities/AssignmentExpression';
+import { updateETSUndefinedType } from '../node-utilities/ETSUndefinedType';
+import { updateConditionalExpression } from '../node-utilities/ConditionalExpression';
+import { updateTSAsExpression } from '../node-utilities/TSAsExpression';
+import { updateThisExpression } from '../node-utilities/ThisExpression';
+import { updateTSTypeAliasDeclaration } from '../node-utilities/TSTypeAliasDeclaration';
+import { updateTSNonNullExpression } from '../node-utilities/TSNonNullExpression';
+import { updateChainExpression } from '../node-utilities/ChainExpression';
+import { updateBlockExpression } from '../node-utilities/BlockExpression';
+import { updateNullLiteral } from '../node-utilities/NullLiteral';
+import { updateETSNewClassInstanceExpression } from '../node-utilities/ETSNewClassInstanceExpression';
+import { updateObjectExpression } from '../node-utilities/ObjectExpression';
+import { updateProperty } from '../node-utilities/Property';
+import { updateTemplateLiteral } from '../node-utilities/TemplateLiteral';
+import { updateArrayExpression } from '../node-utilities/ArrayExpression';
 import { updateTryStatement } from '../node-utilities/TryStatement';
 import { updateForUpdateStatement } from '../node-utilities/ForUpdateStatement';
 import { updateForInStatement } from '../node-utilities/ForInStatement';

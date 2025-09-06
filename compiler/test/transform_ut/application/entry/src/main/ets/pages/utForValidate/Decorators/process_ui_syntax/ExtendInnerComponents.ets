@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,15 +12,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@Extend(Text) 
+function fancyText(weightValue: number, color: Color) {
+  .fontStyle(FontStyle.Italic)
+  .fontWeight(weightValue)
+  .backgroundColor(color)
+}
 
-export const ARKTS_1_2: string = '1.2';
-export const ARKTS_1_1: string = '1.1';
-export const ARKTS_1_0: string = '1.0';
-export const ARKTS_HYBRID: string = 'hybrid';
+@Extend(testExtend)
+function extendTestExtend () {
 
-export const DECLGEN_CACHE_FILE = 'declgen_cache.json';
+}
 
-export enum ARKTS_MODE {
-  STATIC = 'static',
-  DYNAMIC = 'dynamic'
+@Component
+struct testExtend {
+  @State stringOne: string = 'stringOne';
+
+  build() {
+    Column() {
+      Text(this.stringOne)
+    }
+  }
+}
+
+@Entry
+@Component
+struct ExtendInnerComponentsSummerpockets {
+  build(){
+  }
 }

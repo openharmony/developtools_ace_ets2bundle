@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,15 +12,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@Styles
+function stylesOne() {
+  .width(100)
+  console.log(`this is a function`);
+}
 
-export const ARKTS_1_2: string = '1.2';
-export const ARKTS_1_1: string = '1.1';
-export const ARKTS_1_0: string = '1.0';
-export const ARKTS_HYBRID: string = 'hybrid';
+@Styles
+function stylesTwo() {
+  .height(200)
+}
 
-export const DECLGEN_CACHE_FILE = 'declgen_cache.json';
+@Entry
+@ComponentV2
+struct testStylesV2 {
+  @Styles
+  innerStylesOne() {
+    .width(100)
+    console.log(`method`);
+  }
 
-export enum ARKTS_MODE {
-  STATIC = 'static',
-  DYNAMIC = 'dynamic'
+  build() {
+    Column() {
+    }
+  }
+}
+
+@Component
+struct testStyles {
+  @Styles
+  innerStyles(){
+    if(true){
+      .width(100)
+    }
+  }
+
+  build() {
+    Row(){
+
+    }
+  }
 }

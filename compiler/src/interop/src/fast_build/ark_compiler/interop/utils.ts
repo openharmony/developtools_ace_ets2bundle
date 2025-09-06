@@ -13,14 +13,13 @@
  * limitations under the License.
  */
 
-export const ARKTS_1_2: string = '1.2';
-export const ARKTS_1_1: string = '1.1';
-export const ARKTS_1_0: string = '1.0';
-export const ARKTS_HYBRID: string = 'hybrid';
+import fs from 'fs';
 
-export const DECLGEN_CACHE_FILE = 'declgen_cache.json';
-
-export enum ARKTS_MODE {
-  STATIC = 'static',
-  DYNAMIC = 'dynamic'
+export function readFirstLineSync(filePath: string): string {
+  const buffer = fs.readFileSync(filePath, 'utf-8');
+  const newlineIndex = buffer.indexOf('\n');
+  if (newlineIndex === -1) {
+    return buffer.trim();
+  }
+  return buffer.substring(0, newlineIndex).trim();
 }

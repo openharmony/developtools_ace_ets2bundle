@@ -110,9 +110,11 @@ export interface LanguageServiceCache {
   service?: ts.LanguageService;
   pkgJsonFileHash?: string;
   targetESVersion?: ts.ScriptTarget;
+  types?: string[];
   maxFlowDepth?: number;
   preTsImportSendable?: boolean;
   preSkipOhModulesLint?: boolean;
+  preEnableStrictCheckOHModule?: boolean;
   preMixCompile?: boolean;
 }
 
@@ -177,7 +179,8 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
       allPath.push('../*');
     }
   }
-  const suffix: string = projectConfig.hotReload ? HOT_RELOAD_BUILD_INFO_SUFFIX : TS_BUILD_INFO_SUFFIX;
+  const suffix: string = projectConfig?.hotReload ? HOT_RELOAD_BUILD_INFO_SUFFIX :
+    `${TS_BUILD_INFO_SUFFIX}${projectConfig?.widgetCompile === 'true' ? '_widget' : ''}`;
   const buildInfoPath: string = path.resolve(projectConfig.cachePath, '..', suffix);
   checkArkTSVersion();
   Object.assign(compilerOptions, {
@@ -210,7 +213,10 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'compatibleSdkVersionStage': projectConfig.compatibleSdkVersionStage,
     'compatibleSdkVersion': projectConfig.compatibleSdkVersion,
     'skipOhModulesLint': skipOhModulesLint,
-    'mixCompile': mixCompile
+    'enableStrictCheckOHModule': enableStrictCheckOHModule,
+    'mixCompile': mixCompile,
+    'isCompileJsHar': isCompileJsHar(),
+    'moduleRootPath': projectConfig.moduleRootPath,
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
@@ -222,6 +228,11 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     Object.assign(compilerOptions, {'packageManagerType': 'ohpm'});
   }
   readTsBuildInfoFileInCrementalMode(buildInfoPath, projectConfig);
+}
+
+function isCompileJsHar(): boolean {
+  return projectConfig.compileHar && projectConfig.byteCodeHar === false && projectConfig.buildMode === 'Release' &&
+    projectConfig.obfuscationOptions?.selfConfig.ruleOptions.enable && !projectConfig.useTsHar;
 }
 
 function checkArkTSVersion(): void {
@@ -437,30 +448,31 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   let service: ts.LanguageService | undefined = cache?.service;
   const currentHash: string | undefined = rollupShareObject?.projectConfig?.pkgJsonFileHash;
   const currentTargetESVersion: ts.ScriptTarget = compilerOptions.target;
+  const currentTypes: string[] | undefined = compilerOptions.types;
   const currentMaxFlowDepth: number | undefined = compilerOptions.maxFlowDepth;
   const lastHash: string | undefined = cache?.pkgJsonFileHash;
   const lastTargetESVersion: ts.ScriptTarget | undefined = cache?.targetESVersion;
+  const lastTypes: string[] | undefined = cache?.types;
   const lastMaxFlowDepth: number | undefined = cache?.maxFlowDepth;
   const hashDiffers: boolean | undefined = currentHash && lastHash && currentHash !== lastHash;
   const shouldRebuildForDepDiffers: boolean | undefined = reuseLanguageServiceForDepChange ?
     (hashDiffers && !rollupShareObject?.depInfo?.enableIncre) : hashDiffers;
   const targetESVersionDiffers: boolean | undefined = lastTargetESVersion && currentTargetESVersion && lastTargetESVersion !== currentTargetESVersion;
+  const typesDiff: boolean | undefined = lastTypes && currentTypes && !areEqualArrays(lastTypes, currentTypes);
   const maxFlowDepthDiffers: boolean | undefined = lastMaxFlowDepth && currentMaxFlowDepth && lastMaxFlowDepth !== currentMaxFlowDepth;
-  const tsImportSendableDiff: boolean = (cache?.preTsImportSendable === undefined && !tsImportSendable) ?
-    false :
-    cache?.preTsImportSendable !== tsImportSendable;
-  const skipOhModulesLintDiff: boolean = (cache?.preSkipOhModulesLint === undefined && !skipOhModulesLint) ? 
-    false : cache?.preSkipOhModulesLint !== skipOhModulesLint;
-  const mixCompileDiff: boolean = (cache?.preMixCompile === undefined && !mixCompile) ? 
-    false : cache?.preMixCompile !== mixCompile;
-  const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || targetESVersionDiffers ||
-    tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff || mixCompileDiff;
+  const tsImportSendableDiff: boolean = checkValueDiff(cache?.preTsImportSendable, tsImportSendable);
+  const skipOhModulesLintDiff: boolean = checkValueDiff(cache?.preSkipOhModulesLint, skipOhModulesLint);
+  const enableStrictCheckOHModuleDiff: boolean = checkValueDiff(cache?.preEnableStrictCheckOHModule, enableStrictCheckOHModule);
+  const mixCompileDiff: boolean = checkValueDiff(cache?.preMixCompile, mixCompile);
+  const onlyDeleteBuildInfoCache: boolean | undefined = tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff ||
+    enableStrictCheckOHModuleDiff || mixCompileDiff || typesDiff;
+  const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || targetESVersionDiffers || onlyDeleteBuildInfoCache;
   if (reuseLanguageServiceForDepChange && hashDiffers && rollupShareObject?.depInfo?.enableIncre) {
     needReCheckForChangedDepUsers = true;
   }
 
   if (!service || shouldRebuild) {
-    rebuildProgram(targetESVersionDiffers, tsImportSendableDiff, maxFlowDepthDiffers, skipOhModulesLintDiff, mixCompileDiff);
+    rebuildProgram(targetESVersionDiffers, onlyDeleteBuildInfoCache);
     service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
   } else {
     // Found language service from cache, update root files
@@ -472,6 +484,7 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     service: service,
     pkgJsonFileHash: currentHash,
     targetESVersion: currentTargetESVersion,
+    types: currentTypes,
     maxFlowDepth: currentMaxFlowDepth,
     preTsImportSendable: tsImportSendable,
     preSkipOhModulesLint: skipOhModulesLint,
@@ -481,14 +494,43 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   return service;
 }
 
-function rebuildProgram(targetESVersionDiffers: boolean | undefined, tsImportSendableDiff: boolean,
-  maxFlowDepthDiffers: boolean | undefined, skipOhModulesLintDiff: boolean, mixCompileDiff: boolean): void {
+/**
+ * compare cache value and current value, check if they are different
+ * @param cacheValue cache value
+ * @param currentValue current value
+ * @returns true if they are different, false otherwise
+ */
+function checkValueDiff(cacheValue: boolean | undefined, currentValue: boolean): boolean {
+  return !(cacheValue === undefined && !currentValue) && cacheValue !== currentValue;
+}
+
+export function areEqualArrays(lastArray: string[] | undefined, currentArray: string[] | undefined): boolean {
+  if (!lastArray || !currentArray) {
+    return lastArray === currentArray;
+  }
+
+  const currentSet: Set<string> = new Set(currentArray!);
+  const lastSet: Set<string> = new Set(lastArray!);
+
+  if (lastSet.size !== currentSet.size) {
+    return false;
+  }
+
+  for (const item of lastSet) {
+    if (!currentSet.has(item)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function rebuildProgram(targetESVersionDiffers: boolean | undefined, onlyDeleteBuildInfoCache: boolean | undefined): void {
   if (targetESVersionDiffers) {
     // If the targetESVersion is changed, we need to delete the build info cahce files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
     targetESVersionChanged = true;
-  } else if (tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff || mixCompileDiff) {
-    // When tsImportSendable or maxFlowDepth is changed, we need to delete the build info cahce files
+  } else if (onlyDeleteBuildInfoCache) {
+    // When tsImportSendable or types or maxFlowDepth or skipOhModuleslint or mixCompile is changed, we need to delete the build info cahce files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
   }
 }
@@ -548,6 +590,7 @@ export const warnCheckerResult: WarnCheckerResult = { count: 0 };
 export let languageService: ts.LanguageService = null;
 let tsImportSendable: boolean = false;
 let skipOhModulesLint: boolean = false;
+let enableStrictCheckOHModule: boolean = false;
 let mixCompile: boolean = false;
 export let maxMemoryInServiceChecker: number = 0;
 export function serviceChecker(rootFileNames: string[], newLogger: Object = null, resolveModulePaths: string[] = null,
@@ -556,6 +599,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   let cacheFile: string = null;
   tsImportSendable = rollupShareObject?.projectConfig.tsImportSendable;
   skipOhModulesLint = rollupShareObject?.projectConfig.skipOhModulesLint;
+  enableStrictCheckOHModule = rollupShareObject?.projectConfig.enableStrictCheckOHModule;
   mixCompile = rollupShareObject?.projectConfig.mixCompile;
   if (projectConfig.xtsMode || process.env.watchMode === 'true') {
     if (projectConfig.hotReload) {
@@ -568,7 +612,8 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     MemoryMonitor.stopRecordStage(recordInfo);
     props = languageService.getProps();
   } else {
-    cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
+    cacheFile = rollupShareObject?.projectConfig?.widgetCompile === 'true' ? path.resolve(projectConfig.cachePath, '../.ts_checker_cache_widget') :
+      path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
     const [isJsonObject, cacheJsonObject]: [boolean, WholeCache | undefined] = isJsonString(cacheFile);
     const wholeCache: WholeCache = isJsonObject ? cacheJsonObject : { 'runtimeOS': projectConfig.runtimeOS, 'sdkInfo': projectConfig.sdkInfo, 'fileList': {} };
     if (wholeCache.runtimeOS === projectConfig.runtimeOS && wholeCache.sdkInfo === projectConfig.sdkInfo) {
@@ -766,7 +811,7 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], parentEvent
           if ((/\.d\.e?ts$/).test(moduleFile)) {
             generateSourceFilesInHar(moduleFile, fs.readFileSync(moduleFile, 'utf-8'), path.extname(moduleFile),
               projectConfig, projectConfig.modulePathMap);
-          } else if ((/\.e?ts$/).test(moduleFile)) {
+          } else if ((/\.e?ts$/).test(moduleFile) && !toUnixPath(moduleFile).includes('/oh_modules/')) {
             emit = undefined;
             let sourcefile = globalProgram.program.getSourceFile(moduleFile);
             if (sourcefile) {
@@ -784,8 +829,16 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], parentEvent
 }
 
 function printDeclarationDiagnostics(errorCodeLogger?: Object | undefined): void {
-  globalProgram.builderProgram.getDeclarationDiagnostics().forEach((diagnostic: ts.Diagnostic) => {
-    printDiagnostic(diagnostic, ErrorCodeModule.TSC, errorCodeLogger);
+  globalProgram.program.getSourceFiles().forEach((sourceFile: ts.SourceFile) => {
+    if ((/\.d\.e?ts$/).test(sourceFile.fileName) || (/\.js$/).test(sourceFile.fileName)) {
+      return;
+    }
+    if (toUnixPath(sourceFile.fileName).includes('/oh_modules/')) {
+      return;
+    }
+    globalProgram.builderProgram.getDeclarationDiagnostics(sourceFile).forEach((diagnostic: ts.Diagnostic) => {
+      printDiagnostic(diagnostic, ErrorCodeModule.TSC, errorCodeLogger);
+    });
   });
 }
 

@@ -28,7 +28,7 @@ export function interopTransform():Plugins {
     name: 'interop-plugin',
     parsed: parsedTransform,
     checked: checkedTransform,
-    clean() {
+    clean(): void {
         arkts.arktsGlobal.clearContext();
     },
   };
