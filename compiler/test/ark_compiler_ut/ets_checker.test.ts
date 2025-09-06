@@ -39,7 +39,8 @@ import {
   getMaxFlowDepth,
   MAX_FLOW_DEPTH_DEFAULT_VALUE,
   fileCache,
-  getFileContentWithHash
+  getFileContentWithHash,
+  areEqualArrays
 } from '../../lib/ets_checker';
 import { TS_BUILD_INFO_SUFFIX } from '../../lib/pre_define';
 import {
@@ -60,16 +61,28 @@ mocha.describe('test ets_checker file api', function () {
     mocha.after(() => {
         delete this.rollup;
         const cacheFile: string = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
+        const cacheFileWidget: string = path.resolve(projectConfig.cachePath, '../.ts_checker_cache_widget');
         if (fs.existsSync(cacheFile)) {
             fs.unlinkSync(cacheFile);
         }
+        if (fs.existsSync(cacheFileWidget)) {
+            fs.unlinkSync(cacheFileWidget);
+        }
         const tsBuildInfoFilePath: string = path.resolve(projectConfig.cachePath, '..', TS_BUILD_INFO_SUFFIX);
+        const tsBuildInfoWidgetFilePath: string = path.resolve(projectConfig.cachePath, '..', TS_BUILD_INFO_SUFFIX + '_widget');
         if (fs.existsSync(tsBuildInfoFilePath)) {
             fs.unlinkSync(tsBuildInfoFilePath);
         }
+        if (fs.existsSync(tsBuildInfoWidgetFilePath)) {
+            fs.unlinkSync(tsBuildInfoWidgetFilePath);
+        }
         const tsBuildInfoLinterFilePath: string = tsBuildInfoFilePath + '.linter';
+        const tsBuildInfoWidgetLinterFilePath: string = tsBuildInfoWidgetFilePath + '.linter';
         if (fs.existsSync(tsBuildInfoLinterFilePath)) {
             fs.unlinkSync(tsBuildInfoLinterFilePath);
+        }
+        if (fs.existsSync(tsBuildInfoWidgetLinterFilePath)) {
+            fs.unlinkSync(tsBuildInfoWidgetLinterFilePath);
         }
     });
 
@@ -204,12 +217,97 @@ mocha.describe('test ets_checker file api', function () {
     });
 });
 
+mocha.describe('test areEqualArrays function', () => {
+    // test cases for basic functions
+    mocha.it('1-1: should return true for identical arrays', () => {
+        expect(areEqualArrays(['a', 'b', 'c'], ['a', 'b', 'c'])).to.equal(true);
+    });
+
+    mocha.it('1-2: should return true for arrays with same elements in different order', () => {
+        expect(areEqualArrays(['a', 'b', 'c'], ['c', 'a', 'b'])).to.equal(true);
+    });
+
+    mocha.it('1-3: should return false for arrays with different elements', () => {
+        expect(areEqualArrays(['a', 'b', 'c'], ['a', 'b', 'd'])).to.equal(false);
+    });
+
+    mocha.it('1-4: should return false for arrays with different lengths', () => {
+        expect(areEqualArrays(['a', 'b', 'c'], ['a', 'b'])).to.equal(false);
+        expect(areEqualArrays(['a', 'b'], ['a', 'b', 'c'])).to.equal(false);
+    });
+
+    // test cases for boundary conditions
+    mocha.it('1-5: should return true for empty arrays', () => {
+        expect(areEqualArrays([], [])).to.equal(true);
+    });
+
+    mocha.it('1-6: should return false when one array is empty and other is not', () => {
+        expect(areEqualArrays([], ['a'])).to.equal(false);
+        expect(areEqualArrays(['a'], [])).to.equal(false);
+    });
+
+    // test cases for null and undefined scenarios
+    mocha.it('1-7: should return true when both arrays are undefined', () => {
+        expect(areEqualArrays(undefined, undefined)).to.equal(true);
+    });
+
+    mocha.it('1-8: should return true when both arrays are null', () => {
+        expect(areEqualArrays(null as any, null as any)).to.equal(true);
+    });
+
+    mocha.it('1-9: should return false when one array is undefined and other is not', () => {
+        expect(areEqualArrays(undefined, ['a'])).to.equal(false);
+        expect(areEqualArrays(['a'], undefined)).to.equal(false);
+    });
+
+    mocha.it('1-10: should return false when one array is null and other is not', () => {
+        expect(areEqualArrays(null as any, ['a'])).to.equal(false);
+        expect(areEqualArrays(['a'], null as any)).to.equal(false);
+    });
+
+    // test cases for duplicate elements
+    mocha.it('1-11: should handle duplicate elements correctly', () => {
+        expect(areEqualArrays(['a', 'a', 'b'], ['a', 'b', 'a'])).to.equal(true);
+        expect(areEqualArrays(['a', 'a', 'b'], ['a', 'b', 'b'])).to.equal(true);
+    });
+
+    // test case sensitivity scenarios
+    mocha.it('1-12: should be case sensitive', () => {
+        expect(areEqualArrays(['A', 'B'], ['a', 'b'])).to.equal(false);
+        expect(areEqualArrays(['A', 'B'], ['A', 'B'])).to.equal(true);
+    });
+
+    // test cases for special value scenarios
+    mocha.it('1-13: should handle special values', () => {
+        expect(areEqualArrays(['', 'null'], ['', 'null'])).to.equal(true);
+        expect(areEqualArrays(['0', '1'], ['0', '1'])).to.equal(true);
+    });
+
+    // test cases for performance
+    mocha.it('1-14: should handle large arrays efficiently', () => {
+        const largeArray1 = Array(10000).fill('item');
+        const largeArray2 = Array(10000).fill('item');
+
+        expect(areEqualArrays(largeArray1, largeArray2)).to.equal(true);
+    });
+
+    // test cases for the edge condition
+    mocha.it('1-15: should return false for arrays with same length but different content', () => {
+        expect(areEqualArrays(['a', 'b'], ['a', 'c'])).to.equal(false);
+    });
+
+    mocha.it('1-16: should return true for single element arrays', () => {
+        expect(areEqualArrays(['a'], ['a'])).to.equal(true);
+        expect(areEqualArrays(['a'], ['b'])).to.equal(false);
+    });
+  });
+
 mocha.describe('getMaxFlowDepth', () => { 
     mocha.it('1-1: test should return the default value when maxFlowDepth is undefined', () => {
         const result = getMaxFlowDepth();
         expect(result).to.equal(MAX_FLOW_DEPTH_DEFAULT_VALUE);
     });
-  
+
     mocha.it('1-2: test should return the default value and log a warning when maxFlowDepth is less than the minimum valid value', () => {
         const invalidMaxFlowDepth = 1999;
         projectConfig.projectArkOption = {
@@ -219,7 +317,7 @@ mocha.describe('getMaxFlowDepth', () => {
         }
         const result = getMaxFlowDepth();
         expect(result).to.equal(MAX_FLOW_DEPTH_DEFAULT_VALUE);
-      });
+    });
 
     mocha.it('1-3: test should return the value of maxFlowDepth when it is 2000 within the valid range', () => {
         const validMaxFlowDepth = 2000;
@@ -231,7 +329,7 @@ mocha.describe('getMaxFlowDepth', () => {
         const result = getMaxFlowDepth();
         expect(result).to.equal(validMaxFlowDepth);
     });
-  
+
     mocha.it('1-4: test should return the value of maxFlowDepth when it is 3000 within the valid range', () => {
         const validMaxFlowDepth = 3000;
         projectConfig.projectArkOption = {
@@ -253,7 +351,7 @@ mocha.describe('getMaxFlowDepth', () => {
         const result = getMaxFlowDepth();
         expect(result).to.equal(validMaxFlowDepth);
     });
-  
+
     mocha.it('1-6: test should return the default value and log a warning when maxFlowDepth is greater than the maximum valid value', () => {
         const invalidMaxFlowDepth = 65536;
         projectConfig.projectArkOption = {

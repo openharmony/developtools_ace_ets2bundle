@@ -279,10 +279,13 @@ export const UT_VALIDATE_PAGES: string[] = [
 
   'Decorators/process_ui_syntax/EntryDecoParam',
   'Decorators/process_ui_syntax/ExtendOneChild',
+  'Decorators/process_ui_syntax/ExtendInnerComponents',
+  'Decorators/process_ui_syntax/ExtendUISyntax',
   'Decorators/process_ui_syntax/NoSrc',
   'Decorators/process_ui_syntax/NotSupportResrcParam',
   'Decorators/process_ui_syntax/NotSupportResrcType',
   'Decorators/process_ui_syntax/StylesNoParam',
+  'Decorators/process_ui_syntax/StylesUISyntax',
   'Decorators/process_ui_syntax/UnknownSrc',
   'Decorators/process_ui_syntax/UnknownSrcName',
   'Decorators/process_ui_syntax/UnknownSrcType',

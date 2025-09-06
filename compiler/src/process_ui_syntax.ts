@@ -80,7 +80,8 @@ import {
   PAGE_FULL_PATH,
   LENGTH,
   PUV2_VIEW_BASE,
-  CONTEXT_STACK
+  CONTEXT_STACK,
+  CHECK_COMPONENT_EXTEND_DECORATOR
 } from './pre_define';
 import {
   componentInfo,
@@ -131,7 +132,8 @@ import {
   GLOBAL_STYLE_FUNCTION,
   INTERFACE_NODE_SET,
   ID_ATTRS,
-  GLOBAL_CUSTOM_BUILDER_METHOD
+  GLOBAL_CUSTOM_BUILDER_METHOD,
+  INNER_COMPONENT_NAMES
 } from './component_map';
 import {
   resources,
@@ -171,12 +173,12 @@ import {
   createAndStartEvent,
   stopEvent
 } from './performance';
+import parseIntent from './userIntents_parser/parseUserIntents';
 
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
-import parseIntent from './userIntents_parser/parseUserIntents';
 
 export function processUISyntax(program: ts.Program, ut = false,
   parentEvent?: CompileEvent, filePath: string = '', share: object = null, metaInfo: Object = {}): Function {
@@ -354,6 +356,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           storedFileInfo.processBuilder = false;
           storedFileInfo.processGlobalBuilder = false;
         } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
+          parseStylesNode(node, transformLog.errors);
           if (node.parameters.length === 0) {
             node = undefined;
           } else {
@@ -747,7 +750,7 @@ export function processResourceData(node: ts.CallExpression, filePath: string,
     const resourceData: string[] = (node.arguments[0] as ts.StringLiteral).text.trim().split('.');
     const isResourceModule: boolean = resourceData.length && /^\[.*\]$/g.test(resourceData[0]);
     if (node.expression.getText() === RESOURCE_RAWFILE) {
-      isResourcefile(node, previewLog, isResourceModule, isTemplateString, isCorrectResources);
+      isResourcefile(node, previewLog, isResourceModule, isTemplateString, isCorrectResources, filePath);
       if (isCorrectResources.booleanValue) {
         resourcePreviewMessage(previewLog);
         return createResourceParamWithVariable(node, -1, RESOURCE_TYPE.rawfile);
@@ -815,7 +818,7 @@ function getResourceDataNode(node: ts.CallExpression, previewLog: {isAccelerateP
 }
 
 function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, isResourceModule: boolean,
-  isTemplateString: boolean, isCorrectResources: isCorrectResourcesType): void {
+  isTemplateString: boolean, isCorrectResources: isCorrectResourcesType, filePath: string): void {
   if (!isResourceModule && process.env.rawFileResource && !storedFileInfo.resourcesArr.has(node.arguments[0].text) &&
     !previewLog.isAcceleratePreview && process.env.compileMode === 'moduleJson') {
     isTemplateString && (isCorrectResources.booleanValue = true);
@@ -825,6 +828,11 @@ function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePrevie
       pos: node.getStart(),
       code: '10904333'
     });
+  } else if (!isResourceModule && process.env.rawFileResource) {
+    if (!storedFileInfo.resourcesForFiles.has(filePath)) {
+      storedFileInfo.resourcesForFiles.set(filePath, []);
+    }
+    storedFileInfo.resourcesForFiles.get(filePath).push(node.arguments[0].text);
   }
 }
 
@@ -1024,6 +1032,7 @@ export function processAnimateToOrImmediately(node: ts.CallExpression): ts.CallE
 function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
   decoratorName: string): ts.FunctionDeclaration {
   const componentName: string = isExtendFunction(node, { decoratorName: '', componentName: '' }, true);
+  checkExtendNode(node, componentName, log);
   if (componentName && node.body && !node.body.statements.length && decoratorName === COMPONENT_EXTEND_DECORATOR) {
     const statementArray: ts.Statement[] = [];
     const bodynode: ts.Block = ts.visitEachChild(node.body, traverseExtendExpression, contextGlobal);
@@ -1277,9 +1286,83 @@ function parseExtendNode(node: ts.CallExpression, extendResult: ExtendResult, ch
         code: '10905108'
       });
     }
+    if (checkArguments && CHECK_EXTEND_DECORATORS.includes(extendResult.decoratorName) &&
+      node.arguments && node.arguments.length === 1 && ts.isIdentifier(node.arguments[0]) &&
+      !INNER_COMPONENT_NAMES.has(node.arguments[0].getText())) {
+      transformLog.errors.push({
+        type: LogType.WARN,
+        message: `'${node.arguments[0].getText()}' parameter cannot be` +
+          ` passed in the '@${extendResult.decoratorName}' decorator.`,
+        pos: node.getStart()
+      });
+    }
   }
   if (node.arguments.length && ts.isIdentifier(node.arguments[0])) {
     extendResult.componentName = node.arguments[0].escapedText.toString();
+  }
+}
+
+function checkExtendNode(node: ts.FunctionDeclaration, componentName: string,
+  log: LogInfo[]): void {
+  const componentInstance: string = `${componentName}Instance`;
+  if (node.body && ts.isBlock(node.body) && node.body.statements &&
+    node.body.statements.length > 1) {
+    validateUIFunctionFormat(log, node.body.statements[0]);
+    return;
+  }
+  if (node.body && ts.isBlock(node.body) && node.body.statements &&
+    node.body.statements.length === 1 && ts.isExpressionStatement(node.body.statements[0])) {
+    !validateComponentInstance(node.body.statements[0], componentInstance) &&
+      validateUIFunctionFormat(log, node.body.statements[0]);
+    return;
+  }
+  if (node.body && ts.isBlock(node.body) && node.body.statements &&
+    node.body.statements.length === 1 && !ts.isExpressionStatement(node.body.statements[0])) {
+    validateUIFunctionFormat(log, node.body.statements[0]);
+    return;
+  }
+}
+
+function validateComponentInstance(node: ts.ExpressionStatement, targetInstanceName: string): boolean {
+  if (!ts.isCallExpression(node.expression)) {
+    return false;
+  }
+  const instanceName: string = findInstanceIdentifier(node.expression);
+  return instanceName === targetInstanceName;
+}
+
+function findInstanceIdentifier(node: ts.CallExpression): string {
+  let instanceName: string = '';
+  if (!ts.isPropertyAccessExpression(node.expression)) {
+    return instanceName;
+  }
+  const newNode: ts.PropertyAccessExpression = node.expression;
+  if (ts.isIdentifier(newNode.expression)) {
+    instanceName = newNode.expression.escapedText.toString();
+    return instanceName;
+  } else if (ts.isCallExpression(newNode.expression)) {
+    instanceName = findInstanceIdentifier(newNode.expression);
+  }
+  return instanceName;
+}
+
+function validateUIFunctionFormat(log: LogInfo[], block: ts.Statement): void {
+  log.push({
+    message: `Only UI component syntax can be written here.`,
+    type: LogType.WARN,
+    pos: block.getStart()
+  });
+}
+
+export function parseStylesNode(node: ts.FunctionDeclaration | ts.MethodDeclaration, log: LogInfo[]): void {
+  const commonInstance: string = 'CommonInstance';
+  if (node.body && ts.isBlock(node.body) && node.body.statements && node.body.statements.length) {
+    if (node.body.statements.length === 1 && ts.isExpressionStatement(node.body.statements[0])) {
+      !validateComponentInstance(node.body.statements[0], commonInstance) &&
+        validateUIFunctionFormat(log, node.body.statements[0]);
+      return;
+    }
+    validateUIFunctionFormat(log, node.body.statements[0]);
   }
 }
 

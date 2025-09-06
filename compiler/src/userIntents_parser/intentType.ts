@@ -227,13 +227,14 @@ intentEntryInfoChecker.paramValidators = {
   executeMode(v: ts.Expression): boolean {
     return v !== undefined && v !== null && ts.isArrayLiteralExpression(v) &&
       v.elements.every(e => {
+        const enumValue: string = e?.getText().split('.').pop();
         const validModes = [
-          'insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND',
-          'insightIntent.ExecuteMode.UI_ABILITY_BACKGROUND',
-          'insightIntent.ExecuteMode.UI_EXTENSION_ABILITY',
-          'insightIntent.ExecuteMode.SERVICE_EXTENSION_ABILITY'
+          'UI_ABILITY_FOREGROUND',
+          'UI_ABILITY_BACKGROUND',
+          'UI_EXTENSION_ABILITY',
+          'SERVICE_EXTENSION_ABILITY'
         ];
-        return (ts.isNumericLiteral(e) && [0, 1, 2, 3].includes(Number(e.text))) || validModes.includes(e.getText());
+        return (ts.isNumericLiteral(e) && [0, 1, 2, 3].includes(Number(e.text))) || validModes.includes(enumValue);
       });
   },
   intentName: validateRequiredString,
