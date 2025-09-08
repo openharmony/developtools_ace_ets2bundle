@@ -402,7 +402,7 @@ export class factory {
             implementsInfo.push(factory.createClassImplements(CustomComponentNames.PAGE_LIFE_CYCLE));
         }
         if (annotations.customLayout) {
-            implementsInfo.push(factory.createClassImplements(CustomComponentNames.LAYOUT_CALLBACK));
+            implementsInfo.push(factory.createClassImplements(CustomComponentNames.LAYOUT_CALLBACKS));
         }
         return implementsInfo;
     }

@@ -50,7 +50,6 @@ import {
     DecoratorIntrinsicNames,
     DecoratorNames,
     DECORATOR_TYPE_MAP,
-    ENTRY_POINT_IMPORT_SOURCE_NAME,
     NavigationNames,
     EntryWrapperNames,
 } from '../common/predefines';
@@ -157,7 +156,7 @@ export class ComponentTransformer extends AbstractVisitor {
         if (arkts.isETSImportDeclaration(node) && !this.isEntryPointImported) {
             this.isEntryPointImported = !!findLocalImport(
                 node,
-                ENTRY_POINT_IMPORT_SOURCE_NAME,
+                CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
                 EntryWrapperNames.ENTRY_POINT_CLASS_NAME
             );
         }
@@ -172,7 +171,7 @@ export class ComponentTransformer extends AbstractVisitor {
             this.isLayoutCallbackImported = !!findLocalImport(
                 node,
                 CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
-                CustomComponentNames.LAYOUT_CALLBACK
+                CustomComponentNames.LAYOUT_CALLBACKS
             );
         }
     }
@@ -203,7 +202,7 @@ export class ComponentTransformer extends AbstractVisitor {
     }
 
     processEtsScript(node: arkts.EtsScript): arkts.EtsScript {
-        if (this.isExternal && this.externalSourceName === ENTRY_POINT_IMPORT_SOURCE_NAME) {
+        if (this.isExternal && this.externalSourceName === CUSTOM_COMPONENT_IMPORT_SOURCE_NAME) {
             const navInterface = entryFactory.createNavInterface();
             navInterface.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
             return arkts.factory.updateEtsScript(node, [...node.statements, navInterface]);
@@ -231,7 +230,7 @@ export class ComponentTransformer extends AbstractVisitor {
             updateStatements.push(
                 entryFactory.callRegisterNamedRouter(this.entryRouteName, this.projectConfig, this.program?.absName)
             );
-            this.createImportDeclaration(ENTRY_POINT_IMPORT_SOURCE_NAME, NavigationNames.NAVINTERFACE);
+            this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, NavigationNames.NAVINTERFACE);
         }
         if (updateStatements.length > 0) {
             return arkts.factory.updateEtsScript(node, [...node.statements, ...updateStatements]);
@@ -259,7 +258,7 @@ export class ComponentTransformer extends AbstractVisitor {
             );
         }
         if (!this.isLayoutCallbackImported && this.componentType.hasCustomLayout) {
-            this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.LAYOUT_CALLBACK);
+            this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.LAYOUT_CALLBACKS);
         }
     }
 
@@ -551,7 +550,7 @@ export class ComponentTransformer extends AbstractVisitor {
         }
         if (
             arkts.isClassDeclaration(newNode) &&
-            this.externalSourceName === ENTRY_POINT_IMPORT_SOURCE_NAME &&
+            this.externalSourceName === CUSTOM_COMPONENT_IMPORT_SOURCE_NAME &&
             newNode.definition?.ident?.name === EntryWrapperNames.ENTRY_POINT_CLASS_NAME
         ) {
             return this.updateEntryPoint(newNode);

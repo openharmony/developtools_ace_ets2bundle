@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import * as path from 'path';
 import { annotation, createAndInsertImportDeclaration } from '../../common/arkts-utils';
-import { ENTRY_POINT_IMPORT_SOURCE_NAME, EntryWrapperNames, NavigationNames } from '../../common/predefines';
+import { CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, EntryWrapperNames, NavigationNames } from '../../common/predefines';
 import { ProjectConfig } from '../../common/plugin-context';
 import { factory as uiFactory } from '../ui-factory';
 import { getRelativePagePath } from './utils';
@@ -264,11 +264,11 @@ export class factory {
     }
 
     /**
-     * create and insert `import { EntryPoint as EntryPoint } from "@ohos.arkui.UserView";`
+     * create and insert `import { EntryPoint as EntryPoint } from "arkui.component.customComponent";`
      * to the top of script's statements.
      */
     static createAndInsertEntryPointImport(program?: arkts.Program) {
-        const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(ENTRY_POINT_IMPORT_SOURCE_NAME);
+        const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME);
         const imported: arkts.Identifier = arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_POINT_CLASS_NAME);
         // Insert this import at the top of the script's statements.
         if (!program) {
@@ -401,7 +401,7 @@ export class factory {
     }
 
     /**
-     * generate interface NavInterface in header arkui.UserView
+     * generate interface NavInterface in header arkui.component.customComponent
      */
     static createNavInterface(): arkts.TSInterfaceDeclaration {
         return arkts.factory.createInterfaceDeclaration(
@@ -444,7 +444,7 @@ export class factory {
     }
 
     /**
-     * generate generateRegisterNamedRouter method in header arkui.UserView
+     * generate generateRegisterNamedRouter method in header arkui.component.customComponent
      */
     static generateRegisterNamedRouter(): arkts.MethodDefinition {
         const params = [
