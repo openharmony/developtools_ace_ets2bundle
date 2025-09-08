@@ -15,7 +15,7 @@
     "onAccessibility",
     "onFocusMove",
     "onWillDismiss",
-    "setForceDarkAllowed",
+    "allowForceDark",
 
     "width",
     "height",
