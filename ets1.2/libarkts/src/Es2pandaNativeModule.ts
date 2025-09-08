@@ -214,7 +214,7 @@ export class Es2pandaNativeModule {
     _ProgramCanSkipPhases(context: KNativePointer, program: KNativePointer): boolean {
         throw new Error("Not implemented")
     }
-    _GenerateTsDeclarationsFromContext(config: KPtr, outputDeclEts: String, outputEts: String, exportAll: KBoolean, isolated: KBoolean, recordFile: String): KPtr {
+    _GenerateTsDeclarationsFromContext(config: KPtr, outputDeclEts: String, outputEts: String, exportAll: KBoolean, isolated: KBoolean, recordFile: String, genAnnotations: KBoolean): KPtr {
         throw new Error("Not implemented")
     }
     _AstNodeProgram(context: KNativePointer, instance: KNativePointer): KNativePointer {

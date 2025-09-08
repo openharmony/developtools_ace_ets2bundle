@@ -353,7 +353,8 @@ export function generateTsDeclarationsFromContext(
   outputEts: string,
   exportAll: boolean,
   isolated: boolean,
-  recordFile: string
+  recordFile: string,
+  genAnnotations: boolean
 ): KInt {
   return global.es2panda._GenerateTsDeclarationsFromContext(
     global.context,
@@ -361,7 +362,8 @@ export function generateTsDeclarationsFromContext(
     passString(outputEts),
     exportAll,
     isolated,
-    recordFile
+    recordFile,
+    genAnnotations
   );
 }
 
