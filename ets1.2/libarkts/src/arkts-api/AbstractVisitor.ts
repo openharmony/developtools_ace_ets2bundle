@@ -13,38 +13,33 @@
  * limitations under the License.
  */
 
-import { AstNode } from "./peers/AstNode"
-import { visitEachChild } from "./visitor"
-import { Program } from "../../generated"
+import { AstNode } from './peers/AstNode';
+import { visitEachChild } from './visitor';
+import { Program } from '../../generated';
 
 export interface VisitorOptions {
-    program?: Program
+    program?: Program;
 }
 
 export abstract class AbstractVisitor {
-    public program?: Program
+    public program?: Program;
 
     constructor(options?: VisitorOptions) {
         this.program = options?.program;
     }
 
-    indentation = 0
+    indentation = 0;
 
     withIndentation<T>(exec: () => T): T {
-        this.indentation++
-        const result = exec()
-        this.indentation--
-        return result
+        this.indentation++;
+        const result = exec();
+        this.indentation--;
+        return result;
     }
 
-    abstract visitor(node: AstNode, options?: object): AstNode
+    abstract visitor(node: AstNode, options?: object): AstNode;
 
     visitEachChild(node: AstNode, options?: object): AstNode {
-        return this.withIndentation(() =>
-            visitEachChild(
-                node,
-                it => this.visitor(it, options)
-            )
-        )
+        return this.withIndentation(() => visitEachChild(node, (it) => this.visitor(it, options)));
     }
 }

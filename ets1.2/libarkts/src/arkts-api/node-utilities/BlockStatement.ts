@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-import { BlockStatement, Statement } from "../../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
+import { BlockStatement, Statement } from '../../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
 
 export function updateBlockStatement(original: BlockStatement, statements: readonly Statement[]): BlockStatement {
     if (isSameNativeObject(statements, original.statements)) {
-        return original
+        return original;
     }
-    return updateNodeByNode(BlockStatement.createBlockStatement(statements), original)
+    return updateNodeByNode(BlockStatement.createBlockStatement(statements), original);
 }

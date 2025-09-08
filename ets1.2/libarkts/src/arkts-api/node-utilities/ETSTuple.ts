@@ -13,19 +13,13 @@
  * limitations under the License.
  */
 
-import { ETSTuple, TypeNode } from "../../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
+import { ETSTuple, TypeNode } from '../../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
 
-export function updateETSTuple(
-    original: ETSTuple,
-    typeList: readonly TypeNode[]
-): ETSTuple {
+export function updateETSTuple(original: ETSTuple, typeList: readonly TypeNode[]): ETSTuple {
     if (isSameNativeObject(typeList, original.tupleTypeAnnotationsList)) {
-        return original
+        return original;
     }
-    return updateNodeByNode(
-        ETSTuple.create2ETSTuple(typeList),
-        original
-    )
+    return updateNodeByNode(ETSTuple.create2ETSTuple(typeList), original);
 }

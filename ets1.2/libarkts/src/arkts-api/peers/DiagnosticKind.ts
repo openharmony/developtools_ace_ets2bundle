@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-import { KNativePointer } from "@koalaui/interop";
-import { ArktsObject } from "./ArktsObject"
+import { KNativePointer } from '@koalaui/interop';
+import { ArktsObject } from './ArktsObject';
 
 export class DiagnosticKind extends ArktsObject {
-  constructor(peer: KNativePointer) {
-    super(peer);
-  }
+    constructor(peer: KNativePointer) {
+        super(peer);
+    }
 }

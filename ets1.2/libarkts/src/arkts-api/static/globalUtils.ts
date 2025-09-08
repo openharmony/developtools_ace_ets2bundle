@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-import { KNativePointer } from "@koalaui/interop";
-import { Context } from "../peers/Context";
-import { global } from "./global";
-import { NodeCache } from "../node-cache"
+import { KNativePointer } from '@koalaui/interop';
+import { Context } from '../peers/Context';
+import { global } from './global';
+import { NodeCache } from '../node-cache';
 
 export function getOrUpdateGlobalContext(peer: KNativePointer): Context {
     if (!global.compilerContext || global.context !== peer) {

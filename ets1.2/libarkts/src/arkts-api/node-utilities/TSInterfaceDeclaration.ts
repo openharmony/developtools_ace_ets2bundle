@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-import { TSInterfaceDeclaration, TSInterfaceHeritage } from "../../../generated"
-import { Es2pandaLanguage, Es2pandaModifierFlags, } from "../../../generated/Es2pandaEnums"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
-import { AstNode } from "../peers/AstNode"
+import { TSInterfaceDeclaration, TSInterfaceHeritage } from '../../../generated';
+import { Es2pandaLanguage, Es2pandaModifierFlags } from '../../../generated/Es2pandaEnums';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
+import { AstNode } from '../peers/AstNode';
 
 export function createTSInterfaceDeclaration(
     _extends: readonly TSInterfaceHeritage[],
@@ -26,7 +26,7 @@ export function createTSInterfaceDeclaration(
     body: AstNode | undefined,
     isStatic: boolean,
     isExternal: boolean,
-    modifierFlags?: Es2pandaModifierFlags,
+    modifierFlags?: Es2pandaModifierFlags
 ): TSInterfaceDeclaration {
     return TSInterfaceDeclaration.create1TSInterfaceDeclaration(
         _extends,
@@ -36,8 +36,8 @@ export function createTSInterfaceDeclaration(
         isStatic,
         isExternal,
         Es2pandaLanguage.LANGUAGE_ETS,
-        modifierFlags,
-    )
+        modifierFlags
+    );
 }
 
 export function updateTSInterfaceDeclaration(
@@ -48,28 +48,21 @@ export function updateTSInterfaceDeclaration(
     body: AstNode | undefined,
     isStatic: boolean,
     isExternal: boolean,
-    modifierFlags?: Es2pandaModifierFlags,
+    modifierFlags?: Es2pandaModifierFlags
 ): TSInterfaceDeclaration {
-    if (isSameNativeObject(_extends, original.extends)
-        && isSameNativeObject(id, original.id)
-        && isSameNativeObject(typeParams, original.typeParams)
-        && isSameNativeObject(body, original.body)
-        && isSameNativeObject(isStatic, original.isStatic)
-        && isSameNativeObject(isExternal, original.isFromExternal)
-        && isSameNativeObject(modifierFlags, original.modifierFlags)
+    if (
+        isSameNativeObject(_extends, original.extends) &&
+        isSameNativeObject(id, original.id) &&
+        isSameNativeObject(typeParams, original.typeParams) &&
+        isSameNativeObject(body, original.body) &&
+        isSameNativeObject(isStatic, original.isStatic) &&
+        isSameNativeObject(isExternal, original.isFromExternal) &&
+        isSameNativeObject(modifierFlags, original.modifierFlags)
     ) {
-        return original
+        return original;
     }
     return updateNodeByNode(
-        createTSInterfaceDeclaration(
-            _extends,
-            id,
-            typeParams,
-            body,
-            isStatic,
-            isExternal,
-            modifierFlags,
-        ),
+        createTSInterfaceDeclaration(_extends, id, typeParams, body, isStatic, isExternal, modifierFlags),
         original
-    )
+    );
 }

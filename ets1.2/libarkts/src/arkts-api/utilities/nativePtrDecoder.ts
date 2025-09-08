@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { int32 } from "@koalaui/common"
+import { int32 } from '@koalaui/common';
 import {
     Access,
     ArrayDecoder,
@@ -22,49 +22,49 @@ import {
     nullptr,
     pointer,
     providePlatformDefinedData,
-    withByteArray
-} from "@koalaui/interop"
-import { global } from "../static/global"
+    withByteArray,
+} from '@koalaui/interop';
+import { global } from '../static/global';
 
 class NativeString extends NativeStringBase {
     constructor(ptr: pointer) {
-        super(ptr)
+        super(ptr);
     }
     protected bytesLength(): int32 {
-        return global.interop._StringLength(this.ptr)
+        return global.interop._StringLength(this.ptr);
     }
     protected getData(data: Uint8Array): void {
         withByteArray(data, Access.WRITE, (dataPtr: pointer) => {
-            global.interop._StringData(this.ptr, dataPtr, data.length)
-        })
+            global.interop._StringData(this.ptr, dataPtr, data.length);
+        });
     }
     close(): void {
-        global.interop._InvokeFinalizer(this.ptr, global.interop._GetStringFinalizer())
-        this.ptr = nullptr
+        global.interop._InvokeFinalizer(this.ptr, global.interop._GetStringFinalizer());
+        this.ptr = nullptr;
     }
 }
 
 providePlatformDefinedData({
     nativeString(ptr: pointer): NativeStringBase {
-        return new NativeString(ptr)
+        return new NativeString(ptr);
     },
     nativeStringArrayDecoder(): ArrayDecoder<NativeStringBase> {
-        throw new Error("Not yet implemented")
+        throw new Error('Not yet implemented');
     },
     callbackRegistry(): CallbackRegistry | undefined {
-        return undefined
-    }
-})
+        return undefined;
+    },
+});
 
 export class NativePtrDecoder extends ArrayDecoder<pointer> {
     getArraySize(blob: pointer) {
-        return global.interop._GetPtrVectorSize(blob)
+        return global.interop._GetPtrVectorSize(blob);
     }
     disposeArray(blob: pointer): void {
         // Improve:
     }
     getArrayElement(blob: pointer, index: int32): pointer {
-        return global.interop._GetPtrVectorElement(blob, index)
+        return global.interop._GetPtrVectorElement(blob, index);
     }
 }
 
@@ -75,12 +75,12 @@ export class OptimizedNativePtrDecoder {
         // Improve:
     }
     decode(blob: pointer): BigUint64Array {
-        return global.interop._GetPtrVector(blob)
+        return global.interop._GetPtrVector(blob);
     }
     decodeAndCopy(blob: pointer): Array<pointer> {
-        const data = global.interop._GetPtrVector(blob)
-        const result = Array.from(data)
-        this.disposeArray(blob)
-        return result
+        const data = global.interop._GetPtrVector(blob);
+        const result = Array.from(data);
+        this.disposeArray(blob);
+        return result;
     }
 }

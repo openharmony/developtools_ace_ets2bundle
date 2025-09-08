@@ -13,33 +13,22 @@
  * limitations under the License.
  */
 
-import { global } from "../static/global"
-import { NumberLiteral } from "../../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
-import { Es2pandaAstNodeType } from "../../../generated/Es2pandaEnums"
+import { global } from '../static/global';
+import { NumberLiteral } from '../../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
+import { Es2pandaAstNodeType } from '../../../generated/Es2pandaEnums';
 
-export function createNumberLiteral(
-    value: number
-): NumberLiteral {
+export function createNumberLiteral(value: number): NumberLiteral {
     return new NumberLiteral(
-        global.es2panda._CreateNumberLiteral(
-            global.context,
-            value
-        ),
-        Es2pandaAstNodeType.AST_NODE_TYPE_NUMBER_LITERAL,
-    )
+        global.es2panda._CreateNumberLiteral(global.context, value),
+        Es2pandaAstNodeType.AST_NODE_TYPE_NUMBER_LITERAL
+    );
 }
 
-export function updateNumberLiteral(
-    original: NumberLiteral,
-    value: number
-): NumberLiteral {
+export function updateNumberLiteral(original: NumberLiteral, value: number): NumberLiteral {
     if (isSameNativeObject(value.toString(), original.str)) {
-        return original
+        return original;
     }
-    return updateNodeByNode(
-        createNumberLiteral(value),
-        original
-    )
+    return updateNodeByNode(createNumberLiteral(value), original);
 }

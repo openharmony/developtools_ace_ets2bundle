@@ -13,95 +13,94 @@
  * limitations under the License.
  */
 
-import { throwError } from "../../utils"
-import { KNativePointer, nullptr } from "@koalaui/interop"
-import { initEs2panda, Es2pandaNativeModule, initGeneratedEs2panda } from "../../Es2pandaNativeModule"
-import { Es2pandaNativeModule as GeneratedEs2pandaNativeModule } from "../../../generated/Es2pandaNativeModule"
-import { initInterop, InteropNativeModule } from "../../InteropNativeModule"
-import { Context } from "../peers/Context"
-import { Profiler } from "./profiler"
-import { ArkTsConfig } from "../../../generated"
+import { throwError } from '../../utils';
+import { KNativePointer, nullptr } from '@koalaui/interop';
+import { initEs2panda, Es2pandaNativeModule, initGeneratedEs2panda } from '../../Es2pandaNativeModule';
+import { Es2pandaNativeModule as GeneratedEs2pandaNativeModule } from '../../../generated/Es2pandaNativeModule';
+import { initInterop, InteropNativeModule } from '../../InteropNativeModule';
+import { Context } from '../peers/Context';
+import { Profiler } from './profiler';
+import { ArkTsConfig } from '../../../generated';
 import { Config } from '../peers/Config';
 
 export class UpdateTracker {
-    stack: boolean[] = []
+    stack: boolean[] = [];
 
     push() {
-        this.stack.push(false)
+        this.stack.push(false);
     }
 
     update() {
-        this.stack[this.stack.length - 1] = true
+        this.stack[this.stack.length - 1] = true;
     }
 
     check() {
-        return this.stack.pop()
+        return this.stack.pop();
     }
 }
 
 export class global {
-    public static filePath: string = "./plugins/input/main.ets"
+    public static filePath: string = './plugins/input/main.ets';
 
-    public static arktsconfig?: ArkTsConfig
+    public static arktsconfig?: ArkTsConfig;
     public static configObj?: Config;
 
-    private static _config?: KNativePointer
+    private static _config?: KNativePointer;
     public static set config(config: KNativePointer) {
-        global._config = config
+        global._config = config;
         global.configObj = new Config(global._config);
     }
     public static get config(): KNativePointer {
-        return global._config ?? throwError('Global.config not initialized')
+        return global._config ?? throwError('Global.config not initialized');
     }
     public static configIsInitialized(): boolean {
-        return global._config !== undefined && global._config !== nullptr
+        return global._config !== undefined && global._config !== nullptr;
     }
     public static resetConfig(): void {
-        global._config = undefined
+        global._config = undefined;
         global.configObj = undefined;
     }
 
     // Improve: rename to contextPeer
     public static get context(): KNativePointer {
-        return global.compilerContext?.peer ?? throwError('Global.context not initialized')
+        return global.compilerContext?.peer ?? throwError('Global.context not initialized');
     }
 
     // Improve: rename to context when the pointer valued one is eliminated
-    public static compilerContext: Context | undefined
-    public static isContextGenerateAbcForExternalSourceFiles: boolean = false
+    public static compilerContext: Context | undefined;
+    public static isContextGenerateAbcForExternalSourceFiles: boolean = false;
 
-    private static _es2panda: Es2pandaNativeModule | undefined = undefined
+    private static _es2panda: Es2pandaNativeModule | undefined = undefined;
     public static get es2panda(): Es2pandaNativeModule {
         if (this._es2panda === undefined) {
-            this._es2panda = initEs2panda()
+            this._es2panda = initEs2panda();
         }
-        return this._es2panda
+        return this._es2panda;
     }
 
-    private static _generatedEs2panda: GeneratedEs2pandaNativeModule | undefined = undefined
+    private static _generatedEs2panda: GeneratedEs2pandaNativeModule | undefined = undefined;
     public static get generatedEs2panda(): GeneratedEs2pandaNativeModule {
         if (this._generatedEs2panda === undefined) {
-            this._generatedEs2panda = initGeneratedEs2panda()
+            this._generatedEs2panda = initGeneratedEs2panda();
         }
-        return this._generatedEs2panda
+        return this._generatedEs2panda;
     }
 
-    private static _interop: InteropNativeModule | undefined = undefined
+    private static _interop: InteropNativeModule | undefined = undefined;
     public static get interop(): InteropNativeModule {
-        if (this._interop === undefined) this._interop = initInterop()
-        return this._interop
-
+        if (this._interop === undefined) this._interop = initInterop();
+        return this._interop;
     }
 
-    public static profiler = new Profiler()
+    public static profiler = new Profiler();
 
     // Check node type values during node creation
-    public static validatePeerTypes = false
+    public static validatePeerTypes = false;
 
     public static clearContext(): void {
-        global.compilerContext = undefined
+        global.compilerContext = undefined;
     }
 
     // Keep track of update info to optimize performance
-    public static updateTracker: UpdateTracker = new UpdateTracker()
+    public static updateTracker: UpdateTracker = new UpdateTracker();
 }

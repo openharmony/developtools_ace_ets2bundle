@@ -13,38 +13,41 @@
  * limitations under the License.
  */
 
-import { KNativePointer } from "@koalaui/interop"
-import { defaultFilter, listPrograms } from "./plugins"
-import { Program } from "../../generated"
+import { KNativePointer } from '@koalaui/interop';
+import { defaultFilter, listPrograms } from './plugins';
+import { Program } from '../../generated';
 
 export class ProgramProvider {
     // Improve: migrate to wrappers instead of pointers
-    seenPrograms: Set<KNativePointer> = new Set<KNativePointer>()
-    queue: Program[] = []
+    seenPrograms: Set<KNativePointer> = new Set<KNativePointer>();
+    queue: Program[] = [];
 
-    constructor(private mainProgram: Program, private readonly filter: (name: string) => boolean = defaultFilter) {
-        this.seenPrograms.add(mainProgram.peer)
-        this.queue = [mainProgram]
+    constructor(
+        private mainProgram: Program,
+        private readonly filter: (name: string) => boolean = defaultFilter
+    ) {
+        this.seenPrograms.add(mainProgram.peer);
+        this.queue = [mainProgram];
     }
 
     updateQueue() {
-        const listed = listPrograms(this.mainProgram, this.filter)
+        const listed = listPrograms(this.mainProgram, this.filter);
         for (const program of listed) {
             if (!this.seenPrograms.has(program.peer)) {
-                this.seenPrograms.add(program.peer)
-                this.queue.push(program)
+                this.seenPrograms.add(program.peer);
+                this.queue.push(program);
             }
         }
     }
 
     next(): Program | undefined {
         if (this.queue.length == 0) {
-            this.updateQueue()
+            this.updateQueue();
             if (this.queue.length == 0) {
                 // console.log("PROGRAMS:", this.seenPrograms.size)
-                return undefined
+                return undefined;
             }
         }
-        return this.queue.shift()
+        return this.queue.shift();
     }
 }

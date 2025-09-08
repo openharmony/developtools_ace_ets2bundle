@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import { AnnotatedExpression, AnnotationUsage, ETSParameterExpression, Expression, TypeNode } from "../../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
+import { AnnotatedExpression, AnnotationUsage, ETSParameterExpression, Expression, TypeNode } from '../../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
 
 export function createETSParameterExpression(
     identOrSpread: AnnotatedExpression | undefined,
@@ -23,11 +23,11 @@ export function createETSParameterExpression(
     initExpr?: Expression,
     annotations?: readonly AnnotationUsage[]
 ): ETSParameterExpression {
-    const res = ETSParameterExpression.createETSParameterExpression(identOrSpread, isOptional, annotations)
+    const res = ETSParameterExpression.createETSParameterExpression(identOrSpread, isOptional, annotations);
     if (initExpr) {
-        res.setInitializer(initExpr)
+        res.setInitializer(initExpr);
     }
-    return res
+    return res;
 }
 
 export function updateETSParameterExpression(
@@ -35,17 +35,16 @@ export function updateETSParameterExpression(
     identOrSpread: AnnotatedExpression | undefined,
     isOptional: boolean,
     initExpr?: Expression,
-    annotations?: readonly AnnotationUsage[],
+    annotations?: readonly AnnotationUsage[]
 ): ETSParameterExpression {
-    if ((isSameNativeObject(identOrSpread, original.ident) || isSameNativeObject(identOrSpread, original.restParameter))
-        && isSameNativeObject(isOptional, original.isOptional)
-        && isSameNativeObject(initExpr, original.initializer)
-        && isSameNativeObject(annotations, original.annotations)
+    if (
+        (isSameNativeObject(identOrSpread, original.ident) ||
+            isSameNativeObject(identOrSpread, original.restParameter)) &&
+        isSameNativeObject(isOptional, original.isOptional) &&
+        isSameNativeObject(initExpr, original.initializer) &&
+        isSameNativeObject(annotations, original.annotations)
     ) {
-        return original
+        return original;
     }
-    return updateNodeByNode(
-        createETSParameterExpression(identOrSpread, isOptional, initExpr, annotations),
-        original
-    )
+    return updateNodeByNode(createETSParameterExpression(identOrSpread, isOptional, initExpr, annotations), original);
 }

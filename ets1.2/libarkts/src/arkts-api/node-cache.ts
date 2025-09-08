@@ -13,31 +13,31 @@
  * limitations under the License.
  */
 
-import { KNativePointer } from "@koalaui/interop"
-import { AstNode } from "./peers/AstNode"
+import { KNativePointer } from '@koalaui/interop';
+import { AstNode } from './peers/AstNode';
 
 export class NodeCache {
-    private static cache = new Map<KNativePointer, AstNode>()
+    private static cache = new Map<KNativePointer, AstNode>();
 
     static cached<T extends AstNode>(pointer: KNativePointer, factory: (pointer: KNativePointer) => AstNode): T {
-        const cached = NodeCache.cache.get(pointer)
+        const cached = NodeCache.cache.get(pointer);
         if (cached !== undefined) {
-            return cached as T
+            return cached as T;
         }
-        const node = factory(pointer)
-        NodeCache.addToCache(pointer, node)
-        return node as T
+        const node = factory(pointer);
+        NodeCache.addToCache(pointer, node);
+        return node as T;
     }
 
     static get<T extends AstNode>(pointer: KNativePointer): T | undefined {
-        return NodeCache.cache.get(pointer) as T | undefined
+        return NodeCache.cache.get(pointer) as T | undefined;
     }
 
     public static addToCache(pointer: KNativePointer, node: AstNode) {
-        NodeCache.cache.set(pointer, node)
+        NodeCache.cache.set(pointer, node);
     }
 
     public static clear(): void {
-        NodeCache.cache.clear()
+        NodeCache.cache.clear();
     }
 }

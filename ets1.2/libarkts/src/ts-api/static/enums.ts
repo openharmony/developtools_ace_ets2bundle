@@ -13,6 +13,6 @@
  * limitations under the License.
  */
 
-export { SyntaxKind } from "@koalaui/ets-tsc"
-export { TokenSyntaxKind } from "@koalaui/ets-tsc"
-export { NodeFlags } from "@koalaui/ets-tsc"
+export { SyntaxKind } from '@koalaui/ets-tsc';
+export { TokenSyntaxKind } from '@koalaui/ets-tsc';
+export { NodeFlags } from '@koalaui/ets-tsc';

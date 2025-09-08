@@ -13,33 +13,28 @@
  * limitations under the License.
  */
 
-import { ETSModule, Identifier, Program, Statement } from "../../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
-import { Es2pandaLanguage, Es2pandaModuleFlag } from "../../../generated/Es2pandaEnums"
+import { ETSModule, Identifier, Program, Statement } from '../../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
+import { Es2pandaLanguage, Es2pandaModuleFlag } from '../../../generated/Es2pandaEnums';
 
 export function updateETSModule(
     original: ETSModule,
     statementList: readonly Statement[],
     ident: Identifier | undefined,
     flag: Es2pandaModuleFlag,
-    program?: Program,
+    program?: Program
 ) {
-    if (isSameNativeObject(statementList, original.statements)
-        && isSameNativeObject(ident, original.ident)
-        && isSameNativeObject(flag, original.getNamespaceFlag())
-        && isSameNativeObject(program, original.program)
+    if (
+        isSameNativeObject(statementList, original.statements) &&
+        isSameNativeObject(ident, original.ident) &&
+        isSameNativeObject(flag, original.getNamespaceFlag()) &&
+        isSameNativeObject(program, original.program)
     ) {
-        return original
+        return original;
     }
     return updateNodeByNode(
-        ETSModule.create1ETSModule(
-            statementList,
-            ident,
-            flag,
-            Es2pandaLanguage.LANGUAGE_ETS,
-            program,
-        ),
-        original,
-    )
+        ETSModule.create1ETSModule(statementList, ident, flag, Es2pandaLanguage.LANGUAGE_ETS, program),
+        original
+    );
 }

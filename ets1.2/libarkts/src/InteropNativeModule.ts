@@ -17,40 +17,40 @@ import {
     KNativePointer as KPtr,
     KInt,
     registerNativeModuleLibraryName,
-    loadNativeModuleLibrary
-} from "@koalaui/interop"
-import { findNativeModule } from "./Es2pandaNativeModule"
+    loadNativeModuleLibrary,
+} from '@koalaui/interop';
+import { findNativeModule } from './Es2pandaNativeModule';
 
 export class InteropNativeModule {
     _StringLength(ptr: KPtr): KInt {
-        throw new Error("Not implemented")
+        throw new Error('Not implemented');
     }
     _StringData(ptr: KPtr, buffer: KPtr, length: KInt): void {
-        throw new Error("Not implemented")
+        throw new Error('Not implemented');
     }
     _GetStringFinalizer(): KPtr {
-        throw new Error("Not implemented")
+        throw new Error('Not implemented');
     }
-    _RawUtf8ToString(ptr: KPtr): string  {
-        throw new Error("Not implemented")
+    _RawUtf8ToString(ptr: KPtr): string {
+        throw new Error('Not implemented');
     }
     _InvokeFinalizer(ptr: KPtr, finalizer: KPtr): void {
-        throw new Error("Not implemented")
+        throw new Error('Not implemented');
     }
     _GetPtrVector(ptr: KPtr): BigUint64Array {
-        throw new Error("Not implemented")
+        throw new Error('Not implemented');
     }
     _GetPtrVectorSize(ptr: KPtr): KInt {
-        throw new Error("Not implemented")
+        throw new Error('Not implemented');
     }
     _GetPtrVectorElement(ptr: KPtr, index: KInt): KPtr {
-        throw new Error("Not implemented")
+        throw new Error('Not implemented');
     }
 }
 
 export function initInterop(): InteropNativeModule {
-    registerNativeModuleLibraryName("InteropNativeModule", findNativeModule())
-    const instance = new InteropNativeModule()
-    loadNativeModuleLibrary("InteropNativeModule", instance)
-    return instance
+    registerNativeModuleLibraryName('InteropNativeModule', findNativeModule());
+    const instance = new InteropNativeModule();
+    loadNativeModuleLibrary('InteropNativeModule', instance);
+    return instance;
 }

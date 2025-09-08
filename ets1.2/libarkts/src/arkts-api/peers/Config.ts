@@ -13,46 +13,40 @@
  * limitations under the License.
  */
 
-import { ArktsObject } from "./ArktsObject"
-import { global } from "../static/global"
-import { passStringArray } from "../utilities/private"
-import { KNativePointer, nullptr } from "@koalaui/interop"
-import { Es2pandaCompilationMode } from "../../../generated/Es2pandaEnums"
+import { ArktsObject } from './ArktsObject';
+import { global } from '../static/global';
+import { passStringArray } from '../utilities/private';
+import { KNativePointer, nullptr } from '@koalaui/interop';
+import { Es2pandaCompilationMode } from '../../../generated/Es2pandaEnums';
 
 export class Config extends ArktsObject {
     constructor(peer: KNativePointer) {
-        super(peer)
+        super(peer);
         // Improve: wait for getter from api
-        this.path = ``
+        this.path = ``;
     }
 
-    static create(
-        input: readonly string[]
-    ): Config {
-        return new Config(
-            global.es2panda._CreateConfig(input.length, passStringArray(input))
-        )
+    static create(input: readonly string[]): Config {
+        return new Config(global.es2panda._CreateConfig(input.length, passStringArray(input)));
     }
 
     static createDefault(): Config {
         if (global.configIsInitialized()) {
-            console.warn(`Config already initialized`)
-            return new Config(
-                global.config
-            )
+            console.warn(`Config already initialized`);
+            return new Config(global.config);
         }
         return new Config(
             global.es2panda._CreateConfig(
                 4,
-                passStringArray(["", "--arktsconfig", "./arktsconfig.json", global.filePath])
+                passStringArray(['', '--arktsconfig', './arktsconfig.json', global.filePath])
             )
-        )
+        );
     }
 
     destroy() {
         if (this.peer != nullptr) {
-            global.es2panda._DestroyConfig(this.peer)
-            this.peer = nullptr
+            global.es2panda._DestroyConfig(this.peer);
+            this.peer = nullptr;
         }
     }
 
@@ -60,6 +54,5 @@ export class Config extends ArktsObject {
         return global.es2panda._GetCompilationMode(this.peer);
     }
 
-
-    readonly path: string
+    readonly path: string;
 }

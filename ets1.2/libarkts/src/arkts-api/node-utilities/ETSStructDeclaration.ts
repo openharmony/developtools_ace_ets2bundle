@@ -13,19 +13,16 @@
  * limitations under the License.
  */
 
-import { ClassDefinition, ETSStructDeclaration } from "../../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
+import { ClassDefinition, ETSStructDeclaration } from '../../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
 
 export function updateETSStructDeclaration(
     original: ETSStructDeclaration,
     def?: ClassDefinition
 ): ETSStructDeclaration {
     if (isSameNativeObject(def, original.definition)) {
-        return original
+        return original;
     }
-    return updateNodeByNode(
-        ETSStructDeclaration.createETSStructDeclaration(def),
-        original
-    )
+    return updateNodeByNode(ETSStructDeclaration.createETSStructDeclaration(def), original);
 }

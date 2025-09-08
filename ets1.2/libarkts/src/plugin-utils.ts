@@ -23,102 +23,114 @@ import {
     ProgramProvider,
     CompilationOptions,
     dumpProgramSrcFormatted,
-} from "./arkts-api"
-import { Tracer } from "./tracer"
+} from './arkts-api';
+import { Tracer } from './tracer';
 
 export interface RunTransformerHooks {
-    onProgramTransformStart?(options: CompilationOptions, program: Program): void
-    onProgramTransformEnd?(options: CompilationOptions, program: Program): void
+    onProgramTransformStart?(options: CompilationOptions, program: Program): void;
+    onProgramTransformEnd?(options: CompilationOptions, program: Program): void;
 }
 
 class ASTCache {
-    processedPrograms = new Set<string>()
-    constructor() { }
+    processedPrograms = new Set<string>();
+    constructor() {}
     find(program: Program): boolean {
-        return this.processedPrograms.has(program.absoluteName)
+        return this.processedPrograms.has(program.absoluteName);
     }
     update(program: Program) {
-        this.processedPrograms.add(program.absoluteName)
+        this.processedPrograms.add(program.absoluteName);
     }
 }
 
 export class DumpingHooks implements RunTransformerHooks {
-    constructor(private state: Es2pandaContextState, private pluginName: string, private dumpAst: boolean = false) {
+    constructor(
+        private state: Es2pandaContextState,
+        private pluginName: string,
+        private dumpAst: boolean = false
+    ) {
         if (process.env.KOALA_DUMP_PLUGIN_AST) {
-            this.dumpAst = true
+            this.dumpAst = true;
         }
     }
     onProgramTransformStart(options: CompilationOptions, program: Program) {
         if (this.dumpAst) {
-            console.log(`BEFORE ${this.pluginName}:`)
-            dumpProgramSrcFormatted(program, true)
+            console.log(`BEFORE ${this.pluginName}:`);
+            dumpProgramSrcFormatted(program, true);
         }
-        if (!options.isProgramForCodegeneration) arktsGlobal.profiler.transformDepStarted()
+        if (!options.isProgramForCodegeneration) arktsGlobal.profiler.transformDepStarted();
     }
     onProgramTransformEnd(options: CompilationOptions, program: Program) {
-        if (!options.isProgramForCodegeneration) arktsGlobal.profiler.transformDepEnded(this.state, this.pluginName)
+        if (!options.isProgramForCodegeneration) arktsGlobal.profiler.transformDepEnded(this.state, this.pluginName);
         if (this.dumpAst) {
-            console.log(`AFTER ${this.pluginName}:`)
-            dumpProgramSrcFormatted(program, true)
+            console.log(`AFTER ${this.pluginName}:`);
+            dumpProgramSrcFormatted(program, true);
         }
     }
 }
 
+export function runTransformerOnProgram(
+    program: Program,
+    options: CompilationOptions,
+    transform: ProgramTransformer | undefined,
+    pluginContext: PluginContext,
+    hooks: RunTransformerHooks = {}
+) {
+    arktsGlobal.filePath = program.absoluteName;
 
-export function runTransformerOnProgram(program: Program, options: CompilationOptions, transform: ProgramTransformer | undefined, pluginContext: PluginContext, hooks: RunTransformerHooks = {}) {
-    arktsGlobal.filePath = program.absoluteName
-
-    Tracer.startProgramTracing(program)
+    Tracer.startProgramTracing(program);
 
     // Perform some additional actions before the transformation start
-    hooks.onProgramTransformStart?.(options, program)
+    hooks.onProgramTransformStart?.(options, program);
 
     // Save currently existing imports in the program
-    const importStorage = new ImportStorage(program, options.state == Es2pandaContextState.ES2PANDA_STATE_PARSED)
+    const importStorage = new ImportStorage(program, options.state == Es2pandaContextState.ES2PANDA_STATE_PARSED);
 
     // Run the plugin itself
-    transform?.(program, options, pluginContext)
+    transform?.(program, options, pluginContext);
 
     // Update internal import information based on import modification by plugin
-    importStorage.update()
+    importStorage.update();
 
     // Perform some additional actions after the transformation end
-    hooks.onProgramTransformEnd?.(options, program)
+    hooks.onProgramTransformEnd?.(options, program);
 
-    Tracer.stopProgramTracing()
+    Tracer.stopProgramTracing();
 }
 
-export function runTransformer(prog: Program, state: Es2pandaContextState, transform: ProgramTransformer | undefined, pluginContext: PluginContext, hooks: RunTransformerHooks = {}) {
+export function runTransformer(
+    prog: Program,
+    state: Es2pandaContextState,
+    transform: ProgramTransformer | undefined,
+    pluginContext: PluginContext,
+    hooks: RunTransformerHooks = {}
+) {
     // Program provider used to provide programs to transformer dynamically relative to inserted imports
-    const provider = new ProgramProvider(prog)
+    const provider = new ProgramProvider(prog);
 
     // The first program provided by program provider is the main program
-    let currentProgram = provider.next()
-    let isMainProgram = true
+    let currentProgram = provider.next();
+    let isMainProgram = true;
 
     while (currentProgram) {
         // Options passed to plugin and hooks
         const options: CompilationOptions = {
             isProgramForCodegeneration: isProgramForCodegeneration(currentProgram, isMainProgram),
             state,
-        }
+        };
 
-        runTransformerOnProgram(currentProgram, options, transform, pluginContext, hooks)
+        runTransformerOnProgram(currentProgram, options, transform, pluginContext, hooks);
 
         // The first program is always the main program
-        isMainProgram = false
+        isMainProgram = false;
 
         // Proceed to the next program
-        currentProgram = provider.next()
+        currentProgram = provider.next();
     }
 }
 
-function isProgramForCodegeneration(
-    program: Program,
-    isMainProgram: boolean,
-): boolean {
+function isProgramForCodegeneration(program: Program, isMainProgram: boolean): boolean {
     if (!arktsGlobal.isContextGenerateAbcForExternalSourceFiles) {
-        return isMainProgram
+        return isMainProgram;
     }
-    return program.isGenAbcForExternal
+    return program.isGenAbcForExternal;
 }

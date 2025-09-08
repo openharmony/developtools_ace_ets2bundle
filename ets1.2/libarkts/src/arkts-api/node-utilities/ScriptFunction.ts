@@ -20,13 +20,13 @@ import {
     Identifier,
     ScriptFunction,
     TSTypeParameterDeclaration,
-    TypeNode
-} from "../../../generated"
-import { AstNode } from "../peers/AstNode"
-import { Es2pandaLanguage, Es2pandaModifierFlags, Es2pandaScriptFunctionFlags } from "../../../generated/Es2pandaEnums"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
-import { KNativePointer } from "@koalaui/interop"
+    TypeNode,
+} from '../../../generated';
+import { AstNode } from '../peers/AstNode';
+import { Es2pandaLanguage, Es2pandaModifierFlags, Es2pandaScriptFunctionFlags } from '../../../generated/Es2pandaEnums';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
+import { KNativePointer } from '@koalaui/interop';
 
 export function createScriptFunction(
     databody: AstNode | undefined,
@@ -39,29 +39,24 @@ export function createScriptFunction(
     ident: Identifier | undefined,
     annotations: readonly AnnotationUsage[] | undefined,
     signaturePointer?: KNativePointer,
-    preferredReturnTypePointer?: KNativePointer,
+    preferredReturnTypePointer?: KNativePointer
 ) {
     const res = ScriptFunction.create1ScriptFunction(
         databody,
-        FunctionSignature.createFunctionSignature(
-            typeParams,
-            params,
-            returnTypeAnnotation,
-            hasReceiver,
-        ),
+        FunctionSignature.createFunctionSignature(typeParams, params, returnTypeAnnotation, hasReceiver),
         datafuncFlags,
         dataflags,
         Es2pandaLanguage.LANGUAGE_ETS,
         ident,
-        annotations,
-    )
+        annotations
+    );
     if (signaturePointer) {
-        res.setSignaturePointer(signaturePointer)
+        res.setSignaturePointer(signaturePointer);
     }
     if (preferredReturnTypePointer) {
-        res.setPreferredReturnTypePointer(preferredReturnTypePointer)
+        res.setPreferredReturnTypePointer(preferredReturnTypePointer);
     }
-    return res
+    return res;
 }
 
 export function updateScriptFunction(
@@ -76,21 +71,22 @@ export function updateScriptFunction(
     ident: Identifier | undefined,
     annotations: readonly AnnotationUsage[] | undefined,
     signaturePointer?: KNativePointer,
-    preferredReturnTypePointer?: KNativePointer,
+    preferredReturnTypePointer?: KNativePointer
 ) {
-    if (isSameNativeObject(databody, original.body)
-        && isSameNativeObject(typeParams, original.typeParams)
-        && isSameNativeObject(params, original.params)
-        && isSameNativeObject(returnTypeAnnotation, original.returnTypeAnnotation)
-        && isSameNativeObject(hasReceiver, original.hasReceiver)
-        && isSameNativeObject(datafuncFlags, original.flags)
-        && isSameNativeObject(dataflags, original.modifierFlags)
-        && isSameNativeObject(ident, original.id)
-        && isSameNativeObject(annotations, original.annotations)
-        && signaturePointer == original.getSignaturePointer()
-        && preferredReturnTypePointer == original.getPreferredReturnTypePointer()
+    if (
+        isSameNativeObject(databody, original.body) &&
+        isSameNativeObject(typeParams, original.typeParams) &&
+        isSameNativeObject(params, original.params) &&
+        isSameNativeObject(returnTypeAnnotation, original.returnTypeAnnotation) &&
+        isSameNativeObject(hasReceiver, original.hasReceiver) &&
+        isSameNativeObject(datafuncFlags, original.flags) &&
+        isSameNativeObject(dataflags, original.modifierFlags) &&
+        isSameNativeObject(ident, original.id) &&
+        isSameNativeObject(annotations, original.annotations) &&
+        signaturePointer == original.getSignaturePointer() &&
+        preferredReturnTypePointer == original.getPreferredReturnTypePointer()
     ) {
-        return original
+        return original;
     }
     return updateNodeByNode(
         createScriptFunction(
@@ -104,10 +100,10 @@ export function updateScriptFunction(
             ident,
             annotations,
             signaturePointer,
-            preferredReturnTypePointer,
+            preferredReturnTypePointer
         ),
         original
-    )
+    );
 }
 
 export function inplaceUpdateScriptFunction(
@@ -122,13 +118,15 @@ export function inplaceUpdateScriptFunction(
     ident: Identifier | undefined,
     annotations: readonly AnnotationUsage[] | undefined,
     signaturePointer?: KNativePointer,
-    preferredReturnTypePointer?: KNativePointer,
+    preferredReturnTypePointer?: KNativePointer
 ) {
-    if (!isSameNativeObject(typeParams, original.typeParams)
-     || !isSameNativeObject(hasReceiver, original.hasReceiver)
-     || !isSameNativeObject(datafuncFlags, original.flags)) {
+    if (
+        !isSameNativeObject(typeParams, original.typeParams) ||
+        !isSameNativeObject(hasReceiver, original.hasReceiver) ||
+        !isSameNativeObject(datafuncFlags, original.flags)
+    ) {
         // unlikely
-        console.log(`Did not managed to update script function ${ident?.name} inplace!`)
+        console.log(`Did not managed to update script function ${ident?.name} inplace!`);
         const result = createScriptFunction(
             databody,
             typeParams,
@@ -140,18 +138,18 @@ export function inplaceUpdateScriptFunction(
             ident,
             annotations,
             signaturePointer,
-            preferredReturnTypePointer,
-        )
-        result.onUpdate(original)
-        return result
+            preferredReturnTypePointer
+        );
+        result.onUpdate(original);
+        return result;
     }
-    original.setBody(databody)
-    original.setParams(params)
-    original.setReturnTypeAnnotation(returnTypeAnnotation)
-    original.modifierFlags = dataflags
-    if (ident) original.setIdent(ident)
-    if (annotations) original.setAnnotations(annotations)
-    if (signaturePointer) original.setSignaturePointer(signaturePointer)
-    if (preferredReturnTypePointer) original.setPreferredReturnTypePointer(preferredReturnTypePointer)
-    return original
+    original.setBody(databody);
+    original.setParams(params);
+    original.setReturnTypeAnnotation(returnTypeAnnotation);
+    original.modifierFlags = dataflags;
+    if (ident) original.setIdent(ident);
+    if (annotations) original.setAnnotations(annotations);
+    if (signaturePointer) original.setSignaturePointer(signaturePointer);
+    if (preferredReturnTypePointer) original.setPreferredReturnTypePointer(preferredReturnTypePointer);
+    return original;
 }

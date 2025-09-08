@@ -13,88 +13,88 @@
  * limitations under the License.
  */
 
-import { isNullPtr, KInt, KNativePointer, nullptr } from "@koalaui/interop"
-import { global } from "../static/global"
-import { allFlags, unpackNode, unpackNodeArray, unpackNonNullableNode, unpackString } from "../utilities/private"
-import { throwError } from "../../utils"
-import { Es2pandaAstNodeType, Es2pandaModifierFlags } from "../../../generated/Es2pandaEnums"
-import { ArktsObject } from "./ArktsObject"
-import { SourcePosition } from "../../../generated/peers/SourcePosition"
-import { NodeCache } from "../node-cache"
+import { isNullPtr, KInt, KNativePointer, nullptr } from '@koalaui/interop';
+import { global } from '../static/global';
+import { allFlags, unpackNode, unpackNodeArray, unpackNonNullableNode, unpackString } from '../utilities/private';
+import { throwError } from '../../utils';
+import { Es2pandaAstNodeType, Es2pandaModifierFlags } from '../../../generated/Es2pandaEnums';
+import { ArktsObject } from './ArktsObject';
+import { SourcePosition } from '../../../generated/peers/SourcePosition';
+import { NodeCache } from '../node-cache';
 
 export abstract class AstNode extends ArktsObject {
-    public readonly astNodeType: Es2pandaAstNodeType
+    public readonly astNodeType: Es2pandaAstNodeType;
 
     protected constructor(peer: KNativePointer, astNodeType: Es2pandaAstNodeType) {
-        global.profiler.nodeCreated()
+        global.profiler.nodeCreated();
         if (isNullPtr(peer)) {
-            throwError(`attempted to create AstNode from nullptr`)
+            throwError(`attempted to create AstNode from nullptr`);
         }
-        super(peer)
-        this.astNodeType = astNodeType
-        NodeCache.addToCache(peer, this)
+        super(peer);
+        this.astNodeType = astNodeType;
+        NodeCache.addToCache(peer, this);
     }
 
     public get originalPeer(): KNativePointer {
-        const result = global.generatedEs2panda._AstNodeOriginalNodeConst(global.context, this.peer)
+        const result = global.generatedEs2panda._AstNodeOriginalNodeConst(global.context, this.peer);
         if (result === nullptr) {
-            this.originalPeer = this.peer
-            return this.peer
+            this.originalPeer = this.peer;
+            return this.peer;
         }
-        return result
+        return result;
     }
 
     public set originalPeer(peer: KNativePointer) {
-        global.generatedEs2panda._AstNodeSetOriginalNode(global.context, this.peer, peer)
+        global.generatedEs2panda._AstNodeSetOriginalNode(global.context, this.peer, peer);
     }
 
     public get original(): this {
-        return unpackNonNullableNode(this.originalPeer)
+        return unpackNonNullableNode(this.originalPeer);
     }
 
     public getChildren(): readonly AstNode[] {
-        return unpackNodeArray(global.es2panda._AstNodeChildren(global.context, this.peer))
+        return unpackNodeArray(global.es2panda._AstNodeChildren(global.context, this.peer));
     }
 
     public getSubtree(): readonly AstNode[] {
         return this.getChildren().reduce(
             (prev: readonly AstNode[], curr) => {
-                return prev.concat(curr.getSubtree())
+                return prev.concat(curr.getSubtree());
             },
             [this]
-        )
+        );
     }
 
     public updateModifiers(modifierFlags: KInt | undefined): this {
-        global.generatedEs2panda._AstNodeClearModifier(global.context, this.peer, allFlags)
-        global.generatedEs2panda._AstNodeAddModifier(global.context, this.peer, modifierFlags ?? Es2pandaModifierFlags.MODIFIER_FLAGS_NONE)
-        return this
+        global.generatedEs2panda._AstNodeClearModifier(global.context, this.peer, allFlags);
+        global.generatedEs2panda._AstNodeAddModifier(
+            global.context,
+            this.peer,
+            modifierFlags ?? Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+        );
+        return this;
     }
 
     public dump(indentation: number = 0): string {
-        const children = this.getChildren()
-            .map((it) => it.dump(indentation + 1))
-        const msg =
-            `${indentation}_`
-            + ` <mods: ${this.modifierFlags}>`
-            + this.dumpMessage()
-        return "> " + " ".repeat(4 * indentation) + msg + "\n" + children.join("")
+        const children = this.getChildren().map((it) => it.dump(indentation + 1));
+        const msg = `${indentation}_` + ` <mods: ${this.modifierFlags}>` + this.dumpMessage();
+        return '> ' + ' '.repeat(4 * indentation) + msg + '\n' + children.join('');
     }
 
     protected dumpMessage(): string {
-        return ``
+        return ``;
     }
 
     public dumpJson(): string {
-        return unpackString(global.generatedEs2panda._AstNodeDumpJSONConst(global.context, this.peer))
+        return unpackString(global.generatedEs2panda._AstNodeDumpJSONConst(global.context, this.peer));
     }
 
     public dumpSrc(): string {
-        return unpackString(global.generatedEs2panda._AstNodeDumpEtsSrcConst(global.context, this.peer))
+        return unpackString(global.generatedEs2panda._AstNodeDumpEtsSrcConst(global.context, this.peer));
     }
 
     public dumpModifiers(): string {
-        return unpackString(global.es2panda._AstNodeDumpModifiers(global.context, this.peer))
+        return unpackString(global.es2panda._AstNodeDumpModifiers(global.context, this.peer));
     }
 
     // public clone(): this {
@@ -131,36 +131,40 @@ export abstract class AstNode extends ArktsObject {
     }
 
     public get modifierFlags(): Es2pandaModifierFlags {
-        return global.generatedEs2panda._AstNodeModifiers(global.context, this.peer)
+        return global.generatedEs2panda._AstNodeModifiers(global.context, this.peer);
     }
 
     public set modifierFlags(flags: KInt | undefined) {
-        global.generatedEs2panda._AstNodeClearModifier(global.context, this.peer, allFlags)
-        global.generatedEs2panda._AstNodeAddModifier(global.context, this.peer, flags ?? Es2pandaModifierFlags.MODIFIER_FLAGS_NONE)
+        global.generatedEs2panda._AstNodeClearModifier(global.context, this.peer, allFlags);
+        global.generatedEs2panda._AstNodeAddModifier(
+            global.context,
+            this.peer,
+            flags ?? Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+        );
     }
 
     /** @deprecated Use {@link modifierFlags} instead */
     public get modifiers(): KInt {
-        return this.modifierFlags
+        return this.modifierFlags;
     }
 
     /** @deprecated Use {@link modifierFlags} instead */
     public set modifiers(flags: KInt | undefined) {
-        this.modifierFlags = flags
+        this.modifierFlags = flags;
     }
 
     public setChildrenParentPtr(): void {
         if (this.peer === nullptr) {
-            throwError('setChildrenParentPtr called on NULLPTR')
+            throwError('setChildrenParentPtr called on NULLPTR');
         }
-        global.es2panda._AstNodeSetChildrenParentPtr(global.context, this.peer)
+        global.es2panda._AstNodeSetChildrenParentPtr(global.context, this.peer);
     }
 
     public override onUpdate(original: AstNode): void {
         // Improve: Update modifiers only for specific AST nodes in the generated factory code
-        this.modifierFlags = original.modifierFlags
+        this.modifierFlags = original.modifierFlags;
 
-        global.es2panda._AstNodeOnUpdate(global.context, this.peer, original.peer)
+        global.es2panda._AstNodeOnUpdate(global.context, this.peer, original.peer);
     }
 
     public get isExport(): boolean {

@@ -13,21 +13,21 @@
  * limitations under the License.
  */
 
-import { Es2pandaAstNodeType } from "../../generated/Es2pandaEnums"
-import { throwError } from "../utils"
-import { global } from "./static/global"
-import { KNativePointer } from "@koalaui/interop"
-import { AstNode } from "./peers/AstNode"
-import { NodeCache } from "./node-cache"
+import { Es2pandaAstNodeType } from '../../generated/Es2pandaEnums';
+import { throwError } from '../utils';
+import { global } from './static/global';
+import { KNativePointer } from '@koalaui/interop';
+import { AstNode } from './peers/AstNode';
+import { NodeCache } from './node-cache';
 
-export const nodeByType = new Map<Es2pandaAstNodeType, (peer: KNativePointer) => AstNode>([])
+export const nodeByType = new Map<Es2pandaAstNodeType, (peer: KNativePointer) => AstNode>([]);
 
 export function nodeFrom<T extends AstNode>(peer: KNativePointer, typeHint?: Es2pandaAstNodeType): T {
-    const fromCache = NodeCache.get<T>(peer)
+    const fromCache = NodeCache.get<T>(peer);
     if (fromCache) {
-        return fromCache
+        return fromCache;
     }
-    const type = typeHint ?? global.generatedEs2panda._AstNodeTypeConst(global.context, peer)
-    const create = nodeByType.get(type) ?? throwError(`unknown node type: ${type}`)
-    return create(peer) as T
+    const type = typeHint ?? global.generatedEs2panda._AstNodeTypeConst(global.context, peer);
+    const create = nodeByType.get(type) ?? throwError(`unknown node type: ${type}`);
+    return create(peer) as T;
 }

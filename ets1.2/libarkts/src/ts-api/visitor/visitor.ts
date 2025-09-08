@@ -13,31 +13,34 @@
  * limitations under the License.
  */
 
-import { throwError } from "../../utils"
+import { throwError } from '../../utils';
 
-import * as ts from "../."
-import { factory } from "../factory/nodeFactory"
-import { SyntaxKind } from "../static/enums"
+import * as ts from '../.';
+import { factory } from '../factory/nodeFactory';
+import { SyntaxKind } from '../static/enums';
 
-type Visitor = (node: ts.Node) => ts.Node
+type Visitor = (node: ts.Node) => ts.Node;
 
 // Improve: rethink (remove as)
 function nodeVisitor<T extends ts.Node | undefined>(node: T, visitor: Visitor): T {
     if (node === undefined) {
-        return node
+        return node;
     }
-    return visitor(node) as T
+    return visitor(node) as T;
 }
 
 // Improve: rethink (remove as)
-function nodesVisitor<T extends ts.Node, TIn extends ts.NodeArray<T> | undefined>(nodes: TIn, visitor: Visitor): T[] | TIn {
+function nodesVisitor<T extends ts.Node, TIn extends ts.NodeArray<T> | undefined>(
+    nodes: TIn,
+    visitor: Visitor
+): T[] | TIn {
     if (nodes === undefined) {
-        return nodes
+        return nodes;
     }
-    return nodes.map(node => visitor(node) as T)
+    return nodes.map((node) => visitor(node) as T);
 }
 
-type VisitEachChildFunction<T extends ts.Node> = (node: T, visitor: Visitor) => T
+type VisitEachChildFunction<T extends ts.Node> = (node: T, visitor: Visitor) => T;
 
 // Improve: add more nodes
 type HasChildren =
@@ -50,17 +53,14 @@ type HasChildren =
     | ts.MethodDeclaration
     | ts.Block
     | ts.VariableStatement
-    | ts.VariableDeclarationList
+    | ts.VariableDeclarationList;
 
-type VisitEachChildTable = { [TNode in HasChildren as TNode["kind"]]: VisitEachChildFunction<TNode> }
+type VisitEachChildTable = { [TNode in HasChildren as TNode['kind']]: VisitEachChildFunction<TNode> };
 
 // Improve: add more nodes
 const visitEachChildTable: VisitEachChildTable = {
     [SyntaxKind.SourceFile]: function (node: ts.SourceFile, visitor: Visitor) {
-        return factory.updateSourceFile(
-            node,
-            nodesVisitor(node.statements, visitor)
-        )
+        return factory.updateSourceFile(node, nodesVisitor(node.statements, visitor));
     },
     [SyntaxKind.FunctionDeclaration]: function (node: ts.FunctionDeclaration, visitor: Visitor) {
         return factory.updateFunctionDeclaration(
@@ -71,14 +71,11 @@ const visitEachChildTable: VisitEachChildTable = {
             nodesVisitor(node.typeParameters, visitor),
             nodesVisitor(node.parameters, visitor),
             nodeVisitor(node.type, visitor),
-            nodeVisitor(node.body, visitor),
-        )
+            nodeVisitor(node.body, visitor)
+        );
     },
     [SyntaxKind.ExpressionStatement]: function (node: ts.ExpressionStatement, visitor: Visitor) {
-        return factory.updateExpressionStatement(
-            node,
-            nodeVisitor(node.expression, visitor)
-        )
+        return factory.updateExpressionStatement(node, nodeVisitor(node.expression, visitor));
     },
     [SyntaxKind.CallExpression]: function (node: ts.CallExpression, visitor: Visitor) {
         return factory.updateCallExpression(
@@ -86,14 +83,14 @@ const visitEachChildTable: VisitEachChildTable = {
             nodeVisitor(node.expression, visitor),
             undefined,
             nodesVisitor(node.arguments, visitor)
-        )
+        );
     },
     [SyntaxKind.PropertyAccessExpression]: function (node: ts.PropertyAccessExpression, visitor: Visitor) {
         return factory.updatePropertyAccessExpression(
             node,
             nodeVisitor(node.expression, visitor),
             nodeVisitor(node.name, visitor)
-        )
+        );
     },
     [SyntaxKind.ClassDeclaration]: function (node: ts.ClassDeclaration, visitor: Visitor) {
         return factory.updateClassDeclaration(
@@ -103,7 +100,7 @@ const visitEachChildTable: VisitEachChildTable = {
             undefined,
             undefined,
             nodesVisitor(node.members, visitor)
-        )
+        );
     },
     [SyntaxKind.MethodDeclaration]: function (node: ts.MethodDeclaration, visitor: Visitor) {
         return factory.updateMethodDeclaration(
@@ -115,41 +112,28 @@ const visitEachChildTable: VisitEachChildTable = {
             undefined,
             nodesVisitor(node.parameters, visitor),
             undefined,
-            nodeVisitor(node.body, visitor),
-        )
+            nodeVisitor(node.body, visitor)
+        );
     },
     [SyntaxKind.Block]: function (node: ts.Block, visitor: Visitor) {
-        return factory.updateBlock(
-            node,
-            nodesVisitor(node.statements, visitor),
-        )
+        return factory.updateBlock(node, nodesVisitor(node.statements, visitor));
     },
     [SyntaxKind.VariableStatement]: function (node: ts.VariableStatement, visitor: Visitor) {
-        return factory.updateVariableStatement(
-            node,
-            undefined,
-            nodeVisitor(node.declarationList, visitor),
-        )
+        return factory.updateVariableStatement(node, undefined, nodeVisitor(node.declarationList, visitor));
     },
     [SyntaxKind.VariableDeclarationList]: function (node: ts.VariableDeclarationList, visitor: Visitor) {
-        return factory.updateVariableDeclarationList(
-            node,
-            nodesVisitor(node.declarations, visitor),
-        )
+        return factory.updateVariableDeclarationList(node, nodesVisitor(node.declarations, visitor));
     },
-}
+};
 
 function nodeHasChildren(node: ts.Node): node is HasChildren {
-    return node.kind in visitEachChildTable
+    return node.kind in visitEachChildTable;
 }
 
-export function visitEachChild<T extends ts.Node>(
-    node: T,
-    visitor: Visitor
-): T {
+export function visitEachChild<T extends ts.Node>(node: T, visitor: Visitor): T {
     const visitFunc = (visitEachChildTable as Record<SyntaxKind, VisitEachChildFunction<any> | undefined>)[node.kind];
     if (nodeHasChildren(node) && visitFunc === undefined) {
-        throwError('Unsupported node kind: ' + node.kind)
+        throwError('Unsupported node kind: ' + node.kind);
     }
-    return (visitFunc === undefined) ? node : visitFunc(node, visitor);
+    return visitFunc === undefined ? node : visitFunc(node, visitor);
 }

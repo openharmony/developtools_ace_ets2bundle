@@ -13,16 +13,16 @@
  * limitations under the License.
  */
 
-import { Es2pandaContextState } from "../../generated/Es2pandaEnums"
-import { ETSModule, Program } from "../../generated"
-import { ExternalSource } from "./peers/ExternalSource"
-import { KNativePointer, nullptr } from "@koalaui/interop"
-import { global } from "./static/global"
-import { RunTransformerHooks } from "../plugin-utils"
+import { Es2pandaContextState } from '../../generated/Es2pandaEnums';
+import { ETSModule, Program } from '../../generated';
+import { ExternalSource } from './peers/ExternalSource';
+import { KNativePointer, nullptr } from '@koalaui/interop';
+import { global } from './static/global';
+import { RunTransformerHooks } from '../plugin-utils';
 
 export interface CompilationOptions {
-    readonly isProgramForCodegeneration: boolean,
-    readonly state: Es2pandaContextState,
+    readonly isProgramForCodegeneration: boolean;
+    readonly state: Es2pandaContextState;
 }
 
 export interface DependentModuleConfig {
@@ -55,32 +55,31 @@ export interface ProjectConfig {
     moduleRootPath: string;
     aceModuleJsonPath: string;
     ignoreError: boolean;
-    projectPath: string,
-    projectRootPath: string,
-    integratedHsp: boolean
+    projectPath: string;
+    projectRootPath: string;
+    integratedHsp: boolean;
     frameworkMode?: string;
 }
 
-
 export interface PluginContext {
-    setParameter<V>(name: string, value: V): void
-    parameter<V>(name: string) : V | undefined
+    setParameter<V>(name: string, value: V): void;
+    parameter<V>(name: string): V | undefined;
 }
 
 export class PluginContextImpl implements PluginContext {
-    map = new Map<String, Object | undefined>()
+    map = new Map<String, Object | undefined>();
 
-    private ast: ETSModule | undefined = undefined
-    private projectConfig: ProjectConfig | undefined  = undefined
+    private ast: ETSModule | undefined = undefined;
+    private projectConfig: ProjectConfig | undefined = undefined;
 
-    parameter<V>(name: string): V|undefined {
-        return this.map.get(name) as (V|undefined)
+    parameter<V>(name: string): V | undefined {
+        return this.map.get(name) as V | undefined;
     }
     setParameter<V>(name: string, value: V) {
-        this.map.set(name, value as Object)
+        this.map.set(name, value as Object);
     }
     getContextPtr(): KNativePointer {
-        return global.compilerContext?.peer ?? nullptr
+        return global.compilerContext?.peer ?? nullptr;
     }
     public setProjectConfig(projectConfig: ProjectConfig): void {
         this.projectConfig = projectConfig;
@@ -102,15 +101,18 @@ export class PluginContextImpl implements PluginContext {
     public getArkTSAst(): ETSModule | undefined {
         return this.ast;
     }
-
 }
 
-export type ProgramTransformer = (program: Program, compilationOptions: CompilationOptions, context: PluginContext) => void
+export type ProgramTransformer = (
+    program: Program,
+    compilationOptions: CompilationOptions,
+    context: PluginContext
+) => void;
 
 export function defaultFilter(name: string) {
-    if (name.startsWith("std.")) return false
-    if (name.startsWith("escompat")) return false
-    return true
+    if (name.startsWith('std.')) return false;
+    if (name.startsWith('escompat')) return false;
+    return true;
 }
 
 export function listPrograms(program: Program, filter: (name: string) => boolean = defaultFilter): Program[] {
@@ -118,18 +120,18 @@ export function listPrograms(program: Program, filter: (name: string) => boolean
         program,
         ...program.getExternalSources().flatMap((it: ExternalSource) => {
             if (filter(it.getName())) {
-                return it.programs
+                return it.programs;
             }
-            return []
-        })
-    ]
+            return [];
+        }),
+    ];
 }
 
 export interface PluginEntry {
-    name?: string
-    parsed?: (hooks?: RunTransformerHooks) => void
-    checked?: (hooks?: RunTransformerHooks) => void
-    clean?: (hooks?: RunTransformerHooks) => void
+    name?: string;
+    parsed?: (hooks?: RunTransformerHooks) => void;
+    checked?: (hooks?: RunTransformerHooks) => void;
+    clean?: (hooks?: RunTransformerHooks) => void;
 }
 
-export type PluginInitializer = (parsedJson?: Object, checkedJson?: Object) => PluginEntry
+export type PluginInitializer = (parsedJson?: Object, checkedJson?: Object) => PluginEntry;

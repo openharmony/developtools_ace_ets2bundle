@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import { ETSTypeReferencePart, Expression, TSTypeParameterInstantiation } from "../../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
+import { ETSTypeReferencePart, Expression, TSTypeParameterInstantiation } from '../../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
 
 export function updateETSTypeReferencePart(
     original: ETSTypeReferencePart,
@@ -23,14 +23,12 @@ export function updateETSTypeReferencePart(
     typeParams?: TSTypeParameterInstantiation,
     prev?: ETSTypeReferencePart
 ): ETSTypeReferencePart {
-    if (isSameNativeObject(name, original.name)
-        && isSameNativeObject(typeParams, original.typeParams)
-        && isSameNativeObject(prev, original.previous)
+    if (
+        isSameNativeObject(name, original.name) &&
+        isSameNativeObject(typeParams, original.typeParams) &&
+        isSameNativeObject(prev, original.previous)
     ) {
-        return original
+        return original;
     }
-    return updateNodeByNode(
-        ETSTypeReferencePart.createETSTypeReferencePart(name, typeParams, prev),
-        original
-    )
+    return updateNodeByNode(ETSTypeReferencePart.createETSTypeReferencePart(name, typeParams, prev), original);
 }

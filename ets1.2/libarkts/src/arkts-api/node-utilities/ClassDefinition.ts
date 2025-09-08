@@ -21,15 +21,15 @@ import {
     MethodDefinition,
     TSClassImplements,
     TSTypeParameterDeclaration,
-    TSTypeParameterInstantiation
-} from "../../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { AstNode } from "../peers/AstNode"
+    TSTypeParameterInstantiation,
+} from '../../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { AstNode } from '../peers/AstNode';
 import {
     Es2pandaClassDefinitionModifiers,
     Es2pandaLanguage,
-    Es2pandaModifierFlags
-} from "../../../generated/Es2pandaEnums"
+    Es2pandaModifierFlags,
+} from '../../../generated/Es2pandaEnums';
 
 export function createClassDefinition(
     ident: Identifier | undefined,
@@ -40,8 +40,22 @@ export function createClassDefinition(
     superClass: Expression | undefined,
     body: readonly AstNode[],
     modifiers: Es2pandaClassDefinitionModifiers,
-    flags: Es2pandaModifierFlags, annotations?: readonly AnnotationUsage[]): ClassDefinition {
-    return ClassDefinition.create3ClassDefinition(ident, typeParams, superTypeParams, _implements, ctor, superClass, body, modifiers, flags, Es2pandaLanguage.LANGUAGE_ETS, annotations)
+    flags: Es2pandaModifierFlags,
+    annotations?: readonly AnnotationUsage[]
+): ClassDefinition {
+    return ClassDefinition.create3ClassDefinition(
+        ident,
+        typeParams,
+        superTypeParams,
+        _implements,
+        ctor,
+        superClass,
+        body,
+        modifiers,
+        flags,
+        Es2pandaLanguage.LANGUAGE_ETS,
+        annotations
+    );
 }
 
 export function updateClassDefinition(
@@ -57,18 +71,19 @@ export function updateClassDefinition(
     flags: Es2pandaModifierFlags,
     annotations?: readonly AnnotationUsage[]
 ): ClassDefinition {
-    if (isSameNativeObject(ident, original.ident)
-        && (isSameNativeObject(typeParams, original.typeParams))
-        && (isSameNativeObject(superTypeParams, original.superTypeParams))
-        && (isSameNativeObject(_implements, original.implements))
-        && (isSameNativeObject(ctor, original.ctor))
-        && (isSameNativeObject(superClass, original.super))
-        && (isSameNativeObject(body, original.body))
-        && (isSameNativeObject(modifiers, original.modifiers))
-        && (isSameNativeObject(flags, original.modifierFlags))
-        && (isSameNativeObject(annotations, original.annotations))
+    if (
+        isSameNativeObject(ident, original.ident) &&
+        isSameNativeObject(typeParams, original.typeParams) &&
+        isSameNativeObject(superTypeParams, original.superTypeParams) &&
+        isSameNativeObject(_implements, original.implements) &&
+        isSameNativeObject(ctor, original.ctor) &&
+        isSameNativeObject(superClass, original.super) &&
+        isSameNativeObject(body, original.body) &&
+        isSameNativeObject(modifiers, original.modifiers) &&
+        isSameNativeObject(flags, original.modifierFlags) &&
+        isSameNativeObject(annotations, original.annotations)
     ) {
-        return original
+        return original;
     }
     return ClassDefinition.update3ClassDefinition(
         original,
@@ -82,6 +97,6 @@ export function updateClassDefinition(
         modifiers,
         flags,
         Es2pandaLanguage.LANGUAGE_ETS,
-        annotations,
-    )
+        annotations
+    );
 }

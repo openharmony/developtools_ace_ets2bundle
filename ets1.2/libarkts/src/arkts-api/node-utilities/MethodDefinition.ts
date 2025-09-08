@@ -13,13 +13,10 @@
  * limitations under the License.
  */
 
-import { Expression, MethodDefinition } from "../../../generated"
-import {
-    Es2pandaMethodDefinitionKind,
-    Es2pandaModifierFlags,
-} from "../../../generated/Es2pandaEnums"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
+import { Expression, MethodDefinition } from '../../../generated';
+import { Es2pandaMethodDefinitionKind, Es2pandaModifierFlags } from '../../../generated/Es2pandaEnums';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
 
 export function createMethodDefinition(
     kind: Es2pandaMethodDefinitionKind,
@@ -29,14 +26,7 @@ export function createMethodDefinition(
     isComputed: boolean,
     overloads?: readonly MethodDefinition[]
 ): MethodDefinition {
-    return MethodDefinition.createMethodDefinition(
-        kind,
-        key,
-        value,
-        modifiers,
-        isComputed,
-        overloads,
-    )
+    return MethodDefinition.createMethodDefinition(kind, key, value, modifiers, isComputed, overloads);
 }
 
 export function updateMethodDefinition(
@@ -48,24 +38,15 @@ export function updateMethodDefinition(
     isComputed: boolean,
     overloads?: readonly MethodDefinition[]
 ): MethodDefinition {
-    if (isSameNativeObject(kind, original.kind)
-        && isSameNativeObject(key, original.key)
-        && isSameNativeObject(value, original.value)
-        && isSameNativeObject(modifiers, original.modifierFlags)
-        && isSameNativeObject(isComputed, original.isComputed)
-        && isSameNativeObject(overloads, original.overloads)
+    if (
+        isSameNativeObject(kind, original.kind) &&
+        isSameNativeObject(key, original.key) &&
+        isSameNativeObject(value, original.value) &&
+        isSameNativeObject(modifiers, original.modifierFlags) &&
+        isSameNativeObject(isComputed, original.isComputed) &&
+        isSameNativeObject(overloads, original.overloads)
     ) {
-        return original
+        return original;
     }
-    return updateNodeByNode(
-        createMethodDefinition(
-            kind,
-            key,
-            value,
-            modifiers,
-            isComputed,
-            overloads,
-        ),
-        original
-    )
+    return updateNodeByNode(createMethodDefinition(kind, key, value, modifiers, isComputed, overloads), original);
 }

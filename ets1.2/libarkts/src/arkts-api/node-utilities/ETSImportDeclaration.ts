@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-import { ETSImportDeclaration, StringLiteral } from "../../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
-import { AstNode } from "../peers/AstNode"
-import { Es2pandaImportKinds } from "../../../generated/Es2pandaEnums"
+import { ETSImportDeclaration, StringLiteral } from '../../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
+import { AstNode } from '../peers/AstNode';
+import { Es2pandaImportKinds } from '../../../generated/Es2pandaEnums';
 
 export function updateETSImportDeclaration(
     original: ETSImportDeclaration,
@@ -25,15 +25,13 @@ export function updateETSImportDeclaration(
     specifiers: readonly AstNode[],
     importKind: Es2pandaImportKinds
 ): ETSImportDeclaration {
-    if (isSameNativeObject(source, original.source)
-        && isSameNativeObject(specifiers, original.specifiers)
+    if (
+        isSameNativeObject(source, original.source) &&
+        isSameNativeObject(specifiers, original.specifiers)
         /* no getter for importKind */
     ) {
         /* Improve: probably should set importMetadata, but no getter provided yet */
-        return original
+        return original;
     }
-    return updateNodeByNode(
-        ETSImportDeclaration.createETSImportDeclaration(source, specifiers, importKind),
-        original
-    )
+    return updateNodeByNode(ETSImportDeclaration.createETSImportDeclaration(source, specifiers, importKind), original);
 }
