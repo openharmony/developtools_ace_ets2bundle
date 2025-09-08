@@ -57,39 +57,6 @@ export enum Tags {
 const VALUE_TRUE: number = 1
 const VALUE_FALSE: number = 0
 
-export function runtimeType<T>(value: T): int32 {
-    if (value === undefined)
-        return RuntimeType.UNDEFINED;
-
-    if (value === null)
-        return RuntimeType.OBJECT;
-
-    if (value instanceof String)
-        return RuntimeType.STRING
-
-    if (value instanceof Numeric)
-        return RuntimeType.NUMBER
-
-    if (value instanceof Boolean)
-        return RuntimeType.BOOLEAN
-
-    if (value instanceof BigInt)
-        return RuntimeType.BIGINT
-
-    if (value instanceof Function)
-        return RuntimeType.FUNCTION
-
-    // slow workaround for enum
-    const typeName = typeof value
-    if (typeName == "number")
-      return RuntimeType.NUMBER
-
-    if (typeName == "string")
-      return RuntimeType.STRING
-
-    return RuntimeType.OBJECT
-}
-
 export function toPeerPtr(value: object): pointer {
     if (value instanceof MaterializedBase) {
         const peer = (value as MaterializedBase).getPeer()
