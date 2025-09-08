@@ -15,12 +15,12 @@
 
 import * as fs from "node:fs"
 import * as path from "node:path"
-import { checkSDK, arktsGlobal as global, findStdlib, DumpingHooks, listPrograms, initVisitsTable } from "@koalaui/libarkts"
-import { PluginEntry, PluginInitializer, CompilationOptions, Program } from "@koalaui/libarkts"
+import { checkSDK, arktsGlobal as global, findStdlib, DumpingHooks, listPrograms, initVisitsTable, PluginContextImpl } from "@koalaui/libarkts"
+import { PluginEntry, PluginInitializer } from "@koalaui/libarkts"
 import { Command } from "commander"
 import { throwError } from "@koalaui/libarkts"
 import { Es2pandaContextState } from "@koalaui/libarkts"
-import { Tracer, traceGlobal, Options, Config, Context, proceedToState, dumpProgramInfo, dumpArkTsConfigInfo } from "@koalaui/libarkts"
+import { Tracer, traceGlobal, Options, Config, Context, proceedToState, dumpArkTsConfigInfo } from "@koalaui/libarkts"
 
 interface CommandLineOptions {
     files: string[]
@@ -94,13 +94,40 @@ function insertPlugin(
     global.profiler.transformStarted()
 
     const hooks = new DumpingHooks(state, pluginName, dumpAst)
+    const pluginContext = new PluginContextImpl()
+
+    if (false) {
+        pluginContext.setProjectConfig({
+            bundleName: "bundle",
+            moduleName: "module",
+            cachePath: "./dist",
+            dependentModuleList: [],
+            appResource: "",
+            rawFileResource: "",
+            buildLoaderJson: "",
+            hspResourcesMap: false,
+            compileHar: false,
+            byteCodeHar: false,
+            uiTransformOptimization: false,
+            resetBundleName: true,
+            allowEmptyBundleName: true,
+            moduleType: "module",
+            moduleRootPath: ".",
+            aceModuleJsonPath: "./module.json",
+            ignoreError: false,
+            projectPath: ".",
+            projectRootPath: ".",
+            integratedHsp: false,
+            frameworkMode: "yes"
+        })
+    }
 
     if (state == Es2pandaContextState.ES2PANDA_STATE_PARSED) {
-        pluginEntry.parsed?.(hooks)
+        pluginEntry.parsed?.call(pluginContext, hooks)
     }
 
     if (state == Es2pandaContextState.ES2PANDA_STATE_CHECKED) {
-        pluginEntry.checked?.(hooks)
+        pluginEntry.checked?.call(pluginContext, hooks)
     }
 
     global.profiler.transformEnded(state, pluginName)
