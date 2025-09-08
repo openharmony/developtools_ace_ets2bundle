@@ -24,12 +24,14 @@ import { EXTERNAL_SOURCE_PREFIX_NAMES, EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWOR
 import { debugLog } from '../common/debug';
 import { SignatureTransformer } from './signature-transformer';
 import { InternalsTransformer } from './internal-transformer';
+import { ProgramSkipper } from "../common/program-skipper";
 
 export function unmemoizeTransform(): Plugins {
     return {
         name: 'memo-plugin',
         checked: checkedTransform,
         clean() {
+            ProgramSkipper.clear();
             arkts.arktsGlobal.clearContext();
         },
     };
