@@ -78,6 +78,9 @@
         "panda:sdk:reinstall": "npm run panda:sdk:clean && npm run panda:sdk:install",
         "regenerate:current": "rimraf -rf ./generated && npm run compile -C ../../../arktscgen && node ../../../arktscgen --panda-sdk-path $npm_package_config_panda_sdk_path --output-dir ../ --options-file ./generator/options.json5 --no-initialize --debug",
         "regenerate": "rimraf -rf ./generated && arktscgen --panda-sdk-path ${PANDA_SDK_PATH:=$npm_package_config_panda_sdk_path} --output-dir ../ --options-file ./generator/options.json5 --no-initialize",
-        "reinstall:regenerate": "npm run panda:sdk:reinstall && npm run regenerate && git diff --shortstat"
+        "reinstall:regenerate": "npm run panda:sdk:reinstall && npm run regenerate && git diff --shortstat",
+        "format:src:ts": "npx prettier --config .prettierrc --write \"./src/**/*.ts\"",
+        "format:generated:ts": "npx prettier --config .prettierrc --write \"./generated/**/*.ts\"",
+        "format:ts": "npm run format:src:ts && npm run format:generated:ts"
     }
 }
