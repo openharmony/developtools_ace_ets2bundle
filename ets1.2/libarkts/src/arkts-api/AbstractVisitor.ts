@@ -30,7 +30,7 @@ export abstract class AbstractVisitor {
 
     indentation = 0
 
-    withIndentation<T>(exec: () => T) {
+    withIndentation<T>(exec: () => T): T {
         this.indentation++
         const result = exec()
         this.indentation--

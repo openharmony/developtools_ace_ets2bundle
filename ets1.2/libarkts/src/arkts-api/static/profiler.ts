@@ -93,21 +93,21 @@ export class Profiler implements PerformanceData {
     }
 
     private transformStartTime = 0
-    transformStarted() {
+    transformStarted(): void {
         this.transformStartTime = Date.now()
     }
     private transformDepStartTime = 0
-    transformDepStarted() {
+    transformDepStarted(): void {
         this.transformDepStartTime = Date.now()
     }
 
-    transformEnded(state: Es2pandaContextState, pluginName: string) {
+    transformEnded(state: Es2pandaContextState, pluginName: string): void {
         const transformEndTime = Date.now()
         const consumedTime = transformEndTime - this.transformStartTime
         this.getPluginData(pluginName, state).transformTime += consumedTime
     }
 
-    transformDepEnded(state: Es2pandaContextState, pluginName: string) {
+    transformDepEnded(state: Es2pandaContextState, pluginName: string): void {
         const transformEndTime = Date.now()
         const consumedTime = transformEndTime - this.transformDepStartTime
         this.getPluginData(pluginName, state).transformTimeDeps += consumedTime

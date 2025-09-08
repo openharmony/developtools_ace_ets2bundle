@@ -73,7 +73,7 @@ ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result) {
     LOGE("Use ANI")
     ani_env* aniEnv = nullptr;
     *result = 1;
-    CHECK_ANI_FATAL(vm->GetEnv(/* version */ 1, (ani_env**)&aniEnv));
+    CHECK_ANI_FATAL(vm->GetEnv(1, (ani_env**)&aniEnv));
     if (!registerAllModules(aniEnv)) {
         LOGE("Failed to register ANI modules");
         return ANI_ERROR;

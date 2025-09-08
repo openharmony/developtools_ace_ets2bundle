@@ -68,7 +68,7 @@ export interface PluginContext {
 }
 
 export class PluginContextImpl implements PluginContext {
-    map = new Map<String, Object|undefined>()
+    map = new Map<String, Object | undefined>()
 
     private ast: ETSModule | undefined = undefined
     private projectConfig: ProjectConfig | undefined  = undefined
