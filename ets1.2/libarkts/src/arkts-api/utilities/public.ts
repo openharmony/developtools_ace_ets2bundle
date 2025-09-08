@@ -83,7 +83,7 @@ export function createETSModuleFromSource(
     global.compilerContext = Context.createFromString(source)
     proceedToState(state)
     let program = global.generatedEs2panda._ContextProgram(global.compilerContext.peer)
-    if (program == nullptr)
+    if (program === nullptr)
         throw new Error(`Program is null for ${source} 0x${global.compilerContext.peer.toString(16)}`)
     return new ETSModule(global.generatedEs2panda._ProgramAst(global.context, program), Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE)
 }

@@ -261,7 +261,7 @@ function stateFromString(stateName: string): Es2pandaContextState {
     }
 }
 
-function readAndSortPlugins(configDir: string, plugins: any[]) {
+function readAndSortPlugins(configDir: string, plugins: {transform: string, state: string}[]) {
     const pluginsByState = new Map<Es2pandaContextState, PluginEntry[]>()
     const pluginInitializers = new Map<string, PluginInitializer>()
     const pluginParsedStageOptions = new Map<string, Object>()
