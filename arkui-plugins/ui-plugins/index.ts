@@ -21,6 +21,7 @@ import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../common/predefines';
 import { debugLog } from '../common/debug';
 import { MetaDataCollector } from '../common/metadata-collector';
+import { ProgramSkipper } from "../common/program-skipper";
 
 export function uiTransform(): Plugins {
     return {
@@ -28,6 +29,7 @@ export function uiTransform(): Plugins {
         parsed: parsedTransform,
         checked: checkedTransform,
         clean() {
+            ProgramSkipper.clear();
             arkts.arktsGlobal.clearContext();
         },
     };
