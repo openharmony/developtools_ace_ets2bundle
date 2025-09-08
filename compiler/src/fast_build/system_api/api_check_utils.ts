@@ -584,8 +584,7 @@ function checkSinceValue(
   if (versionChecker === compareVersionsWithPointSystem) {
     projectTargetVersion = projectConfig.compatibleSdkVersion.toString();
   } else {
-    projectTargetVersion = projectConfig.originCompatibleSdkVersion?.toString()
-        || projectConfig.compatibleSdkVersion.toString();
+    projectTargetVersion = projectConfig.originCompatibleSdkVersion?.toString() || projectConfig.compatibleSdkVersion.toString();
   }
   const validationResult = versionChecker(apiMinVersion, projectTargetVersion, 0);
   if (validationResult.result) {
@@ -655,14 +654,15 @@ export function compareVersionsWithPointSystem(
   if (!isCompliantSince(sinceVersion) || !isCompliantSince(targetVersion)) {
     return {
       result: true,
-      message: "Invalid version number format"
+      message: 'Invalid version number format'
     };
   }
-  const isTargetGreater = comparePointVersion(targetVersion, sinceVersion);
+  const triggerResult = comparePointVersion(targetVersion, sinceVersion);
+  const isTargetGreaterOrEqual = triggerResult >= 0;
 
   return {
-    result: isTargetGreater == 1,
-    message: isTargetGreater ? "API version requirement not met" : "Version requirement satisfied"
+    result: isTargetGreaterOrEqual,
+    message: isTargetGreaterOrEqual ? 'Version requirement satisfied' : 'API version requirement not met'
   };
 }
 
@@ -931,19 +931,18 @@ function getMinVersion(jsDocs: ts.JSDoc[]): string {
  * @param { string } secondVersion 
  * @returns { number }
  */
-function comparePointVersion(firstVersion: string, secondVersion: string): number {
-  const firstPointVersion = firstVersion.split('.');
-  const secondPointVersion = secondVersion.split('.');
-  for (let i = 0; i < 3; i++) {
-    const part1 = parseInt(firstPointVersion[i] || '0', 10);
-    const part2 = parseInt(secondPointVersion[i] || '0', 10);
+function comparePointVersion(firstVersion: string, secondVersion: string): -1 | 0 | 1 {
+  const firstParts = firstVersion.split('.');
+  const secondParts = secondVersion.split('.');
 
-    if (part1 < part2) {
-      return -1;
-    }
-    if (part1 > part2) {
-      return 1;
+  for (let i = 0; i < 3; i++) {
+    const part1 = parseInt(firstParts[i] || '0', 10);
+    const part2 = parseInt(secondParts[i] || '0', 10);
+
+    if (part1 !== part2) {
+      return part1 > part2 ? 1 : -1;
     }
   }
+
   return 0;
 }

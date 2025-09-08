@@ -19,7 +19,7 @@ import {
 } from '../../../main';
 import {
   getVersionValidationFunction
-} from './api_check_utils'
+} from './api_check_utils';
 
 /**
  * The node is considered **valid** if it satisfies **at least one** of the following:
@@ -30,11 +30,11 @@ import {
 export class SdkVersionValidator {
   private readonly compatibleSdkVersion: string;
   private readonly minSinceVersion: string;
-  private readonly closeSourceDeviceInfo: string = "distributionOSApiVersion";
-  private readonly openSourceDeviceInfo: string = "sdkApiVersion";
-  private readonly openSourceRuntime: string = "OpenHarmony";
+  private readonly otherSourceDeviceInfo: string = 'distributionOSApiVersion';
+  private readonly openSourceDeviceInfo: string = 'sdkApiVersion';
+  private readonly openSourceRuntime: string = 'OpenHarmony';
   private readonly deviceInfoChecker: Map<string, string[]> = new Map([
-  [this.closeSourceDeviceInfo, ['@ohos.deviceInfo.d.ts']], 
+  [this.otherSourceDeviceInfo, ['@ohos.deviceInfo.d.ts']], 
   [this.openSourceDeviceInfo, ['@ohos.deviceInfo.d.ts']]
 ]);
   private readonly typeChecker?: ts.TypeChecker;
@@ -115,28 +115,31 @@ export class SdkVersionValidator {
   private isUndefinedNode(node: ts.Node): boolean {
     return ts.isIdentifier(node) && node.text === 'undefined';
   }
-
+  
   private isNodeWrappedInSdkComparison(node: ts.Node): boolean {
     if (this.compatibleSdkVersion === '' || !this.typeChecker) {
       return false;
     }
   
-    return this.findParentNode(node, (parent) => {
-      if (ts.isIfStatement(parent)) {
-        try {
-          const isInThenBlock = this.isNodeInIfThenBlock(node, parent);
-          if (!isInThenBlock) {
-            return false;
-          }
-  
-          const sdkComparisonResult = this.isSdkComparisonHelper(parent.expression);
-          return sdkComparisonResult;
-        } catch (error) {
-          return false;
-        }
-      }
+    return (
+      this.findParentNode(node, (parent) => this.isParentIfSdkComparison(node, parent)) !== null
+    );
+  }
+
+  private isParentIfSdkComparison(node: ts.Node, parent: ts.Node): boolean {
+    if (!ts.isIfStatement(parent)) {
       return false;
-    }) !== null;
+    }
+
+    try {
+      const isInThenBlock = this.isNodeInIfThenBlock(node, parent);
+      if (!isInThenBlock) {
+        return false;
+      }
+      return this.isSdkComparisonHelper(parent.expression);
+    } catch {
+      return false;
+    }
   }
 
   private isSdkComparisonHelper(expression: ts.Expression): boolean {
@@ -150,17 +153,17 @@ export class SdkVersionValidator {
     }
   
     const [matchedApi, validPackagePath] = matchedEntry;
-    if (runtimeType === this.openSourceRuntime && matchedApi === this.closeSourceDeviceInfo) {
+    if (runtimeType === this.openSourceRuntime && matchedApi === this.otherSourceDeviceInfo) {
       return false;
     }
   
     const parts = this.extractComparisonParts(expression, matchedApi);
     if (!parts) {
-      return false
+      return false;
     }
   
     if (!this.validateSdkVersionCompatibility(parts.operator, parts.value, matchedApi, runtimeType, parts.apiPosition)) {
-      return false
+      return false;
     }
   
     // Try to resolve the actual identifier used for this API in the expression
@@ -373,29 +376,29 @@ export class SdkVersionValidator {
     const effectiveOperator = apiPosition === 'right' ? this.flipOperator(operator) : operator;
   
     switch (effectiveOperator) {
-      case ">":
+      case '>':
         // sdkVersion > 15 → SDK version would be at least 16
         return comparisonValue + 1;
   
-      case ">=":
+      case '>=':
         // sdkVersion >= 16 → SDK version would be at least 16
         return comparisonValue;
   
-      case "<":
+      case '<':
         // sdkVersion < 16 → SDK version would be at most 15
         return comparisonValue - 1;
   
-      case "<=":
+      case '<=':
         // sdkVersion <= 15 → SDK version would be at most 15
         return comparisonValue;
   
-      case "==":
-      case "===":
+      case '==':
+      case '===':
         // sdkVersion === 16 → SDK version would be exactly 16
         return comparisonValue;
   
-      case "!=":
-      case "!==":
+      case '!=':
+      case '!==':
         // sdkVersion !== 15 → Cannot determine specific value
         return null;
   
@@ -412,14 +415,14 @@ export class SdkVersionValidator {
    */
   private flipOperator(operator: string): string {
     switch (operator) {
-      case ">": return "<";
-      case "<": return ">";
-      case ">=": return "<=";
-      case "<=": return ">=";
-      case "==":
-      case "===":
-      case "!=":
-      case "!==":
+      case '>': return '<';
+      case '<': return '>';
+      case '>=': return '<=';
+      case '<=': return '>=';
+      case '==':
+      case '===':
+      case '!=':
+      case '!==':
         return operator; // These don't need flipping
       default:
         return operator;
