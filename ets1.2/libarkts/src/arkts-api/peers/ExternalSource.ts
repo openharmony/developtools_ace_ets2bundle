@@ -13,29 +13,29 @@
  * limitations under the License.
  */
 
-import { global } from "../static/global"
-import { acceptNativeObjectArrayResult, unpackString } from "../utilities/private"
-import { KNativePointer, nullptr } from "@koalaui/interop"
-import { Program } from "../../../generated"
-import { ArktsObject } from "./ArktsObject"
+import { global } from '../static/global';
+import { acceptNativeObjectArrayResult, unpackString } from '../utilities/private';
+import { KNativePointer, nullptr } from '@koalaui/interop';
+import { Program } from '../../../generated';
+import { ArktsObject } from './ArktsObject';
 
 export class ExternalSource extends ArktsObject {
     constructor(peer: KNativePointer) {
-        super(peer)
+        super(peer);
     }
 
     getName(): string {
-        return unpackString(global.es2panda._ExternalSourceName(this.peer))
+        return unpackString(global.es2panda._ExternalSourceName(this.peer));
     }
 
     get programs(): Program[] {
         return acceptNativeObjectArrayResult<Program>(
             global.es2panda._ExternalSourcePrograms(this.peer),
             (instance: KNativePointer) => new Program(instance)
-        )
+        );
     }
 
     static instantiate(peer: KNativePointer) {
-        return new ExternalSource(peer)
+        return new ExternalSource(peer);
     }
 }

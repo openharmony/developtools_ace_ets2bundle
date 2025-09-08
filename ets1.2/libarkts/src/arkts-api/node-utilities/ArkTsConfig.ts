@@ -13,14 +13,14 @@
  * limitations under the License.
  */
 
-import { ArkTsConfig } from "../../../generated"
-import { traceGlobal } from "../../tracer"
+import { ArkTsConfig } from '../../../generated';
+import { traceGlobal } from '../../tracer';
 
 export function dumpArkTsConfigInfo(arkTsConfig: ArkTsConfig) {
-    traceGlobal(() => `ArkTsConfig info:`)
-    traceGlobal(() => `\tBaseUrl:          ${arkTsConfig.baseUrl}`)
-    traceGlobal(() => `\tConfigPath:       ${arkTsConfig.configPath}`)
-    traceGlobal(() => `\tOutDir:           ${arkTsConfig.outDir}`)
-    traceGlobal(() => `\tPackage:          ${arkTsConfig.package}`)
-    traceGlobal(() => `\tRootDir:          ${arkTsConfig.rootDir}`)
+    traceGlobal(() => `ArkTsConfig info:`);
+    traceGlobal(() => `\tBaseUrl:          ${arkTsConfig.baseUrl}`);
+    traceGlobal(() => `\tConfigPath:       ${arkTsConfig.configPath}`);
+    traceGlobal(() => `\tOutDir:           ${arkTsConfig.outDir}`);
+    traceGlobal(() => `\tPackage:          ${arkTsConfig.package}`);
+    traceGlobal(() => `\tRootDir:          ${arkTsConfig.rootDir}`);
 }

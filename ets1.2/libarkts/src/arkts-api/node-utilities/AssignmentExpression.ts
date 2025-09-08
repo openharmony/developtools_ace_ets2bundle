@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-import { AssignmentExpression, Expression } from "../../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
-import { Es2pandaAstNodeType, Es2pandaTokenType } from "../../../generated/Es2pandaEnums"
+import { AssignmentExpression, Expression } from '../../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
+import { Es2pandaAstNodeType, Es2pandaTokenType } from '../../../generated/Es2pandaEnums';
 
 export function createAssignmentExpression(
     left: Expression | undefined,
@@ -27,8 +27,8 @@ export function createAssignmentExpression(
         Es2pandaAstNodeType.AST_NODE_TYPE_ASSIGNMENT_EXPRESSION,
         left,
         right,
-        assignmentOperator,
-    )
+        assignmentOperator
+    );
 }
 
 export function updateAssignmentExpression(
@@ -37,14 +37,12 @@ export function updateAssignmentExpression(
     right: Expression | undefined,
     assignmentOperator: Es2pandaTokenType
 ): AssignmentExpression {
-    if (isSameNativeObject(left, original.left)
-        && isSameNativeObject(right, original.right)
-        && isSameNativeObject(assignmentOperator, original.operatorType)
+    if (
+        isSameNativeObject(left, original.left) &&
+        isSameNativeObject(right, original.right) &&
+        isSameNativeObject(assignmentOperator, original.operatorType)
     ) {
-        return original
+        return original;
     }
-    return updateNodeByNode(
-        createAssignmentExpression(left, right, assignmentOperator),
-        original
-    )
+    return updateNodeByNode(createAssignmentExpression(left, right, assignmentOperator), original);
 }

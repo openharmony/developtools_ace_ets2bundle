@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import { BlockStatement, CallExpression, Expression, TSTypeParameterInstantiation } from "../../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
+import { BlockStatement, CallExpression, Expression, TSTypeParameterInstantiation } from '../../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
 
 export function updateCallExpression(
     original: CallExpression,
@@ -24,21 +24,22 @@ export function updateCallExpression(
     typeParams: TSTypeParameterInstantiation | undefined,
     optional_arg: boolean = false,
     trailingComma: boolean = false,
-    trailingBlock: BlockStatement | undefined = undefined,
+    trailingBlock: BlockStatement | undefined = undefined
 ): CallExpression {
-    if (isSameNativeObject(callee, original.callee)
-        && isSameNativeObject(_arguments, original.arguments)
-        && isSameNativeObject(typeParams, original.typeParams)
-        && isSameNativeObject(optional_arg, original.isOptional)
-        && isSameNativeObject(trailingComma, original.hasTrailingComma)
-        && isSameNativeObject(trailingBlock, original.trailingBlock)
+    if (
+        isSameNativeObject(callee, original.callee) &&
+        isSameNativeObject(_arguments, original.arguments) &&
+        isSameNativeObject(typeParams, original.typeParams) &&
+        isSameNativeObject(optional_arg, original.isOptional) &&
+        isSameNativeObject(trailingComma, original.hasTrailingComma) &&
+        isSameNativeObject(trailingBlock, original.trailingBlock)
     ) {
-        return original
+        return original;
     }
     return updateNodeByNode(
         CallExpression.createCallExpression(callee, _arguments, typeParams, optional_arg, trailingComma, trailingBlock),
         original
-    )
+    );
 }
 
 export function inplaceUpdateCallExpression(
@@ -48,13 +49,14 @@ export function inplaceUpdateCallExpression(
     typeParams: TSTypeParameterInstantiation | undefined,
     optional_arg: boolean = false,
     trailingComma: boolean = false,
-    trailingBlock: BlockStatement | undefined = undefined,
+    trailingBlock: BlockStatement | undefined = undefined
 ) {
-    if (!isSameNativeObject(optional_arg, original.isOptional)
-     || !isSameNativeObject(trailingComma, original.hasTrailingComma)
+    if (
+        !isSameNativeObject(optional_arg, original.isOptional) ||
+        !isSameNativeObject(trailingComma, original.hasTrailingComma)
     ) {
         // unlikely
-        console.log(`Did not managed to update call expression ${callee?.dumpSrc()} inplace!`)
+        console.log(`Did not managed to update call expression ${callee?.dumpSrc()} inplace!`);
         const result = CallExpression.createCallExpression(
             callee,
             _arguments,
@@ -62,13 +64,13 @@ export function inplaceUpdateCallExpression(
             optional_arg,
             trailingComma,
             trailingBlock
-        )
-        result.onUpdate(original)
-        return result
+        );
+        result.onUpdate(original);
+        return result;
     }
-    original.setCallee(callee)
-    original.setArguments(_arguments)
-    original.setTypeParams(typeParams)
-    original.setTrailingBlock(trailingBlock)
-    return original
+    original.setCallee(callee);
+    original.setArguments(_arguments);
+    original.setTypeParams(typeParams);
+    original.setTrailingBlock(trailingBlock);
+    return original;
 }

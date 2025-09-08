@@ -13,160 +13,166 @@
  * limitations under the License.
  */
 
-import * as fs from "node:fs"
-import * as path from "node:path"
-import { Program } from "../generated"
-import { global } from "./arkts-api/static/global"
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { Program } from '../generated';
+import { global } from './arkts-api/static/global';
 
 export class Tracer {
-    static traceDir: string
-    static GlobalTracer: Tracer
-    static Tracers: Map<string, Tracer>
-    static LRUTracer: Tracer | undefined
+    static traceDir: string;
+    static GlobalTracer: Tracer;
+    static Tracers: Map<string, Tracer>;
+    static LRUTracer: Tracer | undefined;
 
     static startGlobalTracing(outDir: string) {
-        Tracer.traceDir = path.join(outDir, 'trace')
-        fs.rmSync(Tracer.traceDir, { force: true, recursive: true })
-        const globalTraceFile = path.join(Tracer.traceDir, '.global.txt')
+        Tracer.traceDir = path.join(outDir, 'trace');
+        fs.rmSync(Tracer.traceDir, { force: true, recursive: true });
+        const globalTraceFile = path.join(Tracer.traceDir, '.global.txt');
 
-        Tracer.GlobalTracer = new Tracer(globalTraceFile)
-        Tracer.pushContext('tracer')
-        traceGlobal(() => `Trace file created at ${globalTraceFile}`, true)
+        Tracer.GlobalTracer = new Tracer(globalTraceFile);
+        Tracer.pushContext('tracer');
+        traceGlobal(() => `Trace file created at ${globalTraceFile}`, true);
 
-        Tracer.Tracers = new Map<string, Tracer>()
+        Tracer.Tracers = new Map<string, Tracer>();
     }
 
     static startProgramTracing(program: Program) {
         if (!Tracer.GlobalTracer) {
-            return
+            return;
         }
-        const programPath = program.absoluteName
-        if (programPath == "") {
-            return
+        const programPath = program.absoluteName;
+        if (programPath == '') {
+            return;
         }
-        const suggestedTracer = Tracer.Tracers.get(programPath)
+        const suggestedTracer = Tracer.Tracers.get(programPath);
         if (suggestedTracer) {
-            Tracer.LRUTracer = suggestedTracer
-            return
+            Tracer.LRUTracer = suggestedTracer;
+            return;
         }
         if (!global.arktsconfig) {
-            throw new Error("global.arktsconfig should be set for tracer usage")
+            throw new Error('global.arktsconfig should be set for tracer usage');
         }
-        const relative = path.relative(global.arktsconfig?.baseUrl, programPath)
+        const relative = path.relative(global.arktsconfig?.baseUrl, programPath);
         const traceFileSuggestedPath = relative.startsWith('..')
             ? path.join(this.traceDir, 'external', program.absoluteName.slice(1))
-            : path.join(this.traceDir, relative)
+            : path.join(this.traceDir, relative);
         Tracer.LRUTracer = new Tracer(
-            path.join(path.dirname(traceFileSuggestedPath), path.basename(traceFileSuggestedPath, path.extname(traceFileSuggestedPath)) + '.txt'),
+            path.join(
+                path.dirname(traceFileSuggestedPath),
+                path.basename(traceFileSuggestedPath, path.extname(traceFileSuggestedPath)) + '.txt'
+            ),
             programPath
-        )
+        );
     }
 
     static stopProgramTracing() {
-        Tracer.LRUTracer = undefined
+        Tracer.LRUTracer = undefined;
     }
 
     static stopGlobalTracing() {
-        Tracer.GlobalTracer.traceEventsStats()
+        Tracer.GlobalTracer.traceEventsStats();
     }
 
-    private constructor(private traceFilePath: string, inputFilePath?: string) {
+    private constructor(
+        private traceFilePath: string,
+        inputFilePath?: string
+    ) {
         if (!fs.existsSync(path.dirname(traceFilePath))) {
-            fs.mkdirSync(path.dirname(traceFilePath), { recursive: true })
+            fs.mkdirSync(path.dirname(traceFilePath), { recursive: true });
         }
         if (inputFilePath) {
-            Tracer.Tracers.set(inputFilePath, this)
+            Tracer.Tracers.set(inputFilePath, this);
         }
     }
 
     trace(traceLog: string | undefined | void) {
         if (!traceLog) {
-            return
+            return;
         }
-        const lastContext = Tracer.lastContext()
-        fs.appendFileSync(this.traceFilePath, `[${lastContext.padStart(12)}] ${traceLog}\n`, 'utf-8')
+        const lastContext = Tracer.lastContext();
+        fs.appendFileSync(this.traceFilePath, `[${lastContext.padStart(12)}] ${traceLog}\n`, 'utf-8');
     }
 
-    events: Map<string, number> | undefined
-    eventsPerContext: Map<string, Map<string, number> > | undefined
+    events: Map<string, number> | undefined;
+    eventsPerContext: Map<string, Map<string, number>> | undefined;
 
     recordEvent(event: string) {
         if (!this.events) {
-            this.events = new Map<string, number>()
+            this.events = new Map<string, number>();
         }
-        this.events.set(event, (this.events.get(event) ?? 0) + 1)
+        this.events.set(event, (this.events.get(event) ?? 0) + 1);
 
         if (!this.eventsPerContext) {
-            this.eventsPerContext = new Map<string, Map<string, number> >()
+            this.eventsPerContext = new Map<string, Map<string, number>>();
         }
         if (!this.eventsPerContext.has(Tracer.lastContext())) {
-            this.eventsPerContext.set(Tracer.lastContext(), new Map<string, number>())
+            this.eventsPerContext.set(Tracer.lastContext(), new Map<string, number>());
         }
-        const eventsPerContext = this.eventsPerContext.get(Tracer.lastContext())
-        eventsPerContext?.set(event, (eventsPerContext.get(event) ?? 0) + 1)
+        const eventsPerContext = this.eventsPerContext.get(Tracer.lastContext());
+        eventsPerContext?.set(event, (eventsPerContext.get(event) ?? 0) + 1);
     }
 
     traceEventsStats() {
         if (this.events && this.eventsPerContext) {
             const maxLength = Math.max(
-                ...[...this.events.keys()].map(it => `Event "${it}"`.length),
-                ...[...this.eventsPerContext?.keys()].map(it => `  in context [${it}]`.length),
-            )
-            this.trace(`Events stats:`)
+                ...[...this.events.keys()].map((it) => `Event "${it}"`.length),
+                ...[...this.eventsPerContext?.keys()].map((it) => `  in context [${it}]`.length)
+            );
+            this.trace(`Events stats:`);
             this.events.forEach((eventCnt: number, event: string) => {
-                this.trace(`${`Event "${event}"`.padEnd(maxLength)}: ${eventCnt}`)
+                this.trace(`${`Event "${event}"`.padEnd(maxLength)}: ${eventCnt}`);
                 this.eventsPerContext?.forEach((localizedEventsMap: Map<string, number>, context: string) => {
                     localizedEventsMap.forEach((localizedEventCnt: number, localizedEvent: string) => {
                         if (localizedEvent == event) {
-                            this.trace(`${`  in context [${context}]`.padEnd(maxLength)}: ${localizedEventCnt}`)
+                            this.trace(`${`  in context [${context}]`.padEnd(maxLength)}: ${localizedEventCnt}`);
                         }
-                    })
-                })
-            })
+                    });
+                });
+            });
         } else {
-            this.trace('No events recorded')
+            this.trace('No events recorded');
         }
-        Tracer.popContext()
+        Tracer.popContext();
     }
 
-    private static contexts: string[] = []
+    private static contexts: string[] = [];
 
     static lastContext() {
-        return Tracer.contexts[Tracer.contexts.length - 1]
+        return Tracer.contexts[Tracer.contexts.length - 1];
     }
 
     static pushContext(newContext: string) {
-        Tracer.contexts.push(newContext)
+        Tracer.contexts.push(newContext);
     }
 
     static popContext() {
-        Tracer.contexts.pop()
+        Tracer.contexts.pop();
     }
 }
 
 export function traceGlobal(traceLog: () => string | undefined | void, forceLogToConsole: boolean = false) {
     if (forceLogToConsole) {
-        const result = traceLog()
+        const result = traceLog();
         if (result) {
-            console.log(`[${Tracer.lastContext()}] ${result}`)
+            console.log(`[${Tracer.lastContext()}] ${result}`);
         }
     }
     if (!Tracer.GlobalTracer) {
-        return
+        return;
     }
-    Tracer.GlobalTracer.trace(traceLog())
+    Tracer.GlobalTracer.trace(traceLog());
 }
 
 export function trace(event: string, traceLog: () => string | undefined | void, forceLogToConsole: boolean = false) {
     if (forceLogToConsole) {
-        const result = traceLog()
+        const result = traceLog();
         if (result) {
-            console.log(`[${Tracer.lastContext()}] ${result}`)
+            console.log(`[${Tracer.lastContext()}] ${result}`);
         }
     }
     if (!Tracer.GlobalTracer) {
-        return
+        return;
     }
-    Tracer.LRUTracer?.trace(traceLog())
-    Tracer.GlobalTracer.recordEvent(event)
+    Tracer.LRUTracer?.trace(traceLog());
+    Tracer.GlobalTracer.recordEvent(event);
 }

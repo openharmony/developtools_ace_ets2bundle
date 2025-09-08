@@ -13,28 +13,33 @@
  * limitations under the License.
  */
 
-import { Program } from "../../../generated"
-import { traceGlobal } from "../../tracer"
+import { Program } from '../../../generated';
+import { traceGlobal } from '../../tracer';
 
 export function dumpProgramInfo(program: Program) {
-    traceGlobal(() => `Program info:`)
-    traceGlobal(() => `\tAbsoluteName:          ${program.absoluteName}`)
-    traceGlobal(() => `\tFileName:              ${program.fileName}`)
-    traceGlobal(() => `\tFileNameWithExtension: ${program.fileNameWithExtension}`)
-    traceGlobal(() => `\tModuleName:            ${program.moduleName}`)
-    traceGlobal(() => `\tModulePrefix:          ${program.modulePrefix}`)
-    traceGlobal(() => `\tRelativeFilePath:      ${program.relativeFilePath}`)
-    traceGlobal(() => `\tResolvedFilePath:      ${program.resolvedFilePath}`)
-    traceGlobal(() => `\tSourceFileFolder:      ${program.sourceFileFolder}`)
-    traceGlobal(() => `\tSourceFilePath:        ${program.sourceFilePath}`)
+    traceGlobal(() => `Program info:`);
+    traceGlobal(() => `\tAbsoluteName:          ${program.absoluteName}`);
+    traceGlobal(() => `\tFileName:              ${program.fileName}`);
+    traceGlobal(() => `\tFileNameWithExtension: ${program.fileNameWithExtension}`);
+    traceGlobal(() => `\tModuleName:            ${program.moduleName}`);
+    traceGlobal(() => `\tModulePrefix:          ${program.modulePrefix}`);
+    traceGlobal(() => `\tRelativeFilePath:      ${program.relativeFilePath}`);
+    traceGlobal(() => `\tResolvedFilePath:      ${program.resolvedFilePath}`);
+    traceGlobal(() => `\tSourceFileFolder:      ${program.sourceFileFolder}`);
+    traceGlobal(() => `\tSourceFilePath:        ${program.sourceFilePath}`);
 }
 
 export function dumpProgramSrcFormatted(program: Program, recursive: boolean, withLines: boolean = true) {
-    const lines = program.ast.dumpSrc()
-    console.log(`// file: ${program.absoluteName}`)
+    const lines = program.ast.dumpSrc();
+    console.log(`// file: ${program.absoluteName}`);
     if (withLines) {
-        console.log(lines.split('\n').map((it, index) => `${`${index + 1}`.padStart(4)} |${it}`).join('\n'))
+        console.log(
+            lines
+                .split('\n')
+                .map((it, index) => `${`${index + 1}`.padStart(4)} |${it}`)
+                .join('\n')
+        );
     } else {
-        console.log(lines)
+        console.log(lines);
     }
 }

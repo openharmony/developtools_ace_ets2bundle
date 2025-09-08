@@ -15,18 +15,18 @@
 
 // koala-wrapper compatibility helpers
 
-import { KNativePointer } from "@koalaui/interop"
-import { ETSModule } from "../../generated"
-import { createETSModuleFromContext } from "./utilities/public"
-import { global } from "./static/global"
+import { KNativePointer } from '@koalaui/interop';
+import { ETSModule } from '../../generated';
+import { createETSModuleFromContext } from './utilities/public';
+import { global } from './static/global';
 
 export class EtsScript {
     public static fromContext(): ETSModule {
-        return createETSModuleFromContext()
+        return createETSModuleFromContext();
     }
 }
 
 export function destroyConfig(config: KNativePointer): void {
-    global.es2panda._DestroyConfig(config)
-    global.resetConfig()
+    global.es2panda._DestroyConfig(config);
+    global.resetConfig();
 }

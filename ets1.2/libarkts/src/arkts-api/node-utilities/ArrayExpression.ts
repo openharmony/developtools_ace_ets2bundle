@@ -13,30 +13,18 @@
  * limitations under the License.
  */
 
-import { Es2pandaAstNodeType } from "../../../generated/Es2pandaEnums"
-import { ArrayExpression, Expression } from "../../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
+import { Es2pandaAstNodeType } from '../../../generated/Es2pandaEnums';
+import { ArrayExpression, Expression } from '../../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
 
-export function createArrayExpression(
-    elements: readonly Expression[]
-): ArrayExpression {
-    return ArrayExpression.create1ArrayExpression(
-        Es2pandaAstNodeType.AST_NODE_TYPE_ARRAY_EXPRESSION,
-        elements,
-        false
-    )
+export function createArrayExpression(elements: readonly Expression[]): ArrayExpression {
+    return ArrayExpression.create1ArrayExpression(Es2pandaAstNodeType.AST_NODE_TYPE_ARRAY_EXPRESSION, elements, false);
 }
 
-export function updateArrayExpression(
-    original: ArrayExpression,
-    elements: readonly Expression[]
-): ArrayExpression {
+export function updateArrayExpression(original: ArrayExpression, elements: readonly Expression[]): ArrayExpression {
     if (isSameNativeObject(original.elements, elements)) {
-        return original
+        return original;
     }
-    return updateNodeByNode(
-        createArrayExpression(elements),
-        original
-    )
+    return updateNodeByNode(createArrayExpression(elements), original);
 }

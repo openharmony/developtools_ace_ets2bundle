@@ -14,22 +14,14 @@
  */
 
 // Improve: remove private export
-export * from "./utilities/private"
-export * from "./utilities/public"
-export * from "./types"
-export * from "./factory/nodeFactory"
-export * from "./factory/nodeTests"
-export {
-    visitEachChild,
-} from "./visitor/visitor"
-export {
-    SyntaxKind,
-    NodeFlags,
-} from "./static/enums"
+export * from './utilities/private';
+export * from './utilities/public';
+export * from './types';
+export * from './factory/nodeFactory';
+export * from './factory/nodeTests';
+export { visitEachChild } from './visitor/visitor';
+export { SyntaxKind, NodeFlags } from './static/enums';
 
 // from ArkTS api
-export * from "../arkts-api/static/global"
-export {
-    Es2pandaContextState as ContextState,
-    Es2pandaPrimitiveType as Es2pandaPrimitiveType,
-} from "../arkts-api"
+export * from '../arkts-api/static/global';
+export { Es2pandaContextState as ContextState, Es2pandaPrimitiveType as Es2pandaPrimitiveType } from '../arkts-api';

@@ -30,37 +30,41 @@ import {
     TryStatement,
     TSTypeParameter,
     VariableDeclarator,
-} from "../../../generated"
-import { factory as generatedFactory } from "../../../generated/factory"
-import { createScriptFunction, inplaceUpdateScriptFunction, updateScriptFunction } from "../node-utilities/ScriptFunction"
-import { inplaceUpdateCallExpression, updateCallExpression } from "../node-utilities/CallExpression"
-import { createNumberLiteral, updateNumberLiteral } from "../node-utilities/NumberLiteral"
-import { updateMemberExpression } from "../node-utilities/MemberExpression"
-import { createETSParameterExpression, updateETSParameterExpression } from "../node-utilities/ETSParameterExpression"
-import { updateTSTypeParameter } from "../node-utilities/TSTypeParameter"
-import { updateETSTypeReferencePart } from "../node-utilities/TSTypeReferencePart"
-import { updateETSImportDeclaration } from "../node-utilities/ETSImportDeclaration"
-import { updateVariableDeclarator } from "../node-utilities/VariableDeclarator"
-import { createClassDefinition, updateClassDefinition } from "../node-utilities/ClassDefinition"
-import { updateETSStructDeclaration } from "../node-utilities/ETSStructDeclaration"
-import { updateClassProperty } from "../node-utilities/ClassProperty"
-import { createETSFunctionType, updateETSFunctionType } from "../node-utilities/ETSFunctionType"
-import { createMethodDefinition, updateMethodDefinition } from "../node-utilities/MethodDefinition"
-import { createTSInterfaceDeclaration, updateTSInterfaceDeclaration } from "../node-utilities/TSInterfaceDeclaration"
-import { updateTryStatement } from "../node-utilities/TryStatement"
-import { createAssignmentExpression, updateAssignmentExpression } from "../node-utilities/AssignmentExpression"
-import { createObjectExpression, updateObjectExpression } from "../node-utilities/ObjectExpression"
-import { updateETSTuple } from "../node-utilities/ETSTuple"
-import { createArrayExpression, updateArrayExpression } from "../node-utilities/ArrayExpression"
-import { updateBlockStatement } from "../node-utilities/BlockStatement"
-import { updateETSModule } from "../node-utilities/ETSModule"
-import { createOpaqueTypeNode } from "../node-utilities/OpaqueTypeNode"
+} from '../../../generated';
+import { factory as generatedFactory } from '../../../generated/factory';
+import {
+    createScriptFunction,
+    inplaceUpdateScriptFunction,
+    updateScriptFunction,
+} from '../node-utilities/ScriptFunction';
+import { inplaceUpdateCallExpression, updateCallExpression } from '../node-utilities/CallExpression';
+import { createNumberLiteral, updateNumberLiteral } from '../node-utilities/NumberLiteral';
+import { updateMemberExpression } from '../node-utilities/MemberExpression';
+import { createETSParameterExpression, updateETSParameterExpression } from '../node-utilities/ETSParameterExpression';
+import { updateTSTypeParameter } from '../node-utilities/TSTypeParameter';
+import { updateETSTypeReferencePart } from '../node-utilities/TSTypeReferencePart';
+import { updateETSImportDeclaration } from '../node-utilities/ETSImportDeclaration';
+import { updateVariableDeclarator } from '../node-utilities/VariableDeclarator';
+import { createClassDefinition, updateClassDefinition } from '../node-utilities/ClassDefinition';
+import { updateETSStructDeclaration } from '../node-utilities/ETSStructDeclaration';
+import { updateClassProperty } from '../node-utilities/ClassProperty';
+import { createETSFunctionType, updateETSFunctionType } from '../node-utilities/ETSFunctionType';
+import { createMethodDefinition, updateMethodDefinition } from '../node-utilities/MethodDefinition';
+import { createTSInterfaceDeclaration, updateTSInterfaceDeclaration } from '../node-utilities/TSInterfaceDeclaration';
+import { updateTryStatement } from '../node-utilities/TryStatement';
+import { createAssignmentExpression, updateAssignmentExpression } from '../node-utilities/AssignmentExpression';
+import { createObjectExpression, updateObjectExpression } from '../node-utilities/ObjectExpression';
+import { updateETSTuple } from '../node-utilities/ETSTuple';
+import { createArrayExpression, updateArrayExpression } from '../node-utilities/ArrayExpression';
+import { updateBlockStatement } from '../node-utilities/BlockStatement';
+import { updateETSModule } from '../node-utilities/ETSModule';
+import { createOpaqueTypeNode } from '../node-utilities/OpaqueTypeNode';
 
 export const factory = {
     ...generatedFactory,
 
     createIdentifier: Identifier.create2Identifier,
-    updateIdentifier:  Identifier.update2Identifier,
+    updateIdentifier: Identifier.update2Identifier,
 
     createETSModule: ETSModule.create1ETSModule,
     updateETSModule,
@@ -131,10 +135,10 @@ export const factory = {
     createBlockStatement: BlockStatement.createBlockStatement,
     updateBlockStatement,
 
-    updateInterfaceBody : generatedFactory.updateTSInterfaceBody,
+    updateInterfaceBody: generatedFactory.updateTSInterfaceBody,
 
     createClassStaticBlock: ClassStaticBlock.createClassStaticBlock,
     updateClassStaticBlock: ClassStaticBlock.updateClassStaticBlock,
 
     createOpaqueTypeNode,
-}
+};

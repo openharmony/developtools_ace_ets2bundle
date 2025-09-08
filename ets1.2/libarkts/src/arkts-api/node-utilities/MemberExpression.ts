@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-import { Expression, MemberExpression } from "../../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
-import { Es2pandaMemberExpressionKind } from "../../../generated/Es2pandaEnums"
+import { Expression, MemberExpression } from '../../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
+import { Es2pandaMemberExpressionKind } from '../../../generated/Es2pandaEnums';
 
 export function updateMemberExpression(
     original: MemberExpression,
@@ -26,16 +26,17 @@ export function updateMemberExpression(
     computed: boolean,
     optional_arg: boolean
 ): MemberExpression {
-    if (isSameNativeObject(object_arg, original.object)
-        && isSameNativeObject(property, original.property)
-        && isSameNativeObject(kind, original.kind)
-        && isSameNativeObject(computed, original.isComputed)
-        && isSameNativeObject(optional_arg, original.isOptional)
+    if (
+        isSameNativeObject(object_arg, original.object) &&
+        isSameNativeObject(property, original.property) &&
+        isSameNativeObject(kind, original.kind) &&
+        isSameNativeObject(computed, original.isComputed) &&
+        isSameNativeObject(optional_arg, original.isOptional)
     ) {
-        return original
+        return original;
     }
     return updateNodeByNode(
         MemberExpression.createMemberExpression(object_arg, property, kind, computed, optional_arg),
         original
-    )
+    );
 }

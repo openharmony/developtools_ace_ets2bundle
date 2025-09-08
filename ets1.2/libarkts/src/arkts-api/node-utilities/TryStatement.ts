@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import { BlockStatement, CatchClause, LabelPair, Statement, TryStatement } from "../../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
+import { BlockStatement, CatchClause, LabelPair, Statement, TryStatement } from '../../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
 
 export function updateTryStatement(
     original: TryStatement,
@@ -25,11 +25,12 @@ export function updateTryStatement(
     finalizerInsertionsLabelPair: readonly LabelPair[],
     finalizerInsertionsStatement: readonly Statement[]
 ): TryStatement {
-    if (isSameNativeObject(block, original.block)
-        && isSameNativeObject(catchClauses, original.catchClauses)
-        && isSameNativeObject(finalizer, original.finallyBlock)
+    if (
+        isSameNativeObject(block, original.block) &&
+        isSameNativeObject(catchClauses, original.catchClauses) &&
+        isSameNativeObject(finalizer, original.finallyBlock)
     ) {
-        return original
+        return original;
     }
     return updateNodeByNode(
         TryStatement.createTryStatement(
@@ -37,8 +38,8 @@ export function updateTryStatement(
             catchClauses,
             finalizer,
             finalizerInsertionsLabelPair,
-            finalizerInsertionsStatement,
+            finalizerInsertionsStatement
         ),
         original
-    )
+    );
 }

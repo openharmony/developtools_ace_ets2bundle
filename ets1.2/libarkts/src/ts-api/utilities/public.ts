@@ -13,43 +13,43 @@
  * limitations under the License.
  */
 
-import { global } from "../../arkts-api/static/global"
-import { throwError } from "../../utils"
-import * as ts from "../."
-import { KNativePointer, nullptr } from "@koalaui/interop"
-import { unpackNonNullableNode } from "../../arkts-api"
+import { global } from '../../arkts-api/static/global';
+import { throwError } from '../../utils';
+import * as ts from '../.';
+import { KNativePointer, nullptr } from '@koalaui/interop';
+import { unpackNonNullableNode } from '../../arkts-api';
 
-export { proceedToState, startChecker } from "../../arkts-api"
+export { proceedToState, startChecker } from '../../arkts-api';
 
 // Improve: like in arkts utils
 export function getDecl(node: ts.Node): ts.Node | undefined {
     if (node.node === undefined) {
-        throwError('there is no arkts pair of ts node (unable to getDecl)')
+        throwError('there is no arkts pair of ts node (unable to getDecl)');
     }
-    let decl: KNativePointer = node.node.peer
-    decl = global.es2panda._AstNodeVariableConst(global.context, decl)
+    let decl: KNativePointer = node.node.peer;
+    decl = global.es2panda._AstNodeVariableConst(global.context, decl);
     if (decl === nullptr) {
-        return undefined
+        return undefined;
     }
-    decl = global.es2panda._VariableDeclaration(global.context, decl)
+    decl = global.es2panda._VariableDeclaration(global.context, decl);
     if (decl === nullptr) {
-        return undefined
+        return undefined;
     }
-    decl = global.es2panda._DeclNode(global.context, decl)
+    decl = global.es2panda._DeclNode(global.context, decl);
     if (decl === nullptr) {
-        return undefined
+        return undefined;
     }
-    return ts.unpackNode(unpackNonNullableNode(decl))
+    return ts.unpackNode(unpackNonNullableNode(decl));
 }
 
 // Improve: like in arkts utils
 export function getOriginalNode(node: ts.Node): ts.Node {
     if (node.node === undefined) {
         // Improve: fix this
-        throwError('there is no arkts pair of ts node (unable to getOriginalNode)')
+        throwError('there is no arkts pair of ts node (unable to getOriginalNode)');
     }
     if (node.node.originalPeer === nullptr) {
-        return node
+        return node;
     }
-    return ts.unpackNode(unpackNonNullableNode(node.node.originalPeer))
+    return ts.unpackNode(unpackNonNullableNode(node.node.originalPeer));
 }

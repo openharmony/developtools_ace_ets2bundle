@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-import { Expression, VariableDeclarator } from "../../../generated"
-import { Es2pandaVariableDeclaratorFlag } from "../../../generated/Es2pandaEnums"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
+import { Expression, VariableDeclarator } from '../../../generated';
+import { Es2pandaVariableDeclaratorFlag } from '../../../generated/Es2pandaEnums';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
 
 export function updateVariableDeclarator(
     original: VariableDeclarator,
@@ -24,14 +24,12 @@ export function updateVariableDeclarator(
     ident?: Expression,
     init?: Expression
 ): VariableDeclarator {
-    if (isSameNativeObject(flag, original.flag)
-        && isSameNativeObject(ident, original.id)
-        && isSameNativeObject(init, original.init)
+    if (
+        isSameNativeObject(flag, original.flag) &&
+        isSameNativeObject(ident, original.id) &&
+        isSameNativeObject(init, original.init)
     ) {
-        return original
+        return original;
     }
-    return updateNodeByNode(
-        VariableDeclarator.create1VariableDeclarator(flag, ident, init),
-        original
-    )
+    return updateNodeByNode(VariableDeclarator.create1VariableDeclarator(flag, ident, init), original);
 }

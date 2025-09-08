@@ -13,10 +13,17 @@
  * limitations under the License.
  */
 
-import { AnnotationUsage, ETSFunctionType, Expression, FunctionSignature, TSTypeParameterDeclaration, TypeNode } from "../../../generated"
-import { Es2pandaScriptFunctionFlags } from "../../../generated/Es2pandaEnums"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
+import {
+    AnnotationUsage,
+    ETSFunctionType,
+    Expression,
+    FunctionSignature,
+    TSTypeParameterDeclaration,
+    TypeNode,
+} from '../../../generated';
+import { Es2pandaScriptFunctionFlags } from '../../../generated/Es2pandaEnums';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
 
 export function createETSFunctionType(
     typeParams: TSTypeParameterDeclaration | undefined,
@@ -24,18 +31,13 @@ export function createETSFunctionType(
     returnTypeAnnotation: TypeNode | undefined,
     hasReceiver: boolean,
     funcFlags: Es2pandaScriptFunctionFlags,
-    annotations?: readonly AnnotationUsage[],
+    annotations?: readonly AnnotationUsage[]
 ): ETSFunctionType {
     return ETSFunctionType.createETSFunctionType(
-        FunctionSignature.createFunctionSignature(
-            typeParams,
-            params,
-            returnTypeAnnotation,
-            hasReceiver,
-        ),
+        FunctionSignature.createFunctionSignature(typeParams, params, returnTypeAnnotation, hasReceiver),
         funcFlags,
-        annotations,
-    )
+        annotations
+    );
 }
 
 export function updateETSFunctionType(
@@ -45,18 +47,19 @@ export function updateETSFunctionType(
     returnTypeAnnotation: TypeNode | undefined,
     hasReceiver: boolean,
     funcFlags: Es2pandaScriptFunctionFlags,
-    annotations?: readonly AnnotationUsage[],
+    annotations?: readonly AnnotationUsage[]
 ): ETSFunctionType {
-    if (isSameNativeObject(typeParams, original.typeParams)
-        && isSameNativeObject(params, original.params)
-        && isSameNativeObject(returnTypeAnnotation, original.returnType)
-        && isSameNativeObject(funcFlags, original.flags)
-        && isSameNativeObject(annotations, original.annotations)
+    if (
+        isSameNativeObject(typeParams, original.typeParams) &&
+        isSameNativeObject(params, original.params) &&
+        isSameNativeObject(returnTypeAnnotation, original.returnType) &&
+        isSameNativeObject(funcFlags, original.flags) &&
+        isSameNativeObject(annotations, original.annotations)
     ) {
-        return original
+        return original;
     }
     return updateNodeByNode(
         createETSFunctionType(typeParams, params, returnTypeAnnotation, hasReceiver, funcFlags, annotations),
         original
-    )
+    );
 }

@@ -13,18 +13,16 @@
  * limitations under the License.
  */
 
-import { ArktsObject } from "./ArktsObject"
-import { global } from "../static/global"
-import { KNativePointer } from "@koalaui/interop"
+import { ArktsObject } from './ArktsObject';
+import { global } from '../static/global';
+import { KNativePointer } from '@koalaui/interop';
 
 export class ImportPathManager extends ArktsObject {
     constructor(peer: KNativePointer) {
-        super(peer)
+        super(peer);
     }
 
     static create(): ImportPathManager {
-        return new ImportPathManager(
-            global.es2panda._ETSParserGetImportPathManager(global.context)
-        );
+        return new ImportPathManager(global.es2panda._ETSParserGetImportPathManager(global.context));
     }
 }

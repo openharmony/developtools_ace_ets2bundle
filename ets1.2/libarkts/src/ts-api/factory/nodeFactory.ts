@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import { throwError } from "../../utils"
-import * as ts from "@koalaui/ets-tsc"
-import * as arkts from "../../arkts-api"
+import { throwError } from '../../utils';
+import * as ts from '@koalaui/ets-tsc';
+import * as arkts from '../../arkts-api';
 
 import {
     passNode,
@@ -26,11 +26,8 @@ import {
     passIdentifier,
     passTypeParams,
     passVariableDeclarationKind,
-} from "../utilities/private"
-import {
-    SyntaxKind,
-    NodeFlags,
-} from "../static/enums"
+} from '../utilities/private';
+import { SyntaxKind, NodeFlags } from '../static/enums';
 import {
     Es2pandaContextState,
     Es2pandaPrimitiveType,
@@ -41,12 +38,11 @@ import {
     Es2pandaClassDefinitionModifiers,
     Es2pandaVariableDeclarationKind,
     Es2pandaVariableDeclaratorFlag,
-} from "../../arkts-api"
+} from '../../arkts-api';
 import {
     // ts types:
     Modifier,
     BinaryOperatorToken,
-
     Node,
     Token,
     Identifier,
@@ -83,7 +79,7 @@ import {
     ImportDeclaration,
     ImportClause,
     ImportSpecifier,
-} from "../types"
+} from '../types';
 
 // Improve: add flags and base
 export function createNodeFactory() {
@@ -141,7 +137,7 @@ export function createNodeFactory() {
         updateParenthesizedExpression,
         // createImportDeclaration,
         createImportSpecifier,
-    }
+    };
 
     // @api
     // function createSourceFile(
@@ -149,9 +145,12 @@ export function createNodeFactory() {
     //     endOfFileToken: EndOfFileToken,
     //     flags: NodeFlags,
     // ): SourceFile;
-    function createSourceFile(source: string, state: Es2pandaContextState = Es2pandaContextState.ES2PANDA_STATE_PARSED): SourceFile {
-        const node = arkts.EtsScript.createFromSource(source, state)
-        return new SourceFile(node)
+    function createSourceFile(
+        source: string,
+        state: Es2pandaContextState = Es2pandaContextState.ES2PANDA_STATE_PARSED
+    ): SourceFile {
+        const node = arkts.EtsScript.createFromSource(source, state);
+        return new SourceFile(node);
     }
 
     // Improve: fix (now doesn't create a new node)
@@ -165,32 +164,16 @@ export function createNodeFactory() {
     //     hasNoDefaultLib?: boolean,
     //     libReferences?: readonly FileReference[]
     // ): SourceFile;
-    function updateSourceFile(
-        node: SourceFile,
-        statements: readonly Statement[]
-    ): SourceFile {
-        return new SourceFile(
-            arkts.EtsScript.updateByStatements(
-                node.node,
-                passNodeArray(statements)
-            )
-        )
+    function updateSourceFile(node: SourceFile, statements: readonly Statement[]): SourceFile {
+        return new SourceFile(arkts.EtsScript.updateByStatements(node.node, passNodeArray(statements)));
     }
 
     // @api
     // createIdentifier(
     //     text: string
     // ): Identifier;
-    function createIdentifier(
-        text: string,
-        typeAnnotation?: TypeNode | undefined
-    ): Identifier {
-        return new Identifier(
-            arkts.factory.createIdentifier(
-                text,
-                passNode(typeAnnotation)
-            )
-        )
+    function createIdentifier(text: string, typeAnnotation?: TypeNode | undefined): Identifier {
+        return new Identifier(arkts.factory.createIdentifier(text, passNode(typeAnnotation)));
     }
 
     // @api
@@ -198,14 +181,8 @@ export function createNodeFactory() {
     //     text: string,
     //     isSingleQuote?: boolean
     // ): StringLiteral;
-    function createStringLiteral(
-        str: string
-    ): StringLiteral {
-        return new StringLiteral(
-            arkts.factory.createStringLiteral(
-                str
-            )
-        )
+    function createStringLiteral(str: string): StringLiteral {
+        return new StringLiteral(arkts.factory.createStringLiteral(str));
     }
 
     // @api
@@ -213,14 +190,8 @@ export function createNodeFactory() {
     //     value: string | number,
     //     numericLiteralFlags: TokenFlags = TokenFlags.None
     // ): NumericLiteral {
-    function createNumericLiteral(
-        value: number
-    ): NumericLiteral {
-        return new NumericLiteral(
-            arkts.factory.createNumberLiteral(
-                value
-            )
-        )
+    function createNumericLiteral(value: number): NumericLiteral {
+        return new NumericLiteral(arkts.factory.createNumberLiteral(value));
     }
 
     // @api
@@ -238,7 +209,7 @@ export function createNodeFactory() {
                 passVariableDeclarationKind(flags),
                 passNodeArray(declarations)
             )
-        )
+        );
     }
 
     // @api
@@ -257,7 +228,7 @@ export function createNodeFactory() {
                 passVariableDeclarationKind(node.flags),
                 passNodeArray(declarations)
             )
-        )
+        );
     }
 
     // @api
@@ -269,14 +240,13 @@ export function createNodeFactory() {
         modifiers: readonly Modifier[] | undefined,
         declarationList: VariableDeclarationList | readonly VariableDeclaration[]
     ): VariableStatement {
-        const node: arkts.VariableDeclaration = (declarationList instanceof VariableDeclarationList) ? declarationList.node : createVariableDeclarationList(declarationList, undefined).node
+        const node: arkts.VariableDeclaration =
+            declarationList instanceof VariableDeclarationList
+                ? declarationList.node
+                : createVariableDeclarationList(declarationList, undefined).node;
         return new VariableStatement(
-            arkts.factory.createVariableDeclaration(
-                passModifiers(modifiers),
-                node.declarationKind,
-                node.declarators
-            )
-        )
+            arkts.factory.createVariableDeclaration(passModifiers(modifiers), node.declarationKind, node.declarators)
+        );
     }
 
     // @api
@@ -297,7 +267,7 @@ export function createNodeFactory() {
                 declarationList.node.declarationKind,
                 declarationList.node.declarators
             )
-        )
+        );
     }
 
     // @api
@@ -320,7 +290,7 @@ export function createNodeFactory() {
                 passIdentifier(name, type),
                 passNode(initializer)
             )
-        )
+        );
     }
 
     // @api
@@ -346,7 +316,7 @@ export function createNodeFactory() {
                 passIdentifier(name, type),
                 passNode(initializer)
             )
-        )
+        );
     }
 
     // @api
@@ -378,13 +348,15 @@ export function createNodeFactory() {
                         type?.node
                     ),
                     0,
-                    passModifiers(modifiers) | Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+                    passModifiers(modifiers) |
+                        Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
+                        Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
                     body === undefined,
                     passIdentifier(name)
                 ),
                 false
             )
-        )
+        );
     }
 
     // @api
@@ -420,13 +392,15 @@ export function createNodeFactory() {
                         type?.node
                     ),
                     0,
-                    passModifiers(modifiers) | Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+                    passModifiers(modifiers) |
+                        Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
+                        Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
                     body === undefined,
                     passIdentifier(name)
                 ),
                 false
             )
-        )
+        );
     }
 
     // @api
@@ -448,13 +422,10 @@ export function createNodeFactory() {
     ): ParameterDeclaration {
         return new ParameterDeclaration(
             arkts.factory.createParameterDeclaration(
-                arkts.factory.createIdentifier(
-                    (name instanceof Identifier) ? name.node.name : name,
-                    type?.node
-                ),
+                arkts.factory.createIdentifier(name instanceof Identifier ? name.node.name : name, type?.node),
                 initializer?.node
             )
-        )
+        );
     }
 
     // @api
@@ -479,13 +450,10 @@ export function createNodeFactory() {
         return new ParameterDeclaration(
             arkts.factory.updateParameterDeclaration(
                 node.node,
-                arkts.factory.createIdentifier(
-                    (name instanceof Identifier) ? name.node.name : name,
-                    type?.node
-                ),
+                arkts.factory.createIdentifier(name instanceof Identifier ? name.node.name : name, type?.node),
                 initializer?.node
             )
-        )
+        );
     }
 
     // @api
@@ -508,7 +476,7 @@ export function createNodeFactory() {
                 defaultType?.node,
                 passModifiers(modifiers)
             )
-        )
+        );
     }
 
     // @api
@@ -534,21 +502,15 @@ export function createNodeFactory() {
                 defaultType?.node,
                 passModifiers(modifiers)
             )
-        )
+        );
     }
 
     // @api
     // createETSUnionTypeNode(
     //     types: readonly TypeNode[]
     // ): UnionTypeNode
-    function createETSUnionTypeNode(
-        types: readonly TypeNode[]
-    ): UnionTypeNode {
-        return new UnionTypeNode(
-            arkts.factory.createETSUnionType(
-                passNodeArray(types)
-            )
-        )
+    function createETSUnionTypeNode(types: readonly TypeNode[]): UnionTypeNode {
+        return new UnionTypeNode(arkts.factory.createETSUnionType(passNodeArray(types)));
     }
 
     // @api
@@ -556,17 +518,8 @@ export function createNodeFactory() {
     //     node: UnionTypeNode,
     //     types: NodeArray<TypeNode>
     // ): UnionTypeNode
-    function updateETSUnionTypeNode(
-        node: UnionTypeNode,
-        types: readonly TypeNode[]
-    ): UnionTypeNode {
-        return new UnionTypeNode(
-            arkts.factory.updateETSUnionType(
-                node.node,
-                passNodeArray(types)
-            )
-        )
-
+    function updateETSUnionTypeNode(node: UnionTypeNode, types: readonly TypeNode[]): UnionTypeNode {
+        return new UnionTypeNode(arkts.factory.updateETSUnionType(node.node, passNodeArray(types)));
     }
 
     // @api
@@ -574,15 +527,8 @@ export function createNodeFactory() {
     //     typeName: string | EntityName,
     //     typeArguments?: readonly TypeNode[]
     // ): TypeReferenceNode;
-    function createETSTypeReferenceNode(
-        typeName: Identifier,
-        typeArguments?: undefined
-    ): TypeReferenceNode {
-        return new TypeReferenceNode(
-            arkts.factory.createETSTypeReferenceFromId(
-                typeName.node
-            )
-        )
+    function createETSTypeReferenceNode(typeName: Identifier, typeArguments?: undefined): TypeReferenceNode {
+        return new TypeReferenceNode(arkts.factory.createETSTypeReferenceFromId(typeName.node));
     }
 
     // @api
@@ -596,50 +542,31 @@ export function createNodeFactory() {
         typeName: Identifier,
         typeArguments?: undefined
     ): TypeReferenceNode {
-        return new TypeReferenceNode(
-            arkts.factory.updateTypeReferenceFromId(
-                node.node,
-                typeName.node
-            )
-        )
+        return new TypeReferenceNode(arkts.factory.updateTypeReferenceFromId(node.node, typeName.node));
     }
 
     // @api
     // createKeywordTypeNode<TKind extends KeywordTypeSyntaxKind>(
     //     kind: TKind
     // ): KeywordTypeNode<TKind>;
-    function createKeywordTypeNode(
-        TKind: ts.KeywordTypeSyntaxKind
-    ): KeywordTypeNode {
-        function createKeywordTypeNodeFromString(
-            keyword: string
-        ): KeywordTypeNode {
+    function createKeywordTypeNode(TKind: ts.KeywordTypeSyntaxKind): KeywordTypeNode {
+        function createKeywordTypeNodeFromString(keyword: string): KeywordTypeNode {
             return new KeywordTypeNode(
-                arkts.factory.createETSTypeReferenceFromId(
-                    arkts.factory.createIdentifier(
-                        keyword
-                    )
-                )
-            )
+                arkts.factory.createETSTypeReferenceFromId(arkts.factory.createIdentifier(keyword))
+            );
         }
 
-        function createKeywordTypeNodeFromKind(
-            kind: number
-        ): KeywordTypeNode {
-            return new KeywordTypeNode(
-                arkts.factory.createPrimitiveType(
-                    kind
-                )
-            )
+        function createKeywordTypeNodeFromKind(kind: number): KeywordTypeNode {
+            return new KeywordTypeNode(arkts.factory.createPrimitiveType(kind));
         }
 
         const keywords = new Map<ts.KeywordTypeSyntaxKind, KeywordTypeNode>([
-            [ts.SyntaxKind.NumberKeyword, createKeywordTypeNodeFromString("number")],
-            [ts.SyntaxKind.StringKeyword, createKeywordTypeNodeFromString("string")],
-            [ts.SyntaxKind.AnyKeyword, createKeywordTypeNodeFromString("any")],
+            [ts.SyntaxKind.NumberKeyword, createKeywordTypeNodeFromString('number')],
+            [ts.SyntaxKind.StringKeyword, createKeywordTypeNodeFromString('string')],
+            [ts.SyntaxKind.AnyKeyword, createKeywordTypeNodeFromString('any')],
             [ts.SyntaxKind.VoidKeyword, createKeywordTypeNodeFromKind(8)],
-        ])
-        return keywords.get(TKind) ?? throwError('unsupported keyword')
+        ]);
+        return keywords.get(TKind) ?? throwError('unsupported keyword');
     }
 
     // @api
@@ -647,15 +574,8 @@ export function createNodeFactory() {
     //     statements: readonly Statement[],
     //     multiLine?: boolean
     // ): Block;
-    function createBlock(
-        statements: readonly Statement[],
-        multiline?: boolean
-    ): Block {
-        return new Block(
-            arkts.factory.createBlock(
-                passNodeArray(statements)
-            )
-        )
+    function createBlock(statements: readonly Statement[], multiline?: boolean): Block {
+        return new Block(arkts.factory.createBlock(passNodeArray(statements)));
     }
 
     // @api
@@ -663,30 +583,16 @@ export function createNodeFactory() {
     //     node: Block,
     //     statements: readonly Statement[]
     // ): Block;
-    function updateBlock(
-        node: Block,
-        statements: readonly Statement[]
-    ): Block {
-        return new Block(
-            arkts.factory.updateBlock(
-                node.node,
-                passNodeArray(statements)
-            )
-        )
+    function updateBlock(node: Block, statements: readonly Statement[]): Block {
+        return new Block(arkts.factory.updateBlock(node.node, passNodeArray(statements)));
     }
 
     // @api
     // createExpressionStatement(
     //     expression: Expression
     // ): ExpressionStatement;
-    function createExpressionStatement(
-        expression: Expression
-    ): ExpressionStatement {
-        return new ExpressionStatement(
-            arkts.factory.createExpressionStatement(
-                expression.node
-            )
-        )
+    function createExpressionStatement(expression: Expression): ExpressionStatement {
+        return new ExpressionStatement(arkts.factory.createExpressionStatement(expression.node));
     }
 
     // @api
@@ -694,30 +600,16 @@ export function createNodeFactory() {
     //     node: ExpressionStatement,
     //     expression: Expression
     // ): ExpressionStatement;
-    function updateExpressionStatement(
-        node: ExpressionStatement,
-        expression: Expression
-    ): ExpressionStatement {
-        return new ExpressionStatement(
-            arkts.factory.updateExpressionStatement(
-                node.node,
-                expression.node
-            )
-        )
+    function updateExpressionStatement(node: ExpressionStatement, expression: Expression): ExpressionStatement {
+        return new ExpressionStatement(arkts.factory.updateExpressionStatement(node.node, expression.node));
     }
 
     // @api
     // createReturnStatement(
     //     expression?: Expression
     // ): ReturnStatement;
-    function createReturnStatement(
-        expression: Expression
-    ): ReturnStatement {
-        return new ReturnStatement(
-            arkts.factory.createReturnStatement(
-                expression.node
-            )
-        )
+    function createReturnStatement(expression: Expression): ReturnStatement {
+        return new ReturnStatement(arkts.factory.createReturnStatement(expression.node));
     }
 
     // @api
@@ -725,16 +617,8 @@ export function createNodeFactory() {
     //     node: ReturnStatement,
     //     expression: Expression | undefined
     // ): ReturnStatement
-    function updateReturnStatement(
-        node: ReturnStatement,
-        expression: Expression
-    ): ReturnStatement {
-        return new ReturnStatement(
-            arkts.factory.updateReturnStatement(
-                node.node,
-                expression.node
-            )
-        )
+    function updateReturnStatement(node: ReturnStatement, expression: Expression): ReturnStatement {
+        return new ReturnStatement(arkts.factory.updateReturnStatement(node.node, expression.node));
     }
 
     // @api
@@ -754,7 +638,7 @@ export function createNodeFactory() {
                 false,
                 false
             )
-        )
+        );
     }
 
     // @api
@@ -777,7 +661,7 @@ export function createNodeFactory() {
                 false,
                 false
             )
-        )
+        );
     }
 
     // @api
@@ -794,11 +678,12 @@ export function createNodeFactory() {
         return new CallExpression(
             arkts.factory.createCallExpression(
                 expression.node,
-                (typeArguments !== undefined) ?
-                arkts.factory.createTypeParameterDeclaration(passNodeArray(typeArguments)) : undefined,
+                typeArguments !== undefined
+                    ? arkts.factory.createTypeParameterDeclaration(passNodeArray(typeArguments))
+                    : undefined,
                 passNodeArray(argumentsArray)
             )
-        )
+        );
     }
 
     // @api
@@ -818,11 +703,12 @@ export function createNodeFactory() {
             arkts.factory.updateCallExpression(
                 node.node,
                 expression.node,
-                (typeArguments !== undefined) ?
-                arkts.factory.createTypeParameterDeclaration(passNodeArray(typeArguments)) : undefined,
+                typeArguments !== undefined
+                    ? arkts.factory.createTypeParameterDeclaration(passNodeArray(typeArguments))
+                    : undefined,
                 passNodeArray(argumentsArray)
             )
-        )
+        );
     }
 
     // @api
@@ -837,12 +723,8 @@ export function createNodeFactory() {
         elseStatement?: undefined
     ): IfStatement {
         return new IfStatement(
-            arkts.factory.createIfStatement(
-                passNode(expression),
-                passNode(thenStatement),
-                passNode(elseStatement),
-            )
-        )
+            arkts.factory.createIfStatement(passNode(expression), passNode(thenStatement), passNode(elseStatement))
+        );
     }
 
     // @api
@@ -862,9 +744,9 @@ export function createNodeFactory() {
                 node.node,
                 passNode(expression),
                 passNode(thenStatement),
-                passNode(elseStatement),
+                passNode(elseStatement)
             )
-        )
+        );
     }
 
     // Improve: rewrite maybe
@@ -872,10 +754,8 @@ export function createNodeFactory() {
     // createToken(
     //     token: SyntaxKind._
     // ): _;
-    function createToken<TKind extends ts.TokenSyntaxKind>(
-        token: TKind
-    ) {
-        return new Token(token)
+    function createToken<TKind extends ts.TokenSyntaxKind>(token: TKind) {
+        return new Token(token);
     }
 
     // @api
@@ -890,12 +770,8 @@ export function createNodeFactory() {
         right: Expression
     ): BinaryExpression {
         return new BinaryExpression(
-            arkts.factory.createBinaryExpression(
-                passNode(left),
-                passToken(operator),
-                passNode(right),
-            )
-        )
+            arkts.factory.createBinaryExpression(passNode(left), passToken(operator), passNode(right))
+        );
     }
 
     // @api
@@ -912,13 +788,8 @@ export function createNodeFactory() {
         right: Expression
     ): BinaryExpression {
         return new BinaryExpression(
-            arkts.factory.updateBinaryExpression(
-                node.node,
-                passNode(left),
-                passToken(operator),
-                passNode(right),
-            )
-        )
+            arkts.factory.updateBinaryExpression(node.node, passNode(left), passToken(operator), passNode(right))
+        );
     }
 
     // @api
@@ -953,7 +824,7 @@ export function createNodeFactory() {
                     undefined
                 )
             )
-        )
+        );
     }
 
     // @api
@@ -973,7 +844,7 @@ export function createNodeFactory() {
         parameters: readonly ParameterDeclaration[],
         type: undefined,
         equalsGreaterThanToken: Token<ts.SyntaxKind.EqualsGreaterThanToken> | undefined,
-        body: Block,
+        body: Block
     ): ArrowFunction {
         return new ArrowFunction(
             arkts.factory.updateArrowFunction(
@@ -992,7 +863,7 @@ export function createNodeFactory() {
                     undefined
                 )
             )
-        )
+        );
     }
 
     // @api
@@ -1023,7 +894,7 @@ export function createNodeFactory() {
                     undefined
                 )
             )
-        )
+        );
     }
 
     // @api
@@ -1057,7 +928,7 @@ export function createNodeFactory() {
                     passTypeParams(typeParameters)
                 )
             )
-        )
+        );
     }
 
     // @api
@@ -1080,7 +951,7 @@ export function createNodeFactory() {
                 ),
                 Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_NONE
             )
-        )
+        );
     }
 
     // @api
@@ -1106,7 +977,7 @@ export function createNodeFactory() {
                 ),
                 Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_NONE
             )
-        )
+        );
     }
 
     // Improve: fix modifiers
@@ -1131,7 +1002,7 @@ export function createNodeFactory() {
         type: TypeNode | undefined,
         body: Block | undefined
     ): MethodDeclaration {
-        const _name = passIdentifier(name)
+        const _name = passIdentifier(name);
         return new MethodDeclaration(
             arkts.factory.createMethodDefinition(
                 Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
@@ -1145,7 +1016,8 @@ export function createNodeFactory() {
                             passNode(type)
                         ),
                         0,
-                        passModifiers(modifiers) | Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC || Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+                        passModifiers(modifiers) | Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC ||
+                            Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
                         false,
                         _name
                     )
@@ -1153,7 +1025,7 @@ export function createNodeFactory() {
                 passModifiers(modifiers),
                 false
             )
-        )
+        );
     }
 
     // @api
@@ -1179,7 +1051,7 @@ export function createNodeFactory() {
         type: undefined,
         body: Block | undefined
     ): MethodDeclaration {
-        const _name = passIdentifier(name)
+        const _name = passIdentifier(name);
         return new MethodDeclaration(
             arkts.factory.updateMethodDefinition(
                 node.node,
@@ -1196,7 +1068,8 @@ export function createNodeFactory() {
                             passNode(type)
                         ),
                         0,
-                        passModifiers(modifiers) | Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC || Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+                        passModifiers(modifiers) | Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC ||
+                            Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
                         false,
                         _name
                     )
@@ -1204,7 +1077,7 @@ export function createNodeFactory() {
                 passModifiers(modifiers),
                 false
             )
-        )
+        );
     }
 
     // @api
@@ -1218,9 +1091,7 @@ export function createNodeFactory() {
         parameters: readonly ParameterDeclaration[],
         body: Block | undefined
     ): ConstructorDeclaration {
-        const _name = arkts.factory.createIdentifier(
-            "constructor"
-        )
+        const _name = arkts.factory.createIdentifier('constructor');
         return new ConstructorDeclaration(
             arkts.factory.createMethodDefinition(
                 Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
@@ -1234,8 +1105,11 @@ export function createNodeFactory() {
                             // Improve: change to void maybe
                             undefined
                         ),
-                        passModifiersToScriptFunction(modifiers) | Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR,
-                        passModifiers(modifiers) | Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
+                        passModifiersToScriptFunction(modifiers) |
+                            Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR,
+                        passModifiers(modifiers) |
+                            Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
+                            Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
                         false,
                         _name
                     )
@@ -1243,7 +1117,7 @@ export function createNodeFactory() {
                 passModifiers(modifiers) | Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
                 false
             )
-        )
+        );
     }
 
     // @api
@@ -1259,10 +1133,7 @@ export function createNodeFactory() {
         parameters: readonly ParameterDeclaration[],
         body: Block | undefined
     ): ConstructorDeclaration {
-        const _name = arkts.factory.updateIdentifier(
-            node.node.name,
-            "constructor"
-        )
+        const _name = arkts.factory.updateIdentifier(node.node.name, 'constructor');
         return new ConstructorDeclaration(
             arkts.factory.updateMethodDefinition(
                 node.node,
@@ -1279,8 +1150,11 @@ export function createNodeFactory() {
                             // Improve: change to void maybe
                             undefined
                         ),
-                        passModifiersToScriptFunction(modifiers) | Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR,
-                        passModifiers(modifiers) | Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
+                        passModifiersToScriptFunction(modifiers) |
+                            Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR,
+                        passModifiers(modifiers) |
+                            Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
+                            Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
                         false,
                         _name
                     )
@@ -1288,42 +1162,30 @@ export function createNodeFactory() {
                 passModifiers(modifiers) | Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
                 false
             )
-        )
-
+        );
     }
 
     // @api
     // tsc: createSuper(
     // ): SuperExpression;
-    function createSuper(
-    ): SuperExpression {
-        return new SuperExpression(
-            arkts.factory.createSuperExpression()
-        )
+    function createSuper(): SuperExpression {
+        return new SuperExpression(arkts.factory.createSuperExpression());
     }
 
     // @api
     // tsc: updateSuper(
     //     node: SuperExpression
     // ): SuperExpression;
-    function updateSuper(
-        node: SuperExpression
-    ): SuperExpression {
-        return new SuperExpression(
-            arkts.factory.updateSuperExpression(
-                node.node,
-            )
-        )
+    function updateSuper(node: SuperExpression): SuperExpression {
+        return new SuperExpression(arkts.factory.updateSuperExpression(node.node));
     }
 
     // @api
     // tsc: createParenthesizedExpression(
     //     expression: Expression
     // ): ParenthesizedExpression;
-    function createParenthesizedExpression(
-        expression: Expression
-    ): ParenthesizedExpression {
-        return expression
+    function createParenthesizedExpression(expression: Expression): ParenthesizedExpression {
+        return expression;
         // Improve:
         // return new ParenthesizedExpression(
         //     expression
@@ -1339,7 +1201,7 @@ export function createNodeFactory() {
         node: ParenthesizedExpression,
         expression: Expression
     ): ParenthesizedExpression {
-        return expression
+        return expression;
         // Improve:
         // return new ParenthesizedExpression(
         //     expression
@@ -1381,9 +1243,7 @@ export function createNodeFactory() {
         propertyName: Identifier | undefined,
         name: Identifier
     ): ImportSpecifier {
-        return new ImportSpecifier(
-            name.node
-        )
+        return new ImportSpecifier(name.node);
     }
 }
 

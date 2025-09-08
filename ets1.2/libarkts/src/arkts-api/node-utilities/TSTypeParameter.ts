@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-import { Identifier, TSTypeParameter, TypeNode } from "../../../generated"
-import { Es2pandaModifierFlags } from "../../../generated/Es2pandaEnums"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
+import { Identifier, TSTypeParameter, TypeNode } from '../../../generated';
+import { Es2pandaModifierFlags } from '../../../generated/Es2pandaEnums';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
 
 export function updateTSTypeParameter(
     original: TSTypeParameter,
@@ -25,15 +25,13 @@ export function updateTSTypeParameter(
     defaultType: TypeNode | undefined,
     flags: Es2pandaModifierFlags
 ): TSTypeParameter {
-    if (isSameNativeObject(name, original.name)
-        && isSameNativeObject(constraint, original.constraint)
-        && isSameNativeObject(defaultType, original.defaultType)
-        && isSameNativeObject(flags, original.modifierFlags)
+    if (
+        isSameNativeObject(name, original.name) &&
+        isSameNativeObject(constraint, original.constraint) &&
+        isSameNativeObject(defaultType, original.defaultType) &&
+        isSameNativeObject(flags, original.modifierFlags)
     ) {
-        return original
+        return original;
     }
-    return updateNodeByNode(
-        TSTypeParameter.create1TSTypeParameter(name, constraint, defaultType, flags),
-        original
-    )
+    return updateNodeByNode(TSTypeParameter.create1TSTypeParameter(name, constraint, defaultType, flags), original);
 }

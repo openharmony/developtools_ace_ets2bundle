@@ -13,41 +13,37 @@
  * limitations under the License.
  */
 
-import { KNativePointer } from "@koalaui/interop"
-import { ObjectExpression, Expression } from "../../../generated"
-import { isSameNativeObject } from "../peers/ArktsObject"
-import { updateNodeByNode } from "../utilities/private"
-import { Es2pandaAstNodeType } from "../../../generated/Es2pandaEnums"
+import { KNativePointer } from '@koalaui/interop';
+import { ObjectExpression, Expression } from '../../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
+import { updateNodeByNode } from '../utilities/private';
+import { Es2pandaAstNodeType } from '../../../generated/Es2pandaEnums';
 
 export function createObjectExpression(
     properties: readonly Expression[],
-    preferredReturnType?: KNativePointer,
+    preferredReturnType?: KNativePointer
 ): ObjectExpression {
     const result = ObjectExpression.createObjectExpression(
         Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
         properties,
-        false, // Improve: provide trailingComma value from native module through ObjectExpression?
-    )
+        false // Improve: provide trailingComma value from native module through ObjectExpression?
+    );
     if (preferredReturnType) {
-        result.setPreferredTypePointer(preferredReturnType)
+        result.setPreferredTypePointer(preferredReturnType);
     }
-    return result
+    return result;
 }
 
 export function updateObjectExpression(
     original: ObjectExpression,
     properties: readonly Expression[],
-    preferredReturnType?: KNativePointer,
+    preferredReturnType?: KNativePointer
 ): ObjectExpression {
-    if (isSameNativeObject(properties, original.properties)
-        && preferredReturnType == original.getPreferredTypePointer()) {
-        return original
+    if (
+        isSameNativeObject(properties, original.properties) &&
+        preferredReturnType == original.getPreferredTypePointer()
+    ) {
+        return original;
     }
-    return updateNodeByNode(
-        createObjectExpression(
-            properties,
-            preferredReturnType
-        ),
-        original
-    )
+    return updateNodeByNode(createObjectExpression(properties, preferredReturnType), original);
 }

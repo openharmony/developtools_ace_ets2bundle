@@ -13,22 +13,22 @@
  * limitations under the License.
  */
 
-import { KNativePointer } from "@koalaui/interop"
-import { ArktsObject } from "./ArktsObject"
-import { global } from "../static/global"
-import { Config } from "./Config"
-import { ArkTsConfig } from "../../../generated"
+import { KNativePointer } from '@koalaui/interop';
+import { ArktsObject } from './ArktsObject';
+import { global } from '../static/global';
+import { Config } from './Config';
+import { ArkTsConfig } from '../../../generated';
 
 export class Options extends ArktsObject {
     constructor(peer: KNativePointer) {
-        super(peer)
+        super(peer);
     }
 
     static createOptions(config: Config) {
-        return new Options(global.es2panda._ConfigGetOptions(config.peer))
+        return new Options(global.es2panda._ConfigGetOptions(config.peer));
     }
 
     getArkTsConfig(): ArkTsConfig {
-        return new ArkTsConfig(global.es2panda._OptionsArkTsConfig(global.context, this.peer))
+        return new ArkTsConfig(global.es2panda._OptionsArkTsConfig(global.context, this.peer));
     }
 }
