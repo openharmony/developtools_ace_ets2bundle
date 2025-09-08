@@ -24,13 +24,14 @@ import {
   ohosSystemModulePaths,
   systemModules,
   allModulesPaths,
-  ohosSystemModuleSubDirPaths
+  ohosSystemModuleSubDirPaths,
+  externalApiCheckPlugin
 } from '../../../main';
 import {
   LogType,
   LogInfo,
   IFileLog,
-  CurrentProcessFile
+  CurrentProcessFile,
 } from '../../utils';
 import { type ResolveModuleInfo } from '../../ets_checker';
 import {
@@ -73,6 +74,7 @@ import {
   VERSION_CHECK_FUNCTION_NAME
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
+import { SdkVersionValidator } from './sdk_version_validator';
 
 /**
  * bundle info
@@ -89,7 +91,7 @@ export interface CheckValidCallbackInterface {
 }
 
 export interface CheckJsDocSpecialValidCallbackInterface {
-  (jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean;
+  (jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node): boolean;
 }
 
 export interface checkConditionValidCallbackInterface {
@@ -545,32 +547,152 @@ function collectExternalSyscapInfos(
 }
 
 /**
- * Determine the necessity of since check.
+ * Validates if a since tag requires version checking based on JSDoc and project configuration.
  * 
- * @param jsDocTags 
- * @param config 
- * @returns 
+ * @param jsDocTags - Array of JSDoc tags to analyze
+ * @param config - Configuration object that will receive error messages
+ * @param node - Optional TypeScript node for additional validation
+ * @returns True if since check is required and validation fails, false otherwise
  */
-function checkSinceValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
+function checkSinceValue(
+  jsDocTags: readonly ts.JSDocTag[], 
+  config: ts.JsDocNodeCheckConfigItem, 
+  node?: ts.Node
+): boolean {
+  // Validate basic input structure
   if (!jsDocTags[0]?.parent?.parent || !projectConfig.compatibleSdkVersion) {
     return false;
   }
-  const currentNode: HasJSDocNode = jsDocTags[0].parent.parent as HasJSDocNode;
-  if (!currentNode.jsDoc) {
-    return false;
-  }
-  const minSince: string = getMinVersion(currentNode.jsDoc);
-  const hasSince: boolean = minSince !== '';
 
-  const compatibleSdkVersion: string = projectConfig.compatibleSdkVersion.toString();
-  if (!isCompliantSince(minSince) || !isCompliantSince(compatibleSdkVersion)) {
+  const jsDocNode = jsDocTags[0].parent.parent as HasJSDocNode;
+  if (!jsDocNode?.jsDoc) {
     return false;
   }
-  if (hasSince && comparePointVersion(compatibleSdkVersion.toString(), minSince) === -1) {
-    config.message = SINCE_TAG_CHECK_ERROER.replace('$SINCE1', minSince).replace('$SINCE2', compatibleSdkVersion);
-    return true;
+  const apiMinVersion = getMinVersion(jsDocNode.jsDoc);
+  if (!apiMinVersion) {
+    return false;
   }
-  return false;
+
+  const sourceFile = jsDocNode.getSourceFile();
+  if (!sourceFile) {
+    return false;
+  }
+
+  // Perform version validation check
+  const versionChecker = getVersionValidationFunction();
+  let projectTargetVersion: string;
+  if (versionChecker === compareVersionsWithPointSystem) {
+    projectTargetVersion = projectConfig.compatibleSdkVersion.toString();
+  } else {
+    projectTargetVersion = projectConfig.originCompatibleSdkVersion?.toString() || projectConfig.compatibleSdkVersion.toString();
+  }
+  const validationResult = versionChecker(apiMinVersion, projectTargetVersion, 0);
+  if (validationResult.result) {
+    return false;
+  }
+  
+  // Check if SDK version is already properly handled in code
+  const typeChecker = CurrentProcessFile.getChecker();
+  const sdkValidator = new SdkVersionValidator(projectTargetVersion, apiMinVersion, typeChecker);
+  
+  if (sdkValidator.isSdkApiVersionHandled(node)) {
+    return false;
+  }
+
+  config.message = SINCE_TAG_CHECK_ERROER
+    .replace('$SINCE1', apiMinVersion)
+    .replace('$SINCE2', projectTargetVersion);
+    
+  return true;
+}
+
+/**
+ * Retrieves the appropriate version validation function.
+ * First attempts to load external plugin validation, falls back to default if unavailable.
+ * 
+ * @returns Version validation function (external or default)
+ */
+export function getVersionValidationFunction(): VersionValidationFunction {
+  if (projectConfig.originCompatibleSdkVersion?.toString() === undefined) {
+    return compareVersionsWithPointSystem;
+  }
+  const pluginKey = getPluginKey(projectConfig.runtimeOS, SINCE_TAG_NAME);
+  const plugins = externalApiCheckPlugin.get(pluginKey);
+  
+  // Check if external plugins exist and try to load them
+  if (plugins && plugins.length > 0) {
+    try {
+      for (const plugin of plugins) {
+        const externalMethod = require(plugin.path)[plugin.functionName];
+        if (typeof externalMethod === 'function') {
+          return externalMethod;
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to load external version validator: ${error}`);
+    }
+  }
+  
+  return compareVersionsWithPointSystem;
+}
+
+/**
+ * Default version comparison function using point-based version numbering.
+ * Validates version format and compares numerical values.
+ *
+ * @param sinceVersion - Minimum version requirement
+ * @param targetVersion - Current project target version
+ * @param _triggerScene - Trigger scene identifier (unused in default implementation)
+ * @returns Validation result with success status and optional message
+ */
+export function compareVersionsWithPointSystem(
+  sinceVersion: string,
+  targetVersion: string,
+  _triggerScene: number
+): VersionValidationResult {
+  // Validate version format
+  if (!isCompliantSince(sinceVersion) || !isCompliantSince(targetVersion)) {
+    return {
+      result: true,
+      message: 'Invalid version number format'
+    };
+  }
+  const triggerResult = comparePointVersion(targetVersion, sinceVersion);
+  const isTargetGreaterOrEqual = triggerResult >= 0;
+
+  return {
+    result: isTargetGreaterOrEqual,
+    message: isTargetGreaterOrEqual ? 'Version requirement satisfied' : 'API version requirement not met'
+  };
+}
+
+/**
+ * Function signature for version validation.
+ * Takes two version strings and a trigger scene (0-1-2), returns validation result.
+ */
+export interface VersionValidationFunction {
+  (sinceVersion: string, targetVersion: string, triggerScene: number): VersionValidationResult;
+}
+
+/**
+ * Result object returned by version validation functions.
+ */
+export interface VersionValidationResult {
+  result: boolean;
+  message?: string;
+}
+
+/**
+ * 获取externalApiCheckPlugin的key
+ * @param { string } apiFilePath
+ * @param { string } tagName
+ * @returns { string }
+ */
+function getPluginKey(apiFilePath: string, tagName: string): string {
+  const apiFileName: string = path.basename(apiFilePath);
+  const apiPrefix: string = apiFileName.split('.')[0];
+  const pluginKey: string = apiPrefix + '/' + tagName;
+  return pluginKey;
 }
 
 /**
@@ -809,19 +931,18 @@ function getMinVersion(jsDocs: ts.JSDoc[]): string {
  * @param { string } secondVersion 
  * @returns { number }
  */
-function comparePointVersion(firstVersion: string, secondVersion: string): number {
-  const firstPointVersion = firstVersion.split('.');
-  const secondPointVersion = secondVersion.split('.');
-  for (let i = 0; i < 3; i++) {
-    const part1 = parseInt(firstPointVersion[i] || '0', 10);
-    const part2 = parseInt(secondPointVersion[i] || '0', 10);
+function comparePointVersion(firstVersion: string, secondVersion: string): -1 | 0 | 1 {
+  const firstParts = firstVersion.split('.');
+  const secondParts = secondVersion.split('.');
 
-    if (part1 < part2) {
-      return -1;
-    }
-    if (part1 > part2) {
-      return 1;
+  for (let i = 0; i < 3; i++) {
+    const part1 = parseInt(firstParts[i] || '0', 10);
+    const part2 = parseInt(secondParts[i] || '0', 10);
+
+    if (part1 !== part2) {
+      return part1 > part2 ? 1 : -1;
     }
   }
+
   return 0;
 }
