@@ -37,7 +37,7 @@ export enum CustomComponentNames {
     BUILDCOMPATIBLENODE = '_buildCompatibleNode',
     OPTIONS = 'options',
     PAGE_LIFE_CYCLE = 'PageLifeCycle',
-    LAYOUT_CALLBACK = 'LayoutCallback',
+    LAYOUT_CALLBACKS = 'LayoutCallbacks',
 }
 
 export enum CustomDialogNames {
