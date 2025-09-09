@@ -186,11 +186,15 @@ struct InteropTypeConverter<KVMObjectHandle> {
 
 inline napi_typedarray_type getNapiType(KInt size)
 {
+    constexpr auto NUM_1{1};
+    constexpr auto NUM_2{2};
+    constexpr auto NUM_3{3};
+    constexpr auto NUM_4{4};
     switch (size) {
-        case 1: return napi_uint8_array;
-        case 2: return napi_uint16_array;
-        case 4: return napi_uint32_array;
-        case 8: return napi_biguint64_array;
+        case NUM_1: return napi_uint8_array;
+        case NUM_2: return napi_uint16_array;
+        case NUM_4: return napi_uint32_array;
+        case NUM_8: return napi_biguint64_array;
         default: break;
     }
     return napi_uint8_array;
