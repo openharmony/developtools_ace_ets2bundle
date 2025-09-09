@@ -756,15 +756,6 @@ KBoolean impl_ObjectExpressionIsOptionalConst(KNativePointer context, KNativePoi
 }
 KOALA_INTEROP_2(ObjectExpressionIsOptionalConst, KBoolean, KNativePointer, KNativePointer);
 
-KNativePointer impl_ObjectExpressionValidateExpression(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ObjectExpressionValidateExpression(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ObjectExpressionValidateExpression, KNativePointer, KNativePointer, KNativePointer);
-
 KBoolean impl_ObjectExpressionConvertibleToObjectPattern(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -3939,15 +3930,6 @@ KBoolean impl_ArrayExpressionConvertibleToArrayPattern(KNativePointer context, K
 }
 KOALA_INTEROP_2(ArrayExpressionConvertibleToArrayPattern, KBoolean, KNativePointer, KNativePointer);
 
-KNativePointer impl_ArrayExpressionValidateExpression(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ArrayExpressionValidateExpression(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ArrayExpressionValidateExpression, KNativePointer, KNativePointer, KNativePointer);
-
 KNativePointer impl_ArrayExpressionTypeAnnotationConst(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -4210,15 +4192,6 @@ KBoolean impl_PropertyConvertibleToPatternProperty(KNativePointer context, KNati
     return result;
 }
 KOALA_INTEROP_2(PropertyConvertibleToPatternProperty, KBoolean, KNativePointer, KNativePointer);
-
-KNativePointer impl_PropertyValidateExpression(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->PropertyValidateExpression(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(PropertyValidateExpression, KNativePointer, KNativePointer, KNativePointer);
 
 KNativePointer impl_CreateVariableDeclarator(KNativePointer context, KInt flag, KNativePointer ident)
 {
@@ -7711,15 +7684,6 @@ void impl_SpreadElementSetOptional(KNativePointer context, KNativePointer receiv
 }
 KOALA_INTEROP_V3(SpreadElementSetOptional, KNativePointer, KNativePointer, KBoolean);
 
-KNativePointer impl_SpreadElementValidateExpression(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->SpreadElementValidateExpression(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(SpreadElementValidateExpression, KNativePointer, KNativePointer, KNativePointer);
-
 KBoolean impl_SpreadElementConvertibleToRest(KNativePointer context, KNativePointer receiver, KBoolean isDeclaration, KBoolean allowPattern)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -9060,15 +9024,6 @@ KNativePointer impl_IdentifierCloneReference(KNativePointer context, KNativePoin
     return result;
 }
 KOALA_INTEROP_3(IdentifierCloneReference, KNativePointer, KNativePointer, KNativePointer, KNativePointer);
-
-KNativePointer impl_IdentifierValidateExpression(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->IdentifierValidateExpression(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(IdentifierValidateExpression, KNativePointer, KNativePointer, KNativePointer);
 
 KNativePointer impl_IdentifierTypeAnnotationConst(KNativePointer context, KNativePointer receiver)
 {

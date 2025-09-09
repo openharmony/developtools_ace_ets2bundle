@@ -256,9 +256,6 @@ export class Es2pandaNativeModule {
     _ObjectExpressionIsOptionalConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'ObjectExpressionIsOptionalConst was not overloaded by native module initialization")
     }
-    _ObjectExpressionValidateExpression(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'ObjectExpressionValidateExpression was not overloaded by native module initialization")
-    }
     _ObjectExpressionConvertibleToObjectPattern(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'ObjectExpressionConvertibleToObjectPattern was not overloaded by native module initialization")
     }
@@ -1258,9 +1255,6 @@ export class Es2pandaNativeModule {
     _ArrayExpressionConvertibleToArrayPattern(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'ArrayExpressionConvertibleToArrayPattern was not overloaded by native module initialization")
     }
-    _ArrayExpressionValidateExpression(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'ArrayExpressionValidateExpression was not overloaded by native module initialization")
-    }
     _ArrayExpressionHandleNestedArrayExpression(context: KNativePointer, receiver: KNativePointer, currentElement: KNativePointer, isPreferredTuple: KBoolean, idx: KUInt): KBoolean {
         throw new Error("'ArrayExpressionHandleNestedArrayExpression was not overloaded by native module initialization")
     }
@@ -1344,9 +1338,6 @@ export class Es2pandaNativeModule {
     }
     _PropertyConvertibleToPatternProperty(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'PropertyConvertibleToPatternProperty was not overloaded by native module initialization")
-    }
-    _PropertyValidateExpression(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'PropertyValidateExpression was not overloaded by native module initialization")
     }
     _CreateVariableDeclarator(context: KNativePointer, flag: KInt, ident: KNativePointer): KNativePointer {
         throw new Error("'CreateVariableDeclarator was not overloaded by native module initialization")
@@ -2452,9 +2443,6 @@ export class Es2pandaNativeModule {
     _SpreadElementSetOptional(context: KNativePointer, receiver: KNativePointer, optional_arg: KBoolean): void {
         throw new Error("'SpreadElementSetOptional was not overloaded by native module initialization")
     }
-    _SpreadElementValidateExpression(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'SpreadElementValidateExpression was not overloaded by native module initialization")
-    }
     _SpreadElementConvertibleToRest(context: KNativePointer, receiver: KNativePointer, isDeclaration: KBoolean, allowPattern: KBoolean): KBoolean {
         throw new Error("'SpreadElementConvertibleToRest was not overloaded by native module initialization")
     }
@@ -2871,9 +2859,6 @@ export class Es2pandaNativeModule {
     }
     _IdentifierCloneReference(context: KNativePointer, receiver: KNativePointer, parent: KNativePointer): KNativePointer {
         throw new Error("'IdentifierCloneReference was not overloaded by native module initialization")
-    }
-    _IdentifierValidateExpression(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'IdentifierValidateExpression was not overloaded by native module initialization")
     }
     _IdentifierTypeAnnotationConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'IdentifierTypeAnnotationConst was not overloaded by native module initialization")
