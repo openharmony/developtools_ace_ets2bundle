@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -186,12 +187,8 @@ function main() {}
 }
 
 @Component() export interface __Options_Child {
-  set customBuilderParam(customBuilderParam: (@memo() (()=> void) | undefined))
-
-  get customBuilderParam(): (@memo() (()=> void) | undefined)
-  set __options_has_customBuilderParam(__options_has_customBuilderParam: (boolean | undefined))
-  
-  get __options_has_customBuilderParam(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@memo() (()=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
   
 }
 
@@ -458,12 +455,8 @@ function main() {}
 }
 
 @Component() export interface __Options_Child {
-  set customBuilderParam(customBuilderParam: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined))
-
-  get customBuilderParam(): (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
-  set __options_has_customBuilderParam(__options_has_customBuilderParam: (boolean | undefined))
-  
-  get __options_has_customBuilderParam(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
   
 }
 

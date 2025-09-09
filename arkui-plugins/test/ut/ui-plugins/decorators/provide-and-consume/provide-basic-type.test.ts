@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -154,51 +155,25 @@ function main() {}
 }
 
 @Component() export interface __Options_PropParent {
-  set provideVar1(provideVar1: (string | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar1', '(IProvideDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar1', '(boolean | undefined)')}
 
-  get provideVar1(): (string | undefined)
-  set __backing_provideVar1(__backing_provideVar1: (IProvideDecoratedVariable<string> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar2', '(IProvideDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar2', '(boolean | undefined)')}
 
-  get __backing_provideVar1(): (IProvideDecoratedVariable<string> | undefined)
-  set __options_has_provideVar1(__options_has_provideVar1: (boolean | undefined))
-  
-  get __options_has_provideVar1(): (boolean | undefined)
-  set provideVar2(provideVar2: (number | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar3', '(IProvideDecoratedVariable<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar3', '(boolean | undefined)')}
 
-  get provideVar2(): (number | undefined)
-  set __backing_provideVar2(__backing_provideVar2: (IProvideDecoratedVariable<number> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar4', '(IProvideDecoratedVariable<undefined> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar4', '(boolean | undefined)')}
 
-  get __backing_provideVar2(): (IProvideDecoratedVariable<number> | undefined)
-  set __options_has_provideVar2(__options_has_provideVar2: (boolean | undefined))
-  
-  get __options_has_provideVar2(): (boolean | undefined)
-  set provideVar3(provideVar3: (boolean | undefined))
-
-  get provideVar3(): (boolean | undefined)
-  set __backing_provideVar3(__backing_provideVar3: (IProvideDecoratedVariable<boolean> | undefined))
-
-  get __backing_provideVar3(): (IProvideDecoratedVariable<boolean> | undefined)
-  set __options_has_provideVar3(__options_has_provideVar3: (boolean | undefined))
-  
-  get __options_has_provideVar3(): (boolean | undefined)
-  set provideVar4(provideVar4: (undefined | undefined))
-
-  get provideVar4(): (undefined | undefined)
-  set __backing_provideVar4(__backing_provideVar4: (IProvideDecoratedVariable<undefined> | undefined))
-
-  get __backing_provideVar4(): (IProvideDecoratedVariable<undefined> | undefined)
-  set __options_has_provideVar4(__options_has_provideVar4: (boolean | undefined))
-  
-  get __options_has_provideVar4(): (boolean | undefined)
-  set provideVar5(provideVar5: (null | undefined))
-
-  get provideVar5(): (null | undefined)
-  set __backing_provideVar5(__backing_provideVar5: (IProvideDecoratedVariable<null> | undefined))
-
-  get __backing_provideVar5(): (IProvideDecoratedVariable<null> | undefined)
-  set __options_has_provideVar5(__options_has_provideVar5: (boolean | undefined))
-  
-  get __options_has_provideVar5(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar5', '(IProvideDecoratedVariable<null> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar5', '(boolean | undefined)')}
   
 }
 `;

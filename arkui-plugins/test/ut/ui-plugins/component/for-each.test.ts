@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -209,10 +210,9 @@ class AB {
 }
 
 @Component() export interface __Options_ImportStruct {
-  set arr(arr: (Array<string> | undefined))
-  get arr(): (Array<string> | undefined)
-  set __options_has_arr(__options_has_arr: (boolean | undefined))
-  get __options_has_arr(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'arr', '(Array<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_arr', '(boolean | undefined)')}
+  
 }
 `;
 

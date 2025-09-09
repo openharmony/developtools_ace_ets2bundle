@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -315,114 +316,53 @@ final class StateType extends BaseEnum<int> {
 }
 
 @Component() export interface __Options_Parent {
-  set stateVar1(stateVar1: (Per | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar1', '(Per | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar1', '(IStateDecoratedVariable<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar1', '(boolean | undefined)')}
 
-  get stateVar1(): (Per | undefined)
-  set __backing_stateVar1(__backing_stateVar1: (IStateDecoratedVariable<Per> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar2', '(Array<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar2', '(IStateDecoratedVariable<Array<number>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar2', '(boolean | undefined)')}
 
-  get __backing_stateVar1(): (IStateDecoratedVariable<Per> | undefined)
-  set __options_has_stateVar1(__options_has_stateVar1: (boolean | undefined))
-  
-  get __options_has_stateVar1(): (boolean | undefined)
-  set stateVar2(stateVar2: (Array<number> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar3', '(StateType | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar3', '(IStateDecoratedVariable<StateType> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar3', '(boolean | undefined)')}
 
-  get stateVar2(): (Array<number> | undefined)
-  set __backing_stateVar2(__backing_stateVar2: (IStateDecoratedVariable<Array<number>> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(Set<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar4', '(IStateDecoratedVariable<Set<string>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar4', '(boolean | undefined)')}
 
-  get __backing_stateVar2(): (IStateDecoratedVariable<Array<number>> | undefined)
-  set __options_has_stateVar2(__options_has_stateVar2: (boolean | undefined))
-  
-  get __options_has_stateVar2(): (boolean | undefined)
-  set stateVar3(stateVar3: (StateType | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar5', '(Array<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar5', '(IStateDecoratedVariable<Array<boolean>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar5', '(boolean | undefined)')}
 
-  get stateVar3(): (StateType | undefined)
-  set __backing_stateVar3(__backing_stateVar3: (IStateDecoratedVariable<StateType> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar6', '(Array<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar6', '(IStateDecoratedVariable<Array<Per>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar6', '(boolean | undefined)')}
 
-  get __backing_stateVar3(): (IStateDecoratedVariable<StateType> | undefined)
-  set __options_has_stateVar3(__options_has_stateVar3: (boolean | undefined))
-  
-  get __options_has_stateVar3(): (boolean | undefined)
-  set stateVar4(stateVar4: (Set<string> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar7', '(Array<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar7', '(IStateDecoratedVariable<Array<Per>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar7', '(boolean | undefined)')}
 
-  get stateVar4(): (Set<string> | undefined)
-  set __backing_stateVar4(__backing_stateVar4: (IStateDecoratedVariable<Set<string>> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar8', '(((sr: string)=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar8', '(IStateDecoratedVariable<((sr: string)=> void)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar8', '(boolean | undefined)')}
 
-  get __backing_stateVar4(): (IStateDecoratedVariable<Set<string>> | undefined)
-  set __options_has_stateVar4(__options_has_stateVar4: (boolean | undefined))
-  
-  get __options_has_stateVar4(): (boolean | undefined)
-  set stateVar5(stateVar5: (Array<boolean> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar9', '(Date | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar9', '(IStateDecoratedVariable<Date> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar9', '(boolean | undefined)')}
 
-  get stateVar5(): (Array<boolean> | undefined)
-  set __backing_stateVar5(__backing_stateVar5: (IStateDecoratedVariable<Array<boolean>> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar10', '(Map<number, Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar10', '(IStateDecoratedVariable<Map<number, Per>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar10', '(boolean | undefined)')}
 
-  get __backing_stateVar5(): (IStateDecoratedVariable<Array<boolean>> | undefined)
-  set __options_has_stateVar5(__options_has_stateVar5: (boolean | undefined))
-  
-  get __options_has_stateVar5(): (boolean | undefined)
-  set stateVar6(stateVar6: (Array<Per> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11', '((string | number) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11', '(IStateDecoratedVariable<(string | number)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11', '(boolean | undefined)')}
 
-  get stateVar6(): (Array<Per> | undefined)
-  set __backing_stateVar6(__backing_stateVar6: (IStateDecoratedVariable<Array<Per>> | undefined))
-
-  get __backing_stateVar6(): (IStateDecoratedVariable<Array<Per>> | undefined)
-  set __options_has_stateVar6(__options_has_stateVar6: (boolean | undefined))
-  
-  get __options_has_stateVar6(): (boolean | undefined)
-  set stateVar7(stateVar7: (Array<Per> | undefined))
-
-  get stateVar7(): (Array<Per> | undefined)
-  set __backing_stateVar7(__backing_stateVar7: (IStateDecoratedVariable<Array<Per>> | undefined))
-
-  get __backing_stateVar7(): (IStateDecoratedVariable<Array<Per>> | undefined)
-  set __options_has_stateVar7(__options_has_stateVar7: (boolean | undefined))
-  
-  get __options_has_stateVar7(): (boolean | undefined)
-  set stateVar8(stateVar8: (((sr: string)=> void) | undefined))
-
-  get stateVar8(): (((sr: string)=> void) | undefined)
-  set __backing_stateVar8(__backing_stateVar8: (IStateDecoratedVariable<((sr: string)=> void)> | undefined))
-
-  get __backing_stateVar8(): (IStateDecoratedVariable<((sr: string)=> void)> | undefined)
-  set __options_has_stateVar8(__options_has_stateVar8: (boolean | undefined))
-  
-  get __options_has_stateVar8(): (boolean | undefined)
-  set stateVar9(stateVar9: (Date | undefined))
-
-  get stateVar9(): (Date | undefined)
-  set __backing_stateVar9(__backing_stateVar9: (IStateDecoratedVariable<Date> | undefined))
-
-  get __backing_stateVar9(): (IStateDecoratedVariable<Date> | undefined)
-  set __options_has_stateVar9(__options_has_stateVar9: (boolean | undefined))
-  
-  get __options_has_stateVar9(): (boolean | undefined)
-  set stateVar10(stateVar10: (Map<number, Per> | undefined))
-
-  get stateVar10(): (Map<number, Per> | undefined)
-  set __backing_stateVar10(__backing_stateVar10: (IStateDecoratedVariable<Map<number, Per>> | undefined))
-
-  get __backing_stateVar10(): (IStateDecoratedVariable<Map<number, Per>> | undefined)
-  set __options_has_stateVar10(__options_has_stateVar10: (boolean | undefined))
-  
-  get __options_has_stateVar10(): (boolean | undefined)
-  set stateVar11(stateVar11: ((string | number) | undefined))
-
-  get stateVar11(): ((string | number) | undefined)
-  set __backing_stateVar11(__backing_stateVar11: (IStateDecoratedVariable<(string | number)> | undefined))
-
-  get __backing_stateVar11(): (IStateDecoratedVariable<(string | number)> | undefined)
-  set __options_has_stateVar11(__options_has_stateVar11: (boolean | undefined))
-  
-  get __options_has_stateVar11(): (boolean | undefined)
-  set stateVar12(stateVar12: ((Set<string> | Per) | undefined))
-
-  get stateVar12(): ((Set<string> | Per) | undefined)
-  set __backing_stateVar12(__backing_stateVar12: (IStateDecoratedVariable<(Set<string> | Per)> | undefined))
-
-  get __backing_stateVar12(): (IStateDecoratedVariable<(Set<string> | Per)> | undefined)
-  set __options_has_stateVar12(__options_has_stateVar12: (boolean | undefined))
-  
-  get __options_has_stateVar12(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar12', '((Set<string> | Per) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar12', '(IStateDecoratedVariable<(Set<string> | Per)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar12', '(boolean | undefined)')}
   
 }
 `;

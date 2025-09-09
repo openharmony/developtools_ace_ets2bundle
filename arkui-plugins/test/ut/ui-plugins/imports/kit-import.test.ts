@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -86,12 +87,14 @@ import hilog from "@ohos.hilog";
 }
 
 @Entry() @Component() export interface __Options_A {
+  ${ignoreNewLines(`
   a?: string;
   @State() __backing_a?: string;
   __options_has_a?: boolean;
   b?: string;
   @PropRef() __backing_b?: string;
   __options_has_b?: boolean;
+  `)}
   
 }
 
@@ -245,24 +248,13 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_A {
-  set a(a: (string | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'a', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_a', '(IStateDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_a', '(boolean | undefined)')}
 
-  get a(): (string | undefined)
-  set __backing_a(__backing_a: (IStateDecoratedVariable<string> | undefined))
-
-  get __backing_a(): (IStateDecoratedVariable<string> | undefined)
-  set __options_has_a(__options_has_a: (boolean | undefined))
-  
-  get __options_has_a(): (boolean | undefined)
-  set b(b: (string | undefined))
-
-  get b(): (string | undefined)
-  set __backing_b(__backing_b: (IPropRefDecoratedVariable<string> | undefined))
-  
-  get __backing_b(): (IPropRefDecoratedVariable<string> | undefined)
-  set __options_has_b(__options_has_b: (boolean | undefined))
-  
-  get __options_has_b(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'b', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_b', '(IPropRefDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_b', '(boolean | undefined)')}
   
 }
 

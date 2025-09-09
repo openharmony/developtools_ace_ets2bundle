@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -193,22 +194,14 @@ function main() {}
 }
 
 @CustomDialog() export interface __Options_CustomDialogExample {
-  set aaController(aaController: ((CustomDialogController | undefined) | undefined))
-
-  get aaController(): ((CustomDialogController | undefined) | undefined)
-  set __options_has_aaController(__options_has_aaController: (boolean | undefined))
-  
-  get __options_has_aaController(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'aaController', '((CustomDialogController | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_aaController', '(boolean | undefined)')}
   
 }
 
 @Component() export interface __Options_CustomDialogUser {
-  set dialogController(dialogController: ((CustomDialogController | null) | undefined))
-
-  get dialogController(): ((CustomDialogController | null) | undefined)
-  set __options_has_dialogController(__options_has_dialogController: (boolean | undefined))
-  
-  get __options_has_dialogController(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
   
 }
 `;

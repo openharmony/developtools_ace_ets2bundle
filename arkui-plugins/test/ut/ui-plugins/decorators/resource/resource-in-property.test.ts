@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -141,18 +142,11 @@ function main() {}
 }
 
 @Component() export interface __Options_ResourceComponent {
-  set str(str: (Resource | undefined))
-  
-  get str(): (Resource | undefined)
-  set __options_has_str(__options_has_str: (boolean | undefined))
-  
-  get __options_has_str(): (boolean | undefined)
-  set icon(icon: (Resource | undefined))
-  
-  get icon(): (Resource | undefined)
-  set __options_has_icon(__options_has_icon: (boolean | undefined))
-  
-  get __options_has_icon(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'str', '(Resource | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'icon', '(Resource | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_icon', '(boolean | undefined)')}
   
 }
 `;
