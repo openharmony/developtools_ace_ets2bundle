@@ -429,14 +429,14 @@ struct Pattern {
         return false;
     }
 
-    bool matchWildcard(const std::string& pattern, const char* value) {
+    bool matchWildcard(const std::string& pattern, const char* valueArg) {
         if (pattern.find('*') == std::string::npos) {
-            return pattern == value;
+            return pattern == valueArg;
         }
         regex_t     regex;
         regmatch_t  match[1];
         regcomp(&regex, pattern.c_str(), REG_NEWLINE);
-        return regexec(&regex, value, 1, match, 0) != REG_NOMATCH;
+        return regexec(&regex, valueArg, 1, match, 0) != REG_NOMATCH;
     }
 };
 
