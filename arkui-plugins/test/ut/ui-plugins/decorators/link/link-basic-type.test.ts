@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -168,51 +169,25 @@ function main() {}
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 @Component() export interface __Options_LinkParent {
-  @__Link_intrinsic() set linkVar1(linkVar1: (string | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar1', '(string | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar1', '(LinkSourceType<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar1', '(boolean | undefined)')}
 
-  @__Link_intrinsic() get linkVar1(): (string | undefined)
-  set __backing_linkVar1(__backing_linkVar1: (LinkSourceType<string> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar2', '(number | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar2', '(LinkSourceType<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar2', '(boolean | undefined)')}
 
-  get __backing_linkVar1(): (LinkSourceType<string> | undefined)
-  set __options_has_linkVar1(__options_has_linkVar1: (boolean | undefined))
-  
-  get __options_has_linkVar1(): (boolean | undefined)
-  @__Link_intrinsic() set linkVar2(linkVar2: (number | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar3', '(boolean | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar3', '(LinkSourceType<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar3', '(boolean | undefined)')}
 
-  @__Link_intrinsic() get linkVar2(): (number | undefined)
-  set __backing_linkVar2(__backing_linkVar2: (LinkSourceType<number> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar4', '(undefined | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar4', '(LinkSourceType<undefined> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar4', '(boolean | undefined)')}
 
-  get __backing_linkVar2(): (LinkSourceType<number> | undefined)
-  set __options_has_linkVar2(__options_has_linkVar2: (boolean | undefined))
-  
-  get __options_has_linkVar2(): (boolean | undefined)
-  @__Link_intrinsic() set linkVar3(linkVar3: (boolean | undefined))
-
-  @__Link_intrinsic() get linkVar3(): (boolean | undefined)
-  set __backing_linkVar3(__backing_linkVar3: (LinkSourceType<boolean> | undefined))
-
-  get __backing_linkVar3(): (LinkSourceType<boolean> | undefined)
-  set __options_has_linkVar3(__options_has_linkVar3: (boolean | undefined))
-  
-  get __options_has_linkVar3(): (boolean | undefined)
-  @__Link_intrinsic() set linkVar4(linkVar4: (undefined | undefined))
-
-  @__Link_intrinsic() get linkVar4(): (undefined | undefined)
-  set __backing_linkVar4(__backing_linkVar4: (LinkSourceType<undefined> | undefined))
-
-  get __backing_linkVar4(): (LinkSourceType<undefined> | undefined)
-  set __options_has_linkVar4(__options_has_linkVar4: (boolean | undefined))
-  
-  get __options_has_linkVar4(): (boolean | undefined)
-  @__Link_intrinsic() set linkVar5(linkVar5: (null | undefined))
-
-  @__Link_intrinsic() get linkVar5(): (null | undefined)
-  set __backing_linkVar5(__backing_linkVar5: (LinkSourceType<null> | undefined))
-
-  get __backing_linkVar5(): (LinkSourceType<null> | undefined)
-  set __options_has_linkVar5(__options_has_linkVar5: (boolean | undefined))
-  
-  get __options_has_linkVar5(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar5', '(null | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar5', '(LinkSourceType<null> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar5', '(boolean | undefined)')}
   
 }
 `;

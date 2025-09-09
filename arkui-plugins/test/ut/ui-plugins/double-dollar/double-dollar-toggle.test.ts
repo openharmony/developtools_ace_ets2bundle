@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -179,24 +180,13 @@ class BooleanClass {
 }
 
 @Component() export interface __Options_MyStateSample {
-  set boo(boo: (Array<boolean> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'boo', '(Array<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_boo', '(IStateDecoratedVariable<Array<boolean>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_boo', '(boolean | undefined)')}
 
-  get boo(): (Array<boolean> | undefined)
-  set __backing_boo(__backing_boo: (IStateDecoratedVariable<Array<boolean>> | undefined))
-
-  get __backing_boo(): (IStateDecoratedVariable<Array<boolean>> | undefined)
-  set __options_has_boo(__options_has_boo: (boolean | undefined))
-  
-  get __options_has_boo(): (boolean | undefined)
-  set booClass(booClass: (BooleanClass | undefined))
-
-  get booClass(): (BooleanClass | undefined)
-  set __backing_booClass(__backing_booClass: (IStateDecoratedVariable<BooleanClass> | undefined))
-
-  get __backing_booClass(): (IStateDecoratedVariable<BooleanClass> | undefined)
-  set __options_has_booClass(__options_has_booClass: (boolean | undefined))
-  
-  get __options_has_booClass(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'booClass', '(BooleanClass | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_booClass', '(IStateDecoratedVariable<BooleanClass> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_booClass', '(boolean | undefined)')}
   
 }
 `;

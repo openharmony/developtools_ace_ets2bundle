@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -186,15 +187,9 @@ class CC {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  set boo(boo: (boolean | undefined))
-
-  get boo(): (boolean | undefined)
-  set __backing_boo(__backing_boo: (IStateDecoratedVariable<boolean> | undefined))
-
-  get __backing_boo(): (IStateDecoratedVariable<boolean> | undefined)
-  set __options_has_boo(__options_has_boo: (boolean | undefined))
-  
-  get __options_has_boo(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'boo', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_boo', '(IStateDecoratedVariable<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_boo', '(boolean | undefined)')}
   
 }
 
