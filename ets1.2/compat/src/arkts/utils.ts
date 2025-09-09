@@ -15,28 +15,26 @@
 
 export function errorAsString(error: Any): string {
     if (error instanceof Error) {
-        const stack = error.stack
-        return stack
-            ? error.toString() + '\n' + stack
-            : error.toString()
+        const stack = error.stack;
+        return stack ? error.toString() + '\n' + stack : error.toString();
     }
-    return JSON.stringify(error)
+    return JSON.stringify(error);
 }
 
 export function unsafeCast<T>(value: Object): T {
-    return value as T
+    return value as T;
 }
 
 export function scheduleCoroutine(): void {
-    Coroutine.Schedule()
+    Coroutine.Schedule();
 }
 
 export function memoryStats(): string {
-    return `used ${GC.getUsedHeapSize()} free ${GC.getFreeHeapSize()}`
+    return `used ${GC.getUsedHeapSize()} free ${GC.getFreeHeapSize()}`;
 }
 
 export function launchJob(task: () => void): Promise<Any> {
-    return taskpool.execute(task)
+    return taskpool.execute(task);
 }
 
-export type WorkerLocalValue<T> = WorkerLocal<T>
+export type WorkerLocalValue<T> = WorkerLocal<T>;

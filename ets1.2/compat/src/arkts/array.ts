@@ -13,47 +13,46 @@
  * limitations under the License.
  */
 
-import { float64, int32, int8 } from "./types"
+import { float64, int32, int8 } from './types';
 
 // Improve: this can be a performance disaster
 // just wait for the library to provide the proper functionality.
 export function asArray<T>(value: T[]): Array<T> {
-    return Array.of<T>(...value)
+    return Array.of<T>(...value);
 }
 
 // Improve: this can be a performance disaster
 // just wait for the library to provide the proper functionality.
 export function Array_from_set<T>(set: Set<T>): Array<T> {
-    const array = new Array<T>() // to avoid creation of undefined content
-    const values = set.values()
-    for (let it = values.next(); it.done != true; it = values.next())  {
-        array.push(it.value as T)
+    const array = new Array<T>(); // to avoid creation of undefined content
+    const values = set.values();
+    for (let it = values.next(); it.done != true; it = values.next()) {
+        array.push(it.value as T);
     }
-    return array
+    return array;
 }
 
 // Improve: this can be a performance disaster
 // just wait for the library to provide the proper functionality.
 export function Array_from_int32(data: Int32Array): number[] {
-    const result: number[] = []
+    const result: number[] = [];
     for (let i: int32 = 0; i < data.length; i++) {
-        result[i] = data.at(i) as number
+        result[i] = data.at(i) as number;
     }
-    return result
+    return result;
 }
 
 // Improve: this can be a performance disaster
 // just wait for the library to provide the proper functionality.
 export function Array_from_number(data: float64[]): Array<float64> {
-    const result = new Array<number>(data.length)
+    const result = new Array<number>(data.length);
     for (let i: int32 = 0; i < data.length; i++) {
-        result[i] = data[i]
+        result[i] = data[i];
     }
-    return result
+    return result;
 }
 
 export function int8Array(size: int32): FixedArray<int8> {
-    const array: FixedArray<int8> = new int8[size]
-    return array
+    const array: FixedArray<int8> = new int8[size]();
+    return array;
 }
-

@@ -13,18 +13,18 @@
  * limitations under the License.
  */
 
-import { int32 } from "@koalaui/compat"
+import { int32 } from '@koalaui/compat';
 
-export type KoalaCallsiteKey = int32
+export type KoalaCallsiteKey = int32;
 
 export class KoalaCallsiteKeys {
-    static readonly empty: KoalaCallsiteKey = 0
+    static readonly empty: KoalaCallsiteKey = 0;
 
     static combine(key1: KoalaCallsiteKey, key2: KoalaCallsiteKey): KoalaCallsiteKey {
-        return key1 + key2
+        return key1 + key2;
     }
 
     static asString(key: KoalaCallsiteKey): string {
-        return key.toString(16)
+        return key.toString(16);
     }
 }

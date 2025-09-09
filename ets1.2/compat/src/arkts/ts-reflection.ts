@@ -14,25 +14,25 @@
  */
 
 export function className(object?: Object): string {
-    return object ? (Type.of(object) as ClassType).getName() : "null"
+    return object ? (Type.of(object) as ClassType).getName() : 'null';
 }
 
 export function isFunction(object?: Object): boolean {
-    return Type.of(object) instanceof FunctionType
+    return Type.of(object) instanceof FunctionType;
 }
 
 // Improve: This is an very ad hoc function,
 // but I could not find in ArkTS stdlib enough functionality
 // for a more generic way.
-export function functionOverValue<Value>(value: Value|(()=>Value)): boolean {
-    return Type.of(value) instanceof FunctionType
+export function functionOverValue<Value>(value: Value | (() => Value)): boolean {
+    return Type.of(value) instanceof FunctionType;
 }
 
 // Somehow es2panda only allows === on reference types.
 export function refEqual<Value>(a: Value, b: Value): boolean {
-    return a == b
+    return a == b;
 }
 
 export function isNotPrimitive(value: Object): boolean {
-    return !Type.of(value).isPrimitive()
+    return !Type.of(value).isPrimitive();
 }

@@ -13,50 +13,50 @@
  * limitations under the License.
  */
 
-import { float64toInt32, int32 } from "@koalaui/compat"
-import { createSha1 } from "./sha1";
+import { float64toInt32, int32 } from '@koalaui/compat';
+import { createSha1 } from './sha1';
 
 export class UniqueId {
-    private sha = createSha1()
+    private sha = createSha1();
 
     public addString(data: string): UniqueId {
-        this.sha.updateString(data)
-        return this
+        this.sha.updateString(data);
+        return this;
     }
 
     public addI32(data: int32): UniqueId {
-        this.sha.updateInt32(data)
-        return this
+        this.sha.updateInt32(data);
+        return this;
     }
 
     public addF32Array(data: Float32Array): UniqueId {
-        this.sha.update(data)
-        return this
+        this.sha.update(data);
+        return this;
     }
 
     public addI32Array(data: Int32Array): UniqueId {
-        this.sha.update(data)
-        return this
+        this.sha.update(data);
+        return this;
     }
 
     public addU32Array(data: Uint32Array): UniqueId {
-        this.sha.update(data)
-        return this
+        this.sha.update(data);
+        return this;
     }
 
     public addU8Array(data: Uint8Array): UniqueId {
-        this.sha.update(data)
-        return this
+        this.sha.update(data);
+        return this;
     }
 
     public addPtr(data: Uint32Array | number): UniqueId {
         if (data instanceof Uint32Array) {
-            return this.addU32Array(data)
+            return this.addU32Array(data);
         }
-        return this.addI32(float64toInt32(data))
+        return this.addI32(float64toInt32(data));
     }
 
     public compute(): string {
-        return this.sha.digest("hex") as string
+        return this.sha.digest('hex') as string;
     }
 }

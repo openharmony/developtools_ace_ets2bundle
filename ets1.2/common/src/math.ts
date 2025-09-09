@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { asFloat64, float64 } from "@koalaui/compat"
+import { asFloat64, float64 } from '@koalaui/compat';
 
 /**
  * Computes the linear interpolation between `source` and `target` based on `weight`.
@@ -24,7 +24,7 @@ import { asFloat64, float64 } from "@koalaui/compat"
  * @returns interpolated value
  */
 export function lerp(weight: float64, source: float64, target: float64): float64 {
-    return source * (1.0 - weight) + target * weight
+    return source * (1.0 - weight) + target * weight;
 }
 
 /**
@@ -38,7 +38,7 @@ export function lerp(weight: float64, source: float64, target: float64): float64
  *          `value` otherwise
  */
 export function clamp(value: float64, min: float64, max: float64): float64 {
-    return value <= min ? min : value >= max ? max : value
+    return value <= min ? min : value >= max ? max : value;
 }
 
 /**
@@ -51,8 +51,8 @@ export function clamp(value: float64, min: float64, max: float64): float64 {
  */
 export function modulo(value: float64): float64 {
     // The casts below are needed since floor returns double in ArkTS
-    const modulo: float64 = value - Math.floor(value)
-    return (modulo < 1.0) ? modulo : 0.0
+    const modulo: float64 = value - Math.floor(value);
+    return modulo < 1.0 ? modulo : 0.0;
 }
 
 /**
@@ -62,21 +62,21 @@ export function modulo(value: float64): float64 {
  * @returns a floating-point number
  * @throws Error if `str` cannot be parsed
  */
-export function parseNumber(str: string, name: string = "number", verify: boolean = false): float64 {
-    if (str != "") { // do not parse empty string to 0
+export function parseNumber(str: string, name: string = 'number', verify: boolean = false): float64 {
+    if (str != '') {
+        // do not parse empty string to 0
         // ArkTS does not support NaN, isNaN, parseFloat
-        const value = asFloat64(str)
+        const value = asFloat64(str);
         if (verify) {
-            const reverseStr = value.toString()
+            const reverseStr = value.toString();
             if (reverseStr !== undefined && reverseStr?.length == str.length && reverseStr == str) {
-                return value
+                return value;
             }
-        }
-        else {
-            return value
+        } else {
+            return value;
         }
     }
-    throw new Error(`cannot parse ${name}: "${str}"`)
+    throw new Error(`cannot parse ${name}: "${str}"`);
 }
 
 /**
@@ -87,11 +87,11 @@ export function isFiniteNumber(number: float64): boolean {
     // isFiniteNumber(Number.NEGATIVE_INFINITY) == false
     // isFiniteNumber(Number.POSITIVE_INFINITY) == false
     // isFiniteNumber(NaN) == false
-    return number >= Number.MIN_SAFE_INTEGER && number <= Number.MAX_SAFE_INTEGER
+    return number >= Number.MIN_SAFE_INTEGER && number <= Number.MAX_SAFE_INTEGER;
 }
 
 export function getDistancePx(startX: float64, startY: float64, endX: float64, endY: float64): float64 {
-    const cathetA = Math.abs(endX - startX)
-    const cathetB = Math.abs(endY - startY)
-    return Math.sqrt(cathetA * cathetA + cathetB * cathetB) as float64
+    const cathetA = Math.abs(endX - startX);
+    const cathetB = Math.abs(endY - startY);
+    return Math.sqrt(cathetA * cathetA + cathetB * cathetB) as float64;
 }

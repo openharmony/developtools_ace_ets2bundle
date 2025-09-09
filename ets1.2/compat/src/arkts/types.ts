@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-export type uint8 = byte
-export type int8 = byte
-export type unt16 = short
-export type int16 = short
-export type int32 = int
-export type uint32 = int
-export type int64 = long
-export type uint64 = long
-export type float32 = float
-export type float64 = double
+export type uint8 = byte;
+export type int8 = byte;
+export type unt16 = short;
+export type int16 = short;
+export type int32 = int;
+export type uint32 = int;
+export type int64 = long;
+export type uint64 = long;
+export type float32 = float;
+export type float64 = double;

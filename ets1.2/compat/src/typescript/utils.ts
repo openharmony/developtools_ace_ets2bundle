@@ -13,57 +13,56 @@
  * limitations under the License.
  */
 
-import { AtomicRef } from "./atomic"
+import { AtomicRef } from './atomic';
 
 export function errorAsString(error: any): string {
     if (error instanceof Error) {
-        return error.stack ?? error.toString()
+        return error.stack ?? error.toString();
     }
-    return JSON.stringify(error)
+    return JSON.stringify(error);
 }
 
 export function unsafeCast<T>(value: unknown): T {
-    return value as unknown as T
+    return value as unknown as T;
 }
 
 export function scheduleCoroutine(): void {}
 
 export function memoryStats(): string {
-    return `none`
+    return `none`;
 }
 
 export function launchJob(task: () => void): Promise<any> {
     return new Promise((resolve, reject) => {
         try {
-            task()
-            resolve(undefined)
+            task();
+            resolve(undefined);
         } catch (error) {
-            reject(error)
+            reject(error);
         }
-    })
+    });
 }
 
 export class WorkerLocalValue<T> {
-    private ref?: AtomicRef<T>
+    private ref?: AtomicRef<T>;
 
     /**
      * @param init - a factory function to provide initial worker-local value if needed
      */
-    constructor(private init?: () => T) {
-    }
+    constructor(private init?: () => T) {}
 
     /**
      * @returns the worker-local value for current worker
      * @throws `Error` when value not initialized and no `init` function provided
      */
     get(): T {
-        const ref = this.ref
-        if (ref) return ref.value
-        const init = this.init
-        if (!init) throw new Error("WorkerLocalValue not initialized: call set() first or provide init() function.")
-        const value = init()
-        this.ref = new AtomicRef<T>(value)
-        return value
+        const ref = this.ref;
+        if (ref) return ref.value;
+        const init = this.init;
+        if (!init) throw new Error('WorkerLocalValue not initialized: call set() first or provide init() function.');
+        const value = init();
+        this.ref = new AtomicRef<T>(value);
+        return value;
     }
 
     /**
@@ -71,11 +70,11 @@ export class WorkerLocalValue<T> {
      * @param value - new value to store
      */
     set(value: T) {
-        const ref = this.ref
+        const ref = this.ref;
         if (ref) {
-            ref.value = value
+            ref.value = value;
         } else {
-            this.ref = new AtomicRef<T>(value)
+            this.ref = new AtomicRef<T>(value);
         }
     }
 
@@ -83,6 +82,6 @@ export class WorkerLocalValue<T> {
      * Deletes the worker-local value for current worker.
      */
     delete() {
-        this.ref = undefined
+        this.ref = undefined;
     }
 }
