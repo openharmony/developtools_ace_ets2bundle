@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-type int = number
-type long = number
-type float = number
-type double = number
+type int = number;
+type long = number;
+type float = number;
+type double = number;

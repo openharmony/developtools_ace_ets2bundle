@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,17 +14,17 @@
  */
 
 export interface Thunk {
-    clean(): void
+    clean(): void;
 }
 
 const registry = new FinalizationRegistry<Thunk>((thunk: Thunk) => {
-    thunk.clean()
-})
+    thunk.clean();
+});
 
 export function finalizerRegister(target: Object, thunk: Object) {
-    registry.register(target, thunk as Thunk)
+    registry.register(target, thunk as Thunk);
 }
 
 export function finalizerUnregister(target: Object) {
-    registry.unregister(target)
+    registry.unregister(target);
 }

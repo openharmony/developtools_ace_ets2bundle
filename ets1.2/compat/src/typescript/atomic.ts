@@ -17,14 +17,14 @@
  * A reference that may be updated atomically.
  */
 export class AtomicRef<Value> {
-    value: Value
+    value: Value;
 
     /**
      * Creates a new reference object with the given initial value.
      * @param value - the new value
      */
     constructor(value: Value) {
-        this.value = value
+        this.value = value;
     }
 
     /**
@@ -33,8 +33,8 @@ export class AtomicRef<Value> {
      * @returns the previous value
      */
     getAndSet(value: Value): Value {
-        const result = this.value
-        this.value = value
-        return result
+        const result = this.value;
+        this.value = value;
+        return result;
     }
 }

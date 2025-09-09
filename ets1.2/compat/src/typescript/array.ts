@@ -13,24 +13,24 @@
  * limitations under the License.
  */
 
-import { float64, int32, int8 } from "./types"
+import { float64, int32, int8 } from './types';
 
 export function asArray<T>(value: T[]): Array<T> {
-    return value
+    return value;
 }
 
 export function Array_from_set<T>(set: Set<T>): Array<T> {
-    return Array.from(set)
+    return Array.from(set);
 }
 
 export function Array_from_int32(data: Int32Array): int32[] {
-    return Array.from(data)
+    return Array.from(data);
 }
 
 export function Array_from_number(data: float64[]): Array<float64> {
-    return data
+    return data;
 }
 
 export function int8Array(size: int32): int8[] {
-    return []
+    return [];
 }

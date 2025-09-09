@@ -44,22 +44,31 @@ export {
     uint8,
     int8,
     int16,
-    int32, int32toFloat32, int32toFloat64, int32to64,
+    int32,
+    int32toFloat32,
+    int32toFloat64,
+    int32to64,
     uint32,
-    int64, int64toFloat32, int64toFloat64, int64to32,
+    int64,
+    int64toFloat32,
+    int64toFloat64,
+    int64to32,
     uint64,
-    float32, float32to64, float32toInt32, float32toInt64,
-    float64, float64to32, float64toInt32, float64toInt64,
+    float32,
+    float32to64,
+    float32toInt32,
+    float32toInt64,
+    float64,
+    float64to32,
+    float64toInt32,
+    float64toInt64,
     int8Array,
     errorAsString,
     unsafeCast,
     WorkerLocalValue,
     scheduleCoroutine,
     memoryStats,
-    launchJob
-} from "../typescript"
+    launchJob,
+} from '../typescript';
 
-export {
-    timeNow,
-    numberToFixed,
-} from "./performance"
+export { timeNow, numberToFixed } from './performance';

@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { className } from "./ts-reflection"
+import { className } from './ts-reflection';
 
 export function lcClassName(object: Object) {
-    return className(object).toLowerCase()
+    return className(object).toLowerCase();
 }

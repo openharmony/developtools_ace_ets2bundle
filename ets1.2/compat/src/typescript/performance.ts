@@ -18,7 +18,7 @@
  *          January 1, 1970 Universal Coordinated Time (UTC).
  */
 export function timeNow(): number {
-    return performance.now()
+    return performance.now();
 }
 
 /**
@@ -26,5 +26,5 @@ export function timeNow(): number {
  * @returns a string representing a number in fixed-point notation
  */
 export function numberToFixed(value: number, fractionDigits: number): string {
-    return value.toFixed(fractionDigits)
+    return value.toFixed(fractionDigits);
 }

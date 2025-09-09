@@ -14,35 +14,47 @@
  */
 
 /// <reference path="../typescript/Types.d.ts" />
-export type uint8 = int
-export type int8 = int
-export type int16 = int
-export type int32 = int
-export type uint32 = int
-export type int64 = long
-export type uint64 = long
-export type float32 = float
-export type float64 = double
+export type uint8 = int;
+export type int8 = int;
+export type int16 = int;
+export type int32 = int;
+export type uint32 = int;
+export type int64 = long;
+export type uint64 = long;
+export type float32 = float;
+export type float64 = double;
 
-export {}
+export {};
 declare global {
     export interface Number {
-        toByte(): int
-        toShort(): int
-        toInt(): int
-        toLong(): long
-        toFloat(): float
-        toDouble(): double
+        toByte(): int;
+        toShort(): int;
+        toInt(): int;
+        toLong(): long;
+        toFloat(): float;
+        toDouble(): double;
     }
 }
-Number.prototype.toByte = function() { return (this as Number | 0) as number; }
+Number.prototype.toByte = function () {
+    return this as Number | 0 as number;
+};
 
-Number.prototype.toShort = function() { return (this as Number | 0) as number; }
+Number.prototype.toShort = function () {
+    return this as Number | 0 as number;
+};
 
-Number.prototype.toInt = function() { return (this as Number | 0) as number; }
+Number.prototype.toInt = function () {
+    return this as Number | 0 as number;
+};
 
-Number.prototype.toLong = function() { return (this as Number | 0) as number; }
+Number.prototype.toLong = function () {
+    return this as Number | 0 as number;
+};
 
-Number.prototype.toFloat = function() { return this as number; }
+Number.prototype.toFloat = function () {
+    return this as number;
+};
 
-Number.prototype.toDouble = function() { return this as number; }
+Number.prototype.toDouble = function () {
+    return this as number;
+};
