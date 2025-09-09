@@ -13,86 +13,84 @@
  * limitations under the License.
  */
 
-import { KPointer } from "../../interop/InteropTypes"
-import { CallbackRegistry } from "../../interop/Platform"
+import { KPointer } from '../../interop/InteropTypes';
+import { CallbackRegistry } from '../../interop/Platform';
 
 class CallbackInfo {
-    cb: any
-    recv: any
+    cb: any;
+    recv: any;
     constructor(callback: any, obj: any = null) {
-        this.cb = callback
-        this.recv = obj
+        this.cb = callback;
+        this.recv = obj;
     }
 }
 
-const GLOBAL_SCOPE = new class CallbackScope {
-    static readonly CB_NULL = new CallbackInfo(
-        () => { throw new Error("attempted to call a callback at NULL") },
-        null
-    )
-    static readonly CB_UNDEFINED = new CallbackInfo(
-        () => { throw new Error("attempted to call an uninitialized callback") },
-        null
-    )
-    static readonly CB_NULL_ID = 0
-    nextId: number
-    callbackMap: Map<number, CallbackInfo> | null
+const GLOBAL_SCOPE = new (class CallbackScope {
+    static readonly CB_NULL = new CallbackInfo(() => {
+        throw new Error('attempted to call a callback at NULL');
+    }, null);
+    static readonly CB_UNDEFINED = new CallbackInfo(() => {
+        throw new Error('attempted to call an uninitialized callback');
+    }, null);
+    static readonly CB_NULL_ID = 0;
+    nextId: number;
+    callbackMap: Map<number, CallbackInfo> | null;
 
     constructor() {
-        this.nextId = 1
-        this.callbackMap = new Map()
-        this.callbackMap.set(CallbackScope.CB_NULL_ID, CallbackScope.CB_NULL)
+        this.nextId = 1;
+        this.callbackMap = new Map();
+        this.callbackMap.set(CallbackScope.CB_NULL_ID, CallbackScope.CB_NULL);
     }
 
     addCallback(cb: any, obj: any): number {
-        let id = this.nextId++
-        this.callbackMap?.set(id, new CallbackInfo(cb, obj))
-        return id
+        let id = this.nextId++;
+        this.callbackMap?.set(id, new CallbackInfo(cb, obj));
+        return id;
     }
 
     getCallback(id: number): CallbackInfo {
-        return this.callbackMap?.get(id) || CallbackScope.CB_UNDEFINED
+        return this.callbackMap?.get(id) || CallbackScope.CB_UNDEFINED;
     }
 
     deleteCallback(id: number): void {
         if (id > CallbackScope.CB_NULL_ID) {
-            this.callbackMap?.delete(id)
+            this.callbackMap?.delete(id);
         }
     }
 
     release(): void {
-        this.callbackMap = null
+        this.callbackMap = null;
     }
-}
+})();
 
 function callCallback(callbackId: number): any {
-    let CallbackInfo = GLOBAL_SCOPE.getCallback(callbackId)
+    let CallbackInfo = GLOBAL_SCOPE.getCallback(callbackId);
     try {
-        let cb = CallbackInfo.cb
+        let cb = CallbackInfo.cb;
         if (CallbackInfo.recv !== null) {
-            cb = cb.bind(CallbackInfo.recv)
+            cb = cb.bind(CallbackInfo.recv);
         }
-        return cb()
+        return cb();
     } catch (e) {
-        console.error(e)
+        console.error(e);
     }
 }
 
 export function registerCallback(callback: any, obj: any = null): KPointer {
-    return GLOBAL_SCOPE.addCallback(callback, obj)
+    return GLOBAL_SCOPE.addCallback(callback, obj);
 }
 
 function releaseCallback(callbackId: number): void {
-    return GLOBAL_SCOPE.deleteCallback(callbackId)
+    return GLOBAL_SCOPE.deleteCallback(callbackId);
 }
 
 declare namespace globalThis {
-    function callCallback(callbackId: number): any
-    function releaseCallback(callbackId: number): any
+    function callCallback(callbackId: number): any;
+    function releaseCallback(callbackId: number): any;
 }
 
-globalThis.callCallback = callCallback
-globalThis.releaseCallback = releaseCallback
+globalThis.callCallback = callCallback;
+globalThis.releaseCallback = releaseCallback;
 
 export function setCallbackRegistry(_ignoredRegistry: CallbackRegistry) {
     // On WASM we don't need registry in current implementation.

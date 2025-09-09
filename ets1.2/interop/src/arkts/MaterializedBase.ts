@@ -13,14 +13,13 @@
  * limitations under the License.
  */
 
-import { Finalizable } from "./Finalizable"
+import { Finalizable } from './Finalizable';
 
 export class MaterializedBaseTag {
-    static NOP = new MaterializedBaseTag()
-    private constructor() { }
+    static NOP = new MaterializedBaseTag();
+    private constructor() {}
 }
 
 export interface MaterializedBase {
-    getPeer(): Finalizable | undefined
+    getPeer(): Finalizable | undefined;
 }
-

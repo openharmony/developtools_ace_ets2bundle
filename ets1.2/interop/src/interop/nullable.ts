@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-import { isNullPtr } from "./Wrapper"
-import { KPointer } from "./InteropTypes"
+import { isNullPtr } from './Wrapper';
+import { KPointer } from './InteropTypes';
 
 export function nullable<T>(value: KPointer, body: (arg: KPointer) => T | undefined): T | undefined {
     if (isNullPtr(value)) {
-        return undefined
+        return undefined;
     } else {
-        return body(value)
+        return body(value);
     }
 }

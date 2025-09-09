@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { Finalizable } from "./Finalizable"
+import { Finalizable } from './Finalizable';
 
 export interface MaterializedBase {
-    getPeer(): Finalizable | undefined
+    getPeer(): Finalizable | undefined;
 }

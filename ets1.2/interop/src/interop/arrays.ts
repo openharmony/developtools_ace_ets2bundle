@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { int32 } from "@koalaui/common"
+import { int32 } from '@koalaui/common';
 
 export enum Access {
     READ = 1, // 1 << 0,
@@ -21,23 +21,23 @@ export enum Access {
     READWRITE = 3, // READ | WRITE
 }
 export function isRead(access: Access) {
-    return access & Access.READ
+    return access & Access.READ;
 }
 export function isWrite(access: Access) {
-    return access & Access.WRITE
+    return access & Access.WRITE;
 }
 
-export type Exec<P, R> = (pointer: P) => R
-export type ExecWithLength<P, R> = (pointer: P, length: int32) => R
+export type Exec<P, R> = (pointer: P) => R;
+export type ExecWithLength<P, R> = (pointer: P, length: int32) => R;
 
 export type TypedArray =
-    Uint8Array
+    | Uint8Array
     | Int8Array
     | Uint16Array
     | Int16Array
     | Uint32Array
     | Int32Array
     | Float32Array
-    | Float64Array
+    | Float64Array;
 
-export type PtrArray = Uint32Array | BigUint64Array
+export type PtrArray = Uint32Array | BigUint64Array;

@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-import { int32, float64toInt32 } from "@koalaui/common"
+import { int32, float64toInt32 } from '@koalaui/common';
 
-export type ResourceId = int32
+export type ResourceId = int32;
 
 interface ResourceInfo {
-    resource: object
-    holdersCount: int32
+    resource: object;
+    holdersCount: int32;
 }
 
 export interface Disposable {
@@ -27,60 +27,56 @@ export interface Disposable {
 }
 
 export class ResourceHolder {
-    private static nextResourceId: ResourceId = 100 
-    private resources: Map<ResourceId, ResourceInfo> = new Map<ResourceId, ResourceInfo>()
-    private static _instance: ResourceHolder|undefined = undefined
+    private static nextResourceId: ResourceId = 100;
+    private resources: Map<ResourceId, ResourceInfo> = new Map<ResourceId, ResourceInfo>();
+    private static _instance: ResourceHolder | undefined = undefined;
     private static disposables = new Array<Disposable>();
-    private static disposablesSize = 0
+    private static disposablesSize = 0;
 
     static instance(): ResourceHolder {
         if (ResourceHolder._instance == undefined) {
-            ResourceHolder._instance = new ResourceHolder()
+            ResourceHolder._instance = new ResourceHolder();
         }
-        return ResourceHolder._instance!
+        return ResourceHolder._instance!;
     }
 
     public hold(resourceId: ResourceId) {
-        if (!this.resources.has(resourceId))
-            throw new Error(`Resource ${resourceId} does not exists, can not hold`)
-        this.resources.get(resourceId)!.holdersCount++
+        if (!this.resources.has(resourceId)) throw new Error(`Resource ${resourceId} does not exists, can not hold`);
+        this.resources.get(resourceId)!.holdersCount++;
     }
 
     public release(resourceId: ResourceId) {
-        if (!this.resources.has(resourceId))
-            throw new Error(`Resource ${resourceId} does not exists, can not release`)
-        const resource = this.resources.get(resourceId)!
-        resource.holdersCount--
-        if (resource.holdersCount <= 0)
-            this.resources.delete(resourceId)
+        if (!this.resources.has(resourceId)) throw new Error(`Resource ${resourceId} does not exists, can not release`);
+        const resource = this.resources.get(resourceId)!;
+        resource.holdersCount--;
+        if (resource.holdersCount <= 0) this.resources.delete(resourceId);
     }
 
     public registerAndHold(resource: object): ResourceId {
-        const resourceId = ResourceHolder.nextResourceId++
+        const resourceId = ResourceHolder.nextResourceId++;
         this.resources.set(resourceId, {
             resource: resource,
             holdersCount: 1,
-        })
-        return resourceId
+        });
+        return resourceId;
     }
 
     public get(resourceId: ResourceId): object {
-        if (!this.resources.has(resourceId))
-            throw new Error(`Resource ${resourceId} does not exists`)
-        return this.resources.get(resourceId)!.resource
+        if (!this.resources.has(resourceId)) throw new Error(`Resource ${resourceId} does not exists`);
+        return this.resources.get(resourceId)!.resource;
     }
 
     public has(resourceId: ResourceId): boolean {
-        return this.resources.has(resourceId)
+        return this.resources.has(resourceId);
     }
 
     static register(resource: Disposable) {
         if (ResourceHolder.disposablesSize < ResourceHolder.disposables.length) {
-            ResourceHolder.disposables[ResourceHolder.disposablesSize] = resource
+            ResourceHolder.disposables[ResourceHolder.disposablesSize] = resource;
         } else {
-            ResourceHolder.disposables.push(resource)
+            ResourceHolder.disposables.push(resource);
         }
-        ResourceHolder.disposablesSize++
+        ResourceHolder.disposablesSize++;
     }
 
     static unregister(resource: Disposable) {
@@ -95,9 +91,9 @@ export class ResourceHolder {
 
     static disposeAll() {
         for (let i = 0; i < ResourceHolder.disposablesSize; ++i) {
-            ResourceHolder.disposables[i].dispose()
+            ResourceHolder.disposables[i].dispose();
         }
-        ResourceHolder.disposablesSize = 0
+        ResourceHolder.disposablesSize = 0;
     }
 
     static compactDisposables() {

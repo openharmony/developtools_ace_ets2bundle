@@ -13,33 +13,32 @@
  * limitations under the License.
  */
 
-import { ptrToString, nullptr, isSamePtr } from "#common/wrappers/Wrapper"
-import { className } from "@koalaui/common"
-import { KPointer } from "./InteropTypes"
+import { ptrToString, nullptr, isSamePtr } from '#common/wrappers/Wrapper';
+import { className } from '@koalaui/common';
+import { KPointer } from './InteropTypes';
 
-export { isNullPtr, nullptr, ptrToBits, bitsToPtr, isSamePtr, ptrToString } from "#common/wrappers/Wrapper"
+export { isNullPtr, nullptr, ptrToBits, bitsToPtr, isSamePtr, ptrToString } from '#common/wrappers/Wrapper';
 
 /**
  * An object holding reference to the native pointer.
  */
 export class Wrapper {
-    ptr: KPointer
+    ptr: KPointer;
     constructor(ptr: KPointer) {
-        if (ptr == null)
-            throw new Error(`Init <${className(this)}> with null native peer`)
-        this.ptr = ptr
+        if (ptr == null) throw new Error(`Init <${className(this)}> with null native peer`);
+        this.ptr = ptr;
     }
     toString(): string {
-        return `[native object <${className(this)}> at ${ptrToString(this.ptr)}]`
+        return `[native object <${className(this)}> at ${ptrToString(this.ptr)}]`;
     }
 }
 
-export function getPtr(value: Wrapper|undefined): KPointer {
-    return value?.ptr ?? nullptr
+export function getPtr(value: Wrapper | undefined): KPointer {
+    return value?.ptr ?? nullptr;
 }
 
-export function ptrEqual(a: Wrapper|undefined, b: Wrapper|undefined): boolean {
-    if (a === b) return true
-    if (a == undefined || b == undefined) return false
-    return isSamePtr(a.ptr, b.ptr)
+export function ptrEqual(a: Wrapper | undefined, b: Wrapper | undefined): boolean {
+    if (a === b) return true;
+    if (a == undefined || b == undefined) return false;
+    return isSamePtr(a.ptr, b.ptr);
 }
