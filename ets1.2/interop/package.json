@@ -93,7 +93,8 @@
         "compile:native-panda-with-hzvm-ohos-arm32": "npm run configure:native-panda-with-hzvm-ohos-arm32 && npm run compile:native-panda-ohos-arm32 && meson compile -C build-hzvm-ohos-arm32-vmloader && meson install -C build-hzvm-ohos-arm32-vmloader",
         "compile:kotlin:cinterop": "cd src/cpp/kotlin && cinterop -def cinterop-interop_native_module.def -pkg cinterop.interop_native_module -compiler-option -I. -o ../../../build/kotlin-interop/cinterop.interop_native_module",
         "compile:kotlin:kt": "konanc ./src/kotlin/*.kt -l ./build/kotlin-interop/cinterop.interop_native_module.klib -p library -o ./build/kotlin-interop/interop",
-        "compile:kotlin:interop": "rm -rf build/kotlin-interop && npm run compile:kotlin:cinterop && npm run compile:kotlin:kt"
+        "compile:kotlin:interop": "rm -rf build/kotlin-interop && npm run compile:kotlin:cinterop && npm run compile:kotlin:kt",
+        "format:src:ts": "npx prettier --config .prettierrc --write \"./src/**/*.ts\""
     },
     "keywords": [],
     "dependencies": {

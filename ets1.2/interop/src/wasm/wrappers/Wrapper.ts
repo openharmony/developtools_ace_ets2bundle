@@ -13,32 +13,32 @@
  * limitations under the License.
  */
 
-import { int32 } from "@koalaui/common"
-import { KPointer } from "../../interop/InteropTypes"
+import { int32 } from '@koalaui/common';
+import { KPointer } from '../../interop/InteropTypes';
 
-export const nullptr: number = 0
+export const nullptr: number = 0;
 
 export function isNullPtr(value: KPointer): boolean {
-    return (value == nullptr)
+    return value == nullptr;
 }
 
 export function ptrToString(ptr: KPointer) {
-    if (ptr === 0) return "0x0"
+    if (ptr === 0) return '0x0';
 
-    const hex = (ptr as number).toString(16).padStart(8, "0")
-    return `0x${hex}`
+    const hex = (ptr as number).toString(16).padStart(8, '0');
+    return `0x${hex}`;
 }
 
 export function isSamePtr(a: KPointer, b: KPointer) {
-    return a === b
+    return a === b;
 }
 
 export function ptrToBits(ptr: KPointer): Uint32Array {
-    let result = new Uint32Array(2)
-    result[0] = ptr as int32
-    return result
+    let result = new Uint32Array(2);
+    result[0] = ptr as int32;
+    return result;
 }
 
 export function bitsToPtr(array: Int32Array, offset: int32): KPointer {
-    return array[offset]
+    return array[offset];
 }

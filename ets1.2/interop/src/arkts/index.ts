@@ -13,14 +13,14 @@
  * limitations under the License.
  */
 
-export * from "./InteropTypes"
-export * from "./callback"
-export * from "./ResourceManager"
-export * from "./NativeBuffer"
-export * from "./InteropNativeModule"
-export * from "./SerializerBase"
-export * from "./DeserializerBase"
-export * from "./Finalizable"
-export * from "./loadLibraries"
-export * from "./MaterializedBase"
-export * from "./events"
+export * from './InteropTypes';
+export * from './callback';
+export * from './ResourceManager';
+export * from './NativeBuffer';
+export * from './InteropNativeModule';
+export * from './SerializerBase';
+export * from './DeserializerBase';
+export * from './Finalizable';
+export * from './loadLibraries';
+export * from './MaterializedBase';
+export * from './events';

@@ -13,46 +13,45 @@
  * limitations under the License.
  */
 
-import { int32 } from "@koalaui/common"
-import { DeserializerBase } from "./DeserializerBase"
-import { InteropNativeModule } from "./InteropNativeModule"
-import { ResourceHolder } from "../arkts/ResourceManager"
-import { wrapSystemCallback } from "./InteropOps"
-import { KSerializerBuffer } from "./InteropTypes"
+import { int32 } from '@koalaui/common';
+import { DeserializerBase } from './DeserializerBase';
+import { InteropNativeModule } from './InteropNativeModule';
+import { ResourceHolder } from '../arkts/ResourceManager';
+import { wrapSystemCallback } from './InteropOps';
+import { KSerializerBuffer } from './InteropTypes';
 
-const API_KIND_MAX = 100
-const apiEventHandlers: (EventHandler | undefined)[] = new Array(API_KIND_MAX).fill(undefined)
-export type EventHandler = (deserializer: DeserializerBase) => void
+const API_KIND_MAX = 100;
+const apiEventHandlers: (EventHandler | undefined)[] = new Array(API_KIND_MAX).fill(undefined);
+export type EventHandler = (deserializer: DeserializerBase) => void;
 export function registerApiEventHandler(apiKind: int32, handler: EventHandler) {
     if (apiKind < 0 || apiKind > API_KIND_MAX) {
-        throw new Error(`Maximum api kind is ${API_KIND_MAX}, received ${apiKind}`)
+        throw new Error(`Maximum api kind is ${API_KIND_MAX}, received ${apiKind}`);
     }
     if (apiEventHandlers[apiKind] !== undefined) {
-        throw new Error(`Callback caller for api kind ${apiKind} already was set`)
+        throw new Error(`Callback caller for api kind ${apiKind} already was set`);
     }
-    apiEventHandlers[apiKind] = handler
+    apiEventHandlers[apiKind] = handler;
 }
 export function handleApiEvent(apiKind: int32, deserializer: DeserializerBase) {
     if (apiKind < 0 || apiKind > API_KIND_MAX) {
-        throw new Error(`Maximum api kind is ${API_KIND_MAX}, received ${apiKind}`)
+        throw new Error(`Maximum api kind is ${API_KIND_MAX}, received ${apiKind}`);
     }
     if (apiEventHandlers[apiKind] === undefined) {
-        throw new Error(`Callback caller for api kind ${apiKind} was not set`)
+        throw new Error(`Callback caller for api kind ${apiKind} was not set`);
     }
-    apiEventHandlers[apiKind]!(deserializer)
+    apiEventHandlers[apiKind]!(deserializer);
 }
 export function wrapSystemApiHandlerCallback() {
-    wrapSystemCallback(1, (buffer: KSerializerBuffer, len:int32) => {
-        const deserializer = new DeserializerBase(buffer, len)
-        const apiKind = deserializer.readInt32()
-        handleApiEvent(apiKind, deserializer)
-        return 0
-    })
+    wrapSystemCallback(1, (buffer: KSerializerBuffer, len: int32) => {
+        const deserializer = new DeserializerBase(buffer, len);
+        const apiKind = deserializer.readInt32();
+        handleApiEvent(apiKind, deserializer);
+        return 0;
+    });
 }
 export function checkEvents(): void {
     while (checkSingleEvent()) {}
 }
-
 
 enum CallbackEventKind {
     Event_CallCallback = 0,
@@ -60,20 +59,19 @@ enum CallbackEventKind {
     Event_ReleaseManagedResource = 2,
 }
 
-const bufferSize = 8 * 1024
-const buffer = new Uint8Array(bufferSize)
-const deserializer = new DeserializerBase(buffer.buffer, bufferSize)
+const bufferSize = 8 * 1024;
+const buffer = new Uint8Array(bufferSize);
+const deserializer = new DeserializerBase(buffer.buffer, bufferSize);
 function checkSingleEvent(): boolean {
-    deserializer.resetCurrentPosition()
-    let result = InteropNativeModule._CheckCallbackEvent(buffer, bufferSize)
-    if (result == 0)
-        return false
+    deserializer.resetCurrentPosition();
+    let result = InteropNativeModule._CheckCallbackEvent(buffer, bufferSize);
+    if (result == 0) return false;
 
-    const eventKind = deserializer.readInt32() as CallbackEventKind
+    const eventKind = deserializer.readInt32() as CallbackEventKind;
     switch (eventKind) {
         case CallbackEventKind.Event_CallCallback: {
-            const apiKind = deserializer.readInt32()
-            handleApiEvent(apiKind, deserializer)
+            const apiKind = deserializer.readInt32();
+            handleApiEvent(apiKind, deserializer);
             return true;
         }
         case CallbackEventKind.Event_HoldManagedResource: {

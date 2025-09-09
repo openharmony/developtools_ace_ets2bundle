@@ -13,46 +13,45 @@
  * limitations under the License.
  */
 
-import { int32 } from "@koalaui/common"
-import { isNullPtr, nullptr, Wrapper } from "./Wrapper"
-import { decodeToString } from "#common/wrappers/arrays"
-import { setCallbackRegistry } from "#common/wrappers/Callback"
-import { KPointer } from "./InteropTypes"
+import { int32 } from '@koalaui/common';
+import { isNullPtr, nullptr, Wrapper } from './Wrapper';
+import { decodeToString } from '#common/wrappers/arrays';
+import { setCallbackRegistry } from '#common/wrappers/Callback';
+import { KPointer } from './InteropTypes';
 
 export abstract class NativeStringBase extends Wrapper {
     constructor(ptr: KPointer) {
-        super(ptr)
+        super(ptr);
     }
 
-    protected abstract bytesLength(): int32
-    protected abstract getData(data: Uint8Array): void
+    protected abstract bytesLength(): int32;
+    protected abstract getData(data: Uint8Array): void;
 
     toString(): string {
-        let length = this.bytesLength()
-        let data = new Uint8Array(length)
-        this.getData(data)
-        return decodeToString(data)
+        let length = this.bytesLength();
+        let data = new Uint8Array(length);
+        this.getData(data);
+        return decodeToString(data);
     }
 
-    abstract close(): void
+    abstract close(): void;
 }
 
 export abstract class ArrayDecoder<T> {
-    abstract getArraySize(blob: KPointer): int32
-    abstract disposeArray(blob: KPointer): void
-    abstract getArrayElement(blob: KPointer, index: int32): T
+    abstract getArraySize(blob: KPointer): int32;
+    abstract disposeArray(blob: KPointer): void;
+    abstract getArrayElement(blob: KPointer, index: int32): T;
 
     decode(blob: KPointer): Array<T> {
-        const size = this.getArraySize(blob)
-        const result = new Array<T>(size)
+        const size = this.getArraySize(blob);
+        const result = new Array<T>(size);
         for (let index = 0; index < size; index++) {
-            result[index] = this.getArrayElement(blob, index)
+            result[index] = this.getArrayElement(blob, index);
         }
-        this.disposeArray(blob)
-        return result
+        this.disposeArray(blob);
+        return result;
     }
 }
-
 
 // Improve: the semicolons after methods in these interfaces are to
 // workaround ArkTS compiler parser bug
@@ -66,24 +65,24 @@ export interface PlatformDefinedData {
     callbackRegistry(): CallbackRegistry | undefined;
 }
 
-let platformData: PlatformDefinedData|undefined = undefined
+let platformData: PlatformDefinedData | undefined = undefined;
 
 export function providePlatformDefinedData(platformDataParam: PlatformDefinedData) {
-    platformData = platformDataParam
-    let registry = platformDataParam.callbackRegistry()
-    if (registry) setCallbackRegistry(registry)
+    platformData = platformDataParam;
+    let registry = platformDataParam.callbackRegistry();
+    if (registry) setCallbackRegistry(registry);
 }
 
-export function withStringResult(ptr: KPointer): string|undefined {
-    if (isNullPtr(ptr)) return undefined
-    let managedString = platformData!.nativeString(ptr)
-    let result = managedString?.toString()
-    managedString?.close()
-    return result
+export function withStringResult(ptr: KPointer): string | undefined {
+    if (isNullPtr(ptr)) return undefined;
+    let managedString = platformData!.nativeString(ptr);
+    let result = managedString?.toString();
+    managedString?.close();
+    return result;
 }
 
 export function withStringArrayResult(ptr: KPointer): Array<string> {
-    if (ptr == nullptr) return new Array<string>()
-    let managedStringArray = platformData!.nativeStringArrayDecoder().decode(ptr)
-    return managedStringArray.map((nativeString:NativeStringBase) => nativeString.toString())
+    if (ptr == nullptr) return new Array<string>();
+    let managedStringArray = platformData!.nativeStringArrayDecoder().decode(ptr);
+    return managedStringArray.map((nativeString: NativeStringBase) => nativeString.toString());
 }

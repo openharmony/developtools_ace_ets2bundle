@@ -13,15 +13,15 @@
  * limitations under the License.
  */
 
-import { KPointer } from "../../interop/InteropTypes"
-import { CallbackRegistry } from "../../interop/Platform"
+import { KPointer } from '../../interop/InteropTypes';
+import { CallbackRegistry } from '../../interop/Platform';
 
 export function registerCallback(callback: any, obj: any = null): KPointer {
-    return theRegistry!.registerCallback(callback, obj)
+    return theRegistry!.registerCallback(callback, obj);
 }
 
-let theRegistry: CallbackRegistry|undefined = undefined
+let theRegistry: CallbackRegistry | undefined = undefined;
 
 export function setCallbackRegistry(registry: CallbackRegistry) {
-    theRegistry = registry
+    theRegistry = registry;
 }

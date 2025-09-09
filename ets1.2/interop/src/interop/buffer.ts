@@ -11,29 +11,29 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
-import { int32 } from "@koalaui/common"
+import { int32 } from '@koalaui/common';
 
 // Improve: can be removed if passing ArrayBuffer type through interop is possible
 export class KBuffer {
-    private readonly _buffer: Uint8Array
+    private readonly _buffer: Uint8Array;
     public get buffer(): ArrayBuffer {
-        return this._buffer
+        return this._buffer;
     }
     public get length(): int32 {
-        return this._buffer.length
+        return this._buffer.length;
     }
 
     constructor(length: int32) {
-        this._buffer = new Uint8Array(length)
+        this._buffer = new Uint8Array(length);
     }
 
     set(index: int32, value: int32): void {
-        this._buffer[index] = value
+        this._buffer[index] = value;
     }
 
     get(index: int32): int32 {
-        return this._buffer[index]
+        return this._buffer[index];
     }
 }

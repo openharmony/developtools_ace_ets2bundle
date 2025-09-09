@@ -11,21 +11,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
-const nativeModuleLibraries: Map<string, string> = new Map<string, string>()
+const nativeModuleLibraries: Map<string, string> = new Map<string, string>();
 
 export function loadNativeLibrary(library: string) {
-    console.log(`[loadLibraries] Loading ${library} [${library}]`)
-    loadLibrary(library)
+    console.log(`[loadLibraries] Loading ${library} [${library}]`);
+    loadLibrary(library);
 }
 
 export function registerNativeModuleLibraryName(nativeModule: string, libraryName: string) {
-    console.log(`[loadLibraries] Registered ${libraryName} as ${nativeModule}`)
-    nativeModuleLibraries.set(nativeModule, libraryName)
+    console.log(`[loadLibraries] Registered ${libraryName} as ${nativeModule}`);
+    nativeModuleLibraries.set(nativeModule, libraryName);
 }
 
 export function loadNativeModuleLibrary(nativeModule: string) {
-    console.log(`[loadLibraries] Loading ${nativeModule} [${nativeModuleLibraries.get(nativeModule) ?? nativeModule}]`)
-    loadLibrary(nativeModuleLibraries.get(nativeModule) ?? nativeModule)
+    console.log(`[loadLibraries] Loading ${nativeModule} [${nativeModuleLibraries.get(nativeModule) ?? nativeModule}]`);
+    loadLibrary(nativeModuleLibraries.get(nativeModule) ?? nativeModule);
 }

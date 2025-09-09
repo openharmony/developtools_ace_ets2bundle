@@ -13,18 +13,18 @@
  * limitations under the License.
  */
 
-import { Finalizable } from "./Finalizable"
-import { InteropNativeModule } from "./InteropNativeModule"
-import { pointer } from "./InteropTypes"
+import { Finalizable } from './Finalizable';
+import { InteropNativeModule } from './InteropNativeModule';
+import { pointer } from './InteropTypes';
 
 export class NativeString extends Finalizable {
     constructor(ptr: pointer) {
-        super(ptr, InteropNativeModule._GetStringFinalizer())
+        super(ptr, InteropNativeModule._GetStringFinalizer());
     }
     static Make(value: string): NativeString {
-        return new NativeString(InteropNativeModule._StringMake(value))
+        return new NativeString(InteropNativeModule._StringMake(value));
     }
     toString(): string {
-        return InteropNativeModule._StdStringToString(this.ptr)
+        return InteropNativeModule._StdStringToString(this.ptr);
     }
 }
