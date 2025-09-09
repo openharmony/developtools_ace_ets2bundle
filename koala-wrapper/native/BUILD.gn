@@ -15,8 +15,7 @@ import("//build/ohos.gni")
 
 shared_library("es2panda") {
   external_deps = [
-    "ets_frontend:libes2panda_public_headers",
-    "node:node_header_notice",
+    "ets_frontend:libes2panda_public_headers"
   ]
   sources = [
     "../koalaui/interop/src/cpp/common-interop.cc",
