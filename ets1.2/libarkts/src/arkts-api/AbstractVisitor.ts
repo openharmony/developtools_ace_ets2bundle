@@ -37,6 +37,10 @@ export abstract class AbstractVisitor {
         return result;
     }
 
+    process(node: AstNode, options?: object): AstNode {
+        return this.visitor(node, options);
+    }
+
     abstract visitor(node: AstNode, options?: object): AstNode;
 
     visitEachChild(node: AstNode, options?: object): AstNode {

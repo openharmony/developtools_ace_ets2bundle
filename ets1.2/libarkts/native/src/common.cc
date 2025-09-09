@@ -18,6 +18,7 @@
 #include <sstream>
 #include <vector>
 #include <iterator>
+#include <regex.h>
 
 #include "interop-types.h"
 
@@ -384,6 +385,8 @@ struct Pattern {
             auto type = impl->AstNodeTypeConst(context, node);
             switch (type) {
                 case Es2pandaAstNodeType::AST_NODE_TYPE_METHOD_DEFINITION:
+                case Es2pandaAstNodeType::AST_NODE_TYPE_SCRIPT_FUNCTION:
+
                     return value == "method";
                 case Es2pandaAstNodeType::AST_NODE_TYPE_STRUCT_DECLARATION:
                     return value == "struct";
@@ -404,6 +407,11 @@ struct Pattern {
                 case Es2pandaAstNodeType::AST_NODE_TYPE_FUNCTION_DECLARATION:
                     result = impl->FunctionDeclarationAnnotations(context, node, &length);
                     break;
+                case AST_NODE_TYPE_ARROW_FUNCTION_EXPRESSION: {
+                    auto function = impl->ArrowFunctionExpressionFunction(context, node);
+                    result = impl->FunctionDeclarationAnnotations(context, function, &length);
+                    break;
+                }
                 case Es2pandaAstNodeType::AST_NODE_TYPE_CLASS_PROPERTY:
                     result = impl->ClassPropertyAnnotations(context, node, &length);
                     break;
@@ -414,11 +422,21 @@ struct Pattern {
             for (std::size_t i = 0; i < length && result; i++) {
                 es2panda_AstNode* ident = impl->AnnotationUsageIrGetBaseNameConst(context, result[i]);
                 const char* name = impl->IdentifierNameConst(context, ident);
-                found |= (value == name);
+                found |= matchWildcard(value, name);
             }
             return found;
         }
         return false;
+    }
+
+    bool matchWildcard(const std::string& pattern, const char* value) {
+        if (pattern.find('*') == std::string::npos) {
+            return pattern == value;
+        }
+        regex_t     regex;
+        regmatch_t  match[1];
+        regcomp(&regex, pattern.c_str(), REG_NEWLINE);
+        return regexec(&regex, value, 1, match, 0) != REG_NOMATCH;
     }
 };
 
