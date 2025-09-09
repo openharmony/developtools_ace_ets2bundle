@@ -140,7 +140,7 @@ function nodeVisitor<T extends AstNode | undefined>(node: T, visitor: Visitor): 
         return node;
     }
     const result = visitor(node) as T;
-    if (node != result) {
+    if (node !== result) {
         global.updateTracker.update();
     }
     return result;
@@ -154,7 +154,7 @@ function nodesVisitor<T extends AstNode, TIn extends readonly T[] | undefined>(
     if (nodes === undefined) {
         return nodes;
     }
-    return nodes.map((node) => {
+    return nodes.map((node): T => {
         const result = visitor(node) as T;
         if (node != result) {
             global.updateTracker.update();
@@ -163,7 +163,7 @@ function nodesVisitor<T extends AstNode, TIn extends readonly T[] | undefined>(
     });
 }
 
-function visitBlockStatement(node: BlockStatement, visitor: Visitor) {
+function visitBlockStatement(node: BlockStatement, visitor: Visitor): BlockStatement {
     global.updateTracker.push();
     const newStatements: readonly Statement[] = nodesVisitor(node.statements, visitor);
     if (global.updateTracker.check()) {
@@ -172,7 +172,7 @@ function visitBlockStatement(node: BlockStatement, visitor: Visitor) {
     return node;
 }
 
-function visitETSModule(node: ETSModule, visitor: Visitor) {
+function visitETSModule(node: ETSModule, visitor: Visitor): ETSModule {
     global.updateTracker.push();
     const newStatements: readonly Statement[] = nodesVisitor(node.statements, visitor);
     const oldIdent = node.ident;
@@ -194,7 +194,7 @@ function visitETSModule(node: ETSModule, visitor: Visitor) {
     return node;
 }
 
-function visitCallExpression(node: CallExpression, visitor: Visitor) {
+function visitCallExpression(node: CallExpression, visitor: Visitor): CallExpression {
     global.updateTracker.push();
     const newCallee = nodeVisitor(node.callee, visitor);
     const newArguments: readonly Expression[] = nodesVisitor(node.arguments, visitor);
@@ -209,7 +209,7 @@ function visitCallExpression(node: CallExpression, visitor: Visitor) {
     return node;
 }
 
-function visitIdentifier(node: Identifier, visitor: Visitor) {
+function visitIdentifier(node: Identifier, visitor: Visitor): Identifier {
     global.updateTracker.push();
     const newTypeAnnotation = nodeVisitor(node.typeAnnotation, visitor);
     if (global.updateTracker.check()) {
@@ -220,7 +220,7 @@ function visitIdentifier(node: Identifier, visitor: Visitor) {
     return node;
 }
 
-function visitMemberExpression(node: MemberExpression, visitor: Visitor) {
+function visitMemberExpression(node: MemberExpression, visitor: Visitor): MemberExpression {
     global.updateTracker.push();
     const newObject = nodeVisitor(node.object, visitor);
     const newProperty = nodeVisitor(node.property, visitor);
@@ -231,7 +231,7 @@ function visitMemberExpression(node: MemberExpression, visitor: Visitor) {
     return node;
 }
 
-function visitETSTypeReference(node: ETSTypeReference, visitor: Visitor) {
+function visitETSTypeReference(node: ETSTypeReference, visitor: Visitor): ETSTypeReference {
     global.updateTracker.push();
     const newPart = nodeVisitor(node.part, visitor);
     if (global.updateTracker.check()) {
@@ -242,7 +242,7 @@ function visitETSTypeReference(node: ETSTypeReference, visitor: Visitor) {
     return node;
 }
 
-function visitETSTypeReferencePart(node: ETSTypeReferencePart, visitor: Visitor) {
+function visitETSTypeReferencePart(node: ETSTypeReferencePart, visitor: Visitor): ETSTypeReferencePart {
     global.updateTracker.push();
     const newName = nodeVisitor(node.name, visitor);
     const newTypeParams = nodeVisitor(node.typeParams, visitor);
@@ -255,7 +255,7 @@ function visitETSTypeReferencePart(node: ETSTypeReferencePart, visitor: Visitor)
     return node;
 }
 
-function visitScriptFunction(node: ScriptFunction, visitor: Visitor) {
+function visitScriptFunction(node: ScriptFunction, visitor: Visitor): ScriptFunction {
     global.updateTracker.push();
     const newBody = nodeVisitor(node.body, visitor);
     const oldTypeParams = node.typeParams;
@@ -291,7 +291,7 @@ function visitScriptFunction(node: ScriptFunction, visitor: Visitor) {
     return node;
 }
 
-function visitMethodDefinition(node: MethodDefinition, visitor: Visitor) {
+function visitMethodDefinition(node: MethodDefinition, visitor: Visitor): MethodDefinition {
     global.updateTracker.push();
     const oldId = node.id;
     const newId = nodeVisitor(oldId, visitor);
@@ -312,7 +312,7 @@ function visitMethodDefinition(node: MethodDefinition, visitor: Visitor) {
             return result;
         }
         node.setOverloads(newOverloads);
-        newOverloads.forEach((it) => {
+        newOverloads.forEach((it): void => {
             it.setBaseOverloadMethod(node);
             it.parent = node;
         });
@@ -320,7 +320,7 @@ function visitMethodDefinition(node: MethodDefinition, visitor: Visitor) {
     return node;
 }
 
-function visitArrowFunctionExpression(node: ArrowFunctionExpression, visitor: Visitor) {
+function visitArrowFunctionExpression(node: ArrowFunctionExpression, visitor: Visitor): ArrowFunctionExpression {
     global.updateTracker.push();
     const oldFunction = node.function;
     const newFunction = nodeVisitor(oldFunction, visitor);
@@ -336,7 +336,7 @@ function visitArrowFunctionExpression(node: ArrowFunctionExpression, visitor: Vi
     return node;
 }
 
-function visitFunctionDeclaration(node: FunctionDeclaration, visitor: Visitor) {
+function visitFunctionDeclaration(node: FunctionDeclaration, visitor: Visitor): FunctionDeclaration {
     global.updateTracker.push();
     const oldFunction = node.function;
     const newFunction = nodeVisitor(oldFunction, visitor);
@@ -352,7 +352,7 @@ function visitFunctionDeclaration(node: FunctionDeclaration, visitor: Visitor) {
     return node;
 }
 
-function visitBlockExpression(node: BlockExpression, visitor: Visitor) {
+function visitBlockExpression(node: BlockExpression, visitor: Visitor): BlockExpression {
     global.updateTracker.push();
     const newStatements: readonly Statement[] = nodesVisitor(node.statements, visitor);
     if (global.updateTracker.check()) {
@@ -363,7 +363,7 @@ function visitBlockExpression(node: BlockExpression, visitor: Visitor) {
     return node;
 }
 
-function visitChainExpression(node: ChainExpression, visitor: Visitor) {
+function visitChainExpression(node: ChainExpression, visitor: Visitor): ChainExpression {
     global.updateTracker.push();
     const newExpression = nodeVisitor(node.expression, visitor);
     if (global.updateTracker.check()) {
@@ -374,7 +374,7 @@ function visitChainExpression(node: ChainExpression, visitor: Visitor) {
     return node;
 }
 
-function visitExpressionStatement(node: ExpressionStatement, visitor: Visitor) {
+function visitExpressionStatement(node: ExpressionStatement, visitor: Visitor): ExpressionStatement {
     global.updateTracker.push();
     const newExpression = nodeVisitor(node.expression, visitor);
     if (global.updateTracker.check()) {
@@ -383,7 +383,7 @@ function visitExpressionStatement(node: ExpressionStatement, visitor: Visitor) {
     return node;
 }
 
-function visitETSStructDeclaration(node: ETSStructDeclaration, visitor: Visitor) {
+function visitETSStructDeclaration(node: ETSStructDeclaration, visitor: Visitor): ETSStructDeclaration {
     global.updateTracker.push();
     const newDefinition = nodeVisitor(node.definition, visitor);
     if (global.updateTracker.check()) {
@@ -392,7 +392,7 @@ function visitETSStructDeclaration(node: ETSStructDeclaration, visitor: Visitor)
     return node;
 }
 
-function visitClassDeclaration(node: ClassDeclaration, visitor: Visitor) {
+function visitClassDeclaration(node: ClassDeclaration, visitor: Visitor): ClassDeclaration {
     global.updateTracker.push();
     const newDefinition = nodeVisitor(node.definition, visitor);
     if (global.updateTracker.check()) {
@@ -401,7 +401,7 @@ function visitClassDeclaration(node: ClassDeclaration, visitor: Visitor) {
     return node;
 }
 
-function visitTSInterfaceBody(node: TSInterfaceBody, visitor: Visitor) {
+function visitTSInterfaceBody(node: TSInterfaceBody, visitor: Visitor): TSInterfaceBody {
     global.updateTracker.push();
     const newBody = nodesVisitor(node.body, visitor);
     if (global.updateTracker.check()) {
@@ -412,7 +412,7 @@ function visitTSInterfaceBody(node: TSInterfaceBody, visitor: Visitor) {
     return node;
 }
 
-function visitClassDefinition(node: ClassDefinition, visitor: Visitor) {
+function visitClassDefinition(node: ClassDefinition, visitor: Visitor): ClassDefinition {
     global.updateTracker.push();
     const newIdent = nodeVisitor(node.ident, visitor);
     const newTypeParams = nodeVisitor(node.typeParams, visitor);
@@ -452,7 +452,7 @@ function visitClassDefinition(node: ClassDefinition, visitor: Visitor) {
     return node;
 }
 
-function visitETSParameterExpression(node: ETSParameterExpression, visitor: Visitor) {
+function visitETSParameterExpression(node: ETSParameterExpression, visitor: Visitor): ETSParameterExpression {
     if (node.isRestParameter) {
         /** there is no RestParameter node at .idl */
         return node;
@@ -469,7 +469,7 @@ function visitETSParameterExpression(node: ETSParameterExpression, visitor: Visi
     return node;
 }
 
-function visitSwitchStatement(node: SwitchStatement, visitor: Visitor) {
+function visitSwitchStatement(node: SwitchStatement, visitor: Visitor): SwitchStatement {
     global.updateTracker.push();
     const newDiscriminant = nodeVisitor(node.discriminant, visitor);
     const oldCases = node.cases;
@@ -485,7 +485,7 @@ function visitSwitchStatement(node: SwitchStatement, visitor: Visitor) {
     return node;
 }
 
-function visitSwitchCaseStatement(node: SwitchCaseStatement, visitor: Visitor) {
+function visitSwitchCaseStatement(node: SwitchCaseStatement, visitor: Visitor): SwitchCaseStatement {
     global.updateTracker.push();
     const newTest = nodeVisitor(node.test, visitor);
     const oldConsequent = node.consequent;
@@ -501,7 +501,7 @@ function visitSwitchCaseStatement(node: SwitchCaseStatement, visitor: Visitor) {
     return node;
 }
 
-function visitTSInterfaceDeclaration(node: TSInterfaceDeclaration, visitor: Visitor) {
+function visitTSInterfaceDeclaration(node: TSInterfaceDeclaration, visitor: Visitor): TSInterfaceDeclaration {
     global.updateTracker.push();
     const newExtends: readonly TSInterfaceHeritage[] = nodesVisitor(node.extends, visitor);
     const newIdent = nodeVisitor(node.id, visitor);
@@ -525,7 +525,7 @@ function visitTSInterfaceDeclaration(node: TSInterfaceDeclaration, visitor: Visi
     return node;
 }
 
-function visitIfStatement(node: IfStatement, visitor: Visitor) {
+function visitIfStatement(node: IfStatement, visitor: Visitor): IfStatement {
     global.updateTracker.push();
     const newTest = nodeVisitor(node.test, visitor);
     const oldConsequent = node.consequent;
@@ -544,7 +544,7 @@ function visitIfStatement(node: IfStatement, visitor: Visitor) {
     return node;
 }
 
-function visitConditionalExpression(node: ConditionalExpression, visitor: Visitor) {
+function visitConditionalExpression(node: ConditionalExpression, visitor: Visitor): ConditionalExpression {
     global.updateTracker.push();
     const newTest = nodeVisitor(node.test, visitor);
     const newConsequent = nodeVisitor(node.consequent, visitor);
@@ -557,7 +557,7 @@ function visitConditionalExpression(node: ConditionalExpression, visitor: Visito
     return node;
 }
 
-function visitVariableDeclararion(node: VariableDeclaration, visitor: Visitor) {
+function visitVariableDeclararion(node: VariableDeclaration, visitor: Visitor): VariableDeclaration {
     global.updateTracker.push();
     const oldDeclarators = node.declarators;
     const newDeclarators: readonly VariableDeclarator[] = nodesVisitor(oldDeclarators, visitor);
@@ -573,7 +573,7 @@ function visitVariableDeclararion(node: VariableDeclaration, visitor: Visitor) {
     return node;
 }
 
-function visitVariableDeclarator(node: VariableDeclarator, visitor: Visitor) {
+function visitVariableDeclarator(node: VariableDeclarator, visitor: Visitor): VariableDeclarator {
     global.updateTracker.push();
     const oldId = node.id;
     const newId = nodeVisitor(oldId, visitor);
@@ -589,7 +589,7 @@ function visitVariableDeclarator(node: VariableDeclarator, visitor: Visitor) {
     return node;
 }
 
-function visitReturnStatement(node: ReturnStatement, visitor: Visitor) {
+function visitReturnStatement(node: ReturnStatement, visitor: Visitor): ReturnStatement {
     global.updateTracker.push();
     const newArgument = nodeVisitor(node.argument, visitor);
     if (global.updateTracker.check()) {
@@ -598,7 +598,7 @@ function visitReturnStatement(node: ReturnStatement, visitor: Visitor) {
     return node;
 }
 
-function visitTSAsExpression(node: TSAsExpression, visitor: Visitor) {
+function visitTSAsExpression(node: TSAsExpression, visitor: Visitor): TSAsExpression {
     global.updateTracker.push();
     const newExpr = nodeVisitor(node.expr, visitor);
     const oldTypeAnnotation = node.typeAnnotation;
@@ -614,7 +614,7 @@ function visitTSAsExpression(node: TSAsExpression, visitor: Visitor) {
     return node;
 }
 
-function visitTemplateLiteral(node: TemplateLiteral, visitor: Visitor) {
+function visitTemplateLiteral(node: TemplateLiteral, visitor: Visitor): TemplateLiteral {
     global.updateTracker.push();
     const newQuasis: readonly TemplateElement[] = nodesVisitor(node.quasis, visitor);
     const newExpression: readonly Expression[] = nodesVisitor(node.expressions, visitor);
@@ -626,7 +626,7 @@ function visitTemplateLiteral(node: TemplateLiteral, visitor: Visitor) {
     return node;
 }
 
-function visitTSTypeAliasDeclaration(node: TSTypeAliasDeclaration, visitor: Visitor) {
+function visitTSTypeAliasDeclaration(node: TSTypeAliasDeclaration, visitor: Visitor): TSTypeAliasDeclaration {
     global.updateTracker.push();
     const oldId = node.id;
     const newId = nodeVisitor(oldId, visitor);
@@ -651,7 +651,7 @@ function visitTSTypeAliasDeclaration(node: TSTypeAliasDeclaration, visitor: Visi
     return node;
 }
 
-function visitTryStatement(node: TryStatement, visitor: Visitor) {
+function visitTryStatement(node: TryStatement, visitor: Visitor): TryStatement {
     global.updateTracker.push();
     const newBlock = nodeVisitor(node.block, visitor);
     const newCatchClauses: readonly CatchClause[] = nodesVisitor(node.catchClauses, visitor);
@@ -664,7 +664,7 @@ function visitTryStatement(node: TryStatement, visitor: Visitor) {
     return node;
 }
 
-function visitObjectExpression(node: ObjectExpression, visitor: Visitor) {
+function visitObjectExpression(node: ObjectExpression, visitor: Visitor): ObjectExpression {
     global.updateTracker.push();
     const newProperties: readonly Expression[] = nodesVisitor(node.properties, visitor);
     if (global.updateTracker.check()) {
@@ -675,7 +675,7 @@ function visitObjectExpression(node: ObjectExpression, visitor: Visitor) {
     return node;
 }
 
-function visitFunctionExpression(node: FunctionExpression, visitor: Visitor) {
+function visitFunctionExpression(node: FunctionExpression, visitor: Visitor): FunctionExpression {
     global.updateTracker.push();
     const newId = nodeVisitor(node.id, visitor);
     const newFunction = nodeVisitor(node.function, visitor);
@@ -687,7 +687,7 @@ function visitFunctionExpression(node: FunctionExpression, visitor: Visitor) {
     return node;
 }
 
-function visitArrayExpression(node: ArrayExpression, visitor: Visitor) {
+function visitArrayExpression(node: ArrayExpression, visitor: Visitor): ArrayExpression {
     global.updateTracker.push();
     const newElements: readonly Expression[] = nodesVisitor(node.elements, visitor);
     if (global.updateTracker.check()) {
@@ -696,7 +696,7 @@ function visitArrayExpression(node: ArrayExpression, visitor: Visitor) {
     return node;
 }
 
-function visitAssignmentExpression(node: AssignmentExpression, visitor: Visitor) {
+function visitAssignmentExpression(node: AssignmentExpression, visitor: Visitor): AssignmentExpression {
     global.updateTracker.push();
     const newLeft = nodeVisitor(node.left, visitor);
     const newRight = nodeVisitor(node.right, visitor);
@@ -707,7 +707,7 @@ function visitAssignmentExpression(node: AssignmentExpression, visitor: Visitor)
     return node;
 }
 
-function visitETSTyple(node: ETSTuple, visitor: Visitor) {
+function visitETSTyple(node: ETSTuple, visitor: Visitor): ETSTuple {
     global.updateTracker.push();
     const newTypeAnnotationList: readonly TypeNode[] = nodesVisitor(node.tupleTypeAnnotationsList, visitor);
     if (global.updateTracker.check()) {
@@ -716,7 +716,7 @@ function visitETSTyple(node: ETSTuple, visitor: Visitor) {
     return node;
 }
 
-function visitETSUnionType(node: ETSUnionType, visitor: Visitor) {
+function visitETSUnionType(node: ETSUnionType, visitor: Visitor): ETSUnionType {
     global.updateTracker.push();
     const oldTypes = node.types;
     const newTypes: readonly TypeNode[] = nodesVisitor(oldTypes, visitor);
@@ -732,7 +732,7 @@ function visitETSUnionType(node: ETSUnionType, visitor: Visitor) {
     return node;
 }
 
-function visitETSFunctionType(node: ETSFunctionType, visitor: Visitor) {
+function visitETSFunctionType(node: ETSFunctionType, visitor: Visitor): ETSFunctionType {
     global.updateTracker.push();
     const oldTypeParams = node.typeParams;
     const newTypeParams = nodeVisitor(oldTypeParams, visitor);
@@ -763,7 +763,7 @@ function visitETSFunctionType(node: ETSFunctionType, visitor: Visitor) {
     return node;
 }
 
-function visitClassProperty(node: ClassProperty, visitor: Visitor) {
+function visitClassProperty(node: ClassProperty, visitor: Visitor): ClassProperty {
     global.updateTracker.push();
     const oldKey = node.key;
     const newKey = nodeVisitor(oldKey, visitor);
@@ -790,7 +790,7 @@ function visitClassProperty(node: ClassProperty, visitor: Visitor) {
     return node;
 }
 
-function visitProperty(node: Property, visitor: Visitor) {
+function visitProperty(node: Property, visitor: Visitor): Property {
     global.updateTracker.push();
     const newKey = nodeVisitor(node.key, visitor);
     const newValue = nodeVisitor(node.value, visitor);
@@ -802,7 +802,7 @@ function visitProperty(node: Property, visitor: Visitor) {
     return node;
 }
 
-function visitBinaryExpression(node: BinaryExpression, visitor: Visitor) {
+function visitBinaryExpression(node: BinaryExpression, visitor: Visitor): BinaryExpression {
     global.updateTracker.push();
     const newLeft = nodeVisitor(node.left, visitor);
     const newRight = nodeVisitor(node.right, visitor);
@@ -813,7 +813,10 @@ function visitBinaryExpression(node: BinaryExpression, visitor: Visitor) {
     return node;
 }
 
-function visitETSNewClassInstanceExpression(node: ETSNewClassInstanceExpression, visitor: Visitor) {
+function visitETSNewClassInstanceExpression(
+    node: ETSNewClassInstanceExpression,
+    visitor: Visitor
+): ETSNewClassInstanceExpression {
     global.updateTracker.push();
     const oldTypeRef = node.typeRef;
     const newTypeRef = nodeVisitor(oldTypeRef, visitor);
@@ -830,7 +833,7 @@ function visitETSNewClassInstanceExpression(node: ETSNewClassInstanceExpression,
     return node;
 }
 
-function visitWhileStatement(node: WhileStatement, visitor: Visitor) {
+function visitWhileStatement(node: WhileStatement, visitor: Visitor): WhileStatement {
     global.updateTracker.push();
     const newTest = nodeVisitor(node.test, visitor);
     const oldBody = node.body;
@@ -846,7 +849,7 @@ function visitWhileStatement(node: WhileStatement, visitor: Visitor) {
     return node;
 }
 
-function visitDoWhileStatement(node: DoWhileStatement, visitor: Visitor) {
+function visitDoWhileStatement(node: DoWhileStatement, visitor: Visitor): DoWhileStatement {
     global.updateTracker.push();
     const newBody = nodeVisitor(node.body, visitor);
     const newTest = nodeVisitor(node.test, visitor);
@@ -858,7 +861,7 @@ function visitDoWhileStatement(node: DoWhileStatement, visitor: Visitor) {
     return node;
 }
 
-function visitForUpdateStatement(node: ForUpdateStatement, visitor: Visitor) {
+function visitForUpdateStatement(node: ForUpdateStatement, visitor: Visitor): ForUpdateStatement {
     global.updateTracker.push();
     const newInit = nodeVisitor(node.init, visitor);
     const newTest = nodeVisitor(node.test, visitor);
@@ -872,7 +875,7 @@ function visitForUpdateStatement(node: ForUpdateStatement, visitor: Visitor) {
     return node;
 }
 
-function visitForInStatement(node: ForInStatement, visitor: Visitor) {
+function visitForInStatement(node: ForInStatement, visitor: Visitor): ForInStatement {
     global.updateTracker.push();
     const newLeft = nodeVisitor(node.left, visitor);
     const newRight = nodeVisitor(node.right, visitor);
@@ -885,7 +888,7 @@ function visitForInStatement(node: ForInStatement, visitor: Visitor) {
     return node;
 }
 
-function visitForOfStatement(node: ForOfStatement, visitor: Visitor) {
+function visitForOfStatement(node: ForOfStatement, visitor: Visitor): ForOfStatement {
     global.updateTracker.push();
     const newLeft = nodeVisitor(node.left, visitor);
     const newRight = nodeVisitor(node.right, visitor);
@@ -898,7 +901,7 @@ function visitForOfStatement(node: ForOfStatement, visitor: Visitor) {
     return node;
 }
 
-function visitETSImportDeclaration(node: ETSImportDeclaration, visitor: Visitor) {
+function visitETSImportDeclaration(node: ETSImportDeclaration, visitor: Visitor): ETSImportDeclaration {
     global.updateTracker.push();
     const newSource = nodeVisitor(node.source, visitor);
     const newSpecifiers = nodesVisitor(node.specifiers, visitor);
@@ -914,7 +917,7 @@ function visitETSImportDeclaration(node: ETSImportDeclaration, visitor: Visitor)
     return node;
 }
 
-function visitTSNonNullExpression(node: TSNonNullExpression, visitor: Visitor) {
+function visitTSNonNullExpression(node: TSNonNullExpression, visitor: Visitor): TSNonNullExpression {
     global.updateTracker.push();
     const newExpr = nodeVisitor(node.expr, visitor);
     if (global.updateTracker.check()) {
@@ -924,7 +927,7 @@ function visitTSNonNullExpression(node: TSNonNullExpression, visitor: Visitor) {
     return node;
 }
 
-function visitUpdateExpression(node: UpdateExpression, visitor: Visitor) {
+function visitUpdateExpression(node: UpdateExpression, visitor: Visitor): UpdateExpression {
     global.updateTracker.push();
     const newArgument = nodeVisitor(node.argument, visitor);
     if (global.updateTracker.check()) {
@@ -935,7 +938,10 @@ function visitUpdateExpression(node: UpdateExpression, visitor: Visitor) {
     return node;
 }
 
-function visitTSTypeParameterInstantiation(node: TSTypeParameterInstantiation, visitor: Visitor) {
+function visitTSTypeParameterInstantiation(
+    node: TSTypeParameterInstantiation,
+    visitor: Visitor
+): TSTypeParameterInstantiation {
     global.updateTracker.push();
     const newParams: readonly TypeNode[] = nodesVisitor(node.params, visitor);
     if (global.updateTracker.check()) {
@@ -946,7 +952,10 @@ function visitTSTypeParameterInstantiation(node: TSTypeParameterInstantiation, v
     return node;
 }
 
-function visitTSTypeParameterDeclaration(node: TSTypeParameterDeclaration, visitor: Visitor) {
+function visitTSTypeParameterDeclaration(
+    node: TSTypeParameterDeclaration,
+    visitor: Visitor
+): TSTypeParameterDeclaration {
     global.updateTracker.push();
     const newParams: readonly TSTypeParameter[] = nodesVisitor(node.params, visitor);
     if (global.updateTracker.check()) {
@@ -957,7 +966,7 @@ function visitTSTypeParameterDeclaration(node: TSTypeParameterDeclaration, visit
     return node;
 }
 
-function visitClassStaticBlock(node: ClassStaticBlock, visitor: Visitor) {
+function visitClassStaticBlock(node: ClassStaticBlock, visitor: Visitor): ClassStaticBlock {
     global.updateTracker.push();
     const newId = nodeVisitor(node.id, visitor);
     const newFunction = nodeVisitor(node.function, visitor);
@@ -971,7 +980,7 @@ function visitClassStaticBlock(node: ClassStaticBlock, visitor: Visitor) {
 
 const visitsTable: (((node: any, visitor: Visitor) => any) | undefined)[] = [];
 
-export function initVisitsTable() {
+export function initVisitsTable(): void {
     const length = Object.values(Es2pandaAstNodeType).length / 2;
     visitsTable.push(...new Array(length));
 

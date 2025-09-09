@@ -30,7 +30,7 @@ export class ProgramProvider {
         this.queue = [mainProgram];
     }
 
-    updateQueue() {
+    updateQueue(): void {
         const listed = listPrograms(this.mainProgram, this.filter);
         for (const program of listed) {
             if (!this.seenPrograms.has(program.peer)) {
@@ -41,9 +41,9 @@ export class ProgramProvider {
     }
 
     next(): Program | undefined {
-        if (this.queue.length == 0) {
+        if (this.queue.length === 0) {
             this.updateQueue();
-            if (this.queue.length == 0) {
+            if (this.queue.length === 0) {
                 // console.log("PROGRAMS:", this.seenPrograms.size)
                 return undefined;
             }

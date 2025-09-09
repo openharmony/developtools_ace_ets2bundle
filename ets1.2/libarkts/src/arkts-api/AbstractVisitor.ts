@@ -44,6 +44,6 @@ export abstract class AbstractVisitor {
     abstract visitor(node: AstNode, options?: object): AstNode;
 
     visitEachChild(node: AstNode, options?: object): AstNode {
-        return this.withIndentation(() => visitEachChild(node, (it) => this.visitor(it, options)));
+        return this.withIndentation((): AstNode => visitEachChild(node, (it): AstNode => this.visitor(it, options)));
     }
 }
