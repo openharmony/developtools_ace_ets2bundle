@@ -125,6 +125,7 @@ export interface LanguageServiceCache {
   targetESVersion?: ts.ScriptTarget;
   types?: string[];
   maxFlowDepth?: number;
+  useTsHar?: boolean;
   preTsImportSendable?: boolean;
   preSkipOhModulesLint?: boolean;
   preEnableStrictCheckOHModule?: boolean;
@@ -480,19 +481,21 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const targetESVersionDiffers: boolean | undefined = lastTargetESVersion && currentTargetESVersion && lastTargetESVersion !== currentTargetESVersion;
   const typesDiff: boolean | undefined = lastTypes && currentTypes && !areEqualArrays(lastTypes, currentTypes);
   const maxFlowDepthDiffers: boolean | undefined = lastMaxFlowDepth && currentMaxFlowDepth && lastMaxFlowDepth !== currentMaxFlowDepth;
+  const useTsHarDiff: boolean = checkValueDiff(cache?.useTsHar, projectConfig.useTsHar);
   const tsImportSendableDiff: boolean = checkValueDiff(cache?.preTsImportSendable, tsImportSendable);
   const skipOhModulesLintDiff: boolean = checkValueDiff(cache?.preSkipOhModulesLint, skipOhModulesLint);
   const enableStrictCheckOHModuleDiff: boolean = checkValueDiff(cache?.preEnableStrictCheckOHModule, enableStrictCheckOHModule);
   const mixCompileDiff: boolean = checkValueDiff(cache?.preMixCompile, mixCompile);
   const onlyDeleteBuildInfoCache: boolean | undefined = tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff ||
     enableStrictCheckOHModuleDiff || mixCompileDiff || typesDiff;
-  const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || targetESVersionDiffers || onlyDeleteBuildInfoCache;
+  const shouldInvalidCache: boolean | undefined = targetESVersionDiffers || useTsHarDiff;
+  const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || shouldInvalidCache || onlyDeleteBuildInfoCache;
   if (reuseLanguageServiceForDepChange && hashDiffers && rollupShareObject?.depInfo?.enableIncre) {
     needReCheckForChangedDepUsers = true;
   }
 
   if (!service || shouldRebuild) {
-    rebuildProgram(targetESVersionDiffers, onlyDeleteBuildInfoCache);
+    rebuildProgram(shouldInvalidCache, onlyDeleteBuildInfoCache);
     service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
   } else {
     // Found language service from cache, update root files
@@ -506,6 +509,7 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     targetESVersion: currentTargetESVersion,
     types: currentTypes,
     maxFlowDepth: currentMaxFlowDepth,
+    useTsHar: projectConfig.useTsHar,
     preTsImportSendable: tsImportSendable,
     preSkipOhModulesLint: skipOhModulesLint,
     preMixCompile: mixCompile
@@ -544,9 +548,9 @@ export function areEqualArrays(lastArray: string[] | undefined, currentArray: st
   return true;
 }
 
-function rebuildProgram(targetESVersionDiffers: boolean | undefined, onlyDeleteBuildInfoCache: boolean | undefined): void {
-  if (targetESVersionDiffers) {
-    // If the targetESVersion is changed, we need to delete the build info cahce files
+function rebuildProgram(shouldInvalidCache: boolean | undefined, onlyDeleteBuildInfoCache: boolean | undefined): void {
+  if (shouldInvalidCache) {
+    // If the targetESVersion or usTsHar is changed, we need to delete the build info cahce files & rollup caches
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
     targetESVersionChanged = true;
   } else if (onlyDeleteBuildInfoCache) {
