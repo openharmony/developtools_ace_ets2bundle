@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -91,22 +92,26 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
 }
 
 @ComponentV2() export interface __Options_Child {
+  ${ignoreNewLines(`
   onceParamNum?: number;
   @Param() @Once() __backing_onceParamNum?: number;
   __options_has_onceParamNum?: boolean;
   onceParamInfo?: Info;
   @Param() @Once() @Require() __backing_onceParamInfo?: Info;
   __options_has_onceParamInfo?: boolean;
+  `)}
   
 }
 
 @ComponentV2() export interface __Options_Index {
+  ${ignoreNewLines(`
   localNum?: number;
   @Local() __backing_localNum?: number;
   __options_has_localNum?: boolean;
   localInfo?: Info;
   @Local() __backing_localInfo?: Info;
   __options_has_localInfo?: boolean;
+  `)}
   
 }
 `;
@@ -308,46 +313,24 @@ function main() {}
 }
 
 @ComponentV2() export interface __Options_Child {
-  set onceParamNum(onceParamNum: (number | undefined))
-  
-  get onceParamNum(): (number | undefined)
-  @Param() set __backing_onceParamNum(__backing_onceParamNum: (IParamOnceDecoratedVariable<number> | undefined))
-  
-  @Param() get __backing_onceParamNum(): (IParamOnceDecoratedVariable<number> | undefined)
-  set __options_has_onceParamNum(__options_has_onceParamNum: (boolean | undefined))
-  
-  get __options_has_onceParamNum(): (boolean | undefined)
-  set onceParamInfo(onceParamInfo: (Info | undefined))
-  
-  get onceParamInfo(): (Info | undefined)
-  @Param() @Require() set __backing_onceParamInfo(__backing_onceParamInfo: (IParamOnceDecoratedVariable<Info> | undefined))
-  
-  @Param() @Require() get __backing_onceParamInfo(): (IParamOnceDecoratedVariable<Info> | undefined)
-  set __options_has_onceParamInfo(__options_has_onceParamInfo: (boolean | undefined))
-  
-  get __options_has_onceParamInfo(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamNum', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamNum', '(IParamOnceDecoratedVariable<number> | undefined)', [dumpAnnotation('Param')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceParamNum', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamInfo', '(Info | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamInfo', '(IParamOnceDecoratedVariable<Info> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceParamInfo', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_Index {
-  set localNum(localNum: (number | undefined))
-  
-  get localNum(): (number | undefined)
-  set __backing_localNum(__backing_localNum: (ILocalDecoratedVariable<number> | undefined))
-  
-  get __backing_localNum(): (ILocalDecoratedVariable<number> | undefined)
-  set __options_has_localNum(__options_has_localNum: (boolean | undefined))
-  
-  get __options_has_localNum(): (boolean | undefined)
-  set localInfo(localInfo: (Info | undefined))
-  
-  get localInfo(): (Info | undefined)
-  set __backing_localInfo(__backing_localInfo: (ILocalDecoratedVariable<Info> | undefined))
-  
-  get __backing_localInfo(): (ILocalDecoratedVariable<Info> | undefined)
-  set __options_has_localInfo(__options_has_localInfo: (boolean | undefined))
-  
-  get __options_has_localInfo(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'localNum', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localNum', '(ILocalDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localNum', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'localInfo', '(Info | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localInfo', '(ILocalDecoratedVariable<Info> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localInfo', '(boolean | undefined)')}
   
 }
 `;

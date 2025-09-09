@@ -42,6 +42,10 @@ import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
+import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
+
+import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
+
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
@@ -119,6 +123,10 @@ import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+
+import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
+
+import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 

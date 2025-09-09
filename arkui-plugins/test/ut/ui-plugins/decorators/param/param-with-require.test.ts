@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -124,23 +125,29 @@ class Info {
 }
 
 @ComponentV2() export interface __Options_Index {
+  ${ignoreNewLines(`
   infoList?: Info[];
   @Local() __backing_infoList?: Info[];
   __options_has_infoList?: boolean;
+  `)}
   
 }
 
 @ComponentV2() export interface __Options_MiddleComponent {
+  ${ignoreNewLines(`
   info?: Info;
   @Require() @Param() __backing_info?: Info;
   __options_has_info?: boolean;
+  `)}
   
 }
 
 @ComponentV2() export interface __Options_SubComponent {
+  ${ignoreNewLines(`
   region?: Region;
   @Require() @Param() __backing_region?: Region;
   __options_has_region?: boolean;
+  `)}
   
 }
 `;
@@ -327,32 +334,23 @@ class Info {
 }
 
 @ComponentV2() export interface __Options_Index {
-  get infoList(): (Array<Info> | undefined)
-  set infoList(infoList: (Array<Info> | undefined))
-  get __backing_infoList(): (ILocalDecoratedVariable<Array<Info>> | undefined)
-  set __backing_infoList(__backing_infoList: (ILocalDecoratedVariable<Array<Info>> | undefined))
-  get __options_has_infoList(): (boolean | undefined)
-  set __options_has_infoList(__options_has_infoList: (boolean | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'infoList', '(Array<Info> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_infoList', '(ILocalDecoratedVariable<Array<Info>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_infoList', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_MiddleComponent {
-  get info(): (Info | undefined)
-  set info(info: (Info | undefined))
-  @Require() get __backing_info(): (IParamDecoratedVariable<Info> | undefined)
-  @Require() set __backing_info(__backing_info: (IParamDecoratedVariable<Info> | undefined))
-  get __options_has_info(): (boolean | undefined)
-  set __options_has_info(__options_has_info: (boolean | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'info', '(Info | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_info', '(IParamDecoratedVariable<Info> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_info', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_SubComponent {
-  get region(): (Region | undefined)
-  set region(region: (Region | undefined))
-  @Require() get __backing_region(): (IParamDecoratedVariable<Region> | undefined)
-  @Require() set __backing_region(__backing_region: (IParamDecoratedVariable<Region> | undefined))
-  get __options_has_region(): (boolean | undefined)
-  set __options_has_region(__options_has_region: (boolean | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'region', '(Region | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_region', '(IParamDecoratedVariable<Region> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_region', '(boolean | undefined)')}
   
 }
 `;

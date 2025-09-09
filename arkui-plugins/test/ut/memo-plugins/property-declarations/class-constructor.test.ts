@@ -19,6 +19,7 @@ import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 
 const PROPERTY_DIR_PATH: string = 'memo/properties';
@@ -59,17 +60,16 @@ function main() {}
     }
 });
 interface A {
-    @memo() set a(a: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))
-    @memo() get a(): ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'a', '((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [dumpAnnotation('memo')])}
 }
 class AA {
     @memo() public a: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
-    constructor() {
-        this(undefined);
-    }
-    public constructor(arg: (A | undefined)) {
+    public constructor(arg?: A) {
         this.a = ({let gensym%%_<some_random_number> = arg;
         (((gensym%%_<some_random_number>) == (null)) ? undefined : gensym%%_<some_random_number>.a)});
+    }
+    constructor() {
+        this(undefined);
     }
     @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);

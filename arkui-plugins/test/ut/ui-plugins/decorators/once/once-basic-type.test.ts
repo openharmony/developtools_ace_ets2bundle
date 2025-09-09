@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -125,51 +126,25 @@ function main() {}
 }
 
 @ComponentV2() export interface __Options_Parent {
-  set onceVar1(onceVar1: (string | undefined))
-  
-  get onceVar1(): (string | undefined)
-  @Param() set __backing_onceVar1(__backing_onceVar1: (IParamOnceDecoratedVariable<string> | undefined))
-  
-  @Param() get __backing_onceVar1(): (IParamOnceDecoratedVariable<string> | undefined)
-  set __options_has_onceVar1(__options_has_onceVar1: (boolean | undefined))
-  
-  get __options_has_onceVar1(): (boolean | undefined)
-  set onceVar2(onceVar2: (number | undefined))
-  
-  get onceVar2(): (number | undefined)
-  @Param() set __backing_onceVar2(__backing_onceVar2: (IParamOnceDecoratedVariable<number> | undefined))
-  
-  @Param() get __backing_onceVar2(): (IParamOnceDecoratedVariable<number> | undefined)
-  set __options_has_onceVar2(__options_has_onceVar2: (boolean | undefined))
-  
-  get __options_has_onceVar2(): (boolean | undefined)
-  set onceVar3(onceVar3: (boolean | undefined))
-  
-  get onceVar3(): (boolean | undefined)
-  @Param() set __backing_onceVar3(__backing_onceVar3: (IParamOnceDecoratedVariable<boolean> | undefined))
-  
-  @Param() get __backing_onceVar3(): (IParamOnceDecoratedVariable<boolean> | undefined)
-  set __options_has_onceVar3(__options_has_onceVar3: (boolean | undefined))
-  
-  get __options_has_onceVar3(): (boolean | undefined)
-  set onceVar4(onceVar4: (undefined | undefined))
-  
-  get onceVar4(): (undefined | undefined)
-  @Param() set __backing_onceVar4(__backing_onceVar4: (IParamOnceDecoratedVariable<undefined> | undefined))
-  
-  @Param() get __backing_onceVar4(): (IParamOnceDecoratedVariable<undefined> | undefined)
-  set __options_has_onceVar4(__options_has_onceVar4: (boolean | undefined))
-  
-  get __options_has_onceVar4(): (boolean | undefined)
-  set onceVar5(onceVar5: (null | undefined))
-  
-  get onceVar5(): (null | undefined)
-  @Param() set __backing_onceVar5(__backing_onceVar5: (IParamOnceDecoratedVariable<null> | undefined))
-  
-  @Param() get __backing_onceVar5(): (IParamOnceDecoratedVariable<null> | undefined)
-  set __options_has_onceVar5(__options_has_onceVar5: (boolean | undefined))
-  
-  get __options_has_onceVar5(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar1', '(IParamOnceDecoratedVariable<string> | undefined)', [dumpAnnotation('Param')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar1', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar2', '(IParamOnceDecoratedVariable<number> | undefined)', [dumpAnnotation('Param')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar2', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar3', '(IParamOnceDecoratedVariable<boolean> | undefined)', [dumpAnnotation('Param')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar3', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar4', '(IParamOnceDecoratedVariable<undefined> | undefined)', [dumpAnnotation('Param')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar4', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar5', '(IParamOnceDecoratedVariable<null> | undefined)', [dumpAnnotation('Param')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar5', '(boolean | undefined)')}
   
 }
 `;

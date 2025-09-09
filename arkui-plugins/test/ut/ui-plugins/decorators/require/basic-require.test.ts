@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { structNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -80,6 +81,7 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
 }
 
 @Component() export interface __Options_MyStateSample {
+  ${ignoreNewLines(`
   hello?: string;
   __options_has_hello?: boolean;
   state1?: boolean;
@@ -107,13 +109,16 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
   __options_has_select6?: boolean;
   @BuilderParam() builder?: (()=> void);
   __options_has_builder?: boolean;
+  `)}
   
 }
 
 @ComponentV2() export interface __Options_V2222 {
+  ${ignoreNewLines(`
   select1?: string;
   @Require() @Param() __backing_select1?: string;
   __options_has_select1?: boolean;
+  `)}
   
 }
 `;
@@ -288,100 +293,49 @@ function main() {}
 }
 
 @Component() export interface __Options_MyStateSample {
-  set hello(hello: (string | undefined))
-  
-  get hello(): (string | undefined)
-  set __options_has_hello(__options_has_hello: (boolean | undefined))
-  
-  get __options_has_hello(): (boolean | undefined)
-  set state1(state1: (boolean | undefined))
-  
-  get state1(): (boolean | undefined)
-  set __backing_state1(__backing_state1: (IStateDecoratedVariable<boolean> | undefined))
-  
-  get __backing_state1(): (IStateDecoratedVariable<boolean> | undefined)
-  set __options_has_state1(__options_has_state1: (boolean | undefined))
-  
-  get __options_has_state1(): (boolean | undefined)
-  set select100(select100: (string | undefined))
-  
-  get select100(): (string | undefined)
-  set __options_has_select100(__options_has_select100: (boolean | undefined))
-  
-  get __options_has_select100(): (boolean | undefined)
-  set select0(select0: (number | undefined))
-  
-  get select0(): (number | undefined)
-  @Require() set __backing_select0(__backing_select0: (IStateDecoratedVariable<number> | undefined))
-  
-  @Require() get __backing_select0(): (IStateDecoratedVariable<number> | undefined)
-  set __options_has_select0(__options_has_select0: (boolean | undefined))
-  
-  get __options_has_select0(): (boolean | undefined)
-  set select3(select3: ((number | null) | undefined))
-  
-  get select3(): ((number | null) | undefined)
-  @Require() set __backing_select3(__backing_select3: (IStateDecoratedVariable<(number | null)> | undefined))
-  
-  @Require() get __backing_select3(): (IStateDecoratedVariable<(number | null)> | undefined)
-  set __options_has_select3(__options_has_select3: (boolean | undefined))
-  
-  get __options_has_select3(): (boolean | undefined)
-  set select4(select4: (undefined | undefined))
-  
-  get select4(): (undefined | undefined)
-  @Require() set __backing_select4(__backing_select4: (IStateDecoratedVariable<undefined> | undefined))
-  
-  @Require() get __backing_select4(): (IStateDecoratedVariable<undefined> | undefined)
-  set __options_has_select4(__options_has_select4: (boolean | undefined))
-  
-  get __options_has_select4(): (boolean | undefined)
-  set select1(select1: (string | undefined))
-  
-  get select1(): (string | undefined)
-  @Require() set __backing_select1(__backing_select1: (IPropRefDecoratedVariable<string> | undefined))
-  
-  @Require() get __backing_select1(): (IPropRefDecoratedVariable<string> | undefined)
-  set __options_has_select1(__options_has_select1: (boolean | undefined))
-  
-  get __options_has_select1(): (boolean | undefined)
-  set select2(select2: (Array<string> | undefined))
-  
-  get select2(): (Array<string> | undefined)
-  @Require() set __backing_select2(__backing_select2: (IProvideDecoratedVariable<Array<string>> | undefined))
-  
-  @Require() get __backing_select2(): (IProvideDecoratedVariable<Array<string>> | undefined)
-  set __options_has_select2(__options_has_select2: (boolean | undefined))
-  
-  get __options_has_select2(): (boolean | undefined)
-  set select6(select6: ((Array<string> | undefined | string) | undefined))
-  
-  get select6(): ((Array<string> | undefined | string) | undefined)
-  @Require() set __backing_select6(__backing_select6: (IProvideDecoratedVariable<(Array<string> | undefined | string)> | undefined))
-  
-  @Require() get __backing_select6(): (IProvideDecoratedVariable<(Array<string> | undefined | string)> | undefined)
-  set __options_has_select6(__options_has_select6: (boolean | undefined))
-  
-  get __options_has_select6(): (boolean | undefined)
-  set builder(builder: (@memo() (()=> void) | undefined))
-  
-  get builder(): (@memo() (()=> void) | undefined)
-  set __options_has_builder(__options_has_builder: (boolean | undefined))
-  
-  get __options_has_builder(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'hello', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_hello', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'state1', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_state1', '(IStateDecoratedVariable<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_state1', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select100', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select100', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select0', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select0', '(IStateDecoratedVariable<number> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select0', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select3', '((number | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select3', '(IStateDecoratedVariable<(number | null)> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select3', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select4', '(IStateDecoratedVariable<undefined> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select4', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select1', '(IPropRefDecoratedVariable<string> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select1', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select2', '(Array<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select2', '(IProvideDecoratedVariable<Array<string>> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select2', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select6', '((Array<string> | undefined | string) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select6', '(IProvideDecoratedVariable<(Array<string> | undefined | string) | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select6', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'builder', '(@memo() (()=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builder', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_V2222 {
-  set select1(select1: (string | undefined))
-  
-  get select1(): (string | undefined)
-  @Require() set __backing_select1(__backing_select1: (IParamDecoratedVariable<string> | undefined))
-  
-  @Require() get __backing_select1(): (IParamDecoratedVariable<string> | undefined)
-  set __options_has_select1(__options_has_select1: (boolean | undefined))
-  
-  get __options_has_select1(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select1', '(IParamDecoratedVariable<string> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select1', '(boolean | undefined)')}
   
 }
 `;

@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { structNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -66,6 +67,7 @@ import { PropRef as PropRef } from "@ohos.arkui.stateManagement";
 }
 
 @Component() export interface __Options_PropParent {
+  ${ignoreNewLines(`
   propVar1?: string;
   @PropRef() __backing_propVar1?: string;
   __options_has_propVar1?: boolean;
@@ -87,6 +89,7 @@ import { PropRef as PropRef } from "@ohos.arkui.stateManagement";
   propVar7?: (Map<string, number> | undefined);
   @PropRef() __backing_propVar7?: (Map<string, number> | undefined);
   __options_has_propVar7?: boolean;
+  `)}
   
 }
 `;
@@ -225,69 +228,33 @@ function main() {}
 }
 
 @Component() export interface __Options_PropParent {
-  set propVar1(propVar1: (string | undefined))
-  
-  get propVar1(): (string | undefined)
-  set __backing_propVar1(__backing_propVar1: (IPropRefDecoratedVariable<string> | undefined))
-  
-  get __backing_propVar1(): (IPropRefDecoratedVariable<string> | undefined)
-  set __options_has_propVar1(__options_has_propVar1: (boolean | undefined))
-  
-  get __options_has_propVar1(): (boolean | undefined)
-  set propVar2(propVar2: ((number | undefined) | undefined))
-  
-  get propVar2(): ((number | undefined) | undefined)
-  set __backing_propVar2(__backing_propVar2: (IPropRefDecoratedVariable<(number | undefined)> | undefined))
-  
-  get __backing_propVar2(): (IPropRefDecoratedVariable<(number | undefined)> | undefined)
-  set __options_has_propVar2(__options_has_propVar2: (boolean | undefined))
-  
-  get __options_has_propVar2(): (boolean | undefined)
-  set propVar3(propVar3: (boolean | undefined))
-  
-  get propVar3(): (boolean | undefined)
-  set __backing_propVar3(__backing_propVar3: (IPropRefDecoratedVariable<boolean> | undefined))
-  
-  get __backing_propVar3(): (IPropRefDecoratedVariable<boolean> | undefined)
-  set __options_has_propVar3(__options_has_propVar3: (boolean | undefined))
-  
-  get __options_has_propVar3(): (boolean | undefined)
-  set propVar4(propVar4: (undefined | undefined))
-  
-  get propVar4(): (undefined | undefined)
-  set __backing_propVar4(__backing_propVar4: (IPropRefDecoratedVariable<undefined> | undefined))
-  
-  get __backing_propVar4(): (IPropRefDecoratedVariable<undefined> | undefined)
-  set __options_has_propVar4(__options_has_propVar4: (boolean | undefined))
-  
-  get __options_has_propVar4(): (boolean | undefined)
-  set propVar5(propVar5: (null | undefined))
-  
-  get propVar5(): (null | undefined)
-  set __backing_propVar5(__backing_propVar5: (IPropRefDecoratedVariable<null> | undefined))
-  
-  get __backing_propVar5(): (IPropRefDecoratedVariable<null> | undefined)
-  set __options_has_propVar5(__options_has_propVar5: (boolean | undefined))
-  
-  get __options_has_propVar5(): (boolean | undefined)
-  set propVar6(propVar6: ((Array<number> | null) | undefined))
-  
-  get propVar6(): ((Array<number> | null) | undefined)
-  set __backing_propVar6(__backing_propVar6: (IPropRefDecoratedVariable<(Array<number> | null)> | undefined))
-  
-  get __backing_propVar6(): (IPropRefDecoratedVariable<(Array<number> | null)> | undefined)
-  set __options_has_propVar6(__options_has_propVar6: (boolean | undefined))
-  
-  get __options_has_propVar6(): (boolean | undefined)
-  set propVar7(propVar7: ((Map<string, number> | undefined) | undefined))
-  
-  get propVar7(): ((Map<string, number> | undefined) | undefined)
-  set __backing_propVar7(__backing_propVar7: (IPropRefDecoratedVariable<(Map<string, number> | undefined)> | undefined))
-  
-  get __backing_propVar7(): (IPropRefDecoratedVariable<(Map<string, number> | undefined)> | undefined)
-  set __options_has_propVar7(__options_has_propVar7: (boolean | undefined))
-  
-  get __options_has_propVar7(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar1', '(IPropRefDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar1', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar2', '((number | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar2', '(IPropRefDecoratedVariable<(number | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar2', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar3', '(IPropRefDecoratedVariable<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar3', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar4', '(IPropRefDecoratedVariable<undefined> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar4', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar5', '(IPropRefDecoratedVariable<null> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar5', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar6', '((Array<number> | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar6', '(IPropRefDecoratedVariable<(Array<number> | null)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar6', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar7', '((Map<string, number> | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar7', '(IPropRefDecoratedVariable<(Map<string, number> | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar7', '(boolean | undefined)')}
   
 }
 `;

@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -126,51 +127,25 @@ function main() {}
 }
 
 @ComponentV2() export interface __Options_Parent {
-  set paramVar1(paramVar1: (string | undefined))
-  
-  get paramVar1(): (string | undefined)
-  set __backing_paramVar1(__backing_paramVar1: (IParamDecoratedVariable<string> | undefined))
-  
-  get __backing_paramVar1(): (IParamDecoratedVariable<string> | undefined)
-  set __options_has_paramVar1(__options_has_paramVar1: (boolean | undefined))
-  
-  get __options_has_paramVar1(): (boolean | undefined)
-  set paramVar2(paramVar2: (number | undefined))
-  
-  get paramVar2(): (number | undefined)
-  set __backing_paramVar2(__backing_paramVar2: (IParamDecoratedVariable<number> | undefined))
-  
-  get __backing_paramVar2(): (IParamDecoratedVariable<number> | undefined)
-  set __options_has_paramVar2(__options_has_paramVar2: (boolean | undefined))
-  
-  get __options_has_paramVar2(): (boolean | undefined)
-  set paramVar3(paramVar3: (boolean | undefined))
-  
-  get paramVar3(): (boolean | undefined)
-  set __backing_paramVar3(__backing_paramVar3: (IParamDecoratedVariable<boolean> | undefined))
-  
-  get __backing_paramVar3(): (IParamDecoratedVariable<boolean> | undefined)
-  set __options_has_paramVar3(__options_has_paramVar3: (boolean | undefined))
-  
-  get __options_has_paramVar3(): (boolean | undefined)
-  set paramVar4(paramVar4: (undefined | undefined))
-  
-  get paramVar4(): (undefined | undefined)
-  set __backing_paramVar4(__backing_paramVar4: (IParamDecoratedVariable<undefined> | undefined))
-  
-  get __backing_paramVar4(): (IParamDecoratedVariable<undefined> | undefined)
-  set __options_has_paramVar4(__options_has_paramVar4: (boolean | undefined))
-  
-  get __options_has_paramVar4(): (boolean | undefined)
-  set paramVar5(paramVar5: (null | undefined))
-  
-  get paramVar5(): (null | undefined)
-  set __backing_paramVar5(__backing_paramVar5: (IParamDecoratedVariable<null> | undefined))
-  
-  get __backing_paramVar5(): (IParamDecoratedVariable<null> | undefined)
-  set __options_has_paramVar5(__options_has_paramVar5: (boolean | undefined))
-  
-  get __options_has_paramVar5(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar1', '(IParamDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar1', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar2', '(IParamDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar2', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar3', '(IParamDecoratedVariable<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar3', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar4', '(IParamDecoratedVariable<undefined> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar4', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar5', '(IParamDecoratedVariable<null> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar5', '(boolean | undefined)')}
   
 }
 `;
