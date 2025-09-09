@@ -53,6 +53,8 @@ export function Array_from_number(data: float64[]): Array<float64> {
 }
 
 export function int8Array(size: int32): FixedArray<int8> {
-    const array: FixedArray<int8> = new int8[size]();
+    // Adding () breaks the array creation
+    // prettier-ignore
+    const array: FixedArray<int8> = new int8[size];
     return array;
 }
