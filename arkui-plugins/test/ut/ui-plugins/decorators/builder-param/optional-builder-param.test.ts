@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -149,18 +150,11 @@ function main() {}
 }
 
 @Component() export interface __Options_Child {
-  set customBuilderParam2(customBuilderParam2: (((()=> void) | undefined) | undefined))
-  
-  get customBuilderParam2(): (((()=> void) | undefined) | undefined)
-  set __options_has_customBuilderParam2(__options_has_customBuilderParam2: (boolean | undefined))
-  
-  get __options_has_customBuilderParam2(): (boolean | undefined)
-  set customBuilderParam1(customBuilderParam1: (@memo() (()=> void) | undefined))
-  
-  get customBuilderParam1(): (@memo() (()=> void) | undefined)
-  set __options_has_customBuilderParam1(__options_has_customBuilderParam1: (boolean | undefined))
-  
-  get __options_has_customBuilderParam1(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '(((()=> void) | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam2', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam1', '(@memo() (()=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam1', '(boolean | undefined)')}
   
 }
 
@@ -417,18 +411,11 @@ function main() {}
 }
 
 @Component() export interface __Options_Child {
-  set customBuilderParam2(customBuilderParam2: ((((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | undefined))
-  
-  get customBuilderParam2(): ((((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | undefined)
-  set __options_has_customBuilderParam2(__options_has_customBuilderParam2: (boolean | undefined))
-  
-  get __options_has_customBuilderParam2(): (boolean | undefined)
-  set customBuilderParam1(customBuilderParam1: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined))
-  
-  get customBuilderParam1(): (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)
-  set __options_has_customBuilderParam1(__options_has_customBuilderParam1: (boolean | undefined))
-  
-  get __options_has_customBuilderParam1(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '((((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam2', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam1', '(@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam1', '(boolean | undefined)')}
   
 }
 

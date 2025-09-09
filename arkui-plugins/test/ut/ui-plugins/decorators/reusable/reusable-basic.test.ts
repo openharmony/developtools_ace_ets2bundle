@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -126,24 +127,13 @@ function main() {}
 }
 
 @Component() @Reusable() export interface __Options_Child {
-  set num(num: (number | undefined))
-  
-  get num(): (number | undefined)
-  set __backing_num(__backing_num: (IPropRefDecoratedVariable<number> | undefined))
-  
-  get __backing_num(): (IPropRefDecoratedVariable<number> | undefined)
-  set __options_has_num(__options_has_num: (boolean | undefined))
-  
-  get __options_has_num(): (boolean | undefined)
-  set num1(num1: (number | undefined))
-  
-  get num1(): (number | undefined)
-  set __backing_num1(__backing_num1: (IStateDecoratedVariable<number> | undefined))
-  
-  get __backing_num1(): (IStateDecoratedVariable<number> | undefined)
-  set __options_has_num1(__options_has_num1: (boolean | undefined))
-  
-  get __options_has_num1(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IPropRefDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'num1', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num1', '(IStateDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num1', '(boolean | undefined)')}
   
 }
 `;
