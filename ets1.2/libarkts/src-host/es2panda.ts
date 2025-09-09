@@ -13,33 +13,41 @@
  * limitations under the License.
  */
 
-import * as fs from "node:fs"
-import * as path from "node:path"
-import { checkSDK, arktsGlobal as global, findStdlib, DumpingHooks, listPrograms, initVisitsTable, PluginContextImpl } from "@koalaui/libarkts"
-import { PluginEntry, PluginInitializer } from "@koalaui/libarkts"
-import { Command } from "commander"
-import { throwError } from "@koalaui/libarkts"
-import { Es2pandaContextState } from "@koalaui/libarkts"
-import { Tracer, traceGlobal, Options, Config, Context, proceedToState, dumpArkTsConfigInfo } from "@koalaui/libarkts"
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import {
+    checkSDK,
+    arktsGlobal as global,
+    findStdlib,
+    DumpingHooks,
+    listPrograms,
+    initVisitsTable,
+    PluginContextImpl,
+} from '@koalaui/libarkts';
+import { PluginEntry, PluginInitializer } from '@koalaui/libarkts';
+import { Command } from 'commander';
+import { throwError } from '@koalaui/libarkts';
+import { Es2pandaContextState } from '@koalaui/libarkts';
+import { Tracer, traceGlobal, Options, Config, Context, proceedToState, dumpArkTsConfigInfo } from '@koalaui/libarkts';
 
 interface CommandLineOptions {
-    files: string[]
-    configPath: string
-    outputs: string[]
-    dumpAst: boolean
-    simultaneous: boolean
-    profileMemory: boolean
-    trace: boolean
+    files: string[];
+    configPath: string;
+    outputs: string[];
+    dumpAst: boolean;
+    simultaneous: boolean;
+    profileMemory: boolean;
+    trace: boolean;
 }
 
 function readResponseFile(arg: string | undefined): string | undefined {
     if (!arg) {
-        return undefined
+        return undefined;
     }
     if (!arg.startsWith('@')) {
-        return arg
+        return arg;
     }
-    return fs.readFileSync(arg.slice(1), 'utf-8')
+    return fs.readFileSync(arg.slice(1), 'utf-8');
 }
 
 function parseCommandLineArgs(): CommandLineOptions {
@@ -53,108 +61,107 @@ function parseCommandLineArgs(): CommandLineOptions {
         .option('--simultaneous', 'Use "simultaneous" mode of compilation')
         .option('--profile-memory', 'Profile memory usage')
         .option('--trace', 'Trace plugin compilation')
-        .parse(process.argv)
+        .parse(process.argv);
 
-    const cliOptions = commander.opts()
-    const cliArgs = commander.args
-    const fileArg = readResponseFile(cliOptions.file ?? cliArgs[0])
+    const cliOptions = commander.opts();
+    const cliArgs = commander.args;
+    const fileArg = readResponseFile(cliOptions.file ?? cliArgs[0]);
     if (!fileArg) {
-        reportErrorAndExit(`Either --file option or file argument is required`)
+        reportErrorAndExit(`Either --file option or file argument is required`);
     }
-    const files = fileArg.split(/[ :]/g)
-        .map(it => it.startsWith("'") ? it.slice(1, -1) : it)
-        .map((it: string) => path.resolve(it))
-    const configPath = path.resolve(cliOptions.arktsconfig)
-    const outputArg = cliOptions.output
-    const outputs = outputArg.split(':').map((it: string) => path.resolve(it))
+    const files = fileArg
+        .split(/[ :]/g)
+        .map((it) => (it.startsWith("'") ? it.slice(1, -1) : it))
+        .map((it: string) => path.resolve(it));
+    const configPath = path.resolve(cliOptions.arktsconfig);
+    const outputArg = cliOptions.output;
+    const outputs = outputArg.split(':').map((it: string) => path.resolve(it));
     files.forEach((it: string) => {
         if (!fs.existsSync(it)) {
-            reportErrorAndExit(`File path doesn't exist: ${it}`)
+            reportErrorAndExit(`File path doesn't exist: ${it}`);
         }
-    })
+    });
     if (!fs.existsSync(configPath)) {
-        reportErrorAndExit(`Arktsconfig path doesn't exist: ${configPath}`)
+        reportErrorAndExit(`Arktsconfig path doesn't exist: ${configPath}`);
     }
 
-    const dumpAst = cliOptions.dumpPluginAst ?? false
-    const simultaneous = cliOptions.simultaneous ?? false
-    const profileMemory = cliOptions.profileMemory ?? false
-    const trace = cliOptions.trace ?? false
+    const dumpAst = cliOptions.dumpPluginAst ?? false;
+    const simultaneous = cliOptions.simultaneous ?? false;
+    const profileMemory = cliOptions.profileMemory ?? false;
+    const trace = cliOptions.trace ?? false;
 
-    return { files, configPath, outputs, dumpAst, simultaneous, profileMemory, trace }
+    return { files, configPath, outputs, dumpAst, simultaneous, profileMemory, trace };
 }
 
-function insertPlugin(
-    pluginEntry: PluginEntry,
-    state: Es2pandaContextState,
-    dumpAst: boolean,
-) {
-    const pluginName = `${pluginEntry.name}-${Es2pandaContextState[state].substring(`ES2PANDA_STATE_`.length).toLowerCase()}`
-    global.profiler.curPlugin = pluginName
-    global.profiler.transformStarted()
+function insertPlugin(pluginEntry: PluginEntry, state: Es2pandaContextState, dumpAst: boolean) {
+    const pluginName = `${pluginEntry.name}-${Es2pandaContextState[state].substring(`ES2PANDA_STATE_`.length).toLowerCase()}`;
+    global.profiler.curPlugin = pluginName;
+    global.profiler.transformStarted();
 
-    const hooks = new DumpingHooks(state, pluginName, dumpAst)
-    const pluginContext = new PluginContextImpl()
+    const hooks = new DumpingHooks(state, pluginName, dumpAst);
+    const pluginContext = new PluginContextImpl();
 
     if (false) {
         pluginContext.setProjectConfig({
-            bundleName: "bundle",
-            moduleName: "module",
-            cachePath: "./dist",
+            bundleName: 'bundle',
+            moduleName: 'module',
+            cachePath: './dist',
             dependentModuleList: [],
-            appResource: "",
-            rawFileResource: "",
-            buildLoaderJson: "",
+            appResource: '',
+            rawFileResource: '',
+            buildLoaderJson: '',
             hspResourcesMap: false,
             compileHar: false,
             byteCodeHar: false,
             uiTransformOptimization: false,
             resetBundleName: true,
             allowEmptyBundleName: true,
-            moduleType: "module",
-            moduleRootPath: ".",
-            aceModuleJsonPath: "./module.json",
+            moduleType: 'module',
+            moduleRootPath: '.',
+            aceModuleJsonPath: './module.json',
             ignoreError: false,
-            projectPath: ".",
-            projectRootPath: ".",
+            projectPath: '.',
+            projectRootPath: '.',
             integratedHsp: false,
-            frameworkMode: "yes"
-        })
+            frameworkMode: 'yes',
+        });
     }
 
     if (state == Es2pandaContextState.ES2PANDA_STATE_PARSED) {
-        pluginEntry.parsed?.call(pluginContext, hooks)
+        pluginEntry.parsed?.call(pluginContext, hooks);
     }
 
     if (state == Es2pandaContextState.ES2PANDA_STATE_CHECKED) {
-        pluginEntry.checked?.call(pluginContext, hooks)
+        pluginEntry.checked?.call(pluginContext, hooks);
     }
 
-    global.profiler.transformEnded(state, pluginName)
-    global.profiler.curPlugin = ""
+    global.profiler.transformEnded(state, pluginName);
+    global.profiler.curPlugin = '';
 }
 
 // Improve: move to profiler
 function dumpMemoryProfilerInfo(str: string) {
-    console.log(str, process.memoryUsage().rss)
+    console.log(str, process.memoryUsage().rss);
 }
 
 function dumpCompilationInfo(simultaneous: boolean) {
     traceGlobal(() => {
-        const programs = listPrograms(global.compilerContext!.program)
+        const programs = listPrograms(global.compilerContext!.program);
         if (simultaneous) {
-            const programsForCodegeneration = programs.filter(it => it.isGenAbcForExternal)
-            traceGlobal(() => `Programs for codegeneration        : ${programsForCodegeneration.length}`)
-            traceGlobal(() => `External programs passed to plugins: ${programs.length - programsForCodegeneration.length - 1}`)
+            const programsForCodegeneration = programs.filter((it) => it.isGenAbcForExternal);
+            traceGlobal(() => `Programs for codegeneration        : ${programsForCodegeneration.length}`);
+            traceGlobal(
+                () => `External programs passed to plugins: ${programs.length - programsForCodegeneration.length - 1}`
+            );
         } else {
-            traceGlobal(() => `Programs for codegeneration        : 1`)
-            traceGlobal(() => `External programs passed to plugins: ${programs.length - 1}`)
+            traceGlobal(() => `Programs for codegeneration        : 1`);
+            traceGlobal(() => `External programs passed to plugins: ${programs.length - 1}`);
         }
-    })
+    });
 }
 
 function createContextAdapter(filePaths: string[]): Context {
-    return Context.createFromFile(filePaths[0])
+    return Context.createFromFile(filePaths[0]);
 }
 
 function invoke(
@@ -166,166 +173,188 @@ function invoke(
     profileMemory: boolean,
     trace: boolean,
     simultaneous: boolean,
-    createContext: (fileNames: string[]) => Context,
+    createContext: (fileNames: string[]) => Context
 ): void {
-    const stdlib = findStdlib()
-    const cmd = ['--arktsconfig', configPath, '--extension', 'ets', '--stdlib', stdlib, '--output', outputPath]
+    const stdlib = findStdlib();
+    const cmd = ['--arktsconfig', configPath, '--extension', 'ets', '--stdlib', stdlib, '--output', outputPath];
     if (simultaneous) {
-        cmd.push('--simultaneous')
+        cmd.push('--simultaneous');
     }
-    cmd.push(filePaths[0])
+    cmd.push(filePaths[0]);
 
-    fs.mkdirSync(path.dirname(outputPath), { recursive: true })
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     if (trace) {
-        Tracer.startGlobalTracing(path.dirname(outputPath))
+        Tracer.startGlobalTracing(path.dirname(outputPath));
     }
-    Tracer.pushContext('es2panda')
+    Tracer.pushContext('es2panda');
 
-    initVisitsTable()
+    initVisitsTable();
 
-    const compilerConfig = Config.create(['_', ...cmd])
-    global.config = compilerConfig.peer
-    if (!global.configIsInitialized())
-        throw new Error(`Wrong config: path=${configPath}`)
+    const compilerConfig = Config.create(['_', ...cmd]);
+    global.config = compilerConfig.peer;
+    if (!global.configIsInitialized()) throw new Error(`Wrong config: path=${configPath}`);
 
-    const compilerContext = createContext(filePaths)
-    global.compilerContext = compilerContext
-    global.isContextGenerateAbcForExternalSourceFiles = simultaneous
+    const compilerContext = createContext(filePaths);
+    global.compilerContext = compilerContext;
+    global.isContextGenerateAbcForExternalSourceFiles = simultaneous;
 
-    const options = Options.createOptions(new Config(global.config))
-    global.arktsconfig = options.getArkTsConfig()
-    dumpArkTsConfigInfo(global.arktsconfig)
+    const options = Options.createOptions(new Config(global.config));
+    global.arktsconfig = options.getArkTsConfig();
+    dumpArkTsConfigInfo(global.arktsconfig);
 
-    if (profileMemory) dumpMemoryProfilerInfo('Memory usage before proceed to parsed:')
-    proceedToState(Es2pandaContextState.ES2PANDA_STATE_PARSED)
-    if (profileMemory) dumpMemoryProfilerInfo('Memory usage after proceed to parsed:')
+    if (profileMemory) dumpMemoryProfilerInfo('Memory usage before proceed to parsed:');
+    proceedToState(Es2pandaContextState.ES2PANDA_STATE_PARSED);
+    if (profileMemory) dumpMemoryProfilerInfo('Memory usage after proceed to parsed:');
 
-    pluginsByState.get(Es2pandaContextState.ES2PANDA_STATE_PARSED)?.forEach(plugin => {
-        if (profileMemory) dumpMemoryProfilerInfo(`Memory usage before ${plugin.name}-parsed:`)
-        insertPlugin(plugin, Es2pandaContextState.ES2PANDA_STATE_PARSED, dumpAst)
-        if (profileMemory) dumpMemoryProfilerInfo(`Memory usage after ${plugin.name}-parsed:`)
-    })
+    pluginsByState.get(Es2pandaContextState.ES2PANDA_STATE_PARSED)?.forEach((plugin) => {
+        if (profileMemory) dumpMemoryProfilerInfo(`Memory usage before ${plugin.name}-parsed:`);
+        insertPlugin(plugin, Es2pandaContextState.ES2PANDA_STATE_PARSED, dumpAst);
+        if (profileMemory) dumpMemoryProfilerInfo(`Memory usage after ${plugin.name}-parsed:`);
+    });
 
-    dumpCompilationInfo(simultaneous)
+    dumpCompilationInfo(simultaneous);
 
-    if (profileMemory) dumpMemoryProfilerInfo('Memory usage before proceed to checked:')
-    proceedToState(Es2pandaContextState.ES2PANDA_STATE_CHECKED)
-    if (profileMemory) dumpMemoryProfilerInfo('Memory usage after proceed to checked:')
+    if (profileMemory) dumpMemoryProfilerInfo('Memory usage before proceed to checked:');
+    proceedToState(Es2pandaContextState.ES2PANDA_STATE_CHECKED);
+    if (profileMemory) dumpMemoryProfilerInfo('Memory usage after proceed to checked:');
 
-    pluginsByState.get(Es2pandaContextState.ES2PANDA_STATE_CHECKED)?.forEach(plugin => {
-        if (profileMemory) dumpMemoryProfilerInfo(`Memory usage before ${plugin.name}-checked:`)
-        insertPlugin(plugin, Es2pandaContextState.ES2PANDA_STATE_CHECKED, dumpAst)
-        if (profileMemory) dumpMemoryProfilerInfo(`Memory usage after ${plugin.name}-checked:`)
-    })
+    pluginsByState.get(Es2pandaContextState.ES2PANDA_STATE_CHECKED)?.forEach((plugin) => {
+        if (profileMemory) dumpMemoryProfilerInfo(`Memory usage before ${plugin.name}-checked:`);
+        insertPlugin(plugin, Es2pandaContextState.ES2PANDA_STATE_CHECKED, dumpAst);
+        if (profileMemory) dumpMemoryProfilerInfo(`Memory usage after ${plugin.name}-checked:`);
+    });
 
-    if (profileMemory) dumpMemoryProfilerInfo('Memory usage before proceed to asm:')
-    proceedToState(Es2pandaContextState.ES2PANDA_STATE_ASM_GENERATED)
-    if (profileMemory) dumpMemoryProfilerInfo('Memory usage after proceed to asm:')
+    if (profileMemory) dumpMemoryProfilerInfo('Memory usage before proceed to asm:');
+    proceedToState(Es2pandaContextState.ES2PANDA_STATE_ASM_GENERATED);
+    if (profileMemory) dumpMemoryProfilerInfo('Memory usage after proceed to asm:');
 
-    if (profileMemory) dumpMemoryProfilerInfo('Memory usage before proceed to bin:')
-    proceedToState(Es2pandaContextState.ES2PANDA_STATE_BIN_GENERATED)
-    if (profileMemory) dumpMemoryProfilerInfo('Memory usage after proceed to bin:')
+    if (profileMemory) dumpMemoryProfilerInfo('Memory usage before proceed to bin:');
+    proceedToState(Es2pandaContextState.ES2PANDA_STATE_BIN_GENERATED);
+    if (profileMemory) dumpMemoryProfilerInfo('Memory usage after proceed to bin:');
 
-    global.profiler.compilationEnded()
-    global.profiler.report()
-    global.profiler.reportToFile(true)
+    global.profiler.compilationEnded();
+    global.profiler.report();
+    global.profiler.reportToFile(true);
 
-    compilerContext.destroy()
-    compilerConfig.destroy()
+    compilerContext.destroy();
+    compilerConfig.destroy();
 
-    Tracer.popContext()
+    Tracer.popContext();
     if (trace) {
-        Tracer.stopGlobalTracing()
+        Tracer.stopGlobalTracing();
     }
 }
 
 function loadPlugin(configDir: string, transform: string) {
     /** Improve: read and pass plugin options */
-    const plugin = (transform.startsWith(".") || transform.startsWith("/")) ?
-        path.resolve(configDir, transform) : transform
-    const pluginEntry = require(plugin)
+    const plugin =
+        transform.startsWith('.') || transform.startsWith('/') ? path.resolve(configDir, transform) : transform;
+    const pluginEntry = require(plugin);
     if (!pluginEntry.init) {
-        throw new Error(`init is not specified in plugin ${transform}`)
+        throw new Error(`init is not specified in plugin ${transform}`);
     }
-    if (typeof (pluginEntry.init) !== 'function') {
-        throw new Error(`init is not a function in plugin ${transform}`)
+    if (typeof pluginEntry.init !== 'function') {
+        throw new Error(`init is not a function in plugin ${transform}`);
     }
-    return pluginEntry.init
+    return pluginEntry.init;
 }
 
 function stateFromString(stateName: string): Es2pandaContextState {
     switch (stateName) {
-        case "parsed": return Es2pandaContextState.ES2PANDA_STATE_PARSED
-        case "checked": return Es2pandaContextState.ES2PANDA_STATE_CHECKED
-        default: throw new Error(`Invalid state name: ${stateName}`)
+        case 'parsed':
+            return Es2pandaContextState.ES2PANDA_STATE_PARSED;
+        case 'checked':
+            return Es2pandaContextState.ES2PANDA_STATE_CHECKED;
+        default:
+            throw new Error(`Invalid state name: ${stateName}`);
     }
 }
 
-function readAndSortPlugins(configDir: string, plugins: {transform: string, state: string}[]) {
-    const pluginsByState = new Map<Es2pandaContextState, PluginEntry[]>()
-    const pluginInitializers = new Map<string, PluginInitializer>()
-    const pluginParsedStageOptions = new Map<string, Object>()
-    const pluginCheckedStageOptions = new Map<string, Object>()
+function readAndSortPlugins(configDir: string, plugins: { transform: string; state: string }[]) {
+    const pluginsByState = new Map<Es2pandaContextState, PluginEntry[]>();
+    const pluginInitializers = new Map<string, PluginInitializer>();
+    const pluginParsedStageOptions = new Map<string, Object>();
+    const pluginCheckedStageOptions = new Map<string, Object>();
 
-    plugins.forEach(it => {
-        const transform = it.transform
+    plugins.forEach((it) => {
+        const transform = it.transform;
         if (!transform) {
-            throwError(`arktsconfig plugins objects should specify transform`)
+            throwError(`arktsconfig plugins objects should specify transform`);
         }
-        const state = stateFromString(it.state)
+        const state = stateFromString(it.state);
         if (!pluginInitializers.has(it.transform)) {
-            pluginInitializers.set(it.transform, loadPlugin(configDir, it.transform))
+            pluginInitializers.set(it.transform, loadPlugin(configDir, it.transform));
         }
         if (!pluginsByState.has(state)) {
-            pluginsByState.set(state, [])
+            pluginsByState.set(state, []);
         }
         if (state == Es2pandaContextState.ES2PANDA_STATE_PARSED) {
-            pluginParsedStageOptions.set(it.transform, it)
+            pluginParsedStageOptions.set(it.transform, it);
         }
         if (state == Es2pandaContextState.ES2PANDA_STATE_CHECKED) {
-            pluginCheckedStageOptions.set(it.transform, it)
+            pluginCheckedStageOptions.set(it.transform, it);
         }
-    })
+    });
 
     pluginInitializers.forEach((pluginInit, pluginTransform) => {
-        const parsedJson = pluginParsedStageOptions.get(pluginTransform)
-        const checkedJson = pluginCheckedStageOptions.get(pluginTransform)
-        const plugin = pluginInit(parsedJson, checkedJson)
+        const parsedJson = pluginParsedStageOptions.get(pluginTransform);
+        const checkedJson = pluginCheckedStageOptions.get(pluginTransform);
+        const plugin = pluginInit(parsedJson, checkedJson);
         if (parsedJson && plugin.parsed) {
-            pluginsByState.get(Es2pandaContextState.ES2PANDA_STATE_PARSED)?.push(plugin)
+            pluginsByState.get(Es2pandaContextState.ES2PANDA_STATE_PARSED)?.push(plugin);
         }
         if (checkedJson && plugin.checked) {
-            pluginsByState.get(Es2pandaContextState.ES2PANDA_STATE_CHECKED)?.push(plugin)
+            pluginsByState.get(Es2pandaContextState.ES2PANDA_STATE_CHECKED)?.push(plugin);
         }
-    })
+    });
 
-    return pluginsByState
+    return pluginsByState;
 }
 
 export function main() {
-    checkSDK()
-    const { files, configPath, outputs, dumpAst, simultaneous, profileMemory, trace } = parseCommandLineArgs()
+    checkSDK();
+    const { files, configPath, outputs, dumpAst, simultaneous, profileMemory, trace } = parseCommandLineArgs();
     if (!simultaneous && files.length != outputs.length) {
-        reportErrorAndExit("Different length of inputs and outputs")
+        reportErrorAndExit('Different length of inputs and outputs');
     }
-    const arktsconfig = JSON.parse(fs.readFileSync(configPath).toString())
-    const configDir = path.dirname(configPath)
-    const compilerOptions = arktsconfig.compilerOptions ?? throwError(`arktsconfig should specify compilerOptions`)
-    const plugins = compilerOptions.plugins ?? []
-    const pluginsByState = readAndSortPlugins(configDir, plugins)
+    const arktsconfig = JSON.parse(fs.readFileSync(configPath).toString());
+    const configDir = path.dirname(configPath);
+    const compilerOptions = arktsconfig.compilerOptions ?? throwError(`arktsconfig should specify compilerOptions`);
+    const plugins = compilerOptions.plugins ?? [];
+    const pluginsByState = readAndSortPlugins(configDir, plugins);
 
     if (simultaneous) {
-        invoke(configPath, files, outputs[0], pluginsByState, dumpAst, profileMemory, trace, simultaneous, Context.createContextGenerateAbcForExternalSourceFiles)
+        invoke(
+            configPath,
+            files,
+            outputs[0],
+            pluginsByState,
+            dumpAst,
+            profileMemory,
+            trace,
+            simultaneous,
+            Context.createContextGenerateAbcForExternalSourceFiles
+        );
     } else {
         for (var i = 0; i < files.length; i++) {
-            invoke(configPath, [files[i]], outputs[i], pluginsByState, dumpAst, profileMemory, trace, simultaneous, createContextAdapter)
+            invoke(
+                configPath,
+                [files[i]],
+                outputs[i],
+                pluginsByState,
+                dumpAst,
+                profileMemory,
+                trace,
+                simultaneous,
+                createContextAdapter
+            );
         }
     }
 }
 
 function reportErrorAndExit(message: string): never {
-    console.error(message)
-    process.exit(1)
+    console.error(message);
+    process.exit(1);
 }
 
-main()
+main();

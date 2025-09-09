@@ -40,7 +40,7 @@ export class ImportStorage {
         }
     }
 
-    update() {
+    update(): void {
         // Save current statements
         const statements = this.program.ast.statements;
 

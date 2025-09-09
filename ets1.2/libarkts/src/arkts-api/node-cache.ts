@@ -33,7 +33,7 @@ export class NodeCache {
         return NodeCache.cache.get(pointer) as T | undefined;
     }
 
-    public static addToCache(pointer: KNativePointer, node: AstNode) {
+    public static addToCache(pointer: KNativePointer, node: AstNode): void {
         NodeCache.cache.set(pointer, node);
     }
 

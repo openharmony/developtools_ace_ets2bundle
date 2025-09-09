@@ -13,18 +13,17 @@
  * limitations under the License.
  */
 
-import * as arkts from "@koalaui/libarkts"
-
+import * as arkts from '@koalaui/libarkts';
 
 export class PrintVisitor extends arkts.AbstractVisitor {
-    private result = ""
+    private result = '';
 
     private printNode(node: arkts.AstNode) {
-        return `${" ".repeat(4 * this.indentation)}${arkts.asString(node)}`
+        return `${' '.repeat(4 * this.indentation)}${arkts.asString(node)}`;
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {
-        console.log(this.printNode(node))
-        return this.visitEachChild(node)
+        console.log(this.printNode(node));
+        return this.visitEachChild(node);
     }
 }

@@ -67,7 +67,7 @@ export interface PluginContext {
 }
 
 export class PluginContextImpl implements PluginContext {
-    map = new Map<String, Object | undefined>();
+    map = new Map<string, object | undefined>();
 
     private ast: ETSModule | undefined = undefined;
     private projectConfig: ProjectConfig | undefined = undefined;
@@ -75,8 +75,8 @@ export class PluginContextImpl implements PluginContext {
     parameter<V>(name: string): V | undefined {
         return this.map.get(name) as V | undefined;
     }
-    setParameter<V>(name: string, value: V) {
-        this.map.set(name, value as Object);
+    setParameter<V>(name: string, value: V): void {
+        this.map.set(name, value as object);
     }
     getContextPtr(): KNativePointer {
         return global.compilerContext?.peer ?? nullptr;
@@ -109,7 +109,7 @@ export type ProgramTransformer = (
     context: PluginContext
 ) => void;
 
-export function defaultFilter(name: string) {
+export function defaultFilter(name: string): boolean {
     if (name.startsWith('std.')) return false;
     if (name.startsWith('escompat')) return false;
     return true;
@@ -118,7 +118,7 @@ export function defaultFilter(name: string) {
 export function listPrograms(program: Program, filter: (name: string) => boolean = defaultFilter): Program[] {
     return [
         program,
-        ...program.getExternalSources().flatMap((it: ExternalSource) => {
+        ...program.getExternalSources().flatMap((it: ExternalSource): Program[] => {
             if (filter(it.getName())) {
                 return it.programs;
             }
@@ -134,4 +134,4 @@ export interface PluginEntry {
     clean?: (hooks?: RunTransformerHooks) => void;
 }
 
-export type PluginInitializer = (parsedJson?: Object, checkedJson?: Object) => PluginEntry;
+export type PluginInitializer = (parsedJson?: object, checkedJson?: object) => PluginEntry;
