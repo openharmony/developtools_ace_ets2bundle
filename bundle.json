@@ -35,7 +35,8 @@
           "//developtools/ace_ets2bundle:server",
           "//developtools/ace_ets2bundle:codegen",
           "//developtools/ace_ets2bundle:ets_loader_declaration",
-          "//developtools/ace_ets2bundle:ets_loader_ark_hap"
+          "//developtools/ace_ets2bundle:ets_loader_ark_hap",
+          "//developtools/ace_ets2bundle/koala-wrapper:ohos_ets_koala_wrapper(//build/toolchain/linux:clang_x64)"
         ],
         "inner_kits": [
             {
