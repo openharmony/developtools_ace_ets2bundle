@@ -17,34 +17,40 @@
 #define _DYNAMIC_LOADER_H
 
 #include <string>
+
 #include "interop-utils.h"
 
 #ifdef KOALA_WINDOWS
 #include <windows.h>
 // Here we need to find module where GetArkUINodeAPI()
 // function is implemented.
-inline void* loadLibrary(const std::string& libPath) {
+inline void* loadLibrary(const std::string& libPath)
+{
     return LoadLibraryA(libPath.c_str());
 }
 
-inline const char* libraryError() {
+inline const char* libraryError()
+{
     static char error[256];
     interop_snprintf(error, sizeof error, "error %lu", GetLastError());
     return error;
 }
 
-inline void* findSymbol(void* library, const char* name) {
+inline void* findSymbol(void* library, const char* name)
+{
     return (void*)GetProcAddress(reinterpret_cast<HMODULE>(library), name);
 }
 
-inline std::string libName(const char* lib) {
+inline std::string libName(const char* lib)
+{
     return std::string(lib) + ".dll";
 }
 
 #elif defined(KOALA_LINUX) || defined(KOALA_MACOS) || defined(KOALA_OHOS)
 #include <dlfcn.h>
 
-inline void* loadLibrary(const std::string& libPath) {
+inline void* loadLibrary(const std::string& libPath)
+{
     void* handle = dlopen(libPath.c_str(), RTLD_LOCAL | RTLD_NOW);
     if (!handle) {
         return nullptr;
@@ -52,27 +58,31 @@ inline void* loadLibrary(const std::string& libPath) {
     return handle;
 }
 
-inline const char* libraryError() {
+inline const char* libraryError()
+{
     return dlerror();
 }
 
-inline std::string symbolName(const char* name) {
+inline std::string symbolName(const char* name)
+{
     return name;
 }
 
-inline void* findSymbol(void* library, const char* name) {
+inline void* findSymbol(void* library, const char* name)
+{
     return dlsym(library, symbolName(name).c_str());
 }
 
-inline std::string libName(const char* lib) {
+inline std::string libName(const char* lib)
+{
     std::string result;
     std::string suffix =
 #ifdef KOALA_MACOS
-    ".dylib"
+        ".dylib"
 #else
-    ".so"
+        ".so"
 #endif
-    ;
+        ;
     result = "lib" + std::string(lib) + suffix;
     return result;
 }
@@ -81,31 +91,36 @@ inline std::string libName(const char* lib) {
 
 #include <cstdio>
 
-inline void* loadLibrary(const std::string& libPath) {
+inline void* loadLibrary(const std::string& libPath)
+{
     fprintf(stderr, "No loadLibrary() on this platform\n");
     return nullptr;
 }
 
-inline const char* libraryError() {
+inline const char* libraryError()
+{
     fprintf(stderr, "No libraryError() on this platform\n");
     return nullptr;
 }
 
-inline std::string symbolName(const char* name) {
+inline std::string symbolName(const char* name)
+{
     fprintf(stderr, "No symbolName() on this platform\n");
     return "";
 }
 
-inline void* findSymbol(void* library, const char* name) {
+inline void* findSymbol(void* library, const char* name)
+{
     fprintf(stderr, "No findSymbol() on this platform\n");
     return nullptr;
 }
 
-inline std::string libName(const char* lib) {
+inline std::string libName(const char* lib)
+{
     fprintf(stderr, "No libName() on this platform\n");
     return "";
 }
 
 #endif
 
-#endif  // _DYNAMIC_LOADER_H
+#endif // _DYNAMIC_LOADER_H

@@ -13,49 +13,57 @@
  * limitations under the License.
  */
 
+#include "convertors-jsc.h"
+
 #include <MacTypes.h>
 #include <_types/_uint32_t.h>
 #include <_types/_uint8_t.h>
 #include <cstdint>
 
-#include "convertors-jsc.h"
-
 #include "interop-logging.h"
 #include "interop-utils.h"
 
-// See https://github.com/BabylonJS/BabylonNative/blob/master/Dependencies/napi/napi-direct/source/js_native_api_javascriptcore.cc
+// See
+// https://github.com/BabylonJS/BabylonNative/blob/master/Dependencies/napi/napi-direct/source/js_native_api_javascriptcore.cc
 // for convertors logic.
 
-
-KInt* getInt32Elements(JSContextRef context, const JSValueRef arguments) {
+KInt* getInt32Elements(JSContextRef context, const JSValueRef arguments)
+{
     return getTypedElements<KInt>(context, arguments);
 }
 
-uint32_t* getUInt32Elements(JSContextRef context, const JSValueRef arguments) {
+uint32_t* getUInt32Elements(JSContextRef context, const JSValueRef arguments)
+{
     return getTypedElements<uint32_t>(context, arguments);
 }
 
-float* getFloat32Elements(JSContextRef context, const JSValueRef arguments) {
+float* getFloat32Elements(JSContextRef context, const JSValueRef arguments)
+{
     return getTypedElements<float>(context, arguments);
 }
 
-KByte* getByteElements(JSContextRef context, const JSValueRef arguments) {
+KByte* getByteElements(JSContextRef context, const JSValueRef arguments)
+{
     return getTypedElements<KByte>(context, arguments);
 }
 
-KStringArray getKStringArray(JSContextRef context, const JSValueRef arguments) {
+KStringArray getKStringArray(JSContextRef context, const JSValueRef arguments)
+{
     return getTypedElements<uint8_t>(context, arguments);
 }
 
-KUShort* getUShortElements(JSContextRef context, const JSValueRef arguments) {
+KUShort* getUShortElements(JSContextRef context, const JSValueRef arguments)
+{
     return getTypedElements<KUShort>(context, arguments);
 }
 
-KShort* getShortElements(JSContextRef context, const JSValueRef arguments) {
+KShort* getShortElements(JSContextRef context, const JSValueRef arguments)
+{
     return getTypedElements<KShort>(context, arguments);
 }
 
-int32_t getInt32(JSContextRef context, JSValueRef value) {
+int32_t getInt32(JSContextRef context, JSValueRef value)
+{
     JSValueRef exception {};
     if (JSValueIsNull(context, value)) {
         return 0;
@@ -68,7 +76,8 @@ int32_t getInt32(JSContextRef context, JSValueRef value) {
     return static_cast<int32_t>(result);
 }
 
-uint32_t getUInt32(JSContextRef context, JSValueRef value) {
+uint32_t getUInt32(JSContextRef context, JSValueRef value)
+{
     JSValueRef exception {};
     if (JSValueIsNull(context, value)) {
         return 0;
@@ -81,7 +90,8 @@ uint32_t getUInt32(JSContextRef context, JSValueRef value) {
     return static_cast<uint32_t>(result);
 }
 
-uint8_t getUInt8(JSContextRef context, JSValueRef value) {
+uint8_t getUInt8(JSContextRef context, JSValueRef value)
+{
     JSValueRef exception {};
     if (JSValueIsNull(context, value)) {
         return 0;
@@ -111,12 +121,12 @@ static JSStringRef arrayToBigintCastFuncBody = JSStringCreateWithUTF8CString(
 #ifdef KOALA_JSC_USE_CALLBACK_CAST
 
 static JSStringRef bigIntFromPartsFuncName = JSStringCreateWithUTF8CString("__JSC__bigIntFromParts");
-static JSStringRef bigIntFromPartsFuncParams[] = { JSStringCreateWithUTF8CString("hi"), JSStringCreateWithUTF8CString("lo") };
-static JSStringRef bigIntFromPartsFuncBody = JSStringCreateWithUTF8CString(
-    "return BigInt(hi) << 32n | BigInt(lo);"
-);
+static JSStringRef bigIntFromPartsFuncParams[] = { JSStringCreateWithUTF8CString("hi"),
+    JSStringCreateWithUTF8CString("lo") };
+static JSStringRef bigIntFromPartsFuncBody = JSStringCreateWithUTF8CString("return BigInt(hi) << 32n | BigInt(lo);");
 
-static JSObjectRef getGlobalCallback(JSContextRef context, JSStringRef name, JSStringRef params[], JSStringRef body) {
+static JSObjectRef getGlobalCallback(JSContextRef context, JSStringRef name, JSStringRef params[], JSStringRef body)
+{
     JSObjectRef globalThis = JSContextGetGlobalObject(context);
     JSValueRef propname = JSValueMakeString(context, name);
     JSValueRef castFunc = JSObjectGetPropertyForKey(context, globalThis, propname, nullptr);
@@ -129,25 +139,27 @@ static JSObjectRef getGlobalCallback(JSContextRef context, JSStringRef name, JSS
     return JSValueToObject(context, castFunc, nullptr);
 }
 
-static JSObjectRef getBigIntFromParts(JSContextRef context) {
+static JSObjectRef getBigIntFromParts(JSContextRef context)
+{
     return getGlobalCallback(context, bigIntFromPartsFuncName, bigIntFromPartsFuncParams, bigIntFromPartsFuncBody);
 }
 
 #endif
 
-static JSValueRef u64ToBigInt(JSContextRef context, uint64_t value) {
+static JSValueRef u64ToBigInt(JSContextRef context, uint64_t value)
+{
     JSValueRef bigint;
 #ifdef KOALA_JSC_USE_CALLBACK_CAST
     // Improve: benchmark this
     JSObjectRef bigIntFromParts = getBigIntFromParts(context);
     JSValueRef parts[2] = {
-        JSValueMakeNumber(context, (double) (value >> 32)),
-        JSValueMakeNumber(context, (double) (value & 0xFFFFFFFF)),
+        JSValueMakeNumber(context, (double)(value >> 32)),
+        JSValueMakeNumber(context, (double)(value & 0xFFFFFFFF)),
     };
     contexpr auto ARGUMENT_COUNT{sizeof(parts)/sizeof(parts[0])};
     bigint = JSObjectCallAsFunction(context, bigIntFromParts, nullptr, ARGUMENT_COUNT, parts, nullptr);
 #else
-    char buffer[128] = {0};
+    char buffer[128] = { 0 };
     interop_snprintf(buffer, sizeof(buffer) - 1, "%zun", static_cast<size_t>(value));
     JSStringRef script = JSStringCreateWithUTF8CString(buffer);
     contexpr auto ARGUMENT_COUNT{0};
@@ -157,7 +169,8 @@ static JSValueRef u64ToBigInt(JSContextRef context, uint64_t value) {
     return bigint;
 }
 
-static uint64_t bigIntToU64(JSContextRef ctx, JSValueRef value) {
+static uint64_t bigIntToU64(JSContextRef ctx, JSValueRef value)
+{
     char buf[128];
     JSStringRef strRef = JSValueToStringCopy(ctx, value, nullptr);
     size_t len = JSStringGetUTF8CString(strRef, buf, sizeof(buf));
@@ -169,12 +182,14 @@ static uint64_t bigIntToU64(JSContextRef ctx, JSValueRef value) {
     return numValue;
 }
 
-KNativePointer getPointer(JSContextRef context, JSValueRef value) {
+KNativePointer getPointer(JSContextRef context, JSValueRef value)
+{
     uint64_t raw = bigIntToU64(context, value);
     return reinterpret_cast<void*>(static_cast<uintptr_t>(raw));
 }
 
-KNativePointerArray getPointerElements(JSContextRef context, JSValueRef value) {
+KNativePointerArray getPointerElements(JSContextRef context, JSValueRef value)
+{
     if (JSValueIsNull(context, value) || JSValueIsUndefined(context, value)) {
         return nullptr;
     }
@@ -186,7 +201,8 @@ KNativePointerArray getPointerElements(JSContextRef context, JSValueRef value) {
     return reinterpret_cast<KNativePointerArray>(JSObjectGetTypedArrayBytesPtr(context, typedArray, nullptr));
 }
 
-KFloat getFloat(JSContextRef context, JSValueRef value) {
+KFloat getFloat(JSContextRef context, JSValueRef value)
+{
     JSValueRef exception {};
     if (JSValueIsNull(context, value)) {
         return 0;
@@ -199,7 +215,8 @@ KFloat getFloat(JSContextRef context, JSValueRef value) {
     return static_cast<KFloat>(result);
 }
 
-KDouble getDouble(JSContextRef context, JSValueRef value) {
+KDouble getDouble(JSContextRef context, JSValueRef value)
+{
     JSValueRef exception {};
     if (JSValueIsNull(context, value)) {
         return 0;
@@ -211,7 +228,8 @@ KDouble getDouble(JSContextRef context, JSValueRef value) {
     return JSValueToNumber(context, value, &exception);
 }
 
-KShort getShort(JSContextRef context, JSValueRef value) {
+KShort getShort(JSContextRef context, JSValueRef value)
+{
     JSValueRef exception {};
     if (JSValueIsNull(context, value)) {
         return 0;
@@ -224,7 +242,8 @@ KShort getShort(JSContextRef context, JSValueRef value) {
     return static_cast<KShort>(result);
 }
 
-KUShort getUShort(JSContextRef context, JSValueRef value) {
+KUShort getUShort(JSContextRef context, JSValueRef value)
+{
     JSValueRef exception {};
     if (JSValueIsNull(context, value)) {
         return 0;
@@ -237,7 +256,8 @@ KUShort getUShort(JSContextRef context, JSValueRef value) {
     return static_cast<KUShort>(result);
 }
 
-KStringPtr getString(JSContextRef context, JSValueRef value) {
+KStringPtr getString(JSContextRef context, JSValueRef value)
+{
     if (JSValueIsNull(context, value)) {
         return KStringPtr();
     }
@@ -253,53 +273,64 @@ KStringPtr getString(JSContextRef context, JSValueRef value) {
     return result;
 }
 
-KBoolean getBoolean(JSContextRef context, JSValueRef value) {
+KBoolean getBoolean(JSContextRef context, JSValueRef value)
+{
     bool result = JSValueToBoolean(context, value);
     return static_cast<KBoolean>(result);
 }
 
-JSValueRef makeInt32(JSContextRef context, int32_t value) {
+JSValueRef makeInt32(JSContextRef context, int32_t value)
+{
     return JSValueMakeNumber(context, value);
 }
 
-JSValueRef makeUInt32(JSContextRef context, uint32_t value) {
+JSValueRef makeUInt32(JSContextRef context, uint32_t value)
+{
     return JSValueMakeNumber(context, value);
 }
 
-JSValueRef makePointer(JSContextRef context, KNativePointer value) {
+JSValueRef makePointer(JSContextRef context, KNativePointer value)
+{
     return u64ToBigInt(context, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(value)));
 }
 
-JSValueRef makeFloat(JSContextRef context, KFloat value) {
+JSValueRef makeFloat(JSContextRef context, KFloat value)
+{
     return JSValueMakeNumber(context, value);
 }
 
-JSValueRef makeDouble(JSContextRef context, KDouble value) {
+JSValueRef makeDouble(JSContextRef context, KDouble value)
+{
     return JSValueMakeNumber(context, value);
 }
 
-JSValueRef makeBoolean(JSContextRef context, KBoolean value) {
+JSValueRef makeBoolean(JSContextRef context, KBoolean value)
+{
     return JSValueMakeBoolean(context, value);
 }
 
-JSValueRef makeVoid(JSContextRef context) {
+JSValueRef makeVoid(JSContextRef context)
+{
     return JSValueMakeUndefined(context);
 }
 
-Exports* Exports::getInstance() {
-  static Exports *instance = nullptr;
-  if (instance == nullptr) {
-      instance = new Exports();
-  }
-  return instance;
+Exports* Exports::getInstance()
+{
+    static Exports* instance = nullptr;
+    if (instance == nullptr) {
+        instance = new Exports();
+    }
+    return instance;
 }
 
-void InitExports(JSGlobalContextRef globalContext) {
+void InitExports(JSGlobalContextRef globalContext)
+{
     JSObjectRef globalObject = JSContextGetGlobalObject(globalContext);
-    for (auto impl: Exports::getInstance()->getImpls()) {
+    for (auto impl : Exports::getInstance()->getImpls()) {
         JSStringRef functionName = JSStringCreateWithUTF8CString(impl.first.c_str());
         JSObjectRef functionObject = JSObjectMakeFunctionWithCallback(globalContext, functionName, impl.second);
-        JSObjectSetProperty(globalContext, globalObject, functionName, functionObject, kJSPropertyAttributeNone, nullptr);
+        JSObjectSetProperty(
+            globalContext, globalObject, functionName, functionObject, kJSPropertyAttributeNone, nullptr);
         JSStringRelease(functionName);
     }
 }

@@ -14,37 +14,40 @@
  */
 #include <cstdint>
 #include <cstring>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "interop-logging.h"
 #undef KOALA_INTEROP_MODULE
 #define KOALA_INTEROP_MODULE InteropNativeModule
 #include "convertors-napi.h"
 
-
 // Adapter for NAPI_MODULE
-#define NODE_API_MODULE_ADAPTER(modname, regfunc)                                      \
-  static napi_value __napi_##regfunc(napi_env env, napi_value exports) {       \
-    return Napi::RegisterModule(env, exports, regfunc);                        \
-  }                                                                            \
-  NAPI_MODULE(modname, __napi_##regfunc)
+#define NODE_API_MODULE_ADAPTER(modname, regfunc)                        \
+    static napi_value __napi_##regfunc(napi_env env, napi_value exports) \
+    {                                                                    \
+        return Napi::RegisterModule(env, exports, regfunc);              \
+    }                                                                    \
+    NAPI_MODULE(modname, __napi_##regfunc)
 
-napi_valuetype getValueTypeChecked(napi_env env, napi_value value) {
+napi_valuetype getValueTypeChecked(napi_env env, napi_value value)
+{
     napi_valuetype type;
     napi_status status = napi_typeof(env, value, &type);
     KOALA_NAPI_THROW_IF_FAILED(env, status, napi_undefined);
     return type;
 }
 
-bool isTypedArray(napi_env env, napi_value value) {
+bool isTypedArray(napi_env env, napi_value value)
+{
     bool result = false;
     napi_status status = napi_is_typedarray(env, value, &result);
     KOALA_NAPI_THROW_IF_FAILED(env, status, false);
     return result;
 }
 
-KBoolean getBoolean(napi_env env, napi_value value) {
+KBoolean getBoolean(napi_env env, napi_value value)
+{
     if (getValueTypeChecked(env, value) == napi_valuetype::napi_boolean) {
         bool result = false;
         napi_get_value_bool(env, value, &result);
@@ -53,7 +56,8 @@ KBoolean getBoolean(napi_env env, napi_value value) {
     return static_cast<KBoolean>(getInt32(env, value) != 0);
 }
 
-KInt getInt32(napi_env env, napi_value value) {
+KInt getInt32(napi_env env, napi_value value)
+{
     if (getValueTypeChecked(env, value) != napi_valuetype::napi_number) {
         napi_throw_error(env, nullptr, "Expected Number");
         return 0;
@@ -63,7 +67,8 @@ KInt getInt32(napi_env env, napi_value value) {
     return static_cast<KInt>(result);
 }
 
-KUInt getUInt32(napi_env env, napi_value value) {
+KUInt getUInt32(napi_env env, napi_value value)
+{
     if (getValueTypeChecked(env, value) != napi_valuetype::napi_number) {
         napi_throw_error(env, nullptr, "Expected Number");
         return 0;
@@ -73,7 +78,8 @@ KUInt getUInt32(napi_env env, napi_value value) {
     return static_cast<KUInt>(result);
 }
 
-KFloat getFloat32(napi_env env, napi_value value) {
+KFloat getFloat32(napi_env env, napi_value value)
+{
     if (getValueTypeChecked(env, value) != napi_valuetype::napi_number) {
         napi_throw_error(env, nullptr, "Expected Number");
         return 0.0f;
@@ -83,7 +89,8 @@ KFloat getFloat32(napi_env env, napi_value value) {
     return static_cast<KFloat>(static_cast<float>(result));
 }
 
-KDouble getFloat64(napi_env env, napi_value value) {
+KDouble getFloat64(napi_env env, napi_value value)
+{
     if (getValueTypeChecked(env, value) != napi_valuetype::napi_number) {
         napi_throw_error(env, nullptr, "Expected Number");
         return 0.0;
@@ -93,27 +100,30 @@ KDouble getFloat64(napi_env env, napi_value value) {
     return static_cast<KDouble>(result);
 }
 
-KStringPtr getString(napi_env env, napi_value value) {
-  KStringPtr result {};
-  napi_valuetype valueType = getValueTypeChecked(env, value);
-  if (valueType == napi_valuetype::napi_null || valueType == napi_valuetype::napi_undefined) {
-    return result;
-  }
+KStringPtr getString(napi_env env, napi_value value)
+{
+    KStringPtr result {};
+    napi_valuetype valueType = getValueTypeChecked(env, value);
+    if (valueType == napi_valuetype::napi_null || valueType == napi_valuetype::napi_undefined) {
+        return result;
+    }
 
-  if (valueType != napi_valuetype::napi_string) {
-    napi_throw_error(env, nullptr, "Expected String");
-    return result;
-  }
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_error(env, nullptr, "Expected String");
+        return result;
+    }
 
-  size_t length = 0;
-  napi_status status = napi_get_value_string_utf8(env, value, nullptr, 0, &length);
-  if (status != 0) return result;
-  result.resize(length);
-  status = napi_get_value_string_utf8(env, value, result.data(), length + 1, nullptr);
-  return result;
+    size_t length = 0;
+    napi_status status = napi_get_value_string_utf8(env, value, nullptr, 0, &length);
+    if (status != 0)
+        return result;
+    result.resize(length);
+    status = napi_get_value_string_utf8(env, value, result.data(), length + 1, nullptr);
+    return result;
 }
 
-KNativePointer getPointerSlow(napi_env env, napi_value value) {
+KNativePointer getPointerSlow(napi_env env, napi_value value)
+{
     napi_valuetype valueType = getValueTypeChecked(env, value);
     if (valueType == napi_valuetype::napi_external) {
         KNativePointer result = nullptr;
@@ -138,7 +148,8 @@ KNativePointer getPointerSlow(napi_env env, napi_value value) {
     return reinterpret_cast<KNativePointer>(ptrU64);
 }
 
-KLong getInt64(napi_env env, napi_value value) {
+KLong getInt64(napi_env env, napi_value value)
+{
     if (getValueTypeChecked(env, value) == napi_valuetype::napi_number) {
         int64_t result = 0;
         if (napi_get_value_int64(env, value, &result) != napi_ok) {
@@ -164,7 +175,8 @@ KLong getInt64(napi_env env, napi_value value) {
     return -1;
 }
 
-KULong getUInt64(napi_env env, napi_value value) {
+KULong getUInt64(napi_env env, napi_value value)
+{
     if (getValueTypeChecked(env, value) != napi_valuetype::napi_bigint) {
         napi_throw_error(env, nullptr, "cannot be coerced to uint64");
         return -1;
@@ -180,7 +192,8 @@ KULong getUInt64(napi_env env, napi_value value) {
     return static_cast<KULong>(ptr64);
 }
 
-napi_value makeString(napi_env env, const KStringPtr& value) {
+napi_value makeString(napi_env env, const KStringPtr& value)
+{
     napi_value result;
     napi_status status;
     status = napi_create_string_utf8(env, value.isNull() ? "" : value.data(), value.length(), &result);
@@ -188,7 +201,8 @@ napi_value makeString(napi_env env, const KStringPtr& value) {
     return result;
 }
 
-napi_value makeString(napi_env env, const std::string& value) {
+napi_value makeString(napi_env env, const std::string& value)
+{
     napi_value result;
     napi_status status;
     status = napi_create_string_utf8(env, value.c_str(), value.length(), &result);
@@ -196,31 +210,35 @@ napi_value makeString(napi_env env, const std::string& value) {
     return result;
 }
 
-napi_value makeBoolean(napi_env env, int8_t value) {
+napi_value makeBoolean(napi_env env, int8_t value)
+{
     napi_value result;
     napi_status status;
-    status = napi_get_boolean(env,  value != 0, &result);
+    status = napi_get_boolean(env, value != 0, &result);
     KOALA_NAPI_THROW_IF_FAILED(env, status, result);
     return result;
 }
 
-napi_value makeInt32(napi_env env, int32_t value) {
+napi_value makeInt32(napi_env env, int32_t value)
+{
     napi_value result;
     napi_status status;
-    status = napi_create_int32(env,  value, &result);
+    status = napi_create_int32(env, value, &result);
     KOALA_NAPI_THROW_IF_FAILED(env, status, result);
     return result;
 }
 
-napi_value makeUInt32(napi_env env, uint32_t value) {
+napi_value makeUInt32(napi_env env, uint32_t value)
+{
     napi_value result;
     napi_status status;
-    status = napi_create_uint32(env,  value, &result);
+    status = napi_create_uint32(env, value, &result);
     KOALA_NAPI_THROW_IF_FAILED(env, status, result);
     return result;
 }
 
-napi_value makeInt64(napi_env env, int64_t value) {
+napi_value makeInt64(napi_env env, int64_t value)
+{
     napi_value result;
     napi_status status;
     status = napi_create_bigint_int64(env, value, &result);
@@ -228,7 +246,8 @@ napi_value makeInt64(napi_env env, int64_t value) {
     return result;
 }
 
-napi_value makeUInt64(napi_env env, uint64_t value) {
+napi_value makeUInt64(napi_env env, uint64_t value)
+{
     napi_value result;
     napi_status status;
     status = napi_create_bigint_uint64(env, value, &result);
@@ -236,15 +255,8 @@ napi_value makeUInt64(napi_env env, uint64_t value) {
     return result;
 }
 
-napi_value makeFloat32(napi_env env, float value) {
-    napi_value result;
-    napi_status status;
-    status = napi_create_double(env,  value, &result);
-    KOALA_NAPI_THROW_IF_FAILED(env, status, result);
-    return result;
-}
-
-napi_value makeFloat64(napi_env env, double value) {
+napi_value makeFloat32(napi_env env, float value)
+{
     napi_value result;
     napi_status status;
     status = napi_create_double(env, value, &result);
@@ -252,7 +264,17 @@ napi_value makeFloat64(napi_env env, double value) {
     return result;
 }
 
-napi_value makePointer(napi_env env, void* value) {
+napi_value makeFloat64(napi_env env, double value)
+{
+    napi_value result;
+    napi_status status;
+    status = napi_create_double(env, value, &result);
+    KOALA_NAPI_THROW_IF_FAILED(env, status, result);
+    return result;
+}
+
+napi_value makePointer(napi_env env, void* value)
+{
     napi_value result;
     napi_status status;
     status = napi_create_bigint_uint64(env, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(value)), &result);
@@ -260,7 +282,8 @@ napi_value makePointer(napi_env env, void* value) {
     return result;
 }
 
-napi_value makeVoid(napi_env env) {
+napi_value makeVoid(napi_env env)
+{
     napi_value result;
     napi_status status;
     status = napi_get_undefined(env, &result);
@@ -268,7 +291,8 @@ napi_value makeVoid(napi_env env) {
     return result;
 }
 
-napi_value makeObject(napi_env env, napi_value object) {
+napi_value makeObject(napi_env env, napi_value object)
+{
     napi_value result;
     napi_status status;
     status = napi_create_object(env, &result);
@@ -277,19 +301,21 @@ napi_value makeObject(napi_env env, napi_value object) {
 }
 
 #if _MSC_VER >= 1932 // Visual Studio 2022 version 17.2+
-#    pragma comment(linker, "/alternatename:__imp___std_init_once_complete=__imp_InitOnceComplete")
-#    pragma comment(linker, "/alternatename:__imp___std_init_once_begin_initialize=__imp_InitOnceBeginInitialize")
+#pragma comment(linker, "/alternatename:__imp___std_init_once_complete=__imp_InitOnceComplete")
+#pragma comment(linker, "/alternatename:__imp___std_init_once_begin_initialize=__imp_InitOnceBeginInitialize")
 #endif
 
-Exports* Exports::getInstance() {
-    static Exports *instance = nullptr;
+Exports* Exports::getInstance()
+{
+    static Exports* instance = nullptr;
     if (instance == nullptr) {
         instance = new Exports();
     }
     return instance;
 }
 
-std::vector<std::string> Exports::getModules() {
+std::vector<std::string> Exports::getModules()
+{
     std::vector<std::string> result;
     for (auto it = implementations.begin(); it != implementations.end(); ++it) {
         result.push_back(it->first);
@@ -297,16 +323,17 @@ std::vector<std::string> Exports::getModules() {
     return result;
 }
 
-void Exports::addMethod(const char* module, const char* name, napi_type_t impl) {
+void Exports::addMethod(const char* module, const char* name, napi_type_t impl)
+{
     auto it = implementations.find(module);
     if (it == implementations.end()) {
         it = implementations.insert(std::make_pair(module, std::vector<std::pair<std::string, napi_type_t>>())).first;
     }
     it->second.push_back(std::make_pair(name, impl));
-
 }
 
-const std::vector<std::pair<std::string, napi_type_t>>& Exports::getMethods(const std::string& module) {
+const std::vector<std::pair<std::string, napi_type_t>>& Exports::getMethods(const std::string& module)
+{
     auto it = implementations.find(module);
     if (it == implementations.end()) {
         LOGE("Module %s is not registered", module.c_str());
@@ -318,12 +345,14 @@ const std::vector<std::pair<std::string, napi_type_t>>& Exports::getMethods(cons
 //
 // Callback dispatcher
 //
-// Improve: Should we get rid of explicit Node_* declrations and hide the naming convention behind the macro definitions?
+// Improve: Should we get rid of explicit Node_* declrations and hide the naming convention behind the macro
+// definitions?
 
 static napi_ref g_koalaNapiCallbackDispatcher = nullptr;
 
 // Improve: shall we pass name in globalThis instead of object reference?
-napi_value Node_SetCallbackDispatcher(napi_env env, napi_callback_info cbinfo) {
+napi_value Node_SetCallbackDispatcher(napi_env env, napi_callback_info cbinfo)
+{
     fprintf(stderr, "Node_SetCallbackDispatcher!\n");
 
     CallbackInfo info(env, cbinfo);
@@ -336,7 +365,8 @@ napi_value Node_SetCallbackDispatcher(napi_env env, napi_callback_info cbinfo) {
 }
 MAKE_NODE_EXPORT(KOALA_INTEROP_MODULE, SetCallbackDispatcher)
 
-napi_value Node_CleanCallbackDispatcher(napi_env env, napi_callback_info cbinfo) {
+napi_value Node_CleanCallbackDispatcher(napi_env env, napi_callback_info cbinfo)
+{
     napi_value result = makeVoid(env);
     if (g_koalaNapiCallbackDispatcher) {
         napi_status status = napi_delete_reference(env, g_koalaNapiCallbackDispatcher);
@@ -347,7 +377,8 @@ napi_value Node_CleanCallbackDispatcher(napi_env env, napi_callback_info cbinfo)
 }
 MAKE_NODE_EXPORT(KOALA_INTEROP_MODULE, CleanCallbackDispatcher)
 
-napi_value getKoalaNapiCallbackDispatcher(napi_env env) {
+napi_value getKoalaNapiCallbackDispatcher(napi_env env)
+{
     if (!g_koalaNapiCallbackDispatcher) {
         abort();
     }
@@ -366,7 +397,8 @@ using ModuleRegisterCallback = napi_value (*)(napi_env env, napi_value exports);
 /**
  * Sets a new callback and returns its previous value.
  */
-ModuleRegisterCallback ProvideModuleRegisterCallback(ModuleRegisterCallback value = nullptr) {
+ModuleRegisterCallback ProvideModuleRegisterCallback(ModuleRegisterCallback value = nullptr)
+{
     static const ModuleRegisterCallback DEFAULT_CB = [](napi_env env, napi_value exports) { return exports; };
     static ModuleRegisterCallback curCallback = DEFAULT_CB;
 
@@ -377,11 +409,12 @@ ModuleRegisterCallback ProvideModuleRegisterCallback(ModuleRegisterCallback valu
 
 static constexpr bool splitModules = true;
 
-static napi_value InitModule(napi_env env, napi_value exports) {
+static napi_value InitModule(napi_env env, napi_value exports)
+{
     Exports* inst = Exports::getInstance();
     napi_status status;
     napi_value target = exports;
-    for (const auto &module : inst->getModules()) {
+    for (const auto& module : inst->getModules()) {
         if (splitModules) {
             status = napi_create_object(env, &target);
             KOALA_NAPI_THROW_IF_FAILED(env, status, exports);
@@ -389,7 +422,7 @@ static napi_value InitModule(napi_env env, napi_value exports) {
             KOALA_NAPI_THROW_IF_FAILED(env, status, exports);
         }
 
-        for (const auto &impl : inst->getMethods(module)) {
+        for (const auto& impl : inst->getMethods(module)) {
             napi_value implFunc;
             status = napi_create_function(env, impl.first.c_str(), NAPI_AUTO_LENGTH, impl.second, nullptr, &implFunc);
             KOALA_NAPI_THROW_IF_FAILED(env, status, exports);

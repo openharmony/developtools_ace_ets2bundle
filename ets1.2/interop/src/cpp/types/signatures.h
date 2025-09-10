@@ -18,8 +18,8 @@
 
 #include <string>
 
-std::string sigType(const std::string &type);
-std::string codeType(const std::string &type);
+std::string sigType(const std::string& type);
+std::string codeType(const std::string& type);
 std::string convertType(const char* name, const char* koalaType);
 
 #endif // _SIGNATURES_H

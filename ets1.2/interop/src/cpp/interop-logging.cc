@@ -12,11 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "interop-logging.h"
+
+#include <stdarg.h>
 #include <string>
 #include <vector>
-#include <cstdarg>
 
-#include "interop-logging.h"
 #include "interop-utils.h"
 
 namespace {
@@ -28,30 +29,35 @@ struct Log {
 
 std::vector<Log*> groupedLogs;
 
-void startGroupedLog(int index) {
+void startGroupedLog(int index)
+{
     if (index >= static_cast<int>(groupedLogs.size())) {
         groupedLogs.resize(index + 1);
         for (int i = 0; i <= index; i++) {
-            if (!groupedLogs[i]) groupedLogs[i] = new Log();
+            if (!groupedLogs[i])
+                groupedLogs[i] = new Log();
         }
     }
     groupedLogs[index]->isActive = true;
     groupedLogs[index]->log.clear();
 }
 
-void stopGroupedLog(int index) {
+void stopGroupedLog(int index)
+{
     if (index < static_cast<int>(groupedLogs.size())) {
         groupedLogs[index]->isActive = false;
     }
 }
 
-void appendGroupedLog(int index, const char* str) {
+void appendGroupedLog(int index, const char* str)
+{
     if (index < static_cast<int>(groupedLogs.size())) {
         groupedLogs[index]->log.append(str);
     }
 }
 
-const char* getGroupedLog(int index) {
+const char* getGroupedLog(int index)
+{
     if (index < static_cast<int>(groupedLogs.size())) {
         // G.STD.04-CPP: Do not hold pointer returned from std::string c_str() method.
         return std::move(groupedLogs[index]->log.c_str());
@@ -59,7 +65,8 @@ const char* getGroupedLog(int index) {
     return "";
 }
 
-int needGroupedLog(int index) {
+int needGroupedLog(int index)
+{
     if (index < static_cast<int>(groupedLogs.size())) {
         return groupedLogs[index]->isActive;
     }
@@ -76,11 +83,13 @@ const GroupLogger defaultInstance = {
 
 } // namespace
 
-const GroupLogger* GetDefaultLogger() {
+const GroupLogger* GetDefaultLogger()
+{
     return &defaultInstance;
 }
 
-extern "C" [[noreturn]] void InteropLogFatal(const char* format, ...) {
+extern "C" [[noreturn]] void InteropLogFatal(const char* format, ...)
+{
     va_list args;
     va_start(args, format);
     char buffer[4096];

@@ -11,19 +11,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 #undef KOALA_INTEROP_MODULE
 #define KOALA_INTEROP_MODULE InteropNativeModule
-#include "common-interop.h"
-#include "interop-types.h"
 #include "callback-resource.h"
-#include "SerializerBase.h"
-#include "interop-utils.h"
+
+#include <atomic>
 #include <deque>
 #include <unordered_map>
-#include <atomic>
 #include <utility>
+
+#include "SerializerBase.h"
+#include "common-interop.h"
+#include "interop-types.h"
+#include "interop-utils.h"
 
 static bool needReleaseFront = false;
 static std::deque<CallbackEventKind> callbackEventsQueue;
@@ -32,7 +34,8 @@ static std::deque<InteropInt32> callbackResourceSubqueue;
 
 static std::atomic<KVMDeferred*> currentDeferred(nullptr);
 
-static KVMDeferred* takeCurrent(KNativePointer waitContext) {
+static KVMDeferred* takeCurrent(KNativePointer waitContext)
+{
     KVMDeferred* current;
     do {
         current = currentDeferred.load();
@@ -40,13 +43,15 @@ static KVMDeferred* takeCurrent(KNativePointer waitContext) {
     return current;
 }
 
-void notifyWaiter() {
+void notifyWaiter()
+{
     auto current = takeCurrent(nullptr);
     if (current)
         current->resolve(current, nullptr, 0);
 }
 
-KVMObjectHandle impl_CallbackAwait(KVMContext vmContext, KNativePointer waitContext) {
+KVMObjectHandle impl_CallbackAwait(KVMContext vmContext, KNativePointer waitContext)
+{
     KVMObjectHandle result = nullptr;
     auto* current = takeCurrent(waitContext);
     if (current) {
@@ -54,41 +59,46 @@ KVMObjectHandle impl_CallbackAwait(KVMContext vmContext, KNativePointer waitCont
     }
     auto next = CreateDeferred(vmContext, &result);
     KVMDeferred* null = nullptr;
-    while (!currentDeferred.compare_exchange_strong(null, next)) {}
+    while (!currentDeferred.compare_exchange_strong(null, next)) {
+    }
     return result;
 }
 KOALA_INTEROP_CTX_1(CallbackAwait, KVMObjectHandle, KNativePointer)
 
-void impl_UnblockCallbackWait(KNativePointer waitContext) {
+void impl_UnblockCallbackWait(KNativePointer waitContext)
+{
     auto current = takeCurrent(waitContext);
-    if (current) current->resolve(current, nullptr, 0);
+    if (current)
+        current->resolve(current, nullptr, 0);
 }
 KOALA_INTEROP_V1(UnblockCallbackWait, KNativePointer)
 
-void enqueueCallback(int apiKind, const CallbackBuffer* event) {
+void enqueueCallback(int apiKind, const CallbackBuffer* event)
+{
     callbackEventsQueue.push_back(Event_CallCallback);
     callbackCallSubqueue.push_back({ apiKind, *event });
     notifyWaiter();
 }
 
-void holdManagedCallbackResource(InteropInt32 resourceId) {
+void holdManagedCallbackResource(InteropInt32 resourceId)
+{
     callbackEventsQueue.push_back(Event_HoldManagedResource);
     callbackResourceSubqueue.push_back(resourceId);
     notifyWaiter();
 }
 
-void releaseManagedCallbackResource(InteropInt32 resourceId) {
+void releaseManagedCallbackResource(InteropInt32 resourceId)
+{
     callbackEventsQueue.push_back(Event_ReleaseManagedResource);
     callbackResourceSubqueue.push_back(resourceId);
     notifyWaiter();
 }
 
-KInt impl_CheckCallbackEvent(KSerializerBuffer buffer, KInt size) {
+KInt impl_CheckCallbackEvent(KSerializerBuffer buffer, KInt size)
+{
     KByte* result = (KByte*)buffer;
-    if (needReleaseFront)
-    {
-        switch (callbackEventsQueue.front())
-        {
+    if (needReleaseFront) {
+        switch (callbackEventsQueue.front()) {
             case Event_CallCallback:
                 callbackCallSubqueue.front().second.resourceHolder.release();
                 callbackCallSubqueue.pop_front();
@@ -111,12 +121,12 @@ KInt impl_CheckCallbackEvent(KSerializerBuffer buffer, KInt size) {
     const CallbackEventKind frontEventKind = callbackEventsQueue.front();
     serializer.writeInt32(frontEventKind);
 
-    switch (frontEventKind)
-    {
+    switch (frontEventKind) {
         case Event_CallCallback: {
-            std::pair<int, CallbackBuffer> &callback = callbackCallSubqueue.front();
+            std::pair<int, CallbackBuffer>& callback = callbackCallSubqueue.front();
             serializer.writeInt32(callback.first);
-            interop_memcpy(result + serializer.length(), size - serializer.length(), callback.second.buffer, sizeof(CallbackBuffer::buffer));
+            interop_memcpy(result + serializer.length(), size - serializer.length(), callback.second.buffer,
+                sizeof(CallbackBuffer::buffer));
             break;
         }
         case Event_HoldManagedResource:
@@ -133,12 +143,14 @@ KInt impl_CheckCallbackEvent(KSerializerBuffer buffer, KInt size) {
 }
 KOALA_INTEROP_DIRECT_2(CheckCallbackEvent, KInt, KSerializerBuffer, KInt)
 
-void impl_ReleaseCallbackResource(InteropInt32 resourceId) {
+void impl_ReleaseCallbackResource(InteropInt32 resourceId)
+{
     releaseManagedCallbackResource(resourceId);
 }
 KOALA_INTEROP_V1(ReleaseCallbackResource, KInt)
 
-void impl_HoldCallbackResource(InteropInt32 resourceId) {
+void impl_HoldCallbackResource(InteropInt32 resourceId)
+{
     holdManagedCallbackResource(resourceId);
 }
 KOALA_INTEROP_V1(HoldCallbackResource, KInt)

@@ -19,11 +19,11 @@
 // NOLINTBEGIN(modernize-use-using, readability-identifier-naming, cppcoreguidelines-pro-type-vararg)
 
 #ifdef __cplusplus
-#include <cstdint>
 #include <cstdarg>
+#include <cstdint>
 #else
-#include <stdint.h>
 #include <stdarg.h>
+#include <stdint.h>
 #endif
 
 // NOLINTBEGIN(cppcoreguidelines-macro-usage)
@@ -32,12 +32,12 @@
 #define ETS_NAPI_VERSION_1_0 0x00010000
 
 // General return value constants
-#define ETS_OK 0            // success
-#define ETS_ERR (-1)        // unknown error
-#define ETS_ERR_VER (-2)    // ETS version error
-#define ETS_ERR_NOMEM (-3)  // not enough memory
-#define ETS_ERR_EXIST (-4)  // VM already created
-#define ETS_ERR_INVAL (-5)  // invalid arguments
+#define ETS_OK 0           // success
+#define ETS_ERR (-1)       // unknown error
+#define ETS_ERR_VER (-2)   // ETS version error
+#define ETS_ERR_NOMEM (-3) // not enough memory
+#define ETS_ERR_EXIST (-4) // VM already created
+#define ETS_ERR_INVAL (-5) // invalid arguments
 
 // Boolean Constants
 #define ETS_FALSE 0
@@ -77,26 +77,26 @@ class __ets_floatArray : public __ets_array {};
 class __ets_doubleArray : public __ets_array {};
 class __ets_error : public __ets_object {};
 
-typedef __ets_object *ets_object;
-typedef __ets_class *ets_class;
-typedef __ets_string *ets_string;
-typedef __ets_array *ets_array;
-typedef __ets_objectArray *ets_objectArray;
-typedef __ets_booleanArray *ets_booleanArray;
-typedef __ets_byteArray *ets_byteArray;
-typedef __ets_charArray *ets_charArray;
-typedef __ets_shortArray *ets_shortArray;
-typedef __ets_intArray *ets_intArray;
-typedef __ets_longArray *ets_longArray;
-typedef __ets_floatArray *ets_floatArray;
-typedef __ets_doubleArray *ets_doubleArray;
-typedef __ets_error *ets_error;
-typedef __ets_object *ets_weak;
+typedef __ets_object* ets_object;
+typedef __ets_class* ets_class;
+typedef __ets_string* ets_string;
+typedef __ets_array* ets_array;
+typedef __ets_objectArray* ets_objectArray;
+typedef __ets_booleanArray* ets_booleanArray;
+typedef __ets_byteArray* ets_byteArray;
+typedef __ets_charArray* ets_charArray;
+typedef __ets_shortArray* ets_shortArray;
+typedef __ets_intArray* ets_intArray;
+typedef __ets_longArray* ets_longArray;
+typedef __ets_floatArray* ets_floatArray;
+typedef __ets_doubleArray* ets_doubleArray;
+typedef __ets_error* ets_error;
+typedef __ets_object* ets_weak;
 
-#else   // __cplusplus
+#else  // __cplusplus
 
 struct __ets_object;
-typedef struct __ets_object *ets_object;
+typedef struct __ets_object* ets_object;
 typedef ets_object ets_class;
 typedef ets_object ets_string;
 typedef ets_object ets_error;
@@ -111,16 +111,16 @@ typedef ets_array ets_intArray;
 typedef ets_array ets_longArray;
 typedef ets_array ets_floatArray;
 typedef ets_array ets_doubleArray;
-#endif  // __cplusplus
+#endif // __cplusplus
 
 struct __ets_deferred;
-typedef struct __ets_deferred *ets_deferred;
+typedef struct __ets_deferred* ets_deferred;
 
 // Field and Method IDs
 struct __ets_method;
 struct __ets_field;
-typedef struct __ets_method *ets_method;
-typedef struct __ets_field *ets_field;
+typedef struct __ets_method* ets_method;
+typedef struct __ets_field* ets_field;
 
 // The Value Type
 typedef union ets_value {
@@ -137,9 +137,9 @@ typedef union ets_value {
 
 // Describe native method by name, signature and function pointer
 typedef struct {
-    const char *name;
-    const char *signature;
-    void *func;
+    const char* name;
+    const char* signature;
+    void* func;
 } EtsNativeMethod;
 
 // The object reference types
@@ -154,8 +154,8 @@ typedef enum {
 typedef struct __EtsVM EtsVM;
 typedef struct __EtsEnv ets_env;
 #else
-typedef const struct ETS_InvokeInterface *EtsVM;
-typedef const struct ETS_NativeInterface *ets_env;
+typedef const struct ETS_InvokeInterface* EtsVM;
+typedef const struct ETS_NativeInterface* ets_env;
 #endif
 
 // Deprecated types:
@@ -166,8 +166,8 @@ typedef enum {
     ETS_INVALID_ARG,
     ETS_GENERIC_FAILURE,
     ETS_PENDING_EXCEPTION,
-    ETS_INVALID_VERSION,  // NOTE(v.cherkashin): This status code doesn't match to napi interface.
-                          //                     Should we probably delete this status code?
+    ETS_INVALID_VERSION, // NOTE(v.cherkashin): This status code doesn't match to napi interface.
+                         //                     Should we probably delete this status code?
 } ets_status;
 
 // clang-format off
@@ -459,13 +459,13 @@ typedef enum {
 
 typedef struct EtsVMOption {
     EtsOptionType option;
-    const void *extraInfo;
+    const void* extraInfo;
 } EtsVMOption;
 
 typedef struct EtsVMInitArgs {
     ets_int version;
     ets_int nOptions;
-    EtsVMOption *options;
+    EtsVMOption* options;
 } EtsVMInitArgs;
 
 typedef enum {
@@ -485,29 +485,29 @@ extern "C" {
 #endif
 
 #ifdef _MSC_VER
-#define ETS_EXPORT  __declspec(dllexport)
+#define ETS_EXPORT __declspec(dllexport)
 #else
 #define ETS_EXPORT __attribute__((visibility("default")))
 #endif
 #define ETS_IMPORT
 #define ETS_CALL
 
-ETS_EXPORT ets_int ETS_GetDefaultVMInitArgs(EtsVMInitArgs *vmArgs);
-ETS_EXPORT ets_int ETS_GetCreatedVMs(EtsVM **vmBuf, ets_size bufLen, ets_size *nVms);
-ETS_EXPORT ets_int ETS_CreateVM(EtsVM **pVm, EtsEnv **pEnv, EtsVMInitArgs *vmArgs);
+ETS_EXPORT ets_int ETS_GetDefaultVMInitArgs(EtsVMInitArgs* vmArgs);
+ETS_EXPORT ets_int ETS_GetCreatedVMs(EtsVM** vmBuf, ets_size bufLen, ets_size* nVms);
+ETS_EXPORT ets_int ETS_CreateVM(EtsVM** pVm, EtsEnv** pEnv, EtsVMInitArgs* vmArgs);
 
 #ifdef __cplusplus
 }
 #endif
 
 struct ETS_InvokeInterface {
-    ets_int (*DestroyEtsVM)(EtsVM *vm);
-    ets_int (*GetEnv)(EtsVM *vm, EtsEnv **pEnv, ets_int version);
+    ets_int (*DestroyEtsVM)(EtsVM* vm);
+    ets_int (*GetEnv)(EtsVM* vm, EtsEnv** pEnv, ets_int version);
 };
 
 struct __EtsVM {
     // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
-    const struct ETS_InvokeInterface *invoke_interface;
+    const struct ETS_InvokeInterface* invoke_interface;
 
 #ifdef __cplusplus
     ets_int DestroyEtsVM()
@@ -515,7 +515,7 @@ struct __EtsVM {
         return invoke_interface->DestroyEtsVM(this);
     }
 
-    ets_int GetEnv(EtsEnv **pEnv, ets_int version)
+    ets_int GetEnv(EtsEnv** pEnv, ets_int version)
     {
         return invoke_interface->GetEnv(this, pEnv, version);
     }
@@ -524,7 +524,7 @@ struct __EtsVM {
 
 struct __EtsEnv {
     // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
-    const struct ETS_NativeInterface *native_interface;
+    const struct ETS_NativeInterface* native_interface;
 
 #ifdef __cplusplus
 
@@ -533,7 +533,7 @@ struct __EtsEnv {
         return native_interface->GetVersion(this);
     }
     // DefineClass,
-    ets_class FindClass(const char *name)
+    ets_class FindClass(const char* name)
     {
         return native_interface->FindClass(this, name);
     }
@@ -553,7 +553,7 @@ struct __EtsEnv {
     {
         return native_interface->ThrowError(this, obj);
     }
-    ets_int ThrowErrorNew(ets_class cls, const char *message)
+    ets_int ThrowErrorNew(ets_class cls, const char* message)
     {
         return native_interface->ThrowErrorNew(this, cls, message);
     }
@@ -569,7 +569,7 @@ struct __EtsEnv {
     {
         native_interface->ErrorClear(this);
     }
-    void FatalError(const char *message)
+    void FatalError(const char* message)
     {
         native_interface->FatalError(this, message);
     }
@@ -621,7 +621,7 @@ struct __EtsEnv {
     {
         return native_interface->NewObjectList(this, cls, p_method, args);
     }
-    ets_object NewObjectArray(ets_class cls, ets_method p_method, const ets_value *args)
+    ets_object NewObjectArray(ets_class cls, ets_method p_method, const ets_value* args)
     {
         return native_interface->NewObjectArray(this, cls, p_method, args);
     }
@@ -633,7 +633,7 @@ struct __EtsEnv {
     {
         return native_interface->IsInstanceOf(this, obj, cls);
     }
-    ets_method Getp_method(ets_class cls, const char *name, const char *sig)
+    ets_method Getp_method(ets_class cls, const char* name, const char* sig)
     {
         return native_interface->Getp_method(this, cls, name, sig);
     }
@@ -649,7 +649,7 @@ struct __EtsEnv {
     {
         return native_interface->CallObjectMethodList(this, obj, method_id, args);
     }
-    ets_object CallObjectMethodArray(ets_object obj, ets_method method_id, const ets_value *args)
+    ets_object CallObjectMethodArray(ets_object obj, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallObjectMethodArray(this, obj, method_id, args);
     }
@@ -665,7 +665,7 @@ struct __EtsEnv {
     {
         return native_interface->CallBooleanMethodList(this, obj, method_id, args);
     }
-    ets_boolean CallBooleanMethodArray(ets_object obj, ets_method method_id, const ets_value *args)
+    ets_boolean CallBooleanMethodArray(ets_object obj, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallBooleanMethodArray(this, obj, method_id, args);
     }
@@ -681,7 +681,7 @@ struct __EtsEnv {
     {
         return native_interface->CallByteMethodList(this, obj, method_id, args);
     }
-    ets_byte CallByteMethodArray(ets_object obj, ets_method method_id, const ets_value *args)
+    ets_byte CallByteMethodArray(ets_object obj, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallByteMethodArray(this, obj, method_id, args);
     }
@@ -697,7 +697,7 @@ struct __EtsEnv {
     {
         return native_interface->CallCharMethodList(this, obj, method_id, args);
     }
-    ets_char CallCharMethodArray(ets_object obj, ets_method method_id, const ets_value *args)
+    ets_char CallCharMethodArray(ets_object obj, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallCharMethodArray(this, obj, method_id, args);
     }
@@ -713,7 +713,7 @@ struct __EtsEnv {
     {
         return native_interface->CallShortMethodList(this, obj, method_id, args);
     }
-    ets_short CallShortMethodArray(ets_object obj, ets_method method_id, const ets_value *args)
+    ets_short CallShortMethodArray(ets_object obj, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallShortMethodArray(this, obj, method_id, args);
     }
@@ -729,7 +729,7 @@ struct __EtsEnv {
     {
         return native_interface->CallIntMethodList(this, obj, method_id, args);
     }
-    ets_int CallIntMethodArray(ets_object obj, ets_method method_id, const ets_value *args)
+    ets_int CallIntMethodArray(ets_object obj, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallIntMethodArray(this, obj, method_id, args);
     }
@@ -745,7 +745,7 @@ struct __EtsEnv {
     {
         return native_interface->CallLongMethodList(this, obj, method_id, args);
     }
-    ets_long CallLongMethodArray(ets_object obj, ets_method method_id, const ets_value *args)
+    ets_long CallLongMethodArray(ets_object obj, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallLongMethodArray(this, obj, method_id, args);
     }
@@ -761,7 +761,7 @@ struct __EtsEnv {
     {
         return native_interface->CallFloatMethodList(this, obj, method_id, args);
     }
-    ets_float CallFloatMethodArray(ets_object obj, ets_method method_id, const ets_value *args)
+    ets_float CallFloatMethodArray(ets_object obj, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallFloatMethodArray(this, obj, method_id, args);
     }
@@ -777,7 +777,7 @@ struct __EtsEnv {
     {
         return native_interface->CallDoubleMethodList(this, obj, method_id, args);
     }
-    ets_double CallDoubleMethodArray(ets_object obj, ets_method method_id, const ets_value *args)
+    ets_double CallDoubleMethodArray(ets_object obj, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallDoubleMethodArray(this, obj, method_id, args);
     }
@@ -792,7 +792,7 @@ struct __EtsEnv {
     {
         native_interface->CallVoidMethodList(this, obj, method_id, args);
     }
-    void CallVoidMethodArray(ets_object obj, ets_method method_id, const ets_value *args)
+    void CallVoidMethodArray(ets_object obj, ets_method method_id, const ets_value* args)
     {
         native_interface->CallVoidMethodArray(this, obj, method_id, args);
     }
@@ -808,8 +808,8 @@ struct __EtsEnv {
     {
         return native_interface->CallNonvirtualObjectMethodList(this, obj, cls, method_id, args);
     }
-    ets_object CallNonvirtualObjectMethodArray(ets_object obj, ets_class cls, ets_method method_id,
-                                               const ets_value *args)
+    ets_object CallNonvirtualObjectMethodArray(
+        ets_object obj, ets_class cls, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallNonvirtualObjectMethodArray(this, obj, cls, method_id, args);
     }
@@ -825,8 +825,8 @@ struct __EtsEnv {
     {
         return native_interface->CallNonvirtualBooleanMethodList(this, obj, cls, method_id, args);
     }
-    ets_boolean CallNonvirtualBooleanMethodArray(ets_object obj, ets_class cls, ets_method method_id,
-                                                 const ets_value *args)
+    ets_boolean CallNonvirtualBooleanMethodArray(
+        ets_object obj, ets_class cls, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallNonvirtualBooleanMethodArray(this, obj, cls, method_id, args);
     }
@@ -842,7 +842,7 @@ struct __EtsEnv {
     {
         return native_interface->CallNonvirtualByteMethodList(this, obj, cls, method_id, args);
     }
-    ets_byte CallNonvirtualByteMethodArray(ets_object obj, ets_class cls, ets_method method_id, const ets_value *args)
+    ets_byte CallNonvirtualByteMethodArray(ets_object obj, ets_class cls, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallNonvirtualByteMethodArray(this, obj, cls, method_id, args);
     }
@@ -858,7 +858,7 @@ struct __EtsEnv {
     {
         return native_interface->CallNonvirtualCharMethodList(this, obj, cls, method_id, args);
     }
-    ets_char CallNonvirtualCharMethodArray(ets_object obj, ets_class cls, ets_method method_id, const ets_value *args)
+    ets_char CallNonvirtualCharMethodArray(ets_object obj, ets_class cls, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallNonvirtualCharMethodArray(this, obj, cls, method_id, args);
     }
@@ -874,7 +874,7 @@ struct __EtsEnv {
     {
         return native_interface->CallNonvirtualShortMethodList(this, obj, cls, method_id, args);
     }
-    ets_short CallNonvirtualShortMethodArray(ets_object obj, ets_class cls, ets_method method_id, const ets_value *args)
+    ets_short CallNonvirtualShortMethodArray(ets_object obj, ets_class cls, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallNonvirtualShortMethodArray(this, obj, cls, method_id, args);
     }
@@ -890,7 +890,7 @@ struct __EtsEnv {
     {
         return native_interface->CallNonvirtualIntMethodList(this, obj, cls, method_id, args);
     }
-    ets_int CallNonvirtualIntMethodArray(ets_object obj, ets_class cls, ets_method method_id, const ets_value *args)
+    ets_int CallNonvirtualIntMethodArray(ets_object obj, ets_class cls, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallNonvirtualIntMethodArray(this, obj, cls, method_id, args);
     }
@@ -906,7 +906,7 @@ struct __EtsEnv {
     {
         return native_interface->CallNonvirtualLongMethodList(this, obj, cls, method_id, args);
     }
-    ets_long CallNonvirtualLongMethodArray(ets_object obj, ets_class cls, ets_method method_id, const ets_value *args)
+    ets_long CallNonvirtualLongMethodArray(ets_object obj, ets_class cls, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallNonvirtualLongMethodArray(this, obj, cls, method_id, args);
     }
@@ -922,7 +922,7 @@ struct __EtsEnv {
     {
         return native_interface->CallNonvirtualFloatMethodList(this, obj, cls, method_id, args);
     }
-    ets_float CallNonvirtualFloatMethodArray(ets_object obj, ets_class cls, ets_method method_id, const ets_value *args)
+    ets_float CallNonvirtualFloatMethodArray(ets_object obj, ets_class cls, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallNonvirtualFloatMethodArray(this, obj, cls, method_id, args);
     }
@@ -938,8 +938,8 @@ struct __EtsEnv {
     {
         return native_interface->CallNonvirtualDoubleMethodList(this, obj, cls, method_id, args);
     }
-    ets_double CallNonvirtualDoubleMethodArray(ets_object obj, ets_class cls, ets_method method_id,
-                                               const ets_value *args)
+    ets_double CallNonvirtualDoubleMethodArray(
+        ets_object obj, ets_class cls, ets_method method_id, const ets_value* args)
     {
         return native_interface->CallNonvirtualDoubleMethodArray(this, obj, cls, method_id, args);
     }
@@ -954,11 +954,11 @@ struct __EtsEnv {
     {
         native_interface->CallNonvirtualVoidMethodList(this, obj, cls, method_id, args);
     }
-    void CallNonvirtualVoidMethodArray(ets_object obj, ets_class cls, ets_method method_id, const ets_value *args)
+    void CallNonvirtualVoidMethodArray(ets_object obj, ets_class cls, ets_method method_id, const ets_value* args)
     {
         native_interface->CallNonvirtualVoidMethodArray(this, obj, cls, method_id, args);
     }
-    ets_field Getp_field(ets_class cls, const char *name, const char *sig)
+    ets_field Getp_field(ets_class cls, const char* name, const char* sig)
     {
         return native_interface->Getp_field(this, cls, name, sig);
     }
@@ -1034,7 +1034,7 @@ struct __EtsEnv {
     {
         return native_interface->SetDoubleField(this, obj, p_field, value);
     }
-    ets_method GetStaticp_method(ets_class cls, const char *name, const char *sig)
+    ets_method GetStaticp_method(ets_class cls, const char* name, const char* sig)
     {
         return native_interface->GetStaticp_method(this, cls, name, sig);
     }
@@ -1050,7 +1050,7 @@ struct __EtsEnv {
     {
         return native_interface->CallStaticObjectMethodList(this, cls, method_id, args);
     }
-    ets_object CallStaticObjectMethodArray(ets_class cls, ets_method method_id, ets_value *args)
+    ets_object CallStaticObjectMethodArray(ets_class cls, ets_method method_id, ets_value* args)
     {
         return native_interface->CallStaticObjectMethodArray(this, cls, method_id, args);
     }
@@ -1066,7 +1066,7 @@ struct __EtsEnv {
     {
         return native_interface->CallStaticBooleanMethodList(this, cls, method_id, args);
     }
-    ets_boolean CallStaticBooleanMethodArray(ets_class cls, ets_method method_id, ets_value *args)
+    ets_boolean CallStaticBooleanMethodArray(ets_class cls, ets_method method_id, ets_value* args)
     {
         return native_interface->CallStaticBooleanMethodArray(this, cls, method_id, args);
     }
@@ -1082,7 +1082,7 @@ struct __EtsEnv {
     {
         return native_interface->CallStaticByteMethodList(this, cls, method_id, args);
     }
-    ets_byte CallStaticByteMethodArray(ets_class cls, ets_method method_id, ets_value *args)
+    ets_byte CallStaticByteMethodArray(ets_class cls, ets_method method_id, ets_value* args)
     {
         return native_interface->CallStaticByteMethodArray(this, cls, method_id, args);
     }
@@ -1098,7 +1098,7 @@ struct __EtsEnv {
     {
         return native_interface->CallStaticCharMethodList(this, cls, method_id, args);
     }
-    ets_char CallStaticCharMethodArray(ets_class cls, ets_method method_id, ets_value *args)
+    ets_char CallStaticCharMethodArray(ets_class cls, ets_method method_id, ets_value* args)
     {
         return native_interface->CallStaticCharMethodArray(this, cls, method_id, args);
     }
@@ -1114,7 +1114,7 @@ struct __EtsEnv {
     {
         return native_interface->CallStaticShortMethodList(this, cls, method_id, args);
     }
-    ets_short CallStaticShortMethodArray(ets_class cls, ets_method method_id, ets_value *args)
+    ets_short CallStaticShortMethodArray(ets_class cls, ets_method method_id, ets_value* args)
     {
         return native_interface->CallStaticShortMethodArray(this, cls, method_id, args);
     }
@@ -1130,7 +1130,7 @@ struct __EtsEnv {
     {
         return native_interface->CallStaticIntMethodList(this, cls, method_id, args);
     }
-    ets_int CallStaticIntMethodArray(ets_class cls, ets_method method_id, ets_value *args)
+    ets_int CallStaticIntMethodArray(ets_class cls, ets_method method_id, ets_value* args)
     {
         return native_interface->CallStaticIntMethodArray(this, cls, method_id, args);
     }
@@ -1146,7 +1146,7 @@ struct __EtsEnv {
     {
         return native_interface->CallStaticLongMethodList(this, cls, method_id, args);
     }
-    ets_long CallStaticLongMethodArray(ets_class cls, ets_method method_id, ets_value *args)
+    ets_long CallStaticLongMethodArray(ets_class cls, ets_method method_id, ets_value* args)
     {
         return native_interface->CallStaticLongMethodArray(this, cls, method_id, args);
     }
@@ -1162,7 +1162,7 @@ struct __EtsEnv {
     {
         return native_interface->CallStaticFloatMethodList(this, cls, method_id, args);
     }
-    ets_float CallStaticFloatMethodArray(ets_class cls, ets_method method_id, ets_value *args)
+    ets_float CallStaticFloatMethodArray(ets_class cls, ets_method method_id, ets_value* args)
     {
         return native_interface->CallStaticFloatMethodArray(this, cls, method_id, args);
     }
@@ -1178,7 +1178,7 @@ struct __EtsEnv {
     {
         return native_interface->CallStaticDoubleMethodList(this, cls, method_id, args);
     }
-    ets_double CallStaticDoubleMethodArray(ets_class cls, ets_method method_id, ets_value *args)
+    ets_double CallStaticDoubleMethodArray(ets_class cls, ets_method method_id, ets_value* args)
     {
         return native_interface->CallStaticDoubleMethodArray(this, cls, method_id, args);
     }
@@ -1193,11 +1193,11 @@ struct __EtsEnv {
     {
         native_interface->CallStaticVoidMethodList(this, cls, method_id, args);
     }
-    void CallStaticVoidMethodArray(ets_class cls, ets_method method_id, ets_value *args)
+    void CallStaticVoidMethodArray(ets_class cls, ets_method method_id, ets_value* args)
     {
         native_interface->CallStaticVoidMethodArray(this, cls, method_id, args);
     }
-    ets_field GetStaticp_field(ets_class cls, const char *name, const char *sig)
+    ets_field GetStaticp_field(ets_class cls, const char* name, const char* sig)
     {
         return native_interface->GetStaticp_field(this, cls, name, sig);
     }
@@ -1273,7 +1273,7 @@ struct __EtsEnv {
     {
         return native_interface->SetStaticDoubleField(this, cls, p_field, value);
     }
-    ets_string NewString(const ets_char *unicode_chars, ets_size len)
+    ets_string NewString(const ets_char* unicode_chars, ets_size len)
     {
         return native_interface->NewString(this, unicode_chars, len);
     }
@@ -1281,15 +1281,15 @@ struct __EtsEnv {
     {
         return native_interface->GetStringLength(this, string);
     }
-    const ets_char *GetStringChars(ets_string string, ets_boolean *is_copy)
+    const ets_char* GetStringChars(ets_string string, ets_boolean* is_copy)
     {
         return native_interface->GetStringChars(this, string, is_copy);
     }
-    void ReleaseStringChars(ets_string string, const ets_char *chars)
+    void ReleaseStringChars(ets_string string, const ets_char* chars)
     {
         native_interface->ReleaseStringChars(this, string, chars);
     }
-    ets_string NewStringUTF(const char *bytes)
+    ets_string NewStringUTF(const char* bytes)
     {
         return native_interface->NewStringUTF(this, bytes);
     }
@@ -1297,11 +1297,11 @@ struct __EtsEnv {
     {
         return native_interface->GetStringUTFLength(this, string);
     }
-    const char *GetStringUTFChars(ets_string string, ets_boolean *is_copy)
+    const char* GetStringUTFChars(ets_string string, ets_boolean* is_copy)
     {
         return native_interface->GetStringUTFChars(this, string, is_copy);
     }
-    void ReleaseStringUTFChars(ets_string string, const char *chars)
+    void ReleaseStringUTFChars(ets_string string, const char* chars)
     {
         native_interface->ReleaseStringUTFChars(this, string, chars);
     }
@@ -1356,35 +1356,35 @@ struct __EtsEnv {
     {
         return native_interface->NewDoubleArray(this, length);
     }
-    ets_boolean *PinBooleanArray(ets_booleanArray array)
+    ets_boolean* PinBooleanArray(ets_booleanArray array)
     {
         return native_interface->PinBooleanArray(this, array);
     }
-    ets_byte *PinByteArray(ets_byteArray array)
+    ets_byte* PinByteArray(ets_byteArray array)
     {
         return native_interface->PinByteArray(this, array);
     }
-    ets_char *PinCharArray(ets_charArray array)
+    ets_char* PinCharArray(ets_charArray array)
     {
         return native_interface->PinCharArray(this, array);
     }
-    ets_short *PinShortArray(ets_shortArray array)
+    ets_short* PinShortArray(ets_shortArray array)
     {
         return native_interface->PinShortArray(this, array);
     }
-    ets_int *PinIntArray(ets_intArray array)
+    ets_int* PinIntArray(ets_intArray array)
     {
         return native_interface->PinIntArray(this, array);
     }
-    ets_long *PinLongArray(ets_longArray array)
+    ets_long* PinLongArray(ets_longArray array)
     {
         return native_interface->PinLongArray(this, array);
     }
-    ets_float *PinFloatArray(ets_floatArray array)
+    ets_float* PinFloatArray(ets_floatArray array)
     {
         return native_interface->PinFloatArray(this, array);
     }
-    ets_double *PinDoubleArray(ets_doubleArray array)
+    ets_double* PinDoubleArray(ets_doubleArray array)
     {
         return native_interface->PinDoubleArray(this, array);
     }
@@ -1420,71 +1420,71 @@ struct __EtsEnv {
     {
         return native_interface->UnpinDoubleArray(this, array);
     }
-    void GetBooleanArrayRegion(ets_booleanArray array, ets_size start, ets_size len, ets_boolean *buf)
+    void GetBooleanArrayRegion(ets_booleanArray array, ets_size start, ets_size len, ets_boolean* buf)
     {
         return native_interface->GetBooleanArrayRegion(this, array, start, len, buf);
     }
-    void GetByteArrayRegion(ets_byteArray array, ets_size start, ets_size len, ets_byte *buf)
+    void GetByteArrayRegion(ets_byteArray array, ets_size start, ets_size len, ets_byte* buf)
     {
         return native_interface->GetByteArrayRegion(this, array, start, len, buf);
     }
-    void GetCharArrayRegion(ets_charArray array, ets_size start, ets_size len, ets_char *buf)
+    void GetCharArrayRegion(ets_charArray array, ets_size start, ets_size len, ets_char* buf)
     {
         return native_interface->GetCharArrayRegion(this, array, start, len, buf);
     }
-    void GetShortArrayRegion(ets_shortArray array, ets_size start, ets_size len, ets_short *buf)
+    void GetShortArrayRegion(ets_shortArray array, ets_size start, ets_size len, ets_short* buf)
     {
         return native_interface->GetShortArrayRegion(this, array, start, len, buf);
     }
-    void GetIntArrayRegion(ets_intArray array, ets_size start, ets_size len, ets_int *buf)
+    void GetIntArrayRegion(ets_intArray array, ets_size start, ets_size len, ets_int* buf)
     {
         return native_interface->GetIntArrayRegion(this, array, start, len, buf);
     }
-    void GetLongArrayRegion(ets_longArray array, ets_size start, ets_size len, ets_long *buf)
+    void GetLongArrayRegion(ets_longArray array, ets_size start, ets_size len, ets_long* buf)
     {
         return native_interface->GetLongArrayRegion(this, array, start, len, buf);
     }
-    void GetFloatArrayRegion(ets_floatArray array, ets_size start, ets_size len, ets_float *buf)
+    void GetFloatArrayRegion(ets_floatArray array, ets_size start, ets_size len, ets_float* buf)
     {
         return native_interface->GetFloatArrayRegion(this, array, start, len, buf);
     }
-    void GetDoubleArrayRegion(ets_doubleArray array, ets_size start, ets_size len, ets_double *buf)
+    void GetDoubleArrayRegion(ets_doubleArray array, ets_size start, ets_size len, ets_double* buf)
     {
         return native_interface->GetDoubleArrayRegion(this, array, start, len, buf);
     }
-    void SetBooleanArrayRegion(ets_booleanArray array, ets_size start, ets_size length, const ets_boolean *buf)
+    void SetBooleanArrayRegion(ets_booleanArray array, ets_size start, ets_size length, const ets_boolean* buf)
     {
         native_interface->SetBooleanArrayRegion(this, array, start, length, buf);
     }
-    void SetByteArrayRegion(ets_byteArray array, ets_size start, ets_size length, const ets_byte *buf)
+    void SetByteArrayRegion(ets_byteArray array, ets_size start, ets_size length, const ets_byte* buf)
     {
         native_interface->SetByteArrayRegion(this, array, start, length, buf);
     }
-    void SetCharArrayRegion(ets_charArray array, ets_size start, ets_size length, const ets_char *buf)
+    void SetCharArrayRegion(ets_charArray array, ets_size start, ets_size length, const ets_char* buf)
     {
         native_interface->SetCharArrayRegion(this, array, start, length, buf);
     }
-    void SetShortArrayRegion(ets_shortArray array, ets_size start, ets_size length, const ets_short *buf)
+    void SetShortArrayRegion(ets_shortArray array, ets_size start, ets_size length, const ets_short* buf)
     {
         native_interface->SetShortArrayRegion(this, array, start, length, buf);
     }
-    void SetIntArrayRegion(ets_intArray array, ets_size start, ets_size length, const ets_int *buf)
+    void SetIntArrayRegion(ets_intArray array, ets_size start, ets_size length, const ets_int* buf)
     {
         native_interface->SetIntArrayRegion(this, array, start, length, buf);
     }
-    void SetLongArrayRegion(ets_longArray array, ets_size start, ets_size length, const ets_long *buf)
+    void SetLongArrayRegion(ets_longArray array, ets_size start, ets_size length, const ets_long* buf)
     {
         native_interface->SetLongArrayRegion(this, array, start, length, buf);
     }
-    void SetFloatArrayRegion(ets_floatArray array, ets_size start, ets_size length, const ets_float *buf)
+    void SetFloatArrayRegion(ets_floatArray array, ets_size start, ets_size length, const ets_float* buf)
     {
         native_interface->SetFloatArrayRegion(this, array, start, length, buf);
     }
-    void SetDoubleArrayRegion(ets_doubleArray array, ets_size start, ets_size length, const ets_double *buf)
+    void SetDoubleArrayRegion(ets_doubleArray array, ets_size start, ets_size length, const ets_double* buf)
     {
         native_interface->SetDoubleArrayRegion(this, array, start, length, buf);
     }
-    ets_int RegisterNatives(ets_class cls, const EtsNativeMethod *methods, ets_int nMethods)
+    ets_int RegisterNatives(ets_class cls, const EtsNativeMethod* methods, ets_int nMethods)
     {
         return native_interface->RegisterNatives(this, cls, methods, nMethods);
     }
@@ -1492,15 +1492,15 @@ struct __EtsEnv {
     {
         return native_interface->UnregisterNatives(this, cls);
     }
-    ets_int GetEtsVM(EtsVM **vm)
+    ets_int GetEtsVM(EtsVM** vm)
     {
         return native_interface->GetEtsVM(this, vm);
     }
-    void GetStringRegion(ets_string str, ets_size start, ets_size len, ets_char *buf)
+    void GetStringRegion(ets_string str, ets_size start, ets_size len, ets_char* buf)
     {
         native_interface->GetStringRegion(this, str, start, len, buf);
     }
-    void GetStringUTFRegion(ets_string str, ets_size start, ets_size len, char *buf)
+    void GetStringUTFRegion(ets_string str, ets_size start, ets_size len, char* buf)
     {
         native_interface->GetStringUTFRegion(this, str, start, len, buf);
     }
@@ -1525,7 +1525,7 @@ struct __EtsEnv {
     }
 
     // Promise
-    ets_status PromiseCreate(ets_deferred *deferred, ets_object *promise)
+    ets_status PromiseCreate(ets_deferred* deferred, ets_object* promise)
     {
         return native_interface->PromiseCreate(this, deferred, promise);
     }
@@ -1542,4 +1542,4 @@ struct __EtsEnv {
 
 // NOLINTEND(modernize-use-using, readability-identifier-naming, cppcoreguidelines-pro-type-vararg)
 
-#endif  // PANDA_RUNTIME_INTEROP_ETS_NAPI_H
+#endif // PANDA_RUNTIME_INTEROP_ETS_NAPI_H

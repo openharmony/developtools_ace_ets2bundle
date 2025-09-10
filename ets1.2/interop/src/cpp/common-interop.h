@@ -33,7 +33,6 @@
 #define KOALA_INTEROP_LOGGER(name) InteropMethodCall logger(#name);
 #endif
 
-
 #ifdef KOALA_INTEROP_LOGGER
 #define KOALA_MAYBE_LOG(name) KOALA_INTEROP_LOGGER(name);
 #else
@@ -43,11 +42,12 @@
 #ifdef KOALA_WINDOWS
 #define DLL_EXPORT __declspec(dllexport)
 #else
-#define DLL_EXPORT __attribute__ ((visibility ("default")))
+#define DLL_EXPORT __attribute__((visibility("default")))
 #endif
 
 typedef void (*Callback_Caller_t)(KInt callbackKind, KSerializerBuffer argsData, KInt argsLength);
-typedef void (*Callback_Caller_Sync_t)(KVMContext vmContext, KInt callbackKind, KSerializerBuffer argsData, KInt argsLength);
+typedef void (*Callback_Caller_Sync_t)(
+    KVMContext vmContext, KInt callbackKind, KSerializerBuffer argsData, KInt argsLength);
 extern "C" DLL_EXPORT void setCallbackCaller(int apiKind, Callback_Caller_t caller);
 extern "C" DLL_EXPORT void setCallbackCallerSync(int apiKind, Callback_Caller_Sync_t callerSync);
 

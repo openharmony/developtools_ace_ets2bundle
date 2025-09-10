@@ -13,11 +13,13 @@
  * limitations under the License.
  */
 
-#include <map>
 #include "convertors-ets.h"
-#include "signatures.h"
+
+#include <map>
+
 #include "interop-logging.h"
 #include "interop-types.h"
+#include "signatures.h"
 
 static const char* callCallbackFromNative = "callCallbackFromNative";
 static const char* callCallbackFromNativeSig = "IJI:I";
@@ -26,11 +28,13 @@ static const char* FAST_NATIVE_PREFIX = "#F$";
 
 const bool registerByOne = true;
 
-static bool registerNatives(ets_env *env, const ets_class clazz, const std::vector<std::tuple<std::string, std::string, void*, int>> impls) {
+static bool registerNatives(
+    ets_env* env, const ets_class clazz, const std::vector<std::tuple<std::string, std::string, void*, int>> impls)
+{
     std::vector<EtsNativeMethod> methods;
     methods.reserve(impls.size());
     bool result = true;
-    for (const auto &[name, type, func, flag] : impls) {
+    for (const auto& [name, type, func, flag] : impls) {
         EtsNativeMethod method;
         method.name = name.c_str();
         method.func = func;
@@ -40,8 +44,7 @@ static bool registerNatives(ets_env *env, const ets_class clazz, const std::vect
             if (env->ErrorCheck()) {
                 env->ErrorClear();
             }
-        }
-        else {
+        } else {
             methods.push_back(method);
         }
     }
@@ -51,7 +54,8 @@ static bool registerNatives(ets_env *env, const ets_class clazz, const std::vect
     return registerByOne ? true : result;
 }
 
-bool registerAllModules(ets_env *env) {
+bool registerAllModules(ets_env* env)
+{
     auto moduleNames = EtsExports::getInstance()->getModules();
 
     for (auto it = moduleNames.begin(); it != moduleNames.end(); ++it) {
@@ -69,7 +73,8 @@ bool registerAllModules(ets_env *env) {
     return true;
 }
 
-extern "C" ETS_EXPORT ets_int ETS_CALL EtsNapiOnLoad(ets_env *env) {
+extern "C" ETS_EXPORT ets_int ETS_CALL EtsNapiOnLoad(ets_env* env)
+{
     LOGE("Use ETSNAPI")
     if (!registerAllModules(env)) {
         LOGE("Failed to register ets modules");
@@ -88,15 +93,17 @@ extern "C" ETS_EXPORT ets_int ETS_CALL EtsNapiOnLoad(ets_env *env) {
     return ETS_NAPI_VERSION_1_0;
 }
 
-EtsExports* EtsExports::getInstance() {
-    static EtsExports *instance = nullptr;
+EtsExports* EtsExports::getInstance()
+{
+    static EtsExports* instance = nullptr;
     if (instance == nullptr) {
         instance = new EtsExports();
     }
     return instance;
 }
 
-std::vector<std::string> EtsExports::getModules() {
+std::vector<std::string> EtsExports::getModules()
+{
     std::vector<std::string> result;
     for (auto it = implementations.begin(); it != implementations.end(); ++it) {
         result.push_back(it->first);
@@ -104,7 +111,8 @@ std::vector<std::string> EtsExports::getModules() {
     return result;
 }
 
-const std::vector<std::tuple<std::string, std::string, void*, int>>& EtsExports::getMethods(const std::string& module) {
+const std::vector<std::tuple<std::string, std::string, void*, int>>& EtsExports::getMethods(const std::string& module)
+{
     auto it = implementations.find(module);
     if (it == implementations.end()) {
         LOGE("Module %s is not registered", module.c_str());
@@ -112,15 +120,19 @@ const std::vector<std::tuple<std::string, std::string, void*, int>>& EtsExports:
     return it->second;
 }
 
-void EtsExports::addMethod(const char* module, const char *name, const char *type, void *impl, int flags) {
+void EtsExports::addMethod(const char* module, const char* name, const char* type, void* impl, int flags)
+{
     auto it = implementations.find(module);
     if (it == implementations.end()) {
-        it = implementations.insert(std::make_pair(module, std::vector<std::tuple<std::string, std::string, void*, int>>())).first;
+        it = implementations
+                 .insert(std::make_pair(module, std::vector<std::tuple<std::string, std::string, void*, int>>()))
+                 .first;
     }
     it->second.push_back(std::make_tuple(name, convertType(name, type), impl, flags));
 }
 
-void EtsExports::setClasspath(const char* module, const char *classpath) {
+void EtsExports::setClasspath(const char* module, const char* classpath)
+{
     auto it = classpaths.find(module);
     if (it == classpaths.end()) {
         classpaths.insert(std::make_pair(module, classpath));
@@ -129,14 +141,15 @@ void EtsExports::setClasspath(const char* module, const char *classpath) {
     }
 }
 
-static std::map<std::string, std::string> g_defaultClasspaths = {    
-    {"InteropNativeModule", "@koalaui/interop/InteropNativeModule/InteropNativeModule"},
+static std::map<std::string, std::string> g_defaultClasspaths = {
+    { "InteropNativeModule", "@koalaui/interop/InteropNativeModule/InteropNativeModule" },
     // Improve: leave just InteropNativeModule, define others via KOALA_ETS_INTEROP_MODULE_CLASSPATH
-    {"TestNativeModule", "arkui/generated/arkts/TestNativeModule/TestNativeModule"},
-    {"ArkUINativeModule", "arkui/generated/arkts/ArkUINativeModule/ArkUINativeModule"},
-    {"ArkUIGeneratedNativeModule", "arkui/generated/arkts/ArkUIGeneratedNativeModule/ArkUIGeneratedNativeModule"},
+    { "TestNativeModule", "arkui/generated/arkts/TestNativeModule/TestNativeModule" },
+    { "ArkUINativeModule", "arkui/generated/arkts/ArkUINativeModule/ArkUINativeModule" },
+    { "ArkUIGeneratedNativeModule", "arkui/generated/arkts/ArkUIGeneratedNativeModule/ArkUIGeneratedNativeModule" },
 };
-const std::string& EtsExports::getClasspath(const std::string& module) {
+const std::string& EtsExports::getClasspath(const std::string& module)
+{
     auto it = classpaths.find(module);
     if (it != classpaths.end()) {
         return it->second;
