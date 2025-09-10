@@ -14,7 +14,7 @@
  */
 #include "interop-logging.h"
 
-#include <stdarg.h>
+#include <cstdarg>
 #include <string>
 #include <vector>
 
