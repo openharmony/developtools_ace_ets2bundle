@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,3 +12,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// Improve: remove private export
+export * from './utilities/private';
+export * from './utilities/public';
+export * from './types';
+export * from './factory/nodeFactory';
+export * from './factory/nodeTests';
+export { visitEachChild } from './visitor/visitor';
+export { SyntaxKind, NodeFlags } from './static/enums';
+
+// from ArkTS api
+export * from '../arkts-api/static/global';
+export { Es2pandaContextState as ContextState, Es2pandaPrimitiveType as Es2pandaPrimitiveType } from '../arkts-api';

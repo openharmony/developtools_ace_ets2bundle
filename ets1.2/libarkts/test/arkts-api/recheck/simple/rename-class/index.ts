@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,3 +12,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ 
+import * as arkts from "../../../../../src/arkts-api"
+
+export function renameClass(node: arkts.ClassDefinition) {
+    return arkts.factory.updateClassDefinition(
+        node,
+        node.ident ? arkts.factory.updateIdentifier(
+            node.ident,
+            "D"
+        ) : undefined,
+        node.typeParams,
+        node.superTypeParams,
+        node.implements,
+        undefined,
+        node.super,
+        node.body,
+        node.modifiers,
+        node.modifierFlags
+    )
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,3 +12,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { KPointer } from '../../interop/InteropTypes';
+import { CallbackRegistry } from '../../interop/Platform';
+
+export function registerCallback(callback: any, obj: any = null): KPointer {
+    return theRegistry!.registerCallback(callback, obj);
+}
+
+let theRegistry: CallbackRegistry | undefined = undefined;
+
+export function setCallbackRegistry(registry: CallbackRegistry) {
+    theRegistry = registry;
+}

@@ -12,3 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { Finalizable } from './Finalizable';
+
+export class MaterializedBaseTag {
+    static NOP = new MaterializedBaseTag();
+    private constructor() {}
+}
+
+export interface MaterializedBase {
+    getPeer(): Finalizable | undefined;
+}
