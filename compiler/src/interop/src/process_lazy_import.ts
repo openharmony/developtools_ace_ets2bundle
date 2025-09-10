@@ -36,19 +36,24 @@ const reExportStrictMode: string = 'strict';
 export interface LazyImportOptions {
   autoLazyImport: boolean;
   reExportCheckMode: string;
+  autoLazyFilter: Object;
 }
 
 export function processJsCodeLazyImport(id: string, code: string,
-  autoLazyImport: boolean, reExportCheckMode: string): string {
+  autoLazyImport: boolean, reExportCheckMode: string, metaInfo: Object, autoLazyFilter: Object): string {
   let sourceNode: ts.SourceFile = ts.createSourceFile(id, code, ts.ScriptTarget.ES2021, true, ts.ScriptKind.JS);
   if (autoLazyImport) {
-    sourceNode = transformLazyImport(sourceNode);
+    sourceNode = transformLazyImport(metaInfo, sourceNode, autoLazyFilter);
   }
   lazyImportReExportCheck(sourceNode, reExportCheckMode);
   return autoLazyImport ? ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }).printFile(sourceNode) : code;
 }
 
-export function transformLazyImport(sourceNode: ts.SourceFile, resolver?: Object): ts.SourceFile {
+export function transformLazyImport(metaInfo: Object, sourceNode: ts.SourceFile,
+  autoLazyFilter: Object, resolver?: Object): ts.SourceFile {
+  if (isNotAutoLazyImport(metaInfo, autoLazyFilter)) {
+    return sourceNode;
+  }
   const moduleNodeTransformer: ts.TransformerFactory<ts.SourceFile> = context => {
     const visitor: ts.Visitor = node => {
       if (ts.isImportDeclaration(node)) {
@@ -62,6 +67,22 @@ export function transformLazyImport(sourceNode: ts.SourceFile, resolver?: Object
   const result: ts.TransformationResult<ts.SourceFile> =
     ts.transform(sourceNode, [moduleNodeTransformer]);
   return result.transformed[0];
+}
+
+function isNotAutoLazyImport(metaInfo: Object, autoLazyFilter: Object): boolean {
+  if (!autoLazyFilter || Object.keys(autoLazyFilter).length === 0) {
+    return false;
+  }
+  const pkgName: string = metaInfo?.pkgName;
+  const includeList: string[] = autoLazyFilter?.include;
+  const excludeList: string[] = autoLazyFilter?.exclude;
+  if (pkgName && includeList && includeList.length > 0) {
+    return !includeList.includes(pkgName);
+  }
+  if (pkgName && excludeList && excludeList.length > 0) {
+    return excludeList.includes(pkgName);
+  }
+  return false;
 }
 
 function updateImportDecl(node: ts.ImportDeclaration, resolver: Object): ts.ImportDeclaration {

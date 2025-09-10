@@ -516,7 +516,8 @@ async function transform(code: string, id: string) {
   const metaInfo: Object = this.getModuleInfo(id).meta;
   const lazyImportOptions: LazyImportOptions = {
     autoLazyImport: this.share.projectConfig?.autoLazyImport ?? false,
-    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? reExportNoCheckMode
+    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? reExportNoCheckMode,
+    autoLazyFilter: this.share.projectConfig?.autoLazyFilter ?? {}
   };
   // use `try finally` to restore `noEmit` when error thrown by `processUISyntax` in preview mode
   const eventShouldEmitJs = createAndStartEvent(eventEtsTransformForEsmodule, 'shouldEmitJs');
