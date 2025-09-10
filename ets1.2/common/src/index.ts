@@ -45,6 +45,8 @@ export {
     functionOverValue,
     Observed,
     Observable,
+    ObservableClass,
+    ClassMetadata,
     ObservableHandler,
     observableProxy,
     observableProxyArray,
