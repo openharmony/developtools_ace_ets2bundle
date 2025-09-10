@@ -31,6 +31,7 @@ import {
   newSourceMaps as webpackNewSourceMaps,
   transformModuleSpecifier,
   writeObfuscatedSourceCode,
+  writeFileSyncCaseAware,
 } from './ark_utils';
 import { processSystemApi } from './validate_ui_syntax';
 import { isDebug } from './fast_build/ark_compiler/utils';
@@ -94,7 +95,7 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
     return;
   }
   mkdirsSync(path.dirname(temporaryFile));
-  fs.writeFileSync(temporaryFile, mixedInfo.content);
+  writeFileSyncCaseAware(temporaryFile, mixedInfo.content);
   stopEvent(eventWriteFileSyncByNode);
 }
 

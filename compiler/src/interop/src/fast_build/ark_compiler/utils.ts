@@ -44,6 +44,7 @@ import {
 import {
   tryMangleFileName,
   writeObfuscatedSourceCode,
+  writeFileSyncCaseAware,
 } from '../../ark_utils';
 import { AOT_FULL, AOT_PARTIAL, AOT_TYPE } from '../../pre_define';
 import { SourceMapGenerator } from './generate_sourcemap';
@@ -186,7 +187,7 @@ export async function writeFileContentToTempDir(id: string, content: string, pro
     case EXTNAME_JSON:
       const newFilePath: string = tryMangleFileName(filePath, projectConfig, id, projectConfig.isBytecodeObfEnabled);
       mkdirsSync(path.dirname(newFilePath));
-      fs.writeFileSync(newFilePath, content ?? '');
+      writeFileSyncCaseAware(newFilePath, content ?? '');
       break;
     default:
       break;
@@ -209,7 +210,7 @@ async function writeFileContent(sourceFilePath: string, filePath: string, conten
     return;
   }
   mkdirsSync(path.dirname(filePath));
-  fs.writeFileSync(filePath, content, 'utf-8');
+  writeFileSyncCaseAware(filePath, content, 'utf-8');
 }
 
 export function getEs2abcFileThreadNumber(): number {
