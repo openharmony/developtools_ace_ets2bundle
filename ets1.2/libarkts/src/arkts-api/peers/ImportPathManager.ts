@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,3 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { ArktsObject } from './ArktsObject';
+import { global } from '../static/global';
+import { KNativePointer } from '@koalaui/interop';
+
+export class ImportPathManager extends ArktsObject {
+    constructor(peer: KNativePointer) {
+        super(peer);
+    }
+
+    static create(): ImportPathManager {
+        return new ImportPathManager(global.es2panda._ETSParserGetImportPathManager(global.context));
+    }
+}

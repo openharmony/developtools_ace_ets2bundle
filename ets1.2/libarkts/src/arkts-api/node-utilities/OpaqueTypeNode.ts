@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,3 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { KNativePointer } from '@koalaui/interop';
+import { global } from '../static/global';
+import { OpaqueTypeNode } from '../../../generated';
+import { Es2pandaAstNodeType } from '../../../generated/Es2pandaEnums';
+
+export function createOpaqueTypeNode(typePointer: KNativePointer): OpaqueTypeNode {
+    return new OpaqueTypeNode(
+        global.es2panda._Checker_CreateOpaqueTypeNode(global.context, typePointer),
+        Es2pandaAstNodeType.AST_NODE_TYPE_OPAQUE_TYPE_NODE
+    );
+}

@@ -12,3 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#ifndef _SIGNATURES_H
+#define _SIGNATURES_H
+
+#include <string>
+
+std::string sigType(const std::string& type);
+std::string codeType(const std::string& type);
+std::string convertType(const char* name, const char* koalaType);
+
+#endif // _SIGNATURES_H

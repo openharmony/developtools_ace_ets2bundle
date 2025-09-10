@@ -12,3 +12,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+export interface Thunk {
+    clean(): void;
+}
+
+const registry = new FinalizationRegistry<Thunk>((thunk: Thunk) => {
+    thunk.clean();
+});
+
+export function finalizerRegister(target: Object, thunk: Object) {
+    registry.register(target, thunk as Thunk);
+}
+
+export function finalizerUnregister(target: Object) {
+    registry.unregister(target);
+}
