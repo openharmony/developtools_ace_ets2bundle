@@ -17,19 +17,22 @@
 #define _INTEROP_CRASHDUMP_H
 
 #ifdef KOALA_LINUX
-#include <signal.h>
 #include <execinfo.h>
+#include <signal.h>
 
 sighandler_t oldCrashHandler = nullptr;
 
-static void onCrashHandler(int signo) {
+static void onCrashHandler(int signo)
+{
     void* stack[20];
     size_t size = backtrace(stack, 20);
     backtrace_symbols_fd(stack, size, STDERR_FILENO);
-    if (oldCrashHandler) oldCrashHandler(signo);
+    if (oldCrashHandler)
+        oldCrashHandler(signo);
 }
 
-static void installCrashHandlers() {
+static void installCrashHandlers()
+{
     static bool installed = false;
     if (!installed) {
         oldCrashHandler = signal(SIGSEGV, onCrashHandler);
@@ -40,4 +43,4 @@ static void installCrashHandlers() {
 static void installCrashHandlers() {}
 #endif
 
-#endif  // _INTEROP_CRASHDUMP_H
+#endif // _INTEROP_CRASHDUMP_H

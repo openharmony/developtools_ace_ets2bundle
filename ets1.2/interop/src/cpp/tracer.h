@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 #ifndef _KOALA_TRACER_
 #define _KOALA_TRACER_
@@ -31,13 +31,16 @@
 #endif
 
 class InteropMethodCall {
-  private:
+private:
     const char* name;
-  public:
-    InteropMethodCall(const char* name) : name(name) {
+
+public:
+    InteropMethodCall(const char* name) : name(name)
+    {
         KOALA_TRACE(">>> " KOALA_TRACE_PUBLIC, name);
     }
-    ~InteropMethodCall() {
+    ~InteropMethodCall()
+    {
         KOALA_TRACE("<<< " KOALA_TRACE_PUBLIC, name);
     }
 };

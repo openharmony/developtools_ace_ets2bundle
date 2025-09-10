@@ -15,14 +15,14 @@
 
 #include <algorithm>
 #include <cstring>
+#include <filesystem>
 #include <sstream>
 #include <vector>
-#include <filesystem>
 
-#include "interop-logging.h"
 #include "dynamic-loader.h"
-#include "koala-types.h"
+#include "interop-logging.h"
 #include "interop-utils.h"
+#include "koala-types.h"
 
 // DO NOT USE KOALA INTEROP MECHANISMS IN THIS FILE!
 
@@ -43,8 +43,8 @@
 #endif
 
 #if defined(KOALA_LINUX) || defined(KOALA_MACOS) || defined(KOALA_OHOS)
-#include "sys/stat.h"
 #include "dirent.h"
+#include "sys/stat.h"
 #endif
 
 #define OHOS_USER_LIBS "/data/storage/el1/bundle/libs"
@@ -69,7 +69,8 @@
 #endif
 #endif
 
-void traverseDir(const std::string& root, std::vector<std::string>& paths, std::string suffix, const std::vector<std::string>& fallbackPaths = {});
+void traverseDir(const std::string& root, std::vector<std::string>& paths, std::string suffix,
+    const std::vector<std::string>& fallbackPaths = {});
 
 struct VMLibInfo {
     const char* sdkPath;
@@ -78,54 +79,52 @@ struct VMLibInfo {
 };
 
 #ifdef KOALA_JNI
-const VMLibInfo javaVMLib = {
-    getenv("JAVA_HOME"),
-    #if defined(KOALA_LINUX) || defined(KOALA_MACOS)
+const VMLibInfo javaVMLib = { getenv("JAVA_HOME"),
+#if defined(KOALA_LINUX) || defined(KOALA_MACOS)
     "lib/server"
-    #elif KOALA_WINDOWS
+#elif KOALA_WINDOWS
     "bin/server"
-    #else
-    #error "Unknown platform"
-    #endif
+#else
+#error "Unknown platform"
+#endif
     ,
-    "jvm"
-};
+    "jvm" };
 #endif
 
 #if defined(KOALA_ETS_NAPI) || defined(KOALA_ANI)
 const VMLibInfo pandaVMLib = {
-    // sdkPath
-    #if defined(KOALA_OHOS)
-        #ifdef KOALA_OHOS_ARM32
-            "/system/lib"
-        #elif KOALA_OHOS_ARM64
-            "/system/lib64"
-        #else
-            OHOS_USER_LIBS
-        #endif
-    #else
-        getenv("PANDA_HOME")
-    #endif
+// sdkPath
+#if defined(KOALA_OHOS)
+#ifdef KOALA_OHOS_ARM32
+    "/system/lib"
+#elif KOALA_OHOS_ARM64
+    "/system/lib64"
+#else
+    OHOS_USER_LIBS
+#endif
+#else
+    getenv("PANDA_HOME")
+#endif
     ,
 
-    // platform
-    #ifdef KOALA_LINUX
-        #ifdef KOALA_LINUX_ARM64
-            "linux_arm64_host_tools/lib"
-        #else
-            "linux_host_tools/lib"
-        #endif
-    #elif KOALA_MACOS
-        "macos_host_tools/lib"
-    #elif KOALA_WINDOWS
-        "_host_tools/lib"
-    #elif KOALA_OHOS_ARM64
-        "arm64"
-    #elif KOALA_OHOS_ARM32
-        "arm"
-    #else
-        #error "Unknown platform"
-    #endif
+// platform
+#ifdef KOALA_LINUX
+#ifdef KOALA_LINUX_ARM64
+    "linux_arm64_host_tools/lib"
+#else
+    "linux_host_tools/lib"
+#endif
+#elif KOALA_MACOS
+    "macos_host_tools/lib"
+#elif KOALA_WINDOWS
+    "_host_tools/lib"
+#elif KOALA_OHOS_ARM64
+    "arm64"
+#elif KOALA_OHOS_ARM32
+    "arm"
+#else
+#error "Unknown platform"
+#endif
     ,
 
     // lib
@@ -179,10 +178,11 @@ typedef int (*createVM_t)(void** pVM, void** pEnv, void* vmInitArgs);
 #ifdef KOALA_WINDOWS
 #define DLL_EXPORT __declspec(dllexport)
 #else
-#define DLL_EXPORT __attribute__ ((visibility ("default")))
+#define DLL_EXPORT __attribute__((visibility("default")))
 #endif
 
-int loadES2Panda(const char* appClassPath, const char* appLibPath) {
+int loadES2Panda(const char* appClassPath, const char* appLibPath)
+{
     fprintf(stderr, "native: es2panda %s\n", appClassPath);
     return 0;
 }
@@ -202,7 +202,7 @@ enum PandaLog2MobileLog : int {
     SILENT,
 };
 
-int ArkMobileLog(int id, int level, const char *component, const char *fmt, const char *msg)
+int ArkMobileLog(int id, int level, const char* component, const char* fmt, const char* msg)
 {
     switch (level) {
         case PandaLog2MobileLog::DEFAULT:
@@ -223,25 +223,24 @@ int ArkMobileLog(int id, int level, const char *component, const char *fmt, cons
     return 0;
 }
 
-}
+} // namespace
 #endif
 
 #ifdef KOALA_ANI
 
-static void AniMobileLog([[maybe_unused]] FILE *stream, int level,
-                         const char *component, const char *msg)
+static void AniMobileLog([[maybe_unused]] FILE* stream, int level, const char* component, const char* msg)
 {
     switch (level) {
-    case ANI_LOGLEVEL_INFO:
-    case ANI_LOGLEVEL_DEBUG:
-        LOGI("ArkRuntime [%" LOG_PUBLIC "s]: %" LOG_PUBLIC "s", component, msg);
-        break;
-    case ANI_LOGLEVEL_FATAL:
-    case ANI_LOGLEVEL_ERROR:
-    case ANI_LOGLEVEL_WARNING:
-    default:
-        LOGE("ArkRuntime [%" LOG_PUBLIC "s]: %" LOG_PUBLIC "s", component, msg);
-        break;
+        case ANI_LOGLEVEL_INFO:
+        case ANI_LOGLEVEL_DEBUG:
+            LOGI("ArkRuntime [%" LOG_PUBLIC "s]: %" LOG_PUBLIC "s", component, msg);
+            break;
+        case ANI_LOGLEVEL_FATAL:
+        case ANI_LOGLEVEL_ERROR:
+        case ANI_LOGLEVEL_WARNING:
+        default:
+            LOGE("ArkRuntime [%" LOG_PUBLIC "s]: %" LOG_PUBLIC "s", component, msg);
+            break;
     }
 }
 
@@ -257,7 +256,8 @@ static std::string makeClasspath(const std::vector<std::string>& files)
     return stream.str();
 }
 
-static std::pair<std::string, std::string> GetBootAndAppPandaFiles(const VMLibInfo* thisVM, const char* bootFilesPath, const char* userFilesPath)
+static std::pair<std::string, std::string> GetBootAndAppPandaFiles(
+    const VMLibInfo* thisVM, const char* bootFilesPath, const char* userFilesPath)
 {
     std::vector<std::string> bootFiles;
 #if USE_SYSTEM_ARKVM
@@ -269,9 +269,7 @@ static std::pair<std::string, std::string> GetBootAndAppPandaFiles(const VMLibIn
 #endif
 
 #if defined(KOALA_OHOS)
-    traverseDir("/system/framework", bootFiles, ".abc", {
-        "etsstdlib_bootabc"
-    });
+    traverseDir("/system/framework", bootFiles, ".abc", { "etsstdlib_bootabc" });
 #endif
 
     std::vector<std::string> userFiles;
@@ -282,7 +280,7 @@ static std::pair<std::string, std::string> GetBootAndAppPandaFiles(const VMLibIn
     std::sort(bootFiles.begin(), bootFiles.end());
 
     if (bootFiles.empty() || userFiles.empty())
-        return {"",""};
+        return { "", "" };
 
     return { makeClasspath(bootFiles), makeClasspath(userFiles) };
 }
@@ -294,7 +292,7 @@ static std::string GetAOTFiles(const char* appClassPath)
     return makeClasspath(files);
 }
 
-static bool ResetErrorIfExists(ani_env *env)
+static bool ResetErrorIfExists(ani_env* env)
 {
     ani_boolean hasError = ANI_FALSE;
     env->ExistUnhandledError(&hasError);
@@ -308,7 +306,8 @@ static bool ResetErrorIfExists(ani_env *env)
 
 #endif
 
-std::string makeLibPath(const char *sdkPath, const char *platform, const char *lib) {
+std::string makeLibPath(const char* sdkPath, const char* platform, const char* lib)
+{
     std::string result;
     constexpr auto RESERVE_SIZE{255};
     result.reserve(RESERVE_SIZE);
@@ -322,30 +321,36 @@ std::string makeLibPath(const char *sdkPath, const char *platform, const char *l
     return result;
 }
 
-extern "C" DLL_EXPORT KInt LoadVirtualMachine(KInt vmKind, const char* bootFilesDir, const char* userFilesDir, const char* appLibPath, const ForeignVMContext* foreignVMContext)
+extern "C" DLL_EXPORT KInt LoadVirtualMachine(KInt vmKind, const char* bootFilesDir, const char* userFilesDir,
+    const char* appLibPath, const ForeignVMContext* foreignVMContext)
 {
     if (vmKind == ES2PANDA_KIND) {
         return loadES2Panda(bootFilesDir, appLibPath);
     }
 
     const VMLibInfo* thisVM =
-        #ifdef KOALA_JNI
+#ifdef KOALA_JNI
         (vmKind == JAVA_VM_KIND) ? &javaVMLib :
-        #endif
-        #if defined(KOALA_ETS_NAPI) || defined(KOALA_ANI)
-        (vmKind == PANDA_VM_KIND || vmKind == PANDA_ANI_VM_KIND) ? &pandaVMLib :
-        #endif
-        #ifdef KOALA_KOTLIN
-        (vmKind == KOTLIN_KIND) ? &kotlinLib :
-        #endif
-        nullptr;
+#endif
+#if defined(KOALA_ETS_NAPI) || defined(KOALA_ANI)
+        (vmKind == PANDA_VM_KIND || vmKind == PANDA_ANI_VM_KIND) ? &pandaVMLib
+        :
+#endif
+#ifdef KOALA_KOTLIN
+        (vmKind == KOTLIN_KIND) ? &kotlinLib
+                                :
+#endif
+                                nullptr;
 
     if (!thisVM) {
-        LOGE("Unknown VM kind: %" LOG_PUBLIC "d\n (possibly %" LOG_PUBLIC "s is compiled without expected flags)", vmKind, __FILE__);
+        LOGE("Unknown VM kind: %" LOG_PUBLIC "d\n (possibly %" LOG_PUBLIC "s is compiled without expected flags)",
+            vmKind, __FILE__);
         return -1;
     }
 
-    LOGI("Starting VM %" LOG_PUBLIC "d with bootFilesDir=%" LOG_PUBLIC "s userFilesDir=%" LOG_PUBLIC "s native=%" LOG_PUBLIC "s", vmKind, bootFilesDir, userFilesDir, appLibPath);
+    LOGI("Starting VM %" LOG_PUBLIC "d with bootFilesDir=%" LOG_PUBLIC "s userFilesDir=%" LOG_PUBLIC
+         "s native=%" LOG_PUBLIC "s",
+        vmKind, bootFilesDir, userFilesDir, appLibPath);
 
     std::string libPath =
 #if USE_SYSTEM_ARKVM
@@ -355,10 +360,10 @@ extern "C" DLL_EXPORT KInt LoadVirtualMachine(KInt vmKind, const char* bootFiles
 #elif defined(KOALA_OHOS)
         std::string(OHOS_USER_LIBS) + "/" + libName(thisVM->lib)
 #else
-        #error "Library path not specified for this platform"
+#error "Library path not specified for this platform"
 #endif
         ;
-    void *handle = loadLibrary(libPath);
+    void* handle = loadLibrary(libPath);
     if (!handle) {
         LOGE("Cannot load library %" LOG_PUBLIC "s: %" LOG_PUBLIC "s\n", libPath.c_str(), libraryError());
         return -1;
@@ -381,8 +386,8 @@ extern "C" DLL_EXPORT KInt LoadVirtualMachine(KInt vmKind, const char* bootFiles
         javaVMArgs.ignoreUnrecognized = false;
         std::vector<JavaVMOption> javaVMOptions;
         javaVMOptions = {
-            {(char*)strdup((std::string("-Djava.class.path=") + bootFilesDir).c_str())},
-            {(char*)strdup((std::string("-Djava.library.path=") + appLibPath).c_str())},
+            { (char*)strdup((std::string("-Djava.class.path=") + bootFilesDir).c_str()) },
+            { (char*)strdup((std::string("-Djava.library.path=") + appLibPath).c_str()) },
         };
         javaVMArgs.nOptions = javaVMOptions.size();
         javaVMArgs.options = javaVMOptions.data();
@@ -411,24 +416,23 @@ extern "C" DLL_EXPORT KInt LoadVirtualMachine(KInt vmKind, const char* bootFiles
 
             bootFiles = "--ext:--boot-panda-files=" + bootFiles;
             LOGI("ANI boot-panda-files option: \"%" LOG_PUBLIC "s\"", bootFiles.c_str());
-            pandaVMOptions.push_back({bootFiles.c_str(), nullptr});
+            pandaVMOptions.push_back({ bootFiles.c_str(), nullptr });
 
             auto aotFiles = GetAOTFiles(bootFilesDir);
             if (!aotFiles.empty()) {
                 LOGI("ANI AOT files: \"%" LOG_PUBLIC "s\"", aotFiles.c_str());
                 aotFiles = "--ext:--aot-files=" + aotFiles;
-                pandaVMOptions.push_back({aotFiles.c_str(), nullptr});
+                pandaVMOptions.push_back({ aotFiles.c_str(), nullptr });
             }
 
-            pandaVMOptions.push_back({"--ext:--gc-trigger-type=heap-trigger", nullptr});
-            std::string nativeLibraryPathOption =
-                std::string("--ext:--native-library-path=") + appLibPath;
-            pandaVMOptions.push_back({nativeLibraryPathOption.c_str(), nullptr});
-            pandaVMOptions.push_back({"--ext:--verification-mode=on-the-fly", nullptr});
-            pandaVMOptions.push_back({"--ext:--compiler-enable-jit=true", nullptr});
-            pandaVMOptions.push_back({"--logger", reinterpret_cast<void *>(AniMobileLog)});
-            pandaVMOptions.push_back({"--ext:--enable-an", nullptr});
-            ani_options optionsPtr = {pandaVMOptions.size(), pandaVMOptions.data()};
+            pandaVMOptions.push_back({ "--ext:--gc-trigger-type=heap-trigger", nullptr });
+            std::string nativeLibraryPathOption = std::string("--ext:--native-library-path=") + appLibPath;
+            pandaVMOptions.push_back({ nativeLibraryPathOption.c_str(), nullptr });
+            pandaVMOptions.push_back({ "--ext:--verification-mode=on-the-fly", nullptr });
+            pandaVMOptions.push_back({ "--ext:--compiler-enable-jit=true", nullptr });
+            pandaVMOptions.push_back({ "--logger", reinterpret_cast<void*>(AniMobileLog) });
+            pandaVMOptions.push_back({ "--ext:--enable-an", nullptr });
+            ani_options optionsPtr = { pandaVMOptions.size(), pandaVMOptions.data() };
 
             result = createVM(&optionsPtr, version, &vm);
         }
@@ -456,34 +460,38 @@ extern "C" DLL_EXPORT KInt LoadVirtualMachine(KInt vmKind, const char* bootFiles
         std::sort(files_aot.begin(), files_aot.end());
         etsVMOptions = {
 #if USE_SYSTEM_ARKVM
-            {EtsOptionType::ETS_BOOT_FILE, SYSTEM_ARK_STDLIB_PATH},
+            { EtsOptionType::ETS_BOOT_FILE, SYSTEM_ARK_STDLIB_PATH },
 #elif defined(KOALA_OHOS)
-            {EtsOptionType::ETS_BOOT_FILE, (std::string(OHOS_USER_LIBS) + "/" + "etsstdlib.abc").c_str() },
+            { EtsOptionType::ETS_BOOT_FILE, (std::string(OHOS_USER_LIBS) + "/" + "etsstdlib.abc").c_str() },
 
 #elif defined(KOALA_LINUX) || defined(KOALA_MACOS) || defined(KOALA_WINDOWS)
-            {EtsOptionType::ETS_BOOT_FILE, (char*)strdup((std::string(thisVM->sdkPath) + "/ets/etsstdlib.abc").c_str())},
+            { EtsOptionType::ETS_BOOT_FILE,
+                (char*)strdup((std::string(thisVM->sdkPath) + "/ets/etsstdlib.abc").c_str()) },
 #endif
         };
         std::string all_files;
         for (const std::string& path : files) {
-            etsVMOptions.push_back({EtsOptionType::ETS_BOOT_FILE, (char*)strdup(path.c_str())});
-            if (all_files.size() > 0) all_files.append(":");
+            etsVMOptions.push_back({ EtsOptionType::ETS_BOOT_FILE, (char*)strdup(path.c_str()) });
+            if (all_files.size() > 0)
+                all_files.append(":");
             all_files.append(path);
         }
         LOGI("Using ETSNAPI: classpath \"%" LOG_PUBLIC "s\" from %" LOG_PUBLIC "s", all_files.c_str(), bootFilesDir);
         std::string all_files_aot;
         for (const std::string& path : files_aot) {
-            etsVMOptions.push_back({EtsOptionType::ETS_AOT_FILE, (char*)strdup(path.c_str())});
-            if (all_files_aot.size() > 0) all_files_aot.append(":");
+            etsVMOptions.push_back({ EtsOptionType::ETS_AOT_FILE, (char*)strdup(path.c_str()) });
+            if (all_files_aot.size() > 0)
+                all_files_aot.append(":");
             all_files_aot.append(path);
         }
         LOGI("ETSNAPI classpath (aot) \"%" LOG_PUBLIC "s\" from %" LOG_PUBLIC "s", all_files_aot.c_str(), bootFilesDir);
-        etsVMOptions.push_back({EtsOptionType::ETS_GC_TRIGGER_TYPE, "heap-trigger"});
-        etsVMOptions.push_back({EtsOptionType::ETS_NATIVE_LIBRARY_PATH, (char*)strdup(std::string(appLibPath).c_str())});
-        etsVMOptions.push_back({EtsOptionType::ETS_VERIFICATION_MODE, "on-the-fly"});
-        etsVMOptions.push_back({EtsOptionType::ETS_JIT, nullptr});
-        etsVMOptions.push_back({EtsOptionType::ETS_MOBILE_LOG, (void*)ArkMobileLog});
-        etsVMOptions.push_back({EtsOptionType::ETS_AOT, nullptr});
+        etsVMOptions.push_back({ EtsOptionType::ETS_GC_TRIGGER_TYPE, "heap-trigger" });
+        etsVMOptions.push_back(
+            { EtsOptionType::ETS_NATIVE_LIBRARY_PATH, (char*)strdup(std::string(appLibPath).c_str()) });
+        etsVMOptions.push_back({ EtsOptionType::ETS_VERIFICATION_MODE, "on-the-fly" });
+        etsVMOptions.push_back({ EtsOptionType::ETS_JIT, nullptr });
+        etsVMOptions.push_back({ EtsOptionType::ETS_MOBILE_LOG, (void*)ArkMobileLog });
+        etsVMOptions.push_back({ EtsOptionType::ETS_AOT, nullptr });
         pandaVMArgs.nOptions = etsVMOptions.size();
         pandaVMArgs.options = etsVMOptions.data();
         g_vmEntry.vmKind = vmKind;
@@ -511,10 +519,12 @@ extern "C" DLL_EXPORT KInt LoadVirtualMachine(KInt vmKind, const char* bootFiles
         g_vmEntry.vmKind = vmKind;
         (void)vm;
 
-        kotlin_exported_symbols_t kotlin_exported_symbols = (kotlin_exported_symbols_t)findSymbol(handle, "kotlin_koala_symbols");
+        kotlin_exported_symbols_t kotlin_exported_symbols =
+            (kotlin_exported_symbols_t)findSymbol(handle, "kotlin_koala_symbols");
         env = kotlin_exported_symbols();
 
-        set_user_view_factory_t set_user_view_factory = (set_user_view_factory_t)findSymbol(handle, "set_user_view_factory");
+        set_user_view_factory_t set_user_view_factory =
+            (set_user_view_factory_t)findSymbol(handle, "set_user_view_factory");
         set_user_view_factory();
 
         g_vmEntry.create = findSymbol(handle, "application_create");
@@ -552,65 +562,36 @@ struct AppInfo {
 };
 
 #ifdef KOALA_JNI
-const AppInfo javaAppInfo = {
-    "org/koalaui/arkoala/Application",
-    "createApplication",
-    "(Ljava/lang/String;Ljava/lang/String;)Lorg/koalaui/arkoala/Application;",
-    "start",
-    "(JI)J",
-    "enter",
-    "(IIJ)Z",
-    "emitEvent",
-    "(IIII)Ljava/lang/String;",
-    "UNUSED",
-    "()V"
-};
+const AppInfo javaAppInfo = { "org/koalaui/arkoala/Application", "createApplication",
+    "(Ljava/lang/String;Ljava/lang/String;)Lorg/koalaui/arkoala/Application;", "start", "(JI)J", "enter", "(IIJ)Z",
+    "emitEvent", "(IIII)Ljava/lang/String;", "UNUSED", "()V" };
 #endif
 
 #ifdef KOALA_ETS_NAPI
-const AppInfo pandaAppInfo = {
-    "arkui/ArkUIEntry/Application",
+const AppInfo pandaAppInfo = { "arkui/ArkUIEntry/Application", "createApplication",
+    "Lstd/core/String;Lstd/core/String;ZI:Larkui/ArkUIEntry/Application;", "start", "JI:J", "enter", "IIJ:Z",
+    "emitEvent", "IIII:Lstd/core/String;", "UNUSED", "I:I" };
+const AppInfo harnessAppInfo = {
+    "@koalaui/ets-harness/src/EtsHarnessApplication/EtsHarnessApplication",
     "createApplication",
-    "Lstd/core/String;Lstd/core/String;ZI:Larkui/ArkUIEntry/Application;",
+    "Lstd/core/String;Lstd/core/String;ZI:L@koalaui/ets-harness/src/EtsHarnessApplication/EtsHarnessApplication;",
     "start",
-    "JI:J",
+    "J:J",
     "enter",
     "IIJ:Z",
     "emitEvent",
     "IIII:Lstd/core/String;",
-    "UNUSED",
-    "I:I"
+    "restartWith",
+    "Lstd/core/String;:V",
 };
-const AppInfo harnessAppInfo = {
-        "@koalaui/ets-harness/src/EtsHarnessApplication/EtsHarnessApplication",
-        "createApplication",
-        "Lstd/core/String;Lstd/core/String;ZI:L@koalaui/ets-harness/src/EtsHarnessApplication/EtsHarnessApplication;",
-        "start",
-        "J:J",
-        "enter",
-        "IIJ:Z",
-        "emitEvent",
-        "IIII:Lstd/core/String;",
-        "restartWith",
-        "Lstd/core/String;:V",
-    };
 #endif
 #ifdef KOALA_ANI
-const AppInfo harnessAniAppInfo = {
-    "@koalaui.ets-harness.src.EtsHarnessApplication.EtsHarnessApplication",
+const AppInfo harnessAniAppInfo = { "@koalaui.ets-harness.src.EtsHarnessApplication.EtsHarnessApplication",
     "createApplication",
-    "C{std.core.String}C{std.core.String}C{std.core.String}zi:C{@koalaui.ets-harness.src.EtsHarnessApplication.EtsHarnessApplication}",
-    "start",
-    "li:l",
-    "enter",
-    "iil:z",
-    "emitEvent",
-    "iiii:C{std.core.String}",
-    "restartWith",
-    "C{std.core.String}:",
-    "UNUSED",
-    "i:i"
-};
+    "C{std.core.String}C{std.core.String}C{std.core.String}zi:C{@koalaui.ets-harness.src.EtsHarnessApplication."
+    "EtsHarnessApplication}",
+    "start", "li:l", "enter", "iil:z", "emitEvent", "iiii:C{std.core.String}", "restartWith",
+    "C{std.core.String}:", "UNUSED", "i:i" };
 const AppInfo aniAppInfo = {
     "arkui.ArkUIEntry.Application",
     "createApplication",
@@ -636,22 +617,26 @@ extern "C" DLL_EXPORT KNativePointer StartApplication(const char* appUrl, const 
 {
     const auto isTestEnv = std::string(appUrl) == "EtsHarness";
     const AppInfo* appInfo =
-        #ifdef KOALA_JNI
+#ifdef KOALA_JNI
         (g_vmEntry.vmKind == JAVA_VM_KIND) ? &javaAppInfo :
-        #endif
-        #if defined(KOALA_ETS_NAPI)
-        (g_vmEntry.vmKind == PANDA_VM_KIND) ? isTestEnv ? &harnessAppInfo : &pandaAppInfo :
-        #endif
-        #if defined(KOALA_ANI)
-        (g_vmEntry.vmKind == PANDA_ANI_VM_KIND) ? isTestEnv ? &harnessAniAppInfo : &aniAppInfo :
-        #endif
-        #if defined(KOALA_KOTLIN)
-        (g_vmEntry.vmKind == KOTLIN_KIND) ? &kotlinAppInfo :
-        #endif
-        nullptr;
+#endif
+#if defined(KOALA_ETS_NAPI)
+        (g_vmEntry.vmKind == PANDA_VM_KIND) ? isTestEnv ? &harnessAppInfo : &pandaAppInfo
+        :
+#endif
+#if defined(KOALA_ANI)
+        (g_vmEntry.vmKind == PANDA_ANI_VM_KIND) ? isTestEnv ? &harnessAniAppInfo : &aniAppInfo
+        :
+#endif
+#if defined(KOALA_KOTLIN)
+        (g_vmEntry.vmKind == KOTLIN_KIND) ? &kotlinAppInfo
+                                          :
+#endif
+                                          nullptr;
 
     if (!appInfo) {
-        LOGE("No appInfo provided for VM kind %" LOG_PUBLIC "d (recompile vmloader.cc with the missing flags)\n", g_vmEntry.vmKind);
+        LOGE("No appInfo provided for VM kind %" LOG_PUBLIC "d (recompile vmloader.cc with the missing flags)\n",
+            g_vmEntry.vmKind);
         return nullptr;
     }
 
@@ -669,7 +654,8 @@ extern "C" DLL_EXPORT KNativePointer StartApplication(const char* appUrl, const 
             LOGE("Cannot find create method %s\n", appInfo->createMethodName);
             return nullptr;
         }
-        auto app = jEnv->NewGlobalRef(jEnv->CallStaticObjectMethod(appClass, create, jEnv->NewStringUTF(appUrl), jEnv->NewStringUTF(appParams)));
+        auto app = jEnv->NewGlobalRef(
+            jEnv->CallStaticObjectMethod(appClass, create, jEnv->NewStringUTF(appUrl), jEnv->NewStringUTF(appParams)));
         g_vmEntry.app = app;
         auto start = jEnv->GetMethodID(appClass, appInfo->startMethodName, appInfo->startMethodSig);
         if (!start) {
@@ -681,13 +667,13 @@ extern "C" DLL_EXPORT KNativePointer StartApplication(const char* appUrl, const 
             LOGE("Cannot find enter method %s\n", appInfo->enterMethodName);
             return nullptr;
         }
-        g_vmEntry.emitEvent = (void*)(jEnv->GetMethodID(appClass, appInfo->emitEventMethodName, appInfo->emitEventMethodSig));
+        g_vmEntry.emitEvent =
+            (void*)(jEnv->GetMethodID(appClass, appInfo->emitEventMethodName, appInfo->emitEventMethodSig));
         if (!g_vmEntry.emitEvent) {
             LOGE("Cannot find emitEvent method %s\n", appInfo->emitEventMethodName);
             return nullptr;
         }
-        return reinterpret_cast<KNativePointer>(jEnv->CallLongMethod(
-            app, start));
+        return reinterpret_cast<KNativePointer>(jEnv->CallLongMethod(app, start));
     }
 #endif
 #if defined(KOALA_ETS_NAPI)
@@ -712,12 +698,8 @@ extern "C" DLL_EXPORT KNativePointer StartApplication(const char* appUrl, const 
             return nullptr;
         }
         auto useNativeLog = false;
-        auto app = etsEnv->NewGlobalRef(etsEnv->CallStaticObjectMethod(
-            appClass, create,
-            etsEnv->NewStringUTF(appUrl), etsEnv->NewStringUTF(appParams),
-            useNativeLog,
-            g_vmEntry.vmKind
-            ));
+        auto app = etsEnv->NewGlobalRef(etsEnv->CallStaticObjectMethod(appClass, create, etsEnv->NewStringUTF(appUrl),
+            etsEnv->NewStringUTF(appParams), useNativeLog, g_vmEntry.vmKind));
         if (!app) {
             LOGE("createApplication returned null");
             if (etsEnv->ErrorCheck()) {
@@ -729,7 +711,8 @@ extern "C" DLL_EXPORT KNativePointer StartApplication(const char* appUrl, const 
         }
         g_vmEntry.app = (void*)app;
         auto start = etsEnv->Getp_method(appClass, appInfo->startMethodName, appInfo->startMethodSig);
-        g_vmEntry.enter = (void*)(etsEnv->Getp_method(appClass, appInfo->enterMethodName, nullptr /*appInfo->enterMethodSig */));
+        g_vmEntry.enter =
+            (void*)(etsEnv->Getp_method(appClass, appInfo->enterMethodName, nullptr /*appInfo->enterMethodSig */));
         if (!g_vmEntry.enter) {
             LOGE("Cannot find enter method %" LOG_PUBLIC "s", appInfo->enterMethodName);
             if (etsEnv->ErrorCheck()) {
@@ -743,7 +726,8 @@ extern "C" DLL_EXPORT KNativePointer StartApplication(const char* appUrl, const 
             etsEnv->ErrorClear();
             return nullptr;
         }
-        g_vmEntry.emitEvent = (void*)(etsEnv->Getp_method(appClass, appInfo->emitEventMethodName, appInfo->emitEventMethodSig));
+        g_vmEntry.emitEvent =
+            (void*)(etsEnv->Getp_method(appClass, appInfo->emitEventMethodName, appInfo->emitEventMethodSig));
         if (!g_vmEntry.emitEvent) {
             LOGE("Cannot find enter emitEvent %" LOG_PUBLIC "s", appInfo->emitEventMethodSig);
             if (etsEnv->ErrorCheck()) {
@@ -753,7 +737,8 @@ extern "C" DLL_EXPORT KNativePointer StartApplication(const char* appUrl, const 
             return nullptr;
         }
         if (isTestEnv) {
-            g_vmEntry.restartWith = (void*)(etsEnv->Getp_method(appClass, appInfo->restartWithMethodName, appInfo->restartWithMethodSig));
+            g_vmEntry.restartWith =
+                (void*)(etsEnv->Getp_method(appClass, appInfo->restartWithMethodName, appInfo->restartWithMethodSig));
             if (!g_vmEntry.restartWith) {
                 LOGE("Cannot find enter restartWith %" LOG_PUBLIC "s", appInfo->restartWithMethodSig);
                 if (etsEnv->ErrorCheck()) {
@@ -764,12 +749,13 @@ extern "C" DLL_EXPORT KNativePointer StartApplication(const char* appUrl, const 
             }
         }
         // Improve: pass app entry point!
-        return reinterpret_cast<KNativePointer>(etsEnv->CallLongMethod((ets_object)(app), start, &g_vmEntry.foreignVMContext));
+        return reinterpret_cast<KNativePointer>(
+            etsEnv->CallLongMethod((ets_object)(app), start, &g_vmEntry.foreignVMContext));
     }
 #endif
 #if defined(KOALA_ANI)
     if (g_vmEntry.vmKind == PANDA_ANI_VM_KIND) {
-        auto *env = reinterpret_cast<ani_env *>(g_vmEntry.env);
+        auto* env = reinterpret_cast<ani_env*>(g_vmEntry.env);
 
         ani_class appClass {};
         auto status = env->FindClass(appInfo->className, &appClass);
@@ -795,7 +781,8 @@ extern "C" DLL_EXPORT KNativePointer StartApplication(const char* appUrl, const 
         }
 
         ani_string userPandaFilesPathString {};
-        status = env->String_NewUTF8(g_vmEntry.userFilesAbcPaths.c_str(), g_vmEntry.userFilesAbcPaths.size(), &userPandaFilesPathString);
+        status = env->String_NewUTF8(
+            g_vmEntry.userFilesAbcPaths.c_str(), g_vmEntry.userFilesAbcPaths.size(), &userPandaFilesPathString);
         if (status != ANI_OK) {
             ResetErrorIfExists(env);
             return nullptr;
@@ -809,8 +796,8 @@ extern "C" DLL_EXPORT KNativePointer StartApplication(const char* appUrl, const 
         }
 
         ani_ref appInstance {};
-        status = env->Class_CallStaticMethod_Ref(appClass, create, &appInstance, appUrlString, userPandaFilesPathString, appParamsString,
-            useNativeLog, static_cast<ani_int>(g_vmEntry.vmKind));
+        status = env->Class_CallStaticMethod_Ref(appClass, create, &appInstance, appUrlString, userPandaFilesPathString,
+            appParamsString, useNativeLog, static_cast<ani_int>(g_vmEntry.vmKind));
         if (status != ANI_OK) {
             LOGE("createApplication returned null");
             ResetErrorIfExists(env);
@@ -837,7 +824,7 @@ extern "C" DLL_EXPORT KNativePointer StartApplication(const char* appUrl, const 
             ResetErrorIfExists(env);
             return nullptr;
         }
-        g_vmEntry.enter = reinterpret_cast<void *>(enter);
+        g_vmEntry.enter = reinterpret_cast<void*>(enter);
         ani_method emitEvent {};
         status = env->Class_FindMethod(appClass, appInfo->emitEventMethodName, appInfo->emitEventMethodSig, &emitEvent);
         if (status != ANI_OK) {
@@ -845,26 +832,27 @@ extern "C" DLL_EXPORT KNativePointer StartApplication(const char* appUrl, const 
             ResetErrorIfExists(env);
             return nullptr;
         }
-        g_vmEntry.emitEvent = reinterpret_cast<void *>(emitEvent);
+        g_vmEntry.emitEvent = reinterpret_cast<void*>(emitEvent);
         ani_method loadView {};
         status = env->Class_FindMethod(appClass, appInfo->loadViewMethodName, appInfo->loadViewMethodSig, &loadView);
         if (status != ANI_OK) {
-            LOGE("Cannot find `%" LOG_PUBLIC "s` method %" LOG_PUBLIC "s",
-                appInfo->loadViewMethodName, appInfo->loadViewMethodSig);
+            LOGE("Cannot find `%" LOG_PUBLIC "s` method %" LOG_PUBLIC "s", appInfo->loadViewMethodName,
+                appInfo->loadViewMethodSig);
             ResetErrorIfExists(env);
             return nullptr;
         }
-        g_vmEntry.loadView = reinterpret_cast<void *>(loadView);
+        g_vmEntry.loadView = reinterpret_cast<void*>(loadView);
 
         if (isTestEnv) {
             ani_method restartWith {};
-            status = env->Class_FindMethod(appClass, appInfo->restartWithMethodName, appInfo->restartWithMethodSig, &restartWith);
+            status = env->Class_FindMethod(
+                appClass, appInfo->restartWithMethodName, appInfo->restartWithMethodSig, &restartWith);
             if (status != ANI_OK) {
                 LOGE("Cannot find `restartWith` method sig=%" LOG_PUBLIC "s", appInfo->restartWithMethodSig);
                 ResetErrorIfExists(env);
                 return nullptr;
             }
-            g_vmEntry.restartWith = reinterpret_cast<void *>(restartWith);
+            g_vmEntry.restartWith = reinterpret_cast<void*>(restartWith);
         }
 
         ani_long ptr = 0;
@@ -897,17 +885,13 @@ extern "C" DLL_EXPORT KNativePointer StartApplication(const char* appUrl, const 
     return nullptr;
 }
 
-extern "C" DLL_EXPORT KBoolean RunApplication(const KInt arg0, const KInt arg1) {
+extern "C" DLL_EXPORT KBoolean RunApplication(const KInt arg0, const KInt arg1)
+{
 #ifdef KOALA_JNI
     if (g_vmEntry.vmKind == JAVA_VM_KIND) {
         JNIEnv* jEnv = (JNIEnv*)(g_vmEntry.env);
-        auto result = jEnv->CallBooleanMethod(
-            (jobject)(g_vmEntry.app),
-            (jmethodID)(g_vmEntry.enter),
-            (jint)arg0,
-            (jint)arg1,
-            (int64_t)(intptr_t)(&g_vmEntry.foreignVMContext)
-        );
+        auto result = jEnv->CallBooleanMethod((jobject)(g_vmEntry.app), (jmethodID)(g_vmEntry.enter), (jint)arg0,
+            (jint)arg1, (int64_t)(intptr_t)(&g_vmEntry.foreignVMContext));
         if (jEnv->ExceptionCheck()) {
             jEnv->ExceptionDescribe();
             jEnv->ExceptionClear();
@@ -922,13 +906,8 @@ extern "C" DLL_EXPORT KBoolean RunApplication(const KInt arg0, const KInt arg1) 
             LOGE("Cannot find enter method");
             return -1;
         }
-        auto result = etsEnv->CallBooleanMethod(
-            (ets_object)(g_vmEntry.app),
-            (ets_method)(g_vmEntry.enter),
-            (ets_int)arg0,
-            (ets_int)arg1,
-            (int64_t)(intptr_t)(&g_vmEntry.foreignVMContext)
-        );
+        auto result = etsEnv->CallBooleanMethod((ets_object)(g_vmEntry.app), (ets_method)(g_vmEntry.enter),
+            (ets_int)arg0, (ets_int)arg1, (int64_t)(intptr_t)(&g_vmEntry.foreignVMContext));
         if (etsEnv->ErrorCheck()) {
             LOGE("Calling enter() method gave an error");
             etsEnv->ErrorDescribe();
@@ -939,16 +918,15 @@ extern "C" DLL_EXPORT KBoolean RunApplication(const KInt arg0, const KInt arg1) 
 #endif
 #if defined(KOALA_ANI)
     if (g_vmEntry.vmKind == PANDA_ANI_VM_KIND) {
-        ani_env* env = reinterpret_cast<ani_env *>(g_vmEntry.env);
+        ani_env* env = reinterpret_cast<ani_env*>(g_vmEntry.env);
         if (g_vmEntry.enter == nullptr) {
             LOGE("Cannot find enter method");
             return -1;
         }
         ani_boolean result = ANI_FALSE;
         auto status = env->Object_CallMethod_Boolean(reinterpret_cast<ani_object>(g_vmEntry.app),
-            reinterpret_cast<ani_method>(g_vmEntry.enter), &result,
-            static_cast<ani_int>(arg0), static_cast<ani_int>(arg1),
-            reinterpret_cast<ani_long>(&g_vmEntry.foreignVMContext));
+            reinterpret_cast<ani_method>(g_vmEntry.enter), &result, static_cast<ani_int>(arg0),
+            static_cast<ani_int>(arg1), reinterpret_cast<ani_long>(&g_vmEntry.foreignVMContext));
         if (status != ANI_OK) {
             ResetErrorIfExists(env);
             return ANI_FALSE;
@@ -977,19 +955,13 @@ extern "C" DLL_EXPORT const char* EmitEvent(const KInt type, const KInt target, 
             LOGE("Cannot find emitEvent method");
             return "-1";
         }
-        auto rv = (jstring)jEnv->CallObjectMethod(
-            (jobject)(g_vmEntry.app),
-            (jmethodID)(g_vmEntry.emitEvent),
-            (jint)type,
-            (jint)target,
-            (jint)arg0,
-            (jint)arg1
-        );
+        auto rv = (jstring)jEnv->CallObjectMethod((jobject)(g_vmEntry.app), (jmethodID)(g_vmEntry.emitEvent),
+            (jint)type, (jint)target, (jint)arg0, (jint)arg1);
         if (jEnv->ExceptionCheck()) {
             jEnv->ExceptionDescribe();
             jEnv->ExceptionClear();
         }
-        const char *result = jEnv->GetStringUTFChars(rv, 0);
+        const char* result = jEnv->GetStringUTFChars(rv, 0);
         return result;
     }
 #endif
@@ -1001,38 +973,28 @@ extern "C" DLL_EXPORT const char* EmitEvent(const KInt type, const KInt target, 
             LOGE("Cannot find emitEvent method");
             return "-1";
         }
-        auto rv = (ets_string)etsEnv->CallObjectMethod(
-            (ets_object)(g_vmEntry.app),
-            (ets_method)(g_vmEntry.emitEvent),
-            (ets_int)type,
-            (ets_int)target,
-            (ets_int)arg0,
-            (ets_int)arg1
-        );
+        auto rv = (ets_string)etsEnv->CallObjectMethod((ets_object)(g_vmEntry.app), (ets_method)(g_vmEntry.emitEvent),
+            (ets_int)type, (ets_int)target, (ets_int)arg0, (ets_int)arg1);
         if (etsEnv->ErrorCheck()) {
             LOGE("Calling emitEvent() method gave an error");
             etsEnv->ErrorDescribe();
             etsEnv->ErrorClear();
         }
-        const char *result = etsEnv->GetStringUTFChars(rv, 0);
+        const char* result = etsEnv->GetStringUTFChars(rv, 0);
         return result;
     }
 #endif
 #if defined(KOALA_ANI)
     if (g_vmEntry.vmKind == PANDA_ANI_VM_KIND) {
-        ani_env *env = reinterpret_cast<ani_env *>(g_vmEntry.env);
+        ani_env* env = reinterpret_cast<ani_env*>(g_vmEntry.env);
         if (g_vmEntry.emitEvent == nullptr) {
             LOGE("Cannot find emitEvent method");
             return "-1";
         }
         ani_ref result {};
         auto status = env->Object_CallMethod_Ref(reinterpret_cast<ani_object>(g_vmEntry.app),
-            reinterpret_cast<ani_method>(g_vmEntry.emitEvent),
-            &result,
-            static_cast<ani_int>(type),
-            static_cast<ani_int>(target),
-            static_cast<ani_int>(arg0),
-            static_cast<ani_int>(arg1));
+            reinterpret_cast<ani_method>(g_vmEntry.emitEvent), &result, static_cast<ani_int>(type),
+            static_cast<ani_int>(target), static_cast<ani_int>(arg0), static_cast<ani_int>(arg1));
         if (status != ANI_OK) {
             LOGE("Calling emitEvent() method gave an error");
             ResetErrorIfExists(env);
@@ -1050,7 +1012,7 @@ extern "C" DLL_EXPORT const char* EmitEvent(const KInt type, const KInt target, 
         ani_size writtenChars = 0;
         status = env->String_GetUTF8(str, buffer, sz + 1, &writtenChars);
         if (status != ANI_OK || writtenChars != sz) {
-            delete [] buffer;
+            delete[] buffer;
             ResetErrorIfExists(env);
             return "-1";
         }
@@ -1062,13 +1024,13 @@ extern "C" DLL_EXPORT const char* EmitEvent(const KInt type, const KInt target, 
     if (g_vmEntry.vmKind == KOTLIN_KIND) {
         kotlin_kref_VMLoaderApplication app = { .pinned = g_vmEntry.app };
         application_emit_event_t application_emit_event = (application_emit_event_t)g_vmEntry.emitEvent;
-        const char *kotlinString = application_emit_event(app, type, target, arg0, arg1);
+        const char* kotlinString = application_emit_event(app, type, target, arg0, arg1);
 
         size_t bufferSize = interop_strlen(kotlinString) + 1;
-        char *result = (char*)malloc(bufferSize);
+        char* result = (char*)malloc(bufferSize);
         interop_strcpy(result, bufferSize, kotlinString);
 
-        kotlin_ExportedSymbols *env = reinterpret_cast<kotlin_ExportedSymbols*>(g_vmEntry.env);
+        kotlin_ExportedSymbols* env = reinterpret_cast<kotlin_ExportedSymbols*>(g_vmEntry.env);
         env->DisposeString(kotlinString);
 
         return result;
@@ -1086,11 +1048,7 @@ extern "C" DLL_EXPORT void RestartWith(const char* page)
             LOGE("Cannot find restartWith method");
             return;
         }
-        jEnv->CallVoidMethod(
-            (jobject)(g_vmEntry.app),
-            (jmethodID)(g_vmEntry.restartWith),
-            jEnv->NewStringUTF(page)
-        );
+        jEnv->CallVoidMethod((jobject)(g_vmEntry.app), (jmethodID)(g_vmEntry.restartWith), jEnv->NewStringUTF(page));
         if (jEnv->ExceptionCheck()) {
             jEnv->ExceptionDescribe();
             jEnv->ExceptionClear();
@@ -1105,10 +1063,7 @@ extern "C" DLL_EXPORT void RestartWith(const char* page)
             return;
         }
         etsEnv->CallVoidMethod(
-            (ets_object)(g_vmEntry.app),
-            (ets_method)(g_vmEntry.restartWith),
-            etsEnv->NewStringUTF(page)
-        );
+            (ets_object)(g_vmEntry.app), (ets_method)(g_vmEntry.restartWith), etsEnv->NewStringUTF(page));
         if (etsEnv->ErrorCheck()) {
             LOGE("Calling restartWith() method gave an error");
             etsEnv->ErrorDescribe();
@@ -1118,7 +1073,7 @@ extern "C" DLL_EXPORT void RestartWith(const char* page)
 #endif
 #if defined(KOALA_ANI)
     if (g_vmEntry.vmKind == PANDA_ANI_VM_KIND) {
-        ani_env *env = reinterpret_cast<ani_env *>(g_vmEntry.env);
+        ani_env* env = reinterpret_cast<ani_env*>(g_vmEntry.env);
         if (!g_vmEntry.restartWith) {
             LOGE("Cannot find restartWith method");
             return;
@@ -1143,7 +1098,7 @@ extern "C" DLL_EXPORT const char* LoadView(const char* className, const char* pa
 {
 #if defined(KOALA_ANI)
     if (g_vmEntry.vmKind == PANDA_ANI_VM_KIND) {
-        ani_env *env = reinterpret_cast<ani_env *>(g_vmEntry.env);
+        ani_env* env = reinterpret_cast<ani_env*>(g_vmEntry.env);
         if (!g_vmEntry.loadView) {
             return strdup("Cannot find loadView() method");
         }
@@ -1160,9 +1115,7 @@ extern "C" DLL_EXPORT const char* LoadView(const char* className, const char* pa
         }
         ani_string resultString = nullptr;
         status = env->Object_CallMethod_Ref(reinterpret_cast<ani_object>(g_vmEntry.app),
-            reinterpret_cast<ani_method>(g_vmEntry.loadView),
-            (ani_ref*)&resultString,
-            classNameString, paramsString);
+            reinterpret_cast<ani_method>(g_vmEntry.loadView), (ani_ref*)&resultString, classNameString, paramsString);
         if (status != ANI_OK) {
             ResetErrorIfExists(env);
             return strdup("Calling laodView() method gave an error");
@@ -1184,32 +1137,33 @@ namespace fs = std::filesystem;
 
 bool ends_with(std::string str, std::string suffix)
 {
-    return str.size() >= suffix.size() && str.compare(str.size()-suffix.size(), suffix.size(), suffix) == 0;
+    return str.size() >= suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-void traverseDir(const std::string& root, std::vector<std::string>& paths, std::string suffix, const std::vector<std::string>& fallbackPaths)
+void traverseDir(const std::string& root, std::vector<std::string>& paths, std::string suffix,
+    const std::vector<std::string>& fallbackPaths)
 {
-    #ifdef KOALA_OHOS_ARM32
+#ifdef KOALA_OHOS_ARM32
     // selinux prohibits any access to "/system/framework"
     if (root == "/system/framework") {
-        for (auto path: fallbackPaths) {
+        for (auto path : fallbackPaths) {
             paths.push_back(root + "/" + path + suffix);
         }
         return;
     }
-    #endif
+#endif
 
     if (!fs::exists(root)) {
         LOGE("Cannot open dir %" LOG_PUBLIC "s\n", root.c_str());
         return;
     }
 
-    #if defined(KOALA_OHOS)
+#if defined(KOALA_OHOS)
     suffix += ".so";
-    #endif
+#endif
 
     LOGI("Searching in %" LOG_PUBLIC "s\n", root.c_str());
-    for (auto &file : fs::recursive_directory_iterator(root)) {
+    for (auto& file : fs::recursive_directory_iterator(root)) {
         if (ends_with(file.path().string(), suffix) && fs::is_regular_file(file)) {
             paths.push_back(file.path().string());
         }

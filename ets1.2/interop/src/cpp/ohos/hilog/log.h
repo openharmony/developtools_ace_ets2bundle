@@ -146,7 +146,7 @@ typedef enum {
  * than <b>0</b> otherwise.
  * @since 8
  */
-int OH_LOG_Print(LogType type, LogLevel level, unsigned int domain, const char *tag, const char *fmt, ...)
+int OH_LOG_Print(LogType type, LogLevel level, unsigned int domain, const char* tag, const char* fmt, ...)
     __attribute__((__format__(os_log, 5, 6)));
 
 /**
@@ -158,7 +158,7 @@ int OH_LOG_Print(LogType type, LogLevel level, unsigned int domain, const char *
  * @return Returns <b>true</b> if the specified logs can be output; returns <b>false</b> otherwise.
  * @since 8
  */
-bool OH_LOG_IsLoggable(unsigned int domain, const char *tag, LogLevel level);
+bool OH_LOG_IsLoggable(unsigned int domain, const char* tag, LogLevel level);
 
 /**
  * @brief Outputs debug logs. This is a function-like macro.
@@ -256,8 +256,8 @@ bool OH_LOG_IsLoggable(unsigned int domain, const char *tag, LogLevel level);
  * @param msg Indicates the log message itself, which is a formatted log string.
  * @since 11
  */
-typedef void (*LogCallback)(const LogType type, const LogLevel level, const unsigned int domain, const char *tag,
-    const char *msg);
+typedef void (*LogCallback)(
+    const LogType type, const LogLevel level, const unsigned int domain, const char* tag, const char* msg);
 
 /**
  * @brief Set the user-defined log processing function.
@@ -282,4 +282,4 @@ void OH_LOG_SetCallback(LogCallback callback);
 #include "hilog/log_inner.h"
 #endif
 
-#endif  // HIVIEWDFX_HILOG_C_H
+#endif // HIVIEWDFX_HILOG_C_H

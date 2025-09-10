@@ -16,13 +16,13 @@
 #define _INTEROP_LGGING_H
 
 #ifdef __cplusplus
-    #include <cstdio>
-    #include <cstdint>
-    #include <cassert>
+#include <cassert>
+#include <cstdint>
+#include <cstdio>
 #else
-    #include <stdio.h>
-    #include <stdint.h>
-    #include <assert.h>
+#include <assert.h>
+#include <stdint.h>
+#include <stdio.h>
 #endif
 
 #if defined(KOALA_OHOS)
@@ -45,7 +45,7 @@
 #endif
 
 #ifndef ASSERT
-    #define ASSERT(expression) assert(expression)
+#define ASSERT(expression) assert(expression)
 #endif
 
 // Grouped logs. Keep consistent with type in ServiceGroupLogger

@@ -18,13 +18,7 @@
 
 #include <hilog/log.h>
 
-typedef enum {
-    Log_Debug,
-    Log_Info,
-    Log_Warn,
-    Log_Error,
-    Log_Fatal
-} oh_sk_log_type;
+typedef enum { Log_Debug, Log_Info, Log_Warn, Log_Error, Log_Fatal } oh_sk_log_type;
 
 void oh_sk_file_log(oh_sk_log_type type, const char* msg, ...);
 const char* oh_sk_log_type_str(oh_sk_log_type type);

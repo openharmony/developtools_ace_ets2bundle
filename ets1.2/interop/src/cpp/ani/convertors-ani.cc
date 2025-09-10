@@ -12,23 +12,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <cstring>
+#include "convertors-ani.h"
 
 #include <map>
-#include "convertors-ani.h"
-#include "signatures.h"
+#include <string.h>
+
 #include "interop-types.h"
+#include "signatures.h"
 
 static const char* callCallbackFromNative = "callCallbackFromNative";
 static const char* callCallbackFromNativeSig = "ili:i";
 
 const bool registerByOne = true;
 
-static bool registerNatives(ani_env *env, const ani_class clazz, const std::vector<std::tuple<std::string, std::string, void*, int>> impls) {
+static bool registerNatives(
+    ani_env* env, const ani_class clazz, const std::vector<std::tuple<std::string, std::string, void*, int>> impls)
+{
     std::vector<ani_native_function> staticMethods;
     staticMethods.reserve(impls.size());
     bool result = true;
-    for (const auto &[name, type, func, flag] : impls) {
+    for (const auto& [name, type, func, flag] : impls) {
         ani_native_function staticMethod;
         staticMethod.name = name.c_str();
         staticMethod.pointer = func;
@@ -41,19 +44,19 @@ static bool registerNatives(ani_env *env, const ani_class clazz, const std::vect
                 CHECK_ANI_FATAL(env->DescribeError());
                 CHECK_ANI_FATAL(env->ResetError());
             }
-        }
-        else {
+        } else {
             staticMethods.push_back(staticMethod);
         }
     }
     if (!registerByOne) {
         result = env->Class_BindStaticNativeMethods(
-            clazz, staticMethods.data(), static_cast<ani_size>(staticMethods.size())) == ANI_OK;
+                     clazz, staticMethods.data(), static_cast<ani_size>(staticMethods.size())) == ANI_OK;
     }
     return registerByOne ? true : result;
 }
 
-bool registerAllModules(ani_env *aniEnv) {
+bool registerAllModules(ani_env* aniEnv)
+{
     auto moduleNames = AniExports::getInstance()->getModules();
     for (auto it = moduleNames.begin(); it != moduleNames.end(); ++it) {
         std::string classpath = AniExports::getInstance()->getClasspath(*it);
@@ -70,7 +73,8 @@ bool registerAllModules(ani_env *aniEnv) {
     return true;
 }
 
-ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result) {
+ANI_EXPORT ani_status ANI_Constructor(ani_vm* vm, uint32_t* result)
+{
     LOGE("Use ANI")
     ani_env* aniEnv = nullptr;
     *result = 1;
@@ -104,15 +108,17 @@ ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result) {
     return ANI_OK;
 }
 
-AniExports* AniExports::getInstance() {
-    static AniExports *instance = nullptr;
+AniExports* AniExports::getInstance()
+{
+    static AniExports* instance = nullptr;
     if (instance == nullptr) {
         instance = new AniExports();
     }
     return instance;
 }
 
-std::vector<std::string> AniExports::getModules() {
+std::vector<std::string> AniExports::getModules()
+{
     std::vector<std::string> result;
     for (auto it = implementations.begin(); it != implementations.end(); ++it) {
         result.push_back(it->first);
@@ -120,7 +126,8 @@ std::vector<std::string> AniExports::getModules() {
     return result;
 }
 
-const std::vector<std::tuple<std::string, std::string, void*, int>>& AniExports::getMethods(const std::string& module) {
+const std::vector<std::tuple<std::string, std::string, void*, int>>& AniExports::getMethods(const std::string& module)
+{
     auto it = implementations.find(module);
     if (it == implementations.end()) {
         LOGE("Module %s is not registered", module.c_str());
@@ -128,15 +135,19 @@ const std::vector<std::tuple<std::string, std::string, void*, int>>& AniExports:
     return it->second;
 }
 
-void AniExports::addMethod(const char* module, const char *name, const char *type, void *impl, int flags) {
+void AniExports::addMethod(const char* module, const char* name, const char* type, void* impl, int flags)
+{
     auto it = implementations.find(module);
     if (it == implementations.end()) {
-        it = implementations.insert(std::make_pair(module, std::vector<std::tuple<std::string, std::string, void*, int>>())).first;
+        it = implementations
+                 .insert(std::make_pair(module, std::vector<std::tuple<std::string, std::string, void*, int>>()))
+                 .first;
     }
     it->second.push_back(std::make_tuple(name, convertType(name, type), impl, flags));
 }
 
-void AniExports::setClasspath(const char* module, const char *classpath) {
+void AniExports::setClasspath(const char* module, const char* classpath)
+{
     auto it = classpaths.find(module);
     if (it == classpaths.end()) {
         classpaths.insert(std::make_pair(module, classpath));
@@ -146,14 +157,15 @@ void AniExports::setClasspath(const char* module, const char *classpath) {
 }
 
 static std::map<std::string, std::string> g_defaultClasspaths = {
-    {"InteropNativeModule", "@koalaui.interop.InteropNativeModule.InteropNativeModule"},
+    { "InteropNativeModule", "@koalaui.interop.InteropNativeModule.InteropNativeModule" },
     // Improve: leave just InteropNativeModule, define others via KOALA_ETS_INTEROP_MODULE_CLASSPATH
-    {"TestNativeModule", "arkui.framework.arkts.TestNativeModule.TestNativeModule"},
-    {"ArkUINativeModule", "arkui.framework.arkts.ArkUINativeModule.ArkUINativeModule"},
-    {"ArkUIGeneratedNativeModule", "arkui.framework.arkts.ArkUIGeneratedNativeModule.ArkUIGeneratedNativeModule"},
+    { "TestNativeModule", "arkui.framework.arkts.TestNativeModule.TestNativeModule" },
+    { "ArkUINativeModule", "arkui.framework.arkts.ArkUINativeModule.ArkUINativeModule" },
+    { "ArkUIGeneratedNativeModule", "arkui.framework.arkts.ArkUIGeneratedNativeModule.ArkUIGeneratedNativeModule" },
 };
 
-const std::string& AniExports::getClasspath(const std::string& module) {
+const std::string& AniExports::getClasspath(const std::string& module)
+{
     auto it = classpaths.find(module);
     if (it != classpaths.end()) {
         return it->second;
@@ -173,29 +185,26 @@ static struct {
 static thread_local ani_env* currentContext = nullptr;
 
 bool setKoalaANICallbackDispatcher(
-    ani_env* aniEnv,
-    ani_class clazz,
-    const char* dispatcherMethodName,
-    const char* dispatcherMethodSig
-) {
+    ani_env* aniEnv, ani_class clazz, const char* dispatcherMethodName, const char* dispatcherMethodSig)
+{
     currentContext = aniEnv;
     g_koalaANICallbackDispatcher.clazz = clazz;
     CHECK_ANI_FATAL(aniEnv->Class_FindStaticMethod(
-        clazz, dispatcherMethodName, dispatcherMethodSig,
-        &g_koalaANICallbackDispatcher.method
-    ));
+        clazz, dispatcherMethodName, dispatcherMethodSig, &g_koalaANICallbackDispatcher.method));
     if (g_koalaANICallbackDispatcher.method == nullptr) {
         return false;
     }
     return true;
 }
 
-void getKoalaANICallbackDispatcher(ani_class* clazz, ani_static_method* method) {
+void getKoalaANICallbackDispatcher(ani_class* clazz, ani_static_method* method)
+{
     *clazz = g_koalaANICallbackDispatcher.clazz;
     *method = g_koalaANICallbackDispatcher.method;
 }
 
-ani_env* getKoalaANIContext(void* hint) {
+ani_env* getKoalaANIContext(void* hint)
+{
     if (currentContext) {
         return currentContext;
     } else {

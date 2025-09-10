@@ -13,12 +13,12 @@
  * limitations under the License.
  */
 
-
 #define KOALA_INTEROP_MODULE
 #include "convertors-jni.h"
-#include "signatures.h"
+
 #include "interop-logging.h"
 #include "interop-types.h"
+#include "signatures.h"
 
 static const char* nativeModule = "org/koalaui/arkoala/InteropNativeModule";
 static const char* nativeModulePrefix = "org/koalaui/arkoala/";
@@ -27,17 +27,18 @@ static const char* callCallbackFromNativeSig = "(I[BI)I";
 
 const bool registerByOne = true;
 
-static bool registerNatives(JNIEnv *env, jclass clazz, const std::vector<std::tuple<std::string, std::string, void* >> impls) {
+static bool registerNatives(
+    JNIEnv* env, jclass clazz, const std::vector<std::tuple<std::string, std::string, void*>> impls)
+{
     constexpr auto NUM_0{0};
     constexpr auto NUM_1{1};
     constexpr auto NUM_2{2};
     size_t numMethods = impls.size();
-    JNINativeMethod *methods = new JNINativeMethod[numMethods];
+    JNINativeMethod* methods = new JNINativeMethod[numMethods];
     bool result = true;
-    for (size_t i = 0; i < numMethods; i++)
-    {
-        methods[i].name = (char *)std::get<NUM_0>(impls[i]).c_str();
-        methods[i].signature = (char *)std::get<NUM_1>(impls[i]).c_str();
+    for (size_t i = 0; i < numMethods; i++) {
+        methods[i].name = (char*)std::get<NUM_0>(impls[i]).c_str();
+        methods[i].signature = (char*)std::get<NUM_1>(impls[i]).c_str();
         methods[i].fnPtr = std::get<NUM_2>(impls[i]);
         if (registerByOne) {
             result &= (env->RegisterNatives(clazz, methods + i, 1) >= 0);
@@ -53,38 +54,39 @@ static bool registerNatives(JNIEnv *env, jclass clazz, const std::vector<std::tu
 
 constexpr bool splitPerModule = true;
 
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
-    JNIEnv *env;
-    if (vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_8) != JNI_OK) {
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
+{
+    JNIEnv* env;
+    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_8) != JNI_OK) {
         return JNI_ERR;
     }
     auto modules = JniExports::getInstance()->getModules();
     jclass defaultNativeModule = env->FindClass(nativeModule);
     for (auto it = modules.begin(); it != modules.end(); ++it) {
         std::string className = std::string(nativeModulePrefix) + *it;
-        jclass nativeModule =
-            (!splitPerModule) ? defaultNativeModule : env->FindClass(className.c_str());
+        jclass nativeModule = (!splitPerModule) ? defaultNativeModule : env->FindClass(className.c_str());
         if (nativeModule == nullptr) {
             LOGE("Cannot find managed class %s", className.c_str());
             continue;
         }
         registerNatives(env, nativeModule, JniExports::getInstance()->getMethods(*it));
     }
-    if (!setKoalaJniCallbackDispatcher(env, defaultNativeModule, callCallbackFromNative, callCallbackFromNativeSig)) return JNI_ERR;
+    if (!setKoalaJniCallbackDispatcher(env, defaultNativeModule, callCallbackFromNative, callCallbackFromNativeSig))
+        return JNI_ERR;
     return JNI_VERSION_1_8;
 }
 
-JniExports *JniExports::getInstance()
+JniExports* JniExports::getInstance()
 {
-    static JniExports *instance = nullptr;
-    if (instance == nullptr)
-    {
+    static JniExports* instance = nullptr;
+    if (instance == nullptr) {
         instance = new JniExports();
     }
     return instance;
 }
 
-std::vector<std::string> JniExports::getModules() {
+std::vector<std::string> JniExports::getModules()
+{
     std::vector<std::string> result;
     for (auto it = implementations.begin(); it != implementations.end(); ++it) {
         result.push_back(it->first);
@@ -92,7 +94,8 @@ std::vector<std::string> JniExports::getModules() {
     return result;
 }
 
-const std::vector<std::tuple<std::string, std::string, void*>>& JniExports::getMethods(const std::string& module) {
+const std::vector<std::tuple<std::string, std::string, void*>>& JniExports::getMethods(const std::string& module)
+{
     auto it = implementations.find(module);
     if (it == implementations.end()) {
         LOGE("Module %s is not registered", module.c_str());
@@ -101,10 +104,12 @@ const std::vector<std::tuple<std::string, std::string, void*>>& JniExports::getM
     return it->second;
 }
 
-void JniExports::addMethod(const char* module, const char *name, const char *type, void *impl) {
+void JniExports::addMethod(const char* module, const char* name, const char* type, void* impl)
+{
     auto it = implementations.find(module);
     if (it == implementations.end()) {
-        it = implementations.insert(std::make_pair(module, std::vector<std::tuple<std::string, std::string, void*>>())).first;
+        it = implementations.insert(std::make_pair(module, std::vector<std::tuple<std::string, std::string, void*>>()))
+                 .first;
     }
     it->second.push_back(std::make_tuple(name, convertType(name, type), impl));
 }

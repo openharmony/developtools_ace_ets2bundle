@@ -13,36 +13,45 @@
  * limitations under the License.
  */
 
+#include "oh_sk_log.h"
+
+#include <cstdarg>
 #include <cstdio>
 #include <ctime>
-#include <sys/time.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <cstdarg>
 #include <memory>
-#include "oh_sk_log.h"
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <unistd.h>
+
 #include "interop-utils.h"
 
 static const char* KOALAUI_OHOS_LOG_ROOT = "/data/storage/el2/base/files/logs";
 
-#define APPLY_LOG_FILE_PATTERN(buf, bufLen, t, ms, pid) \
-    interop_sprintf(buf, bufLen, "%s/%d_%d_%d_%lld.pid%d.log", \
-    KOALAUI_OHOS_LOG_ROOT, (t).tm_year + 1900, (t).tm_mon + 1, (t).tm_mday, (ms).tv_sec, pid)
+#define APPLY_LOG_FILE_PATTERN(buf, bufLen, t, ms, pid)                                                   \
+    interop_sprintf(buf, bufLen, "%s/%d_%d_%d_%lld.pid%d.log", KOALAUI_OHOS_LOG_ROOT, (t).tm_year + 1900, \
+        (t).tm_mon + 1, (t).tm_mday, (ms).tv_sec, pid)
 
-const char* oh_sk_log_type_str(oh_sk_log_type type) {
+const char* oh_sk_log_type_str(oh_sk_log_type type)
+{
     switch (type) {
-        case Log_Debug: return "D";
-        case Log_Info: return "I";
-        case Log_Warn: return "W";
-        case Log_Error: return "E";
-        case Log_Fatal: return "F";
+        case Log_Debug:
+            return "D";
+        case Log_Info:
+            return "I";
+        case Log_Warn:
+            return "W";
+        case Log_Error:
+            return "E";
+        case Log_Fatal:
+            return "F";
     }
 }
 
-void oh_sk_file_log(oh_sk_log_type type, const char* msg, ...) {
+void oh_sk_file_log(oh_sk_log_type type, const char* msg, ...)
+{
     time_t t = time(nullptr);
     struct tm lt = *localtime(&t);
-    struct timeval ms{};
+    struct timeval ms {};
     gettimeofday(&ms, nullptr);
 
     static char* path = nullptr;
@@ -54,12 +63,12 @@ void oh_sk_file_log(oh_sk_log_type type, const char* msg, ...) {
     }
 
     std::unique_ptr<FILE, decltype(&fclose)> file(fopen(path, "a"), fclose);
-    if (!file) return;
+    if (!file)
+        return;
 
     constexpr auto US_IN_MS{1000};
-    fprintf(file.get(), "%02d-%02d %02d:%02d:%02d.%03lld %s koala: ",
-            lt.tm_mon + 1, lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec, static_cast<long long>(ms.tv_usec / US_IN_MS),
-            oh_sk_log_type_str(type));
+    fprintf(file.get(), "%02d-%02d %02d:%02d:%02d.%03lld %s koala: ", lt.tm_mon + 1, lt.tm_mday, lt.tm_hour, lt.tm_min,
+        lt.tm_sec, static_cast<long long>(ms.tv_usec / US_IN_MS), oh_sk_log_type_str(type));
 
     va_list args;
     va_start(args, msg);

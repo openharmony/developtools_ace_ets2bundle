@@ -16,18 +16,18 @@
 #ifndef _INTEROP_UTILS_H_
 #define _INTEROP_UTILS_H_
 
-#include <cstring>
 #include <cstdio>
+#include <cstring>
 
 #ifdef __STDC_LIB_EXT1__
-    #include "securec.h"
-    #define USE_SAFE(name, ...) name##_s(__VA_ARGS__)
+#include "securec.h"
+#define USE_SAFE(name, ...) name##_s(__VA_ARGS__)
 #else
-    /* handle possible unsafe case */
-    #define USE_SAFE(name, ...) name(__VA_ARGS__)
+/* handle possible unsafe case */
+#define USE_SAFE(name, ...) name(__VA_ARGS__)
 #endif
 
-inline char *interop_strcpy(char *dest, size_t destsz, const char *src)
+inline char* interop_strcpy(char* dest, size_t destsz, const char* src)
 {
 #ifdef __STDC_LIB_EXT1__
     return reinterpret_cast<char(*)>(USE_SAFE(strcpy, dest, reinterpret_cast<rsize_t>(destsz), src));
@@ -37,7 +37,7 @@ inline char *interop_strcpy(char *dest, size_t destsz, const char *src)
 #endif
 }
 
-inline char *interop_strcat(char *dest, size_t destsz, const char *src)
+inline char* interop_strcat(char* dest, size_t destsz, const char* src)
 {
 #ifdef __STDC_LIB_EXT1__
     return reinterpret_cast<char(*)>(USE_SAFE(strcat, dest, reinterpret_cast<rsize_t>(destsz), src));
@@ -47,7 +47,7 @@ inline char *interop_strcat(char *dest, size_t destsz, const char *src)
 #endif
 }
 
-inline void *interop_memcpy(void *dest, size_t destsz, const void *src, size_t count)
+inline void* interop_memcpy(void* dest, size_t destsz, const void* src, size_t count)
 {
 #ifdef __STDC_LIB_EXT1__
     return reinterpret_cast<void(*)>(USE_SAFE(memcpy, dest, reinterpret_cast<rsize_t>(destsz), src, count));
@@ -57,7 +57,7 @@ inline void *interop_memcpy(void *dest, size_t destsz, const void *src, size_t c
 #endif
 }
 
-inline void *interop_memset(void *dest, size_t destsz, int ch, size_t count)
+inline void* interop_memset(void* dest, size_t destsz, int ch, size_t count)
 {
 #ifdef __STDC_LIB_EXT1__
     return reinterpret_cast<void(*)>(USE_SAFE(memset, dest, reinterpret_cast<rsize_t>(destsz), ch, count))
@@ -67,8 +67,8 @@ inline void *interop_memset(void *dest, size_t destsz, int ch, size_t count)
 #endif
 }
 
-template <typename... T>
-inline int interop_sprintf(char *buffer, size_t bufsz, const char *format, T... args)
+template<typename... T>
+inline int interop_sprintf(char* buffer, size_t bufsz, const char* format, T... args)
 {
 #ifdef __STDC_LIB_EXT1__
     return USE_SAFE(sprintf, buffer, reinterpret_cast<rsize_t>(bufsz), format, args...);
@@ -78,18 +78,18 @@ inline int interop_sprintf(char *buffer, size_t bufsz, const char *format, T... 
 #endif
 }
 
-template <typename... T>
-inline int interop_snprintf(char *buffer, size_t bufsz, const char *format, T... args)
+template<typename... T>
+inline int interop_snprintf(char* buffer, size_t bufsz, const char* format, T... args)
 {
     return USE_SAFE(snprintf, buffer, bufsz, format, args...);
 }
 
-inline int interop_vsnprintf(char *buffer, size_t bufsz, const char *format, va_list vlist)
+inline int interop_vsnprintf(char* buffer, size_t bufsz, const char* format, va_list vlist)
 {
     return USE_SAFE(vsnprintf, buffer, bufsz, format, vlist);
 }
 
-inline size_t interop_strlen(const char *str)
+inline size_t interop_strlen(const char* str)
 {
 #ifdef __STDC_LIB_EXT1__
     return USE_SAFE(strnlen, str, UINT_MAX);

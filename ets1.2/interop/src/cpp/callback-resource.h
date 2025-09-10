@@ -17,23 +17,27 @@
 #define _INTEROP_CALLBACK_RESOURCE_H
 
 #include <vector>
+
 #include "interop-types.h"
 
 #ifdef KOALA_WINDOWS
 #define DLL_EXPORT __declspec(dllexport)
 #else
-#define DLL_EXPORT __attribute__ ((visibility ("default")))
+#define DLL_EXPORT __attribute__((visibility("default")))
 #endif
 
 class CallbackResourceHolder {
 private:
     std::vector<InteropCallbackResource> heldResources;
+
 public:
-    void holdCallbackResource(const InteropCallbackResource* resource) {
+    void holdCallbackResource(const InteropCallbackResource* resource)
+    {
         resource->hold(resource->resourceId);
         this->heldResources.push_back(*resource);
     }
-    void release() {
+    void release()
+    {
         for (auto resource : this->heldResources) {
             resource.release(resource.resourceId);
         }
