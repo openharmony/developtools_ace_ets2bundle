@@ -390,7 +390,7 @@ function main() {}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select2', '(boolean | undefined)')}
 
   ${dumpGetterSetter(GetSetDumper.BOTH, 'select6', '((Array<string> | undefined | string) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select6', '(IProvideDecoratedVariable<(Array<string> | undefined | string) | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select6', '(IProvideDecoratedVariable<(Array<string> | undefined | string)> | undefined)', [dumpAnnotation('Require')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select6', '(boolean | undefined)')}
 
   ${dumpGetterSetter(GetSetDumper.BOTH, 'builder', '(@memo() (()=> void) | undefined)')}

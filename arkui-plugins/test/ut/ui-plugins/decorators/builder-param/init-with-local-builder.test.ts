@@ -114,7 +114,7 @@ function main() {}
 }
 
 @Component() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@memo() ((str: string)=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@memo() (()=> void) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
 
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '(@memo() ((str: string)=> void) | undefined)')}
@@ -230,7 +230,7 @@ function main() {}
 }
 
 @Component() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
 
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '(@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) | undefined)')}
