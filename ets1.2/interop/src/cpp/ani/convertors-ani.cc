@@ -15,7 +15,7 @@
 #include "convertors-ani.h"
 
 #include <map>
-#include <cstring>
+#include <string.h>
 
 #include "interop-types.h"
 #include "signatures.h"

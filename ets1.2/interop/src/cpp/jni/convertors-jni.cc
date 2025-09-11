@@ -30,16 +30,13 @@ const bool registerByOne = true;
 static bool registerNatives(
     JNIEnv* env, jclass clazz, const std::vector<std::tuple<std::string, std::string, void*>> impls)
 {
-    constexpr auto NUM_0{0};
-    constexpr auto NUM_1{1};
-    constexpr auto NUM_2{2};
     size_t numMethods = impls.size();
     JNINativeMethod* methods = new JNINativeMethod[numMethods];
     bool result = true;
     for (size_t i = 0; i < numMethods; i++) {
-        methods[i].name = (char*)std::get<NUM_0>(impls[i]).c_str();
-        methods[i].signature = (char*)std::get<NUM_1>(impls[i]).c_str();
-        methods[i].fnPtr = std::get<NUM_2>(impls[i]);
+        methods[i].name = (char*)std::get<0>(impls[i]).c_str();
+        methods[i].signature = (char*)std::get<1>(impls[i]).c_str();
+        methods[i].fnPtr = std::get<2>(impls[i]);
         if (registerByOne) {
             result &= (env->RegisterNatives(clazz, methods + i, 1) >= 0);
             if (env->ExceptionCheck()) {

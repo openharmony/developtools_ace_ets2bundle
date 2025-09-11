@@ -31,23 +31,21 @@
  * limitations under the License.
  */
 
-#include <iostream>
-#include <string>
-#include <vector>
-
-#include "common-interop.h"
 #include "dynamic-loader.h"
 #include "es2panda_lib.h"
-#include "interop-utils.h"
+#include "common-interop.h"
 #include "stdexcept"
+#include "interop-utils.h"
+#include <string>
+#include <iostream>
+#include <vector>
 
 using std::string, std::cout, std::endl, std::vector;
 
-extern es2panda_Impl* es2pandaImplementation;
+extern es2panda_Impl *es2pandaImplementation;
 
-es2panda_Impl* GetImplSlow();
-inline es2panda_Impl* GetImpl()
-{
+es2panda_Impl *GetImplSlow();
+inline es2panda_Impl *GetImpl() {
     if (es2pandaImplementation) {
         return es2pandaImplementation;
     }
@@ -68,8 +66,12 @@ inline KUInt unpackUInt(const KByte* bytes)
     const KUInt BYTE_1_SHIFT = 8;
     const KUInt BYTE_2_SHIFT = 16;
     const KUInt BYTE_3_SHIFT = 24;
-    return (bytes[BYTE_0] | (bytes[BYTE_1] << BYTE_1_SHIFT) | (bytes[BYTE_2] << BYTE_2_SHIFT) |
-            (bytes[BYTE_3] << BYTE_3_SHIFT));
+    return (
+        bytes[BYTE_0]
+        | (bytes[BYTE_1] << BYTE_1_SHIFT)
+        | (bytes[BYTE_2] << BYTE_2_SHIFT)
+        | (bytes[BYTE_3] << BYTE_3_SHIFT)
+    );
 }
 
 es2panda_ContextState intToState(KInt state);
@@ -77,33 +79,32 @@ es2panda_ContextState intToState(KInt state);
 class StageArena {
     std::vector<void*> allocated;
     size_t totalSize;
-
-public:
+  public:
     StageArena();
     ~StageArena();
     static StageArena* instance();
-    template<typename T>
+    template <typename T>
     static T* alloc()
     {
         auto* arena = StageArena::instance();
         void* memory = arena->alloc(sizeof(T));
         return new (memory) T();
     }
-    template<class T, class T1>
+    template <class T, class T1>
     static T* alloc(T1 arg1)
     {
         auto* arena = StageArena::instance();
         void* memory = arena->alloc(sizeof(T));
         return new (memory) T(std::forward(arg1));
     }
-    template<class T, class T1, class T2>
+    template <class T, class T1, class T2>
     static T* alloc(T1 arg1, T2 arg2)
     {
         auto* arena = StageArena::instance();
         void* memory = arena->alloc(sizeof(T));
         return new (memory) T(arg1, arg2);
     }
-    template<typename T>
+    template <typename T>
     static T* allocArray(size_t count)
     {
         auto* arena = StageArena::instance();
@@ -111,14 +112,14 @@ public:
         void* memory = arena->alloc(sizeof(T) * count);
         return new (memory) T();
     }
-    template<class T>
+    template <class T>
     static T* clone(const T& arg)
     {
         auto* arena = StageArena::instance();
         void* memory = arena->alloc(sizeof(T));
         return new (memory) T(arg);
     }
-    template<class T>
+    template <class T>
     static std::vector<const void*>* cloneVector(const T* arg, size_t count)
     {
         return alloc<std::vector<const void*>, const T*, const T*>(arg, arg + count);

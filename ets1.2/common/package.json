@@ -26,7 +26,7 @@
         "clean": "rimraf build",
         "test": "mocha",
         "test:coverage": "nyc mocha",
-        "build": "node ../../ui2abc/fast-arktsc --config ./ui2abcconfig.json --compiler ../tools/panda/arkts/ui2abc --link-name ./build/common.abc --simultaneous && PANDA_SDK_PATH=${PANDA_SDK_PATH:=../tools/panda/node_modules/@panda/sdk} ninja ${NINJA_OPTIONS} -f build/abc/build.ninja"
+        "build": "fast-arktsc --config ./ui2abcconfig.json --compiler ../incremental/tools/panda/arkts/ui2abc --link-name ./build/common.abc --simultaneous && PANDA_SDK_PATH=${PANDA_SDK_PATH:=../incremental/tools/panda/node_modules/@panda/sdk} ninja ${NINJA_OPTIONS} -f build/abc/build.ninja"
     },
     "keywords": [],
     "dependencies": {
