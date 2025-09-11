@@ -752,6 +752,19 @@ export class MethodDefinition extends AstNode {
             passNodeArray(overloads),
             overloads.length
         );
+        overloads.forEach((it): void => {
+            it.setBaseOverloadMethod(this);
+            it.parent = this;
+        })
+        return this;
+    }
+
+    setBaseOverloadMethod(baseOverloadMethod?: MethodDefinition): this {
+        global.generatedEs2panda._MethodDefinitionSetBaseOverloadMethod(
+            global.context,
+            this.peer,
+            passNode(baseOverloadMethod)
+        );
         return this;
     }
 
