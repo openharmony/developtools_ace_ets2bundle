@@ -105,6 +105,7 @@ import {
 import { ErrorCodeModule } from './hvigor_error_code/const/error_code_module';
 import { buildErrorInfoFromDiagnostic } from './hvigor_error_code/utils';
 import { concatenateEtsOptions, getExternalComponentPaths } from './external_component_map';
+import { ATOMICSERVICE_BUNDLE_TYPE } from './fast_build/system_api/api_check_define';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -186,7 +187,8 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
   checkArkTSVersion();
   Object.assign(compilerOptions, {
     'allowJs': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE ? true : false,
-    'checkJs': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE ? false : undefined,
+    'checkJs': (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE) ? true : 
+      (getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE ? false : undefined),
     'emitNodeModulesFiles': true,
     'importsNotUsedAsValues': ts.ImportsNotUsedAsValues.Preserve,
     'module': ts.ModuleKind.CommonJS,
@@ -853,6 +855,11 @@ function containFormError(message: string): boolean {
   return false;
 }
 
+function matchJSGrammarErrorMessage(message: string): boolean {
+  const regex = /^'.*?' can't support atomicservice application\.$/;
+  return regex.test(message);
+}
+
 let fileToIgnoreDiagnostics: Set<string> | undefined = undefined;
 
 function collectFileToThrowDiagnostics(file: string, fileToThrowDiagnostics: Set<string>): void {
@@ -932,12 +939,25 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
     return;
   }
 
+  // Add filtering logic to remove atomService JS files from fileToIgnoreDiagnostics , while avoiding intrusive modifications
+  if (fileToIgnoreDiagnostics && diagnostic.file && diagnostic.file.fileName &&
+    fileToIgnoreDiagnostics.has(toUnixPath(diagnostic.file.fileName)) &&
+    isAtomicJsFile(diagnostic.file.fileName)) {
+    fileToIgnoreDiagnostics.delete(toUnixPath(diagnostic.file.fileName));
+  }
+
   if (fileToIgnoreDiagnostics && diagnostic.file && diagnostic.file.fileName &&
     fileToIgnoreDiagnostics.has(toUnixPath(diagnostic.file.fileName))) {
     return;
   }
 
+  // Eliminate syntax errors in the JS files, retaining only API validation errors related to the atomService
+  if(!matchJSGrammarErrorMessage(diagnostic.messageText) && fileToIgnoreDiagnostics &&
+  diagnostic.file && diagnostic.file.fileName && isAtomicJsFile(diagnostic.file.fileName)){
+    return;
+  }
   const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+
   if (validateError(message)) {
     if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
       updateErrorFileCache(diagnostic);
@@ -980,6 +1000,17 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
       }
     }
   }
+}
+
+function isAtomicJsFile(fileName): boolean {
+  const isNonSdkFile: boolean = !isInSDK(fileName);
+  const isAtomicServiceBundle: boolean = projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE;
+  const isJsOrModuleFile: boolean = /\.(c|m)?js$/.test(fileName);
+  const normalizedFileName: string = fileName.replace(/\\/g, '/');
+  const normalizedProjectPath: string = projectConfig.projectPath.replace(/\\/g, '/');
+  const isInProjectPath: boolean = normalizedFileName.startsWith(normalizedProjectPath);
+
+  return isNonSdkFile && isAtomicServiceBundle && isJsOrModuleFile && isInProjectPath;
 }
 
 function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
