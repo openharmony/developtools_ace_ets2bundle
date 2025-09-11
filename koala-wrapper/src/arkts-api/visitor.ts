@@ -80,6 +80,7 @@ import {
 import { classDefinitionFlags } from './utilities/public';
 import { Es2pandaAstNodeType } from '../Es2pandaEnums';
 import { updateFunctionExpression } from './node-utilities/FunctionExpression';
+import { MethodDefinition } from './types';
 
 type Visitor = (node: AstNode) => AstNode;
 
@@ -308,7 +309,8 @@ function visitDefinition(node: AstNode, visitor: Visitor): AstNode {
     }
     if (isMethodDefinition(node)) {
         updated = true;
-        return factory.updateMethodDefinition(
+        const newOverloads: readonly MethodDefinition[] = nodesVisitor(node.overloads, visitor);
+        const newNode = factory.updateMethodDefinition(
             node,
             node.kind,
             node.name,
@@ -316,6 +318,12 @@ function visitDefinition(node: AstNode, visitor: Visitor): AstNode {
             node.modifiers,
             false
         );
+        node.setOverloads(newOverloads);
+        newOverloads.forEach((it): void => {
+            it.setBaseOverloadMethod(node);
+            it.parent = node;
+        });
+        return newNode;
     }
     if (isTSInterfaceBody(node)) {
         updated = true;
