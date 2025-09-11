@@ -184,6 +184,16 @@ export class ScriptFunction extends AstNode {
         global.generatedEs2panda._ScriptFunctionSetAnnotations(global.context, this.peer, passNodeArray(annotations), annotations.length)
         return this
     }
+    /** @deprecated */
+    setParams(paramsList: readonly Expression[]): this {
+        global.es2panda._ScriptFunctionSetParams(
+            global.context,
+            this.peer,
+            passNodeArray(paramsList),
+            paramsList.length
+        );
+        return this;
+    }
 }
 export function isScriptFunction(node: AstNode): node is ScriptFunction {
     return node instanceof ScriptFunction
