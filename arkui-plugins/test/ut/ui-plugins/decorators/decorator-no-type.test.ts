@@ -680,7 +680,7 @@ final class StateType extends BaseEnum<int> {
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar2', '(boolean | undefined)')}
 
   ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar3', '(Any | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar3', '(IPropRefDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar3', '(IProvideDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar3', '(boolean | undefined)')}
 
   ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar8', '(Any | undefined)')}
