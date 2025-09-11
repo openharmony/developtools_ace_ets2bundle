@@ -204,18 +204,14 @@ struct InteropTypeConverter<KVMObjectHandle> {
 
 inline napi_typedarray_type getNapiType(KInt size)
 {
-    constexpr auto NUM_1{1};
-    constexpr auto NUM_2{2};
-    constexpr auto NUM_3{3};
-    constexpr auto NUM_4{4};
     switch (size) {
-        case NUM_1:
+        case 1:
             return napi_uint8_array;
-        case NUM_2:
+        case 2:
             return napi_uint16_array;
-        case NUM_4:
+        case 4:
             return napi_uint32_array;
-        case NUM_8:
+        case 8:
             return napi_biguint64_array;
         default:
             break;
@@ -764,8 +760,8 @@ public:
     const std::vector<std::pair<std::string, napi_type_t>>& getMethods(const std::string& module);
 };
 
-#define QUOTE2(x) #x
-#define QUOTE(x) QUOTE2(x)
+#define __QUOTE(x) #x
+#define QUOTE(x) __QUOTE(x)
 
 #ifdef _MSC_VER
 #define MAKE_NODE_EXPORT(module, name)                                            \

@@ -5,7 +5,7 @@
         "ts"
     ],
     "require": [
-        "../../incremental/test-utils/scripts/register"
+        "../incremental/test-utils/scripts/register"
     ],
     "timeout": 20000
 }
