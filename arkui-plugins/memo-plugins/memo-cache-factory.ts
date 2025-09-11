@@ -273,9 +273,6 @@ export class RewriteFactory {
             node.modifiers,
             false
         );
-        if (node.overloads.length > 0) {
-            newNode.setOverloads(node.overloads.map((o) => RewriteFactory.rewriteMethodDefinition(o, metadata)));
-        }
         return newNode;
     }
 

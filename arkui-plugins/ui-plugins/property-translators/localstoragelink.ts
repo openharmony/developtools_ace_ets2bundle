@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { backingField, expectName } from '../../common/arkts-utils';
+import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
@@ -118,7 +118,7 @@ export class LocalStorageLinkInterfaceTranslator<
     translateProperty(): T {
         if (arkts.isMethodDefinition(this.property)) {
             this.modified = true;
-            return this.updateStateMethodInInterface(this.property) as T;
+            return flatVisitMethodWithOverloads(this.property, this.updateStateMethodInInterface) as T;
         } else if (arkts.isClassProperty(this.property)) {
             this.modified = true;
             return this.updateStatePropertyInInterface(this.property) as T;

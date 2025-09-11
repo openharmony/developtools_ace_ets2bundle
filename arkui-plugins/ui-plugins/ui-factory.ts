@@ -44,7 +44,6 @@ export interface MethodDefinitionConfiguration {
     key: arkts.Identifier;
     kind: arkts.Es2pandaMethodDefinitionKind;
     function: ScriptFunctionConfiguration;
-    overloads: arkts.MethodDefinition[];
     modifiers: arkts.Es2pandaModifierFlags;
     isComputed: boolean;
 }
@@ -271,9 +270,6 @@ export class factory {
             config.modifiers ?? original.modifiers,
             config.isComputed ?? false
         );
-        if (!!config.overloads) {
-            newMethod.setOverloads(config.overloads);
-        }
         return newMethod;
     }
 
@@ -292,9 +288,6 @@ export class factory {
             config.modifiers ?? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             config.isComputed ?? false
         );
-        if (!!config.overloads) {
-            newMethod.setOverloads(config.overloads);
-        }
         return newMethod;
     }
 
