@@ -218,6 +218,10 @@ export function memoryMonitor(): MemoryMonitorLifecycle {
       handler(): void {
         const memoryMonitorInstance: MemoryMonitor = MemoryMonitor.getInstance();
         memoryMonitorInstance.stop();
+        const cleanUpTimeout = (projectConfig.memoryDottingWriteFileInterval ?? 1000) * 2;
+        setTimeout(() => {
+          memoryMonitorInstance.cleanUp();
+        }, cleanUpTimeout);
       },
     },
   };
