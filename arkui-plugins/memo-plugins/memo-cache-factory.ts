@@ -116,13 +116,7 @@ export class RewriteFactory {
         if (!node.type && !node.initializer) {
             return node;
         }
-        // if (node.dumpSrc().includes('a: ')) {
-        //     console.log("[BEFORE type rewrite] type: ", node.type?.dumpSrc());
-        // }
         node.type = RewriteFactory.rewriteType(node.type as arkts.TypeNode, metadata);
-        // if (node.dumpSrc().includes('a: ')) {
-        //     console.log("[AFTER type rewrite] type: ", node.type?.dumpSrc());
-        // }
         return node;
     }
 
@@ -226,9 +220,6 @@ export class RewriteFactory {
             _isGetter,
             _hasReceiver
         );
-        // newParams.forEach((a) => {
-        //     console.log("[THIS IS PARAM] ", a.dumpSrc());
-        // })
         const newReturnType: arkts.TypeNode | undefined = prepareRewriteScriptFunctionReturnType(
             node,
             _isGetter,
@@ -253,7 +244,6 @@ export class RewriteFactory {
         if (!!newBody) {
             node.setBody(newBody);
         }
-        // console.log("[NEW Node: ] node: ", node.dumpSrc());
         return node;
     }
 

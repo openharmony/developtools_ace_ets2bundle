@@ -24,19 +24,21 @@ function dumpGetterSetter(
     name: string,
     type: string,
     annotations: string[] = [],
-    body: string | undefined = undefined
+    body: string | undefined = undefined,
+    paramAnnotations: string[] = []
 ): string {
     if (getOrSet === GetSetDumper.BOTH) {
         return [
-            dumpGetterSetter(GetSetDumper.GET, name, type, annotations, body),
-            dumpGetterSetter(GetSetDumper.SET, name, type, annotations, body),
+            dumpGetterSetter(GetSetDumper.GET, name, type, annotations, body, paramAnnotations),
+            dumpGetterSetter(GetSetDumper.SET, name, type, annotations, body, paramAnnotations),
         ].join('\n\n');
     }
     let methodStr: string;
     if (getOrSet === GetSetDumper.GET) {
         methodStr = `get ${name}(): ${type}`;
     } else {
-        methodStr = `set ${name}(${name}: ${type})`;
+        const paramStr = [...paramAnnotations, name].join(' ');
+        methodStr = `set ${name}(${paramStr}: ${type})`;
     }
     const strList: string[] = [...annotations, methodStr, ...(!!body ? [body] : [])];
     return strList.join(' ');

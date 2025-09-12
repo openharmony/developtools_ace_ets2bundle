@@ -78,6 +78,7 @@ import {
     collectMemoableInfoInFunctionReturnType,
     collectMemoableInfoInParameter,
     collectScriptFunctionReturnTypeFromInfo,
+    findCanAddMemoFromArrowFunction,
 } from '../../collectors/memo-collectors/utils';
 import { TypeRecord } from '../../collectors/utils/collect-types';
 import { StyleInternalsVisitor } from './style-internals-visitor';
@@ -475,13 +476,15 @@ export class factory {
     static createOrUpdateArgInBuilderLambda(
         fallback: arkts.AstNode | undefined,
         arg: arkts.Expression | undefined,
-        canAddMemo?: boolean,
+        param: arkts.Expression,
         declInfo?: BuilderLambdaDeclInfo
     ): arkts.AstNode | undefined {
         if (!arg) {
             return fallback;
         }
         if (arkts.isArrowFunctionExpression(arg)) {
+            const memoableInfo = collectMemoableInfoInParameter(param);
+            const canAddMemo = findCanAddMemoFromArrowFunction(arg) || checkIsMemoFromMemoableInfo(memoableInfo, false);
             const newNode = this.processArgArrowFunction(arg, canAddMemo);
             if (canAddMemo) {
                 addMemoAnnotation(newNode);
@@ -498,9 +501,9 @@ export class factory {
     static createSecondLastArgInBuilderLambda(argInfo: BuilderLambdaSecondLastArgInfo): arkts.AstNode | undefined {
         if (!!argInfo.isReusable && !!argInfo.reuseId) {
             const reuseIdNode = arkts.factory.createStringLiteral(argInfo.reuseId);
-            return this.createOrUpdateArgInBuilderLambda(reuseIdNode, undefined, undefined);
+            return reuseIdNode;
         } else if (!argInfo.isFunctionCall) {
-            return this.createOrUpdateArgInBuilderLambda(arkts.factory.createUndefinedLiteral(), undefined, undefined);
+            return arkts.factory.createUndefinedLiteral();
         }
         return undefined;
     }
@@ -530,10 +533,8 @@ export class factory {
                     modifiedArg = this.createSecondLastArgInBuilderLambda(secondLastArgInfo);
                 }
                 if (!modifiedArg) {
-                    const memoableInfo = collectMemoableInfoInParameter(param);
-                    const canAddMemo = checkIsMemoFromMemoableInfo(memoableInfo, false);
                     const fallback = arkts.factory.createUndefinedLiteral();
-                    const updatedArg = this.createOrUpdateArgInBuilderLambda(fallback, arg, canAddMemo, declInfo);
+                    const updatedArg = this.createOrUpdateArgInBuilderLambda(fallback, arg, param, declInfo);
                     modifiedArg = factory.processModifiedArg(updatedArg, index, leaf.arguments, moduleName, type?.name);
                 }
                 const shouldInsertToArgs = !isFunctionCall || (index === params.length - 1 && hasLastTrailingLambda);

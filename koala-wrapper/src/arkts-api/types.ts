@@ -752,10 +752,6 @@ export class MethodDefinition extends AstNode {
             passNodeArray(overloads),
             overloads.length
         );
-        overloads.forEach((it): void => {
-            it.setBaseOverloadMethod(this);
-            it.parent = this;
-        })
         return this;
     }
 

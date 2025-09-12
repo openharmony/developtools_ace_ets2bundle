@@ -61,14 +61,6 @@ class AnnotationVisitor extends AbstractVisitor {
             node.annotations = [this.testAnnotation()];
         } else if (arkts.isMethodDefinition(node)) {
             node.scriptFunction.setAnnotations([this.testAnnotation()]);
-            node.setOverloads(
-                node.overloads.map((ov) => {
-                    if (this.isAnnotationNode(ov)) {
-                        this.addTestAnnotation(ov);
-                    }
-                    return ov;
-                })
-            );
         } else {
             node.setAnnotations([this.testAnnotation()]);
         }
@@ -79,14 +71,6 @@ class AnnotationVisitor extends AbstractVisitor {
             node.annotations = [];
         } else if (arkts.isMethodDefinition(node)) {
             node.scriptFunction.setAnnotations([]);
-            node.setOverloads(
-                node.overloads.map((ov) => {
-                    if (this.isAnnotationNode(ov)) {
-                        this.removeTestAnnotation(ov);
-                    }
-                    return ov;
-                })
-            );
         } else {
             node.setAnnotations([]);
         }
@@ -205,7 +189,7 @@ import { Component as Component, ResourceStr as ResourceStr, Builder as Builder 
     @TestAnno() public constructor() {}
 }
 @TestAnno() interface __A {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'prop', 'number', [dumpAnnotation('TestAnno')])}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'prop', 'number', [dumpAnnotation('TestAnno')], undefined, [dumpAnnotation('TestAnno')])}
 }
 `;
 
