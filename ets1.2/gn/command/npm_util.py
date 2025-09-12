@@ -54,17 +54,17 @@ if args.stdlib_path:
 os.environ["LIBARKTS_PATH"] = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../libarkts")
 os.environ["PANDA_SDK_PATH"] = os.path.join(os.environ.get("LIBARKTS_PATH"), "sdk")
 
-def run(args, dir = None):
+def run(npm_args, dir = None):
     os.chdir(dir or project_path)
 
     if os.environ.get("KOALA_LOG_STDOUT"):
-        subprocess.run(["npm"] + args, env=os.environ, text=True, check=True, stderr=subprocess.STDOUT)
+        subprocess.run(["npm"] + npm_args, env=os.environ, text=True, check=True, stderr=subprocess.STDOUT)
         return
-    result = subprocess.run(["npm"] + args, capture_output=True, env=os.environ, text=True)
+    result = subprocess.run(["npm"] + npm_args, capture_output=True, env=os.environ, text=True)
     with open(koala_log, "w+") as f:
-        f.write(f"npm args: {args}; project: {project_path}:\n" + result.stdout)
+        f.write(f"npm args: {npm_args}; project: {project_path}:\n" + result.stdout)
         if result.returncode != 0:
-            f.write(f"npm args: {args}; project: {project_path}:\n" + result.stderr)
+            f.write(f"npm args: {npm_args}; project: {project_path}:\n" + result.stderr)
             f.close()
             print(open(koala_log, "r").read())
             raise Exception("npm failed")

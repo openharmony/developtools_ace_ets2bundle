@@ -72,8 +72,9 @@ public:
                 auto ns = a.second.time;
                 auto count = a.second.count;
                 char buffer[1024];
+                const double MAX = 100.0;
                 interop_snprintf(buffer, sizeof buffer, "for %s[%lld]: %.01f%% (%lld)\n", a.first.c_str(),
-                    (long long)count, (double)ns / total * 100.0, (long long)ns);
+                    (long long)count, (double)ns / total * MAX, (long long)ns);
                 result += buffer;
             });
         return result;

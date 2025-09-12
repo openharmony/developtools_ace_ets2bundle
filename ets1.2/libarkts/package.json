@@ -64,7 +64,7 @@
         "crosscompile:native": "npm run compile:koala:interop && npm run crosscompile:meson && npm run copy:.node",
         "compile": "npm run regenerate && npm run compile:native && npm run compile:js",
         "compile:release": "npm run crosscompile:native && npm run compile:js",
-        "compile:js": "rm -rf lib/ && rollup -c rollup.lib.mjs && rollup -c rollup.es2panda.mjs",
+        "compile:js": "rm -rf lib/ && rollup -c rollup-lib.mjs && rollup -c rollup.es2panda.mjs",
         "compile:plugins": "rollup -c ./rollup.printer-plugin.mjs",
         "direct": "fast-arktsc --config arktsconfig.json --compiler ../incremental/tools/panda/arkts/ui2abc --link-name ./build/abc/main.abc && ninja -f build/abc/build.ninja",
         "simultaneous": "mkdir -p build/abc && bash ../incremental/tools/panda/arkts/ui2abc --simultaneous --arktsconfig arktsconfig.json --output ./build/abc/main.abc:./build/abc/library.abc plugins/input/main.ets:plugins/input/library.ets",
