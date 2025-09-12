@@ -27,6 +27,7 @@ module.exports = {
         '^.+\\.ts$': ['ts-jest'],
     },
     testRegex: './test/ut/.+\\.test\\.ts$',
+    testPathIgnorePatterns: [],
     moduleFileExtensions: ['ts', 'js', 'json', 'node'],
     coverageDirectory: './test/report',
     collectCoverageFrom: [

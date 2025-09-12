@@ -18,6 +18,27 @@ import { DeclarationCollector } from './declaration-collector';
 import { ARKUI_IMPORT_PREFIX_NAMES, DecoratorNames } from './predefines';
 import * as fs from 'fs';
 
+/**
+ * Visit base method and all its overloads with visitor.
+ * 
+ * @param method base method AstNode
+ * @param visitor rewrite visitor for each method AstNode
+ * @returns new base method AstNode with new overloads
+ */
+export function flatVisitMethodWithOverloads(
+    method: arkts.MethodDefinition,
+    visitor: (node: arkts.MethodDefinition) => arkts.MethodDefinition
+): arkts.MethodDefinition {
+    const newOverloads: readonly arkts.MethodDefinition[] = method.overloads.map(visitor);
+    const newNode = visitor(method);
+    newNode.setOverloads(newOverloads);
+    newOverloads.forEach((it): void => {
+        it.setBaseOverloadMethod(newNode);
+        it.parent = newNode;
+    });
+    return newNode;
+}
+
 export function coerceToAstNode<T extends arkts.AstNode>(node: arkts.AstNode): T {
     return node as T;
 }
@@ -145,9 +166,9 @@ export function moveToFront<T>(arr: T[], idx: number): T[] {
 }
 
 /**
- * Performs the specified action for each argument in a `arkts.CallExpression`'s arguments array 
- * paired with corresponding parameter from the function declaration node.  
- * 
+ * Performs the specified action for each argument in a `arkts.CallExpression`'s arguments array
+ * paired with corresponding parameter from the function declaration node.
+ *
  * @param args An arguments array from a `arkts.CallExpression` node.
  * @param params A parameters array from a function declaration node.
  * @param callbackFn A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array.

@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -217,69 +218,33 @@ final class Status extends BaseEnum<int> {
 }
 
 @Component() export interface __Options_MyStateSample {
-  set arrayB(arrayB: (Array<number> | undefined))
-  
-  get arrayB(): (Array<number> | undefined)
-  set __backing_arrayB(__backing_arrayB: (IStoragePropRefDecoratedVariable<Array<number>> | undefined))
-  
-  get __backing_arrayB(): (IStoragePropRefDecoratedVariable<Array<number>> | undefined)
-  set __options_has_arrayB(__options_has_arrayB: (boolean | undefined))
-  
-  get __options_has_arrayB(): (boolean | undefined)
-  set objectB(objectB: (Object | undefined))
-  
-  get objectB(): (Object | undefined)
-  set __backing_objectB(__backing_objectB: (IStoragePropRefDecoratedVariable<Object> | undefined))
-  
-  get __backing_objectB(): (IStoragePropRefDecoratedVariable<Object> | undefined)
-  set __options_has_objectB(__options_has_objectB: (boolean | undefined))
-  
-  get __options_has_objectB(): (boolean | undefined)
-  set dateB(dateB: (Date | undefined))
-  
-  get dateB(): (Date | undefined)
-  set __backing_dateB(__backing_dateB: (IStoragePropRefDecoratedVariable<Date> | undefined))
-  
-  get __backing_dateB(): (IStoragePropRefDecoratedVariable<Date> | undefined)
-  set __options_has_dateB(__options_has_dateB: (boolean | undefined))
-  
-  get __options_has_dateB(): (boolean | undefined)
-  set setB(setB: (Set<number> | undefined))
-  
-  get setB(): (Set<number> | undefined)
-  set __backing_setB(__backing_setB: (IStoragePropRefDecoratedVariable<Set<number>> | undefined))
-  
-  get __backing_setB(): (IStoragePropRefDecoratedVariable<Set<number>> | undefined)
-  set __options_has_setB(__options_has_setB: (boolean | undefined))
-  
-  get __options_has_setB(): (boolean | undefined)
-  set mapB(mapB: (Map<number, string> | undefined))
-  
-  get mapB(): (Map<number, string> | undefined)
-  set __backing_mapB(__backing_mapB: (IStoragePropRefDecoratedVariable<Map<number, string>> | undefined))
-  
-  get __backing_mapB(): (IStoragePropRefDecoratedVariable<Map<number, string>> | undefined)
-  set __options_has_mapB(__options_has_mapB: (boolean | undefined))
-  
-  get __options_has_mapB(): (boolean | undefined)
-  set classB(classB: (Person | undefined))
-  
-  get classB(): (Person | undefined)
-  set __backing_classB(__backing_classB: (IStoragePropRefDecoratedVariable<Person> | undefined))
-  
-  get __backing_classB(): (IStoragePropRefDecoratedVariable<Person> | undefined)
-  set __options_has_classB(__options_has_classB: (boolean | undefined))
-  
-  get __options_has_classB(): (boolean | undefined)
-  set enumB(enumB: (Status | undefined))
-  
-  get enumB(): (Status | undefined)
-  set __backing_enumB(__backing_enumB: (IStoragePropRefDecoratedVariable<Status> | undefined))
-  
-  get __backing_enumB(): (IStoragePropRefDecoratedVariable<Status> | undefined)
-  set __options_has_enumB(__options_has_enumB: (boolean | undefined))
-  
-  get __options_has_enumB(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'arrayB', '(Array<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_arrayB', '(IStoragePropRefDecoratedVariable<Array<number>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_arrayB', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectB', '(Object | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectB', '(IStoragePropRefDecoratedVariable<Object> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectB', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'dateB', '(Date | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_dateB', '(IStoragePropRefDecoratedVariable<Date> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dateB', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'setB', '(Set<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_setB', '(IStoragePropRefDecoratedVariable<Set<number>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_setB', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'mapB', '(Map<number, string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_mapB', '(IStoragePropRefDecoratedVariable<Map<number, string>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_mapB', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'classB', '(Person | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_classB', '(IStoragePropRefDecoratedVariable<Person> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_classB', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'enumB', '(Status | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_enumB', '(IStoragePropRefDecoratedVariable<Status> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_enumB', '(boolean | undefined)')}
   
 }
 `;

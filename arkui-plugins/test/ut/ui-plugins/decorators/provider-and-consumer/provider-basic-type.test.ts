@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { structNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -122,51 +123,25 @@ function main() {}
 }
 
 @ComponentV2() export interface __Options_Parent {
-  set providerVar1(providerVar1: (string | undefined))
-  
-  get providerVar1(): (string | undefined)
-  set __backing_providerVar1(__backing_providerVar1: (IProviderDecoratedVariable<string> | undefined))
-  
-  get __backing_providerVar1(): (IProviderDecoratedVariable<string> | undefined)
-  set __options_has_providerVar1(__options_has_providerVar1: (boolean | undefined))
-  
-  get __options_has_providerVar1(): (boolean | undefined)
-  set providerVar2(providerVar2: (number | undefined))
-  
-  get providerVar2(): (number | undefined)
-  set __backing_providerVar2(__backing_providerVar2: (IProviderDecoratedVariable<number> | undefined))
-  
-  get __backing_providerVar2(): (IProviderDecoratedVariable<number> | undefined)
-  set __options_has_providerVar2(__options_has_providerVar2: (boolean | undefined))
-  
-  get __options_has_providerVar2(): (boolean | undefined)
-  set providerVar3(providerVar3: (boolean | undefined))
-  
-  get providerVar3(): (boolean | undefined)
-  set __backing_providerVar3(__backing_providerVar3: (IProviderDecoratedVariable<boolean> | undefined))
-  
-  get __backing_providerVar3(): (IProviderDecoratedVariable<boolean> | undefined)
-  set __options_has_providerVar3(__options_has_providerVar3: (boolean | undefined))
-  
-  get __options_has_providerVar3(): (boolean | undefined)
-  set providerVar4(providerVar4: (undefined | undefined))
-  
-  get providerVar4(): (undefined | undefined)
-  set __backing_providerVar4(__backing_providerVar4: (IProviderDecoratedVariable<undefined> | undefined))
-  
-  get __backing_providerVar4(): (IProviderDecoratedVariable<undefined> | undefined)
-  set __options_has_providerVar4(__options_has_providerVar4: (boolean | undefined))
-  
-  get __options_has_providerVar4(): (boolean | undefined)
-  set providerVar5(providerVar5: (null | undefined))
-  
-  get providerVar5(): (null | undefined)
-  set __backing_providerVar5(__backing_providerVar5: (IProviderDecoratedVariable<null> | undefined))
-  
-  get __backing_providerVar5(): (IProviderDecoratedVariable<null> | undefined)
-  set __options_has_providerVar5(__options_has_providerVar5: (boolean | undefined))
-  
-  get __options_has_providerVar5(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar1', '(IProviderDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar1', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar2', '(IProviderDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar2', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar3', '(IProviderDecoratedVariable<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar3', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar4', '(IProviderDecoratedVariable<undefined> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar4', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar5', '(IProviderDecoratedVariable<null> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar5', '(boolean | undefined)')}
   
 }
 `;

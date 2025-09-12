@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { uiNoRecheck, recheck, memoNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -96,12 +97,12 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
           instance.setRowOptions(undefined).height("100%").applyAttributesFinish();
           return;
         }), @memo() (() => {
-          globalBuilder.builder(this.message, 50);
+          globalBuilder(this.message, 50);
           ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
-            instance.setForEachOptions(((): Array<WrappedBuilder<@Builder() ((value: string, size: number)=> void)>> => {
+            instance.setForEachOptions(((): Array<@Builder() ((value: string, size: number)=> void)> => {
               return builderArr;
-            }), @memo() ((item: WrappedBuilder<@Builder() ((value: string, size: number)=> void)>) => {
-              item.builder("Hello World", 30);
+            }), @memo() ((item: @Builder() ((value: string, size: number)=> void)) => {
+              item("Hello World", 30);
             }), undefined);
             return;
           }));
@@ -110,12 +111,9 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     public constructor() {}
 }
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
-    set message(message: (string | undefined))
-    get message(): (string | undefined)
-    set __backing_message(__backing_message: (IStateDecoratedVariable<string> | undefined))
-    get __backing_message(): (IStateDecoratedVariable<string> | undefined)
-    set __options_has_message(__options_has_message: (boolean | undefined))
-    get __options_has_message(): (boolean | undefined)
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
 }
 class __EntryWrapper extends EntryPoint {
     @memo() public entry(): void {
@@ -136,6 +134,8 @@ import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from \"arkui.stateManagement.decorator\";
 import { IStateDecoratedVariable as IStateDecoratedVariable } from \"arkui.stateManagement.decorator\";
 import { RowAttribute as RowAttribute } from \"arkui.component.row\";
+import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
+import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 import { RowImpl as RowImpl } from "arkui.component.row";
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
@@ -244,7 +244,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             __memo_scope.cached;
             return;
           }
-          globalBuilder.builder(__memo_context, ((__memo_id) + (76711614)), this.message, 50);
+          globalBuilder(__memo_context, ((__memo_id) + (76711614)), this.message, 50);
           ForEachImpl(__memo_context, ((__memo_id) + (213687742)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
             const __memo_scope = __memo_context.scope<void>(((__memo_id) + (192802443)), 1);
             const __memo_parameter_instance = __memo_scope.param(0, instance);
@@ -252,16 +252,16 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
               __memo_scope.cached;
               return;
             }
-            __memo_parameter_instance.value.setForEachOptions(((): Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> => {
+            __memo_parameter_instance.value.setForEachOptions(((): Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> => {
               return builderArr;
-            }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
+            }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) => {
               const __memo_scope = __memo_context.scope<void>(((__memo_id) + (223657391)), 1);
               const __memo_parameter_item = __memo_scope.param(0, item);
               if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
               }
-              item.builder(__memo_context, ((__memo_id) + (218979098)), "Hello World", 30);
+              item(__memo_context, ((__memo_id) + (218979098)), "Hello World", 30);
               {
                 __memo_scope.recache();
                 return;
@@ -285,12 +285,9 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     public constructor() {}
 }
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
-    set message(message: (string | undefined))
-    get message(): (string | undefined)
-    set __backing_message(__backing_message: (IStateDecoratedVariable<string> | undefined))
-    get __backing_message(): (IStateDecoratedVariable<string> | undefined)
-    set __options_has_message(__options_has_message: (boolean | undefined))
-    get __options_has_message(): (boolean | undefined)
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
 }
 class __EntryWrapper extends EntryPoint {
     @memo() public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {

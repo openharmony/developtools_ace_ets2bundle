@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -57,16 +58,12 @@ import { ObservedV2 as ObservedV2, Trace as Trace } from "@ohos.arkui.stateManag
 function main() {}
 
 interface PropInterface {
-  set propF(propF: number)
-  
-  get propF(): number
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propF', 'number')}
   
 }
 
 interface trackInterface {
-  set trackF(trackF: number)
-  
-  get trackF(): number
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'trackF', 'number')}
   
 }
 
@@ -100,8 +97,13 @@ interface trackInterface {
   @JSONStringifyIgnore() private __meta_propF: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   private _$property$_trackF: number = 2;
-  
-  set propF(newValue: number) {
+
+  public get propF(): number {
+    this.conditionalAddRef(this.__meta_propF);
+    return UIUtils.makeObserved(this.__backing_propF);
+  }
+
+  public set propF(newValue: number) {
     if (((this.__backing_propF) !== (newValue))) {
       this.__backing_propF = newValue;
       this.__meta_propF.fireChange();
@@ -109,18 +111,13 @@ interface trackInterface {
     }
   }
   
-  public get propF(): number {
-    this.conditionalAddRef(this.__meta_propF);
-    return UIUtils.makeObserved(this.__backing_propF);
-  }
-  
-  set trackF(_$property$_trackF: number) {
-    this._$property$_trackF = _$property$_trackF;
-    return;
-  }
-  
   public get trackF(): number {
     return this._$property$_trackF;
+  }
+
+  public set trackF(_$property$_trackF: number) {
+    this._$property$_trackF = _$property$_trackF;
+    return;
   }
   
   public get bb(): boolean {

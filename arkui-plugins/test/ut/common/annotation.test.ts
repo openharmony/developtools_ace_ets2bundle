@@ -19,6 +19,7 @@ import { PluginTester } from '../../utils/plugin-tester';
 import { BuildConfig, PluginTestContext } from '../../utils/shared-types';
 import { mockBuildConfig } from '../../utils/artkts-config';
 import { parseDumpSrc } from '../../utils/parse-string';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../utils/simplify-dump';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../utils/path-config';
 import { annotation } from '../../../common/arkts-utils';
 import { PluginContext, Plugins } from '../../../common/plugin-context';
@@ -60,14 +61,6 @@ class AnnotationVisitor extends AbstractVisitor {
             node.annotations = [this.testAnnotation()];
         } else if (arkts.isMethodDefinition(node)) {
             node.scriptFunction.setAnnotations([this.testAnnotation()]);
-            node.setOverloads(
-                node.overloads.map((ov) => {
-                    if (this.isAnnotationNode(ov)) {
-                        this.addTestAnnotation(ov);
-                    }
-                    return ov;
-                })
-            );
         } else {
             node.setAnnotations([this.testAnnotation()]);
         }
@@ -78,14 +71,6 @@ class AnnotationVisitor extends AbstractVisitor {
             node.annotations = [];
         } else if (arkts.isMethodDefinition(node)) {
             node.scriptFunction.setAnnotations([]);
-            node.setOverloads(
-                node.overloads.map((ov) => {
-                    if (this.isAnnotationNode(ov)) {
-                        this.removeTestAnnotation(ov);
-                    }
-                    return ov;
-                })
-            );
         } else {
             node.setAnnotations([]);
         }
@@ -204,8 +189,7 @@ import { Component as Component, ResourceStr as ResourceStr, Builder as Builder 
     @TestAnno() public constructor() {}
 }
 @TestAnno() interface __A {
-    @TestAnno() set prop(prop: number)
-    @TestAnno() get prop(): number
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'prop', 'number', [dumpAnnotation('TestAnno')], undefined, [dumpAnnotation('TestAnno')])}
 }
 `;
 

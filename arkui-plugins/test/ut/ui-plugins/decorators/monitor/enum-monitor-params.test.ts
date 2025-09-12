@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -268,15 +269,9 @@ final class MonitorNames extends BaseEnum<String> {
 }
 
 @ComponentV2() export interface __Options_Index {
-  set varF(varF: (FFF | undefined))
-  
-  get varF(): (FFF | undefined)
-  set __backing_varF(__backing_varF: (ILocalDecoratedVariable<FFF> | undefined))
-  
-  get __backing_varF(): (ILocalDecoratedVariable<FFF> | undefined)
-  set __options_has_varF(__options_has_varF: (boolean | undefined))
-  
-  get __options_has_varF(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'varF', '(FFF | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_varF', '(ILocalDecoratedVariable<FFF> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_varF', '(boolean | undefined)')}
   
 }
 `;

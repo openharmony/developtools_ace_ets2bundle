@@ -40,9 +40,7 @@ export function updateMethodDefinition(
         return original;
     }
 
-    const update = updateThenAttach(MethodDefinition.update, (node: MethodDefinition, original: MethodDefinition) =>
-        node.setOverloads(original.overloads)
-    );
+    const update = updateThenAttach(MethodDefinition.update);
     const newNode = update(original, kind, key, value, modifiers, isComputed);
     if (NodeCache.getInstance().has(original)) {
         NodeCache.getInstance().refresh(original, newNode);

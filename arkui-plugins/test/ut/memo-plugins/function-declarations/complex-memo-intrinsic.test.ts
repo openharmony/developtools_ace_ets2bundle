@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 import { ProjectConfig } from '../../../../common/plugin-context';
 
 const FUNCTION_DIR_PATH: string = 'memo/functions';
@@ -77,9 +78,7 @@ export function cb(callback?: (()=> void)) {
 @Retention({policy:"SOURCE"}) @interface memo_intrinsic {}
 
 interface IA<T> {
-  set ccc(ccc: boolean)
-  
-  get ccc(): boolean
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'ccc', 'boolean')}
   
 }
 
@@ -94,13 +93,13 @@ class A<T>  implements IA<T> {
   
   private _$property$_ccc: boolean = false;
   
-  set ccc(_$property$_ccc: boolean) {
-    this._$property$_ccc = _$property$_ccc;
-    return;
-  }
-  
   public get ccc(): boolean {
     return this._$property$_ccc;
+  }
+
+  public set ccc(_$property$_ccc: boolean) {
+    this._$property$_ccc = _$property$_ccc;
+    return;
   }
   
 }

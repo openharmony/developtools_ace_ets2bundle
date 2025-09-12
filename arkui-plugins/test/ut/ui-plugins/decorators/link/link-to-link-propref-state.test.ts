@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { GetSetDumper, dumpGetterSetter, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -197,55 +198,28 @@ function main() {}
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 @Component() export interface __Options_Parant {
-  @__Link_intrinsic() set text1(text1: (string | undefined))
-  
-  @__Link_intrinsic() get text1(): (string | undefined)
-  set __backing_text1(__backing_text1: (LinkSourceType<string> | undefined))
-  
-  get __backing_text1(): (LinkSourceType<string> | undefined)
-  set __options_has_text1(__options_has_text1: (boolean | undefined))
-  
-  get __options_has_text1(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'text1', '(string | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_text1', '(LinkSourceType<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_text1', '(boolean | undefined)')}
   
 }
 
 @Component() export interface __Options_Child {
-  @__Link_intrinsic() set childText(childText: (string | undefined))
-  
-  @__Link_intrinsic() get childText(): (string | undefined)
-  set __backing_childText(__backing_childText: (LinkSourceType<string> | undefined))
-  
-  get __backing_childText(): (LinkSourceType<string> | undefined)
-  set __options_has_childText(__options_has_childText: (boolean | undefined))
-  
-  get __options_has_childText(): (boolean | undefined)
-  set childText2(childText2: (string | undefined))
-  
-  get childText2(): (string | undefined)
-  set __backing_childText2(__backing_childText2: (IStateDecoratedVariable<string> | undefined))
-  
-  get __backing_childText2(): (IStateDecoratedVariable<string> | undefined)
-  set __options_has_childText2(__options_has_childText2: (boolean | undefined))
-  
-  get __options_has_childText2(): (boolean | undefined)
-  set childText3(childText3: (string | undefined))
-  
-  get childText3(): (string | undefined)
-  set __backing_childText3(__backing_childText3: (IPropRefDecoratedVariable<string> | undefined))
-  
-  get __backing_childText3(): (IPropRefDecoratedVariable<string> | undefined)
-  set __options_has_childText3(__options_has_childText3: (boolean | undefined))
-  
-  get __options_has_childText3(): (boolean | undefined)
-  set childText4(childText4: (string | undefined))
-  
-  get childText4(): (string | undefined)
-  set __backing_childText4(__backing_childText4: (IPropRefDecoratedVariable<string> | undefined))
-  
-  get __backing_childText4(): (IPropRefDecoratedVariable<string> | undefined)
-  set __options_has_childText4(__options_has_childText4: (boolean | undefined))
-  
-  get __options_has_childText4(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText', '(string | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childText', '(LinkSourceType<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childText', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText2', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childText2', '(IStateDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childText2', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText3', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childText3', '(IPropRefDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childText3', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText4', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childText4', '(IPropRefDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childText4', '(boolean | undefined)')}
   
 }
 `;

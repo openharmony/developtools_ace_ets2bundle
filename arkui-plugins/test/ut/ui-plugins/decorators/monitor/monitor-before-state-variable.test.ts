@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -151,33 +152,17 @@ function main() {}
 }
 
 @ComponentV2() export interface __Options_Index {
-  set message(message: (string | undefined))
-  
-  get message(): (string | undefined)
-  set __backing_message(__backing_message: (ILocalDecoratedVariable<string> | undefined))
-  
-  get __backing_message(): (ILocalDecoratedVariable<string> | undefined)
-  set __options_has_message(__options_has_message: (boolean | undefined))
-  
-  get __options_has_message(): (boolean | undefined)
-  set name(name: (string | undefined))
-  
-  get name(): (string | undefined)
-  set __backing_name(__backing_name: (ILocalDecoratedVariable<string> | undefined))
-  
-  get __backing_name(): (ILocalDecoratedVariable<string> | undefined)
-  set __options_has_name(__options_has_name: (boolean | undefined))
-  
-  get __options_has_name(): (boolean | undefined)
-  set age(age: (number | undefined))
-  
-  get age(): (number | undefined)
-  set __backing_age(__backing_age: (ILocalDecoratedVariable<number> | undefined))
-  
-  get __backing_age(): (ILocalDecoratedVariable<number> | undefined)
-  set __options_has_age(__options_has_age: (boolean | undefined))
-  
-  get __options_has_age(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(ILocalDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'name', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_name', '(ILocalDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_name', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'age', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_age', '(ILocalDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_age', '(boolean | undefined)')}
   
 }
 `;
