@@ -711,7 +711,6 @@ export class factory {
         decorator: DecoratorNames
     ): arkts.MethodDefinition {
         if (method.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
-            console.log("[wrapStateManagementTypeToMethodInInterface] GETTER ", method.dumpSrc());
             const func = method.scriptFunction;
             const newType: arkts.TypeNode | undefined = factory.wrapStateManagementTypeToType(
                 func.returnTypeAnnotation,
@@ -724,7 +723,6 @@ export class factory {
             return method;
         }
         if (method.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {
-            console.log("[wrapStateManagementTypeToMethodInInterface] SETTER ", method.dumpSrc());
             const func = method.scriptFunction;
             const newParam: arkts.Expression | undefined = factory.wrapStateManagementTypeToParam(
                 method.scriptFunction.params.at(0),
