@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -120,51 +121,25 @@ function main() {}
 }
 
 @Component() export interface __Options_MyStateSample {
-  set numB(numB: (number | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'numB', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_numB', '(ILocalStoragePropRefDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_numB', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stringB', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stringB', '(ILocalStoragePropRefDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stringB', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'booleanB', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_booleanB', '(ILocalStoragePropRefDecoratedVariable<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_booleanB', '(boolean | undefined)')}
   
-  get numB(): (number | undefined)
-  set __backing_numB(__backing_numB: (ILocalStoragePropRefDecoratedVariable<number> | undefined))
-  
-  get __backing_numB(): (ILocalStoragePropRefDecoratedVariable<number> | undefined)
-  set __options_has_numB(__options_has_numB: (boolean | undefined))
-  
-  get __options_has_numB(): (boolean | undefined)
-  set stringB(stringB: (string | undefined))
-  
-  get stringB(): (string | undefined)
-  set __backing_stringB(__backing_stringB: (ILocalStoragePropRefDecoratedVariable<string> | undefined))
-  
-  get __backing_stringB(): (ILocalStoragePropRefDecoratedVariable<string> | undefined)
-  set __options_has_stringB(__options_has_stringB: (boolean | undefined))
-  
-  get __options_has_stringB(): (boolean | undefined)
-  set booleanB(booleanB: (boolean | undefined))
-  
-  get booleanB(): (boolean | undefined)
-  set __backing_booleanB(__backing_booleanB: (ILocalStoragePropRefDecoratedVariable<boolean> | undefined))
-  
-  get __backing_booleanB(): (ILocalStoragePropRefDecoratedVariable<boolean> | undefined)
-  set __options_has_booleanB(__options_has_booleanB: (boolean | undefined))
-  
-  get __options_has_booleanB(): (boolean | undefined)
-  set undefinedB(undefinedB: (undefined | undefined))
-  
-  get undefinedB(): (undefined | undefined)
-  set __backing_undefinedB(__backing_undefinedB: (ILocalStoragePropRefDecoratedVariable<undefined> | undefined))
-  
-  get __backing_undefinedB(): (ILocalStoragePropRefDecoratedVariable<undefined> | undefined)
-  set __options_has_undefinedB(__options_has_undefinedB: (boolean | undefined))
-  
-  get __options_has_undefinedB(): (boolean | undefined)
-  set nullB(nullB: (null | undefined))
-  
-  get nullB(): (null | undefined)
-  set __backing_nullB(__backing_nullB: (ILocalStoragePropRefDecoratedVariable<null> | undefined))
-  
-  get __backing_nullB(): (ILocalStoragePropRefDecoratedVariable<null> | undefined)
-  set __options_has_nullB(__options_has_nullB: (boolean | undefined))
-  
-  get __options_has_nullB(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'undefinedB', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_undefinedB', '(ILocalStoragePropRefDecoratedVariable<undefined> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_undefinedB', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'nullB', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_nullB', '(ILocalStoragePropRefDecoratedVariable<null> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_nullB', '(boolean | undefined)')}
   
 }
 `;

@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { structNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -122,51 +123,25 @@ function main() {}
 }
 
 @ComponentV2() export interface __Options_Parent {
-  set consumerVar1(consumerVar1: (string | undefined))
-  
-  get consumerVar1(): (string | undefined)
-  set __backing_consumerVar1(__backing_consumerVar1: (IConsumerDecoratedVariable<string> | undefined))
-  
-  get __backing_consumerVar1(): (IConsumerDecoratedVariable<string> | undefined)
-  set __options_has_consumerVar1(__options_has_consumerVar1: (boolean | undefined))
-  
-  get __options_has_consumerVar1(): (boolean | undefined)
-  set consumerVar2(consumerVar2: (number | undefined))
-  
-  get consumerVar2(): (number | undefined)
-  set __backing_consumerVar2(__backing_consumerVar2: (IConsumerDecoratedVariable<number> | undefined))
-  
-  get __backing_consumerVar2(): (IConsumerDecoratedVariable<number> | undefined)
-  set __options_has_consumerVar2(__options_has_consumerVar2: (boolean | undefined))
-  
-  get __options_has_consumerVar2(): (boolean | undefined)
-  set consumerVar3(consumerVar3: (boolean | undefined))
-  
-  get consumerVar3(): (boolean | undefined)
-  set __backing_consumerVar3(__backing_consumerVar3: (IConsumerDecoratedVariable<boolean> | undefined))
-  
-  get __backing_consumerVar3(): (IConsumerDecoratedVariable<boolean> | undefined)
-  set __options_has_consumerVar3(__options_has_consumerVar3: (boolean | undefined))
-  
-  get __options_has_consumerVar3(): (boolean | undefined)
-  set consumerVar4(consumerVar4: (undefined | undefined))
-  
-  get consumerVar4(): (undefined | undefined)
-  set __backing_consumerVar4(__backing_consumerVar4: (IConsumerDecoratedVariable<undefined> | undefined))
-  
-  get __backing_consumerVar4(): (IConsumerDecoratedVariable<undefined> | undefined)
-  set __options_has_consumerVar4(__options_has_consumerVar4: (boolean | undefined))
-  
-  get __options_has_consumerVar4(): (boolean | undefined)
-  set consumerVar5(consumerVar5: (null | undefined))
-  
-  get consumerVar5(): (null | undefined)
-  set __backing_consumerVar5(__backing_consumerVar5: (IConsumerDecoratedVariable<null> | undefined))
-  
-  get __backing_consumerVar5(): (IConsumerDecoratedVariable<null> | undefined)
-  set __options_has_consumerVar5(__options_has_consumerVar5: (boolean | undefined))
-  
-  get __options_has_consumerVar5(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar1', '(IConsumerDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar1', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar2', '(IConsumerDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar2', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar3', '(IConsumerDecoratedVariable<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar3', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar4', '(IConsumerDecoratedVariable<undefined> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar4', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar5', '(IConsumerDecoratedVariable<null> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar5', '(boolean | undefined)')}
   
 }
 `;

@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { uiNoRecheck, recheck, memoNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -188,15 +189,9 @@ function main() {}
 }
 
 @Component() export interface __Options_Parent {
-  set label(label: (Tmp | undefined))
-  
-  get label(): (Tmp | undefined)
-  set __backing_label(__backing_label: (IStateDecoratedVariable<Tmp> | undefined))
-  
-  get __backing_label(): (IStateDecoratedVariable<Tmp> | undefined)
-  set __options_has_label(__options_has_label: (boolean | undefined))
-  
-  get __options_has_label(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(Tmp | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_label', '(IStateDecoratedVariable<Tmp> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
   
 }
 `;
@@ -430,16 +425,10 @@ function main() {}
 }
 
 @Component() export interface __Options_Parent {
-  set label(label: (Tmp | undefined))
-  
-  get label(): (Tmp | undefined)
-  set __backing_label(__backing_label: (IStateDecoratedVariable<Tmp> | undefined))
-  
-  get __backing_label(): (IStateDecoratedVariable<Tmp> | undefined)
-  set __options_has_label(__options_has_label: (boolean | undefined))
-  
-  get __options_has_label(): (boolean | undefined)
-  
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(Tmp | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_label', '(IStateDecoratedVariable<Tmp> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
+
 }
 `;
 

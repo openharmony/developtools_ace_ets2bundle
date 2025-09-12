@@ -117,7 +117,7 @@ export class RewriteFactory {
             return node;
         }
         node.type = RewriteFactory.rewriteType(node.type as arkts.TypeNode, metadata);
-        return arkts.factory.updateParameterDeclaration(node, node.identifier, node.initializer);
+        return node;
     }
 
     static rewriteProperty(node: arkts.Property, metadata?: CachedMetadata): arkts.Property {
@@ -214,7 +214,7 @@ export class RewriteFactory {
         const _hasMemoIntrinsic = !!metadata?.hasMemoIntrinsic;
         const _internalsTransformer = metadata?.internalsTransformer;
         const _isDecl = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
-        const newParams: readonly arkts.Expression[] = prepareRewriteScriptFunctionParameters(
+        const newParams = prepareRewriteScriptFunctionParameters(
             node,
             _isSetter,
             _isGetter,
@@ -237,22 +237,20 @@ export class RewriteFactory {
             _isGetter,
             _isSetter
         );
-        return arkts.factory.updateScriptFunction(
-            node,
-            newBody,
-            arkts.factory.createFunctionSignature(node.typeParams, newParams, newReturnType, _hasReceiver),
-            node.flags,
-            node.modifiers
-        );
+        node.setParams(newParams);
+        if (!!newReturnType) {
+            node.setReturnTypeAnnotation(newReturnType);
+        }
+        if (!!newBody) {
+            node.setBody(newBody);
+        }
+        return node;
     }
 
     static rewriteMethodDefinition(node: arkts.MethodDefinition, metadata?: CachedMetadata): arkts.MethodDefinition {
         const isSetter = node.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
         const isGetter = node.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET;
-        if (node.overloads.length > 0) {
-            node.setOverloads(node.overloads.map((o) => RewriteFactory.rewriteMethodDefinition(o, metadata)));
-        }
-        return arkts.factory.updateMethodDefinition(
+        const newNode = arkts.factory.updateMethodDefinition(
             node,
             node.kind,
             node.name,
@@ -265,6 +263,7 @@ export class RewriteFactory {
             node.modifiers,
             false
         );
+        return newNode;
     }
 
     static rewriteCallExpression(node: arkts.CallExpression, metadata?: CachedMetadata): arkts.CallExpression {

@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 
 const FUNCTION_DIR_PATH: string = 'memo/functions';
 
@@ -106,8 +107,8 @@ class A {
     public constructor() {}
 }
 interface MemoBuilder {
-    @memo() set builder(builder: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))
-    @memo() get builder(): ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'builder', '((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [dumpAnnotation('memo')])}
+
 }
 `;
 

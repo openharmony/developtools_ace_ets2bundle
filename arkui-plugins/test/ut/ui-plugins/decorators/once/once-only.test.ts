@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -84,24 +85,13 @@ function main() {}
 }
 
 @ComponentV2() export interface __Options_Child {
-  set onceParamNum(onceParamNum: (number | undefined))
-  
-  get onceParamNum(): (number | undefined)
-  set __backing_onceParamNum(__backing_onceParamNum: (IParamOnceDecoratedVariable<number> | undefined))
-  
-  get __backing_onceParamNum(): (IParamOnceDecoratedVariable<number> | undefined)
-  set __options_has_onceParamNum(__options_has_onceParamNum: (boolean | undefined))
-  
-  get __options_has_onceParamNum(): (boolean | undefined)
-  set onceVar4(onceVar4: (Set<string> | undefined))
-  
-  get onceVar4(): (Set<string> | undefined)
-  set __backing_onceVar4(__backing_onceVar4: (IParamOnceDecoratedVariable<Set<string>> | undefined))
-  
-  get __backing_onceVar4(): (IParamOnceDecoratedVariable<Set<string>> | undefined)
-  set __options_has_onceVar4(__options_has_onceVar4: (boolean | undefined))
-  
-  get __options_has_onceVar4(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamNum', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamNum', '(IParamOnceDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceParamNum', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar4', '(Set<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar4', '(IParamOnceDecoratedVariable<Set<string>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar4', '(boolean | undefined)')}
   
 }
 `;

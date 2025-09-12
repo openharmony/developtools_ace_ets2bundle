@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { structNoRecheck, recheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -670,284 +671,133 @@ final class StateType extends BaseEnum<int> {
 }
 
 @Component() export interface __Options_Parent {
-  set stateVar1(stateVar1: (Any | undefined))
-  
-  get stateVar1(): (Any | undefined)
-  set __backing_stateVar1(__backing_stateVar1: (IStateDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar1(): (IStateDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar1(__options_has_stateVar1: (boolean | undefined))
-  
-  get __options_has_stateVar1(): (boolean | undefined)
-  set stateVar2(stateVar2: (Any | undefined))
-  
-  get stateVar2(): (Any | undefined)
-  set __backing_stateVar2(__backing_stateVar2: (IPropRefDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar2(): (IPropRefDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar2(__options_has_stateVar2: (boolean | undefined))
-  
-  get __options_has_stateVar2(): (boolean | undefined)
-  set stateVar3(stateVar3: (Any | undefined))
-  
-  get stateVar3(): (Any | undefined)
-  set __backing_stateVar3(__backing_stateVar3: (IProvideDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar3(): (IProvideDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar3(__options_has_stateVar3: (boolean | undefined))
-  
-  get __options_has_stateVar3(): (boolean | undefined)
-  set stateVar8(stateVar8: (Any | undefined))
-  
-  get stateVar8(): (Any | undefined)
-  set __options_has_stateVar8(__options_has_stateVar8: (boolean | undefined))
-  
-  get __options_has_stateVar8(): (boolean | undefined)
-  set stateVar9(stateVar9: (Any | undefined))
-  
-  get stateVar9(): (Any | undefined)
-  set __options_has_stateVar9(__options_has_stateVar9: (boolean | undefined))
-  
-  get __options_has_stateVar9(): (boolean | undefined)
-  set stateVar11113(stateVar11113: (Any | undefined))
-  
-  get stateVar11113(): (Any | undefined)
-  set __backing_stateVar11113(__backing_stateVar11113: (IProvideDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar11113(): (IProvideDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar11113(__options_has_stateVar11113: (boolean | undefined))
-  
-  get __options_has_stateVar11113(): (boolean | undefined)
-  set stateVar11114(stateVar11114: (Any | undefined))
-  
-  get stateVar11114(): (Any | undefined)
-  set __backing_stateVar11114(__backing_stateVar11114: (IProvideDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar11114(): (IProvideDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar11114(__options_has_stateVar11114: (boolean | undefined))
-  
-  get __options_has_stateVar11114(): (boolean | undefined)
-  set stateVar11115(stateVar11115: (Any | undefined))
-  
-  get stateVar11115(): (Any | undefined)
-  set __backing_stateVar11115(__backing_stateVar11115: (IStateDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar11115(): (IStateDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar11115(__options_has_stateVar11115: (boolean | undefined))
-  
-  get __options_has_stateVar11115(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar1', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar1', '(IStateDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar1', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar2', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar2', '(IPropRefDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar2', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar3', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar3', '(IProvideDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar3', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar8', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar8', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar9', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar9', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11113', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11113', '(IProvideDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11113', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11114', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11114', '(IProvideDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11114', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11115', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11115', '(IStateDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11115', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_V2Parent {
-  set stateVar4(stateVar4: (Any | undefined))
-  
-  get stateVar4(): (Any | undefined)
-  @Param() set __backing_stateVar4(__backing_stateVar4: (IParamOnceDecoratedVariable<Any> | undefined))
-  
-  @Param() get __backing_stateVar4(): (IParamOnceDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar4(__options_has_stateVar4: (boolean | undefined))
-  
-  get __options_has_stateVar4(): (boolean | undefined)
-  set stateVar5(stateVar5: (Any | undefined))
-  
-  get stateVar5(): (Any | undefined)
-  set __backing_stateVar5(__backing_stateVar5: (ILocalDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar5(): (ILocalDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar5(__options_has_stateVar5: (boolean | undefined))
-  
-  get __options_has_stateVar5(): (boolean | undefined)
-  set stateVar6(stateVar6: (Any | undefined))
-  
-  get stateVar6(): (Any | undefined)
-  set __backing_stateVar6(__backing_stateVar6: (ILocalDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar6(): (ILocalDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar6(__options_has_stateVar6: (boolean | undefined))
-  
-  get __options_has_stateVar6(): (boolean | undefined)
-  set stateVar7(stateVar7: (Any | undefined))
-  
-  get stateVar7(): (Any | undefined)
-  set __options_has_stateVar7(__options_has_stateVar7: (boolean | undefined))
-  
-  get __options_has_stateVar7(): (boolean | undefined)
-  set stateVar8(stateVar8: (Any | undefined))
-  
-  get stateVar8(): (Any | undefined)
-  set __options_has_stateVar8(__options_has_stateVar8: (boolean | undefined))
-  
-  get __options_has_stateVar8(): (boolean | undefined)
-  set stateVar9(stateVar9: (Any | undefined))
-  
-  get stateVar9(): (Any | undefined)
-  set __backing_stateVar9(__backing_stateVar9: (IParamDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar9(): (IParamDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar9(__options_has_stateVar9: (boolean | undefined))
-  
-  get __options_has_stateVar9(): (boolean | undefined)
-  set stateVar10(stateVar10: (Any | undefined))
-  
-  get stateVar10(): (Any | undefined)
-  set __backing_stateVar10(__backing_stateVar10: (IParamDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar10(): (IParamDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar10(__options_has_stateVar10: (boolean | undefined))
-  
-  get __options_has_stateVar10(): (boolean | undefined)
-  set stateVar11(stateVar11: (Any | undefined))
-  
-  get stateVar11(): (Any | undefined)
-  @Param() set __backing_stateVar11(__backing_stateVar11: (IParamOnceDecoratedVariable<Any> | undefined))
-  
-  @Param() get __backing_stateVar11(): (IParamOnceDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar11(__options_has_stateVar11: (boolean | undefined))
-  
-  get __options_has_stateVar11(): (boolean | undefined)
-  set stateVar12(stateVar12: (Any | undefined))
-  
-  get stateVar12(): (Any | undefined)
-  set __backing_stateVar12(__backing_stateVar12: (IProviderDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar12(): (IProviderDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar12(__options_has_stateVar12: (boolean | undefined))
-  
-  get __options_has_stateVar12(): (boolean | undefined)
-  set stateVar11111(stateVar11111: (Any | undefined))
-  
-  get stateVar11111(): (Any | undefined)
-  set __backing_stateVar11111(__backing_stateVar11111: (IConsumerDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar11111(): (IConsumerDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar11111(__options_has_stateVar11111: (boolean | undefined))
-  
-  get __options_has_stateVar11111(): (boolean | undefined)
-  set stateVar11188(stateVar11188: (Any | undefined))
-  
-  get stateVar11188(): (Any | undefined)
-  set __backing_stateVar11188(__backing_stateVar11188: (IProviderDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar11188(): (IProviderDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar11188(__options_has_stateVar11188: (boolean | undefined))
-  
-  get __options_has_stateVar11188(): (boolean | undefined)
-  set stateVar11112(stateVar11112: (Any | undefined))
-  
-  get stateVar11112(): (Any | undefined)
-  set __backing_stateVar11112(__backing_stateVar11112: (IConsumerDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar11112(): (IConsumerDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar11112(__options_has_stateVar11112: (boolean | undefined))
-  
-  get __options_has_stateVar11112(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar4', '(IParamOnceDecoratedVariable<Any> | undefined)', [dumpAnnotation('Param')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar4', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar5', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar5', '(ILocalDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar5', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar6', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar6', '(ILocalDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar6', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar7', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar7', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar8', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar8', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar9', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar9', '(IParamDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar9', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar10', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar10', '(IParamDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar10', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11', '(IParamOnceDecoratedVariable<Any> | undefined)', [dumpAnnotation('Param')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar12', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar12', '(IProviderDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar12', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11111', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11111', '(IConsumerDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11111', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11188', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11188', '(IProviderDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11188', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11112', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11112', '(IConsumerDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11112', '(boolean | undefined)')}
   
 }
 
 @CustomDialog() export interface __Options_CC {
-  set stateVar4(stateVar4: (Any | undefined))
-  
-  get stateVar4(): (Any | undefined)
-  @Param() set __backing_stateVar4(__backing_stateVar4: (IParamOnceDecoratedVariable<Any> | undefined))
-  
-  @Param() get __backing_stateVar4(): (IParamOnceDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar4(__options_has_stateVar4: (boolean | undefined))
-  
-  get __options_has_stateVar4(): (boolean | undefined)
-  set stateVar5(stateVar5: (Any | undefined))
-  
-  get stateVar5(): (Any | undefined)
-  set __backing_stateVar5(__backing_stateVar5: (ILocalDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar5(): (ILocalDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar5(__options_has_stateVar5: (boolean | undefined))
-  
-  get __options_has_stateVar5(): (boolean | undefined)
-  set stateVar6(stateVar6: (Any | undefined))
-  
-  get stateVar6(): (Any | undefined)
-  set __backing_stateVar6(__backing_stateVar6: (ILocalDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar6(): (ILocalDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar6(__options_has_stateVar6: (boolean | undefined))
-  
-  get __options_has_stateVar6(): (boolean | undefined)
-  set stateVar7(stateVar7: (Any | undefined))
-  
-  get stateVar7(): (Any | undefined)
-  set __options_has_stateVar7(__options_has_stateVar7: (boolean | undefined))
-  
-  get __options_has_stateVar7(): (boolean | undefined)
-  set stateVar8(stateVar8: (Any | undefined))
-  
-  get stateVar8(): (Any | undefined)
-  set __options_has_stateVar8(__options_has_stateVar8: (boolean | undefined))
-  
-  get __options_has_stateVar8(): (boolean | undefined)
-  set stateVar9(stateVar9: (Any | undefined))
-  
-  get stateVar9(): (Any | undefined)
-  set __backing_stateVar9(__backing_stateVar9: (IParamDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar9(): (IParamDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar9(__options_has_stateVar9: (boolean | undefined))
-  
-  get __options_has_stateVar9(): (boolean | undefined)
-  set stateVar10(stateVar10: (Any | undefined))
-  
-  get stateVar10(): (Any | undefined)
-  set __backing_stateVar10(__backing_stateVar10: (IParamDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar10(): (IParamDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar10(__options_has_stateVar10: (boolean | undefined))
-  
-  get __options_has_stateVar10(): (boolean | undefined)
-  set stateVar11(stateVar11: (Any | undefined))
-  
-  get stateVar11(): (Any | undefined)
-  @Param() set __backing_stateVar11(__backing_stateVar11: (IParamOnceDecoratedVariable<Any> | undefined))
-  
-  @Param() get __backing_stateVar11(): (IParamOnceDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar11(__options_has_stateVar11: (boolean | undefined))
-  
-  get __options_has_stateVar11(): (boolean | undefined)
-  set stateVar12(stateVar12: (Any | undefined))
-  
-  get stateVar12(): (Any | undefined)
-  set __backing_stateVar12(__backing_stateVar12: (IProviderDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar12(): (IProviderDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar12(__options_has_stateVar12: (boolean | undefined))
-  
-  get __options_has_stateVar12(): (boolean | undefined)
-  set stateVar11111(stateVar11111: (Any | undefined))
-  
-  get stateVar11111(): (Any | undefined)
-  set __backing_stateVar11111(__backing_stateVar11111: (IConsumerDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar11111(): (IConsumerDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar11111(__options_has_stateVar11111: (boolean | undefined))
-  
-  get __options_has_stateVar11111(): (boolean | undefined)
-  set stateVar11188(stateVar11188: (Any | undefined))
-  
-  get stateVar11188(): (Any | undefined)
-  set __backing_stateVar11188(__backing_stateVar11188: (IProviderDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar11188(): (IProviderDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar11188(__options_has_stateVar11188: (boolean | undefined))
-  
-  get __options_has_stateVar11188(): (boolean | undefined)
-  set stateVar11112(stateVar11112: (Any | undefined))
-  
-  get stateVar11112(): (Any | undefined)
-  set __backing_stateVar11112(__backing_stateVar11112: (IConsumerDecoratedVariable<Any> | undefined))
-  
-  get __backing_stateVar11112(): (IConsumerDecoratedVariable<Any> | undefined)
-  set __options_has_stateVar11112(__options_has_stateVar11112: (boolean | undefined))
-  
-  get __options_has_stateVar11112(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar4', '(IParamOnceDecoratedVariable<Any> | undefined)', [dumpAnnotation('Param')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar4', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar5', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar5', '(ILocalDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar5', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar6', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar6', '(ILocalDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar6', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar7', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar7', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar8', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar8', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar9', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar9', '(IParamDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar9', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar10', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar10', '(IParamDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar10', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11', '(IParamOnceDecoratedVariable<Any> | undefined)', [dumpAnnotation('Param')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar12', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar12', '(IProviderDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar12', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11111', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11111', '(IConsumerDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11111', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11188', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11188', '(IProviderDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11188', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11112', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11112', '(IConsumerDecoratedVariable<Any> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11112', '(boolean | undefined)')}
   
 }
 `;

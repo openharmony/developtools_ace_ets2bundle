@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { structNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -265,105 +266,49 @@ final class StateType extends BaseEnum<int> {
 }
 
 @ComponentV2() export interface __Options_Parent {
-  set paramVar1(paramVar1: (Per | undefined))
-  
-  get paramVar1(): (Per | undefined)
-  set __backing_paramVar1(__backing_paramVar1: (IProviderDecoratedVariable<Per> | undefined))
-  
-  get __backing_paramVar1(): (IProviderDecoratedVariable<Per> | undefined)
-  set __options_has_paramVar1(__options_has_paramVar1: (boolean | undefined))
-  
-  get __options_has_paramVar1(): (boolean | undefined)
-  set paramVar2(paramVar2: (Array<number> | undefined))
-  
-  get paramVar2(): (Array<number> | undefined)
-  set __backing_paramVar2(__backing_paramVar2: (IProviderDecoratedVariable<Array<number>> | undefined))
-  
-  get __backing_paramVar2(): (IProviderDecoratedVariable<Array<number>> | undefined)
-  set __options_has_paramVar2(__options_has_paramVar2: (boolean | undefined))
-  
-  get __options_has_paramVar2(): (boolean | undefined)
-  set paramVar3(paramVar3: (StateType | undefined))
-  
-  get paramVar3(): (StateType | undefined)
-  set __backing_paramVar3(__backing_paramVar3: (IProviderDecoratedVariable<StateType> | undefined))
-  
-  get __backing_paramVar3(): (IProviderDecoratedVariable<StateType> | undefined)
-  set __options_has_paramVar3(__options_has_paramVar3: (boolean | undefined))
-  
-  get __options_has_paramVar3(): (boolean | undefined)
-  set paramVar4(paramVar4: (Set<string> | undefined))
-  
-  get paramVar4(): (Set<string> | undefined)
-  set __backing_paramVar4(__backing_paramVar4: (IProviderDecoratedVariable<Set<string>> | undefined))
-  
-  get __backing_paramVar4(): (IProviderDecoratedVariable<Set<string>> | undefined)
-  set __options_has_paramVar4(__options_has_paramVar4: (boolean | undefined))
-  
-  get __options_has_paramVar4(): (boolean | undefined)
-  set paramVar5(paramVar5: (Array<boolean> | undefined))
-  
-  get paramVar5(): (Array<boolean> | undefined)
-  set __backing_paramVar5(__backing_paramVar5: (IProviderDecoratedVariable<Array<boolean>> | undefined))
-  
-  get __backing_paramVar5(): (IProviderDecoratedVariable<Array<boolean>> | undefined)
-  set __options_has_paramVar5(__options_has_paramVar5: (boolean | undefined))
-  
-  get __options_has_paramVar5(): (boolean | undefined)
-  set paramVar6(paramVar6: (Array<Per> | undefined))
-  
-  get paramVar6(): (Array<Per> | undefined)
-  set __backing_paramVar6(__backing_paramVar6: (IProviderDecoratedVariable<Array<Per>> | undefined))
-  
-  get __backing_paramVar6(): (IProviderDecoratedVariable<Array<Per>> | undefined)
-  set __options_has_paramVar6(__options_has_paramVar6: (boolean | undefined))
-  
-  get __options_has_paramVar6(): (boolean | undefined)
-  set paramVar7(paramVar7: (Array<Per> | undefined))
-  
-  get paramVar7(): (Array<Per> | undefined)
-  set __backing_paramVar7(__backing_paramVar7: (IProviderDecoratedVariable<Array<Per>> | undefined))
-  
-  get __backing_paramVar7(): (IProviderDecoratedVariable<Array<Per>> | undefined)
-  set __options_has_paramVar7(__options_has_paramVar7: (boolean | undefined))
-  
-  get __options_has_paramVar7(): (boolean | undefined)
-  set paramVar9(paramVar9: (Date | undefined))
-  
-  get paramVar9(): (Date | undefined)
-  set __backing_paramVar9(__backing_paramVar9: (IProviderDecoratedVariable<Date> | undefined))
-  
-  get __backing_paramVar9(): (IProviderDecoratedVariable<Date> | undefined)
-  set __options_has_paramVar9(__options_has_paramVar9: (boolean | undefined))
-  
-  get __options_has_paramVar9(): (boolean | undefined)
-  set paramVar10(paramVar10: (Map<number, Per> | undefined))
-  
-  get paramVar10(): (Map<number, Per> | undefined)
-  set __backing_paramVar10(__backing_paramVar10: (IProviderDecoratedVariable<Map<number, Per>> | undefined))
-  
-  get __backing_paramVar10(): (IProviderDecoratedVariable<Map<number, Per>> | undefined)
-  set __options_has_paramVar10(__options_has_paramVar10: (boolean | undefined))
-  
-  get __options_has_paramVar10(): (boolean | undefined)
-  set paramVar11(paramVar11: ((string | number) | undefined))
-  
-  get paramVar11(): ((string | number) | undefined)
-  set __backing_paramVar11(__backing_paramVar11: (IProviderDecoratedVariable<(string | number)> | undefined))
-  
-  get __backing_paramVar11(): (IProviderDecoratedVariable<(string | number)> | undefined)
-  set __options_has_paramVar11(__options_has_paramVar11: (boolean | undefined))
-  
-  get __options_has_paramVar11(): (boolean | undefined)
-  set paramVar12(paramVar12: ((Set<string> | Per) | undefined))
-  
-  get paramVar12(): ((Set<string> | Per) | undefined)
-  set __backing_paramVar12(__backing_paramVar12: (IProviderDecoratedVariable<(Set<string> | Per)> | undefined))
-  
-  get __backing_paramVar12(): (IProviderDecoratedVariable<(Set<string> | Per)> | undefined)
-  set __options_has_paramVar12(__options_has_paramVar12: (boolean | undefined))
-  
-  get __options_has_paramVar12(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar1', '(Per | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar1', '(IProviderDecoratedVariable<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar1', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar2', '(Array<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar2', '(IProviderDecoratedVariable<Array<number>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar2', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar3', '(StateType | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar3', '(IProviderDecoratedVariable<StateType> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar3', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar4', '(Set<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar4', '(IProviderDecoratedVariable<Set<string>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar4', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar5', '(Array<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar5', '(IProviderDecoratedVariable<Array<boolean>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar5', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar6', '(Array<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar6', '(IProviderDecoratedVariable<Array<Per>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar6', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar7', '(Array<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar7', '(IProviderDecoratedVariable<Array<Per>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar7', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar9', '(Date | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar9', '(IProviderDecoratedVariable<Date> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar9', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar10', '(Map<number, Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar10', '(IProviderDecoratedVariable<Map<number, Per>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar10', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar11', '((string | number) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar11', '(IProviderDecoratedVariable<(string | number)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar11', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar12', '((Set<string> | Per) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar12', '(IProviderDecoratedVariable<(Set<string> | Per)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar12', '(boolean | undefined)')}
   
 }
 `;

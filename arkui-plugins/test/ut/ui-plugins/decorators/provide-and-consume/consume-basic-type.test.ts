@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { structNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -62,6 +63,7 @@ import { Consume as Consume } from "@ohos.arkui.stateManagement";
 }
 
 @Component() export interface __Options_PropParent {
+  ${ignoreNewLines(`
   conVar1?: string;
   @Consume() __backing_conVar1?: string;
   __options_has_conVar1?: boolean;
@@ -77,6 +79,7 @@ import { Consume as Consume } from "@ohos.arkui.stateManagement";
   conVar5?: null;
   @Consume() __backing_conVar5?: null;
   __options_has_conVar5?: boolean;
+  `)}
   
 }
 `;
@@ -166,51 +169,25 @@ function main() {}
 }
 
 @Component() export interface __Options_PropParent {
-  set conVar1(conVar1: (string | undefined))
-  
-  get conVar1(): (string | undefined)
-  set __backing_conVar1(__backing_conVar1: (IConsumeDecoratedVariable<string> | undefined))
-  
-  get __backing_conVar1(): (IConsumeDecoratedVariable<string> | undefined)
-  set __options_has_conVar1(__options_has_conVar1: (boolean | undefined))
-  
-  get __options_has_conVar1(): (boolean | undefined)
-  set conVar2(conVar2: (number | undefined))
-  
-  get conVar2(): (number | undefined)
-  set __backing_conVar2(__backing_conVar2: (IConsumeDecoratedVariable<number> | undefined))
-  
-  get __backing_conVar2(): (IConsumeDecoratedVariable<number> | undefined)
-  set __options_has_conVar2(__options_has_conVar2: (boolean | undefined))
-  
-  get __options_has_conVar2(): (boolean | undefined)
-  set conVar3(conVar3: (boolean | undefined))
-  
-  get conVar3(): (boolean | undefined)
-  set __backing_conVar3(__backing_conVar3: (IConsumeDecoratedVariable<boolean> | undefined))
-  
-  get __backing_conVar3(): (IConsumeDecoratedVariable<boolean> | undefined)
-  set __options_has_conVar3(__options_has_conVar3: (boolean | undefined))
-  
-  get __options_has_conVar3(): (boolean | undefined)
-  set conVar4(conVar4: (undefined | undefined))
-  
-  get conVar4(): (undefined | undefined)
-  set __backing_conVar4(__backing_conVar4: (IConsumeDecoratedVariable<undefined> | undefined))
-  
-  get __backing_conVar4(): (IConsumeDecoratedVariable<undefined> | undefined)
-  set __options_has_conVar4(__options_has_conVar4: (boolean | undefined))
-  
-  get __options_has_conVar4(): (boolean | undefined)
-  set conVar5(conVar5: (null | undefined))
-  
-  get conVar5(): (null | undefined)
-  set __backing_conVar5(__backing_conVar5: (IConsumeDecoratedVariable<null> | undefined))
-  
-  get __backing_conVar5(): (IConsumeDecoratedVariable<null> | undefined)
-  set __options_has_conVar5(__options_has_conVar5: (boolean | undefined))
-  
-  get __options_has_conVar5(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar1', '(IConsumeDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar1', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar2', '(IConsumeDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar2', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar3', '(IConsumeDecoratedVariable<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar3', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar4', '(IConsumeDecoratedVariable<undefined> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar4', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar5', '(IConsumeDecoratedVariable<null> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar5', '(boolean | undefined)')}
   
 }
 `;

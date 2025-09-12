@@ -993,6 +993,14 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
+    _ScriptFunctionSetParams(
+        context: KNativePointer,
+        receiver: KNativePointer,
+        paramsList: BigUint64Array,
+        paramsListSequenceLength: KUInt
+    ): void {
+        throw new Error('This methods was not overloaded by native module initialization');
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {

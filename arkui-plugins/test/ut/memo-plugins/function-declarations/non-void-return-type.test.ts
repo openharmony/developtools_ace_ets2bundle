@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 
 const FUNCTION_DIR_PATH: string = 'memo/functions';
 
@@ -86,8 +87,7 @@ function main() {}
     return __memo_scope.recache((() => {}));
 }
 interface A {
-    set str(str: string)
-    get str(): string
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'str', 'string')}
 }
 type B = ((str: string)=> void);
 class C {
