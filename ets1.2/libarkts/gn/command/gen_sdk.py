@@ -23,8 +23,8 @@ def load_config(config_file):
         config = json.load(f)
     return config
 
-def get_compiler_type(os, cpu):
-    if (os == 'mingw' and cpu == 'x86_64'):
+def get_compiler_type(os_name, cpu_name):
+    if (os_name == 'mingw' and cpu_name == 'x86_64'):
         return 'mingw_x86_64'
     return 'clang_x64'
 
