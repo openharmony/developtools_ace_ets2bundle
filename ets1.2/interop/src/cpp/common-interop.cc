@@ -514,11 +514,9 @@ void impl_SetForeignVMContext(KNativePointer foreignVMContextRaw)
 }
 KOALA_INTEROP_V1(SetForeignVMContext, KNativePointer)
 
-#ifndef __QUOTE
-#define __QUOTE(x) #x
-#endif
+#define QUOTE2(x) #x
 
-#define QUOTE(x) __QUOTE(x)
+#define QUOTE(x) QUOTE2(x)
 
 void impl_NativeLog(const KStringPtr& str)
 {

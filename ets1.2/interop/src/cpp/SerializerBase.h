@@ -79,7 +79,8 @@ public:
     SerializerBase(CallbackResourceHolder* resourceHolder = nullptr)
         : position(0), ownData(true), resourceHolder(resourceHolder)
     {
-        this->dataLength = 256;
+        constexpr uint16_t LENGTH = 256;
+        this->dataLength = LENGTH;
         this->data = reinterpret_cast<uint8_t*>(malloc(this->dataLength));
         if (!this->data) {
             INTEROP_FATAL("Cannot allocate memory");
@@ -115,11 +116,12 @@ public:
         return position;
     }
 
-    inline void check(int more)
-    {
+    inline void check(int more) {
         if (position + more > dataLength) {
             if (ownData) {
-                resize((position + more) * 3 / 2 + 2);
+                constexpr auto NUM_2{2};
+                constexpr auto NUM_3{3};
+                resize((position + more) * NUM_3 / NUM_2 + NUM_2);
             } else {
                 INTEROP_FATAL("Buffer overrun: %d > %d\n", position + more, dataLength);
             }
