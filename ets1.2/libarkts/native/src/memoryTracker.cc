@@ -163,9 +163,18 @@ void MemoryTracker::Report(MemoryStats stats)
         const double mb = kb * BYTES_PER_KB;
         const double gb = mb * BYTES_PER_KB;
 
-        if (bytes > gb) return std::to_string(bytes / gb) + " GB";
-        if (bytes > mb) return std::to_string(bytes / mb) + " MB";
-        if (bytes > kb) return std::to_string(bytes / kb) + " KB";
+        if (bytes > gb) {
+            return std::to_string(bytes / gb) + " GB";
+        }
+
+        if (bytes > mb) {
+            return std::to_string(bytes / mb) + " MB";
+        }
+
+        if (bytes > kb) {
+            return std::to_string(bytes / kb) + " KB";
+        }
+
         return std::to_string(bytes) + " B";
     };
 

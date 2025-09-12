@@ -156,7 +156,8 @@ static JSValueRef u64ToBigInt(JSContextRef context, uint64_t value)
         JSValueMakeNumber(context, (double)(value >> 32)),
         JSValueMakeNumber(context, (double)(value & 0xFFFFFFFF)),
     };
-    bigint = JSObjectCallAsFunction(context, bigIntFromParts, nullptr, 2, parts, nullptr);
+    const uint8_t COUNT = 2;
+    bigint = JSObjectCallAsFunction(context, bigIntFromParts, nullptr, COUNT, parts, nullptr);
 #else
     char buffer[128] = { 0 };
     interop_snprintf(buffer, sizeof(buffer) - 1, "%zun", static_cast<size_t>(value));
