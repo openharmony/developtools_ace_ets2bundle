@@ -72,7 +72,9 @@ def copy_output(options):
     if (tail_dir == compiler):
         from_path = head_dir
 
-    shutil.rmtree(to_path)
+    if os.path.exists(to_path):
+        shutil.rmtree(to_path)
+
     copy_files(os.path.join(options.source_path, 'lib'),
                os.path.join(to_path, 'lib'))
     
