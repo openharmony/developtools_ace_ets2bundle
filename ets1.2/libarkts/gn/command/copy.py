@@ -24,6 +24,7 @@ def library_ext(os_name, cpu_name):
         return 'dll'
     return 'node'
 
+
 def copy_files(source_path, dest_path, is_file=False):
     try:
         if is_file:
@@ -44,7 +45,6 @@ def run_cmd(cmd, execution_path=None):
     stdout, stderr = proc.communicate(timeout=1000)
     if proc.returncode != 0:
         raise Exception(stdout.decode() + stderr.decode())
-
 
 
 def copy_output(options):

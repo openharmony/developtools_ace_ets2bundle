@@ -136,7 +136,8 @@ void impl_SetUpSoPath(KStringPtr &soPath)
 KOALA_INTEROP_V1(SetUpSoPath, KStringPtr);
 
 // Improve: simplify this
-void* FindLibrary() {
+void* FindLibrary()
+{
     void *res = nullptr;
     std::vector<std::string> pathArray;
 
@@ -205,7 +206,8 @@ char* getStringCopy(KStringPtr& ptr)
     return StageArena::strdup(ptr.c_str() ? ptr.c_str() : "");
 }
 
-KNativePointer impl_CreateConfig(KInt argc, KStringArray argvPtr) {
+KNativePointer impl_CreateConfig(KInt argc, KStringArray argvPtr)
+{
     const std::size_t headerLen = 4;
 
     const char** argv = StageArena::allocArray<const char*>(argc);
@@ -221,14 +223,16 @@ KNativePointer impl_CreateConfig(KInt argc, KStringArray argvPtr) {
 }
 KOALA_INTEROP_2(CreateConfig, KNativePointer, KInt, KStringArray)
 
-KNativePointer impl_DestroyConfig(KNativePointer configPtr) {
+KNativePointer impl_DestroyConfig(KNativePointer configPtr)
+{
     auto config = reinterpret_cast<es2panda_Config*>(configPtr);
     GetImpl()->DestroyConfig(config);
     return nullptr;
 }
 KOALA_INTEROP_1(DestroyConfig, KNativePointer, KNativePointer)
 
-void impl_DestroyContext(KNativePointer contextPtr) {
+void impl_DestroyContext(KNativePointer contextPtr)
+{
     auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
     GetImpl()->DestroyContext(context);
     StageArena::instance()->cleanup();
@@ -244,7 +248,8 @@ KNativePointer impl_UpdateCallExpression(
     KNativePointer typeParamsPtr,
     KBoolean optionalT,
     KBoolean trailingCommaT
-) {
+)
+{
     auto node = reinterpret_cast<es2panda_AstNode*>(nodePtr);
     auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
     auto callee = reinterpret_cast<es2panda_AstNode*>(calleePtr);
@@ -261,7 +266,8 @@ KNativePointer impl_UpdateCallExpression(
 }
 KOALA_INTEROP_8(UpdateCallExpression, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointerArray, KInt, KNativePointer, KBoolean, KBoolean)
 
-KInt impl_IdentifierIdentifierFlags(KNativePointer contextPtr, KNativePointer nodePtr) {
+KInt impl_IdentifierIdentifierFlags(KNativePointer contextPtr, KNativePointer nodePtr)
+{
     auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
     auto node = reinterpret_cast<es2panda_AstNode*>(nodePtr);
 
@@ -272,7 +278,8 @@ KInt impl_IdentifierIdentifierFlags(KNativePointer contextPtr, KNativePointer no
 }
 KOALA_INTEROP_2(IdentifierIdentifierFlags, KInt, KNativePointer, KNativePointer)
 
-void impl_ClassDefinitionSetBody(KNativePointer context, KNativePointer receiver, KNativePointerArray body, KUInt bodyLength) {
+void impl_ClassDefinitionSetBody(KNativePointer context, KNativePointer receiver, KNativePointerArray body, KUInt bodyLength)
+{
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
     const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
     const auto _body = reinterpret_cast<es2panda_AstNode**>(body);
@@ -289,8 +296,8 @@ Improve: NOT FROM API (shouldn't be there)
 -----------------------------------------------------------------------------------------------------------------------------
 */
 
-es2panda_AstNode * cachedParentNode;
-es2panda_Context * cachedContext;
+es2panda_AstNode* cachedParentNode;
+es2panda_Context* cachedContext;
 
 static void changeParent(es2panda_AstNode *child)
 {
@@ -306,7 +313,8 @@ static void SetRightParent(es2panda_AstNode *node, void *arg)
     GetImpl()->AstNodeIterateConst(ctx, node, changeParent);
 }
 
-KNativePointer impl_AstNodeUpdateAll(KNativePointer contextPtr, KNativePointer programPtr) {
+KNativePointer impl_AstNodeUpdateAll(KNativePointer contextPtr, KNativePointer programPtr)
+{
     auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
     auto program = reinterpret_cast<es2panda_AstNode*>(programPtr);
 
@@ -315,7 +323,8 @@ KNativePointer impl_AstNodeUpdateAll(KNativePointer contextPtr, KNativePointer p
 }
 KOALA_INTEROP_2(AstNodeUpdateAll, KNativePointer, KNativePointer, KNativePointer)
 
-void impl_AstNodeSetChildrenParentPtr(KNativePointer contextPtr, KNativePointer nodePtr) {
+void impl_AstNodeSetChildrenParentPtr(KNativePointer contextPtr, KNativePointer nodePtr)
+{
     auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
     auto node = reinterpret_cast<es2panda_AstNode*>(nodePtr);
     cachedParentNode = node;
@@ -324,7 +333,8 @@ void impl_AstNodeSetChildrenParentPtr(KNativePointer contextPtr, KNativePointer 
 }
 KOALA_INTEROP_V2(AstNodeSetChildrenParentPtr, KNativePointer, KNativePointer)
 
-void impl_AstNodeOnUpdate(KNativePointer context, KNativePointer newNode, KNativePointer replacedNode) {
+void impl_AstNodeOnUpdate(KNativePointer context, KNativePointer newNode, KNativePointer replacedNode)
+{
     auto _context = reinterpret_cast<es2panda_Context*>(context);
     auto _newNode = reinterpret_cast<es2panda_AstNode*>(newNode);
     auto _replacedNode = reinterpret_cast<es2panda_AstNode*>(replacedNode);
@@ -357,7 +367,8 @@ static void visitChild(es2panda_AstNode *node)
 KNativePointer impl_AstNodeChildren(
     KNativePointer contextPtr,
     KNativePointer nodePtr
-) {
+)
+{
     auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
     auto node = reinterpret_cast<es2panda_AstNode*>(nodePtr);
     cachedContext = context;
@@ -368,18 +379,22 @@ KNativePointer impl_AstNodeChildren(
 }
 KOALA_INTEROP_2(AstNodeChildren, KNativePointer, KNativePointer, KNativePointer);
 
-struct Pattern {
+struct Pattern
+{
     es2panda_Context* context;
     std::string key;
     std::string value;
     es2panda_Impl* impl;
 
-    Pattern(es2panda_Context* context, const std::string& part): context(context), impl(GetImpl()){
+    Pattern(es2panda_Context* context, const std::string& part): context(context), impl(GetImpl())
+    {
         std::istringstream stream(part);
         std::getline(stream, key, '=');
         std::getline(stream, value, '=');
     }
-    bool match(es2panda_AstNode* node) {
+
+    bool match(es2panda_AstNode* node)
+    {
         if (key == "type") {
             auto type = impl->AstNodeTypeConst(context, node);
             switch (type) {
@@ -422,19 +437,22 @@ struct Pattern {
     }
 };
 
-struct Matcher {
+struct Matcher
+{
     es2panda_Context* context;
     const char* query;
     std::vector<Pattern> patterns;
     es2panda_Impl* impl;
-    Matcher(es2panda_Context* context, const char* query) : context(context), query(query), impl(GetImpl()) {
+    Matcher(es2panda_Context* context, const char* query) : context(context), query(query), impl(GetImpl())
+    {
         std::istringstream stream(query);
         std::string item;
         while (std::getline(stream, item, ';')) {
             patterns.emplace_back(Pattern(context, item));
         }
     }
-    bool match(es2panda_AstNode* node) {
+    bool match(es2panda_AstNode* node)
+    {
         bool result = true;
         for (auto pattern: patterns) {
             result &= pattern.match(node);

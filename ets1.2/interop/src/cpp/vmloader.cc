@@ -309,8 +309,8 @@ static bool ResetErrorIfExists(ani_env* env)
 std::string makeLibPath(const char* sdkPath, const char* platform, const char* lib)
 {
     std::string result;
-    constexpr uint16_t COUNT = 255; 
-    result.reserve(COUNT);
+    constexpr uint16_t count = 255;
+    result.reserve(count);
     if (sdkPath) {
         result.append(sdkPath).append("/");
     }

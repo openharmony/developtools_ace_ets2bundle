@@ -23,14 +23,17 @@ def load_config(config_file):
         config = json.load(f)
     return config
 
+
 def get_compiler_type(os_name, cpu_name):
     if (os_name == 'mingw' and cpu_name == 'x86_64'):
         return 'mingw_x86_64'
     return 'clang_x64'
 
+
 def replace_out_root(value, out_root, compiler_type):
     """Replace $out_root in the string with the actual value."""
     return value.replace("$out_root", out_root).replace("$compiler_type", compiler_type)
+
 
 def validate_out_root(out_root, compiler_type):
     head_out_root, tail_out_root = os.path.split(out_root)

@@ -45,7 +45,8 @@ using std::string, std::cout, std::endl, std::vector;
 extern es2panda_Impl *es2pandaImplementation;
 
 es2panda_Impl *GetImplSlow();
-inline es2panda_Impl *GetImpl() {
+inline es2panda_Impl *GetImpl()
+{
     if (es2pandaImplementation) {
         return es2pandaImplementation;
     }
@@ -76,7 +77,8 @@ inline KUInt unpackUInt(const KByte* bytes)
 
 es2panda_ContextState intToState(KInt state);
 
-class StageArena {
+class StageArena
+{
     std::vector<void*> allocated;
     size_t totalSize;
   public:

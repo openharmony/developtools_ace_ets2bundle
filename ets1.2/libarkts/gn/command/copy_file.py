@@ -17,6 +17,7 @@ import os
 import sys
 import shutil
 
+
 def copy_files(source_path, dest_path):
     try:
         if not os.path.isdir(source_path):
@@ -27,12 +28,14 @@ def copy_files(source_path, dest_path):
     except Exception as err:
         raise Exception("Copy files failed. Error: " + str(err)) from err
 
+
 def main():
     dst = sys.argv[-1]
     srcs = sys.argv[1:-1]
 
     for src in srcs:
         copy_files(src, dst)
+
 
 if __name__ == '__main__':
     sys.exit(main())
