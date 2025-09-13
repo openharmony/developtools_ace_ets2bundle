@@ -57,7 +57,7 @@ string getString(KStringPtr ptr);
 
 char* getStringCopy(KStringPtr& ptr);
 
-inline KUInt unpackUInt(const KByte* bytes)
+KUInt unpackUInt(const KByte* bytes)
 {
     const KUInt BYTE_0 = 0;
     const KUInt BYTE_1 = 1;

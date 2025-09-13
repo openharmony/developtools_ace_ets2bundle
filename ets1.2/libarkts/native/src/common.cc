@@ -278,7 +278,8 @@ KInt impl_IdentifierIdentifierFlags(KNativePointer contextPtr, KNativePointer no
 }
 KOALA_INTEROP_2(IdentifierIdentifierFlags, KInt, KNativePointer, KNativePointer)
 
-void impl_ClassDefinitionSetBody(KNativePointer context, KNativePointer receiver, KNativePointerArray body, KUInt bodyLength)
+void impl_ClassDefinitionSetBody(KNativePointer context, KNativePointer receiver, KNativePointerArray body, 
+    KUInt bodyLength)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
     const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
