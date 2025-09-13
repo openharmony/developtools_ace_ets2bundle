@@ -379,8 +379,7 @@ KNativePointer impl_AstNodeChildren(
 }
 KOALA_INTEROP_2(AstNodeChildren, KNativePointer, KNativePointer, KNativePointer);
 
-struct Pattern
-{
+struct Pattern {
     es2panda_Context* context;
     std::string key;
     std::string value;
