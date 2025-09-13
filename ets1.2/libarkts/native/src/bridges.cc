@@ -510,8 +510,7 @@ KOALA_INTEROP_2(AnnotationUsageIrPropertiesPtrConst, KNativePointer, KNativePoin
 
 KInt impl_GenerateTsDeclarationsFromContext(
     KNativePointer contextPtr, KStringPtr &outputDeclEts, KStringPtr &outputEts,
-    KBoolean exportAll, KBoolean isolated, KStringPtr &recordFile, KBoolean genAnnotations
-)
+    KBoolean exportAll, KBoolean isolated, KStringPtr &recordFile, KBoolean genAnnotations)
 {
     auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
     return GetImpl()->GenerateTsDeclarationsFromContext(context, outputDeclEts.data(), outputEts.data(),
