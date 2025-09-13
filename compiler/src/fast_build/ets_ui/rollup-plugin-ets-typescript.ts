@@ -518,7 +518,7 @@ async function processNoTargetSourceFile(id: string, code: string, compilationTi
       const newSourceFile: ts.SourceFile = ts.createSourceFile(root.id, root.code, etsCheckerCompilerOptions.target,
         true, undefined, etsCheckerCompilerOptions);
       newSourceFile.originalFileName = newSourceFile.fileName;
-      newSourceFile.resolvePath = root.id;
+      newSourceFile.resolvedPath = root.id;
       newSourceFile.path = root.id;
       globalProgram.program.processImportedModules(newSourceFile, true);
       globalProgram.program.setProgramSourceFiles(newSourceFile);
