@@ -24,6 +24,7 @@ def get_compiler_name(os_name, cpu_name):
         return 'mingw_x86_64'
     return 'clang_x64'
 
+
 def library_ext(os_name, cpu_name):
     if (os_name == 'mingw' and cpu_name == 'x86_64'):
         return 'dll'
@@ -57,7 +58,6 @@ def run_cmd(cmd, execution_path=None):
     stdout, stderr = proc.communicate(timeout=1000)
     if proc.returncode != 0:
         raise Exception(stderr.decode())
-
 
 
 def copy_output(options):

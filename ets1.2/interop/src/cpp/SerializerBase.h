@@ -116,7 +116,8 @@ public:
         return position;
     }
 
-    inline void check(int more) {
+    inline void check(int more)
+    {
         if (position + more > dataLength) {
             if (ownData) {
                 constexpr auto NUM_2{2};
