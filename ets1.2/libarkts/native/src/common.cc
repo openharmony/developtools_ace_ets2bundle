@@ -264,7 +264,8 @@ KNativePointer impl_UpdateCallExpression(
     GetImpl()->AstNodeSetOriginalNode(context, nn, node);
     return nn;
 }
-KOALA_INTEROP_8(UpdateCallExpression, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointerArray, KInt, KNativePointer, KBoolean, KBoolean)
+KOALA_INTEROP_8(UpdateCallExpression, KNativePointer, KNativePointer, KNativePointer,
+    KNativePointer, KNativePointerArray, KInt, KNativePointer, KBoolean, KBoolean)
 
 KInt impl_IdentifierIdentifierFlags(KNativePointer contextPtr, KNativePointer nodePtr)
 {
@@ -278,7 +279,7 @@ KInt impl_IdentifierIdentifierFlags(KNativePointer contextPtr, KNativePointer no
 }
 KOALA_INTEROP_2(IdentifierIdentifierFlags, KInt, KNativePointer, KNativePointer)
 
-void impl_ClassDefinitionSetBody(KNativePointer context, KNativePointer receiver, KNativePointerArray body, 
+void impl_ClassDefinitionSetBody(KNativePointer context, KNativePointer receiver, KNativePointerArray body,
     KUInt bodyLength)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);

@@ -162,11 +162,9 @@ static KNativePointer impl_ExternalSourcePrograms(KNativePointer instance)
 }
 KOALA_INTEROP_1(ExternalSourcePrograms, KNativePointer, KNativePointer);
 
-KNativePointer impl_ETSParserBuildImportDeclaration(KNativePointer context,
-    KInt importKinds, KNativePointerArray specifiers,
-    KUInt specifiersSequenceLength,
-    KNativePointer source, KNativePointer program, KInt importFlag
-)
+KNativePointer impl_ETSParserBuildImportDeclaration(KNativePointer context, KInt importKinds,
+    KNativePointerArray specifiers, KUInt specifiersSequenceLength,
+    KNativePointer source, KNativePointer program, KInt importFlag)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
     const auto _kinds = static_cast<Es2pandaImportKinds>(importKinds);
@@ -179,7 +177,7 @@ KNativePointer impl_ETSParserBuildImportDeclaration(KNativePointer context,
     return GetImpl()->ETSParserBuildImportDeclaration(_context, _kinds, _specifiers,
         _specifiersSequenceLength, _source, _program, _importFlag);
 }
-KOALA_INTEROP_7(ETSParserBuildImportDeclaration, KNativePointer, KNativePointer, KInt, 
+KOALA_INTEROP_7(ETSParserBuildImportDeclaration, KNativePointer, KNativePointer, KInt,
     KNativePointerArray, KUInt, KNativePointer, KNativePointer, KInt)
 
 KNativePointer impl_ETSParserGetImportPathManager(KNativePointer contextPtr)
@@ -219,7 +217,7 @@ KNativePointer impl_CreateCacheContextFromFile(KNativePointer configPtr, KString
 ) {
     auto config = reinterpret_cast<es2panda_Config*>(configPtr);
     auto globalContext = reinterpret_cast<es2panda_GlobalContext*>(globalContextPtr);
-    return GetImpl()->CreateCacheContextFromFile(config, 
+    return GetImpl()->CreateCacheContextFromFile(config,
         getStringCopy(source_file_namePtr),
         globalContext,
         isExternal
@@ -297,7 +295,7 @@ KNativePointer impl_Checker_ScriptFunctionGetPreferredReturnType(KNativePointer 
 }
 KOALA_INTEROP_2(Checker_ScriptFunctionGetPreferredReturnType, KNativePointer, KNativePointer, KNativePointer)
 
-void impl_Checker_ScriptFunctionSetPreferredReturnType(KNativePointer context, KNativePointer node, 
+void impl_Checker_ScriptFunctionSetPreferredReturnType(KNativePointer context, KNativePointer node,
     KNativePointer type
 )
 {
@@ -510,16 +508,14 @@ KNativePointer impl_AnnotationUsageIrPropertiesPtrConst(KNativePointer context, 
 }
 KOALA_INTEROP_2(AnnotationUsageIrPropertiesPtrConst, KNativePointer, KNativePointer, KNativePointer);
 
-KInt impl_GenerateTsDeclarationsFromContext(KNativePointer contextPtr,
-    KStringPtr &outputDeclEts,
+KInt impl_GenerateTsDeclarationsFromContext(KNativePointer contextPtr, KStringPtr &outputDeclEts,
     KStringPtr &outputEts,
-    KBoolean exportAll, KBoolean isolated, 
-    KStringPtr &recordFile, KBoolean genAnnotations
-)
+    KBoolean exportAll, KBoolean isolated,
+    KStringPtr &recordFile, KBoolean genAnnotations)
 {
     auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
     return GetImpl()->GenerateTsDeclarationsFromContext(context, outputDeclEts.data(), outputEts.data(),
-                exportAll, isolated, recordFile.data(), genAnnotations);
+        exportAll, isolated, recordFile.data(), genAnnotations);
 }
 KOALA_INTEROP_7(GenerateTsDeclarationsFromContext, KInt, KNativePointer, KStringPtr, 
                 KStringPtr, KBoolean, KBoolean, KStringPtr, KBoolean)
