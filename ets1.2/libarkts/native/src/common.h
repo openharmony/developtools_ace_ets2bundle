@@ -77,8 +77,7 @@ inline KUInt unpackUInt(const KByte* bytes)
 
 es2panda_ContextState intToState(KInt state);
 
-class StageArena
-{
+class StageArena {
     std::vector<void*> allocated;
     size_t totalSize;
   public:

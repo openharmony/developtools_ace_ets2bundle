@@ -437,8 +437,7 @@ struct Pattern
     }
 };
 
-struct Matcher
-{
+struct Matcher {
     es2panda_Context* context;
     const char* query;
     std::vector<Pattern> patterns;

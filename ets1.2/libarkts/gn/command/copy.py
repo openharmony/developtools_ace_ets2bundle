@@ -19,6 +19,7 @@ import shutil
 import subprocess
 import sys
 
+
 def library_ext(os_name, cpu_name):
     if (os_name == 'mingw' and cpu_name == 'x86_64'):
         return 'dll'

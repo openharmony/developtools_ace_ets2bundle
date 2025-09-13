@@ -17,6 +17,7 @@ import shutil
 import json
 import argparse
 
+
 def load_config(config_file):
     """Load the configuration file."""
     with open(config_file, 'r') as f:
@@ -81,6 +82,7 @@ def copy_files(config, src_base, dist_base, out_root, compiler_type, substitutio
             except Exception as e:
                 print(f"Failed to copy directory: {source} -> {destination}, error: {e}")
 
+
 def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Copy files or directories.")
@@ -118,6 +120,7 @@ def main():
 }"""
     with open(os.path.join(args.dist, "package.json"), "w") as file:
         file.write(content)
+
 
 if __name__ == '__main__':
     main()
