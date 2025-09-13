@@ -17,6 +17,7 @@ export const EXTERNAL_SOURCE_PREFIX_NAMES: (string | RegExp)[] = [
     'std',
     'escompat',
     /@arkts\..*/,
+    /@ohos\.(?!arkui).*/,
     /@system\..*/,
 ];
 
