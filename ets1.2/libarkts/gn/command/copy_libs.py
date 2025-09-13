@@ -19,6 +19,7 @@ import shutil
 import subprocess
 import sys
 
+
 def get_compiler_name(os_name, cpu_name):
     if (os_name == 'mingw' and cpu_name == 'x86_64'):
         return 'mingw_x86_64'

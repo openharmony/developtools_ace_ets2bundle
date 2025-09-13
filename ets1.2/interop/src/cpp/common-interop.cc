@@ -49,7 +49,7 @@ InteropProfiler* InteropProfiler::_instance = nullptr;
 using std::string;
 
 #ifndef KOALA_INTEROP_MEM_ANALYZER
-static std::atomic<uint32_t> mallocCounter { 0 };
+static std::atomic<uint32_t> g_mallocCounter { 0 };
 #endif
 
 #if defined(KOALA_NAPI) || defined(KOALA_ANI)
@@ -272,9 +272,9 @@ typedef KNativePointer (*StartApplicationT)(const char* appUrl, const char* appP
 typedef KBoolean (*RunApplicationT)(const KInt arg0, const KInt arg1);
 typedef const char* (*EmitEventT)(const KInt type, const KInt target, const KInt arg0, const KInt arg1);
 typedef void (*RestartWithT)(const char* page);
-typedef const char* (*LoadView_t)(const char* className, const char* params);
+typedef const char* (*LoadViewT)(const char* className, const char* params);
 
-void* getImpl(const char* path, const char* name)
+void* GetImpl(const char* path, const char* name)
 {
     static void* lib = nullptr;
     if (!lib && name) {
@@ -303,7 +303,7 @@ KInt impl_LoadVirtualMachine(KVMContext vmContext, KInt vmKind, const KStringPtr
 
     static LoadVirtualMachineT impl = nullptr;
     if (!impl) {
-        impl = reinterpret_cast<LoadVirtualMachineT>(getImpl(nativeLibPath, "LoadVirtualMachine"));
+        impl = reinterpret_cast<LoadVirtualMachineT>(GetImpl(nativeLibPath, "LoadVirtualMachine"));
     }
     if (!impl) {
         KOALA_INTEROP_THROW_STRING(vmContext, "Cannot load VM", -1);
@@ -317,7 +317,7 @@ KNativePointer impl_StartApplication(const KStringPtr& appUrl, const KStringPtr&
 {
     static StartApplicationT impl = nullptr;
     if (!impl) {
-        impl = reinterpret_cast<StartApplicationT>(getImpl(nullptr, "StartApplication"));
+        impl = reinterpret_cast<StartApplicationT>(GetImpl(nullptr, "StartApplication"));
     }
     return impl(appUrl.c_str(), appParams.c_str(), loopIterations);
 }
@@ -327,7 +327,7 @@ KBoolean impl_RunApplication(const KInt arg0, const KInt arg1)
 {
     static RunApplicationT impl = nullptr;
     if (!impl) {
-        impl = reinterpret_cast<RunApplicationT>(getImpl(nullptr, "RunApplication"));
+        impl = reinterpret_cast<RunApplicationT>(GetImpl(nullptr, "RunApplication"));
     }
     return impl(arg0, arg1);
 }
@@ -337,7 +337,7 @@ KStringPtr impl_EmitEvent(KVMContext vmContext, KInt type, KInt target, KInt arg
 {
     static EmitEventT impl = nullptr;
     if (!impl) {
-        impl = reinterpret_cast<EmitEventT>(getImpl(nullptr, "EmitEvent"));
+        impl = reinterpret_cast<EmitEventT>(GetImpl(nullptr, "EmitEvent"));
     }
     const char* out = impl(type, target, arg0, arg1);
     auto size = std::string(out).size();
@@ -350,7 +350,7 @@ void impl_RestartWith(const KStringPtr& page)
 {
     static RestartWithT impl = nullptr;
     if (!impl) {
-        impl = reinterpret_cast<RestartWithT>(getImpl(nullptr, "RestartWith"));
+        impl = reinterpret_cast<RestartWithT>(GetImpl(nullptr, "RestartWith"));
     }
     impl(page.c_str());
 }
@@ -359,9 +359,9 @@ KOALA_INTEROP_V1(RestartWith, KStringPtr)
 #ifdef KOALA_ANI
 KStringPtr impl_LoadView(const KStringPtr& className, const KStringPtr& params)
 {
-    static LoadView_t impl = nullptr;
+    static LoadViewT impl = nullptr;
     if (!impl) {
-        impl = reinterpret_cast<LoadView_t>(getImpl(nullptr, "LoadView"));
+        impl = reinterpret_cast<LoadViewT>(GetImpl(nullptr, "LoadView"));
     }
     const char* result = impl(className.c_str(), params.c_str());
     return KStringPtr(result, interop_strlen(result), true);
@@ -376,7 +376,7 @@ KNativePointer impl_Malloc(KLong length)
         INTEROP_FATAL("Memory allocation failed!");
     }
 #ifndef KOALA_INTEROP_MEM_ANALYZER
-    mallocCounter.fetch_add(1, std::memory_order_release);
+    g_mallocCounter.fetch_add(1, std::memory_order_release);
 #endif
     return ptr;
 }
@@ -387,7 +387,7 @@ void malloc_finalize(KNativePointer data)
     if (data) {
         free(data);
 #ifndef KOALA_INTEROP_MEM_ANALYZER
-        if (mallocCounter.fetch_sub(1, std::memory_order_release) == 0) {
+        if (g_mallocCounter.fetch_sub(1, std::memory_order_release) == 0) {
             INTEROP_FATAL("Double-free detected!");
         }
 #endif
@@ -442,17 +442,17 @@ static Callback_Caller_Sync_t g_callbackCallerSync[API_KIND_MAX] = { 0 };
 
 #define CHECK_VALID_API_KIND(apiKind)              \
     if ((apiKind) < 0 || (apiKind) > API_KIND_MAX) \
-        INTEROP_FATAL("Maximum api kind is %d, received %d", API_KIND_MAX, apiKind);
+        INTEROP_FATAL("Maximum api kind is %d, received %d", API_KIND_MAX, apiKind)
 #define CHECK_HAS_CALLBACK_CALLER(apiKind, callbackCallers) \
     CHECK_VALID_API_KIND(apiKind);                          \
     if ((callbackCallers)[apiKind] == nullptr)              \
-    INTEROP_FATAL("Callback caller for api kind %d was not set", apiKind);
+    INTEROP_FATAL("Callback caller for api kind %d was not set", apiKind)
 #define CHECK_HAS_NOT_CALLBACK_CALLER(apiKind, callbackCallers) \
     CHECK_VALID_API_KIND(apiKind);                              \
     if ((callbackCallers)[apiKind] != nullptr)                  \
-        INTEROP_FATAL("Callback caller for api kind %d already was set", apiKind);
+        INTEROP_FATAL("Callback caller for api kind %d already was set", apiKind)
 
-void setCallbackCaller(int apiKind, Callback_Caller_t callbackCaller)
+void SetCallbackCaller(int apiKind, Callback_Caller_t callbackCaller)
 {
     CHECK_HAS_NOT_CALLBACK_CALLER(apiKind, g_callbackCaller);
     g_callbackCaller[apiKind] = callbackCaller;
@@ -465,7 +465,7 @@ void impl_CallCallback(KInt apiKind, KInt callbackKind, KSerializerBuffer args, 
 }
 KOALA_INTEROP_V4(CallCallback, KInt, KInt, KSerializerBuffer, KInt)
 
-void setCallbackCallerSync(int apiKind, Callback_Caller_Sync_t callbackCallerSync)
+void SetCallbackCallerSync(int apiKind, Callback_Caller_Sync_t callbackCallerSync)
 {
     CHECK_HAS_NOT_CALLBACK_CALLER(apiKind, g_callbackCallerSync);
     g_callbackCallerSync[apiKind] = callbackCallerSync;
@@ -638,8 +638,7 @@ KVMDeferred* CreateDeferred(KVMContext vmContext, KVMObjectHandle* promiseHandle
     return deferred;
 }
 
-class KoalaWork
-{
+class KoalaWork {
 protected:
     InteropVMContext vmContext;
 #ifdef KOALA_FOREIGN_NAPI
@@ -841,7 +840,7 @@ KOALA_INTEROP_1(IncrementNumber, KInteropNumber, KInteropNumber)
 void impl_ReportMemLeaks()
 {
 #ifndef KOALA_INTEROP_MEM_ANALYZER
-    const auto count = mallocCounter.load(std::memory_order_acquire);
+    const auto count = g_mallocCounter.load(std::memory_order_acquire);
     if (count > 0) {
         fprintf(stderr, "Memory leaks detected: %d blocks\n", count);
     } else {
