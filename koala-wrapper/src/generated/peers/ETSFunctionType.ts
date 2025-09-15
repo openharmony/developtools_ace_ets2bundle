@@ -67,12 +67,6 @@ export class ETSFunctionType extends TypeNode {
     get flags(): Es2pandaScriptFunctionFlags {
         return global.generatedEs2panda._ETSFunctionTypeIrFlags(global.context, this.peer)
     }
-    get isThrowing(): boolean {
-        return global.generatedEs2panda._ETSFunctionTypeIrIsThrowingConst(global.context, this.peer)
-    }
-    get isRethrowing(): boolean {
-        return global.generatedEs2panda._ETSFunctionTypeIrIsRethrowingConst(global.context, this.peer)
-    }
     get isExtensionFunction(): boolean {
         return global.generatedEs2panda._ETSFunctionTypeIrIsExtensionFunctionConst(global.context, this.peer)
     }

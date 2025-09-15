@@ -52,7 +52,14 @@ import {
     isForUpdateStatement,
     isForOfStatement,
     isTSTypeAliasDeclaration,
+    isETSParameterExpression,
     isETSFunctionType,
+    isSwitchStatement,
+    isSwitchCaseStatement,
+    isSpreadElement,
+    isClassStaticBlock,
+    isFunctionExpression,
+    FunctionExpression,
 } from '../generated';
 import {
     isEtsScript,
@@ -72,66 +79,9 @@ import {
 } from './factory/nodeTests';
 import { classDefinitionFlags } from './utilities/public';
 import { Es2pandaAstNodeType } from '../Es2pandaEnums';
+import { updateFunctionExpression } from './node-utilities/FunctionExpression';
 
 type Visitor = (node: AstNode) => AstNode;
-
-export interface StructVariableMetadata {
-    name: string;
-    properties: string[];
-    modifiers: Es2pandaModifierFlags;
-    hasStateManagementType?: boolean;
-}
-
-export class StructInfo {
-    metadata: Record<string, StructVariableMetadata> = {};
-    initializeBody: AstNode[] = [];
-    updateBody: AstNode[] = [];
-    isReusable: boolean = false;
-    toRecordBody: Property[] = [];
-}
-
-export class GlobalInfo {
-    private _structCollection: Set<string>;
-    private static instance: GlobalInfo;
-    private _structMap: Map<string, StructInfo>;
-
-    private constructor() {
-        this._structCollection = new Set();
-        this._structMap = new Map();
-    }
-
-    public static getInfoInstance(): GlobalInfo {
-        if (!this.instance) {
-            this.instance = new GlobalInfo();
-        }
-        return this.instance;
-    }
-
-    public add(str: string): void {
-        this._structCollection.add(str);
-    }
-
-    public getStructCollection(): Set<string> {
-        return this._structCollection;
-    }
-
-    public getStructInfo(structName: string): StructInfo {
-        const structInfo = this._structMap.get(structName);
-        if (!structInfo) {
-            return new StructInfo();
-        }
-        return structInfo;
-    }
-
-    public setStructInfo(structName: string, info: StructInfo): void {
-        this._structMap.set(structName, info);
-    }
-
-    public reset(): void {
-        this._structMap.clear();
-        this._structCollection.clear();
-    }
-}
 
 // TODO: rethink (remove as)
 function nodeVisitor<T extends AstNode | undefined>(node: T, visitor: Visitor): T {
@@ -163,6 +113,7 @@ export function visitEachChild(node: AstNode, visitor: Visitor): AstNode {
     script = visitDefinitionBody(script, visitor);
     script = visitStatement(script, visitor);
     script = visitForLoopStatement(script, visitor);
+    script = visitSwitchCaseStatement(script, visitor);
     script = visitOuterExpression(script, visitor);
     script = visitInnerExpression(script, visitor);
     script = visitTrivialExpression(script, visitor);
@@ -204,7 +155,7 @@ function visitOuterExpression(node: AstNode, visitor: Visitor): AstNode {
         updated = true;
         return factory.updateETSNewClassInstanceExpression(
             node,
-            node.getTypeRef,
+            nodeVisitor(node.getTypeRef, visitor),
             nodesVisitor(node.getArguments, visitor)
         );
     }
@@ -277,6 +228,10 @@ function visitTrivialExpression(node: AstNode, visitor: Visitor): AstNode {
             nodeVisitor(node.right, visitor),
             node.operatorType
         );
+    }
+    if (isSpreadElement(node)) {
+        const nodeType = global.generatedEs2panda._AstNodeTypeConst(global.context, node.peer);
+        return factory.updateSpreadElement(node, nodeType, nodeVisitor(node.argument, visitor));
     }
     // TODO
     return node;
@@ -454,6 +409,23 @@ function visitForLoopStatement(node: AstNode, visitor: Visitor): AstNode {
     return node;
 }
 
+function visitSwitchCaseStatement(node: AstNode, visitor: Visitor): AstNode {
+    if (updated) {
+        return node;
+    }
+    if (isSwitchStatement(node)) {
+        return factory.updateSwitchStatement(
+            node,
+            nodeVisitor(node.discriminant, visitor),
+            nodesVisitor(node.cases, visitor)
+        );
+    }
+    if (isSwitchCaseStatement(node)) {
+        return factory.updateSwitchCaseStatement(node, node.test, nodesVisitor(node.consequent, visitor));
+    }
+    return node;
+}
+
 function visitETSModule(node: AstNode, visitor: Visitor): AstNode {
     if (updated) {
         return node;
@@ -493,6 +465,16 @@ function visitDefinitionBody(node: AstNode, visitor: Visitor): AstNode {
             node.typeAnnotation,
             node.modifiers,
             node.isComputed
+        );
+    }
+    if (isClassStaticBlock(node) && !!node.value) {
+        updated = true;
+        return factory.updateClassStaticBlock(
+            node,
+            updateFunctionExpression(
+                node.value as FunctionExpression,
+                nodeVisitor(node.function, visitor)
+            )
         );
     }
     // TODO

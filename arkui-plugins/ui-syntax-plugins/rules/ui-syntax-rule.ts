@@ -14,30 +14,75 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import { ProjectConfig } from 'common/plugin-context';
+import { UISyntaxRuleComponents } from 'ui-syntax-plugins/utils';
 
 export type FixSuggestion = {
-  range: [start: arkts.SourcePosition, end: arkts.SourcePosition];
-  code: string;
+    range: [start: arkts.SourcePosition, end: arkts.SourcePosition];
+    title?: string;
+    code: string;
 };
 
 export type ReportOptions = {
-  node: arkts.AstNode;
-  message: string;
-  data?: Record<string, string>;
-  fix?: (node: arkts.AstNode) => FixSuggestion;
+    node: arkts.AstNode;
+    message: string;
+    data?: Record<string, string>;
+    fix?: (node: arkts.AstNode) => FixSuggestion;
+    level?: UISyntaxRuleLevel;
 };
 
 export type UISyntaxRuleContext = {
-  report(options: ReportOptions): void;
-  containerComponents?: Set<string> | undefined;
+    projectConfig?: ProjectConfig;
+    componentsInfo: UISyntaxRuleComponents | undefined;
+    report(options: ReportOptions): void;
+    getMainPages(): string[];
 };
 
-export type UISyntaxRuleHandler = (node: arkts.AstNode) => void;
+export type UISyntaxRulePhaseHandler = (node: arkts.AstNode) => void;
+
+export type UISyntaxRuleHandler = {
+    parsed?: UISyntaxRulePhaseHandler;
+    checked?: UISyntaxRulePhaseHandler;
+};
 
 export type UISyntaxRule = {
-  name: string;
-  messages: Record<string, string>;
-  setup(context: UISyntaxRuleContext): {
-    parsed?: UISyntaxRuleHandler;
-  };
+    name: string;
+    messages: Record<string, string>;
+    setup(context: UISyntaxRuleContext): UISyntaxRuleHandler;
 };
+
+export type UISyntaxRuleReportOptions = {
+    node: arkts.AstNode;
+    message: string;
+    data?: Record<string, string>;
+    fix?: (node: arkts.AstNode) => FixSuggestion;
+};
+
+export type UISyntaxRuleLevel = 'error' | 'warn' | 'none';
+
+export interface UISyntaxRuleConstructor {
+    new(context: UISyntaxRuleContext, level: UISyntaxRuleLevel): AbstractUISyntaxRule;
+}
+
+export abstract class AbstractUISyntaxRule {
+    protected messages: Record<string, string>;
+
+    constructor(protected context: UISyntaxRuleContext, protected level: UISyntaxRuleLevel) {
+        this.messages = this.setup();
+    }
+
+    public beforeTransform(): void { }
+    public afterTransform(): void { }
+    public parsed(node: arkts.AstNode): void { }
+    public checked(node: arkts.AstNode): void { }
+    public abstract setup(): Record<string, string>;
+
+    protected report(options: UISyntaxRuleReportOptions): void {
+        this.context.report({
+            ...options,
+            level: this.level,
+        });
+    }
+}
+
+export type UISyntaxRuleConfig = [UISyntaxRuleConstructor, UISyntaxRuleLevel];

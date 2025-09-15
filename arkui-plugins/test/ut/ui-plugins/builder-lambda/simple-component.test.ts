@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { builderLambdaNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
+import { beforeMemoNoRecheck, builderLambdaNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 
 const BUILDER_LAMBDA_DIR_PATH: string = 'builder-lambda';
 
@@ -31,12 +32,13 @@ const pluginTester = new PluginTester('test builder-lambda simple component', bu
 
 function testBuilderLambdaTransformer(this: PluginTestContext): void {
     const expectedScript: string = `
-import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"@ohos.arkui.stateManagement\";
-import { Column as Column, UIColumnAttribute as UIColumnAttribute } from \"arkui.component.column\";
+import { memo as memo } from "arkui.stateManagement.runtime";
+import { memo as memo } from \"@ohos.arkui.stateManagement\";
+import { Column as Column, ColumnAttribute as ColumnAttribute } from \"arkui.component.column\";
 function main() {}
 class MyStateSample {
     @memo() public build() {
-        Column(undefined, undefined, (() => {}));
+        Column(undefined, undefined, @memo() (() => {}));
     }
     public constructor() {}
 }
@@ -46,17 +48,19 @@ class MyStateSample {
 
 function testMemoTransformer(this: PluginTestContext): void {
     const expectedScript: string = `
-import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"@ohos.arkui.stateManagement\";
-import { Column as Column, UIColumnAttribute as UIColumnAttribute } from \"arkui.component.column\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { memo as memo } from "arkui.stateManagement.runtime";
+import { memo as memo } from \"@ohos.arkui.stateManagement\";
+import { Column as Column, ColumnAttribute as ColumnAttribute } from \"arkui.component.column\";
 function main() {}
 class MyStateSample {
-    public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (263357132)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
-        Column(__memo_context, ((__memo_id) + (65509320)), undefined, undefined, ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+        Column(__memo_context, ((__memo_id) + (65509320)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<void>(((__memo_id) + (147296800)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -80,7 +84,7 @@ class MyStateSample {
 
 pluginTester.run(
     'transform simple component',
-    [builderLambdaNoRecheck, recheck, memoNoRecheck],
+    [builderLambdaNoRecheck, beforeMemoNoRecheck, memoNoRecheck, recheck],
     {
         'checked:builder-lambda-no-recheck': [testBuilderLambdaTransformer],
         'checked:memo-no-recheck': [testMemoTransformer],

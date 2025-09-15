@@ -69,6 +69,8 @@ export class DeclTransformer extends AbstractVisitor {
                 return this.transformMethodDefinition(astNode);
             }
             return astNode;
+        } else if (arkts.isClassProperty(astNode)) {
+            astNode.setAnnotations([]);
         }
         return node;
     }
@@ -119,7 +121,7 @@ export class DeclTransformer extends AbstractVisitor {
     }
 
     updateImportDeclaration(astNode: arkts.AstNode):arkts.AstNode {
-        if (!arkts.isETSImportDeclaration(astNode) || astNode?.source?.str !== '@ohos.arkui.component') {
+        if (!arkts.isETSImportDeclaration(astNode) || (astNode?.source?.str !== '@ohos.arkui.component' && astNode?.source?.str !== '@ohos.arkui.stateManagement')) {
             return astNode;
         }
         astNode.specifiers.forEach((element) => {

@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { uiNoRecheck } from '../../../utils/plugins';
+import { recheck, uiNoRecheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -32,22 +33,22 @@ buildConfig.compileFiles = [
 const animationTransform: Plugins = {
     name: 'animation',
     parsed: uiTransform().parsed,
-}
+};
 
 const pluginTester = new PluginTester('test basic animation transform', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
 
-import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
+import { NavInterface as NavInterface } from "arkui.UserView";
+
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -57,16 +58,22 @@ import { Entry as Entry } from "@ohos.arkui.component";
 
 function main() {}
 
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../animation/animation-basic",
+  pageFullPath: "test/demo/mock/animation/animation-basic",
+  integratedHsp: "false",
+  } as NavInterface));
 
-
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class AnimatablePropertyExample extends CustomComponent<AnimatablePropertyExample, __Options_AnimatablePropertyExample> {
-  public __initializeStruct(initializers: __Options_AnimatablePropertyExample | undefined, @memo() content: (()=> void) | undefined): void {}
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct AnimatablePropertyExample extends CustomComponent<AnimatablePropertyExample, __Options_AnimatablePropertyExample> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_AnimatablePropertyExample | undefined), @memo() content: ((()=> void) | undefined)): void {}
   
-  public __updateStruct(initializers: __Options_AnimatablePropertyExample | undefined): void {}
+  public __updateStruct(initializers: (__Options_AnimatablePropertyExample | undefined)): void {}
   
-  @memo() public _build(@memo() style: ((instance: AnimatablePropertyExample)=> AnimatablePropertyExample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_AnimatablePropertyExample | undefined): void {
-    Column(undefined, undefined, (() => {
-      Text(@memo() ((instance: UITextAttribute): void => {
+  @memo() public build() {
+    Column(undefined, undefined, @memo() (() => {
+      Text(@memo() ((instance: TextAttribute): void => {
         instance.animationStart({
           duration: 2000,
           curve: Curve.Ease,
@@ -89,7 +96,7 @@ function main() {}
   
 }
 
-interface __Options_AnimatablePropertyExample {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_AnimatablePropertyExample {
   
 }
 
@@ -105,17 +112,24 @@ class __EntryWrapper extends EntryPoint {
 }
 `;
 
+const expectedHeader =
+    `
+    animationStart(value: AnimateParam | undefined): this
+    animationStop(value: AnimateParam | undefined): this
+    `;
+
 function testAnimationTransformer(this: PluginTestContext): void {
     expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
 }
 
 pluginTester.run(
     'test basic animation transform',
-    [animationTransform, uiNoRecheck],
+    [animationTransform, uiNoRecheck, recheck],
     {
         checked: [testAnimationTransformer],
     },
     {
         stopAfter: 'checked',
+        tracing: { externalSourceNames: ['arkui.component.common'] },
     }
 );

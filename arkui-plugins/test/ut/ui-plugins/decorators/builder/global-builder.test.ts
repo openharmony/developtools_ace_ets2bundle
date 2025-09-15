@@ -14,58 +14,63 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
 const FUNCTION_DIR_PATH: string = 'decorators/builder';
 
 const buildConfig: BuildConfig = mockBuildConfig();
-buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, FUNCTION_DIR_PATH, 'global-builder.ets'),
-];
+buildConfig.compileFiles = [path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, FUNCTION_DIR_PATH, 'global-builder.ets')];
 
 const pluginTester = new PluginTester('test global builder', buildConfig);
 
 const parsedTransform: Plugins = {
     name: 'global-builder',
-    parsed: uiTransform().parsed
+    parsed: uiTransform().parsed,
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
-import { UIRowAttribute as UIRowAttribute } from "@ohos.arkui.component";
+
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component, Row as Row, Builder as Builder, Text as Text } from "@ohos.arkui.component";
 
 function main() {}
+
 
 @memo() function showTextBuilder() {
   Text(undefined, "Hello World", undefined, undefined);
 }
 
 @memo() function overBuilder(params: Tmp) {
-  Row(undefined, undefined, (() => {
+  Row(undefined, undefined, @memo() (() => {
     Text(undefined, (("UseStateVarByReference: ") + (params.paramA1)), undefined, undefined);
   }));
 }
 
+
 class Tmp {
   public paramA1: string = "";
+
   public constructor() {}
+
 }
 
-@Component({freezeWhenInactive:false}) final class BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
-  public __initializeStruct(initializers: __Options_BuilderDemo | undefined, @memo() content: (()=> void) | undefined): void {}
-  public __updateStruct(initializers: __Options_BuilderDemo | undefined): void {}
-  @memo() public _build(@memo() style: ((instance: BuilderDemo)=> BuilderDemo) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_BuilderDemo | undefined): void {
+@Component() final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
+  public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @memo() content: ((()=> void) | undefined)): void {}
+
+  public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
+
+  @memo() public build() {
     Row(undefined, undefined, @memo() (() => {
       showTextBuilder();
       overBuilder({
@@ -73,10 +78,12 @@ class Tmp {
       });
     }));
   }
+
   public constructor() {}
+
 }
 
-interface __Options_BuilderDemo {
+@Component() export interface __Options_BuilderDemo {
   
 }
 `;
@@ -87,7 +94,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'global builder',
-    [parsedTransform, uiNoRecheck],
+    [parsedTransform, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

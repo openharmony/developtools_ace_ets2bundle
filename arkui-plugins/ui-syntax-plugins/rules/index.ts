@@ -13,87 +13,115 @@
  * limitations under the License.
  */
 
-import { UISyntaxRule } from './ui-syntax-rule';
-import BuildRootNode from './build-root-node';
-import CheckConstructPrivateParameter from './check-construct-private-parameter';
-import CheckDecoratedPropertyType from './check-decorated-property-type';
-import ComponentComponentV2MixUseCheck from './component-componentV2-mix-use-check';
-import ComponentV2MixCheck from './componentV2-mix-check';
-import ConsumerProviderDecoratorCheck from './consumer-provider-decorator-check';
-import ComponentV2StateUsageValidation from './componentV2-state-usage-validation';
-import ConstructParameterLiteral from './construct-parameter-literal';
-import CustomDialogMissingController from './custom-dialog-missing-controller';
-import DecoratorsInUIComponentOnly from './decorators-in-ui-component-only';
-import EntryLoacalStorageCheck from './entry-localstorage-check';
-import EntryStructNoExport from './entry-struct-no-export';
-import LocalBuilderCheck from './local-builder-check';
-import MonitorDecoratorCheck from './monitor-decorator-check';
-import NestedRelationship from './nested-relationship';
-import NoChildInButton from './no-child-in-button';
-import NoDuplicateDecorators from './no-duplicate-decorators';
-import NoDuplicateEntry from './no-duplicate-entry';
-import NoDuplicatePreview from './no-duplicate-preview';
-import NoDuplicateStateManager from './no-duplicate-state-manager';
-import NoPropLinkObjectlinkInEntry from './no-prop-link-objectlink-in-entry';
-import NoSameAsBuiltInAttribute from './no-same-as-built-in-attribute';
-import ReuseAttributeCheck from './reuse-attribute-check';
-import StructMissingDecorator from './struct-missing-decorator';
-import StructPropertyDecorator from './struct-property-decorator';
-import StructVariableInitialization from './struct-variable-initialization';
-import TrackDecoratorCheck from './track-decorator-check';
-import TypeDecoratorCheck from './type-decorator-check';
-import ValidateBuildInStruct from './validate-build-in-struct';
-import VariableInitializationViaComponentCons from './variable-initialization-via-component-cons';
-import WatchDecoratorFunction from './watch-decorator-function';
-import WatchDecoratorRegular from './watch-decorator-regular';
-import WrapBuilderCheck from './wrap-builder-check';
-import ObservedHeritageCompatibleCheck from './observed-heritage-compatible-check';
-import ObservedObservedV2 from './observed-observedV2-check';
-import ObservedV2TraceUsageValidation from './observedV2-trace-usage-validation';
-import OnceDecoratorCheck from './once-decorator-check';
-import OneDecoratorOnFunctionMethod from './one-decorator-on-function-method';
-import OldNewDecoratorMixUseCheck from './old-new-decorator-mix-use-check';
+import { UISyntaxRule, UISyntaxRuleConfig } from './ui-syntax-rule';
+import BuilderParamDecoratorCheckRule from './builderparam-decorator-check';
+import AttributeNoInvokeRule from './attribute-no-invoke';
+import BuildRootNodeRule from './build-root-node';
+import CheckConstructPrivateParameterRule from './check-construct-private-parameter';
+import CheckDecoratedPropertyTypeRule from './check-decorated-property-type';
+import CheckPropertyModifiersRule from './check-property-modifiers';
+import ComponentComponentV2MixUseCheckRule from './component-componentV2-mix-use-check';
+import ComponentV2MixCheckRule from './componentV2-mix-check';
+import ConstructParameterLiteralRule from './construct-parameter-literal';
+import ConstructParameterRule from './construct-parameter';
+import ConsumerProviderDecoratorCheckRule from './consumer-provider-decorator-check';
+import ComputedDecoratorCheckRule from './computed-decorator-check';
+import ComponentV2StateUsageValidationRule from './componentV2-state-usage-validation';
+import CustomDialogMissingControllerRule from './custom-dialog-missing-controller';
+import EntryLocalStorageCheckRule from './entry-localstorage-check';
+import EntryStructNoExportRule from './entry-struct-no-export';
+import MainPagesEntryCheckRule from './main-pages-entry-check';
+import MonitorDecoratorCheckRule from './monitor-decorator-check';
+import NestedRelationshipRule from './nested-relationship';
+import NestedReuseComponentCheckRule from './nested-reuse-component-check';
+import NoChildInButtonRule from './no-child-in-button';
+import NoDuplicateEntryRule from './no-duplicate-entry';
+import NoDuplicateIdRule from './no-duplicate-id';
+import NoDuplicatePreviewRule from './no-duplicate-preview';
+import NoPropLinkObjectLinkInEntryRule from './no-prop-link-objectlink-in-entry';
+import NoSameAsBuiltInAttributeRule from './no-same-as-built-in-attribute';
+import ReuseAttributeCheckRule from './reuse-attribute-check';
+import StaticParamRequireRule from './static-param-require';
+import StructMissingDecoratorRule from './struct-missing-decorator';
+import StructPropertyDecoratorRule from './struct-property-decorator';
+import TrackDecoratorCheckRule from './track-decorator-check';
+import ValidateBuildInStructRule from './validate-build-in-struct';
+import WrapBuilderCheckRule from './wrap-builder-check';
+import StructPropertyOptionalRule from './struct-property-optional';
+import StructVariableInitializationRule from './struct-variable-initialization';
+import UiConsistentCheckRule from './ui-consistent-check';
+import ValidateDecoratorTargetRule from './validate-decorator-target';
+import WatchDecoratorFunctionRule from './watch-decorator-function';
+import WatchDecoratorRegularRule from './watch-decorator-regular';
+import ObservedHeritageCompatibleCheckRule from './observed-heritage-compatible-check';
+import ObservedObservedV2Rule from './observed-observedV2-check';
+import ObservedV2TraceUsageValidationRule from './observedV2-trace-usage-validation';
+import OnceDecoratorCheckRule from './once-decorator-check';
+import OneDecoratorOnFunctionMethodRule from './one-decorator-on-function-method';
+import PropertyTypeRule from './property-type';
+import ReusableV2DecoratorCheckRule from './reusableV2-decorator-check';
+import VariableInitializationViaComponentConstructorRule from './variable-initialization-via-component-constructor';
+import ComponentComponentV2InitCheckRule from './component-componentV2-init-check';
+import StructNoExtendsRule from './struct-no-extends';
+import OldNewDecoratorMixUseCheckRule from './old-new-decorator-mix-use-check';
+import RequireDecoratorRegularRule from './require-decorator-regular';
+import ReusableComponentInV2CheckRule from './reusable-component-in-V2-check';
+import SpecificComponentChildrenRule from './specific-component-children';
 
-const rules: UISyntaxRule[] = [
-  BuildRootNode,
-  CheckConstructPrivateParameter,
-  CheckDecoratedPropertyType,
-  ComponentComponentV2MixUseCheck,
-  ComponentV2MixCheck,
-  ConsumerProviderDecoratorCheck,
-  ComponentV2StateUsageValidation,
-  ConstructParameterLiteral,
-  CustomDialogMissingController,
-  DecoratorsInUIComponentOnly,
-  EntryLoacalStorageCheck,
-  EntryStructNoExport,
-  LocalBuilderCheck,
-  MonitorDecoratorCheck,
-  NestedRelationship,
-  NoChildInButton,
-  NoDuplicateDecorators,
-  NoDuplicateEntry,
-  NoDuplicatePreview,
-  NoDuplicateStateManager,
-  NoPropLinkObjectlinkInEntry,
-  NoSameAsBuiltInAttribute,
-  ReuseAttributeCheck,
-  StructMissingDecorator,
-  StructPropertyDecorator,
-  StructVariableInitialization,
-  TrackDecoratorCheck,
-  TypeDecoratorCheck,
-  ValidateBuildInStruct,
-  VariableInitializationViaComponentCons,
-  WatchDecoratorFunction,
-  WatchDecoratorRegular,
-  WrapBuilderCheck,
-  ObservedHeritageCompatibleCheck,
-  ObservedObservedV2,
-  ObservedV2TraceUsageValidation,
-  OnceDecoratorCheck,
-  OneDecoratorOnFunctionMethod,
-  OldNewDecoratorMixUseCheck,
+const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
+    [AttributeNoInvokeRule, 'warn'],
+    [BuildRootNodeRule, 'error'],
+    [BuilderParamDecoratorCheckRule, 'error'],
+    [CheckConstructPrivateParameterRule, 'warn'],
+    [CheckDecoratedPropertyTypeRule, 'error'],
+    [CheckPropertyModifiersRule, 'warn'],
+    [ComponentComponentV2MixUseCheckRule, 'error'],
+    [ComponentV2MixCheckRule, 'error'],
+    [ConstructParameterLiteralRule, 'warn'],
+    [ConstructParameterRule, 'error'],
+    [ConsumerProviderDecoratorCheckRule, 'error'],
+    [ComponentV2StateUsageValidationRule, 'error'],
+    [CustomDialogMissingControllerRule, 'error'],
+    [EntryLocalStorageCheckRule, 'warn'],
+    [EntryStructNoExportRule, 'warn'],
+    [MainPagesEntryCheckRule, 'error'],
+    [MonitorDecoratorCheckRule, 'error'],
+    [NestedRelationshipRule, 'error'],
+    [NestedReuseComponentCheckRule, 'error'],
+    [NoChildInButtonRule, 'error'],
+    [NoDuplicateEntryRule, 'error'],
+    [NoDuplicateIdRule, 'warn'],
+    [NoDuplicatePreviewRule, 'error'],
+    [NoPropLinkObjectLinkInEntryRule, 'warn'],
+    [NoSameAsBuiltInAttributeRule, 'error'],
+    [ReuseAttributeCheckRule, 'error'],
+    [StaticParamRequireRule, 'warn'],
+    [StructMissingDecoratorRule, 'error'],
+    [StructPropertyDecoratorRule, 'error'],
+    [TrackDecoratorCheckRule, 'error'],
+    [ValidateBuildInStructRule, 'error'],
+    [WrapBuilderCheckRule, 'error'],
+    [StructPropertyOptionalRule, 'warn'],
+    [StructVariableInitializationRule, 'error'],
+    [ObservedHeritageCompatibleCheckRule, 'error'],
+    [ObservedObservedV2Rule, 'error'],
+    [ObservedV2TraceUsageValidationRule, 'error'],
+    [OnceDecoratorCheckRule, 'error'],
+    [OneDecoratorOnFunctionMethodRule, 'error'],
+    [PropertyTypeRule, 'error'],
+    [ComputedDecoratorCheckRule, 'error'],
+    [ComponentComponentV2InitCheckRule, 'error'],
+    [ReusableV2DecoratorCheckRule, 'error'],
+    [VariableInitializationViaComponentConstructorRule, 'error'],
+    [StructNoExtendsRule, 'error'],
+    [UiConsistentCheckRule, 'warn'],
+    [ValidateDecoratorTargetRule, 'error'],
+    [WatchDecoratorFunctionRule, 'error'],
+    [WatchDecoratorRegularRule, 'error'],
+    [OldNewDecoratorMixUseCheckRule, 'error'],
+    [RequireDecoratorRegularRule, 'warn'],
+    [ReusableComponentInV2CheckRule, 'warn'],
+    [SpecificComponentChildrenRule, 'error'],
 ];
 
 export default rules;

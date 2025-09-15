@@ -21,12 +21,14 @@ export class PluginContext {
     private program: arkts.Program | undefined;
     private projectConfig: ProjectConfig | undefined;
     private contextPtr: number | undefined;
+    private codingFilePath: string | undefined;
 
     constructor() {
         this.ast = undefined;
         this.program = undefined;
         this.projectConfig = undefined;
         this.contextPtr = undefined;
+        this.codingFilePath = undefined;
     }
 
     /**
@@ -58,7 +60,7 @@ export class PluginContext {
     }
 
     public setProjectConfig(projectConfig: ProjectConfig): void {
-        throw new Error('do not set projectConfig!');
+        this.projectConfig = projectConfig;
     }
 
     public getProjectConfig(): ProjectConfig | undefined {
@@ -72,12 +74,53 @@ export class PluginContext {
     public getContextPtr(): number | undefined {
         return this.contextPtr;
     }
+
+    public setCodingFilePath(codingFilePath: string): void {
+        this.codingFilePath = codingFilePath;
+    }
+
+    public getCodingFilePath(): string | undefined {
+        return this.codingFilePath;
+    }
+
+    public isCoding(): boolean {
+        return this.codingFilePath !== undefined;
+    }
+}
+
+export interface DependentModuleConfig {
+    packageName: string;
+    moduleName: string;
+    moduleType: string;
+    modulePath: string;
+    sourceRoots: string[];
+    entryFile: string;
+    language: string;
+    declFilesPath?: string;
+    dependencies?: string[];
 }
 
 export interface ProjectConfig {
     bundleName: string;
     moduleName: string;
     cachePath: string;
+    dependentModuleList: DependentModuleConfig[];
+    appResource: string;
+    rawFileResource: string;
+    buildLoaderJson: string;
+    hspResourcesMap: boolean;
+    compileHar: boolean;
+    byteCodeHar: boolean;
+    uiTransformOptimization: boolean;
+    resetBundleName: boolean;
+    allowEmptyBundleName: boolean;
+    moduleType: string;
+    moduleRootPath: string;
+    aceModuleJsonPath: string;
+    ignoreError: boolean;
+    projectPath: string,
+    projectRootPath: string,
+    integratedHsp: boolean
     frameworkMode?: string;
 }
 

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { memo, __memo_context_type, __memo_id_type } from "@ohos.arkui.stateManagement"
+import { memo, __memo_context_type, __memo_id_type } from "arkui.stateManagement.runtime";
 
 export declare function __context(): __memo_context_type
 export declare function __id(): __memo_id_type

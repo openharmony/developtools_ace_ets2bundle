@@ -67,7 +67,9 @@ export class global {
 
     private static _interop: InteropNativeModule | undefined = undefined
     public static get interop(): InteropNativeModule {
-        if (this._interop === undefined) this._interop = initInterop()
+        if (this._interop === undefined) {
+            this._interop = initInterop()
+        }
         return this._interop
     }
 

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { memo, __memo_context_type, __memo_id_type } from "@ohos.arkui.stateManagement"
+import { memo } from "arkui.stateManagement.runtime";
 
 @memo type ItemBuilder<T> = (item: Item<T>) => void;
 

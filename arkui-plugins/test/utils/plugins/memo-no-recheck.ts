@@ -16,12 +16,13 @@
 import * as arkts from '@koalaui/libarkts';
 import { PluginContext, Plugins } from '../../../common/plugin-context';
 import { ProgramVisitor } from '../../../common/program-visitor';
-import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../../../common/predefines';
+import { EXTERNAL_SOURCE_PREFIX_NAMES, EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK } from '../../../common/predefines';
 import { PositionalIdTracker } from '../../../memo-plugins/utils';
 import { ParameterTransformer } from '../../../memo-plugins/parameter-transformer';
 import { ReturnTransformer } from '../../../memo-plugins/return-transformer';
 import { SignatureTransformer } from '../../../memo-plugins/signature-transformer';
 import { FunctionTransformer } from '../../../memo-plugins/function-transformer';
+import { InternalsTransformer } from '../../../memo-plugins/internal-transformer';
 
 /**
  * AfterCheck unmemoizeTransform with no recheck AST.
@@ -29,8 +30,9 @@ import { FunctionTransformer } from '../../../memo-plugins/function-transformer'
 export const memoNoRecheck: Plugins = {
     name: 'memo-no-recheck',
     checked(this: PluginContext): arkts.EtsScript | undefined {
-        const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+        const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
+            const isFrameworkMode = !!this.getProjectConfig()?.frameworkMode;
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
             let script = program.astNode;
             const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
@@ -39,20 +41,30 @@ export const memoNoRecheck: Plugins = {
             });
             const returnTransformer = new ReturnTransformer();
             const signatureTransformer = new SignatureTransformer();
+            let internalsTransformer: InternalsTransformer | undefined;
+            if (isFrameworkMode) {
+                internalsTransformer = new InternalsTransformer({ positionalIdTracker });
+            }
             const functionTransformer = new FunctionTransformer({
                 positionalIdTracker,
                 parameterTransformer,
                 returnTransformer,
                 signatureTransformer,
+                internalsTransformer,
+                useCache: arkts.NodeCache.getInstance().isCollected()
             });
+            const skipPrefixNames = isFrameworkMode
+                ? EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK
+                : EXTERNAL_SOURCE_PREFIX_NAMES;
             const programVisitor = new ProgramVisitor({
                 pluginName: memoNoRecheck.name,
                 state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
                 visitors: [functionTransformer],
-                skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+                skipPrefixNames,
                 pluginContext: this,
             });
             program = programVisitor.programVisitor(program);
+            arkts.NodeCache.getInstance().clear();
             script = program.astNode;
             return script;
         }

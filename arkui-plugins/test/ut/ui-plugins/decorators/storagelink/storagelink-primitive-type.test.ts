@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,36 +38,36 @@ const storageLinkTransform: Plugins = {
 const pluginTester = new PluginTester('test storagelink primitive type transform', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
-
-import { StorageLinkDecoratedVariable as StorageLinkDecoratedVariable } from "@ohos.arkui.stateManagement";
-
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
+import { NavInterface as NavInterface } from "arkui.UserView";
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 import { EntryPoint as EntryPoint } from "arkui.UserView";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
 import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
-
 import { StorageLink as StorageLink } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/storagelink/storagelink-primitive-type",
+  pageFullPath: "test/demo/mock/decorators/storagelink/storagelink-primitive-type",
+  integratedHsp: "false",
+  } as NavInterface));
 
-
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_numA = new StorageLinkDecoratedVariable<number>("Prop1", "numA", 33)
-    this.__backing_stringA = new StorageLinkDecoratedVariable<string>("Prop2", "stringA", "AA")
-    this.__backing_booleanA = new StorageLinkDecoratedVariable<boolean>("Prop3", "booleanA", true)
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_numA = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "Prop1", "numA", 33)
+    this.__backing_stringA = STATE_MGMT_FACTORY.makeStorageLink<string>(this, "Prop2", "stringA", "AA")
+    this.__backing_booleanA = STATE_MGMT_FACTORY.makeStorageLink<boolean>(this, "Prop3", "booleanA", true)
   }
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
-  private __backing_numA?: StorageLinkDecoratedVariable<number>;
+  private __backing_numA?: IStorageLinkDecoratedVariable<number>;
   
   public get numA(): number {
     return this.__backing_numA!.get();
@@ -76,7 +77,7 @@ function main() {}
     this.__backing_numA!.set(value);
   }
   
-  private __backing_stringA?: StorageLinkDecoratedVariable<string>;
+  private __backing_stringA?: IStorageLinkDecoratedVariable<string>;
   
   public get stringA(): string {
     return this.__backing_stringA!.get();
@@ -86,7 +87,7 @@ function main() {}
     this.__backing_stringA!.set(value);
   }
   
-  private __backing_booleanA?: StorageLinkDecoratedVariable<boolean>;
+  private __backing_booleanA?: IStorageLinkDecoratedVariable<boolean>;
   
   public get booleanA(): boolean {
     return this.__backing_booleanA!.get();
@@ -96,31 +97,31 @@ function main() {}
     this.__backing_booleanA!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: MyStateSample)=> MyStateSample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MyStateSample | undefined): void {}
+  @memo() public build() {}
   
   public constructor() {}
   
 }
 
-interface __Options_MyStateSample {
-  set numA(numA: number | undefined)
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
+  set numA(numA: (number | undefined))
   
-  get numA(): number | undefined
-  set __backing_numA(__backing_numA: StorageLinkDecoratedVariable<number> | undefined)
+  get numA(): (number | undefined)
+  set __backing_numA(__backing_numA: (IStorageLinkDecoratedVariable<number> | undefined))
   
-  get __backing_numA(): StorageLinkDecoratedVariable<number> | undefined
-  set stringA(stringA: string | undefined)
+  get __backing_numA(): (IStorageLinkDecoratedVariable<number> | undefined)
+  set stringA(stringA: (string | undefined))
   
-  get stringA(): string | undefined
-  set __backing_stringA(__backing_stringA: StorageLinkDecoratedVariable<string> | undefined)
+  get stringA(): (string | undefined)
+  set __backing_stringA(__backing_stringA: (IStorageLinkDecoratedVariable<string> | undefined))
   
-  get __backing_stringA(): StorageLinkDecoratedVariable<string> | undefined
-  set booleanA(booleanA: boolean | undefined)
+  get __backing_stringA(): (IStorageLinkDecoratedVariable<string> | undefined)
+  set booleanA(booleanA: (boolean | undefined))
   
-  get booleanA(): boolean | undefined
-  set __backing_booleanA(__backing_booleanA: StorageLinkDecoratedVariable<boolean> | undefined)
+  get booleanA(): (boolean | undefined)
+  set __backing_booleanA(__backing_booleanA: (IStorageLinkDecoratedVariable<boolean> | undefined))
   
-  get __backing_booleanA(): StorageLinkDecoratedVariable<boolean> | undefined
+  get __backing_booleanA(): (IStorageLinkDecoratedVariable<boolean> | undefined)
   
 }
 
@@ -134,7 +135,6 @@ class __EntryWrapper extends EntryPoint {
   public constructor() {}
   
 }
-
 `;
 
 function testStorageLinkTransformer(this: PluginTestContext): void {
@@ -143,9 +143,9 @@ function testStorageLinkTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test storagelink primitive type transform',
-    [storageLinkTransform, uiNoRecheck],
+    [storageLinkTransform, uiNoRecheck, recheck],
     {
-        checked: [testStorageLinkTransformer],
+        'checked:ui-no-recheck': [testStorageLinkTransformer],
     },
     {
         stopAfter: 'checked',

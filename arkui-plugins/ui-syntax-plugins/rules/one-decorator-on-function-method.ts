@@ -14,55 +14,110 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getAnnotationName } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { getAnnotationName, PresetDecorators } from '../utils';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-const allowedDecorators = new Set(['Extend', 'Builder', 'Styles']);
+const allowedDecorators = PresetDecorators.BUILDER;
+const PARAM_THIS_NAME = '=t';
+const DECORATOR_LIMIT = 1;
 
-function validateFunctionDecorator(node: arkts.EtsScript, context: UISyntaxRuleContext): void {
-  node.statements.forEach((statement) => {
-    // If the node is not a function declaration, it is returned
-    if (!arkts.isFunctionDeclaration(statement)) {
-      return;
+class OneDecoratorOnFunctionMethodRule extends AbstractUISyntaxRule {
+    public setup(): Record<string, string> {
+        return {
+            invalidDecorator: `A function can only be decorated by the 'Builder'.`,
+        };
     }
-    const annotations = statement.annotations;
-    // If there is no annotation, go straight back
-    if (!annotations) {
-      return;
-    }
-    // Check that each annotation is in the list of allowed decorators
-    annotations.forEach((annotation) => {
-      const decoratorName = getAnnotationName(annotation);
-      // rule1: misuse of decorator, only '@Extend', '@Builder' , '@Styles' decorators allowed on global functions
-      if (!allowedDecorators.has(decoratorName)) {
-        context.report({
-          node: annotation,
-          message: rule.messages.invalidDecorator,
-          data: {
-            decoratorName,
-          },
-        });
-      }
-    });
-  });
-}
 
-const rule: UISyntaxRule = {
-  name: 'one-decorator-on-function-method',
-  messages: {
-    invalidDecorator: `misuse of '@{{decoratorName}}' decorator, only '@Extend', '@Builder' and '@Styles' decorators allowed on global functions.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node: arkts.AstNode): void => {
+    public parsed(node: arkts.AstNode): void {
         // If the node is not an ETS script, it is returned directly
         if (!arkts.isEtsScript(node)) {
-          return;
+            return;
         }
-        validateFunctionDecorator(node, context);
-      },
-    };
-  },
-};
+        this.validateFunctionDecorator(node);
+    }
 
-export default rule;
+    private validateFunctionDecorator(node: arkts.EtsScript): void {
+        node.statements.forEach((statement) => {
+            // If the node is not a function declaration, it is returned
+            if (!arkts.isFunctionDeclaration(statement)) {
+                return;
+            }
+            const annotations = statement.annotations;
+            // If there is no annotation, go straight back
+            if (!annotations) {
+                return;
+            }
+            // @AnimatableExtend decorators can only be used with functions with this parameter.
+            const animatableExtendDecorator = this.findDecorator(annotations, PresetDecorators.ANIMATABLE_EXTEND);
+            if (arkts.isScriptFunction(statement.scriptFunction) && animatableExtendDecorator) {
+                const member = statement.scriptFunction;
+                if (this.hasThisParameter(member)) {
+                    return;
+                }
+            }
+            // Check that each annotation is in the list of allowed decorators
+            this.validateAllowedDecorators(annotations, this.otherDecoratorFilter(annotations));
+        });
+    }
+
+    private findDecorator(annotations: arkts.AnnotationUsage[], decorator: string): arkts.AnnotationUsage | undefined {
+        return annotations?.find(annotation =>
+            annotation.expr && arkts.isIdentifier(annotation.expr) &&
+            annotation.expr.name === decorator
+        );
+    }
+
+    private otherDecoratorFilter(annotations: arkts.AnnotationUsage[]): arkts.AnnotationUsage | undefined {
+        return annotations?.find(annotation =>
+            annotation.expr && arkts.isIdentifier(annotation.expr) &&
+            annotation.expr.name !== PresetDecorators.BUILDER
+        );
+    }
+
+    private hasThisParameter(member: arkts.ScriptFunction): boolean {
+        return member.params.some((param) => {
+            return arkts.isEtsParameterExpression(param) &&
+                arkts.isIdentifier(param.identifier) &&
+                param.identifier.name === PARAM_THIS_NAME;
+        });
+    }
+
+    private validateAllowedDecorators(
+        annotations: arkts.AnnotationUsage[],
+        otherDecorator: arkts.AnnotationUsage | undefined,
+    ): void {
+        annotations.forEach((annotation) => {
+            const decoratorName = getAnnotationName(annotation);
+            // rule1: misuse of decorator, only '@Builder'  decorator allowed on global functions
+            if (allowedDecorators !== decoratorName ||
+                (allowedDecorators === decoratorName && decoratorName.length > DECORATOR_LIMIT)) {
+                this.reportInvalidDecorator(annotation, otherDecorator);
+            }
+        });
+    }
+
+    private reportInvalidDecorator(
+        annotation: arkts.AnnotationUsage,
+        otherDecorator: arkts.AnnotationUsage | undefined,
+    ): void {
+        if (!otherDecorator) {
+            return;
+        }
+        this.report({
+            node: annotation,
+            message: this.messages.invalidDecorator,
+            fix: () => {
+                let startPosition = otherDecorator.startPosition;
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                const endPosition = otherDecorator.endPosition;
+                return {
+                    title: 'Remove the annotation',
+                    range: [startPosition, endPosition],
+                    code: ``
+                };
+            }
+        });
+    }
+}
+
+export default OneDecoratorOnFunctionMethodRule;

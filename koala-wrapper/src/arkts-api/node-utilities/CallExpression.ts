@@ -17,6 +17,7 @@ import { TypeNode } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { AstNode } from '../peers/AstNode';
 import { CallExpression } from '../types';
+import { NodeCache } from '../utilities/nodeCache';
 import { attachModifiers, updateThenAttach } from '../utilities/private';
 
 export function updateCallExpression(
@@ -41,5 +42,9 @@ export function updateCallExpression(
         (node: CallExpression, original: CallExpression) =>
             !!original.trailingBlock ? node.setTralingBlock(original.trailingBlock) : node
     );
-    return update(original, expression, typeArguments, args, isOptional, trailingComma);
+    const newNode = update(original, expression, typeArguments, args, isOptional, trailingComma);
+    if (NodeCache.getInstance().has(original)) {
+        NodeCache.getInstance().refresh(original, newNode);
+    }
+    return newNode;
 }

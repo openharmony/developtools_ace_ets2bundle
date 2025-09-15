@@ -14,60 +14,68 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getAnnotationUsage, PresetDecorators } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { getAnnotationUsage, MAX_PREVIEW_DECORATOR_COUNT, PresetDecorators } from '../utils';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-const MAX_PREVIEW_DECORATOR_COUNT = 10;
+class NoDuplicatePreviewRule extends AbstractUISyntaxRule {
+    private previewDecoratorUsages: arkts.AnnotationUsage[] = [];
+    private previewDecoratorUsageIndex = 10;
 
-function checkDuplicatePreview(node: arkts.AstNode, context: UISyntaxRuleContext): void {
-  if (arkts.nodeType(node) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
-    return;
-  }
-  let previewDecoratorUsages: arkts.AnnotationUsage[] = [];
-  node.getChildren().forEach((child) => {
-    if (!arkts.isStructDeclaration(child)) {
-      return;
-    }
-    const previewDecoratorUsage = getAnnotationUsage(
-      child,
-      PresetDecorators.PREVIEW,
-    );
-    if (previewDecoratorUsage) {
-      previewDecoratorUsages.push(previewDecoratorUsage);
-    }
-  });
-  // If the number of preview decorators is greater than 10, an error is reported
-  if (previewDecoratorUsages.length <= MAX_PREVIEW_DECORATOR_COUNT) {
-    return;
-  }
-  previewDecoratorUsages.forEach((previewDecoratorUsage) => {
-    context.report({
-      node: previewDecoratorUsage,
-      message: rule.messages.duplicateEntry,
-      fix: (previewDecoratorUsage) => {
-        const startPosition = arkts.getStartPosition(previewDecoratorUsage);
-        const endPosition = arkts.getEndPosition(previewDecoratorUsage);
+    public setup(): Record<string, string> {
         return {
-          range: [startPosition, endPosition],
-          code: '',
+            duplicateEntry: `A page can contain at most 10 '@Preview' annotations.`,
         };
-      }
-    });
-  });
+    }
+
+    public beforeTransform(): void {
+        this.previewDecoratorUsages = [];
+        this.previewDecoratorUsageIndex = 10;
+    }
+
+    public parsed(node: arkts.StructDeclaration): void {
+        if (!arkts.isStructDeclaration(node)) {
+            return;
+        }
+        const previewDecoratorUsage = getAnnotationUsage(
+            node,
+            PresetDecorators.PREVIEW,
+        );
+        if (previewDecoratorUsage) {
+            this.previewDecoratorUsages.push(previewDecoratorUsage);
+        }
+        // If the number of preview decorators is less than 10, no error is reported
+        if (this.previewDecoratorUsages.length <= MAX_PREVIEW_DECORATOR_COUNT) {
+            return;
+        }
+        if (this.previewDecoratorUsageIndex === MAX_PREVIEW_DECORATOR_COUNT) {
+            this.previewDecoratorUsages.forEach((previewDecoratorUsage) => {
+                this.reportError(previewDecoratorUsage);
+            });
+        } else {
+            let previewDecoratorUsage = this.previewDecoratorUsages.at(this.previewDecoratorUsageIndex);
+            if (!previewDecoratorUsage) {
+                return;
+            }
+            this.reportError(previewDecoratorUsage);
+        }
+        this.previewDecoratorUsageIndex++;
+    }
+
+    private reportError(errorNode: arkts.AnnotationUsage): void {
+        let startPosition = errorNode.startPosition;
+        startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+        this.report({
+            node: errorNode,
+            message: this.messages.duplicateEntry,
+            fix: () => {
+                return {
+                    title: 'Remove the duplicate \'Preview\' annotation',
+                    range: [startPosition, errorNode.endPosition],
+                    code: '',
+                };
+            }
+        });
+    }
 }
 
-const rule: UISyntaxRule = {
-  name: 'no-duplicate-preview',
-  messages: {
-    duplicateEntry: `An ArkTS file con contain at most 10 '@Preview' decorators.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
-        checkDuplicatePreview(node, context);
-      },
-    };
-  },
-};
-
-export default rule;
+export default NoDuplicatePreviewRule;

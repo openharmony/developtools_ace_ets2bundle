@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include <common.h>
+#include "common.h"
 
 KNativePointer impl_CreateLabelledStatement(KNativePointer context, KNativePointer ident, KNativePointer body)
 {
@@ -297,24 +297,6 @@ KInt impl_ETSFunctionTypeIrFlags(KNativePointer context, KNativePointer receiver
     return result;
 }
 KOALA_INTEROP_2(ETSFunctionTypeIrFlags, KInt, KNativePointer, KNativePointer);
-
-KBoolean impl_ETSFunctionTypeIrIsThrowingConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ETSFunctionTypeIrIsThrowingConst(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ETSFunctionTypeIrIsThrowingConst, KBoolean, KNativePointer, KNativePointer);
-
-KBoolean impl_ETSFunctionTypeIrIsRethrowingConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ETSFunctionTypeIrIsRethrowingConst(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ETSFunctionTypeIrIsRethrowingConst, KBoolean, KNativePointer, KNativePointer);
 
 KBoolean impl_ETSFunctionTypeIrIsExtensionFunctionConst(KNativePointer context, KNativePointer receiver)
 {
@@ -2707,16 +2689,6 @@ void impl_TSTypeAliasDeclarationSetTypeParameters(KNativePointer context, KNativ
 }
 KOALA_INTEROP_V3(TSTypeAliasDeclarationSetTypeParameters, KNativePointer, KNativePointer, KNativePointer);
 
-KNativePointer impl_TSTypeAliasDeclarationAnnotations(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    std::size_t length;
-    auto result = GetImpl()->TSTypeAliasDeclarationAnnotations(_context, _receiver, &length);
-    return new std::vector<void*>(result, result + length);
-}
-KOALA_INTEROP_2(TSTypeAliasDeclarationAnnotations, KNativePointer, KNativePointer, KNativePointer);
-
 KNativePointer impl_TSTypeAliasDeclarationAnnotationsConst(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -3251,24 +3223,6 @@ KBoolean impl_ScriptFunctionHasThrowStatementConst(KNativePointer context, KNati
 }
 KOALA_INTEROP_2(ScriptFunctionHasThrowStatementConst, KBoolean, KNativePointer, KNativePointer);
 
-KBoolean impl_ScriptFunctionIsThrowingConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ScriptFunctionIsThrowingConst(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ScriptFunctionIsThrowingConst, KBoolean, KNativePointer, KNativePointer);
-
-KBoolean impl_ScriptFunctionIsRethrowingConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ScriptFunctionIsRethrowingConst(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ScriptFunctionIsRethrowingConst, KBoolean, KNativePointer, KNativePointer);
-
 KBoolean impl_ScriptFunctionIsDynamicConst(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -3324,16 +3278,6 @@ void impl_ScriptFunctionAddFlag(KNativePointer context, KNativePointer receiver,
     return ;
 }
 KOALA_INTEROP_V3(ScriptFunctionAddFlag, KNativePointer, KNativePointer, KInt);
-
-void impl_ScriptFunctionAddModifier(KNativePointer context, KNativePointer receiver, KInt flags)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    const auto _flags = static_cast<Es2pandaModifierFlags>(flags);
-    GetImpl()->ScriptFunctionAddModifier(_context, _receiver, _flags);
-    return ;
-}
-KOALA_INTEROP_V3(ScriptFunctionAddModifier, KNativePointer, KNativePointer, KInt);
 
 KUInt impl_ScriptFunctionFormalParamsLengthConst(KNativePointer context, KNativePointer receiver)
 {
@@ -6691,16 +6635,6 @@ KNativePointer impl_ImportDeclarationSpecifiersConst(KNativePointer context, KNa
 }
 KOALA_INTEROP_2(ImportDeclarationSpecifiersConst, KNativePointer, KNativePointer, KNativePointer);
 
-KNativePointer impl_ImportDeclarationSpecifiers(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    std::size_t length;
-    auto result = GetImpl()->ImportDeclarationSpecifiers(_context, _receiver, &length);
-    return new std::vector<void*>(result, result + length);
-}
-KOALA_INTEROP_2(ImportDeclarationSpecifiers, KNativePointer, KNativePointer, KNativePointer);
-
 KBoolean impl_ImportDeclarationIsTypeKindConst(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -6786,15 +6720,6 @@ KNativePointer impl_UpdateETSImportDeclaration(KNativePointer context, KNativePo
     return result;
 }
 KOALA_INTEROP_6(UpdateETSImportDeclaration, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointerArray, KUInt, KInt);
-
-KNativePointer impl_ETSImportDeclarationAssemblerName(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ETSImportDeclarationAssemblerName(_context, _receiver);
-    return new std::string(result);
-}
-KOALA_INTEROP_2(ETSImportDeclarationAssemblerName, KNativePointer, KNativePointer, KNativePointer);
 
 KNativePointer impl_ETSImportDeclarationAssemblerNameConst(KNativePointer context, KNativePointer receiver)
 {

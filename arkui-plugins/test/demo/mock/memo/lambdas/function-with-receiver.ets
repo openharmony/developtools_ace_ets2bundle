@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { memo } from "@ohos.arkui.stateManagement"
+import { memo } from "arkui.stateManagement.runtime";
 
 class B {
 	@memo internal_call(): B {
