@@ -14,8 +14,8 @@
  */
 
 import ts from 'typescript';
-import { componentCollection } from './validate_ui_syntax';
-import { COMPATIBLESTATICCOMPONENT, COMPONENT_POP_FUNCTION, GLOBAL_THIS, PUSH, STATICPOINTER, VIEWSTACKPROCESSOR } from './pre_define';
+import { componentCollection, linkCollection } from './validate_ui_syntax';
+import { CREATESTATICCOMPONENT, COMPONENT_POP_FUNCTION, GLOBAL_THIS, PUSH, VIEWSTACKPROCESSOR, UPDATESTATICCOMPONENT, ISINITIALRENDER } from './pre_define';
 
 
 function generateGetClassStatements(): ts.Statement[] {
@@ -74,49 +74,111 @@ export function generateBytecodePathFragement(className: string, filePath: strin
     return `L${targetPath}/${targetPathWithDollar}$__Options_${className}$ObjectLiteral;`;
 }
 
-/**
- * 
- * @param objectExpr 
- * @param options 
- * @returns (() => { const result = new Child(); result[key] = value; return result; })()
- */
-export function transformObjectExpression(
-  objectExpr: ts.ObjectExpression,
-  options: string
-): ts.Expression {
-  const newExpression = ts.factory.createNewExpression(
-    ts.factory.createIdentifier(options),
-    undefined,
-    []
+// create block in this.observeComponentCreation2
+export function createStaticArrowBolck(newNode: ts.NewExpression,componentParameter: ts.ObjectLiteralExpression, name: string): ts.Statement[] {
+  return [
+    setInteropRenderingFlag(),
+    createIfStaticComponent(newNode, componentParameter, name),
+    resetInteropRenderingFlag()
+  ]
+}
+
+// isInitialRender
+export function createIfStaticComponent(newNode: ts.NewExpression, componentParameter: ts.ObjectLiteralExpression, name: string): ts.IfStatement {
+  return ts.factory.createIfStatement(
+    ts.factory.createIdentifier(ISINITIALRENDER),
+    ts.factory.createBlock(
+      [ 
+        createStaticComponent(name, newNode),
+        pushStaticComponent(name),
+        popStaticComponent()
+      ], true),
+    ts.factory.createBlock(
+      [
+        ts.factory.createCallExpression(
+          ts.factory.createElementAccessExpression(
+            ts.factory.createIdentifier('static_' + name),
+            ts.factory.createNumericLiteral('0')
+          ),
+          undefined,
+          []
+        )
+      ]
+    )
   );
-  
-  const resultVar = ts.factory.createVariableDeclaration(
-    ts.factory.createIdentifier('result'),
-    undefined,
-    undefined,
-    newExpression
+}
+
+
+export function setInteropRenderingFlag(): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createBinaryExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createThis(),
+        ts.factory.createIdentifier('__interopInStaticRendering_internal_')
+      ),
+      ts.factory.createToken(ts.SyntaxKind.EqualsEqualsToken),
+      ts.factory.createTrue()
+    )
   );
-  
-  const constResult = ts.factory.createVariableStatement(
+}
+
+export function resetInteropRenderingFlag(): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createBinaryExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createThis(),
+        ts.factory.createIdentifier('__interopInStaticRendering_internal_')
+      ),
+      ts.factory.createToken(ts.SyntaxKind.EqualsEqualsToken),
+      ts.factory.createFalse()
+    )
+  );
+}
+
+
+function createStaticOptions(structName: string): ts.VariableStatement {
+  return ts.factory.createVariableStatement(
     [],
     ts.factory.createVariableDeclarationList(
-      [resultVar],
+      [ts.factory.createVariableDeclaration(
+        ts.factory.createIdentifier('result'),
+        undefined,
+        undefined,
+        ts.factory.createNewExpression(
+          ts.factory.createIdentifier(structName),
+          undefined,
+          []
+        )
+      )],
       ts.NodeFlags.Const
     )
   );
+}
 
-  const propertyAssignments: ts.Statement[] = objectExpr.properties.map(prop => {
-    if (ts.isPropertyAssignment(prop)) {
-      let propertyName: ts.Expression;
-      if (ts.isIdentifier(prop.name)) {
-        propertyName = ts.factory.createStringLiteral(prop.name.text);
-      } else if (ts.isStringLiteral(prop.name)) {
-        propertyName = ts.factory.createStringLiteral(prop.name.text);
+/**
+ * 
+ * @param objectExpr 
+ * @param structName 
+ * @returns (() => { const result = new Child(); result[key] = value; return result; })()
+ */
+export function createStaticComponentOptions(
+  objectExpr: ts.ObjectLiteralExpression,
+  structName: string
+): ts.Expression {
+  const constResult = createStaticOptions(structName);
+
+  let propertyAssignments: ts.Statement[] = [];
+  objectExpr.properties.forEach(prop => {
+    if (ts.isPropertyAssignment(prop) && ts.isIdentifier(prop.name)) {
+      const name = prop.name.text;
+      let propertyName: string;
+      if (linkCollection.get(structName)?.has(name)) {
+        propertyName = ts.factory.createStringLiteral('__backing_' + name);
       } else {
-        propertyName = ts.factory.createStringLiteral(prop.name.getText());
+        propertyName = ts.factory.createStringLiteral(name);
       }
 
-      return ts.factory.createExpressionStatement(
+      propertyAssignments.push(ts.factory.createExpressionStatement(
         ts.factory.createAssignment(
           ts.factory.createElementAccessExpression(
             ts.factory.createIdentifier('result'),
@@ -124,10 +186,18 @@ export function transformObjectExpression(
           ),
           prop.initializer
         )
-      );
+      ));
+      propertyAssignments.push(ts.factory.createExpressionStatement(
+        ts.factory.createAssignment(
+          ts.factory.createElementAccessExpression(
+            ts.factory.createIdentifier('result'),
+            ts.factory.createStringLiteral('__options_has_' + name)
+          ),
+          ts.factory.createTrue()
+        )
+      ));
     }
-    return null;
-  }).filter(Boolean) as ts.Statement[];
+  });
 
   const returnStatement = ts.factory.createReturnStatement(
     ts.factory.createIdentifier('result')
@@ -148,14 +218,10 @@ export function transformObjectExpression(
     functionBody
   );
 
-  return ts.factory.createCallExpression(
-    ts.factory.createParenthesizedExpression(arrowFunction),
-    undefined,
-    []
-  );
+  return arrowFunction;
 }
 
-function makeStaticFactory(name: string): ts.arrowFunction {
+function makeStaticFactory(name: string): ts.ArrowFunction {
   return ts.factory.createArrowFunction(
     undefined,
     undefined,
@@ -181,38 +247,32 @@ function makeStaticFactory(name: string): ts.arrowFunction {
  * 
  * @param name the name of staticComponent
  * @param newNode 
- * @returns let staticPointer = compatibleStaticComponent(() => { return new Child(); });
+ * @returns static_Child = __Interop_CreateStaticComponent_Internal(() => { return new Child(); });
  */
-export function createStaticComponent(name: string, newNode: ts.NewExpression): ts.VariableStatement {
+export function createStaticComponent(name: string, newNode: ts.NewExpression): ts.Statement {
   const argument = newNode.arguments;
   const options = argument.length > 2 ? argument[1] : undefined;
-  return ts.factory.createVariableStatement(
-    undefined,
-    ts.factory.createVariableDeclarationList(
-      [
-        ts.factory.createVariableDeclaration(
-          ts.factory.createIdentifier(STATICPOINTER),
-          undefined,
-          undefined,
-          ts.factory.createCallExpression(
-            ts.factory.createIdentifier(COMPATIBLESTATICCOMPONENT),
-            undefined,
-            [
-              makeStaticFactory(name),
-              transformObjectExpression(options, `__Options_${name}`)
-            ]
-          )
-        )
-      ]
+  return ts.factory.createExpressionStatement(
+    ts.factory.createBinaryExpression(
+      ts.factory.createIdentifier('static_' + name),
+      ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+      ts.factory.createCallExpression(
+        ts.factory.createIdentifier(CREATESTATICCOMPONENT),
+        undefined,
+        [
+          makeStaticFactory(name),
+          createStaticComponentOptions(options, `__Options_${name}`)
+        ]
+      )
     )
   );
 }
 
 /**
  * 
- * @returns ViewStackProcessor.push(staticPointer);
+ * @returns ViewStackProcessor.push(static_Child[1]);
  */
-export function pushStaticComponent(): ts.ExpressionStatement {
+export function pushStaticComponent(name: string): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
@@ -221,7 +281,10 @@ export function pushStaticComponent(): ts.ExpressionStatement {
       ),
       undefined,
       [
-        ts.factory.createIdentifier(STATICPOINTER)
+        ts.factory.createElementAccessExpression(
+          ts.factory.createIdentifier('static_' + name),
+          ts.factory.createNumericLiteral('1')
+        )
       ]
     )
   );
@@ -242,4 +305,29 @@ export function popStaticComponent(): ts.ExpressionStatement {
       undefined
     )
   );
+}
+
+export function createStaticTuple(name: string): ts.VariableStatement {
+  return ts.factory.createVariableStatement(
+    undefined,
+    ts.factory.createVariableDeclarationList(
+      [
+        ts.factory.createVariableDeclaration(
+          ts.factory.createIdentifier('static_' + name),
+          undefined,
+          ts.factory.createTupleTypeNode(
+            [
+              ts.factory.createTypeReferenceNode(
+                ts.factory.createIdentifier(name),
+                undefined
+              ),
+              ts.factory.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword)
+            ]
+          ),
+          undefined
+        )
+      ],
+      ts.NodeFlags.Let
+    )
+  )
 }
