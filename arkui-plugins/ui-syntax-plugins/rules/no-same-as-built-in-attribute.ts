@@ -14,34 +14,38 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { UISyntaxRule } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
+import { isBuiltInAttribute } from '../utils';
 
-const rule: UISyntaxRule = {
-  name: 'no-same-as-built-in-attribute',
-  messages: {
-    duplicateName: `The struct name '{{structName}}' should not have the same name as a built-in attribute.`,
-  },
-  setup(context) {
-    const builtInAttributes = ['fontColor', 'width', 'height', 'size', 'border', 'backgroundColor', 'margin',
-      'padding'];
+class NoSameAsBuiltInAttributeRule extends AbstractUISyntaxRule {
+  public setup(): Record<string, string> {
     return {
-      parsed: (node): void => {
-        if (!arkts.isStructDeclaration(node)) {
-          return;
-        }
-        const structName = node.definition.ident?.name ?? ' ';
-        const structIdent = node.definition.ident;
-        // If the struct name matches any built-in attribute, report an error
-        if (builtInAttributes.includes(structName) && structIdent) {
-          context.report({
-            node: structIdent,
-            message: rule.messages.duplicateName,
-            data: { structName }
-          });
-        }
-      },
+      duplicateName: `The struct '{{structName}}' cannot have the same name as the built-in attribute '{{builtInName}}'.`,
     };
-  },
+  }
+
+  public parsed(node: arkts.AstNode): void {
+    if (!arkts.isStructDeclaration(node)) {
+      return;
+    }
+    if (!node.definition) {
+      return;
+    }
+    if (!arkts.isClassDefinition(node.definition)) {
+      return;
+    }
+    const structIdent = node.definition.ident;
+    const structName = node.definition.ident?.name ?? ' ';
+    // If the struct name matches any built-in attribute, report an error
+    if (structIdent && isBuiltInAttribute(this.context, structName)) {
+      const builtInName = structName;
+      this.report({
+        node: structIdent,
+        message: this.messages.duplicateName,
+        data: { structName, builtInName }
+      });
+    }
+  }
 };
 
-export default rule;
+export default NoSameAsBuiltInAttributeRule;

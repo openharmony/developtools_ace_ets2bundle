@@ -15,6 +15,7 @@
 
 import { Identifier, TSTypeAliasDeclaration, TSTypeParameterDeclaration, TypeNode } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
+import { NodeCache } from '../utilities/nodeCache';
 import { attachModifiers, updateThenAttach } from '../utilities/private';
 
 export function updateTSTypeAliasDeclaration(
@@ -36,5 +37,9 @@ export function updateTSTypeAliasDeclaration(
         attachModifiers,
         (node: TSTypeAliasDeclaration, original: TSTypeAliasDeclaration) => node.setAnnotations(original.annotations)
     );
-    return update(original, id, typeParams, typeAnnotation);
+    const newNode = update(original, id, typeParams, typeAnnotation);
+    if (NodeCache.getInstance().has(original)) {
+        NodeCache.getInstance().refresh(original, newNode);
+    }
+    return newNode;
 }

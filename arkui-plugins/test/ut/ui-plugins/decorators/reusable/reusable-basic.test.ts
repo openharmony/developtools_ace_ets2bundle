@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,58 +38,58 @@ const reusableTransform: Plugins = {
 const pluginTester = new PluginTester('test basic reusable', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
+import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { DecoratedV1VariableBase as DecoratedV1VariableBase } from "@ohos.arkui.stateManagement";
-
-import { LinkDecoratedVariable as LinkDecoratedVariable } from "@ohos.arkui.stateManagement";
-
-import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Reusable as Reusable } from "@ohos.arkui.component";
 
-import { State as State, Link as Link } from "@ohos.arkui.stateManagement";
+import { State as State, Prop as Prop } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
 
 
-@Component({freezeWhenInactive:false}) final class MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {}
+@Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {}
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
-  @memo() public _build(@memo() style: ((instance: MyStateSample)=> MyStateSample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MyStateSample | undefined): void {
+  @memo() public build() {
     Child._instantiateImpl(undefined, (() => {
       return new Child();
-    }), ({
+    }), {
       num: 5,
-    } as __Options_Child), undefined, "Child");
+    }, "Child", undefined);
   }
   
   public constructor() {}
   
 }
 
-@Component({freezeWhenInactive:false}) @Reusable() final class Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
-    if (({let gensym___98468840 = initializers;
-    (((gensym___98468840) == (null)) ? undefined : gensym___98468840.__backing_num)})) {
-      this.__backing_num = new LinkDecoratedVariable<number>("num", initializers!.__backing_num!);
-    };
-    this.__backing_num1 = new StateDecoratedVariable<number>("num1", ((({let gensym___33833641 = initializers;
-    (((gensym___33833641) == (null)) ? undefined : gensym___33833641.num1)})) ?? (2)));
+@Component() @Reusable() final struct Child extends CustomComponent<Child, __Options_Child> {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_num = STATE_MGMT_FACTORY.makeProp<number>(this, "num", ((({let gensym___83257243 = initializers;
+    (((gensym___83257243) == (null)) ? undefined : gensym___83257243.num)})) ?? (1)));
+    this.__backing_num1 = STATE_MGMT_FACTORY.makeState<number>(this, "num1", ((({let gensym___24398512 = initializers;
+    (((gensym___24398512) == (null)) ? undefined : gensym___24398512.num1)})) ?? (2)));
   }
   
-  public __updateStruct(initializers: __Options_Child | undefined): void {}
+  public __updateStruct(initializers: (__Options_Child | undefined)): void {
+    if (((({let gensym___108716469 = initializers;
+    (((gensym___108716469) == (null)) ? undefined : gensym___108716469.num)})) !== (undefined))) {
+      this.__backing_num!.update((initializers!.num as number));
+    }
+  }
   
-  public override __toRecord(params: Object): Record<string, Object> {
+  public override constructor __toRecord(params: Object): Record<string, Object> {
     const paramsCasted = (params as __Options_Child);
     return {
       "num": ((paramsCasted.num) ?? (new Object())),
@@ -96,7 +97,7 @@ function main() {}
     };
   }
   
-  private __backing_num?: LinkDecoratedVariable<number>;
+  private __backing_num?: IPropDecoratedVariable<number>;
   
   public get num(): number {
     return this.__backing_num!.get();
@@ -106,7 +107,7 @@ function main() {}
     this.__backing_num!.set(value);
   }
   
-  private __backing_num1?: StateDecoratedVariable<number>;
+  private __backing_num1?: IStateDecoratedVariable<number>;
   
   public get num1(): number {
     return this.__backing_num1!.get();
@@ -116,29 +117,29 @@ function main() {}
     this.__backing_num1!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {}
+  @memo() public build() {}
   
   public constructor() {}
   
 }
 
-interface __Options_MyStateSample {
+@Component() export interface __Options_MyStateSample {
   
 }
 
-interface __Options_Child {
-  set num(num: number | undefined)
+@Component() @Reusable() export interface __Options_Child {
+  set num(num: (number | undefined))
   
-  get num(): number | undefined
-  set __backing_num(__backing_num: DecoratedV1VariableBase<number> | undefined)
+  get num(): (number | undefined)
+  set __backing_num(__backing_num: (IPropDecoratedVariable<number> | undefined))
   
-  get __backing_num(): DecoratedV1VariableBase<number> | undefined
-  set num1(num1: number | undefined)
+  get __backing_num(): (IPropDecoratedVariable<number> | undefined)
+  set num1(num1: (number | undefined))
   
-  get num1(): number | undefined
-  set __backing_num1(__backing_num1: StateDecoratedVariable<number> | undefined)
+  get num1(): (number | undefined)
+  set __backing_num1(__backing_num1: (IStateDecoratedVariable<number> | undefined))
   
-  get __backing_num1(): StateDecoratedVariable<number> | undefined
+  get __backing_num1(): (IStateDecoratedVariable<number> | undefined)
   
 }
 `;
@@ -149,9 +150,9 @@ function testReusableTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic reusable',
-    [reusableTransform, uiNoRecheck],
+    [reusableTransform, uiNoRecheck, recheck],
     {
-        checked: [testReusableTransformer],
+        'checked:ui-no-recheck': [testReusableTransformer],
     },
     {
         stopAfter: 'checked',

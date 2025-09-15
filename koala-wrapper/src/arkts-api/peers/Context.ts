@@ -33,13 +33,25 @@ export class Context extends ArktsObject {
             global.es2panda._CreateContextFromString(global.config, passString(source), passString(global.filePath))
         );
     }
-    static destroyAndRecreate(ast: AstNode): Context {
-        console.log('[TS WRAPPER] DESTROY AND RECREATE');
-        const source = filterSource(ast.dumpSrc());
-        global.es2panda._DestroyContext(global.context);
-        global.compilerContext = Context.createFromString(source);
 
-        return new Context(global.context);
+    static createFromStringWithHistory(source: string): Context {
+        if (!global.configIsInitialized()) {
+            throwError(`Config not initialized`);
+        }
+        return new Context(
+            global.es2panda._CreateContextFromStringWithHistory(global.config, passString(source), passString(global.filePath))
+        );
+    }
+
+    static createCacheContextFromFile(
+        configPtr: KNativePointer,
+        fileName: string,
+        globalContextPtr: KNativePointer,
+        isExternal: KBoolean
+    ): Context {
+        return new Context(
+            global.es2panda._CreateCacheContextFromFile(configPtr, passString(fileName), globalContextPtr, isExternal)
+        );
     }
 
     static createContextGenerateAbcForExternalSourceFiles(
@@ -50,6 +62,16 @@ export class Context extends ArktsObject {
         return new Context(
             global.es2panda._CreateContextGenerateAbcForExternalSourceFiles(global.config, filenames.length, passStringArray(filenames))
         );
+    }
+
+
+    static destroyAndRecreate(ast: AstNode): Context {
+        console.log('[TS WRAPPER] DESTROY AND RECREATE');
+        const source = filterSource(ast.dumpSrc());
+        global.es2panda._DestroyContext(global.context);
+        global.compilerContext = Context.createFromString(source);
+
+        return new Context(global.context);
     }
 
     get program(): Program {

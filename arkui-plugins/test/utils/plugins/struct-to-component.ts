@@ -26,11 +26,13 @@ export const structToComponent: Plugins = {
     name: 'struct-to-component',
     parsed(this: PluginContext): arkts.EtsScript | undefined {
         let script: arkts.EtsScript | undefined;
-        const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+        const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
             script = program.astNode;
-            const componentTransformer = new ComponentTransformer();
+            const componentTransformer = new ComponentTransformer({
+                projectConfig: this.getProjectConfig(),
+            });
             const programVisitor = new ProgramVisitor({
                 pluginName: structToComponent.name,
                 state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,

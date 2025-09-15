@@ -27,7 +27,6 @@ import {
     allFlags,
     arrayOfNullptr,
     assertValidPeer,
-    nodeType,
     passNode,
     passNodeArray,
     passString,
@@ -90,7 +89,7 @@ export class EtsScript extends AstNode {
             global.config = Config.createDefault().peer;
         }
         global.compilerContext = Context.createFromString(source);
-        proceedToState(state);
+        proceedToState(state, global.context);
         return new EtsScript(
             global.es2panda._ProgramAst(global.context, global.es2panda._ContextProgram(global.context))
         );
@@ -120,6 +119,10 @@ export class EtsScript extends AstNode {
             passNodeArray(nodes),
             nodes.length
         );
+    }
+
+    get isNamespace(): boolean {
+        return global.generatedEs2panda._ETSModuleIsNamespaceConst(global.context, this.peer);
     }
 }
 
@@ -239,6 +242,14 @@ export class CallExpression extends Expression {
     setTypeParams(typeParams?: TSTypeParameterInstantiation): this {
         global.generatedEs2panda._CallExpressionSetTypeParams(global.context, this.peer, passNode(typeParams));
         return this;
+    }
+
+    get hasTrailingComma(): boolean {
+        return global.generatedEs2panda._CallExpressionHasTrailingCommaConst(global.context, this.peer);
+    }
+
+    get isTrailingCall(): boolean {
+        return global.es2panda._CallExpressionIsTrailingCallConst(global.context, this.peer);
     }
 
     readonly expression: AstNode; // Expression
@@ -473,7 +484,7 @@ export class FunctionDeclaration extends AstNode {
     readonly isAnon: boolean;
 }
 
-export class FunctionExpression extends AstNode {
+class FunctionExpression extends AstNode {
     constructor(peer: KPtr) {
         assertValidPeer(peer, Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_EXPRESSION);
         super(peer);

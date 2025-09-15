@@ -14,9 +14,7 @@
 import("//build/ohos.gni")
 
 shared_library("es2panda") {
-  external_deps = [
-    "ets_frontend:libes2panda_public_headers"
-  ]
+  external_deps = [ "ets_frontend:libes2panda_public_headers" ]
   sources = [
     "../koalaui/interop/src/cpp/common-interop.cc",
     "../koalaui/interop/src/cpp/interop-logging.cc",
@@ -24,6 +22,7 @@ shared_library("es2panda") {
     "./src/bridges.cc",
     "./src/common.cc",
     "./src/generated/bridges.cc",
+    "./src/memoryTracker.cc",
   ]
 
   include_dirs = [
@@ -112,7 +111,6 @@ shared_library("es2panda") {
       "-Xclang",
       "-instcombine-lower-dbg-declare=0",
       "-no-canonical-prefixes",
-      "-static",
       "-rtlib=compiler-rt",
       "-stdlib=libc++",
       "-lunwind",
@@ -123,13 +121,6 @@ shared_library("es2panda") {
       "-fno-strict-aliasing",
       "-Wno-builtin-macro-redefined",
       "-fms-extensions",
-      "-static",
-      "-rtlib=compiler-rt",
-      "-stdlib=libc++",
-      "-std=c++17",
-      "-lunwind",
-      "-lpthread",
-      "-Qunused-arguments",
       "-target",
       "x86_64-pc-windows-gnu",
       "-D__CUSTOM_SECURITY_LIBRARY",

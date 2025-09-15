@@ -17,6 +17,7 @@
 export * from './struct-to-component';
 
 // AfterCheck
+export * from './before-memo-no-recheck';
 export * from './builder-lambda-no-recheck';
 export * from './memo-no-recheck';
 export * from './struct-no-recheck';

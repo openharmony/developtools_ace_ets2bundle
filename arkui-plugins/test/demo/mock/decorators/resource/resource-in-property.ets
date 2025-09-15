@@ -20,7 +20,7 @@ let i: Resource = $r('app.string.app_name');
 @Component
 struct ResourceComponent {
   private str: Resource  = $r('app.string.app_name');
-  private icon: Resource  = $rawfile('app.photo.png');
+  private icon: Resource  = $rawfile('app.mock.txt');
   build() {
     Column() {
       Text(this.str)

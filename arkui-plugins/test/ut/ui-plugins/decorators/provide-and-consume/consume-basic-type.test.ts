@@ -1,0 +1,216 @@
+/*
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import * as path from 'path';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
+import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
+import { parseDumpSrc } from '../../../../utils/parse-string';
+import { structNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { uiTransform } from '../../../../../ui-plugins';
+import { Plugins } from '../../../../../common/plugin-context';
+
+const STATE_DIR_PATH: string = 'decorators/provide-and-consume';
+
+const buildConfig: BuildConfig = mockBuildConfig();
+buildConfig.compileFiles = [
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, STATE_DIR_PATH, 'consume-basic-type.ets'),
+];
+
+const pluginTester = new PluginTester('test basic type @Consume decorated variables transformation', buildConfig);
+
+const parsedTransform: Plugins = {
+    name: 'parsedTrans',
+    parsed: uiTransform().parsed
+};
+
+const expectedParsedScript: string = `
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Component as Component } from "@ohos.arkui.component";
+
+import { Consume as Consume } from "@ohos.arkui.stateManagement";
+
+@Component() final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
+  @Consume() public conVar1!: string;
+
+  @Consume() public conVar2!: number;
+
+  @Consume() public conVar3!: boolean;
+
+  @Consume() public conVar4?: undefined;
+
+  @Consume() public conVar5?: null;
+
+  public build() {}
+
+  public constructor() {}
+
+}
+
+@Component() export interface __Options_PropParent {
+  conVar1?: string;
+  @Consume() __backing_conVar1?: string;
+  conVar2?: number;
+  @Consume() __backing_conVar2?: number;
+  conVar3?: boolean;
+  @Consume() __backing_conVar3?: boolean;
+  conVar4?: undefined;
+  @Consume() __backing_conVar4?: undefined;
+  conVar5?: null;
+  @Consume() __backing_conVar5?: null;
+
+}
+`;
+
+const expectedCheckedScript: string = `
+import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { IConsumeDecoratedVariable as IConsumeDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Component as Component } from "@ohos.arkui.component";
+
+import { Consume as Consume } from "@ohos.arkui.stateManagement";
+
+function main() {}
+
+
+
+@Component() final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
+  public __initializeStruct(initializers: (__Options_PropParent | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_conVar1 = STATE_MGMT_FACTORY.makeConsume<string>(this, "conVar1", "conVar1");
+    this.__backing_conVar2 = STATE_MGMT_FACTORY.makeConsume<number>(this, "conVar2", "conVar2");
+    this.__backing_conVar3 = STATE_MGMT_FACTORY.makeConsume<boolean>(this, "conVar3", "conVar3");
+    this.__backing_conVar4 = STATE_MGMT_FACTORY.makeConsume<undefined>(this, "conVar4", "conVar4");
+    this.__backing_conVar5 = STATE_MGMT_FACTORY.makeConsume<null>(this, "conVar5", "conVar5");
+  }
+
+  public __updateStruct(initializers: (__Options_PropParent | undefined)): void {}
+
+  private __backing_conVar1?: IConsumeDecoratedVariable<string>;
+
+  public get conVar1(): string {
+    return this.__backing_conVar1!.get();
+  }
+
+  public set conVar1(value: string) {
+    this.__backing_conVar1!.set(value);
+  }
+
+  private __backing_conVar2?: IConsumeDecoratedVariable<number>;
+
+  public get conVar2(): number {
+    return this.__backing_conVar2!.get();
+  }
+
+  public set conVar2(value: number) {
+    this.__backing_conVar2!.set(value);
+  }
+
+  private __backing_conVar3?: IConsumeDecoratedVariable<boolean>;
+
+  public get conVar3(): boolean {
+    return this.__backing_conVar3!.get();
+  }
+
+  public set conVar3(value: boolean) {
+    this.__backing_conVar3!.set(value);
+  }
+
+  private __backing_conVar4?: IConsumeDecoratedVariable<undefined>;
+
+  public get conVar4(): undefined {
+    return this.__backing_conVar4!.get();
+  }
+
+  public set conVar4(value: undefined) {
+    this.__backing_conVar4!.set(value);
+  }
+
+  private __backing_conVar5?: IConsumeDecoratedVariable<null>;
+
+  public get conVar5(): null {
+    return this.__backing_conVar5!.get();
+  }
+
+  public set conVar5(value: null) {
+    this.__backing_conVar5!.set(value);
+  }
+
+  @memo() public build() {}
+
+  public constructor() {}
+
+}
+
+@Component() export interface __Options_PropParent {
+  set conVar1(conVar1: (string | undefined))
+
+  get conVar1(): (string | undefined)
+  set __backing_conVar1(__backing_conVar1: (IConsumeDecoratedVariable<string> | undefined))
+
+  get __backing_conVar1(): (IConsumeDecoratedVariable<string> | undefined)
+  set conVar2(conVar2: (number | undefined))
+
+  get conVar2(): (number | undefined)
+  set __backing_conVar2(__backing_conVar2: (IConsumeDecoratedVariable<number> | undefined))
+
+  get __backing_conVar2(): (IConsumeDecoratedVariable<number> | undefined)
+  set conVar3(conVar3: (boolean | undefined))
+
+  get conVar3(): (boolean | undefined)
+  set __backing_conVar3(__backing_conVar3: (IConsumeDecoratedVariable<boolean> | undefined))
+
+  get __backing_conVar3(): (IConsumeDecoratedVariable<boolean> | undefined)
+  set conVar4(conVar4: (undefined | undefined))
+
+  get conVar4(): (undefined | undefined)
+  set __backing_conVar4(__backing_conVar4: (IConsumeDecoratedVariable<undefined> | undefined))
+
+  get __backing_conVar4(): (IConsumeDecoratedVariable<undefined> | undefined)
+  set conVar5(conVar5: (null | undefined))
+
+  get conVar5(): (null | undefined)
+  set __backing_conVar5(__backing_conVar5: (IConsumeDecoratedVariable<null> | undefined))
+
+  get __backing_conVar5(): (IConsumeDecoratedVariable<null> | undefined)
+
+}
+`;
+
+function testParsedTransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedParsedScript));
+}
+
+function testCheckedTransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedCheckedScript));
+}
+
+pluginTester.run(
+    'test basic type @Consume decorated variables transformation',
+    [parsedTransform, structNoRecheck, recheck],
+    {
+        'parsed': [testParsedTransformer],
+        'checked:struct-no-recheck': [testCheckedTransformer],
+    },
+    {
+        stopAfter: 'checked',
+    }
+);

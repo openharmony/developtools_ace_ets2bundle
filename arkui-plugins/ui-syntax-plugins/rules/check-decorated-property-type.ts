@@ -14,64 +14,74 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 import {
+  forbiddenUseStateType,
   getAnnotationUsage, getClassPropertyAnnotationNames, getClassPropertyName,
   getClassPropertyType, PresetDecorators
 } from '../utils';
 
-function checkDecoratedPropertyType(
-  member: arkts.AstNode,
-  context: UISyntaxRuleContext,
-  relationship: Record<string, string[]>
-): void {
-  if (!arkts.isClassProperty(member)) {
-    return;
+const forbiddenUseStateTypeForDecorators: string[] = [
+  PresetDecorators.STATE,
+  PresetDecorators.PROP_REF,
+  PresetDecorators.LINK,
+  PresetDecorators.PROVIDE,
+  PresetDecorators.CONSUME,
+  PresetDecorators.OBJECT_LINK,
+  PresetDecorators.BUILDER_PARAM,
+  PresetDecorators.STORAGE_PROP_REF,
+  PresetDecorators.STORAGE_LINK,
+  PresetDecorators.LOCAL_STORAGE_LINK,
+];
+
+class CheckDecoratedPropertyTypeRule extends AbstractUISyntaxRule {
+  public setup(): Record<string, string> {
+    return {
+      invalidDecoratedPropertyType: `The '@{{decoratorName}}' property '{{propertyName}}' cannot be a '{{propertyType}}' object.`,
+    };
   }
-  const propertyName = getClassPropertyName(member);
-  const propertyType = getClassPropertyType(member);
-  const propertyAnnotationNames = getClassPropertyAnnotationNames(member);
-  Object.entries(relationship).forEach(([decoratorName, invalidPropertyTypes]) => {
-    if (propertyAnnotationNames.some(annotationName => annotationName === decoratorName) &&
-      invalidPropertyTypes
-        .some(invalidPropertyType => invalidPropertyType === propertyType)) {
-      if (!arkts.isClassProperty || member.key === undefined) {
-        return;
-      }
-      const errorNode = member.key;
-      context.report({
+
+  public parsed(node: arkts.StructDeclaration): void {
+    if (!arkts.isStructDeclaration(node)) {
+      return;
+    }
+    if (!node.definition) {
+      return;
+    }
+    node.definition.body.forEach(member => {
+      this.checkDecoratedPropertyType(member, forbiddenUseStateTypeForDecorators, forbiddenUseStateType);
+    });
+  }
+
+  private checkDecoratedPropertyType(
+    member: arkts.AstNode,
+    annoList: string[],
+    typeList: string[]
+  ): void {
+    if (!arkts.isClassProperty(member)) {
+      return;
+    }
+    const propertyName = getClassPropertyName(member);
+    const propertyType = getClassPropertyType(member);
+    if (!propertyName || !propertyType) {
+      return;
+    }
+    const propertyAnnotationNames: string[] = getClassPropertyAnnotationNames(member);
+    const decoratorName: string | undefined =
+      propertyAnnotationNames.find((annotation) => annoList.includes(annotation));
+    const isType: boolean = typeList.includes(propertyType);
+    if (!member.key) {
+      return;
+    }
+    const errorNode = member.key;
+    if (decoratorName && isType) {
+      this.report({
         node: errorNode,
-        message: rule.messages.invalidDecoratedPropertyType,
+        message: this.messages.invalidDecoratedPropertyType,
         data: { decoratorName, propertyName, propertyType },
       });
     }
-  });
+  }
 }
 
-const rule: UISyntaxRule = {
-  name: 'check-decorated-property-type',
-  messages: {
-    invalidDecoratedPropertyType: `The {{decoratorName}} property '{{propertyName}}' cannot be a '{{propertyType}}' object.`,
-  },
-  setup(context) {
-    const relationship: Record<string, string[]> = {
-      [PresetDecorators.STATE]: ['CustomDialogController'],
-    };
-    return {
-      parsed: (node): void => {
-        if (!arkts.isStructDeclaration(node)) {
-          return;
-        }
-        const componentDecorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
-        if (!componentDecorator) {
-          return;
-        }
-        node.definition.body.forEach(member => {
-          checkDecoratedPropertyType(member, context, relationship);
-        });
-      },
-    };
-  },
-};
-
-export default rule;
+export default CheckDecoratedPropertyTypeRule;

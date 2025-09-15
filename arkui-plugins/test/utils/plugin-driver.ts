@@ -15,12 +15,15 @@
 
 import { isNumber } from './safe-types';
 import { Plugins, PluginContext, PluginHandler, PluginState, PluginExecutor } from '../../common/plugin-context';
+import { PluginStateId } from './shared-types';
 import * as arkts from '@koalaui/libarkts';
 
 export interface PluginDriver {
     initPlugins(plugins: Plugins[]): void;
     getSortedPlugins(state: arkts.Es2pandaContextState): PluginExecutor[] | undefined;
     getPluginContext(): PluginContext;
+    getPluginHistory(): PluginStateId[];
+    clear(): void;
 }
 
 function toCamelCase(str: string): string {
@@ -71,11 +74,29 @@ function selectPlugins(plugins: Plugins[], stage: PluginState): PluginExecutor[]
 
 class MockPluginDriver implements PluginDriver {
     private sortedPlugins: Map<arkts.Es2pandaContextState, PluginExecutor[] | undefined>;
-    private context: PluginContext;
+    private history: Set<PluginStateId>;
+    private context: PluginContext | undefined;
+
+    private static instance: PluginDriver | undefined;
 
     constructor() {
         this.sortedPlugins = new Map<arkts.Es2pandaContextState, PluginExecutor[] | undefined>();
+        this.history = new Set<PluginStateId>();
         this.context = new PluginContext();
+    }
+
+    public static getInstance(): PluginDriver {
+        if (!this.instance) {
+            this.instance = new MockPluginDriver();
+        }
+        return this.instance;
+    }
+
+    private collectHistory(state: PluginState, plugins: PluginExecutor[]) {
+        for (const plugin of plugins) {
+            this.history.add(`${state}:${plugin.name}`);
+        }
+        this.history.add(state);
     }
 
     public initPlugins(plugins: Plugins[]): void {
@@ -84,12 +105,14 @@ class MockPluginDriver implements PluginDriver {
         Object.values(arkts.Es2pandaContextState)
             .filter(isNumber)
             .forEach((it) => {
-                const selected = selectPlugins(plugins, stateName(it));
+                const state = stateName(it);
+                const selected = selectPlugins(plugins, state);
                 if (selected.length > 0) {
                     pluginsByState.set(it, selected);
                 } else {
                     pluginsByState.set(it, undefined);
                 }
+                this.collectHistory(state, selected);
             });
 
         this.sortedPlugins = pluginsByState;
@@ -100,7 +123,19 @@ class MockPluginDriver implements PluginDriver {
     }
 
     public getPluginContext(): PluginContext {
+        if (!this.context) {
+            this.context = new PluginContext();
+        }
         return this.context;
+    }
+
+    public getPluginHistory(): PluginStateId[] {
+        return Array.from(this.history);
+    }
+
+    public clear(): void {
+        this.sortedPlugins.clear();
+        this.context = undefined;
     }
 }
 

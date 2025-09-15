@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,58 +38,65 @@ const watchTransform: Plugins = {
 const pluginTester = new PluginTester('test basic watch transform', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+import { IConsumeDecoratedVariable as IConsumeDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
+import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { IObjectLinkDecoratedVariable as IObjectLinkDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { IStoragePropRefDecoratedVariable as IStoragePropRefDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { LinkSourceType as LinkSourceType } from "arkui.stateManagement.decorator";
+
+import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { ConsumeDecoratedVariable as ConsumeDecoratedVariable } from "@ohos.arkui.stateManagement";
+import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
-import { ProvideDecoratedVariable as ProvideDecoratedVariable } from "@ohos.arkui.stateManagement";
+import { OBSERVE as OBSERVE } from "arkui.stateManagement.decorator";
 
-import { SubscribedWatches as SubscribedWatches } from "@ohos.arkui.stateManagement";
+import { IMutableStateMeta as IMutableStateMeta } from "arkui.stateManagement.decorator";
 
-import { WatchIdType as WatchIdType } from "@ohos.arkui.stateManagement";
+import { RenderIdType as RenderIdType } from "arkui.stateManagement.decorator";
 
-import { int32 as int32 } from "@ohos.arkui.stateManagement";
+import { WatchIdType as WatchIdType } from "arkui.stateManagement.decorator";
 
-import { IObservedObject as IObservedObject } from "@ohos.arkui.stateManagement";
+import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.decorator";
 
-import { setObservationDepth as setObservationDepth } from "@ohos.arkui.stateManagement";
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
-import { BackingValue as BackingValue } from "@ohos.arkui.stateManagement";
+import { NavInterface as NavInterface } from "arkui.UserView";
 
-import { MutableStateMeta as MutableStateMeta } from "@ohos.arkui.stateManagement";
-
-import { ObjectLinkDecoratedVariable as ObjectLinkDecoratedVariable } from "@ohos.arkui.stateManagement";
-
-import { DecoratedV1VariableBase as DecoratedV1VariableBase } from "@ohos.arkui.stateManagement";
-
-import { LinkDecoratedVariable as LinkDecoratedVariable } from "@ohos.arkui.stateManagement";
-
-import { StoragePropDecoratedVariable as StoragePropDecoratedVariable } from "@ohos.arkui.stateManagement";
-
-import { StorageLinkDecoratedVariable as StorageLinkDecoratedVariable } from "@ohos.arkui.stateManagement";
-
-import { PropDecoratedVariable as PropDecoratedVariable } from "@ohos.arkui.stateManagement";
-
-import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
 
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
-import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
+import { Component as Component, Entry as Entry, Column as Column } from "@ohos.arkui.component";
 
 import { State as State, Prop as Prop, StorageLink as StorageLink, StorageProp as StorageProp, Link as Link, Watch as Watch, ObjectLink as ObjectLink, Observed as Observed, Track as Track, Provide as Provide, Consume as Consume } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/watch/watch-basic",
+  pageFullPath: "test/demo/mock/decorators/watch/watch-basic",
+  integratedHsp: "false",
+  } as NavInterface));
 
-
-@Observed() class A implements IObservedObject {
-  private subscribedWatches: SubscribedWatches = new SubscribedWatches();
+@Observed() class A implements IObservedObject, ISubscribedWatches {
+  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -102,63 +110,85 @@ function main() {}
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
-  public _permissibleAddRefDepth: int32 = 0;
+  @JSONStringifyIgnore() private ____V1RenderId: RenderIdType = 0;
+
+  public setV1RenderId(renderId: RenderIdType): void {
+    this.____V1RenderId = renderId;
+  }
+
+  protected conditionalAddRef(meta: IMutableStateMeta): void {
+    if (OBSERVE.shouldAddRef(this.____V1RenderId)) {
+      meta.addRef();
+    }
+  }
   
   public propA: string = "hello";
   
-  private __backing_trackA: string = "world";
+  @JSONRename({newName:"trackA"}) private __backing_trackA: string = "world";
   
-  private __meta_trackA: MutableStateMeta = new MutableStateMeta("@Track");
+  @JSONStringifyIgnore() private __meta_trackA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public constructor() {}
   
   public get trackA(): string {
-    if (((this._permissibleAddRefDepth) > (0))) {
-      this.__meta_trackA.addRef();
-    }
+    this.conditionalAddRef(this.__meta_trackA);
     return this.__backing_trackA;
   }
   
   public set trackA(newValue: string) {
     if (((this.__backing_trackA) !== (newValue))) {
       this.__backing_trackA = newValue;
-    this.__meta_trackA.fireChange();
-    this.executeOnSubscribingWatches("trackA");
+      this.__meta_trackA.fireChange();
+      this.executeOnSubscribingWatches("trackA");
     }
   }
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_statevar = new StateDecoratedVariable<string>("statevar", ((({let gensym___76198660 = initializers;
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_statevar = STATE_MGMT_FACTORY.makeState<string>(this, "statevar", ((({let gensym___76198660 = initializers;
     (((gensym___76198660) == (null)) ? undefined : gensym___76198660.statevar)})) ?? ("Hello World")), ((_: string): void => {
       this.stateOnChange(_);
     }));
-    this.__backing_propvar = new PropDecoratedVariable<string>("propvar", ((({let gensym___241486692 = initializers;
+    this.__backing_propvar = STATE_MGMT_FACTORY.makeProp<string>(this, "propvar", ((({let gensym___241486692 = initializers;
     (((gensym___241486692) == (null)) ? undefined : gensym___241486692.propvar)})) ?? ("Hello World")), ((_: string): void => {
       this.propOnChange(_);
     }));
-    this.__backing_storagelinkvar = new StorageLinkDecoratedVariable<string>("prop1", "storagelinkvar", "Hello World", ((_: string): void => {
+    if (({let gensym___165820150 = initializers;
+    (((gensym___165820150) == (null)) ? undefined : gensym___165820150.__backing_linkvar)})) {
+      this.__backing_linkvar = STATE_MGMT_FACTORY.makeLink<string>(this, "linkvar", initializers!.__backing_linkvar!, ((_: string): void => {
+        this.linkOnChange(_);
+      }));
+    };
+    this.__backing_storagelinkvar = STATE_MGMT_FACTORY.makeStorageLink<string>(this, "prop1", "storagelinkvar", "Hello World", ((_: string): void => {
       this.storageLinkOnChange(_);
     }))
-    this.__backing_storagepropvar = new StoragePropDecoratedVariable<string>("prop2", "storagepropvar", "Hello World", ((_: string): void => {
+    this.__backing_storagepropvar = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "prop2", "storagepropvar", "Hello World", ((_: string): void => {
       this.storagePropOnChange(_);
     }))
-    this.__backing_providevar = this.addProvidedVar<string>("providevar", "providevar", ((({let gensym___194235814 = initializers;
-    (((gensym___194235814) == (null)) ? undefined : gensym___194235814.providevar)})) ?? ("Hello World")), false, ((_: string): void => {
+    this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", (({let gensym___172556967 = initializers;
+    (((gensym___172556967) == (null)) ? undefined : gensym___172556967.objectlinkvar)}) as A), ((_: string): void => {
+      this.objectLinkOnChange(_);
+    }))
+    this.__backing_providevar = STATE_MGMT_FACTORY.makeProvide<string>(this, "providevar", "providevar", ((({let gensym___244584558 = initializers;
+    (((gensym___244584558) == (null)) ? undefined : gensym___244584558.providevar)})) ?? ("Hello World")), false, ((_: string): void => {
       this.ProvideOnChange(_);
     }));
   }
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {
     if (((({let gensym___220608839 = initializers;
     (((gensym___220608839) == (null)) ? undefined : gensym___220608839.propvar)})) !== (undefined))) {
       this.__backing_propvar!.update((initializers!.propvar as string));
     }
+    if (((({let gensym___164966179 = initializers;
+    (((gensym___164966179) == (null)) ? undefined : gensym___164966179.objectlinkvar)})) !== (undefined))) {
+      this.__backing_objectlinkvar!.update(initializers!.objectlinkvar!);
+    }
   }
   
-  private __backing_statevar?: StateDecoratedVariable<string>;
+  private __backing_statevar?: IStateDecoratedVariable<string>;
   
   public get statevar(): string {
     return this.__backing_statevar!.get();
@@ -168,7 +198,7 @@ function main() {}
     this.__backing_statevar!.set(value);
   }
   
-  private __backing_propvar?: PropDecoratedVariable<string>;
+  private __backing_propvar?: IPropDecoratedVariable<string>;
   
   public get propvar(): string {
     return this.__backing_propvar!.get();
@@ -178,7 +208,17 @@ function main() {}
     this.__backing_propvar!.set(value);
   }
   
-  private __backing_storagelinkvar?: StorageLinkDecoratedVariable<string>;
+  private __backing_linkvar?: ILinkDecoratedVariable<string>;
+
+  public get linkvar(): string {
+    return this.__backing_linkvar!.get();
+  }
+
+  public set linkvar(value: string) {
+    this.__backing_linkvar!.set(value);
+  }
+
+  private __backing_storagelinkvar?: IStorageLinkDecoratedVariable<string>;
   
   public get storagelinkvar(): string {
     return this.__backing_storagelinkvar!.get();
@@ -188,7 +228,7 @@ function main() {}
     this.__backing_storagelinkvar!.set(value);
   }
   
-  private __backing_storagepropvar?: StoragePropDecoratedVariable<string>;
+  private __backing_storagepropvar?: IStoragePropRefDecoratedVariable<string>;
   
   public get storagepropvar(): string {
     return this.__backing_storagepropvar!.get();
@@ -198,7 +238,13 @@ function main() {}
     this.__backing_storagepropvar!.set(value);
   }
   
-  private __backing_providevar?: ProvideDecoratedVariable<string>;
+  private __backing_objectlinkvar?: IObjectLinkDecoratedVariable<A>;
+
+  public get objectlinkvar(): A {
+    return this.__backing_objectlinkvar!.get();
+  }
+
+  private __backing_providevar?: IProvideDecoratedVariable<string>;
   
   public get providevar(): string {
     return this.__backing_providevar!.get();
@@ -212,68 +258,110 @@ function main() {}
   
   public propOnChange(propName: string) {}
   
+  public linkOnChange(propName: string) {}
+
   public storageLinkOnChange(propName: string) {}
   
   public storagePropOnChange(propName: string) {}
   
+  public objectLinkOnChange(propName: string) {}
+
   public ProvideOnChange(propName: string) {}
   
-  @memo() public _build(@memo() style: ((instance: MyStateSample)=> MyStateSample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MyStateSample | undefined): void {
-    Child._instantiateImpl(undefined, (() => {
-      return new Child();
-    }), undefined, undefined, undefined);
+  @memo() public build() {
+    Column(undefined, undefined, @memo() (() => {
+      Child._instantiateImpl(undefined, (() => {
+        return new Child();
+      }), undefined, undefined, undefined);
+    }));
   }
   
   public constructor() {}
   
 }
 
-@Component({freezeWhenInactive:false}) final class Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {}
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_providevar = STATE_MGMT_FACTORY.makeConsume<string>(this, "providevar", "providevar", ((_: string): void => {
+      this.ConsumeOnChange(_);
+    }));
+  }
+
+  public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+
+  private __backing_providevar?: IConsumeDecoratedVariable<string>;
+
+  public get providevar(): string {
+    return this.__backing_providevar!.get();
+  }
+
+  public set providevar(value: string) {
+    this.__backing_providevar!.set(value);
+  }
   
-  public __updateStruct(initializers: __Options_Child | undefined): void {}
+  public ConsumeOnChange(propName: string) {}
   
-  @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {}
+  @memo() public build() {}
   
   public constructor() {}
   
 }
 
-interface __Options_MyStateSample {
-  set statevar(statevar: string | undefined)
+@Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
+
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
+  set statevar(statevar: (string | undefined))
+
+  get statevar(): (string | undefined)
+  @Watch({value:"stateOnChange"}) set __backing_statevar(__backing_statevar: (IStateDecoratedVariable<string> | undefined))
+
+  @Watch({value:"stateOnChange"}) get __backing_statevar(): (IStateDecoratedVariable<string> | undefined)
+  set propvar(propvar: (string | undefined))
   
-  get statevar(): string | undefined
-  set __backing_statevar(__backing_statevar: StateDecoratedVariable<string> | undefined)
+  get propvar(): (string | undefined)
+  @Watch({value:"propOnChange"}) set __backing_propvar(__backing_propvar: (IPropDecoratedVariable<string> | undefined))
   
-  get __backing_statevar(): StateDecoratedVariable<string> | undefined
-  set propvar(propvar: string | undefined)
+  @Watch({value:"propOnChange"}) get __backing_propvar(): (IPropDecoratedVariable<string> | undefined)
+  @__Link_intrinsic() set linkvar(linkvar: (string | undefined))
   
-  get propvar(): string | undefined
-  set __backing_propvar(__backing_propvar: PropDecoratedVariable<string> | undefined)
+  @__Link_intrinsic() get linkvar(): (string | undefined)
+  @Watch({value:"linkOnChange"}) set __backing_linkvar(__backing_linkvar: (LinkSourceType<string> | undefined))
   
-  get __backing_propvar(): PropDecoratedVariable<string> | undefined
-  set storagelinkvar(storagelinkvar: string | undefined)
+  @Watch({value:"linkOnChange"}) get __backing_linkvar(): (LinkSourceType<string> | undefined)
+  set storagelinkvar(storagelinkvar: (string | undefined))
   
-  get storagelinkvar(): string | undefined
-  set __backing_storagelinkvar(__backing_storagelinkvar: StorageLinkDecoratedVariable<string> | undefined)
+  get storagelinkvar(): (string | undefined)
+  @Watch({value:"storageLinkOnChange"}) set __backing_storagelinkvar(__backing_storagelinkvar: (IStorageLinkDecoratedVariable<string> | undefined))
   
-  get __backing_storagelinkvar(): StorageLinkDecoratedVariable<string> | undefined
-  set storagepropvar(storagepropvar: string | undefined)
+  @Watch({value:"storageLinkOnChange"}) get __backing_storagelinkvar(): (IStorageLinkDecoratedVariable<string> | undefined)
+  set storagepropvar(storagepropvar: (string | undefined))
   
-  get storagepropvar(): string | undefined
-  set __backing_storagepropvar(__backing_storagepropvar: StoragePropDecoratedVariable<string> | undefined)
+  get storagepropvar(): (string | undefined)
+  @Watch({value:"storagePropOnChange"}) set __backing_storagepropvar(__backing_storagepropvar: (IStoragePropRefDecoratedVariable<string> | undefined))
   
-  get __backing_storagepropvar(): StoragePropDecoratedVariable<string> | undefined
-  set providevar(providevar: string | undefined)
+  @Watch({value:"storagePropOnChange"}) get __backing_storagepropvar(): (IStoragePropRefDecoratedVariable<string> | undefined)
+  set objectlinkvar(objectlinkvar: (A | undefined))
   
-  get providevar(): string | undefined
-  set __backing_providevar(__backing_providevar: ProvideDecoratedVariable<string> | undefined)
+  get objectlinkvar(): (A | undefined)
+  @Watch({value:"objectLinkOnChange"}) set __backing_objectlinkvar(__backing_objectlinkvar: (IObjectLinkDecoratedVariable<A> | undefined))
   
-  get __backing_providevar(): ProvideDecoratedVariable<string> | undefined
+  @Watch({value:"objectLinkOnChange"}) get __backing_objectlinkvar(): (IObjectLinkDecoratedVariable<A> | undefined)
+  set providevar(providevar: (string | undefined))
+
+  get providevar(): (string | undefined)
+  @Watch({value:"ProvideOnChange"}) set __backing_providevar(__backing_providevar: (IProvideDecoratedVariable<string> | undefined))
+
+  @Watch({value:"ProvideOnChange"}) get __backing_providevar(): (IProvideDecoratedVariable<string> | undefined)
   
 }
 
-interface __Options_Child {
+@Component() export interface __Options_Child {
+  set providevar(providevar: (string | undefined))
+
+  get providevar(): (string | undefined)
+  @Watch({value:"ConsumeOnChange"}) set __backing_providevar(__backing_providevar: (IConsumeDecoratedVariable<string> | undefined))
+
+  @Watch({value:"ConsumeOnChange"}) get __backing_providevar(): (IConsumeDecoratedVariable<string> | undefined)
   
 }
 
@@ -287,7 +375,6 @@ class __EntryWrapper extends EntryPoint {
   public constructor() {}
   
 }
-
 `;
 
 function testWatchTransformer(this: PluginTestContext): void {
@@ -296,9 +383,9 @@ function testWatchTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic watch transform',
-    [watchTransform, uiNoRecheck],
+    [watchTransform, uiNoRecheck, recheck],
     {
-        checked: [testWatchTransformer],
+        'checked:ui-no-recheck': [testWatchTransformer],
     },
     {
         stopAfter: 'checked',

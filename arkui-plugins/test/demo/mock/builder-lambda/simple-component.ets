@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { memo, __memo_context_type, __memo_id_type } from "@ohos.arkui.stateManagement"
-import { Column, UIColumnAttribute } from "arkui.component.column"
+import { memo } from "@ohos.arkui.stateManagement"
+import { Column, ColumnAttribute } from "arkui.component.column"
 
 class MyStateSample {
     @memo build() {

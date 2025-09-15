@@ -14,54 +14,29 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { createGetter, createSetter, getStageManagementIdent } from './utils';
-import { createOptionalClassProperty } from '../utils';
+import { collectStateManagementTypeImport, createGetter, createSetter } from './utils';
+import { CustomComponentInfo, ClassInfo } from '../utils';
+import { StateManagementTypes } from '../../common/predefines';
+import { ClassScopeInfo } from '../struct-translators/utils';
+import { getClassPropertyType } from '../utils';
+
+export interface PropertyTranslatorOptions {
+    property: arkts.ClassProperty;
+    structInfo: CustomComponentInfo;
+}
 
 export abstract class PropertyTranslator {
-    constructor(
-        protected property: arkts.ClassProperty,
-        protected structName: string
-    ) {}
+    protected property: arkts.ClassProperty;
+    protected structInfo: CustomComponentInfo;
+    protected propertyType: arkts.TypeNode | undefined;
+
+    constructor(options: PropertyTranslatorOptions) {
+        this.property = options.property;
+        this.structInfo = options.structInfo;
+        this.propertyType = getClassPropertyType(options.property);
+    }
 
     abstract translateMember(): arkts.AstNode[];
-
-    translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field = createOptionalClassProperty(
-            newName,
-            this.property,
-            getStageManagementIdent(this.property),
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
-        );
-
-        const member = arkts.factory.createTSNonNullExpression(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createThisExpression(),
-                arkts.factory.createIdentifier(newName),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            )
-        );
-        const thisValue: arkts.MemberExpression = arkts.factory.createMemberExpression(
-            member,
-            arkts.factory.createIdentifier('value'),
-            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-            false,
-            false
-        );
-
-        const getter: arkts.MethodDefinition = this.translateGetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisValue
-        );
-        const setter: arkts.MethodDefinition = this.translateSetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisValue
-        );
-        return [field, getter, setter];
-    }
 
     translateGetter(
         originalName: string,
@@ -77,10 +52,65 @@ export abstract class PropertyTranslator {
         left: arkts.MemberExpression
     ): arkts.MethodDefinition {
         const right: arkts.CallExpression = arkts.factory.createCallExpression(
-            arkts.factory.createIdentifier('observableProxy'),
+            arkts.factory.createIdentifier(StateManagementTypes.OBSERVABLE_PROXY),
             undefined,
             [arkts.factory.createIdentifier('value')]
         );
+        collectStateManagementTypeImport(StateManagementTypes.OBSERVABLE_PROXY);
         return createSetter(originalName, typeAnnotation, left, right);
+    }
+}
+
+export abstract class MethodTranslator {
+    protected method: arkts.MethodDefinition;
+    protected classInfo: ClassInfo;
+    protected returnType: arkts.TypeNode | undefined;
+
+    constructor(method: arkts.MethodDefinition, classInfo: ClassInfo) {
+        this.method = method;
+        this.classInfo = classInfo;
+        this.returnType = this.method.scriptFunction.returnTypeAnnotation?.clone();
+    }
+
+    abstract translateMember(): arkts.AstNode[];
+}
+
+export abstract class ObservedPropertyTranslator {
+    protected property: arkts.ClassProperty;
+    protected classScopeInfo: ClassScopeInfo;
+    protected propertyType: arkts.TypeNode | undefined;
+
+    constructor(property: arkts.ClassProperty, classScopeInfo: ClassScopeInfo) {
+        this.property = property;
+        this.classScopeInfo = classScopeInfo;
+        this.propertyType = getClassPropertyType(this.property);
+    }
+
+    abstract translateMember(): arkts.AstNode[];
+    abstract createField(originalName: string, newName: string): arkts.ClassProperty[];
+}
+
+export type InterfacePropertyTypes = arkts.MethodDefinition | arkts.ClassProperty;
+
+export interface InterfacePropertyTranslatorOptions<T extends InterfacePropertyTypes> {
+    property: T;
+}
+
+export abstract class InterfacePropertyTranslator<T extends InterfacePropertyTypes = InterfacePropertyTypes>
+    implements InterfacePropertyTranslatorOptions<T>
+{
+    property: T;
+
+    modified: boolean;
+
+    constructor(options: InterfacePropertyTranslatorOptions<T>) {
+        this.property = options.property;
+        this.modified = false;
+    }
+
+    abstract translateProperty(): T;
+
+    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+        return false;
     }
 }

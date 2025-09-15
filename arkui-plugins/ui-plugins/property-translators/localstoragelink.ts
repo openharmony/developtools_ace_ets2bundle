@@ -16,93 +16,142 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
-import { PropertyTranslator } from './base';
+import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
+import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
-import { DecoratorNames, generateToRecord } from './utils';
-
-function getLocalStorageLinkValueStr(node: arkts.AstNode): string | undefined {
-    if (!arkts.isClassProperty(node) || !node.value) return undefined;
-    return arkts.isStringLiteral(node.value) ? node.value.str : undefined;
-}
-
-function getLocalStorageLinkAnnotationValue(anno: arkts.AnnotationUsage): string | undefined {
-    const isStorageLinkAnnotation: boolean =
-        !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === DecoratorNames.LOCAL_STORAGE_LINK;
-
-    if (isStorageLinkAnnotation && anno.properties.length === 1) {
-        return getLocalStorageLinkValueStr(anno.properties.at(0)!);
-    }
-    return undefined;
-}
-
-function getLocalStorageLinkValueInAnnotation(node: arkts.ClassProperty): string | undefined {
-    const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
-
-    for (let i = 0; i < annotations.length; i++) {
-        const anno: arkts.AnnotationUsage = annotations[i];
-        const str: string | undefined = getLocalStorageLinkAnnotationValue(anno);
-        if (!!str) {
-            return str;
-        }
-    }
-
-    return undefined;
-}
+import {
+    generateToRecord,
+    createGetter,
+    createSetter2,
+    generateThisBacking,
+    generateGetOrSetCall,
+    collectStateManagementTypeImport,
+    hasDecorator,
+    getValueInAnnotation,
+} from './utils';
+import { factory } from './factory';
+import { PropertyCache } from './cache/propertyCache';
 
 export class LocalStorageLinkTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
 
-        this.cacheTranslatedInitializer(newName, originalName); // TODO: need to release cache after some point...
+        this.cacheTranslatedInitializer(newName, originalName);
         return this.translateWithoutInitializer(newName, originalName);
     }
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
-        const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
-        currentStructInfo.initializeBody.push(initializeStruct);
-
-        if (currentStructInfo.isReusable) {
+        PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
+        if (!!this.structInfo.annotations?.reusable) {
             const toRecord = generateToRecord(newName, originalName);
-            currentStructInfo.toRecordBody.push(toRecord);
+            PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);
         }
-
-        arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
     }
 
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        const localStorageLinkValueStr: string | undefined = getLocalStorageLinkValueInAnnotation(this.property);
+        const localStorageLinkValueStr: string | undefined = getValueInAnnotation(
+            this.property,
+            DecoratorNames.LOCAL_STORAGE_LINK
+        );
         if (!localStorageLinkValueStr) {
-            throw new Error('LocalStorageLink required only one value!!'); // TODO: replace this with proper error message.
+            throw new Error('LocalStorageLink required only one value!!');
         }
 
-        const call = arkts.factory.createCallExpression(
-            arkts.factory.createIdentifier('StorageLinkState'),
-            this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
-            [
-                arkts.factory.createMemberExpression(
-                    arkts.factory.createThisExpression(),
-                    arkts.factory.createIdentifier('_entry_local_storage_'),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
-                ),
-                arkts.factory.createStringLiteral(localStorageLinkValueStr),
-                this.property.value ?? arkts.factory.createUndefinedLiteral(),
-            ]
-        );
-
+        const args: arkts.Expression[] = [
+            arkts.factory.createStringLiteral(localStorageLinkValueStr),
+            arkts.factory.create1StringLiteral(originalName),
+            this.property.value ?? arkts.factory.createUndefinedLiteral(),
+        ];
+        factory.judgeIfAddWatchFunc(args, this.property);
+        collectStateManagementTypeImport(StateManagementTypes.LOCAL_STORAGE_LINK_DECORATED);
         return arkts.factory.createAssignmentExpression(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createThisExpression(),
-                arkts.factory.createIdentifier(newName),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
+            generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            call
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_LOCAL_STORAGE_LINK,
+                this.propertyType,
+                args,
+                true
+            )
         );
+    }
+
+    translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
+        const field = factory.createOptionalClassProperty(
+            newName,
+            this.property,
+            StateManagementTypes.LOCAL_STORAGE_LINK_DECORATED,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
+        );
+        const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
+        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
+        const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
+            generateGetOrSetCall(thisValue, GetSetTypes.SET)
+        );
+        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
+        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
+        return [field, getter, setter];
+    }
+
+    translateGetter(
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
+        returnValue: arkts.Expression
+    ): arkts.MethodDefinition {
+        return createGetter(originalName, typeAnnotation, returnValue);
+    }
+
+    translateSetter(
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
+        statement: arkts.AstNode
+    ): arkts.MethodDefinition {
+        return createSetter2(originalName, typeAnnotation, statement);
+    }
+}
+
+export class LocalStorageLinkInterfaceTranslator<
+    T extends InterfacePropertyTypes
+> extends InterfacePropertyTranslator<T> {
+    translateProperty(): T {
+        if (arkts.isMethodDefinition(this.property)) {
+            this.modified = true;
+            return this.updateStateMethodInInterface(this.property) as T;
+        } else if (arkts.isClassProperty(this.property)) {
+            this.modified = true;
+            return this.updateStatePropertyInInterface(this.property) as T;
+        }
+        return this.property;
+    }
+
+    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+        if (arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.LOCAL_STORAGE_LINK)) {
+            return true;
+        } else if (arkts.isClassProperty(node) && hasDecorator(node, DecoratorNames.LOCAL_STORAGE_LINK)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
+     * to `MutableState<T> | undefined`.
+     *
+     * @param method expecting getter with `@LocalStorageLink` and a setter with `@LocalStorageLink` in the overloads.
+     */
+    private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.LOCAL_STORAGE_LINK);
+    }
+
+    /**
+     * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
+     * to `MutableState<T> | undefined`.
+     *
+     * @param property expecting property with `@LocalStorageLink`.
+     */
+    private updateStatePropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
+        return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.LOCAL_STORAGE_LINK);
     }
 }

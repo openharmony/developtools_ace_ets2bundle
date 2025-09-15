@@ -15,205 +15,98 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor } from '../../common/abstract-visitor';
-import { annotation, collect, filterDefined } from '../../common/arkts-utils';
 import { ProjectConfig } from '../../common/plugin-context';
-import { classifyProperty, PropertyTranslator } from '../property-translators';
+import { collectCustomComponentScopeInfo, CustomComponentNames, isCustomComponentClass } from '../utils';
 import {
-    addMemoAnnotation,
-    CustomComponentNames,
-    getCustomComponentOptionsName,
-    getTypeNameFromTypeParameter,
-    getTypeParamsFromClassDecl,
-} from '../utils';
-import { isCustomComponentClass, isKnownMethodDefinition, isEtsGlobalClass, isReourceNode, CustomComponentScopeInfo, findCanAddMemoFromArrowFunction } from './utils';
-import { factory as uiFactory } from '../ui-factory';
+    CustomComponentScopeInfo,
+    isResourceNode,
+    ScopeInfoCollection,
+    LoaderJson,
+    ResourceInfo,
+    loadBuildJson,
+    initResourceInfo,
+} from './utils';
 import { factory } from './factory';
 import { isEntryWrapperClass } from '../entry-translators/utils';
 import { factory as entryFactory } from '../entry-translators/factory';
-import { DecoratorNames, hasDecorator } from '../property-translators/utils';
-import { ScopeInfoCollection } from './utils';
-
-function tranformPropertyMembers(
-    className: string,
-    propertyTranslators: PropertyTranslator[],
-    optionsTypeName: string,
-    isDecl?: boolean,
-    scope?: CustomComponentScopeInfo
-): arkts.AstNode[] {
-    const propertyMembers = propertyTranslators.map((translator) => translator.translateMember());
-    const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(className);
-    const collections = [];
-    if (!scope?.hasInitializeStruct) {
-        collections.push(factory.createInitializeStruct(currentStructInfo, optionsTypeName, isDecl));
-    }
-    if (!scope?.hasUpdateStruct) {
-        collections.push(factory.createUpdateStruct(currentStructInfo, optionsTypeName, isDecl));
-    }
-    if (currentStructInfo.isReusable) {
-        collections.push(factory.toRecord(optionsTypeName, currentStructInfo.toRecordBody));
-    }
-    return collect(...collections, ...propertyMembers);
-}
-
-function transformEtsGlobalClassMembers(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
-    if (!node.definition) {
-        return node;
-    }
-    node.definition.body.map((member: arkts.AstNode) => {
-        if (arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.BUILDER)) {
-            member.scriptFunction.setAnnotations([annotation('memo')]);
-        }
-        return member;
-    });
-    return node;
-}
-
-function transformOtherMembersInClass(
-    member: arkts.AstNode,
-    classTypeName: string | undefined,
-    classOptionsName: string | undefined,
-    className: string,
-    isDecl?: boolean
-): arkts.AstNode {
-    if (arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.BUILDER)) {
-        member.scriptFunction.setAnnotations([annotation('memo')]);
-        return member;
-    }
-    if (
-        arkts.isMethodDefinition(member) &&
-        isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI) &&
-        !isDecl
-    ) {
-        return uiFactory.createConstructorMethod(member);
-    }
-    if (arkts.isMethodDefinition(member) && isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_BUILD_ORI)) {
-        return factory.transformBuildMethodWithOriginBuild(
-            member,
-            classTypeName ?? className,
-            classOptionsName ?? getCustomComponentOptionsName(className),
-            isDecl
-        );
-    }
-    return member;
-}
-
-function tranformClassMembers(
-    node: arkts.ClassDeclaration,
-    isDecl?: boolean,
-    scope?: CustomComponentScopeInfo
-): arkts.ClassDeclaration {
-    if (!node.definition) {
-        return node;
-    }
-
-    let classTypeName: string | undefined;
-    let classOptionsName: string | undefined;
-    if (isDecl) {
-        const [classType, classOptions] = getTypeParamsFromClassDecl(node);
-        classTypeName = getTypeNameFromTypeParameter(classType);
-        classOptionsName = getTypeNameFromTypeParameter(classOptions);
-    }
-    const definition: arkts.ClassDefinition = node.definition;
-    const className: string | undefined = node.definition.ident?.name;
-    if (!className) {
-        throw new Error('Non Empty className expected for Component');
-    }
-
-    const propertyTranslators: PropertyTranslator[] = filterDefined(
-        definition.body.map((it) => classifyProperty(it, className))
-    );
-    const translatedMembers: arkts.AstNode[] = tranformPropertyMembers(
-        className,
-        propertyTranslators,
-        classOptionsName ?? getCustomComponentOptionsName(className),
-        isDecl,
-        scope
-    );
-    const updateMembers: arkts.AstNode[] = definition.body
-        .filter((member) => !arkts.isClassProperty(member))
-        .map((member: arkts.AstNode) =>
-            transformOtherMembersInClass(member, classTypeName, classOptionsName, className, isDecl)
-        );
-
-    const updateClassDef: arkts.ClassDefinition = factory.updateCustomComponentClass(definition, [
-        ...translatedMembers,
-        ...updateMembers,
-    ]);
-    return arkts.factory.updateClassDeclaration(node, updateClassDef);
-}
-
-function transformResource(
-    resourceNode: arkts.CallExpression,
-    projectConfig: ProjectConfig | undefined
-): arkts.CallExpression {
-    const newArgs: arkts.AstNode[] = [
-        arkts.factory.create1StringLiteral(projectConfig?.bundleName ? projectConfig.bundleName : ''),
-        arkts.factory.create1StringLiteral(projectConfig?.moduleName ? projectConfig.moduleName : ''),
-        ...resourceNode.arguments,
-    ];
-    return factory.generateTransformedResource(resourceNode, newArgs);
-}
+import { ImportCollector } from '../../common/import-collector';
+import { DeclarationCollector } from '../../common/declaration-collector';
+import { generateArkUICompatible, isArkUICompatible } from '../interop/interop';
+import { PropertyCache } from '../property-translators/cache/propertyCache';
 
 export class StructTransformer extends AbstractVisitor {
-    private scopeInfoCollection: ScopeInfoCollection;
+    private scope: ScopeInfoCollection;
     projectConfig: ProjectConfig | undefined;
+    aceBuildJson: LoaderJson;
+    resourceInfo: ResourceInfo;
 
     constructor(projectConfig: ProjectConfig | undefined) {
         super();
         this.projectConfig = projectConfig;
-        this.scopeInfoCollection = { customComponents: [] };
+        this.scope = { customComponents: [] };
+        this.aceBuildJson = loadBuildJson(this.projectConfig);
+        this.resourceInfo = initResourceInfo(this.projectConfig, this.aceBuildJson);
     }
 
     reset(): void {
         super.reset();
-        this.scopeInfoCollection = { customComponents: [] };
+        this.scope = { customComponents: [] };
+        PropertyCache.getInstance().reset();
+        ImportCollector.getInstance().reset();
+        DeclarationCollector.getInstance().reset();
     }
 
     enter(node: arkts.AstNode): void {
-        if (arkts.isClassDeclaration(node) && isCustomComponentClass(node)) {
-            this.scopeInfoCollection.customComponents.push({ name: node.definition!.ident!.name });
+        if (arkts.isClassDeclaration(node) && !!node.definition && node.definition.body.length > 0) {
+            const customComponentInfo = collectCustomComponentScopeInfo(node);
+            if (!!customComponentInfo) {
+                this.scope.customComponents.push(customComponentInfo);
+            }
         }
-        if (arkts.isMethodDefinition(node) && this.scopeInfoCollection.customComponents.length > 0) {
+        if (arkts.isMethodDefinition(node) && this.scope.customComponents.length > 0) {
             const name = node.name.name;
-            const scopeInfo = this.scopeInfoCollection.customComponents.pop()!;
+            const scopeInfo = this.scope.customComponents.pop()!;
             scopeInfo.hasInitializeStruct ||= name === CustomComponentNames.COMPONENT_INITIALIZE_STRUCT;
             scopeInfo.hasUpdateStruct ||= name === CustomComponentNames.COMPONENT_UPDATE_STRUCT;
-            scopeInfo.hasReusableRebind ||= name === CustomComponentNames.REUSABLE_COMPONENT_REBIND_STATE;
-            this.scopeInfoCollection.customComponents.push(scopeInfo);
+            this.scope.customComponents.push(scopeInfo);
         }
     }
-
     exit(node: arkts.AstNode): void {
-        if (arkts.isClassDeclaration(node) && isCustomComponentClass(node)) {
-            this.scopeInfoCollection.customComponents.pop();
+        if (
+            arkts.isClassDeclaration(node) &&
+            this.scope.customComponents.length > 0 &&
+            isCustomComponentClass(node, this.scope.customComponents[this.scope.customComponents.length - 1])
+        ) {
+            this.scope.customComponents.pop();
         }
     }
 
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         this.enter(beforeChildren);
         const node = this.visitEachChild(beforeChildren);
-        if (arkts.isClassDeclaration(node) && isCustomComponentClass(node)) {
-            let scope: CustomComponentScopeInfo | undefined;
-            const scopeInfos: CustomComponentScopeInfo[] = this.scopeInfoCollection.customComponents;
-            if (scopeInfos.length > 0) {
-                scope = scopeInfos[scopeInfos.length - 1];
-            }
-            const newClass: arkts.ClassDeclaration = tranformClassMembers(
-                node,
-                arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE),
-                scope
-            );
+        if (
+            arkts.isClassDeclaration(node) &&
+            this.scope.customComponents.length > 0 &&
+            isCustomComponentClass(node, this.scope.customComponents[this.scope.customComponents.length - 1])
+        ) {
+            const scope: CustomComponentScopeInfo = this.scope.customComponents[this.scope.customComponents.length - 1];
+            const newClass: arkts.ClassDeclaration = factory.tranformClassMembers(node, scope);
             this.exit(beforeChildren);
             return newClass;
         } else if (isEntryWrapperClass(node)) {
             entryFactory.addMemoToEntryWrapperClassMethods(node);
             return node;
-        } else if (arkts.isClassDeclaration(node) && isEtsGlobalClass(node)) {
-            return transformEtsGlobalClassMembers(node);
-        } else if (arkts.isCallExpression(node) && isReourceNode(node)) {
-            return transformResource(node, this.projectConfig);
-        } else if (findCanAddMemoFromArrowFunction(node)) {
-            return addMemoAnnotation(node);
+        } else if (arkts.isClassDeclaration(node)) {
+            return factory.transformNormalClass(node);
+        } else if (arkts.isCallExpression(node) && isResourceNode(node)) {
+            return factory.transformResource(node, this.projectConfig, this.resourceInfo);
+        } else if (isArkUICompatible(node)) {
+            return generateArkUICompatible(node as arkts.CallExpression);
+        } else if (arkts.isTSInterfaceDeclaration(node)) {
+            return factory.tranformInterfaceMembers(node, this.externalSourceName);
+        }
+        if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
+            ImportCollector.getInstance().insertCurrentImports(this.program);
         }
         return node;
     }

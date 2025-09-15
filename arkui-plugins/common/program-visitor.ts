@@ -17,9 +17,9 @@ import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor, VisitorOptions } from './abstract-visitor';
 import { matchPrefix } from './arkts-utils';
 import { debugDump, getDumpFileName } from './debug';
-import { InteroperAbilityNames, ARKUI_COMPONENT_IMPORT_NAME, KIT_ARKUI_NAME } from './predefines';
+import { InteroperAbilityNames } from '../ui-plugins/interop/predefines';
 import { PluginContext } from './plugin-context';
-import { LegacyTransformer } from '../ui-plugins/legacy-transformer';
+import { LegacyTransformer } from '../ui-plugins/interop/legacy-transformer';
 import { ComponentTransformer } from '../ui-plugins/component-transformer';
 
 export interface ProgramVisitorOptions extends VisitorOptions {
@@ -59,28 +59,9 @@ function flattenVisitorsInHooks(
     ];
 }
 
-function sortExternalSources(externalSources: arkts.ExternalSource[]): arkts.ExternalSource[] {
-    return externalSources.sort((a, b) => {
-        const prefix = ARKUI_COMPONENT_IMPORT_NAME || KIT_ARKUI_NAME;
-        const hasPrefixA = a.getName().startsWith(prefix);
-        const hasPrefixB = b.getName().startsWith(prefix);
-
-        // If both have the prefix, maintain their original order
-        if (hasPrefixA && hasPrefixB) {
-            return 0;
-        }
-        // If neither has the prefix, maintain their original order
-        if (!hasPrefixA && !hasPrefixB) {
-            return 0;
-        }
-        // If only one has the prefix, the one with the prefix comes first
-        return hasPrefixA ? -1 : 1;
-    });
-}
-
 export interface StructMap {
     [key: string]: string;
-} 
+}
 
 export class ProgramVisitor extends AbstractVisitor {
     private readonly pluginName: string;
@@ -113,7 +94,7 @@ export class ProgramVisitor extends AbstractVisitor {
         this.legacyModuleList = [];
     }
 
-    getLegacyModule(): void {
+    private getLegacyModule(): void {
         const moduleList = this.pluginContext?.getProjectConfig()?.dependentModuleList;
         if (moduleList === undefined) {
             return;
@@ -125,143 +106,158 @@ export class ProgramVisitor extends AbstractVisitor {
                 continue;
             }
             if (!this.legacyStructMap.has(moduleName)) {
-                this.legacyStructMap.set(moduleName, {});                
+                this.legacyStructMap.set(moduleName, {});
                 this.legacyModuleList.push(moduleName);
             }
         }
     }
 
-    dumpHeaders(
-        currProgram: arkts.Program,
+    private dumpExternalSource(
+        script: arkts.AstNode,
         name: string,
         cachePath: string | undefined,
         prefixName: string,
         extensionName: string
     ): void {
         debugDump(
-            currProgram.astNode.dumpSrc(), 
-            getDumpFileName(this.state, prefixName, undefined, name), 
+            script.dumpSrc(),
+            getDumpFileName(this.state, prefixName, undefined, name),
             true,
             cachePath,
             extensionName
         );
     }
 
-    programVisitor(program: arkts.Program): arkts.Program {
-        const skipPrefixes: (string | RegExp)[] = this.skipPrefixNames;
+    private visitLegacyInExternalSource(currProgram: arkts.Program, name: string): void {
+        if (this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED) {
+            const structList = this.visitorLegacy(currProgram.astNode, currProgram, name);
+            const moduleName = name.split('/')[0];
+            const structMap = this.legacyStructMap.get(moduleName)!;
+            for (const struct of structList) {
+                structMap[struct] = name;
+            }
+        }
+    }
+
+    private visitNonLegacyInExternalSource(
+        program: arkts.Program,
+        currProgram: arkts.Program,
+        name: string,
+        cachePath?: string
+    ): void {
+        const extensionName: string = program.fileNameWithExtension;
+        this.dumpExternalSource(currProgram.astNode, name, cachePath, 'ORI', extensionName);
+        const script = this.visitor(currProgram.astNode, currProgram, name);
+        if (script) {
+            this.dumpExternalSource(script, name, cachePath, this.pluginName, extensionName);
+        }
+    }
+
+    private visitNextProgramInQueue(
+        queue: arkts.Program[],
+        visited: Set<unknown>,
+        externalSource: arkts.ExternalSource
+    ): void {
+        const nextProgramArr: arkts.Program[] = externalSource.programs ?? [];
+        for (const nextProgram of nextProgramArr) {
+            this.filenames.set(nextProgram.peer, externalSource.getName());
+            if (!visited.has(nextProgram.peer)) {
+                queue.push(nextProgram);
+            }
+        }
+    }
+
+    private visitExternalSources(
+        program: arkts.Program,
+        programQueue: arkts.Program[]
+    ): void {
         const visited = new Set();
-        const queue: arkts.Program[] = [program];
+        const queue: arkts.Program[] = programQueue;
         this.getLegacyModule();
         while (queue.length > 0) {
             const currProgram = queue.shift()!;
-            if (visited.has(currProgram.peer)) {
+            if (visited.has(currProgram.peer) || currProgram.isASTLowered()) {
                 continue;
             }
             if (currProgram.peer !== program.peer) {
                 const name: string = this.filenames.get(currProgram.peer)!;
                 const cachePath: string | undefined = this.pluginContext?.getProjectConfig()?.cachePath;
                 if (this.legacyModuleList && matchPrefix(this.legacyModuleList, name)) {
-                    if (this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED) {
-                        const structList = this.visitorLegacy(currProgram.astNode, currProgram, name);
-                        const moduleName = name.split('/')[0];
-                        const structMap = this.legacyStructMap.get(moduleName)!;
-                        for (const struct of structList) {
-                            structMap[struct] = name;
-                        }
-                    }
+                    this.visitLegacyInExternalSource(currProgram, name);
                 } else {
-                    this.dumpHeaders(currProgram, name, cachePath, 'Ori', program.programFileNameWithExtension);
-                    const script = this.visitor(currProgram.astNode, currProgram, name);
-                    if (script) {
-                        this.dumpHeaders(currProgram, name, cachePath, this.pluginName, program.programFileNameWithExtension);
-                    }
+                    this.visitNonLegacyInExternalSource(program, currProgram, name, cachePath);
                 }
             }
             visited.add(currProgram.peer);
-            for (const externalSource of sortExternalSources(currProgram.externalSources)) {
-                if (matchPrefix(skipPrefixes, externalSource.getName())) {
+            for (const externalSource of currProgram.externalSources) {
+                if (matchPrefix(this.skipPrefixNames, externalSource.getName())) {
                     continue;
                 }
-                const nextProgramArr: arkts.Program[] = externalSource.programs ?? [];
-                for (const nextProgram of nextProgramArr) {
-                    this.filenames.set(nextProgram.peer, externalSource.getName());
-                    if (!visited.has(nextProgram.peer)) {
-                        queue.push(nextProgram);
-                    }
-                }
+                this.visitNextProgramInQueue(queue, visited, externalSource);
             }
         }
-        const hasLegacy = this.legacyStructMap.size ? true : false;
+    }
+
+    programVisitor(program: arkts.Program): arkts.Program {
+        this.visitExternalSources(program, [program]);
+
         let programScript = program.astNode;
-        programScript = this.visitor(programScript, program, this.externalSourceName, hasLegacy);
+        programScript = this.visitor(programScript, program, this.externalSourceName);
+
         const visitorsToReset = flattenVisitorsInHooks(this.hooks, this.state);
         visitorsToReset.forEach((visitor) => visitor.reset());
+
         return program;
     }
 
-    preVisitor(
+    private preVisitor(
+        hook: ProgramHookLifeCycle | undefined,
         node: arkts.AstNode,
         program?: arkts.Program,
         externalSourceName?: string
     ): void {
-        const isExternal: boolean = !!externalSourceName;
-        let hook: ProgramHookLifeCycle | undefined = isExternal ? this.hooks?.external : this.hooks?.source;
         let script: arkts.EtsScript = node as arkts.EtsScript;
-
         const preVisitors = hook?.pre?.visitors ?? [];
         for (const transformer of preVisitors) {
-            transformer.isExternal = isExternal;
-            transformer.externalSourceName = externalSourceName;
-            transformer.program = program;
-            transformer.visitor(script);
+            this.visitTransformer(transformer, script, externalSourceName, program);
             if (!this.hooks?.external?.pre?.resetAfter) {
                 transformer.reset();
             }
         }
     }
 
-    postVisitor(
+    private postVisitor(
+        hook: ProgramHookLifeCycle | undefined,
         node: arkts.AstNode,
         program?: arkts.Program,
         externalSourceName?: string
     ): void {
-        const isExternal: boolean = !!externalSourceName;
-        let hook: ProgramHookLifeCycle | undefined = isExternal ? this.hooks?.external : this.hooks?.source;
         let script: arkts.EtsScript = node as arkts.EtsScript;
-
         const postVisitors = hook?.post?.visitors ?? [];
         for (const transformer of postVisitors) {
-            transformer.isExternal = isExternal;
-            transformer.externalSourceName = externalSourceName;
-            transformer.program = program;
-            transformer.visitor(script);
+            this.visitTransformer(transformer, script, externalSourceName, program);
             if (!this.hooks?.external?.pre?.resetAfter) {
                 transformer.reset();
             }
         }
     }
 
-    visitor(
-        node: arkts.AstNode,
-        program?: arkts.Program,
-        externalSourceName?: string,
-        hasLegacy: boolean = false
-    ): arkts.EtsScript {
+    visitor(node: arkts.AstNode, program?: arkts.Program, externalSourceName?: string): arkts.EtsScript {
+        let hook: ProgramHookLifeCycle | undefined;
+
         let script: arkts.EtsScript = node as arkts.EtsScript;
         let count: number = 0;
         const isExternal: boolean = !!externalSourceName;
 
         // pre-run visitors
-        this.preVisitor(node, program, externalSourceName);
+        hook = isExternal ? this.hooks?.external : this.hooks?.source;
+        this.preVisitor(hook, node, program, externalSourceName);
 
         for (const transformer of this.visitors) {
-            transformer.isExternal = isExternal;
-            transformer.externalSourceName = externalSourceName;
-            transformer.program = program;
-            if (hasLegacy && transformer instanceof ComponentTransformer) {
+            if (this.legacyStructMap.size > 0 && transformer instanceof ComponentTransformer) {
                 transformer.registerMap(this.legacyStructMap);
             }
-            script = transformer.visitor(script) as arkts.EtsScript;
+            this.visitTransformer(transformer, script, externalSourceName, program);
             transformer.reset();
             arkts.setAllParents(script);
             if (!transformer.isExternal) {
@@ -270,26 +266,38 @@ export class ProgramVisitor extends AbstractVisitor {
                     getDumpFileName(this.state, this.pluginName, count, transformer.constructor.name),
                     true,
                     this.pluginContext?.getProjectConfig()?.cachePath,
-                    program!.programFileNameWithExtension
+                    program!.fileNameWithExtension
                 );
                 count += 1;
             }
         }
 
         // post-run visitors
-        this.postVisitor(node, program, externalSourceName);
-
+        hook = isExternal ? this.hooks?.external : this.hooks?.source;
+        this.postVisitor(hook, node, program, externalSourceName);
         return script;
     }
 
-    visitorLegacy(
-        node: arkts.AstNode,
-        program?: arkts.Program,
-        externalSourceName?: string,
-    ): string[] {
-        const visitor = new LegacyTransformer();
-        const script = visitor.visitor(node) as arkts.EtsScript;
-        const structList = visitor.getList();
+    private visitorLegacy(node: arkts.AstNode, program?: arkts.Program, externalSourceName?: string): string[] {
+        const transformer = new LegacyTransformer();
+        transformer.isExternal = !!externalSourceName;
+        transformer.externalSourceName = externalSourceName;
+        transformer.program = program;
+        transformer.visitor(node);
+        const structList = transformer.getList();
         return structList;
+    }
+
+    private visitTransformer(
+        transformer: AbstractVisitor,
+        script: arkts.EtsScript,
+        externalSourceName?: string,
+        program?: arkts.Program
+    ): arkts.EtsScript {
+        transformer.isExternal = !!externalSourceName;
+        transformer.externalSourceName = externalSourceName;
+        transformer.program = program;
+        const newScript = transformer.visitor(script) as arkts.EtsScript;
+        return newScript;
     }
 }

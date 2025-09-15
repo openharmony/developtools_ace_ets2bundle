@@ -19,8 +19,9 @@ import * as arkts from '@koalaui/libarkts';
 const isDebugLog: boolean = false;
 const isDebugDump: boolean = false;
 const isPerformance: boolean = false;
+const enableMemoryTracker: boolean = false;
 arkts.Performance.getInstance().skip(!isPerformance);
-
+arkts.Performance.getInstance().enableMemoryTracker(enableMemoryTracker);
 export function getEnumName(enumType: any, value: number): string | undefined {
     return enumType[value];
 }
@@ -46,7 +47,7 @@ export function debugDump(
     const outputDir: string = cachePath
         ? path.resolve(currentDirectory, cachePath, modifiedFileName)
         : path.resolve(currentDirectory, 'dist', 'cache', modifiedFileName);
-    const filePath: string = path.resolve(outputDir, fileName);
+    const filePath: string = path.resolve(outputDir, fileName.replaceAll('\/', '_'));
     if (!fs.existsSync(outputDir)) {
         mkDir(outputDir);
     }

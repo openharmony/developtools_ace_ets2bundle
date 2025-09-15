@@ -15,61 +15,74 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { getAnnotationUsage, PresetDecorators } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-function checkNoPropLinkOrObjectLinkInEntry(context: UISyntaxRuleContext, node: arkts.StructDeclaration): void {
-  // Check if the struct has the @Entry decorator
-  const isEntryComponent = !!getAnnotationUsage(node, PresetDecorators.ENTRY);
-  if (!isEntryComponent) {
-    return;
-  }
-  node.definition.body.forEach(body => {
-    if (!arkts.isClassProperty(body)) {
-      return;
-    }
-    const invalidDecorators = [PresetDecorators.PROP, PresetDecorators.LINK, PresetDecorators.OBJECT_LINK];
-    // Check if any invalid decorators are applied to the class property
-    body.annotations?.forEach(annotation => {
-      reportInvalidDecorator(context, annotation, invalidDecorators);
-    });
-  });
-}
+const invalidDecorators = [PresetDecorators.PROP_REF, PresetDecorators.LINK, PresetDecorators.OBJECT_LINK];
 
-function reportInvalidDecorator(context: UISyntaxRuleContext, annotation: arkts.AnnotationUsage,
-  invalidDecorators: string[],): void {
-  if (annotation.expr && invalidDecorators.includes(annotation.expr.dumpSrc())) {
-    const decorator = annotation.expr.dumpSrc();
-    context.report({
-      node: annotation,
-      message: rule.messages.invalidUsage,
-      data: { decorator },
-      fix: (annotation) => {
-        const startPosition = arkts.getStartPosition(annotation);
-        const endPosition = arkts.getEndPosition(annotation);
+class NoPropLinkObjectLinkInEntryRule extends AbstractUISyntaxRule {
+    public setup(): Record<string, string> {
         return {
-          range: [startPosition, endPosition],
-          code: '',
+            disallowDecoratorInEntry: `The '@Entry' component '{{componentName}}' cannot have the '@{{decoratorName}}' property '{{propertyName}}'.`,
         };
-      },
-    });
-  }
+    }
+    public parsed(node: arkts.AstNode): void {
+        if (!arkts.isStructDeclaration(node)) {
+            return;
+        }
+        this.checkNoPropLinkOrObjectLinkInEntry(node);
+    }
+
+    private checkNoPropLinkOrObjectLinkInEntry(node: arkts.StructDeclaration): void {
+        // Check if the struct has the @Entry decorator
+        const isEntryComponent = !!getAnnotationUsage(node, PresetDecorators.ENTRY);
+        if (!node.definition.ident || !arkts.isIdentifier(node.definition.ident)) {
+            return;
+        }
+        const componentName = node.definition.ident.name;
+        if (!isEntryComponent) {
+            return;
+        }
+        node.definition.body.forEach(body => {
+            if (!arkts.isClassProperty(body)) {
+                return;
+            }
+            if (!body.key || !arkts.isIdentifier(body.key)) {
+                return;
+            }
+            const propertyName = body.key.name;
+            // Check if any invalid decorators are applied to the class property
+            body.annotations?.forEach(annotation => {
+                this.reportInvalidDecorator(annotation, invalidDecorators, componentName, propertyName);
+            });
+        });
+    }
+
+    private reportInvalidDecorator(annotation: arkts.AnnotationUsage,
+        invalidDecorators: string[], componentName: string, propertyName: string): void {
+        if (annotation.expr && arkts.isIdentifier(annotation.expr) &&
+            invalidDecorators.includes(annotation.expr.name)) {
+            const decoratorName = annotation.expr.name;
+            this.report({
+                node: annotation,
+                message: this.messages.disallowDecoratorInEntry,
+                data: {
+                    componentName,
+                    decoratorName,
+                    propertyName,
+                },
+                fix: (annotation) => {
+                    let startPosition = annotation.startPosition;
+                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                    let endPosition = annotation.endPosition;
+                    return {
+                        title: 'Remove the annotation',
+                        range: [startPosition, endPosition],
+                        code: '',
+                    };
+                },
+            });
+        }
+    }
 }
 
-const rule: UISyntaxRule = {
-  name: 'no-prop-link-objectlink-in-entry',
-  messages: {
-    invalidUsage: `@{{decorator}} decorator cannot be used for '@Entry' decorated components.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
-        if (!arkts.isStructDeclaration(node)) {
-          return;
-        }
-        checkNoPropLinkOrObjectLinkInEntry(context, node);
-      },
-    };
-  },
-};
-
-export default rule;
+export default NoPropLinkObjectLinkInEntryRule;

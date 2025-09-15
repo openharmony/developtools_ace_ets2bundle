@@ -19,9 +19,18 @@ import { acceptNativeObjectArrayResult, unpackString } from "../utilities/privat
 import { KNativePointer } from "@koalaui/interop"
 import { EtsScript } from "../types"
 
+enum SkipPhaseResult {
+    NOT_COMPUTED,
+    CAN_SKIP,
+    CANNOT_SKIP,
+}
+
 export class Program extends ArktsObject {
+    private canSkipPhaseResult: SkipPhaseResult;
+
     constructor(peer: KNativePointer) {
         super(peer);
+        this.canSkipPhaseResult = SkipPhaseResult.NOT_COMPUTED;
     }
 
     get astNode(): EtsScript {
@@ -35,16 +44,57 @@ export class Program extends ArktsObject {
         );
     }
 
-    get programFileName(): string {
+    get directExternalSources(): ExternalSource[] {
+        return acceptNativeObjectArrayResult<ExternalSource>(
+            global.es2panda._ProgramDirectExternalSources(global.context, this.peer),
+            (instance: KNativePointer) => new ExternalSource(instance)
+        );
+    }
+
+    get fileName(): string {
         return unpackString(global.es2panda._ProgramFileNameConst(global.context, this.peer));
     }
 
-    get programFileNameWithExtension(): string {
+    get fileNameWithExtension(): string {
         return unpackString(global.es2panda._ProgramFileNameWithExtensionConst(global.context, this.peer));
     }
 
-    get programGlobalAbsName(): string {
+    /**
+     * @deprecated
+     */
+    get globalAbsName(): string {
         return unpackString(global.es2panda._ETSParserGetGlobalProgramAbsName(global.context));
+    }
+
+    get absName(): string {
+        return unpackString(global.es2panda._ProgramAbsoluteNameConst(global.context, this.peer));
+    }
+
+    get moduleName(): string {
+        return unpackString(global.es2panda._ProgramModuleNameConst(global.context, this.peer));
+    }
+
+    get sourceFilePath(): string {
+        return unpackString(global.es2panda._ProgramSourceFilePathConst(global.context, this.peer));
+    }
+
+    isASTLowered(): boolean {
+        return global.es2panda._ProgramIsASTLoweredConst(global.context, this.peer);
+    }
+
+    canSkipPhases(): boolean {
+        if (this.canSkipPhaseResult === SkipPhaseResult.CAN_SKIP) {
+            return true;
+        } else if (this.canSkipPhaseResult === SkipPhaseResult.CANNOT_SKIP) {
+            return false;
+        }
+        if (global.es2panda._ProgramCanSkipPhases(global.context, this.peer)) {
+            this.canSkipPhaseResult = SkipPhaseResult.CAN_SKIP;
+            return true;
+        } else {
+            this.canSkipPhaseResult = SkipPhaseResult.CANNOT_SKIP;
+            return false;
+        }
     }
 }
 

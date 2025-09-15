@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,21 +38,29 @@ const reusableTransform: Plugins = {
 const pluginTester = new PluginTester('test complex reusable', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
 
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
+import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { ConditionScope as ConditionScope } from "arkui.component.builder";
+
+import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
+
+import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { UIButtonAttribute as UIButtonAttribute } from "@ohos.arkui.component";
+import { NavInterface as NavInterface } from "arkui.UserView";
 
-import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
-
-import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -61,10 +70,16 @@ import { State as State } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/reusable/reusable-complex",
+  pageFullPath: "test/demo/mock/decorators/reusable/reusable-complex",
+  integratedHsp: "false",
+  } as NavInterface));
 
 class Message {
-  public value: string | undefined;
+  public value: (string | undefined);
   
   public constructor(value: string) {
     this.value = value;
@@ -72,15 +87,15 @@ class Message {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class Index extends CustomComponent<Index, __Options_Index> {
-  public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_display = new StateDecoratedVariable<boolean>("display", ((({let gensym___83835842 = initializers;
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_display = STATE_MGMT_FACTORY.makeState<boolean>(this, "display", ((({let gensym___83835842 = initializers;
     (((gensym___83835842) == (null)) ? undefined : gensym___83835842.display)})) ?? (true)));
   }
   
-  public __updateStruct(initializers: __Options_Index | undefined): void {}
+  public __updateStruct(initializers: (__Options_Index | undefined)): void {}
   
-  private __backing_display?: StateDecoratedVariable<boolean>;
+  private __backing_display?: IStateDecoratedVariable<boolean>;
   
   public get display(): boolean {
     return this.__backing_display!.get();
@@ -90,24 +105,28 @@ class Message {
     this.__backing_display!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: Index)=> Index) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Index | undefined): void {
-    Column(@memo() ((instance: UIColumnAttribute): void => {
+  @memo() public build() {
+    Column(@memo() ((instance: ColumnAttribute): void => {
       instance.height("100%").width("100%");
       return;
-    }), undefined, (() => {
-      Button(@memo() ((instance: UIButtonAttribute): void => {
+    }), undefined, @memo() (() => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.fontSize(30).fontWeight(FontWeight.Bold).onClick(((e: ClickEvent) => {
           this.display = !(this.display);
         }));
         return;
       }), "Hello", undefined, undefined);
-      if (this.display) {
-        Child._instantiateImpl(undefined, (() => {
-        return new Child();
-      }), ({
-        message: new Message("Child"),
-      } as __Options_Child), undefined, "Child");
-      }
+      ConditionScope(@memo() (() => {
+        if (this.display) {
+          ConditionBranch(@memo() (() => {
+            Child._instantiateImpl(undefined, (() => {
+              return new Child();
+            }), {
+              message: new Message("Child"),
+            }, "Child", undefined);
+          }));
+        }
+      }));
     }));
   }
   
@@ -115,22 +134,22 @@ class Message {
   
 }
 
-@Reusable() @Component({freezeWhenInactive:false}) final class Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: __Options_Child | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_message = new StateDecoratedVariable<Message>("message", ((({let gensym___91869411 = initializers;
+@Reusable() @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_message = STATE_MGMT_FACTORY.makeState<Message>(this, "message", ((({let gensym___91869411 = initializers;
     (((gensym___91869411) == (null)) ? undefined : gensym___91869411.message)})) ?? (new Message("AboutToReuse"))));
   }
   
-  public __updateStruct(initializers: __Options_Child | undefined): void {}
+  public __updateStruct(initializers: (__Options_Child | undefined)): void {}
   
-  public override __toRecord(params: Object): Record<string, Object> {
+  public override constructor __toRecord(params: Object): Record<string, Object> {
     const paramsCasted = (params as __Options_Child);
     return {
       "message": ((paramsCasted.message) ?? (new Object())),
     };
   }
   
-  private __backing_message?: StateDecoratedVariable<Message>;
+  private __backing_message?: IStateDecoratedVariable<Message>;
   
   public get message(): Message {
     return this.__backing_message!.get();
@@ -144,12 +163,12 @@ class Message {
     console.info("Recycle ====Child==");
   }
   
-  @memo() public _build(@memo() style: ((instance: Child)=> Child) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Child | undefined): void {
-    Column(@memo() ((instance: UIColumnAttribute): void => {
+  @memo() public build() {
+    Column(@memo() ((instance: ColumnAttribute): void => {
       instance.borderWidth(1).height(100);
       return;
-    }), undefined, (() => {
-      Text(@memo() ((instance: UITextAttribute): void => {
+    }), undefined, @memo() (() => {
+      Text(@memo() ((instance: TextAttribute): void => {
         instance.fontSize(30);
         return;
       }), this.message.value, undefined, undefined);
@@ -160,23 +179,23 @@ class Message {
   
 }
 
-interface __Options_Index {
-  set display(display: boolean | undefined)
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
+  set display(display: (boolean | undefined))
   
-  get display(): boolean | undefined
-  set __backing_display(__backing_display: StateDecoratedVariable<boolean> | undefined)
+  get display(): (boolean | undefined)
+  set __backing_display(__backing_display: (IStateDecoratedVariable<boolean> | undefined))
   
-  get __backing_display(): StateDecoratedVariable<boolean> | undefined
+  get __backing_display(): (IStateDecoratedVariable<boolean> | undefined)
   
 }
 
-interface __Options_Child {
-  set message(message: Message | undefined)
+@Reusable() @Component() export interface __Options_Child {
+  set message(message: (Message | undefined))
   
-  get message(): Message | undefined
-  set __backing_message(__backing_message: StateDecoratedVariable<Message> | undefined)
+  get message(): (Message | undefined)
+  set __backing_message(__backing_message: (IStateDecoratedVariable<Message> | undefined))
   
-  get __backing_message(): StateDecoratedVariable<Message> | undefined
+  get __backing_message(): (IStateDecoratedVariable<Message> | undefined)
   
 }
 
@@ -190,7 +209,6 @@ class __EntryWrapper extends EntryPoint {
   public constructor() {}
   
 }
-
 `;
 
 function testReusableTransformer(this: PluginTestContext): void {
@@ -199,9 +217,9 @@ function testReusableTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test complex reusable',
-    [reusableTransform, uiNoRecheck],
+    [reusableTransform, uiNoRecheck, recheck],
     {
-        checked: [testReusableTransformer],
+        'checked:ui-no-recheck': [testReusableTransformer],
     },
     {
         stopAfter: 'checked',
