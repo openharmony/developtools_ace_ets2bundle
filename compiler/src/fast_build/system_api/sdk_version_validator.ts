@@ -14,13 +14,8 @@
  */
 
 import ts from 'typescript';
-import {
-  projectConfig,
-  fileDeviceCheckPlugin
-} from '../../../main';
-import {
-  getVersionValidationFunction
-} from './api_check_utils';
+import {fileDeviceCheckPlugin, projectConfig} from '../../../main';
+import {getVersionValidationFunction} from './api_check_utils';
 import fs from 'fs';
 
 /**
@@ -337,10 +332,6 @@ export class SdkVersionValidator {
     apiPosition: 'left' | 'right'
   ): boolean {
     const comparisonValue = Number(value);
-    // comparisonValue should conform to the integer format.
-    if (!Number.isInteger(comparisonValue)) {
-      return false;
-    }
     // Adjust comparison values based on operators
     const assignedSdkVersion = this.calculateAssignedSdkVersion(operator, comparisonValue, apiPosition);
 
@@ -535,8 +526,7 @@ export class SdkVersionValidator {
     const nodeEnd = node.getEnd();
     const thenStart = ifStatement.thenStatement.getStart();
     const thenEnd = ifStatement.thenStatement.getEnd();
-    const isInRange = nodeStart >= thenStart && nodeEnd <= thenEnd;
-    return isInRange;
+    return nodeStart >= thenStart && nodeEnd <= thenEnd;
   }
 
   /**
