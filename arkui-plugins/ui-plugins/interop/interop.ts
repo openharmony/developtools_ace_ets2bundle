@@ -29,8 +29,6 @@ import {
     createELMTID, 
     createInitReturn
 } from './utils';
-import { ImportCollector } from '../../common/import-collector';
-import { factory as uiFactory } from '../ui-factory';
 import { DecoratorNames } from '../../common/predefines';
 import { hasDecorator } from '../property-translators/utils';
 
@@ -290,51 +288,35 @@ function createUpdater(updateProp: arkts.Property[]): arkts.ArrowFunctionExpress
 }
 
 function updateArguments(context: InteropContext, name: string): arkts.ObjectExpression {
+    const property = arkts.factory.createProperty(
+        arkts.factory.createIdentifier(name),
+        arkts.factory.createTSAsExpression(
+            context.content,
+            arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier('Function')
+                )
+            ),
+            false
+        )
+    );
     return context.arguments ? arkts.factory.updateObjectExpression(
         context.arguments,
         arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
         [
             ...(context.arguments?.properties as arkts.Property[]),
-            arkts.factory.createProperty(
-                arkts.factory.createIdentifier(name),
-                arkts.factory.createTSAsExpression(
-                    context.content,
-                    arkts.factory.createTypeReference(
-                        arkts.factory.createTypeReferencePart(
-                            arkts.factory.createIdentifier('Function')
-                        )
-                    ),
-                    false
-                )
-            )
+            property
         ],
         false
     ) : arkts.factory.createObjectExpression(
         arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
-        [
-            arkts.factory.createProperty(
-                arkts.factory.createIdentifier(name),
-                arkts.factory.createTSAsExpression(
-                    context.content,
-                    arkts.factory.createTypeReference(
-                        arkts.factory.createTypeReferencePart(
-                            arkts.factory.createIdentifier('Function')
-                        )
-                    ),
-                    false
-                )
-            )
-        ],
+        [property],
         false
     );
 }
 
-function generateVarMap(context: InteropContext, node: arkts.Identifier): Map<string, arkts.ClassProperty> {
+function generateVarMap(context: InteropContext, decl: arkts.ClassDefinition): Map<string, arkts.ClassProperty> {
     let needBuilderParam = !!context.content;
-    const decl = arkts.getDecl(node);
-    if (!(decl instanceof arkts.ClassDefinition)) {
-        throw Error("can't find legacy class declaration");
-    }
     const result = new Map<string, arkts.ClassProperty>();
     const definition = decl;
     const body = definition.body;
@@ -351,62 +333,30 @@ function generateVarMap(context: InteropContext, node: arkts.Identifier): Map<st
     return result;
 }
 
-function generateStructInfo(context: InteropContext): arkts.AstNode[] {
-    const result: arkts.AstNode[] = [
-        arkts.factory.createStringLiteral(context.path),
-        context.line ? arkts.factory.createIdentifier(context.line.toString()) : arkts.factory.createUndefinedLiteral(),
-        context.col ? arkts.factory.createIdentifier(context.col.toString()) : arkts.factory.createUndefinedLiteral(),
-        context.arguments ?? arkts.factory.createUndefinedLiteral(),
-        context.content ?? arkts.factory.createUndefinedLiteral(),
-    ];
-    return result;
-
-}
-
-/**
- * 
- * @param {Object} context - Context information about the parsed CustomComponent.
- * @param {string} context.className - Name of the CustomComponent class.
- * @param {string} context.path - File path where the CustomComponent is located.
- * @param {number} [context.line] - Line number of the CustomComponent in the file (optional).
- * @param {number} [context.col] - Column number of the CustomComponent in the file (optional).
- * @param {Object} [context.arguments] - Additional arguments passed to the CustomComponent (optional).
- * @returns {Object} <context.className>.instantiate_Interop.
- */
-export function generateInstantiateInterop(context: InteropContext): arkts.CallExpression {
-    return arkts.factory.createCallExpression(
-        arkts.factory.createMemberExpression(
-            arkts.factory.createIdentifier(context.className),
-            arkts.factory.createIdentifier('instantiate_Interop'),
-            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-            false,
-            false
-        ),
-        undefined,
-        generateStructInfo(context)
-    );
-}
-
-/**
- * 
- * @param node 
- * @returns {boolean}  Checks if a given CallExpression represents a call to <Struct>.instantiate_Interop.
- */
-export function isArkUICompatible(node: arkts.AstNode): boolean {
-    if (node instanceof arkts.CallExpression && node.expression instanceof arkts.MemberExpression &&
-        node.expression.property instanceof arkts.Identifier &&
-        node.expression.property.name === 'instantiate_Interop') {
-        ImportCollector.getInstance().collectSource(InteroperAbilityNames.ARKUICOMPATIBLE, InteroperAbilityNames.INTEROP);
-        ImportCollector.getInstance().collectImport(InteroperAbilityNames.ARKUICOMPATIBLE);
-        ImportCollector.getInstance().collectSource(InteroperAbilityNames.GETCOMPATIBLESTATE, InteroperAbilityNames.INTEROP);
-        ImportCollector.getInstance().collectImport(InteroperAbilityNames.GETCOMPATIBLESTATE);
-        ImportCollector.getInstance().collectSource(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER, InteroperAbilityNames.INTEROP);
-        ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER);
-        ImportCollector.getInstance().collectSource(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER, InteroperAbilityNames.INTEROP);
-        ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER);
-        return true;
+export function processArgumens(arg: arkts.Expression): arkts.ObjectExpression {
+    if (!arkts.isObjectExpression(arg)) {
+        throw new Error('Cannot find arguments for InteropComponent');
     }
-    return false;
+    const properties = arg.properties.map((property: arkts.Property) => {
+        const key = property.key;
+        if (arkts.isIdentifier(key) && key.name.startsWith('__backing_')) {
+            return arkts.factory.updateProperty(
+                property,
+                arkts.factory.updateIdentifier(
+                    key,
+                    key.name.slice('__backing_'.length)
+                ),
+                property.value
+            );
+        }
+        return property;
+    });
+    return arkts.factory.updateObjectExpression(
+        arg,
+        arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+        properties,
+        false
+    );
 }
 
 
@@ -415,25 +365,28 @@ export function isArkUICompatible(node: arkts.AstNode): boolean {
  * @param node 
  * @returns After Checked, transform instantiate_Interop -> ArkUICompatible
  */
-export function generateArkUICompatible(node: arkts.CallExpression): arkts.CallExpression {
+export function generateArkUICompatible(node: arkts.CallExpression, globalBuilder: boolean): arkts.CallExpression {
     const classInterop = (node.expression as arkts.MemberExpression).object as arkts.Identifier;
     const className = classInterop.name;
+    const decl = arkts.getDecl(classInterop);
+    if (!(decl instanceof arkts.ClassDefinition)) {
+        throw Error("can't find legacy class declaration");
+    }
+    const filePath = arkts.getProgramFromAstNode(decl).moduleName;
     const args = node.arguments;
-    const path = (args[0] as arkts.StringLiteral).str;
-    const line = args[1] instanceof arkts.UndefinedLiteral ? undefined : (args[1] as arkts.NumberLiteral).value;
-    const col = args[2] instanceof arkts.UndefinedLiteral ? undefined : (args[2] as arkts.NumberLiteral).value;
-    const options = args[3] instanceof arkts.UndefinedLiteral ? undefined : args[3] as arkts.ObjectExpression;
-    const content = args[4] instanceof arkts.UndefinedLiteral ? undefined : args[4] as arkts.ArrowFunctionExpression;
+    const options = args.length < 2 || arkts.isUndefinedLiteral(args[1]) ? undefined : processArgumens(args[1]);
+    const content = args.length < 3 || arkts.isUndefinedLiteral(args[2]) ? undefined : args[2];
+    if (!!content) {
+        arkts.NodeCache.getInstance().collect(content);
+    }
     const context: InteropContext = {
         className: className,
-        path: path,
-        line: line,
-        col: col,
+        path: filePath,
         arguments: options,
         content: content,
     };
 
-    const varMap: Map<string, arkts.ClassProperty> = generateVarMap(context, classInterop);
+    const varMap: Map<string, arkts.ClassProperty> = generateVarMap(context, decl);
     const updateProp: arkts.Property[] = [];
     const initializer = createInitializer(context, varMap, updateProp);
     const updater = createUpdater(updateProp);
@@ -444,7 +397,7 @@ export function generateArkUICompatible(node: arkts.CallExpression): arkts.CallE
         [
             initializer,
             updater,
-            arkts.factory.createThisExpression(),
+            globalBuilder ? arkts.factory.createUndefinedLiteral() : arkts.factory.createThisExpression(),
         ]
     );
     arkts.NodeCache.getInstance().collect(result);

@@ -47,10 +47,11 @@ import { builderRewriteByType } from './builder-lambda-translators/builder-facto
 import { MonitorCache } from './property-translators/cache/monitorCache';
 import { ComponentAttributeCache } from './builder-lambda-translators/cache/componentAttributeCache';
 import { MetaDataCollector } from '../common/metadata-collector';
+import { FileManager } from '../common/file-manager';
+import { LANGUAGE_VERSION } from '../common/predefines';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
-    private legacyBuilderSet: Set<string> = new Set();
     projectConfig: ProjectConfig | undefined;
     aceBuildJson: LoaderJson;
     resourceInfo: ResourceInfo;
@@ -61,25 +62,6 @@ export class CheckedTransformer extends AbstractVisitor {
         this.scope = { customComponents: [] };
         this.aceBuildJson = loadBuildJson(this.projectConfig);
         this.resourceInfo = initResourceInfo(this.projectConfig, this.aceBuildJson);
-        this.legacyBuilderSet = new Set();
-        this.initBuilderMap();
-    }
-
-    initBuilderMap(): void {
-        const moduleList = this.projectConfig?.dependentModuleList;
-        if (moduleList === undefined) {
-            return;
-        }
-        for (const module of moduleList) {
-            const language = module.language;
-            const moduleName = module.moduleName;
-            if (language !== InteroperAbilityNames.ARKTS_1_1) {
-                continue;
-            }
-            if (!this.legacyBuilderSet.has(moduleName)) {
-                this.legacyBuilderSet.add(moduleName);
-            }
-        }
     }
 
     init(): void {
@@ -127,29 +109,25 @@ export class CheckedTransformer extends AbstractVisitor {
     }
 
     isFromBuilder1_1(decl: arkts.AstNode | undefined): boolean {
-        if (!decl || this.legacyBuilderSet.size === 0) {
+        if (!decl || !arkts.isMethodDefinition(decl)) {
             return false;
         }
-        const moduleName = arkts.getProgramFromAstNode(decl).moduleName?.split('/')[0];
-
-        if (!this.legacyBuilderSet.has(moduleName)) {
+        const path = arkts.getProgramFromAstNode(decl).absName;
+        const fileManager = FileManager.getInstance();
+        if (fileManager.getLanguageVersionByFilePath(path) !== LANGUAGE_VERSION.ARKTS_1_1) {
             return false;
         }
 
-        let isFrom1_1 = false;
-        if (arkts.isMethodDefinition(decl)) {
-            const annotations = decl.scriptFunction.annotations;
-            const decorators: string[] = annotations.map((annotation) => {
-                return (annotation.expr as arkts.Identifier).name;
-            });
-            decorators.forEach((element) => {
-                if (element === 'Builder') {
-                    isFrom1_1 = true;
-                    return;
-                }
-            });
+        const annotations = decl.scriptFunction.annotations;
+        const decorators: string[] = annotations.map((annotation) => {
+            return (annotation.expr as arkts.Identifier).name;
+        });
+        for (const decorator of decorators) {
+            if (decorator === 'memo') {
+                return true;
+            }
         }
-        return isFrom1_1;
+        return false;
     }
 
     addcompatibleComponentImport(): void {
@@ -201,7 +179,7 @@ export class CheckedTransformer extends AbstractVisitor {
         } else if (arkts.isClassDeclaration(node)) {
             return structFactory.transformNormalClass(node, this.externalSourceName);
         } else if (arkts.isCallExpression(node)) {
-            return structFactory.transformCallExpression(node, this.projectConfig, this.resourceInfo);
+            return structFactory.transformCallExpression(node, this.projectConfig, this.resourceInfo, this.scope.customComponents.length === 0);
         } else if (arkts.isTSInterfaceDeclaration(node)) {
             return structFactory.tranformInterfaceMembers(node, this.externalSourceName);
         } else if (
