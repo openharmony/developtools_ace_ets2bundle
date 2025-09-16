@@ -17,10 +17,11 @@ import * as arkts from '@koalaui/libarkts';
 import { getIdentifierName, getAnnotationUsage, PresetDecorators, BUILD_NAME } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-const STATEMENT_LENGTH: number = 1;
 const BUILD_COUNT_LIMIT: number = 1;
 
 class BuildRootNodeRule extends AbstractUISyntaxRule {
+    private customComponentNames: string[] = [];
+
     public setup(): Record<string, string> {
         return {
             invalidEntryBuildRoot: `In an '@Entry' decorated component, the 'build' function can have only one root node, which must be a container component.`,
@@ -28,7 +29,15 @@ class BuildRootNodeRule extends AbstractUISyntaxRule {
         };
     }
 
+    public beforeTransform(): void {
+        this.customComponentNames = [];
+    }
+
     public parsed(node: arkts.AstNode): void {
+        if (arkts.nodeType(node) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
+            this.getCustomComponentNames(node);
+        }
+
         if (!arkts.isStructDeclaration(node)) {
             return;
         }
@@ -43,95 +52,83 @@ class BuildRootNodeRule extends AbstractUISyntaxRule {
                 return;
             }
             const statements = blockStatement.statements;
-            let buildCount = 0;
-            // rule1: The 'build' method cannot have more than one root node.
-            if (statements.length > STATEMENT_LENGTH) {
-                if (!this.isBuildOneRoot(statements, buildCount)) {
+            const componentNames = this.getComponentNames([...statements]);
+
+            if (componentNames.length > BUILD_COUNT_LIMIT) {
+                this.report({
+                    node: buildNode,
+                    message: entryDecoratorUsage ? this.messages.invalidEntryBuildRoot : this.messages.invalidBuildRoot,
+                });
+                return;
+            }
+
+            if (entryDecoratorUsage && componentNames.length === BUILD_COUNT_LIMIT) {
+                const componentName = componentNames[0];
+                if (!this.isContainerComponent((componentName))) {
                     this.report({
                         node: buildNode,
-                        message: entryDecoratorUsage ? this.messages.invalidEntryBuildRoot : this.messages.invalidBuildRoot,
+                        message: this.messages.invalidEntryBuildRoot
                     });
                 }
             }
-            // rule2: its 'build' function can have only one root node, which must be a container component.
-            if (!statements.length || !entryDecoratorUsage) {
-                return;
-            }
-            this.validateContainerInBuild(statements, buildNode);
         });
     }
 
-    private isBuildOneRoot(
-        statements: readonly arkts.Statement[],
-        buildCount: number
-    ): boolean {
-        statements.forEach(statement => {
+    private getCustomComponentNames(node: arkts.AstNode): void {
+        if (!arkts.isEtsScript(node)) {
+            return;
+        }
+
+        node.statements.forEach((statement) => {
+            if (arkts.isStructDeclaration(statement)) {
+                const customComponentName = statement.definition.ident?.name;
+                if (customComponentName) {
+                    this.customComponentNames.push(customComponentName);
+                }
+            }
+        });
+    }
+
+    private getComponentNames(statements: arkts.Statement[]): string[] {
+        const componentNames: string[] = [];
+        statements.forEach((statement) => {
             if (!arkts.isExpressionStatement(statement)) {
                 return;
             }
-            if (!statement.expression) {
-                return;
-            }
-            const componentName = this.getComponentName(statement.expression);
-            if (componentName && componentName !== 'hilog') {
-                buildCount++;
-            }
+
+            const componentName = this.getComponentName(statement);
+            if (componentName) {
+                componentNames.push(componentName);
+            } 
         });
-        return buildCount <= BUILD_COUNT_LIMIT;
+        return componentNames;
     }
 
-    private validateContainerInBuild(statements: readonly arkts.Statement[], buildNode: arkts.Identifier): void {
-        const expressionStatement = statements[0];
-        if (!arkts.isExpressionStatement(expressionStatement)) {
-            return;
-        }
-        const callExpression = expressionStatement.expression;
-        if (!arkts.isCallExpression(callExpression)) {
-            return;
-        }
-        let componentName = this.getComponentName(callExpression);
-        if (!componentName) {
-            return;
-        }
-        let isContainer = this.isContainerComponent(componentName);
-        if (!isContainer) {
-            this.report({
-                node: buildNode,
-                message: this.messages.invalidEntryBuildRoot,
-            });
+    private getComponentName(node: arkts.ExpressionStatement): string | undefined {
+        let current: arkts.AstNode | undefined = node.expression;
+        while (current) {
+            if (arkts.isIdentifier(current) && this.isComponent(getIdentifierName(current))) {
+                return getIdentifierName(current);
+            }
+
+            if (arkts.isCallExpression(current) || arkts.isMemberExpression(current)) {
+                current = current.getChildren()?.[0];
+            } else {
+                break;
+            }
         }
     }
 
     private isContainerComponent(componentName: string): boolean {
-        const loadedContainerComponents = this.context.componentsInfo?.containerComponents;
-        if (!componentName || !loadedContainerComponents) {
-            return false;
-        }
+        const loadedContainerComponents = this.context.componentsInfo?.containerComponents ?? [];
         return loadedContainerComponents.includes(componentName);
     }
 
-    private getComponentName(node: arkts.AstNode): string | undefined {
-        let children = node.getChildren();
-        let componentName: string | undefined;
-
-        while (true) {
-            if (!children || children.length === 0) {
-                return undefined;
-            }
-
-            const firstChild = children[0];
-
-            if (arkts.isIdentifier(firstChild)) {
-                componentName = getIdentifierName(firstChild);
-                return componentName;
-            }
-
-            if (!arkts.isMemberExpression(firstChild) && !arkts.isCallExpression(firstChild)) {
-                return undefined;
-            }
-
-            children = firstChild.getChildren();
-        }
+    private isComponent(componentName: string): boolean {
+        const atomicComponents = this.context.componentsInfo?.atomicComponents ?? [];
+        const containerComponents = this.context.componentsInfo?.containerComponents ?? [];
+        const loadedComponents = atomicComponents.concat(containerComponents).concat(this.customComponentNames);
+        return loadedComponents.includes(componentName);
     }
 }
 
