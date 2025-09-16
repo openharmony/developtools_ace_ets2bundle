@@ -15,11 +15,13 @@
 
 import ts from 'typescript';
 import {
-  projectConfig
+  projectConfig,
+  fileDeviceCheckPlugin
 } from '../../../main';
 import {
   getVersionValidationFunction
 } from './api_check_utils';
+import fs from 'fs';
 
 /**
  * The node is considered **valid** if it satisfies **at least one** of the following:
@@ -34,7 +36,7 @@ export class SdkVersionValidator {
   private readonly openSourceDeviceInfo: string = 'sdkApiVersion';
   private readonly openSourceRuntime: string = 'OpenHarmony';
   private readonly deviceInfoChecker: Map<string, string[]> = new Map([
-  [this.otherSourceDeviceInfo, ['@ohos.deviceInfo.d.ts']], 
+  [this.otherSourceDeviceInfo, ['@ohos.deviceInfo.d.ts']],
   [this.openSourceDeviceInfo, ['@ohos.deviceInfo.d.ts']]
 ]);
   private readonly typeChecker?: ts.TypeChecker;
@@ -117,6 +119,31 @@ export class SdkVersionValidator {
   }
   
   private isNodeWrappedInSdkComparison(node: ts.Node): boolean {
+    const nodeSourceFile = node.getSourceFile()?.fileName;
+    if (!nodeSourceFile) {
+      return false;
+    }
+
+    // First check cache
+    if (fileDeviceCheckPlugin.has(nodeSourceFile)) {
+      const hasDeviceInfo = fileDeviceCheckPlugin.get(nodeSourceFile)!;
+      if (!hasDeviceInfo) {
+        return false;
+      }
+    } else {
+      // File not in cache, read and cache the result
+      try {
+        const fileContent: string = fs.readFileSync(nodeSourceFile, { encoding: 'utf-8' });
+        const deviceInfoContentChecker = /\bdeviceInfo\b/.test(fileContent);
+        fileDeviceCheckPlugin.set(nodeSourceFile, deviceInfoContentChecker);
+        if (!deviceInfoContentChecker) {
+          return false;
+        }
+      } catch (error) {
+        console.warn('Error reading device info: ' + nodeSourceFile);
+      }
+    }
+
     if (this.compatibleSdkVersion === '' || !this.typeChecker) {
       return false;
     }
@@ -178,7 +205,7 @@ export class SdkVersionValidator {
   /**
    * Extracts comparison parts from a binary expression and resolves declaration values.
    * Also determines which side of the comparison contains the API.
-   * 
+   *
    * @param expression - The binary expression to analyze
    * @param matchedApi - The API identifier to match against
    * @returns Object with operator, resolved value, and API position, or undefined if invalid
@@ -222,7 +249,7 @@ export class SdkVersionValidator {
    * Resolves the declaration value of an expression if it exists.
    * If the expression is a variable/constant reference, returns its declared value.
    * Otherwise, returns the original text value.
-   * 
+   *
    * @param expression - The expression to resolve
    * @param fallbackValue - The fallback text value if resolution fails
    * @returns The resolved declaration value or fallback value
@@ -265,7 +292,7 @@ export class SdkVersionValidator {
   /**
    * Extracts the actual value from a variable initializer expression.
    * Handles literals, numeric values, and string values.
-   * 
+   *
    * @param initializer - The initializer expression
    * @returns The extracted value as string
    */
@@ -294,7 +321,7 @@ export class SdkVersionValidator {
   
   /**
    * Validates SDK version compatibility by comparing operator, value, and API type.
-   * 
+   *
    * @param operator - Comparison operator from the expression
    * @param value - Version value to compare against
    * @param matchedApi - The matched API identifier
@@ -333,16 +360,16 @@ export class SdkVersionValidator {
   
   /**
    * Compares SDK version using value assignment logic to determine if version check is valid.
-   * 
+   *
    * Logic: Determines what value the SDK version would have based on the condition,
    * then compares that assigned value with the minimum required version.
-   * 
+   *
    * Examples:
    * - sdkVersion > 15: SDK gets value 16, compare 16 >= minSince
-   * - sdkVersion >= 16: SDK gets value 16, compare 16 >= minSince  
+   * - sdkVersion >= 16: SDK gets value 16, compare 16 >= minSince
    * - sdkVersion < 16: SDK gets value 15, compare 15 >= minSince
    * - 16 < sdkVersion: SDK gets value 17, compare 17 >= minSince (flipped logic)
-   * 
+   *
    * @param assignedSdkVersion - The value being compared against in the condition
    * @returns True if the assigned SDK version meets the minimum requirement
    */
@@ -361,15 +388,15 @@ export class SdkVersionValidator {
   
   /**
    * Calculates what value the SDK version would have based on the comparison condition.
-   * 
+   *
    * @param operator - Comparison operator
    * @param comparisonValue - Value being compared against
    * @param apiPosition - Whether API is on left or right side
    * @returns Assigned SDK version value, or null if indeterminate
    */
   private calculateAssignedSdkVersion(
-    operator: string, 
-    comparisonValue: number, 
+    operator: string,
+    comparisonValue: number,
     apiPosition: 'left' | 'right'
   ): number | null {
     // Flip operator if API is on the right side
@@ -409,7 +436,7 @@ export class SdkVersionValidator {
   
   /**
    * Flips comparison operators for when API is on the right side of comparison.
-   * 
+   *
    * @param operator - Original operator
    * @returns Flipped operator
    */
