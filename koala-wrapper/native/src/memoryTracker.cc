@@ -169,10 +169,10 @@ void MemoryTracker::Report(MemoryStats stats)
         return std::to_string(bytes) + " B";
     };
 
-    std::cout << "Current RSS: " << formatBytes(stats.currentRss) << "\n";
-    std::cout << "Peak RSS   : " << formatBytes(stats.peakRss) << "\n";
-    std::cout << "VSS        : " << formatBytes(stats.currentVss) << "\n";
-    std::cout << "FaultsMinor: " << stats.pageFaultsMinor << "\n";
-    std::cout << "FaultsMajor: " << stats.pageFaultsMajor << "\n";
+    std::cout << "Current RSS: " << formatBytes(stats.currentRss) << "\n" << std::endl;
+    std::cout << "Peak RSS   : " << formatBytes(stats.peakRss) << "\n" << std::endl;
+    std::cout << "VSS        : " << formatBytes(stats.currentVss) << "\n" << std::endl;
+    std::cout << "FaultsMinor: " << stats.pageFaultsMinor << "\n" << std::endl;
+    std::cout << "FaultsMajor: " << stats.pageFaultsMajor << "\n" << std::endl;
     return;
 }

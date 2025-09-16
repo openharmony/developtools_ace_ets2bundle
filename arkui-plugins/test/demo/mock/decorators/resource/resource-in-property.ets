@@ -21,6 +21,11 @@ const i: Resource = $r('app.string.app_name');
 struct ResourceComponent {
   private str: Resource  = $r('app.string.app_name');
   private icon: Resource  = $rawfile('app.mock.txt');
+  private varOne: Resource | string = 'default value';
+  lambdaOne = () => {
+    this.varOne = $r('app.string.EntryAbility_label');
+  }
+
   build() {
     Column() {
       Text(this.str)
