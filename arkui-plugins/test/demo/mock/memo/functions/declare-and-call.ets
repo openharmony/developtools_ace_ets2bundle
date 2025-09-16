@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { memo, __memo_context_type, __memo_id_type } from "@ohos.arkui.stateManagement"
+import { memo } from "arkui.stateManagement.runtime";
 
 @memo
 declare function funcA(): void;
@@ -29,7 +29,26 @@ function funcB(): void {
     funcA();
 }
 
+interface MemoBuilder {
+    @memo builder: () => void
+}
+
+@memo
+function funcWithMemoBuilder(@memo memo_arg: MemoBuilder): void {}
+
+function funcWithArg(arg: () => void): void {}
+
+function func(): void {}
+
 @memo
 () => {
     funcA();
+    funcWithMemoBuilder({
+        builder: () => {
+            funcWithArg(() => {
+                func();
+                return;
+            });
+        }
+    });
 }

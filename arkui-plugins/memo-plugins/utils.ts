@@ -71,6 +71,15 @@ export class PositionalIdTracker {
     // Global for the whole program.
     static callCount: number = 0;
 
+    private static instance: PositionalIdTracker;
+
+    static getInstance(fileName: string): PositionalIdTracker {
+        if (!this.instance) {
+            this.instance = new PositionalIdTracker(fileName);
+        }
+        return this.instance;
+    }
+
     // Set `stable` to true if you want to have more predictable values.
     // For example for tests.
     // Don't use it in production!
@@ -494,6 +503,21 @@ export function findReturnTypeFromTypeAnnotation(
     return undefined;
 }
 
+export function findLocalReturnTypeFromTypeAnnotation(
+    typeAnnotation: arkts.AstNode | undefined
+): arkts.TypeNode | undefined {
+    if (!typeAnnotation) {
+        return undefined;
+    }
+    if (arkts.isETSFunctionType(typeAnnotation)) {
+        return typeAnnotation.returnType;
+    }
+    if (arkts.isETSUnionType(typeAnnotation)) {
+        return typeAnnotation.types.find((type) => arkts.isETSFunctionType(type))?.returnType;
+    }
+    return undefined;
+}
+
 export function getDeclResolveAlias(node: arkts.AstNode): arkts.AstNode | undefined {
     const decl = arkts.getDecl(node);
     if (!!decl && !!decl.parent && arkts.isIdentifier(decl) && arkts.isVariableDeclarator(decl.parent)) {
@@ -508,11 +532,17 @@ export function getDeclResolveAlias(node: arkts.AstNode): arkts.AstNode | undefi
 }
 
 export function mayAddLastReturn(node: arkts.BlockStatement): boolean {
-    return (
-        node.statements.length === 0 ||
-        (!arkts.isReturnStatement(node.statements[node.statements.length - 1]) &&
-            !arkts.isThrowStatement(node.statements[node.statements.length - 1]))
-    );
+    if (node.statements.length === 0) {
+        return true;
+    }
+    const lastStatement = node.statements[node.statements.length - 1];
+    if (arkts.isBlockStatement(lastStatement)) {
+        return mayAddLastReturn(lastStatement);
+    }
+    if (arkts.isReturnStatement(lastStatement) || arkts.isThrowStatement(lastStatement)) {
+        return false;
+    }
+    return true;
 }
 
 export function fixGensymParams(params: ParamInfo[], body: arkts.BlockStatement): number {
@@ -536,14 +566,47 @@ export function fixGensymParams(params: ParamInfo[], body: arkts.BlockStatement)
     return gensymParamsCount;
 }
 
-export function isUnmemoizedInFunction(params?: readonly arkts.Expression[]): boolean {
+export function isMemoContextParamAdded(param: arkts.Expression): boolean {
+    return arkts.isEtsParameterExpression(param) && param.identifier.name === RuntimeNames.CONTEXT;
+}
+
+export function isMemoIdParamAdded(param: arkts.Expression): boolean {
+    return arkts.isEtsParameterExpression(param) && param.identifier.name === RuntimeNames.ID;
+}
+
+export function isUnmemoizedInFunctionParams(params?: readonly arkts.Expression[], hasReceiver?: boolean): boolean {
     const _params = params ?? [];
-    const first = _params.at(0);
-    const isContextAdded =
-        !!first && arkts.isEtsParameterExpression(first) && first.identifier.name === RuntimeNames.CONTEXT;
-    const second = _params.at(1);
-    const isIdAdded = !!second && arkts.isEtsParameterExpression(second) && second.identifier.name === RuntimeNames.ID;
+    const startIndex = hasReceiver ? 1 : 0;
+    const isContextAdded = !!_params.at(startIndex) && isMemoContextParamAdded(_params.at(startIndex)!);
+    const isIdAdded = !!_params.at(startIndex + 1) && isMemoIdParamAdded(_params.at(startIndex + 1)!);
     return isContextAdded && isIdAdded;
+}
+
+export function getFunctionParamsBeforeUnmemoized(
+    params?: readonly arkts.Expression[],
+    hasReceiver?: boolean
+): readonly arkts.Expression[] {
+    const _params = params ?? [];
+    if (isUnmemoizedInFunctionParams(_params, hasReceiver)) {
+        if (!!hasReceiver) {
+            return [_params.at(0)!, ..._params.slice(3)];
+        }
+        return _params.slice(2);
+    }
+    return _params;
+}
+
+export function findUnmemoizedScopeInFunctionBody(body: arkts.BlockStatement, gensymCount: number = 0): boolean {
+    const startIndex = gensymCount;
+    if (body.statements.length < startIndex + 1) {
+        return false;
+    }
+    const statement = body.statements.at(startIndex)!;
+    if (!arkts.isVariableDeclaration(statement)) {
+        return false;
+    }
+    const declarator = statement.declarators.at(0)!;
+    return declarator.name.name === RuntimeNames.SCOPE;
 }
 
 export function buildReturnTypeInfo(
@@ -588,4 +651,8 @@ function isThisParam(node: arkts.Expression | undefined): boolean {
         return false;
     }
     return node.identifier?.isReceiver ?? false;
+}
+
+export function filterMemoSkipParams(params: readonly arkts.Expression[]): readonly arkts.Expression[] {
+    return params.filter((p) => !hasMemoSkipAnnotation(p as arkts.ETSParameterExpression));
 }

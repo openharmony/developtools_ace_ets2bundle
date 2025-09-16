@@ -14,161 +14,216 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { PresetDecorators } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { getAnnotationUsage, PresetDecorators, getClassAnnotationUsage } from '../utils';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-// Function declarations moved to the top with explicit return types
-function getLocalMonitorUsed(body: arkts.MethodDefinition): arkts.AnnotationUsage | undefined {
-  const localMonitorUsed = body.scriptFunction.annotations?.find(
-    annotation => annotation.expr &&
-      annotation.expr.dumpSrc() === PresetDecorators.MONITOR
-  );
-  return localMonitorUsed;
-}
-
-function checkConflictingDecorators(context: UISyntaxRuleContext, body: arkts.MethodDefinition,
-  localMonitorUsed: arkts.AnnotationUsage): boolean {
-  const conflictingDecorators = body.scriptFunction.annotations?.filter(
-    annotation => annotation.expr &&
-      annotation.expr.dumpSrc() !== PresetDecorators.MONITOR
-  );
-  if (conflictingDecorators?.length > 0) {
-    reportConflictingDecorators(context, localMonitorUsed, conflictingDecorators);
-    return true;
-  }
-  return false;
-}
-
-function reportConflictingDecorators(context: UISyntaxRuleContext, localMonitorUsed: arkts.AstNode,
-  conflictingDecorators: arkts.AnnotationUsage[]): void {
-  context.report({
-    node: localMonitorUsed,
-    message: rule.messages.invalidUsage1,
-    fix: () => {
-      const startPositions = conflictingDecorators.map(annotation =>
-        arkts.getStartPosition(annotation));
-      const endPositions = conflictingDecorators.map(annotation => arkts.getEndPosition(annotation));
-      const startPosition = startPositions[0];
-      const endPosition = endPositions[endPositions.length - 1];
-      return {
-        range: [startPosition, endPosition],
-        code: ''
-      };
-    }
-  });
-}
-
-function checkIfClassIsObservedV2(node: arkts.ClassDeclaration): boolean {
-  return node.definition?.annotations?.some(
-    observedV2 => observedV2.expr?.dumpSrc() === PresetDecorators.OBSERVED_V2
-  ) ?? false;
-}
-
-function checkIfStructIsComponentV2(node: arkts.StructDeclaration): boolean {
-  return node.definition?.annotations?.some(
-    componentV2 => componentV2.expr?.dumpSrc() === PresetDecorators.COMPONENT_V2
-  ) ?? false;
-}
-
-function reportInvalidUsage(context: UISyntaxRuleContext, node: arkts.AstNode, message: string, fixCode: string)
-  : void {
-  const startPosition = arkts.getStartPosition(node);
-  context.report({
-    node,
-    message,
-    fix: () => ({
-      range: [startPosition, startPosition],
-      code: fixCode,
-    }),
-  });
-}
-
-function checkMultipleDecorators(
-  node: arkts.ClassDeclaration | arkts.StructDeclaration,
-  context: UISyntaxRuleContext
-): boolean {
-  // Traverse body of the class to check for @Monitor usage
-  let monitorUsed: boolean = false;
-  node.definition?.body.forEach(body => {
-    if (arkts.isMethodDefinition(body)) {
-      const localMonitorUsed = getLocalMonitorUsed(body);
-      if (localMonitorUsed) {
-        monitorUsed = true;
-        checkConflictingDecorators(context, body, localMonitorUsed);
-        return; // Stop further checks for this method
-      }
-    }
-  });
-  return monitorUsed;
-}
-
-function checkDecorateMethod(
-  node: arkts.ClassDeclaration | arkts.StructDeclaration,
-  context: UISyntaxRuleContext
-): void {
-  // Check if @Monitor is used on a property (which is not allowed)
-  node.definition?.body.forEach(body => {
-    if (!arkts.isClassProperty(body)) {
-      return;
-    }
-    const monitorDecorator = body.annotations?.find(
-      annotation => annotation.expr?.dumpSrc() === PresetDecorators.MONITOR);
-    if (monitorDecorator === undefined) {
-      return;
-    }
-    context.report({
-      node: monitorDecorator,
-      message: rule.messages.invalidUsage4,
-      fix: () => {
-        const startPosition = arkts.getStartPosition(monitorDecorator);
-        const endPosition = arkts.getEndPosition(monitorDecorator);
+class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
+    public setup(): Record<string, string> {
         return {
-          range: [startPosition, endPosition],
-          code: '',
+            monitorUsedAlone:
+                `The member property or method can not be decorated by multiple built-in annotations.`,
+            monitorUsedInObservedV2Class:
+                `The '@Monitor' can decorate only member method within a 'class' decorated with @ObservedV2.`,
+            monitorUsedInComponentV2Struct:
+                `The '@Monitor' annotation can only be used in a 'struct' decorated with '@ComponentV2'.`,
+            monitorDecorateMethod:
+                `@Monitor can only decorate method.`
         };
-      },
-    });
-  });
+    }
+
+    public parsed(node: arkts.AstNode): void {
+        if (!arkts.isClassDeclaration(node) && !arkts.isStructDeclaration(node)) {
+            return;
+        }
+
+        const monitorDecorator = this.checkMonitorUsage(node);
+        if (monitorDecorator && arkts.isClassDeclaration(node)) {
+            this.checkMonitorInClass(node, monitorDecorator);
+        }
+
+        if (monitorDecorator && arkts.isStructDeclaration(node)) {
+            this.checkMonitorInStruct(node, monitorDecorator);
+        }
+        this.checkDecorateMethod(node);
+    }
+
+
+    private checkMonitorInClass(
+        node: arkts.ClassDeclaration,
+        monitorDecorator: arkts.AnnotationUsage | undefined,
+    ): void {
+        if (!monitorDecorator) {
+            return;
+        }
+        const isObservedV2 = this.checkDecorator(node, PresetDecorators.OBSERVED_V2);
+        const observedV1Decorator = getClassAnnotationUsage(node, PresetDecorators.OBSERVED_V1);
+
+        if (!isObservedV2 && !observedV1Decorator) {
+            this.report({
+                node: monitorDecorator,
+                message: this.messages.monitorUsedInObservedV2Class,
+                fix: () => {
+                    return {
+                        title: 'Add @ObservedV2 annotation',
+                        range: [node.startPosition, node.startPosition],
+                        code: `@${PresetDecorators.OBSERVED_V2}\n`
+                    };
+                }
+            });
+            return;
+        }
+        if (!isObservedV2 && observedV1Decorator) {
+            this.report({
+                node: monitorDecorator,
+                message: this.messages.monitorUsedInObservedV2Class,
+                fix: () => {
+                    return {
+			title: 'Change @Observed to @ObservedV2',
+                        range: [observedV1Decorator.startPosition, observedV1Decorator.endPosition],
+                        code: `${PresetDecorators.OBSERVED_V2}`
+                    };
+                }
+            });
+        }
+    }
+
+    private checkMonitorInStruct(
+        node: arkts.StructDeclaration,
+        monitorDecorator: arkts.AnnotationUsage | undefined,
+    ): void {
+        if (!monitorDecorator) {
+            return;
+        }
+        const componentV1Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
+        const isComponentV2 = this.checkDecorator(node, PresetDecorators.COMPONENT_V2);
+        if (!isComponentV2 && !componentV1Decorator) {
+            this.report({
+                node: monitorDecorator,
+                message: this.messages.monitorUsedInComponentV2Struct,
+                fix: () => ({
+                    title: 'Add @ComponentV2 annotation',
+                    range: [node.startPosition, node.startPosition],
+                    code: `@${PresetDecorators.COMPONENT_V2}\n`
+                })
+            });
+            return;
+        }
+
+        if (!isComponentV2 && componentV1Decorator) {
+            this.report({
+                node: monitorDecorator,
+                message: this.messages.monitorUsedInComponentV2Struct,
+                fix: () => {
+                    return {
+                        title: 'Change @Component to @ComponentV2',
+                        range: [componentV1Decorator.startPosition, componentV1Decorator.endPosition],
+                        code: `${PresetDecorators.COMPONENT_V2}`
+                    };
+                }
+            });
+        }
+    }
+
+    private checkDecorator(node: arkts.ClassDeclaration | arkts.StructDeclaration, decoratorName: string): boolean {
+        return node.definition?.annotations?.some(
+            annotation => annotation.expr && arkts.isIdentifier(annotation.expr) &&
+                annotation.expr?.name === decoratorName
+        ) ?? false;
+    }
+
+    private checkMonitorUsage(
+        node: arkts.ClassDeclaration | arkts.StructDeclaration
+    ): arkts.AnnotationUsage | undefined {
+        let monitorUsage: arkts.AnnotationUsage | undefined;
+
+        for (const body of node.definition?.body ?? []) {
+            if (!arkts.isMethodDefinition(body)) {
+                continue;
+            }
+            const currentMonitor = this.getLocalMonitorUsed(body);
+
+            if (currentMonitor) {
+                monitorUsage = currentMonitor;
+                this.checkConflictingDecorators(body, currentMonitor);
+                break;
+            }
+        }
+        return monitorUsage;
+    }
+
+    private getLocalMonitorUsed(body: arkts.MethodDefinition): arkts.AnnotationUsage | undefined {
+        const localMonitorUsed = body.scriptFunction.annotations?.find(
+            annotation => annotation.expr && arkts.isIdentifier(annotation.expr) &&
+                annotation.expr.name === PresetDecorators.MONITOR
+        );
+        return localMonitorUsed;
+    }
+
+    private checkConflictingDecorators(body: arkts.MethodDefinition, localMonitorUsed: arkts.AnnotationUsage): boolean {
+        const conflictingDecorators = body.scriptFunction.annotations?.filter(
+            annotation => annotation.expr && arkts.isIdentifier(annotation.expr) &&
+                annotation.expr.name !== PresetDecorators.MONITOR
+        );
+        if (conflictingDecorators?.length > 0) {
+            this.reportConflictingDecorators(localMonitorUsed, conflictingDecorators);
+            return true;
+        }
+        return false;
+    }
+
+    private reportConflictingDecorators(localMonitorUsed: arkts.AstNode, conflictingDecorators: arkts.AnnotationUsage[]): void {
+        this.report({
+            node: localMonitorUsed,
+            message: this.messages.monitorUsedAlone,
+            fix: () => {
+                const startPositions = conflictingDecorators.map(annotation =>
+                    annotation.startPosition);
+                const endPositions = conflictingDecorators.map(annotation => annotation.endPosition);
+                let startPosition = startPositions[0];
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                const endPosition = endPositions[endPositions.length - 1];
+                return {
+                    title: 'Remove the annotation',
+                    range: [startPosition, endPosition],
+                    code: ''
+                };
+            }
+        });
+    }
+
+    private checkDecorateMethod(node: arkts.ClassDeclaration | arkts.StructDeclaration): void {
+        // Check if @Monitor is used on a property (which is not allowed)
+        node.definition?.body.forEach((body) => {
+            if (!arkts.isClassProperty(body)) {
+                return;
+            }
+
+            const monitorDecorator = body.annotations?.find(
+                (annotation) =>
+                    annotation.expr &&
+                    arkts.isIdentifier(annotation.expr) &&
+                    annotation.expr.name === PresetDecorators.MONITOR
+            );
+
+            if (monitorDecorator === undefined) {
+                return;
+            }
+            this.report({
+                node: monitorDecorator,
+                message: this.messages.monitorDecorateMethod,
+                fix: () => {
+                    let startPosition = monitorDecorator.startPosition;
+                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                    const endPosition = monitorDecorator.endPosition;
+                    return {
+                        title: 'Remove the @Monitor annotation',
+                        range: [startPosition, endPosition],
+                        code: '',
+                    };
+                },
+            });
+        });
+    }
 }
 
-// The rule object with its setup method
-const rule: UISyntaxRule = {
-  name: 'monitor-decorator-check',
-  messages: {
-    invalidUsage1:
-      `The member property or method can not be decorated by multiple built-in decorators.`,
-    invalidUsage2:
-      `The '@Monitor' can decorate only member method within a 'class' decorated with @ObservedV2.`,
-    invalidUsage3:
-      `The '@Monitor' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`,
-    invalidUsage4:
-      `@Monitor can only decorate method`,
-  },
-  setup(context) {
-    return {
-      parsed: (node: arkts.AstNode): void => {
-        if (!arkts.isClassDeclaration(node) && !arkts.isStructDeclaration(node)) {
-          return;
-        }
-        let monitorUsed = false;
-
-        const isObservedV2 = arkts.isClassDeclaration(node) && checkIfClassIsObservedV2(node);
-        const isComponentV2 = arkts.isStructDeclaration(node) && checkIfStructIsComponentV2(node);
-
-        monitorUsed = checkMultipleDecorators(node, context);
-
-        // Check for errors related to @Monitor usage
-        if (monitorUsed && !isObservedV2 && arkts.isClassDeclaration(node)) {
-          reportInvalidUsage(context, node, rule.messages.invalidUsage2, `@${PresetDecorators.OBSERVED_V2}\n`);
-        }
-        if (monitorUsed && !isComponentV2 && arkts.isStructDeclaration(node)) {
-          reportInvalidUsage(context, node, rule.messages.invalidUsage3, `@${PresetDecorators.COMPONENT_V2}\n`);
-        }
-
-        checkDecorateMethod(node, context);
-      },
-    };
-  },
-};
-
-export default rule;
+export default MonitorDecoratorCheckRule;

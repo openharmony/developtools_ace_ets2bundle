@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,19 +38,20 @@ const storagePropTransform: Plugins = {
 const pluginTester = new PluginTester('test storageprop with appstorage', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
+import { IStoragePropRefDecoratedVariable as IStoragePropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { StoragePropDecoratedVariable as StoragePropDecoratedVariable } from "@ohos.arkui.stateManagement";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
 
-import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
+import { NavInterface as NavInterface } from "arkui.UserView";
 
-import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -62,6 +64,14 @@ function main() {}
 AppStorage.setOrCreate("PropA", 47);
 AppStorage.setOrCreate("PropB", new Data(50));
 
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/storageprop/storageprop-appstorage",
+  pageFullPath: "test/demo/mock/decorators/storageprop/storageprop-appstorage",
+  integratedHsp: "false",
+  } as NavInterface));
+
 class Data {
   public code: number;
   
@@ -71,15 +81,15 @@ class Data {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class Index extends CustomComponent<Index, __Options_Index> {
-  public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_storageProp = new StoragePropDecoratedVariable<number>("PropA", "storageProp", 1)
-    this.__backing_storagePropObject = new StoragePropDecoratedVariable<Data>("PropB", "storagePropObject", new Data(1))
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_storageProp = STATE_MGMT_FACTORY.makeStoragePropRef<number>(this, "PropA", "storageProp", 1)
+    this.__backing_storagePropObject = STATE_MGMT_FACTORY.makeStoragePropRef<Data>(this, "PropB", "storagePropObject", new Data(1))
   }
   
-  public __updateStruct(initializers: __Options_Index | undefined): void {}
+  public __updateStruct(initializers: (__Options_Index | undefined)): void {}
   
-  private __backing_storageProp?: StoragePropDecoratedVariable<number>;
+  private __backing_storageProp?: IStoragePropRefDecoratedVariable<number>;
   
   public get storageProp(): number {
     return this.__backing_storageProp!.get();
@@ -89,7 +99,7 @@ class Data {
     this.__backing_storageProp!.set(value);
   }
   
-  private __backing_storagePropObject?: StoragePropDecoratedVariable<Data>;
+  private __backing_storagePropObject?: IStoragePropRefDecoratedVariable<Data>;
   
   public get storagePropObject(): Data {
     return this.__backing_storagePropObject!.get();
@@ -99,15 +109,15 @@ class Data {
     this.__backing_storagePropObject!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: Index)=> Index) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Index | undefined): void {
-    Column(undefined, undefined, (() => {
-      Text(@memo() ((instance: UITextAttribute): void => {
+  @memo() public build() {
+    Column(undefined, undefined, @memo() (() => {
+      Text(@memo() ((instance: TextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.storageProp += 1;
         }));
         return;
       }), \`From AppStorage \${this.storageProp}\`, undefined, undefined);
-      Text(@memo() ((instance: UITextAttribute): void => {
+      Text(@memo() ((instance: TextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.storagePropObject.code += 1;
         }));
@@ -120,19 +130,19 @@ class Data {
   
 }
 
-interface __Options_Index {
-  set storageProp(storageProp: number | undefined)
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
+  set storageProp(storageProp: (number | undefined))
   
-  get storageProp(): number | undefined
-  set __backing_storageProp(__backing_storageProp: StoragePropDecoratedVariable<number> | undefined)
+  get storageProp(): (number | undefined)
+  set __backing_storageProp(__backing_storageProp: (IStoragePropRefDecoratedVariable<number> | undefined))
   
-  get __backing_storageProp(): StoragePropDecoratedVariable<number> | undefined
-  set storagePropObject(storagePropObject: Data | undefined)
+  get __backing_storageProp(): (IStoragePropRefDecoratedVariable<number> | undefined)
+  set storagePropObject(storagePropObject: (Data | undefined))
   
-  get storagePropObject(): Data | undefined
-  set __backing_storagePropObject(__backing_storagePropObject: StoragePropDecoratedVariable<Data> | undefined)
+  get storagePropObject(): (Data | undefined)
+  set __backing_storagePropObject(__backing_storagePropObject: (IStoragePropRefDecoratedVariable<Data> | undefined))
   
-  get __backing_storagePropObject(): StoragePropDecoratedVariable<Data> | undefined
+  get __backing_storagePropObject(): (IStoragePropRefDecoratedVariable<Data> | undefined)
   
 }
 
@@ -146,7 +156,6 @@ class __EntryWrapper extends EntryPoint {
   public constructor() {}
   
 }
-
 `;
 
 function testStoragePropTransformer(this: PluginTestContext): void {
@@ -155,9 +164,9 @@ function testStoragePropTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test storageprop with appstorage',
-    [storagePropTransform, uiNoRecheck],
+    [storagePropTransform, uiNoRecheck, recheck],
     {
-        checked: [testStoragePropTransformer],
+        'checked:ui-no-recheck': [testStoragePropTransformer],
     },
     {
         stopAfter: 'checked',

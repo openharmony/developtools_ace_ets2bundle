@@ -17,6 +17,7 @@ import { ETSFunctionType, FunctionSignature } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { attachModifiers, updateThenAttach } from '../utilities/private';
 import { Es2pandaScriptFunctionFlags } from '../../generated/Es2pandaEnums';
+import { NodeCache } from '../utilities/nodeCache';
 
 export function updateETSFunctionType(
     original: ETSFunctionType,
@@ -38,5 +39,9 @@ export function updateETSFunctionType(
         attachModifiers,
         (node: ETSFunctionType, original: ETSFunctionType) => node.setAnnotations(original.annotations)
     );
-    return update(original, signature, funcFlags);
+    const newNode = update(original, signature, funcFlags);
+    if (NodeCache.getInstance().has(original)) {
+        NodeCache.getInstance().refresh(original, newNode);
+    }
+    return newNode;
 }

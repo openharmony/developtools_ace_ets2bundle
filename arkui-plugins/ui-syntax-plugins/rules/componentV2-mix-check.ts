@@ -15,43 +15,47 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { getAnnotationUsage, PresetDecorators } from '../utils';
-import { UISyntaxRule } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-const rule: UISyntaxRule = {
-  name: 'componentV2-mix-check',
-  messages: {
-    conflictWithComponentV2: `The struct '{{structName}}' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.`,
-  },
-  setup(context) {
+class ComponentV2MixCheckRule extends AbstractUISyntaxRule {
+  public setup(): Record<string, string> {
     return {
-      parsed: (node): void => {
-        if (!arkts.isStructDeclaration(node)) {
-          return;
-        }
-        const structName = node.definition.ident?.name ?? '';
-        const structNameNode = node.definition.ident;
-        if (!structNameNode) {
-          return;
-        }
-        // Check if the struct has the '@ComponentV2' annotation
-        const hasComponentV2 = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
-        if (!hasComponentV2) {
-          return;
-        }
-        // Check for the presence of conflicting decorators: '@Component', '@Reusable', '@CustomDialog'
-        const hasComponent = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
-        const hasReusable = getAnnotationUsage(node, PresetDecorators.REUSABLE_V1);
-        const hasCustomDialog = getAnnotationUsage(node, PresetDecorators.CUSTOM_DIALOG);
-        if (hasComponent || hasReusable || hasCustomDialog) {
-          context.report({
-            node: structNameNode,
-            message: rule.messages.conflictWithComponentV2,
-            data: { structName },
-          });
-        }
-      },
+      conflictWithComponentV2: `The struct '{{structName}}' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.`,
     };
-  },
-};
+  }
 
-export default rule;
+  public parsed(node: arkts.AstNode): void {
+    if (!arkts.isStructDeclaration(node)) {
+      return;
+    }
+    const definition = node.definition;
+    if (!definition) {
+      return;
+    }
+    const structNameNode = definition.ident;
+    if (!structNameNode) {
+      return;
+    }
+    const structName = structNameNode.name ?? '';
+    // Check if the struct has the '@ComponentV2' annotation
+    const componentV2Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
+    if (!componentV2Decorator) {
+      return;
+    }
+
+    // Check for conflicting decorators
+    const componentDecorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
+    const reusableDecorator = getAnnotationUsage(node, PresetDecorators.REUSABLE_V1);
+    const customDialogDecorator = getAnnotationUsage(node, PresetDecorators.CUSTOM_DIALOG);
+
+    if (componentDecorator || reusableDecorator || customDialogDecorator) {
+      this.report({
+        node: structNameNode,
+        message: this.messages.conflictWithComponentV2,
+        data: { structName },
+      });
+    }
+  }
+}
+
+export default ComponentV2MixCheckRule;

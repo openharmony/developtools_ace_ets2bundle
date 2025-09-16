@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { memoNoRecheck } from '../../../utils/plugins';
+import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 
 const METHOD_DIR_PATH: string = 'memo/methods';
 
@@ -28,16 +29,17 @@ buildConfig.compileFiles = [path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, MET
 const pluginTester = new PluginTester('test memo method', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"@ohos.arkui.stateManagement\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
-@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
     }
     A.$_invoke(__memo_context, ((__memo_id) + (<some_random_number>)));
-    B.$_invoke(((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+    B.$_invoke(((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -48,7 +50,7 @@ function main() {}
             return;
         }
     }));
-    let x: C | D = C.$_instantiate(__memo_context, ((__memo_id) + (<some_random_number>)), (() => {
+    let x: (C | D) = C.$_instantiate(__memo_context, ((__memo_id) + (<some_random_number>)), (() => {
         return new C();
     }));
     x = D.$_instantiate((() => {
@@ -60,7 +62,7 @@ function main() {}
     }
 });
 class A {
-    public static $_invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @memo() public static $_invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -74,11 +76,11 @@ class A {
     public constructor() {}
 }
 class B {
-    @functions.OptionalParametersAnnotation({minArgCount:0}) public static $_invoke(@memo() p?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
+    public static $_invoke(@memo() p?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
     public constructor() {}
 }
 class C {
-    public static $_instantiate(__memo_context: __memo_context_type, __memo_id: __memo_id_type, factory: (()=> C)): C {
+    @memo() public static $_instantiate(__memo_context: __memo_context_type, __memo_id: __memo_id_type, factory: (()=> C)): C {
         const __memo_scope = __memo_context.scope<C>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_factory = __memo_scope.param(0, factory);
         if (__memo_scope.unchanged) {
@@ -89,7 +91,7 @@ class C {
     public constructor() {}
 }
 class D {
-    @functions.OptionalParametersAnnotation({minArgCount:1}) public static $_instantiate(factory: (()=> D), @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): D {
+    public static $_instantiate(factory: (()=> D), @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): D {
         return factory();
     }
     public constructor() {}
@@ -102,7 +104,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'transform callable class',
-    [memoNoRecheck],
+    [beforeMemoNoRecheck, memoNoRecheck, recheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],
     },

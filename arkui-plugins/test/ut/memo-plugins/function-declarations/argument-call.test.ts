@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { memoNoRecheck } from '../../../utils/plugins';
+import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 
 const FUNCTION_DIR_PATH: string = 'memo/functions';
 
@@ -28,9 +29,10 @@ buildConfig.compileFiles = [path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, FUN
 const pluginTester = new PluginTester('test memo function', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"@ohos.arkui.stateManagement\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
-@functions.OptionalParametersAnnotation({minArgCount:3}) function memo_arg_call(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1: number, arg2: ((x: number)=> number), @memo() arg3: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, x: number)=> number), arg4?: ((x: number)=> number), @memo() arg5?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, x: number)=> number)): void {
+@memo() function memo_arg_call(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1: number, arg2: ((x: number)=> number), @memo() arg3: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, x: number)=> number), arg4?: ((x: number)=> number), @memo() arg5?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, x: number)=> number)) {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 5);
     const __memo_parameter_arg1 = __memo_scope.param(0, arg1), __memo_parameter_arg2 = __memo_scope.param(1, arg2), __memo_parameter_arg3 = __memo_scope.param(2, arg3), __memo_parameter_arg4 = __memo_scope.param(3, arg4), __memo_parameter_arg5 = __memo_scope.param(4, arg5);
     if (__memo_scope.unchanged) {
@@ -48,7 +50,7 @@ function main() {}
         return;
     }
 }
-@functions.OptionalParametersAnnotation({minArgCount:1}) function memo_arg_call_with_lowering(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1: number, arg4?: ((x: number)=> number), @memo() arg5?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, x: number)=> number)): void {
+@memo() function memo_arg_call_with_lowering(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1: number, arg4?: ((x: number)=> number), @memo() arg5?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, x: number)=> number)) {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 3);
     const __memo_parameter_arg1 = __memo_scope.param(0, arg1), __memo_parameter_arg4 = __memo_scope.param(1, arg4), __memo_parameter_arg5 = __memo_scope.param(2, arg5);
     if (__memo_scope.unchanged) {
@@ -68,9 +70,9 @@ function main() {}
         return;
     }
 }
-@functions.OptionalParametersAnnotation({minArgCount:0}) function args_with_default_values(__memo_context: __memo_context_type, __memo_id: __memo_id_type, gensym%%_<some_random_number>?: int, @memo() gensym%%_<some_random_number>?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> int), gensym%%_<some_random_number>?: int, arg4?: int): void {
+@memo() function args_with_default_values(__memo_context: __memo_context_type, __memo_id: __memo_id_type, gensym%%_<some_random_number>?: int, @memo() gensym%%_<some_random_number>?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> int), gensym%%_<some_random_number>?: int, arg4?: int): void {
     let arg1: int = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : (10 as int));
-    let arg2: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> int) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : (((__memo_context: __memo_context_type, __memo_id: __memo_id_type): int => {
+    let arg2: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> int) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : (((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<int>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             return __memo_scope.cached;
@@ -99,7 +101,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'transform argument calls in functions',
-    [memoNoRecheck],
+    [beforeMemoNoRecheck, memoNoRecheck, recheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],
     },

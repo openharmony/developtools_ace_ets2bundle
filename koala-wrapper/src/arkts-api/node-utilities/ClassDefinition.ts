@@ -27,35 +27,38 @@ import { MethodDefinition } from '../types';
 import { updateThenAttach } from '../utilities/private';
 import { Es2pandaClassDefinitionModifiers, Es2pandaModifierFlags } from '../../generated/Es2pandaEnums';
 import { classDefinitionFlags } from '../utilities/public';
+import { Es2pandaLanguage } from '..';
 
 export function updateClassDefinition(
     original: ClassDefinition,
     ident: Identifier | undefined,
     typeParams: TSTypeParameterDeclaration | undefined,
     superTypeParams: TSTypeParameterInstantiation | undefined,
-    _implements: readonly TSClassImplements[],
+    classImplements: readonly TSClassImplements[],
     ctor: MethodDefinition | undefined,
     superClass: Expression | undefined,
     body: readonly AstNode[],
     modifiers: Es2pandaClassDefinitionModifiers,
-    flags: Es2pandaModifierFlags
+    flags: Es2pandaModifierFlags,
+    lang?: Es2pandaLanguage
 ): ClassDefinition {
     if (
         isSameNativeObject(ident, original.ident) &&
         isSameNativeObject(typeParams, original.typeParams) &&
         isSameNativeObject(superTypeParams, original.superTypeParams) &&
-        isSameNativeObject(_implements, original.implements) &&
+        isSameNativeObject(classImplements, original.implements) &&
         isSameNativeObject(superClass, original.super) &&
         isSameNativeObject(body, original.body) &&
         isSameNativeObject(modifiers, original.modifiers) &&
-        isSameNativeObject(flags, classDefinitionFlags(original))
+        isSameNativeObject(flags, classDefinitionFlags(original)) &&
+        (!lang || isSameNativeObject(lang, original.lang))
         /* TODO: no getter for ctor */
     ) {
         return original;
     }
 
     const update = updateThenAttach(
-        ClassDefinition.updateClassDefinition,
+        ClassDefinition.update3ClassDefinition,
         (node: ClassDefinition, original: ClassDefinition) => node.setAnnotations(original.annotations)
     );
     return update(
@@ -63,11 +66,12 @@ export function updateClassDefinition(
         ident,
         typeParams,
         superTypeParams,
-        _implements,
+        classImplements,
         undefined,
         superClass,
         body,
         modifiers,
-        flags
+        flags,
+        lang ?? original.lang
     );
 }

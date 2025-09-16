@@ -14,18 +14,10 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import * as path from 'path';
 import { factory } from './factory';
 import { isAnnotation } from '../../common/arkts-utils';
-import { CustomComponentNames } from '../utils';
-
-export enum EntryWrapperNames {
-    ENTRY_FUNC = 'entry',
-    WRAPPER_CLASS_NAME = '__EntryWrapper',
-    ENTRY_STORAGE_ANNOTATION_KEY = 'storage',
-    ENTRY_STORAGE_LOCAL_STORAGE_PROPERTY_NAME = '_entry_local_storage_',
-    ENTRY_DEFAULT_IMPORT = 'arkui.UserView',
-    ENTRY_POINT_CLASS_NAME = 'EntryPoint',
-}
+import { StructDecoratorNames, EntryParamNames, EntryWrapperNames } from '../../common/predefines';
 
 /**
  * @deprecated
@@ -67,18 +59,37 @@ export function isEntryWrapperClass(node: arkts.AstNode): node is arkts.ClassDec
 }
 
 /**
- * find `{storage: "<name>"}` in `@Entry({storage: "<name>"})` (i.e. annotation's properties).
+ * get annotation's properties in `@Entry()`: storage, useSharedStorage, routeName.
  *
  * @param node class definition node
  */
-export function findEntryWithStorageInClassAnnotations(node: arkts.ClassDefinition): arkts.ClassProperty | undefined {
-    const annotation = node.annotations.find((anno) => {
-        if (!isAnnotation(anno, CustomComponentNames.ENTRY_ANNOTATION_NAME)) return false;
-        const property = anno.properties?.at(0);
-        if (!property || !arkts.isClassProperty(property)) return false;
-        if (!property.key || !arkts.isIdentifier(property.key)) return false;
-        if (!property.value || !arkts.isStringLiteral(property.value)) return false;
-        return property.key.name === EntryWrapperNames.ENTRY_STORAGE_ANNOTATION_KEY;
-    });
-    return annotation?.properties?.at(0) as arkts.ClassProperty | undefined;
+export function getEntryParams(node: arkts.ClassDefinition): Record<EntryParamNames, arkts.ClassProperty | undefined> {
+    const annotation = node.annotations.find((anno) => isAnnotation(anno, StructDecoratorNames.ENTRY));
+    const result = {
+        storage: undefined,
+        useSharedStorage: undefined,
+        routeName: undefined,
+    } as Record<EntryParamNames, arkts.ClassProperty | undefined>;
+    if (!annotation || !annotation.properties) {
+        return result;
+    }
+    for (const prop of annotation.properties) {
+        if (arkts.isClassProperty(prop) && prop.key && arkts.isIdentifier(prop.key)) {
+            const name = prop.key.name as EntryParamNames;
+            if (name in result) {
+                result[name] = prop;
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ * Computes and formats a relative path by removing `.ets` extension and normalizing path separators to `/`.
+ */
+export function getRelativePagePath(from: string, to: string): string {
+  return path
+    .relative(from, to)
+    .replace(/\\/g, '/')
+    .replace(/\.ets$/, '');
 }

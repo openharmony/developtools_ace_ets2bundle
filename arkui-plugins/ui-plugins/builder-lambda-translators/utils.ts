@@ -14,18 +14,18 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { isAnnotation } from '../../common/arkts-utils';
-import { BuilderLambdaNames, Dollars } from '../utils';
+import { isAnnotation, matchPrefix } from '../../common/arkts-utils';
+import { BuilderLambdaNames, isCustomComponentAnnotation } from '../utils';
+import { DeclarationCollector } from '../../common/declaration-collector';
+import { ARKUI_IMPORT_PREFIX_NAMES, BindableDecl, Dollars, StructDecoratorNames } from '../../common/predefines';
+import { ImportCollector } from '../../common/import-collector';
 
 export type BuilderLambdaDeclInfo = {
     isFunctionCall: boolean; // isFunctionCall means it is from $_instantiate.
     params: readonly arkts.Expression[];
     returnType: arkts.TypeNode | undefined;
+    moduleName: string;
 };
-
-export enum BindableDecl {
-    BINDABLE = 'Bindable',
-}
 
 export type BuilderLambdaAstNode = arkts.ScriptFunction | arkts.ETSParameterExpression | arkts.FunctionDeclaration;
 
@@ -33,6 +33,46 @@ export type InstanceCallInfo = {
     isReceiver: boolean;
     call: arkts.CallExpression;
 };
+
+export type BuilderLambdaArgInfo = {
+    isFunctionCall: boolean;
+};
+
+export type BuilderLambdaReusableArgInfo = {
+    isReusable?: boolean;
+    reuseId?: string;
+};
+
+export type BuilderLambdaSecondLastArgInfo = BuilderLambdaArgInfo & BuilderLambdaReusableArgInfo;
+
+export type BuilderLambdaConditionBranchInfo = {
+    statements: readonly arkts.Statement[];
+    breakIndex: number;
+};
+
+export type BuilderLambdaChainingCallArgInfo = {
+    arg: arkts.Expression;
+    hasBuilder?: boolean;
+};
+
+export function buildSecondLastArgInfo(
+    type: arkts.Identifier | undefined,
+    isFunctionCall: boolean
+): BuilderLambdaSecondLastArgInfo {
+    let isReusable: boolean | undefined;
+    let reuseId: string | undefined;
+    if (!isFunctionCall && !!type) {
+        const customComponentDecl = arkts.getDecl(type);
+        isReusable =
+            !!customComponentDecl &&
+            arkts.isClassDefinition(customComponentDecl) &&
+            customComponentDecl.annotations.some((anno) =>
+                isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE)
+            );
+        reuseId = isReusable ? type.name : undefined;
+    }
+    return { isFunctionCall, isReusable, reuseId };
+}
 
 /**
  * Used in finding "XXX" in BuilderLambda("XXX")
@@ -54,13 +94,8 @@ export function builderLambdaArgumentName(annotation: arkts.AnnotationUsage): st
     return property.value.str;
 }
 
-/**
- * Determine whether it is a custom component.
- *
- * @param node class declaration node
- */
-export function isBuilderLambda(node: arkts.AstNode, isExternal?: boolean): boolean {
-    const builderLambdaCall: arkts.AstNode | undefined = getDeclForBuilderLambda(node);
+export function isBuilderLambda(node: arkts.AstNode, nodeDecl?: arkts.AstNode | undefined): boolean {
+    const builderLambdaCall: arkts.AstNode | undefined = getDeclForBuilderLambda(node, nodeDecl);
     if (!builderLambdaCall) {
         return arkts.isCallExpression(node) && node.arguments.length > 0 && isBuilderLambda(node.arguments[0]);
     }
@@ -131,15 +166,12 @@ export function replaceBuilderLambdaDeclMethodName(name: string | undefined): st
     return undefined;
 }
 
-export function isBuilderLambdaMethodDecl(node: arkts.AstNode, isExternal?: boolean): boolean {
+export function isBuilderLambdaMethodDecl(node: arkts.AstNode): boolean {
     const builderLambdaMethodDecl: arkts.AstNode | undefined = getDeclForBuilderLambdaMethodDecl(node);
     return !!builderLambdaMethodDecl;
 }
 
-export function getDeclForBuilderLambdaMethodDecl(
-    node: arkts.AstNode,
-    isExternal?: boolean
-): arkts.AstNode | undefined {
+export function getDeclForBuilderLambdaMethodDecl(node: arkts.AstNode): arkts.AstNode | undefined {
     if (!node || !arkts.isMethodDefinition(node)) {
         return undefined;
     }
@@ -154,7 +186,10 @@ export function getDeclForBuilderLambdaMethodDecl(
     return undefined;
 }
 
-export function getDeclForBuilderLambda(node: arkts.AstNode, isExternal?: boolean): arkts.AstNode | undefined {
+export function getDeclForBuilderLambda(
+    node: arkts.AstNode,
+    nodeDecl?: arkts.AstNode | undefined
+): arkts.AstNode | undefined {
     if (!node || !arkts.isCallExpression(node)) {
         return undefined;
     }
@@ -179,15 +214,21 @@ export function getDeclForBuilderLambda(node: arkts.AstNode, isExternal?: boolea
         currNode = _node.object;
     }
 
-    if (isBuilderLambdaCall(node)) {
+    if (isBuilderLambdaCall(node, nodeDecl)) {
         return node;
     }
     return undefined;
 }
 
-export function isBuilderLambdaCall(node: arkts.CallExpression | arkts.Identifier): boolean {
-    const expr = arkts.isIdentifier(node) ? node : node.expression;
-    const decl = arkts.getDecl(expr);
+export function isBuilderLambdaCall(
+    node: arkts.CallExpression | arkts.Identifier,
+    nodeDecl?: arkts.AstNode | undefined
+): boolean {
+    let decl = nodeDecl;
+    if (decl === undefined) {
+        const expr = arkts.isIdentifier(node) ? node : node.expression;
+        decl = arkts.getDecl(expr);
+    }
 
     if (!decl) {
         return false;
@@ -278,6 +319,11 @@ export function findBuilderLambdaDecl(node: arkts.CallExpression | arkts.Identif
     if (!decl) {
         return undefined;
     }
+    const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+    if (!moduleName) {
+        return undefined;
+    }
+    DeclarationCollector.getInstance().collect(decl);
     return decl;
 }
 
@@ -301,12 +347,15 @@ export function findBuilderLambdaDeclInfo(decl: arkts.AstNode | undefined): Buil
     if (!decl) {
         return undefined;
     }
-
+    const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+    if (!moduleName) {
+        return undefined;
+    }
     if (arkts.isMethodDefinition(decl)) {
         const params = decl.scriptFunction.params.map((p) => p.clone());
         const returnType = decl.scriptFunction.returnTypeAnnotation?.clone();
         const isFunctionCall = isBuilderLambdaFunctionCall(decl);
-        return { isFunctionCall, params, returnType };
+        return { isFunctionCall, params, returnType, moduleName };
     }
 
     return undefined;
@@ -348,17 +397,17 @@ export function builderLambdaMethodDeclType(method: arkts.MethodDefinition): ark
     return method.scriptFunction.returnTypeAnnotation;
 }
 
-export function builderLambdaTypeName(leaf: arkts.CallExpression): string | undefined {
+export function builderLambdaType(leaf: arkts.CallExpression): arkts.Identifier | undefined {
     if (!callIsGoodForBuilderLambda(leaf)) {
         return undefined;
     }
     const node = leaf.expression;
-    let name: string | undefined;
+    let name: arkts.Identifier | undefined;
     if (arkts.isIdentifier(node)) {
-        name = node.name;
+        name = node;
     }
     if (arkts.isMemberExpression(node) && arkts.isIdentifier(node.object)) {
-        name = node.object.name;
+        name = node.object;
     }
     return name;
 }
@@ -382,58 +431,48 @@ export function builderLambdaFunctionName(node: arkts.CallExpression): string | 
 }
 
 /**
- * Determine whether the node `<type>` is `<bindableDecl>` bindable property.
- *
- * @param type type node
- * @param bindableDecl bindable decalaration name
- */
-export function hasBindableProperty(type: arkts.AstNode, bindableDecl: BindableDecl): boolean {
-    let res: boolean = false;
-    if (arkts.isETSUnionType(type)) {
-        type.types.forEach((item: arkts.TypeNode) => {
-            res = res || hasBindableProperty(item, bindableDecl);
-        });
-    }
-    if (arkts.isETSTypeReference(type)) {
-        res =
-            res ||
-            (!!type.part &&
-                !!type.part.name &&
-                arkts.isIdentifier(type.part.name) &&
-                type.part.name.name === bindableDecl);
-    }
-
-    return res;
-}
-
-/**
  * Determine whether `<value>` is `$$()` call expression node.
  *
  * @param value expression node
  */
-export function isDoubleDollarCall(value: arkts.Expression): boolean {
-    if (
-        arkts.isCallExpression(value) &&
-        value.expression &&
-        arkts.isIdentifier(value.expression) &&
-        value.expression.name
-    ) {
-        return value.expression.name === Dollars.DOLLAR_DOLLAR;
+export function isDoubleDollarCall(
+    value: arkts.Expression,
+    ignoreDecl: boolean = false
+): value is arkts.CallExpression {
+    if (!arkts.isCallExpression(value)) {
+        return false;
     }
-    return false;
+    if (
+        !(!!value.expression && arkts.isIdentifier(value.expression) && value.expression.name === Dollars.DOLLAR_DOLLAR)
+    ) {
+        return false;
+    }
+    if (!ignoreDecl) {
+        const decl = arkts.getDecl(value.expression);
+        if (!decl) {
+            return false;
+        }
+        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
+            return false;
+        }
+        DeclarationCollector.getInstance().collect(decl);
+    }
+    return true;
 }
 
 /**
- * get declaration type from `{xxx: <value>}` or `fun(<value>)`.
+ * get declaration type from function call argument `fun(<arg>)`.
  *
- * @param value type node
+ * @param arg first argument in call expression.
  */
-export function getDecalTypeFromValue(value: arkts.Expression): arkts.TypeNode {
-    const decl: arkts.AstNode | undefined = arkts.getDecl(value);
+export function getArgumentType(arg: arkts.Expression): arkts.TypeNode {
+    const isArrayElement = arkts.isMemberExpression(arg) && !!arg.property && arkts.isNumberLiteral(arg.property);
+    const decl: arkts.AstNode | undefined = arkts.getDecl(arg);
     if (!decl || !arkts.isClassProperty(decl)) {
         throw new Error('cannot get declaration');
     }
-    if (isArrayType(decl.typeAnnotation!)) {
+    if (isArrayElement) {
         return getElementTypeFromArray(decl.typeAnnotation!)!;
     }
     return decl.typeAnnotation!;
@@ -474,4 +513,35 @@ export function getElementTypeFromArray(arrayType: arkts.TypeNode): arkts.TypeNo
         return arrayType.part.typeParams.params[0].clone();
     }
     return undefined;
+}
+
+export function collectComponentAttributeImport(type: arkts.TypeNode | undefined, moduleName: string): void {
+    if (
+        !type ||
+        !arkts.isETSTypeReference(type) ||
+        !type.part ||
+        !type.part.name ||
+        !arkts.isIdentifier(type.part.name)
+    ) {
+        return;
+    }
+
+    const regex: RegExp = /(?<source>\w+Attribute)(?:<.*>)?$/;
+    const name: string = type.part.name.name;
+    const match: RegExpExecArray | null = regex.exec(name);
+    const attributeName: string | undefined = match?.groups?.source;
+    if (!!attributeName) {
+        ImportCollector.getInstance().collectSource(attributeName, moduleName);
+        ImportCollector.getInstance().collectImport(attributeName);
+    }
+}
+
+export function checkIsWithInIfConditionScope(statement: arkts.AstNode): boolean {
+    if (!statement.parent) {
+        return false;
+    }
+    if (arkts.isIfStatement(statement.parent)) {
+        return arkts.isBlockStatement(statement) || arkts.isIfStatement(statement);
+    }
+    return false;
 }

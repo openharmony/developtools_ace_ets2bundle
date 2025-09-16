@@ -15,6 +15,7 @@
 
 import { Expression, Property } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
+import { NodeCache } from '../utilities/nodeCache';
 import { attachModifiers, updateThenAttach } from '../utilities/private';
 
 export function updateProperty(original: Property, key?: Expression, value?: Expression): Property {
@@ -23,5 +24,10 @@ export function updateProperty(original: Property, key?: Expression, value?: Exp
     }
 
     const update = updateThenAttach(Property.updateProperty, attachModifiers);
-    return update(original, key, value);
+    const newNode = update(original, key, value);
+    if (NodeCache.getInstance().has(original)) {
+        NodeCache.getInstance().refresh(original, newNode);
+    }
+    return newNode;
+
 }

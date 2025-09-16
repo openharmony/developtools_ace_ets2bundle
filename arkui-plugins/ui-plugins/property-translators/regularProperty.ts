@@ -15,37 +15,44 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { createGetter, generateToRecord, generateThisBacking, createSetter2 } from './utils';
-import { PropertyTranslator } from './base';
+import { createGetter, generateToRecord, generateThisBacking, createSetter2, isCustomDialogController } from './utils';
+import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
-import { createOptionalClassProperty } from '../utils';
 import { backingField, expectName } from '../../common/arkts-utils';
 import { factory } from './factory';
+import { CustomComponentNames } from '../utils';
+import { PropertyCache } from './cache/propertyCache';
 
-export class regularPropertyTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
+export class RegularPropertyTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
-        this.cacheTranslatedInitializer(newName, originalName); // TODO: need to release cache after some point...
+        this.cacheTranslatedInitializer(newName, originalName);
         return this.translateWithoutInitializer(newName, originalName);
     }
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
-        const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
-        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
-        currentStructInfo.initializeBody.push(initializeStruct);
-        if (currentStructInfo.isReusable) {
-            const toRecord = generateToRecord(newName, originalName);
-            currentStructInfo.toRecordBody.push(toRecord);
+        const value = this.property.value ?? arkts.factory.createUndefinedLiteral();
+        let initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName, value);
+        if (
+            !!this.propertyType &&
+            !!this.structInfo.annotations.customdialog &&
+            isCustomDialogController(this.propertyType)
+        ) {
+            initializeStruct = this.generateControllerInit(originalName, initializeStruct);
         }
-        arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
+        PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
+        if (!!this.structInfo.annotations?.reusable) {
+            const toRecord = generateToRecord(newName, originalName);
+            PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);
+        }
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = createOptionalClassProperty(
+        const field: arkts.ClassProperty = factory.createOptionalClassProperty(
             newName,
             this.property,
-            '',
+            undefined,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
         const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
@@ -53,19 +60,15 @@ export class regularPropertyTranslator extends PropertyTranslator implements Ini
             arkts.factory.createAssignmentExpression(
                 thisValue,
                 arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                arkts.factory.createIdentifier('value'),
+                arkts.factory.createIdentifier('value')
             )
         );
         const getter: arkts.MethodDefinition = this.translateGetter(
             originalName,
-            this.property.typeAnnotation,
-            arkts.factory.createTSAsExpression(thisValue, this.property.typeAnnotation, false)
+            this.propertyType,
+            arkts.factory.createTSAsExpression(thisValue, this.propertyType, false)
         );
-        const setter: arkts.MethodDefinition = this.translateSetter(
-            originalName,
-            this.property.typeAnnotation,
-            thisSet
-        );
+        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
 
         return [field, getter, setter];
     }
@@ -86,13 +89,13 @@ export class regularPropertyTranslator extends PropertyTranslator implements Ini
         return createSetter2(originalName, typeAnnotation, statement);
     }
 
-    generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
+    generateInitializeStruct(newName: string, originalName: string, value: arkts.Expression): arkts.AstNode {
         const binaryItem = arkts.factory.createBinaryExpression(
             factory.createBlockStatementForOptionalExpression(
-                arkts.factory.createIdentifier('initializers'),
+                arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
                 originalName
             ),
-            this.property.value ?? arkts.factory.createUndefinedLiteral(),
+            value ?? arkts.factory.createUndefinedLiteral(),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         );
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
@@ -101,5 +104,25 @@ export class regularPropertyTranslator extends PropertyTranslator implements Ini
             binaryItem
         );
         return arkts.factory.createExpressionStatement(assign);
+    }
+
+    generateControllerInit(originalName: string, initializeStruct: arkts.AstNode): arkts.AstNode {
+        return arkts.factory.createIfStatement(
+            factory.createBlockStatementForOptionalExpression(
+                arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
+                originalName
+            ),
+            arkts.factory.createBlock([initializeStruct])
+        );
+    }
+}
+
+export class RegularInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+    translateProperty(): T {
+        return this.property;
+    }
+
+    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+        return true;
     }
 }

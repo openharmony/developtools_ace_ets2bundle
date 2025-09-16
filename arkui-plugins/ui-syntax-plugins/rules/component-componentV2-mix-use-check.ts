@@ -14,164 +14,176 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { PresetDecorators } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { PresetDecorators, getIdentifierName } from '../utils';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-// Report an Observed version violation error
-function reportObservedConflict(
-  node: arkts.ClassProperty,
-  context: UISyntaxRuleContext,
-  message: string
-): void {
-  node.annotations.forEach((anno) => {
-    if (anno.expr?.dumpSrc()) {
-      context.report({
-        node: anno,
-        message: message,
-        data: {
-          annotation: anno.expr?.dumpSrc(),
+const v1ComponentDecorators: string[] = [
+  PresetDecorators.STATE,
+  PresetDecorators.PROP_REF,
+  PresetDecorators.LINK,
+  PresetDecorators.PROVIDE,
+  PresetDecorators.CONSUME,
+  PresetDecorators.STORAGE_LINK,
+  PresetDecorators.STORAGE_PROP_REF,
+  PresetDecorators.LOCAL_STORAGE_LINK,
+];
+
+class ComponentComponentV2MixUseCheckRule extends AbstractUISyntaxRule {
+  private observedV2Names: Set<string> = new Set();
+
+  public setup(): Record<string, string> {
+    return {
+      observedv2_v1: `The type of the @{{annotation}} property cannot be a class decorated with '@ObservedV2'.`
+    };
+  }
+
+  public beforeTransform(): void {
+    this.observedV2Names = new Set();
+  }
+
+  public parsed(node: arkts.AstNode): void {
+    if (arkts.nodeType(node) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
+      this.findAllObserved(node);
+      this.findAllTSTypeAliasDeclaration(node);
+    }
+
+    if (arkts.isStructDeclaration(node)) {
+      this.processComponentAnnotations(node);
+    }
+  }
+
+  private findAllObserved(node: arkts.AstNode): void {
+    if (arkts.isClassDeclaration(node)) {
+      node.definition?.annotations.forEach((anno) => {
+        if (!anno.expr) {
+          return;
+        }
+
+        const annotationName = getIdentifierName(anno.expr);
+
+        if (annotationName === PresetDecorators.OBSERVED_V2) {
+          const componentV2Name = node.definition?.ident?.name;
+          componentV2Name ? this.observedV2Names.add(componentV2Name) : null;
         }
       });
     }
-  });
-}
 
-function processNode(
-  node: arkts.ClassProperty,
-  annotationName: string,
-  observedV1Name: Set<string>,
-  observedV2Name: Set<string>,
-  context: UISyntaxRuleContext
-): void {
-  const queue: Array<arkts.AstNode> = [node];
-  while (queue.length > 0) {
-    const currentNode: arkts.AstNode = queue.shift() as arkts.AstNode;
-    if (arkts.isIdentifier(currentNode)) {
-      if (observedV1Name.has(currentNode.dumpSrc()) && annotationName === PresetDecorators.COMPONENT_V2) {
-        reportObservedConflict(node, context, rule.messages.observedv1_v2);
-        break;
-      }
-      if (observedV2Name.has(currentNode.dumpSrc()) && annotationName === PresetDecorators.COMPONENT_V1) {
-        reportObservedConflict(node, context, rule.messages.observedv2_v1);
-        break;
-      }
-    }
-    const children = currentNode.getChildren();
-    for (const child of children) {
-      queue.push(child);
+    for (const child of node.getChildren()) {
+      this.findAllObserved(child);
     }
   }
-}
 
-function traverseTree(
-  node: arkts.AstNode,
-  annotationName: string,
-  observedV1Name: Set<string>,
-  observedV2Name: Set<string>,
-  context: UISyntaxRuleContext
-): void {
-  if (arkts.isClassProperty(node)) {
-    processNode(node, annotationName, observedV1Name, observedV2Name, context);
-  }
-  const children = node.getChildren();
-  for (const child of children) {
-    traverseTree(child, annotationName, observedV1Name, observedV2Name, context);
-  }
-}
-
-function findAllObserved(node: arkts.AstNode, observedV1Name: Set<string>, observedV2Name: Set<string>): void {
-  if (arkts.isClassDeclaration(node)) {
-    node.definition?.annotations.forEach((anno) => {
-      if (anno.expr?.dumpSrc() === PresetDecorators.OBSERVED_V1) {
-        const componentV1Name = node?.definition?.ident?.name;
-        componentV1Name ? observedV1Name.add(componentV1Name) : null;
+  private findAllTSTypeAliasDeclaration(node: arkts.AstNode): void {
+    if (
+      arkts.nodeType(node) ===
+      arkts.Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_ALIAS_DECLARATION
+    ) {
+      for (const child of node.getChildren()) {
+        if (arkts.isIdentifier(child)) {
+          const typeName = getIdentifierName(child);
+          this.findAllObservedType(node, typeName);
+        }
       }
-      if (anno.expr?.dumpSrc() === PresetDecorators.OBSERVED_V2) {
-        const componentV2Name = node?.definition?.ident?.name;
-        componentV2Name ? observedV2Name.add(componentV2Name) : null;
+    }
+
+    for (const child of node.getChildren()) {
+      this.findAllTSTypeAliasDeclaration(child);
+    }
+  }
+
+  private findAllObservedType(
+    node: arkts.AstNode,
+    typeName: string
+  ): void {
+    if (arkts.isIdentifier(node)) {
+      const name = getIdentifierName(node);
+
+      if (this.observedV2Names.has(name)) {
+        this.observedV2Names.add(typeName);
+      }
+    }
+
+    for (const child of node.getChildren()) {
+      this.findAllObservedType(child, typeName);
+    }
+  }
+
+  private processComponentAnnotations(
+    node: arkts.StructDeclaration
+  ): void {
+    node.definition.annotations.forEach((anno) => {
+      if (!anno.expr) {
+        return;
+      }
+      const annotationName = getIdentifierName(anno.expr);
+      if (
+        annotationName === PresetDecorators.COMPONENT_V2 ||
+        annotationName === PresetDecorators.COMPONENT_V1
+      ) {
+        this.traverseTree(node, annotationName);
       }
     });
   }
-  const children = node.getChildren();
-  for (const child of children) {
-    findAllObserved(child, observedV1Name, observedV2Name);
-  }
-}
 
-function findAllTSTypeAliasDeclaration(
-  node: arkts.AstNode,
-  observedV1Name: Set<string>,
-  observedV2Name: Set<string>
-): void {
-  if (arkts.nodeType(node) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_ALIAS_DECLARATION) {
-    node.getChildren().forEach((child) => {
-      if (arkts.isIdentifier(child)) {
-        const typeName = child.dumpSrc();
-        findAllObservedType(node, typeName, observedV1Name, observedV2Name);
+  private traverseTree(
+    node: arkts.AstNode,
+    annotationName: string
+  ): void {
+    if (arkts.isClassProperty(node)) {
+      this.processNode(node, annotationName);
+    }
+
+    for (const child of node.getChildren()) {
+      this.traverseTree(child, annotationName);
+    }
+  }
+
+  private processNode(
+    node: arkts.ClassProperty,
+    annotationName: string
+  ): void {
+    const queue: Array<arkts.AstNode> = [node];
+    while (queue.length > 0) {
+      const currentNode: arkts.AstNode = queue.shift() as arkts.AstNode;
+      if (arkts.isIdentifier(currentNode)) {
+        const name = getIdentifierName(currentNode);
+
+        if (
+          annotationName === PresetDecorators.COMPONENT_V1 &&
+          this.observedV2Names.has(name)
+        ) {
+          this.checkObservedConflict(node, v1ComponentDecorators);
+          break;
+        }
+      }
+      const children = currentNode.getChildren();
+      for (const child of children) {
+        queue.push(child);
+      }
+    }
+  }
+
+  private checkObservedConflict(
+    node: arkts.ClassProperty,
+    componentDecorators: string[]
+  ): void {
+    node.annotations.forEach((anno) => {
+      if (!anno.expr) {
+        return;
+      }
+
+      const annotationName = getIdentifierName(anno.expr);
+      if (annotationName && componentDecorators.includes(annotationName)) {
+        this.report({
+          node: anno,
+          message: this.messages.observedv2_v1,
+          data: {
+            annotation: annotationName,
+          },
+        });
       }
     });
   }
-  const children = node.getChildren();
-  for (const child of children) {
-    findAllTSTypeAliasDeclaration(child, observedV1Name, observedV2Name);
-  }
 }
 
-function findAllObservedType(
-  node: arkts.AstNode,
-  typeName: string,
-  observedV1Name: Set<string>,
-  observedV2Name: Set<string>
-): void {
-  if (arkts.isIdentifier(node) && observedV1Name.has(node.dumpSrc())) {
-    observedV1Name.add(typeName);
-  }
-  if (arkts.isIdentifier(node) && observedV2Name.has(node.dumpSrc())) {
-    observedV2Name.add(typeName);
-  }
-  const children = node.getChildren();
-  for (const child of children) {
-    findAllObservedType(child, typeName, observedV1Name, observedV2Name);
-  }
-}
-
-function processComponentAnnotations(
-  node: arkts.StructDeclaration,
-  observedV1Name: Set<string>,
-  observedV2Name: Set<string>,
-  context: UISyntaxRuleContext
-): void {
-  node?.definition?.annotations.forEach((anno) => {
-    if (anno.expr?.dumpSrc() === PresetDecorators.COMPONENT_V2) {
-      traverseTree(node, PresetDecorators.COMPONENT_V2, observedV1Name, observedV2Name, context);
-    }
-    if (anno.expr?.dumpSrc() === PresetDecorators.COMPONENT_V1) {
-      traverseTree(node, PresetDecorators.COMPONENT_V1, observedV1Name, observedV2Name, context);
-    }
-  });
-}
-
-const rule: UISyntaxRule = {
-  name: 'component-componentV2-mix-use-check',
-  messages: {
-    observedv1_v2: `The type of the @{{annotation}} Decorator property can not be a class decorated with @Observed.`,
-    observedv2_v1: `The type of the @{{annotation}} Decorator property can not be a class decorated with @ObservedV2.`
-  },
-  setup(context) {
-    let observedV1Name: Set<string> = new Set();
-    let observedV2Name: Set<string> = new Set();
-    return {
-      parsed: (node): void => {
-        if (arkts.nodeType(node) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
-          findAllObserved(node, observedV1Name, observedV2Name);
-          findAllTSTypeAliasDeclaration(node, observedV1Name, observedV2Name);
-        }
-        if (arkts.isStructDeclaration(node)) {
-          processComponentAnnotations(node, observedV1Name, observedV2Name, context);
-        }
-      },
-    };
-  },
-};
-
-export default rule;
+export default ComponentComponentV2MixUseCheckRule;

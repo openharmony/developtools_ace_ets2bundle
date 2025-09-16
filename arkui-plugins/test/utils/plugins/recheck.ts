@@ -23,7 +23,7 @@ export const recheck: Plugins = {
     name: 'recheck',
     checked(this: PluginContext): arkts.EtsScript | undefined {
         let script: arkts.EtsScript | undefined;
-        const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+        const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
             script = program.astNode;

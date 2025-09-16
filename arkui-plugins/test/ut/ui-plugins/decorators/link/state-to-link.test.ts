@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,46 +38,70 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
+import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
+import { LinkSourceType as LinkSourceType } from "arkui.stateManagement.decorator";
+
+import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
-import { StateDecoratedVariable as StateDecoratedVariable } from "@ohos.arkui.stateManagement";
-import { DecoratedV1VariableBase as DecoratedV1VariableBase } from "@ohos.arkui.stateManagement";
-import { LinkDecoratedVariable as LinkDecoratedVariable } from "@ohos.arkui.stateManagement";
-import { UIDatePickerAttribute as UIDatePickerAttribute } from "@ohos.arkui.component";
-import { UIButtonAttribute as UIButtonAttribute } from "@ohos.arkui.component";
-import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
+
+import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
+
+import { NavInterface as NavInterface } from "arkui.UserView";
+
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
+
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { Component as Component, Entry as Entry, Column as Column, Button as Button, DatePicker as DatePicker, ClickEvent as ClickEvent } from "@ohos.arkui.component";
+
 import { Link as Link, State as State } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@Component({freezeWhenInactive:false}) final class DateComponent extends CustomComponent<DateComponent, __Options_DateComponent> {
-  public __initializeStruct(initializers: __Options_DateComponent | undefined, @memo() content: (()=> void) | undefined): void {
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/link/state-to-link",
+  pageFullPath: "test/demo/mock/decorators/link/state-to-link",
+  integratedHsp: "false",
+  } as NavInterface));
+
+@Component() final struct DateComponent extends CustomComponent<DateComponent, __Options_DateComponent> {
+  public __initializeStruct(initializers: (__Options_DateComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___164314175 = initializers;
     (((gensym___164314175) == (null)) ? undefined : gensym___164314175.__backing_selectedDate)})) {
-      this.__backing_selectedDate = new LinkDecoratedVariable<Date>("selectedDate", initializers!.__backing_selectedDate!);
+      this.__backing_selectedDate = STATE_MGMT_FACTORY.makeLink<Date>(this, "selectedDate", initializers!.__backing_selectedDate!);
     };
   }
-  public __updateStruct(initializers: __Options_DateComponent | undefined): void {}
-  private __backing_selectedDate?: LinkDecoratedVariable<Date>;
+
+  public __updateStruct(initializers: (__Options_DateComponent | undefined)): void {}
+
+  private __backing_selectedDate?: ILinkDecoratedVariable<Date>;
+
   public get selectedDate(): Date {
     return this.__backing_selectedDate!.get();
   }
+
   public set selectedDate(value: Date) {
     this.__backing_selectedDate!.set(value);
   }
-  @memo() public _build(@memo() style: ((instance: DateComponent)=> DateComponent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_DateComponent | undefined): void {
-    Column(undefined, undefined, (() => {
-      Button(@memo() ((instance: UIButtonAttribute): void => {
+
+  @memo() public build() {
+    Column(undefined, undefined, @memo() (() => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.selectedDate.setFullYear(((this.selectedDate.getFullYear()) + (1)));
         }));
         return;
       }), "child increase the year by 1", undefined, undefined);
-      Button(@memo() ((instance: UIButtonAttribute): void => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.margin(10).onClick(((e: ClickEvent) => {
           this.selectedDate = new Date("2023-09-09");
         }));
@@ -89,32 +114,38 @@ function main() {}
       }, undefined);
     }));
   }
+
   public constructor() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> {
-  public __initializeStruct(initializers: __Options_ParentComponent | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_parentSelectedDate = new StateDecoratedVariable<Date>("parentSelectedDate", ((({let gensym___80922148 = initializers;
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_ParentComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_parentSelectedDate = STATE_MGMT_FACTORY.makeState<Date>(this, "parentSelectedDate", ((({let gensym___80922148 = initializers;
     (((gensym___80922148) == (null)) ? undefined : gensym___80922148.parentSelectedDate)})) ?? (new Date("2021-08-08"))));
   }
-  public __updateStruct(initializers: __Options_ParentComponent | undefined): void {}
-  private __backing_parentSelectedDate?: StateDecoratedVariable<Date>;
+
+  public __updateStruct(initializers: (__Options_ParentComponent | undefined)): void {}
+
+  private __backing_parentSelectedDate?: IStateDecoratedVariable<Date>;
+
   public get parentSelectedDate(): Date {
     return this.__backing_parentSelectedDate!.get();
   }
+
   public set parentSelectedDate(value: Date) {
     this.__backing_parentSelectedDate!.set(value);
   }
-  @memo() public _build(@memo() style: ((instance: ParentComponent)=> ParentComponent) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_ParentComponent | undefined): void {
-    Column(undefined, undefined, (() => {
-      Button(@memo() ((instance: UIButtonAttribute): void => {
+
+  @memo() public build() {
+    Column(undefined, undefined, @memo() (() => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.margin(10).onClick(((e: ClickEvent) => {
           this.parentSelectedDate.setMonth(((this.parentSelectedDate.getMonth()) + (1)));
         }));
         return;
       }), "parent increase the month by 1", undefined, undefined);
-      Button(@memo() ((instance: UIButtonAttribute): void => {
+      Button(@memo() ((instance: ButtonAttribute): void => {
         instance.margin(10).onClick(((e: ClickEvent) => {
           this.parentSelectedDate = new Date("2023-07-07");
         }));
@@ -127,26 +158,36 @@ function main() {}
       }, undefined);
       DateComponent._instantiateImpl(undefined, (() => {
         return new DateComponent();
-      }), ({
+      }), {
         __backing_selectedDate: this.__backing_parentSelectedDate,
-      } as __Options_DateComponent), undefined, undefined);
+      }, undefined, undefined);
     }));
   }
+
   public constructor() {}
+
 }
 
-interface __Options_DateComponent {
-  set selectedDate(selectedDate: Date | undefined)
-  get selectedDate(): Date | undefined
-  set __backing_selectedDate(__backing_selectedDate: DecoratedV1VariableBase<Date> | undefined)
-  get __backing_selectedDate(): DecoratedV1VariableBase<Date> | undefined
+@Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
+
+@Component() export interface __Options_DateComponent {
+  @__Link_intrinsic() set selectedDate(selectedDate: (Date | undefined))
+
+  @__Link_intrinsic() get selectedDate(): (Date | undefined)
+  set __backing_selectedDate(__backing_selectedDate: (LinkSourceType<Date> | undefined))
+
+  get __backing_selectedDate(): (LinkSourceType<Date> | undefined)
+
 }
 
-interface __Options_ParentComponent {
-  set parentSelectedDate(parentSelectedDate: Date | undefined)
-  get parentSelectedDate(): Date | undefined
-  set __backing_parentSelectedDate(__backing_parentSelectedDate: StateDecoratedVariable<Date> | undefined)
-  get __backing_parentSelectedDate(): StateDecoratedVariable<Date> | undefined
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_ParentComponent {
+  set parentSelectedDate(parentSelectedDate: (Date | undefined))
+
+  get parentSelectedDate(): (Date | undefined)
+  set __backing_parentSelectedDate(__backing_parentSelectedDate: (IStateDecoratedVariable<Date> | undefined))
+
+  get __backing_parentSelectedDate(): (IStateDecoratedVariable<Date> | undefined)
+
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -155,7 +196,9 @@ class __EntryWrapper extends EntryPoint {
       return new ParentComponent();
     }), undefined, undefined, undefined);
   }
+
   public constructor() {}
+
 }
 `;
 
@@ -165,9 +208,9 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Link decorated variables passing',
-    [parsedTransform, uiNoRecheck],
+    [parsedTransform, uiNoRecheck, recheck],
     {
-        checked: [testParsedAndCheckedTransformer],
+        'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },
     {
         stopAfter: 'checked',

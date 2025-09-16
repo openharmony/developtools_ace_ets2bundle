@@ -26,7 +26,7 @@ import {
     nodeByType,
     ArktsObject,
     unpackString,
-    Es2pandaAstNodeType
+    Es2pandaAstNodeType,
 } from '../../reexport-for-generated';
 import { BlockStatement } from './BlockStatement';
 import { CatchClause } from './CatchClause';

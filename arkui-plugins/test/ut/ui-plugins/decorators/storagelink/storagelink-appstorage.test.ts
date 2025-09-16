@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,24 +38,15 @@ const storageLinkTransform: Plugins = {
 const pluginTester = new PluginTester('test storagelink with appstorage', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
-
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 import { memo as memo } from "arkui.stateManagement.runtime";
-
-import { StorageLinkDecoratedVariable as StorageLinkDecoratedVariable } from "@ohos.arkui.stateManagement";
-
-import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
-
-import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
-
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+import { NavInterface as NavInterface } from "arkui.UserView";
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 import { EntryPoint as EntryPoint } from "arkui.UserView";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
 import { Component as Component, Entry as Entry, Column as Column, Text as Text, ClickEvent as ClickEvent } from "@ohos.arkui.component";
-
 import { StorageLink as StorageLink, AppStorage as AppStorage } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -62,24 +54,30 @@ function main() {}
 AppStorage.setOrCreate("PropA", 47);
 AppStorage.setOrCreate("PropB", new Data(50));
 
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/storagelink/storagelink-appstorage",
+  pageFullPath: "test/demo/mock/decorators/storagelink/storagelink-appstorage",
+  integratedHsp: "false",
+  } as NavInterface));
+
 class Data {
   public code: number;
-  
   public constructor(code: number) {
     this.code = code;
   }
-  
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class Index extends CustomComponent<Index, __Options_Index> {
-  public __initializeStruct(initializers: __Options_Index | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_storageLink = new StorageLinkDecoratedVariable<number>("PropA", "storageLink", 1)
-    this.__backing_storageLinkObject = new StorageLinkDecoratedVariable<Data>("PropB", "storageLinkObject", new Data(1))
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_storageLink = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "PropA", "storageLink", 1)
+    this.__backing_storageLinkObject = STATE_MGMT_FACTORY.makeStorageLink<Data>(this, "PropB", "storageLinkObject", new Data(1))
   }
   
-  public __updateStruct(initializers: __Options_Index | undefined): void {}
+  public __updateStruct(initializers: (__Options_Index | undefined)): void {}
   
-  private __backing_storageLink?: StorageLinkDecoratedVariable<number>;
+  private __backing_storageLink?: IStorageLinkDecoratedVariable<number>;
   
   public get storageLink(): number {
     return this.__backing_storageLink!.get();
@@ -89,7 +87,7 @@ class Data {
     this.__backing_storageLink!.set(value);
   }
   
-  private __backing_storageLinkObject?: StorageLinkDecoratedVariable<Data>;
+  private __backing_storageLinkObject?: IStorageLinkDecoratedVariable<Data>;
   
   public get storageLinkObject(): Data {
     return this.__backing_storageLinkObject!.get();
@@ -99,15 +97,15 @@ class Data {
     this.__backing_storageLinkObject!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: Index)=> Index) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_Index | undefined): void {
-    Column(undefined, undefined, (() => {
-      Text(@memo() ((instance: UITextAttribute): void => {
+  @memo() public build() {
+    Column(undefined, undefined, @memo() (() => {
+      Text(@memo() ((instance: TextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.storageLink += 1;
         }));
         return;
       }), \`From AppStorage \${this.storageLink}\`, undefined, undefined);
-      Text(@memo() ((instance: UITextAttribute): void => {
+      Text(@memo() ((instance: TextAttribute): void => {
         instance.onClick(((e: ClickEvent) => {
           this.storageLinkObject.code += 1;
         }));
@@ -120,19 +118,19 @@ class Data {
   
 }
 
-interface __Options_Index {
-  set storageLink(storageLink: number | undefined)
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
+  set storageLink(storageLink: (number | undefined))
   
-  get storageLink(): number | undefined
-  set __backing_storageLink(__backing_storageLink: StorageLinkDecoratedVariable<number> | undefined)
+  get storageLink(): (number | undefined)
+  set __backing_storageLink(__backing_storageLink: (IStorageLinkDecoratedVariable<number> | undefined))
   
-  get __backing_storageLink(): StorageLinkDecoratedVariable<number> | undefined
-  set storageLinkObject(storageLinkObject: Data | undefined)
+  get __backing_storageLink(): (IStorageLinkDecoratedVariable<number> | undefined)
+  set storageLinkObject(storageLinkObject: (Data | undefined))
   
-  get storageLinkObject(): Data | undefined
-  set __backing_storageLinkObject(__backing_storageLinkObject: StorageLinkDecoratedVariable<Data> | undefined)
+  get storageLinkObject(): (Data | undefined)
+  set __backing_storageLinkObject(__backing_storageLinkObject: (IStorageLinkDecoratedVariable<Data> | undefined))
   
-  get __backing_storageLinkObject(): StorageLinkDecoratedVariable<Data> | undefined
+  get __backing_storageLinkObject(): (IStorageLinkDecoratedVariable<Data> | undefined)
   
 }
 
@@ -154,9 +152,9 @@ function testStorageLinkTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test storagelink with appstorage',
-    [storageLinkTransform, uiNoRecheck],
+    [storageLinkTransform, uiNoRecheck, recheck],
     {
-        checked: [testStorageLinkTransformer],
+        'checked:ui-no-recheck': [testStorageLinkTransformer],
     },
     {
         stopAfter: 'checked',

@@ -38,6 +38,10 @@ export function updateTSInterfaceDeclaration(
         return original;
     }
 
-    const update = updateThenAttach(TSInterfaceDeclaration.updateTSInterfaceDeclaration, attachModifiers);
+    const update = updateThenAttach(
+        TSInterfaceDeclaration.updateTSInterfaceDeclaration,
+        attachModifiers,
+        (node: TSInterfaceDeclaration, original: TSInterfaceDeclaration) => node.setAnnotations(original.annotations)
+    );
     return update(original, _extends, id, typeParams, body, isStatic, isExternal);
 }

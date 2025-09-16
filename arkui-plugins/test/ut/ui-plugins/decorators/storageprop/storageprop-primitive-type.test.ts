@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,15 +38,18 @@ const storagePropTransform: Plugins = {
 const pluginTester = new PluginTester('test storageprop primitive type transform', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { StoragePropDecoratedVariable as StoragePropDecoratedVariable } from "@ohos.arkui.stateManagement";
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
+import { IStoragePropRefDecoratedVariable as IStoragePropRefDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { NavInterface as NavInterface } from "arkui.UserView";
+
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
+
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -55,18 +59,24 @@ import { StorageProp as StorageProp } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/storageprop/storageprop-primitive-type",
+  pageFullPath: "test/demo/mock/decorators/storageprop/storageprop-primitive-type",
+  integratedHsp: "false",
+  } as NavInterface));
 
-
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_numB = new StoragePropDecoratedVariable<number>("Prop1", "numB", 43)
-    this.__backing_stringB = new StoragePropDecoratedVariable<string>("Prop2", "stringB", "BB")
-    this.__backing_booleanB = new StoragePropDecoratedVariable<boolean>("Prop3", "booleanB", false)
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_numB = STATE_MGMT_FACTORY.makeStoragePropRef<number>(this, "Prop1", "numB", 43)
+    this.__backing_stringB = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "Prop2", "stringB", "BB")
+    this.__backing_booleanB = STATE_MGMT_FACTORY.makeStoragePropRef<boolean>(this, "Prop3", "booleanB", false)
   }
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
-  private __backing_numB?: StoragePropDecoratedVariable<number>;
+  private __backing_numB?: IStoragePropRefDecoratedVariable<number>;
   
   public get numB(): number {
     return this.__backing_numB!.get();
@@ -76,7 +86,7 @@ function main() {}
     this.__backing_numB!.set(value);
   }
   
-  private __backing_stringB?: StoragePropDecoratedVariable<string>;
+  private __backing_stringB?: IStoragePropRefDecoratedVariable<string>;
   
   public get stringB(): string {
     return this.__backing_stringB!.get();
@@ -86,7 +96,7 @@ function main() {}
     this.__backing_stringB!.set(value);
   }
   
-  private __backing_booleanB?: StoragePropDecoratedVariable<boolean>;
+  private __backing_booleanB?: IStoragePropRefDecoratedVariable<boolean>;
   
   public get booleanB(): boolean {
     return this.__backing_booleanB!.get();
@@ -96,31 +106,31 @@ function main() {}
     this.__backing_booleanB!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: MyStateSample)=> MyStateSample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MyStateSample | undefined): void {}
+  @memo() public build() {}
   
   public constructor() {}
   
 }
 
-interface __Options_MyStateSample {
-  set numB(numB: number | undefined)
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
+  set numB(numB: (number | undefined))
   
-  get numB(): number | undefined
-  set __backing_numB(__backing_numB: StoragePropDecoratedVariable<number> | undefined)
+  get numB(): (number | undefined)
+  set __backing_numB(__backing_numB: (IStoragePropRefDecoratedVariable<number> | undefined))
   
-  get __backing_numB(): StoragePropDecoratedVariable<number> | undefined
-  set stringB(stringB: string | undefined)
+  get __backing_numB(): (IStoragePropRefDecoratedVariable<number> | undefined)
+  set stringB(stringB: (string | undefined))
   
-  get stringB(): string | undefined
-  set __backing_stringB(__backing_stringB: StoragePropDecoratedVariable<string> | undefined)
+  get stringB(): (string | undefined)
+  set __backing_stringB(__backing_stringB: (IStoragePropRefDecoratedVariable<string> | undefined))
   
-  get __backing_stringB(): StoragePropDecoratedVariable<string> | undefined
-  set booleanB(booleanB: boolean | undefined)
+  get __backing_stringB(): (IStoragePropRefDecoratedVariable<string> | undefined)
+  set booleanB(booleanB: (boolean | undefined))
   
-  get booleanB(): boolean | undefined
-  set __backing_booleanB(__backing_booleanB: StoragePropDecoratedVariable<boolean> | undefined)
+  get booleanB(): (boolean | undefined)
+  set __backing_booleanB(__backing_booleanB: (IStoragePropRefDecoratedVariable<boolean> | undefined))
   
-  get __backing_booleanB(): StoragePropDecoratedVariable<boolean> | undefined
+  get __backing_booleanB(): (IStoragePropRefDecoratedVariable<boolean> | undefined)
   
 }
 
@@ -142,9 +152,9 @@ function testStoragePropTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test storageprop primitive type transform',
-    [storagePropTransform, uiNoRecheck],
+    [storagePropTransform, uiNoRecheck, recheck],
     {
-        checked: [testStoragePropTransformer],
+        'checked:ui-no-recheck': [testStoragePropTransformer],
     },
     {
         stopAfter: 'checked',

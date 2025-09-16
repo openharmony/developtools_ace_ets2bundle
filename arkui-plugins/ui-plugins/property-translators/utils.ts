@@ -14,45 +14,99 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { annotation } from '../../common/arkts-utils';
-import { factory } from './factory';
+import { ImportCollector } from '../../common/import-collector';
+import { isDecoratorAnnotation } from '../../common/arkts-utils';
+import {
+    DecoratorIntrinsicNames,
+    DecoratorNames,
+    StateManagementTypes,
+    GetSetTypes,
+    ObservedNames,
+} from '../../common/predefines';
+import {
+    addMemoAnnotation,
+    findCanAddMemoFromParameter,
+    findCanAddMemoFromTypeAnnotation,
+} from '../../collectors/memo-collectors/utils';
+import { CustomDialogNames } from '../utils';
+import { ReturnTransformer } from './return-transformer';
 
-export enum DecoratorNames {
-    STATE = 'State',
-    STORAGE_LINK = 'StorageLink',
-    STORAGE_PROP = 'StorageProp',
-    LINK = 'Link',
-    PROP = 'Prop',
-    PROVIDE = 'Provide',
-    CONSUME = 'Consume',
-    OBJECT_LINK = 'ObjectLink',
-    OBSERVED = 'Observed',
-    WATCH = 'Watch',
-    BUILDER_PARAM = 'BuilderParam',
-    BUILDER = 'Builder',
-    CUSTOM_DIALOG = 'CustomDialog',
-    LOCAL_STORAGE_PROP = 'LocalStorageProp',
-    LOCAL_STORAGE_LINK = 'LocalStorageLink',
-    REUSABLE = 'Reusable',
-    TRACK = 'Track',
+export interface DecoratorInfo {
+    annotation: arkts.AnnotationUsage;
+    name: DecoratorNames;
 }
 
-export function collectPropertyDecorators(property: arkts.ClassProperty): string[] {
-    const properties: string[] = [];
-    property.annotations.forEach((anno) => {
-        if (!!anno.expr && arkts.isIdentifier(anno.expr)) {
-            properties.push(anno.expr.name);
-        }
-    });
-    return properties;
+export interface OptionalMemberInfo {
+    isCall?: boolean;
+    isNumeric?: boolean;
 }
 
-export function isDecoratorAnnotation(anno: arkts.AnnotationUsage, decoratorName: DecoratorNames): boolean {
+export function isDecoratorIntrinsicAnnotation(
+    anno: arkts.AnnotationUsage,
+    decoratorName: DecoratorIntrinsicNames
+): boolean {
     return !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName;
 }
 
-export function hasDecorator(
+export function removeDecorator(
     property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition,
+    decoratorName: DecoratorNames,
+    ignoreDecl?: boolean
+): void {
+    if (arkts.isMethodDefinition(property)) {
+        property.scriptFunction.setAnnotations(
+            property.scriptFunction.annotations.filter(
+                (anno) => !isDecoratorAnnotation(anno, decoratorName, ignoreDecl)
+            )
+        );
+    } else {
+        property.setAnnotations(
+            property.annotations.filter((anno) => !isDecoratorAnnotation(anno, decoratorName, ignoreDecl))
+        );
+    }
+}
+
+export function getGetterReturnType(method: arkts.MethodDefinition): arkts.TypeNode | undefined {
+    const body = method.scriptFunction.body;
+    if (!body || !arkts.isBlockStatement(body) || body.statements.length <= 0) {
+        return undefined;
+    }
+    let returnType: arkts.TypeNode | undefined = undefined;
+    const returnTransformer = new ReturnTransformer();
+    returnTransformer.visitor(body);
+    const typeArray = returnTransformer.types;
+    if (typeArray.length <= 0) {
+        returnType = undefined;
+    } else if (typeArray.length === 1) {
+        returnType = typeArray.at(0);
+    } else {
+        returnType = arkts.factory.createUnionType(typeArray);
+    }
+    returnTransformer.reset();
+    return returnType?.clone();
+}
+
+/**
+ * checking whether astNode's annotations contain given corresponding decorator name,
+ * regardless where the annotation's declaration is from arkui declaration files.
+ */
+export function hasDecoratorName(
+    property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition,
+    decoratorName: DecoratorNames
+): boolean {
+    if (arkts.isMethodDefinition(property)) {
+        return property.scriptFunction.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName, true));
+    }
+    return property.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName, true));
+}
+
+export function hasDecorator(
+    property:
+        | arkts.ClassProperty
+        | arkts.ClassDefinition
+        | arkts.MethodDefinition
+        | arkts.ETSParameterExpression
+        | arkts.ETSFunctionType,
     decoratorName: DecoratorNames
 ): boolean {
     if (arkts.isMethodDefinition(property)) {
@@ -68,34 +122,54 @@ export function hasDecorator(
  */
 export function needDefiniteOrOptionalModifier(st: arkts.ClassProperty): boolean {
     return (
-        hasDecorator(st, DecoratorNames.LINK) ||
-        hasDecorator(st, DecoratorNames.CONSUME) ||
-        hasDecorator(st, DecoratorNames.OBJECT_LINK) ||
-        (hasDecorator(st, DecoratorNames.PROP) && !st.value)
+        hasDecoratorName(st, DecoratorNames.LINK) ||
+        hasDecoratorName(st, DecoratorNames.CONSUME) ||
+        hasDecoratorName(st, DecoratorNames.OBJECT_LINK) ||
+        (hasDecoratorName(st, DecoratorNames.PROP) && !st.value) ||
+        (hasDecoratorName(st, DecoratorNames.PROP_REF) && !st.value) ||
+        (hasDecoratorName(st, DecoratorNames.PARAM) && !st.value) ||
+        (hasDecoratorName(st, DecoratorNames.EVENT) && !st.value) ||
+        (hasDecoratorName(st, DecoratorNames.REQUIRE) && !st.value)
     );
 }
 
-export function getStateManagementType(node: arkts.ClassProperty): string {
-    if (hasDecorator(node, DecoratorNames.STATE)) {
-        return 'StateDecoratedVariable';
-    } else if (hasDecorator(node, DecoratorNames.LINK)) {
-        return 'DecoratedV1VariableBase';
-    } else if (hasDecorator(node, DecoratorNames.PROP)) {
-        return 'PropDecoratedVariable';
-    } else if (hasDecorator(node, DecoratorNames.STORAGE_LINK)) {
-        return 'StorageLinkDecoratedVariable';
-    } else if (hasDecorator(node, DecoratorNames.STORAGE_PROP)) {
-        return 'StoragePropDecoratedVariable';
-    } else if (hasDecorator(node, DecoratorNames.PROVIDE)) {
-        return 'ProvideDecoratedVariable';
-    } else if (hasDecorator(node, DecoratorNames.CONSUME)) {
-        return 'ConsumeDecoratedVariable';
-    } else if (hasDecorator(node, DecoratorNames.OBJECT_LINK)) {
-        return 'ObjectLinkDecoratedVariable';
-    } else if (hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP)) {
-        return 'SyncedProperty';
+export function findDecoratorByName(
+    property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition,
+    decoratorName: DecoratorNames
+): arkts.AnnotationUsage | undefined {
+    if (arkts.isMethodDefinition(property)) {
+        return property.scriptFunction.annotations.find((anno) => isDecoratorAnnotation(anno, decoratorName, true));
     }
-    return 'MutableState';
+    return property.annotations.find((anno) => isDecoratorAnnotation(anno, decoratorName, true));
+}
+
+export function findDecorator(
+    property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition,
+    decoratorName: DecoratorNames
+): arkts.AnnotationUsage | undefined {
+    if (arkts.isMethodDefinition(property)) {
+        return property.scriptFunction.annotations.find((anno) => isDecoratorAnnotation(anno, decoratorName));
+    }
+    return property.annotations.find((anno) => isDecoratorAnnotation(anno, decoratorName));
+}
+
+export function findDecoratorInfos(
+    property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition
+): DecoratorInfo[] {
+    const decoratorNames = Object.values(DecoratorNames);
+    const infos: DecoratorInfo[] = [];
+    for (let i = 0; i < decoratorNames.length; i++) {
+        const name = decoratorNames[i];
+        const annotation: arkts.AnnotationUsage | undefined = findDecoratorByName(property, name);
+        if (!!annotation) {
+            infos.push({ annotation, name });
+        }
+    }
+    return infos;
+}
+
+export function collectStateManagementTypeImport(type: StateManagementTypes): void {
+    ImportCollector.getInstance().collectImport(type);
 }
 
 export function createGetter(
@@ -103,23 +177,27 @@ export function createGetter(
     type: arkts.TypeNode | undefined,
     returns: arkts.Expression,
     needMemo: boolean = false,
+    isStatic: boolean = false
 ): arkts.MethodDefinition {
     const returnType: arkts.TypeNode | undefined = type?.clone();
-    if (needMemo) {
-        returnType?.setAnnotations([annotation('memo')]);
+    if (needMemo && findCanAddMemoFromTypeAnnotation(returnType)) {
+        addMemoAnnotation(returnType);
     }
     const body = arkts.factory.createBlock([arkts.factory.createReturnStatement(returns)]);
+    const modifiers = isStatic
+        ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
+        : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
     const scriptFunction = arkts.factory.createScriptFunction(
         body,
         arkts.FunctionSignature.createFunctionSignature(undefined, [], returnType, false),
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+        modifiers
     );
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET,
         arkts.factory.createIdentifier(name),
         scriptFunction,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+        modifiers,
         false
     );
 }
@@ -144,8 +222,8 @@ export function createSetter(
         arkts.factory.createIdentifier('value', type?.clone()),
         undefined
     );
-    if (needMemo) {
-        param.annotations = [annotation('memo')];
+    if (needMemo && findCanAddMemoFromParameter(param)) {
+        addMemoAnnotation(param);
     }
     const scriptFunction = arkts.factory.createScriptFunction(
         body,
@@ -166,25 +244,29 @@ export function createSetter(
 export function createSetter2(
     name: string,
     type: arkts.TypeNode | undefined,
-    statement: arkts.AstNode
+    statement: arkts.AstNode,
+    isStatic: boolean = false
 ): arkts.MethodDefinition {
     const body = arkts.factory.createBlock([statement]);
     const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
         arkts.factory.createIdentifier('value', type?.clone()),
         undefined
     );
+    const modifiers = isStatic
+        ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
+        : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
     const scriptFunction = arkts.factory.createScriptFunction(
         body,
         arkts.FunctionSignature.createFunctionSignature(undefined, [param], undefined, false),
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_SETTER,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+        modifiers
     );
 
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET,
         arkts.factory.createIdentifier(name),
         scriptFunction,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+        modifiers,
         false
     );
 }
@@ -297,16 +379,7 @@ function getDifferentAnnoTypeValue(value: arkts.Expression): string | boolean {
     return value.dumpSrc();
 }
 
-export function judgeIfAddWatchFunc(args: arkts.Expression[], property: arkts.ClassProperty): void {
-    if (hasDecorator(property, DecoratorNames.WATCH)) {
-        const watchStr: string | undefined = getValueInAnnotation(property, DecoratorNames.WATCH);
-        if (watchStr) {
-            args.push(factory.createWatchCallback(watchStr));
-        }
-    }
-}
-
-export function generateGetOrSetCall(beforCall: arkts.AstNode, type: string) {
+export function generateGetOrSetCall(beforCall: arkts.AstNode, type: GetSetTypes) {
     return arkts.factory.createCallExpression(
         arkts.factory.createMemberExpression(
             beforCall,
@@ -343,25 +416,65 @@ export function generateToRecord(newName: string, originalName: string): arkts.P
     );
 }
 
-export function getStageManagementIdent(property: arkts.ClassProperty): string {
-    const useMutableState: boolean =
-        hasDecorator(property, DecoratorNames.STATE) ||
-        hasDecorator(property, DecoratorNames.STORAGE_LINK) ||
-        hasDecorator(property, DecoratorNames.PROVIDE) ||
-        hasDecorator(property, DecoratorNames.CONSUME) ||
-        hasDecorator(property, DecoratorNames.LINK) ||
-        hasDecorator(property, DecoratorNames.LOCAL_STORAGE_LINK) ||
-        hasDecorator(property, DecoratorNames.LINK);
-    const useSyncedProperty: boolean =
-        hasDecorator(property, DecoratorNames.PROP) ||
-        hasDecorator(property, DecoratorNames.STORAGE_PROP) ||
-        hasDecorator(property, DecoratorNames.LOCAL_STORAGE_PROP) ||
-        hasDecorator(property, DecoratorNames.OBJECT_LINK);
-    if (useMutableState) {
-        return 'MutableState';
-    } else if (useSyncedProperty) {
-        return 'SyncedProperty';
-    } else {
-        return '';
+export function isCustomDialogController(type: arkts.TypeNode): boolean {
+    if (arkts.isETSUnionType(type)) {
+        return !!type.types.find((item: arkts.TypeNode) => {
+            return isCustomDialogController(item);
+        });
     }
+    return (
+        !!arkts.isETSTypeReference(type) &&
+        !!type.part &&
+        !!type.part.name &&
+        arkts.isIdentifier(type.part.name) &&
+        type.part.name.name === CustomDialogNames.CUSTOM_DIALOG_CONTROLLER
+    );
+}
+
+export function removeImplementProperty(originalName: string): string {
+    const prefix = ObservedNames.PROPERTY_PREFIX;
+    return originalName.substring(prefix.length);
+}
+
+export function getValueInMonitorAnnotation(annotations: readonly arkts.AnnotationUsage[]): string[] | undefined {
+    const monitorAnno: arkts.AnnotationUsage | undefined = annotations.find((anno: arkts.AnnotationUsage) => {
+        return (
+            anno.expr &&
+            arkts.isIdentifier(anno.expr) &&
+            anno.expr.name === DecoratorNames.MONITOR &&
+            anno.properties.length === 1
+        );
+    });
+    if (!monitorAnno) {
+        return undefined;
+    }
+    return getArrayFromAnnoProperty(monitorAnno.properties.at(0)!);
+}
+
+export function getArrayFromAnnoProperty(property: arkts.AstNode): string[] | undefined {
+    if (!arkts.isClassProperty(property) || !property.value || !arkts.isArrayExpression(property.value)) {
+        return undefined;
+    }
+    const resArr: string[] = [];
+    property.value.elements.forEach((item: arkts.Expression) => {
+        if (arkts.isStringLiteral(item)) {
+            resArr.push(item.str);
+        } else if (arkts.isMemberExpression(item)) {
+            const res: string | undefined = getMonitorStrFromMemberExpr(item);
+            !!res && resArr.push(res);
+        }
+    });
+    return resArr;
+}
+
+function getMonitorStrFromMemberExpr(node: arkts.MemberExpression): string | undefined {
+    const decl: arkts.AstNode | undefined = arkts.getDecl(node.property);
+    if (!decl || !arkts.isClassProperty(decl) || !decl.value || !arkts.isETSNewClassInstanceExpression(decl.value)) {
+        return undefined;
+    }
+    const args: readonly arkts.Expression[] = decl.value.getArguments;
+    if (args.length >= 2 && arkts.isStringLiteral(args[1])) {
+        return args[1].str;
+    }
+    return undefined;
 }

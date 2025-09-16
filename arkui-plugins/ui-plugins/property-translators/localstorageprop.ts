@@ -15,10 +15,13 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { DecoratorNames, generateToRecord } from './utils';
-import { PropertyTranslator } from './base';
-import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName } from '../../common/arkts-utils';
+import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
+import { collectStateManagementTypeImport, generateToRecord, hasDecorator } from './utils';
+import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
+import { GetterSetter, InitializerConstructor } from './types';
+import { factory } from './factory';
+import { PropertyCache } from './cache/propertyCache';
 
 function getLocalStorageporpValueStr(node: arkts.AstNode): string | undefined {
     if (!arkts.isClassProperty(node) || !node.value) return undefined;
@@ -54,29 +57,55 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
 
-        this.cacheTranslatedInitializer(newName, originalName); // TODO: need to release cache after some point...
+        this.cacheTranslatedInitializer(newName, originalName);
         return this.translateWithoutInitializer(newName, originalName);
     }
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
-        const currentStructInfo: arkts.StructInfo = arkts.GlobalInfo.getInfoInstance().getStructInfo(this.structName);
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
+        PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
         const updateStruct: arkts.AstNode = this.generateUpdateStruct(newName, originalName);
-        currentStructInfo.initializeBody.push(initializeStruct);
-        currentStructInfo.updateBody.push(updateStruct);
-
-        if (currentStructInfo.isReusable) {
+        PropertyCache.getInstance().collectUpdateStruct(this.structInfo.name, [updateStruct]);
+        if (!!this.structInfo.annotations?.reusable) {
             const toRecord = generateToRecord(newName, originalName);
-            currentStructInfo.toRecordBody.push(toRecord);
+            PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);
         }
+    }
 
-        arkts.GlobalInfo.getInfoInstance().setStructInfo(this.structName, currentStructInfo);
+    translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
+        const field = factory.createOptionalClassProperty(
+            newName,
+            this.property,
+            StateManagementTypes.SYNCED_PROPERTY,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
+        );
+
+        const member = arkts.factory.createTSNonNullExpression(
+            arkts.factory.createMemberExpression(
+                arkts.factory.createThisExpression(),
+                arkts.factory.createIdentifier(newName),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
+            )
+        );
+        const thisValue: arkts.MemberExpression = arkts.factory.createMemberExpression(
+            member,
+            arkts.factory.createIdentifier('value'),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
+        );
+
+        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisValue);
+        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisValue);
+        return [field, getter, setter];
     }
 
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
         const localStorageporpValueStr: string | undefined = getLocalStorageporpValueInAnnotation(this.property);
         if (!localStorageporpValueStr) {
-            throw new Error('LocalStorageProp required only one value!!'); // TODO: replace this with proper error message.
+            throw new Error('LocalStorageProp required only one value!!');
         }
         const insideMember = arkts.factory.createMemberExpression(
             arkts.factory.createThisExpression(),
@@ -86,17 +115,18 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
             false
         );
         const binaryItem = arkts.factory.createCallExpression(
-            arkts.factory.createIdentifier('StorageLinkState'),
-            this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
+            arkts.factory.createIdentifier(StateManagementTypes.STORAGE_LINK_STATE),
+            this.propertyType ? [this.propertyType] : [],
             [
                 insideMember,
                 arkts.factory.createStringLiteral(localStorageporpValueStr),
                 this.property.value ?? arkts.factory.createUndefinedLiteral(),
             ]
         );
+        collectStateManagementTypeImport(StateManagementTypes.STORAGE_LINK_STATE);
         const call = arkts.factory.createCallExpression(
-            arkts.factory.createIdentifier('propState'),
-            this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
+            arkts.factory.createIdentifier(StateManagementTypes.PROP_STATE),
+            this.propertyType ? [this.propertyType] : [],
             [
                 arkts.factory.createMemberExpression(
                     binaryItem,
@@ -107,6 +137,7 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
                 ),
             ]
         );
+        collectStateManagementTypeImport(StateManagementTypes.PROP_STATE);
         return arkts.factory.createAssignmentExpression(
             arkts.factory.createMemberExpression(
                 arkts.factory.createThisExpression(),
@@ -123,31 +154,10 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
     generateUpdateStruct(newName: string, originalName: string): arkts.AstNode {
         const localStorageporpValueStr: string | undefined = getLocalStorageporpValueInAnnotation(this.property);
         if (!localStorageporpValueStr) {
-            throw new Error('StorageLink required only one value!!'); // TODO: replace this with proper error message.
+            throw new Error('StorageLink required only one value!!');
         }
-
-        const StorageLinkStateValue = arkts.factory.createMemberExpression(
-            arkts.factory.createCallExpression(
-                arkts.factory.createIdentifier('StorageLinkState'),
-                this.property.typeAnnotation ? [this.property.typeAnnotation] : [],
-                [
-                    arkts.factory.createMemberExpression(
-                        arkts.factory.createThisExpression(),
-                        arkts.factory.createIdentifier('_entry_local_storage_'),
-                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                        false,
-                        false
-                    ),
-                    arkts.factory.createStringLiteral(localStorageporpValueStr),
-                    this.property.value ?? arkts.factory.createUndefinedLiteral(),
-                ]
-            ),
-            arkts.factory.createIdentifier('value'),
-            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-            false,
-            false
-        );
-
+        const StorageLinkStateValue = factory.createStorageLinkStateValue(this.property, localStorageporpValueStr);
+        collectStateManagementTypeImport(StateManagementTypes.STORAGE_LINK_STATE);
         const test = arkts.factory.createMemberExpression(
             arkts.factory.createThisExpression(),
             arkts.factory.createIdentifier(newName),
@@ -155,7 +165,6 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
             false,
             false
         );
-
         const consequent = arkts.BlockStatement.createBlockStatement([
             arkts.factory.createExpressionStatement(
                 arkts.factory.createCallExpression(
@@ -171,7 +180,50 @@ export class LocalStoragePropTranslator extends PropertyTranslator implements In
                 )
             ),
         ]);
-
         return arkts.factory.createExpressionStatement(arkts.factory.createIfStatement(test, consequent));
+    }
+}
+
+export class LocalStoragePropInterfaceTranslator<
+    T extends InterfacePropertyTypes
+> extends InterfacePropertyTranslator<T> {
+    translateProperty(): T {
+        if (arkts.isMethodDefinition(this.property)) {
+            this.modified = true;
+            return this.updateStateMethodInInterface(this.property) as T;
+        } else if (arkts.isClassProperty(this.property)) {
+            this.modified = true;
+            return this.updateStatePropertyInInterface(this.property) as T;
+        }
+        return this.property;
+    }
+
+    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+        if (arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP)) {
+            return true;
+        } else if (arkts.isClassProperty(node) && hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
+     * to `SyncedProperty<T> | undefined`.
+     *
+     * @param method expecting getter with `@LocalStorageProp` and a setter with `@LocalStorageProp` in the overloads.
+     */
+    private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.LOCAL_STORAGE_PROP);
+    }
+
+    /**
+     * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
+     * to `SyncedProperty<T> | undefined`.
+     *
+     * @param property expecting property with `@LocalStorageProp`.
+     */
+    private updateStatePropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
+        return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.LOCAL_STORAGE_PROP);
     }
 }
