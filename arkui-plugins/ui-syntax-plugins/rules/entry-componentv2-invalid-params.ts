@@ -17,13 +17,18 @@ import * as arkts from '@koalaui/libarkts';
 import { getAnnotationUsage, PresetDecorators } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
+const ENTRY_VALUE: string = 'value';
 const ENTRY_STORAGE: string = 'storage';
-const ENTRY_USE_SHARED_STORAGE = 'useSharedStorage';
+const ENTRY_USE_SHARED_STORAGE: string = 'useSharedStorage';
 
 class EntryComponentV2InvalidParamsRule extends AbstractUISyntaxRule {
+  private entryDecoratorhasInvalidEntryOptions: boolean = false;
+  private entryDecoratorhasInvalidLocalStorage: boolean = false;
+
   public setup(): Record<string, string> {
     return {
-      invalidEntryParams: `The "@ComponentV2" decorator cannot be used together with the "@Entry" decorator that has "storage" or "useSharedStorage" parameters.`
+      invalidEntryOptions: `The "@Entry" decorator that has "storage" or "useSharedStorage" parameters cannot be used together with the "@ComponentV2" decorator.`,
+      invalidLocalStorage: `The "@Entry" decorator that has a "LocalStorage" type parameter cannot be used together with the "@ComponentV2" decorator.`
     };
   }
 
@@ -42,22 +47,33 @@ class EntryComponentV2InvalidParamsRule extends AbstractUISyntaxRule {
       return;
     }
 
-    const entryDecoratorhasInvalidParams = this.checkEntryDecoratorHasInvalidParams(entryDecoratorUsage);
-    if (entryDecoratorhasInvalidParams) {
+    this.checkEntryDecoratorHasInvalidEntryOptions(entryDecoratorUsage);
+    if (this.entryDecoratorhasInvalidEntryOptions) {
       this.report({
         node: entryDecoratorUsage,
-        message: this.messages.invalidEntryParams,
+        message: this.messages.invalidEntryOptions,
+      });
+      return;
+    }
+
+    if (this.entryDecoratorhasInvalidLocalStorage) {
+      this.report({
+        node: entryDecoratorUsage,
+        message: this.messages.invalidLocalStorage,
       });
     }
   }
 
-  private checkEntryDecoratorHasInvalidParams(entryDecorator: arkts.AnnotationUsage): boolean {
-    return entryDecorator.properties.some((property) => {
+  private checkEntryDecoratorHasInvalidEntryOptions(entryDecorator: arkts.AnnotationUsage): void {
+    entryDecorator.properties.forEach((property) => {
       if (arkts.isClassProperty(property) && property.key && arkts.isIdentifier(property.key)) {
         const propertyName = property.key.name;
-        return propertyName === ENTRY_STORAGE || propertyName === ENTRY_USE_SHARED_STORAGE;
+        if (propertyName === ENTRY_STORAGE || propertyName === ENTRY_USE_SHARED_STORAGE) {
+          this.entryDecoratorhasInvalidEntryOptions = true;
+        } else if (propertyName === ENTRY_VALUE) {
+          this.entryDecoratorhasInvalidLocalStorage = true;
+        }
       }
-      return false;
     });
   }
 }
