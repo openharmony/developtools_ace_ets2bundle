@@ -16,7 +16,11 @@
 
 
 import * as arkts from '@koalaui/libarkts';
-import { ESValueMethodNames, InteroperAbilityNames } from './predefines';
+import { BuilderMethodNames, ESValueMethodNames, InteroperAbilityNames } from './predefines';
+import { LANGUAGE_VERSION } from '../../common/predefines';
+import { FileManager } from '../../common/file-manager';
+import { BuilderLambdaNames } from '../utils';
+import { ImportCollector } from '../../common/import-collector';
 
 
 /**
@@ -220,4 +224,41 @@ export function createGlobal(): arkts.Statement {
             )
         )]
     );
+}
+
+
+export function isInstantiateImpl(node: arkts.MemberExpression): boolean {
+    const property = node.property;
+    if (arkts.isIdentifier(property) && property.name === BuilderLambdaNames.ORIGIN_METHOD_NAME) {
+        return true;
+    }
+    return false;
+}
+
+export function isArkTS1_1(node: arkts.MemberExpression): boolean {
+    const struct = node.object;
+    const decl = arkts.getDecl(struct);
+    if (!decl || !arkts.isClassDefinition(decl) || decl.lang !== arkts.Es2pandaLanguage.JS) {
+        return false;
+    }
+    return true;
+}
+
+export function isInteropComponent(node: arkts.CallExpression): boolean {
+    if (
+        arkts.isMemberExpression(node.expression) &&
+        isInstantiateImpl(node.expression) &&
+        isArkTS1_1(node.expression)
+    ) {
+        ImportCollector.getInstance().collectSource(InteroperAbilityNames.ARKUICOMPATIBLE, InteroperAbilityNames.INTEROP);
+        ImportCollector.getInstance().collectImport(InteroperAbilityNames.ARKUICOMPATIBLE);
+        ImportCollector.getInstance().collectSource(InteroperAbilityNames.GETCOMPATIBLESTATE, InteroperAbilityNames.INTEROP);
+        ImportCollector.getInstance().collectImport(InteroperAbilityNames.GETCOMPATIBLESTATE);
+        ImportCollector.getInstance().collectSource(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER, InteroperAbilityNames.INTEROP);
+        ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER);
+        ImportCollector.getInstance().collectSource(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER, InteroperAbilityNames.INTEROP);
+        ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER);
+        return true;
+    }
+    return false;
 }
