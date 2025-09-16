@@ -331,8 +331,8 @@ export class SdkVersionValidator {
     runtimeType: string,
     apiPosition: 'left' | 'right'
   ): boolean {
-    const comparisonValue = Number(value);
-    // Adjust comparison values based on operators
+    const numValue = Number(value);
+    const comparisonValue = numValue % 1 === 0 ? numValue : Math.ceil(numValue);    // Adjust comparison values based on operators
     const assignedSdkVersion = this.calculateAssignedSdkVersion(operator, comparisonValue, apiPosition);
 
     // Handle OpenHarmony runtime with direct comparison
