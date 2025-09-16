@@ -73,7 +73,8 @@ let ohosSystemModulePaths = [];
 let ohosSystemModuleSubDirPaths = [];
 let allModulesPaths = [];
 let externalApiCheckPlugin = new Map();
-
+let externalApiMethodPlugin = new Map();
+let fileDeviceCheckPlugin = new Map();
 
 function initProjectConfig(projectConfig) {
   initProjectPathConfig(projectConfig);
@@ -799,8 +800,11 @@ function collectExternalApiCheckPlugin(sdkConfig, sdkPath) {
   pluginConfigs.forEach(config => {
     const pluginPrefix = sdkConfig.osName + '/' + config.tag;
     config.path = path.resolve(sdkPath, config.path);
+    let externalApiCheckPlugins;
     if (externalApiCheckPlugin.get(pluginPrefix)) {
-      externalApiCheckPlugin.set(pluginPrefix, externalApiCheckPlugin.get(pluginPrefix).push(...pluginConfigs));
+      externalApiCheckPlugins = externalApiCheckPlugin.get(pluginPrefix);
+      externalApiCheckPlugins.push(...pluginConfigs);
+      externalApiCheckPlugin.set(pluginPrefix, externalApiCheckPlugins);
     } else {
       externalApiCheckPlugin.set(pluginPrefix, [...pluginConfigs]);
     }
@@ -1148,6 +1152,8 @@ function resetMain() {
   ohosSystemModuleSubDirPaths = [];
   allModulesPaths = [];
   externalApiCheckPlugin = new Map();
+  externalApiMethodPlugin = new Map();
+  fileDeviceCheckPlugin = new Map();
 }
 
 function resetAbilityConfig() {
@@ -1239,4 +1245,6 @@ exports.setEntryArrayForObf = setEntryArrayForObf;
 exports.getPackageJsonEntryPath = getPackageJsonEntryPath;
 exports.setIntentEntryPages = setIntentEntryPages;
 exports.externalApiCheckPlugin = externalApiCheckPlugin;
+exports.externalApiMethodPlugin = externalApiMethodPlugin;
+exports.fileDeviceCheckPlugin = fileDeviceCheckPlugin;
 exports.setStartupPagesForObf = setStartupPagesForObf;

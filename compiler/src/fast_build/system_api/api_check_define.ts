@@ -53,3 +53,9 @@ export const CONSTANT_STEP_3: number = 3;
 
 export const GLOBAL_DECLARE_WHITE_LIST: Set<string> = new Set(['Context', 'PointerStyle', 'PixelMap', 'UnifiedData',
   'Summary', 'UniformDataType', 'IntentionCode', 'NavDestinationInfo', 'UIContext', 'Resource', 'WebviewController']);
+
+export enum ComparisonResult {
+  Less = -1,
+  Equal = 0,
+  Greater = 1
+}
