@@ -14,115 +14,181 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getIdentifierName, PresetDecorators } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { getIdentifierName, isPrivateClassProperty, PresetDecorators, getClassPropertyName, findDecorator } from '../utils';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-// Gets the names of all methods in the struct
-function getMethodNames(node: arkts.StructDeclaration): string[] {
-  const methodNames: string[] = [];
-  node.definition.body.forEach((member) => {
-    if (arkts.isMethodDefinition(member)) {
-      const methodName = getIdentifierName(member.name);
-      if (methodName) {
-        methodNames.push(methodName);
-      }
+class WatchDecoratorFunctionRule extends AbstractUISyntaxRule {
+    public setup(): Record<string, string> {
+        return {
+            invalidWatch: `'@watch' cannot be used with '{{parameterName}}'. Apply it only to parameters that correspond to existing methods.`,
+            stringOnly: `'@Watch' cannot be used with '{{parameterName}}'. Apply it only to 'string' parameters.`,
+        };
     }
-  });
-  return methodNames;
-}
 
-// Invalid @Watch decorator bugs are reported
-function reportInvalidWatch(
-  member: arkts.ClassProperty,
-  methodName: string,
-  hasWatchDecorator: arkts.AnnotationUsage,
-  context: UISyntaxRuleContext
-): void {
-  context.report({
-    node: hasWatchDecorator,
-    message: rule.messages.invalidWatch,
-    data: { methodName },
-    fix: () => {
-      const startPosition = arkts.getEndPosition(member);
-      const endPosition = arkts.getEndPosition(member);
-      return {
-        range: [startPosition, endPosition],
-        code: `\n${methodName}(){\n}`,
-      };
-    },
-  });
-}
-
-function validateWatchDecorator(
-  member: arkts.ClassProperty,
-  methodNames: string[],
-  hasWatchDecorator: arkts.AnnotationUsage | undefined,
-  context: UISyntaxRuleContext
-): void {
-  member.annotations.forEach((annotation) => {
-    validateWatchProperty(annotation, member, methodNames, hasWatchDecorator, context);
-  });
-}
-
-function validateWatchProperty(
-  annotation: arkts.AnnotationUsage,
-  member: arkts.ClassProperty,
-  methodNames: string[],
-  hasWatchDecorator: arkts.AnnotationUsage | undefined,
-  context: UISyntaxRuleContext
-): void {
-  if (
-    annotation.expr &&
-    annotation.expr.dumpSrc() === PresetDecorators.WATCH
-  ) {
-    annotation.properties.forEach((element) => {
-      if (!arkts.isClassProperty(element)) {
-        return;
-      }
-      const methodName = element.value?.dumpSrc().slice(1, -1);
-      if (hasWatchDecorator && methodName && !methodNames.includes(methodName)) {
-        reportInvalidWatch(member, methodName, hasWatchDecorator, context);
-      }
-    });
-  }
-
-}
-
-function validateWatch(
-  node: arkts.StructDeclaration,
-  methodNames: string[],
-  context: UISyntaxRuleContext
-): void {
-  node.definition.body.forEach(member => {
-    if (!arkts.isClassProperty(member)) {
-      return;
-    }
-    const hasWatchDecorator = member.annotations?.find(annotation =>
-      annotation.expr &&
-      annotation.expr.dumpSrc() === PresetDecorators.WATCH
-    );
-    // Determine whether it contains @watch decorators
-    validateWatchDecorator(member, methodNames, hasWatchDecorator, context);
-  });
-}
-
-const rule: UISyntaxRule = {
-  name: 'watch-decorator-function',
-  messages: {
-    invalidWatch: `The '@Watch' decorated parameter must be a callback '{{methodName}}' of a function in a custom component.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
+    public parsed(node: arkts.AstNode): void {
         if (!arkts.isStructDeclaration(node)) {
-          return;
+            return;
         }
         // Get all method names
-        const methodNames = getMethodNames(node);
-        validateWatch(node, methodNames, context);
-      },
-    };
-  },
-};
+        const methodNames = this.getMethodNames(node);
+        // Get a private variable
+        const privateNames = this.getPrivateNames(node);
+        this.validateWatch(node, methodNames, privateNames);
+    }
 
-export default rule;
+    private getExpressionValue(parameters: arkts.Expression, privateNames: string[]): string {
+        const type = arkts.nodeType(parameters);
+        if (type === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_NUMBER_LITERAL) {
+            return parameters.dumpSrc(); // Try extracting the string representation with dumpSrc
+        } else if (type === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_BOOLEAN_LITERAL) {
+            return parameters.dumpSrc();
+        } else if (type === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_NULL_LITERAL) {
+            return 'null';
+        } else if (type === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_UNDEFINED_LITERAL) {
+            return 'undefined';
+        } else if (arkts.isMemberExpression(parameters)) {
+            if (arkts.isIdentifier(parameters.property)) {
+                if (privateNames.includes(parameters.property.name)) {
+                    return parameters.property.name;
+                }
+            }
+        }
+        return parameters.dumpSrc(); // By default, an empty string is returned
+    }
+
+    // Gets the names of all methods in the struct
+    private getMethodNames(node: arkts.StructDeclaration): string[] {
+        const methodNames: string[] = [];
+        node.definition.body.forEach((member) => {
+            if (arkts.isMethodDefinition(member) && arkts.isIdentifier(member.name)) {
+                const methodName = getIdentifierName(member.name);
+                if (methodName) {
+                    methodNames.push(methodName);
+                }
+            }
+        });
+        return methodNames;
+    }
+
+    private getPrivateNames(node: arkts.StructDeclaration): string[] {
+        const privateNames: string[] = [];
+        node.definition.body.forEach((member) => {
+            if (arkts.isClassProperty(member) && isPrivateClassProperty(member)) {
+                const privateName = getClassPropertyName(member);
+                if (privateName) {
+                    privateNames.push(privateName);
+                }
+            }
+        });
+        return privateNames;
+    }
+
+    private validateWatch(
+        node: arkts.StructDeclaration,
+        methodNames: string[],
+        privateNames: string[]
+    ): void {
+        node.definition.body.forEach(member => {
+            if (!arkts.isClassProperty(member)) {
+                return;
+            }
+            const watchDecorator = findDecorator(member, PresetDecorators.WATCH);
+            // Determine whether it contains @watch decorators
+            this.validateWatchDecorator(member, methodNames, privateNames, watchDecorator);
+        });
+    }
+
+    private validateWatchDecorator(
+        member: arkts.ClassProperty,
+        methodNames: string[],
+        privateNames: string[],
+        watchDecorator: arkts.AnnotationUsage | undefined
+    ): void {
+        member.annotations.forEach((annotation) => {
+            this.validateWatchProperty(annotation, member, methodNames, privateNames, watchDecorator);
+        });
+    }
+
+    private validateWatchProperty(
+        annotation: arkts.AnnotationUsage,
+        member: arkts.ClassProperty,
+        methodNames: string[],
+        privateNames: string[],
+        watchDecorator: arkts.AnnotationUsage | undefined
+    ): void {
+        if (
+            !annotation.expr ||
+            !arkts.isIdentifier(annotation.expr) ||
+            annotation.expr.name !== PresetDecorators.WATCH
+        ) {
+            return;
+        }
+        annotation.properties.forEach((element) => {
+            if (!arkts.isClassProperty(element)) {
+                return;
+            }
+            if (!element.value) {
+                return;
+            }
+            if (!arkts.isStringLiteral(element.value)) {
+                if (!watchDecorator) {
+                    return;
+                }
+                this.reportStringOnly(element.value, privateNames, watchDecorator);
+                return;
+            }
+            const parameterName = element.value.str;
+            if (watchDecorator && parameterName && !methodNames.includes(parameterName)) {
+                this.reportInvalidWatch(member, parameterName, watchDecorator);
+            }
+        });
+    }
+
+    // Invalid @Watch decorator bugs are reported
+    private reportInvalidWatch(
+        member: arkts.ClassProperty,
+        parameterName: string,
+        watchDecorator: arkts.AnnotationUsage
+    ): void {
+        this.report({
+            node: watchDecorator,
+            message: this.messages.invalidWatch,
+            data: { parameterName },
+            fix: () => {
+                const startPosition = member.endPosition;
+                const endPosition = member.endPosition;
+                return {
+                    title: 'Add a watch function to the custom component',
+                    range: [startPosition, endPosition],
+                    code: `\n${parameterName}(){\n}`,
+                };
+            },
+        });
+    }
+
+    private reportStringOnly(
+        parameters: arkts.Expression | undefined,
+        privateNames: string[],
+        watchDecorator: arkts.AnnotationUsage
+    ): void {
+        if (!parameters) {
+            return;
+        }
+        this.report({
+            node: watchDecorator,
+            message: this.messages.stringOnly,
+            data: { parameterName: this.getExpressionValue(parameters, privateNames) },
+            fix: () => {
+                const startPosition = parameters.startPosition;
+                const endPosition = parameters.endPosition;
+                return {
+                    title: 'Remove the parameters',
+                    range: [startPosition, endPosition],
+                    code: ``,
+                };
+            },
+        });
+    }
+}
+
+export default WatchDecoratorFunctionRule;

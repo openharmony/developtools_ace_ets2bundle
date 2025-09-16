@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { memoNoRecheck } from '../../../utils/plugins';
+import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 
 const PROPERTY_DIR_PATH: string = 'memo/properties';
 
@@ -30,16 +31,17 @@ buildConfig.compileFiles = [
 const pluginTester = new PluginTester('test memo property', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"@ohos.arkui.stateManagement\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
-@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
     const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
     }
     let a = new AA({
-        a: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+        a: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -57,19 +59,19 @@ function main() {}
     }
 });
 interface A {
-    @memo() set a(a: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void
+    @memo() set a(a: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))
     @memo() get a(): ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)
 }
 class AA {
-    @memo() public a: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined;
+    @memo() public a: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
     constructor() {
         this(undefined);
     }
-    public constructor(arg: A | undefined) {
+    public constructor(arg: (A | undefined)) {
         this.a = ({let gensym%%_<some_random_number> = arg;
         (((gensym%%_<some_random_number>) == (null)) ? undefined : gensym%%_<some_random_number>.a)});
     }
-    public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -91,7 +93,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'transform properties in class constructor',
-    [memoNoRecheck],
+    [beforeMemoNoRecheck, memoNoRecheck, recheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],
     },

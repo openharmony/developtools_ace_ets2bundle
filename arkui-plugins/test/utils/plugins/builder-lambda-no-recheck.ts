@@ -26,11 +26,11 @@ export const builderLambdaNoRecheck: Plugins = {
     name: 'builder-lambda-no-recheck',
     checked(this: PluginContext): arkts.EtsScript | undefined {
         let script: arkts.EtsScript | undefined;
-        const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+        const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
             script = program.astNode;
-            const builderLambdaTransformer = new BuilderLambdaTransformer();
+            const builderLambdaTransformer = new BuilderLambdaTransformer(this.getProjectConfig());
             const programVisitor = new ProgramVisitor({
                 pluginName: builderLambdaNoRecheck.name,
                 state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
@@ -40,7 +40,6 @@ export const builderLambdaNoRecheck: Plugins = {
             });
             program = programVisitor.programVisitor(program);
             script = program.astNode;
-            arkts.GlobalInfo.getInfoInstance().reset();
             return script;
         }
         return script;

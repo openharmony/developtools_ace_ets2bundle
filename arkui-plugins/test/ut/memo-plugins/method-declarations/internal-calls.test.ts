@@ -14,27 +14,33 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig, mockProjectConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { memoNoRecheck } from '../../../utils/plugins';
+import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { ProjectConfig } from '../../../../common/plugin-context';
 
 const METHOD_DIR_PATH: string = 'memo/methods';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, METHOD_DIR_PATH, 'internal-calls.ets')];
 
-const pluginTester = new PluginTester('test memo method', buildConfig);
+const projectConfig: ProjectConfig = mockProjectConfig();
+projectConfig.frameworkMode = 'frameworkMode';
+
+const pluginTester = new PluginTester('test memo method', buildConfig, projectConfig);
 
 const expectedScript: string = `
-import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"@ohos.arkui.stateManagement\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
 function main() {}
-function __context(): __memo_context_type
-function __id(): __memo_id_type
+export function __context(): __memo_context_type
+export function __id(): __memo_id_type
 type MemoType = @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
 class Test {
-    public void_method(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @memo() public void_method(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -45,7 +51,7 @@ class Test {
             return;
         }
     }
-    public internal_call(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @memo() public internal_call(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -57,21 +63,21 @@ class Test {
             return;
         }
     }
-    public method_with_internals(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @memo() public method_with_internals(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
-        __context();
-        __id();
+        __memo_context;
+        __memo_id;
         {
             __memo_scope.recache();
             return;
         }
     }
     public memo_lambda() {
-        @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+        @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -83,7 +89,7 @@ class Test {
             }
         });
     }
-    public memo_variables(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @memo() public memo_variables(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -118,7 +124,7 @@ class Test {
             return;
         }
     }
-    @functions.OptionalParametersAnnotation({minArgCount:0}) public args_with_default_values(__memo_context: __memo_context_type, __memo_id: __memo_id_type, gensym%%_1?: int, gensym%%_2?: (()=> int), gensym%%_3?: int, arg4?: int): void {
+    @memo() public args_with_default_values(__memo_context: __memo_context_type, __memo_id: __memo_id_type, gensym%%_1?: int, gensym%%_2?: (()=> int), gensym%%_3?: int, arg4?: int): void {
         let arg1: int = (((gensym%%_1) !== (undefined)) ? gensym%%_1 : (10 as int));
         let arg2: (()=> int) = (((gensym%%_2) !== (undefined)) ? gensym%%_2 : ((() => {
             return 20;
@@ -137,7 +143,7 @@ class Test {
             return;
         }
     }
-    @functions.OptionalParametersAnnotation({minArgCount:0}) public optional_args(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1?: int, arg2?: (()=> int)): void {
+    @memo() public optional_args(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1?: int, arg2?: (()=> int)) {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
         const __memo_parameter_arg1 = __memo_scope.param(0, arg1), __memo_parameter_arg2 = __memo_scope.param(1, arg2);
         if (__memo_scope.unchanged) {
@@ -153,7 +159,7 @@ class Test {
             return;
         }
     }
-    public type_alias(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg: MemoType): void {
+    @memo() public type_alias(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg: MemoType) {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_arg = __memo_scope.param(0, arg);
         if (__memo_scope.unchanged) {
@@ -176,7 +182,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'transform inner calls in methods',
-    [memoNoRecheck],
+    [beforeMemoNoRecheck, memoNoRecheck, recheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],
     },

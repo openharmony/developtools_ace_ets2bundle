@@ -14,16 +14,16 @@
  */
 
 import { memo } from "@ohos.arkui.stateManagement" // should be insert by ui-plugins
-import { Text, UITextAttribute, Column, Component} from "@ohos.arkui.component" 
+import { Text, TextAttribute, Column, Component} from "@ohos.arkui.component"
 import hilog from '@ohos.hilog'
 
-@memo function cardStyle(this: UITextAttribute, num: number, str: string): this {
+@memo function cardStyle(this: TextAttribute, num: number, str: string): this {
 	this.fontSize(num);
 	this.backgroundColor(num);
 	return this;
 }
 
-@memo function style22(this: UITextAttribute): this {
+@memo function style22(this: TextAttribute): this {
 	this.fontWeight(700);
 	return this;
 }

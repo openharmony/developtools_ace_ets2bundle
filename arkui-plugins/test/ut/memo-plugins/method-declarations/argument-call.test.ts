@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { memoNoRecheck } from '../../../utils/plugins';
+import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 
 const METHOD_DIR_PATH: string = 'memo/methods';
 
@@ -28,10 +29,11 @@ buildConfig.compileFiles = [path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, MET
 const pluginTester = new PluginTester('test memo method', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"@ohos.arkui.stateManagement\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
 class Test {
-    public lambda_arg(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+    @memo() public lambda_arg(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_arg = __memo_scope.param(0, arg);
         if (__memo_scope.unchanged) {
@@ -43,7 +45,7 @@ class Test {
             return;
         }
     }
-    public lambda_arg_with_arg(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string)=> string)): void {
+    @memo() public lambda_arg_with_arg(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string)=> string)) {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_arg = __memo_scope.param(0, arg);
         if (__memo_scope.unchanged) {
@@ -55,7 +57,7 @@ class Test {
             return;
         }
     }
-    public memo_content(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() content: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+    @memo() public memo_content(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() content: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_content = __memo_scope.param(0, content);
         if (__memo_scope.unchanged) {
@@ -68,7 +70,7 @@ class Test {
             return;
         }
     }
-    public compute_test(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg1: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined, arg2: (()=> void) | undefined, content: (()=> void) | undefined): void {
+    @memo() public compute_test(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg1: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined), arg2: ((()=> void) | undefined), content: ((()=> void) | undefined)): void {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 3);
         const __memo_parameter_arg1 = __memo_scope.param(0, arg1), __memo_parameter_arg2 = __memo_scope.param(1, arg2), __memo_parameter_content = __memo_scope.param(2, content);
         if (__memo_scope.unchanged) {
@@ -83,7 +85,7 @@ class Test {
     public constructor() {}
 }
 class Use {
-    public test(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @memo() public test(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -109,7 +111,7 @@ class Use {
             }
             return __memo_scope.recache(__memo_parameter_value.value);
         }));
-        test.compute_test(__memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): void => {
+        test.compute_test(__memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -135,7 +137,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'transform argument calls in methods',
-    [memoNoRecheck],
+    [beforeMemoNoRecheck, memoNoRecheck, recheck],
     {
         'checked:memo-no-recheck': [testMemoTransformer],
     },

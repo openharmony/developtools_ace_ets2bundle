@@ -14,55 +14,91 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getClassPropertyType, PresetDecorators, getAnnotationUsage } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { getClassPropertyType, PresetDecorators, getAnnotationUsage, isClassPropertyOptional } from '../utils';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 const CUSTOM_DIALOG_CONTROLLER: string = 'CustomDialogController';
 
-function missingController(
-  node: arkts.StructDeclaration,
-  context: UISyntaxRuleContext
-): void {
-  // Check for the @CustomDialog decorator
-  const hasCustomDialogDecorator = getAnnotationUsage(node, PresetDecorators.CUSTOM_DIALOG);
-  const structName = node.definition.ident;
-  if (!structName) {
-    return;
+class CustomDialogMissingControllerRule extends AbstractUISyntaxRule {
+  public setup(): Record<string, string> {
+    return {
+      missingController: `The @CustomDialog decorated custom component must contain a property of the CustomDialogController type.`,
+    };
   }
-  // Check if there is an attribute of type CustomDialogController in the class
-  let hasControllerProperty = false;
-  node.definition.body.forEach((property) => {
-    if (arkts.isClassProperty(property)) {
-      const propertyType = getClassPropertyType(property);
-      if (propertyType === CUSTOM_DIALOG_CONTROLLER) {
-        hasControllerProperty = true;
+
+  public parsed(node: arkts.AstNode): void {
+    if (!arkts.isStructDeclaration(node)) {
+      return;
+    }
+    this.checkMissingController(node);
+  }
+
+  // Check if the @CustomDialog-decorated struct contains a property of type CustomDialogController
+  private checkMissingController(node: arkts.StructDeclaration): void {
+    const customDialogDecorator = getAnnotationUsage(node, PresetDecorators.CUSTOM_DIALOG);
+
+    if (!customDialogDecorator) {
+      return;
+    }
+
+    const structName = node.definition.ident;
+    if (!structName) {
+      return;
+    }
+
+    let hasControllerProperty = false;
+
+    node.definition.body.forEach((property) => {
+      if (arkts.isClassProperty(property)) {
+        // Check if it's a union type, such as CustomDialogController | undefined
+        if (this.hasCustomDialogControllerInUnion(property)) {
+          hasControllerProperty = true;
+          return;
+        }
+
+        // Check if it's directly of the CustomDialogController type
+        const propertyType = getClassPropertyType(property);
+        if (propertyType === CUSTOM_DIALOG_CONTROLLER) {
+          hasControllerProperty = true;
+        }
+      }
+    });
+
+    if (!hasControllerProperty) {
+      this.report({
+        node: structName,
+        message: this.messages.missingController,
+      });
+    }
+  }
+
+  // Check that the property is of a form that contains a CustomDialogController in the union type (for example: CustomDialogController | undefined）
+  private hasCustomDialogControllerInUnion(property: arkts.ClassProperty): boolean {
+    if (!isClassPropertyOptional(property)) {
+      return false;
+    }
+
+    if (!property.typeAnnotation || !arkts.isETSUnionType(property.typeAnnotation)) {
+      return false;
+    }
+
+    for (const type of property.typeAnnotation.types) {
+      if (!arkts.isETSTypeReference(type)) {
+        continue;
+      }
+
+      const part = type.part;
+      if (!part || !arkts.isETSTypeReferencePart(part)) {
+        continue;
+      }
+
+      const name = part.name;
+      if (name && arkts.isIdentifier(name) && name.name === CUSTOM_DIALOG_CONTROLLER) {
+        return true;
       }
     }
-  });
-  if (!hasControllerProperty && hasCustomDialogDecorator) {
-    context.report({
-      node: structName,
-      message: rule.messages.missingController,
-    });
+    return false;
   }
 }
 
-const rule: UISyntaxRule = {
-  name: 'custom-dialog-missing-controller',
-  messages: {
-    missingController: `The @CustomDialog decorated custom component must contain a property of the CustomDialogController type.`,
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
-        if (!arkts.isStructDeclaration(node)) {
-          return;
-        }
-        missingController(node, context);
-      },
-    };
-  },
-};
-
-export default rule;
-
+export default CustomDialogMissingControllerRule;

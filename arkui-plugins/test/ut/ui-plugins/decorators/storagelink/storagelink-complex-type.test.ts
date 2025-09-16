@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../../utils/artkts-config';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -37,25 +38,25 @@ const storageLinkTransform: Plugins = {
 const pluginTester = new PluginTester('test storagelink complex type transform', buildConfig);
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
-
 import { memo as memo } from "arkui.stateManagement.runtime";
-
-import { StorageLinkDecoratedVariable as StorageLinkDecoratedVariable } from "@ohos.arkui.stateManagement";
-
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
+import { NavInterface as NavInterface } from "arkui.UserView";
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 import { EntryPoint as EntryPoint } from "arkui.UserView";
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
 import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
-
 import { StorageLink as StorageLink } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/storagelink/storagelink-complex-type",
+  pageFullPath: "test/demo/mock/decorators/storagelink/storagelink-complex-type",
+  integratedHsp: "false",
+  } as NavInterface));
 
 class Person {
   public name: string = "";
@@ -132,21 +133,20 @@ final class Status extends BaseEnum<int> {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({freezeWhenInactive:false}) final class MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: __Options_MyStateSample | undefined, @memo() content: (()=> void) | undefined): void {
-    this.__backing_arrayA = new StorageLinkDecoratedVariable<Array<number>>("Prop1", "arrayA", [1, 2, 3])
-    this.__backing_objectA = new StorageLinkDecoratedVariable<Object>("Prop2", "objectA", {})
-    this.__backing_dateA = new StorageLinkDecoratedVariable<Date>("Prop3", "dateA", new Date("2021-08-08"))
-    this.__backing_setA = new StorageLinkDecoratedVariable<Set<number>>("Prop4", "setA", new Set<number>())
-    this.__backing_mapA = new StorageLinkDecoratedVariable<Map<number, string>>("Prop5", "mapA", new Map<number, string>())
-    this.__backing_unionA = new StorageLinkDecoratedVariable<string | undefined>("Prop6", "unionA", "")
-    this.__backing_classA = new StorageLinkDecoratedVariable<Person>("Prop7", "classA", new Person("John"))
-    this.__backing_enumA = new StorageLinkDecoratedVariable<Status>("Prop8", "enumA", Status.NotFound)
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_arrayA = STATE_MGMT_FACTORY.makeStorageLink<Array<number>>(this, "Prop1", "arrayA", [1, 2, 3])
+    this.__backing_objectA = STATE_MGMT_FACTORY.makeStorageLink<Object>(this, "Prop2", "objectA", {})
+    this.__backing_dateA = STATE_MGMT_FACTORY.makeStorageLink<Date>(this, "Prop3", "dateA", new Date("2021-08-08"))
+    this.__backing_setA = STATE_MGMT_FACTORY.makeStorageLink<Set<number>>(this, "Prop4", "setA", new Set<number>())
+    this.__backing_mapA = STATE_MGMT_FACTORY.makeStorageLink<Map<number, string>>(this, "Prop5", "mapA", new Map<number, string>())
+    this.__backing_classA = STATE_MGMT_FACTORY.makeStorageLink<Person>(this, "Prop7", "classA", new Person("John"))
+    this.__backing_enumA = STATE_MGMT_FACTORY.makeStorageLink<Status>(this, "Prop8", "enumA", Status.NotFound)
   }
   
-  public __updateStruct(initializers: __Options_MyStateSample | undefined): void {}
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
-  private __backing_arrayA?: StorageLinkDecoratedVariable<Array<number>>;
+  private __backing_arrayA?: IStorageLinkDecoratedVariable<Array<number>>;
   
   public get arrayA(): Array<number> {
     return this.__backing_arrayA!.get();
@@ -156,7 +156,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_arrayA!.set(value);
   }
   
-  private __backing_objectA?: StorageLinkDecoratedVariable<Object>;
+  private __backing_objectA?: IStorageLinkDecoratedVariable<Object>;
   
   public get objectA(): Object {
     return this.__backing_objectA!.get();
@@ -166,7 +166,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_objectA!.set(value);
   }
   
-  private __backing_dateA?: StorageLinkDecoratedVariable<Date>;
+  private __backing_dateA?: IStorageLinkDecoratedVariable<Date>;
   
   public get dateA(): Date {
     return this.__backing_dateA!.get();
@@ -176,7 +176,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_dateA!.set(value);
   }
   
-  private __backing_setA?: StorageLinkDecoratedVariable<Set<number>>;
+  private __backing_setA?: IStorageLinkDecoratedVariable<Set<number>>;
   
   public get setA(): Set<number> {
     return this.__backing_setA!.get();
@@ -186,7 +186,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_setA!.set(value);
   }
   
-  private __backing_mapA?: StorageLinkDecoratedVariable<Map<number, string>>;
+  private __backing_mapA?: IStorageLinkDecoratedVariable<Map<number, string>>;
   
   public get mapA(): Map<number, string> {
     return this.__backing_mapA!.get();
@@ -196,17 +196,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_mapA!.set(value);
   }
   
-  private __backing_unionA?: StorageLinkDecoratedVariable<string | undefined>;
-  
-  public get unionA(): string | undefined {
-    return this.__backing_unionA!.get();
-  }
-  
-  public set unionA(value: string | undefined) {
-    this.__backing_unionA!.set(value);
-  }
-  
-  private __backing_classA?: StorageLinkDecoratedVariable<Person>;
+  private __backing_classA?: IStorageLinkDecoratedVariable<Person>;
   
   public get classA(): Person {
     return this.__backing_classA!.get();
@@ -216,7 +206,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_classA!.set(value);
   }
   
-  private __backing_enumA?: StorageLinkDecoratedVariable<Status>;
+  private __backing_enumA?: IStorageLinkDecoratedVariable<Status>;
   
   public get enumA(): Status {
     return this.__backing_enumA!.get();
@@ -226,61 +216,55 @@ final class Status extends BaseEnum<int> {
     this.__backing_enumA!.set(value);
   }
   
-  @memo() public _build(@memo() style: ((instance: MyStateSample)=> MyStateSample) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MyStateSample | undefined): void {}
+  @memo() public build() {}
   
   public constructor() {}
   
 }
 
-interface __Options_MyStateSample {
-  set arrayA(arrayA: Array<number> | undefined)
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
+  set arrayA(arrayA: (Array<number> | undefined))
   
-  get arrayA(): Array<number> | undefined
-  set __backing_arrayA(__backing_arrayA: StorageLinkDecoratedVariable<Array<number>> | undefined)
+  get arrayA(): (Array<number> | undefined)
+  set __backing_arrayA(__backing_arrayA: (IStorageLinkDecoratedVariable<Array<number>> | undefined))
   
-  get __backing_arrayA(): StorageLinkDecoratedVariable<Array<number>> | undefined
-  set objectA(objectA: Object | undefined)
+  get __backing_arrayA(): (IStorageLinkDecoratedVariable<Array<number>> | undefined)
+  set objectA(objectA: (Object | undefined))
   
-  get objectA(): Object | undefined
-  set __backing_objectA(__backing_objectA: StorageLinkDecoratedVariable<Object> | undefined)
+  get objectA(): (Object | undefined)
+  set __backing_objectA(__backing_objectA: (IStorageLinkDecoratedVariable<Object> | undefined))
   
-  get __backing_objectA(): StorageLinkDecoratedVariable<Object> | undefined
-  set dateA(dateA: Date | undefined)
+  get __backing_objectA(): (IStorageLinkDecoratedVariable<Object> | undefined)
+  set dateA(dateA: (Date | undefined))
   
-  get dateA(): Date | undefined
-  set __backing_dateA(__backing_dateA: StorageLinkDecoratedVariable<Date> | undefined)
+  get dateA(): (Date | undefined)
+  set __backing_dateA(__backing_dateA: (IStorageLinkDecoratedVariable<Date> | undefined))
   
-  get __backing_dateA(): StorageLinkDecoratedVariable<Date> | undefined
-  set setA(setA: Set<number> | undefined)
+  get __backing_dateA(): (IStorageLinkDecoratedVariable<Date> | undefined)
+  set setA(setA: (Set<number> | undefined))
   
-  get setA(): Set<number> | undefined
-  set __backing_setA(__backing_setA: StorageLinkDecoratedVariable<Set<number>> | undefined)
+  get setA(): (Set<number> | undefined)
+  set __backing_setA(__backing_setA: (IStorageLinkDecoratedVariable<Set<number>> | undefined))
   
-  get __backing_setA(): StorageLinkDecoratedVariable<Set<number>> | undefined
-  set mapA(mapA: Map<number, string> | undefined)
+  get __backing_setA(): (IStorageLinkDecoratedVariable<Set<number>> | undefined)
+  set mapA(mapA: (Map<number, string> | undefined))
   
-  get mapA(): Map<number, string> | undefined
-  set __backing_mapA(__backing_mapA: StorageLinkDecoratedVariable<Map<number, string>> | undefined)
+  get mapA(): (Map<number, string> | undefined)
+  set __backing_mapA(__backing_mapA: (IStorageLinkDecoratedVariable<Map<number, string>> | undefined))
   
-  get __backing_mapA(): StorageLinkDecoratedVariable<Map<number, string>> | undefined
-  set unionA(unionA: string | undefined | undefined)
+  get __backing_mapA(): (IStorageLinkDecoratedVariable<Map<number, string>> | undefined)
+  set classA(classA: (Person | undefined))
   
-  get unionA(): string | undefined | undefined
-  set __backing_unionA(__backing_unionA: StorageLinkDecoratedVariable<string | undefined> | undefined)
+  get classA(): (Person | undefined)
+  set __backing_classA(__backing_classA: (IStorageLinkDecoratedVariable<Person> | undefined))
   
-  get __backing_unionA(): StorageLinkDecoratedVariable<string | undefined> | undefined
-  set classA(classA: Person | undefined)
+  get __backing_classA(): (IStorageLinkDecoratedVariable<Person> | undefined)
+  set enumA(enumA: (Status | undefined))
   
-  get classA(): Person | undefined
-  set __backing_classA(__backing_classA: StorageLinkDecoratedVariable<Person> | undefined)
+  get enumA(): (Status | undefined)
+  set __backing_enumA(__backing_enumA: (IStorageLinkDecoratedVariable<Status> | undefined))
   
-  get __backing_classA(): StorageLinkDecoratedVariable<Person> | undefined
-  set enumA(enumA: Status | undefined)
-  
-  get enumA(): Status | undefined
-  set __backing_enumA(__backing_enumA: StorageLinkDecoratedVariable<Status> | undefined)
-  
-  get __backing_enumA(): StorageLinkDecoratedVariable<Status> | undefined
+  get __backing_enumA(): (IStorageLinkDecoratedVariable<Status> | undefined)
   
 }
 
@@ -294,7 +278,6 @@ class __EntryWrapper extends EntryPoint {
   public constructor() {}
   
 }
-
 `;
 
 function testStorageLinkTransformer(this: PluginTestContext): void {
@@ -303,9 +286,9 @@ function testStorageLinkTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test storagelink complex type transform',
-    [storageLinkTransform, uiNoRecheck],
+    [storageLinkTransform, uiNoRecheck, recheck],
     {
-        checked: [testStorageLinkTransformer],
+        'checked:ui-no-recheck': [testStorageLinkTransformer],
     },
     {
         stopAfter: 'checked',

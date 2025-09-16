@@ -14,87 +14,125 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getIdentifierName, getAnnotationUsage, PresetDecorators } from '../utils';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { getIdentifierName, getAnnotationUsage, PresetDecorators, BUILD_NAME } from '../utils';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-const BUILD_NAME: string = 'build';
-const BUILD_ROOT_NUM: number = 1;
 const STATEMENT_LENGTH: number = 1;
+const BUILD_COUNT_LIMIT: number = 1;
 
-function isBuildOneRoot(statements: readonly arkts.Statement[], buildNode: arkts.Identifier,
-  context: UISyntaxRuleContext): void {
-  if (statements.length > STATEMENT_LENGTH && buildNode) {
-    context.report({
-      node: buildNode,
-      message: rule.messages.invalidBuildRootCount,
-    });
-  }
+class BuildRootNodeRule extends AbstractUISyntaxRule {
+    public setup(): Record<string, string> {
+        return {
+            invalidEntryBuildRoot: `In an '@Entry' decorated component, the 'build' function can have only one root node, which must be a container component.`,
+            invalidBuildRoot: `The 'build' function can have only one root node.`,
+        };
+    }
+
+    public parsed(node: arkts.AstNode): void {
+        if (!arkts.isStructDeclaration(node)) {
+            return;
+        }
+        const entryDecoratorUsage = getAnnotationUsage(node, PresetDecorators.ENTRY);
+        node.definition.body.forEach((member) => {
+            if (!arkts.isMethodDefinition(member) || getIdentifierName(member.name) !== BUILD_NAME) {
+                return;
+            }
+            const blockStatement = member.scriptFunction.body;
+            const buildNode = member.scriptFunction.id;
+            if (!blockStatement || !arkts.isBlockStatement(blockStatement) || !buildNode) {
+                return;
+            }
+            const statements = blockStatement.statements;
+            let buildCount = 0;
+            // rule1: The 'build' method cannot have more than one root node.
+            if (statements.length > STATEMENT_LENGTH) {
+                if (!this.isBuildOneRoot(statements, buildCount)) {
+                    this.report({
+                        node: buildNode,
+                        message: entryDecoratorUsage ? this.messages.invalidEntryBuildRoot : this.messages.invalidBuildRoot,
+                    });
+                }
+            }
+            // rule2: its 'build' function can have only one root node, which must be a container component.
+            if (!statements.length || !entryDecoratorUsage) {
+                return;
+            }
+            this.validateContainerInBuild(statements, buildNode);
+        });
+    }
+
+    private isBuildOneRoot(
+        statements: readonly arkts.Statement[],
+        buildCount: number
+    ): boolean {
+        statements.forEach(statement => {
+            if (!arkts.isExpressionStatement(statement)) {
+                return;
+            }
+            if (!statement.expression) {
+                return;
+            }
+            const componentName = this.getComponentName(statement.expression);
+            if (componentName && componentName !== 'hilog') {
+                buildCount++;
+            }
+        });
+        return buildCount <= BUILD_COUNT_LIMIT;
+    }
+
+    private validateContainerInBuild(statements: readonly arkts.Statement[], buildNode: arkts.Identifier): void {
+        const expressionStatement = statements[0];
+        if (!arkts.isExpressionStatement(expressionStatement)) {
+            return;
+        }
+        const callExpression = expressionStatement.expression;
+        if (!arkts.isCallExpression(callExpression)) {
+            return;
+        }
+        let componentName = this.getComponentName(callExpression);
+        if (!componentName) {
+            return;
+        }
+        let isContainer = this.isContainerComponent(componentName);
+        if (!isContainer) {
+            this.report({
+                node: buildNode,
+                message: this.messages.invalidEntryBuildRoot,
+            });
+        }
+    }
+
+    private isContainerComponent(componentName: string): boolean {
+        const loadedContainerComponents = this.context.componentsInfo?.containerComponents;
+        if (!componentName || !loadedContainerComponents) {
+            return false;
+        }
+        return loadedContainerComponents.includes(componentName);
+    }
+
+    private getComponentName(node: arkts.AstNode): string | undefined {
+        let children = node.getChildren();
+        let componentName: string | undefined;
+
+        while (true) {
+            if (!children || children.length === 0) {
+                return undefined;
+            }
+
+            const firstChild = children[0];
+
+            if (arkts.isIdentifier(firstChild)) {
+                componentName = getIdentifierName(firstChild);
+                return componentName;
+            }
+
+            if (!arkts.isMemberExpression(firstChild) && !arkts.isCallExpression(firstChild)) {
+                return undefined;
+            }
+
+            children = firstChild.getChildren();
+        }
+    }
 }
 
-function checkBuildRootNode(node: arkts.AstNode, context: UISyntaxRuleContext): void {
-  const loadedContainerComponents = context.containerComponents;
-  if (!arkts.isStructDeclaration(node)) {
-    return;
-  }
-  const entryDecoratorUsage = getAnnotationUsage(node, PresetDecorators.ENTRY);
-  node.definition.body.forEach(member => {
-    // Determine the number of root node
-    if (!arkts.isMethodDefinition(member) || getIdentifierName(member.name) !== BUILD_NAME) {
-      return;
-    }
-    const blockStatement = member.scriptFunction.body;
-    if (!blockStatement || !arkts.isBlockStatement(blockStatement)) {
-      return;
-    }
-    const buildNode = member.scriptFunction.id;
-    const statements = blockStatement.statements;
-    // rule1: The 'build' method cannot have more than one root node.
-    if (buildNode) {
-      isBuildOneRoot(statements, buildNode, context);
-    }
-    if (statements.length !== BUILD_ROOT_NUM) {
-      return;
-    }
-    // Determine whether it is a container component
-    const expressionStatement = statements[0];
-    if (!arkts.isExpressionStatement(expressionStatement)) {
-      return;
-    }
-    const callExpression = expressionStatement.expression;
-    if (!arkts.isCallExpression(callExpression)) {
-      return;
-    }
-    const componentName = callExpression.expression.dumpSrc();
-    let isContainer: boolean = false;
-    loadedContainerComponents?.forEach(container => {
-      if (componentName.includes(container)) {
-        isContainer = true;
-      }
-    });
-    // rule2: If the component is decorated by '@Entry', 
-    // its 'build' function can have only one root node, which must be a container component.
-    if (entryDecoratorUsage && !isContainer && buildNode) {
-      context.report({
-        node: buildNode,
-        message: rule.messages.invalidBuildRoot,
-      });
-    }
-  });
-}
-
-const rule: UISyntaxRule = {
-  name: 'build-root-node',
-  messages: {
-    invalidBuildRootCount: `The 'build' method cannot have more than one root node.`,
-    invalidBuildRoot: `If the component is decorated by '@Entry', its 'build' function can have only one root node, which must be a container component.`
-  },
-  setup(context) {
-    return {
-      parsed: (node): void => {
-        checkBuildRootNode(node, context);
-      },
-    };
-  },
-};
-
-export default rule;
+export default BuildRootNodeRule;

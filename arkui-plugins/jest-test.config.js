@@ -19,6 +19,7 @@ const rootPath = path.resolve(__dirname, '../../../');
 const sdkPath = path.resolve(rootPath, './out/sdk/ohos-sdk/linux/ets/ets1.2');
 const pandaSdkPath = path.resolve(sdkPath, './build-tools/ets2panda');
 const apiPath = path.resolve(sdkPath, './api');
+const kitPath = path.resolve(sdkPath, './kits');
 
 module.exports = {
     testEnvironment: 'node',
@@ -29,6 +30,7 @@ module.exports = {
     moduleFileExtensions: ['ts', 'js', 'json', 'node'],
     coverageDirectory: './test/report',
     collectCoverageFrom: [
+        'collectors/**',
         'common/**',
         'memo-plugins/**',
         'ui-plugins/**'
@@ -45,12 +47,13 @@ module.exports = {
         'ui-plugins/printer-transformer.ts',
         'ui-plugins/builder-lambda-translators/builder-lambda-transformer.ts',
         'ui-plugins/entry-translators/entry-transformer.ts',
-        'ui-plugins/struct-translators/struct-transformer.ts'
+        'ui-plugins/struct-translators/struct-transformer.ts',
     ],
     verbose: true,
     globals: {
         SDK_PATH: sdkPath,
         PANDA_SDK_PATH: pandaSdkPath,
         API_PATH: apiPath,
+        KIT_PATH: kitPath,
     },
 };

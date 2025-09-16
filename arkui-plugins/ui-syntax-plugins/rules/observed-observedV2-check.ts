@@ -15,33 +15,33 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { PresetDecorators } from '../utils';
-import { UISyntaxRule } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-const rule: UISyntaxRule = {
-  name: 'observed-observedV2-check',
-  messages: {
-    conflictingDecorators: `A class cannot be decorated by both '@Observed' and '@ObservedV2' at the same time.`,
-  },
-  setup(context) {
+class ObservedObservedV2Rule extends AbstractUISyntaxRule {
+  public setup(): Record<string, string> {
     return {
-      parsed: (node): void => {
-        if (!arkts.isClassDeclaration(node)) {
-          return;
-        }
-        const hasObservedDecorator = node.definition?.annotations?.find(annotations => annotations.expr &&
-          annotations.expr.dumpSrc() === PresetDecorators.OBSERVED_V1);
-        const hasObservedV2Decorator = node.definition?.annotations?.find(annotations => annotations.expr &&
-          annotations.expr.dumpSrc() === PresetDecorators.OBSERVED_V2);
-        // If the current class is decorated by @Observed and @ObservedV2, an error is reported
-        if (hasObservedDecorator && hasObservedV2Decorator) {
-          context.report({
-            node: hasObservedDecorator,
-            message: rule.messages.conflictingDecorators,
-          });
-        }
-      },
+      conflictingDecorators: `A class cannot be decorated by both '@Observed' and '@ObservedV2' at the same time.`,
     };
-  },
+  }
+
+  public parsed(node: arkts.AstNode): void {
+    if (!arkts.isClassDeclaration(node)) {
+      return;
+    }
+    const hasObservedDecorator = node.definition?.annotations?.find(annotations => annotations.expr &&
+      arkts.isIdentifier(annotations.expr) &&
+      annotations.expr.name === PresetDecorators.OBSERVED_V1);
+    const hasObservedV2Decorator = node.definition?.annotations?.find(annotations => annotations.expr &&
+      arkts.isIdentifier(annotations.expr) &&
+      annotations.expr.name === PresetDecorators.OBSERVED_V2);
+    // If the current class is decorated by @Observed and @ObservedV2, an error is reported
+    if (hasObservedDecorator && hasObservedV2Decorator) {
+      this.report({
+        node: hasObservedDecorator,
+        message: this.messages.conflictingDecorators,
+      });
+    }
+  }
 };
 
-export default rule;
+export default ObservedObservedV2Rule;

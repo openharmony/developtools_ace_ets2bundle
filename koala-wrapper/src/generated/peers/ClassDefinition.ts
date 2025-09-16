@@ -42,6 +42,7 @@ import { TSEnumDeclaration } from "./TSEnumDeclaration"
 import { ClassDeclaration } from "./ClassDeclaration"
 import { FunctionExpression } from "./FunctionExpression"
 import { AnnotationUsage } from "./AnnotationUsage"
+import { Es2pandaLanguage } from "../../Es2pandaEnums"
 export class ClassDefinition extends TypedAstNode {
      constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DEFINITION)
@@ -65,6 +66,12 @@ export class ClassDefinition extends TypedAstNode {
     }
     static update2ClassDefinition(original: ClassDefinition | undefined, ident: Identifier | undefined, modifiers: Es2pandaClassDefinitionModifiers, flags: Es2pandaModifierFlags): ClassDefinition {
         return new ClassDefinition(global.generatedEs2panda._UpdateClassDefinition2(global.context, passNode(original), passNode(ident), modifiers, flags))
+    }
+    static create3ClassDefinition(ident: Identifier | undefined, typeParams: TSTypeParameterDeclaration | undefined, superTypeParams: TSTypeParameterInstantiation | undefined, _implements: readonly TSClassImplements[], ctor: MethodDefinition | undefined, superClass: Expression | undefined, body: readonly AstNode[], modifiers: Es2pandaClassDefinitionModifiers, flags: Es2pandaModifierFlags, lang: Es2pandaLanguage): ClassDefinition {
+        return new ClassDefinition(global.es2panda._CreateClassDefinition3(global.context, passNode(ident), passNode(typeParams), passNode(superTypeParams), passNodeArray(_implements), _implements.length, passNode(ctor), passNode(superClass), passNodeArray(body), body.length, modifiers, flags, lang))
+    }
+    static update3ClassDefinition(original: ClassDefinition | undefined, ident: Identifier | undefined, typeParams: TSTypeParameterDeclaration | undefined, superTypeParams: TSTypeParameterInstantiation | undefined, _implements: readonly TSClassImplements[], ctor: MethodDefinition | undefined, superClass: Expression | undefined, body: readonly AstNode[], modifiers: Es2pandaClassDefinitionModifiers, flags: Es2pandaModifierFlags, lang: Es2pandaLanguage): ClassDefinition {
+        return new ClassDefinition(global.es2panda._UpdateClassDefinition3(global.context, passNode(original), passNode(ident), passNode(typeParams), passNode(superTypeParams), passNodeArray(_implements), _implements.length, passNode(ctor), passNode(superClass), passNodeArray(body), body.length, modifiers, flags, lang))
     }
     get ident(): Identifier | undefined {
         return unpackNode(global.generatedEs2panda._ClassDefinitionIdentConst(global.context, this.peer))
@@ -212,6 +219,9 @@ export class ClassDefinition extends TypedAstNode {
     setAnnotations(annotations: readonly AnnotationUsage[]): this {
         global.generatedEs2panda._ClassDefinitionSetAnnotations(global.context, this.peer, passNodeArray(annotations), annotations.length)
         return this
+    }
+    get lang(): Es2pandaLanguage {
+        return global.es2panda._ClassDefinitionLanguageConst(global.context, this.peer);
     }
 }
 export function isClassDefinition(node: AstNode): node is ClassDefinition {

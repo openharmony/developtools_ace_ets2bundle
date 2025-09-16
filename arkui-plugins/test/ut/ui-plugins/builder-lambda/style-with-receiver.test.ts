@@ -14,11 +14,12 @@
  */
 
 import * as path from 'path';
-import { PluginTestContext, PluginTester } from '../../../utils/plugin-tester';
-import { BuildConfig, mockBuildConfig } from '../../../utils/artkts-config';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { builderLambdaNoRecheck, structNoRecheck, uiNoRecheck } from '../../../utils/plugins';
+import { recheck, uiNoRecheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -33,44 +34,51 @@ const pluginTester = new PluginTester('test function with receiver style transfo
 
 const parsedTransform: Plugins = {
     name: 'style-with-receiver',
-    parsed: uiTransform().parsed
+    parsed: uiTransform().parsed,
 };
 
 const expectedScript: string = `
-import { __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-import { __memo_context_type as __memo_context_type } from "arkui.stateManagement.runtime";
-import { UIColumnAttribute as UIColumnAttribute } from "@ohos.arkui.component";
-import { UITextAttribute as UITextAttribute } from "@ohos.arkui.component";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
 import { memo as memo } from "@ohos.arkui.stateManagement";
-import { Text as Text, UITextAttribute as UITextAttribute, Column as Column, Component as Component } from "@ohos.arkui.component";
+
+import { Text as Text, TextAttribute as TextAttribute, Column as Column, Component as Component } from "@ohos.arkui.component";
+
 import hilog from "@ohos.hilog";
 
 function main() {}
 
-@memo() function cardStyle(this: UITextAttribute, num: number, str: string): UITextAttribute {
+
+@memo() function cardStyle(this: TextAttribute, num: number, str: string): TextAttribute {
   this.fontSize(num);
   this.backgroundColor(num);
   return this;
 }
 
-@memo() function style22(this: UITextAttribute): UITextAttribute {
+@memo() function style22(this: TextAttribute): TextAttribute {
   this.fontWeight(700);
   return this;
 }
 
-@Component({freezeWhenInactive:false}) final class MM extends CustomComponent<MM, __Options_MM> {
-  public __initializeStruct(initializers: __Options_MM | undefined, @memo() content: (()=> void) | undefined): void {}
+
+@Component() final struct MM extends CustomComponent<MM, __Options_MM> {
+  public __initializeStruct(initializers: (__Options_MM | undefined), @memo() content: ((()=> void) | undefined)): void {}
   
-  public __updateStruct(initializers: __Options_MM | undefined): void {}
+  public __updateStruct(initializers: (__Options_MM | undefined)): void {}
   
-  @memo() public _build(@memo() style: ((instance: MM)=> MM) | undefined, @memo() content: (()=> void) | undefined, initializers: __Options_MM | undefined): void {
-    Column(undefined, undefined, (() => {
-      Text(@memo() ((instance: UITextAttribute): void => {
+  @memo() public build() {
+    Column(undefined, undefined, @memo() (() => {
+      Text(@memo() ((instance: TextAttribute): void => {
         style22(cardStyle(instance.height(200).fontColor("#000000"), 600, "#eeeeee").fontSize(60).fontWeight(400)).width(900);
         return;
       }), "hello world", undefined, undefined);
-      Text(@memo() ((instance: UITextAttribute): void => {
+      Text(@memo() ((instance: TextAttribute): void => {
         cardStyle(instance, 600, "#eeeeee");
         return;
       }), "hello world", undefined, undefined);
@@ -81,7 +89,7 @@ function main() {}
   
 }
 
-interface __Options_MM {
+@Component() export interface __Options_MM {
   
 }
 `;
@@ -92,9 +100,9 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test function with receiver style transformstion',
-    [parsedTransform, uiNoRecheck],
+    [parsedTransform, uiNoRecheck, recheck],
     {
-        checked: [testParsedAndCheckedTransformer],
+        'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },
     {
         stopAfter: 'checked',

@@ -37,20 +37,22 @@ export function unmemoizeTransform(): Plugins {
 
 function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
     console.log('[MEMO PLUGIN] AFTER CHECKED ENTER');
-    const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
+    arkts.Performance.getInstance().memoryTrackerReset();
+    arkts.Performance.getInstance().startMemRecord('Node:UIPlugin:Memo-AfterCheck');
+    const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
         let script = program.astNode;
         debugLog('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
         const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
         const isFrameworkMode = !!this.getProjectConfig()?.frameworkMode;
-        const canSkipPhases = false;
+        const canSkipPhases = !isFrameworkMode && program.canSkipPhases();
         debugDump(
             script.dumpSrc(),
             getDumpFileName(0, 'SRC', 5, 'MEMO_AfterCheck_Begin'),
             true,
             cachePath,
-            program.programFileNameWithExtension
+            program.fileNameWithExtension
         );
         arkts.Performance.getInstance().createEvent('memo-checked');
         program = checkedProgramVisit(program, this, canSkipPhases, isFrameworkMode);
@@ -62,13 +64,20 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
             getDumpFileName(0, 'SRC', 6, 'MEMO_AfterCheck_End'),
             true,
             cachePath,
-            program.programFileNameWithExtension
+            program.fileNameWithExtension
         );
+
+        arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:Memo-AfterCheck');
+        arkts.Performance.getInstance().memoryTrackerReset();
+        arkts.Performance.getInstance().stopMemRecord('Node:UIPlugin:Memo-AfterCheck');
+        arkts.Performance.getInstance().startMemRecord('Node:ArkTS:Recheck');
         arkts.Performance.getInstance().createEvent('memo-recheck');
         arkts.recheckSubtree(script);
         arkts.Performance.getInstance().stopEvent('memo-recheck', true);
-        arkts.Performance.getInstance().clearAllEvents();
         this.setArkTSAst(script);
+        arkts.Performance.getInstance().memoryTrackerGetDelta('ArkTS:Recheck');
+        arkts.Performance.getInstance().stopMemRecord('Node:ArkTS:Recheck');
+        arkts.Performance.getInstance().memoryTrackerPrintCurrent('UIPlugin:End');
         console.log('[MEMO PLUGIN] AFTER CHECKED EXIT');
         return script;
     }
@@ -83,22 +92,24 @@ function checkedProgramVisit(
     isFrameworkMode: boolean = false
 ): arkts.Program {
     if (canSkipPhases) {
-        debugLog('[SKIP PHASE] phase: memo-checked, moduleName: ', program?.moduleName);
+        debugLog('[SKIP PHASE] phase: memo-checked, moduleName: ', program.moduleName);
     } else {
-        debugLog('[CANT SKIP PHASE] phase: memo-checked, moduleName: ', program?.moduleName);
+        debugLog('[CANT SKIP PHASE] phase: memo-checked, moduleName: ', program.moduleName);
         const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
-        const parameterTransformer = new ParameterTransformer({
-            positionalIdTracker,
-        });
+        const parameterTransformer = new ParameterTransformer({ positionalIdTracker });
         const returnTransformer = new ReturnTransformer();
         const signatureTransformer = new SignatureTransformer();
-        const internalsTransformer = new InternalsTransformer({ positionalIdTracker });
+        let internalsTransformer: InternalsTransformer | undefined;
+        if (isFrameworkMode) {
+            internalsTransformer = new InternalsTransformer({ positionalIdTracker });
+        }
         const functionTransformer = new FunctionTransformer({
             positionalIdTracker,
             parameterTransformer,
             returnTransformer,
             signatureTransformer,
-            internalsTransformer
+            internalsTransformer,
+            useCache: arkts.NodeCache.getInstance().isCollected(),
         });
         const skipPrefixNames = isFrameworkMode
             ? EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK
@@ -111,6 +122,7 @@ function checkedProgramVisit(
             pluginContext,
         });
         program = programVisitor.programVisitor(program);
+        arkts.NodeCache.getInstance().clear();
     }
     return program;
 }

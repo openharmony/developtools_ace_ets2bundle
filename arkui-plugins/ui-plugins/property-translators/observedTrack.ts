@@ -14,141 +14,144 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { backingField, expectName } from '../../common/arkts-utils';
-import { DecoratorNames, hasDecorator } from './utils';
-import { ClassScopeInfo } from 'ui-plugins/checked-transformer';
+import { annotation, backingField, expectName } from '../../common/arkts-utils';
+import { DecoratorNames, StateManagementTypes, ObservedNames } from '../../common/predefines';
+import { ObservedPropertyTranslator } from './base';
+import {
+    collectStateManagementTypeImport,
+    generateThisBacking,
+    hasDecorator,
+    hasDecoratorName,
+    removeDecorator,
+    removeImplementProperty,
+} from './utils';
+import { ClassScopeInfo } from '../struct-translators/utils';
+import { factory } from './factory';
+import { factory as uiFactory } from '../ui-factory';
 
-export class ObservedTrackTranslator {
-    constructor(protected property: arkts.ClassProperty, protected classScopeInfo: ClassScopeInfo) {}
+export class ObservedTrackTranslator extends ObservedPropertyTranslator {
+    private hasImplement: boolean;
+    private isTracked: boolean;
 
-    private hasImplement: boolean = expectName(this.property.key).startsWith('<property>');
-    private isTracked: boolean = hasDecorator(this.property, DecoratorNames.TRACK);
+    constructor(property: arkts.ClassProperty, classScopeInfo: ClassScopeInfo) {
+        super(property, classScopeInfo);
+        this.hasImplement = expectName(this.property.key).startsWith(ObservedNames.PROPERTY_PREFIX);
+        this.isTracked = hasDecorator(this.property, DecoratorNames.TRACK);
+    }
 
     translateMember(): arkts.AstNode[] {
         if (!this.isTracked && (this.classScopeInfo.classHasTrack || !this.classScopeInfo.isObserved)) {
             return [this.property];
         }
         const originalName: string = this.hasImplement
-            ? this.removeImplementProperty(expectName(this.property.key))
+            ? removeImplementProperty(expectName(this.property.key))
             : expectName(this.property.key);
         const newName: string = backingField(originalName);
-        let properyIsClass = false;
-
-        if (this.property.typeAnnotation && arkts.isETSTypeReference(this.property.typeAnnotation)) {
-            const decl = arkts.getDecl(this.property.typeAnnotation.part?.name!);
-            if (arkts.isClassDefinition(decl!)) {
-                properyIsClass = true;
-            }
-        }
-        const field = this.createField(originalName, newName, properyIsClass);
-
-        this.transformGetterSetter(originalName, newName, properyIsClass);
-
+        const field = this.createField(originalName, newName);
+        this.transformGetterSetter(originalName, newName);
         return [...field];
     }
 
-    createField(originalName: string, newName: string, properyIsClass: boolean): arkts.ClassProperty[] {
-        const backingField = properyIsClass
-            ? this.propertyIsClassField(newName)
-            : arkts.factory.createClassProperty(
-                  arkts.factory.createIdentifier(newName),
-                  this.property.value,
-                  this.property.typeAnnotation,
-                  arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
-                  false
-              );
+    createField(originalName: string, newName: string): arkts.ClassProperty[] {
+        const backingField = arkts.factory.createClassProperty(
+            arkts.factory.createIdentifier(newName),
+            this.property.value,
+            this.propertyType,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+            false
+        );
+        if (!this.property.value) {
+            backingField.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL;
+        }
+        const annotations: arkts.AnnotationUsage[] = [...this.property.annotations];
+        if (
+            !hasDecoratorName(this.property, DecoratorNames.JSONSTRINGIFYIGNORE) &&
+            !hasDecoratorName(this.property, DecoratorNames.JSONRENAME)
+        ) {
+            annotations.push(
+                annotation(DecoratorNames.JSONRENAME).addProperty(
+                    arkts.factory.createClassProperty(
+                        arkts.factory.createIdentifier(ObservedNames.NEW_NAME),
+                        arkts.factory.createStringLiteral(originalName),
+                        undefined,
+                        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+                        false
+                    )
+                )
+            );
+        }
+        backingField.setAnnotations(annotations);
+        removeDecorator(backingField, DecoratorNames.TRACK);
         if (!this.isTracked) {
             return [backingField];
         }
         const metaField = this.metaField(originalName);
+        metaField.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE)]);
         return [backingField, metaField];
     }
 
-    createGetter(originalName: string, newName: string, properyIsClass: boolean): arkts.MethodDefinition {
-        const ifRefDepth: arkts.IfStatement = this.getterIfRefDepth(originalName);
-        const returnMember: arkts.ReturnStatement = this.getterReturnMember(properyIsClass, newName);
-        const setObservationDepth = this.getterSetObservationDepth(newName);
-
-        const body = arkts.factory.createBlock([
-            ifRefDepth,
-            ...(properyIsClass ? [setObservationDepth] : []),
-            returnMember,
-        ]);
-
-        const scriptFunction = arkts.factory.createScriptFunction(
-            body,
-            arkts.FunctionSignature.createFunctionSignature(undefined, [], this.property.typeAnnotation, false),
-            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+    createGetter(originalName: string, newName: string): arkts.MethodDefinition {
+        const conditionalAddRef = arkts.factory.createExpressionStatement(
+            arkts.factory.createCallExpression(generateThisBacking(ObservedNames.CONDITIONAL_ADD_REF), undefined, [
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createThisExpression(),
+                    this.metaIdentifier(originalName),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                ),
+            ])
         );
-
-        return arkts.factory.createMethodDefinition(
-            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET,
-            arkts.factory.createIdentifier(originalName),
-            scriptFunction,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
-            false
+        const backingMember: arkts.Expression = generateThisBacking(newName);
+        const returnMember: arkts.ReturnStatement = arkts.factory.createReturnStatement(
+            this.property.value
+                ? backingMember
+                : arkts.factory.createTSAsExpression(backingMember, this.propertyType, false)
         );
+        const body = arkts.factory.createBlock([conditionalAddRef, returnMember]);
+        return uiFactory.createMethodDefinition({
+            kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET,
+            key: arkts.factory.createIdentifier(originalName),
+            function: {
+                body: body,
+                returnTypeAnnotation: this.propertyType,
+                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
+            },
+            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+        });
     }
 
-    createSetter(originalName: string, newName: string, properyIsClass: boolean): arkts.MethodDefinition {
-        const ifEqualsNewValue: arkts.IfStatement = this.setterIfEqualsNewValue(properyIsClass, originalName, newName);
+    createSetter(originalName: string, newName: string): arkts.MethodDefinition {
+        const ifEqualsNewValue: arkts.IfStatement = this.setterIfEqualsNewValue(originalName, newName);
         const body = arkts.factory.createBlock([ifEqualsNewValue]);
         const param = arkts.factory.createParameterDeclaration(
-            arkts.factory.createIdentifier('newValue', this.property.typeAnnotation),
+            arkts.factory.createIdentifier(ObservedNames.NEW_VALUE, this.propertyType),
             undefined
         );
 
-        const scriptFunction = arkts.factory.createScriptFunction(
-            body,
-            arkts.FunctionSignature.createFunctionSignature(undefined, [param], undefined, false),
-            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_SETTER,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
-        );
-
-        return arkts.factory.createMethodDefinition(
-            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET,
-            arkts.factory.createIdentifier(originalName),
-            scriptFunction,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
-            false
-        );
-    }
-
-    genThisBacking(newName: string): arkts.MemberExpression {
-        return arkts.factory.createMemberExpression(
-            arkts.factory.createThisExpression(),
-            arkts.factory.createIdentifier(newName),
-            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-            false,
-            false
-        );
-    }
-
-    genThisBackingValue(newName: string): arkts.MemberExpression {
-        return arkts.factory.createMemberExpression(
-            this.genThisBacking(newName),
-            arkts.factory.createIdentifier('value'),
-            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-            false,
-            false
-        );
+        return uiFactory.createMethodDefinition({
+            kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET,
+            key: arkts.factory.createIdentifier(originalName),
+            function: {
+                body: body,
+                params: [param],
+                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_SETTER,
+            },
+            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+        });
     }
 
     metaIdentifier(originalName: string): arkts.Identifier {
         return this.isTracked
-            ? arkts.factory.createIdentifier(`__meta_${originalName}`)
-            : arkts.factory.createIdentifier('__meta');
+            ? arkts.factory.createIdentifier(`${StateManagementTypes.META}_${originalName}`)
+            : arkts.factory.createIdentifier(StateManagementTypes.META);
     }
 
-    removeImplementProperty(originalName: string): string {
-        const prefix = '<property>';
-        return originalName.substring(prefix.length);
-    }
-
-    transformGetterSetter(originalName: string, newName: string, properyIsClass: boolean): void {
-        const newGetter = this.createGetter(originalName, newName, properyIsClass);
-        const newSetter = this.createSetter(originalName, newName, properyIsClass);
+    transformGetterSetter(originalName: string, newName: string): void {
+        const newGetter = this.createGetter(originalName, newName);
+        const newSetter = this.createSetter(originalName, newName);
         if (this.hasImplement) {
             {
                 const idx: number = this.classScopeInfo.getters.findIndex(
@@ -181,124 +184,25 @@ export class ObservedTrackTranslator {
         }
     }
 
-    propertyIsClassField(newName: string): arkts.ClassProperty {
-        return arkts.factory.createClassProperty(
-            arkts.factory.createIdentifier(newName),
-            this.property.value
-                ? arkts.factory.createETSNewClassInstanceExpression(
-                      arkts.factory.createTypeReference(
-                          arkts.factory.createTypeReferencePart(
-                              arkts.factory.createIdentifier('BackingValue'),
-                              arkts.factory.createTSTypeParameterInstantiation(
-                                  this.property.typeAnnotation ? [this.property.typeAnnotation] : []
-                              )
-                          )
-                      ),
-                      [this.property.value]
-                  )
-                : undefined,
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier('BackingValue'),
-                    arkts.factory.createTSTypeParameterInstantiation(
-                        this.property.typeAnnotation ? [this.property.typeAnnotation] : []
-                    )
-                )
-            ),
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
-            false
-        );
-    }
-
     metaField(originalName: string): arkts.ClassProperty {
+        collectStateManagementTypeImport(StateManagementTypes.MUTABLE_STATE_META);
         return arkts.factory.createClassProperty(
-            arkts.factory.createIdentifier(`__meta_${originalName}`),
-            arkts.factory.createETSNewClassInstanceExpression(
-                arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('MutableStateMeta'))
-                ),
-                [arkts.factory.createStringLiteral('@Track')]
-            ),
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('MutableStateMeta'))
-            ),
+            arkts.factory.createIdentifier(`${StateManagementTypes.META}_${originalName}`),
+            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_MUTABLESTATE_META, undefined, [], false),
+            uiFactory.createTypeReferenceFromString(StateManagementTypes.MUTABLE_STATE_META),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
         );
     }
 
-    getterIfRefDepth(originalName: string): arkts.IfStatement {
-        return arkts.factory.createIfStatement(
-            arkts.factory.createBinaryExpression(
-                arkts.factory.createMemberExpression(
-                    arkts.factory.createThisExpression(),
-                    arkts.factory.createIdentifier('_permissibleAddRefDepth'),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
-                ),
-                arkts.factory.createNumericLiteral(0),
-                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_GREATER_THAN
-            ),
-            arkts.factory.createBlock([
-                arkts.factory.createExpressionStatement(
-                    arkts.factory.createCallExpression(
-                        arkts.factory.createMemberExpression(
-                            arkts.factory.createMemberExpression(
-                                arkts.factory.createThisExpression(),
-                                this.metaIdentifier(originalName),
-                                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                                false,
-                                false
-                            ),
-                            arkts.factory.createIdentifier('addRef'),
-                            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                            false,
-                            false
-                        ),
-                        undefined,
-                        undefined,
-                        false,
-                        false
-                    )
-                ),
-            ])
-        );
-    }
-
-    getterSetObservationDepth(newName: string): arkts.ExpressionStatement {
-        return arkts.factory.createExpressionStatement(
-            arkts.factory.createCallExpression(arkts.factory.createIdentifier('setObservationDepth'), undefined, [
-                this.genThisBackingValue(newName),
-                arkts.factory.createBinaryExpression(
-                    arkts.factory.createMemberExpression(
-                        arkts.factory.createThisExpression(),
-                        arkts.factory.createIdentifier('_permissibleAddRefDepth'),
-                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                        false,
-                        false
-                    ),
-                    arkts.factory.createNumericLiteral(1),
-                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_MINUS
-                ),
-            ])
-        );
-    }
-
-    getterReturnMember(properyIsClass: boolean, newName: string): arkts.ReturnStatement {
-        return arkts.factory.createReturnStatement(
-            properyIsClass ? this.genThisBackingValue(newName) : this.genThisBacking(newName)
-        );
-    }
-
-    setterIfEqualsNewValue(properyIsClass: boolean, originalName: string, newName: string): arkts.IfStatement {
-        const backingValue = properyIsClass ? this.genThisBackingValue(newName) : this.genThisBacking(newName);
+    setterIfEqualsNewValue(originalName: string, newName: string): arkts.IfStatement {
+        const backingValue = generateThisBacking(newName);
 
         const setNewValue = arkts.factory.createExpressionStatement(
             arkts.factory.createAssignmentExpression(
                 backingValue,
                 arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                arkts.factory.createIdentifier('newValue')
+                arkts.factory.createIdentifier(ObservedNames.NEW_VALUE)
             )
         );
 
@@ -312,7 +216,7 @@ export class ObservedTrackTranslator {
                         false,
                         false
                     ),
-                    arkts.factory.createIdentifier('fireChange'),
+                    arkts.factory.createIdentifier(ObservedNames.FIRE_CHANGE),
                     arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                     false,
                     false
@@ -323,23 +227,15 @@ export class ObservedTrackTranslator {
         );
 
         const subscribingWatches = arkts.factory.createExpressionStatement(
-            arkts.factory.createCallExpression(
-                arkts.factory.createMemberExpression(
-                    arkts.factory.createThisExpression(),
-                    arkts.factory.createIdentifier('executeOnSubscribingWatches'),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
-                ),
-                undefined,
-                [arkts.factory.createStringLiteral(originalName)]
-            )
+            arkts.factory.createCallExpression(generateThisBacking(ObservedNames.EXECUATE_WATCHES), undefined, [
+                arkts.factory.createStringLiteral(originalName),
+            ])
         );
 
         return arkts.factory.createIfStatement(
             arkts.factory.createBinaryExpression(
                 backingValue,
-                arkts.factory.createIdentifier('newValue'),
+                arkts.factory.createIdentifier(ObservedNames.NEW_VALUE),
                 arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NOT_STRICT_EQUAL
             ),
             arkts.factory.createBlock([setNewValue, fireChange, subscribingWatches])

@@ -14,76 +14,86 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { UISyntaxRule, UISyntaxRuleContext } from './ui-syntax-rule';
+import { AbstractUISyntaxRule } from './ui-syntax-rule';
 import { getIdentifierName } from '../utils';
 
-function isInsideStructAndBuild(node: arkts.AstNode): boolean {
-  let parentNode = node.parent;
-  let isInStruct = false;
-  let isInBuild = false;
-  while (arkts.nodeType(parentNode) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
-    if (arkts.isStructDeclaration(parentNode)) {
-      isInStruct = true;
-    }
-    if (arkts.isScriptFunction(parentNode) && parentNode.id?.name === 'build') {
-      isInBuild = true;
-    }
-    parentNode = parentNode.parent;
-  }
-  return isInStruct && isInBuild;
-}
 
-function reportNoChildInButtonError(parentNode: arkts.AstNode, context: UISyntaxRuleContext): void {
-  const siblings = parentNode.getChildren();
-  if (!Array.isArray(siblings) || siblings.length < 3) {
-    return;
-  }
-  if (arkts.isStringLiteral(siblings[1]) && arkts.isBlockStatement(siblings[2])) {
-    context.report({
-      node: parentNode,
-      message: rule.messages.noChildInButton,
-      fix: (parentNode) => {
-        const startPosition = arkts.getStartPosition(siblings[2]);
-        const endPosition = arkts.getEndPosition(siblings[2]);
+class NoChildInButtonRule extends AbstractUISyntaxRule {
+    public setup(): Record<string, string> {
         return {
-          range: [startPosition, endPosition],
-          code: '',
+            noChildInButton: `The Button component with a label parameter can not have any child.`,
         };
-      },
-    });
-  }
-}
+    }
 
-const rule: UISyntaxRule = {
-  name: 'no-child-in-button',
-  messages: {
-    noChildInButton: `The Button component with a label parameter can not have any child.`,
-  },
-  setup(context: UISyntaxRuleContext) {
-    return {
-      parsed: (node): void => {
+    public parsed(node: arkts.AstNode): void {
         // Check if the current node is an identifier
         if (!arkts.isIdentifier(node)) {
-          return;
+            return;
         }
         const componentName = getIdentifierName(node);
         // If the current node is 'Button'
         if (componentName !== 'Button') {
-          return;
+            return;
         }
-        if (!isInsideStructAndBuild(node)) {
-          return;
+        if (!this.isInsideStructAndBuild(node)) {
+            return;
+        }
+        if (!node.parent) {
+            return;
         }
         // Obtain the information of the parent node of the current node
         let parentNode = node.parent;
         if (!arkts.isCallExpression(parentNode)) {
-          return;
+            return;
         };
         // Gets and traverses all the children of the parent node
-        reportNoChildInButtonError(parentNode, context);
-      }
-    };
-  },
+        this.reportNoChildInButtonError(parentNode);
+    }
+
+    private isInsideStructAndBuild(node: arkts.AstNode): boolean {
+        if (!node.parent) {
+            return false;
+        }
+        let parentNode = node.parent;
+        let isInStruct = false;
+        let isInBuild = false;
+        while (arkts.nodeType(parentNode) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
+            if (arkts.isStructDeclaration(parentNode)) {
+                isInStruct = true;
+            }
+            if (arkts.isScriptFunction(parentNode) && parentNode.id?.name === 'build') {
+                isInBuild = true;
+            }
+            if (!parentNode.parent) {
+                return false;
+            }
+            parentNode = parentNode.parent;
+        }
+        return isInStruct && isInBuild;
+    }
+
+    private reportNoChildInButtonError(parentNode: arkts.AstNode): void {
+        const siblings = parentNode.getChildren();
+        if (!Array.isArray(siblings) || siblings.length < 3) {
+            return;
+        }
+        if (arkts.isStringLiteral(siblings[1]) && arkts.isBlockStatement(siblings[2])) {
+            this.report({
+                node: parentNode,
+                message: this.messages.noChildInButton,
+                fix: () => {
+                    const startPosition = siblings[2].startPosition;
+                    const endPosition = siblings[2].endPosition;
+                    return {
+                        title: 'Remove child components',
+                        range: [startPosition, endPosition],
+                        code: '',
+                    };
+                },
+            });
+        }
+    }
+
 };
 
-export default rule;
+export default NoChildInButtonRule;

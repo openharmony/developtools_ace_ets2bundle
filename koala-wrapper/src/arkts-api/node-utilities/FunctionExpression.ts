@@ -13,16 +13,15 @@
  * limitations under the License.
  */
 
-import { ScriptFunction } from '../../generated';
+import { ScriptFunction, FunctionExpression } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { FunctionExpression } from '../types';
 import { attachModifiers, updateThenAttach } from '../utilities/private';
 
-export function updateFunctionExpression(original: FunctionExpression, expression: ScriptFunction): FunctionExpression {
-    if (isSameNativeObject(expression, original.scriptFunction)) {
+export function updateFunctionExpression(original: FunctionExpression, func?: ScriptFunction): FunctionExpression {
+    if (isSameNativeObject(func, original.function)) {
         return original;
     }
 
-    const update = updateThenAttach(FunctionExpression.update, attachModifiers);
-    return update(original, expression);
+    const update = updateThenAttach(FunctionExpression.updateFunctionExpression, attachModifiers);
+    return update(original, func);
 }

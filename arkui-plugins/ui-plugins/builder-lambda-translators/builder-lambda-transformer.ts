@@ -14,12 +14,22 @@
  */
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor } from '../../common/abstract-visitor';
+import { ImportCollector } from '../../common/import-collector';
 import { isBuilderLambda, isBuilderLambdaMethodDecl } from './utils';
 import { factory } from './factory';
+import { ProjectConfig } from '../../common/plugin-context';
 
 export class BuilderLambdaTransformer extends AbstractVisitor {
+    projectConfig: ProjectConfig | undefined;
+
+    constructor(projectConfig: ProjectConfig | undefined) {
+        super();
+        this.projectConfig = projectConfig;
+    }
+
     reset(): void {
         super.reset();
+        ImportCollector.getInstance().reset();
     }
 
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
@@ -32,6 +42,9 @@ export class BuilderLambdaTransformer extends AbstractVisitor {
             return this.visitEachChild(lambda);
         }
         const node = this.visitEachChild(beforeChildren);
+        if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
+            ImportCollector.getInstance().insertCurrentImports(this.program);
+        }
         return node;
     }
 }
