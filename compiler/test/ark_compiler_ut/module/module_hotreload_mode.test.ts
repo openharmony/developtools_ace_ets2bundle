@@ -36,6 +36,7 @@ import {
 import {
   ES2ABC_PATH,
   SYMBOLMAP_MAP,
+  CACHE_FILE,
   DEFAULT_ETS,
   DEBUG_INFO,
   SIMBOL_TABLE
@@ -110,8 +111,22 @@ mocha.describe('test module_hotreload_mode file api', function () {
     moduleMode.addHotReloadArgs();
     expect(moduleMode.cmdArgs[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
     expect(moduleMode.cmdArgs[1] === DEBUG_INFO).to.be.true;
-    expect(moduleMode.cmdArgs[2] === SIMBOL_TABLE).to.be.true;
-    expect(moduleMode.cmdArgs[3].indexOf(SYMBOLMAP_MAP) > 0).to.be.true;
+    expect(moduleMode.cmdArgs[2] === CACHE_FILE).to.be.true;
+    expect(moduleMode.cmdArgs[4] === SIMBOL_TABLE).to.be.true;
+    expect(moduleMode.cmdArgs[5].indexOf(SYMBOLMAP_MAP) > 0).to.be.true;
+  });
+
+  mocha.it('2-2: test addHotReloadArgs under hot reload debug', function () {
+    this.rollup.hotReload();
+    this.rollup.share.projectConfig.oldMapFilePath = DEFAULT_ETS;
+    const moduleMode = new ModuleHotreloadMode(this.rollup);
+    moduleMode.isFirstBuild = false;
+    moduleMode.addHotReloadArgs();
+    expect(moduleMode.cmdArgs[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
+    expect(moduleMode.cmdArgs[1] === DEBUG_INFO).to.be.true;
+    expect(moduleMode.cmdArgs[2] === CACHE_FILE).to.be.true;
+    expect(moduleMode.cmdArgs[4] === SIMBOL_TABLE).to.be.true;
+    expect(moduleMode.cmdArgs[5].indexOf(SYMBOLMAP_MAP) > 0).to.be.true;
   });
 
   mocha.it('3-1: test the error message of the ModuleHotreloadMode constructor', function () {
