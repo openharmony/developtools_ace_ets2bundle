@@ -566,7 +566,7 @@ export class factory {
         moduleName: string,
         name: string | undefined
     ): arkts.Expression | undefined {
-        if (index === 0 && isForEach(name, moduleName) && arkts.isExpression(modifiedArg)) {
+        if (index === 0 && isForEach(name, moduleName) && !!modifiedArg) {
             const newFunc = UIFactory.createScriptFunction({
                 body: arkts.factory.createBlockStatement([arkts.factory.createReturnStatement(modifiedArg)]),
                 flags:
@@ -608,11 +608,14 @@ export class factory {
      * @deprecated
      */
     static getReturnTypeFromTsType(node: arkts.AstNode): arkts.TypeNode | undefined {
+        if (arkts.isCallExpression(node)) {
+            return undefined;
+        }
         const type = arkts.createTypeNodeFromTsType(node);
         if (!type || !arkts.isTypeNode(type)) {
             return undefined;
         }
-        return type;
+        return type.clone();
     }
 
     /**
