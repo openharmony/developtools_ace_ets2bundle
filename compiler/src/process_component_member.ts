@@ -114,7 +114,8 @@ import {
   parentConditionalExpression,
   createFunction,
   getRealNodePos,
-  isWrappedBuilder
+  isWrappedBuilder,
+  isMutableBuilder
 } from './process_component_build';
 import {
   CUSTOM_BUILDER_METHOD,
@@ -910,8 +911,9 @@ export function judgeBuilderParamAssignedByBuilder(node: ts.PropertyDeclaration)
     ts.isPropertyAccessExpression(node.initializer) && node.initializer.name &&
     ts.isIdentifier(node.initializer.name) &&
     (CUSTOM_BUILDER_METHOD.has(node.initializer.name.escapedText.toString()) ||
-    INNER_CUSTOM_LOCALBUILDER_METHOD.has(node.initializer.name.escapedText.toString())) ||
-    isWrappedBuilder(node.initializer as ts.PropertyAccessExpression)));
+      INNER_CUSTOM_LOCALBUILDER_METHOD.has(node.initializer.name.escapedText.toString())) ||
+    isWrappedBuilder(node.initializer as ts.PropertyAccessExpression) ||
+    isMutableBuilder(node.initializer as ts.PropertyAccessExpression)));
 }
 
 export function createViewCreate(node: ts.NewExpression | ts.Identifier): ts.CallExpression {
