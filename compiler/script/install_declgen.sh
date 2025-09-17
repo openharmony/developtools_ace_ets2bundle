@@ -20,7 +20,7 @@ if [ ! -d "../compiler" ]; then
     exit 1
 fi
 
-oriDir=$(pwd)
+CURRENT_DIR=$(pwd)
 
 DECLGEN_ROOT_DIR="../../../arkcompiler/runtime_core/static_core/plugins/ets/tools/declgen_ts2sts"
 
@@ -34,10 +34,10 @@ if npm pack; then
     tarball=$(ls *.tgz)  # Get the generated tarball file name
     if [ -f "$tarball" ]; then
         # Move the tarball to the original directory
-        mv "$tarball" "$oriDir/"
+        mv "$tarball" "$CURRENT_DIR/"
 
         # Go back to the original directory and extract the tarball
-        cd "$oriDir"
+        cd "$CURRENT_DIR"
         tar -xvzf "$tarball"
 
         # Rename the extracted directory (assuming it is named after the package)
@@ -47,7 +47,7 @@ if npm pack; then
         # Optionally, remove the tarball after extraction
         rm "$tarball"
 
-        echo "Build successfully packed, extracted, and renamed to 'declgen' in $oriDir"
+        echo "Build successfully packed, extracted, and renamed to 'declgen' in $CURRENT_DIR"
     else
         echo "Error: No tarball found, cannot proceed"
         exit 1
