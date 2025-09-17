@@ -109,14 +109,8 @@ export class ComponentAttributeCache {
         name: string
     ): arkts.ETSParameterExpression {
         if (index === 0 && isForEach(name) && arkts.isTypeNode(param.typeAnnotation)) {
-            return arkts.factory.createETSParameterExpression(
-                arkts.factory.createIdentifier(
-                    param.ident!.name,
-                    UIFactory.createLambdaFunctionType([], param.typeAnnotation.clone())
-                ),
-                false,
-                undefined
-            );
+            param.setTypeAnnotation(UIFactory.createLambdaFunctionType([], param.typeAnnotation.clone()))
+            return param;
         }
         return param;
     }
