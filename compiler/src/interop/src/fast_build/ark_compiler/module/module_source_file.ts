@@ -29,7 +29,8 @@ import {
   getOhmUrlByFilepath,
   getOhmUrlByExternalPackage,
   getOhmUrlBySystemApiOrLibRequest,
-  OhmUrlParams
+  OhmUrlParams,
+  getPackageInfo
 } from '../../../ark_utils';
 import { writeFileSyncByNode } from '../../../process_module_files';
 import {
@@ -234,6 +235,7 @@ export class ModuleSourceFile {
     let mockFileOhmUrl: string = '';
     if (useNormalizedOHMUrl) {
       const targetModuleInfo: Object = ModuleSourceFile.getModuleInfoOfMockFile(mockFilePath, rollupObject, source2ModuleIdMap);
+      targetModuleInfo.meta.isMockFile = true;
       mockFileOhmUrl = ModuleSourceFile.spliceNormalizedOhmurl(targetModuleInfo, mockFilePath, importerFile);
     } else {
       mockFileOhmUrl = getOhmUrlByFilepath(mockFilePath,
@@ -583,6 +585,12 @@ export class ModuleSourceFile {
       pkgPath,
       isRecordName: false,
       omitModuleName: isMixCompile() && isArkTSEvolutionFile(filePath, moduleInfo.meta),
+      moduleName: ((): string => {
+        if (moduleInfo.meta.isMockFile) {
+          return getPackageInfo(this.projectConfig.aceModuleJsonPath)[1];
+        }
+        return '';
+      })()
     };
     const ohmUrl: string =
       getNormalizedOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, pkgParams,

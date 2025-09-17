@@ -1023,7 +1023,7 @@ mocha.describe('test module_source_file file api', function () {
     let originKey = "@ohos.utils";
     let transKey = "@ohos:utils";
     ModuleSourceFile.generateNewMockInfo(originKey, transKey, this.rollup, '');
-    let expectOHMUrl: string = "@normalized:N&&&entry/src/mock/utilsMock&";
+    let expectOHMUrl: string = "@normalized:N&entry&&entry/src/mock/utilsMock&";
     expect(ModuleSourceFile.newMockConfigInfo[transKey].source === expectOHMUrl).to.be.true;
     this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
     ModuleSourceFile.projectConfig.pkgContextInfo = {};
@@ -1037,7 +1037,7 @@ mocha.describe('test module_source_file file api', function () {
       mockFilePath: {
         meta: {
           pkgName: 'entry',
-          pkgPath: this.rollup.share.projectConfig.modulePath
+          pkgPath: this.rollup.share.projectConfig.modulePath,
         }
       }
     };
@@ -1069,7 +1069,54 @@ mocha.describe('test module_source_file file api', function () {
     let originKey = "@ohos.utils";
     let transKey = "@ohos:utils";
     ModuleSourceFile.generateNewMockInfo(originKey, transKey, this.rollup, '');
-    let expectOHMUrl: string = "@normalized:N&&&entry/src/mock/utilsMock&";
+    let expectOHMUrl: string = "@normalized:N&entry&&entry/src/mock/utilsMock&";
+    expect(ModuleSourceFile.newMockConfigInfo[transKey].source === expectOHMUrl).to.be.true;
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
+    ModuleSourceFile.projectConfig.pkgContextInfo = {};
+  });
+
+  mocha.it('5-8: test generateNewMockInfo under ohosTest mode (has source2ModuleIdMap)', function () {
+    this.rollup.share.projectConfig.isOhosTest = true;
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    const mockFilePath = `${this.rollup.share.projectConfig.modulePath}/src/mock/testMock.ts`;
+    const moduleInfo = {
+      mockFilePath: {
+        meta: {
+          pkgName: 'entry',
+          pkgPath: this.rollup.share.projectConfig.modulePath,
+        }
+      }
+    };
+    this.rollup.moduleInfos.push(moduleInfo);
+    this.rollup.share.projectConfig.mockParams = {
+      decorator: "@MockSetup",
+      packageName: "@ohos/hamock",
+      etsSourceRootPath: "src/main",
+      mockConfigPath: this.rollup.share.projectConfig.aceModuleRoot + '/mock/mock-config.json5',
+      source2ModuleIdMap: {
+        "src/mock/testMock.ts": mockFilePath
+      }
+    }
+    ModuleSourceFile.projectConfig.aceModuleJsonPath = `${this.rollup.share.projectConfig.modulePath}/build/ohosTest/module.json`;
+    ModuleSourceFile.projectConfig.pkgContextInfo = {
+      'entry': {
+        'packageName': 'entry',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    ModuleSourceFile.mockConfigInfo = {
+      "@ohos.test": {
+        "source": "src/mock/testMock.ts"
+      },
+    }
+    let originKey = "@ohos.test";
+    let transKey = "@ohos:test";
+    ModuleSourceFile.generateNewMockInfo(originKey, transKey, this.rollup, '');
+    let expectOHMUrl: string = "@normalized:N&entry_test&&entry/src/mock/testMock&";
     expect(ModuleSourceFile.newMockConfigInfo[transKey].source === expectOHMUrl).to.be.true;
     this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
     ModuleSourceFile.projectConfig.pkgContextInfo = {};
