@@ -62,10 +62,11 @@ def run(npm_args, dir = None):
         subprocess.run(["npm"] + npm_args, env=os.environ, text=True, check=True, stderr=subprocess.STDOUT)
         return
     result = subprocess.run(["npm"] + npm_args, capture_output=True, env=os.environ, text=True)
-    with open(koala_log, "a+") as f:
+    with open(koala_log, "w+") as f:
         f.write(f"npm args: {npm_args}; project: {project_path}:\n" + result.stdout)
         if result.returncode != 0:
             f.write(f"npm args: {npm_args}; project: {project_path}:\n" + result.stderr)
+            f.close()
             print(open(koala_log, "r").read())
             raise Exception("npm failed")
         f.close()

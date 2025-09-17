@@ -3,9 +3,9 @@
         "outDir": "./build/abc",
         "baseUrl": ".",
         "paths": {
-            "@koalaui/compat": [ "../../incremental/compat/src/arkts" ],
-            "#platform": [ "../../incremental/compat/src/arkts" ],
-            "@koalaui/common": [ "../../incremental/common/src" ],
+            "@koalaui/compat": [ "../../compat/src/arkts" ],
+            "#platform": [ "../../compat/src/arkts" ],
+            "@koalaui/common": [ "../../common/src" ],
             "@koalaui/runtime": [ "../../incremental/runtime/ets" ],
             "@koalaui/runtime/annotations": [ "../../incremental/runtime/annotations" ]
         },
