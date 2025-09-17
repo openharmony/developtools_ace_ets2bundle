@@ -79,8 +79,8 @@ def copy_output(options):
     copy_files(os.path.join(options.source_path, 'lib'),
                os.path.join(to_path, 'lib'))
     
-    copy_files(os.path.join(from_path, f'{compiler}/libes2panda.{library_extention}'),
-               os.path.join(to_path, 'build/native/es2panda.node'), True)
+    copy_files(os.path.join(from_path, f'{compiler}/libes2panda_lib.{library_extention}'),
+               os.path.join(to_path, 'build/native/build/es2panda.node'), True)
 
 
 def parse_args():
