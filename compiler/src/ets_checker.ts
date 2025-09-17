@@ -1902,8 +1902,6 @@ export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
 export function resetEtsCheckTypeScript(): void {
   if (globalProgram.program) {
     globalProgram.program.releaseTypeChecker();
-  } else if (languageService) {
-    languageService.getProgram().releaseTypeChecker();
   }
   resetGlobalProgram();
   languageService = null;
