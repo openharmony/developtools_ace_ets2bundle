@@ -541,9 +541,8 @@ inline void WriteToString(std::string* result, InteropFloat32 value)
     result->append(buf);
 #else
     std::string storage;
-    constexpr auto BUF_SIZE{20};
-    static_assert(BUF_SIZE >= std::numeric_limits<InteropFloat64>::max_digits10, "O-ou!");
-    storage.resize(BUF_SIZE);
+    constexpr auto SIZE{20};
+    storage.resize(SIZE);
     // We use to_chars() to avoid locale issues.
     auto rc = std::to_chars(storage.data(), storage.data() + storage.size(), value);
     storage.resize(rc.ptr - storage.data());
@@ -561,7 +560,6 @@ inline void WriteToString(std::string* result, InteropFloat64 value)
 #else
     std::string storage;
     constexpr auto BUF_SIZE{20};
-    static_assert(BUF_SIZE >= std::numeric_limits<InteropFloat64>::max_digits10, "O-ou!");
     storage.resize(BUF_SIZE);
     // We use to_chars() to avoid locale issues.
     auto rc = std::to_chars(storage.data(), storage.data() + storage.size(), value);
