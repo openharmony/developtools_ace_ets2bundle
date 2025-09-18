@@ -25,7 +25,8 @@ import {
   systemModules,
   allModulesPaths,
   ohosSystemModuleSubDirPaths,
-  externalApiCheckPlugin
+  externalApiCheckPlugin,
+  externalApiMethodPlugin
 } from '../../../main';
 import {
   LogType,
@@ -71,7 +72,8 @@ import {
   GLOBAL_DECLARE_WHITE_LIST,
   SINCE_TAG_NAME,
   SINCE_TAG_CHECK_ERROER,
-  VERSION_CHECK_FUNCTION_NAME
+  VERSION_CHECK_FUNCTION_NAME,
+  ComparisonResult
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SdkVersionValidator } from './sdk_version_validator';
@@ -613,18 +615,31 @@ function checkSinceValue(
  * @returns Version validation function (external or default)
  */
 export function getVersionValidationFunction(): VersionValidationFunction {
+  const pluginKey = getPluginKey(projectConfig.runtimeOS, SINCE_TAG_NAME);
+
+  // First check if we already have a cached method
+  if (externalApiMethodPlugin.has(pluginKey)) {
+    return externalApiMethodPlugin.get(pluginKey)!;
+  }
+
+  // Fallback to default if no compatible SDK version
   if (projectConfig.originCompatibleSdkVersion?.toString() === undefined) {
+    externalApiMethodPlugin.set(pluginKey, compareVersionsWithPointSystem);
     return compareVersionsWithPointSystem;
   }
-  const pluginKey = getPluginKey(projectConfig.runtimeOS, SINCE_TAG_NAME);
+
   const plugins = externalApiCheckPlugin.get(pluginKey);
-  
+
   // Check if external plugins exist and try to load them
   if (plugins && plugins.length > 0) {
     try {
       for (const plugin of plugins) {
+        // Load the external method
         const externalMethod = require(plugin.path)[plugin.functionName];
+
         if (typeof externalMethod === 'function') {
+          // Cache with pluginKey for future calls
+          externalApiMethodPlugin.set(pluginKey, externalMethod);
           return externalMethod;
         }
       }
@@ -632,7 +647,9 @@ export function getVersionValidationFunction(): VersionValidationFunction {
       console.warn(`Failed to load external version validator: ${error}`);
     }
   }
-  
+
+  // Cache and return default method
+  externalApiMethodPlugin.set(pluginKey, compareVersionsWithPointSystem);
   return compareVersionsWithPointSystem;
 }
 
@@ -927,11 +944,11 @@ function getMinVersion(jsDocs: ts.JSDoc[]): string {
 
 /**
  * compare point version
- * @param { string } firstVersion 
- * @param { string } secondVersion 
+ * @param { string } firstVersion
+ * @param { string } secondVersion
  * @returns { number }
  */
-function comparePointVersion(firstVersion: string, secondVersion: string): -1 | 0 | 1 {
+function comparePointVersion(firstVersion: string, secondVersion: string): ComparisonResult {
   const firstParts = firstVersion.split('.');
   const secondParts = secondVersion.split('.');
 
@@ -940,9 +957,9 @@ function comparePointVersion(firstVersion: string, secondVersion: string): -1 | 
     const part2 = parseInt(secondParts[i] || '0', 10);
 
     if (part1 !== part2) {
-      return part1 > part2 ? 1 : -1;
+      return part1 > part2 ? ComparisonResult.Greater : ComparisonResult.Less;
     }
   }
 
-  return 0;
+  return ComparisonResult.Equal;
 }
