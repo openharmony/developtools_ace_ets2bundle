@@ -1519,6 +1519,9 @@ function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComp
         validateStateVariable(item);
         currentMethodCollection.add(item.name.getText());
       }
+      if (ts.isClassStaticBlockDeclaration(item)) {
+        validateStaticBlock(item);
+      }
     });
     collectCurrentClassMethod(node, currentMethodCollection);
   }
@@ -1930,6 +1933,14 @@ function validateStateVariable(node: ts.MethodDeclaration): void {
       }
     }
   }
+}
+
+function validateStaticBlock(node: ts.ClassStaticBlockDeclaration): void {
+  transformLog.errors.push({
+    type: LogType.WARN,
+    message: `Static code blocks not supported in structs.`,
+    pos: node.getStart(),
+  });
 }
 
 export function getObservedPropertyCollection(className: string): Set<string> {
