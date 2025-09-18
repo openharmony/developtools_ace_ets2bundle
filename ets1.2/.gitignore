@@ -24,7 +24,7 @@ cachegrind.out.*
 perf.data*
 /ui2abc/memo-plugin-ng/tests/out
 *.tsbuildinfo
-libarkts/lib
+ui2abc/libarkts/lib
 ui2abc/memo-plugin-ng/lib
 ui2abc/ui-plugins-ng/lib
 incremetal-cj/runtime/callsitekey
@@ -34,8 +34,7 @@ tsconfig.tsbuildinfo
 .cache
 incremental/benchmarks/memo-benchmark/ets
 koala_mirror
-ets1.2
+koala_tools
 out
 sdk
 koala_build.log
-__pycache__
