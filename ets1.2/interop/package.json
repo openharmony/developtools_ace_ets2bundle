@@ -41,8 +41,8 @@
     },
     "scripts": {
         "clean": "rimraf dist build types",
-        "compile": "ets-tsc -b .",
-        "compile:release": "ets-tsc -b .",
+        "compile": "tsc -b .",
+        "compile:release": "tsc -b .",
         "build": "node ../fast-arktsc --config ./ui2abcconfig.json --compiler ../incremental/tools/panda/arkts/ui2abc --link-name ./build/interop.abc --simultaneous && ninja ${NINJA_OPTIONS} -f build/abc/build.ninja",
         "lint": "eslint src test components",
         "test:wasm:coverage": "NODE_OPTIONS='--conditions browser --no-experimental-fetch' nyc mocha",
@@ -51,7 +51,7 @@
         "test:node": "mocha",
         "test:coverage": "npm run test:node:coverage",
         "test": "npm run test:node",
-        "watch": "ets-tsc -b . --watch",
+        "watch": "tsc -b . --watch",
         "prepare:compiler": "test $(node -e \"console.log(process.platform)\") != \"linux\" && npm run --prefix ../arkoala-arkts/ohos-sdk download || npm run install:toolchain --prefix ../arkoala-arkts/tools/compiler",
         "prepare:arm64": "npm run prepare:compiler && npm run install:sysroot:arm64 --prefix ../arkoala-arkts/tools/compiler",
         "prepare:arm32": "npm run prepare:compiler && npm run install:sysroot:arm32 --prefix ../arkoala-arkts/tools/compiler",
@@ -103,6 +103,7 @@
     "devDependencies": {
         "@ohos/hypium": "1.0.6",
         "@types/node": "^18.0.0",
+        "typescript": "4.9.5",
         "@typescript-eslint/eslint-plugin": "^5.20.0",
         "@typescript-eslint/parser": "^5.20.0",
         "eslint": "^8.13.0",
