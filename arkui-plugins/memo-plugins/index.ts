@@ -32,7 +32,6 @@ export function unmemoizeTransform(): Plugins {
         checked: checkedTransform,
         clean() {
             ProgramSkipper.clear();
-            arkts.arktsGlobal.clearContext();
         },
     };
 }
@@ -52,7 +51,7 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         program = checkedProgramVisit(program, this, canSkipPhases, isFrameworkMode);
         script = program.astNode;
         arkts.Performance.getInstance().stopEvent('memo-checked', true);
-        
+
 
         arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:Memo-AfterCheck');
         arkts.Performance.getInstance().memoryTrackerReset();
