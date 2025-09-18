@@ -21,11 +21,11 @@
 
 // 内存统计结构体
 struct MemoryStats {
-    size_t currentRss = 0;    // 当前驻留集大小 (字节)
-    size_t peakRss = 0;       // 峰值驻留集大小 (字节)
-    size_t currentVss = 0;    // 当前虚拟内存大小 (字节)
-    size_t pageFaultsMinor = 0;  // 小页错误次数
-    size_t pageFaultsMajor = 0;  // 大页错误次数
+    size_t currentRss = 0;      // 当前驻留集大小 (字节)
+    size_t peakRss = 0;         // 峰值驻留集大小 (字节)
+    size_t currentVss = 0;      // 当前虚拟内存大小 (字节)
+    size_t pageFaultsMinor = 0; // 小页错误次数
+    size_t pageFaultsMajor = 0; // 大页错误次数
 };
 
 class MemoryTracker {
