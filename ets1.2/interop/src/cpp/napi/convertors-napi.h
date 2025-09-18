@@ -206,8 +206,8 @@ inline napi_typedarray_type getNapiType(KInt size)
 {
     constexpr auto NUM_1{1};
     constexpr auto NUM_2{2};
+    constexpr auto NUM_3{3};
     constexpr auto NUM_4{4};
-    constexpr auto NUM_8{8};
     switch (size) {
         case NUM_1:
             return napi_uint8_array;

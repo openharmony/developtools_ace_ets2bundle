@@ -112,12 +112,12 @@ struct KStringPtrImpl {
         // Ignore old content.
         if (_value && _owned)
             free(_value);
-        auto memSize{static_cast<std::size_t>(std::max(0, _length + 1))};
+        auto memSize{static_cast<std::size_t>(std::max(0, length + 1))};
         _value = reinterpret_cast<char*>(malloc(memSize));
         if (!_value) {
             INTEROP_FATAL("Cannot allocate memory");
         }
-        _value[_length] = 0;
+        _value[length] = 0;
     }
 
     void assign(const char* data)

@@ -33,7 +33,6 @@ static bool registerNatives(
     constexpr auto NUM_0{0};
     constexpr auto NUM_1{1};
     constexpr auto NUM_2{2};
-
     size_t numMethods = impls.size();
     JNINativeMethod* methods = new JNINativeMethod[numMethods];
     bool result = true;

@@ -3,7 +3,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -11,20 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if (!defined(koala_mr)) {
-# OHOS build tree workaround
-    import("../koala_integration.gni")
+koala_mr = {
+    root_path = "//developtools/ace_ets2bundle/ets1.2"
+    scripts_path = "$root_path/gn/script"
+    imports_prefix = "$root_path/gn/import"
+    libarkts_path = "$root_path/libarkts"
+    interop_path = "$root_path/interop"
+    is_rri = false
 }
-if (!koala_mr.is_rri) {
-    import("//build/ohos.gni")
-}
-import("${koala_mr.imports_prefix}/npm.gni")
 
-if (current_toolchain == host_toolchain) {
-    npm_install("install_all") {
-        outputs = [
-            "$target_out_dir/install_all"
-        ]
-        project_path = rebase_path(".")
-    }
-}
+node_version = "v16.20.2"
+host_arch = "${host_os}-${host_cpu}"
+koala_node_path = rebase_path("//prebuilts/build-tools/common/nodejs/node-${node_version}-${host_arch}/bin")
