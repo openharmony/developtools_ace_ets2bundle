@@ -55,13 +55,17 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
-import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { MemoIntrinsic as MemoIntrinsic } from \"arkui.stateManagement.runtime\";
 import { FakeComponentAttribute as FakeComponentAttribute } from \"${utilExternalSourceName}\";
 import { FakeComponentImpl as FakeComponentImpl } from \"${utilExternalSourceName}\";
+import { memo as memo } from \"arkui.stateManagement.runtime\";
 import { NavInterface as NavInterface } from \"arkui.component.customComponent\";
 import { PageLifeCycle as PageLifeCycle } from \"arkui.component.customComponent\";
 import { EntryPoint as EntryPoint } from \"arkui.component.customComponent\";
 import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
+import { Builder as Builder } from \"arkui.component.builder";
+import { LocalStorage as LocalStorage } from \"arkui.stateManagement.storage.localStorage\";
+import { ComponentBuilder as ComponentBuilder } from \"arkui.stateManagement.runtime\";
 import { Entry as Entry, Component as Component } from \"arkui.component.customComponent\";
 import { FakeComponent as FakeComponent } from \"./utils/fake-overload-component\";
 
@@ -78,6 +82,15 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
     public __initializeStruct(initializers: (__Options_A | undefined), @memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_A | undefined)): void {}
+    @MemoIntrinsic() public static _invoke(style: @memo() ((instance: A) => void), initializer:((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+        CustomComponent._invokeImpl<A, __Options_A>(style, ((): A => {
+            return new A(false, ({let gensym___<some_random_number> = storage;
+                (((gensym___<some_random_number>) == (null)) ? undefined: gensym___<some_random_number>())}));
+        }), initializers, reuseId, content);
+    }
+    @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() @memo() content?: (() => void)): A {
+        throw new Error("Declare interface");
+    }
     @memo() public build() {
         FakeComponentImpl(@memo() ((instance: FakeComponentAttribute): void => {
             instance.setFakeComponentOptions(\"fake-component\");
@@ -92,7 +105,15 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             return;
         }), @memo() (() => {}));
     }
-    public constructor() {}
+    constructor(useSharedStorage: (boolean | undefined) {
+        this(useSharedStorage, undefined);
+    }
+    constructor() {
+        this(undefined, undefined);
+    }
+    public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+        super(useSharedStorage, storage);
+    }
 }
 
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_A {
@@ -100,9 +121,10 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
 
 class __EntryWrapper extends EntryPoint {
     @memo() public entry(): void {
-        A._instantiateImpl(undefined, (() => {
-            return new A();
-        }), undefined, undefined, undefined);
+        A._invoke(@memo() ((instance: A): void => {
+            instance.applyAttributesFinish();
+            return;
+        }), undefined, undefined, undefined, undefined);
     }
     public constructor() {}
 }
@@ -127,8 +149,6 @@ interface FakeOptions {
 
 interface FakeComponentAttribute {
   setFakeComponentOptions(str: string): this
-  setFakeComponentOptions(options?: FakeOptions): this
-  setFakeComponentOptions(): this
   
 }
 `;
