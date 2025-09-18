@@ -40,6 +40,7 @@ import {
   unobfuscationNamesObj,
   writeObfuscationNameCache,
   writeUnobfuscationContent,
+  addReservedFileNames,
 } from 'arkguard';
 import type {
   ArkObfuscator,
@@ -458,9 +459,29 @@ export function collectSourcesWhiteList(rollupObject: Object, allSourceFilePaths
       keepFilesAndDependencies,
       sourceFiles
     );
+    if (obfuscationConfig?.options?.stripNotCompiledModuleName) {
+      collectCompiledModuleName(rollupObject);
+    }
   }
   MemoryMonitor.stopRecordStage(recordInfo);
   endFilesEvent(EventList.SCAN_SOURCEFILES, performancePrinter.timeSumPrinter);
+}
+
+/**
+ * collect module name involved in the compilation.
+ */ 
+function collectCompiledModuleName(rollupObject: Object): void {
+  const reservedFilePath: Set<string> = new Set<string>();
+  for (const moduleId of rollupObject.getModuleIds()) {
+    const moduleInfo: Object = rollupObject.getModuleInfo(moduleId);
+    const metaInfo: Object = moduleInfo.meta;
+    if (metaInfo && metaInfo.pkgPath) {
+      reservedFilePath.add(metaInfo.pkgPath);
+    } else {
+      reservedFilePath.add(moduleId);
+    }
+  }
+  addReservedFileNames([...reservedFilePath]);
 }
 
 /**
