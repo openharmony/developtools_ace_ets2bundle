@@ -963,6 +963,16 @@
         "type": "ERROR",
         "code": "10905305"
     },
+    "validateStaticBlock": [
+        {
+            "message": "Static code blocks not supported in structs.",
+            "type": "WARN"
+        },
+        {
+            "message": "Static code blocks not supported in structs.",
+            "type": "WARN"
+        }
+    ],
     "v2ToV1Link": [
         {
             "message": "The property 'link_value' in the custom component 'V1' is missing (mandatory to specify).",
