@@ -28,9 +28,7 @@ export function interopTransform():Plugins {
     name: 'interop-plugin',
     parsed: parsedTransform,
     checked: checkedTransform,
-    clean(): void {
-        arkts.arktsGlobal.clearContext();
-    },
+    clean(): void {},
   };
 }
 
@@ -89,7 +87,7 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         program = programVisitor.programVisitor(program);
         script = program.astNode;
         arkts.recheckSubtree(script);
-        this.setArkTSAst(script); 
+        this.setArkTSAst(script);
         debugLog('interopTransform:checked exit');
         return script;
       }
