@@ -32,7 +32,7 @@ buildConfig.compileFiles = [
 const pluginTester = new PluginTester('test memo function', buildConfig);
 
 const expectedScript: string = `
-import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
 @memo() function funcA(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void

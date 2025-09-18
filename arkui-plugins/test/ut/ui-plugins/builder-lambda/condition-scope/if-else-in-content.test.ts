@@ -126,7 +126,7 @@ function testUITransformer(this: PluginTestContext): void {
 }
 
 const expectedMemoScript: string = `
-import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";

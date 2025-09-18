@@ -29,7 +29,7 @@ buildConfig.compileFiles = [path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, FUN
 const pluginTester = new PluginTester('test memo function', buildConfig);
 
 const expectedScript: string = `
-import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
 @memo() function memo_arg_call(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1: number, arg2: ((x: number)=> number), @memo() arg3: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, x: number)=> number), arg4?: ((x: number)=> number), @memo() arg5?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, x: number)=> number)) {

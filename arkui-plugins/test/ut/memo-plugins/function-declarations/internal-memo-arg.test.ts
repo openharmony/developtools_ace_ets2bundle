@@ -36,16 +36,15 @@ const pluginTester = new PluginTester('test internal memo argument calls', build
 
 const expectedScript: string = `
 
-import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.incremental.runtime.state";
 
-import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+import { memo as memo } from "arkui.stateManagement.runtime";
 
-import { IncrementalNode as IncrementalNode } from "@koalaui.runtime.tree.IncrementalNode";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.incremental.runtime.state";
 
-import { ControlledScope as ControlledScope, StateManager as StateManager } from "@koalaui.runtime.states.State";
+import { StateContext as StateContext, IncrementalScope as IncrementalScope } from "arkui.incremental.runtime.state";
 
 function main() {}
-
 
 export function __context(): __memo_context_type
 
@@ -64,7 +63,7 @@ export function __id(): __memo_id_type
 }
 
 @memo_intrinsic() export function contextLocalValue<Value>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, name: string): Value {
-  return __memo_context.valueBy<Value>(name);
+  return (__memo_context as StateManager).valueBy<Value>(name);
 }
 
 @memo_intrinsic() export function contextLocalScope<Value>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, name: string, value: Value, @memo() content: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
@@ -79,13 +78,13 @@ export function __id(): __memo_id_type
 }
 
 @memo_intrinsic() export function NodeAttach<Node extends IncrementalNode>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, create: (()=> Node), @memo() update: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, node: Node)=> void), reuseKey?: string): void {
-  const scope = __memo_context.scope<undefined>(__memo_id, 0, create, undefined, undefined, undefined, reuseKey);
+  const scope = (__memo_context as StateManager).scopeEx<undefined>(__memo_id, 0, create, undefined, undefined, undefined, reuseKey);
   if (scope.unchanged) {
     scope.cached;
   } else {
     try {
       if (!reuseKey) {
-        update(__memo_context, ((__memo_id) + (6025780)), (__memo_context.node as Node));
+        update(__memo_context, ((__memo_id) + (6025780)), ((__memo_context as StateManager).node as Node));
       } else {
         memoEntry(__memo_context, 0, ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (31840240)), 0);
@@ -93,7 +92,7 @@ export function __id(): __memo_id_type
             __memo_scope.cached;
             return;
           }
-          update(__memo_context, ((__memo_id) + (253864074)), (__memo_context.node as Node));
+          update(__memo_context, ((__memo_id) + (253864074)), ((__memo_context as StateManager).node as Node));
           {
             __memo_scope.recache();
             return;
@@ -107,7 +106,7 @@ export function __id(): __memo_id_type
 }
 
 @memo_intrinsic() export function rememberControlledScope(__memo_context: __memo_context_type, __memo_id: __memo_id_type, invalidate: (()=> void)): ControlledScope {
-  return __memo_context.controlledScope(__memo_id, invalidate);
+  return (__memo_context as StateManager).controlledScope(__memo_id, invalidate);
 }
 
 @memo() export function Repeat(__memo_context: __memo_context_type, __memo_id: __memo_id_type, count: int, @memo() action: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, index: int)=> void)) {
@@ -126,6 +125,19 @@ export function __id(): __memo_id_type
   }
 }
 
+export declare class IncrementalNode {
+  public constructor() {}
+}
+
+export declare interface ControlledScope {
+}
+
+export declare interface StateManager extends StateContext {
+  get node(): (IncrementalNode | undefined)
+  valueBy<Value>(name: string, global?: boolean): Value
+  scopeEx<Value>(id: int, paramCount?: int, create?: (()=> IncrementalNode), compute?: (()=> Value), cleanup?: ((value: (Value | undefined))=> void), once?: boolean, reuseKey?: string): IncrementalScope<Value>
+  controlledScope(id: int, invalidate: (()=> void)): ControlledScope
+}
 
 @Retention({policy:"SOURCE"}) @interface memo_intrinsic {}
 
