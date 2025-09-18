@@ -1,11 +1,4 @@
 {
   "name": "root",
-  "private": true,
-  "workspaces": [
-    "interop",
-    "build-common",
-    "common",
-    "compat",
-    "libarkts"
-  ]
+  "private": true
 }
