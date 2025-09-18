@@ -33,8 +33,9 @@ projectConfig.frameworkMode = 'frameworkMode';
 const pluginTester = new PluginTester('test memo method', buildConfig, projectConfig);
 
 const expectedScript: string = `
-import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
-import { memo as memo, __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
+import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
 function main() {}
 export function __context(): __memo_context_type
 export function __id(): __memo_id_type
