@@ -31,7 +31,7 @@ export enum RuntimeNames {
     COMPUTE = 'compute',
     CONTEXT = '__memo_context',
     CONTEXT_TYPE = '__memo_context_type',
-    MEMO_IMPORT_NAME = 'arkui.stateManagement.runtime',
+    MEMO_IMPORT_NAME = 'arkui.incremental.runtime.state',
     GENSYM = 'gensym%%_',
     ID = '__memo_id',
     ID_TYPE = '__memo_id_type',
