@@ -2,12 +2,6 @@
     "name": "@koalaui/interop",
     "version": "1.7.10+devel",
     "description": "",
-    "workspaces": [
-        "../incremental/build-common",
-        "../incremental/compat",
-        "../incremental/common",
-        "../fast-arktsc"
-    ],
     "files": [
         "build/lib/src/**/*.js",
         "build/lib/src/**/*.d.ts",
@@ -98,7 +92,9 @@
     "keywords": [],
     "dependencies": {
         "@types/node": "^18.0.0",
-        "@koalaui/common": "1.7.10+devel"
+        "@koalaui/build-common": "file:../build-common",
+        "@koalaui/compat": "file:../compat",
+        "@koalaui/common": "file:../common"
     },
     "devDependencies": {
         "@ohos/hypium": "1.0.6",

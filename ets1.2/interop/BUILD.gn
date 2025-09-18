@@ -48,8 +48,4 @@ npm_cmd("interop_compile") {
     ]
     project_path = rebase_path(".")
     run_tasks = [ "compile" ]
-
-    deps = [
-        "${koala_mr.root_path}:install_all(${host_toolchain})"
-    ]
 }

@@ -11,10 +11,6 @@
             ]
         }
     },
-    "workspaces": [
-        ".",
-        "../ui2abc/memo-plugin-ng"
-    ],
     "exports": {
         ".": "./lib/libarkts.js",
         "./compat": "./lib/libarkts-compat.js",
@@ -30,10 +26,11 @@
         "panda_sdk_version": "next"
     },
     "dependencies": {
-        "@koalaui/build-common": "1.7.10+devel",
-        "@koalaui/compat": "1.7.10+devel",
-        "@koalaui/common": "1.7.10+devel",
-        "@koalaui/interop": "1.7.10+devel",
+        "@koalaui/build-common": "file:../build-common",
+        "@koalaui/compat": "file:../compat",
+        "@koalaui/common": "file:../common",
+        "@koalaui/interop": "file:../interop",
+        "@koalaui/libarkts": ".",
         "@idlizer/arktscgen": "2.1.10-arktscgen-4",
         "mocha": "^9.2.2",
         "node-addon-api": "8.0.0",
