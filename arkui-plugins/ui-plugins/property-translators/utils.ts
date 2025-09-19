@@ -284,7 +284,7 @@ function getValueStr(node: arkts.AstNode): string | undefined {
     return arkts.isStringLiteral(node.value) ? node.value.str : undefined;
 }
 
-function getAnnotationValue(anno: arkts.AnnotationUsage, decoratorName: DecoratorNames): string | undefined {
+export function getAnnotationValue(anno: arkts.AnnotationUsage, decoratorName: DecoratorNames): string | undefined {
     const isSuitableAnnotation: boolean =
         !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName;
     if (isSuitableAnnotation && anno.properties.length === 1) {

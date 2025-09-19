@@ -89,7 +89,9 @@ export function createIfStaticComponent(newNode: ts.NewExpression, componentPara
     ts.factory.createIdentifier(ISINITIALRENDER),
     ts.factory.createBlock(
       [ 
+        createInteropExtendableComponent(true),
         createStaticComponent(name, newNode),
+        createInteropExtendableComponent(false),
         pushStaticComponent(name),
         popStaticComponent()
       ], true),
@@ -108,6 +110,20 @@ export function createIfStaticComponent(newNode: ts.NewExpression, componentPara
   );
 }
 
+
+function createInteropExtendableComponent(ifUpdate: boolean): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createIdentifier(
+        ifUpdate
+          ? "__Interop_UpdateInteropExtendableComponent_Internal"
+          : "__Interop_ResetInteropExtendableComponent_Internal"
+      ),
+      undefined,
+      ifUpdate ? [ts.factory.createThis()] : []
+    )
+  );
+}
 
 export function setInteropRenderingFlag(): ts.Statement {
   return ts.factory.createExpressionStatement(
