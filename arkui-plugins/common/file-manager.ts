@@ -29,53 +29,19 @@ export class FileManager {
 
     static setInstance(instance: FileManager | undefined): void {
         if (instance === undefined) {
-            throw Error('fileManager is undefined!');
+            FileManager.instance = new FileManager();
         }
         FileManager.instance = instance;
     }
 
     static getInstance(): FileManager {
         if (!FileManager.instance) {
-            throw Error('fileManager not exist.');
+            FileManager.instance = new FileManager();
         }
         return FileManager.instance;
     }
 
-    private static isFirstLineUseStatic(filePath: string): boolean {
-        const firstLine = readFirstLineSync(filePath);
-        return firstLine === "'use static'";
-    }
-
     getLanguageVersionByFilePath(filePath: string): string {
-        const path = toUnixPath(filePath);
-        for (const apiPath of FileManager.staticApiPath) {
-            if (path.startsWith(apiPath)) {
-                return LANGUAGE_VERSION.ARKTS_1_2;
-            }
-        }
-        for (const apiPath of FileManager.dynamicApiPath) {
-            if (path.startsWith(apiPath)) {
-                return LANGUAGE_VERSION.ARKTS_1_1;
-            }
-        }
-        if (FileManager.buildConfig.compileFiles?.includes(filePath)) {
-            return LANGUAGE_VERSION.ARKTS_1_2;
-        }
-        for (const [pkgName, moduleInfo] of FileManager.arkTSModuleMap) {
-            if (!path.startsWith(moduleInfo.modulePath)) {
-                continue;
-            }
-            if (moduleInfo.language !== LANGUAGE_VERSION.ARKTS_HYBRID) {
-                return moduleInfo.language;
-            }
-            /**
-             * when process hybrid hsp or har we can't get info of 1.1,
-             * only by module decl-fileinfo.json or `'use static'`
-             */
-            if (FileManager.isFirstLineUseStatic(filePath)) {
-                return LANGUAGE_VERSION.ARKTS_1_2;
-            }
-        }
-        return LANGUAGE_VERSION.ARKTS_1_1;
+        return LANGUAGE_VERSION.ARKTS_1_2;
     }
 }

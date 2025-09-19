@@ -17,11 +17,11 @@ import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor, VisitorOptions } from './abstract-visitor';
 import { matchPrefix } from './arkts-utils';
 import { getDumpFileName, debugDumpAstNode, debugLog } from './debug';
-import { InteroperAbilityNames } from '../ui-plugins/interop/predefines';
 import { PluginContext } from './plugin-context';
 import { LegacyTransformer } from '../ui-plugins/interop/legacy-transformer';
-import { ComponentTransformer } from '../ui-plugins/component-transformer';
 import { ProgramSkipper } from './program-skipper';
+import { FileManager } from './file-manager';
+import { LANGUAGE_VERSION } from './predefines';
 
 export interface ProgramVisitorOptions extends VisitorOptions {
     pluginName: string;
@@ -61,10 +61,6 @@ function flattenVisitorsInHooks(
     ];
 }
 
-export interface StructMap {
-    [key: string]: string;
-}
-
 export class ProgramVisitor extends AbstractVisitor {
     private readonly pluginName: string;
     private readonly state: arkts.Es2pandaContextState;
@@ -73,8 +69,6 @@ export class ProgramVisitor extends AbstractVisitor {
     private readonly hooks?: ProgramHooks;
     private filenames: Map<number, string>;
     private pluginContext?: PluginContext;
-    private legacyModuleList: string[] = [];
-    private legacyStructMap: Map<string, StructMap>;
     private isFrameworkMode: boolean = false;
 
     constructor(options: ProgramVisitorOptions) {
@@ -86,8 +80,10 @@ export class ProgramVisitor extends AbstractVisitor {
         this.hooks = options.hooks;
         this.filenames = new Map();
         this.pluginContext = options.pluginContext;
-        this.legacyModuleList = [];
-        this.legacyStructMap = new Map();
+
+        if (this.pluginContext && 'getFileManager' in this.pluginContext) {
+            FileManager.setInstance(this.pluginContext.getFileManager());
+        }
 
         if (options.isFrameworkMode !== undefined) {
             this.isFrameworkMode = options.isFrameworkMode;
@@ -97,26 +93,6 @@ export class ProgramVisitor extends AbstractVisitor {
     reset(): void {
         super.reset();
         this.filenames = new Map();
-        this.legacyStructMap = new Map();
-        this.legacyModuleList = [];
-    }
-
-    private getLegacyModule(): void {
-        const moduleList = this.pluginContext?.getProjectConfig()?.dependentModuleList;
-        if (moduleList === undefined) {
-            return;
-        }
-        for (const module of moduleList) {
-            const language = module.language;
-            const moduleName = module.moduleName;
-            if (language !== InteroperAbilityNames.ARKTS_1_1) {
-                continue;
-            }
-            if (!this.legacyStructMap.has(moduleName)) {
-                this.legacyStructMap.set(moduleName, {});
-                this.legacyModuleList.push(moduleName);
-            }
-        }
     }
 
     private dumpExternalSource(
@@ -134,15 +110,12 @@ export class ProgramVisitor extends AbstractVisitor {
         );
     }
 
-    private visitLegacyInExternalSource(currProgram: arkts.Program, name: string): void {
-        if (this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED) {
-            const structList = this.visitorLegacy(currProgram.astNode, currProgram, name);
-            const moduleName = name.split('/')[0];
-            const structMap = this.legacyStructMap.get(moduleName)!;
-            for (const struct of structList) {
-                structMap[struct] = name;
-            }
-        }
+    private visitLegacyInExternalSource(program: arkts.Program, externalSourceName: string): void {
+        const transformer = new LegacyTransformer();
+        transformer.isExternal = !!externalSourceName;
+        transformer.externalSourceName = externalSourceName;
+        transformer.program = program;
+        transformer.visitor(program.astNode);
     }
 
     private visitNonLegacyInExternalSource(
@@ -173,13 +146,20 @@ export class ProgramVisitor extends AbstractVisitor {
         }
     }
 
+    private isLegacyFile(path: string): boolean {
+        const fileManager = FileManager.getInstance();
+        if (fileManager.getLanguageVersionByFilePath(path) === LANGUAGE_VERSION.ARKTS_1_1) {
+            return true;
+        }
+        return false;
+    }
+
     private visitExternalSources(
         program: arkts.Program,
         programQueue: arkts.Program[]
     ): void {
         const visited = new Set();
         const queue: arkts.Program[] = programQueue;
-        this.getLegacyModule();
         while (queue.length > 0) {
             const currProgram = queue.shift()!;
             if (visited.has(currProgram.peer) || currProgram.isASTLowered()) {
@@ -188,7 +168,8 @@ export class ProgramVisitor extends AbstractVisitor {
             if (currProgram.peer !== program.peer) {
                 const name: string = this.filenames.get(currProgram.peer)!;
                 const cachePath: string | undefined = this.pluginContext?.getProjectConfig()?.cachePath;
-                if (this.legacyModuleList && matchPrefix(this.legacyModuleList, name)) {
+                if (this.pluginContext && 'getFileManager' in this.pluginContext && this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED &&
+                    this.pluginName === 'uiTransform' && this.isLegacyFile(currProgram.absName)) {
                     this.visitLegacyInExternalSource(currProgram, name);
                 } else {
                     this.visitNonLegacyInExternalSource(program, currProgram, name, cachePath);
@@ -266,9 +247,6 @@ export class ProgramVisitor extends AbstractVisitor {
         this.preVisitor(hook, node, program, externalSourceName);
 
         for (const transformer of this.visitors) {
-            if (this.legacyStructMap.size > 0 && transformer instanceof ComponentTransformer) {
-                transformer.registerMap(this.legacyStructMap);
-            }
             this.visitTransformer(transformer, script, externalSourceName, program);
             arkts.setAllParents(script);
             if (!transformer.isExternal) {
@@ -286,16 +264,6 @@ export class ProgramVisitor extends AbstractVisitor {
         hook = isExternal ? this.hooks?.external : this.hooks?.source;
         this.postVisitor(hook, node, program, externalSourceName);
         return script;
-    }
-
-    private visitorLegacy(node: arkts.AstNode, program?: arkts.Program, externalSourceName?: string): string[] {
-        const transformer = new LegacyTransformer();
-        transformer.isExternal = !!externalSourceName;
-        transformer.externalSourceName = externalSourceName;
-        transformer.program = program;
-        transformer.visitor(node);
-        const structList = transformer.getList();
-        return structList;
     }
 
     private visitTransformer(
