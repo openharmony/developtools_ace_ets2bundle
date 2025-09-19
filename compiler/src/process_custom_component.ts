@@ -101,7 +101,8 @@ import {
   LogInfo,
   componentInfo,
   storedFileInfo,
-  CurrentProcessFile
+  CurrentProcessFile,
+  createApiVersionCheck
 } from './utils';
 import {
   bindComponentAttr,
@@ -655,14 +656,37 @@ function generateReuseOrCreateArgArr(componentNode: ts.CallExpression, component
     ));
   }
   reuseParamsArr.push(createReuseParameterArrowFunction(getArgumentsToPass(componentNode), constantDefine.GET_PARAMS, name));
-  reuseParamsArr.push(createReuseParameterArrowFunction(
-    [], constantDefine.GET_REUSE_ID, componentAttrInfo.reuse ? componentAttrInfo.reuse : name));
+  reuseParamsArr.push(createReuseIdArrowFunction(componentAttrInfo, name));
   if (newNode.arguments.length >= 6 && ts.isObjectLiteralExpression(newNode.arguments[5])) {
     reuseParamsArr.push(generateExtraInfo(true, newNode.arguments[5]));
   } else {
     reuseParamsArr.push(generateExtraInfo(false));
   }
   return reuseParamsArr;
+}
+
+function createReuseIdArrowFunction(componentAttrInfo: ComponentAttrInfo, componentName: string): ts.PropertyAssignment {
+  return ts.factory.createPropertyAssignment(
+    ts.factory.createIdentifier(constantDefine.GET_REUSE_ID),
+    ts.factory.createConditionalExpression(
+      createApiVersionCheck(20),
+      ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+      componentAttrInfo.reuseAttribute ?? createReuseIdValue(componentName),
+      ts.factory.createToken(ts.SyntaxKind.ColonToken),
+      createReuseIdValue(componentAttrInfo.reuse.length > 0 ? componentAttrInfo.reuse : componentName)
+    )
+  );
+}
+
+function createReuseIdValue(idName: string): ts.ArrowFunction {
+  return ts.factory.createArrowFunction(
+    undefined,
+    undefined,
+    [],
+    undefined,
+    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+    ts.factory.createStringLiteral(idName)
+  );
 }
 
 function getArgumentsToPass(componentNode: ts.CallExpression): ts.NodeArray<ts.ObjectLiteralElementLike> | undefined[] {
