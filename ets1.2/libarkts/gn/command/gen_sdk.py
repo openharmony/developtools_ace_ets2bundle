@@ -28,7 +28,10 @@ def load_config(config_file):
 def get_compiler_type(os_name, cpu_name):
     if (os_name == 'mingw' and cpu_name == 'x86_64'):
         return 'mingw_x86_64'
-    return 'clang_x64'
+    elif (os_name == 'mac' and cpu_name == 'arm64'):
+        return 'clang_arm64'
+    else:
+        return 'clang_x64'
 
 
 def replace_out_root(value, out_root, compiler_type):
