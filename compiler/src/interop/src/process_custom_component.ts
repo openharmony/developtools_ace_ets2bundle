@@ -132,7 +132,7 @@ import processStructComponentV2, { StructInfo, ParamDecoratorInfo } from './proc
 import constantDefine from './constant_define';
 import createAstNodeUtils from './create_ast_node_utils';
 import logMessageCollection from './log_message_collection';
-import { createStaticComponent, popStaticComponent, pushStaticComponent } from './process_interop_component';
+import { createStaticComponent, popStaticComponent, pushStaticComponent, createStaticTuple, setInteropRenderingFlag, resetInteropRenderingFlag, updateStaticComponent, createIfStaticComponent, createStaticArrowBolck } from './process_interop_component';
 
 let decoractorMap: Map<string, Map<string, Set<string>>>;
 
@@ -597,10 +597,11 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
       ts.factory.createIdentifier(ISINITIALRENDER)
     )
   ];
-  const arrowBolck: ts.Statement[] = [
+  const arrowBolck: ts.Statement[] = isArkoala ? createStaticArrowBolck(newNode, componentParameter, name) : 
+  [
     projectConfig.optLazyForEach && storedFileInfo.processLazyForEach ? createCollectElmtIdNode() : undefined,
     createIfCustomComponent(newNode, componentNode, componentParameter, name, isGlobalBuilder,
-      isBuilder, isRecycleComponent, componentAttrInfo, log, isArkoala)
+      isBuilder, isRecycleComponent, componentAttrInfo, log)
   ];
   if (isRecycleComponent) {
     arrowArgArr.push(ts.factory.createParameterDeclaration(
@@ -633,6 +634,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     generateReuseOrCreateArgArr(componentNode, componentAttrInfo, name, newNode), true)];
   return ts.factory.createBlock(
     [
+      isArkoala ? createStaticTuple(name) : undefined,
       ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(isGlobalBuilder ?
           ts.factory.createParenthesizedExpression(parentConditionalExpression()) : ts.factory.createThis(),
@@ -642,8 +644,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
             ts.factory.createIdentifier(partialUpdateConfig.optimizeComponent ?
               OBSERVECOMPONENTCREATION2 : OBSERVECOMPONENTCREATION)
         ),
-        undefined, isReuseComponentInV2 ? reuseOrCreateArgArr as ts.Expression[] : observeArgArr as ts.Expression[])),
-      isArkoala ? popStaticComponent() : undefined
+        undefined, isReuseComponentInV2 ? reuseOrCreateArgArr as ts.Expression[] : observeArgArr as ts.Expression[]))
     ], 
     true
   );
@@ -798,20 +799,7 @@ function splitComponentParams(componentNode: ts.CallExpression, isBuilder: boole
 
 function createIfCustomComponent(newNode: ts.NewExpression, componentNode: ts.CallExpression,
   componentParameter: ts.ObjectLiteralExpression, name: string, isGlobalBuilder: boolean, isBuilder: boolean,
-  isRecycleComponent: boolean, componentAttrInfo: ComponentAttrInfo, log: LogInfo[], isArkoala: boolean = false): ts.IfStatement {
-  if (isArkoala) {
-    return ts.factory.createIfStatement(
-      ts.factory.createIdentifier(ISINITIALRENDER),
-      ts.factory.createBlock(
-        [ 
-          createStaticComponent(name, newNode),
-          pushStaticComponent()
-        ], true),
-      ts.factory.createBlock(
-        []
-      )
-    );
-  }
+  isRecycleComponent: boolean, componentAttrInfo: ComponentAttrInfo, log: LogInfo[]): ts.IfStatement {
   return ts.factory.createIfStatement(
     ts.factory.createIdentifier(ISINITIALRENDER),
     ts.factory.createBlock(
