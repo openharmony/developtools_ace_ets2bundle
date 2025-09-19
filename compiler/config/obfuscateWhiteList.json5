@@ -226,6 +226,9 @@
     "useSharedStorage",
     "value",
     "visualState",
-    "wrapBuilder"
+    "wrapBuilder",
+    "getUINativeModule",
+    "common",
+    "getApiTargetVersion"
   ]
 }

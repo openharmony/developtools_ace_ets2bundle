@@ -42,7 +42,7 @@ class ParentOne extends ViewV2 {
                 getParams: () => ({
                     a: 'aaa', b: 'bbb', e1: (num) => { this.message += num; }
                 }),
-                getReuseId: () => "ReuseV2Child1",
+                getReuseId: getUINativeModule().common.getApiTargetVersion() >= 20 ? () => "ReuseV2Child1" : () => "ReuseV2Child1",
                 extraInfo: { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/v2_component_decorator/reusableV2/reusableV2_component_nesting.ets", line: 27, col: 7 }
             });
         }
@@ -50,7 +50,7 @@ class ParentOne extends ViewV2 {
             this.reuseOrCreateNewComponent({
                 componentClass: ReuseV2Child2,
                 getParams: () => ({}),
-                getReuseId: () => "idOne",
+                getReuseId: getUINativeModule().common.getApiTargetVersion() >= 20 ? () => "idOne" : () => "idOne",
                 extraInfo: { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/v2_component_decorator/reusableV2/reusableV2_component_nesting.ets", line: 28, col: 7 }
             });
         }
@@ -118,7 +118,7 @@ class ParentOne extends ViewV2 {
             this.reuseOrCreateNewComponent({
                 componentClass: ReuseV2Child3,
                 getParams: () => ({}),
-                getReuseId: () => "idThree",
+                getReuseId: getUINativeModule().common.getApiTargetVersion() >= 20 ? () => "idThree" : () => "idThree",
                 extraInfo: { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/v2_component_decorator/reusableV2/reusableV2_component_nesting.ets", line: 33, col: 7 }
             });
         }
