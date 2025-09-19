@@ -37,6 +37,7 @@ import {
 import {
   ES2ABC_PATH,
   SYMBOLMAP_MAP,
+  CACHE_FILE,
   DEFAULT_ETS,
   DEBUG_INFO,
   SIMBOL_TABLE
@@ -114,8 +115,9 @@ mocha.describe('test module_coldreload_mode file api', function () {
     moduleMode.addColdReloadArgs();
     expect(moduleMode.cmdArgs[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
     expect(moduleMode.cmdArgs[1] === DEBUG_INFO).to.be.true;
-    expect(moduleMode.cmdArgs[2] === SIMBOL_TABLE).to.be.true;
-    expect(moduleMode.cmdArgs[3].indexOf(SYMBOLMAP_MAP) > 0).to.be.true;
+    expect(moduleMode.cmdArgs[2] === CACHE_FILE).to.be.true;
+    expect(moduleMode.cmdArgs[4] === SIMBOL_TABLE).to.be.true;
+    expect(moduleMode.cmdArgs[5].indexOf(SYMBOLMAP_MAP) > 0).to.be.true;
   });
 
   mocha.it('1-3: test addColdReloadArgs under cold reload release', function () {
@@ -124,12 +126,38 @@ mocha.describe('test module_coldreload_mode file api', function () {
     const moduleMode = new ModuleColdreloadMode(this.rollup);
     moduleMode.addColdReloadArgs();
     expect(moduleMode.cmdArgs[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
-    expect(moduleMode.cmdArgs[1] === DEBUG_INFO).to.be.false;
-    expect(moduleMode.cmdArgs[1] === SIMBOL_TABLE).to.be.true;
-    expect(moduleMode.cmdArgs[2].indexOf(SYMBOLMAP_MAP) > 0).to.be.true;
+    expect(moduleMode.cmdArgs[1] === CACHE_FILE).to.be.true;
+    expect(moduleMode.cmdArgs[3] === SIMBOL_TABLE).to.be.true;
+    expect(moduleMode.cmdArgs[4].indexOf(SYMBOLMAP_MAP) > 0).to.be.true;
   });
 
-  mocha.it('1-4: test updateSourceMapFromFileList under cold reload debug', function () {
+  mocha.it('1-4: test addColdReloadArgs under cold reload debug not first', function () {
+    this.rollup.coldReload();
+    this.rollup.share.projectConfig.oldMapFilePath = DEFAULT_ETS;
+    const moduleMode = new ModuleColdreloadMode(this.rollup);
+    moduleMode.isFirstBuild = false;
+    moduleMode.addColdReloadArgs();
+    expect(moduleMode.cmdArgs[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
+    expect(moduleMode.cmdArgs[1] === DEBUG_INFO).to.be.true;
+    expect(moduleMode.cmdArgs[2] === CACHE_FILE).to.be.true;
+    expect(moduleMode.cmdArgs[4] === SIMBOL_TABLE).to.be.true;
+    expect(moduleMode.cmdArgs[5].indexOf(SYMBOLMAP_MAP) > 0).to.be.true;
+  });
+
+  mocha.it('1-5: test addColdReloadArgs under cold reload release not first', function () {
+    this.rollup.coldReload(RELEASE);
+    this.rollup.share.projectConfig.oldMapFilePath = DEFAULT_ETS;
+    const moduleMode = new ModuleColdreloadMode(this.rollup);
+    moduleMode.isFirstBuild = false;
+    moduleMode.addColdReloadArgs();
+    console.log(" 3333", moduleMode.cmdArgs);
+    expect(moduleMode.cmdArgs[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
+    expect(moduleMode.cmdArgs[1] === CACHE_FILE).to.be.true;
+    expect(moduleMode.cmdArgs[3] === SIMBOL_TABLE).to.be.true;
+    expect(moduleMode.cmdArgs[4].indexOf(SYMBOLMAP_MAP) > 0).to.be.true;
+  });
+
+  mocha.it('1-6: test updateSourceMapFromFileList under cold reload debug', function () {
     this.rollup.coldReload();
     this.rollup.share.projectConfig.oldMapFilePath = DEFAULT_ETS;
     const moduleMode = new ModuleColdreloadMode(this.rollup);
