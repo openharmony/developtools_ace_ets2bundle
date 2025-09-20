@@ -13,6 +13,12 @@
       "$.exe": "",
       "$.lib": ".so"
     },
+    "mac":
+    {
+      "$host_tools": "linux_host_tools",
+      "$.exe": "",
+      "$.lib": ".so"
+    },
     "mingw":
     {
       "$host_tools": "windows_host_tools",
