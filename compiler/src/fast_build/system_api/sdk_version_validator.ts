@@ -568,6 +568,6 @@ export class SdkVersionValidator {
 
   private isTargetNode(node: ts.Node, name: string): boolean {
     const nodePrimaryName = this.getPrimaryNameFromNode(node);
-    return nodePrimaryName === name;
+    return nodePrimaryName === name && ts.isPropertyAccessExpression(node);
   }
 }
