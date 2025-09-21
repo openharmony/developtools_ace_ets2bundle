@@ -946,9 +946,8 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
 
 function parseComponentInImportNode(originNode: ts.StructDeclaration, name: string,
   asComponentName: string, structDecorator: structDecoratorResult, originFile: string, isArkoala: boolean = false): void {
-  if (!isArkoala) {
-    componentCollection.customComponents.add(name);
-  } else {
+  componentCollection.customComponents.add(name);
+  if (isArkoala) {
     const filePath = originNode.getSourceFile().fileName;
     componentCollection.arkoalaComponents.set(name, filePath);
   }
