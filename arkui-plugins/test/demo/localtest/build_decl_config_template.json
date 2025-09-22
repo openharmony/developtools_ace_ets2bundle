@@ -1,6 +1,6 @@
 {
     "plugins": {
-        "interop_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/build-tools/ui-plugins/lib/interop-plugins/index"
+        "interop_plugin": "workspace/out/sdk/ohos-sdk/linux/ets/static/build-tools/ui-plugins/lib/interop-plugins/index"
     },
 
     "compileFiles": [
@@ -17,7 +17,7 @@
     "loaderOutPath": "./dist",
     "cachePath": "./dist/cache",
 
-    "buildSdkPath": "workspace/out/sdk/ohos-sdk/linux/ets/ets1.2/",
+    "buildSdkPath": "workspace/out/sdk/ohos-sdk/linux/ets/static/",
 
     "dependentModuleList": [],
 

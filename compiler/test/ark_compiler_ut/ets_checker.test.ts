@@ -461,7 +461,7 @@ mocha.describe('test interop sdk', function () {
         const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
         const aliasConfig: Map<string, string> = new Map();
         const staticSDKDeclPath: Set<string> = new Set([
-            path.join(baseUrl, 'ets1.2interop/declarations/api'),
+            path.join(baseUrl, 'static-interop/declarations/api'),
         ]);
         aliasConfig.set('application', path.join(baseUrl, './configs/alias.json'));
 
@@ -497,7 +497,7 @@ mocha.describe('test interop sdk', function () {
         const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
         const aliasConfig: Map<string, string> = new Map();
         const staticSDKDeclPath: Set<string> = new Set([
-            path.join(baseUrl, 'ets1.2interop/declarations/api'),
+            path.join(baseUrl, 'static-interop/declarations/api'),
         ]);
         aliasConfig.set('application', path.join(baseUrl, './configs/alias.json'));
 
@@ -524,7 +524,7 @@ mocha.describe('test interop sdk', function () {
             undefined);
         FileManager.setMixCompile(true);
         const filePath = path.join(baseUrl, './source_code/file1.ts');
-        const expectPath = path.join(baseUrl, './ets1.2interop/declarations/api/@ohos.errorCode.d.ets');
+        const expectPath = path.join(baseUrl, './static-interop/declarations/api/@ohos.errorCode.d.ets');
         const resolvedModules = resolveModuleNamesMain(['alias.errcode'], path.join(baseUrl, './source_code/file1.ts'));
         expect(resolvedModules[0].resolvedFileName === expectPath).to.be.true;
     });
