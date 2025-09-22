@@ -1,4 +1,13 @@
 {
   "name": "root",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@idlizer/arktscgen": "./libarkts/packages/arktscgen-2.1.10-arktscgen-4.tgz",
+    "@idlizer/core": "./libarkts/packages/core-2.1.10-arktscgen-4.tgz",
+    "@koalaui/build-common": "./build-common",
+    "@koalaui/compat": "./compat",
+    "@koalaui/common": "./common",
+    "@koalaui/interop": "./interop",
+    "@koalaui/libarkts": "./libarkts"
+  }
 }

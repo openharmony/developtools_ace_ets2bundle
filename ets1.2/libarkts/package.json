@@ -26,18 +26,16 @@
         "panda_sdk_version": "next"
     },
     "dependencies": {
-        "@koalaui/build-common": "file:../build-common",
-        "@koalaui/compat": "file:../compat",
-        "@koalaui/common": "file:../common",
-        "@koalaui/interop": "file:../interop",
-        "@koalaui/libarkts": ".",
+        "@koalaui/build-common": "1.7.10+devel",
+        "@koalaui/compat": "1.7.10+devel",
+        "@koalaui/common": "1.7.10+devel",
+        "@koalaui/interop": "1.7.10+devel",
+        "@koalaui/libarkts": "1.7.10+devel",
         "@idlizer/arktscgen": "2.1.10-arktscgen-4",
         "mocha": "^9.2.2",
         "node-addon-api": "8.0.0",
         "node-api-headers": "0.0.5",
-        "commander": "10.0.1"
-    },
-    "devDependencies": {
+        "commander": "10.0.1",
         "typescript": "4.9.5",
         "tslib": "^2.3.1",
         "rollup": "^4.13.0",
@@ -47,6 +45,8 @@
         "@rollup/plugin-typescript": "^11.1.6",
         "tsconfig-paths": "^4.2.0",
         "rimraf": "^6.0.1"
+    },
+    "devDependencies": {
     },
     "scripts": {
         "clean": "rimraf generated build native/build* ./.rollup.cache tsconfig.tsbuildinfo lib",
