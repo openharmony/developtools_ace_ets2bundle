@@ -21,7 +21,7 @@ if (!koala_mr.is_rri) {
 }
 import("${koala_mr.imports_prefix}/npm.gni")
 
-libarkts_node_modules_dir = koala_mr.libarkts_path + "/node_modules"
+root_node_modules_dir = koala_mr.root_path + "/node_modules"
 
 if (!koala_mr.is_rri) {
     action("ui2abc_panda_sdk") {
@@ -116,8 +116,8 @@ shared_library("es2panda_lib") {
         "${koala_mr.root_path}/interop/src/cpp",
         "${koala_mr.root_path}/interop/src/cpp/napi",
         "${koala_mr.root_path}/interop/src/cpp/types",
-        "$libarkts_node_modules_dir/node-api-headers/include",
-        "$libarkts_node_modules_dir/node-addon-api"
+        "$root_node_modules_dir/node-api-headers/include",
+        "$root_node_modules_dir/node-addon-api"
     ]
 
     defines = [
