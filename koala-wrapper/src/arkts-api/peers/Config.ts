@@ -18,6 +18,7 @@ import { global } from "../static/global"
 import { passStringArray } from "../utilities/private"
 import { KNativePointer } from "@koalaui/interop"
 import { Es2pandaCompilationMode } from '../../generated/Es2pandaEnums'
+import { Debugger } from "../utilities/debugger"
 
 export class Config extends ArktsObject {
     constructor(peer: KNativePointer) {
@@ -29,7 +30,7 @@ export class Config extends ArktsObject {
     static create(
         input: readonly string[]
     ): Config {
-        console.log("[TS WRAPPER] CREATE CONFIG");
+        Debugger.getInstance().phasesDebugLog(`[TS WRAPPER] CREATE CONFIG`);
         return new Config(
             global.es2panda._CreateConfig(input.length, passStringArray(input))
         )

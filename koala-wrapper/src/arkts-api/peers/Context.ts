@@ -20,6 +20,7 @@ import { passString, passStringArray } from '../utilities/private';
 import { KBoolean, KInt, KNativePointer } from '@koalaui/interop';
 import { AstNode } from './AstNode';
 import { Program } from './Program';
+import { Debugger } from '../utilities/debugger';
 export class Context extends ArktsObject {
     constructor(peer: KNativePointer) {
         super(peer);
@@ -66,7 +67,7 @@ export class Context extends ArktsObject {
 
 
     static destroyAndRecreate(ast: AstNode): Context {
-        console.log('[TS WRAPPER] DESTROY AND RECREATE');
+        Debugger.getInstance().phasesDebugLog(`[TS WRAPPER] DESTROY AND RECREATE`);
         const source = filterSource(ast.dumpSrc());
         global.es2panda._DestroyContext(global.context);
         global.compilerContext = Context.createFromString(source);
