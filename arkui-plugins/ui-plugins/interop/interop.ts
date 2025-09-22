@@ -149,13 +149,17 @@ function newComponent(className: string): arkts.Statement {
     );
 }
 
-function createComponent(className: string): arkts.Statement[] {
+function createComponent(className: string, isV2: boolean): arkts.Statement[] {
+    let viewCreateMethod = 'viewPUCreate';
+    if (isV2) {
+        viewCreateMethod = 'viewV2Create';
+    }
     const component = newComponent(className);
-    const ViewPU = getPropertyESValue('viewPUCreate', InteroperAbilityNames.GLOBAL, 'viewPUCreate');
+    const View = getPropertyESValue(viewCreateMethod, InteroperAbilityNames.GLOBAL, viewCreateMethod);
     const create = arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
-                arkts.factory.createIdentifier('viewPUCreate'),
+                arkts.factory.createIdentifier(viewCreateMethod),
                 arkts.factory.createIdentifier('invoke'),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
@@ -167,12 +171,12 @@ function createComponent(className: string): arkts.Statement[] {
             ]
         )
     );
-    return [component, ViewPU, create];
+    return [component, View, create];
 }
 
 
 function createWrapperBlock(context: InteropContext, varMap: Map<string, arkts.ClassProperty>,
-    updateProp: arkts.Property[]): arkts.BlockStatement {
+    updateProp: arkts.Property[], isV2: boolean): arkts.BlockStatement {
     const className: string = context.className;
     const path: string = context.path;
     const args: arkts.ObjectExpression | undefined = context.arguments;
@@ -191,15 +195,15 @@ function createWrapperBlock(context: InteropContext, varMap: Map<string, arkts.C
             ...initialArgsStatement,
             ...createExtraInfo(['page'], [path]),
             ...createELMTID(),
-            ...createComponent(className),
+            ...createComponent(className, isV2),
             createInitReturn(className)
         ]
     );
 }
 
 function createInitializer(context: InteropContext, varMap: Map<string, arkts.ClassProperty>,
-    updateProp: arkts.Property[]): arkts.ArrowFunctionExpression {
-    const block = createWrapperBlock(context, varMap, updateProp);
+    updateProp: arkts.Property[], isV2: boolean): arkts.ArrowFunctionExpression {
+    const block = createWrapperBlock(context, varMap, updateProp, isV2);
     return arkts.factory.createArrowFunction(
         arkts.factory.createScriptFunction(
             block,
@@ -388,7 +392,9 @@ export function generateArkUICompatible(node: arkts.CallExpression, globalBuilde
 
     const varMap: Map<string, arkts.ClassProperty> = generateVarMap(context, decl);
     const updateProp: arkts.Property[] = [];
-    const initializer = createInitializer(context, varMap, updateProp);
+    const isComponentV2 = decl.annotations.some(
+        annotation => annotation.expr instanceof arkts.Identifier && annotation.expr.name === 'ComponentV2');
+    const initializer = createInitializer(context, varMap, updateProp, isComponentV2);
     const updater = createUpdater(updateProp);
     const result = arkts.factory.updateCallExpression(
         node,
