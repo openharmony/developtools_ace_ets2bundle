@@ -245,10 +245,16 @@
             "solutions": ["Please make sure that the splash page has one and only one '@Entry' decorator."]
         }
     ],
-    "notConcurrent": {
-        "message": "The struct 'NotConcurrentIndexDecorator' use invalid decorator.",
-        "type": "WARN"
-    },
+    "notConcurrent": [
+        {
+            "message": "The struct 'NotConcurrentIndexDecorator' use invalid decorator.",
+            "type": "WARN"
+        },
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'NotConcurrentIndexDecorator'.",
+            "type": "WARN"
+        }
+    ],
     "notConcurrentFun": {
         "message": "'@Concurrent' can not be used on method, please use it on function declaration.",
         "type": "ERROR",
@@ -262,10 +268,16 @@
         "message": "The struct 'StylesDuplicate' use invalid decorator.",
         "type": "WARN"
     },
-    "vaildateDecorator": {
-        "message": "The struct 'VaildateDecoratorIndex' use invalid decorator.",
-        "type": "WARN"
-    },
+    "vaildateDecorator": [
+        {
+            "message": "The struct 'VaildateDecoratorIndex' use invalid decorator.",
+            "type": "WARN"
+        },
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'VaildateDecoratorIndex'.",
+            "type": "WARN"
+        }
+    ],
     "state": {
         "message": "The struct 'Button' cannot have the same name as the built-in component 'Button'.",
         "type": "ERROR",
@@ -1239,6 +1251,18 @@
             "message": "The '@ReusableV2' decorator can only be used with 'struct'.",
             "type": "ERROR",
             "code": "10905337"
+        },
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'v22'.",
+            "type": "WARN"
+        },
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'v23'.",
+            "type": "WARN"
+        },
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'V25'.",
+            "type": "WARN"
         }
     ],
     "validateNestedReusableComponents": [

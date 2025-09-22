@@ -67,7 +67,8 @@ import {
   SENDABLE,
   TYPE,
   COMPONENT_LOCAL_BUILDER_DECORATOR,
-  COMPONENT_DECORATOR_REUSABLE_V2
+  COMPONENT_DECORATOR_REUSABLE_V2,
+  MAIN_COMPONENT_DECORATORS
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -340,10 +341,14 @@ function checkDecorators(decorators: readonly ts.Decorator[], result: DecoratorR
   const componentName: string = component.getText();
   const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(componentName);
   let hasInnerComponentDecorator: boolean = false;
+  let hasComponentDecorator: boolean = false;
   decorators.forEach((element) => {
     let name: string = element.getText().replace(/\([^\(\)]*\)/, '').trim();
     if (element.expression && element.expression.expression && ts.isIdentifier(element.expression.expression)) {
       name = '@' + element.expression.expression.getText();
+    }
+    if (MAIN_COMPONENT_DECORATORS.has(name)) {
+      hasComponentDecorator = true;
     }
     if (INNER_COMPONENT_DECORATORS.has(name)) {
       hasInnerComponentDecorator = true;
@@ -383,6 +388,7 @@ function checkDecorators(decorators: readonly ts.Decorator[], result: DecoratorR
     }
   });
   validateStruct(hasInnerComponentDecorator, componentName, component, log, sourceFile, structInfo);
+  validateComponentDecorator(hasComponentDecorator, componentName, component, log, sourceFile);
 }
 
 function validateInvalidStructDecorator(element: ts.Decorator, componentName: string, log: LogInfo[],
@@ -390,6 +396,14 @@ function validateInvalidStructDecorator(element: ts.Decorator, componentName: st
   const pos: number = element.expression ? element.expression.pos : element.pos;
   const message: string = `The struct '${componentName}' use invalid decorator.`;
   addLog(LogType.WARN, message, pos, log, sourceFile);
+}
+
+function validateComponentDecorator(hasComponentDecorator: boolean, componentName: string, component: ts.Identifier,
+  log: LogInfo[], sourceFile: ts.sourceFile): void {
+  if (!hasComponentDecorator) {
+    const message: string = `Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct '${componentName}'.`;
+    addLog(LogType.WARN, message, component.pos, log, sourceFile);
+  }
 }
 
 function validateStruct(hasInnerComponentDecorator: boolean, componentName: string, component: ts.Identifier,
