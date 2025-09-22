@@ -20,8 +20,10 @@ const isDebugLog: boolean = false;
 const isDebugDump: boolean = false;
 const isPerformance: boolean = false;
 const enableMemoryTracker: boolean = false;
+const enablePhasesDebug: boolean = false;
 arkts.Performance.getInstance().skip(!isPerformance);
 arkts.Performance.getInstance().enableMemoryTracker(enableMemoryTracker);
+arkts.Debugger.getInstance().enablePhasesDebug(enablePhasesDebug);
 export function getEnumName(enumType: any, value: number): string | undefined {
     return enumType[value];
 }
