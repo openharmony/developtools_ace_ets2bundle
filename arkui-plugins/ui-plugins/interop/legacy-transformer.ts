@@ -293,7 +293,8 @@ export class LegacyTransformer extends AbstractVisitor {
 
     enter(node: arkts.AstNode): void {
         if ((arkts.isStructDeclaration(node) || arkts.isClassDeclaration(node)) && !!node.definition.ident) {
-            const isComponent = node.definition.annotations.some(annotation => annotation.expr instanceof arkts.Identifier && annotation.expr.name === 'Component');
+            const isComponent = node.definition.annotations.some(annotation => annotation.expr instanceof arkts.Identifier &&
+                (annotation.expr.name === 'Component' || annotation.expr.name === 'ComponentV2'));
             const scopeInfo: ScopeInfo = { name: node.definition.ident.name, isComponent: isComponent};
             this.scopeInfos.push(scopeInfo);
         }
@@ -369,7 +370,8 @@ export class LegacyTransformer extends AbstractVisitor {
         if (arkts.isStructDeclaration(newNode) || arkts.isClassDeclaration(newNode)) {
             const definition = newNode.definition!;
             const annotations = definition.annotations;
-            if (annotations.some(annotation => annotation.expr instanceof arkts.Identifier && annotation.expr.name === 'Component')) {
+            if (annotations.some(annotation => annotation.expr instanceof arkts.Identifier &&
+                (annotation.expr.name === 'Component' || annotation.expr.name === 'ComponentV2'))) {
                 const className = newNode.definition?.ident?.name!;
                 const memberMap = this.collectComponentMembers(newNode as arkts.StructDeclaration, className);
                 this.componentInterfaceCollection.push(this.generateComponentInterface(className, node.modifiers, memberMap));
