@@ -70,7 +70,7 @@ import SpecificComponentChildrenRule from './specific-component-children';
 import EntryComponentV2InvalidParamsRule from './entry-componentv2-invalid-params';
 
 const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
-    [AttributeNoInvokeRule, 'warn'],
+    [AttributeNoInvokeRule, 'error'],
     [BuildRootNodeRule, 'error'],
     [BuilderParamDecoratorCheckRule, 'error'],
     [CheckConstructPrivateParameterRule, 'warn'],
