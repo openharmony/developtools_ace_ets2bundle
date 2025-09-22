@@ -64,6 +64,7 @@ import {
     TSTypeParameterInstantiation,
     TypeNode,
 } from '../generated';
+import { Debugger } from './utilities/debugger';
 
 export class EtsScript extends AstNode {
     constructor(peer: KPtr) {
@@ -72,7 +73,7 @@ export class EtsScript extends AstNode {
     }
 
     static fromContext(): EtsScript {
-        console.log('[TS WRAPPER] GET AST FROM CONTEXT');
+        Debugger.getInstance().phasesDebugLog(`[TS WRAPPER] GET AST FROM CONTEXT`);
         return new EtsScript(
             global.es2panda._ProgramAst(global.context, global.es2panda._ContextProgram(global.context))
         );
