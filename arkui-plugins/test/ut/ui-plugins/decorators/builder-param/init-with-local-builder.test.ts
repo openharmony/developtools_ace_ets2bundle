@@ -138,7 +138,7 @@ function main() {}
   }
   
   @memo() public doNothingBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (174403279)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (174403279)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
@@ -150,7 +150,7 @@ function main() {}
   }
   
   @memo() public doNothingBuilder2(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() str: string) {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (76253767)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (76253767)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
@@ -162,7 +162,7 @@ function main() {}
   }
   
   @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (179390036)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (179390036)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;

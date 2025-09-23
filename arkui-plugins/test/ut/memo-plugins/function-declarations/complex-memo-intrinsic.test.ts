@@ -108,13 +108,13 @@ export type SimpleArray<T> = (Array<T> | ReadonlyArray<T> | Readonly<Array<T>>);
 
 class Use {
   @memo() public test(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (228150357)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (228150357)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
     const style = @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, attributes: IA<number>) => {
-      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (237001330)), 1);
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (237001330)), 1);
       const __memo_parameter_attributes = __memo_scope.param(0, attributes);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
