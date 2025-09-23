@@ -237,7 +237,7 @@ export function isMemoParametersDeclaration(node: arkts.AstNode): boolean {
  * TODO: change this to TypeNodeGetType to check void type
  */
 export function isVoidType(typeNode: arkts.TypeNode | undefined): boolean {
-    return typeNode?.dumpSrc() === 'void';
+    return !typeNode || typeNode.dumpSrc() === 'void';
 }
 
 /**
@@ -616,13 +616,14 @@ export function buildReturnTypeInfo(
     isMemo?: boolean,
     isStableThis?: boolean
 ): ReturnTypeInfo {
+    const isVoid = isVoidType(returnType);
     const newReturnType = !!returnType
         ? returnType.clone()
-        : arkts.factory.createETSUndefinedType();
+        : arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
     return {
         node: newReturnType,
         isMemo,
-        isVoid: isVoidType(newReturnType),
+        isVoid,
         isStableThis,
     };
 }

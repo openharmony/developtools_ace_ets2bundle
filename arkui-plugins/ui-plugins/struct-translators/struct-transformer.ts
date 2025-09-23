@@ -31,7 +31,7 @@ import { isEntryWrapperClass } from '../entry-translators/utils';
 import { factory as entryFactory } from '../entry-translators/factory';
 import { ImportCollector } from '../../common/import-collector';
 import { DeclarationCollector } from '../../common/declaration-collector';
-import { generateArkUICompatible, isArkUICompatible } from '../interop/interop';
+import { generateArkUICompatible } from '../interop/interop';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
 
 export class StructTransformer extends AbstractVisitor {
@@ -100,8 +100,6 @@ export class StructTransformer extends AbstractVisitor {
             return factory.transformNormalClass(node);
         } else if (arkts.isCallExpression(node) && isResourceNode(node)) {
             return factory.transformResource(node, this.projectConfig, this.resourceInfo);
-        } else if (isArkUICompatible(node)) {
-            return generateArkUICompatible(node as arkts.CallExpression);
         } else if (arkts.isTSInterfaceDeclaration(node)) {
             return factory.tranformInterfaceMembers(node, this.externalSourceName);
         }

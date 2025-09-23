@@ -41,7 +41,7 @@ class A {
 }
 class Test {
     @memo() public void_method(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
@@ -52,7 +52,7 @@ class Test {
         }
     }
     @memo() public a_method_with_implicit_return_type(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
@@ -63,7 +63,7 @@ class Test {
         }
     }
     @memo() public void_method_with_arg(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg: string) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_arg = __memo_scope.param(0, arg);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -75,7 +75,7 @@ class Test {
         }
     }
     @memo() public void_method_with_return(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg: string) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_arg = __memo_scope.param(0, arg);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -87,7 +87,7 @@ class Test {
         }
     }
     @memo() public static static_method_with_type_parameter<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg: T): void {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_arg = __memo_scope.param(0, arg);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -99,7 +99,7 @@ class Test {
         }
     }
     @memo() public obj_arg(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg: A) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_arg = __memo_scope.param(0, arg);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -114,7 +114,7 @@ class Test {
 }
 class Use {
     @memo() public test(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;

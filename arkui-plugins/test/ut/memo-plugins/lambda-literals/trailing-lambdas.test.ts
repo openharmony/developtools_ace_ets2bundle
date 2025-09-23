@@ -35,7 +35,7 @@ import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
 @memo() function bar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, f?: (()=> void)): void {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
     const __memo_parameter_f = __memo_scope.param(0, f);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -48,7 +48,7 @@ function main() {}
 }
 function par(f?: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
 @memo() function kar(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() f?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
     const __memo_parameter_f = __memo_scope.param(0, f);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -60,7 +60,7 @@ function par(f?: @memo() ((__memo_context: __memo_context_type, __memo_id: __mem
     }
 }
 @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
@@ -70,7 +70,7 @@ function par(f?: @memo() ((__memo_context: __memo_context_type, __memo_id: __mem
         console.log();
     }));
     a.goo(((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
@@ -82,7 +82,7 @@ function par(f?: @memo() ((__memo_context: __memo_context_type, __memo_id: __mem
         }
     }));
     a.koo(__memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
@@ -97,7 +97,7 @@ function par(f?: @memo() ((__memo_context: __memo_context_type, __memo_id: __mem
         console.log();
     }));
     par(((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
@@ -109,7 +109,7 @@ function par(f?: @memo() ((__memo_context: __memo_context_type, __memo_id: __mem
         }
     }));
     kar(__memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
@@ -127,7 +127,7 @@ function par(f?: @memo() ((__memo_context: __memo_context_type, __memo_id: __mem
 });
 class A {
     @memo() public foo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, p?: (()=> void)): void {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_p = __memo_scope.param(0, p);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -140,7 +140,7 @@ class A {
     }
     public goo(@memo() p?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
     @memo() public koo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() p?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_p = __memo_scope.param(0, p);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;

@@ -43,7 +43,7 @@ export function __id(): __memo_id_type
 @Retention({policy:"SOURCE"}) @interface memo_skip {}
 class Test {
     @memo() public void_method(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
@@ -103,7 +103,7 @@ class Test {
 }
 class Use {
     @memo() public test(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;

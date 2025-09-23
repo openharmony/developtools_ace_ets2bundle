@@ -17,6 +17,7 @@
   "loaderOutPath": "./dist",
   "compileSdkVersion": 20,
   "compatibleSdkVersion": 20,
+  "aceModuleJsonPath": "./demo/localtest/entry/src/main/module.json5",
   "bundleName": "com.example.myapplication",
   "useNormalizedOHMUrl": true,
   "buildType": "build",
@@ -33,13 +34,35 @@
   "integratedHsp": false,
   "allowEmptyBundleName": false,
   "declgenV2OutPath": "",
-  "externalApiPaths": [],
+  "externalApiPaths": [
+    "workspace/out/sdk/ohos-sdk/linux/ets/static/api",
+    "workspace/out/sdk/ohos-sdk/linux/ets/static/kits",
+    "workspace/out/sdk/ohos-sdk/linux/ets/static/arkts"
+  ],
+  "deviceTypes": [
+    "phone"
+  ],
+  "permissions": {},
+  "byteCodeHar": false,
+  "uiTransformOptimization": false,
+  "runtimeOS": "HarmonyOS",
+  "sdkConfigPaths": [],
+  "isPreview": false,
+  "codeRootPath": "./demo/localtest/entry/src/main/ets",
+  "isCrossplatform": false,
+  "bundleType": "app",
   "level": {
     "level": 20000,
     "levelStr": "INFO",
     "colour": "green"
   },
+  "dependencyModuleList": [],
   "isBuildConfigModified": false,
-  "aceModuleJsonPath": "./demo/localtest/entry/src/main/module.json5",
-  "es2pandaMode": 2
+  "pandaSdkPath": "workspace/out/sdk/ohos-sdk/linux/ets/static/build-tools/ets2panda",
+  "abcLinkerPath": "workspace/out/sdk/ohos-sdk/linux/ets/static/build-tools/ets2panda/bin/ark_link",
+  "dependencyAnalyzerPath": "workspace/out/sdk/ohos-sdk/linux/ets/static/build-tools/ets2panda/bin/dependency_analyzer",
+  "aliasConfig": {},
+  "sdkAliasMap": {},
+  "interopSDKPaths": {},
+  "es2pandaMode": "simultaneous"
 }
