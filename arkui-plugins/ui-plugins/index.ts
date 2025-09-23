@@ -36,7 +36,7 @@ export function uiTransform(): Plugins {
 
 function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
     let script: arkts.EtsScript | undefined;
-    console.log('[UI PLUGIN] AFTER PARSED ENTER');
+    arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED ENTER');
     arkts.Performance.getInstance().memoryTrackerPrintCurrent('ArkTS:Parse');
     arkts.Performance.getInstance().memoryTrackerReset();
     arkts.Performance.getInstance().startMemRecord('Node:UIPlugin:AfterParse');
@@ -55,10 +55,10 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
         arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:AfterParse');
         arkts.Performance.getInstance().memoryTrackerReset();
         arkts.Performance.getInstance().stopMemRecord('Node:UIPlugin:AfterParse');
-        console.log('[UI PLUGIN] AFTER PARSED EXIT');
+        arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED EXIT');
         return script;
     }
-    console.log('[UI PLUGIN] AFTER PARSED EXIT WITH NO TRANSFORM');
+    arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED EXIT WITH NO TRANSFORM');
     return script;
 }
 
@@ -88,7 +88,7 @@ function parsedProgramVisit(
 
 function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
     let script: arkts.EtsScript | undefined;
-    console.log('[UI PLUGIN] AFTER CHECKED ENTER');
+    arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED ENTER');
     arkts.Performance.getInstance().memoryTrackerPrintCurrent('ArkTS:Check');
     arkts.Performance.getInstance().memoryTrackerGetDelta('ArkTS:Check');
     arkts.Performance.getInstance().memoryTrackerReset();
@@ -107,10 +107,10 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         this.setArkTSAst(script);
         arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:UI-AfterCheck');
         arkts.Performance.getInstance().stopMemRecord('Node:UIPlugin:UI-AfterCheck');
-        console.log('[UI PLUGIN] AFTER CHECKED EXIT');
+        arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED EXIT');
         return script;
     }
-    console.log('[UI PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
+    arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
     return script;
 }
 
