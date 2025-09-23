@@ -41,7 +41,7 @@ function main() {}
         return __memo_scope.cached;
     }
     return __memo_scope.recache(((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: Item<T>): void => {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_item = __memo_scope.param(0, item);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -63,13 +63,13 @@ interface Attribute<T> {
 }
 class B {
     @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
         A<string>(__memo_context, ((__memo_id) + (<some_random_number>))).each(__memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, ri: Item<string>) => {
-            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
             const __memo_parameter_ri = __memo_scope.param(0, ri);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
