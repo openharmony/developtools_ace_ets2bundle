@@ -33,6 +33,10 @@
         "clipContent",
         "backToTop",
         "onWillStopDragging",
-        "syncLoad"
+        "syncLoad",
+        "onWillStartDragging",
+        "onDidStopDragging",
+        "onWillStartFling",
+        "onDidStopFling"
     ]
 }
