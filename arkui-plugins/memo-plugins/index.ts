@@ -120,6 +120,7 @@ function checkedProgramVisit(
             visitors: [functionTransformer],
             skipPrefixNames,
             pluginContext,
+            isFrameworkMode
         });
         program = programVisitor.programVisitor(program);
         arkts.NodeCache.getInstance().clear();

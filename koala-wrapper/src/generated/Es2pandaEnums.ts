@@ -1085,7 +1085,8 @@ export enum Es2pandaForStatementKind {
 export enum Es2pandaCompilationMode {
     COMPILATION_MODE_GEN_STD_LIB = 0,
     COMPILATION_MODE_PROJECT = 1,
-    COMPILATION_MODE_SINGLE_FILE = 2
+    COMPILATION_MODE_SINGLE_FILE = 2,
+    COMPILATION_MODE_GEN_ABC_FOR_EXTERNAL_SOURCE = 3
 }
 export enum Es2pandaCheckDecision {
     CHECK_DECISION_CORRECT = 0,
