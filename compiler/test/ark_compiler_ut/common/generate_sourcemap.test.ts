@@ -116,7 +116,9 @@ mocha.describe('test generate_sourcemap api', function () {
     const errInfo: LogData = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_INTERNAL_GET_MODULE_INFO_FAILED,
       ArkTSInternalErrorDescription,
-      'Failed to get ModuleInfo, moduleId: moduleId'
+      'Failed to get ModuleInfo, moduleId: moduleId',
+      '',
+      ['Please check in which file this file moduleId was imported.']
     );
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     let moduleId = "moduleId";
@@ -139,7 +141,9 @@ mocha.describe('test generate_sourcemap api', function () {
     const errInfo: LogData = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_INTERNAL_GET_MODULE_INFO_FAILED,
       ArkTSInternalErrorDescription,
-      'Failed to get ModuleInfo, moduleId: moduleId'
+      'Failed to get ModuleInfo, moduleId: moduleId',
+      '',
+      ['Please check in which file this file moduleId was imported.']
     );
     CommonLogger.destroyInstance();
     const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
