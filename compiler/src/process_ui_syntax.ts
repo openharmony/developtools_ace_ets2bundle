@@ -84,7 +84,7 @@ import {
   CHECK_COMPONENT_EXTEND_DECORATOR,
   MUTABLEBUILDER_FUNCTION,
   ATTRIBUTE_ID,
-  __RESOURCEID__
+  __GETRESOURCEID__
 } from './pre_define';
 import {
   componentInfo,
@@ -405,13 +405,13 @@ export function processUISyntax(program: ts.Program, ut = false,
       } else if (ts.isDecorator(node)) {
         // This processing is for mock instead of ui transformation
         node = processDecorator(node);
-      } else if (isWrapBuilderFunction(node)) {
+      } else if (isWrapBuilderFunction(node) || isMutableBuilderFunction(node)) {
         if (node.arguments && node.arguments[0] && (!ts.isIdentifier(node.arguments[0]) ||
           ts.isIdentifier(node.arguments[0]) &&
           !CUSTOM_BUILDER_METHOD.has(node.arguments[0].escapedText.toString()))) {
           transformLog.errors.push({
             type: LogType.ERROR,
-            message: `The wrapBuilder's parameter should be '@Builder' function.`,
+            message: `The '${node.expression.escapedText.toString()}'s parameter should be '@Builder' function.`,
             pos: node.getStart(),
             code: '10905109'
           });
@@ -456,6 +456,14 @@ export function processUISyntax(program: ts.Program, ut = false,
     function isWrapBuilderFunction(node: ts.Node): boolean {
       if (ts.isCallExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
         node.expression.escapedText.toString() === WRAPBUILDER_FUNCTION) {
+        return true;
+      }
+      return false;
+    }
+
+    function isMutableBuilderFunction(node: ts.Node): boolean {
+      if (ts.isCallExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
+        node.expression.escapedText.toString() === MUTABLEBUILDER_FUNCTION) {
         return true;
       }
       return false;
@@ -776,7 +784,7 @@ export function processResourceData(node: ts.CallExpression, filePath: string,
     return createResourceParamWithVariable(node, -1, -1, false, true);
   } else if (node.expression.getText() === RESOURCE_RAWFILE && node.arguments && node.arguments.length) {
     resourcePreviewMessage(previewLog);
-    return createResourceParamWithVariable(node, -1, RESOURCE_TYPE.rawfile, false, true);
+    return createResourceParamWithVariable(node, -1, RESOURCE_TYPE.rawfile, false, false);
   }
   return node;
 }
@@ -884,13 +892,13 @@ function createBundleOrModuleNode(isDynamicBundleOrModule: boolean, type: string
     projectConfig.moduleName);
 }
 
-function createResourceParamWithVariable(node: ts.CallExpression,  resourceType: number, resourceValue: number,
+function createResourceParamWithVariable(node: ts.CallExpression, resourceValue: number, resourceType: number,
   isTemplateStringOrString: boolean, isVariableParamR: boolean): ts.ObjectLiteralExpression {
   const propertyArray: Array<ts.PropertyAssignment | ts.GetAccessorDeclaration> = [
-    (isTemplateStringOrString || !isVariableParamR) ? ts.factory.createPropertyAssignment(
+    (isTemplateStringOrString || !isVariableParamR || projectConfig.minAPIVersion%1000 < 22) ? ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_ID),
       ts.factory.createNumericLiteral(resourceValue)
-    ) : resourceIdName(),
+    ) : resourceIdName(__GETRESOURCEID__),
     ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_TYPE),
       ts.factory.createNumericLiteral(resourceType)
@@ -908,32 +916,36 @@ function createResourceParamWithVariable(node: ts.CallExpression,  resourceType:
   return resourceParams;
 }
 
-function resourceIdName(): ts.GetAccessorDeclaration {
+function resourceIdName(funcName: string): ts.GetAccessorDeclaration {
   return ts.factory.createGetAccessorDeclaration(
     undefined, ts.factory.createIdentifier(ATTRIBUTE_ID), [], undefined,
-    ts.factory.createBlock([ts.factory.createReturnStatement(ts.factory.createBinaryExpression(
-      ts.factory.createCallChain(
-        ts.factory.createCallExpression(
-          ts.factory.createIdentifier(__RESOURCEID__),
-          undefined,
-          []
-        ),
-        ts.factory.createToken(ts.SyntaxKind.QuestionDotToken),
-        undefined,
-        [ts.factory.createThis()]
-      ),
-      ts.factory.createToken(ts.SyntaxKind.QuestionQuestionToken),
-      ts.factory.createPrefixUnaryExpression(
-        ts.SyntaxKind.MinusToken,
-        ts.factory.createNumericLiteral('1')
-      )
-    ))
+    ts.factory.createBlock([ts.factory.createReturnStatement(ts.factory.createConditionalExpression(
+    ts.factory.createBinaryExpression(
+      ts.factory.createTypeOfExpression(ts.factory.createIdentifier(funcName)),
+      ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+      ts.factory.createStringLiteral(FUNCTION)
+    ),
+    ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+    ts.factory.createCallExpression(
+      ts.factory.createIdentifier(funcName),
+      undefined,
+      [ts.factory.createThis()]
+    ),
+    ts.factory.createToken(ts.SyntaxKind.ColonToken),
+    ts.factory.createPrefixUnaryExpression(
+      ts.SyntaxKind.MinusToken,
+      ts.factory.createNumericLiteral('1')
+    )
+  ))
 ], true));
 }
 
 function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[],
   resourceModuleName: string, isResourceModule: boolean):
   ts.ObjectLiteralExpression {
+  if (projectConfig.compileHar) {	
+    resourceValue = -1;
+  }
   const propertyArray: Array<ts.PropertyAssignment | ts.GetAccessorDeclaration> = [];
   const resourceIdKeyValue: ts.PropertyAssignment = ts.factory.createPropertyAssignment(	
       ts.factory.createStringLiteral(RESOURCE_NAME_ID),	
@@ -941,8 +953,8 @@ function createResourceParam(resourceValue: number, resourceType: number, argsAr
     );
   if (resourceType === 30000) {
     propertyArray.push(resourceIdKeyValue);
-  } else if (isResourceModule) {
-    propertyArray.push(resourceIdName());
+  } else if (isResourceModule && projectConfig.minAPIVersion%1000 >= 22) {
+    propertyArray.push(resourceIdName(__GETRESOURCEID__));
   } else {
     propertyArray.push(resourceIdKeyValue);
   }

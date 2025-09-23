@@ -8,6 +8,6 @@
     "onWillScroll", "onDidScroll", "onScrollStart", "onScrollStop", "flingSpeedLimit",
     "fadingEdge", "clipContent", "onReachStart", "onReachEnd", "backToTop", "onWillStopDragging",
     "maxZoomScale", "minZoomScale", "zoomScale", "enableBouncesZoom", "onDidZoom", "onZoomStart",
-    "onZoomStop"
+    "onZoomStop", "onWillStartDragging", "onDidStopDragging", "onWillStartFling", "onDidStopFling"
   ]
 }
