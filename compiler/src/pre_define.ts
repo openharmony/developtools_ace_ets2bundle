@@ -305,6 +305,8 @@ export const CUSTOM_DIALOG_CONTROLLER_BUILDER: string = 'builder';
 export const BUILDER_ATTR_NAME: string = 'builder';
 export const BUILDER_ATTR_BIND: string = 'bind';
 
+export const MUTABLEBUILDER_DISPATCHBUILDER: string = '_dispatchBuilder';
+
 export const GEOMETRY_VIEW: string = 'GeometryView';
 
 export const MODULE_SHARE_PATH: string = 'src' + path.sep + 'main' + path.sep + 'ets' + path.sep + 'share';
@@ -647,8 +649,11 @@ export const TRANSFORMED_MOCK_CONFIG: string = 'mock-config.json';
 export const USER_DEFINE_MOCK_CONFIG: string = 'mock-config.json5';
 
 export const WRAPBUILDER_FUNCTION: string = 'wrapBuilder';
+export const MUTABLEBUILDER_FUNCTION: string = 'mutableBuilder';
 export const WRAPPEDBUILDER_CLASS: string = 'WrappedBuilder';
+export const MUTABLEBUILDER_CLASS: string = 'MutableBuilder';
 export const WRAPBUILDER_BUILDERPROP: string = 'builder';
+export const MUTABLEBUILDER_BUILDERPROP: string = 'builder';
 export const LENGTH: string = 'length';
 
 export const PREVIEW: string = 'preview';

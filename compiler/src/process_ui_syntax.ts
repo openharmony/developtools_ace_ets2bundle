@@ -81,7 +81,8 @@ import {
   LENGTH,
   PUV2_VIEW_BASE,
   CONTEXT_STACK,
-  CHECK_COMPONENT_EXTEND_DECORATOR
+  CHECK_COMPONENT_EXTEND_DECORATOR,
+  MUTABLEBUILDER_FUNCTION
 } from './pre_define';
 import {
   componentInfo,
@@ -402,13 +403,13 @@ export function processUISyntax(program: ts.Program, ut = false,
       } else if (ts.isDecorator(node)) {
         // This processing is for mock instead of ui transformation
         node = processDecorator(node);
-      } else if (isWrapBuilderFunction(node)) {
+      } else if (isWrapBuilderFunction(node) || isMutableBuilderFunction(node)) {
         if (node.arguments && node.arguments[0] && (!ts.isIdentifier(node.arguments[0]) ||
           ts.isIdentifier(node.arguments[0]) &&
           !CUSTOM_BUILDER_METHOD.has(node.arguments[0].escapedText.toString()))) {
           transformLog.errors.push({
             type: LogType.ERROR,
-            message: `The wrapBuilder's parameter should be '@Builder' function.`,
+            message: `The '${node.expression.escapedText.toString()}'s parameter should be '@Builder' function.`,
             pos: node.getStart(),
             code: '10905109'
           });
@@ -453,6 +454,14 @@ export function processUISyntax(program: ts.Program, ut = false,
     function isWrapBuilderFunction(node: ts.Node): boolean {
       if (ts.isCallExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
         node.expression.escapedText.toString() === WRAPBUILDER_FUNCTION) {
+        return true;
+      }
+      return false;
+    }
+
+    function isMutableBuilderFunction(node: ts.Node): boolean {
+      if (ts.isCallExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
+        node.expression.escapedText.toString() === MUTABLEBUILDER_FUNCTION) {
         return true;
       }
       return false;
