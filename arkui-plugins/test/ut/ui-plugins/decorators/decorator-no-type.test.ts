@@ -314,11 +314,11 @@ final class StateType extends BaseEnum<int> {
   
   private __backing_stateVar8?: Any;
   
-  public get stateVar8(): (sr: String) => void {
-    return (this.__backing_stateVar8 as (sr: String) => void);
+  public get stateVar8(): ((p1: String) => void) {
+    return (this.__backing_stateVar8 as ((p1: String) => void));
   }
   
-  public set stateVar8(value: (sr: String) => void) {
+  public set stateVar8(value: ((p1: String) => void)) {
     this.__backing_stateVar8 = value;
   }
   
@@ -443,11 +443,11 @@ final class StateType extends BaseEnum<int> {
   
   private __backing_stateVar8?: Any;
   
-  public get stateVar8(): (sr: String) => void {
-    return (this.__backing_stateVar8 as (sr: String) => void);
+  public get stateVar8(): ((p1: String) => void) {
+    return (this.__backing_stateVar8 as ((p1: String) => void));
   }
   
-  public set stateVar8(value: (sr: String) => void) {
+  public set stateVar8(value: ((p1: String) => void)) {
     this.__backing_stateVar8 = value;
   }
   
@@ -594,11 +594,11 @@ final class StateType extends BaseEnum<int> {
   
   private __backing_stateVar8?: Any;
   
-  public get stateVar8(): (sr: String) => void {
-    return (this.__backing_stateVar8 as (sr: String) => void);
+  public get stateVar8(): ((p1: String) => void) {
+    return (this.__backing_stateVar8 as ((p1: String) => void));
   }
   
-  public set stateVar8(value: (sr: String) => void) {
+  public set stateVar8(value: ((p1: String) => void)) {
     this.__backing_stateVar8 = value;
   }
   
