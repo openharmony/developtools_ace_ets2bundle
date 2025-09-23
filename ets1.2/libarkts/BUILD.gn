@@ -50,11 +50,16 @@ if (koala_mr.is_rri) {
     npm_cmd("panda_sdk_reinstall") {
         if (!koala_mr.is_rri) {
             koala_node_path = rebase_path(node_path)
+            project_path = rebase_path("..")
+            run_tasks = [
+                "panda:sdk:reinstall:libarkts"
+            ]
+        } else {
+            project_path = rebase_path(".")
+            run_tasks = [
+                "panda:sdk:reinstall"
+            ]
         }
-        project_path = rebase_path(".")
-        run_tasks = [
-            "panda:sdk:reinstall"
-        ]
     }
 } else {
 
@@ -76,21 +81,24 @@ if (koala_mr.is_rri) {
 if (current_toolchain == host_toolchain) {
     npm_cmd("regenerate") {
         assert(current_toolchain == host_toolchain, "must be executed with host_toolchain")
-        if (koala_mr.is_rri) {
-            deps = [
-                ":panda_sdk_reinstall"
-            ]
-        } else {
+        if (!koala_mr.is_rri) {
             deps = [
                 ":ui2abc_panda_sdk"
             ]
             koala_node_path = rebase_path(node_path)
+            project_path = rebase_path("..")
+            run_tasks = [
+                "regenerate:libarkts"
+            ]
+        } else {
+            deps = [
+                ":panda_sdk_reinstall"
+            ]
+            project_path = rebase_path(".")
+            run_tasks = [
+                "regenerate"
+            ]
         }
-
-        project_path = rebase_path(".")
-        run_tasks = [
-            "regenerate"
-        ]
     }
 }
 
@@ -291,9 +299,6 @@ action("regenerate_and_copy") {
 # for //developtools/ace_ets2bundle
 
 npm_cmd("libarkts_compile") {
-    if (!koala_mr.is_rri) {
-        koala_node_path = rebase_path(node_path)
-    }
     deps = [
         "${koala_mr.interop_path}:interop_compile",
         ":regenerate(${host_toolchain})"
@@ -301,8 +306,14 @@ npm_cmd("libarkts_compile") {
     outputs = [
         "$target_out_dir/libarkts.js"
     ]
-    project_path = rebase_path(".")
-    run_tasks = [ "compile:js" ]
+    if (!koala_mr.is_rri) {
+        koala_node_path = rebase_path(node_path)
+        project_path = rebase_path("..")
+        run_tasks = [ "compile:js:libarkts" ]
+    } else {
+        project_path = rebase_path(".")
+        run_tasks = [ "compile:js" ]
+    }
 }
 
 group("es2panda") {
