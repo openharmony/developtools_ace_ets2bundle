@@ -20,11 +20,15 @@ function changePathToAbsPath(p) {
   return path.resolve(p);
 }
 
+function replaceWorkspace(p, workspace) {
+  return p.replace(/workspace/g, workspace);
+}
+
 // 获取当前目录
 const currentDirectory = process.cwd();
-let workSpace = currentDirectory;
+let workspace = currentDirectory;
 for (let i = 0; i < 4; i++) {
-  workSpace = path.dirname(workSpace);
+  workspace = path.dirname(workspace);
 }
 // JSON 文件路径
 const jsonFilePath = path.join(__dirname, 'demo/localtest/build_config_template.json');
@@ -37,18 +41,18 @@ try {
   console.log(jsonData)
   // 处理 baseUrl 字段
   if (jsonData.buildSdkPath) {
-    jsonData.buildSdkPath = jsonData.buildSdkPath.replace(/workspace/g, workSpace);
+    jsonData.buildSdkPath = replaceWorkspace(jsonData.buildSdkPath, workspace);
   }
 
   // 处理 plugins 字段
   if (jsonData.plugins.ui_syntax_plugin) {
-    jsonData.plugins.ui_syntax_plugin = jsonData.plugins.ui_syntax_plugin.replace(/workspace/g, workSpace);
+    jsonData.plugins.ui_syntax_plugin = replaceWorkspace(jsonData.plugins.ui_syntax_plugin, workspace);
   }
   if (jsonData.plugins.ui_plugin) {
-    jsonData.plugins.ui_plugin = jsonData.plugins.ui_plugin.replace(/workspace/g, workSpace);
+    jsonData.plugins.ui_plugin = replaceWorkspace(jsonData.plugins.ui_plugin, workspace);
   }
   if (jsonData.plugins.memo_plugin) {
-    jsonData.plugins.memo_plugin = jsonData.plugins.memo_plugin.replace(/workspace/g, workSpace);
+    jsonData.plugins.memo_plugin = replaceWorkspace(jsonData.plugins.memo_plugin, workspace);
   }
 
   // compileFiles
@@ -76,7 +80,7 @@ try {
     jsonData.loaderOutPath = changePathToAbsPath(jsonData.loaderOutPath);
   }
 
-  // loaderOutPath
+  // cachePath
   if (jsonData.cachePath) {
     jsonData.cachePath = changePathToAbsPath(jsonData.cachePath);
   }
@@ -84,6 +88,31 @@ try {
   // appModuleJsonPath
   if (jsonData.aceModuleJsonPath) {
     jsonData.aceModuleJsonPath = changePathToAbsPath(jsonData.aceModuleJsonPath);
+  }
+
+  // externalApiPaths
+  if (jsonData.externalApiPaths) {
+    jsonData.externalApiPaths = jsonData.externalApiPaths.map((p) => replaceWorkspace(p, workspace));
+  }
+
+  // externalApiPaths
+  if (jsonData.codeRootPath) {
+    jsonData.codeRootPath = changePathToAbsPath(jsonData.codeRootPath);
+  }
+
+  // abcLinkerPath
+  if (jsonData.pandaSdkPath) {
+    jsonData.pandaSdkPath = replaceWorkspace(jsonData.pandaSdkPath, workspace);
+  }
+
+  // abcLinkerPath
+  if (jsonData.abcLinkerPath) {
+    jsonData.abcLinkerPath = replaceWorkspace(jsonData.abcLinkerPath, workspace);
+  }
+
+  // dependencyAnalyzerPath
+  if (jsonData.dependencyAnalyzerPath) {
+    jsonData.dependencyAnalyzerPath = replaceWorkspace(jsonData.dependencyAnalyzerPath, workspace);
   }
 
   // 将修改后的内容写回 JSON 文件

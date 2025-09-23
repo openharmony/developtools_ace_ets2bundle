@@ -55,7 +55,7 @@ export class MemoCallbackContext {
 }
 
 @memo_intrinsic() export function contextLocalScope<Value>(name: string, value: Value, @memo() content: (()=> void)) {
-  const scope = __context().scope<void>(__id(), 1);
+  const scope = __context().scope<undefined>(__id(), 1);
   scope.param<Value>(0, value, undefined, name, true);
   if (scope.unchanged) {
     scope.cached;
@@ -66,7 +66,7 @@ export class MemoCallbackContext {
 }
 
 @memo_intrinsic() export function NodeAttach<Node extends IncrementalNode>(create: (()=> Node), @memo() update: ((node: Node)=> void), reuseKey?: string): void {
-  const scope = __context().scope<void>(__id(), 0, create, undefined, undefined, undefined, reuseKey);
+  const scope = __context().scope<undefined>(__id(), 0, create, undefined, undefined, undefined, reuseKey);
   if (scope.unchanged) {
     scope.cached;
   } else {
