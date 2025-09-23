@@ -402,6 +402,8 @@ export function isArkUICompatible(node: arkts.AstNode): boolean {
         ImportCollector.getInstance().collectImport(InteroperAbilityNames.GETCOMPATIBLESTATE);
         ImportCollector.getInstance().collectSource(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER, InteroperAbilityNames.INTEROP);
         ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER);
+        ImportCollector.getInstance().collectSource(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER, InteroperAbilityNames.INTEROP);
+        ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER);
         return true;
     }
     return false;
