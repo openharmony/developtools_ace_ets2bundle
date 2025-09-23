@@ -195,7 +195,8 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
   if (isMixCompile()) {
     compilerOptions.preserveValueImports = true;
   }
-  const suffix: string = projectConfig.hotReload ? HOT_RELOAD_BUILD_INFO_SUFFIX : TS_BUILD_INFO_SUFFIX;
+  const suffix: string = projectConfig?.hotReload ? HOT_RELOAD_BUILD_INFO_SUFFIX :
+    `${TS_BUILD_INFO_SUFFIX}${projectConfig?.widgetCompile === 'true' ? '_widget' : ''}`;
   const buildInfoPath: string = path.resolve(projectConfig.cachePath, '..', suffix);
   checkArkTSVersion();
   Object.assign(compilerOptions, {
@@ -617,7 +618,8 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     MemoryMonitor.stopRecordStage(recordInfo);
     props = languageService.getProps();
   } else {
-    cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
+    cacheFile = rollupShareObject?.projectConfig?.widgetCompile === 'true' ? path.resolve(projectConfig.cachePath, '../.ts_checker_cache_widget') :
+      path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
     const [isJsonObject, cacheJsonObject]: [boolean, WholeCache | undefined] = isJsonString(cacheFile);
     const wholeCache: WholeCache = isJsonObject ? cacheJsonObject : { 'runtimeOS': projectConfig.runtimeOS, 'sdkInfo': projectConfig.sdkInfo, 'fileList': {} };
     if (wholeCache.runtimeOS === projectConfig.runtimeOS && wholeCache.sdkInfo === projectConfig.sdkInfo) {
