@@ -61,16 +61,28 @@ mocha.describe('test ets_checker file api', function () {
     mocha.after(() => {
         delete this.rollup;
         const cacheFile: string = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
+        const cacheFileWidget: string = path.resolve(projectConfig.cachePath, '../.ts_checker_cache_widget');
         if (fs.existsSync(cacheFile)) {
             fs.unlinkSync(cacheFile);
         }
+        if (fs.existsSync(cacheFileWidget)) {
+            fs.unlinkSync(cacheFileWidget);
+        }
         const tsBuildInfoFilePath: string = path.resolve(projectConfig.cachePath, '..', TS_BUILD_INFO_SUFFIX);
+        const tsBuildInfoWidgetFilePath: string = path.resolve(projectConfig.cachePath, '..', TS_BUILD_INFO_SUFFIX + '_widget');
         if (fs.existsSync(tsBuildInfoFilePath)) {
             fs.unlinkSync(tsBuildInfoFilePath);
         }
+        if (fs.existsSync(tsBuildInfoWidgetFilePath)) {
+            fs.unlinkSync(tsBuildInfoWidgetFilePath);
+        }
         const tsBuildInfoLinterFilePath: string = tsBuildInfoFilePath + '.linter';
+        const tsBuildInfoWidgetLinterFilePath: string = tsBuildInfoWidgetFilePath + '.linter';
         if (fs.existsSync(tsBuildInfoLinterFilePath)) {
             fs.unlinkSync(tsBuildInfoLinterFilePath);
+        }
+        if (fs.existsSync(tsBuildInfoWidgetLinterFilePath)) {
+            fs.unlinkSync(tsBuildInfoWidgetLinterFilePath);
         }
     });
 
