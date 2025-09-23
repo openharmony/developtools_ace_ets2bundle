@@ -177,6 +177,7 @@ class WatchDecoratorFunctionRule extends AbstractUISyntaxRule {
         this.report({
             node: watchDecorator,
             message: this.messages.stringOnly,
+            level: 'warn',
             data: { parameterName: this.getExpressionValue(parameters, privateNames) },
             fix: () => {
                 const startPosition = parameters.startPosition;

@@ -54,6 +54,7 @@ export type UISyntaxRule = {
 export type UISyntaxRuleReportOptions = {
     node: arkts.AstNode;
     message: string;
+    level?: UISyntaxRuleLevel;
     data?: Record<string, string>;
     fix?: (node: arkts.AstNode) => FixSuggestion;
 };
@@ -80,7 +81,7 @@ export abstract class AbstractUISyntaxRule {
     protected report(options: UISyntaxRuleReportOptions): void {
         this.context.report({
             ...options,
-            level: this.level,
+            level: options.level ?? this.level,
         });
     }
 }
