@@ -109,13 +109,19 @@ function main() {}
     this.__backing_varOne = value;
   }
   private __backing_lambdaOne?: Any;
-  public get lambdaOne(): (() => void) {
-    return (this.__backing_lambdaOne as (() => void));
+  public get lambdaOne(): () => void {
+    return (this.__backing_lambdaOne as () => void);
   }
-  public set lambdaOne(value: (() => void)) {
+  public set lambdaOne(value: () => void) {
     this.__backing_lambdaOne = value;
   }
-  
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: ResourceComponent)=> void), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<ResourceComponent, __Options_ResourceComponent>(style, ((): ResourceComponent => {
+    return new ResourceComponent(false, ({let gensym___<some_random_number> = storage;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+    }), initializers, reuseId, content);
+    }
+
   @ComponentBuilder() public static $_invoke(initializers?: __Options_ResourceComponent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): ResourceComponent {
     throw new Error("Declare interface");
   }
