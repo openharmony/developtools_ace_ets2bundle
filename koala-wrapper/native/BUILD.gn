@@ -52,6 +52,7 @@ shared_library("es2panda") {
       "-Werror",
       "-Wno-unused-variable",
       "-fPIC",
+      "-fstack-protector-strong"
     ]
 
     ldflags = [
@@ -73,6 +74,7 @@ shared_library("es2panda") {
       "-Werror",
       "-Wno-unused-variable",
       "-fPIC",
+      "-fstack-protector-strong"
     ]
 
     ldflags = [
@@ -124,6 +126,7 @@ shared_library("es2panda") {
       "-target",
       "x86_64-pc-windows-gnu",
       "-D__CUSTOM_SECURITY_LIBRARY",
+      "-fstack-protector-strong"
     ]
 
     ldflags = [
