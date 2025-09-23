@@ -276,7 +276,7 @@ export const RESOURCE_NAME_TYPE: string = 'type';
 export const RESOURCE_NAME_PARAMS: string = 'params';
 export const RESOURCE_NAME_BUNDLE: string = 'bundleName';
 export const RESOURCE_NAME_MODULE: string = 'moduleName';
-export const __RESOURCEID__: string = '__resourceId__';
+export const __GETRESOURCEID__: string = '__getResourceId__';
 
 export const RESOURCE_TYPE = {
   color: 10001,
@@ -306,6 +306,8 @@ export const CUSTOM_DIALOG_CONTROLLER_BUILDER: string = 'builder';
 
 export const BUILDER_ATTR_NAME: string = 'builder';
 export const BUILDER_ATTR_BIND: string = 'bind';
+
+export const MUTABLEBUILDER_DISPATCHBUILDER: string = '_dispatchBuilder';
 
 export const GEOMETRY_VIEW: string = 'GeometryView';
 
@@ -649,8 +651,11 @@ export const TRANSFORMED_MOCK_CONFIG: string = 'mock-config.json';
 export const USER_DEFINE_MOCK_CONFIG: string = 'mock-config.json5';
 
 export const WRAPBUILDER_FUNCTION: string = 'wrapBuilder';
+export const MUTABLEBUILDER_FUNCTION: string = 'mutableBuilder';
 export const WRAPPEDBUILDER_CLASS: string = 'WrappedBuilder';
+export const MUTABLEBUILDER_CLASS: string = 'MutableBuilder';
 export const WRAPBUILDER_BUILDERPROP: string = 'builder';
+export const MUTABLEBUILDER_BUILDERPROP: string = 'builder';
 export const LENGTH: string = 'length';
 
 export const PREVIEW: string = 'preview';

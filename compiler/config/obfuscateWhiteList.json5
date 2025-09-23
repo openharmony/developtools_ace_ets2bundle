@@ -39,7 +39,7 @@
     "getParams",
     "getReuseId",
     "extraInfo",
-    "__resourceId__"
+    "__getResourceId__"
   ],
   "OptimizedReservedPropertyNames": [
     "$$",
