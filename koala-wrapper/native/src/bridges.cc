@@ -819,3 +819,11 @@ static KNativePointer impl_ProgramSourceFilePathConst(KNativePointer contextPtr,
     return new std::string(result);
 }
 KOALA_INTEROP_2(ProgramSourceFilePathConst, KNativePointer, KNativePointer, KNativePointer);
+
+KInt impl_GetCompilationMode(KNativePointer configPtr)
+{
+    auto _config = reinterpret_cast<es2panda_Config *>(configPtr);
+    auto _options = const_cast<es2panda_Options *>(GetImpl()->ConfigGetOptions(_config));
+    return GetImpl()->OptionsUtilGetCompilationModeConst(nullptr, _options);
+}
+KOALA_INTEROP_1(GetCompilationMode, KInt, KNativePointer);

@@ -19,9 +19,11 @@ import { initEs2panda, Es2pandaNativeModule, initGeneratedEs2panda } from "../..
 import { Es2pandaNativeModule as GeneratedEs2pandaNativeModule } from "../../generated/Es2pandaNativeModule"
 import { initInterop, InteropNativeModule } from "../../InteropNativeModule"
 import type { Context } from "../peers/Context"
+import { Config } from '../peers/Config';
 
 export class global {
     public static filePath: string = "./plugins/input/main.sts"
+    public static configObj?: Config;
 
     private static _config?: KNativePointer
     public static set config(config: KNativePointer) {
@@ -29,6 +31,7 @@ export class global {
             throwError('Global.config already initialized')
         }
         global._config = config
+        global.configObj = new Config(global._config);
     }
     public static get config(): KNativePointer {
         return global._config ?? throwError('Global.config not initialized')
@@ -75,5 +78,6 @@ export class global {
 
     public static resetConfig() {
         global._config = undefined;
+        global.configObj = undefined;
     }
 }
