@@ -239,17 +239,12 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
         }
         const callExpName: string = node.expression.name;
         if (this.componentV2WithConsumer.has(callExpName)) {
-            const queue: Array<arkts.AstNode> = [node];
-            while (queue.length > 0) {
-                const currentNode: arkts.AstNode = queue.shift() as arkts.AstNode;
-                if (arkts.isIdentifier(currentNode)) {
-                    this.checkInvalidConsumerUsage(currentNode, callExpName);
+            node.arguments.forEach(argument => {
+                if (!arkts.isObjectExpression(argument)) {
+                    return;
                 }
-                const children = currentNode.getChildren();
-                for (const child of children) {
-                    queue.push(child);
-                }
-            }
+                this.checkInvalidConsumerUsage(argument, callExpName);
+            });
         }
     }
 
@@ -259,66 +254,71 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
         }
         const callExpName: string = node.expression.name;
         if (this.componentV2WithProvider.has(callExpName)) {
-            const queue: Array<arkts.AstNode> = [node];
-            while (queue.length > 0) {
-                const currentNode: arkts.AstNode = queue.shift() as arkts.AstNode;
-                if (arkts.isIdentifier(currentNode)) {
-                    this.checkInvalidProviderUsage(currentNode, callExpName);
+            node.arguments.forEach(argument => {
+                if (!arkts.isObjectExpression(argument)) {
+                    return;
                 }
-                const children = currentNode.getChildren();
-                for (const child of children) {
-                    queue.push(child);
-                }
+                this.checkInvalidProviderUsage(argument, callExpName);
+            });
+        }
+    }
+
+    private checkInvalidConsumerUsage(argument: arkts.ObjectExpression, callExpName: string): void {
+        argument.properties.forEach(property => {
+            if (!arkts.isProperty(property) || !property.key || !arkts.isIdentifier(property.key)) {
+                return;
             }
-        }
+            const currentNode = property.key;
+            if (property && this.componentV2WithConsumer.get(callExpName).includes(getIdentifierName(currentNode))) {
+                this.report({
+                    node: property,
+                    message: this.messages.forbiddenInitialization,
+                    data: {
+                        decorator: PresetDecorators.CONSUMER,
+                        value: getIdentifierName(currentNode),
+                        structName: callExpName
+                    },
+                    fix: () => {
+                        const startPosition = property.startPosition;
+                        const endPosition = property.endPosition;
+                        return {
+                            title: 'Remove the property',
+                            range: [startPosition, endPosition],
+                            code: '',
+                        };
+                    }
+                });
+            }
+        });
     }
 
-    private checkInvalidConsumerUsage(currentNode: arkts.Identifier, callExpName: string): void {
-        const parent = currentNode.parent;
-        if (parent && this.componentV2WithConsumer.get(callExpName).includes(getIdentifierName(currentNode))) {
-            this.report({
-                node: parent,
-                message: this.messages.forbiddenInitialization,
-                data: {
-                    decorator: PresetDecorators.CONSUMER,
-                    value: getIdentifierName(currentNode),
-                    structName: callExpName
-                },
-                fix: () => {
-                    const startPosition = parent.startPosition;
-                    const endPosition = parent.endPosition;
-                    return {
-                        title: 'Remove the property',
-                        range: [startPosition, endPosition],
-                        code: '',
-                    };
-                }
-            });
-        }
-    }
-
-    private checkInvalidProviderUsage(currentNode: arkts.Identifier, callExpName: string): void {
-        const parent = currentNode.parent;
-        if (parent && this.componentV2WithProvider.get(callExpName)?.includes(getIdentifierName(currentNode))) {
-            this.report({
-                node: parent,
-                message: this.messages.forbiddenInitialization,
-                data: {
-                    decorator: PresetDecorators.PROVIDER,
-                    value: getIdentifierName(currentNode),
-                    structName: callExpName
-                },
-                fix: () => {
-                    const startPosition = parent.startPosition;
-                    const endPosition = parent.endPosition;
-                    return {
-                        title: 'Remove the property',
-                        range: [startPosition, endPosition],
-                        code: '',
-                    };
-                }
-            });
-        }
+    private checkInvalidProviderUsage(argument: arkts.ObjectExpression, callExpName: string): void {
+        argument.properties.forEach(property => {
+            if (!arkts.isProperty(property) || !property.key || !arkts.isIdentifier(property.key)) {
+                return;
+            }
+            const currentNode = property.key;
+            if (property && this.componentV2WithProvider.get(callExpName)?.includes(getIdentifierName(currentNode))) {
+                this.report({
+                    node: property,
+                    message: this.messages.forbiddenInitialization,
+                    data: {
+                        decorator: PresetDecorators.PROVIDER,
+                        value: getIdentifierName(currentNode),
+                        structName: callExpName
+                    },
+                    fix: () => {
+                        const startPosition = property.startPosition;
+                        const endPosition = property.endPosition;
+                        return {
+                            title: 'Remove the property',
+                            range: [startPosition, endPosition],
+                            code: '',
+                        };
+                    }
+                });
+            }
+        });
     }
 }
 
