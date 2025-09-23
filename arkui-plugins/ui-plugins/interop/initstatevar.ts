@@ -31,7 +31,7 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
     for (const property of args.properties) {
         if (!(property instanceof arkts.Property)) {
             continue;
-        }
+        }   
         const key = property.key;
         const value = property.value!;
         if (!(key instanceof arkts.Identifier)) {
@@ -117,17 +117,17 @@ function getStateProxy(proxyName: string, stateVar: () => arkts.Expression): ark
 
 /**
  * Processes a nested object literal and generates code to instantiate and populate it using ESValue methods.
- *
+ * 
  * Converts a nested object structure into a sequence of statements that:
  * 1. Instantiate empty objects via `ESValue.instantiateEmptyObject()`
  * 2. Sets properties on these objects using `setProperty()`
  * 3. Nests objects by assigning child objects as properties of parent objects
- *
+ * 
  * @param target - A nested object literal (e.g., { b: { c: { d: '1' }, cc: { d: '1' } } })
  * @returns Generated code statements that reconstruct the input object using ESValue APIs
  * @example
  * Input: { b: { c: { d: '1' }, cc: { d: '1' } } }
- * Output:
+ * Output: 
  * let param0 = ESValue.instantiateEmptyObject();
  * let param00 = ESValue.instantiateEmptyObject();
  * param00.setProperty("d", ESValue.wrap("1"));
@@ -167,7 +167,7 @@ function processObjectLiteral(target: arkts.ObjectExpression, curParam: string, 
 
 
 /**
- *
+ * 
  * @param keyName - The name of the state variable (e.g., state)
  * @returns generate code to process @Link data interoperability
  * @example
@@ -201,7 +201,7 @@ export function processLink(keyName: string, value: arkts.Expression, type: arkt
 }
 
 /**
- *
+ * 
  * @param keyName - The name of the state variable (e.g., state)
  * @returns generate code to process regular data interoperability
  */
@@ -221,9 +221,9 @@ export function processNormal(keyName: string, value: arkts.AstNode): arkts.Stat
 }
 
 /**
- *
- * @param keyName
- * @param value
+ * 
+ * @param keyName 
+ * @param value 
  * @returns generate code to process @BuilderParam interoperability
  * @example
  * Input: {builderParam: this.builder}
@@ -231,7 +231,9 @@ export function processNormal(keyName: string, value: arkts.AstNode): arkts.Stat
  */
 export function processBuilderParam(keyName: string, value: arkts.AstNode): arkts.Statement[] {
     const result: arkts.Statement[] = [];
+    const needUpdate: boolean = checkUpdatable(value);
     const newValue = arkts.factory.createCallExpression(
+        needUpdate ? arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER) :
         arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER),
         undefined,
         [
@@ -245,4 +247,59 @@ export function processBuilderParam(keyName: string, value: arkts.AstNode): arkt
     );
     result.push(setProperty);
     return result;
+}
+
+function getIdentifier(value: arkts.AstNode): arkts.identifier | undefined {
+    if (arkts.isIdentifier(value)) {
+        return value;
+    } else if (arkts.isMemberExpression(value) && arkts.isThisExpression(value.object) && arkts.isIdentifier(value.property)) {
+        return value.property;
+    } else {
+        return undefined;
+    }
+}
+
+function checkUpdatable(value: arkts.AstNode): boolean {
+    const ident = getIdentifier(value);
+    if (ident === undefined) {
+        return false;
+    }
+    const decl = arkts.getDecl(ident) as arkts.MethodDefinition;
+    const script = decl.scriptFunction;
+    const params = script.params;
+    if (params.length === 1 && arkts.isEtsParameterExpression(params[0])) {
+        const type = params[0].type;
+        if (type === undefined) {
+            return false;
+        }
+        if (arkts.isETSUnionType(type)) {
+            for (const element of type.types) {
+                if (isNonBuiltinType(element)) {
+                    return true;
+                }
+            }
+        } else if (isNonBuiltinType(type)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function isNonBuiltinType(type: arkts.AstNode): boolean {
+    if (!arkts.isETSTypeReference(type)) {
+        return false;
+    }
+    const ident = type.part?.name;
+    if (ident && arkts.isIdentifier(ident)) {
+        const decl = arkts.getDecl(ident);
+        if (!decl) {
+            return false;
+        }
+        const moduleName = arkts.getProgramFromAstNode(decl).moduleName;
+        if (moduleName === 'escompat') {
+            return false;
+        }
+        return true;
+    }
+    return false;
 }
