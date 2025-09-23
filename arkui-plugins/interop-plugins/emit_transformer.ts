@@ -18,6 +18,8 @@ import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor } from '../common/abstract-visitor';
 
 import { debugLog } from '../common/debug';
+import { hasDecorator, getAnnotationValue } from '../ui-plugins/property-translators/utils'
+import { DecoratorNames } from '../common/predefines';
 
 export class EmitTransformer extends AbstractVisitor {
     constructor(private options?: interop.EmitTransformerOptions) {
@@ -50,10 +52,36 @@ export class EmitTransformer extends AbstractVisitor {
         return newDec;
     }
 
+    processConsume(node: arkts.ClassProperty): arkts.ClassProperty {
+        if (!hasDecorator(node, DecoratorNames.CONSUME)) {
+            return node;
+        }
+        const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
+        annotations.forEach((anno)=>{
+            const value = getAnnotationValue(anno, DecoratorNames.CONSUME);
+            if (arkts.isIdentifier(node.key)) {
+                const property = anno.properties[0];
+                anno.setProperties([
+                    arkts.factory.updateClassProperty(
+                        property,
+                        arkts.factory.createIdentifier('value'),
+                        value ? arkts.factory.createStringLiteral(node.key.name) : property.value,
+                        property.typeAnnotation,
+                        property.modifiers,
+                        false
+                    )
+                ]);
+            }
+        })
+        return node;
+    }
+
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         const node = this.visitEachChild(beforeChildren);
         if (arkts.isClassDeclaration(node) && arkts.classDefinitionIsFromStructConst(node.definition!)) {
             return this.processComponent(node);
+        } else if (arkts.isClassProperty(node)) {
+            return this.processConsume(node);
         }
         return node;
     }
