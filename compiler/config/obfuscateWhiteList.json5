@@ -38,7 +38,8 @@
     "componentClass",
     "getParams",
     "getReuseId",
-    "extraInfo"
+    "extraInfo",
+    "__resourceId__"
   ],
   "OptimizedReservedPropertyNames": [
     "$$",

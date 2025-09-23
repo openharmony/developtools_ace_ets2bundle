@@ -81,7 +81,10 @@ import {
   LENGTH,
   PUV2_VIEW_BASE,
   CONTEXT_STACK,
-  CHECK_COMPONENT_EXTEND_DECORATOR
+  CHECK_COMPONENT_EXTEND_DECORATOR,
+  MUTABLEBUILDER_FUNCTION,
+  ATTRIBUTE_ID,
+  __RESOURCEID__
 } from './pre_define';
 import {
   componentInfo,
@@ -753,7 +756,7 @@ export function processResourceData(node: ts.CallExpression, filePath: string,
       isResourcefile(node, previewLog, isResourceModule, isTemplateString, isCorrectResources, filePath);
       if (isCorrectResources.booleanValue) {
         resourcePreviewMessage(previewLog);
-        return createResourceParamWithVariable(node, -1, RESOURCE_TYPE.rawfile);
+        return createResourceParamWithVariable(node, -1, RESOURCE_TYPE.rawfile, true, false);
       }
       if (resourceData && resourceData[0] && isResourceModule) {
         return createResourceParam(-1, RESOURCE_TYPE.rawfile, [node.arguments[0]], resourceData[0], true);
@@ -764,16 +767,16 @@ export function processResourceData(node: ts.CallExpression, filePath: string,
       const resourceDataNode: ts.Node = getResourceDataNode(node, previewLog, resourceData, isResourceModule, filePath, isTemplateString, isCorrectResources);
       if (isCorrectResources.booleanValue) {
         resourcePreviewMessage(previewLog);
-        return createResourceParamWithVariable(node, -1, -1);
+        return createResourceParamWithVariable(node, -1, -1, true, false);
       }
       return resourceDataNode;
     }
   } else if (node.expression.getText() === RESOURCE && node.arguments && node.arguments.length) {
     resourcePreviewMessage(previewLog);
-    return createResourceParamWithVariable(node, -1, -1);
+    return createResourceParamWithVariable(node, -1, -1, false, true);
   } else if (node.expression.getText() === RESOURCE_RAWFILE && node.arguments && node.arguments.length) {
     resourcePreviewMessage(previewLog);
-    return createResourceParamWithVariable(node, -1, RESOURCE_TYPE.rawfile);
+    return createResourceParamWithVariable(node, -1, RESOURCE_TYPE.rawfile, false, true);
   }
   return node;
 }
@@ -836,7 +839,7 @@ function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePrevie
   }
 }
 
-function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment>, resourceModuleName: string, isResourceModule: boolean): void {
+function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment | ts.GetAccessorDeclaration>, resourceModuleName: string, isResourceModule: boolean): void {
   if (projectConfig.compileHar) {
     projectConfig.bundleName = '__harDefaultBundleName__';
     projectConfig.moduleName = '__harDefaultModuleName__';
@@ -881,12 +884,13 @@ function createBundleOrModuleNode(isDynamicBundleOrModule: boolean, type: string
     projectConfig.moduleName);
 }
 
-function createResourceParamWithVariable(node: ts.CallExpression, resourceValue: number, resourceType: number): ts.ObjectLiteralExpression {
-  const propertyArray: Array<ts.PropertyAssignment> = [
-    ts.factory.createPropertyAssignment(
+function createResourceParamWithVariable(node: ts.CallExpression,  resourceType: number, resourceValue: number,
+  isTemplateStringOrString: boolean, isVariableParamR: boolean): ts.ObjectLiteralExpression {
+  const propertyArray: Array<ts.PropertyAssignment | ts.GetAccessorDeclaration> = [
+    (isTemplateStringOrString || !isVariableParamR) ? ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_ID),
       ts.factory.createNumericLiteral(resourceValue)
-    ),
+    ) : resourceIdName(),
     ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_TYPE),
       ts.factory.createNumericLiteral(resourceType)
@@ -904,27 +908,52 @@ function createResourceParamWithVariable(node: ts.CallExpression, resourceValue:
   return resourceParams;
 }
 
+function resourceIdName(): ts.GetAccessorDeclaration {
+  return ts.factory.createGetAccessorDeclaration(
+    undefined, ts.factory.createIdentifier(ATTRIBUTE_ID), [], undefined,
+    ts.factory.createBlock([ts.factory.createReturnStatement(ts.factory.createBinaryExpression(
+      ts.factory.createCallChain(
+        ts.factory.createCallExpression(
+          ts.factory.createIdentifier(__RESOURCEID__),
+          undefined,
+          []
+        ),
+        ts.factory.createToken(ts.SyntaxKind.QuestionDotToken),
+        undefined,
+        [ts.factory.createThis()]
+      ),
+      ts.factory.createToken(ts.SyntaxKind.QuestionQuestionToken),
+      ts.factory.createPrefixUnaryExpression(
+        ts.SyntaxKind.MinusToken,
+        ts.factory.createNumericLiteral('1')
+      )
+    ))
+], true));
+}
+
 function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[],
   resourceModuleName: string, isResourceModule: boolean):
   ts.ObjectLiteralExpression {
-  if (projectConfig.compileHar) {
-    resourceValue = -1;
+  const propertyArray: Array<ts.PropertyAssignment | ts.GetAccessorDeclaration> = [];
+  const resourceIdKeyValue: ts.PropertyAssignment = ts.factory.createPropertyAssignment(	
+      ts.factory.createStringLiteral(RESOURCE_NAME_ID),	
+      ts.factory.createNumericLiteral(resourceValue)	
+    );
+  if (resourceType === 30000) {
+    propertyArray.push(resourceIdKeyValue);
+  } else if (isResourceModule) {
+    propertyArray.push(resourceIdName());
+  } else {
+    propertyArray.push(resourceIdKeyValue);
   }
-
-  const propertyArray: Array<ts.PropertyAssignment> = [
-    ts.factory.createPropertyAssignment(
-      ts.factory.createStringLiteral(RESOURCE_NAME_ID),
-      ts.factory.createNumericLiteral(resourceValue)
-    ),
-    ts.factory.createPropertyAssignment(
+  propertyArray.push(ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_TYPE),
       ts.factory.createNumericLiteral(resourceType)
     ),
     ts.factory.createPropertyAssignment(
       ts.factory.createIdentifier(RESOURCE_NAME_PARAMS),
       ts.factory.createArrayLiteralExpression(argsArr, false)
-    )
-  ];
+    ));
 
   addBundleAndModuleParam(propertyArray, resourceModuleName, isResourceModule);
 
