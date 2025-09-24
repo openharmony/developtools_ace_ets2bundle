@@ -73,12 +73,12 @@ export class ModuleColdreloadMode extends ModuleMode {
   }
 
   addColdReloadArgs(): void {
+    this.addCacheFileArgs();
     if (isFirstBuild) {
       this.cmdArgs.push('--dump-symbol-table');
       this.cmdArgs.push(`"${this.symbolMapFilePath}"`);
       return;
     }
-    this.addCacheFileArgs();
     this.cmdArgs.push('--input-symbol-table');
     this.cmdArgs.push(`"${this.symbolMapFilePath}"`);
     this.cmdArgs.push('--cold-reload');
