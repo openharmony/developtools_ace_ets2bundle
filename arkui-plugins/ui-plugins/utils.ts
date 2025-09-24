@@ -54,8 +54,11 @@ export enum CustomDialogNames {
 
 export enum BuilderLambdaNames {
     ANNOTATION_NAME = 'ComponentBuilder',
-    ORIGIN_METHOD_NAME = '$_instantiate',
-    TRANSFORM_METHOD_NAME = '_instantiateImpl',
+    ORIGIN_METHOD_NAME = '$_invoke', // '$_instantiate',
+    TRANSFORM_METHOD_NAME = '_invokeImpl', // '_instantiateImpl',
+    REUSE_ID_PARAM_NAME = 'reuseId',
+    STORAGE_PARAM_NAME = 'storage',
+    USE_SHARED_STORAGE_PARAM_NAME = 'useSharedStorage',
     STYLE_PARAM_NAME = 'style',
     STYLE_ARROW_PARAM_NAME = 'instance',
     CONTENT_PARAM_NAME = 'content',
@@ -166,7 +169,7 @@ export type CustomComponentAnontations = {
     reusable?: arkts.AnnotationUsage;
     reusableV2?: arkts.AnnotationUsage;
     customLayout?: arkts.AnnotationUsage;
-    customdialog?: arkts.AnnotationUsage;
+    customDialog?: arkts.AnnotationUsage;
 };
 
 type StructAnnoationInfo = {
@@ -247,7 +250,7 @@ export function collectCustomComponentScopeInfo(
                 ...(isReusable && !annotations?.reusable && { reusable: anno }),
                 ...(isReusableV2 && !annotations?.reusableV2 && { reusableV2: anno }),
                 ...(isCustomLayout && !annotations?.customLayout && { customLayout: anno }),
-                ...(isCustomDialog && !annotations?.customdialog && { customdialog: anno }),
+                ...(isCustomDialog && !annotations?.customDialog && { customDialog: anno }),
             };
         }
         if (!isCustomComponent) {
@@ -360,7 +363,7 @@ export function getComponentExtendsName(annotations: CustomComponentAnontations,
     if (!!annotations.customLayout) {
         componentType.hasCustomLayout ||= true;
     }
-    if (!!annotations.customdialog) {
+    if (!!annotations.customDialog) {
         componentType.hasCustomDialog ||= true;
         return CustomComponentNames.BASE_CUSTOM_DIALOG_NAME;
     }
