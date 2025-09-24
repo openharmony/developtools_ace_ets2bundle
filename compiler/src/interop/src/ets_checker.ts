@@ -229,7 +229,9 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'compatibleSdkVersionStage': projectConfig.compatibleSdkVersionStage,
     'compatibleSdkVersion': projectConfig.compatibleSdkVersion,
     'skipOhModulesLint': skipOhModulesLint,
-    'mixCompile': mixCompile
+    'mixCompile': mixCompile,
+    'isCompileJsHar': isCompileJsHar(),
+    'moduleRootPath': projectConfig.moduleRootPath,
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
@@ -241,6 +243,11 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     Object.assign(compilerOptions, {'packageManagerType': 'ohpm'});
   }
   readTsBuildInfoFileInCrementalMode(buildInfoPath, projectConfig);
+}
+
+function isCompileJsHar(): boolean {
+  return projectConfig.compileHar && projectConfig.byteCodeHar === false && projectConfig.buildMode === 'Release' &&
+    projectConfig.obfuscationOptions?.selfConfig.ruleOptions.enable && !projectConfig.useTsHar;
 }
 
 function checkArkTSVersion(): void {
