@@ -141,7 +141,9 @@ export class SourceMapGenerator {
       const errInfo: LogData = LogDataFactory.newInstance(
         ErrorCode.ETS2BUNDLE_INTERNAL_GET_MODULE_INFO_FAILED,
         ArkTSInternalErrorDescription,
-        `Failed to get ModuleInfo, moduleId: ${moduleId}`
+        `Failed to get ModuleInfo, moduleId: ${moduleId}`,
+        '',
+        [`Please check if the imported file ${moduleId} includes the .js suffix.`]
       );
       this.logger.printErrorAndExit(errInfo);
     }
