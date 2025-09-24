@@ -20,6 +20,7 @@ import { Plugins, PluginContext, ProjectConfig } from '../common/plugin-context'
 import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../common/predefines';
 import { debugDump, debugLog, getDumpFileName } from '../common/debug';
+import { ProgramSkipper } from '../common/program-skipper';
 
 export function uiTransform(): Plugins {
     return {
@@ -27,6 +28,7 @@ export function uiTransform(): Plugins {
         parsed: parsedTransform,
         checked: checkedTransform,
         clean() {
+            ProgramSkipper.clear();
             arkts.arktsGlobal.clearContext();
         },
     };
