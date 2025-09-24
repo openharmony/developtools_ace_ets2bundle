@@ -78,7 +78,8 @@ import {
   TRUE,
   FALSE,
   MIN_OBSERVED,
-  COMPONENT_OBSERVEDV2_DECORATOR
+  COMPONENT_OBSERVEDV2_DECORATOR,
+  COMPONENT_ENV_DECORATOR
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -148,7 +149,7 @@ export const requireCanReleaseMandatoryDecorators: Set<string> =
     ...observedPropertyDecorators]);
 
 export const forbiddenSpecifyDefaultValueDecorators: Set<string> =
-  new Set([COMPONENT_LINK_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR]);
+  new Set([COMPONENT_LINK_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_ENV_DECORATOR]);
 
 export const mandatoryToInitViaParamDecorators: Set<string> =
   new Set([...propAndLinkDecorators, COMPONENT_OBJECT_LINK_DECORATOR]);
@@ -1263,16 +1264,16 @@ function validateNonObservedClassType(propertyName: ts.Identifier, decorator: st
   if (isEsmoduleAndUpdateMode) {
     log.push({
       type: projectConfig.optLazyForEach ? LogType.WARN : LogType.ERROR,
-      message: `'@ObjectLink' cannot be used with this type.` +
-        ` Apply it only to classes decorated by '@Observed' or initialized using the return value of 'makeV1Observed'.`,
+      message: `'${decorator}' cannot be used with this type.` +
+        ` Apply it only to classes decorated by '${COMPONENT_OBSERVEDV2_DECORATOR}' or initialized using the return value of 'makeV1Observed'.`,
       pos: propertyName.getStart(),
       code: '10905307'
     });
   } else {
     log.push({
       type: projectConfig.optLazyForEach ? LogType.WARN : LogType.ERROR,
-      message: `'@ObjectLink' cannot be used with this type.` +
-        ` Apply it only to classes decorated by '@Observed' or initialized using the return value of 'makeV1Observed'.`,
+      message: `'${decorator}' cannot be used with this type.` +
+        ` Apply it only to classes decorated by '${COMPONENT_OBSERVED_DECORATOR}' or initialized using the return value of 'makeV1Observed'.`,
       pos: propertyName.getStart(),
       code: '10905307'
     });
