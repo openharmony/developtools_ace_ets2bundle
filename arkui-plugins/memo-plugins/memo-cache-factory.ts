@@ -175,8 +175,9 @@ export class RewriteFactory {
             expectReturn ??
             arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
         const _isVoidReturn = isVoidType(returnType);
+        const _returnType = _isVoidReturn ? arkts.factory.createETSUndefinedType() : returnType;
         const scopeDeclaration = factory.createScopeDeclaration(
-            returnType,
+            _returnType,
             positionalIdTracker.id(_callName),
             filteredParams.length
         );
