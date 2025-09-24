@@ -125,7 +125,7 @@ export class CheckedTransformer extends AbstractVisitor {
             return (annotation.expr as arkts.Identifier).name;
         });
         for (const decorator of decorators) {
-            if (decorator === 'memo') {
+            if (decorator === 'memo' || decorator === 'Builder') {
                 return true;
             }
         }
