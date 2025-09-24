@@ -618,7 +618,7 @@ export function buildReturnTypeInfo(
 ): ReturnTypeInfo {
     const newReturnType = !!returnType
         ? returnType.clone()
-        : arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
+        : arkts.factory.createETSUndefinedType();
     return {
         node: newReturnType,
         isMemo,
