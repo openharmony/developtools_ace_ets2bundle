@@ -231,7 +231,7 @@ export class factory {
                         ),
                         returnTypeAnnotation
                             ? [returnTypeAnnotation]
-                            : [arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)],
+                            : [arkts.factory.createETSUndefinedType()],
                         [factory.createIdArgument(hash), arkts.factory.createNumericLiteral(cnt)]
                     )
                 ),
@@ -357,12 +357,13 @@ export class factory {
         const paramInfos = buildeParamInfos(parameters);
         const gensymParamsCount = fixGensymParams(paramInfos, node);
         const parameterNames = paramInfos.map((it) => it.ident.name);
-        const scopeDeclaration = factory.createScopeDeclaration(returnTypeInfo.node, hash, parameterNames.length);
+        const isVoidValue = !!returnTypeInfo.isVoid;
+        const _returnType = isVoidValue ? arkts.factory.createETSUndefinedType() : returnTypeInfo.node;
+        const scopeDeclaration = factory.createScopeDeclaration(_returnType, hash, parameterNames.length);
         const memoParametersDeclaration = parameterNames.length
             ? factory.createMemoParameterDeclaration(parameterNames)
             : undefined;
         const syntheticReturnStatement = factory.createSyntheticReturnStatement(!!returnTypeInfo.isStableThis);
-        const isVoidValue = !!returnTypeInfo.isVoid;
         const unchangedCheck = factory.createIfStatementWithSyntheticReturnStatement(
             syntheticReturnStatement,
             isVoidValue
