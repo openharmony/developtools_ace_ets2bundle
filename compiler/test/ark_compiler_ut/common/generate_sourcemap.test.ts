@@ -118,7 +118,7 @@ mocha.describe('test generate_sourcemap api', function () {
       ArkTSInternalErrorDescription,
       'Failed to get ModuleInfo, moduleId: moduleId',
       '',
-      ['Please check in which file this file moduleId was imported.']
+      ['Please check if the imported file moduleId include the .js suffix.']
     );
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     let moduleId = "moduleId";
@@ -143,7 +143,7 @@ mocha.describe('test generate_sourcemap api', function () {
       ArkTSInternalErrorDescription,
       'Failed to get ModuleInfo, moduleId: moduleId',
       '',
-      ['Please check in which file this file moduleId was imported.']
+      ['Please check if the imported file moduleId include the .js suffix.']
     );
     CommonLogger.destroyInstance();
     const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
