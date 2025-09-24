@@ -225,7 +225,7 @@ export function collectMemoableInfoInParameter(node: arkts.AstNode, info?: Memoa
     let currInfo = info ?? {};
     if (arkts.NodeCache.getInstance().has(node)) {
         const metadata = arkts.NodeCache.getInstance().get(node)?.metadata;
-        return { ...currInfo, ...metadata };
+        return { ...currInfo, hasMemo: true, hasProperType: true, ...metadata };
     }
     if (!arkts.isEtsParameterExpression(node)) {
         return currInfo;

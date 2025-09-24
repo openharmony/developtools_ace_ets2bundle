@@ -20,6 +20,7 @@ import { throwError } from '../../utils';
 import { Es2pandaModifierFlags } from '../../generated/Es2pandaEnums';
 import { ArktsObject } from './ArktsObject';
 import { SourcePosition } from './SourcePosition';
+import { copyCacheToClonedNode } from '../utilities/nodeCache';
 
 export abstract class AstNode extends ArktsObject {
     protected constructor(peer: KNativePointer) {
@@ -99,6 +100,7 @@ export abstract class AstNode extends ArktsObject {
         const clonedNode = unpackNonNullableNode(
             global.generatedEs2panda._AstNodeClone(global.context, this.peer, this.parent?.peer ?? nullptr)
         );
+        copyCacheToClonedNode(this, clonedNode);
         clonedNode.parent = undefined;
         return clonedNode as this;
     }
