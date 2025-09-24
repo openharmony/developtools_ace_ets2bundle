@@ -20,6 +20,7 @@ const COMPUTED: string = 'Computed';
 const REQUIRE: string = 'Require';
 const BUILDER_PARAM: string = 'BuilderParam';
 const DECORATOR_BUILDER_PARAM: string = '@BuilderParam';
+const DECORATOR_ENV: string = '@Env';
 const MONITOR_DECORATOR: string = '@Monitor';
 const COMPUTED_DECORATOR: string = '@Computed';
 const EVENT_DECORATOR: string = '@Event';
@@ -80,6 +81,7 @@ export default {
   DECORATOR_V2,
   BUILDER_PARAM,
   DECORATOR_BUILDER_PARAM,
+  DECORATOR_ENV,
   BYTE_CODE_HAR,
   CLOSED_SOURCE_HAR,
   SHARED_HSP,

@@ -133,7 +133,11 @@
         },
         {
           "name": "Type",
-          "emitParameters" : true
+          "emitParameters": true
+        },
+        {
+          "name": "Env",
+          "emitParameters": true
         }
       ],
       "propertyDecorators": [
