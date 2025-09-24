@@ -13,5 +13,15 @@
  * limitations under the License.
  */
 
-package pack
-export class A {}
+import { Expression, ThrowStatement } from "../../generated";
+import { isSameNativeObject } from "../peers/ArktsObject";
+import { attachModifiers, updateThenAttach } from '../utilities/private';
+
+export function updateThrowStatement(original: ThrowStatement, argument?: Expression): ThrowStatement {
+    if (isSameNativeObject(argument, original.argument)) {
+        return original;
+    }
+
+    const update = updateThenAttach(ThrowStatement.updateThrowStatement, attachModifiers);
+    return update(original);
+}

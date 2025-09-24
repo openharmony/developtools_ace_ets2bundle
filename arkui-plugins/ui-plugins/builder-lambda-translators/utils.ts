@@ -37,7 +37,7 @@ export type BuilderLambdaDeclInfo = {
     isFunctionCall: boolean; // isFunctionCall means it is from $_instantiate.
     params: readonly arkts.Expression[];
     returnType: arkts.TypeNode | undefined;
-    moduleName: string;
+    moduleName?: string;
     hasReceiver?: boolean;
     isFromCommonMethod?: boolean;
 };
@@ -45,6 +45,7 @@ export type BuilderLambdaDeclInfo = {
 export type BuilderLambdaStyleBodyInfo = {
     lambdaBody: arkts.Identifier | arkts.CallExpression | undefined;
     initCallPtr: AstNodePointer | undefined;
+    reuseId: arkts.AstNode | undefined;
 };
 
 export type BuilderLambdaAstNode = arkts.ScriptFunction | arkts.ETSParameterExpression | arkts.FunctionDeclaration;
@@ -54,15 +55,24 @@ export type InstanceCallInfo = {
     call: arkts.CallExpression;
 };
 
+/**
+ * @deprecated
+ */
 export type BuilderLambdaArgInfo = {
     isFunctionCall: boolean;
 };
 
+/**
+ * @deprecated
+ */
 export type BuilderLambdaReusableArgInfo = {
     isReusable?: boolean;
     reuseId?: string;
 };
 
+/**
+ * @deprecated
+ */
 export type BuilderLambdaSecondLastArgInfo = BuilderLambdaArgInfo & BuilderLambdaReusableArgInfo;
 
 export type BuilderLambdaConditionBranchInfo = {
@@ -91,6 +101,9 @@ export function isForEach(name: string | undefined, sourceName?: string): boolea
     return name === InnerComponentNames.FOR_EACH && externalSourceName === ARKUI_FOREACH_SOURCE_NAME;
 }
 
+/**
+ * @deprecated
+ */
 export function buildSecondLastArgInfo(
     type: arkts.Identifier | undefined,
     isFunctionCall: boolean
@@ -128,6 +141,14 @@ export function builderLambdaArgumentName(annotation: arkts.AnnotationUsage): st
     }
 
     return property.value.str;
+}
+
+export function findReuseId(chainingCall: arkts.CallExpression): arkts.AstNode | undefined {
+    const callee = chainingCall.expression;
+    if (!arkts.isIdentifier(callee) || callee.name !== BuilderLambdaNames.REUSE_ID_PARAM_NAME) {
+        return undefined;
+    }
+    return chainingCall.arguments.at(0);
 }
 
 export function isBuilderLambda(node: arkts.AstNode, nodeDecl?: arkts.AstNode | undefined): boolean {
@@ -355,10 +376,6 @@ export function findBuilderLambdaDecl(node: arkts.CallExpression | arkts.Identif
     if (!decl) {
         return undefined;
     }
-    const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
-    if (!moduleName) {
-        return undefined;
-    }
     DeclarationCollector.getInstance().collect(decl);
     return decl;
 }
@@ -380,21 +397,18 @@ export function isParameterPassing(prop: arkts.Property): boolean | undefined {
 }
 
 export function findBuilderLambdaDeclInfo(decl: arkts.AstNode | undefined): BuilderLambdaDeclInfo | undefined {
-    if (!decl) {
-        return undefined;
-    }
-    const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
-    if (!moduleName) {
-        return undefined;
-    }
-    if (!arkts.isMethodDefinition(decl)) {
+    if (!decl || !arkts.isMethodDefinition(decl)) {
         return undefined;
     }
     const func = decl.scriptFunction;
     const nameNode = decl.name;
+    const isFunctionCall = isBuilderLambdaFunctionCall(nameNode);
+    let moduleName: string | undefined;
+    if (isFunctionCall) {
+        moduleName = arkts.getProgramFromAstNode(decl).moduleName;
+    }
     const originType = func.returnTypeAnnotation;
     const params = func.params.map((p) => p.clone());
-    const isFunctionCall = isBuilderLambdaFunctionCall(nameNode);
     const hasReceiver = func.hasReceiver;
     const isFromCommonMethod = isFunctionCall && findComponentAttributeFromCommonMethod(originType);
     const returnType = originType?.clone();

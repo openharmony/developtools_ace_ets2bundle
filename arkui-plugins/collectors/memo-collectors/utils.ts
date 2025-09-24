@@ -25,6 +25,7 @@ export enum MemoNames {
     MEMO_SKIP = 'memo_skip',
     MEMO_SKIP_UI = 'MemoSkip',
     MEMO_INTRINSIC = 'memo_intrinsic',
+    MEMO_INTRINSIC_UI = 'MemoIntrinsic',
     MEMO_ENTRY = 'memo_entry',
 }
 
@@ -70,6 +71,8 @@ export function hasMemoAnnotation<T extends MemoAstNode>(node: T): boolean {
 
 export function addMemoAnnotation<T extends MemoAstNode>(node: T, memoName: MemoNames = MemoNames.MEMO): T {
     const skipNames = [MemoNames.MEMO_SKIP, MemoNames.MEMO_SKIP_UI];
+    const intrisicNames = [MemoNames.MEMO_INTRINSIC, MemoNames.MEMO_INTRINSIC_UI];
+    const entryNames = [MemoNames.MEMO_ENTRY];
     collectMemoAnnotationSource(memoName);
     if (arkts.isETSUnionType(node)) {
         return arkts.factory.updateUnionType(
@@ -87,16 +90,20 @@ export function addMemoAnnotation<T extends MemoAstNode>(node: T, memoName: Memo
         annotation(memoName),
     ];
     collectMemoAnnotationImport(memoName);
+    const metadata: arkts.AstNodeCacheValueMetadata = { 
+        ...(intrisicNames.includes(memoName) && { hasMemoIntrinsic: true }),
+        ...(entryNames.includes(memoName) && { hasMemoEntry: true }),
+    }
     if (arkts.isEtsParameterExpression(node)) {
         node.annotations = newAnnotations;
         if (!skipNames.includes(memoName)) {
-            arkts.NodeCache.getInstance().collect(node);
+            arkts.NodeCache.getInstance().collect(node, metadata);
         }
         return node;
     }
     const newNode = node.setAnnotations(newAnnotations) as T;
     if (!skipNames.includes(memoName)) {
-        arkts.NodeCache.getInstance().collect(newNode);
+        arkts.NodeCache.getInstance().collect(newNode, metadata);
     }
     return newNode;
 }
@@ -131,7 +138,11 @@ export function collectMemoAnnotationImport(memoName: MemoNames = MemoNames.MEMO
 }
 
 export function collectMemoAnnotationSource(memoName: MemoNames = MemoNames.MEMO): void {
-    ImportCollector.getInstance().collectSource(memoName, MEMO_IMPORT_SOURCE_NAME);
+    if (memoName === MemoNames.MEMO_INTRINSIC_UI) {
+        ImportCollector.getInstance().collectSource(memoName, MEMO_IMPORT_SOURCE_NAME);
+    } else {
+        ImportCollector.getInstance().collectSource(memoName, MEMO_IMPORT_SOURCE_NAME);
+    }
 }
 
 export function collectMemoableInfoInUnionType(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {

@@ -77,7 +77,16 @@ export interface ObservedAnnoInfo {
 
 export type ClassScopeInfo = ObservedAnnoInfo & {
     getters: arkts.MethodDefinition[];
-};
+}
+
+export function getCustomComponentNameFromInfo(info: CustomComponentScopeInfo): string {
+    if (!!info.annotations.componentV2) {
+        return CustomComponentNames.COMPONENT_V2_CLASS_NAME;
+    } else if (!!info.annotations.customDialog) {
+        return CustomComponentNames.BASE_CUSTOM_DIALOG_NAME;
+    }
+    return CustomComponentNames.COMPONENT_CLASS_NAME;
+}
 
 export type RouterMap = RouterInfo & {
     ohmurl: string;

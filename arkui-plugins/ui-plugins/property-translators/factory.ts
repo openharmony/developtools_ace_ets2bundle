@@ -50,57 +50,12 @@ export class factory {
         info?: OptionalMemberInfo
     ): arkts.Expression {
         let id = GenSymGenerator.getInstance().id(key);
+        const alternate = this.generateConditionalAlternate(id, key, info)
         const statements: arkts.Statement[] = [
-            factory.generateLetVariableDecl(arkts.factory.createIdentifier(id), object),
-            factory.generateTernaryExpression(id, key, info),
+            UIFactory.generateLetVariableDecl(arkts.factory.createIdentifier(id), object),
+            UIFactory.generateTernaryExpression(id, alternate),
         ];
         return arkts.factory.createBlockExpression(statements);
-    }
-
-    /**
-     * generate a variable declaration, e.g. `let <left> = <right>`;
-     *
-     * @param left left expression.
-     * @param right right expression.
-     */
-    static generateLetVariableDecl(left: arkts.Identifier, right: arkts.AstNode): arkts.VariableDeclaration {
-        return arkts.factory.createVariableDeclaration(
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-            arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
-            [
-                arkts.factory.createVariableDeclarator(
-                    arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
-                    left,
-                    right
-                ),
-            ]
-        );
-    }
-
-    /**
-     * generate a ternary expression, e.g. `<test> ? <consequent> : <alternate>`;
-     *
-     * @param testLeft the left hand of the test condition.
-     * @param key item after ?.
-     */
-    static generateTernaryExpression(
-        testLeft: string,
-        key: string,
-        info?: OptionalMemberInfo
-    ): arkts.ExpressionStatement {
-        const test = arkts.factory.createBinaryExpression(
-            arkts.factory.createIdentifier(testLeft),
-            arkts.factory.createNullLiteral(),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_EQUAL
-        );
-        const consequent: arkts.Expression = arkts.factory.createUndefinedLiteral();
-        return arkts.factory.createExpressionStatement(
-            arkts.factory.createConditionalExpression(
-                test,
-                consequent,
-                this.generateConditionalAlternate(testLeft, key, info)
-            )
-        );
     }
 
     static generateConditionalAlternate(testLeft: string, key: string, info?: OptionalMemberInfo): arkts.Expression {
@@ -130,9 +85,10 @@ export class factory {
     ): arkts.Expression {
         let id = GenSymGenerator.getInstance().id(key1);
         let initial: arkts.Expression = factory.createBlockStatementForOptionalExpression(object, key1);
+        const alternate = this.generateConditionalAlternate(id, key2);
         const statements: arkts.Statement[] = [
-            factory.generateLetVariableDecl(arkts.factory.createIdentifier(id), initial),
-            factory.generateTernaryExpression(id, key2),
+            UIFactory.generateLetVariableDecl(arkts.factory.createIdentifier(id), initial),
+            UIFactory.generateTernaryExpression(id, alternate),
         ];
         return arkts.factory.createBlockExpression(statements);
     }
