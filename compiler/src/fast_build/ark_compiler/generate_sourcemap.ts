@@ -143,7 +143,7 @@ export class SourceMapGenerator {
         ArkTSInternalErrorDescription,
         `Failed to get ModuleInfo, moduleId: ${moduleId}`,
         '',
-        [`Please check if the imported file ${moduleId} include the .js suffix.`]
+        [`Please check if the imported file ${moduleId} includes the .js suffix.`]
       );
       this.logger.printErrorAndExit(errInfo);
     }
