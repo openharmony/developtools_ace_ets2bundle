@@ -1,0 +1,22 @@
+{
+  "name": "root",
+  "private": true,
+  "dependencies": {
+    "@idlizer/arktscgen": "./libarkts/packages/arktscgen-2.1.10-arktscgen-4.tgz",
+    "@idlizer/core": "./libarkts/packages/core-2.1.10-arktscgen-4.tgz",
+    "@koalaui/build-common": "./build-common",
+    "@koalaui/compat": "./compat",
+    "@koalaui/common": "./common",
+    "@koalaui/interop": "./interop",
+    "@koalaui/libarkts": "./libarkts",
+    "node-addon-api": "8.0.0",
+    "node-api-headers": "0.0.5"
+  },
+  "scripts": {
+    "build:interop": "npm run build --prefix interop",
+    "compile:interop": "npm run compile --prefix interop",
+    "panda:sdk:reinstall:libarkts": "npm run panda:sdk:reinstall --prefix libarkts",
+    "regenerate:libarkts": "npm run regenerate --prefix libarkts",
+    "compile:js:libarkts": "npm run compile:js --prefix libarkts"
+  }
+}

@@ -1,5 +1,5 @@
 {
-    "extends": "@koalaui/build-common/tsconfig.json",
+    "extends": "../build-common/tsconfig.json",
     "compilerOptions": {
         "baseUrl": ".",
         "rootDir": ".",

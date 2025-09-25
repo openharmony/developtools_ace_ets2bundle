@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import * as ts from '@koalaui/ets-tsc';
+import * as ts from 'typescript';
 import * as arkts from '../arkts-api';
 
 import { throwError } from '../utils';

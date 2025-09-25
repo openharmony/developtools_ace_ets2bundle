@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -75,17 +75,17 @@ function checkSingleEvent(): boolean {
             return true;
         }
         case CallbackEventKind.Event_HoldManagedResource: {
-            const resourceId = deserializer.readInt32()
-            ResourceHolder.instance().hold(resourceId)
+            const resourceId = deserializer.readInt32();
+            ResourceHolder.instance().hold(resourceId);
             return true;
         }
         case CallbackEventKind.Event_ReleaseManagedResource: {
-            const resourceId = deserializer.readInt32()
-            ResourceHolder.instance().release(resourceId)
+            const resourceId = deserializer.readInt32();
+            ResourceHolder.instance().release(resourceId);
             return true;
         }
         default: {
-            throw new Error(`Unknown callback event kind ${eventKind}`)
+            throw new Error(`Unknown callback event kind ${eventKind}`);
         }
     }
 }

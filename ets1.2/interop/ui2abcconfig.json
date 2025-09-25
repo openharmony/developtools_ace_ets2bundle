@@ -4,8 +4,8 @@
         "outDir": "./build/abc",
         "baseUrl": "./src/arkts",
         "paths": {
-            "@koalaui/compat": ["../../../incremental/compat/src/arkts"],
-            "@koalaui/common": ["../../../incremental/common/src"]
+            "@koalaui/compat": ["../../../compat/src/arkts"],
+            "@koalaui/common": ["../../../common/src"]
         }
     },
     "include": ["./src/arkts/*.ts"]

@@ -18,40 +18,44 @@ if (!defined(koala_mr)) {
 if (!koala_mr.is_rri) {
     import("//build/config/components/ets_frontend/ets2abc_config.gni")
     import("//build/ohos.gni")
-    import("//foundation/arkui/ace_engine/ace_config.gni")
 }
 import("${koala_mr.imports_prefix}/npm.gni")
 
-if (current_toolchain == host_toolchain) {
-    npm_install("interop_install") {
+if (defined(koala_mr.ui2abc_path)) {
+    npm_cmd("interop_abc") {
         outputs = [
-            "$target_out_dir/interop_install"
+            "$target_out_dir/interop.abc"
         ]
-        project_path = rebase_path(".")
+        if (!koala_mr.is_rri) {
+            project_path = rebase_path("..")
+            run_tasks = [ "build:interop" ]
+        } else {
+            project_path = rebase_path(".")
+            run_tasks = [ "build" ]
+        }
+
+        deps = [
+            "${koala_mr.ui2abc_path}:ui2abc_base"
+        ]
+
+        if (!koala_mr.is_rri) {
+            external_deps = [
+                ets2abc_build_deps,
+                static_linker_build_deps
+            ]
+        }
     }
 }
 
-npm_cmd("interop.abc") {
+npm_cmd("interop_compile") {
     outputs = [
-        "$target_out_dir/interop.abc"
+        "$target_out_dir/interop_compile"
     ]
-    project_path = rebase_path(".")
-    run_tasks = [ "build" ]
-
-    deps = [
-        "${koala_mr.ui2abc_path}:ui2abc"
-    ]
-
     if (!koala_mr.is_rri) {
-        external_deps = [
-            ets2abc_build_deps,
-            static_linker_build_deps
-        ]
+        project_path = rebase_path("..")
+        run_tasks = [ "compile:interop" ]
+    } else {
+        project_path = rebase_path(".")
+        run_tasks = [ "compile" ]
     }
-}
-
-group("interop") {
-    deps = [
-        "${koala_mr.interop_path}:interop.abc"
-    ]
 }
