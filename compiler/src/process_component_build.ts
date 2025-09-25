@@ -2179,7 +2179,6 @@ export interface ComponentAttrInfo {
   hasIdAttr: boolean,
   attrCount: number,
   reuse: string,
-  reuseAttribute?: ts.Expression,
 }
 
 export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: ts.Identifier,
@@ -2278,57 +2277,38 @@ function validateStylesUIComponent(node: ts.ExpressionStatement, isStylesAttr: b
 
 function parseRecycleId(node: ts.CallExpression, attr: ts.Identifier, componentAttrInfo: ComponentAttrInfo, log: LogInfo[],
   isReusableV2NodeAttr: boolean = false): void {
-  if (componentAttrInfo && node.arguments.length > 0) {
-    const param: ts.Expression = node.arguments[0];
+  if (componentAttrInfo) {
     const attrName: string = attr.escapedText.toString();
     if (attrName === RECYCLE_REUSE_ID) {
       logMessageCollection.checkUsageOfReuseIdAttribute(node, isReusableV2NodeAttr, log);
-      componentAttrInfo.reuseId = param;
+      componentAttrInfo.reuseId = node.arguments[0];
     } else if (attrName === ATTRIBUTE_ID) {
       componentAttrInfo.hasIdAttr = true;
     } else if (attrName === REUSE_ATTRIBUTE) {
       logMessageCollection.checkUsageOfReuseAttribute(node, isReusableV2NodeAttr, log);
-      setReuseAttributeInfo(componentAttrInfo, param);
+      if (ts.isObjectLiteralExpression(node.arguments[0]) && !!getReuseIdInReuse(node.arguments[0])) {
+        componentAttrInfo.reuse = getReuseIdInReuse(node.arguments[0]);
+      } else {
+        componentAttrInfo.reuse = '';
+      }
     }
     componentAttrInfo.attrCount++;
   }
 }
 
-function setReuseAttributeInfo(componentAttrInfo: ComponentAttrInfo, param: ts.Expression): void {
-  componentAttrInfo.reuse = '';
-  componentAttrInfo.reuseAttribute = undefined;
-  if (!ts.isObjectLiteralExpression(param)) {
-    return;
+function getReuseIdInReuse(node: ts.ObjectLiteralExpression): string {
+  let reuse: string = '';
+  if (node.properties && node.properties.length) {
+    node.properties.forEach((item: ts.ObjectLiteralElementLike) => {
+      if (ts.isPropertyAssignment(item) && item.name && ts.isIdentifier(item.name) &&
+        item.name.getText() === RECYCLE_REUSE_ID && item.initializer && 
+        ts.isArrowFunction(item.initializer) && item.initializer.body &&
+        ts.isStringLiteral(item.initializer.body)) {
+        reuse = item.initializer.body.text;
+      }
+    });
   }
-  const reuseIdProperty = getReuseIdProperty(param);
-  if (reuseIdProperty) {
-    componentAttrInfo.reuse = getReuseIdInReuse(reuseIdProperty);
-    componentAttrInfo.reuseAttribute = reuseIdProperty;
-  }
-}
-
-function getReuseIdProperty(
-  node: ts.ObjectLiteralExpression
-): ts.Expression | undefined {
-  if (!node.properties || node.properties.length <= 0) {
-    return undefined;
-  }
-  const reuseIdProperty: ts.PropertyAssignment | undefined =
-    node.properties.find(
-      (item: ts.ObjectLiteralElementLike) =>
-        ts.isPropertyAssignment(item) &&
-        item.name &&
-        ts.isIdentifier(item.name) &&
-        item.name.getText() === RECYCLE_REUSE_ID
-    ) as ts.PropertyAssignment | undefined;
-  return reuseIdProperty?.initializer;
-}
-
-function getReuseIdInReuse(node: ts.Expression): string {
-  if (ts.isArrowFunction(node) && node.body && ts.isStringLiteral(node.body)) {
-    return node.body.text;
-  }
-  return '';
+  return reuse;
 }
 
 function processCustomBuilderProperty(node: ts.CallExpression, identifierNode: ts.Identifier,
