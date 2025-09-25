@@ -67,7 +67,8 @@ def run(npm_args, dir = None):
         if result.returncode != 0:
             f.write(f"npm args: {npm_args}; project: {project_path}:\n" + result.stderr)
             f.close()
-            print(open(koala_log, "r").read())
+            with open(koala_log, "r") as log_file:
+                print(log_file.read())
             raise Exception("npm failed")
         f.close()
 
