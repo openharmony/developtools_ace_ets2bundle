@@ -925,6 +925,17 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
   fileToThrowDiagnostics.forEach(file => {
     fileToIgnoreDiagnostics.delete(file);
   });
+
+  // Remove the atomicservice's JavaScript file from the list of ignored errors.
+  const atomicJsFiles = new Set<string>();
+  for(const file of fileToIgnoreDiagnostics) {
+    if(isAtomicJsFile(file)) {
+      atomicJsFiles.add(file);
+    }
+  }
+  
+  atomicJsFiles.forEach(file => fileToIgnoreDiagnostics.delete(file));
+
   MemoryMonitor.stopRecordStage(ignoreDiagnosticsRecordInfo);
 }
 
@@ -939,21 +950,14 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
     return;
   }
 
-  // Add filtering logic to remove atomService JS files from fileToIgnoreDiagnostics , while avoiding intrusive modifications
-  if (fileToIgnoreDiagnostics && diagnostic.file && diagnostic.file.fileName &&
-    fileToIgnoreDiagnostics.has(toUnixPath(diagnostic.file.fileName)) &&
-    isAtomicJsFile(diagnostic.file.fileName)) {
-    fileToIgnoreDiagnostics.delete(toUnixPath(diagnostic.file.fileName));
-  }
-
   if (fileToIgnoreDiagnostics && diagnostic.file && diagnostic.file.fileName &&
     fileToIgnoreDiagnostics.has(toUnixPath(diagnostic.file.fileName))) {
     return;
   }
 
   // Eliminate syntax errors in the JS files, retaining only API validation errors related to the atomService
-  if(!matchJSGrammarErrorMessage(diagnostic.messageText) && fileToIgnoreDiagnostics &&
-  diagnostic.file && diagnostic.file.fileName && isAtomicJsFile(diagnostic.file.fileName)){
+  if (fileToIgnoreDiagnostics &&diagnostic.file && diagnostic.file.fileName &&
+    isAtomicJsFile(diagnostic.file.fileName) && !matchJSGrammarErrorMessage(diagnostic.messageText)) {
     return;
   }
   const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
@@ -1002,15 +1006,26 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
   }
 }
 
-function isAtomicJsFile(fileName): boolean {
-  const isNonSdkFile: boolean = !isInSDK(fileName);
-  const isAtomicServiceBundle: boolean = projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE;
+function isAtomicJsFile(fileName: string): boolean {
   const isJsOrModuleFile: boolean = /\.(c|m)?js$/.test(fileName);
+  if (!isJsOrModuleFile) {
+    return false;
+  }
+  const isAtomicServiceBundle: boolean = projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE;
+  if (!isAtomicServiceBundle) {
+    return false;
+  }
+  const isNonSdkFile: boolean = !isInSDK(fileName);
+  if (!isNonSdkFile) {
+    return false;
+  }
   const normalizedFileName: string = fileName.replace(/\\/g, '/');
   const normalizedProjectPath: string = projectConfig.projectPath.replace(/\\/g, '/');
   const isInProjectPath: boolean = normalizedFileName.startsWith(normalizedProjectPath);
-
-  return isNonSdkFile && isAtomicServiceBundle && isJsOrModuleFile && isInProjectPath;
+  if (!isInProjectPath) {
+    return false;
+  }
+  return true;
 }
 
 function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
