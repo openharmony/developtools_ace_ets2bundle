@@ -72,7 +72,7 @@ function main() {}
       }),
     }], ((_m: IMonitor) => {
       this.onStrChange2(_m);
-    }));
+    }), this);
     this.__monitor_onStrChange3 = STATE_MGMT_FACTORY.makeMonitor([{
       path: "name",
       valueCallback: ((): Any => {
@@ -80,7 +80,7 @@ function main() {}
       }),
     }], ((_m: IMonitor) => {
       this.onStrChange3(_m);
-    }));
+    }), this);
   }
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}

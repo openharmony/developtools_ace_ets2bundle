@@ -82,7 +82,7 @@ function main() {}
       }),
     }], ((_m: IMonitor) => {
       this.onStrChange(_m);
-    }));
+    }), this);
   }
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
