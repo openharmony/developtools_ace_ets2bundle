@@ -281,6 +281,8 @@ export const RESOURCE_NAME_TYPE: string = 'type';
 export const RESOURCE_NAME_PARAMS: string = 'params';
 export const RESOURCE_NAME_BUNDLE: string = 'bundleName';
 export const RESOURCE_NAME_MODULE: string = 'moduleName';
+export const __GETRESOURCEID__: string = '__getResourceId__';
+
 export const RESOURCE_TYPE = {
   color: 10001,
   float: 10002,
