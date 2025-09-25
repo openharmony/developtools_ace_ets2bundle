@@ -242,7 +242,7 @@ final class MonitorNames extends BaseEnum<String> {
       }),
     }], ((_m: IMonitor) => {
       this.changeEEE(_m);
-    }));
+    }), this);
   }
 
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
