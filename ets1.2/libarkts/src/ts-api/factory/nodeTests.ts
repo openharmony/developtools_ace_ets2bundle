@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { SyntaxKind } from '@koalaui/ets-tsc';
+import { SyntaxKind } from 'typescript';
 
 import {
     ArrowFunction,

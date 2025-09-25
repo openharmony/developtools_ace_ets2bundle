@@ -18,13 +18,13 @@
         "baseUrl": ".",
         "types": ["node"],
         "paths": {
-            "@koalaui/common": ["../incremental/common/src"],
+            "@koalaui/common": ["../common/src"],
             "#common/wrappers/*": ["./src/napi/wrappers/*", "./src/wasm/wrappers/*"]
         }
     },
     "include": ["src/interop/**/*", "src/napi/**/*", "src/wasm/**/*", "src/arkts/ResourceManager.ts"],
     "references": [
-        { "path": "../incremental/compat" },
-        { "path": "../incremental/common" }
+        { "path": "../compat" },
+        { "path": "../common" }
     ]
 }
