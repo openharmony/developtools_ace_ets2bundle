@@ -227,6 +227,7 @@ export enum StateManagementTypes {
     UI_UTILS = 'UIUtils',
     MAKE_OBSERVED = 'makeObserved',
     MAKE_BUILDER_PARAM_PROXY = 'makeBuilderParameterProxy',
+    SET_OWNER = 'setOwner',
 }
 
 export enum AnimationNames {
