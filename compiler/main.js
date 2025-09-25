@@ -232,7 +232,7 @@ function setStartupPagesForObf(projectConfig) {
       return;
     }
     setEntryArrayForObf(startupConfig.configEntry);
-    startupConfig.startupTasks.forEach(task => {
+    startupConfig.startupTasks?.forEach(task => {
       if (task.srcEntry) {
         setEntryArrayForObf(task.srcEntry);
       }
