@@ -24,6 +24,7 @@ import { MethodTranslator } from './base';
 import { InitializerConstructor } from './types';
 import { factory as UIFactory } from '../ui-factory';
 import { factory } from './factory';
+import { ComputedCache } from './cache/computedCache';
 
 export class ComputedTranslator extends MethodTranslator implements InitializerConstructor {
     private isStatic: boolean;
@@ -39,10 +40,15 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
         if (!this.returnType) {
             this.returnType = getGetterReturnType(this.method);
         }
+        if (this.classInfo.isFromStruct && !this.isStatic) {
+            this.cacheTranslatedInitializer(newName);
+        }
         return this.translateWithoutInitializer(newName, originalName);
     }
 
-    cacheTranslatedInitializer(newName: string): void {}
+    cacheTranslatedInitializer(newName: string): void {
+        ComputedCache.getInstance().collectComputed(this.classInfo.className, { newName });
+    }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
         const modifiers = this.isStatic ? this.method.modifiers : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;

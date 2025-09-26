@@ -45,6 +45,7 @@ import { InteroperAbilityNames } from './interop/predefines';
 import { generateBuilderCompatible } from './interop/builder-interop';
 import { builderRewriteByType } from './builder-lambda-translators/builder-factory';
 import { MonitorCache } from './property-translators/cache/monitorCache';
+import { ComputedCache } from './property-translators/cache/computedCache';
 import { ComponentAttributeCache } from './builder-lambda-translators/cache/componentAttributeCache';
 import { MetaDataCollector } from '../common/metadata-collector';
 import { FileManager } from '../common/file-manager';
@@ -76,6 +77,7 @@ export class CheckedTransformer extends AbstractVisitor {
         this.scope = { customComponents: [] };
         PropertyCache.getInstance().reset();
         MonitorCache.getInstance().reset();
+        ComputedCache.getInstance().reset();
         ComponentAttributeCache.getInstance().reset();
         ImportCollector.getInstance().reset();
         DeclarationCollector.getInstance().reset();
