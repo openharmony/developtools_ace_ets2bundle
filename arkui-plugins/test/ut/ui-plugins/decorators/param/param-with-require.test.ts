@@ -126,19 +126,22 @@ class Info {
 @ComponentV2() export interface __Options_Index {
   infoList?: Info[];
   @Local() __backing_infoList?: Info[];
-
+  __options_has_infoList?: boolean;
+  
 }
 
 @ComponentV2() export interface __Options_MiddleComponent {
   info?: Info;
   @Require() @Param() __backing_info?: Info;
-
+  __options_has_info?: boolean;
+  
 }
 
 @ComponentV2() export interface __Options_SubComponent {
   region?: Region;
   @Require() @Param() __backing_region?: Region;
-
+  __options_has_region?: boolean;
+  
 }
 `;
 
@@ -216,6 +219,7 @@ class Info {
           return new MiddleComponent();
         }), {
           info: info,
+          __options_has_info: true,
         }, undefined, undefined);
       }));
       Button(@memo() ((instance: ButtonAttribute): void => {
@@ -239,8 +243,8 @@ class Info {
   }
 
   public __updateStruct(initializers: (__Options_MiddleComponent | undefined)): void {
-    if (((({let gensym___152615498 = initializers;
-    (((gensym___152615498) == (null)) ? undefined : gensym___152615498.info)})) !== (undefined))) {
+    if (({let gensym___20494961 = initializers;
+    (((gensym___20494961) == (null)) ? undefined : gensym___20494961.__options_has_info)})) {
       this.__backing_info!.update((initializers!.info as Info));
     }
   }
@@ -259,6 +263,7 @@ class Info {
         return new SubComponent();
       }), {
         region: this.info.region,
+        __options_has_region: true,
       }, undefined, undefined);
     }));
   }
@@ -273,8 +278,8 @@ class Info {
   }
 
   public __updateStruct(initializers: (__Options_SubComponent | undefined)): void {
-    if (((({let gensym___240509478 = initializers;
-    (((gensym___240509478) == (null)) ? undefined : gensym___240509478.region)})) !== (undefined))) {
+    if (({let gensym___4614499 = initializers;
+    (((gensym___4614499) == (null)) ? undefined : gensym___4614499.__options_has_region)})) {
       this.__backing_region!.update((initializers!.region as Region));
     }
   }
@@ -302,7 +307,10 @@ class Info {
   set __backing_infoList(__backing_infoList: (ILocalDecoratedVariable<Array<Info>> | undefined))
 
   get __backing_infoList(): (ILocalDecoratedVariable<Array<Info>> | undefined)
-
+  set __options_has_infoList(__options_has_infoList: (boolean | undefined))
+  
+  get __options_has_infoList(): (boolean | undefined)
+  
 }
 
 @ComponentV2() export interface __Options_MiddleComponent {
@@ -312,7 +320,10 @@ class Info {
   @Require() set __backing_info(__backing_info: (IParamDecoratedVariable<Info> | undefined))
 
   @Require() get __backing_info(): (IParamDecoratedVariable<Info> | undefined)
-
+  set __options_has_info(__options_has_info: (boolean | undefined))
+  
+  get __options_has_info(): (boolean | undefined)
+  
 }
 
 @ComponentV2() export interface __Options_SubComponent {
@@ -322,7 +333,10 @@ class Info {
   @Require() set __backing_region(__backing_region: (IParamDecoratedVariable<Region> | undefined))
 
   @Require() get __backing_region(): (IParamDecoratedVariable<Region> | undefined)
-
+  set __options_has_region(__options_has_region: (boolean | undefined))
+  
+  get __options_has_region(): (boolean | undefined)
+  
 }
 `;
 

@@ -64,15 +64,20 @@ import { Consume as Consume } from "@ohos.arkui.stateManagement";
 @Component() export interface __Options_PropParent {
   conVar1?: string;
   @Consume() __backing_conVar1?: string;
+  __options_has_conVar1?: boolean;
   conVar2?: number;
   @Consume() __backing_conVar2?: number;
+  __options_has_conVar2?: boolean;
   conVar3?: boolean;
   @Consume() __backing_conVar3?: boolean;
+  __options_has_conVar3?: boolean;
   conVar4?: undefined;
   @Consume() __backing_conVar4?: undefined;
+  __options_has_conVar4?: boolean;
   conVar5?: null;
   @Consume() __backing_conVar5?: null;
-
+  __options_has_conVar5?: boolean;
+  
 }
 `;
 
@@ -167,31 +172,46 @@ function main() {}
   set __backing_conVar1(__backing_conVar1: (IConsumeDecoratedVariable<string> | undefined))
 
   get __backing_conVar1(): (IConsumeDecoratedVariable<string> | undefined)
+  set __options_has_conVar1(__options_has_conVar1: (boolean | undefined))
+  
+  get __options_has_conVar1(): (boolean | undefined)
   set conVar2(conVar2: (number | undefined))
 
   get conVar2(): (number | undefined)
   set __backing_conVar2(__backing_conVar2: (IConsumeDecoratedVariable<number> | undefined))
 
   get __backing_conVar2(): (IConsumeDecoratedVariable<number> | undefined)
+  set __options_has_conVar2(__options_has_conVar2: (boolean | undefined))
+  
+  get __options_has_conVar2(): (boolean | undefined)
   set conVar3(conVar3: (boolean | undefined))
 
   get conVar3(): (boolean | undefined)
   set __backing_conVar3(__backing_conVar3: (IConsumeDecoratedVariable<boolean> | undefined))
 
   get __backing_conVar3(): (IConsumeDecoratedVariable<boolean> | undefined)
+  set __options_has_conVar3(__options_has_conVar3: (boolean | undefined))
+  
+  get __options_has_conVar3(): (boolean | undefined)
   set conVar4(conVar4: (undefined | undefined))
 
   get conVar4(): (undefined | undefined)
   set __backing_conVar4(__backing_conVar4: (IConsumeDecoratedVariable<undefined> | undefined))
 
   get __backing_conVar4(): (IConsumeDecoratedVariable<undefined> | undefined)
+  set __options_has_conVar4(__options_has_conVar4: (boolean | undefined))
+  
+  get __options_has_conVar4(): (boolean | undefined)
   set conVar5(conVar5: (null | undefined))
 
   get conVar5(): (null | undefined)
   set __backing_conVar5(__backing_conVar5: (IConsumeDecoratedVariable<null> | undefined))
 
   get __backing_conVar5(): (IConsumeDecoratedVariable<null> | undefined)
-
+  set __options_has_conVar5(__options_has_conVar5: (boolean | undefined))
+  
+  get __options_has_conVar5(): (boolean | undefined)
+  
 }
 `;
 

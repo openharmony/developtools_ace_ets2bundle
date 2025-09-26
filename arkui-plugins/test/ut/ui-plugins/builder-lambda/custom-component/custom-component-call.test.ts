@@ -84,7 +84,8 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
 
 @Component() export interface __Options_CustomContainer {
   @BuilderParam() closer?: (()=> void);
-
+  __options_has_closer?: boolean;
+  
 }
 
 @Component() export interface __Options_CustomContainerUser {
@@ -171,7 +172,10 @@ function main() {}
   set closer(closer: (@memo() (()=> void) | undefined))
 
   get closer(): (@memo() (()=> void) | undefined)
-
+  set __options_has_closer(__options_has_closer: (boolean | undefined))
+  
+  get __options_has_closer(): (boolean | undefined)
+  
 }
 
 @Component() export interface __Options_CustomContainerUser {

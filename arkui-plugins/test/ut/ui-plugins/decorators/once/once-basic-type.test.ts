@@ -52,8 +52,6 @@ import { Param as Param, Once as Once } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-
-
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_onceVar1 = STATE_MGMT_FACTORY.makeParamOnce<string>(this, "onceVar1", ((({let gensym___35048285 = initializers;
@@ -133,31 +131,46 @@ function main() {}
   @Param() set __backing_onceVar1(__backing_onceVar1: (IParamOnceDecoratedVariable<string> | undefined))
 
   @Param() get __backing_onceVar1(): (IParamOnceDecoratedVariable<string> | undefined)
+  set __options_has_onceVar1(__options_has_onceVar1: (boolean | undefined))
+  
+  get __options_has_onceVar1(): (boolean | undefined)
   set onceVar2(onceVar2: (number | undefined))
 
   get onceVar2(): (number | undefined)
   @Param() set __backing_onceVar2(__backing_onceVar2: (IParamOnceDecoratedVariable<number> | undefined))
 
   @Param() get __backing_onceVar2(): (IParamOnceDecoratedVariable<number> | undefined)
+  set __options_has_onceVar2(__options_has_onceVar2: (boolean | undefined))
+  
+  get __options_has_onceVar2(): (boolean | undefined)
   set onceVar3(onceVar3: (boolean | undefined))
 
   get onceVar3(): (boolean | undefined)
   @Param() set __backing_onceVar3(__backing_onceVar3: (IParamOnceDecoratedVariable<boolean> | undefined))
 
   @Param() get __backing_onceVar3(): (IParamOnceDecoratedVariable<boolean> | undefined)
+  set __options_has_onceVar3(__options_has_onceVar3: (boolean | undefined))
+  
+  get __options_has_onceVar3(): (boolean | undefined)
   set onceVar4(onceVar4: (undefined | undefined))
 
   get onceVar4(): (undefined | undefined)
   @Param() set __backing_onceVar4(__backing_onceVar4: (IParamOnceDecoratedVariable<undefined> | undefined))
 
   @Param() get __backing_onceVar4(): (IParamOnceDecoratedVariable<undefined> | undefined)
+  set __options_has_onceVar4(__options_has_onceVar4: (boolean | undefined))
+  
+  get __options_has_onceVar4(): (boolean | undefined)
   set onceVar5(onceVar5: (null | undefined))
 
   get onceVar5(): (null | undefined)
   @Param() set __backing_onceVar5(__backing_onceVar5: (IParamOnceDecoratedVariable<null> | undefined))
 
   @Param() get __backing_onceVar5(): (IParamOnceDecoratedVariable<null> | undefined)
-
+  set __options_has_onceVar5(__options_has_onceVar5: (boolean | undefined))
+  
+  get __options_has_onceVar5(): (boolean | undefined)
+  
 }
 `;
 

@@ -69,8 +69,8 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_CountDownComponent | undefined)): void {
-    if (((({let gensym___188547633 = initializers;
-    (((gensym___188547633) == (null)) ? undefined : gensym___188547633.count)})) !== (undefined))) {
+    if (({let gensym___142908272 = initializers;
+    (((gensym___142908272) == (null)) ? undefined : gensym___142908272.__options_has_count)})) {
       this.__backing_count!.update((initializers!.count as number));
     }
   }
@@ -158,7 +158,9 @@ function main() {}
         return new CountDownComponent();
       }), {
         count: this.countDownStartValue,
+        __options_has_count: true,
         costOfOneAttempt: 2,
+        __options_has_costOfOneAttempt: true,
       }, undefined, undefined);
     }));
   }
@@ -174,10 +176,16 @@ function main() {}
   set __backing_count(__backing_count: (IPropRefDecoratedVariable<number> | undefined))
 
   get __backing_count(): (IPropRefDecoratedVariable<number> | undefined)
+  set __options_has_count(__options_has_count: (boolean | undefined))
+  
+  get __options_has_count(): (boolean | undefined)
   set costOfOneAttempt(costOfOneAttempt: (number | undefined))
 
   get costOfOneAttempt(): (number | undefined)
-
+  set __options_has_costOfOneAttempt(__options_has_costOfOneAttempt: (boolean | undefined))
+  
+  get __options_has_costOfOneAttempt(): (boolean | undefined)
+  
 }
 
 @Component() export interface __Options_ParentComponent {
@@ -187,7 +195,10 @@ function main() {}
   set __backing_countDownStartValue(__backing_countDownStartValue: (IStateDecoratedVariable<number> | undefined))
 
   get __backing_countDownStartValue(): (IStateDecoratedVariable<number> | undefined)
-
+  set __options_has_countDownStartValue(__options_has_countDownStartValue: (boolean | undefined))
+  
+  get __options_has_countDownStartValue(): (boolean | undefined)
+  
 }
 `;
 

@@ -56,7 +56,6 @@ import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent"
 
 import { EntryPoint as EntryPoint } from "arkui.UserView";
 
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component, Entry as Entry, Column as Column, Button as Button, DatePicker as DatePicker, ClickEvent as ClickEvent } from "@ohos.arkui.component";
@@ -75,8 +74,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 @Component() final struct DateComponent extends CustomComponent<DateComponent, __Options_DateComponent> {
   public __initializeStruct(initializers: (__Options_DateComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
-    if (({let gensym___164314175 = initializers;
-    (((gensym___164314175) == (null)) ? undefined : gensym___164314175.__backing_selectedDate)})) {
+    if (({let gensym___27735436 = initializers;
+    (((gensym___27735436) == (null)) ? undefined : gensym___27735436.__options_has_selectedDate)})) {
       this.__backing_selectedDate = STATE_MGMT_FACTORY.makeLink<Date>(this, "selectedDate", initializers!.__backing_selectedDate!);
     };
   }
@@ -160,6 +159,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         return new DateComponent();
       }), {
         __backing_selectedDate: this.__backing_parentSelectedDate,
+        __options_has_selectedDate: true,
       }, undefined, undefined);
     }));
   }
@@ -177,7 +177,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   set __backing_selectedDate(__backing_selectedDate: (LinkSourceType<Date> | undefined))
 
   get __backing_selectedDate(): (LinkSourceType<Date> | undefined)
-
+  set __options_has_selectedDate(__options_has_selectedDate: (boolean | undefined))
+  
+  get __options_has_selectedDate(): (boolean | undefined)
+  
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_ParentComponent {
@@ -187,7 +190,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   set __backing_parentSelectedDate(__backing_parentSelectedDate: (IStateDecoratedVariable<Date> | undefined))
 
   get __backing_parentSelectedDate(): (IStateDecoratedVariable<Date> | undefined)
-
+  set __options_has_parentSelectedDate(__options_has_parentSelectedDate: (boolean | undefined))
+  
+  get __options_has_parentSelectedDate(): (boolean | undefined)
+  
 }
 
 class __EntryWrapper extends EntryPoint {

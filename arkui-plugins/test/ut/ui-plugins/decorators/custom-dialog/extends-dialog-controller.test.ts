@@ -156,14 +156,20 @@ class DialogControllerV3 extends DialogControllerV2 {
   set aaController(aaController: ((CustomDialogController | undefined) | undefined))
 
   get aaController(): ((CustomDialogController | undefined) | undefined)
-
+  set __options_has_aaController(__options_has_aaController: (boolean | undefined))
+  
+  get __options_has_aaController(): (boolean | undefined)
+  
 }
 
 @Component() export interface __Options_CustomDialogUser {
   set dialogController(dialogController: ((CustomDialogController | null) | undefined))
 
   get dialogController(): ((CustomDialogController | null) | undefined)
-
+  set __options_has_dialogController(__options_has_dialogController: (boolean | undefined))
+  
+  get __options_has_dialogController(): (boolean | undefined)
+  
 }
 `;
 

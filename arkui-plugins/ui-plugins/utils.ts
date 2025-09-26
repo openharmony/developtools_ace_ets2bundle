@@ -373,6 +373,10 @@ export function monitorField(name: string): string {
     return `__monitor_${name}`;
 }
 
+export function optionsHasField(name: string): string {
+    return `__options_has_${name}`;
+}
+
 export function getClassPropertyType(property: arkts.ClassProperty): arkts.TypeNode | undefined {
     const type = property.typeAnnotation;
     if (!!type) {

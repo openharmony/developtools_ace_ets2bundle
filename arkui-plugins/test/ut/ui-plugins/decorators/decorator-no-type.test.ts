@@ -52,7 +52,7 @@ import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { IPropDecoratedVariable as IPropDecoratedVariable } from "arkui.stateManagement.decorator";
+import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -80,11 +80,12 @@ import { CustomComponent as CustomComponent } from "arkui.component.customCompon
 
 import { Component as Component, ComponentV2 as ComponentV2, CustomDialog as CustomDialog } from "@ohos.arkui.component";
 
-import { State as State, Prop as Prop, Provide as Provide, Event as Event, Local as Local, Param as Param } from "@ohos.arkui.stateManagement";
+import { State as State, PropRef as PropRef, Provide as Provide, Event as Event, Local as Local, Param as Param } from "@ohos.arkui.stateManagement";
 
 import { Provider as Provider, Consumer as Consumer, Once as Once, Observed as Observed, ObservedV2 as ObservedV2, Trace as Trace, Track as Track } from "@ohos.arkui.stateManagement";
 
 function main() {}
+
 
 class Per {
   public num: number;
@@ -257,7 +258,7 @@ final class StateType extends BaseEnum<int> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_stateVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "stateVar1", (((({let gensym___213853607 = initializers;
     (((gensym___213853607) == (null)) ? undefined : gensym___213853607.stateVar1)})) ?? (new Per(6))) as Per));
-    this.__backing_stateVar2 = STATE_MGMT_FACTORY.makeProp<Array<Double>>(this, "stateVar2", (((({let gensym___113574154 = initializers;
+    this.__backing_stateVar2 = STATE_MGMT_FACTORY.makePropRef<Array<Double>>(this, "stateVar2", (((({let gensym___113574154 = initializers;
     (((gensym___113574154) == (null)) ? undefined : gensym___113574154.stateVar2)})) ?? (new Array<number>(3, 6, 8))) as Array<Double>));
     this.__backing_stateVar3 = STATE_MGMT_FACTORY.makeProvide<StateType>(this, "stateVar3", "stateVar3", (((({let gensym___120612294 = initializers;
     (((gensym___120612294) == (null)) ? undefined : gensym___120612294.stateVar3)})) ?? (StateType.TYPE3)) as StateType), false);
@@ -274,8 +275,8 @@ final class StateType extends BaseEnum<int> {
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {
-    if (((({let gensym___130780487 = initializers;
-    (((gensym___130780487) == (null)) ? undefined : gensym___130780487.stateVar2)})) !== (undefined))) {
+    if (({let gensym___103591793 = initializers;
+    (((gensym___103591793) == (null)) ? undefined : gensym___103591793.__options_has_stateVar2)})) {
       this.__backing_stateVar2!.update((initializers!.stateVar2 as Array<Double>));
     }
   }
@@ -289,9 +290,9 @@ final class StateType extends BaseEnum<int> {
   public set stateVar1(value: Per) {
     this.__backing_stateVar1!.set(value);
   }
-
-  private __backing_stateVar2?: IPropDecoratedVariable<Array<Double>>;
-
+  
+  private __backing_stateVar2?: IPropRefDecoratedVariable<Array<Double>>;
+  
   public get stateVar2(): Array<Double> {
     return this.__backing_stateVar2!.get();
   }
@@ -389,12 +390,12 @@ final class StateType extends BaseEnum<int> {
   }
 
   public __updateStruct(initializers: (__Options_V2Parent | undefined)): void {
-    if (((({let gensym___68371156 = initializers;
-    (((gensym___68371156) == (null)) ? undefined : gensym___68371156.stateVar9)})) !== (undefined))) {
+    if (({let gensym___220782256 = initializers;
+    (((gensym___220782256) == (null)) ? undefined : gensym___220782256.__options_has_stateVar9)})) {
       this.__backing_stateVar9!.update((initializers!.stateVar9 as Date));
     }
-    if (((({let gensym___20754573 = initializers;
-    (((gensym___20754573) == (null)) ? undefined : gensym___20754573.stateVar10)})) !== (undefined))) {
+    if (({let gensym___252301725 = initializers;
+    (((gensym___252301725) == (null)) ? undefined : gensym___252301725.__options_has_stateVar10)})) {
       this.__backing_stateVar10!.update((initializers!.stateVar10 as Map<Double,Per>));
     }
   }
@@ -540,12 +541,12 @@ final class StateType extends BaseEnum<int> {
   }
 
   public __updateStruct(initializers: (__Options_CC | undefined)): void {
-    if (((({let gensym___177096870 = initializers;
-    (((gensym___177096870) == (null)) ? undefined : gensym___177096870.stateVar9)})) !== (undefined))) {
+    if (({let gensym___245065060 = initializers;
+    (((gensym___245065060) == (null)) ? undefined : gensym___245065060.__options_has_stateVar9)})) {
       this.__backing_stateVar9!.update((initializers!.stateVar9 as Date));
     }
-    if (((({let gensym___35982320 = initializers;
-    (((gensym___35982320) == (null)) ? undefined : gensym___35982320.stateVar10)})) !== (undefined))) {
+    if (({let gensym___158661357 = initializers;
+    (((gensym___158661357) == (null)) ? undefined : gensym___158661357.__options_has_stateVar10)})) {
       this.__backing_stateVar10!.update((initializers!.stateVar10 as Map<Double,Per>));
     }
   }
@@ -675,43 +676,67 @@ final class StateType extends BaseEnum<int> {
   set __backing_stateVar1(__backing_stateVar1: (IStateDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar1(): (IStateDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar1(__options_has_stateVar1: (boolean | undefined))
+  
+  get __options_has_stateVar1(): (boolean | undefined)
   set stateVar2(stateVar2: (Any | undefined))
 
   get stateVar2(): (Any | undefined)
-  set __backing_stateVar2(__backing_stateVar2: (IPropDecoratedVariable<Any> | undefined))
-
-  get __backing_stateVar2(): (IPropDecoratedVariable<Any> | undefined)
+  set __backing_stateVar2(__backing_stateVar2: (IPropRefDecoratedVariable<Any> | undefined))
+  
+  get __backing_stateVar2(): (IPropRefDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar2(__options_has_stateVar2: (boolean | undefined))
+  
+  get __options_has_stateVar2(): (boolean | undefined)
   set stateVar3(stateVar3: (Any | undefined))
 
   get stateVar3(): (Any | undefined)
   set __backing_stateVar3(__backing_stateVar3: (IProvideDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar3(): (IProvideDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar3(__options_has_stateVar3: (boolean | undefined))
+  
+  get __options_has_stateVar3(): (boolean | undefined)
   set stateVar8(stateVar8: (Any | undefined))
 
   get stateVar8(): (Any | undefined)
+  set __options_has_stateVar8(__options_has_stateVar8: (boolean | undefined))
+  
+  get __options_has_stateVar8(): (boolean | undefined)
   set stateVar9(stateVar9: (Any | undefined))
 
   get stateVar9(): (Any | undefined)
+  set __options_has_stateVar9(__options_has_stateVar9: (boolean | undefined))
+  
+  get __options_has_stateVar9(): (boolean | undefined)
   set stateVar11113(stateVar11113: (Any | undefined))
 
   get stateVar11113(): (Any | undefined)
   set __backing_stateVar11113(__backing_stateVar11113: (IProvideDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar11113(): (IProvideDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar11113(__options_has_stateVar11113: (boolean | undefined))
+  
+  get __options_has_stateVar11113(): (boolean | undefined)
   set stateVar11114(stateVar11114: (Any | undefined))
 
   get stateVar11114(): (Any | undefined)
   set __backing_stateVar11114(__backing_stateVar11114: (IProvideDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar11114(): (IProvideDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar11114(__options_has_stateVar11114: (boolean | undefined))
+  
+  get __options_has_stateVar11114(): (boolean | undefined)
   set stateVar11115(stateVar11115: (Any | undefined))
 
   get stateVar11115(): (Any | undefined)
   set __backing_stateVar11115(__backing_stateVar11115: (IStateDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar11115(): (IStateDecoratedVariable<Any> | undefined)
-
+  set __options_has_stateVar11115(__options_has_stateVar11115: (boolean | undefined))
+  
+  get __options_has_stateVar11115(): (boolean | undefined)
+  
 }
 
 @ComponentV2() export interface __Options_V2Parent {
@@ -721,67 +746,103 @@ final class StateType extends BaseEnum<int> {
   @Param() set __backing_stateVar4(__backing_stateVar4: (IParamOnceDecoratedVariable<Any> | undefined))
 
   @Param() get __backing_stateVar4(): (IParamOnceDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar4(__options_has_stateVar4: (boolean | undefined))
+  
+  get __options_has_stateVar4(): (boolean | undefined)
   set stateVar5(stateVar5: (Any | undefined))
 
   get stateVar5(): (Any | undefined)
   set __backing_stateVar5(__backing_stateVar5: (ILocalDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar5(): (ILocalDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar5(__options_has_stateVar5: (boolean | undefined))
+  
+  get __options_has_stateVar5(): (boolean | undefined)
   set stateVar6(stateVar6: (Any | undefined))
 
   get stateVar6(): (Any | undefined)
   set __backing_stateVar6(__backing_stateVar6: (ILocalDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar6(): (ILocalDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar6(__options_has_stateVar6: (boolean | undefined))
+  
+  get __options_has_stateVar6(): (boolean | undefined)
   set stateVar7(stateVar7: (Any | undefined))
 
   get stateVar7(): (Any | undefined)
+  set __options_has_stateVar7(__options_has_stateVar7: (boolean | undefined))
+  
+  get __options_has_stateVar7(): (boolean | undefined)
   set stateVar8(stateVar8: (Any | undefined))
 
   get stateVar8(): (Any | undefined)
+  set __options_has_stateVar8(__options_has_stateVar8: (boolean | undefined))
+  
+  get __options_has_stateVar8(): (boolean | undefined)
   set stateVar9(stateVar9: (Any | undefined))
 
   get stateVar9(): (Any | undefined)
   set __backing_stateVar9(__backing_stateVar9: (IParamDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar9(): (IParamDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar9(__options_has_stateVar9: (boolean | undefined))
+  
+  get __options_has_stateVar9(): (boolean | undefined)
   set stateVar10(stateVar10: (Any | undefined))
 
   get stateVar10(): (Any | undefined)
   set __backing_stateVar10(__backing_stateVar10: (IParamDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar10(): (IParamDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar10(__options_has_stateVar10: (boolean | undefined))
+  
+  get __options_has_stateVar10(): (boolean | undefined)
   set stateVar11(stateVar11: (Any | undefined))
 
   get stateVar11(): (Any | undefined)
   @Param() set __backing_stateVar11(__backing_stateVar11: (IParamOnceDecoratedVariable<Any> | undefined))
 
   @Param() get __backing_stateVar11(): (IParamOnceDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar11(__options_has_stateVar11: (boolean | undefined))
+  
+  get __options_has_stateVar11(): (boolean | undefined)
   set stateVar12(stateVar12: (Any | undefined))
 
   get stateVar12(): (Any | undefined)
   set __backing_stateVar12(__backing_stateVar12: (IProviderDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar12(): (IProviderDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar12(__options_has_stateVar12: (boolean | undefined))
+  
+  get __options_has_stateVar12(): (boolean | undefined)
   set stateVar11111(stateVar11111: (Any | undefined))
 
   get stateVar11111(): (Any | undefined)
   set __backing_stateVar11111(__backing_stateVar11111: (IConsumerDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar11111(): (IConsumerDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar11111(__options_has_stateVar11111: (boolean | undefined))
+  
+  get __options_has_stateVar11111(): (boolean | undefined)
   set stateVar11188(stateVar11188: (Any | undefined))
 
   get stateVar11188(): (Any | undefined)
   set __backing_stateVar11188(__backing_stateVar11188: (IProviderDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar11188(): (IProviderDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar11188(__options_has_stateVar11188: (boolean | undefined))
+  
+  get __options_has_stateVar11188(): (boolean | undefined)
   set stateVar11112(stateVar11112: (Any | undefined))
 
   get stateVar11112(): (Any | undefined)
   set __backing_stateVar11112(__backing_stateVar11112: (IConsumerDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar11112(): (IConsumerDecoratedVariable<Any> | undefined)
-
+  set __options_has_stateVar11112(__options_has_stateVar11112: (boolean | undefined))
+  
+  get __options_has_stateVar11112(): (boolean | undefined)
+  
 }
 
 @CustomDialog() export interface __Options_CC {
@@ -791,69 +852,104 @@ final class StateType extends BaseEnum<int> {
   @Param() set __backing_stateVar4(__backing_stateVar4: (IParamOnceDecoratedVariable<Any> | undefined))
 
   @Param() get __backing_stateVar4(): (IParamOnceDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar4(__options_has_stateVar4: (boolean | undefined))
+  
+  get __options_has_stateVar4(): (boolean | undefined)
   set stateVar5(stateVar5: (Any | undefined))
 
   get stateVar5(): (Any | undefined)
   set __backing_stateVar5(__backing_stateVar5: (ILocalDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar5(): (ILocalDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar5(__options_has_stateVar5: (boolean | undefined))
+  
+  get __options_has_stateVar5(): (boolean | undefined)
   set stateVar6(stateVar6: (Any | undefined))
 
   get stateVar6(): (Any | undefined)
   set __backing_stateVar6(__backing_stateVar6: (ILocalDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar6(): (ILocalDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar6(__options_has_stateVar6: (boolean | undefined))
+  
+  get __options_has_stateVar6(): (boolean | undefined)
   set stateVar7(stateVar7: (Any | undefined))
 
   get stateVar7(): (Any | undefined)
+  set __options_has_stateVar7(__options_has_stateVar7: (boolean | undefined))
+  
+  get __options_has_stateVar7(): (boolean | undefined)
   set stateVar8(stateVar8: (Any | undefined))
 
   get stateVar8(): (Any | undefined)
+  set __options_has_stateVar8(__options_has_stateVar8: (boolean | undefined))
+  
+  get __options_has_stateVar8(): (boolean | undefined)
   set stateVar9(stateVar9: (Any | undefined))
 
   get stateVar9(): (Any | undefined)
   set __backing_stateVar9(__backing_stateVar9: (IParamDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar9(): (IParamDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar9(__options_has_stateVar9: (boolean | undefined))
+  
+  get __options_has_stateVar9(): (boolean | undefined)
   set stateVar10(stateVar10: (Any | undefined))
 
   get stateVar10(): (Any | undefined)
   set __backing_stateVar10(__backing_stateVar10: (IParamDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar10(): (IParamDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar10(__options_has_stateVar10: (boolean | undefined))
+  
+  get __options_has_stateVar10(): (boolean | undefined)
   set stateVar11(stateVar11: (Any | undefined))
 
   get stateVar11(): (Any | undefined)
   @Param() set __backing_stateVar11(__backing_stateVar11: (IParamOnceDecoratedVariable<Any> | undefined))
 
   @Param() get __backing_stateVar11(): (IParamOnceDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar11(__options_has_stateVar11: (boolean | undefined))
+  
+  get __options_has_stateVar11(): (boolean | undefined)
   set stateVar12(stateVar12: (Any | undefined))
 
   get stateVar12(): (Any | undefined)
   set __backing_stateVar12(__backing_stateVar12: (IProviderDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar12(): (IProviderDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar12(__options_has_stateVar12: (boolean | undefined))
+  
+  get __options_has_stateVar12(): (boolean | undefined)
   set stateVar11111(stateVar11111: (Any | undefined))
 
   get stateVar11111(): (Any | undefined)
   set __backing_stateVar11111(__backing_stateVar11111: (IConsumerDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar11111(): (IConsumerDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar11111(__options_has_stateVar11111: (boolean | undefined))
+  
+  get __options_has_stateVar11111(): (boolean | undefined)
   set stateVar11188(stateVar11188: (Any | undefined))
 
   get stateVar11188(): (Any | undefined)
   set __backing_stateVar11188(__backing_stateVar11188: (IProviderDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar11188(): (IProviderDecoratedVariable<Any> | undefined)
+  set __options_has_stateVar11188(__options_has_stateVar11188: (boolean | undefined))
+  
+  get __options_has_stateVar11188(): (boolean | undefined)
   set stateVar11112(stateVar11112: (Any | undefined))
 
   get stateVar11112(): (Any | undefined)
   set __backing_stateVar11112(__backing_stateVar11112: (IConsumerDecoratedVariable<Any> | undefined))
 
   get __backing_stateVar11112(): (IConsumerDecoratedVariable<Any> | undefined)
-
+  set __options_has_stateVar11112(__options_has_stateVar11112: (boolean | undefined))
+  
+  get __options_has_stateVar11112(): (boolean | undefined)
+  
 }
-
 `;
 
 function testParsedAndCheckedTransformer(this: PluginTestContext): void {
