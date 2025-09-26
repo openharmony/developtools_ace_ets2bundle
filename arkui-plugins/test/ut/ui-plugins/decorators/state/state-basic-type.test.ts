@@ -38,13 +38,11 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
-
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -53,8 +51,6 @@ import { Component as Component } from "@ohos.arkui.component";
 import { State as State } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
-
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
@@ -135,31 +131,46 @@ function main() {}
   set __backing_stateVar1(__backing_stateVar1: (IStateDecoratedVariable<string> | undefined))
 
   get __backing_stateVar1(): (IStateDecoratedVariable<string> | undefined)
+  set __options_has_stateVar1(__options_has_stateVar1: (boolean | undefined))
+  
+  get __options_has_stateVar1(): (boolean | undefined)
   set stateVar2(stateVar2: (number | undefined))
 
   get stateVar2(): (number | undefined)
   set __backing_stateVar2(__backing_stateVar2: (IStateDecoratedVariable<number> | undefined))
 
   get __backing_stateVar2(): (IStateDecoratedVariable<number> | undefined)
+  set __options_has_stateVar2(__options_has_stateVar2: (boolean | undefined))
+  
+  get __options_has_stateVar2(): (boolean | undefined)
   set stateVar3(stateVar3: (boolean | undefined))
 
   get stateVar3(): (boolean | undefined)
   set __backing_stateVar3(__backing_stateVar3: (IStateDecoratedVariable<boolean> | undefined))
 
   get __backing_stateVar3(): (IStateDecoratedVariable<boolean> | undefined)
+  set __options_has_stateVar3(__options_has_stateVar3: (boolean | undefined))
+  
+  get __options_has_stateVar3(): (boolean | undefined)
   set stateVar4(stateVar4: (undefined | undefined))
 
   get stateVar4(): (undefined | undefined)
   set __backing_stateVar4(__backing_stateVar4: (IStateDecoratedVariable<undefined> | undefined))
 
   get __backing_stateVar4(): (IStateDecoratedVariable<undefined> | undefined)
+  set __options_has_stateVar4(__options_has_stateVar4: (boolean | undefined))
+  
+  get __options_has_stateVar4(): (boolean | undefined)
   set stateVar5(stateVar5: (null | undefined))
 
   get stateVar5(): (null | undefined)
   set __backing_stateVar5(__backing_stateVar5: (IStateDecoratedVariable<null> | undefined))
 
   get __backing_stateVar5(): (IStateDecoratedVariable<null> | undefined)
-
+  set __options_has_stateVar5(__options_has_stateVar5: (boolean | undefined))
+  
+  get __options_has_stateVar5(): (boolean | undefined)
+  
 }
 `;
 

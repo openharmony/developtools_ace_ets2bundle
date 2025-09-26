@@ -80,12 +80,14 @@ import hilog from "@ohos.hilog";
 
 @Component() export interface __Options_CustomDialogUser {
   dialogController?: (CustomDialogController | null);
-
+  __options_has_dialogController?: boolean;
+  
 }
 
 @Component() export interface __Options_CustomDialogUser2 {
   dialogController?: (CustomDialogController | null);
-
+  __options_has_dialogController?: boolean;
+  
 }
 `;
 
@@ -174,14 +176,20 @@ function main() {}
   set dialogController(dialogController: ((CustomDialogController | null) | undefined))
 
   get dialogController(): ((CustomDialogController | null) | undefined)
-
+  set __options_has_dialogController(__options_has_dialogController: (boolean | undefined))
+  
+  get __options_has_dialogController(): (boolean | undefined)
+  
 }
 
 @Component() export interface __Options_CustomDialogUser2 {
   set dialogController(dialogController: ((CustomDialogController | null) | undefined))
 
   get dialogController(): ((CustomDialogController | null) | undefined)
-
+  set __options_has_dialogController(__options_has_dialogController: (boolean | undefined))
+  
+  get __options_has_dialogController(): (boolean | undefined)
+  
 }
 `;
 

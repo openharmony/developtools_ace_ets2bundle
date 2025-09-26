@@ -150,6 +150,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_dateA = STATE_MGMT_FACTORY.makeLocalStorageLink<Date>(this, "Prop3", "dateA", new Date("2021-08-08"))
     this.__backing_setA = STATE_MGMT_FACTORY.makeLocalStorageLink<Set<number>>(this, "Prop4", "setA", new Set<number>())
     this.__backing_mapA = STATE_MGMT_FACTORY.makeLocalStorageLink<Map<number, string>>(this, "Prop5", "mapA", new Map<number, string>())
+    this.__backing_unionA = STATE_MGMT_FACTORY.makeLocalStorageLink<(string | undefined)>(this, "Prop6", "unionA", "")
     this.__backing_classA = STATE_MGMT_FACTORY.makeLocalStorageLink<Person>(this, "Prop7", "classA", new Person("John"))
     this.__backing_enumA = STATE_MGMT_FACTORY.makeLocalStorageLink<Status>(this, "Prop8", "enumA", Status.NotFound)
   }
@@ -205,7 +206,17 @@ final class Status extends BaseEnum<int> {
   public set mapA(value: Map<number, string>) {
     this.__backing_mapA!.set(value);
   }
-
+  
+  private __backing_unionA?: ILocalStorageLinkDecoratedVariable<(string | undefined)>;
+  
+  public get unionA(): (string | undefined) {
+    return this.__backing_unionA!.get();
+  }
+  
+  public set unionA(value: (string | undefined)) {
+    this.__backing_unionA!.set(value);
+  }
+  
   private __backing_classA?: ILocalStorageLinkDecoratedVariable<Person>;
 
   public get classA(): Person {
@@ -239,43 +250,73 @@ final class Status extends BaseEnum<int> {
   set __backing_arrayA(__backing_arrayA: (ILocalStorageLinkDecoratedVariable<Array<number>> | undefined))
 
   get __backing_arrayA(): (ILocalStorageLinkDecoratedVariable<Array<number>> | undefined)
+  set __options_has_arrayA(__options_has_arrayA: (boolean | undefined))
+  
+  get __options_has_arrayA(): (boolean | undefined)
   set objectA(objectA: (Object | undefined))
 
   get objectA(): (Object | undefined)
   set __backing_objectA(__backing_objectA: (ILocalStorageLinkDecoratedVariable<Object> | undefined))
 
   get __backing_objectA(): (ILocalStorageLinkDecoratedVariable<Object> | undefined)
+  set __options_has_objectA(__options_has_objectA: (boolean | undefined))
+  
+  get __options_has_objectA(): (boolean | undefined)
   set dateA(dateA: (Date | undefined))
 
   get dateA(): (Date | undefined)
   set __backing_dateA(__backing_dateA: (ILocalStorageLinkDecoratedVariable<Date> | undefined))
 
   get __backing_dateA(): (ILocalStorageLinkDecoratedVariable<Date> | undefined)
+  set __options_has_dateA(__options_has_dateA: (boolean | undefined))
+  
+  get __options_has_dateA(): (boolean | undefined)
   set setA(setA: (Set<number> | undefined))
 
   get setA(): (Set<number> | undefined)
   set __backing_setA(__backing_setA: (ILocalStorageLinkDecoratedVariable<Set<number>> | undefined))
 
   get __backing_setA(): (ILocalStorageLinkDecoratedVariable<Set<number>> | undefined)
+  set __options_has_setA(__options_has_setA: (boolean | undefined))
+  
+  get __options_has_setA(): (boolean | undefined)
   set mapA(mapA: (Map<number, string> | undefined))
 
   get mapA(): (Map<number, string> | undefined)
   set __backing_mapA(__backing_mapA: (ILocalStorageLinkDecoratedVariable<Map<number, string>> | undefined))
 
   get __backing_mapA(): (ILocalStorageLinkDecoratedVariable<Map<number, string>> | undefined)
+  set __options_has_mapA(__options_has_mapA: (boolean | undefined))
+  
+  get __options_has_mapA(): (boolean | undefined)
+  set unionA(unionA: ((string | undefined) | undefined))
+  
+  get unionA(): ((string | undefined) | undefined)
+  set __backing_unionA(__backing_unionA: (ILocalStorageLinkDecoratedVariable<(string | undefined)> | undefined))
+  
+  get __backing_unionA(): (ILocalStorageLinkDecoratedVariable<(string | undefined)> | undefined)
+  set __options_has_unionA(__options_has_unionA: (boolean | undefined))
+  
+  get __options_has_unionA(): (boolean | undefined)
   set classA(classA: (Person | undefined))
 
   get classA(): (Person | undefined)
   set __backing_classA(__backing_classA: (ILocalStorageLinkDecoratedVariable<Person> | undefined))
 
   get __backing_classA(): (ILocalStorageLinkDecoratedVariable<Person> | undefined)
+  set __options_has_classA(__options_has_classA: (boolean | undefined))
+  
+  get __options_has_classA(): (boolean | undefined)
   set enumA(enumA: (Status | undefined))
 
   get enumA(): (Status | undefined)
   set __backing_enumA(__backing_enumA: (ILocalStorageLinkDecoratedVariable<Status> | undefined))
 
   get __backing_enumA(): (ILocalStorageLinkDecoratedVariable<Status> | undefined)
-
+  set __options_has_enumA(__options_has_enumA: (boolean | undefined))
+  
+  get __options_has_enumA(): (boolean | undefined)
+  
 }
 
 class __EntryWrapper extends EntryPoint {

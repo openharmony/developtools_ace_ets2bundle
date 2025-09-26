@@ -38,7 +38,6 @@ const reusableTransform: Plugins = {
 const pluginTester = new PluginTester('test complex reusable', buildConfig);
 
 const expectedScript: string = `
-
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
@@ -123,6 +122,7 @@ class Message {
               return new Child();
             }), {
               message: new Message("Child"),
+              __options_has_message: true,
             }, "Child", undefined);
           }));
         }
@@ -159,9 +159,7 @@ class Message {
     this.__backing_message!.set(value);
   }
   
-  public aboutToReuse(params: Record<string, ESObject>) {
-    console.info("Recycle ====Child==");
-  }
+  public aboutToReuse(params: Record<string, ESObject>) {}
   
   @memo() public build() {
     Column(@memo() ((instance: ColumnAttribute): void => {
@@ -186,6 +184,9 @@ class Message {
   set __backing_display(__backing_display: (IStateDecoratedVariable<boolean> | undefined))
   
   get __backing_display(): (IStateDecoratedVariable<boolean> | undefined)
+  set __options_has_display(__options_has_display: (boolean | undefined))
+  
+  get __options_has_display(): (boolean | undefined)
   
 }
 
@@ -196,6 +197,9 @@ class Message {
   set __backing_message(__backing_message: (IStateDecoratedVariable<Message> | undefined))
   
   get __backing_message(): (IStateDecoratedVariable<Message> | undefined)
+  set __options_has_message(__options_has_message: (boolean | undefined))
+  
+  get __options_has_message(): (boolean | undefined)
   
 }
 

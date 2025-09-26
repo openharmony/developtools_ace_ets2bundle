@@ -269,67 +269,100 @@ final class StateType extends BaseEnum<int> {
   set __backing_localVar1(__backing_localVar1: (ILocalDecoratedVariable<Per> | undefined))
 
   get __backing_localVar1(): (ILocalDecoratedVariable<Per> | undefined)
+  set __options_has_localVar1(__options_has_localVar1: (boolean | undefined))
+  
+  get __options_has_localVar1(): (boolean | undefined)
   set localVar2(localVar2: (Array<number> | undefined))
 
   get localVar2(): (Array<number> | undefined)
   set __backing_localVar2(__backing_localVar2: (ILocalDecoratedVariable<Array<number>> | undefined))
 
   get __backing_localVar2(): (ILocalDecoratedVariable<Array<number>> | undefined)
+  set __options_has_localVar2(__options_has_localVar2: (boolean | undefined))
+  
+  get __options_has_localVar2(): (boolean | undefined)
   set localVar3(localVar3: (StateType | undefined))
 
   get localVar3(): (StateType | undefined)
   set __backing_localVar3(__backing_localVar3: (ILocalDecoratedVariable<StateType> | undefined))
 
   get __backing_localVar3(): (ILocalDecoratedVariable<StateType> | undefined)
+  set __options_has_localVar3(__options_has_localVar3: (boolean | undefined))
+  
+  get __options_has_localVar3(): (boolean | undefined)
   set localVar4(localVar4: (Set<string> | undefined))
 
   get localVar4(): (Set<string> | undefined)
   set __backing_localVar4(__backing_localVar4: (ILocalDecoratedVariable<Set<string>> | undefined))
 
   get __backing_localVar4(): (ILocalDecoratedVariable<Set<string>> | undefined)
+  set __options_has_localVar4(__options_has_localVar4: (boolean | undefined))
+  
+  get __options_has_localVar4(): (boolean | undefined)
   set localVar5(localVar5: (Array<boolean> | undefined))
 
   get localVar5(): (Array<boolean> | undefined)
   set __backing_localVar5(__backing_localVar5: (ILocalDecoratedVariable<Array<boolean>> | undefined))
 
   get __backing_localVar5(): (ILocalDecoratedVariable<Array<boolean>> | undefined)
+  set __options_has_localVar5(__options_has_localVar5: (boolean | undefined))
+  
+  get __options_has_localVar5(): (boolean | undefined)
   set localVar6(localVar6: (Array<Per> | undefined))
 
   get localVar6(): (Array<Per> | undefined)
   set __backing_localVar6(__backing_localVar6: (ILocalDecoratedVariable<Array<Per>> | undefined))
 
   get __backing_localVar6(): (ILocalDecoratedVariable<Array<Per>> | undefined)
+  set __options_has_localVar6(__options_has_localVar6: (boolean | undefined))
+  
+  get __options_has_localVar6(): (boolean | undefined)
   set localVar7(localVar7: (Array<Per> | undefined))
 
   get localVar7(): (Array<Per> | undefined)
   set __backing_localVar7(__backing_localVar7: (ILocalDecoratedVariable<Array<Per>> | undefined))
 
   get __backing_localVar7(): (ILocalDecoratedVariable<Array<Per>> | undefined)
+  set __options_has_localVar7(__options_has_localVar7: (boolean | undefined))
+  
+  get __options_has_localVar7(): (boolean | undefined)
   set localVar9(localVar9: (Date | undefined))
 
   get localVar9(): (Date | undefined)
   set __backing_localVar9(__backing_localVar9: (ILocalDecoratedVariable<Date> | undefined))
 
   get __backing_localVar9(): (ILocalDecoratedVariable<Date> | undefined)
+  set __options_has_localVar9(__options_has_localVar9: (boolean | undefined))
+  
+  get __options_has_localVar9(): (boolean | undefined)
   set localVar10(localVar10: (Map<number, Per> | undefined))
 
   get localVar10(): (Map<number, Per> | undefined)
   set __backing_localVar10(__backing_localVar10: (ILocalDecoratedVariable<Map<number, Per>> | undefined))
 
   get __backing_localVar10(): (ILocalDecoratedVariable<Map<number, Per>> | undefined)
+  set __options_has_localVar10(__options_has_localVar10: (boolean | undefined))
+  
+  get __options_has_localVar10(): (boolean | undefined)
   set localVar11(localVar11: ((string | number) | undefined))
 
   get localVar11(): ((string | number) | undefined)
   set __backing_localVar11(__backing_localVar11: (ILocalDecoratedVariable<(string | number)> | undefined))
 
   get __backing_localVar11(): (ILocalDecoratedVariable<(string | number)> | undefined)
+  set __options_has_localVar11(__options_has_localVar11: (boolean | undefined))
+  
+  get __options_has_localVar11(): (boolean | undefined)
   set localVar12(localVar12: ((Set<string> | Per) | undefined))
 
   get localVar12(): ((Set<string> | Per) | undefined)
   set __backing_localVar12(__backing_localVar12: (ILocalDecoratedVariable<(Set<string> | Per)> | undefined))
 
   get __backing_localVar12(): (ILocalDecoratedVariable<(Set<string> | Per)> | undefined)
-
+  set __options_has_localVar12(__options_has_localVar12: (boolean | undefined))
+  
+  get __options_has_localVar12(): (boolean | undefined)
+  
 }
 `;
 

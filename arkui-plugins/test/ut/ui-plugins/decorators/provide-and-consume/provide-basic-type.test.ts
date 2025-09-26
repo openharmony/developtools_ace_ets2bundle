@@ -44,7 +44,6 @@ import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.st
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
 import { Component as Component } from "@ohos.arkui.component";
@@ -132,31 +131,46 @@ function main() {}
   set __backing_provideVar1(__backing_provideVar1: (IProvideDecoratedVariable<string> | undefined))
 
   get __backing_provideVar1(): (IProvideDecoratedVariable<string> | undefined)
+  set __options_has_provideVar1(__options_has_provideVar1: (boolean | undefined))
+  
+  get __options_has_provideVar1(): (boolean | undefined)
   set provideVar2(provideVar2: (number | undefined))
 
   get provideVar2(): (number | undefined)
   set __backing_provideVar2(__backing_provideVar2: (IProvideDecoratedVariable<number> | undefined))
 
   get __backing_provideVar2(): (IProvideDecoratedVariable<number> | undefined)
+  set __options_has_provideVar2(__options_has_provideVar2: (boolean | undefined))
+  
+  get __options_has_provideVar2(): (boolean | undefined)
   set provideVar3(provideVar3: (boolean | undefined))
 
   get provideVar3(): (boolean | undefined)
   set __backing_provideVar3(__backing_provideVar3: (IProvideDecoratedVariable<boolean> | undefined))
 
   get __backing_provideVar3(): (IProvideDecoratedVariable<boolean> | undefined)
+  set __options_has_provideVar3(__options_has_provideVar3: (boolean | undefined))
+  
+  get __options_has_provideVar3(): (boolean | undefined)
   set provideVar4(provideVar4: (undefined | undefined))
 
   get provideVar4(): (undefined | undefined)
   set __backing_provideVar4(__backing_provideVar4: (IProvideDecoratedVariable<undefined> | undefined))
 
   get __backing_provideVar4(): (IProvideDecoratedVariable<undefined> | undefined)
+  set __options_has_provideVar4(__options_has_provideVar4: (boolean | undefined))
+  
+  get __options_has_provideVar4(): (boolean | undefined)
   set provideVar5(provideVar5: (null | undefined))
 
   get provideVar5(): (null | undefined)
   set __backing_provideVar5(__backing_provideVar5: (IProvideDecoratedVariable<null> | undefined))
 
   get __backing_provideVar5(): (IProvideDecoratedVariable<null> | undefined)
-
+  set __options_has_provideVar5(__options_has_provideVar5: (boolean | undefined))
+  
+  get __options_has_provideVar5(): (boolean | undefined)
+  
 }
 `;
 

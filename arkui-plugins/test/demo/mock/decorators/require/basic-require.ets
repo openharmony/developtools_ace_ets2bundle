@@ -14,7 +14,7 @@
  */
 
 import { Component, ComponentV2, BuilderParam } from "@ohos.arkui.component"
-import { State, Require, Prop, Provide, Param } from "@ohos.arkui.stateManagement"
+import { State, Require, PropRef, Provide, Param } from "@ohos.arkui.stateManagement"
 
 @Component
 struct MyStateSample {
@@ -24,7 +24,7 @@ struct MyStateSample {
   @Require @State select0: number;
   @Require @State select3: number | null;
   @Require @State select4: undefined;
-  @Require @Prop select1: string;
+  @Require @PropRef select1: string;
   @Require @Provide({ alias: '15' }) select2: string[];
   @Require @Provide({ alias: 't' }) select6: string[] | undefined | string;
   @Require @BuilderParam builder: () => void;

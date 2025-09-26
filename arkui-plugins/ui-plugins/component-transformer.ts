@@ -41,7 +41,7 @@ import {
 import { ProjectConfig } from '../common/plugin-context';
 import { getEntryParams } from './entry-translators/utils';
 import { factory as entryFactory } from './entry-translators/factory';
-import { hasDecoratorName, findDecoratorInfos } from './property-translators/utils';
+import { hasDecoratorName, findDecoratorInfos, DecoratorInfo } from './property-translators/utils';
 import { factory } from './ui-factory';
 import { factory as propertyFactory } from './property-translators/factory';
 import { StructMap } from '../common/program-visitor';
@@ -454,13 +454,14 @@ export class ComponentTransformer extends AbstractVisitor {
             undefined,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
         );
-        const infos = findDecoratorInfos(member);
-        const buildParamInfo = infos.find((it) =>
+        const infos: DecoratorInfo[] = findDecoratorInfos(member);
+        const buildParamInfo: DecoratorInfo | undefined = infos.find((it) =>
             isDecoratorAnnotation(it.annotation, DecoratorNames.BUILDER_PARAM, true)
         );
+        const optionsHasMember = factory.createOptionsHasMember(originalName);
         if (!!buildParamInfo) {
             originMember.setAnnotations([buildParamInfo.annotation.clone()]);
-            return [originMember];
+            return [originMember, optionsHasMember];
         }
         const targetInfo = infos.find((it) => DECORATOR_TYPE_MAP.has(it.name));
         if (!!targetInfo) {
@@ -476,9 +477,9 @@ export class ComponentTransformer extends AbstractVisitor {
                 this.shouldAddLinkIntrinsic = true;
                 originMember.setAnnotations([annotation(DecoratorIntrinsicNames.LINK)]);
             }
-            return [originMember, newMember];
+            return [originMember, newMember, optionsHasMember];
         }
-        return [originMember];
+        return [originMember, optionsHasMember];
     }
 
     registerMap(map: Map<string, StructMap>): void {
@@ -510,13 +511,15 @@ export class ComponentTransformer extends AbstractVisitor {
         }
         const className = ident.name;
         const trailingBlock = node.trailingBlock;
-        const content = trailingBlock ? arkts.factory.createArrowFunction(
-            factory.createScriptFunction({
-                body: trailingBlock,
-                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-            })
-        ) : undefined;
+        const content = trailingBlock
+            ? arkts.factory.createArrowFunction(
+                  factory.createScriptFunction({
+                      body: trailingBlock,
+                      flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                      modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+                  })
+              )
+            : undefined;
         if (this.legacyCallMap.has(className)) {
             const path = this.legacyCallMap.get(className)!;
             const args = node.arguments;
@@ -524,7 +527,7 @@ export class ComponentTransformer extends AbstractVisitor {
                 className: className,
                 path: path,
                 arguments: args && args.length === 1 && args[0] instanceof arkts.ObjectExpression ? args[0] : undefined,
-                content: content
+                content: content,
             };
             return generateInstantiateInterop(context);
         }

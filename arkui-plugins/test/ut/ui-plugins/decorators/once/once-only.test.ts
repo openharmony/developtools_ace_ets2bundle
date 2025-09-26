@@ -90,13 +90,19 @@ function main() {}
   set __backing_onceParamNum(__backing_onceParamNum: (IParamOnceDecoratedVariable<number> | undefined))
 
   get __backing_onceParamNum(): (IParamOnceDecoratedVariable<number> | undefined)
+  set __options_has_onceParamNum(__options_has_onceParamNum: (boolean | undefined))
+  
+  get __options_has_onceParamNum(): (boolean | undefined)
   set onceVar4(onceVar4: (Set<string> | undefined))
 
   get onceVar4(): (Set<string> | undefined)
   set __backing_onceVar4(__backing_onceVar4: (IParamOnceDecoratedVariable<Set<string>> | undefined))
 
   get __backing_onceVar4(): (IParamOnceDecoratedVariable<Set<string>> | undefined)
-
+  set __options_has_onceVar4(__options_has_onceVar4: (boolean | undefined))
+  
+  get __options_has_onceVar4(): (boolean | undefined)
+  
 }
 `;
 
