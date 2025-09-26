@@ -49,7 +49,8 @@ template("npm_cmd") {
             args += [ "--panda-sdk-path", invoker.panda_sdk_path ]
         }
         if (defined(invoker.koala_node_path)) {
-            args += [ "--node-path", invoker.koala_node_path ]
+            node_path = string_replace(invoker.koala_node_path, "-darwin-arm64/bin", "-darwin-x64/bin")
+            args += [ "--node-path", node_path ]
         }
         if (defined(invoker.target_out_path)) {
             args += [ "--target-out-path", invoker.target_out_path ]
