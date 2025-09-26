@@ -103,8 +103,16 @@ if (current_toolchain == host_toolchain) {
 }
 
 shared_library("es2panda_lib") {
-    if (!koala_mr.is_rri) {
-        external_deps = [ "ets_frontend:ets2panda" ]
+    if (defined(is_arkui_x) && is_arkui_x) {
+        deps = [ 
+            "//third_party/bounds_checking_function:libsec_shared",
+            "//arkcompiler/ets_frontend/es2panda:es2panda"
+        ]
+    } else if (!koala_mr.is_rri) {
+        external_deps = [
+            "bounds_checking_function:libsec_shared",
+            "ets_frontend:ets2panda"
+        ]
     }
 
     sources = [
@@ -134,6 +142,11 @@ shared_library("es2panda_lib") {
         "KOALA_USE_NODE_VM",
         "KOALA_NAPI"
     ]
+
+    if (!koala_mr.is_rri) {
+        defines += ["IS_OHOS"]
+        defines += ["USE_LIBSEC"]
+    }
 
     deps = [
         ":regenerate_and_copy",
