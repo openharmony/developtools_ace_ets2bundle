@@ -42,10 +42,7 @@ import {
   GET_SHARED,
   COMPONENT_CONSTRUCTOR_UNDEFINED,
   USE_SHARED_STORAGE,
-  STORAGE,
-  GET_UI_NATIVE_MODULE,
-  COMMON,
-  GET_API_TARGET_VERSION
+  STORAGE
 } from './pre_define';
 import { 
   ERROR_DESCRIPTION,
@@ -1400,32 +1397,4 @@ export class CurrentProcessFile {
   private static isETSFile(id: string): boolean {
     return !!(path.extname(id)?.endsWith('ets'));
   }
-}
-
-/**
- * create api version check condition.
- * 
- * @param { number } apiVersion
- * @returns { ts.BinaryExpression }
- */
-export function createApiVersionCheck(apiVersion: number): ts.BinaryExpression {
-  return ts.factory.createBinaryExpression(
-    ts.factory.createCallExpression(
-      ts.factory.createPropertyAccessExpression(
-        ts.factory.createPropertyAccessExpression(
-          ts.factory.createCallExpression(
-            ts.factory.createIdentifier(GET_UI_NATIVE_MODULE),
-            undefined,
-            []
-          ),
-          ts.factory.createIdentifier(COMMON)
-        ),
-        ts.factory.createIdentifier(GET_API_TARGET_VERSION)
-      ),
-      undefined,
-      []
-    ),
-    ts.factory.createToken(ts.SyntaxKind.GreaterThanEqualsToken),
-    ts.factory.createNumericLiteral(apiVersion)
-  );
 }

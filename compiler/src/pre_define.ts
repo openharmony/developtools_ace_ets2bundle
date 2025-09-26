@@ -64,9 +64,6 @@ export const COMPONENT_DECORATOR_REUSABLE_V2: string = '@ReusableV2';
 export const DECORATOR_REUSABLE_V2: string = 'ReusableV2';
 export const REUSABLE_V2_INNER_DECORATOR: string = '__ReusableV2_Inner_Decorator__';
 export const REUSE_ATTRIBUTE: string = 'reuse';
-export const GET_UI_NATIVE_MODULE = 'getUINativeModule';
-export const COMMON = 'common';
-export const GET_API_TARGET_VERSION = 'getApiTargetVersion';
 
 export const COMPONENT_USER_INTENTS_DECORATOR_PAGE: string = '@InsightIntentPage';
 export const COMPONENT_USER_INTENTS_DECORATOR_LINK: string = '@InsightIntentLink';
