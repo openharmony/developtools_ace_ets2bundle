@@ -19,18 +19,23 @@
 #include <cstdio>
 #include <cstring>
 
-#ifdef __STDC_LIB_EXT1__
-#include "securec.h"
-#define USE_SAFE(name, ...) name##_s(__VA_ARGS__)
+#if defined(__STDC_LIB_EXT1__) || defined(USE_LIBSEC)
+    #include "securec.h"
+    #define USE_SAFE(name, ...) name##_s(__VA_ARGS__)
 #else
 /* handle possible unsafe case */
-#define USE_SAFE(name, ...) name(__VA_ARGS__)
+#ifdef IS_OHOS
+    #error "OHOS must use safe function"
+#endif
+    #define USE_SAFE(name, ...) name(__VA_ARGS__)
 #endif
 
 inline char* interop_strcpy(char* dest, size_t destsz, const char* src)
 {
-#ifdef __STDC_LIB_EXT1__
+#if defined(__STDC_LIB_EXT1__)
     return reinterpret_cast<char(*)>(USE_SAFE(strcpy, dest, reinterpret_cast<rsize_t>(destsz), src));
+#elif defined(USE_LIBSEC)
+    return reinterpret_cast<char(*)>(USE_SAFE(strcpy, dest, destsz, src));
 #else
     /* handle possible unsafe case */
     return USE_SAFE(strcpy, dest, src);
@@ -39,8 +44,10 @@ inline char* interop_strcpy(char* dest, size_t destsz, const char* src)
 
 inline char* interop_strcat(char* dest, size_t destsz, const char* src)
 {
-#ifdef __STDC_LIB_EXT1__
+#if defined(__STDC_LIB_EXT1__)
     return reinterpret_cast<char(*)>(USE_SAFE(strcat, dest, reinterpret_cast<rsize_t>(destsz), src));
+#elif defined(USE_LIBSEC)
+    return reinterpret_cast<char(*)>(USE_SAFE(strcat, dest, destsz, src));
 #else
     /* handle possible unsafe case */
     return USE_SAFE(strcat, dest, src);
@@ -49,8 +56,10 @@ inline char* interop_strcat(char* dest, size_t destsz, const char* src)
 
 inline void* interop_memcpy(void* dest, size_t destsz, const void* src, size_t count)
 {
-#ifdef __STDC_LIB_EXT1__
+#if defined(__STDC_LIB_EXT1__)
     return reinterpret_cast<void(*)>(USE_SAFE(memcpy, dest, reinterpret_cast<rsize_t>(destsz), src, count));
+#elif defined(USE_LIBSEC)
+    return reinterpret_cast<void(*)>(USE_SAFE(memcpy, dest, destsz, src, count));
 #else
     /* handle possible unsafe case */
     return USE_SAFE(memcpy, dest, src, count);
@@ -59,8 +68,10 @@ inline void* interop_memcpy(void* dest, size_t destsz, const void* src, size_t c
 
 inline void* interop_memset(void* dest, size_t destsz, int ch, size_t count)
 {
-#ifdef __STDC_LIB_EXT1__
-    return reinterpret_cast<void(*)>(USE_SAFE(memset, dest, reinterpret_cast<rsize_t>(destsz), ch, count))
+#if defined(__STDC_LIB_EXT1__)
+    return reinterpret_cast<void(*)>(USE_SAFE(memset, dest, reinterpret_cast<rsize_t>(destsz), ch, count));
+#elif defined(USE_LIBSEC)
+    return reinterpret_cast<void(*)>(USE_SAFE(memset, dest, destsz, ch, count));
 #else
     /* handle possible unsafe case */
     return USE_SAFE(memset, dest, ch, count);
@@ -70,8 +81,10 @@ inline void* interop_memset(void* dest, size_t destsz, int ch, size_t count)
 template<typename... T>
 inline int interop_sprintf(char* buffer, size_t bufsz, const char* format, T... args)
 {
-#ifdef __STDC_LIB_EXT1__
+#if defined(__STDC_LIB_EXT1__)
     return USE_SAFE(sprintf, buffer, reinterpret_cast<rsize_t>(bufsz), format, args...);
+#elif defined(USE_LIBSEC)
+    return USE_SAFE(sprintf, buffer, bufsz, format, args...);
 #else
     /* handle possible unsafe case */
     return USE_SAFE(sprintf, buffer, format, args...);
@@ -81,22 +94,25 @@ inline int interop_sprintf(char* buffer, size_t bufsz, const char* format, T... 
 template<typename... T>
 inline int interop_snprintf(char* buffer, size_t bufsz, const char* format, T... args)
 {
+#if defined(USE_LIBSEC)
+    return USE_SAFE(snprintf, buffer, bufsz, bufsz - 1, format, args...);
+#else
     return USE_SAFE(snprintf, buffer, bufsz, format, args...);
+#endif
 }
 
 inline int interop_vsnprintf(char* buffer, size_t bufsz, const char* format, va_list vlist)
 {
+#if defined(USE_LIBSEC)
+    return USE_SAFE(vsnprintf, buffer, bufsz, bufsz - 1, format, vlist);
+#else
     return USE_SAFE(vsnprintf, buffer, bufsz, format, vlist);
+#endif
 }
 
 inline size_t interop_strlen(const char* str)
 {
-#ifdef __STDC_LIB_EXT1__
-    return USE_SAFE(strnlen, str, UINT_MAX);
-#else
-    /* handle possible unsafe case */
-    return USE_SAFE(strlen, str);
-#endif
+    return strlen(str);
 }
 
 #endif // _INTEROP_UTILS_H_
