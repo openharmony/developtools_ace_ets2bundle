@@ -37,6 +37,8 @@
         "onWillStartDragging",
         "onDidStopDragging",
         "onWillStartFling",
-        "onDidStopFling"
+        "onDidStopFling",
+        "contentStartOffset",
+        "contentEndOffset"
     ]
 }
