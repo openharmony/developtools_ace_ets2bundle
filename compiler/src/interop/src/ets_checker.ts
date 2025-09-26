@@ -512,6 +512,7 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     useTsHar: projectConfig.useTsHar,
     preTsImportSendable: tsImportSendable,
     preSkipOhModulesLint: skipOhModulesLint,
+    preEnableStrictCheckOHModule: enableStrictCheckOHModule,
     preMixCompile: mixCompile
   };
   setRollupCache(rollupShareObject, projectConfig, cacheKey, newCache);
@@ -554,7 +555,7 @@ function rebuildProgram(shouldInvalidCache: boolean | undefined, onlyDeleteBuild
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
     targetESVersionChanged = true;
   } else if (onlyDeleteBuildInfoCache) {
-    // When tsImportSendable or types or maxFlowDepth or skipOhModuleslint or mixCompile is changed, we need to delete the build info cahce files
+    // When tsImportSendable or types or maxFlowDepth or skipOhModuleslint or enableStrictCheckOHModule or mixCompile is changed, delete cahce files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
   }
 }
