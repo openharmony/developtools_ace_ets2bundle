@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import os
 import sys
+import re
 
 NPM_REPO = "https://repo.huaweicloud.com/repository/npm/"
 
@@ -42,7 +43,8 @@ if args.node_path is None:
     print("Error: --node-path is expected")
     sys.exit(1)
 
-os.environ["PATH"] = f"{args.node_path}:{os.environ['PATH']}"
+node_path = re.sub(r'(-darwin-)arm64(/bin)', r'\1x64\2', args.node_path)
+os.environ["PATH"] = f"{node_path}:{os.environ['PATH']}"
 
 if args.es2panda_path:
     os.environ["ES2PANDA_PATH"] = args.es2panda_path
