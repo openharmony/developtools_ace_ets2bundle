@@ -118,6 +118,9 @@ export interface LanguageServiceCache {
   preSkipOhModulesLint?: boolean;
   preEnableStrictCheckOHModule?: boolean;
   preMixCompile?: boolean;
+  autoLazyImport?: boolean;
+  autoLazyFilterInclude?: string[];
+  autoLazyFilterExclude?: string[];
 }
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
@@ -453,6 +456,11 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const currentTargetESVersion: ts.ScriptTarget = compilerOptions.target;
   const currentTypes: string[] | undefined = compilerOptions.types;
   const currentMaxFlowDepth: number | undefined = compilerOptions.maxFlowDepth;
+  const currentAutoLazyImport: boolean = rollupShareObject?.projectConfig?.autoLazyImport === true;
+  const currentAutoLazyFilterInclude: string[] | undefined = Array.isArray(rollupShareObject?.projectConfig?.autoLazyFilter?.include) ?
+    rollupShareObject.projectConfig.autoLazyFilter.include : undefined;
+  const currentAutoLazyFilterExclude: string[] | undefined = Array.isArray(rollupShareObject?.projectConfig?.autoLazyFilter?.exclude) ?
+    rollupShareObject.projectConfig.autoLazyFilter.exclude : undefined;
   const lastHash: string | undefined = cache?.pkgJsonFileHash;
   const lastTargetESVersion: ts.ScriptTarget | undefined = cache?.targetESVersion;
   const lastTypes: string[] | undefined = cache?.types;
@@ -468,8 +476,12 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const skipOhModulesLintDiff: boolean = checkValueDiff(cache?.preSkipOhModulesLint, skipOhModulesLint);
   const enableStrictCheckOHModuleDiff: boolean = checkValueDiff(cache?.preEnableStrictCheckOHModule, enableStrictCheckOHModule);
   const mixCompileDiff: boolean = checkValueDiff(cache?.preMixCompile, mixCompile);
+  const autoLazyImportDiff: boolean = checkValueDiff(cache?.autoLazyImport, currentAutoLazyImport);
+  const autoLazyFilterIncludeDiff: boolean = !areEqualArrays(cache?.autoLazyFilterInclude, currentAutoLazyFilterInclude);
+  const autoLazyFilterExcludeDiff: boolean = !areEqualArrays(cache?.autoLazyFilterExclude, currentAutoLazyFilterExclude);
+  const autoLazyFilterDiff: boolean = autoLazyFilterIncludeDiff || autoLazyFilterExcludeDiff;
   const onlyDeleteBuildInfoCache: boolean | undefined = tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff ||
-    enableStrictCheckOHModuleDiff || mixCompileDiff || typesDiff;
+    enableStrictCheckOHModuleDiff || mixCompileDiff || typesDiff || autoLazyImportDiff || autoLazyFilterDiff;
   const shouldInvalidCache: boolean | undefined = targetESVersionDiffers || useTsHarDiff;
   const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || shouldInvalidCache || onlyDeleteBuildInfoCache;
   if (reuseLanguageServiceForDepChange && hashDiffers && rollupShareObject?.depInfo?.enableIncre) {
@@ -495,7 +507,10 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     preTsImportSendable: tsImportSendable,
     preSkipOhModulesLint: skipOhModulesLint,
     preEnableStrictCheckOHModule: enableStrictCheckOHModule,
-    preMixCompile: mixCompile
+    preMixCompile: mixCompile,
+    autoLazyImport: currentAutoLazyImport,
+    autoLazyFilterInclude: currentAutoLazyFilterInclude ? [...currentAutoLazyFilterInclude] : undefined,
+    autoLazyFilterExclude: currentAutoLazyFilterExclude ? [...currentAutoLazyFilterExclude] : undefined
   };
   setRollupCache(rollupShareObject, projectConfig, cacheKey, newCache);
   return service;
