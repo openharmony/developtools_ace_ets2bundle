@@ -84,7 +84,8 @@ import {
   CHECK_COMPONENT_EXTEND_DECORATOR,
   MUTABLEBUILDER_FUNCTION,
   ATTRIBUTE_ID,
-  __GETRESOURCEID__
+  __GETRESOURCEID__,
+  __RESOURCEIDHAR__
 } from './pre_define';
 import {
   componentInfo,
@@ -823,7 +824,7 @@ function getResourceDataNode(node: ts.CallExpression, previewLog: {isAccelerateP
     }
     return createResourceParam(resourceValue, resourceType,
       projectConfig.compileHar || isResourceModule ? Array.from(node.arguments) : Array.from(node.arguments).slice(1),
-      resourceData.length && resourceData[0], isResourceModule);
+      resourceData.length && resourceData[0], isResourceModule, resourceData[0]);
   }
   return node;
 }
@@ -941,9 +942,8 @@ function resourceIdName(funcName: string): ts.GetAccessorDeclaration {
 }
 
 function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[],
-  resourceModuleName: string, isResourceModule: boolean):
-  ts.ObjectLiteralExpression {
-  if (projectConfig.compileHar) {	
+  resourceModuleName: string, isResourceModule: boolean, resourceSource: string = ''): ts.ObjectLiteralExpression {
+  if (projectConfig.compileHar && resourceSource !== 'sys') {	
     resourceValue = -1;
   }
   const propertyArray: Array<ts.PropertyAssignment | ts.GetAccessorDeclaration> = [];
@@ -955,6 +955,8 @@ function createResourceParam(resourceValue: number, resourceType: number, argsAr
     propertyArray.push(resourceIdKeyValue);
   } else if (isResourceModule && projectConfig.minAPIVersion%1000 >= 22) {
     propertyArray.push(resourceIdName(__GETRESOURCEID__));
+  } else if (isCompileHar(isResourceModule, resourceSource)) {
+    propertyArray.push(resourceIdName(__RESOURCEIDHAR__));
   } else {
     propertyArray.push(resourceIdKeyValue);
   }
@@ -972,6 +974,11 @@ function createResourceParam(resourceValue: number, resourceType: number, argsAr
   const resourceParams: ts.ObjectLiteralExpression = ts.factory.createObjectLiteralExpression(
     propertyArray, false);
   return resourceParams;
+}
+
+function isCompileHar(isResourceModule: boolean, resourceSource: string): boolean {
+  return projectConfig.compileHar && !isResourceModule && resourceSource !== 'sys' &&
+  projectConfig.minAPIVersion%1000 >= 22;
 }
 
 function preCheckResourceData(resourceData: string[], resources: object, pos: number, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]},
