@@ -15,8 +15,11 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { ConditionScopeVisitor } from './condition-scope-visitor';
-import { coerceToAstNode } from '../../common/arkts-utils';
+import { findClassInstanceFromCallArgument } from './utils';
+import { factory as BuilderLambdaFactory } from './factory';
 import { factory as UIFactory } from '../ui-factory';
+import { addMemoAnnotation, MemoNames } from '../../collectors/memo-collectors/utils';
+import { coerceToAstNode } from '../../common/arkts-utils';
 
 export class BuilderFactory {
     /**
@@ -26,6 +29,9 @@ export class BuilderFactory {
      */
     static rewriteBuilderScriptFunction<T extends arkts.AstNode = arkts.ScriptFunction>(node: T): arkts.ScriptFunction {
         const _node = coerceToAstNode<arkts.ScriptFunction>(node);
+        let params = (_node.params as arkts.ETSParameterExpression[]).map((p) =>
+            addMemoAnnotation(p, MemoNames.MEMO_SKIP_UI)
+        );
         let funcBody: arkts.AstNode | undefined = _node.body;
         if (!funcBody || !arkts.isBlockStatement(funcBody)) {
             return _node;
@@ -39,7 +45,7 @@ export class BuilderFactory {
                 return newNode;
             })
         );
-        return UIFactory.updateScriptFunction(_node, { body: funcBody });
+        return UIFactory.updateScriptFunction(_node, { params, body: funcBody });
     }
 
     /**
@@ -109,6 +115,40 @@ export class BuilderFactory {
         const newInitializer = BuilderFactory.rewriteBuilderArrowFunction(initializer);
         return arkts.factory.updateParameterDeclaration(_node, _node.identifier, newInitializer);
     }
+
+    /**
+     * rewrite `@Builder` call.
+     */
+    static rewriteBuilderCall<T extends arkts.AstNode = arkts.CallExpression>(node: T): arkts.CallExpression {
+        const _node = coerceToAstNode<arkts.CallExpression>(node);
+        const args = _node.arguments;
+        if (args.length !== 1) {
+            return _node;
+        }
+        const arg = args.at(0)!;
+        if (!arkts.isTSAsExpression(arg) && !arkts.isObjectExpression(arg)) {
+            return _node;
+        }
+        const decl = findClassInstanceFromCallArgument(arg);
+        if (!decl) {
+            return _node;
+        }
+        const isFromClass = arkts.isClassDefinition(decl);
+        const typeRef = BuilderLambdaFactory.createTypeRefInBuilderParameterProxyCall(arg, decl);
+        let newArgument: arkts.AstNode;
+        if (arkts.isTSAsExpression(arg)) {
+            const objectExpr = arg.expr as arkts.ObjectExpression;
+            newArgument = arkts.factory.updateTSAsExpression(
+                arg,
+                BuilderLambdaFactory.createBuilderParameterProxyCall(objectExpr, typeRef, isFromClass),
+                arg.typeAnnotation,
+                arg.isConst
+            );
+        } else {
+            newArgument = BuilderLambdaFactory.createBuilderParameterProxyCall(arg, typeRef, isFromClass);
+        }
+        return arkts.factory.updateCallExpression(_node, _node.expression, _node.typeArguments, [newArgument]);
+    }
 }
 
 export type BuilderRewriteFn<T extends arkts.AstNode = arkts.AstNode> = (node: T) => T;
@@ -119,4 +159,5 @@ export const builderRewriteByType = new Map<arkts.Es2pandaAstNodeType, BuilderRe
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_PROPERTY, BuilderFactory.rewriteBuilderProperty],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ARROW_FUNCTION_EXPRESSION, BuilderFactory.rewriteBuilderArrowFunction],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PARAMETER_EXPRESSION, BuilderFactory.rewriteBuilderParameter],
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CALL_EXPRESSION, BuilderFactory.rewriteBuilderCall],
 ]);

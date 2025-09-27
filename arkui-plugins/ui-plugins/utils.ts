@@ -382,7 +382,10 @@ export function getClassPropertyType(property: arkts.ClassProperty): arkts.TypeN
     if (!!type) {
         return type.clone();
     }
-    let value: arkts.Expression | undefined = property.value;
+    return inferTypeFromValue(property.value);
+}
+
+export function inferTypeFromValue(value: arkts.AstNode | undefined): arkts.TypeNode | undefined {
     let inferredType: arkts.AstNode | undefined = value ? arkts.createTypeNodeFromTsType(value) : undefined;
     if (inferredType && arkts.isTypeNode(inferredType)) {
         return inferredType;

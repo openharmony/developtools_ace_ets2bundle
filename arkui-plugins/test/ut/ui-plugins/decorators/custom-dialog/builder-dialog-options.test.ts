@@ -92,6 +92,8 @@ import hilog from "@ohos.hilog";
 `;
 
 const expectedCheckedScript: string = `
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
@@ -104,7 +106,7 @@ import hilog from "@ohos.hilog";
 
 function main() {}
 
-@memo() function builder1(str: string) {}
+@memo() function builder1(@MemoSkip() str: string) {}
 
 @memo() function builder2() {}
 
