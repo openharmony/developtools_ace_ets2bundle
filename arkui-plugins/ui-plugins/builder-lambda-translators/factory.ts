@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { BuilderLambdaNames, optionsHasField } from '../utils';
+import { BuilderLambdaNames, optionsHasField, inferTypeFromValue } from '../utils';
 import {
     backingField,
     filterDefined,
@@ -48,8 +48,10 @@ import {
     BuilderLambdaChainingCallArgInfo,
     getArgumentType,
     OptionsPropertyInfo,
+    flatObjectExpressionToEntries,
 } from './utils';
 import { hasDecorator, isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
+import { BuilderFactory } from './builder-factory';
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as UIFactory } from '../ui-factory';
 import {
@@ -59,11 +61,13 @@ import {
     ConditionNames,
     DecoratorIntrinsicNames,
     DecoratorNames,
+    StateManagementTypes,
+    TypeNames,
 } from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
 import { addMemoAnnotation, collectMemoableInfoInParameter } from '../../collectors/memo-collectors/utils';
 import { factory as MemoCollectFactory } from '../../collectors/memo-collectors/factory';
-import { BuilderFactory } from './builder-factory';
+import { GenSymGenerator } from '../../common/gensym-generator';
 import { ConditionBreakCache } from './cache/conditionBreakCache';
 
 export class factory {
@@ -925,5 +929,142 @@ export class factory {
             arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
         );
         return [conditionScope, conditionBranch];
+    }
+
+    /**
+     * create `makeBuilderParameterProxy` function call to replace the ONLY argument in `@Builder` function call.
+     */
+    static createBuilderParameterProxyCall(
+        node: arkts.ObjectExpression,
+        typeRef: arkts.TypeNode,
+        isFromClass: boolean
+    ): arkts.CallExpression {
+        const entries = flatObjectExpressionToEntries(node);
+        const objectArg = isFromClass
+            ? arkts.factory.createObjectExpression(arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION, [], false)
+            : node;
+        const newMapArg = this.createInitMapArgInBuilderParameterProxyCall(entries);
+        const updateArg = this.createUpdateArgInBuilderParameterProxyCall(typeRef, entries, isFromClass);
+        ImportCollector.getInstance().collectSource(
+            StateManagementTypes.MAKE_BUILDER_PARAM_PROXY,
+            ARKUI_BUILDER_SOURCE_NAME
+        );
+        ImportCollector.getInstance().collectImport(StateManagementTypes.MAKE_BUILDER_PARAM_PROXY);
+        return arkts.factory.createCallExpression(
+            arkts.factory.createIdentifier(StateManagementTypes.MAKE_BUILDER_PARAM_PROXY),
+            [typeRef],
+            [objectArg, newMapArg, updateArg]
+        );
+    }
+
+    /**
+     * create type reference as the type argument in `makeBuilderParameterProxy` function call.
+     */
+    static createTypeRefInBuilderParameterProxyCall(
+        node: arkts.ObjectExpression | arkts.TSAsExpression,
+        decl: arkts.TSInterfaceDeclaration | arkts.ClassDefinition
+    ): arkts.TypeNode {
+        if (arkts.isTSAsExpression(node)) {
+            return node.typeAnnotation!;
+        }
+        let nameNode: arkts.Identifier;
+        if (arkts.isTSInterfaceDeclaration(decl)) {
+            nameNode = decl.id!;
+        } else {
+            nameNode = decl.ident!;
+        }
+        return UIFactory.createTypeReferenceFromString(nameNode.name);
+    }
+
+    /**
+     * create `new Map<string, () => Any>([...])` as the second argument in `makeBuilderParameterProxy` function call.
+     */
+    static createInitMapArgInBuilderParameterProxyCall(
+        entries: [arkts.Identifier, arkts.Expression | undefined][]
+    ): arkts.ETSNewClassInstanceExpression {
+        const newMapName = arkts.factory.createTypeReference(
+            arkts.factory.createTypeReferencePart(
+                arkts.factory.createIdentifier(TypeNames.MAP),
+                arkts.factory.createTSTypeParameterInstantiation([
+                    UIFactory.createTypeReferenceFromString(TypeNames.STRING),
+                    arkts.factory.createFunctionType(
+                        arkts.factory.createFunctionSignature(
+                            undefined,
+                            [],
+                            UIFactory.createTypeReferenceFromString(TypeNames.ANY),
+                            false
+                        ),
+                        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
+                    ),
+                ])
+            )
+        );
+        const newMapArg = arkts.factory.createArrayExpression(
+            entries.map(([k, v]) => {
+                const name = k.name;
+                const key = arkts.factory.createStringLiteral(name);
+                const value = this.prepareBuilderParameterPropertyValue(v);
+                const arrowFunc = arkts.factory.createArrowFunction(
+                    UIFactory.createScriptFunction({
+                        body: arkts.factory.createBlock([arkts.factory.createReturnStatement(value)]),
+                        returnTypeAnnotation: UIFactory.createTypeReferenceFromString(TypeNames.ANY),
+                        flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                    })
+                );
+                return arkts.factory.createArrayExpression([key, arrowFunc]);
+            })
+        );
+        return arkts.factory.createETSNewClassInstanceExpression(newMapName, [newMapArg]);
+    }
+
+    /**
+     * create update arrow function as the third argument in `makeBuilderParameterProxy` function call.
+     */
+    static createUpdateArgInBuilderParameterProxyCall(
+        typeRef: arkts.TypeNode,
+        entries: [arkts.Identifier, arkts.Expression | undefined][],
+        isFromClass: boolean
+    ): arkts.ArrowFunctionExpression {
+        const genSymName: string = GenSymGenerator.getInstance().id();
+        const param = arkts.factory.createParameterDeclaration(
+            arkts.factory.createIdentifier(genSymName, typeRef),
+            undefined
+        );
+        const statements = isFromClass
+            ? entries.map(([k, v]) => {
+                  const left = arkts.factory.createMemberExpression(
+                      arkts.factory.createIdentifier(genSymName),
+                      k,
+                      arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_GETTER,
+                      false,
+                      false
+                  );
+                  const right = this.prepareBuilderParameterPropertyValue(v);
+                  return arkts.factory.createExpressionStatement(
+                      arkts.factory.createAssignmentExpression(
+                          left,
+                          arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+                          right
+                      )
+                  );
+              })
+            : [];
+        const body = arkts.factory.createBlock(statements);
+        const flags = arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW;
+        return arkts.factory.createArrowFunction(UIFactory.createScriptFunction({ params: [param], body, flags }));
+    }
+
+    /**
+     * Wrap correct type and value to each property in `@Builder` function ONLY parameter.
+     */
+    static prepareBuilderParameterPropertyValue(value: arkts.Expression | undefined): arkts.Expression {
+        if (!value) {
+            return arkts.factory.createUndefinedLiteral();
+        }
+        if (arkts.isObjectExpression(value)) {
+            const type = inferTypeFromValue(value) ?? UIFactory.createTypeReferenceFromString(TypeNames.ANY);
+            return arkts.factory.createTSAsExpression(value, type, false);
+        }
+        return value;
     }
 }

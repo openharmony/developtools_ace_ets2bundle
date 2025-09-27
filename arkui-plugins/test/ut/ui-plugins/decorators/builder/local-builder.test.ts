@@ -37,6 +37,8 @@ const parsedTransform: Plugins = {
 
 const expectedScript: string = `
 
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
@@ -62,7 +64,7 @@ function main() {}
     }), "Hello World", undefined, undefined);
   }
 
-  @memo() public showTextValueBuilder(param: string) {
+  @memo() public showTextValueBuilder(@MemoSkip() param: string) {
     Text(@memo() ((instance: TextAttribute): void => {
       instance.fontSize(30);
       return;
