@@ -59,7 +59,7 @@ function main() {}
 
 
 @ObservedV2() class CC implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -85,7 +85,7 @@ function main() {}
   
   @JSONRename({newName:"traceB"}) public static __backing_traceB: number = 2;
   
-  @JSONStringifyIgnore() public static __meta_traceB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_traceB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   static {
     
