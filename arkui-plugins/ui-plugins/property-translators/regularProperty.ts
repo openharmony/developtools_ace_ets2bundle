@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { createGetter, generateToRecord, generateThisBacking, createSetter2, isCustomDialogController } from './utils';
+import { createGetter, generateToRecord, generateThisBacking, createSetter2, isCustomDialogController, findCachedMemoMetadata } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
@@ -66,14 +66,28 @@ export class RegularPropertyTranslator extends PropertyTranslator implements Ini
                 arkts.factory.createIdentifier('value')
             )
         );
-        const getter: arkts.MethodDefinition = this.translateGetter(
-            originalName,
-            this.propertyType,
-            arkts.factory.createTSAsExpression(thisValue, this.propertyType, false)
-        );
+        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, this.getGetterReturnValue(thisValue));
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
         field.range = this.property.range;
+        if (this.isMemoCached) {
+            const metadata = findCachedMemoMetadata(this.property, false);
+            arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
+            arkts.NodeCache.getInstance().collect(getter, metadata);
+            arkts.NodeCache.getInstance().collect(setter, metadata);
+        }
         return [field, getter, setter];
+    }
+
+    getGetterReturnValue(thisValue: arkts.Expression): arkts.Expression {
+        if (!this.propertyType) {
+            return thisValue;
+        }
+        const returnVale = arkts.factory.createTSAsExpression(thisValue, this.propertyType, false);
+        if (arkts.NodeCache.getInstance().has(this.property)) {
+            const metadata = arkts.NodeCache.getInstance().get(this.property)?.metadata;
+            arkts.NodeCache.getInstance().collect(returnVale, { ...metadata, isWithinTypeParams: true });
+        }
+        return returnVale;
     }
 
     translateGetter(

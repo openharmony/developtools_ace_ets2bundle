@@ -477,3 +477,14 @@ function getMonitorStrFromMemberExpr(node: arkts.MemberExpression): string | und
     }
     return undefined;
 }
+
+export function findCachedMemoMetadata(node: arkts.AstNode, shouldWrapType: boolean = true): arkts.AstNodeCacheValueMetadata | undefined {
+    if (!arkts.NodeCache.getInstance().has(node)) {
+        return undefined;
+    }
+    const metadata = arkts.NodeCache.getInstance().get(node)?.metadata ?? {};
+    if (!!shouldWrapType) {
+        metadata.isWithinTypeParams = true;
+    }
+    return metadata;
+}
