@@ -40,7 +40,7 @@ const parsedTransform: Plugins = {
 const expectedUIScript: string = `
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
@@ -97,7 +97,7 @@ import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
-import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
