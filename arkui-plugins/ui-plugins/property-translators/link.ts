@@ -26,6 +26,7 @@ import {
     generateGetOrSetCall,
     collectStateManagementTypeImport,
     hasDecorator,
+    findCachedMemoMetadata,
 } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
@@ -76,7 +77,13 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
                 arkts.factory.createAssignmentExpression(
                     generateThisBacking(newName, false, false),
                     arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                    factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_LINK, this.propertyType, args, true)
+                    factory.generateStateMgmtFactoryCall(
+                        StateManagementTypes.MAKE_LINK,
+                        this.propertyType?.clone(),
+                        args,
+                        true,
+                        this.isMemoCached ? findCachedMemoMetadata(this.property, true) : undefined
+                    )
                 )
             ),
         ]);
@@ -99,6 +106,12 @@ export class LinkTranslator extends PropertyTranslator implements InitializerCon
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
         field.range = this.property.range;
+        if (this.isMemoCached) {
+            const metadata = findCachedMemoMetadata(this.property, false);
+            arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
+            arkts.NodeCache.getInstance().collect(getter, metadata);
+            arkts.NodeCache.getInstance().collect(setter, metadata);
+        }
         return [field, getter, setter];
     }
 
@@ -147,7 +160,8 @@ export class LinkInterfaceTranslator<T extends InterfacePropertyTypes> extends I
      * @param method expecting getter with `@Link` and a setter with `@Link` in the overloads.
      */
     private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
-        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.LINK);
+        const metadata = findCachedMemoMetadata(method);
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.LINK, metadata);
     }
 
     /**
