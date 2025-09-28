@@ -162,15 +162,15 @@ function main() {}
 }
 
 @CustomDialog() export declare interface __Options_CustomDialogExample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'aaController', '((CustomDialogController | undefined) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_aaController', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'aaController', '((CustomDialogController | undefined) | undefined)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_aaController', '(boolean | undefined)', [], [], false)}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'text', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_text', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_text', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'text', '(string | undefined)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_text', '(IStateDecoratedVariable<string> | undefined)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_text', '(boolean | undefined)', [], [], false)}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'hh', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_hh', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'hh', '(string | undefined)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_hh', '(boolean | undefined)', [], [], false)}
   
 }
 

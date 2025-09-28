@@ -58,12 +58,12 @@ import { Observed as Observed } from "@ohos.arkui.stateManagement";
 function main() {}
 
 interface PropInterface {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propF', 'number')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propF', 'number', [], [], false)}
   
 }
 
 interface trackInterface {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'trackF', 'number')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'trackF', 'number', [], [], false)}
   
 }
 
