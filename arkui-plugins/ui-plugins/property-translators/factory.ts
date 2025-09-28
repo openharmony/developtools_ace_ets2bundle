@@ -32,7 +32,7 @@ import {
     OptionalMemberInfo,
     removeDecorator,
 } from './utils';
-import { CustomComponentNames, getClassPropertyType, optionsHasField } from '../utils';
+import { CustomComponentNames, optionsHasField } from '../utils';
 import { addMemoAnnotation, findCanAddMemoFromTypeAnnotation } from '../../collectors/memo-collectors/utils';
 import { annotation, isNumeric } from '../../common/arkts-utils';
 
@@ -123,13 +123,18 @@ export class factory {
         params: arkts.Expression[] | undefined,
         returnType: arkts.TypeNode | undefined,
         hasReceiver: boolean,
-        bodyStatementsList: arkts.Statement[]
+        bodyStatementsList: arkts.Statement[],
+        hasReturn?: boolean
     ): arkts.ArrowFunctionExpression {
+        let flag = arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW;
+        if (hasReturn) {
+            flag |= arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN;
+        }
         return arkts.factory.createArrowFunction(
             arkts.factory.createScriptFunction(
                 arkts.BlockStatement.createBlockStatement(bodyStatementsList),
                 arkts.factory.createFunctionSignature(typeParams, params ? params : [], returnType, hasReceiver),
-                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                flag,
                 arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
             )
         );
@@ -278,7 +283,7 @@ export class factory {
         modifiers: arkts.Es2pandaModifierFlags,
         needMemo: boolean = false
     ): arkts.ClassProperty {
-        const originType = getClassPropertyType(property);
+        const originType = property.typeAnnotation;
         const newType: arkts.TypeNode | undefined = !stageManagementType
             ? property.typeAnnotation ?? UIFactory.createTypeReferenceFromString(TypeNames.ANY)
             : originType;

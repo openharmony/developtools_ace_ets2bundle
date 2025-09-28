@@ -569,4 +569,26 @@ export class factory {
             arkts.factory.createConditionalExpression(test, consequent, alternate)
         );
     }
+
+    /**
+     * find arkts.ObjectExpression type from its declaration.
+     */
+    static findObjectType(obj: arkts.ObjectExpression): arkts.TypeNode | undefined {
+        const decl = arkts.getDecl(obj);
+        if (!decl) {
+            return undefined;
+        }
+        let typeName: string | undefined;
+        if (arkts.isClassDefinition(decl)) {
+            typeName = decl.ident?.name;
+        } else if (arkts.isTSInterfaceDeclaration(decl)) {
+            typeName = decl.id?.name;
+        } else if (arkts.isTSTypeAliasDeclaration(decl)) {
+            typeName = decl.id?.name;
+        }
+        if (!typeName) {
+            return undefined;
+        }
+        return this.createTypeReferenceFromString(typeName);
+    }
 }
