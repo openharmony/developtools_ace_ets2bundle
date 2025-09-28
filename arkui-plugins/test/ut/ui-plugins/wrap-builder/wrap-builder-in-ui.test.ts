@@ -38,12 +38,12 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
-import { MemoIntrinsic as MemoIntrinsic } from \"arkui.stateManagement.runtime\";
+import { MemoIntrinsic as MemoIntrinsic } from \"arkui.incremental.annotation\";
 import { ColumnAttribute as ColumnAttribute } from \"arkui.component.column\";
 import { ColumnImpl as ColumnImpl } from \"arkui.component.column\";
 import { ForEachAttribute as ForEachAttribute } from \"arkui.component.forEach\";
 import { ForEachImpl as ForEachImpl } from \"arkui.component.forEach\";
-import { MemoSkip as MemoSkip } from \"arkui.stateManagement.runtime\";
+import { MemoSkip as MemoSkip } from \"arkui.incremental.runtime\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 import { TextAttribute as TextAttribute } from \"arkui.component.text\";
 import { TextImpl as TextImpl } from \"arkui.component.text\";
@@ -130,12 +130,12 @@ function testUITransformer(this: PluginTestContext): void {
 
 const expectedMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
-import { MemoIntrinsic as MemoIntrinsic } from \"arkui.stateManagement.runtime\";
+import { MemoIntrinsic as MemoIntrinsic } from \"arkui.incremental.annotation\";
 import { ColumnAttribute as ColumnAttribute } from \"arkui.component.column\";
 import { ColumnImpl as ColumnImpl } from \"arkui.component.column\";
 import { ForEachAttribute as ForEachAttribute } from \"arkui.component.forEach\";
 import { ForEachImpl as ForEachImpl } from \"arkui.component.forEach\";
-import { MemoSkip as MemoSkip } from \"arkui.stateManagement.runtime\";
+import { MemoSkip as MemoSkip } from \"arkui.incremental.annotation\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 import { TextAttribute as TextAttribute } from \"arkui.component.text\";
 import { TextImpl as TextImpl } from \"arkui.component.text\";
