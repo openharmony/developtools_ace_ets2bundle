@@ -28,6 +28,7 @@ import {
     collectStateManagementTypeImport,
     hasDecorator,
     getValueInAnnotation,
+    findCachedMemoMetadata,
 } from './utils';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
@@ -71,9 +72,10 @@ export class LocalStorageLinkTranslator extends PropertyTranslator implements In
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
             factory.generateStateMgmtFactoryCall(
                 StateManagementTypes.MAKE_LOCAL_STORAGE_LINK,
-                this.propertyType,
+                this.propertyType?.clone(),
                 args,
-                true
+                true,
+                this.isMemoCached ? findCachedMemoMetadata(this.property, true) : undefined
             )
         );
     }
@@ -92,6 +94,12 @@ export class LocalStorageLinkTranslator extends PropertyTranslator implements In
         );
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
+        if (this.isMemoCached) {
+            const metadata = findCachedMemoMetadata(this.property, false);
+            arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
+            arkts.NodeCache.getInstance().collect(getter, metadata);
+            arkts.NodeCache.getInstance().collect(setter, metadata);
+        }
         return [field, getter, setter];
     }
 
@@ -142,7 +150,8 @@ export class LocalStorageLinkInterfaceTranslator<
      * @param method expecting getter with `@LocalStorageLink` and a setter with `@LocalStorageLink` in the overloads.
      */
     private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
-        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.LOCAL_STORAGE_LINK);
+        const metadata = findCachedMemoMetadata(method);
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.LOCAL_STORAGE_LINK, metadata);
     }
 
     /**

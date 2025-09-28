@@ -31,12 +31,14 @@ export abstract class PropertyTranslator {
     protected property: arkts.ClassProperty;
     protected structInfo: CustomComponentInfo;
     protected propertyType: arkts.TypeNode | undefined;
+    protected isMemoCached?: boolean;
 
     constructor(options: PropertyTranslatorOptions) {
         this.property = options.property;
         this.structInfo = options.structInfo;
         this.checkObservedWhenInterop(options.property, options.structInfo);
         this.propertyType = getClassPropertyType(options.property);
+        this.isMemoCached = arkts.NodeCache.getInstance().has(options.property);
     }
 
     checkObservedWhenInterop(property: arkts.ClassProperty, structInfo: CustomComponentInfo): void {
