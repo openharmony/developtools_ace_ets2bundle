@@ -56,7 +56,7 @@ function main() {}
 }
 @memo() type ItemBuilder<T> = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: Item<T>)=> void);
 interface Item<T> {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'item', 'T')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'item', 'T', [], [], false)}
 }
 interface Attribute<T> {
     @memo() each<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() itemGenerator: ItemBuilder<T>): Attribute<T>

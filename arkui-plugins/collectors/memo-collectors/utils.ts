@@ -73,15 +73,16 @@ function insertMemoAnnotationImport(memoName: MemoNames): void {
 }
 
 function isScriptFunctionFromInterfaceGetterSetter(node: arkts.ScriptFunction): boolean {
-    let parent = node.parent;
-    if (!parent || !arkts.isMethodDefinition(parent)) {
+    let methodDef = node.parent?.parent;
+    if (!methodDef || !arkts.isMethodDefinition(methodDef)) {
         return false;
     }
-    const isGetterSetter = parent.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET
-        || parent.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
+    const isGetterSetter = methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET
+        || methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
     if (!isGetterSetter) {
         return false;
     }
+    let parent: arkts.AstNode | undefined = methodDef as arkts.AstNode;
     while (!!parent && arkts.isMethodDefinition(parent)) {
         parent = parent.parent;
     }
@@ -776,7 +777,7 @@ export function findCanAddMemoFromMethod(node: arkts.AstNode): node is arkts.Met
             hasMemoIntrinsic,
         });
         const body = func.body;
-        if (!!body && arkts.isBlockStatement(body)) {
+        if (!!body && arkts.isBlockStatement(body) && !isScriptFunctionFromInterfaceGetterSetter(func)) {
             const disableCollectReturn = hasMemoEntry || hasMemoIntrinsic;
             collectMemoScriptFunctionBody(
                 body,

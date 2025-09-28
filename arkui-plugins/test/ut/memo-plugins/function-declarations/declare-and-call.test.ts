@@ -107,7 +107,7 @@ class A {
     public constructor() {}
 }
 interface MemoBuilder {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'builder', '((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [dumpAnnotation('memo')])}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'builder', '((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [dumpAnnotation('memo')], [], false)}
 
 }
 `;

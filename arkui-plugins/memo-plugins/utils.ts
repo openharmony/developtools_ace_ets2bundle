@@ -659,3 +659,38 @@ function isThisParam(node: arkts.Expression | undefined): boolean {
 export function filterMemoSkipParams(paramInfos: ParamInfo[]): ParamInfo[] {
     return paramInfos.filter((p) => !hasMemoSkipAnnotation(p.param));
 }
+
+export function isScriptFunctionFromInterfaceGetterSetter(node: arkts.ScriptFunction): boolean {
+    let methodDef = node.parent?.parent;
+    if (!methodDef || !arkts.isMethodDefinition(methodDef)) {
+        return false;
+    }
+    const isGetterSetter = methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET
+        || methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
+    if (!isGetterSetter) {
+        return false;
+    }
+    let parent: arkts.AstNode | undefined = methodDef as arkts.AstNode;
+    while (!!parent && arkts.isMethodDefinition(parent)) {
+        parent = parent.parent;
+    }
+    return !!parent && arkts.isTSInterfaceBody(parent);
+}
+
+export function isScriptFunctionFromGetter(node: arkts.ScriptFunction): boolean {
+    return (
+        !!node.parent &&
+        !!node.parent.parent &&
+        arkts.isMethodDefinition(node.parent.parent) &&
+        node.parent.parent.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET
+    );
+}
+
+export function isScriptFunctionFromSetter(node: arkts.ScriptFunction): boolean {
+    return (
+        !!node.parent &&
+        !!node.parent.parent &&
+        arkts.isMethodDefinition(node.parent.parent) &&
+        node.parent.parent.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET
+    );
+}
