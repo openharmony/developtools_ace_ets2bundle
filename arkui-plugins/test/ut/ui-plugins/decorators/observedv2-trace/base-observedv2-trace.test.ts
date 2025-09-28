@@ -57,7 +57,7 @@ import { ObservedV2 as ObservedV2, Trace as Trace } from "@ohos.arkui.stateManag
 function main() {}
 
 @ObservedV2() class CC implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -81,7 +81,7 @@ function main() {}
   
   @JSONRename({newName:"traceB"}) private __backing_traceB: number = 2;
   
-  @JSONStringifyIgnore() private __meta_traceB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public get traceB(): number {
     this.conditionalAddRef(this.__meta_traceB);
@@ -101,7 +101,7 @@ function main() {}
 }
 
 @ObservedV2() class DD implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -125,11 +125,11 @@ function main() {}
   
   @JSONRename({newName:"traceE"}) private __backing_traceE: number = 2;
   
-  @JSONStringifyIgnore() private __meta_traceE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   @JSONRename({newName:"tracef"}) private __backing_tracef: number = 2;
   
-  @JSONStringifyIgnore() private __meta_tracef: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_tracef: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public vv: string;
   
