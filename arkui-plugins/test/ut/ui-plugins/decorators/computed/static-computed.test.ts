@@ -67,7 +67,7 @@ function main() {}
 
 
 @ObservedV2() class Name implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -89,11 +89,11 @@ function main() {}
   
   @JSONRename({newName:"firstName"}) public static __backing_firstName: string = "Hua";
   
-  @JSONStringifyIgnore() public static __meta_firstName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_firstName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   @JSONRename({newName:"lastName"}) public static __backing_lastName: string = "Li";
   
-  @JSONStringifyIgnore() public static __meta_lastName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_lastName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public static __computed_fullName = STATE_MGMT_FACTORY.makeComputed<string>((() => {
     return ((((Name.firstName) + (" "))) + (Name.lastName));
@@ -207,7 +207,7 @@ function main() {}
 }
 
 @ObservedV2() class Name2 implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);

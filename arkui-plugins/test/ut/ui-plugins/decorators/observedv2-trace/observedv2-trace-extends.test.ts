@@ -57,7 +57,7 @@ import { ObservedV2 as ObservedV2, Trace as Trace } from "@ohos.arkui.stateManag
 function main() {}
 
 @ObservedV2() class A implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -81,7 +81,7 @@ function main() {}
   
   @JSONRename({newName:"traceA"}) private __backing_traceA: number = 2;
   
-  @JSONStringifyIgnore() private __meta_traceA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public get traceA(): number {
     this.conditionalAddRef(this.__meta_traceA);
@@ -108,7 +108,7 @@ class G extends A {
 }
 
 @ObservedV2() class H extends G implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -130,7 +130,7 @@ class G extends A {
   
   @JSONRename({newName:"propG"}) private __backing_propG: number = 1;
   
-  @JSONStringifyIgnore() private __meta_propG: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_propG: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public get propG(): number {
     this.conditionalAddRef(this.__meta_propG);

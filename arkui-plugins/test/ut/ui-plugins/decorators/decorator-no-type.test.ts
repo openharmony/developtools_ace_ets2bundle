@@ -166,7 +166,7 @@ final class StateType extends BaseEnum<int> {
 }
 
 @ObservedV2() class OO implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -188,7 +188,7 @@ final class StateType extends BaseEnum<int> {
   
   @JSONRename({newName:"hi"}) private __backing_hi: "150" = "150";
   
-  @JSONStringifyIgnore() private __meta_hi: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_hi: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public get hi(): "150" {
     this.conditionalAddRef(this.__meta_hi);
@@ -208,7 +208,7 @@ final class StateType extends BaseEnum<int> {
 }
 
 @Observed() class RR implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -222,7 +222,7 @@ final class StateType extends BaseEnum<int> {
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
-  @JSONStringifyIgnore() private ____V1RenderId: RenderIdType = 0;
+  @JSONStringifyIgnore() @JSONParseIgnore() private ____V1RenderId: RenderIdType = 0;
   
   public setV1RenderId(renderId: RenderIdType): void {
     this.____V1RenderId = renderId;
@@ -236,7 +236,7 @@ final class StateType extends BaseEnum<int> {
   
   @JSONRename({newName:"hi"}) private __backing_hi: "150" = "150";
   
-  @JSONStringifyIgnore() private __meta_hi: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_hi: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public constructor() {}
   
