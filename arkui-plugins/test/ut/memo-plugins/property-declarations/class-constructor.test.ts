@@ -60,7 +60,7 @@ function main() {}
     }
 });
 interface A {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'a', '((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [dumpAnnotation('memo')])}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'a', '((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [dumpAnnotation('memo')], [], false)}
 }
 class AA {
     @memo() public a: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);

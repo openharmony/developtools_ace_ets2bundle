@@ -24,19 +24,28 @@ function dumpGetterSetter(
     name: string,
     type: string,
     annotations: string[] = [],
+    paramAnnotations: string[] = [],
+    hasBody: boolean = true,
     body: string | undefined = undefined
 ): string {
     if (getOrSet === GetSetDumper.BOTH) {
         return [
-            dumpGetterSetter(GetSetDumper.GET, name, type, annotations, body),
-            dumpGetterSetter(GetSetDumper.SET, name, type, annotations, body),
+            dumpGetterSetter(GetSetDumper.GET, name, type, annotations, paramAnnotations, hasBody),
+            dumpGetterSetter(GetSetDumper.SET, name, type, annotations, paramAnnotations, hasBody)
         ].join('\n\n');
     }
     let methodStr: string;
     if (getOrSet === GetSetDumper.GET) {
         methodStr = `get ${name}(): ${type}`;
+        if (hasBody) {
+            body = '{\nreturn undefined;\n}\n';
+        }
     } else {
-        methodStr = `set ${name}(${name}: ${type})`;
+        const paramStr = [...paramAnnotations, name].join(' ');
+        methodStr = `set ${name}(${paramStr}: ${type})`;
+        if (hasBody) {
+            body = '{\nthrow new InvalidStoreAccessError();\n}\n';
+        }
     }
     const strList: string[] = [...annotations, methodStr, ...(!!body ? [body] : [])];
     return strList.join(' ');
