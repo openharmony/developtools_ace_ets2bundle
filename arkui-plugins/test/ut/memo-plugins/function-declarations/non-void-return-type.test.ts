@@ -87,7 +87,7 @@ function main() {}
     return __memo_scope.recache((() => {}));
 }
 interface A {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'str', 'string')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'str', 'string', [], [], false)}
 }
 type B = ((str: string)=> void);
 class C {

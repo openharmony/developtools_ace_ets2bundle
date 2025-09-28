@@ -111,17 +111,17 @@ function main() {}
 }
 
 @Component() export declare interface __Options_SwipeRefresher {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'content', '((ResourceStr | undefined) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_content', '(IPropRefDecoratedVariable<(ResourceStr | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_content', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'content', '((ResourceStr | undefined) | undefined)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_content', '(IPropRefDecoratedVariable<(ResourceStr | undefined)> | undefined)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_content', '(boolean | undefined)', [], [], false)}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'isLoading', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_isLoading', '(IPropRefDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_isLoading', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'isLoading', '(boolean | undefined)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_isLoading', '(IPropRefDecoratedVariable<boolean> | undefined)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_isLoading', '(boolean | undefined)', [], [], false)}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'code', '(number | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_code', '(IStateDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_code', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'code', '(number | undefined)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_code', '(IStateDecoratedVariable<number> | undefined)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_code', '(boolean | undefined)', [], [], false)}
   
 }
 `;

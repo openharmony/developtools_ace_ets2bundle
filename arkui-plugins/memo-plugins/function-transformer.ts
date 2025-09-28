@@ -48,13 +48,21 @@ import {
     isThisAttributeAssignment,
     removeMemoAnnotation,
     parametrizedNodeHasReceiver,
+    isScriptFunctionFromInterfaceGetterSetter,
+    isScriptFunctionFromGetter,
+    isScriptFunctionFromSetter
 } from './utils';
 import { ParameterTransformer } from './parameter-transformer';
 import { ReturnTransformer } from './return-transformer';
 import { SignatureTransformer } from './signature-transformer';
 import { moveToFront } from '../common/arkts-utils';
 import { InternalsTransformer } from './internal-transformer';
-import { CachedMetadata, rewriteByType } from './memo-cache-factory';
+import {
+    CachedMetadata,
+    rewriteByType,
+    prepareRewriteScriptFunctionParameters,
+    prepareRewriteScriptFunctionReturnType
+} from './memo-cache-factory';
 
 interface ScopeInfo extends MemoInfo {
     regardAsSameScope?: boolean;
@@ -252,6 +260,28 @@ export class FunctionTransformer extends AbstractVisitor {
         );
     }
 
+    updateScriptFunctionFromInterfaceGetterSetter(node: arkts.ScriptFunction): arkts.ScriptFunction {
+        const _isGetter = isScriptFunctionFromGetter(node);
+        const _isSetter = isScriptFunctionFromSetter(node);
+        const _hasReceiver = node.hasReceiver;
+        const newParams = prepareRewriteScriptFunctionParameters(
+            node,
+            _isSetter,
+            _isGetter,
+            _hasReceiver
+        );
+        const newReturnType: arkts.TypeNode | undefined = prepareRewriteScriptFunctionReturnType(
+            node,
+            _isGetter,
+            _hasReceiver
+        );
+        node.setParams(newParams);
+        if (!!newReturnType) {
+            node.setReturnTypeAnnotation(newReturnType);
+        }
+        return node;
+    }
+
     updateScriptFunction(scriptFunction: arkts.ScriptFunction, name: string = ''): arkts.ScriptFunction {
         if (!scriptFunction.body || !arkts.isBlockStatement(scriptFunction.body)) {
             return scriptFunction;
@@ -261,6 +291,9 @@ export class FunctionTransformer extends AbstractVisitor {
         }
         if (hasMemoIntrinsicAnnotation(scriptFunction) || hasMemoEntryAnnotation(scriptFunction)) {
             return this.updateInternalsInScriptFunction(scriptFunction);
+        }
+        if (isScriptFunctionFromInterfaceGetterSetter(scriptFunction)) {
+            return this.updateScriptFunctionFromInterfaceGetterSetter(scriptFunction);
         }
         const returnType = scriptFunction.returnTypeAnnotation;
         const isStableThis = this.stable > 0 && returnType !== undefined && arkts.isTSThisType(returnType);
