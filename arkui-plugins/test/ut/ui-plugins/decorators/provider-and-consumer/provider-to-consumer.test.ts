@@ -52,7 +52,7 @@ import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { IProviderDecoratedVariable as IProviderDecoratedVariable } from "arkui.stateManagement.decorator";
 
