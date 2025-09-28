@@ -17,7 +17,6 @@ import * as arkts from '@koalaui/libarkts';
 
 import { expectName } from '../../common/arkts-utils';
 import { GetSetTypes, StateManagementTypes } from '../../common/predefines';
-import { AbstractVisitor } from '../../common/abstract-visitor';
 import { ClassInfo, computedField } from '../utils';
 import { generateThisBacking, generateGetOrSetCall } from './utils';
 import { MethodTranslator } from './base';
@@ -37,9 +36,6 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.method.name);
         const newName: string = computedField(originalName);
-        if (!this.returnType) {
-            this.returnType = getGetterReturnType(this.method);
-        }
         if (this.classInfo.isFromStruct && !this.isStatic) {
             this.cacheTranslatedInitializer(newName);
         }
@@ -62,7 +58,9 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
                         UIFactory.createScriptFunction({
                             body: this.method.scriptFunction.body?.clone(),
                             modifiers: modifiers,
-                            flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                            flags:
+                                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW |
+                                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN,
                         })
                     ),
                     arkts.factory.createStringLiteral(originalName),
@@ -77,6 +75,9 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
         const originGetter: arkts.MethodDefinition = UIFactory.updateMethodDefinition(this.method, {
             function: {
                 returnTypeAnnotation: this.returnType,
+                flags:
+                    this.method.scriptFunction.flags |
+                    arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN,
                 body: arkts.factory.createBlock([
                     arkts.factory.createReturnStatement(this.generateComputedGet(newName)),
                 ]),
@@ -91,50 +92,5 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
             ? UIFactory.generateMemberExpression(arkts.factory.createIdentifier(this.classInfo.className), newName)
             : generateThisBacking(newName, false, true);
         return generateGetOrSetCall(thisValue, GetSetTypes.GET);
-    }
-}
-
-function getGetterReturnType(method: arkts.MethodDefinition): arkts.TypeNode | undefined {
-    const body = method.scriptFunction.body;
-    if (!body || !arkts.isBlockStatement(body) || body.statements.length <= 0) {
-        return undefined;
-    }
-    let returnType: arkts.TypeNode | undefined = undefined;
-    const returnTransformer = new ReturnTransformer();
-    returnTransformer.visitor(body);
-    const typeArray = returnTransformer.types;
-    if (typeArray.length <= 0) {
-        returnType = undefined;
-    } else if (typeArray.length === 1) {
-        returnType = typeArray.at(0);
-    } else {
-        returnType = arkts.factory.createUnionType(typeArray);
-    }
-    returnTransformer.reset();
-    return returnType?.clone();
-}
-
-class ReturnTransformer extends AbstractVisitor {
-    private _types: arkts.TypeNode[] = [];
-
-    reset(): void {
-        super.reset();
-        this._types = [];
-    }
-
-    visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
-        const node = this.visitEachChild(beforeChildren);
-        if (arkts.isReturnStatement(node) && node.argument) {
-            const type = arkts.createTypeNodeFromTsType(node.argument);
-            if (!!type && arkts.isTypeNode(type)) {
-                this._types.push(type);
-            }
-            return node;
-        }
-        return node;
-    }
-
-    get types(): arkts.TypeNode[] {
-        return this._types;
     }
 }

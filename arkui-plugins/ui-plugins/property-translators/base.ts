@@ -18,7 +18,6 @@ import { collectStateManagementTypeImport, createGetter, createSetter } from './
 import { CustomComponentInfo, ClassInfo } from '../utils';
 import { StateManagementTypes } from '../../common/predefines';
 import { ClassScopeInfo } from '../struct-translators/utils';
-import { getClassPropertyType } from '../utils';
 import { logDiagnostic, getPropertyType } from '../interop/initstatevar';
 import { getHasAnnotationObserved } from '../interop/interop';
 
@@ -37,7 +36,7 @@ export abstract class PropertyTranslator {
         this.property = options.property;
         this.structInfo = options.structInfo;
         this.checkObservedWhenInterop(options.property, options.structInfo);
-        this.propertyType = getClassPropertyType(options.property);
+        this.propertyType = options.property.typeAnnotation;
         this.isMemoCached = arkts.NodeCache.getInstance().has(options.property);
     }
 
@@ -109,7 +108,7 @@ export abstract class ObservedPropertyTranslator {
     constructor(property: arkts.ClassProperty, classScopeInfo: ClassScopeInfo) {
         this.property = property;
         this.classScopeInfo = classScopeInfo;
-        this.propertyType = getClassPropertyType(this.property);
+        this.propertyType = property.typeAnnotation;
     }
 
     abstract translateMember(): arkts.AstNode[];
