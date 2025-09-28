@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedAfterUIScript: string = `
-import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
@@ -100,7 +100,7 @@ function main() {}
 
 const expectedAfterMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.incremental.runtime.state";
-import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
