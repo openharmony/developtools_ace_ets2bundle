@@ -18,7 +18,7 @@ import * as arkts from '@koalaui/libarkts';
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
 import { CustomComponentNames } from '../utils';
-import { createGetter, generateGetOrSetCall, generateThisBacking, generateToRecord, hasDecorator } from './utils';
+import { createGetter, findCachedMemoMetadata, generateGetOrSetCall, generateThisBacking, generateToRecord, hasDecorator } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
 import { factory } from './factory';
@@ -58,7 +58,13 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
         return arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_OBJECT_LINK, this.propertyType, args, true)
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_OBJECT_LINK,
+                this.propertyType?.clone(),
+                args,
+                true,
+                this.isMemoCached ? findCachedMemoMetadata(this.property, true) : undefined
+            )
         );
     }
 
@@ -80,6 +86,10 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
             this.propertyType,
             false
         );
+        if (this.isMemoCached) {
+            const metadata = findCachedMemoMetadata(this.property, false);
+            arkts.NodeCache.getInstance().collect(nonNullItem, { ...metadata, isWithinTypeParams: true });
+        }
         return factory.createIfInUpdateStruct(originalName, member, [nonNullItem]);
     }
 
@@ -93,6 +103,11 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
         const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
+        if (this.isMemoCached) {
+            const metadata = findCachedMemoMetadata(this.property, false);
+            arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
+            arkts.NodeCache.getInstance().collect(getter, metadata);
+        }
         return [field, getter];
     }
 
@@ -133,7 +148,8 @@ export class ObjectLinkInterfaceTranslator<T extends InterfacePropertyTypes> ext
      * @param method expecting getter with `@ObjectLink` and a setter with `@ObjectLink` in the overloads.
      */
     private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
-        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.OBJECT_LINK);
+        const metadata = findCachedMemoMetadata(method);
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.OBJECT_LINK, metadata);
     }
 
     /**

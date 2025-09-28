@@ -24,6 +24,7 @@ import {
     generateGetOrSetCall,
     hasDecorator,
     collectStateManagementTypeImport,
+    findCachedMemoMetadata,
 } from './utils';
 import {
     InterfacePropertyTranslator,
@@ -69,7 +70,12 @@ export class LocalTranslator extends PropertyTranslator implements InitializerCo
         );
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
-
+        if (this.isMemoCached) {
+            const metadata = findCachedMemoMetadata(this.property, false);
+            arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
+            arkts.NodeCache.getInstance().collect(getter, metadata);
+            arkts.NodeCache.getInstance().collect(setter, metadata);
+        }
         return [field, getter, setter];
     }
 
@@ -124,9 +130,10 @@ export class LocalTranslator extends PropertyTranslator implements InitializerCo
         collectStateManagementTypeImport(StateManagementTypes.LOCAL_DECORATED);
         return factory.generateStateMgmtFactoryCall(
             this.isStatic ? StateManagementTypes.MAKE_STATIC_LOCAL : StateManagementTypes.MAKE_LOCAL,
-            this.propertyType,
+            this.propertyType?.clone(),
             args,
-            this.isStatic ? false : true
+            !this.isStatic,
+            this.isMemoCached ? findCachedMemoMetadata(this.property, true) : undefined
         );
     }
 }
@@ -159,7 +166,8 @@ export class LocalInterfaceTranslator<T extends InterfacePropertyTypes> extends 
      * @param method expecting getter with `@Local` and a setter with `@Local` in the overloads.
      */
     private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
-        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.LOCAL);
+        const metadata = findCachedMemoMetadata(method);
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.LOCAL, metadata);
     }
 
     /**
