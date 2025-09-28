@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { BuilderLambdaNames, inferTypeFromValue, optionsHasField } from '../utils';
+import { BuilderLambdaNames, optionsHasField } from '../utils';
 import {
     backingField,
     filterDefined,
@@ -56,14 +56,13 @@ import {
 } from './utils';
 import { hasDecorator, isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
 import { BuilderFactory } from './builder-factory';
-import { factory as PropertyFactory } from '../property-translators/factory';
+import { BindableFactory } from './bindable-factory';
 import { factory as TypeFactory } from '../type-translators/factory';
 import { factory as UIFactory } from '../ui-factory';
 import { factory as MemoCollectFactory } from '../../collectors/memo-collectors/factory';
 import {
     AnimationNames,
     ARKUI_BUILDER_SOURCE_NAME,
-    BindableDecl,
     ConditionNames,
     DecoratorIntrinsicNames,
     DecoratorNames,
@@ -126,7 +125,7 @@ export class factory {
         );
     }
 
-    /*
+    /**
      * transform arguments in style node.
      */
     static getTransformedStyle(call: arkts.CallExpression): BuilderLambdaChainingCallArgInfo[] {
@@ -143,13 +142,8 @@ export class factory {
             params,
             (arg, param, index) => {
                 const _param = param as arkts.ETSParameterExpression;
-                let isDoubleDollar: boolean = false;
-                if (index === 0 && !!arg) {
-                    isDoubleDollar = isDoubleDollarCall(arg);
-                }
-                if (isDoubleDollar && !!arg) {
-                    const bindableArg: arkts.Expression = (arg as arkts.CallExpression).arguments[0];
-                    argInfo.push({ arg: factory.updateBindableStyleArguments(bindableArg) });
+                if (index === 0 && !!arg && isDoubleDollarCall(arg)) {
+                    argInfo.push({ arg: BindableFactory.updateBindableStyleArguments(arg, _param) });
                 } else if (!!arg) {
                     argInfo.push({ arg, hasBuilder: hasDecorator(_param, DecoratorNames.BUILDER) });
                 }
@@ -159,20 +153,7 @@ export class factory {
         return argInfo;
     }
 
-    /*
-     * transform bundable arguments in style node, e.g. `Radio().checked($$(this.checked))` => `Radio().checked({value: xxx, onChange: xxx})`.
-     */
-    static updateBindableStyleArguments(bindableArg: arkts.Expression): arkts.Expression {
-        const valueType: arkts.TypeNode = getArgumentType(bindableArg);
-        const objExp: arkts.ObjectExpression = arkts.factory.createObjectExpression(
-            arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
-            [factory.generateValueProperty(bindableArg), factory.generateOnChangeArrowFunc(bindableArg, valueType)],
-            false
-        );
-        return arkts.factory.createTSAsExpression(objExp, factory.createBindableType(valueType), false);
-    }
-
-    /*
+    /**
      * create style instance call, e.g. `instance.margin(10)`.
      */
     static createStyleLambdaBody(lambdaBody: arkts.AstNode, callInfo: InstanceCallInfo): arkts.CallExpression {
@@ -442,7 +423,7 @@ export class factory {
         const keyName: string = key.name;
         let newProperty: arkts.Property = prop;
         if (isDoubleDollarCall(value)) {
-            newProperty = factory.updateBindableProperty(prop);
+            newProperty = BindableFactory.updateBindableProperty(prop, value);
         } else if (propertyInfo.isBuilderParam && arkts.isArrowFunctionExpression(value)) {
             addMemoAnnotation(value);
             newProperty = prop;
@@ -571,9 +552,9 @@ export class factory {
         if (index === 0 && isForEach(name, moduleName) && !!modifiedArg && arkts.isExpression(modifiedArg)) {
             const newFunc = UIFactory.createScriptFunction({
                 body: arkts.factory.createBlock([arkts.factory.createReturnStatement(modifiedArg)]),
-                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                returnTypeAnnotation:
-                    factory.getReturnTypeFromArrowParameter(args) ?? factory.getReturnTypeFromTsType(modifiedArg),
+                flags:
+                    arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW |
+                    arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN,
                 modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             });
             const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(newFunc);
@@ -607,6 +588,7 @@ export class factory {
 
     /**
      * get return type from the TsType of value.
+     * @deprecated
      */
     static getReturnTypeFromTsType(node: arkts.AstNode): arkts.TypeNode | undefined {
         const type = arkts.createTypeNodeFromTsType(node);
@@ -971,89 +953,6 @@ export class factory {
         const newNode = arkts.factory.updateCallExpression(node, replace, leaf.typeArguments, filterDefined(args));
         arkts.NodeCache.getInstance().collect(newNode);
         return newNode;
-    }
-
-    /*
-     * update bindableProperty, e.g. `text: $$(this.text)` => `text: { value: xxx , onChange: xxx }`.
-     */
-    static updateBindableProperty(prop: arkts.Property, type?: arkts.TypeNode): arkts.Property {
-        let res: arkts.Property[] = [];
-        let valueType: arkts.TypeNode;
-        if (
-            prop.value &&
-            arkts.isCallExpression(prop.value) &&
-            prop.value.arguments &&
-            prop.value.arguments.length === 1
-        ) {
-            let bindableArg = prop.value.arguments[0];
-            valueType = getArgumentType(bindableArg);
-            res.push(
-                factory.generateValueProperty(bindableArg),
-                factory.generateOnChangeArrowFunc(bindableArg, valueType)
-            );
-        } else {
-            return prop;
-        }
-        const asObjProp: arkts.TSAsExpression = arkts.factory.createTSAsExpression(
-            arkts.ObjectExpression.createObjectExpression(
-                arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
-                res,
-                false
-            ),
-            factory.createBindableType(valueType),
-            false
-        );
-        return arkts.factory.updateProperty(prop, prop.key, asObjProp);
-    }
-
-    /*
-     * generate `value: <bindableArg>` in object.
-     */
-    static generateValueProperty(bindableArg: arkts.Expression): arkts.Property {
-        return arkts.factory.createProperty(arkts.factory.createIdentifier('value'), bindableArg.clone());
-    }
-
-    /*
-     * generate `onChange: (value) => <bindableArg> = value` in object.
-     */
-    static generateOnChangeArrowFunc(bindableArg: arkts.Expression, valueType: arkts.TypeNode): arkts.Property {
-        return arkts.factory.createProperty(
-            arkts.factory.createIdentifier('onChange'),
-            PropertyFactory.createArrowFunctionWithParamsAndBody(
-                undefined,
-                [
-                    arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier('value', valueType.clone()),
-                        undefined
-                    ),
-                ],
-                undefined,
-                false,
-                [
-                    arkts.factory.createExpressionStatement(
-                        arkts.factory.createAssignmentExpression(
-                            bindableArg.clone(),
-                            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                            arkts.factory.createIdentifier('value')
-                        )
-                    ),
-                ]
-            )
-        );
-    }
-
-    /*
-     * generate `Bindable<valueType>`.
-     */
-    static createBindableType(valueType: arkts.TypeNode): arkts.ETSTypeReference {
-        const transformedKey = BindableDecl.BINDABLE;
-        ImportCollector.getInstance().collectImport(transformedKey);
-        return arkts.factory.createTypeReference(
-            arkts.factory.createTypeReferencePart(
-                arkts.factory.createIdentifier(transformedKey),
-                arkts.factory.createTSTypeParameterInstantiation([valueType.clone()])
-            )
-        );
     }
 
     /**
@@ -1425,7 +1324,7 @@ export class factory {
             return arkts.factory.createUndefinedLiteral();
         }
         if (arkts.isObjectExpression(value)) {
-            const type = inferTypeFromValue(value) ?? UIFactory.createTypeReferenceFromString(TypeNames.ANY);
+            const type = UIFactory.findObjectType(value) ?? UIFactory.createTypeReferenceFromString(TypeNames.ANY);
             return arkts.factory.createTSAsExpression(value.clone(), type, false);
         }
         return value.clone();

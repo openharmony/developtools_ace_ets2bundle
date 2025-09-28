@@ -379,6 +379,9 @@ export function optionsHasField(name: string): string {
     return `__options_has_${name}`;
 }
 
+/**
+ * @deprecated
+ */
 export function getClassPropertyType(property: arkts.ClassProperty): arkts.TypeNode | undefined {
     const type = property.typeAnnotation;
     if (!!type) {
@@ -387,6 +390,9 @@ export function getClassPropertyType(property: arkts.ClassProperty): arkts.TypeN
     return inferTypeFromValue(property.value);
 }
 
+/**
+ * @deprecated
+ */
 export function inferTypeFromValue(value: arkts.AstNode | undefined): arkts.TypeNode | undefined {
     let inferredType: arkts.AstNode | undefined = value ? arkts.createTypeNodeFromTsType(value) : undefined;
     if (inferredType && arkts.isTypeNode(inferredType)) {
