@@ -88,7 +88,7 @@ export class ObservedV2TraceTranslator extends ObservedPropertyTranslator {
         backingField.setAnnotations(annotations);
         removeDecorator(backingField, DecoratorNames.TRACE);
         const metaField = this.metaField(originalName);
-        metaField.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE)]);
+        metaField.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE), annotation(DecoratorNames.JSONPARSEIGNORE)]);
         return [backingField, metaField];
     }
 

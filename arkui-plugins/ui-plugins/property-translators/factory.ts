@@ -363,7 +363,7 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
         );
-        subscribedWatches.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE)]);
+        subscribedWatches.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE), annotation(DecoratorNames.JSONPARSEIGNORE)]);
         collectStateManagementTypeImport(StateManagementTypes.SUBSCRIBED_WATCHES);
 
         const addWatchSubscriber = factory.createWatchMethod(
@@ -482,7 +482,7 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
         );
-        v1RenderId.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE)]);
+        v1RenderId.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE), annotation(DecoratorNames.JSONPARSEIGNORE)]);
         collectStateManagementTypeImport(StateManagementTypes.RENDER_ID_TYPE);
         const setV1RenderId: arkts.MethodDefinition = factory.setV1RenderId(isObservedV2);
         return isObservedV2 ? [setV1RenderId] : [v1RenderId, setV1RenderId];
@@ -591,7 +591,7 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
         );
-        meta.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE)]);
+        meta.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE), annotation(DecoratorNames.JSONPARSEIGNORE)]);
         return meta;
     }
 
