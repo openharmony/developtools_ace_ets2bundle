@@ -29,8 +29,6 @@ import { ClassScopeInfo } from '../struct-translators/utils';
 import { factory } from './factory';
 import { factory as uiFactory } from '../ui-factory';
 import { ImportCollector } from '../../common/import-collector';
-import { logDiagnostic } from '../interop/initstatevar';
-import { getHasAnnotationObserved } from '../interop/interop';
 
 export class ObservedV2TraceTranslator extends ObservedPropertyTranslator {
     private hasImplement: boolean;
@@ -41,16 +39,7 @@ export class ObservedV2TraceTranslator extends ObservedPropertyTranslator {
         super(property, classScopeInfo);
         this.hasImplement = expectName(this.property.key).startsWith(ObservedNames.PROPERTY_PREFIX);
         this.isTraced = hasDecorator(this.property, DecoratorNames.TRACE);
-        this.checkObservedWhenInterop(property);
         this.isStatic = arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC);
-    }
-
-    checkObservedWhenInterop(property: arkts.ClassProperty): void {
-        const isObservedFrom1_1 = getHasAnnotationObserved(property, 'Observed');
-        if (isObservedFrom1_1) {
-            const errorMessage = `The type of the regular property can not be a class decorated with @Observed when interop`;
-            logDiagnostic(errorMessage, property);
-        }
     }
 
     translateMember(): arkts.AstNode[] {
