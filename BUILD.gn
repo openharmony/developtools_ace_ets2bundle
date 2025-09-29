@@ -84,11 +84,11 @@ action("build_ets_loader_library") {
   } else {
     _ace_config_dir = "//prebuilts/ace-toolkit/ets-loader/compiler"
   }
-  _declarations_file_dir = ets_component_out_dir + "/${sdk_type}/ets_component"
-  _kit_configs_file_dir = ets_component_out_dir + "/${sdk_type}/bundle_kits"
+  _declarations_file_dir = ets_component_out_dir + "/ohos_build_dynamic_sdk_component"
+  _kit_configs_file_dir = ets_component_out_dir + "/bundle_kits"
   _kit_apis_file_dir =
-      root_out_dir + "/ohos_declaration/${sdk_type}/ohos_declaration_ets"
-  _arkts_apis_file_dir = ets_component_out_dir + "/${sdk_type}/bundle_arkts"
+      root_out_dir + "/ohos_declaration/ohos_declaration_ets"
+  _arkts_apis_file_dir = ets_component_out_dir + "/bundle_arkts"
 
   _babel_js = _ace_config_dir + "/node_modules/@babel/cli/bin/babel.js"
   _babel_config_js = _ace_config_dir + "/babel.config.js"
@@ -360,7 +360,7 @@ ohos_copy("ohos_declaration_ets_ark") {
   if (defined(is_arkui_x) && is_arkui_x) {
     deps = [ "//interface/sdk-js:ohos_declaration_ets" ]
     sources =
-      [ root_out_dir + "/ohos_declaration/${sdk_type}/ohos_declaration_ets" ]
+      [ root_out_dir + "/ohos_declaration/ohos_declaration_ets" ]
     
   } else {
     external_deps = [ "sdk:ohos_declaration_ets_api" ]
