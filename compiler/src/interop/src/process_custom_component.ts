@@ -63,8 +63,6 @@ import {
   COMPONENTV2_LOCAL_DECORATOR,
   COMPONENTV2_CONSUMER_DECORATOR,
   COMPONENTV2_PROVIDER_DECORATOR,
-  COMPONENTV2_PARAM_DECORATOR,
-  COMPONENTV2_EVENT_DECORATOR,
   VIEWSTACKPROCESSOR,
 } from './pre_define';
 import {
@@ -373,7 +371,6 @@ class ChildAndParentComponentInfo {
   forbiddenInitPropsV2: string[];
   updatePropsForV1Parent: string[];
   updatePropsForV2Parent: string[];
-  forbiddenInitPropsV1: Map<string, string[]>;
   constructor(childName: string, childNode: ts.CallExpression, propsAndObjectLinks: string[]) {
     this.childName = childName;
     this.propsAndObjectLinks = propsAndObjectLinks;
@@ -391,7 +388,6 @@ class ChildAndParentComponentInfo {
     this.updatePropsForV2Parent = [...this.parentStructInfo.localDecoratorSet,
       ...this.parentStructInfo.paramDecoratorMap.keys(), ...this.parentStructInfo.providerDecoratorSet,
       ...this.parentStructInfo.consumerDecoratorSet];
-    this.forbiddenInitPropsV1 = this.childStructInfo?.updatePropsDecoratorsV1Map || new Map();
   }
 }
 
@@ -438,26 +434,12 @@ function getForbbidenInitPropsV2Type(itemName: string, info: ChildAndParentCompo
     typeName = COMPONENTV2_CONSUMER_DECORATOR;
   } else if (info.childStructInfo.providerDecoratorSet.has(itemName)) {
     typeName = COMPONENTV2_PROVIDER_DECORATOR;
-  } else if (info.childStructInfo.paramDecoratorMap.has(itemName)) {
-    typeName = COMPONENTV2_PARAM_DECORATOR;
-  } else if (info.childStructInfo.eventDecoratorMap.has(itemName)) {
-    typeName = COMPONENTV2_EVENT_DECORATOR;
   }
   return typeName;
 }
 
 function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
   childParam: ts.PropertyAssignment[], log: LogInfo[], info: ChildAndParentComponentInfo): void {
-  if (ts.isPropertyAccessExpression(item.initializer) &&
-    item.initializer.expression.kind === ts.SyntaxKind.ThisKeyword) {
-    const { parentPropertyName, parentPropertyKind } = getParentPropertyInfo(item);
-    if (handleV1ParentWithV2Child(item, itemName, parentPropertyName, parentPropertyKind, info, log)) {
-      return;
-    }
-    if (handleV2ParentWithV1Child(item, itemName, parentPropertyName, parentPropertyKind, info, log)) {
-      return;
-    }
-  }
   if (info.childStructInfo.isComponentV2) {
     if (info.forbiddenInitPropsV2.includes(itemName)) {
       const propType: string = getForbbidenInitPropsV2Type(itemName, info);
@@ -487,77 +469,6 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
     }
   }
   logMessageCollection.checkIfAssignToStaticProps(item, itemName, info.childStructInfo.staticPropertySet, log);
-}
-
-function getParentPropertyInfo(item: ts.PropertyAssignment): { parentPropertyName: string; parentPropertyKind: string } {
-  if (ts.isPropertyAccessExpression(item.initializer)) {
-    const parentPropertyName: string = item.initializer.name.getText();
-    let parentPropertyKind = "regular";
-
-    const symbol: ts.Symbol = globalProgram.checker.getSymbolAtLocation(item.initializer.name);
-    if (symbol && symbol.valueDeclaration && ts.isPropertyDeclaration(symbol.valueDeclaration)) {
-      if (symbol.valueDeclaration.modifiers) {
-        for (const decorator of symbol.valueDeclaration.modifiers) {
-          if (ts.isDecorator(decorator)) {
-            if (ts.isIdentifier(decorator.expression)) {
-              parentPropertyKind = decorator.expression.escapedText.toString();
-              break;
-            } else if (ts.isCallExpression(decorator.expression) && ts.isIdentifier(decorator.expression.expression)) {
-              parentPropertyKind = decorator.expression.expression.escapedText.toString();
-              break;
-            }
-          }
-        }
-      }
-    }
-    return { parentPropertyName, parentPropertyKind };
-  }
-}
-
-function handleV1ParentWithV2Child(
-  item: ts.PropertyAssignment, 
-  itemName: string, 
-  parentPropertyName: string, 
-  parentPropertyKind: string,
-  info: ChildAndParentComponentInfo, 
-  log: LogInfo[]
-): boolean {
-  if (!info.parentStructInfo.isComponentV2 && info.childStructInfo.isComponentV2) {
-    const propType: string = getForbbidenInitPropsV2Type( itemName, info );
-    const symbol = parentPropertyKind === "regular" ? "" : "@";
-    log.push({
-      type: LogType.ERROR,
-      message: `The ${symbol}${parentPropertyKind} property ${parentPropertyName} cannot be assigned to the` +
-          ` ${propType} property ${itemName} when interop.`,
-      pos: item.getStart(),
-      code: '10905501'
-    });
-    return true;
-  }
-  return false;
-}
-
-function handleV2ParentWithV1Child(item: ts.PropertyAssignment, itemName: string, parentPropertyName: string,
-  parentPropertyKind: string, info: ChildAndParentComponentInfo, log: LogInfo[]): boolean {
-  if (info.parentStructInfo.isComponentV2 && !info.childStructInfo.isComponentV2) {
-    if (!info.forbiddenInitPropsV1 || info.forbiddenInitPropsV1.size === 0) {
-      return true;
-    }
-    const symbol = parentPropertyKind === "regular" ? "" : "@";
-    for (const [key, arr] of info.forbiddenInitPropsV1) {
-      if (arr.includes(itemName)) {
-        log.push({
-          type: LogType.ERROR,
-          message: `The ${symbol}${parentPropertyKind} property ${parentPropertyName} cannot be assigned to the` +
-              ` ${key} property ${itemName} when interop.`,
-          pos: item.getStart(),
-          code: '10905501'
-        });
-        return true;
-      }
-    }
-  }
-  return false;
 }
 
 function isForbiddenTypeToComponentV1(type: ts.Type): boolean {
