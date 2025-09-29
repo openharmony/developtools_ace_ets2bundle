@@ -68,6 +68,7 @@ import RequireDecoratorRegularRule from './require-decorator-regular';
 import ReusableComponentInV2CheckRule from './reusable-component-in-V2-check';
 import SpecificComponentChildrenRule from './specific-component-children';
 import EntryComponentV2InvalidParamsRule from './entry-componentv2-invalid-params';
+import StructAttributeNoTypeRule from './struct-attribute-no-type';
 
 const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [AttributeNoInvokeRule, 'error'],
@@ -123,7 +124,8 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [RequireDecoratorRegularRule, 'warn'],
     [ReusableComponentInV2CheckRule, 'warn'],
     [SpecificComponentChildrenRule, 'error'],
-    [EntryComponentV2InvalidParamsRule, 'warn']
+    [EntryComponentV2InvalidParamsRule, 'warn'],
+    [StructAttributeNoTypeRule, 'error'],
 ];
 
 export default rules;

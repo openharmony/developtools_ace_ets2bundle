@@ -518,7 +518,7 @@ export function isDoubleDollarCall(
         return false;
     }
     const expr = _value.expression;
-    if (!(!!expr && arkts.isIdentifier(expr) && expr.name === Dollars.DOLLAR_DOLLAR)) {
+    if (!expr || !arkts.isIdentifier(expr) || expr.name !== Dollars.DOLLAR_DOLLAR) {
         return false;
     }
     if (!ignoreDecl) {
