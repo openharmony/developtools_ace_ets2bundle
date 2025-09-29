@@ -30,7 +30,7 @@ import {
     createInitReturn
 } from './utils';
 import { DecoratorNames } from '../../common/predefines';
-import { hasDecorator } from '../property-translators/utils';
+import { hasDecoratorInterop } from './utils';
 
 
 function paramsLambdaDeclaration(name: string, args?: arkts.ObjectExpression): arkts.Statement[] {
@@ -328,7 +328,7 @@ function generateVarMap(context: InteropContext, decl: arkts.ClassDefinition): M
         if (node instanceof arkts.ClassProperty && node.key instanceof arkts.Identifier) {
             const key = node.key.name;
             result.set(key, node);
-            if (needBuilderParam && hasDecorator(node, DecoratorNames.BUILDER_PARAM)) {
+            if (needBuilderParam && hasDecoratorInterop(node, DecoratorNames.BUILDER_PARAM)) {
                 context.arguments = updateArguments(context, key);
                 needBuilderParam = false;
             }

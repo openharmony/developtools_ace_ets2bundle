@@ -27,7 +27,7 @@ import {
 const fs = require('fs');
 const path = require('path');
 
-const OHOS_ARKUI_STATEMANAGEMENT: string = '@ohos.arkui.stateManagement';
+const OHOS_ARKUI_STATEMANAGEMENT: string = 'dynamic/@ohos.arkui.GlobalAnnotation';
 const OHOS_ARKUI_COMPONENT: string = '@ohos.arkui.component';
 const ARKUI_EXTEND: string = 'Extend';
 const ARKUI_STYLES: string = 'Styles';
