@@ -24,6 +24,7 @@ import {
     generateGetOrSetCall,
     hasDecorator,
     collectStateManagementTypeImport,
+    findCachedMemoMetadata,
 } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
@@ -55,7 +56,11 @@ export class ParamTranslator extends PropertyTranslator implements InitializerCo
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
         const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
-
+        if (this.isMemoCached) {
+            const metadata = findCachedMemoMetadata(this.property, false);
+            arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
+            arkts.NodeCache.getInstance().collect(getter, metadata);
+        }
         return [field, getter];
     }
 
@@ -76,7 +81,13 @@ export class ParamTranslator extends PropertyTranslator implements InitializerCo
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_PARAM, this.propertyType, args, true)
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_PARAM,
+                this.propertyType?.clone(),
+                args,
+                true,
+                this.isMemoCached ? findCachedMemoMetadata(this.property, true) : undefined
+            )
         );
         return arkts.factory.createExpressionStatement(assign);
     }
@@ -89,18 +100,21 @@ export class ParamTranslator extends PropertyTranslator implements InitializerCo
             false,
             false
         );
-        return factory.createIfInUpdateStruct(originalName, member, [
-            arkts.factory.createTSAsExpression(
-                factory.createNonNullOrOptionalMemberExpression(
-                    CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
-                    originalName,
-                    false,
-                    true
-                ),
-                this.propertyType,
-                false
+        const asExpression = arkts.factory.createTSAsExpression(
+            factory.createNonNullOrOptionalMemberExpression(
+                CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
+                originalName,
+                false,
+                true
             ),
-        ]);
+            this.propertyType,
+            false
+        );
+        if (this.isMemoCached) {
+            const metadata = findCachedMemoMetadata(this.property, false);
+            arkts.NodeCache.getInstance().collect(asExpression, { ...metadata, isWithinTypeParams: true });
+        }
+        return factory.createIfInUpdateStruct(originalName, member, [asExpression]);
     }
 }
 
@@ -132,7 +146,8 @@ export class ParamInterfaceTranslator<T extends InterfacePropertyTypes> extends 
      * @param method expecting getter with `@Param` and a setter with `@Param` in the overloads.
      */
     private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
-        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.PARAM);
+        const metadata = findCachedMemoMetadata(method);
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.PARAM, metadata);
     }
 
     /**
