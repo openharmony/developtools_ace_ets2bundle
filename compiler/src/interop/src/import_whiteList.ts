@@ -1613,8 +1613,8 @@ export const stateManagementWhiteList: string[] = [
   'AppStorage',
   'PersistentStorage',
   'Environment',
-  'AppStorageV2',
-  'PersistenceV2',
+  'ColorMode',
+  'LayoutDirection',
 ];
 
 export const decoratorsWhiteList: string[] = [
