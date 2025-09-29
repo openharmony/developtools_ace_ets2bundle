@@ -145,7 +145,7 @@ export function resetInteropRenderingFlag(): ts.Statement {
         ts.factory.createThis(),
         ts.factory.createIdentifier('__interopInStaticRendering_internal_')
       ),
-      ts.factory.createToken(ts.SyntaxKind.EqualsEqualsToken),
+      ts.factory.createToken(ts.SyntaxKind.EqualsToken),
       ts.factory.createFalse()
     )
   );
