@@ -38,16 +38,25 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+import { RowAttribute as RowAttribute } from "arkui.component.row";
 import { ConditionScope as ConditionScope } from "arkui.component.builder";
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
+import { RowImpl as RowImpl } from "arkui.component.row";
 import { memo as memo } from "arkui.stateManagement.runtime";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+import { TextImpl as TextImpl } from "arkui.component.text";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Entry as Entry, Builder as Builder, BuilderParam as BuilderParam, Column as Column, Text as Text, Row as Row } from "@kit.ArkUI";
 
 function main() {}
 
 @memo() function showTextBuilder() {
-  Text(undefined, "Hello World", undefined, undefined);
+  TextImpl(@memo() ((instance: TextAttribute): void => {
+    instance.setTextOptions("Hello World", undefined).applyAttributesFinish();
+    return;
+  }), undefined);
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
@@ -81,7 +90,10 @@ function main() {}
   }
 
   @memo() public build() {
-    Row(undefined, undefined, @memo() (() => {
+    RowImpl(@memo() ((instance: RowAttribute): void => {
+      instance.setRowOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
       ConditionScope(@memo() (() => {
         if (this.customBuilderParam2) {
           ConditionBranch(@memo() (() => {
@@ -110,11 +122,17 @@ function main() {}
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   @memo() public componentBuilder() {
-    Text(undefined, "Parent builder", undefined, undefined);
+    TextImpl(@memo() ((instance: TextAttribute): void => {
+      instance.setTextOptions("Parent builder", undefined).applyAttributesFinish();
+      return;
+    }), undefined);
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {
@@ -153,9 +171,15 @@ function main() {}
 
 const expectedMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+import { RowAttribute as RowAttribute } from "arkui.component.row";
 import { ConditionScope as ConditionScope } from "arkui.component.builder";
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
+import { RowImpl as RowImpl } from "arkui.component.row";
 import { memo as memo } from "arkui.stateManagement.runtime";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+import { TextImpl as TextImpl } from "arkui.component.text";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Entry as Entry, Builder as Builder, BuilderParam as BuilderParam, Column as Column, Text as Text, Row as Row } from "@kit.ArkUI";
 
@@ -167,7 +191,19 @@ function main() {}
     __memo_scope.cached;
     return;
   }
-  Text(__memo_context, ((__memo_id) + (47330804)), undefined, "Hello World", undefined, undefined);
+  TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+    const __memo_parameter_instance = __memo_scope.param(0, instance);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
+      return;
+    }
+    __memo_parameter_instance.value.setTextOptions("Hello World", undefined).applyAttributesFinish();
+    {
+      __memo_scope.recache();
+      return;
+    }
+  }), undefined);
   {
     __memo_scope.recache();
     return;
@@ -210,7 +246,19 @@ function main() {}
       __memo_scope.cached;
       return;
     }
-    Row(__memo_context, ((__memo_id) + (46726221)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    RowImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: RowAttribute): void => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+      const __memo_parameter_instance = __memo_scope.param(0, instance);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      __memo_parameter_instance.value.setRowOptions(undefined).applyAttributesFinish();
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
       const __memo_scope = __memo_context.scope<void>(((__memo_id) + (213104625)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -293,7 +341,19 @@ function main() {}
       __memo_scope.cached;
       return;
     }
-    Text(__memo_context, ((__memo_id) + (218979098)), undefined, "Parent builder", undefined, undefined);
+    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+      const __memo_parameter_instance = __memo_scope.param(0, instance);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      __memo_parameter_instance.value.setTextOptions("Parent builder", undefined).applyAttributesFinish();
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }), undefined);
     {
       __memo_scope.recache();
       return;
@@ -306,7 +366,19 @@ function main() {}
       __memo_scope.cached;
       return;
     }
-    Column(__memo_context, ((__memo_id) + (78055758)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    ColumnImpl(__memo_context, ((__memo_id) + (78055758)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+      const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+      const __memo_parameter_instance = __memo_scope.param(0, instance);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      __memo_parameter_instance.value.setColumnOptions(undefined).applyAttributesFinish();
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
       const __memo_scope = __memo_context.scope<void>(((__memo_id) + (136716185)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;

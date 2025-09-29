@@ -40,13 +40,25 @@ const parsedTransform: Plugins = {
 const expectedCheckedScript: string = `
 import { IConsumerDecoratedVariable as IConsumerDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { DividerAttribute as DividerAttribute } from "arkui.component.divider";
+
+import { DividerImpl as DividerImpl } from "arkui.component.divider";
+
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
+import { TextImpl as TextImpl } from "arkui.component.text";
+
 import { IProviderDecoratedVariable as IProviderDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
+
+import { ButtonImpl as ButtonImpl } from "arkui.component.button";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -152,28 +164,31 @@ function main() {}
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), undefined, undefined, undefined);
-      Button(@memo() ((instance: ButtonAttribute): void => {
-        instance.onClick(((e) => {
+      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+        instance.setButtonOptions("add new user", undefined).onClick(((e) => {
           this.users.push(new User("Molly", 18));
-        }));
+        })).applyAttributesFinish();
         return;
-      }), "add new user", undefined, undefined);
-      Button(@memo() ((instance: ButtonAttribute): void => {
-        instance.onClick(((e) => {
+      }), undefined);
+      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+        instance.setButtonOptions("age++", undefined).onClick(((e) => {
           (this.users[0].age++);
-        }));
+        })).applyAttributesFinish();
         return;
-      }), "age++", undefined, undefined);
-      Button(@memo() ((instance: ButtonAttribute): void => {
-        instance.onClick(((e) => {
+      }), undefined);
+      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+        instance.setButtonOptions("change name", undefined).onClick(((e) => {
           this.users[0].name = "Shelly";
-        }));
+        })).applyAttributesFinish();
         return;
-      }), "change name", undefined, undefined);
+      }), undefined);
     }));
   }
 
@@ -199,20 +214,29 @@ function main() {}
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
       ForEach<User>(((): Array<User> => {
         return this.users;
       }), ((item: User) => {
-        Column(undefined, undefined, @memo() (() => {
-          Text(@memo() ((instance: TextAttribute): void => {
-            instance.fontSize(30);
+        ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+          instance.setColumnOptions(undefined).applyAttributesFinish();
+          return;
+        }), @memo() (() => {
+          TextImpl(@memo() ((instance: TextAttribute): void => {
+            instance.setTextOptions(\`name: \${item.name}\`, undefined).fontSize(30).applyAttributesFinish();
             return;
-          }), \`name: \${item.name}\`, undefined, undefined);
-          Text(@memo() ((instance: TextAttribute): void => {
-            instance.fontSize(30);
+          }), undefined);
+          TextImpl(@memo() ((instance: TextAttribute): void => {
+            instance.setTextOptions(\`age: \${item.age}\`, undefined).fontSize(30).applyAttributesFinish();
             return;
-          }), \`age: \${item.age}\`, undefined, undefined);
-          Divider(undefined);
+          }), undefined);
+          DividerImpl(@memo() ((instance: DividerAttribute): void => {
+            instance.setDividerOptions().applyAttributesFinish();
+            return;
+          }));
         }));
       }));
     }));

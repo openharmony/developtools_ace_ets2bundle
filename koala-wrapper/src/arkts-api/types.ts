@@ -576,7 +576,7 @@ export class ETSParameterExpression extends Expression {
         global.generatedEs2panda._ETSParameterExpressionSetTypeAnnotation(global.context, this.peer, t.peer);
     }
 
-    get optional(): Boolean {
+    get optional(): boolean {
         return global.generatedEs2panda._ETSParameterExpressionIsOptionalConst(global.context, this.peer);
     }
 

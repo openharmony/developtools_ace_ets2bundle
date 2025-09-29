@@ -93,6 +93,9 @@ import hilog from "@ohos.hilog";
 
 const expectedCheckedScript: string = `
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
@@ -136,7 +139,10 @@ function main() {}
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {}));
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {}));
   }
 
   public constructor() {}
@@ -167,7 +173,10 @@ function main() {}
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {}));
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {}));
   }
 
   public constructor() {}

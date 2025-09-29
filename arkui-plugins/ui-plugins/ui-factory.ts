@@ -146,10 +146,17 @@ export class factory {
     /**
      * create type from string
      */
-    static createTypeReferenceFromString(name: string): arkts.TypeNode {
-        return arkts.factory.createTypeReference(
-            arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(name))
-        );
+    static createTypeReferenceFromString(
+        name: string,
+        typeParams?: arkts.TSTypeParameterInstantiation
+    ): arkts.TypeNode {
+        let part: arkts.ETSTypeReferencePart;
+        if (!!typeParams) {
+            part = arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(name), typeParams);
+        } else {
+            part = arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(name));
+        }
+        return arkts.factory.createTypeReference(part);
     }
 
     /**
