@@ -39,10 +39,15 @@ const parsedTransform: Plugins = {
 
 const expectedScript: string = `
 
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
+import { TextImpl as TextImpl } from "arkui.component.text";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -73,15 +78,18 @@ function main() {}
   public __updateStruct(initializers: (__Options_MM | undefined)): void {}
   
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Text(@memo() ((instance: TextAttribute): void => {
-        style22(cardStyle(instance.height(200).fontColor("#000000"), 600, "#eeeeee").fontSize(60).fontWeight(400)).width(900);
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        style22(cardStyle(instance.setTextOptions("hello world", undefined).height(200).fontColor("#000000"), 600, "#eeeeee").fontSize(60).fontWeight(400)).width(900).applyAttributesFinish();
         return;
-      }), "hello world", undefined, undefined);
-      Text(@memo() ((instance: TextAttribute): void => {
-        cardStyle(instance, 600, "#eeeeee");
+      }), undefined);
+      TextImpl(@memo() ((instance: TextAttribute): void => {
+        cardStyle(instance.setTextOptions("hello world", undefined), 600, "#eeeeee").applyAttributesFinish();
         return;
-      }), "hello world", undefined, undefined);
+      }), undefined);
     }));
   }
   

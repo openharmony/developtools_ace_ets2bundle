@@ -38,9 +38,13 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+import { TextImpl as TextImpl } from "arkui.component.text";
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
 import { Text as Text, Column as Column, Component as Component } from \"@ohos.arkui.component\";
 function main() {}
@@ -48,23 +52,35 @@ function main() {}
     public __initializeStruct(initializers: (__Options_IfElse | undefined), @memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_IfElse | undefined)): void {}
     @memo() public build() {
-        Column(undefined, undefined, @memo() (() => {
+        ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+            instance.setColumnOptions(undefined).applyAttributesFinish();
+            return;
+        }), @memo() (() => {
             ConditionScope(@memo() (() => {
                 if (true) {
                     ConditionBranch(@memo() (() => {
                         ConditionScope(@memo() (() => {
                             if (false) {
                                 ConditionBranch(@memo() (() => {
-                                    Text(undefined, \"if-if\", undefined, undefined);
+                                    TextImpl(@memo() ((instance: TextAttribute): void => {
+                                        instance.setTextOptions("if-if", undefined).applyAttributesFinish();
+                                        return;
+                                    }), undefined);
                                 }));
                             } else {
                                 if (true) {
                                     ConditionBranch(@memo() (() => {
-                                        Text(undefined, \"if-elseIf\", undefined, undefined);
+                                        TextImpl(@memo() ((instance: TextAttribute): void => {
+                                            instance.setTextOptions("if-elseIf", undefined).applyAttributesFinish();
+                                            return;
+                                        }), undefined);
                                     }));
                                 } else {
                                     ConditionBranch(@memo() (() => {
-                                        Text(undefined, \"if-else\", undefined, undefined);
+                                        TextImpl(@memo() ((instance: TextAttribute): void => {
+                                            instance.setTextOptions("if-else", undefined).applyAttributesFinish();
+                                            return;
+                                        }), undefined);
                                     }));
                                 }
                             }
@@ -73,18 +89,30 @@ function main() {}
                 } else {
                     if (false) {
                         ConditionBranch(@memo() (() => {
-                            Text(undefined, \"elseIf\", undefined, undefined);
+                            TextImpl(@memo() ((instance: TextAttribute): void => {
+                                instance.setTextOptions("elseIf", undefined).applyAttributesFinish();
+                                return;
+                            }), undefined);
                         }));
                     } else {
                         ConditionBranch(@memo() (() => {
-                            Text(undefined, \"else\", undefined, undefined);
+                            TextImpl(@memo() ((instance: TextAttribute): void => {
+                                instance.setTextOptions("else", undefined).applyAttributesFinish();
+                                return;
+                            }), undefined);
                         }));
                         return;
-                        Text(undefined, \"after-return\", undefined, undefined);
+                        TextImpl(@memo() ((instance: TextAttribute): void => {
+                            instance.setTextOptions("after-return", undefined).applyAttributesFinish();
+                            return;
+                        }), undefined);
                     }
                 }
             }));
-            Text(undefined, \"hello world\", undefined, undefined);
+            TextImpl(@memo() ((instance: TextAttribute): void => {
+                instance.setTextOptions("hello world", undefined).applyAttributesFinish();
+                return;
+            }), undefined);
         }));
     }
     public constructor() {}
@@ -99,9 +127,13 @@ function testUITransformer(this: PluginTestContext): void {
 
 const expectedMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+import { TextImpl as TextImpl } from "arkui.component.text";
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
 import { Text as Text, Column as Column, Component as Component } from \"@ohos.arkui.component\";
 function main() {}
@@ -114,7 +146,19 @@ function main() {}
             __memo_scope.cached;
             return;
         }
-        Column(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+            const __memo_parameter_instance = __memo_scope.param(0, instance);
+            if (__memo_scope.unchanged) {
+                __memo_scope.cached;
+                return;
+            }
+            __memo_parameter_instance.value.setColumnOptions(undefined).applyAttributesFinish();
+            {
+                __memo_scope.recache();
+                return;
+            }
+        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -146,7 +190,19 @@ function main() {}
                                         __memo_scope.cached;
                                         return;
                                     }
-                                    Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"if-if\", undefined, undefined);
+                                    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                                        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                        const __memo_parameter_instance = __memo_scope.param(0, instance);
+                                        if (__memo_scope.unchanged) {
+                                            __memo_scope.cached;
+                                            return;
+                                        }
+                                        __memo_parameter_instance.value.setTextOptions("if-if", undefined).applyAttributesFinish();
+                                        {
+                                            __memo_scope.recache();
+                                            return;
+                                        }
+                                    }), undefined);
                                     {
                                         __memo_scope.recache();
                                         return;
@@ -160,7 +216,19 @@ function main() {}
                                             __memo_scope.cached;
                                             return;
                                         }
-                                        Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"if-elseIf\", undefined, undefined);
+                                        TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                                            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                            const __memo_parameter_instance = __memo_scope.param(0, instance);
+                                            if (__memo_scope.unchanged) {
+                                                __memo_scope.cached;
+                                                return;
+                                            }
+                                            __memo_parameter_instance.value.setTextOptions("if-elseIf", undefined).applyAttributesFinish();
+                                            {
+                                                __memo_scope.recache();
+                                                return;
+                                            }
+                                        }), undefined);
                                         {
                                             __memo_scope.recache();
                                             return;
@@ -173,7 +241,19 @@ function main() {}
                                             __memo_scope.cached;
                                             return;
                                         }
-                                        Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"if-else\", undefined, undefined);
+                                        TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                                            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                            const __memo_parameter_instance = __memo_scope.param(0, instance);
+                                            if (__memo_scope.unchanged) {
+                                                __memo_scope.cached;
+                                                return;
+                                            }
+                                            __memo_parameter_instance.value.setTextOptions("if-else", undefined).applyAttributesFinish();
+                                            {
+                                                __memo_scope.recache();
+                                                return;
+                                            }
+                                        }), undefined);
                                         {
                                             __memo_scope.recache();
                                             return;
@@ -199,7 +279,19 @@ function main() {}
                                 __memo_scope.cached;
                                 return;
                             }
-                            Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"elseIf\", undefined, undefined);
+                            TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                                const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                const __memo_parameter_instance = __memo_scope.param(0, instance);
+                                if (__memo_scope.unchanged) {
+                                    __memo_scope.cached;
+                                    return;
+                                }
+                                __memo_parameter_instance.value.setTextOptions("elseIf", undefined).applyAttributesFinish();
+                                {
+                                    __memo_scope.recache();
+                                    return;
+                                }
+                            }), undefined);
                             {
                                 __memo_scope.recache();
                                 return;
@@ -212,14 +304,38 @@ function main() {}
                                 __memo_scope.cached;
                                 return;
                             }
-                            Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"else\", undefined, undefined);
+                            TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                                const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                const __memo_parameter_instance = __memo_scope.param(0, instance);
+                                if (__memo_scope.unchanged) {
+                                    __memo_scope.cached;
+                                    return;
+                                }
+                                __memo_parameter_instance.value.setTextOptions("else", undefined).applyAttributesFinish();
+                                {
+                                    __memo_scope.recache();
+                                    return;
+                                }
+                            }), undefined);
                             {
                                 __memo_scope.recache();
                                 return;
                             }
                         }));
                         return;
-                        Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"after-return\", undefined, undefined);
+                        TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                            const __memo_parameter_instance = __memo_scope.param(0, instance);
+                            if (__memo_scope.unchanged) {
+                                __memo_scope.cached;
+                                return;
+                            }
+                            __memo_parameter_instance.value.setTextOptions("after-return", undefined).applyAttributesFinish();
+                            {
+                                __memo_scope.recache();
+                                return;
+                            }
+                        }), undefined);
                     }
                 }
                 {
@@ -227,7 +343,19 @@ function main() {}
                     return;
                 }
             }));
-            Text(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, \"hello world\", undefined, undefined);
+            TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                const __memo_parameter_instance = __memo_scope.param(0, instance);
+                if (__memo_scope.unchanged) {
+                    __memo_scope.cached;
+                    return;
+                }
+                __memo_parameter_instance.value.setTextOptions("hello world", undefined).applyAttributesFinish();
+                {
+                    __memo_scope.recache();
+                    return;
+                }
+            }), undefined);
             {
                 __memo_scope.recache();
                 return;

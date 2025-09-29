@@ -39,17 +39,15 @@ const parsedTransform: Plugins = {
 
 const expectedScript: string = `
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
-
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
-
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { memo as memo } from "arkui.stateManagement.runtime";
-
+import { ToggleAttribute as ToggleAttribute } from "arkui.component.toggle";
 import { Bindable as Bindable } from "arkui.component.common";
-
+import { ToggleImpl as ToggleImpl } from "arkui.component.toggle";
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
 import { Text as Text, Column as Column, Component as Component, $$ as $$, Toggle as Toggle, ToggleType as ToggleType } from "@ohos.arkui.component";
-
 import { State as State } from "@ohos.arkui.stateManagement";
 
 let c: Array<boolean>;
@@ -96,34 +94,46 @@ class BooleanClass {
   }
 
   @memo() public build() {
-    Column(undefined, undefined, @memo() (() => {
-      Toggle(undefined, {
-        type: ToggleType.Checkbox,
-        isOn: ({
-          value: this.boo[0],
-          onChange: ((value: boolean) => {
-            this.boo[0] = value;
-          }),
-        } as Bindable<boolean>),
-      }, undefined);
-      Toggle(undefined, {
-        type: ToggleType.Checkbox,
-        isOn: ({
-          value: this.booClass.isOn,
-          onChange: ((value: boolean) => {
-            this.booClass.isOn = value;
-          }),
-        } as Bindable<boolean>),
-      }, undefined);
-      Toggle(undefined, {
-        type: ToggleType.Checkbox,
-        isOn: ({
-          value: c[1],
-          onChange: ((value: boolean) => {
-            c[1] = value;
-          }),
-        } as Bindable<boolean>),
-      }, undefined);
+    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined).applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      ToggleImpl(@memo() ((instance: ToggleAttribute): void => {
+        instance.setToggleOptions({
+          type: ToggleType.Checkbox,
+          isOn: ({
+            value: this.boo[0],
+            onChange: ((value: boolean) => {
+              this.boo[0] = value;
+            }),
+          } as Bindable<boolean>),
+        }).applyAttributesFinish();
+        return;
+      }), undefined);
+      ToggleImpl(@memo() ((instance: ToggleAttribute): void => {
+        instance.setToggleOptions({
+          type: ToggleType.Checkbox,
+          isOn: ({
+            value: this.booClass.isOn,
+            onChange: ((value: boolean) => {
+              this.booClass.isOn = value;
+            }),
+          } as Bindable<boolean>),
+        }).applyAttributesFinish();
+        return;
+      }), undefined);
+      ToggleImpl(@memo() ((instance: ToggleAttribute): void => {
+        instance.setToggleOptions({
+          type: ToggleType.Checkbox,
+          isOn: ({
+            value: c[1],
+            onChange: ((value: boolean) => {
+              c[1] = value;
+            }),
+          } as Bindable<boolean>),
+        }).applyAttributesFinish();
+        return;
+      }), undefined);
     }));
   }
 
