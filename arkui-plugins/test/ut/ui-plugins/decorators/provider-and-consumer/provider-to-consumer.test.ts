@@ -217,7 +217,7 @@ function main() {}
       return;
     }), @memo() (() => {
       ForEachImpl<User>(@memo() ((instance: ForEachAttribute): void => {
-        instance.setForEachOptions<User>(((): Array<User> => {
+        instance.setForEachOptions<User>((() => {
           return this.users;
         }), @memo() ((item: User) => {
           ColumnImpl(@memo() ((instance: ColumnAttribute): void => {

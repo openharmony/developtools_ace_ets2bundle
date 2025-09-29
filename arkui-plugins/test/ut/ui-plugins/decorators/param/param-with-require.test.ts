@@ -230,7 +230,7 @@ class Info {
       return;
     }), @memo() (() => {
       ForEachImpl<Info>(@memo() ((instance: ForEachAttribute): void => {
-        instance.setForEachOptions<Info>(((): Array<Info> => {
+        instance.setForEachOptions<Info>((() => {
           return this.infoList;
         }), @memo() ((info: Info) => {
           MiddleComponent._instantiateImpl(undefined, (() => {

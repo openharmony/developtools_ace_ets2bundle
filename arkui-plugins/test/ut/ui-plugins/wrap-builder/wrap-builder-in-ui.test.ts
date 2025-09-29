@@ -86,7 +86,7 @@ function main() {}
   
   @memo() public testBuilder() {
     ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
-      instance.setForEachOptions(((): Array<WrappedBuilder<MyBuilderFuncType>> => {
+      instance.setForEachOptions((() => {
         return globalBuilderArr;
       }), @memo() ((item: WrappedBuilder<MyBuilderFuncType>) => {
         item.builder("hello world", 39);
@@ -215,7 +215,7 @@ function main() {}
         __memo_scope.cached;
         return;
       }
-      __memo_parameter_instance.value.setForEachOptions(((): Array<WrappedBuilder<MyBuilderFuncType>> => {
+      __memo_parameter_instance.value.setForEachOptions((() => {
         return globalBuilderArr;
       }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<MyBuilderFuncType>) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (76711614)), 1);
