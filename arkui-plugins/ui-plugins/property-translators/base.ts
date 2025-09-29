@@ -29,11 +29,13 @@ export abstract class PropertyTranslator {
     protected property: arkts.ClassProperty;
     protected structInfo: CustomComponentInfo;
     protected propertyType: arkts.TypeNode | undefined;
+    protected isMemoCached?: boolean;
 
     constructor(options: PropertyTranslatorOptions) {
         this.property = options.property;
         this.structInfo = options.structInfo;
         this.propertyType = getClassPropertyType(options.property);
+        this.isMemoCached = arkts.NodeCache.getInstance().has(options.property);
     }
 
     abstract translateMember(): arkts.AstNode[];

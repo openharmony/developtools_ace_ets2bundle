@@ -29,6 +29,7 @@ import {
     findCanAddMemoFromTypeAnnotation,
 } from '../../collectors/memo-collectors/utils';
 import { CustomDialogNames } from '../utils';
+import { CachedMetadata } from '../../memo-plugins/memo-cache-factory';
 
 export interface DecoratorInfo {
     annotation: arkts.AnnotationUsage;
@@ -455,4 +456,15 @@ function getMonitorStrFromMemberExpr(node: arkts.MemberExpression): string | und
         return args[1].str;
     }
     return undefined;
+}
+
+export function findCachedMemoMetadata(node: arkts.AstNode, shouldWrapType: boolean = true): arkts.AstNodeCacheValueMetadata | undefined {
+    if (!arkts.NodeCache.getInstance().has(node)) {
+        return undefined;
+    }
+    const metadata = arkts.NodeCache.getInstance().get(node)?.metadata ?? {};
+    if (!!shouldWrapType) {
+        metadata.isWithinTypeParams = true;
+    }
+    return metadata;
 }

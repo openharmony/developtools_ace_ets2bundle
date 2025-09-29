@@ -28,6 +28,7 @@ import {
     collectStateManagementTypeImport,
     hasDecorator,
     getValueInAnnotation,
+    findCachedMemoMetadata,
 } from './utils';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
@@ -69,7 +70,13 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
         return arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_STORAGE_LINK, this.propertyType, args, true)
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_STORAGE_LINK,
+                this.propertyType?.clone(),
+                args,
+                true,
+                this.isMemoCached ? findCachedMemoMetadata(this.property, true) : undefined
+            )
         );
     }
 
@@ -87,6 +94,12 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
         );
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
+        if (this.isMemoCached) {
+            const metadata = findCachedMemoMetadata(this.property, false);
+            arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
+            arkts.NodeCache.getInstance().collect(getter, metadata);
+            arkts.NodeCache.getInstance().collect(setter, metadata);
+        }
         return [field, getter, setter];
     }
 
@@ -135,7 +148,8 @@ export class StorageLinkInterfaceTranslator<T extends InterfacePropertyTypes> ex
      * @param method expecting getter with `@StorageLink` and a setter with `@StorageLink` in the overloads.
      */
     private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
-        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.STORAGE_LINK);
+        const metadata = findCachedMemoMetadata(method);
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.STORAGE_LINK, metadata);
     }
 
     /**

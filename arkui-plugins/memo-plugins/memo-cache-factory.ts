@@ -36,17 +36,29 @@ export interface CachedMetadata extends arkts.AstNodeCacheValueMetadata {
 }
 
 export class RewriteFactory {
+    static rewriteTsAsExpression(node: arkts.TSAsExpression, metadata?: CachedMetadata): arkts.TSAsExpression {
+        return arkts.factory.updateTSAsExpression(
+            node,
+            node.expr,
+            RewriteFactory.rewriteType(node.typeAnnotation, metadata),
+            node.isConst
+        );
+    }
+
     static rewriteUnionType(node: arkts.ETSUnionType, metadata?: CachedMetadata): arkts.ETSUnionType {
         return arkts.factory.updateUnionType(
             node,
-            node.types.map((t) => {
-                if (arkts.isETSFunctionType(t)) {
-                    return RewriteFactory.rewriteFunctionType(t, metadata);
+            node.types.map((nodeType) => {
+                if (arkts.isETSFunctionType(nodeType)) {
+                    return RewriteFactory.rewriteFunctionType(nodeType, metadata);
                 }
-                if (arkts.isETSUnionType(t)) {
-                    return RewriteFactory.rewriteUnionType(t, metadata);
+                if (arkts.isETSUnionType(nodeType)) {
+                    return RewriteFactory.rewriteUnionType(nodeType, metadata);
                 }
-                return t;
+                if (arkts.isETSTypeReference(nodeType)) {
+                    return RewriteFactory.rewriteETSTypeReference(nodeType, metadata);
+                }
+                return nodeType;
             })
         );
     }
@@ -214,17 +226,20 @@ export class RewriteFactory {
         const _hasMemoEntry = !!metadata?.hasMemoEntry;
         const _hasMemoIntrinsic = !!metadata?.hasMemoIntrinsic;
         const _internalsTransformer = metadata?.internalsTransformer;
+        const _isWithinTypeParams = metadata?.isWithinTypeParams;
         const _isDecl = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
         const newParams = prepareRewriteScriptFunctionParameters(
             node,
             _isSetter,
             _isGetter,
-            _hasReceiver
+            _hasReceiver,
+            _isWithinTypeParams
         );
         const newReturnType: arkts.TypeNode | undefined = prepareRewriteScriptFunctionReturnType(
             node,
             _isGetter,
-            _hasReceiver
+            _hasReceiver,
+            _isWithinTypeParams
         );
         const newBody: arkts.AstNode | undefined = prepareRewriteScriptFunctionBody(
             node,
@@ -350,19 +365,21 @@ function prepareRewriteScriptFunctionParameters(
     node: arkts.ScriptFunction,
     isSetter?: boolean,
     isGetter?: boolean,
-    hasReceiver?: boolean
+    hasReceiver?: boolean,
+    isWithinTypeParams?: boolean
 ): readonly arkts.Expression[] {
     let newParams: readonly arkts.Expression[] = node.params;
     if (!isSetter && !isGetter) {
         newParams = factory.createHiddenParameterIfNotAdded(node.params, node.hasReceiver);
     } else if (isSetter && node.params.length > 0) {
+        const metadata = { isWithinTypeParams };
         if (hasReceiver && node.params.length === 2) {
             newParams = [
                 node.params.at(0)!,
-                RewriteFactory.rewriteParameter(node.params.at(1)! as arkts.ETSParameterExpression),
+                RewriteFactory.rewriteParameter(node.params.at(1)! as arkts.ETSParameterExpression, metadata),
             ];
         } else {
-            newParams = [RewriteFactory.rewriteParameter(node.params.at(0)! as arkts.ETSParameterExpression)];
+            newParams = [RewriteFactory.rewriteParameter(node.params.at(0)! as arkts.ETSParameterExpression, metadata)];
         }
     }
     return newParams;
@@ -371,11 +388,12 @@ function prepareRewriteScriptFunctionParameters(
 function prepareRewriteScriptFunctionReturnType(
     node: arkts.ScriptFunction,
     isGetter?: boolean,
-    hasReceiver?: boolean
+    hasReceiver?: boolean,
+    isWithinTypeParams?: boolean
 ): arkts.TypeNode | undefined {
     let newReturnType: arkts.TypeNode | undefined = node.returnTypeAnnotation;
     if (!!node.returnTypeAnnotation && isGetter) {
-        newReturnType = RewriteFactory.rewriteType(node.returnTypeAnnotation, { hasReceiver });
+        newReturnType = RewriteFactory.rewriteType(node.returnTypeAnnotation, { hasReceiver, isWithinTypeParams });
     }
     return newReturnType;
 }
@@ -427,4 +445,5 @@ export const rewriteByType = new Map<arkts.Es2pandaAstNodeType, (node: any, ...a
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_RETURN_STATEMENT, RewriteFactory.rewriteReturnStatement],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATOR, RewriteFactory.rewriteVariableDeclarator],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_PROPERTY, RewriteFactory.rewriteProperty],
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_TS_AS_EXPRESSION, RewriteFactory.rewriteTsAsExpression],
 ]);

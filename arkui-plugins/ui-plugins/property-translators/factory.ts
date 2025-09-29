@@ -252,9 +252,13 @@ export class factory {
         makeType: StateManagementTypes,
         typeArguments: arkts.TypeNode | undefined,
         args: arkts.AstNode[],
-        argsContainsThis: boolean
+        argsContainsThis: boolean,
+        memoMetadata?: arkts.AstNodeCacheValueMetadata
     ): arkts.CallExpression {
         collectStateManagementTypeImport(StateManagementTypes.STATE_MANAGEMENT_FACTORY);
+        if (!!typeArguments && !!memoMetadata) {
+            arkts.NodeCache.getInstance().collect(typeArguments, memoMetadata);
+        }
         return arkts.factory.createCallExpression(
             UIFactory.generateMemberExpression(
                 arkts.factory.createIdentifier(StateManagementTypes.STATE_MANAGEMENT_FACTORY),
@@ -689,12 +693,16 @@ export class factory {
 
     static wrapStateManagementTypeToParam(
         param: arkts.Expression | undefined,
-        decoratorName: DecoratorNames
+        decoratorName: DecoratorNames,
+        metadata?: arkts.AstNodeCacheValueMetadata,
     ): arkts.Expression | undefined {
         let newParam: arkts.Expression | undefined;
         let wrapTypeName: StateManagementTypes | undefined;
         if (!!param && !!(wrapTypeName = DECORATOR_TYPE_MAP.get(decoratorName))) {
             newParam = factory.wrapInterfacePropertyParamExpr(param, wrapTypeName);
+            if (!!metadata) {
+                arkts.NodeCache.getInstance().collect(newParam, metadata);
+            }
             collectStateManagementTypeImport(wrapTypeName);
         }
         return newParam;
@@ -708,7 +716,8 @@ export class factory {
      */
     static wrapStateManagementTypeToMethodInInterface(
         method: arkts.MethodDefinition,
-        decorator: DecoratorNames
+        decorator: DecoratorNames,
+        metadata?: arkts.AstNodeCacheValueMetadata,
     ): arkts.MethodDefinition {
         if (method.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
             const func = method.scriptFunction;
@@ -718,6 +727,9 @@ export class factory {
             );
             removeDecorator(method, decorator);
             if (!!newType) {
+                if (!!metadata) {
+                    arkts.NodeCache.getInstance().collect(newType, metadata);
+                }
                 func.setReturnTypeAnnotation(newType);
             }
             return method;
@@ -726,7 +738,8 @@ export class factory {
             const func = method.scriptFunction;
             const newParam: arkts.Expression | undefined = factory.wrapStateManagementTypeToParam(
                 method.scriptFunction.params.at(0),
-                decorator
+                decorator,
+                metadata
             );
             removeDecorator(method, decorator);
             if (!!newParam) {

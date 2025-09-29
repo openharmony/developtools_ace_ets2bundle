@@ -24,6 +24,7 @@ import {
     generateGetOrSetCall,
     hasDecorator,
     getValueInAnnotation,
+    findCachedMemoMetadata,
 } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
@@ -57,7 +58,12 @@ export class ProviderTranslator extends PropertyTranslator implements Initialize
         );
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
-
+        if (this.isMemoCached) {
+            const metadata = findCachedMemoMetadata(this.property, false);
+            arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
+            arkts.NodeCache.getInstance().collect(getter, metadata);
+            arkts.NodeCache.getInstance().collect(setter, metadata);
+        }
         return [field, getter, setter];
     }
 
@@ -88,7 +94,13 @@ export class ProviderTranslator extends PropertyTranslator implements Initialize
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_PROVIDER, this.propertyType, args, true)
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_PROVIDER,
+                this.propertyType?.clone(),
+                args,
+                true,
+                this.isMemoCached ? findCachedMemoMetadata(this.property, true) : undefined
+            )
         );
         return arkts.factory.createExpressionStatement(assign);
     }
@@ -122,7 +134,8 @@ export class ProviderInterfaceTranslator<T extends InterfacePropertyTypes> exten
      * @param method expecting getter with `@Provider` and a setter with `@Provider` in the overloads.
      */
     private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
-        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.PROVIDER);
+        const metadata = findCachedMemoMetadata(method);
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.PROVIDER, metadata);
     }
 
     /**
