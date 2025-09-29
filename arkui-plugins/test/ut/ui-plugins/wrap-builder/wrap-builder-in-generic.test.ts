@@ -88,54 +88,42 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     pageFullPath: \"test/demo/mock/wrap-builder/wrap-builder-in-generic\",
     integratedHsp: \"false\",
 } as NavInterface));
-
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
-    public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
-        this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, \"message\", ((({let gensym___<some_random_number> = initializers;
-            (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? (\"Hello World\")));
-    }
-
-    public __updateStruct(initializers: (__Options_Index | undefined)): void {}
-
-    private __backing_message?: IStateDecoratedVariable<string>;
-
-    public get message(): string {
-        return this.__backing_message!.get();
-    }
-
-    public set message(value: string) {
-        this.__backing_message!.set(value);
-    }
-
-    @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
-        CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
-            return new Index(false, ({let gensym___<some_random_number> = storage;
-                (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
-        }), initializers, reuseId, content);
-    }
-
-    @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Index {
-        throw new Error(\"Declare interface\");
-    }
-
-    @memo() public build() {
-        RowImpl(@memo() ((instance: RowAttribute): void => {
-            instance.setRowOptions(undefined).height(\"100%\").applyAttributesFinish();
-            return;
-        }), @memo() (() => {
-            globalBuilder.builder(this.message, 50);
-            ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
-                instance.setForEachOptions(((): Array<WrappedBuilder<@Builder() ((value: string, size: number)=> void)>> => {
-                    return builderArr;
-                }), @memo() ((item: WrappedBuilder<@Builder() ((value: string, size: number)=> void)>) => {
-                    item.builder("Hello World", 30);
-                }), undefined);
-                return;
-            }));
-        }));
-    }
-
-    ${dumpConstructor()}
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, "message", ((({let gensym___117212394 = initializers;
+    (((gensym___117212394) == (null)) ? undefined : gensym___117212394.message)})) ?? ("Hello World")));
+  }
+  
+  public __updateStruct(initializers: (__Options_Index | undefined)): void {}
+  
+  private __backing_message?: IStateDecoratedVariable<string>;
+  public get message(): string {
+    return this.__backing_message!.get();
+  }
+  
+  public set message(value: string) {
+    this.__backing_message!.set(value);
+  }
+  
+  @memo() public build() {
+    RowImpl(@memo() ((instance: RowAttribute): void => {
+      instance.setRowOptions(undefined).height("100%").applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      globalBuilder.builder(this.message, 50);
+      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+        instance.setForEachOptions((() => {
+          return builderArr;
+        }), @memo() ((item: WrappedBuilder<@Builder() ((value: string, size: number)=> void)>) => {
+          item.builder("Hello World", 30);
+        }), undefined);
+        return;
+      }));
+    }));
+  }
+  
+  public constructor() {}
+  
 }
 
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
@@ -286,6 +274,15 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
+          __memo_scope.cached;
+          return;
+        }
+        __memo_parameter_instance.value.setForEachOptions((() => {
+          return builderArr;
+        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
+          const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (223657391)), 1);
+          const __memo_parameter_item = __memo_scope.param(0, item);
+          if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
