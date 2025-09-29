@@ -36,7 +36,7 @@ export abstract class PropertyTranslator {
         this.property = options.property;
         this.structInfo = options.structInfo;
         this.checkObservedWhenInterop(options.property, options.structInfo);
-        this.propertyType = options.property.typeAnnotation;
+        this.propertyType = options.property.typeAnnotation?.clone();
         this.isMemoCached = arkts.NodeCache.getInstance().has(options.property);
     }
 

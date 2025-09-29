@@ -351,7 +351,7 @@ function main() {}
           __memo_scope.cached;
           return;
         }
-        __memo_parameter_instance.value.setForEachOptions(((): Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> => {
+        __memo_parameter_instance.value.setForEachOptions((() => {
           return this.builderRegular3;
         }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (46726221)), 1);
@@ -380,7 +380,7 @@ function main() {}
           __memo_scope.cached;
           return;
         }
-        __memo_parameter_instance.value.setForEachOptions(((): Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> => {
+        __memo_parameter_instance.value.setForEachOptions((() => {
           return this.builderProvider3;
         }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (54078781)), 1);
@@ -788,7 +788,7 @@ function main() {}
           __memo_scope.cached;
           return;
         }
-        __memo_parameter_instance.value.setForEachOptions(((): Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> => {
+        __memo_parameter_instance.value.setForEachOptions((() => {
           return this.builderRegular3;
         }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (18973066)), 1);
@@ -817,7 +817,7 @@ function main() {}
           __memo_scope.cached;
           return;
         }
-        __memo_parameter_instance.value.setForEachOptions(((): Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> => {
+        __memo_parameter_instance.value.setForEachOptions((() => {
           return this.builderLocalStorageLink3;
         }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (139295044)), 1);

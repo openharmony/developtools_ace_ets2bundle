@@ -91,11 +91,11 @@ i = _r(16777216, 10003, "com.example.mock", "entry");
   public set varOne(value: (Resource | string)) {
     this.__backing_varOne = value;
   }
-  private __backing_lambdaOne?: Any;
-  public get lambdaOne(): (() => void) {
-    return (this.__backing_lambdaOne as (() => void));
+  private __backing_lambdaOne?: (()=> void);
+  public get lambdaOne(): (()=> void) {
+    return (this.__backing_lambdaOne as (()=> void));
   }
-  public set lambdaOne(value: (() => void)) {
+  public set lambdaOne(value: (()=> void)) {
     this.__backing_lambdaOne = value;
   }
   
@@ -132,7 +132,7 @@ i = _r(16777216, 10003, "com.example.mock", "entry");
   ${dumpGetterSetter(GetSetDumper.BOTH, 'varOne', '((Resource | string) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_varOne', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'lambdaOne', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'lambdaOne', '((()=> void) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_lambdaOne', '(boolean | undefined)')}
 }
 `;
