@@ -19,6 +19,8 @@ import { CustomComponentInfo, ClassInfo } from '../utils';
 import { StateManagementTypes } from '../../common/predefines';
 import { ClassScopeInfo } from '../struct-translators/utils';
 import { getClassPropertyType } from '../utils';
+import { logDiagnostic, getPropertyType } from '../interop/initstatevar';
+import { getHasAnnotationObserved } from '../interop/interop';
 
 export interface PropertyTranslatorOptions {
     property: arkts.ClassProperty;
@@ -34,8 +36,30 @@ export abstract class PropertyTranslator {
     constructor(options: PropertyTranslatorOptions) {
         this.property = options.property;
         this.structInfo = options.structInfo;
+        this.checkObservedWhenInterop(options.property, options.structInfo);
         this.propertyType = getClassPropertyType(options.property);
         this.isMemoCached = arkts.NodeCache.getInstance().has(options.property);
+    }
+
+    checkObservedWhenInterop(property: arkts.ClassProperty, structInfo: CustomComponentInfo): void {
+        if (structInfo.annotations.component) {
+            const isObservedV2From1_1 = getHasAnnotationObserved(property, 'ObservedV2');
+            if (isObservedV2From1_1) {
+                let decoratorType = 'regular';
+                property?.annotations?.some((annotations) => (decoratorType = getPropertyType(annotations)));
+                const errorMessage = `The type of the ${decoratorType} property can not be a class decorated with @ObservedV2 when interop`;
+                logDiagnostic(errorMessage, property);
+            }
+        }
+        if (structInfo.annotations.componentV2) {
+            const isObservedFrom1_1 = getHasAnnotationObserved(property, 'Observed');
+            if (isObservedFrom1_1) {
+                let decoratorType = 'regular';
+                property?.annotations?.some((annotations) => (decoratorType = getPropertyType(annotations)));
+                const errorMessage = `The type of the ${decoratorType} property can not be a class decorated with @Observed when interop`;
+                logDiagnostic(errorMessage, property);
+            }
+        }
     }
 
     abstract translateMember(): arkts.AstNode[];

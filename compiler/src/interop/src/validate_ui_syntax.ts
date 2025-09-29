@@ -115,6 +115,8 @@ import { collectSharedModule } from './fast_build/ark_compiler/check_shared_modu
 import constantDefine from './constant_define';
 import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
 import logMessageCollection from './log_message_collection';
+import { FileManager } from './fast_build/ark_compiler/interop/interop_manager';
+import { ARKTS_1_2 } from './fast_build/ark_compiler/interop/pre_define';
 
 export class ComponentCollection {
   localStorageName: string = null;
@@ -495,6 +497,12 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
     }
     validateFunction(node, sourceFileNode, log);
   }
+  if (ts.isPropertyDeclaration(node) && node.modifiers == undefined) {
+    const checkObserved = validateObservedProperty(node, isComponentV2, log, sourceFileNode);
+    if (checkObserved) {
+      return;
+    }
+  }
   checkDecoratorCount(node, sourceFileNode, log);
   checkDecorator(sourceFileNode, node, log, structContext, classContext, isObservedClass, isComponentV2,
     isObservedV1Class, isSendableClass);
@@ -507,8 +515,91 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   isSendableClass = false;
 }
 
+function validateObservedProperty(node: ts.PropertyDeclaration, isComponentV2: boolean, log: LogInfo[],
+  sourceFileNode: ts.SourceFile): boolean {
+  if (!node.initializer) {
+    return false;
+  }
+  if (ts.isNewExpression(node.initializer)) {
+    if (checkNewExpressionForObserved(node.initializer, node, isComponentV2, log, sourceFileNode)) {
+      return true;
+    }
+  }
+  if (ts.isArrayLiteralExpression(node.initializer) && node.initializer.elements?.length > 0) {
+    for (const element of (node.initializer as ts.ArrayLiteralExpression).elements) {
+      if (ts.isNewExpression(element)) {
+        if (checkNewExpressionForObserved(element, node, isComponentV2, log, sourceFileNode)) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function checkNewExpressionForObserved(newExpression: ts.NewExpression, propertyNode: ts.PropertyDeclaration,
+  isComponentV2: boolean, log: LogInfo[], sourceFileNode: ts.SourceFile): boolean {
+  if (!ts.isIdentifier(newExpression.expression)) {
+    return false;
+  }
+  const symbol = getSymbolIfAliased(newExpression.expression);
+  if (!symbol?.valueDeclaration) {
+    return false;
+  }
+  const filePath = symbol.valueDeclaration.getSourceFile().fileName;
+  const languageVersion = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
+  if (languageVersion?.languageVersion === ARKTS_1_2) {
+    const [hasObserved, hasObservedV2] = checkObservedProperty(propertyNode);
+    if ((isComponentV2 && hasObserved) || (!isComponentV2 && hasObservedV2)) {
+      const decoratorType = isComponentV2 ? 'Observed' : 'ObservedV2';
+      const message = `The type of the regular property cannot be a class decorated with @${decoratorType} when interop.`;
+      addLog(LogType.ERROR, message, propertyNode.getStart(), log, sourceFileNode, { code: '10905502' });
+      return true;
+    }
+  }
+  return false;
+}
+
+function getHasObserved(symbol: ts.Symbol): [boolean, boolean] {
+  if (!symbol?.valueDeclaration || !ts.isClassDeclaration(symbol.valueDeclaration) ||
+    !symbol.valueDeclaration.modifiers) {
+    return [false, false];
+  }
+  let hasObserved = false;
+  let hasObservedV2 = false;
+  for (const decorator of symbol.valueDeclaration.modifiers) {
+    if (ts.isDecorator(decorator) && ts.isIdentifier(decorator.expression)) {
+      const decoratorName: string = decorator.expression.escapedText.toString();
+      if (decoratorName === 'Observed') {
+        hasObserved = true;
+      } else if (decoratorName === 'ObservedV2') {
+        hasObservedV2 = true;
+      }
+    }
+  }
+  return [hasObserved, hasObservedV2];
+}
+
+function checkObservedProperty(node: ts.PropertyDeclaration): [boolean, boolean] {
+  if (!node.type) {
+    return [false, false];
+  }
+  if (ts.isTypeReferenceNode(node.type) && ts.isIdentifier(node.type.typeName)) {
+    const symbol: ts.Symbol = getSymbolIfAliased(node.type.typeName);
+    return getHasObserved(symbol);
+  } else if (ts.isArrayTypeNode(node.type) && ts.isTypeReferenceNode(node.type.elementType) && ts.isIdentifier((node.type.elementType.typeName))) {
+    const symbol: ts.Symbol = getSymbolIfAliased(node.type.elementType.typeName);
+    return getHasObserved(symbol);
+  } else if (node.type && ts.isUnionTypeNode(node.type)) {
+    const classResult: ClassDecoratorResult = new ClassDecoratorResult();
+    validatePropertyType(node.type, classResult);
+    return [classResult.hasObserved, classResult.hasObservedV2];
+  }
+  return [false, false];
+}
+
 const v1ComponentDecorators: string[] = [
-  'State', 'Prop', 'Link', 'Provide', 'Consume',
+  'State', 'Prop', 'Link', 'Provide', 'Consume', 'ObjectLink',
   'StorageLink', 'StorageProp', 'LocalStorageLink', 'LocalStorageProp'
 ];
 const v2ComponentDecorators: string[] = [
@@ -516,25 +607,69 @@ const v2ComponentDecorators: string[] = [
 ];
 function validatePropertyInStruct(structContext: boolean, decoratorNode: ts.Identifier,
   decoratorName: string, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-  if (structContext) {
-    const isV1Decorator: boolean = v1ComponentDecorators.includes(decoratorName);
-    const isV2Decorator: boolean = v2ComponentDecorators.includes(decoratorName);
-    if (!isV1Decorator && !isV2Decorator) {
+  const isV1Decorator: boolean = v1ComponentDecorators.includes(decoratorName);
+  const isV2Decorator: boolean = v2ComponentDecorators.includes(decoratorName);
+  if (!isV1Decorator && !isV2Decorator) {
+    return;
+  }
+  const classResult: ClassDecoratorResult = new ClassDecoratorResult();
+  const propertyNode: ts.PropertyDeclaration = getPropertyNodeByDecorator(decoratorNode);
+  if (!propertyNode?.initializer) {
+    return;
+  }
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (propertyNode.type && checker) {
+    validatePropertyType(propertyNode.type, classResult);
+  }
+  if (ts.isNewExpression(propertyNode.initializer)) {
+    if (checkDecoratorNewExpressionForObserved(propertyNode.initializer, decoratorNode, decoratorName, isV1Decorator,
+      isV2Decorator, classResult, log, sourceFileNode)) {
+
       return;
     }
-    const classResult: ClassDecoratorResult = new ClassDecoratorResult();
-    const propertyNode: ts.PropertyDeclaration = getPropertyNodeByDecorator(decoratorNode);
-    const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
-    if (propertyNode && propertyNode.type && checker) {
-      validatePropertyType(propertyNode.type, classResult);
+  }
+  if (ts.isArrayLiteralExpression(propertyNode.initializer) && propertyNode.initializer.elements?.length > 0) {
+    for (const element of propertyNode.initializer.elements) {
+      if (ts.isNewExpression(element) &&
+        checkDecoratorNewExpressionForObserved(element, decoratorNode, decoratorName, isV1Decorator,
+          isV2Decorator, classResult, log, sourceFileNode)) {
+
+
+        return;
+      }
     }
-    let message: string;
+  }
+  if (structContext) {
     if (isV1Decorator && classResult.hasObservedV2) {
-      message = `The type of the '@${decoratorName}' property can not be a class decorated with '@ObservedV2'.`;
+      const message = `The type of the '@${decoratorName}' property can not be a class decorated with '@ObservedV2'`;
       addLog(LogType.ERROR, message, decoratorNode.getStart(), log, sourceFileNode, { code: '10905348' });
       return;
     }
   }
+}
+
+function checkDecoratorNewExpressionForObserved(newExpression: ts.NewExpression, decoratorNode: ts.Identifier,
+  decoratorName: string, isV1Decorator: boolean, isV2Decorator: boolean, classResult: ClassDecoratorResult,
+  log: LogInfo[], sourceFileNode: ts.SourceFile): boolean {
+  if (!ts.isIdentifier(newExpression.expression)) {
+    return false;
+  }
+  const symbol = getSymbolIfAliased(newExpression.expression);
+  if (!symbol?.valueDeclaration) {
+    return false;
+  }
+  const filePath = symbol.valueDeclaration.getSourceFile().fileName;
+  const languageVersion = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
+  if (languageVersion?.languageVersion === ARKTS_1_2) {
+    if ((isV1Decorator && classResult.hasObservedV2) || (isV2Decorator && classResult.hasObserved)) {
+      const decoratorVersion = isV1Decorator ? 'ObservedV2' : 'Observed';
+      const message = `The type of the @${decoratorName} property can not be a class decorated with` +
+        ` @${decoratorVersion} when interop.`;
+      addLog(LogType.ERROR, message, decoratorNode.getStart(), log, sourceFileNode, { code: '10905502' });
+      return true;
+    }
+  }
+  return false;
 }
 
 function getPropertyNodeByDecorator(decoratorNode: ts.Identifier): ts.PropertyDeclaration {
@@ -557,6 +692,11 @@ function validatePropertyType(node: ts.TypeNode, classResult: ClassDecoratorResu
   if (ts.isTypeReferenceNode(node) && node.typeName) {
     const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
     const typeNode: ts.Type = checker?.getTypeAtLocation(node.typeName);
+    parsePropertyType(typeNode, classResult);
+  }
+  if (ts.isArrayTypeNode(node) && ts.isTypeReferenceNode(node.elementType)&& node.elementType.typeName) {
+    const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+    const typeNode: ts.Type = checker?.getTypeAtLocation(node.elementType.typeName);
     parsePropertyType(typeNode, classResult);
   }
 }
@@ -1457,12 +1597,27 @@ function collectComponentProps(node: ts.StructDeclaration, structInfo: StructInf
     ...componentSet.provides, ...componentSet.objectLinks
   );
   structInfo.linkDecoratorsV1.push(...componentSet.links);
+  updateStructInfoWithDecorators(structInfo, componentSet);
 }
 
 export function getComponentSet(node: ts.StructDeclaration, uiCheck: boolean = false): IComponentSet {
   const componentSet: IComponentSet = new IComponentSet();
   traversalComponentProps(node, componentSet, uiCheck);
   return componentSet;
+}
+
+export function updateStructInfoWithDecorators(structInfo: StructInfo, componentSet: IComponentSet): void {
+  structInfo.linkDecoratorsV1.push(...componentSet.links);
+  structInfo.updatePropsDecoratorsV1Map.set('@State', [...componentSet.states]);
+  structInfo.updatePropsDecoratorsV1Map.set('@Link', [...componentSet.links]);
+  structInfo.updatePropsDecoratorsV1Map.set('@Prop', [...componentSet.props]);
+  structInfo.updatePropsDecoratorsV1Map.set('@Provide', [...componentSet.provides]);
+  structInfo.updatePropsDecoratorsV1Map.set('@Consume', [...componentSet.consumes]);
+  structInfo.updatePropsDecoratorsV1Map.set('@ObjectLink', [...componentSet.objectLinks]);
+  structInfo.updatePropsDecoratorsV1Map.set('@StorageLink', [...componentSet.storageLinks]);
+  structInfo.updatePropsDecoratorsV1Map.set('@StorageProp', [...componentSet.storageProps]);
+  structInfo.updatePropsDecoratorsV1Map.set('@LocalStorageLink', [...componentSet.localStorageLink.keys()]);
+  structInfo.updatePropsDecoratorsV1Map.set('@LocalStorageProp', [...componentSet.localStorageProp.keys()]);
 }
 
 class RecordRequire {

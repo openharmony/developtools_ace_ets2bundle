@@ -63,6 +63,8 @@ import {
   COMPONENTV2_LOCAL_DECORATOR,
   COMPONENTV2_CONSUMER_DECORATOR,
   COMPONENTV2_PROVIDER_DECORATOR,
+  COMPONENTV2_PARAM_DECORATOR,
+  COMPONENTV2_EVENT_DECORATOR,
   VIEWSTACKPROCESSOR,
 } from './pre_define';
 import {
@@ -345,7 +347,8 @@ function addCustomComponentStatements(node: ts.ExpressionStatement, newStatement
   }
 }
 
-function createChildElmtId(node: ts.CallExpression, name: string, log: LogInfo[]): ts.PropertyAssignment[] {
+function createChildElmtId(node: ts.CallExpression, name: string, log: LogInfo[],
+  isArkoala: boolean = false): ts.PropertyAssignment[] {
   const childParam: ts.PropertyAssignment[] = [];
   const propsAndObjectLinks: string[] = [];
   if (propCollection.get(name)) {
@@ -357,7 +360,7 @@ function createChildElmtId(node: ts.CallExpression, name: string, log: LogInfo[]
   if (projectConfig.optLazyForEach && storedFileInfo.processLazyForEach && stateCollection.get(name)) {
     propsAndObjectLinks.push(...stateCollection.get(name));
   }
-  parseChildProperties(name, node, childParam, propsAndObjectLinks, log);
+  parseChildProperties(name, node, childParam, propsAndObjectLinks, log, isArkoala);
   return childParam;
 }
 
@@ -371,6 +374,7 @@ class ChildAndParentComponentInfo {
   forbiddenInitPropsV2: string[];
   updatePropsForV1Parent: string[];
   updatePropsForV2Parent: string[];
+  forbiddenInitPropsV1: Map<string, string[]>;
   constructor(childName: string, childNode: ts.CallExpression, propsAndObjectLinks: string[]) {
     this.childName = childName;
     this.propsAndObjectLinks = propsAndObjectLinks;
@@ -388,6 +392,7 @@ class ChildAndParentComponentInfo {
     this.updatePropsForV2Parent = [...this.parentStructInfo.localDecoratorSet,
       ...this.parentStructInfo.paramDecoratorMap.keys(), ...this.parentStructInfo.providerDecoratorSet,
       ...this.parentStructInfo.consumerDecoratorSet];
+    this.forbiddenInitPropsV1 = this.childStructInfo?.updatePropsDecoratorsV1Map || new Map();
   }
 }
 
@@ -412,15 +417,15 @@ function getUpdatePropsForV1Parent(): string[] {
   return updatePropsForParent;
 }
 
-function parseChildProperties(childName: string, node: ts.CallExpression,
-  childParam: ts.PropertyAssignment[], propsAndObjectLinks: string[], log: LogInfo[]): void {
+function parseChildProperties(childName: string, node: ts.CallExpression, childParam: ts.PropertyAssignment[],
+  propsAndObjectLinks: string[], log: LogInfo[], isArkoala: boolean = false): void {
   const childAndParentComponentInfo: ChildAndParentComponentInfo =
     new ChildAndParentComponentInfo(childName, node, propsAndObjectLinks);
   if (node.arguments[0].properties) {
     node.arguments[0].properties.forEach((item: ts.PropertyAssignment) => {
       if (ts.isIdentifier(item.name)) {
         const itemName: string = item.name.escapedText.toString();
-        validateChildProperty(item, itemName, childParam, log, childAndParentComponentInfo);
+        validateChildProperty(item, itemName, childParam, log, childAndParentComponentInfo, isArkoala);
       }
     });
   }
@@ -434,12 +439,29 @@ function getForbbidenInitPropsV2Type(itemName: string, info: ChildAndParentCompo
     typeName = COMPONENTV2_CONSUMER_DECORATOR;
   } else if (info.childStructInfo.providerDecoratorSet.has(itemName)) {
     typeName = COMPONENTV2_PROVIDER_DECORATOR;
+  } else if (info.childStructInfo.paramDecoratorMap.has(itemName)) {
+    typeName = COMPONENTV2_PARAM_DECORATOR;
+  } else if (info.childStructInfo.eventDecoratorMap.has(itemName)) {
+    typeName = COMPONENTV2_EVENT_DECORATOR;
   }
   return typeName;
 }
 
-function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
-  childParam: ts.PropertyAssignment[], log: LogInfo[], info: ChildAndParentComponentInfo): void {
+function validateChildProperty(item: ts.PropertyAssignment, itemName: string, childParam: ts.PropertyAssignment[],
+  log: LogInfo[], info: ChildAndParentComponentInfo, isArkoala: boolean = false): void {
+  if (isArkoala) {
+    if (ts.isPropertyAccessExpression(item.initializer) &&
+      item.initializer.expression.kind === ts.SyntaxKind.ThisKeyword) {
+      const { parentPropertyName, parentPropertyKind } = getParentPropertyInfo(item);
+      if (handleV1ParentWithV2Child(item, itemName, parentPropertyName, parentPropertyKind, info, log)) {
+        return;
+      }
+      if (handleV2ParentWithV1Child(item, itemName, parentPropertyName, parentPropertyKind, info, log)) {
+        return;
+      }
+      return;
+    }
+  }
   if (info.childStructInfo.isComponentV2) {
     if (info.forbiddenInitPropsV2.includes(itemName)) {
       const propType: string = getForbbidenInitPropsV2Type(itemName, info);
@@ -469,6 +491,76 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
     }
   }
   logMessageCollection.checkIfAssignToStaticProps(item, itemName, info.childStructInfo.staticPropertySet, log);
+}
+
+function getParentPropertyInfo(item: ts.PropertyAssignment): { parentPropertyName: string; parentPropertyKind: string } {
+  const result = { parentPropertyName: "", parentPropertyKind: "regular" };
+  if (!ts.isPropertyAccessExpression(item.initializer)) {
+    return result;
+  }
+  result.parentPropertyName = item.initializer.name.getText();
+  if (!globalProgram.checker) {
+    return result;
+  }
+  const symbol: ts.Symbol = globalProgram.checker.getSymbolAtLocation(item.initializer.name);
+  if (!symbol?.valueDeclaration || !ts.isPropertyDeclaration(symbol.valueDeclaration)) {
+    return result;
+  }
+
+  if (symbol.valueDeclaration.modifiers) {
+    for (const decorator of symbol.valueDeclaration.modifiers) {
+      if (ts.isDecorator(decorator)) {
+        if (ts.isIdentifier(decorator.expression)) {
+          result.parentPropertyKind = decorator.expression.escapedText.toString();
+          break;
+        } else if (ts.isCallExpression(decorator.expression) && ts.isIdentifier(decorator.expression.expression)) {
+          result.parentPropertyKind = decorator.expression.expression.escapedText.toString();
+          break;
+        }
+      }
+    }
+  }
+  return result;
+}
+
+function handleV1ParentWithV2Child(item: ts.PropertyAssignment, itemName: string, parentPropertyName: string, 
+  parentPropertyKind: string, info: ChildAndParentComponentInfo, log: LogInfo[]): boolean {
+  if (!info.parentStructInfo.isComponentV2 && info.childStructInfo.isComponentV2) {
+    const propType: string = getForbbidenInitPropsV2Type(itemName, info);
+    const symbol = parentPropertyKind === "regular" ? "" : "@";
+    log.push({
+      type: LogType.ERROR,
+      message: `The ${symbol}${parentPropertyKind} property ${parentPropertyName} cannot be assigned to the` +
+          ` ${propType} property ${itemName} when interop.`,
+      pos: item.getStart(),
+      code: '10905501'
+    });
+    return true;
+  }
+  return false;
+}
+
+function handleV2ParentWithV1Child(item: ts.PropertyAssignment, itemName: string, parentPropertyName: string,
+  parentPropertyKind: string, info: ChildAndParentComponentInfo, log: LogInfo[]): boolean {
+  if (info.parentStructInfo.isComponentV2 && !info.childStructInfo.isComponentV2) {
+    if (!info.forbiddenInitPropsV1 || info.forbiddenInitPropsV1.size === 0) {
+      return true;
+    }
+    const symbol = parentPropertyKind === "regular" ? "" : "@";
+    for (const [key, arr] of info.forbiddenInitPropsV1) {
+      if (arr.includes(itemName)) {
+        log.push({
+          type: LogType.ERROR,
+          message: `The ${symbol}${parentPropertyKind} property ${parentPropertyName} cannot be assigned to the` +
+              ` ${key} property ${itemName} when interop.`,
+          pos: item.getStart(),
+          code: '10905501'
+        });
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 function isForbiddenTypeToComponentV1(type: ts.Type): boolean {
@@ -585,7 +677,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
   isReuseComponentInV2:boolean, isArkoala = false): ts.Block {
   let componentParameter: ts.ObjectLiteralExpression;
   if (componentNode.arguments && componentNode.arguments.length) {
-    componentParameter = ts.factory.createObjectLiteralExpression(createChildElmtId(componentNode, name, log), true);
+    componentParameter = ts.factory.createObjectLiteralExpression(createChildElmtId(componentNode, name, log, isArkoala), true);
   } else {
     componentParameter = ts.factory.createObjectLiteralExpression([], false);
   }
