@@ -19,7 +19,7 @@ import * as arkts from '@koalaui/libarkts';
 import { BuilderMethodNames, ESValueMethodNames, InteroperAbilityNames } from './predefines';
 import { getCustomComponentOptionsName } from '../utils';
 import { InteropContext } from '../component-transformer';
-import { createVariableLet, initialArgs} from './initstatevar';
+import { createVariableLet, initialArgs, getPropertyType } from './initstatevar';
 import {
     getPropertyESValue, 
     getWrapValue, 
@@ -29,9 +29,9 @@ import {
     createELMTID, 
     createInitReturn
 } from './utils';
-import { DecoratorNames } from '../../common/predefines';
+import { DecoratorNames, LANGUAGE_VERSION } from '../../common/predefines';
 import { hasDecoratorInterop } from './utils';
-
+import { FileManager } from '../../common/file-manager';
 
 function paramsLambdaDeclaration(name: string, args?: arkts.ObjectExpression): arkts.Statement[] {
     const result: arkts.Statement[] = [];
@@ -120,7 +120,7 @@ function newComponent(className: string): arkts.Statement {
                     arkts.factory.createUndefinedLiteral(),
                     generateTSASExpression(arkts.factory.createIdentifier(InteroperAbilityNames.PARAM)),
                     arkts.factory.createUndefinedLiteral(),
-                    generateTSASExpression(arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID)), 
+                    generateTSASExpression(arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID)),
                     arkts.factory.createTSAsExpression(
                         arkts.factory.createArrowFunction(
                             arkts.factory.createScriptFunction(
@@ -175,8 +175,13 @@ function createComponent(className: string, isV2: boolean): arkts.Statement[] {
 }
 
 
-function createWrapperBlock(context: InteropContext, varMap: Map<string, arkts.ClassProperty>,
-    updateProp: arkts.Property[], isV2: boolean): arkts.BlockStatement {
+function createWrapperBlock(
+    context: InteropContext,
+    varMap: Map<string, arkts.ClassProperty>,
+    updateProp: arkts.Property[],
+    node: arkts.CallExpression,
+    isV2: boolean
+): arkts.BlockStatement {
     const className: string = context.className;
     const path: string = context.path;
     const args: arkts.ObjectExpression | undefined = context.arguments;
@@ -184,37 +189,32 @@ function createWrapperBlock(context: InteropContext, varMap: Map<string, arkts.C
     if (index === -1) {
         throw new Error('Error path of Legacy Component.');
     }
-    const initial = [
-        createGlobal(),
-        createEmptyESValue(InteroperAbilityNames.PARAM)
-    ];
-    const initialArgsStatement = args ? initialArgs(args, varMap, updateProp) : [];
-    return arkts.factory.createBlock(
-        [
-            ...initial,
-            ...initialArgsStatement,
-            ...createExtraInfo(['page'], [path]),
-            ...createELMTID(),
-            ...createComponent(className, isV2),
-            createInitReturn(className)
-        ]
-    );
+    const initial = [createGlobal(), createEmptyESValue(InteroperAbilityNames.PARAM)];
+    const initialArgsStatement = args ? initialArgs(args, varMap, updateProp, node, isV2) : [];
+    return arkts.factory.createBlock([
+        ...initial,
+        ...initialArgsStatement,
+        ...createExtraInfo(['page'], [path]),
+        ...createELMTID(),
+        ...createComponent(className, isV2),
+        createInitReturn(className),
+    ]);
 }
 
-function createInitializer(context: InteropContext, varMap: Map<string, arkts.ClassProperty>,
-    updateProp: arkts.Property[], isV2: boolean): arkts.ArrowFunctionExpression {
-    const block = createWrapperBlock(context, varMap, updateProp, isV2);
+function createInitializer(
+    context: InteropContext,
+    varMap: Map<string, arkts.ClassProperty>,
+    updateProp: arkts.Property[],
+    node: arkts.CallExpression,
+    isV2: boolean
+): arkts.ArrowFunctionExpression {
+    const block = createWrapperBlock(context, varMap, updateProp, node, isV2);
     return arkts.factory.createArrowFunction(
         arkts.factory.createScriptFunction(
             block,
-            arkts.factory.createFunctionSignature(
-                undefined,
-                [],
-                undefined,
-                false,
-            ),
+            arkts.factory.createFunctionSignature(undefined, [], undefined, false),
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
         )
     );
 }
@@ -393,8 +393,9 @@ export function generateArkUICompatible(node: arkts.CallExpression, globalBuilde
     const varMap: Map<string, arkts.ClassProperty> = generateVarMap(context, decl);
     const updateProp: arkts.Property[] = [];
     const isComponentV2 = decl.annotations.some(
-        annotation => annotation.expr instanceof arkts.Identifier && annotation.expr.name === 'ComponentV2');
-    const initializer = createInitializer(context, varMap, updateProp, isComponentV2);
+        (annotation) => annotation.expr instanceof arkts.Identifier && annotation.expr.name === 'ComponentV2'
+    );
+    const initializer = createInitializer(context, varMap, updateProp, node, isComponentV2);
     const updater = createUpdater(updateProp);
     const result = arkts.factory.updateCallExpression(
         node,
@@ -408,4 +409,52 @@ export function generateArkUICompatible(node: arkts.CallExpression, globalBuilde
     );
     arkts.NodeCache.getInstance().collect(result);
     return result;
+}
+
+export function getHasAnnotationObserved(node: arkts.ClassProperty, annotationObserved: string): boolean {
+    let typeIdentifiers: any[] = [];
+    extractTypeIdentifiers(node.typeAnnotation, annotationObserved, typeIdentifiers);
+    return typeIdentifiers.length > 0;
+}
+
+function extractTypeIdentifiers(
+    typeNode: arkts.AstNode | undefined,
+    annotationObserved: string,
+    typeIdentifiers: any[]
+): void {
+    if (!typeNode) {
+        return;
+    }
+    if (arkts.isETSTypeReference(typeNode) && typeNode.part && arkts.isETSTypeReferencePart(typeNode.part)) {
+        if (checkObservedForm1_1(typeNode.part.name, annotationObserved)) {
+            typeIdentifiers.push(typeNode.part.name);
+            return;
+        }
+        const typeParams = typeNode.part.typeParams;
+        if (typeParams && arkts.isTSTypeParameterInstantiation(typeParams) && typeParams.params) {
+            typeParams.params.forEach((param) => extractTypeIdentifiers(param, annotationObserved, typeIdentifiers));
+        }
+    } else if (arkts.isETSUnionType(typeNode)) {
+        typeNode.types.forEach((subType) => extractTypeIdentifiers(subType, annotationObserved, typeIdentifiers));
+    }
+}
+
+function checkObservedForm1_1(typeNode: arkts.AstNode, annotationObserved: string): boolean {
+    const typeDecl = arkts.getDecl(typeNode);
+    if (!typeDecl || !typeDecl.annotations) {
+        return false;
+    }
+    const program = arkts.getProgramFromAstNode(typeDecl);
+    const fileManager = FileManager.getInstance();
+    const isFrom1_1 = fileManager.getLanguageVersionByFilePath(program.absName) === LANGUAGE_VERSION.ARKTS_1_1;
+    if (!isFrom1_1) {
+        return false;
+    }
+    const hasAnnotation = typeDecl.annotations.some(
+        (annotation) => annotation.expr instanceof arkts.Identifier && annotation.expr.name === annotationObserved
+    );
+    if (hasAnnotation && isFrom1_1) {
+        return true;
+    }
+    return false;
 }
