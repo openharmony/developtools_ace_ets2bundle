@@ -106,15 +106,15 @@ function main() {}
   @JSONStringifyIgnore() private __meta_lastName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   public age: number = 20;
-
-  private __computed_fullName = STATE_MGMT_FACTORY.makeComputed<(Array<Double> | string)>((() => {
+  
+  private __computed_fullName = STATE_MGMT_FACTORY.makeComputed((() => {
     if (((this.age) >= (20))) {
       return new Array<number>(0, 1, 2);
     }
     return ((((this.firstName) + (" "))) + (this.lastName));
   }), "fullName");
-
-  @Computed() public get fullName(): (Array<Double> | string) {
+  
+  @Computed() public get fullName() {
     return this.__computed_fullName!.get();
   }
 
@@ -189,23 +189,23 @@ function main() {}
   public set age(value: number) {
     this.__backing_age = value;
   }
-
-  private __computed_fullName = STATE_MGMT_FACTORY.makeComputed<(Int | string)>((() => {
+  
+  private __computed_fullName = STATE_MGMT_FACTORY.makeComputed((() => {
     if (((this.age) >= (20))) {
       return 500;
     }
     return ((((((this.firstName) + (" "))) + (this.lastName))) + (this.age));
   }), "fullName");
-
-  @Computed() public get fullName(): (Int | string) {
+  
+  @Computed() public get fullName() {
     return this.__computed_fullName!.get();
   }
-
-  private __computed_num5 = STATE_MGMT_FACTORY.makeComputed<Int>((() => {
+  
+  private __computed_num5 = STATE_MGMT_FACTORY.makeComputed((() => {
     return 5;
   }), "num5");
-
-  @Computed() public get num5(): Int {
+  
+  @Computed() public get num5() {
     return this.__computed_num5!.get();
   }
 
