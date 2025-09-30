@@ -117,6 +117,7 @@ export interface LanguageServiceCache {
   preTsImportSendable?: boolean;
   preSkipOhModulesLint?: boolean;
   preEnableStrictCheckOHModule?: boolean;
+  preDisableSendableCheckRules?: string[];
   preMixCompile?: boolean;
   autoLazyImport?: boolean;
   autoLazyFilterInclude?: string[];
@@ -130,6 +131,8 @@ export const fileCache: Map<string, string> = new Map();
 
 export const MAX_FLOW_DEPTH_DEFAULT_VALUE = 2000;
 export const MAX_FLOW_DEPTH_MAXIMUM_VALUE = 65535;
+
+export const SENDABLE_CLASS_DECORATOR_RULE = 'arkts-sendable-class-decorator';
 
 export function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
@@ -220,6 +223,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'compatibleSdkVersion': projectConfig.compatibleSdkVersion,
     'skipOhModulesLint': skipOhModulesLint,
     'enableStrictCheckOHModule': enableStrictCheckOHModule,
+    'disableSendableCheckRules': disableSendableCheckRules,
     'mixCompile': mixCompile,
     'isCompileJsHar': isCompileJsHar(),
     'moduleRootPath': projectConfig.moduleRootPath,
@@ -475,13 +479,14 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const tsImportSendableDiff: boolean = checkValueDiff(cache?.preTsImportSendable, tsImportSendable);
   const skipOhModulesLintDiff: boolean = checkValueDiff(cache?.preSkipOhModulesLint, skipOhModulesLint);
   const enableStrictCheckOHModuleDiff: boolean = checkValueDiff(cache?.preEnableStrictCheckOHModule, enableStrictCheckOHModule);
+  const disableSendableCheckRulesDiff: boolean = checkRulesDiff(cache?.preDisableSendableCheckRules, disableSendableCheckRules);
   const mixCompileDiff: boolean = checkValueDiff(cache?.preMixCompile, mixCompile);
   const autoLazyImportDiff: boolean = checkValueDiff(cache?.autoLazyImport, currentAutoLazyImport);
   const autoLazyFilterIncludeDiff: boolean = !areEqualArrays(cache?.autoLazyFilterInclude, currentAutoLazyFilterInclude);
   const autoLazyFilterExcludeDiff: boolean = !areEqualArrays(cache?.autoLazyFilterExclude, currentAutoLazyFilterExclude);
   const autoLazyFilterDiff: boolean = autoLazyFilterIncludeDiff || autoLazyFilterExcludeDiff;
   const onlyDeleteBuildInfoCache: boolean | undefined = tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff ||
-    enableStrictCheckOHModuleDiff || mixCompileDiff || typesDiff || autoLazyImportDiff || autoLazyFilterDiff;
+    enableStrictCheckOHModuleDiff || disableSendableCheckRulesDiff || mixCompileDiff || typesDiff || autoLazyImportDiff || autoLazyFilterDiff;
   const shouldInvalidCache: boolean | undefined = targetESVersionDiffers || useTsHarDiff;
   const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || shouldInvalidCache || onlyDeleteBuildInfoCache;
   if (reuseLanguageServiceForDepChange && hashDiffers && rollupShareObject?.depInfo?.enableIncre) {
@@ -507,6 +512,7 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     preTsImportSendable: tsImportSendable,
     preSkipOhModulesLint: skipOhModulesLint,
     preEnableStrictCheckOHModule: enableStrictCheckOHModule,
+    preDisableSendableCheckRules: disableSendableCheckRules,
     preMixCompile: mixCompile,
     autoLazyImport: currentAutoLazyImport,
     autoLazyFilterInclude: currentAutoLazyFilterInclude ? [...currentAutoLazyFilterInclude] : undefined,
@@ -546,13 +552,38 @@ export function areEqualArrays(lastArray: string[] | undefined, currentArray: st
   return true;
 }
 
+/**
+ * compare cache value and current value, check if they are different
+ * @param lastRules cache rules
+ * @param currentRules current rules
+ * @returns true if they are different, false otherwise
+ */
+function checkRulesDiff(lastRules: string[] | undefined, currentRules: string[] | undefined): boolean {
+  const hasSendableClassDecoratorCacheRule: boolean = hasSendableClassDecoratorRule(lastRules);
+  const hasSendableClassDecoratorCurrentRule: boolean = hasSendableClassDecoratorRule(currentRules);
+  return checkValueDiff(hasSendableClassDecoratorCacheRule, hasSendableClassDecoratorCurrentRule);
+}
+
+/**
+ * check if sendableCheckRules contains SENDABLE_CLASS_DECORATOR_RULE
+ * @param sendableCheckRules sendable check rules
+ * @returns true if sendableCheckRules contains SENDABLE_CLASS_DECORATOR_RULE, false otherwise
+ */
+function hasSendableClassDecoratorRule(sendableCheckRules: string[] | undefined): boolean {
+  if (!sendableCheckRules) {
+    return false;
+  }
+  return sendableCheckRules?.includes(SENDABLE_CLASS_DECORATOR_RULE);
+}
+
 function rebuildProgram(shouldInvalidCache: boolean | undefined, onlyDeleteBuildInfoCache: boolean | undefined): void {
   if (shouldInvalidCache) {
     // If the targetESVersion or usTsHar is changed, we need to delete the build info cahce files & rollup caches
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
     targetESVersionChanged = true;
   } else if (onlyDeleteBuildInfoCache) {
-    // When tsImportSendable or types or maxFlowDepth or skipOhModuleslint or enableStrictCheckOHModule or mixCompile is changed, delete cahce files
+    // When tsImportSendable or types or maxFlowDepth or skipOhModuleslint or enableStrictCheckOHModule or disableSendableCheckRules
+    //  or mixCompile is changed, delete cahce files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
   }
 }
@@ -613,6 +644,7 @@ export let languageService: ts.LanguageService = null;
 let tsImportSendable: boolean = false;
 let skipOhModulesLint: boolean = false;
 let enableStrictCheckOHModule: boolean = false;
+let disableSendableCheckRules: string[] = [];
 let mixCompile: boolean = false;
 export let maxMemoryInServiceChecker: number = 0;
 export function serviceChecker(rootFileNames: string[], newLogger: Object = null, resolveModulePaths: string[] = null,
@@ -622,6 +654,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   tsImportSendable = rollupShareObject?.projectConfig.tsImportSendable;
   skipOhModulesLint = rollupShareObject?.projectConfig.skipOhModulesLint;
   enableStrictCheckOHModule = rollupShareObject?.projectConfig.enableStrictCheckOHModule;
+  disableSendableCheckRules = rollupShareObject?.projectConfig.disableSendableCheckRules || [];
   mixCompile = rollupShareObject?.projectConfig.mixCompile;
   if (projectConfig.xtsMode || process.env.watchMode === 'true') {
     if (projectConfig.hotReload) {
