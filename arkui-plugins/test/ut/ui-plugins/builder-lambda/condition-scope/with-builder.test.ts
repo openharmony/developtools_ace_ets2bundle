@@ -183,7 +183,7 @@ function testUITransformer(this: PluginTestContext): void {
 }
 
 const expectedMemoScript: string = `
-import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
