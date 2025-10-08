@@ -43,7 +43,7 @@ import { clearNodeCache } from '../class-by-peer';
 import { SourcePosition } from '../peers/SourcePosition';
 import { MemberExpression } from '../to-be-generated/MemberExpression';
 import { Es2pandaAstNodeType } from '../../Es2pandaEnums';
-import { Debugger } from "./debugger";
+import { Debugger } from './debugger';
 
 export function proceedToState(state: Es2pandaContextState, context: KNativePointer, forceDtsEmit = false): void {
     Debugger.getInstance().phasesDebugLog(`[TS WRAPPER] PROCEED TO STATE: ${getEnumName(Es2pandaContextState, state)}`);
