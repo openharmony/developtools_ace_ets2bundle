@@ -17,7 +17,7 @@ import { isSameNativeObject } from '../peers/ArktsObject';
 import { AstNode } from '../peers/AstNode';
 import { AssignmentExpression } from '../types';
 import { Es2pandaTokenType } from '../../generated/Es2pandaEnums';
-import { Expression } from "../../generated/peers/Expression";
+import { Expression } from '../../generated/peers/Expression';
 
 export function updateAssignmentExpression(
     original: AssignmentExpression,
