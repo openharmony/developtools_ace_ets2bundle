@@ -19,22 +19,18 @@ import { BuilderLambdaNames, expectNameInTypeReference, isCustomComponentAnnotat
 import { DeclarationCollector } from '../../common/declaration-collector';
 import {
     ARKUI_IMPORT_PREFIX_NAMES,
-    BindableDecl,
+    ARKUI_NAV_DESTINATION_SOURCE_NAME,
+    ARKUI_NAVIGATION_SOURCE_NAME,
     Dollars,
     InnerComponentAttributes,
+    InnerComponentNames,
     StructDecoratorNames,
 } from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
-import {
-    collectTypeRecordFromParameter,
-    collectTypeRecordFromTypeParameterDeclaration,
-    collectTypeRecordFromTypeParameterInstatiation,
-    ParameterRecord,
-    TypeParameterTypeRecord,
-    TypeRecord,
-} from '../../collectors/utils/collect-types';
 import { hasMemoAnnotation } from '../../collectors/memo-collectors/utils';
-import { AstNodePointer } from 'common/safe-types';
+import { AstNodePointer } from '../../common/safe-types';
+import { ComponentAttributeCache } from './cache/componentAttributeCache';
+import { MetaDataCollector } from '../../common/metadata-collector';
 
 export type BuilderLambdaDeclInfo = {
     name: string;
@@ -722,105 +718,20 @@ export function getTransformedComponentName(componentName: string): string {
     return `${componentName}Impl`;
 }
 
-// CACHE
-export interface ComponentRecord {
-    name: string;
-    attributeRecords: ParameterRecord[];
-    typeParams?: TypeParameterTypeRecord[];
-    hasRestParameter?: boolean;
-    hasReceiver?: boolean;
-    hasLastTrailingLambda?: boolean;
+export function isNavigationOrNavDestination(name: string | undefined, sourceName?: string): boolean {
+    const externalSourceName = sourceName ?? MetaDataCollector.getInstance().externalSourceName;
+    return (
+        (name === InnerComponentNames.NAVIGATION && externalSourceName === ARKUI_NAVIGATION_SOURCE_NAME) ||
+        (name === InnerComponentNames.NAV_DESTINATION && externalSourceName === ARKUI_NAV_DESTINATION_SOURCE_NAME)
+    );
 }
 
-export class ComponentAttributeCache {
-    private _cache: Map<string, ComponentRecord>;
-    private _attributeName: string | undefined;
-    private _attributeTypeParams: TypeRecord[] | undefined;
-    private _isCollected: boolean = false;
-    private static instance: ComponentAttributeCache;
-
-    private constructor() {
-        this._cache = new Map<string, ComponentRecord>();
+export function getIsUserCreateStack(
+    typeName: string | undefined,
+    args: readonly arkts.Expression[]
+): boolean | undefined {
+    if (typeName === InnerComponentNames.NAVIGATION) {
+        return args.length > 1 || (args.length === 1 && !arkts.isArrowFunctionExpression(args[0]));
     }
-
-    static getInstance(): ComponentAttributeCache {
-        if (!this.instance) {
-            this.instance = new ComponentAttributeCache();
-        }
-        return this.instance;
-    }
-
-    private collectAttributeName(type: arkts.TypeNode | undefined): string | undefined {
-        if (
-            !type ||
-            !arkts.isETSTypeReference(type) ||
-            !type.part ||
-            !type.part.name ||
-            !arkts.isIdentifier(type.part.name)
-        ) {
-            return;
-        }
-        this._attributeName = type.part.name.name;
-        if (type.part.typeParams) {
-            this._attributeTypeParams = collectTypeRecordFromTypeParameterInstatiation(type.part.typeParams);
-        }
-    }
-
-    get attributeName(): string | undefined {
-        return this._attributeName;
-    }
-
-    get attributeTypeParams(): TypeRecord[] | undefined {
-        return this._attributeTypeParams;
-    }
-
-    reset(): void {
-        this._cache.clear();
-        this._attributeName = undefined;
-        this._attributeTypeParams = undefined;
-        this._isCollected = false;
-    }
-
-    isCollected(): boolean {
-        return this._isCollected;
-    }
-
-    collect(node: arkts.MethodDefinition): void {
-        this.collectAttributeName(node.scriptFunction.returnTypeAnnotation);
-        if (!this._attributeName) {
-            return;
-        }
-        const name: string = node.name.name;
-        const hasRestParameter = node.scriptFunction.hasRestParameter;
-        const hasReceiver = node.scriptFunction.hasReceiver;
-        const typeParams = collectTypeRecordFromTypeParameterDeclaration(node.scriptFunction.typeParams);
-        const params = node.scriptFunction.params as arkts.ETSParameterExpression[];
-        const attributeRecords: ParameterRecord[] = [];
-        const hasLastTrailingLambda = checkIsTrailingLambdaInLastParam(params);
-        params.forEach((p, index) => {
-            if (index === params.length - 1 && hasLastTrailingLambda) {
-                return;
-            }
-            const record = collectTypeRecordFromParameter(p);
-            attributeRecords.push(record);
-        });
-        const componentRecord: ComponentRecord = {
-            name,
-            attributeRecords,
-            typeParams,
-            hasRestParameter,
-            hasReceiver,
-            hasLastTrailingLambda,
-        };
-        this._cache.set(name, componentRecord);
-        this._isCollected = true;
-    }
-
-    getComponentRecord(name: string): ComponentRecord | undefined {
-        return this._cache.get(name);
-    }
-
-    getAllComponentRecords(): ComponentRecord[] {
-        return Array.from(this._cache.values());
-    }
+    return undefined;
 }

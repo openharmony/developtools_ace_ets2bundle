@@ -59,9 +59,10 @@ import {
     ObservedAnnoInfo,
     getNoTransformationMembersInClass,
     isComputedMethod,
+    RouterInfo,
 } from './utils';
 import { collectStateManagementTypeImport, generateThisBacking, hasDecorator } from '../property-translators/utils';
-import { ComponentAttributeCache, isComponentAttributeInterface } from '../builder-lambda-translators/utils';
+import { isComponentAttributeInterface } from '../builder-lambda-translators/utils';
 import { ProjectConfig } from '../../common/plugin-context';
 import { ImportCollector } from '../../common/import-collector';
 import {
@@ -74,6 +75,11 @@ import {
     RESOURCE_TYPE,
     ARKUI_BUILDER_SOURCE_NAME,
     TypeNames,
+    NavigationNames,
+    ArkTsDefaultNames,
+    BuilderNames,
+    EntryWrapperNames,
+    CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
 } from '../../common/predefines';
 import { ObservedTranslator } from '../property-translators/index';
 import {
@@ -83,6 +89,8 @@ import {
 } from '../../collectors/memo-collectors/utils';
 import { generateArkUICompatible } from '../interop/interop';
 import { GenSymGenerator } from '../../common/gensym-generator';
+import { MetaDataCollector } from '../../common/metadata-collector';
+import { ComponentAttributeCache } from '../builder-lambda-translators/cache/componentAttributeCache';
 import { MethodTranslator } from 'ui-plugins/property-translators/base';
 import { MonitorCache } from '../property-translators/cache/monitorCache';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
@@ -1356,5 +1364,79 @@ export class factory {
             ),
         ];
         return arkts.factory.createBlockExpression(statements);
+    }
+
+    static insertClassInEtsScript(node: arkts.EtsScript): arkts.EtsScript {
+        const routerInfo: Map<string, RouterInfo[]> = MetaDataCollector.getInstance().routerInfo;
+        const filePath: string | undefined = MetaDataCollector.getInstance().fileAbsName;
+        if (!filePath || !routerInfo.has(filePath)) {
+            return node;
+        }
+        let navigationBuilders: arkts.ExpressionStatement[] = [];
+        routerInfo.get(filePath)!.forEach((info: RouterInfo) => {
+            navigationBuilders.push(factory.createNavigationBuilderRegister(info));
+        });
+        let body: readonly arkts.AstNode[] = [
+            arkts.factory.createClassProperty(
+                arkts.factory.createIdentifier(NavigationNames.STATIC_BLOCK_TRIGGER_FIELD),
+                arkts.factory.createBooleanLiteral(false),
+                arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_BOOLEAN),
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+                false
+            ),
+            arkts.factory.createClassStaticBlock(
+                arkts.factory.createFunctionExpression(
+                    UIFactory.createScriptFunction({
+                        key: arkts.factory.createIdentifier(ArkTsDefaultNames.DEFAULT_STATIC_BLOCK_NAME),
+                        modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+                        flags:
+                            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_STATIC_BLOCK |
+                            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_EXPRESSION,
+                        body: arkts.factory.createBlock(navigationBuilders),
+                    })
+                )
+            ),
+        ];
+        const navigationClassNode = arkts.factory.createClassDeclaration(
+            arkts.factory.createClassDefinition(
+                arkts.factory.createIdentifier(NavigationNames.NAVIGATION_REGISTER_CLASS),
+                undefined,
+                undefined,
+                [],
+                undefined,
+                undefined,
+                body,
+                arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_CLASS_DECL,
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+            )
+        );
+        return arkts.factory.updateEtsScript(node, [...node.statements, navigationClassNode]);
+    }
+
+    static createNavigationBuilderRegister(routerInfo: RouterInfo): arkts.ExpressionStatement {
+        ImportCollector.getInstance().collectSource(BuilderNames.WRAP_BUILDER, ARKUI_BUILDER_SOURCE_NAME);
+        ImportCollector.getInstance().collectImport(BuilderNames.WRAP_BUILDER);
+        ImportCollector.getInstance().collectSource(
+            EntryWrapperNames.ENTRY_POINT_CLASS_NAME,
+            CUSTOM_COMPONENT_IMPORT_SOURCE_NAME
+        );
+        ImportCollector.getInstance().collectImport(EntryWrapperNames.ENTRY_POINT_CLASS_NAME);
+        return arkts.factory.createExpressionStatement(
+            arkts.factory.createCallExpression(
+                UIFactory.generateMemberExpression(
+                    arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_POINT_CLASS_NAME),
+                    EntryWrapperNames.NAVIGATION_BUILDER_REGISTER
+                ),
+                undefined,
+                [
+                    arkts.factory.createStringLiteral(routerInfo.name),
+                    arkts.factory.createCallExpression(
+                        arkts.factory.createIdentifier(BuilderNames.WRAP_BUILDER),
+                        undefined,
+                        [arkts.factory.createIdentifier(routerInfo.buildFunction)]
+                    ),
+                ]
+            )
+        );
     }
 }

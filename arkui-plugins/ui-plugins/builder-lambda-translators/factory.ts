@@ -14,6 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import path from 'path';
 import { BuilderLambdaNames, optionsHasField, inferTypeFromValue } from '../utils';
 import {
     backingField,
@@ -52,9 +53,9 @@ import {
     BuilderLambdaStyleBodyInfo,
     getDeclaredSetAttribtueMethodName,
     checkIsTrailingLambdaInLastParam,
-    ComponentAttributeCache,
-    ComponentRecord,
     getTransformedComponentName,
+    isNavigationOrNavDestination,
+    getIsUserCreateStack,
 } from './utils';
 import { hasDecorator, isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
 import { BuilderFactory } from './builder-factory';
@@ -69,6 +70,9 @@ import {
     ConditionNames,
     DecoratorIntrinsicNames,
     DecoratorNames,
+    InnerComponentNames,
+    ModuleType,
+    NavigationNames,
     StateManagementTypes,
     TypeNames,
 } from '../../common/predefines';
@@ -83,6 +87,8 @@ import {
 import { TypeRecord } from '../../collectors/utils/collect-types';
 import { StyleInternalsVisitor } from './style-internals-visitor';
 import { ConditionBreakCache } from './cache/conditionBreakCache';
+import { ComponentAttributeCache, ComponentRecord } from './cache/componentAttributeCache';
+import { MetaDataCollector } from '../../common/metadata-collector';
 
 export class factory {
     /**
@@ -514,6 +520,7 @@ export class factory {
     ): (arkts.AstNode | undefined)[] {
         const { isFunctionCall, params, returnType, moduleName, isFromCommonMethod } = declInfo;
         const type: arkts.Identifier | undefined = builderLambdaType(leaf);
+        const typeName: string | undefined = type?.name;
         const args: (arkts.AstNode | undefined)[] = [];
         const modifiedArgs: (arkts.AstNode | undefined)[] = [];
         const secondLastArgInfo = buildSecondLastArgInfo(type, isFunctionCall);
@@ -543,7 +550,7 @@ export class factory {
         );
         const lambdaBody = this.addOptionsArgsToLambdaBodyInStyleArg(
             lambdaBodyInfo,
-            modifiedArgs,
+            factory.addArgsInBuilderLambdaCall(modifiedArgs, typeName, moduleName, leaf),
             typeArguments,
             isFromCommonMethod
         );
@@ -551,6 +558,53 @@ export class factory {
         const styleArg = this.createStyleArgInBuilderLambda(lambdaBody, typeNode, moduleName);
         args.unshift(styleArg);
         return args;
+    }
+
+    static addArgsInBuilderLambdaCall(
+        modifiedArgs: (arkts.AstNode | undefined)[],
+        typeName: string | undefined,
+        moduleName: string,
+        leaf: arkts.CallExpression,
+    ): (arkts.AstNode | undefined)[] {
+        if (isNavigationOrNavDestination(typeName, moduleName)) {
+            const length: number = leaf.arguments.length;
+            if (typeName === InnerComponentNames.NAVIGATION && length === 0) {
+                modifiedArgs.push(arkts.factory.createUndefinedLiteral());
+            }
+            modifiedArgs.push(factory.createModuleInfoArg(getIsUserCreateStack(typeName, leaf.arguments)));
+        }
+        return modifiedArgs;
+    }
+
+    static createModuleInfoArg(isUserCreateStack: boolean | undefined): arkts.ObjectExpression {
+        const projectConfig = MetaDataCollector.getInstance().projectConfig;
+        const fileAbsName = MetaDataCollector.getInstance().fileAbsName;
+        const moduleName = projectConfig?.moduleName ?? '';
+        const filePath = path.relative(projectConfig?.projectRootPath ?? '', fileAbsName ?? '').replace(/\.ets$/, '');
+        const pagePath = projectConfig?.moduleType === ModuleType.HAR ? '' : filePath;
+        const properties: arkts.Property[] = [
+            arkts.factory.createProperty(
+                arkts.factory.createIdentifier(NavigationNames.MODULE_NAME),
+                arkts.factory.createStringLiteral(moduleName)
+            ),
+            arkts.factory.createProperty(
+                arkts.factory.createIdentifier(NavigationNames.PAGE_PATH),
+                arkts.factory.createStringLiteral(pagePath)
+            ),
+        ];
+        if (isUserCreateStack !== undefined) {
+            properties.push(
+                arkts.factory.createProperty(
+                    arkts.factory.createIdentifier(NavigationNames.IS_USER_CREATE_STACK),
+                    arkts.factory.createBooleanLiteral(isUserCreateStack)
+                )
+            );
+        }
+        return arkts.factory.createObjectExpression(
+            arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+            properties,
+            true
+        );
     }
 
     /**
@@ -1197,6 +1251,25 @@ export class factory {
     }
 
     /**
+     * create parameter declaration `ModuleInfo: NavigationModuleInfo` or `ModuleInfo: NavDestinationModuleInfo`.
+     */
+    static createModuleInfoParam(name: string): arkts.ETSParameterExpression {
+        return arkts.factory
+            .createParameterDeclaration(
+                arkts.factory.createIdentifier(
+                    NavigationNames.MODULE_INFO,
+                    UIFactory.createTypeReferenceFromString(
+                        name === InnerComponentNames.NAVIGATION
+                            ? NavigationNames.NAVIGATION_MODULE_INFO
+                            : NavigationNames.NAV_DESTINATION_MODULE_INFO
+                    )
+                ),
+                undefined
+            )
+            .setOptional(true);
+    }
+
+    /**
      * add declared set methods in `@ComponentBuilder` Attribute interface
      */
     static addDeclaredSetMethodsInAttributeInterface(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
@@ -1232,7 +1305,7 @@ export class factory {
         const name = getDeclaredSetAttribtueMethodName(record.name);
         const hasReceiver = !!record.hasReceiver;
         const params = record.attributeRecords.map((record) => TypeFactory.createParameterFromRecord(record));
-        const typeParams = record.typeParams?.map((p) => TypeFactory.createTypeParameterFromRecord(p));
+        const typeParams = record.typeParameters?.map((p) => TypeFactory.createTypeParameterFromRecord(p));
 
         const key = arkts.factory.createIdentifier(name);
         const kind = arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD;
@@ -1303,7 +1376,7 @@ export class factory {
             attributeTypeParams,
             record.hasLastTrailingLambda
         );
-        const typeParamItems = record.typeParams?.map((p) => TypeFactory.createTypeParameterFromRecord(p));
+        const typeParamItems = record.typeParameters?.map((p) => TypeFactory.createTypeParameterFromRecord(p));
         const typeParams = !!typeParamItems
             ? arkts.factory.createTypeParameterDeclaration(typeParamItems, typeParamItems.length)
             : undefined;
