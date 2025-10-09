@@ -122,6 +122,8 @@ import {
   interopTransformLog,
   interopTransform
 } from '../ark_compiler/interop/process_arkts_evolution';
+import { FileManager } from '../ark_compiler/interop/interop_manager';
+import { ARKTS_1_2 } from '../ark_compiler/interop/pre_define';
 
 let switchTsAst: boolean = true;
 
@@ -480,9 +482,9 @@ async function transform(code: string, id: string) {
   // close `noEmit` to make invoking emit() effective.
   tsProgram.getCompilerOptions().noEmit = false;
   const metaInfo: Object = this.getModuleInfo(id).meta;
-  const lazyImportOptions: LazyImportOptions = {
-    autoLazyImport: this.share.projectConfig?.autoLazyImport ?? false,
-    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? reExportNoCheckMode,
+  const lazyImportOptions: LazyImportOptions = {	
+    autoLazyImport: this.share.projectConfig?.autoLazyImport ?? false,	
+    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? reExportNoCheckMode,	
     autoLazyFilter: this.share.projectConfig?.autoLazyFilter ?? {}
   };
   const mixCompile: boolean = this.share.projectConfig?.mixCompile ?? false;
@@ -657,9 +659,10 @@ function setPkgNameForFile(moduleInfo: Object): void {
 
 function validateEts(code: string, id: string, isEntry: boolean, logger: Object, sourceFile: ts.SourceFile, 
   hvigorLogger: Object | undefined = undefined): void {
-  if (/\.ets$/.test(id)) {
+  const isArkTS1_2Declaration = FileManager.getInstance().getLanguageVersionByFilePath(id).languageVersion === ARKTS_1_2;
+  if (/\.ets$/.test(id) || isArkTS1_2Declaration) {
     clearCollection();
-    const fileQuery: string = isEntry && !abilityPagesFullPath.has(path.resolve(id).toLowerCase()) ? '?entry' : '';
+    const fileQuery: string = !isArkTS1_2Declaration && isEntry && !abilityPagesFullPath.has(path.resolve(id).toLowerCase()) ? '?entry' : '';
     const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery, sourceFile);
     if (log.length && !projectConfig.ignoreWarning) {
       emitLogInfo(logger, log, true, id, hvigorLogger);

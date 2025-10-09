@@ -16,12 +16,14 @@
 
 
 import * as arkts from '@koalaui/libarkts';
-import { ESValueMethodNames, InteroperAbilityNames } from './predefines';
+import { BuilderMethodNames, ESValueMethodNames, InteroperAbilityNames } from './predefines';
+import { BuilderLambdaNames } from '../utils';
+import { ImportCollector } from '../../common/import-collector';
 
 
 /**
- *
- * @param result
+ * 
+ * @param result 
  * @returns let result = ESValue.instantiateEmptyObject()
  */
 export function createEmptyESValue(result: string): arkts.VariableDeclaration {
@@ -49,8 +51,8 @@ export function createEmptyESValue(result: string): arkts.VariableDeclaration {
 }
 
 /**
- *
- * @param value
+ * 
+ * @param value 
  * @returns ESValue.wrap(value)
  */
 export function getWrapValue(value: arkts.AstNode): arkts.AstNode {
@@ -68,10 +70,10 @@ export function getWrapValue(value: arkts.AstNode): arkts.AstNode {
 }
 
 /**
- *
- * @param object
- * @param key
- * @param value
+ * 
+ * @param object 
+ * @param key 
+ * @param value 
  * @returns object.setProperty(key, value)
  */
 export function setPropertyESValue(object: string, key: string, value: arkts.AstNode): arkts.ExpressionStatement {
@@ -94,10 +96,10 @@ export function setPropertyESValue(object: string, key: string, value: arkts.Ast
 }
 
 /**
- *
- * @param result
- * @param obj
- * @param key
+ * 
+ * @param result 
+ * @param obj 
+ * @param key 
  * @returns let result = object.getProperty(key)
  */
 export function getPropertyESValue(result: string, obj: string, key: string): arkts.VariableDeclaration {
@@ -125,7 +127,7 @@ export function getPropertyESValue(result: string, obj: string, key: string): ar
 }
 
 /**
- *
+ * 
  * @param {string} stateVarName - Original state variable name to be proxied.
  * @returns {string} Proxied variable name in the format: "__Proxy_{stateVarName}".
  */
@@ -135,7 +137,7 @@ export function stateProxy(stateVarName: string): string {
 
 /**
  * get elmtId
- * @returns
+ * @returns         
  *      let viewStackProcessor = global.getProperty("ViewStackProcessor");
  *      let createId = viewStackProcessor.getProperty("AllocateNewElmetIdForNextComponent");
  *      let elmtId = createId.invoke();
@@ -170,8 +172,8 @@ export function createELMTID(): arkts.Statement[] {
 }
 
 /**
- *
- * @param componentName
+ * 
+ * @param componentName 
  * @returns return {
  *              component: component,
  *              name: componentName,
@@ -197,7 +199,7 @@ export function createInitReturn(componentName: string): arkts.ReturnStatement {
 }
 
 /**
- * createGlobal
+ * createGlobal 
  * @returns let global = ESValue.getGlobal();
  */
 export function createGlobal(): arkts.Statement {
@@ -220,4 +222,41 @@ export function createGlobal(): arkts.Statement {
             )
         )]
     );
+}
+
+
+export function isInstantiateImpl(node: arkts.MemberExpression): boolean {
+    const property = node.property;
+    if (arkts.isIdentifier(property) && property.name === BuilderLambdaNames.ORIGIN_METHOD_NAME) {
+        return true;
+    }
+    return false;
+}
+
+export function isArkTS1_1(node: arkts.MemberExpression): boolean {
+    const struct = node.object;
+    const decl = arkts.getDecl(struct);
+    if (!decl || !arkts.isClassDefinition(decl) || decl.lang !== arkts.Es2pandaLanguage.JS) {
+        return false;
+    }
+    return true;
+}
+
+export function isInteropComponent(node: arkts.CallExpression): boolean {
+    if (
+        arkts.isMemberExpression(node.expression) &&
+        isInstantiateImpl(node.expression) &&
+        isArkTS1_1(node.expression)
+    ) {
+        ImportCollector.getInstance().collectSource(InteroperAbilityNames.ARKUICOMPATIBLE, InteroperAbilityNames.INTEROP);
+        ImportCollector.getInstance().collectImport(InteroperAbilityNames.ARKUICOMPATIBLE);
+        ImportCollector.getInstance().collectSource(InteroperAbilityNames.GETCOMPATIBLESTATE, InteroperAbilityNames.INTEROP);
+        ImportCollector.getInstance().collectImport(InteroperAbilityNames.GETCOMPATIBLESTATE);
+        ImportCollector.getInstance().collectSource(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER, InteroperAbilityNames.INTEROP);
+        ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER);
+        ImportCollector.getInstance().collectSource(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER, InteroperAbilityNames.INTEROP);
+        ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER);
+        return true;
+    }
+    return false;
 }

@@ -81,11 +81,12 @@ import {
     collectMemoableInfoInFunctionReturnType,
     collectScriptFunctionReturnTypeFromInfo,
 } from '../../collectors/memo-collectors/utils';
-import { generateArkUICompatible, isArkUICompatible } from '../interop/interop';
+import { generateArkUICompatible } from '../interop/interop';
 import { GenSymGenerator } from '../../common/gensym-generator';
 import { MethodTranslator } from 'ui-plugins/property-translators/base';
 import { MonitorCache } from '../property-translators/cache/monitorCache';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
+import { isInteropComponent } from '../interop/utils';
 
 export class factory {
     /**
@@ -1159,7 +1160,8 @@ export class factory {
     static transformCallExpression(
         node: arkts.CallExpression,
         projectConfig: ProjectConfig | undefined,
-        resourceInfo: ResourceInfo
+        resourceInfo: ResourceInfo,
+        globalBuilder: boolean
     ): arkts.CallExpression {
         if (arkts.isCallExpression(node) && isResourceNode(node)) {
             return this.transformResource(node, projectConfig, resourceInfo);
@@ -1167,8 +1169,8 @@ export class factory {
         if (arkts.isCallExpression(node) && isForEachCall(node)) {
             return this.transformCallArguments(node);
         }
-        if (isArkUICompatible(node)) {
-            return generateArkUICompatible(node as arkts.CallExpression);
+        if (isInteropComponent(node)) {
+            return generateArkUICompatible(node as arkts.CallExpression, globalBuilder);
         }
         return node;
     }
