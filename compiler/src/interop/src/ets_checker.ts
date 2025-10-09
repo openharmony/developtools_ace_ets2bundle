@@ -237,7 +237,6 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'mixCompile': mixCompile,
     'isCompileJsHar': isCompileJsHar(),
     'moduleRootPath': projectConfig.moduleRootPath,
-    'runtimeOS': projectConfig.runtimeOS,
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
