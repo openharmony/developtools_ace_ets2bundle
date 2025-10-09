@@ -41,6 +41,7 @@ export class RegularPropertyTranslator extends PropertyTranslator implements Ini
         ) {
             initializeStruct = this.generateControllerInit(originalName, initializeStruct);
         }
+        initializeStruct.range = this.property.range;
         PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
         if (!!this.structInfo.annotations?.reusable) {
             const toRecord = generateToRecord(newName, originalName);
@@ -69,7 +70,7 @@ export class RegularPropertyTranslator extends PropertyTranslator implements Ini
             arkts.factory.createTSAsExpression(thisValue, this.propertyType, false)
         );
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
-
+        field.range = this.property.range;
         return [field, getter, setter];
     }
 

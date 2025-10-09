@@ -35,6 +35,7 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const mutableThis: arkts.Expression = generateThisBacking(newName);
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(mutableThis, originalName);
+        initializeStruct.range = this.property.range;
         PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
     }
 
@@ -62,7 +63,7 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
         arkts.NodeCache.getInstance().collect(getter);
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, propertyType, thisSetValue);
         arkts.NodeCache.getInstance().collect(setter);
-
+        field.range = this.property.range;
         return [field, getter, setter];
     }
 

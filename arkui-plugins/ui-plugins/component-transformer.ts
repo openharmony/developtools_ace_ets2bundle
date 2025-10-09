@@ -28,6 +28,7 @@ import {
     isCustomDialogControllerOptions,
     getComponentExtendsName,
     ComponentType,
+    EntryAnnoInfo,
 } from './utils';
 import {
     backingField,
@@ -74,7 +75,7 @@ export interface InteropContext {
 export class ComponentTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
     private componentInterfaceCollection: arkts.TSInterfaceDeclaration[] = [];
-    private entryNames: string[] = [];
+    private entryAnnoInfo: EntryAnnoInfo[] = [];
     private structMembersMap: Map<string, arkts.AstNode[]> = new Map();
     private isCustomComponentImported: boolean = false;
     private isCustomComponentV2Imported: boolean = false;
@@ -102,7 +103,7 @@ export class ComponentTransformer extends AbstractVisitor {
         super.reset();
         this.scopeInfos = [];
         this.componentInterfaceCollection = [];
-        this.entryNames = [];
+        this.entryAnnoInfo = [];
         this.structMembersMap = new Map();
         this.isCustomComponentImported = false;
         this.isCustomComponentV2Imported = false;
@@ -207,7 +208,7 @@ export class ComponentTransformer extends AbstractVisitor {
         ) {
             return arkts.factory.updateEtsScript(node, [...node.statements, entryFactory.createNavigationModuleInfo(this.externalSourceName)]);
         }
-        if (this.isExternal && this.componentInterfaceCollection.length === 0 && this.entryNames.length === 0) {
+        if (this.isExternal && this.componentInterfaceCollection.length === 0 && this.entryAnnoInfo.length === 0) {
             return node;
         }
         const updateStatements: arkts.AstNode[] = [];
@@ -220,15 +221,22 @@ export class ComponentTransformer extends AbstractVisitor {
             updateStatements.push(...this.componentInterfaceCollection);
         }
 
-        if (this.entryNames.length > 0) {
+        if (this.entryAnnoInfo.length > 0) {
             if (!this.isEntryPointImported) entryFactory.createAndInsertEntryPointImport(this.program);
             // normally, we should only have at most one @Entry component in a single file.
             // probably need to handle error message here.
             if (!this.isPageLifeCycleImported)
                 this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.PAGE_LIFE_CYCLE);
-            updateStatements.push(...this.entryNames.map(entryFactory.generateEntryWrapper));
+            updateStatements.push(...this.entryAnnoInfo.map(entryFactory.generateEntryWrapper));
             updateStatements.push(
-                entryFactory.callRegisterNamedRouter(this.entryRouteName, this.projectConfig, this.program?.absName)
+                ...this.entryAnnoInfo.map((item: EntryAnnoInfo) =>
+                    entryFactory.callRegisterNamedRouter(
+                        this.entryRouteName,
+                        this.projectConfig,
+                        this.program?.absName,
+                        item.range
+                    )
+                )
             );
             this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, NavigationNames.NAVINTERFACE);
         }
@@ -341,7 +349,7 @@ export class ComponentTransformer extends AbstractVisitor {
         const definition: arkts.ClassDefinition = node.definition!;
         const newDefinitionBody: arkts.AstNode[] = [];
         if (!!scopeInfo.annotations?.entry) {
-            this.entryNames.push(className);
+            this.entryAnnoInfo.push({ name: className, range: scopeInfo.annotations.entry.range });
             const { storage, useSharedStorage, routeName } = getEntryParams(definition);
             entryFactory.transformStorageParams(storage, useSharedStorage, definition);
             if (routeName && routeName.value && arkts.isStringLiteral(routeName.value)) {
@@ -497,6 +505,7 @@ export class ComponentTransformer extends AbstractVisitor {
             isComponentStruct(newNode, this.scopeInfos[this.scopeInfos.length - 1])
         ) {
             const updateNode = this.processComponent(newNode);
+            updateNode.range = newNode.range;
             this.exit(newNode);
             return updateNode;
         }

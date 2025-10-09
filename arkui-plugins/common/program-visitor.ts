@@ -19,9 +19,10 @@ import { matchPrefix } from './arkts-utils';
 import { debugDump, debugLog, getDumpFileName } from './debug';
 import { PluginContext } from './plugin-context';
 import { LegacyTransformer } from '../ui-plugins/interop/legacy-transformer';
-import { ProgramSkipper } from './program-skipper';
 import { FileManager } from './file-manager';
 import { LANGUAGE_VERSION } from './predefines';
+import { ComponentTransformer } from '../ui-plugins/component-transformer';
+import { LIB_SUFFIX, ProgramSkipper } from './program-skipper';
 
 export interface ProgramVisitorOptions extends VisitorOptions {
     pluginName: string;
@@ -251,6 +252,9 @@ export class ProgramVisitor extends AbstractVisitor {
             this.visitTransformer(transformer, script, externalSourceName, program);
             transformer.reset();
             arkts.setAllParents(script);
+            if (!program?.absName.endsWith(LIB_SUFFIX)) {
+                arkts.setAllRange(script);
+            }
             if (!transformer.isExternal) {
                 debugDump(	
                     script.dumpSrc(),	

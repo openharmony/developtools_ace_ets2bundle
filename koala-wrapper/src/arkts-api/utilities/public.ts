@@ -261,6 +261,10 @@ export function setAllParents(ast: AstNode): void {
     global.es2panda._AstNodeUpdateAll(global.context, ast.peer);
 }
 
+export function setAllRange(ast: AstNode): void {
+    global.es2panda._AstNodeSetAllRange(global.context, ast.peer);
+}
+
 export function generateTsDeclarationsFromContext(
   outputDeclEts: string,
   outputEts: string,

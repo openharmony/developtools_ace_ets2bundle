@@ -40,8 +40,10 @@ export class ParamTranslator extends PropertyTranslator implements InitializerCo
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
+        initializeStruct.range = this.property.range;
         PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
         const updateStruct: arkts.AstNode = this.generateUpdateStruct(generateThisBacking(newName), originalName);
+        updateStruct.range = this.property.range;
         PropertyCache.getInstance().collectUpdateStruct(this.structInfo.name, [updateStruct]);
     }
 
@@ -55,7 +57,7 @@ export class ParamTranslator extends PropertyTranslator implements InitializerCo
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
         const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
-
+        field.range = this.property.range;
         return [field, getter];
     }
 

@@ -43,6 +43,7 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
+        initializeStruct.range = this.property.range;
         PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
         if (!!this.structInfo.annotations?.reusable) {
             const toRecord = generateToRecord(newName, originalName);
@@ -87,6 +88,7 @@ export class StorageLinkTranslator extends PropertyTranslator implements Initial
         );
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
+        field.range = this.property.range;
         return [field, getter, setter];
     }
 

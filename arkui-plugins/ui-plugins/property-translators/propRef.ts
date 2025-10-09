@@ -44,8 +44,10 @@ export class PropRefTranslator extends PropertyTranslator implements Initializer
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const mutableThis: arkts.Expression = generateThisBacking(newName);
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
+        initializeStruct.range = this.property.range;
         PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
         const updateStruct: arkts.AstNode = this.generateUpdateStruct(mutableThis, originalName);
+        updateStruct.range = this.property.range;
         PropertyCache.getInstance().collectUpdateStruct(this.structInfo.name, [updateStruct]);
         if (!!this.structInfo.annotations?.reusable) {
             const toRecord = generateToRecord(newName, originalName);
@@ -67,7 +69,7 @@ export class PropRefTranslator extends PropertyTranslator implements Initializer
         );
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
-
+        field.range = this.property.range;
         return [field, getter, setter];
     }
 

@@ -21,6 +21,7 @@ import { Es2pandaModifierFlags } from '../../generated/Es2pandaEnums';
 import { ArktsObject } from './ArktsObject';
 import { SourcePosition } from './SourcePosition';
 import { copyCacheToClonedNode } from '../utilities/nodeCache';
+import { SourceRange } from './SourceRange';
 
 export abstract class AstNode extends ArktsObject {
     protected constructor(peer: KNativePointer) {
@@ -153,6 +154,14 @@ export abstract class AstNode extends ArktsObject {
 
     public set endPosition(end: SourcePosition) {
         global.es2panda._AstNodeSetEnd(global.context, this.peer, end.peer);
+    }
+
+    public get range(): SourceRange {
+        return new SourceRange(global.es2panda._AstNodeRangeConst(global.context, this.peer));
+    }
+
+    public set range(range: SourceRange) {
+        global.es2panda._AstNodeSetRange(global.context, this.peer, range.peer);
     }
 }
 

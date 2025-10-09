@@ -15,41 +15,8 @@
 
 import * as arkts from '@koalaui/libarkts';
 import * as path from 'path';
-import { factory } from './factory';
 import { isAnnotation } from '../../common/arkts-utils';
 import { StructDecoratorNames, EntryParamNames, EntryWrapperNames } from '../../common/predefines';
-
-/**
- * @deprecated
- */
-export class EntryHandler {
-    private entryDefClassName: Set<string>;
-
-    private static instance: EntryHandler;
-
-    private constructor() {
-        this.entryDefClassName = new Set<string>();
-    }
-
-    public static getInstance(): EntryHandler {
-        if (!this.instance) {
-            this.instance = new EntryHandler();
-        }
-        return this.instance;
-    }
-
-    public rememberEntryFunction(classname: string): void {
-        this.entryDefClassName.add(classname);
-    }
-
-    public createEntryWrapper(): arkts.ClassDeclaration[] {
-        let result: arkts.ClassDeclaration[] = [];
-        this.entryDefClassName.forEach((classname) => {
-            result.push(factory.generateEntryWrapper(classname));
-        });
-        return result;
-    }
-}
 
 export function isEntryWrapperClass(node: arkts.AstNode): node is arkts.ClassDeclaration {
     if (!arkts.isClassDeclaration(node)) return false;

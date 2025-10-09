@@ -40,6 +40,7 @@ export class ConsumerTranslator extends PropertyTranslator implements Initialize
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(originalName, newName);
+        initializeStruct.range = this.property.range;
         PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
     }
 
@@ -57,7 +58,7 @@ export class ConsumerTranslator extends PropertyTranslator implements Initialize
         );
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
-
+        field.range = this.property.range;
         return [field, getter, setter];
     }
 

@@ -28,6 +28,7 @@ import { ProjectConfig } from '../../common/plugin-context';
 import { factory as uiFactory } from '../ui-factory';
 import { getRelativePagePath } from './utils';
 import { addMemoAnnotation } from '../../collectors/memo-collectors/utils';
+import { EntryAnnoInfo } from '../utils';
 
 export class factory {
     /**
@@ -188,7 +189,7 @@ export class factory {
      *
      * @param name class/struct name that has `@Entry` annotation.
      */
-    static generateEntryWrapper(name: string): arkts.ClassDeclaration {
+    static generateEntryWrapper(entryAnnoInfo: EntryAnnoInfo): arkts.ClassDeclaration {
         const ctor = factory.generateConstructor();
         const definition: arkts.ClassDefinition = arkts.factory
             .createClassDefinition(
@@ -202,7 +203,7 @@ export class factory {
                         arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_POINT_CLASS_NAME)
                     )
                 ),
-                [factory.generateEntryFunction(name), ctor],
+                [factory.generateEntryFunction(entryAnnoInfo.name), ctor],
                 arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_CLASS_DECL |
                     arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_DECLARATION |
                     arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_ID_REQUIRED,
@@ -211,6 +212,7 @@ export class factory {
             .setCtor(ctor as any);
         const newClass = arkts.factory.createClassDeclaration(definition);
         newClass.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE;
+        newClass.range = entryAnnoInfo.range;
         return newClass;
     }
 
@@ -379,9 +381,10 @@ export class factory {
     static callRegisterNamedRouter(
         entryRouteName: string | undefined,
         projectConfig: ProjectConfig | undefined,
-        fileAbsName: string | undefined
+        fileAbsName: string | undefined,
+        range: arkts.SourceRange
     ): arkts.ExpressionStatement {
-        return arkts.factory.createExpressionStatement(
+        const registerCall = arkts.factory.createExpressionStatement(
             arkts.factory.createCallExpression(
                 arkts.factory.createMemberExpression(
                     arkts.factory.createIdentifier(EntryWrapperNames.WRAPPER_CLASS_NAME),
@@ -405,6 +408,8 @@ export class factory {
                 ]
             )
         );
+        registerCall.range = range;
+        return registerCall;
     }
 
     /**
