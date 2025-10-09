@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { debugLog } from './debug';
 import path from 'path';
 
-const LIB_SUFFIX = '.d.ets';
+export const LIB_SUFFIX = '.d.ets';
 const ARKUI = 'arkui';
 
 export class ProgramSkipper {

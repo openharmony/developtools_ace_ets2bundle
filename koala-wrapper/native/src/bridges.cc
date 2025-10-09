@@ -650,6 +650,16 @@ void impl_AstNodeSetEnd(KNativePointer context, KNativePointer receiver, KNative
 }
 KOALA_INTEROP_V3(AstNodeSetEnd, KNativePointer, KNativePointer, KNativePointer);
 
+void impl_AstNodeSetRange(KNativePointer context, KNativePointer receiver, KNativePointer range)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    const auto _range = reinterpret_cast<es2panda_SourceRange*>(range);
+    GetImpl()->AstNodeSetRange(_context, _receiver, _range);
+    return;
+}
+KOALA_INTEROP_V3(AstNodeSetRange, KNativePointer, KNativePointer, KNativePointer);
+
 KBoolean impl_IsArrayExpression(KNativePointer nodePtr)
 {
     auto node = reinterpret_cast<es2panda_AstNode*>(nodePtr);
