@@ -17,8 +17,8 @@ import { ArktsObject } from "./ArktsObject"
 import { global } from "../static/global"
 import { passStringArray } from "../utilities/private"
 import { KNativePointer } from "@koalaui/interop"
-import { Es2pandaCompilationMode } from '../../generated/Es2pandaEnums'
-import { Debugger } from "../utilities/debugger"
+import { Es2pandaCompilationMode } from '../../generated/Es2pandaEnums';
+import { Debugger } from '../utilities/debugger';
 
 export class Config extends ArktsObject {
     constructor(peer: KNativePointer) {
