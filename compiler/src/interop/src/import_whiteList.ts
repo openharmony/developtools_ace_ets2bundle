@@ -1615,6 +1615,8 @@ export const stateManagementWhiteList: string[] = [
   'Environment',
   'AppStorageV2',
   'PersistenceV2',
+  'ColorMode',
+  'LayoutDirection'
 ];
 
 export const decoratorsWhiteList: string[] = [
