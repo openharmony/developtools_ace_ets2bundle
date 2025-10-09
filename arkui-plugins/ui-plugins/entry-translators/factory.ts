@@ -16,7 +16,14 @@
 import * as arkts from '@koalaui/libarkts';
 import * as path from 'path';
 import { annotation, createAndInsertImportDeclaration } from '../../common/arkts-utils';
-import { CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, EntryWrapperNames, NavigationNames } from '../../common/predefines';
+import {
+    ARKUI_NAVIGATION_SOURCE_NAME,
+    BuilderNames,
+    CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
+    EntryWrapperNames,
+    NavigationNames,
+    TypeNames,
+} from '../../common/predefines';
 import { ProjectConfig } from '../../common/plugin-context';
 import { factory as uiFactory } from '../ui-factory';
 import { getRelativePagePath } from './utils';
@@ -423,11 +430,11 @@ export class factory {
     /**
      * helper for createNavInterface to generate class properties
      */
-    static createClassProp(propName: string): arkts.ClassProperty {
+    static createClassProp(propName: string, type?: arkts.TypeNode): arkts.ClassProperty {
         return arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(propName),
             undefined,
-            uiFactory.createTypeReferenceFromString('string'),
+            type ?? uiFactory.createTypeReferenceFromString('string'),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
             false
         );
@@ -457,6 +464,71 @@ export class factory {
             kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             function: {
                 body: arkts.factory.createBlock([]),
+                params: params,
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+            },
+            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+        });
+    }
+
+    /**
+     * generate interface `NavigationModuleInfo` or `NavDestinationModuleInfo`.
+     */
+    static createNavigationModuleInfo(externalSourceName: string): arkts.TSInterfaceDeclaration {
+        const isNavigation: boolean = externalSourceName === ARKUI_NAVIGATION_SOURCE_NAME;
+        let params: arkts.ClassProperty[] = [
+            this.createClassProp(NavigationNames.MODULE_NAME),
+            this.createClassProp(NavigationNames.PAGE_PATH),
+        ];
+        if (isNavigation) {
+            params.push(
+                arkts.classPropertySetOptional(
+                    this.createClassProp(
+                        NavigationNames.IS_USER_CREATE_STACK,
+                        arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_BOOLEAN)
+                    ),
+                    true
+                )
+            );
+        }
+        return arkts.factory.createInterfaceDeclaration(
+            [],
+            arkts.factory.createIdentifier(
+                isNavigation ? NavigationNames.NAVIGATION_MODULE_INFO : NavigationNames.NAV_DESTINATION_MODULE_INFO
+            ),
+            undefined,
+            arkts.factory.createInterfaceBody(params),
+            false,
+            false
+        );
+    }
+
+    /**
+     * generate `NavigationBuilderRegister` method in header arkui.component.customComponent.
+     */
+    static generateNavigationBuilderRegister(): arkts.MethodDefinition {
+        const params = [
+            uiFactory.createParameterDeclaration(NavigationNames.NAME, TypeNames.STRING),
+            arkts.factory.createParameterDeclaration(
+                arkts.factory.createIdentifier(
+                    BuilderNames.BUILDER,
+                    uiFactory.createComplexTypeFromStringAndTypeParameter(BuilderNames.WRAPPED_BUILDER, [
+                        uiFactory.createTypeReferenceFromString(TypeNames.TYPE_T),
+                    ])
+                ),
+                undefined
+            ),
+        ];
+        return uiFactory.createMethodDefinition({
+            key: arkts.factory.createIdentifier(EntryWrapperNames.NAVIGATION_BUILDER_REGISTER),
+            kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+            function: {
+                body: arkts.factory.createBlock([]),
+                typeParams: arkts.factory.createTypeParameterDeclaration(
+                    [arkts.factory.createTypeParameter(arkts.factory.createIdentifier(TypeNames.TYPE_T))],
+                    0
+                ),
                 params: params,
                 flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
                 modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,

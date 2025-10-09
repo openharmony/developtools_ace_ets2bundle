@@ -29,6 +29,7 @@ export const MOCK_OUTPUT_DIR_PATH: string = 'generated/abc';
 export const MOCK_OUTPUT_FILE_NAME: string = 'entry.abc';
 export const MOCK_DEP_ANALYZER_PATH: string = 'bin/dependency_analyzer';
 export const MOCK_FILE_DEP_FILE_NAME: string = 'file_dependencies.json';
+export const MOCK_LOADER_JSON_FILE_NAME: string = 'loader.json';
 export const MOCK_DEP_INPUT_FILE_NAME: string = 'depInput.txt';
 export const MOCK_RESOURCE_TABLE_FILE_NAME: string = 'ResourceTable.txt';
 export const MOCK_BUNDLE_NAME: string = 'com.example.mock';
@@ -43,6 +44,10 @@ function getRootPath(): string {
 
 function getResourcePath(): string {
     return path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, 'resource');
+}
+
+function getMockRootPath(): string {
+    return path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH);
 }
 
 function changeFileExtension(file: string, targetExt: string, originExt = ''): string {
@@ -70,4 +75,4 @@ function ensurePathExists(filePath: string): void {
     }
 }
 
-export { getRootPath, getResourcePath, changeFileExtension, getFileName, ensurePathExists };
+export { getRootPath, getResourcePath, getMockRootPath, changeFileExtension, getFileName, ensurePathExists };
