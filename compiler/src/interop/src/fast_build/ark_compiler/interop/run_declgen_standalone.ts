@@ -208,7 +208,7 @@ class DeclfileProductor {
         const declPath: string = path.join(toUnixPath(declgenV2OutPath), projectFilePath) + EXTNAME_D_ETS;
         const isNativeFlag = moduleInfo.isNative ? 'Y' : 'N';
         const ohmUrl: string = `${isNativeFlag}&${mainModuleName}&${bundleName}&${normalizedFilePath}&${moduleInfo.packageVersion}`;
-        this.pkgDeclFilesConfig[moduleInfo.packageName].files[projectFilePath] = { declPath, ohmUrl: `@normalized:${ohmUrl}` };
+        this.pkgDeclFilesConfig[moduleInfo.packageName].files[projectFilePath] = { declPath, filePath, ohmUrl: `@normalized:${ohmUrl}` };
     }
 
     getDeclgenV2OutPath(pkgName: string): string {
