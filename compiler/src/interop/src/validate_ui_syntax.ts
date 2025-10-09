@@ -125,6 +125,7 @@ export class ComponentCollection {
   previewComponent: Array<string> = [];
   customDialogs: Set<string> = new Set([]);
   customComponents: Set<string> = new Set([]);
+  arkoalaComponents: Map<string, string> = new Map();
   currentClassName: string = null;
 }
 
