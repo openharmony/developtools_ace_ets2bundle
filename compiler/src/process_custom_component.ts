@@ -62,7 +62,8 @@ import {
   COMPONENT_LOCAL_STORAGE_LINK_DECORATOR,
   COMPONENTV2_LOCAL_DECORATOR,
   COMPONENTV2_CONSUMER_DECORATOR,
-  COMPONENTV2_PROVIDER_DECORATOR
+  COMPONENTV2_PROVIDER_DECORATOR,
+  COMPONENT_ENV_DECORATOR
 } from './pre_define';
 import {
   stateCollection,
@@ -86,7 +87,8 @@ import {
   regularStaticCollection,
   componentCollection,
   localStorageLinkCollection,
-  localStoragePropCollection
+  localStoragePropCollection,
+  envCollection
 } from './validate_ui_syntax';
 import {
   PropMapManager,
@@ -435,9 +437,66 @@ function getForbbidenInitPropsV2Type(itemName: string, info: ChildAndParentCompo
   return typeName;
 }
 
+interface assignEnvOptions {
+  isParentV2: boolean;
+  isChildV2: boolean;
+  info: ChildAndParentComponentInfo;
+  item: ts.PropertyAssignment;
+  itemName: string;
+}
+
+function checkAssignEnv(assignEnvOption: assignEnvOptions, log: LogInfo[]): void {
+  const info: ChildAndParentComponentInfo = assignEnvOption.info;
+  const parentEnvSet: Set<string> = assignEnvOption.isParentV2 ? info.parentStructInfo.envDecoratorSet :
+    envCollection.get(info.parentStructInfo.structName);
+  const initializerName: string = getInitializerName(assignEnvOption.item);
+  if (!initializerName.length || !parentEnvSet.has(initializerName)) {
+    return;
+  }
+  if (assignEnvOption.isChildV2) {
+    if (!(info.childStructInfo.paramDecoratorMap.has(assignEnvOption.itemName) &&
+      !info.childStructInfo.builderParamDecoratorSet.has(assignEnvOption.itemName))) {
+      validateAssignEnvV2(log, assignEnvOption.item);
+    }
+  } else {
+    if (!getCollectionSet(info.childName, regularCollection).has(assignEnvOption.itemName)) {
+      validateAssignEnvV1(log, assignEnvOption.item);
+    }
+  }
+}
+
+function validateAssignEnvV2(log: LogInfo[], item: ts.PropertyAssignment): void {
+  log.push({
+    type: LogType.ERROR,
+    message: `Within structs decorated with '@ComponentV2', '@Env' can only initialize variables decorated with '@Param'.`,
+    pos: item.getStart(),
+    code: '10905252'
+  });
+}
+
+function validateAssignEnvV1(log: LogInfo[], item: ts.PropertyAssignment): void {
+  log.push({
+    type: LogType.ERROR,
+    message: `Within structs decorated with '@Component', '@Env' can only initialize regular(non-decorated) variables.`,
+    pos: item.getStart(),
+    code: '10905253'
+  });
+}
+
 function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
   childParam: ts.PropertyAssignment[], log: LogInfo[], info: ChildAndParentComponentInfo): void {
+  const isParentV2: boolean = info.parentStructInfo.isComponentV2;
   if (info.childStructInfo.isComponentV2) {
+    if (isInitFromParent(item)) {
+      const newAssignEnvOption: assignEnvOptions = {
+        isParentV2: isParentV2,
+        isChildV2: true,
+        info: info,
+        item: item,
+        itemName: itemName
+      };
+      checkAssignEnv(newAssignEnvOption, log);
+    }
     if (info.forbiddenInitPropsV2.includes(itemName)) {
       const propType: string = getForbbidenInitPropsV2Type(itemName, info);
       log.push({
@@ -461,6 +520,16 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
       });
     }
   } else {
+    if (info.childStructInfo.isComponentV1 && isInitFromParent(item)) {
+      const newAssignEnvOption: assignEnvOptions = {
+        isParentV2: isParentV2,
+        isChildV2: false,
+        info: info,
+        item: item,
+        itemName: itemName
+      };
+      checkAssignEnv(newAssignEnvOption, log);
+    }
     if (info.propsAndObjectLinks.includes(itemName)) {
       childParam.push(item);
     }
@@ -1286,6 +1355,18 @@ function isInitFromParent(node: ts.ObjectLiteralElementLike): boolean {
   return false;
 }
 
+function getInitializerName(node: ts.PropertyAssignment): string {
+  if (ts.isPropertyAccessExpression(node.initializer) && node.initializer.expression &&
+    node.initializer.expression.kind === ts.SyntaxKind.ThisKeyword &&
+    ts.isIdentifier(node.initializer.name)) {
+    return node.initializer.name.escapedText.toString();
+  } else if (ts.isIdentifier(node.initializer) &&
+    matchStartWithDollar(node.initializer.getText())) {
+    return node.initializer.getText().slice(1);
+  }
+  return '';
+}
+
 function isInitFromLocal(node: ts.ObjectLiteralElementLike): boolean {
   if (ts.isPropertyAssignment(node) && ts.isIdentifier(node.initializer) &&
     !matchStartWithDollar(node.initializer.getText())) {
@@ -1331,7 +1412,7 @@ function isCorrectInitFormParent(parent: string, child: string): boolean {
       return true;
     case COMPONENT_NON_DECORATOR:
       if ([COMPONENT_NON_DECORATOR, COMPONENT_STATE_DECORATOR, COMPONENT_LINK_DECORATOR, COMPONENT_PROP_DECORATOR,
-        COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR].includes(parent)) {
+        COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR, COMPONENT_ENV_DECORATOR].includes(parent)) {
         return true;
       }
       break;
