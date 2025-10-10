@@ -482,9 +482,9 @@ async function transform(code: string, id: string) {
   // close `noEmit` to make invoking emit() effective.
   tsProgram.getCompilerOptions().noEmit = false;
   const metaInfo: Object = this.getModuleInfo(id).meta;
-  const lazyImportOptions: LazyImportOptions = {
-    autoLazyImport: this.share.projectConfig?.autoLazyImport ?? false,
-    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? reExportNoCheckMode,
+  const lazyImportOptions: LazyImportOptions = {	
+    autoLazyImport: this.share.projectConfig?.autoLazyImport ?? false,	
+    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? reExportNoCheckMode,	
     autoLazyFilter: this.share.projectConfig?.autoLazyFilter ?? {}
   };
   const mixCompile: boolean = this.share.projectConfig?.mixCompile ?? false;
