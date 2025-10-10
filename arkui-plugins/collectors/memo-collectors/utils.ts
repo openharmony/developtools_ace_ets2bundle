@@ -67,36 +67,95 @@ export function hasMemoAnnotation<T extends MemoAstNode>(node: T): boolean {
     return node.annotations.some((it) => isMemoAnnotation(it, MemoNames.MEMO));
 }
 
-export function addMemoAnnotation<T extends MemoAstNode>(node: T, memoName: MemoNames = MemoNames.MEMO): T {
-    const skipNames = [MemoNames.MEMO_SKIP, MemoNames.MEMO_SKIP_UI];
+function insertMemoAnnotationImport(memoName: MemoNames): void {
     collectMemoAnnotationSource(memoName);
+    collectMemoAnnotationImport(memoName);
+}
+
+function isScriptFunctionFromInterfaceGetterSetter(node: arkts.ScriptFunction): boolean {
+    let methodDef = node.parent?.parent;
+    if (!methodDef || !arkts.isMethodDefinition(methodDef)) {
+        return false;
+    }
+    const isGetterSetter = methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET
+        || methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
+    if (!isGetterSetter) {
+        return false;
+    }
+    let parent: arkts.AstNode | undefined = methodDef as arkts.AstNode;
+    while (!!parent && arkts.isMethodDefinition(parent)) {
+        parent = parent.parent;
+    }
+    return !!parent && arkts.isTSInterfaceBody(parent);
+}
+
+function addMemoAnnotationInScriptFunction(
+    node: arkts.ScriptFunction,
+    memoName: MemoNames = MemoNames.MEMO,
+    skipNames: MemoNames[] = [MemoNames.MEMO_SKIP, MemoNames.MEMO_SKIP_UI]
+): arkts.ScriptFunction {
+    const newAnnotations: arkts.AnnotationUsage[] = [
+        ...node.annotations.filter((it) => !isMemoAnnotation(it, memoName)),
+        annotation(memoName),
+    ];
+    const newNode = node.setAnnotations(newAnnotations);
+    if (!isScriptFunctionFromInterfaceGetterSetter(node)) {
+        collectMemoAstNode(newNode, memoName, skipNames);
+    } else {
+        collectMemoAstNode(newNode.parent!, memoName, skipNames);
+    }
+    return newNode;
+}
+
+function addMemoAnnotationInUnionType(
+    node: arkts.ETSUnionType,
+    memoName: MemoNames = MemoNames.MEMO,
+    skipNames: MemoNames[] = [MemoNames.MEMO_SKIP, MemoNames.MEMO_SKIP_UI]
+): arkts.ETSUnionType {
+    return arkts.factory.updateUnionType(
+        node,
+        node.types.map((type) => {
+            if (arkts.isETSFunctionType(type)) {
+                return addMemoAnnotation(type, memoName, skipNames);
+            }
+            return type;
+        })
+    );
+}
+
+function collectMemoAstNode(
+    node: arkts.AstNode, 
+    memoName: MemoNames = MemoNames.MEMO,
+    skipNames: MemoNames[] = [MemoNames.MEMO_SKIP, MemoNames.MEMO_SKIP_UI]
+): void {
+    if (!skipNames.includes(memoName)) {
+        arkts.NodeCache.getInstance().collect(node);
+    }
+}
+
+export function addMemoAnnotation<T extends MemoAstNode>(
+    node: T,
+    memoName: MemoNames = MemoNames.MEMO,
+    skipNames: MemoNames[] = [MemoNames.MEMO_SKIP, MemoNames.MEMO_SKIP_UI]
+): T {
+    insertMemoAnnotationImport(memoName);
+    if (arkts.isScriptFunction(node)) {
+        return addMemoAnnotationInScriptFunction(node, memoName, skipNames) as T;
+    }
     if (arkts.isETSUnionType(node)) {
-        return arkts.factory.updateUnionType(
-            node,
-            node.types.map((type) => {
-                if (arkts.isETSFunctionType(type)) {
-                    return addMemoAnnotation(type, memoName);
-                }
-                return type;
-            })
-        ) as T;
+        return addMemoAnnotationInUnionType(node, memoName, skipNames) as T;
     }
     const newAnnotations: arkts.AnnotationUsage[] = [
         ...node.annotations.filter((it) => !isMemoAnnotation(it, memoName)),
         annotation(memoName),
     ];
-    collectMemoAnnotationImport(memoName);
     if (arkts.isEtsParameterExpression(node)) {
         node.annotations = newAnnotations;
-        if (!skipNames.includes(memoName)) {
-            arkts.NodeCache.getInstance().collect(node);
-        }
+        collectMemoAstNode(node, memoName, skipNames);
         return node;
     }
     const newNode = node.setAnnotations(newAnnotations) as T;
-    if (!skipNames.includes(memoName)) {
-        arkts.NodeCache.getInstance().collect(newNode);
-    }
+    collectMemoAstNode(node, memoName, skipNames);
     return newNode;
 }
 
@@ -708,6 +767,7 @@ export function findCanAddMemoFromMethod(node: arkts.AstNode): node is arkts.Met
         !hasMemoEntry && !hasMemoIntrinsic,
         shouldEnforceMemoSkip
     );
+    // const isFromInterfaceGetterSetter = node.
     const isMemo = checkIsMemoFromMemoableInfo(memoableInfo);
     if (isMemo && !arkts.NodeCache.getInstance().has(node)) {
         const metadata = collectMetadataInMethod(node);
@@ -717,7 +777,7 @@ export function findCanAddMemoFromMethod(node: arkts.AstNode): node is arkts.Met
             hasMemoIntrinsic,
         });
         const body = func.body;
-        if (!!body && arkts.isBlockStatement(body)) {
+        if (!!body && arkts.isBlockStatement(body) && !isScriptFunctionFromInterfaceGetterSetter(func)) {
             const disableCollectReturn = hasMemoEntry || hasMemoIntrinsic;
             collectMemoScriptFunctionBody(
                 body,
