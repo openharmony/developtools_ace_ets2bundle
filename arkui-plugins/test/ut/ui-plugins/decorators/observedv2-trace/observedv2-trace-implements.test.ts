@@ -58,12 +58,12 @@ import { ObservedV2 as ObservedV2, Trace as Trace } from "@ohos.arkui.stateManag
 function main() {}
 
 interface PropInterface {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propF', 'number')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propF', 'number', [], [], false)}
   
 }
 
 interface trackInterface {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'trackF', 'number')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'trackF', 'number', [], [], false)}
   
 }
 

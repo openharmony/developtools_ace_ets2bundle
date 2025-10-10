@@ -78,7 +78,7 @@ export function cb(callback?: (()=> void)) {
 @Retention({policy:"SOURCE"}) @interface memo_intrinsic {}
 
 interface IA<T> {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'ccc', 'boolean')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'ccc', 'boolean', [], [], false)}
   
 }
 
