@@ -57,7 +57,7 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
             result.push(...initParam);
         } else if (hasDecorator(keyProperty, DecoratorNames.CONSUME)) {
             throw Error('The @Consume property cannot be assigned.');
-        } else if (hasDecorator(keyProperty, DecoratorNames.PROP) || hasDecorator(keyProperty, DecoratorNames.OBJECT_LINK)) {
+        } else if (hasDecorator(keyProperty, DecoratorNames.PROP) || hasDecorator(keyProperty, DecoratorNames.OBJECT_LINK) || hasDecorator(keyProperty, DecoratorNames.PARAM)) {
             updateProp.push(property);
             const initParam = processNormal(keyName, value);
             result.push(...initParam);

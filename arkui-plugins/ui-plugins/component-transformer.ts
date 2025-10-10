@@ -44,7 +44,6 @@ import { factory as entryFactory } from './entry-translators/factory';
 import { hasDecoratorName, findDecoratorInfos, DecoratorInfo } from './property-translators/utils';
 import { factory } from './ui-factory';
 import { factory as propertyFactory } from './property-translators/factory';
-import { StructMap } from '../common/program-visitor';
 import {
     CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
     DecoratorIntrinsicNames,
@@ -53,7 +52,6 @@ import {
     NavigationNames,
     EntryWrapperNames,
 } from '../common/predefines';
-import { generateInstantiateInterop } from './interop/interop';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string;
@@ -83,9 +81,6 @@ export class ComponentTransformer extends AbstractVisitor {
     private isPageLifeCycleImported: boolean = false;
     private isLayoutCallbackImported: boolean = false;
     private shouldAddLinkIntrinsic: boolean = false;
-    private hasLegacy: boolean = false;
-    private legacyStructMap: Map<string, StructMap> = new Map();
-    private legacyCallMap: Map<string, string> = new Map();
     private projectConfig: ProjectConfig | undefined;
     private entryRouteName: string | undefined;
     private componentType: ComponentType = {
@@ -114,9 +109,6 @@ export class ComponentTransformer extends AbstractVisitor {
         this.isPageLifeCycleImported = false;
         this.isLayoutCallbackImported = false;
         this.shouldAddLinkIntrinsic = false;
-        this.hasLegacy = false;
-        this.legacyStructMap = new Map();
-        this.legacyCallMap = new Map();
         this.componentType = {
             hasComponent: false,
             hasComponentV2: false,
@@ -481,58 +473,6 @@ export class ComponentTransformer extends AbstractVisitor {
         return [originMember, optionsHasMember];
     }
 
-    registerMap(map: Map<string, StructMap>): void {
-        this.legacyStructMap = map;
-        this.hasLegacy = true;
-    }
-
-    processInteropImport(node: arkts.ETSImportDeclaration): void {
-        const source = node.source?.str!;
-        const specifiers = node.specifiers as arkts.ImportSpecifier[];
-        if (this.legacyStructMap.has(source)) {
-            const structMap = this.legacyStructMap.get(source);
-            if (!structMap) {
-                return;
-            }
-            for (const specifier of specifiers) {
-                const name = (specifier as arkts.ImportSpecifier)!.local!.name;
-                if (structMap[name]) {
-                    this.legacyCallMap.set(name, structMap[name]);
-                }
-            }
-        }
-    }
-
-    processInteropCall(node: arkts.CallExpression): arkts.CallExpression {
-        const ident = node.expression;
-        if (!(ident instanceof arkts.Identifier)) {
-            return node;
-        }
-        const className = ident.name;
-        const trailingBlock = node.trailingBlock;
-        const content = trailingBlock
-            ? arkts.factory.createArrowFunction(
-                  factory.createScriptFunction({
-                      body: trailingBlock,
-                      flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                      modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-                  })
-              )
-            : undefined;
-        if (this.legacyCallMap.has(className)) {
-            const path = this.legacyCallMap.get(className)!;
-            const args = node.arguments;
-            const context: InteropContext = {
-                className: className,
-                path: path,
-                arguments: args && args.length === 1 && args[0] instanceof arkts.ObjectExpression ? args[0] : undefined,
-                content: content,
-            };
-            return generateInstantiateInterop(context);
-        }
-        return node;
-    }
-
     visitor(node: arkts.AstNode): arkts.AstNode {
         this.enter(node);
         const newNode = this.visitEachChild(node);
@@ -560,16 +500,6 @@ export class ComponentTransformer extends AbstractVisitor {
             isCustomDialogControllerOptions(newNode, this.externalSourceName)
         ) {
             return factory.updateCustomDialogOptionsInterface(newNode);
-        }
-        // process interop code
-        if (!this.hasLegacy) {
-            return newNode;
-        }
-        if (arkts.isETSImportDeclaration(newNode)) {
-            this.processInteropImport(newNode);
-        }
-        if (arkts.isCallExpression(newNode)) {
-            return this.processInteropCall(newNode);
         }
         return newNode;
     }
