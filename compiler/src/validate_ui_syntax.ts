@@ -68,7 +68,8 @@ import {
   TYPE,
   COMPONENT_LOCAL_BUILDER_DECORATOR,
   COMPONENT_DECORATOR_REUSABLE_V2,
-  MAIN_COMPONENT_DECORATORS
+  MAIN_COMPONENT_DECORATORS,
+  COMPONENT_ENV_DECORATOR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -151,6 +152,7 @@ export class IComponentSet {
   provideInit: Set<string> = new Set();
   privateCollection: Set<string> = new Set();
   regularStaticCollection: Set<string> = new Set();
+  envs: Set<string> = new Set();
 }
 
 export let componentCollection: ComponentCollection = new ComponentCollection();
@@ -180,12 +182,15 @@ export const stateInitialization: Map<string, Set<string>> = new Map();
 export const provideInitialization: Map<string, Set<string>> = new Map();
 export const privateCollection: Map<string, Set<string>> = new Map();
 export const regularStaticCollection: Map<string, Set<string>> = new Map();
+export const envCollection: Map<string, Set<string>> = new Map();
 
 export const isStaticViewCollection: Map<string, boolean> = new Map();
 
 export const useOSFiles: Set<string> = new Set();
 export const sourcemapNamesCollection: Map<string, Map<string, string>> = new Map();
 export const originalImportNamesMap: Map<string, string> = new Map();
+
+const envSupportClass: string = 'WindowSizeLayoutBreakpointInfo';
 
 export let stmgmtWhiteList: Set<string> = new Set();
 
@@ -399,7 +404,7 @@ function validateInvalidStructDecorator(element: ts.Decorator, componentName: st
 }
 
 function validateComponentDecorator(hasComponentDecorator: boolean, componentName: string, component: ts.Identifier,
-  log: LogInfo[], sourceFile: ts.sourceFile): void {
+  log: LogInfo[], sourceFile: ts.SourceFile): void {
   if (!hasComponentDecorator) {
     const message: string = `Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct '${componentName}'.`;
     addLog(LogType.WARN, message, component.pos, log, sourceFile);
@@ -610,7 +615,8 @@ function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: 
     decorators.forEach((item: ts.Decorator) => {
       const decoratorName: string = item.getText().replace(/\([^\(\)]*\)/, '');
       if (!excludeDecorators.includes(decoratorName) && (constantDefine.DECORATOR_V2.includes(decoratorName) ||
-        decoratorName === '@BuilderParam')) {
+        decoratorName === constantDefine.DECORATOR_BUILDER_PARAM ||
+        decoratorName === constantDefine.DECORATOR_ENV)) {
         const count: number = v2DecoratorMap.get(decoratorName) || 0;
         v2DecoratorMap.set(decoratorName, count + 1);
         return;
@@ -1450,6 +1456,7 @@ function collectComponentProps(node: ts.StructDeclaration, structInfo: StructInf
   propertyCollection.set(componentName, componentSet.properties);
   stateCollection.set(componentName, componentSet.states);
   linkCollection.set(componentName, componentSet.links);
+  envCollection.set(componentName, componentSet.envs);
   storedFileInfo.overallLinkCollection.set(componentName, componentSet.links);
   propCollection.set(componentName, componentSet.props);
   regularCollection.set(componentName, componentSet.regulars);
@@ -1489,6 +1496,7 @@ class RecordRequire {
   hasRegular: boolean = false;
   hasState: boolean = false;
   hasProvide: boolean = false;
+  hasEnv: boolean = false;
 }
 
 function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComponentSet,
@@ -1525,6 +1533,7 @@ function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComp
               hasValidatePrivate = true;
             }
           }
+          checkEnvDecorator(node, recordRequire, item);
           regularAndRequire(decorators, componentSet, recordRequire, propertyName, accessQualifierResult);
           checkRequire(propertyName, componentSet, recordRequire);
         }
@@ -1669,6 +1678,71 @@ function setInitValue(requirekey: string, initKey: string, name: string, compone
   }
 }
 
+function checkEnvDecorator(node: ts.StructDeclaration, recordRequire: RecordRequire,
+  item: ts.PropertyDeclaration): void {
+  if (!recordRequire.hasEnv) {
+    return;
+  }
+  const structName: string = node.name.escapedText.toString();
+  const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(structName);
+  if (!structInfo.isComponentV1) {
+    transformLog.errors.push({
+      type: LogType.ERROR,
+      code: '10905250',
+      message: `The '@Env' decorator can only be used in structs decorated with either '@Component' or '@ComponentV2'.`,
+      pos: item.getStart()
+    });
+  }
+  const propertyType: ts.Type | undefined = CurrentProcessFile.getChecker()?.getTypeAtLocation?.(item);
+  if (!checkEnvType(propertyType)) {
+    validateEnvType(item);
+  }
+}
+
+export function checkEnvType(propertyType: ts.Type): boolean {
+  if (!propertyType) {
+    return false;
+  }
+  const symbol = propertyType.getSymbol();
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!symbol || !checker) {
+    return false;
+  }
+  if (['string', 'number', 'boolean'].includes(checker.typeToString(propertyType))) {
+    return false;
+  }
+  if (symbol.declarations && symbol.declarations.some(declaration => ts.isTypeAliasDeclaration(declaration))) {
+    const typeAliasDeclaration = symbol.declarations.find(ts.isTypeAliasDeclaration);
+    if (typeAliasDeclaration) {
+      const aliasType = checker.getTypeAtLocation(typeAliasDeclaration);
+      return checkEnvType(aliasType);
+    }
+  }
+  if (propertyType.isClassOrInterface()) {
+    const typeName = checker.typeToString(propertyType);
+    if (typeName === envSupportClass) {
+      return true;
+    }
+    const baseTypes = checker.getBaseTypes(propertyType);
+    for (const baseType of baseTypes) {
+      const checkBaseType = checkEnvType(baseType);
+      if (checkBaseType) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+export function validateEnvType(item: ts.PropertyDeclaration): void {
+  transformLog.errors.push({
+    type: LogType.ERROR,
+    code: '10905251',
+    message: `The '@Env' decorator can only decorate the 'WindowSizeLayoutBreakpointInfo' class or its child classes.`,
+    pos: item.getStart()
+  });
+}
+
 function collectionStates(node: ts.Decorator, decorator: string, name: string,
   componentSet: IComponentSet, recordRequire: RecordRequire): void {
   switch (decorator) {
@@ -1711,6 +1785,10 @@ function collectionStates(node: ts.Decorator, decorator: string, name: string,
       break;
     case COMPONENT_REQUIRE_DECORATOR:
       recordRequire.hasRequire = true;
+      break;
+    case COMPONENT_ENV_DECORATOR:
+      recordRequire.hasEnv = true;
+      componentSet.envs.add(name);
       break;
   }
 }
@@ -2024,6 +2102,7 @@ export function resetValidateUiSyntax(): void {
   storageLinkCollection.clear();
   provideCollection.clear();
   consumeCollection.clear();
+  envCollection.clear();
   builderParamObjectCollection.clear();
   localStorageLinkCollection.clear();
   localStoragePropCollection.clear();
