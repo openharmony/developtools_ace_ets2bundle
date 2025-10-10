@@ -23,15 +23,19 @@ import { hasDecorator } from '../property-translators/utils';
 import { DecoratorNames } from '../../common/predefines';
 
 
-export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, arkts.ClassProperty>, updateProp: arkts.Property[]): arkts.Statement[] {
+export function initialArgs(
+    args: arkts.ObjectExpression,
+    varMap: Map<string, arkts.ClassProperty>,
+    updateProp: arkts.Property[],
+    node: arkts.CallExpression,
+    isV2: boolean
+): arkts.Statement[] {
     const result: arkts.Statement[] = [];
     const proxySet = new Set<string>();
-
-
     for (const property of args.properties) {
         if (!(property instanceof arkts.Property)) {
             continue;
-        }   
+        }
         const key = property.key;
         const value = property.value!;
         if (!(key instanceof arkts.Identifier)) {
@@ -40,15 +44,17 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
         const keyName = key.name;
         const keyProperty = varMap.get(keyName);
         if (keyProperty === undefined) {
-            throw Error('Error arguments in Legacy Component');
+            continue;
         }
+        checkArgsV1InteropV2(keyName, keyProperty, value, node, isV2);
         const keyType = keyProperty.typeAnnotation!;
         const annotations = keyProperty.annotations;
         if (annotations.length === 0) {
             const valueProperty = arkts.getDecl(value);
             if (valueProperty instanceof arkts.ClassProperty && (hasDecorator(valueProperty, DecoratorNames.PROVIDE) ||
                 hasDecorator(valueProperty, DecoratorNames.CONSUME))) {
-                throw Error('Cannot assign @Provide or @Consume decorated data to regular property.');
+                const errorMessage = 'Cannot assign @Provide or @Consume decorated data to regular property.';
+                logDiagnostic(errorMessage, node);
             }
             const initParam = processNormal(keyName, value);
             result.push(...initParam);
@@ -56,7 +62,8 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
             const initParam = processLink(keyName, value, keyType, proxySet);
             result.push(...initParam);
         } else if (hasDecorator(keyProperty, DecoratorNames.CONSUME)) {
-            throw Error('The @Consume property cannot be assigned.');
+            const errorMessage = 'The @Consume property cannot be assigned.';
+            logDiagnostic(errorMessage, node);
         } else if (hasDecorator(keyProperty, DecoratorNames.PROP) || hasDecorator(keyProperty, DecoratorNames.OBJECT_LINK) || hasDecorator(keyProperty, DecoratorNames.PARAM)) {
             updateProp.push(property);
             const initParam = processNormal(keyName, value);
@@ -65,7 +72,8 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
             const initParam = processNormal(keyName, value);
             result.push(...initParam);
         } else if (hasDecorator(keyProperty, DecoratorNames.CONSUME)) {
-            throw Error('The @Consume property cannot be assigned.');
+            const errorMessage = 'The @Consume property cannot be assigned.';
+            logDiagnostic(errorMessage, node);
         } else if (hasDecorator(keyProperty, DecoratorNames.BUILDER_PARAM)) {
             const initParam = processBuilderParam(keyName, value);
             result.push(...initParam);
@@ -75,6 +83,62 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
         }
     }
     return result;
+}
+
+function checkArgsV1InteropV2(
+    keyName: string,
+    keyProperty: arkts.ClassProperty,
+    value: arkts.AstNode,
+    node: arkts.CallExpression,
+    isV2: boolean
+): void {
+    const valueProperty = arkts.getDecl(value);
+    let ketType = 'regular';
+    let valueType = 'regular';
+    if (!(value instanceof arkts.MemberExpression && value.object instanceof arkts.ThisExpression)) {
+        return;
+    }
+    let valueName = value.property.name;
+    let isComponentV2forParent = false;
+    if (valueProperty && valueProperty.annotations) {
+        valueProperty.annotations.some((annotations) => (valueType = getPropertyType(annotations)));
+        isComponentV2forParent = valueProperty.parent?.annotations?.some(
+            (annotation) => annotation.expr instanceof arkts.Identifier && annotation.expr.name === 'ComponentV2'
+        );
+    }
+    if (keyProperty && keyProperty.annotations) {
+        keyProperty.annotations.some((annotations) => (ketType = getPropertyType(annotations)));
+    }
+    if (isV2) {
+        if (!isComponentV2forParent) {
+            let errorMessage = `The ${valueType} property '${valueName}' cannot be assigned to the ${ketType} property '${keyName}' when interop`;
+            logDiagnostic(errorMessage, node);
+        }
+    } else {
+        if (isComponentV2forParent) {
+            if (keyProperty.annotations && keyProperty.annotations.length !== 0) {
+                let errorMessage = `The ${valueType} property '${valueName}' cannot be assigned to the ${ketType} property '${keyName}' when interop`;
+                logDiagnostic(errorMessage, node);
+            }
+        }
+    }
+}
+
+export function getPropertyType(anno: arkts.AnnotationUsage): string {
+    let propertyType = 'regular';
+    if (!!anno.expr && arkts.isIdentifier(anno.expr)) {
+        propertyType = anno.expr.name;
+    }
+    if (propertyType !== 'regular' && propertyType !== '') {
+        return '@' + propertyType;
+    } else {
+        return 'regular';
+    }
+}
+
+export function logDiagnostic(errorMessage: string, node: arkts.AstNode): void {
+    const diagnosticKind = arkts.DiagnosticKind.create(errorMessage, arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_ERROR);
+    arkts.Diagnostic.logDiagnostic(diagnosticKind, arkts.getStartPosition(node));
 }
 
 export function createVariableLet(varName: string, expression: arkts.AstNode): arkts.VariableDeclaration {

@@ -60,7 +60,8 @@ import {
   stateInitialization,
   provideInitialization,
   privateCollection,
-  regularStaticCollection
+  regularStaticCollection,
+  updateStructInfoWithDecorators
 } from './validate_ui_syntax';
 import {
   CurrentProcessFile,
@@ -934,6 +935,7 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
       ...componentSet.provides, ...componentSet.objectLinks
     );
     asComponentNameStructInfo.linkDecoratorsV1.push(...componentSet.links);
+    updateStructInfoWithDecorators(asComponentNameStructInfo, componentSet);
     return;
   }
   const nameStructInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(name);
@@ -942,13 +944,13 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
     ...componentSet.provides, ...componentSet.objectLinks
   );
   nameStructInfo.linkDecoratorsV1.push(...componentSet.links);
+  updateStructInfoWithDecorators(nameStructInfo, componentSet);
 }
 
 function parseComponentInImportNode(originNode: ts.StructDeclaration, name: string,
   asComponentName: string, structDecorator: structDecoratorResult, originFile: string, isArkoala: boolean = false): void {
-  if (!isArkoala) {
-    componentCollection.customComponents.add(name);
-  } else {
+  componentCollection.customComponents.add(name);
+  if (isArkoala) {
     const filePath = originNode.getSourceFile().fileName;
     componentCollection.arkoalaComponents.set(name, filePath);
   }
