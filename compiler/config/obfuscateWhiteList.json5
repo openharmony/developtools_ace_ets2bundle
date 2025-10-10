@@ -39,7 +39,10 @@
     "getParams",
     "getReuseId",
     "extraInfo",
-    "__getResourceId__"
+    "__getResourceId__",
+    "__resourceIdHar__",
+    "__BUNDLE_NAME__",
+    "__MODULE_NAME__"
   ],
   "OptimizedReservedPropertyNames": [
     "$$",
