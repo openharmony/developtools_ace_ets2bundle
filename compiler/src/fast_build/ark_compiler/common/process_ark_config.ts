@@ -108,6 +108,9 @@ export function initArkProjectConfig(share: Object): Object {
   let entryModuleVersion: string = share.projectConfig.entryModuleVersion || '';
   arkProjectConfig.entryPackageInfo = `${entryPackageName}|${entryModuleVersion}`;
   arkProjectConfig.projectRootPath = share.projectConfig.projectTopDir;
+  if (projectConfig.resourceTableTs) {
+    mainProjectConfig.entryArrayForObf?.push(projectConfig.resourceTableTs);
+  }
   if (projectConfig.aceBuildJson && fs.existsSync(projectConfig.aceBuildJson)) {
     const buildJsonInfo = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
     arkProjectConfig.projectRootPath = buildJsonInfo.projectRootPath;
