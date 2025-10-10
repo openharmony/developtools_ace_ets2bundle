@@ -16,24 +16,21 @@
 import * as arkts from '@koalaui/libarkts';
 import { factory } from '../factory';
 
-export interface MonitorInfo {
-    monitorItem: string[] | undefined;
-    originalName: string;
+export interface ComputedInfo {
     newName: string;
-    isFromStruct: boolean;
 }
 
-export class MonitorCache {
-    private _cache: Map<string, Record<string, MonitorInfo>>;
-    private static instance: MonitorCache | null = null;
+export class ComputedCache {
+    private _cache: Map<string, Array<ComputedInfo>>;
+    private static instance: ComputedCache | null = null;
 
     private constructor() {
-        this._cache = new Map<string, Record<string, MonitorInfo>>();
+        this._cache = new Map<string, Array<ComputedInfo>>();
     }
 
-    static getInstance(): MonitorCache {
+    static getInstance(): ComputedCache {
         if (!this.instance) {
-            this.instance = new MonitorCache();
+            this.instance = new ComputedCache();
         }
         return this.instance;
     }
@@ -42,22 +39,22 @@ export class MonitorCache {
         this._cache.clear();
     }
 
-    getCachedMonitors(className: string): arkts.AstNode[] {
+    getCachedComputed(className: string): arkts.AstNode[] {
         if (!this._cache.has(className)) {
             return [];
         }
-        return Object.entries(this._cache.get(className)!).map((item: [string, MonitorInfo]) => {
-            const { monitorItem, originalName, newName, isFromStruct } = item[1];
-            return factory.generateinitAssignment(monitorItem, originalName, newName, isFromStruct);
+        return Object.entries(this._cache.get(className)!).map((item: [string, ComputedInfo]) => {
+            const newName: string = item[1].newName;
+            return factory.generateComputedOwnerAssignment(newName);
         });
     }
 
-    collectMonitors(className: string, monitorPath: string, info: MonitorInfo): void {
-        let classCache: Record<string, MonitorInfo> = {};
+    collectComputed(className: string, info: ComputedInfo): void {
+        let classCache: Array<ComputedInfo> = [];
         if (this._cache.has(className)) {
             classCache = this._cache.get(className)!;
         }
-        classCache[monitorPath] = info;
+        classCache.push(info);
         this._cache.set(className, classCache);
     }
 }
