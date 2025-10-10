@@ -22,7 +22,13 @@ import {
     listToString,
     SINGLE_CHILD_COMPONENT
 } from '../utils';
-import { AbstractUISyntaxRule } from './ui-syntax-rule';
+import { AbstractUISyntaxRule, UISyntaxRuleLevel } from './ui-syntax-rule';
+
+const renderingConrtrolComponents: Set<string> = new Set<string>([
+    'ForEach',
+    'LazyForEach',
+    'Repeat'
+]);
 
 class NestedRelationshipRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
@@ -47,30 +53,60 @@ class NestedRelationshipRule extends AbstractUISyntaxRule {
             return;
         }
         const componentName: string = getIdentifierName(node);
-        if (!this.context.componentsInfo.validParentComponent.has(componentName) || !node.parent || !node.parent.parent) {
+        if (
+            !this.context.componentsInfo.validParentComponent.has(componentName) ||
+            !node.parent ||
+            !node.parent.parent
+        ) {
             return;
         }
         let curNode = node.parent.parent;
-        while (!arkts.isCallExpression(curNode) || !arkts.isIdentifier(curNode.expression) ||
-            !isBuildInComponent(this.context, curNode.expression.name)) {
+        let foundRenderingComponent: boolean = false;
+        while (
+            !arkts.isCallExpression(curNode) ||
+            !arkts.isIdentifier(curNode.expression) ||
+            !isBuildInComponent(this.context, curNode.expression.name)
+        ) {
             if (!curNode.parent) {
                 return;
             }
+            if (
+                arkts.isCallExpression(curNode) &&
+                arkts.isIdentifier(curNode.expression) &&
+                renderingConrtrolComponents.has(curNode.expression.name)
+            ) {
+                foundRenderingComponent = true;
+            }
             curNode = curNode.parent;
         }
-        // If the parent component of the current component is not within the valid range, an error is reported
         const parentComponentName = curNode.expression.name;
-        if (!this.context.componentsInfo.validParentComponent.get(componentName)!.includes(parentComponentName)) {
-            const parentComponentListArray: string[] = this.context.componentsInfo.validParentComponent.get(componentName)!;
-            this.report({
-                node: node,
-                message: this.messages.delegateParentComponent,
-                data: {
-                    componentName: componentName,
-                    parentComponentList: listToString(parentComponentListArray),
-                },
-            });
+        if (this.context.componentsInfo.validParentComponent.get(componentName)!.includes(parentComponentName)) {
+            return;
         }
+
+        const parentComponentListArray: string[] = this.context.componentsInfo.validParentComponent.get(componentName)!;
+        if (foundRenderingComponent) {
+            this.reportDelegateParentComponent(node, 'warn', componentName, parentComponentListArray);
+        } else {
+            this.reportDelegateParentComponent(node, 'error', componentName, parentComponentListArray);
+        }
+    }
+
+    private reportDelegateParentComponent(
+        parentNode: arkts.Identifier,
+        level: UISyntaxRuleLevel,
+        componentName: string,
+        parentComponentList: string[]
+    ): void {
+        this.report({
+            node: parentNode,
+            level: level,
+            message: this.messages.delegateParentComponent,
+            data: {
+                componentName: componentName,
+                parentComponentList: listToString(parentComponentList),
+            },
+        });
     }
 
     private checkValidChildComponent(node: arkts.AstNode): void {
