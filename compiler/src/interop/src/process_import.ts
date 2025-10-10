@@ -90,6 +90,8 @@ import {
   validateModuleSpecifier
 } from './fast_build/system_api/api_check_utils';
 import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
+import { ARKTS_1_2 } from './fast_build/ark_compiler/interop/pre_define';
+import { FileManager } from './fast_build/ark_compiler/interop/interop_manager';
 
 const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> =
   process.env.watchMode === 'true' ? new Map() : (SOURCE_FILES || new Map());
@@ -788,6 +790,12 @@ export function processImportModule(node: ts.ImportDeclaration, pageFile: string
   }
 }
 
+function getFileVersion(originNode: ts.Node): string | undefined {
+  const fileName = originNode.getSourceFile().fileName;
+  const languageVersionversion = FileManager.getInstance().getLanguageVersionByFilePath(fileName);
+  return languageVersionversion?.languageVersion;
+}
+
 function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNode: ts.Node,
   usedNode: ts.Identifier, pageInfo: PageInfo, share: object = null): void {
   const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
@@ -811,7 +819,8 @@ function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNo
         return;
       }
     }
-    processImportNode(originNode, usedNode, false, null, pageInfo, share);
+    const isArkoala = getFileVersion(originNode) === ARKTS_1_2;
+    processImportNode(originNode, usedNode, false, null, pageInfo, share, isArkoala);
   }
 }
 
@@ -857,7 +866,7 @@ function exportAllManage(originNode: ts.Node, usedNode: ts.Identifier, pageInfo:
 }
 
 function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importIntegration: boolean,
-  usedPropName: string, pageInfo: PageInfo, share: object = null): void {
+  usedPropName: string, pageInfo: PageInfo, share: object = null, isArkoala: boolean = false): void {
   const structDecorator: structDecoratorResult = { hasRecycle: false };
   let name: string;
   let asComponentName: string;
@@ -872,7 +881,7 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   let needCollection: boolean = true;
   const originFile: string = originNode.getSourceFile() ? originNode.getSourceFile().fileName : undefined;
   if (ts.isStructDeclaration(originNode) && ts.isIdentifier(originNode.name)) {
-    parseComponentInImportNode(originNode, name, asComponentName, structDecorator, originFile);
+    parseComponentInImportNode(originNode, name, asComponentName, structDecorator, originFile, isArkoala);
   } else if (isObservedClass(originNode)) {
     observedClassCollection.add(name);
   } else if (ts.isFunctionDeclaration(originNode) && hasDecorator(originNode, COMPONENT_BUILDER_DECORATOR)) {
@@ -936,8 +945,13 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
 }
 
 function parseComponentInImportNode(originNode: ts.StructDeclaration, name: string,
-  asComponentName: string, structDecorator: structDecoratorResult, originFile: string): void {
-  componentCollection.customComponents.add(name);
+  asComponentName: string, structDecorator: structDecoratorResult, originFile: string, isArkoala: boolean = false): void {
+  if (!isArkoala) {
+    componentCollection.customComponents.add(name);
+  } else {
+    const filePath = originNode.getSourceFile().fileName;
+    componentCollection.arkoalaComponents.set(name, filePath);
+  }
   const structInfo: StructInfo = asComponentName ?
     processStructComponentV2.getOrCreateStructInfo(asComponentName) :
     processStructComponentV2.getOrCreateStructInfo(name);
