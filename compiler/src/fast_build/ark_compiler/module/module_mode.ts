@@ -255,7 +255,7 @@ export class ModuleMode extends CommonMode {
         pkgPath: metaInfo.pkgPath,
         isRecordName: true,
       };
-      let recordName: string = getNormalizedOhmUrlByFilepath(moduleId, this.projectConfig, this.logger, pkgParams,
+      let recordName: string = metaInfo.ohmurl ? metaInfo.ohmurl : getNormalizedOhmUrlByFilepath(moduleId, this.projectConfig, this.logger, pkgParams,
         undefined);
       compileEntries.add(recordName);
     }
@@ -513,7 +513,7 @@ export class ModuleMode extends CommonMode {
         pkgPath: metaInfo.pkgPath,
         isRecordName: true,
       };
-      recordName = getNormalizedOhmUrlByFilepath(filePath, this.projectConfig, this.logger, pkgParams, undefined);
+      recordName = metaInfo.ohmurl ? metaInfo.ohmurl : getNormalizedOhmUrlByFilepath(filePath, this.projectConfig, this.logger, pkgParams, undefined);
     } else {
       recordName = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, moduleName);
       if (isPackageModules) {
