@@ -86,6 +86,7 @@ import { GenSymGenerator } from '../../common/gensym-generator';
 import { MethodTranslator } from 'ui-plugins/property-translators/base';
 import { MonitorCache } from '../property-translators/cache/monitorCache';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
+import { ComputedCache } from '../property-translators/cache/computedCache';
 
 export class factory {
     /**
@@ -112,6 +113,7 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         if (!scope.isDecl) {
             body = arkts.factory.createBlock([
+                ...ComputedCache.getInstance().getCachedComputed(scope.name),
                 ...PropertyCache.getInstance().getInitializeBody(scope.name),
                 ...MonitorCache.getInstance().getCachedMonitors(scope.name),
             ]);

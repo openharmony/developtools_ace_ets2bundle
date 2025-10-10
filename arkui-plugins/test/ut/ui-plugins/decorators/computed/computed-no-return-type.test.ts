@@ -141,6 +141,8 @@ function main() {}
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
   public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__computed_fullName.setOwner(this);
+    this.__computed_num5.setOwner(this);
     this.__backing_firstName = STATE_MGMT_FACTORY.makeLocal<string>(this, "firstName", "Li");
     this.__backing_lastName = STATE_MGMT_FACTORY.makeLocal<string>(this, "lastName", "Hua");
     this.__backing_age = ((({let gensym___216981064 = initializers;

@@ -790,13 +790,18 @@ export class factory {
     static generateinitAssignment(
         monitorItem: string[] | undefined,
         originalName: string,
-        newName: string
+        newName: string,
+        isFromStruct: boolean,
     ): arkts.ExpressionStatement {
         const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
+        const args: arkts.AstNode[] = [this.generatePathArg(monitorItem), this.generateLambdaArg(originalName)];
+        if (isFromStruct) {
+            args.push(arkts.factory.createThisExpression());
+        }
         const right: arkts.CallExpression = factory.generateStateMgmtFactoryCall(
             StateManagementTypes.MAKE_MONITOR,
             undefined,
-            [this.generatePathArg(monitorItem), this.generateLambdaArg(originalName)],
+            args,
             false
         );
         return arkts.factory.createExpressionStatement(
@@ -896,5 +901,12 @@ export class factory {
             ],
             false
         );
+    }
+
+    static generateComputedOwnerAssignment(newName: string): arkts.ExpressionStatement {
+        const computedVariable = UIFactory.generateMemberExpression(arkts.factory.createThisExpression(), newName, false);
+        const setOwnerFunc = UIFactory.generateMemberExpression(computedVariable, StateManagementTypes.SET_OWNER, false);
+        return arkts.factory.createExpressionStatement(
+            arkts.factory.createCallExpression(setOwnerFunc, undefined, [arkts.factory.createThisExpression()]));
     }
 }
