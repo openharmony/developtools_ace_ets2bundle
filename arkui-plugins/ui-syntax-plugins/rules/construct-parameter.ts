@@ -20,7 +20,6 @@ import {
   getClassPropertyAnnotationNames,
   PresetDecorators,
   getAnnotationName,
-  hasAnnotation,
 } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
