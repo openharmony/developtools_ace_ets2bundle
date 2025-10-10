@@ -446,6 +446,9 @@ export function collectSourcesWhiteList(rollupObject: Object, allSourceFilePaths
   if (compileToolIsRollUp()) {
     const obfuscationConfig = sourceProjectConfig.obfuscationMergedObConfig;
     handleUniversalPathInObf(obfuscationConfig, allSourceFilePaths);
+    if (sourceProjectConfig.resourceTableTs) {
+      obfuscationConfig?.keepSourceOfPaths?.push(toUnixPath(sourceProjectConfig.resourceTableTs));
+    }
     const keepFilesAndDependencies = handleKeepFilesAndGetDependencies(
       obfuscationConfig,
       sourceProjectConfig.arkObfuscator,
