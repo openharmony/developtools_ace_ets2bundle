@@ -363,50 +363,6 @@ KBoolean impl_ProgramCanSkipPhases(KNativePointer context, KNativePointer progra
 }
 KOALA_INTEROP_2(ProgramCanSkipPhases, KBoolean, KNativePointer, KNativePointer)
 
-thread_local es2panda_Context *cachedCtx;
-
-static es2panda_SourceRange *cachedParentRange = nullptr;
-
-static void SetChildRange(es2panda_AstNode *child)
-{
-    es2panda_SourceRange *childRange = GetImpl()->AstNodeRangeConst(cachedCtx, child);
-    if (!childRange) {
-        return;
-    }
-    KNativePointer childStart = GetImpl()->SourceRangeStart(cachedCtx, childRange);
-    KNativePointer childEnd = GetImpl()->SourceRangeEnd(cachedCtx, childRange);
-    auto *startPos = reinterpret_cast<es2panda_SourcePosition *>(childStart);
-    auto *endPos   = reinterpret_cast<es2panda_SourcePosition *>(childEnd);
-    auto startLine = GetImpl()->SourcePositionLine(cachedCtx, startPos);
-    auto startCol  = GetImpl()->SourcePositionCol(cachedCtx, startPos);
-    auto endLine   = GetImpl()->SourcePositionLine(cachedCtx, endPos);
-    auto endCol    = GetImpl()->SourcePositionCol(cachedCtx, endPos);
-    if (startLine == 0 && startCol == 1 && endLine == 0 && endCol == 1) {
-        GetImpl()->AstNodeSetRange(cachedCtx, child, cachedParentRange);
-    }
-}
-
-static void PropagateParentRange(es2panda_AstNode *parent, void *arg)
-{
-    cachedCtx = static_cast<es2panda_Context *>(arg);
-    es2panda_SourceRange *parentRange = GetImpl()->AstNodeRangeConst(cachedCtx, parent);
-    cachedParentRange = parentRange;
-
-    GetImpl()->AstNodeIterateConst(cachedCtx, parent, SetChildRange);
-}
-
-KNativePointer impl_AstNodeSetAllRange(KNativePointer contextPtr,
-                                       KNativePointer programPtr)
-{
-    auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
-    auto program = reinterpret_cast<es2panda_AstNode*>(programPtr);
-    GetImpl()->AstNodeForEach(program, PropagateParentRange, context);
-    return program;
-}
-
-KOALA_INTEROP_2(AstNodeSetAllRange,
-                KNativePointer, KNativePointer, KNativePointer)
-
 /*
 -----------------------------------------------------------------------------------------------------------------------------
 */
