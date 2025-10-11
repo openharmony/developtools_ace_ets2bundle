@@ -118,7 +118,7 @@ function newComponent(className: string): arkts.Statement {
             arkts.factory.createETSNewClassInstanceExpression(
                 arkts.factory.createIdentifier(className),
                 [
-                    arkts.factory.createUndefinedLiteral(),
+                    generateTSASExpression(arkts.factory.createIdentifier(InteroperAbilityNames.PARENT)),
                     generateTSASExpression(arkts.factory.createIdentifier(InteroperAbilityNames.PARAM)),
                     arkts.factory.createUndefinedLiteral(),
                     generateTSASExpression(arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID)),
@@ -213,7 +213,23 @@ function createInitializer(
     return arkts.factory.createArrowFunction(
         arkts.factory.createScriptFunction(
             block,
-            arkts.factory.createFunctionSignature(undefined, [], undefined, false),
+            arkts.factory.createFunctionSignature(
+                undefined,
+                [
+                    arkts.factory.createParameterDeclaration(
+                        arkts.factory.createIdentifier(InteroperAbilityNames.PARENT,
+                            arkts.factory.createTypeReference(
+                                arkts.factory.createTypeReferencePart(
+                                    arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE)
+                                )
+                            )
+                        ),
+                        undefined,
+                    ),
+                ],
+                undefined,
+                false,
+            ),
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
         )
@@ -227,7 +243,7 @@ function createUpdateProp(updateProp: arkts.Property[]): arkts.Statement[] {
     updateProp.forEach((prop) => {
         const key = prop.key as arkts.Identifier;
         const value = prop.value;
-        const insertProperty = setPropertyESValue('updateParam', key.name, value!);
+        const insertProperty = setPropertyESValue('updateParam', key.name, getWrapValue(value!));
         result.push(insertProperty);
     });
     return result;
