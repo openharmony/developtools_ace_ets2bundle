@@ -104,6 +104,7 @@ export class ModuleSourceFile {
   private static moduleIdMap: Map<string, ModuleSourceFile> = new Map();
   private static isEnvInitialized: boolean = false;
   private static hookEventFactory: Object;
+  private static customizedHar: boolean;
 
   constructor(moduleId: string, source: string | ts.SourceFile, metaInfo: Object) {
     this.moduleId = moduleId;
@@ -480,6 +481,19 @@ export class ModuleSourceFile {
       return byteCodeHarOhmurl;
     }
     if (filePath) {
+      if (ModuleSourceFile.customizedHar && ModuleSourceFile.projectConfig.customHarDeclareFilesMap &&
+        ModuleSourceFile.projectConfig.customHarDeclareFilesMap[filePath] && ModuleSourceFile.projectConfig.customHarDeclareFilesMap[filePath].id) {
+        const pkgParams = {
+          pkgName: ModuleSourceFile.projectConfig.entryPackageName,
+          pkgPath: ModuleSourceFile.projectConfig.modulePath,
+          isRecordName: false,
+        };
+        const originFilePath: string =
+          ModuleSourceFile.projectConfig.customHarDeclareFilesMap[filePath].id.replace(/\.d\.ets$/, '.ets').replace(/\.d\.ts$/, '.ts');
+        const customizedHarDeclareFileOhmurl: string | undefined =
+          getNormalizedOhmUrlByFilepath(originFilePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, pkgParams,importerFile);
+        return `@normalized:${customizedHarDeclareFileOhmurl}`
+      }
       const targetModuleInfo: Object = rollupObject.getModuleInfo(filePath);
       if (!targetModuleInfo) {
         const errInfo: LogData = LogDataFactory.newInstance(
@@ -709,7 +723,12 @@ export class ModuleSourceFile {
 
   private static initPluginEnv(rollupObject: Object): void {
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
+    this.customizedHar = this.isBuildCustomizedHar();
     this.logger = CommonLogger.getInstance(rollupObject);
+  }
+
+  private static isBuildCustomizedHar(): boolean {
+    return !!this.projectConfig.byteCodeHar && !!this.projectConfig.customizedOptions && !!this.projectConfig.customizedOptions.basePackage;
   }
 
   public static sortSourceFilesByModuleId(): void {
