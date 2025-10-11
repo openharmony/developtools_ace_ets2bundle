@@ -516,7 +516,7 @@ export class factory {
     static generateArgsInBuilderLambda(
         leaf: arkts.CallExpression,
         lambdaBodyInfo: BuilderLambdaStyleBodyInfo,
-        declInfo: BuilderLambdaDeclInfo,
+        declInfo: BuilderLambdaDeclInfo
     ): (arkts.AstNode | undefined)[] {
         const { isFunctionCall, params, returnType, moduleName, isFromCommonMethod } = declInfo;
         const type: arkts.Identifier | undefined = builderLambdaType(leaf);

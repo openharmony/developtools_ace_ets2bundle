@@ -879,10 +879,6 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
-    _AstNodeSetAllRange(context: KPtr, node: KPtr): void {
-        throw new Error('Not implemented');
-    }
-
     _AstNodeSetRange(context: KNativePointer, node: KNativePointer, range: KNativePointer): KNativePointer {
         throw new Error('Not implemented');
     }
