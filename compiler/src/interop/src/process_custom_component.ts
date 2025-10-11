@@ -134,7 +134,7 @@ import processStructComponentV2, { StructInfo, ParamDecoratorInfo } from './proc
 import constantDefine from './constant_define';
 import createAstNodeUtils from './create_ast_node_utils';
 import logMessageCollection from './log_message_collection';
-import { createStaticComponent, popStaticComponent, pushStaticComponent, createStaticTuple, setInteropRenderingFlag, resetInteropRenderingFlag, updateStaticComponent, createIfStaticComponent, createStaticArrowBolck } from './process_interop_component';
+import { createStaticTuple, createStaticArrowBlock } from './process_interop_component';
 
 let decoractorMap: Map<string, Map<string, Set<string>>>;
 
@@ -689,7 +689,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
       ts.factory.createIdentifier(ISINITIALRENDER)
     )
   ];
-  const arrowBolck: ts.Statement[] = isArkoala ? createStaticArrowBolck(newNode, componentParameter, name) : 
+  const arrowBlock: ts.Statement[] = isArkoala ? createStaticArrowBlock(newNode, componentParameter, name) : 
   [
     projectConfig.optLazyForEach && storedFileInfo.processLazyForEach ? createCollectElmtIdNode() : undefined,
     createIfCustomComponent(newNode, componentNode, componentParameter, name, isGlobalBuilder,
@@ -708,13 +708,13 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     ));
   }
   if (isRecycleComponent || !partialUpdateConfig.optimizeComponent) {
-    arrowBolck.unshift(createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID));
-    arrowBolck.push(createViewStackProcessorStatement(STOPGETACCESSRECORDING));
+    arrowBlock.unshift(createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID));
+    arrowBlock.push(createViewStackProcessorStatement(STOPGETACCESSRECORDING));
   }
   const observeArgArr: ts.Node[] = [
     ts.factory.createArrowFunction(undefined, undefined, arrowArgArr, undefined,
       ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-      ts.factory.createBlock(arrowBolck, true))
+      ts.factory.createBlock(arrowBlock, true))
   ];
   if (isRecycleComponent) {
     componentAttrInfo.reuseId ? observeArgArr.unshift(componentAttrInfo.reuseId) :

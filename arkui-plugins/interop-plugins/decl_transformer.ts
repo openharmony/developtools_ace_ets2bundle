@@ -69,6 +69,8 @@ export class DeclTransformer extends AbstractVisitor {
                 return this.transformMethodDefinition(astNode);
             }
             return astNode;
+        } else if (arkts.isVariableDeclarator(astNode)) {
+            return this.transformWrappedBuilderVarDecl(astNode);
         }
         return node;
     }
@@ -130,5 +132,34 @@ export class DeclTransformer extends AbstractVisitor {
             }
         });
         return astNode;
+    }
+
+    transformWrappedBuilderVarDecl(node: arkts.VariableDeclarator): arkts.VariableDeclarator {
+        const typeAnn = node?.name?.typeAnnotation;
+        if (!typeAnn || !arkts.isETSTypeReference(typeAnn)) {
+            return node;
+        }
+        const part = typeAnn.part;
+        if (!part?.name || !arkts.isIdentifier(part?.name) || part?.name.name !== 'WrappedBuilder') {
+            return node;
+        }
+        const fnType = part.typeParams?.params?.[0];
+        if (!fnType || !arkts.isETSFunctionType(fnType)) {
+            return node;
+        }
+        const types: arkts.TypeNode[] = [];
+        for (const p of fnType.params) {
+            if (!arkts.isEtsParameterExpression(p) || !p.type || !arkts.isTypeNode(p.type)) {
+                return node;
+            }
+            types.push(p.type);
+        }
+        const tuple = arkts.ETSTuple.create2ETSTuple(types);
+
+        const newTypeParams = arkts.factory.updateTSTypeParameterInstantiation(part.typeParams, [tuple]);
+        const newPart = arkts.factory.updateTypeReferencePart(part, part.name, newTypeParams, part.previous);
+        const newTypeRef = arkts.factory.updateTypeReference(typeAnn, newPart);
+        const newId = arkts.factory.updateIdentifier(node.name, node.name.name, newTypeRef);
+        return arkts.factory.updateVariableDeclarator(node, node.flag, newId, node.initializer);
     }
 }
