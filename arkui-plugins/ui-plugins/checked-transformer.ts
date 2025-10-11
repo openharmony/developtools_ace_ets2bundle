@@ -19,11 +19,7 @@ import { factory as structFactory } from './struct-translators/factory';
 import { factory as builderLambdaFactory } from './builder-lambda-translators/factory';
 import { factory as entryFactory } from './entry-translators/factory';
 import { AbstractVisitor } from '../common/abstract-visitor';
-import {	
-    ComponentAttributeCache,
-    isBuilderLambda,
-    isBuilderLambdaMethodDecl,
-} from './builder-lambda-translators/utils';
+import { isBuilderLambda, isBuilderLambdaMethodDecl } from './builder-lambda-translators/utils';
 import { isEntryWrapperClass } from './entry-translators/utils';
 import { ImportCollector } from '../common/import-collector';
 import { DeclarationCollector } from '../common/declaration-collector';
@@ -37,6 +33,7 @@ import {
     ResourceInfo,
     ScopeInfoCollection,
     isForEachDecl,
+    initRouterInfo,
 } from './struct-translators/utils';
 import {
     collectCustomComponentScopeInfo,
@@ -48,6 +45,8 @@ import {
 import { findAndCollectMemoableNode } from '../collectors/memo-collectors/factory';
 import { generateBuilderCompatible } from './interop/builder-interop';
 import { builderRewriteByType } from './builder-lambda-translators/builder-factory';
+import { MetaDataCollector } from '../common/metadata-collector';
+import { ComponentAttributeCache } from './builder-lambda-translators/cache/componentAttributeCache';
 import { MonitorCache } from './property-translators/cache/monitorCache';
 import { ComputedCache } from './property-translators/cache/computedCache';
 import { FileManager } from '../common/file-manager';
@@ -65,6 +64,15 @@ export class CheckedTransformer extends AbstractVisitor {
         this.scope = { customComponents: [] };
         this.aceBuildJson = loadBuildJson(this.projectConfig);
         this.resourceInfo = initResourceInfo(this.projectConfig, this.aceBuildJson);
+        MetaDataCollector.getInstance()
+            .setProjectConfig(this.projectConfig)
+            .setRouterInfo(initRouterInfo(this.aceBuildJson));
+    }
+
+    init(): void {
+        MetaDataCollector.getInstance()
+            .setAbsName(this.program?.absName)
+            .setExternalSourceName(this.externalSourceName);
     }
 
     reset(): void {
@@ -189,9 +197,11 @@ export class CheckedTransformer extends AbstractVisitor {
         }
 
         if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
+            const newScript = structFactory.insertClassInEtsScript(node);
             ImportCollector.getInstance().insertCurrentImports(this.program);
             LogCollector.getInstance().shouldIgnoreError(this.projectConfig?.ignoreError);
             LogCollector.getInstance().emitLogInfo();
+            return newScript;
         }
         return node;
     }

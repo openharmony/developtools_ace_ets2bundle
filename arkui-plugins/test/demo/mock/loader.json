@@ -1,0 +1,25 @@
+{
+  "byteCodeHarInfo": {},
+  "declarationEntry": [],
+  "moduleName": "entry",
+  "hspNameOhmMap": {},
+  "harNameOhmMap": {},
+  "packageManagerType": "ohpm",
+  "compileEntry": [],
+  "otherCompileFiles": [],
+  "dynamicImportLibInfo": {},
+  "routerMap": [
+    {
+      "ohmurl": "",
+      "name": "pageOne",
+      "pageSourceFile": "./test/demo/mock/router-map-pages/page1.ets",
+      "buildFunction": "builderOne"
+    },
+    {
+      "ohmurl": "",
+      "name": "pageTwo",
+      "pageSourceFile": "./test/demo/mock/router-map-pages/page2.ets",
+      "buildFunction": "builderTwo"
+    }
+  ]
+}

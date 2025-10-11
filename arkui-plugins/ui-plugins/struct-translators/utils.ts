@@ -57,6 +57,7 @@ export interface ResourceInfo {
 
 export interface LoaderJson {
     hspResourcesMap: Record<string, string>;
+    routerMap: RouterMap;
 }
 
 export interface ResourceParameter {
@@ -75,6 +76,16 @@ export interface ObservedAnnoInfo {
 
 export type ClassScopeInfo = ObservedAnnoInfo & {
     getters: arkts.MethodDefinition[];
+};
+
+export type RouterMap = RouterInfo & {
+    ohmurl: string;
+    pageSourceFile: string;
+};
+
+export type RouterInfo = {
+    name: string;
+    buildFunction: string;
 };
 
 export function getResourceParams(id: number, type: number, params: arkts.Expression[]): ResourceParameter {
@@ -130,6 +141,37 @@ export function isForEachCall(node: arkts.CallExpression): boolean {
         return true;
     }
     return false;
+}
+
+/**
+ * Initializes routerInfo which maps absolute file paths to corresponding build functions
+ *
+ * @param aceBuildJson content of the file 'loader.json'.
+ */
+export function initRouterInfo(aceBuildJson: Partial<LoaderJson>): Map<string, RouterInfo[]> {
+    const routerInfo: Map<string, RouterInfo[]> = new Map<string, RouterInfo[]>();
+    if (!aceBuildJson || !aceBuildJson.routerMap || !Array.isArray(aceBuildJson.routerMap)) {
+        return routerInfo;
+    }
+    aceBuildJson.routerMap.forEach((item) => {
+        if (item.pageSourceFile && item.name && item.buildFunction) {
+            setRouterInfo(routerInfo, item);
+        }
+    });
+    return routerInfo;
+}
+
+/**
+ * set router info based on the information of router map.
+ */
+function setRouterInfo(routerInfo: Map<string, RouterInfo[]>, routerMapItem: RouterMap): void {
+    const { pageSourceFile, name, buildFunction } = routerMapItem;
+    const filePath = path.resolve(pageSourceFile);
+    if (routerInfo.has(filePath)) {
+        routerInfo.get(filePath)!.push({ name: name, buildFunction: buildFunction });
+    } else {
+        routerInfo.set(filePath, [{ name: name, buildFunction: buildFunction }]);
+    }
 }
 
 /**

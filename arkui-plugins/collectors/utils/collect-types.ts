@@ -95,7 +95,7 @@ export interface ParameterRecord {
     isOptional: boolean;
 }
 
-export function collectTypeRecordFromTypeParameterInstatiation(
+export function collectTypeRecordFromTypeParameterInstantiation(
     typeParams: arkts.TSTypeParameterInstantiation | undefined
 ): TypeRecord[] | undefined {
     if (!typeParams) {
@@ -202,7 +202,7 @@ export function collectTypeRecordFromTypeReference<T extends arkts.AstNode = ark
     }
     const type = TypeRecordTypes.TYPE_REFERENCE;
     const annotations = _node.annotations;
-    const typeParams = collectTypeRecordFromTypeParameterInstatiation(_node.part.typeParams);
+    const typeParams = collectTypeRecordFromTypeParameterInstantiation(_node.part.typeParams);
     return { type, typeName, annotations, typeParams };
 }
 
