@@ -297,7 +297,7 @@ function getPackageJsonEntryPath() {
       } else {
         getEntryPath('', rootPackageJsonPath);
       }
-    } else if (projectConfig.compileHar) {
+    } else if (projectConfig.compileHar && !projectConfig.customizedHar) {
       throw Error('\u001b[31m' + 'BUIDERROR: lack message in ' + projectConfig.packageJson + '.' +
         '\u001b[39m').message;
     }
@@ -311,7 +311,7 @@ function supportSuffix(mainEntryPath) {
     mainEntryPath = path.join(mainEntryPath, 'index.ts');
   } else if (fs.existsSync(path.join(mainEntryPath, 'index.js'))) {
     mainEntryPath = path.join(mainEntryPath, 'index.js');
-  } else if (projectConfig.compileHar) {
+  } else if (projectConfig.compileHar && !projectConfig.customizedHar) {
     throw Error('\u001b[31m' + 'BUIDERROR: not find entry file in ' + projectConfig.packageJson +
       '.' + '\u001b[39m').message;
   }
@@ -343,7 +343,7 @@ function getEntryPath(entryPath, rootPackageJsonPath) {
     projectConfig.entryObj[entryKey] = mainEntryPath;
     setEntryArrayForObf(entryKey);
     abilityPagesFullPath.add(path.resolve(mainEntryPath).toLowerCase());
-  } else if (projectConfig.compileHar) {
+  } else if (projectConfig.compileHar && !projectConfig.customizedHar) {
     throw Error('\u001b[31m' + `BUIDERROR: not find entry file in ${rootPackageJsonPath}.` + '\u001b[39m').message;
   }
 }
@@ -644,6 +644,9 @@ function loadBuildJson() {
   }
   if (!!aceBuildJson.byteCodeHar) {
     projectConfig.useTsHar = true;
+  }
+  if (!!aceBuildJson.customizedHar) {
+    projectConfig.customizedHar = true;
   }
   if (aceBuildJson.updateVersionInfo) {
     projectConfig.updateVersionInfo = aceBuildJson.updateVersionInfo;

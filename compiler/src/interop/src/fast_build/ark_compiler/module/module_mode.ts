@@ -189,6 +189,7 @@ export class ModuleMode extends CommonMode {
   abcPaths: string[] = [];
   byteCodeHar: boolean;
   perfReportPath: string;
+  customizedHar: boolean;
 
   constructor(rollupObject: Object) {
     super(rollupObject);
@@ -219,8 +220,12 @@ export class ModuleMode extends CommonMode {
       }
     }
     this.byteCodeHar = !!this.projectConfig.byteCodeHar;
+    this.customizedHar = this.isBuildCustomizedHar();
     if (this.useNormalizedOHMUrl) {
       this.compileContextInfoPath = this.generateCompileContextInfo(rollupObject);
+    }
+    if (this.customizedHar) {
+      this.abcPaths.push(toUnixPath(this.projectConfig.customizedOptions.basePackage));
     }
   }
 
@@ -237,6 +242,7 @@ export class ModuleMode extends CommonMode {
     }
     compileContextInfo.hspPkgNames = hspPkgNames;
     let compileEntries: Set<string> = new Set();
+    let replaceRecords: Object = {};
     let entryObj: Object = this.projectConfig.entryObj;
     if (!!this.projectConfig.widgetCompile) {
       entryObj = this.projectConfig.cardEntryObj;
@@ -275,6 +281,7 @@ export class ModuleMode extends CommonMode {
       let recordName: string = metaInfo.ohmurl ? metaInfo.ohmurl : getNormalizedOhmUrlByFilepath(moduleId, this.projectConfig, this.logger, pkgParams,
         undefined);
       compileEntries.add(recordName);
+      this.collectReplaceRecords(replaceRecords, recordName, metaInfo.pkgName);
     }
     this.collectDeclarationFilesEntry(compileEntries, hspPkgNames);
     compileContextInfo.compileEntries = Array.from(compileEntries);
@@ -288,8 +295,22 @@ export class ModuleMode extends CommonMode {
       compileContextInfo.needModifyRecord = true;
       compileContextInfo.bundleName = this.projectConfig.bundleName;
     }
+    if (this.customizedHar) {
+      compileContextInfo.replaceRecords = replaceRecords;
+    }
     fs.writeFileSync(compileContextInfoPath, JSON.stringify(compileContextInfo), 'utf-8');
     return compileContextInfoPath;
+  }
+
+   private collectReplaceRecords(replaceRecords: Object, recordName: string, pkgName: string): void {
+    if (!this.customizedHar) {
+      return;
+    }
+    if (replaceRecords[pkgName] && replaceRecords[pkgName].length >= 0) {
+      replaceRecords[pkgName].push(recordName);
+    } else {
+      replaceRecords[pkgName] = [recordName];
+    }
   }
 
   private collectDeclarationFilesEntry(compileEntries: Set<string>, hspPkgNames: Array<string>): void {
@@ -367,6 +388,10 @@ export class ModuleMode extends CommonMode {
 
   private isUsingNormalizedOHMUrl(): boolean {
     return !!this.projectConfig.useNormalizedOHMUrl;
+  }
+
+  private isBuildCustomizedHar(): boolean {
+    return this.byteCodeHar && !!this.projectConfig.customizedOptions && !!this.projectConfig.customizedOptions.basePackage;
   }
 
   private updatePkgEntryInfos(pkgEntryInfos: Map<String, PackageEntryInfo>, key: String, value: PackageEntryInfo): void {
@@ -605,6 +630,9 @@ export class ModuleMode extends CommonMode {
       this.cmdArgs.push('--enable-abc-input');
       this.cmdArgs.push('--remove-redundant-file');
     }
+    if (this.customizedHar) {
+      this.cmdArgs.push('--enable-abc-input');
+    }
     if (!this.arkConfig.optTryCatchFunc) {
       this.cmdArgs.push('--opt-try-catch-func=false');
     }
@@ -662,6 +690,11 @@ export class ModuleMode extends CommonMode {
       filesInfo += `${fileInfo.abstractPath};${fileInfo.recordName};${ESM};${fileInfo.abstractPath};${this.projectConfig.entryPackageName};` +
       `${false};ts\n`;
     }
+    if(this.customizedHar) {
+      const basePackage: string = toUnixPath(this.projectConfig.customizedOptions.basePackage);
+      const pkgName: string = this.projectConfig.entryPackageName;
+      filesInfo += `${basePackage};;;;${pkgName};\n`;
+    }
     fs.writeFileSync(this.filesInfoPath, filesInfo, 'utf-8');
   }
 
@@ -702,7 +735,9 @@ export class ModuleMode extends CommonMode {
      * and the path of bytecode har is within the main project. Therefore, the projectTopDir is used to intercept the
      * relative path of bytecodehar.
      */
-    let relativeAbcPath: string = abcPath.replace(toUnixPath(this.projectConfig.projectTopDir), '');
+    let rootPath: string = this.customizedHar ? toUnixPath(this.projectConfig.moduleRootPath) :
+      toUnixPath(this.projectConfig.projectTopDir);
+    let relativeAbcPath: string = abcPath.replace(rootPath, '');
     let tempPath: string = path.join(this.projectConfig.cachePath, relativeAbcPath);
     return changeFileExtension(tempPath, EXTNAME_PROTO_BIN);
   }
