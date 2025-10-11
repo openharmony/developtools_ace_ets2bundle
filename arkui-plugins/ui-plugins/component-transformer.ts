@@ -44,6 +44,7 @@ import { factory as entryFactory } from './entry-translators/factory';
 import { hasDecoratorName, findDecoratorInfos, DecoratorInfo } from './property-translators/utils';
 import { factory } from './ui-factory';
 import { factory as propertyFactory } from './property-translators/factory';
+import { factory as structFactory } from './struct-translators/factory';
 import {
     CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
     DecoratorIntrinsicNames,
@@ -322,7 +323,7 @@ export class ComponentTransformer extends AbstractVisitor {
         }
         const customComponentInterface = this.generateComponentInterface(
             className,
-            node.modifiers | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT,
+            structFactory.copyStructModifierFlagsToOptionsInterface(node.modifiers),
             Object.values(scopeInfo.annotations ?? {}).map((anno) => anno.clone())
         );
         this.componentInterfaceCollection.push(customComponentInterface);
