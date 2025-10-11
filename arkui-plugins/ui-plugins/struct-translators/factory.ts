@@ -141,14 +141,17 @@ export class factory {
                 modifiers
             )
             .setIdent(updateKey);
-
-        return arkts.factory.createMethodDefinition(
+        const initializeMethod = arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             updateKey,
             scriptFunction,
             modifiers,
             false
         );
+        if (!!scope.keyRange) {
+            initializeMethod.range = scope.keyRange;
+        }
+        return initializeMethod;
     }
 
     static transformControllerInterfaceType(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
@@ -214,7 +217,6 @@ export class factory {
             body = arkts.factory.createBlock(PropertyCache.getInstance().getUpdateBody(scope.name));
             modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
         }
-
         const scriptFunction: arkts.ScriptFunction = arkts.factory
             .createScriptFunction(
                 body,
@@ -228,14 +230,17 @@ export class factory {
                 modifiers
             )
             .setIdent(updateKey);
-
-        return arkts.factory.createMethodDefinition(
+        const updateMethod = arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             updateKey,
             scriptFunction,
             modifiers,
             false
         );
+        if (!!scope.keyRange) {
+            updateMethod.range = scope.keyRange;
+        }
+        return updateMethod;
     }
 
     /**
@@ -517,14 +522,16 @@ export class factory {
             classOptionsName = getTypeNameFromTypeParameter(classOptions);
         }
         const definition: arkts.ClassDefinition = node.definition;
-        const className: string | undefined = node.definition.ident?.name;
-        if (!className) {
+        const classIdent: arkts.Identifier | undefined = node.definition.ident;
+        if (!classIdent) {
             throw new Error('Non Empty className expected for Component');
         }
+        const className: string = classIdent.name;
         const body: readonly arkts.AstNode[] = definition.body;
         const propertyTranslators: (PropertyTranslator | MethodTranslator)[] = filterDefined(
             body.map((member) => classifyStructMembers(member, scope))
         );
+        scope.keyRange = classIdent.range;
         const translatedMembers: arkts.AstNode[] = this.tranformPropertyMembers(
             propertyTranslators,
             classOptionsName ?? getCustomComponentOptionsName(className),

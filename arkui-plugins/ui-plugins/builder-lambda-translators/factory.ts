@@ -962,9 +962,26 @@ export class factory {
         }
         lambdaBodyInfo.lambdaBody = lambdaBody;
         const args: (arkts.AstNode | undefined)[] = this.generateArgsInBuilderLambda(leaf, lambdaBodyInfo, declInfo);
+        const isTrailingCall = leaf.isTrailingCall;
         const newNode = arkts.factory.updateCallExpression(node, replace, leaf.typeArguments, filterDefined(args));
+        factory.setBuilderLambdaRange(isTrailingCall, newNode, node);
         arkts.NodeCache.getInstance().collect(newNode);
         return newNode;
+    }
+
+    /**
+     * set range for `@ComponentBuilder` call.
+     */
+    static setBuilderLambdaRange(
+        isTrailingCall: boolean,
+        newNode: arkts.CallExpression,
+        node: arkts.CallExpression
+    ): void {
+        if (isTrailingCall && node.parent && node.parent.parent) {
+            newNode.range = node.parent.parent.range;
+        } else {
+            newNode.range = node.range;
+        }
     }
 
     /*

@@ -42,6 +42,7 @@ export type CustomComponentScopeInfo = CustomComponentInfo & {
     hasInitializeStruct?: boolean;
     hasUpdateStruct?: boolean;
     hasReusableRebind?: boolean;
+    keyRange?: arkts.SourceRange;
 };
 
 type ResourceMap = Map<string, Record<string, number>>;

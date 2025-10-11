@@ -34,8 +34,10 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
 
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
+        initializeStruct.range = this.property.range;
         PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
         const updateStruct: arkts.AstNode = this.generateUpdateStruct(newName, originalName);
+        updateStruct.range = this.property.range;
         PropertyCache.getInstance().collectUpdateStruct(this.structInfo.name, [updateStruct]);
         if (!!this.structInfo.annotations?.reusable) {
             const toRecord = generateToRecord(newName, originalName);
@@ -93,6 +95,7 @@ export class ObjectLinkTranslator extends PropertyTranslator implements Initiali
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
         const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
+        field.range = this.property.range;
         return [field, getter];
     }
 

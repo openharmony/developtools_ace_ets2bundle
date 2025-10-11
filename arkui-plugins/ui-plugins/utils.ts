@@ -63,6 +63,11 @@ export enum BuilderLambdaNames {
     APPLY_ATTRIBUTES_FINISH_METHOD = 'applyAttributesFinish'
 }
 
+export type EntryAnnoInfo = {
+    range: arkts.SourceRange;
+    name: string;
+}
+
 // IMPORT
 export function findImportSourceByName(importName: string): string {
     const source = DeclarationCollector.getInstance().findExternalSourceFromName(importName);
