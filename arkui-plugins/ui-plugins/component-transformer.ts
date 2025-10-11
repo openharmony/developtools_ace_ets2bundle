@@ -307,7 +307,7 @@ export class ComponentTransformer extends AbstractVisitor {
         }
         const customComponentInterface = this.generateComponentInterface(
             className,
-            node.modifiers | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT,
+            StructFactory.copyStructModifierFlagsToOptionsInterface(node.modifiers),
             Object.values(scopeInfo.annotations ?? {}).map((anno) => anno.clone())
         );
         NamespaceProcessor.getInstance().addInterfaceToCurrentNamespace(customComponentInterface);
