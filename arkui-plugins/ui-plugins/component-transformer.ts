@@ -187,7 +187,10 @@ export class ComponentTransformer extends AbstractVisitor {
             this.externalSourceName === ARKUI_NAVIGATION_SOURCE_NAME ||
             this.externalSourceName === ARKUI_NAV_DESTINATION_SOURCE_NAME
         ) {
-            return arkts.factory.updateEtsScript(node, [...node.statements, EntryFactory.createNavigationModuleInfo(this.externalSourceName)]);
+            return arkts.factory.updateEtsScript(node, [
+                ...node.statements,
+                EntryFactory.createNavigationModuleInfo(this.externalSourceName),
+            ]);
         }
         if (this.isExternal && this.componentInterfaceCollection.length === 0 && this.entryAnnoInfo.length === 0) {
             return node;
@@ -450,14 +453,13 @@ export class ComponentTransformer extends AbstractVisitor {
         if (arkts.isEtsScript(newNode)) {
             return this.processEtsScript(newNode);
         }
-        if (arkts.isCallExpression(node)) {
-            if (
-                arkts.isMemberExpression(node.expression) &&
-                (node.expression.property as arkts.Identifier).name === Reuse.REUSE_ID
-            ) {
-                ImportCollector.getInstance().collectSource(Reuse.REUSE_OPTIONS, ARKUI_COMPONENT_COMMON_SOURCE_NAME);
-                ImportCollector.getInstance().collectImport(Reuse.REUSE_OPTIONS);
-            }
+        if (
+            arkts.isCallExpression(node) &&
+            arkts.isMemberExpression(node.expression) &&
+            (node.expression.property as arkts.Identifier).name === Reuse.REUSE_ID
+        ) {
+            ImportCollector.getInstance().collectSource(Reuse.REUSE_OPTIONS, ARKUI_COMPONENT_COMMON_SOURCE_NAME);
+            ImportCollector.getInstance().collectImport(Reuse.REUSE_OPTIONS);
         }
         if (
             arkts.isStructDeclaration(newNode) &&

@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { Expression, ThrowStatement } from "../../generated";
-import { isSameNativeObject } from "../peers/ArktsObject";
+import { Expression, ThrowStatement } from '../../generated';
+import { isSameNativeObject } from '../peers/ArktsObject';
 import { attachModifiers, updateThenAttach } from '../utilities/private';
 
 export function updateThrowStatement(original: ThrowStatement, argument?: Expression): ThrowStatement {

@@ -90,10 +90,10 @@ export function addMemoAnnotation<T extends MemoAstNode>(node: T, memoName: Memo
         annotation(memoName),
     ];
     collectMemoAnnotationImport(memoName);
-    const metadata: arkts.AstNodeCacheValueMetadata = { 
+    const metadata: arkts.AstNodeCacheValueMetadata = {
         ...(intrisicNames.includes(memoName) && { hasMemoIntrinsic: true }),
         ...(entryNames.includes(memoName) && { hasMemoEntry: true }),
-    }
+    };
     if (arkts.isEtsParameterExpression(node)) {
         node.annotations = newAnnotations;
         if (!skipNames.includes(memoName)) {

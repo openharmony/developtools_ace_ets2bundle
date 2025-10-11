@@ -25,8 +25,6 @@ import {
     DefaultConfiguration,
     LogType,
     RESOURCE_TYPE,
-    InnerComponentNames,
-    ARKUI_FOREACH_SOURCE_NAME,
     DecoratorNames,
 } from '../../common/predefines';
 import { DeclarationCollector } from '../../common/declaration-collector';
@@ -77,7 +75,7 @@ export interface ObservedAnnoInfo {
 
 export type ClassScopeInfo = ObservedAnnoInfo & {
     getters: arkts.MethodDefinition[];
-}
+};
 
 export function getCustomComponentNameFromInfo(info: CustomComponentScopeInfo): string {
     if (!!info.annotations.componentV2) {

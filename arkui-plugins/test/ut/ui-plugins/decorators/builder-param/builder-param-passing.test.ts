@@ -46,9 +46,17 @@ import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
 
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Component as Component, Entry as Entry, Builder as Builder, BuilderParam as BuilderParam, Column as Column, Text as Text } from "@ohos.arkui.component";
 
@@ -72,13 +80,34 @@ function main() {}
     this.__backing_customBuilderParam = value;
   }
   
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
+      return new Child(false, ({let gensym___149025070 = storage;
+      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Child {
+    throw new Error("Declare interface");
+  }
+  
   @memo() public customBuilder() {}
   
   @memo() public build() {
     this.customBuilderParam();
   }
   
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
   
 }
 
@@ -86,6 +115,17 @@ function main() {}
   public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+  
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
+      return new Parent(false, ({let gensym___46528967 = storage;
+      (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
+  }
   
   @memo() public componentBuilder() {
     TextImpl(@memo() ((instance: TextAttribute): void => {
@@ -99,23 +139,30 @@ function main() {}
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
     }), @memo() (() => {
-      Child._instantiateImpl(undefined, (() => {
-        return new Child();
-      }), {
-        customBuilderParam: this.componentBuilder,
-        __options_has_customBuilderParam: true,
-      }, undefined, undefined);
-      Child._instantiateImpl(undefined, (() => {
-        return new Child();
-      }), {
-        customBuilderParam: @memo() (() => {
-          this.componentBuilder();
-        }),
-        __options_has_customBuilderParam: true,
-      }, undefined, undefined);
-      Child._instantiateImpl(undefined, (() => {
-        return new Child();
-      }), undefined, undefined, @memo() (() => {
+      Child._invoke(@memo() ((instance: Child): void => {
+        instance.applyAttributesFinish();
+        return;
+      }), ((): __Options_Child => {
+        return ({
+          customBuilderParam: this.componentBuilder,
+          __options_has_customBuilderParam: true,
+        } as __Options_Child);
+      }), undefined, undefined, undefined);
+      Child._invoke(@memo() ((instance: Child): void => {
+        instance.applyAttributesFinish();
+        return;
+      }), ((): __Options_Child => {
+        return ({
+          customBuilderParam: @memo() (() => {
+            this.componentBuilder();
+          }),
+          __options_has_customBuilderParam: true,
+        } as __Options_Child);
+      }), undefined, undefined, undefined);
+      Child._invoke(@memo() ((instance: Child): void => {
+        instance.applyAttributesFinish();
+        return;
+      }), undefined, undefined, undefined, @memo() (() => {
         TextImpl(@memo() ((instance: TextAttribute): void => {
           instance.setTextOptions("Parent builder", undefined).applyAttributesFinish();
           return;
@@ -123,9 +170,19 @@ function main() {}
       }));
     }));
   }
-
-  public constructor() {}
-
+  
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
+  
 }
 
 @Component() export interface __Options_Child {
@@ -149,8 +206,12 @@ import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+import { Builder as Builder } from "arkui.component.builder";
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 import { Component as Component, Entry as Entry, Builder as Builder, BuilderParam as BuilderParam, Column as Column, Text as Text } from "@ohos.arkui.component";
 
 function main() {}
@@ -172,7 +233,18 @@ function main() {}
   public set customBuilderParam(value: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
     this.__backing_customBuilderParam = value;
   }
-
+  
+  @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Child, __Options_Child>(__memo_context, ((__memo_id) + (47330804)), style, ((): Child => {
+      return new Child(false, ({let gensym___149025070 = storage;
+      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Child {
+    throw new Error("Declare interface");
+  }
+  
   @memo() public customBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (252759234)), 0);
     if (__memo_scope.unchanged) {
@@ -197,15 +269,36 @@ function main() {}
       return;
     }
   }
-
-  public constructor() {}
-
+  
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
+  
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
-
+  
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+  
+  @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Parent, __Options_Parent>(__memo_context, ((__memo_id) + (211301233)), style, ((): Parent => {
+      return new Parent(false, ({let gensym___46528967 = storage;
+      (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Parent {
+    throw new Error("Declare interface");
+  }
 
   @memo() public componentBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (219399173)), 0);
@@ -256,33 +349,67 @@ function main() {}
         __memo_scope.cached;
         return;
       }
-      Child._instantiateImpl(__memo_context, ((__memo_id) + (213104625)), undefined, (() => {
-        return new Child();
-      }), {
-        customBuilderParam: this.componentBuilder,
-        __options_has_customBuilderParam: true,
-      }, undefined, undefined);
-      Child._instantiateImpl(__memo_context, ((__memo_id) + (218979098)), undefined, (() => {
-        return new Child();
-      }), {
-        customBuilderParam: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-          const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (76711614)), 0);
-          if (__memo_scope.unchanged) {
-            __memo_scope.cached;
-            return;
-          }
-          this.componentBuilder(__memo_context, ((__memo_id) + (46726221)));
-          {
-            __memo_scope.recache();
-            return;
-          }
-        }),
-        __options_has_customBuilderParam: true,
-      }, undefined, undefined);
-      Child._instantiateImpl(__memo_context, ((__memo_id) + (213687742)), undefined, (() => {
-        return new Child();
-      }), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (192802443)), 0);
+      Child._invoke(__memo_context, ((__memo_id) + (192802443)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child): void => {
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (223657391)), 1);
+        const __memo_parameter_instance = __memo_scope.param(0, instance);
+        if (__memo_scope.unchanged) {
+          __memo_scope.cached;
+          return;
+        }
+        __memo_parameter_instance.value.applyAttributesFinish();
+        {
+          __memo_scope.recache();
+          return;
+        }
+      }), ((): __Options_Child => {
+        return ({
+          customBuilderParam: this.componentBuilder,
+          __options_has_customBuilderParam: true,
+        } as __Options_Child);
+      }), undefined, undefined, undefined);
+      Child._invoke(__memo_context, ((__memo_id) + (78055758)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child): void => {
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (213687742)), 1);
+        const __memo_parameter_instance = __memo_scope.param(0, instance);
+        if (__memo_scope.unchanged) {
+          __memo_scope.cached;
+          return;
+        }
+        __memo_parameter_instance.value.applyAttributesFinish();
+        {
+          __memo_scope.recache();
+          return;
+        }
+      }), ((): __Options_Child => {
+        return ({
+          customBuilderParam: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (136716185)), 0);
+            if (__memo_scope.unchanged) {
+              __memo_scope.cached;
+              return;
+            }
+            this.componentBuilder(__memo_context, ((__memo_id) + (54078781)));
+            {
+              __memo_scope.recache();
+              return;
+            }
+          }),
+          __options_has_customBuilderParam: true,
+        } as __Options_Child);
+      }), undefined, undefined, undefined);
+      Child._invoke(__memo_context, ((__memo_id) + (238360624)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child): void => {
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (262314519)), 1);
+        const __memo_parameter_instance = __memo_scope.param(0, instance);
+        if (__memo_scope.unchanged) {
+          __memo_scope.cached;
+          return;
+        }
+        __memo_parameter_instance.value.applyAttributesFinish();
+        {
+          __memo_scope.recache();
+          return;
+        }
+      }), undefined, undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (151409217)), 0);
         if (__memo_scope.unchanged) {
           __memo_scope.cached;
           return;
@@ -315,9 +442,19 @@ function main() {}
       return;
     }
   }
-
-  public constructor() {}
-
+  
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
+  
 }
 
 @Component() export interface __Options_Child {

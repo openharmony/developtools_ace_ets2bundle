@@ -691,12 +691,6 @@ export class FunctionTransformer extends AbstractVisitor {
                 return rewriteByType.get(value.type)!(node, metadata);
             }
         }
-        if (arkts.isEtsScript(node) && this.program?.fileNameWithExtension === 'new.ets') {
-                console.log('======================================== memo')
-                console.log(this.modified)
-                console.log(node.dumpSrc())
-                console.log('======================================== memo')
-        }
         if (arkts.isEtsScript(node) && this.modified) {
             factory.createContextTypesImportDeclaration(this.program);
         }
