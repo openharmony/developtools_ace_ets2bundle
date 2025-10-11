@@ -45,6 +45,8 @@ import { hasDecoratorName, findDecoratorInfos, DecoratorInfo } from './property-
 import { factory } from './ui-factory';
 import { factory as propertyFactory } from './property-translators/factory';
 import {
+    ARKUI_NAVIGATION_SOURCE_NAME,
+    ARKUI_NAV_DESTINATION_SOURCE_NAME,
     CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
     DecoratorIntrinsicNames,
     DecoratorNames,
@@ -199,6 +201,12 @@ export class ComponentTransformer extends AbstractVisitor {
             navInterface.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
             return arkts.factory.updateEtsScript(node, [...node.statements, navInterface]);
         }
+        if (
+            this.externalSourceName === ARKUI_NAVIGATION_SOURCE_NAME ||
+            this.externalSourceName === ARKUI_NAV_DESTINATION_SOURCE_NAME
+        ) {
+            return arkts.factory.updateEtsScript(node, [...node.statements, entryFactory.createNavigationModuleInfo(this.externalSourceName)]);
+        }
         if (this.isExternal && this.componentInterfaceCollection.length === 0 && this.entryNames.length === 0) {
             return node;
         }
@@ -268,7 +276,11 @@ export class ComponentTransformer extends AbstractVisitor {
                 node.definition.implements,
                 undefined,
                 node.definition.super,
-                [entryFactory.generateRegisterNamedRouter(), ...node.definition.body],
+                [
+                    entryFactory.generateRegisterNamedRouter(),
+                    entryFactory.generateNavigationBuilderRegister(),
+                    ...node.definition.body,
+                ],
                 node.definition.modifiers,
                 arkts.classDefinitionFlags(node.definition)
             )

@@ -278,7 +278,9 @@ export class ProgramVisitor extends AbstractVisitor {
         transformer.isExternal = !!externalSourceName;
         transformer.externalSourceName = externalSourceName;
         transformer.program = program;
+        transformer.init();
         const newScript = transformer.visitor(script) as arkts.EtsScript;
+        transformer.reset();
         return newScript;
     }
 }

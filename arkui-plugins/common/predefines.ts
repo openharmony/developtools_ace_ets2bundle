@@ -35,6 +35,8 @@ export const CUSTOM_DIALOG_CONTROLLER_SOURCE_NAME: string = 'arkui.component.cus
 export const ARKUI_COMPONENT_COMMON_SOURCE_NAME: string = 'arkui.component.common';
 export const ARKUI_FOREACH_SOURCE_NAME: string = 'arkui.component.forEach';
 export const ARKUI_BUILDER_SOURCE_NAME: string = 'arkui.component.builder';
+export const ARKUI_NAVIGATION_SOURCE_NAME: string = 'arkui.component.navigation';
+export const ARKUI_NAV_DESTINATION_SOURCE_NAME: string = 'arkui.component.navDestination';
 
 export enum ModuleType {
     HAR = 'har',
@@ -82,6 +84,7 @@ export enum EntryWrapperNames {
     WRAPPER_CLASS_NAME = '__EntryWrapper',
     ENTRY_STORAGE_LOCAL_STORAGE_PROPERTY_NAME = '_entry_local_storage_',
     ENTRY_POINT_CLASS_NAME = 'EntryPoint',
+    NAVIGATION_BUILDER_REGISTER = 'NavigationBuilderRegister',
     REGISTER_NAMED_ROUTER = 'RegisterNamedRouter',
     ROUTER_NAME = 'routerName',
     INSTANCE = 'instance',
@@ -118,6 +121,14 @@ export enum EntryParamNames {
 
 export enum InnerComponentNames {
     FOR_EACH = 'ForEach',
+    NAVIGATION = 'Navigation',
+    NAV_DESTINATION = 'NavDestination',
+}
+
+export enum BuilderNames {
+    BUILDER = 'builder',
+    WRAP_BUILDER = 'wrapBuilder',
+    WRAPPED_BUILDER = 'WrappedBuilder',
 }
 
 export enum InnerComponentAttributes {
@@ -165,6 +176,7 @@ export enum TypeNames {
     ARRAY = 'Array',
     MAP = 'Map',
     STRING = 'string',
+    TYPE_T = 'T',
 }
 
 export enum DecoratorIntrinsicNames {
@@ -244,6 +256,13 @@ export enum NavigationNames {
     PAGE_PATH = 'pagePath',
     PAGE_FULL_PATH = 'pageFullPath',
     INTEGRATED_HSP = 'integratedHsp',
+    MODULE_INFO = 'ModuleInfo',
+    NAVIGATION_MODULE_INFO = 'NavigationModuleInfo',
+    NAV_DESTINATION_MODULE_INFO = 'NavDestinationModuleInfo',
+    IS_USER_CREATE_STACK = 'isUserCreateStack',
+    NAME = 'name',
+    NAVIGATION_REGISTER_CLASS = '__NavigationBuilderRegisterClass',
+    STATIC_BLOCK_TRIGGER_FIELD = 'staticBlockTriggerField',
 }
 
 export enum ConditionNames {
