@@ -42,7 +42,7 @@ export const ARKUI_NAV_DESTINATION_SOURCE_NAME: string = 'arkui.component.navDes
 export const ARKUI_LOCAL_STORAGE_SOURCE_NAME: string = 'arkui.stateManagement.storage.localStorage';
 
 export enum UIClass {
-    LOCAL_STORAGE = 'LocalStorage'
+    LOCAL_STORAGE = 'LocalStorage',
 }
 
 export enum ModuleType {

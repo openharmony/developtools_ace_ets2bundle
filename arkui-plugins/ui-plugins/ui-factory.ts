@@ -521,7 +521,12 @@ export class factory {
     /**
      * create `<callee>?.<typeArgs>(<args>)` or `{let _tmp = <callee>; _tmp == null ? undefined : _tmp<typeArgs>(<args>)}` from given `isLowered` flag.
      */
-    static createOptionalCall(callee: arkts.Expression, typeArgs: readonly arkts.TypeNode[] | undefined, args: readonly arkts.AstNode[] | undefined, isLowered?: boolean) {
+    static createOptionalCall(
+        callee: arkts.Expression,
+        typeArgs: readonly arkts.TypeNode[] | undefined,
+        args: readonly arkts.AstNode[] | undefined,
+        isLowered?: boolean,
+    ): arkts.Expression {
         if (!isLowered) {
             return arkts.factory.createCallExpression(callee, typeArgs, args, true);
         }
@@ -560,10 +565,7 @@ export class factory {
      * @param testLeft the left hand of the test condition.
      * @param alternate the alternate of the ternary expression
      */
-    static generateTernaryExpression(
-        testLeft: string,
-        alternate: arkts.Expression
-    ): arkts.ExpressionStatement {
+    static generateTernaryExpression(testLeft: string, alternate: arkts.Expression): arkts.ExpressionStatement {
         const test = arkts.factory.createBinaryExpression(
             arkts.factory.createIdentifier(testLeft),
             arkts.factory.createNullLiteral(),
@@ -571,11 +573,7 @@ export class factory {
         );
         const consequent: arkts.Expression = arkts.factory.createUndefinedLiteral();
         return arkts.factory.createExpressionStatement(
-            arkts.factory.createConditionalExpression(
-                test,
-                consequent,
-                alternate
-            )
+            arkts.factory.createConditionalExpression(test, consequent, alternate)
         );
     }
 }

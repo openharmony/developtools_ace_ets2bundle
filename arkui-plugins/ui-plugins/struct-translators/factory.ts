@@ -1537,6 +1537,7 @@ export class factory {
      */
     static createInvokeImplCall(structName: string, scopeInfo: CustomComponentScopeInfo): arkts.CallExpression {
         const customComponentName = getCustomComponentNameFromInfo(scopeInfo);
+        const optionsName = getCustomComponentOptionsName(structName);
         const isFromV2 = !!scopeInfo.annotations.componentV2;
         const storageCall = UIFactory.createOptionalCall(
             arkts.factory.createIdentifier(BuilderLambdaNames.STORAGE_PARAM_NAME),
@@ -1553,12 +1554,12 @@ export class factory {
         const intrinsicCall = arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
                 arkts.factory.createIdentifier(customComponentName),
-                arkts.factory.createIdentifier(BuilderLambdaNames.TRANSFORM_METHOD_NAME),
+                arkts.factory.createIdentifier(BuilderLambdaNames.CUSTOM_COMPONENT_INVOKE_NAME),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
                 false
             ),
-            undefined,
+            [UIFactory.createTypeReferenceFromString(structName), UIFactory.createTypeReferenceFromString(optionsName)],
             [
                 arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_PARAM_NAME),
                 arkts.factory.createArrowFunction(

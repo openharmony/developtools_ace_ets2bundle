@@ -54,8 +54,9 @@ export enum CustomDialogNames {
 
 export enum BuilderLambdaNames {
     ANNOTATION_NAME = 'ComponentBuilder',
-    ORIGIN_METHOD_NAME = '$_invoke', // '$_instantiate',
-    TRANSFORM_METHOD_NAME = '_invokeImpl', // '_instantiateImpl',
+    ORIGIN_METHOD_NAME = '$_invoke',
+    TRANSFORM_METHOD_NAME = '_invoke',
+    CUSTOM_COMPONENT_INVOKE_NAME = '_invokeImpl',
     REUSE_ID_PARAM_NAME = 'reuseId',
     STORAGE_PARAM_NAME = 'storage',
     USE_SHARED_STORAGE_PARAM_NAME = 'useSharedStorage',
@@ -63,13 +64,13 @@ export enum BuilderLambdaNames {
     STYLE_ARROW_PARAM_NAME = 'instance',
     CONTENT_PARAM_NAME = 'content',
     COMPONENT_PARAM_ORI = 'content_',
-    APPLY_ATTRIBUTES_FINISH_METHOD = 'applyAttributesFinish'
+    APPLY_ATTRIBUTES_FINISH_METHOD = 'applyAttributesFinish',
 }
 
 export type EntryAnnoInfo = {
     range: arkts.SourceRange;
     name: string;
-}
+};
 
 // IMPORT
 export function findImportSourceByName(importName: string): string {

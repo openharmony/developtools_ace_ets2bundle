@@ -42,17 +42,25 @@ import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
 
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Component as Component, Column as Column, Text as Text } from "@ohos.arkui.component";
 
@@ -86,22 +94,46 @@ class Per {
   public set parentVar1(value: Per) {
     this.__backing_parentVar1!.set(value);
   }
+  
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
+      return new Parent(false, ({let gensym___149025070 = storage;
+      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
+  }
 
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
     }), @memo() (() => {
-      Child._instantiateImpl(undefined, (() => {
-        return new Child();
-      }), {
-        childVar1: this.parentVar1,
-        __options_has_childVar1: true,
-      }, undefined, undefined);
+      Child._invoke(@memo() ((instance: Child): void => {
+        instance.applyAttributesFinish();
+        return;
+      }), ((): __Options_Child => {
+        return ({
+          childVar1: this.parentVar1,
+          __options_has_childVar1: true,
+        } as __Options_Child);
+      }), undefined, undefined, undefined);
     }));
   }
 
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 
@@ -122,6 +154,17 @@ class Per {
   public set childVar1(value: Per) {
     this.__backing_childVar1!.set(value);
   }
+  
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
+      return new Child(false, ({let gensym___17371929 = storage;
+      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Child {
+    throw new Error("Declare interface");
+  }
 
   @memo() public build() {
     TextImpl(@memo() ((instance: TextAttribute): void => {
@@ -130,7 +173,17 @@ class Per {
     }), undefined);
   }
 
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
   
 }
 

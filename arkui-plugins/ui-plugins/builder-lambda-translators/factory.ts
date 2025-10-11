@@ -340,8 +340,6 @@ export class factory {
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
         );
         addMemoAnnotation(funcType);
-
-        // const optionalFuncType = arkts.factory.createUnionType([funcType, arkts.factory.createETSUndefinedType()]);
         const parameter = arkts.factory.createParameterDeclaration(
             arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_PARAM_NAME, funcType),
             undefined
@@ -545,12 +543,16 @@ export class factory {
         arg: arkts.Expression,
         returnType: arkts.TypeNode | undefined
     ): arkts.ArrowFunctionExpression {
-        const newArg = arkts.isObjectExpression(arg) && !!returnType
-            ? arkts.factory.createTSAsExpression(arg, returnType.clone(), false)
-            : arg; 
+        const newArg =
+            arkts.isObjectExpression(arg) && !!returnType
+                ? arkts.factory.createTSAsExpression(arg, returnType.clone(), false)
+                : arg;
         const newFunc = UIFactory.createScriptFunction({
             body: arkts.factory.createBlock([arkts.factory.createReturnStatement(newArg)]),
-            flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW | arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN,
+            flags:
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW |
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN,
+            returnTypeAnnotation: returnType,
             modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         });
         const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(newFunc);
@@ -568,7 +570,7 @@ export class factory {
     ): (arkts.AstNode | undefined)[] {
         const { params, returnType } = declInfo;
         const { lambdaBody, reuseId } = lambdaBodyInfo;
-        const args: (arkts.AstNode | undefined)[] = [];
+        const args: Array<arkts.AstNode | undefined> = [];
         const isTrailingCall = leaf.isTrailingCall;
         const newLambdaBody = lambdaBody
             ? this.addApplyAttributesFinishToLambdaBodyEnd(lambdaBody)
@@ -653,7 +655,7 @@ export class factory {
         modifiedArgs: (arkts.AstNode | undefined)[],
         typeName: string | undefined,
         moduleName: string,
-        leaf: arkts.CallExpression,
+        leaf: arkts.CallExpression
     ): (arkts.AstNode | undefined)[] {
         if (isNavigationOrNavDestination(typeName, moduleName)) {
             const length: number = leaf.arguments.length;
@@ -1449,7 +1451,10 @@ export class factory {
     /**
      * add declared set methods in `@ComponentBuilder` Attribute interface
      */
-    static addDeclaredSetMethodsInAttributeInterface(node: arkts.TSInterfaceDeclaration, componentName: string): arkts.TSInterfaceDeclaration {
+    static addDeclaredSetMethodsInAttributeInterface(
+        node: arkts.TSInterfaceDeclaration,
+        componentName: string
+    ): arkts.TSInterfaceDeclaration {
         if (!node.body) {
             return node;
         }

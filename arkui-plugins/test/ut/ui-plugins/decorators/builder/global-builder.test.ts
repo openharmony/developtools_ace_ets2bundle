@@ -36,6 +36,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
 
 import { makeBuilderParameterProxy as makeBuilderParameterProxy } from "arkui.component.builder";
 
@@ -52,6 +53,12 @@ import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Component as Component, Row as Row, Builder as Builder, Text as Text } from "@ohos.arkui.component";
 
@@ -87,25 +94,46 @@ class Tmp {
 
 @Component() final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
   public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @memo() content: ((()=> void) | undefined)): void {}
-
+  
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
-
+  
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: BuilderDemo)=> void), initializers: ((()=> __Options_BuilderDemo) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<BuilderDemo, __Options_BuilderDemo>(style, ((): BuilderDemo => {
+      return new BuilderDemo(false, ({let gensym___149025070 = storage;
+      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_BuilderDemo, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): BuilderDemo {
+    throw new Error("Declare interface");
+  }
+  
   @memo() public build() {
     RowImpl(@memo() ((instance: RowAttribute): void => {
       instance.setRowOptions(undefined).applyAttributesFinish();
       return;
     }), @memo() (() => {
       showTextBuilder();
-      overBuilder(makeBuilderParameterProxy<Tmp>({}, new Map<string, (()=> Any)>([["paramA1", (() => {
+      overBuilder(makeBuilderParameterProxy<Tmp>({}, new Map<string, (()=> Any)>([["paramA1", ((): Any => {
         return "Hello";
-      })]]), ((gensym___<some_random_number>: Tmp) => {
-        gensym___<some_random_number>.paramA1 = "Hello";
+      })]]), ((gensym___203542966: Tmp) => {
+        gensym___203542966.paramA1 = "Hello";
       })));
     }));
   }
-
-  public constructor() {}
-
+  
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
+  
 }
 
 @Component() export interface __Options_BuilderDemo {

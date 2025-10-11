@@ -50,7 +50,7 @@ export class factory {
         info?: OptionalMemberInfo
     ): arkts.Expression {
         let id = GenSymGenerator.getInstance().id(key);
-        const alternate = this.generateConditionalAlternate(id, key, info)
+        const alternate = this.generateConditionalAlternate(id, key, info);
         const statements: arkts.Statement[] = [
             UIFactory.generateLetVariableDecl(arkts.factory.createIdentifier(id), object),
             UIFactory.generateTernaryExpression(id, alternate),
