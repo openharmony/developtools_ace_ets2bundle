@@ -87,6 +87,25 @@ import { isInteropComponent } from '../interop/utils';
 
 export class factory {
     /**
+     * copy struct modifier flags to struct interface, with no default export but export flag.
+     *
+     * @param modifiers struct modifier flags
+     * @returns struct interface modifier flags
+     */
+    static copyStructModifierFlagsToOptionsInterface(
+        modifiers: arkts.Es2pandaModifierFlags
+    ): arkts.Es2pandaModifierFlags {
+        let _modifiers = modifiers;
+        if (
+            (modifiers | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFAULT_EXPORT) ===
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFAULT_EXPORT
+        ) {
+            _modifiers ^= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFAULT_EXPORT;
+        }
+        return _modifiers | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
+    }
+
+    /**
      * update class `constructor` to private.
      * @deprecated
      */

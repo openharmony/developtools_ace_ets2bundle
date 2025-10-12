@@ -62,7 +62,7 @@ function main() {}
 
 @memo() function cardStyle(this: TextAttribute, num: number, str: string): TextAttribute {
   this.fontSize(num);
-  this.backgroundColor(num);
+  this.backgroundColor(str);
   return this;
 }
 
