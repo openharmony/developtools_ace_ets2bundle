@@ -53,9 +53,6 @@ export class EmitTransformer extends AbstractVisitor {
     }
 
     processConsume(node: arkts.ClassProperty): arkts.ClassProperty {
-        if (!hasDecorator(node, DecoratorNames.CONSUME)) {
-            return node;
-        }
         const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
         annotations.forEach((anno)=>{
             const value = getAnnotationValue(anno, DecoratorNames.CONSUME);
@@ -65,7 +62,7 @@ export class EmitTransformer extends AbstractVisitor {
                     arkts.factory.updateClassProperty(
                         property,
                         arkts.factory.createIdentifier('value'),
-                        value ? arkts.factory.createStringLiteral(node.key.name) : property.value,
+                        value ? property.value : arkts.factory.createStringLiteral(node.key.name),
                         property.typeAnnotation,
                         property.modifiers,
                         false
@@ -76,12 +73,68 @@ export class EmitTransformer extends AbstractVisitor {
         return node;
     }
 
+    getClassPropByName(anno: arkts.AnnotationUsage, name: string): arkts.ClassProperty | undefined {
+        return anno.properties.find (
+            (p): p is arkts.ClassProperty =>
+            arkts.isClassProperty(p) &&
+            p.key != null &&
+            arkts.isIdentifier(p.key) &&
+            p.key.name === name
+        );
+    }
+
+
+    processProvide(node: arkts.ClassProperty): arkts.ClassProperty {
+        for (const anno of node.annotations ?? []) {
+            const allowOverrideProp = this.getClassPropByName(anno, 'allowOverride');
+            const aliasProp = this.getClassPropByName(anno, 'alias');
+            if (!allowOverrideProp || !aliasProp) continue;
+            const aliasValue = aliasProp.value && arkts.isStringLiteral(aliasProp.value) ? aliasProp.value.str : '';
+            const allowOverrideValue = allowOverrideProp.value && arkts.isBooleanLiteral(allowOverrideProp.value) ? allowOverrideProp.value.value : false;
+            if (allowOverrideValue) {
+                anno.setProperties([
+                    arkts.factory.updateClassProperty(
+                        allowOverrideProp,
+                        allowOverrideProp.key,
+                        arkts.factory.createStringLiteral(aliasValue),
+                        allowOverrideProp.typeAnnotation,
+                        allowOverrideProp.modifiers,
+                        false
+                    )
+                ]);
+            } else {
+                anno.setProperties([
+                    arkts.factory.updateClassProperty(
+                        aliasProp,
+                        arkts.factory.createIdentifier('value'),
+                        aliasProp.value,
+                        aliasProp.typeAnnotation,
+                        aliasProp.modifiers,
+                        false
+                    )
+                ]);
+            }
+        }
+        return node;
+    }
+
+
+    processClassProperty(node: arkts.ClassProperty): arkts.ClassProperty {
+        if (hasDecorator(node, DecoratorNames.PROVIDE)) {
+            return this.processProvide(node);
+        } else if (hasDecorator(node, DecoratorNames.CONSUME)) {
+            return this.processConsume(node);
+        }
+        return node;
+    }
+
+
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         const node = this.visitEachChild(beforeChildren);
         if (arkts.isClassDeclaration(node) && arkts.classDefinitionIsFromStructConst(node.definition!)) {
             return this.processComponent(node);
         } else if (arkts.isClassProperty(node)) {
-            return this.processConsume(node);
+            return this.processClassProperty(node);
         }
         return node;
     }
