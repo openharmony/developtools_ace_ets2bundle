@@ -1125,19 +1125,23 @@ export class factory {
     /**
      * add declared set methods in `@ComponentBuilder` Attribute interface
      */
-    static addDeclaredSetMethodsInAttributeInterface(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
+    static addDeclaredSetMethodsInAttributeInterface(node: arkts.TSInterfaceDeclaration, componentName: string): arkts.TSInterfaceDeclaration {
         if (!node.body) {
             return node;
         }
-        const records = ComponentAttributeCache.getInstance().getAllComponentRecords();
-        if (records.length === 0) {
+        const records = ComponentAttributeCache.getInstance().getComponentRecord(componentName);
+        if (!records || records.length === 0) {
             return node;
         }
         let rootMethod = factory.createDeclaredSetMethodFromRecord(records.at(0)!);
         const overloads: arkts.MethodDefinition[] = [];
-        for (let i = 0; i < records.length - 1; i++) {
-            const newMethod = factory.createDeclaredSetMethodFromRecord(records.at(i + 1)!);
+        let overloadIndex: number = 1;
+        while (!!records.at(overloadIndex)) {
+            const newMethod = factory.createDeclaredSetMethodFromRecord(records.at(overloadIndex)!);
+            newMethod.setBaseOverloadMethod(rootMethod);
+            newMethod.parent = rootMethod;
             overloads.push(newMethod);
+            overloadIndex++;
         }
         rootMethod.setOverloads(overloads);
         return arkts.factory.updateInterfaceDeclaration(
@@ -1157,8 +1161,8 @@ export class factory {
     static createDeclaredSetMethodFromRecord(record: ComponentRecord): arkts.MethodDefinition {
         const name = getDeclaredSetAttribtueMethodName(record.name);
         const hasReceiver = !!record.hasReceiver;
-        const params = record.attributeRecords.map((record) => TypeFactory.createParameterFromRecord(record));
-        const typeParams = record.typeParams?.map((p) => TypeFactory.createTypeParameterFromRecord(p));
+        const params = record.paramRecords.map((record) => TypeFactory.createParameterFromRecord(record));
+        const typeParams = record.typeParameters?.map((p) => TypeFactory.createTypeParameterFromRecord(p));
 
         const key = arkts.factory.createIdentifier(name);
         const kind = arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD;
@@ -1208,7 +1212,30 @@ export class factory {
     }
 
     /**
-     * generate `@ComponentBuilder` component Impl function in ETSGLOBAL class
+     * create all `@ComponentBuilder` component Impl functions for each unique component name.
+     */
+    static createAllUniqueDeclaredComponentFunctions(componentNames: string[]): arkts.MethodDefinition[] {
+        const componentAttributeCache = ComponentAttributeCache.getInstance();
+        const methods: arkts.MethodDefinition[] = [];
+        componentNames.forEach((name: string) => {
+            const record = componentAttributeCache.getComponentRecord(name)?.at(0);
+            const attributeName = componentAttributeCache.getAttributeName(name);
+            const attributeTypeParams = componentAttributeCache.getAttributeTypeParams(name);
+            if (!record || !attributeName) {
+                return;
+            }
+            const componentImplMethod = factory.createDeclaredComponentFunctionFromRecord(
+                record,
+                attributeName,
+                attributeTypeParams
+            );
+            methods.push(componentImplMethod);
+        });
+        return methods;
+    }
+
+    /**
+     * generate `@ComponentBuilder` component Impl function
      */
     static createDeclaredComponentFunctionFromRecord(
         record: ComponentRecord,
@@ -1229,7 +1256,7 @@ export class factory {
             attributeTypeParams,
             record.hasLastTrailingLambda
         );
-        const typeParamItems = record.typeParams?.map((p) => TypeFactory.createTypeParameterFromRecord(p));
+        const typeParamItems = record.typeParameters?.map((p) => TypeFactory.createTypeParameterFromRecord(p));
         const typeParams = !!typeParamItems
             ? arkts.factory.createTypeParameterDeclaration(typeParamItems, typeParamItems.length)
             : undefined;
