@@ -25,7 +25,7 @@ const addTSAttributeSet = ['AlphabetIndexer', 'Animator', 'Badge', 'Blank', 'But
   'Divider', 'Ellipse', 'Flex', 'FormComponent', 'Gauge', 'Grid', 'GridItem', 'GridContainer', 'Image',
   'ImageAnimator', 'IndicatorComponent', 'LazyVGridLayout', 'Line',
   'List', 'ListItem', 'ListItemGroup', 'LoadingProgress', 'Marquee', 'Navigation', 'Navigator',
-  'Panel', 'Path', 'PatternLock', 'Piece', 'PluginComponent', 'Polygon', 'Polyline', 'Progress',
+  'Panel', 'Path', 'PatternLock', 'Picker', 'Piece', 'PluginComponent', 'Polygon', 'Polyline', 'Progress',
   'QRCode', 'Radio', 'Rating', 'Rect', 'Refresh', 'Row', 'RowSplit', 'Scroll', 'ScrollBar', 'Search',
   'Select', 'Shape', 'Sheet', 'Slider', 'Span', 'Stack', 'Stepper', 'StepperItem', 'Swiper',
   'TabContent', 'Tabs', 'Text', 'TextArea', 'TextClock', 'TextInput', 'TextPicker', 'TextTimer',
