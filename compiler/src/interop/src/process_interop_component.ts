@@ -14,9 +14,9 @@
  */
 
 import ts from 'typescript';
-import { componentCollection, linkCollection } from './validate_ui_syntax';
+import { componentCollection, linkCollection, builderParamObjectCollection } from './validate_ui_syntax';
 import { CREATESTATICCOMPONENT, COMPONENT_POP_FUNCTION, GLOBAL_THIS, PUSH, VIEWSTACKPROCESSOR, UPDATESTATICCOMPONENT, ISINITIALRENDER } from './pre_define';
-
+import { INTEROP_TRAILING_LAMBDA } from './component_map'
 
 function generateGetClassStatements(): ts.Statement[] {
   const statements: ts.Statement[] = [];
@@ -75,7 +75,7 @@ export function generateBytecodePathFragement(className: string, filePath: strin
 }
 
 // create block in this.observeComponentCreation2
-export function createStaticArrowBolck(newNode: ts.NewExpression,componentParameter: ts.ObjectLiteralExpression, name: string): ts.Statement[] {
+export function createStaticArrowBlock(newNode: ts.NewExpression,componentParameter: ts.ObjectLiteralExpression, name: string): ts.Statement[] {
   return [
     setInteropRenderingFlag(),
     createIfStaticComponent(newNode, componentParameter, name),
@@ -89,7 +89,9 @@ export function createIfStaticComponent(newNode: ts.NewExpression, componentPara
     ts.factory.createIdentifier(ISINITIALRENDER),
     ts.factory.createBlock(
       [ 
+        createInteropExtendableComponent(true),
         createStaticComponent(name, newNode),
+        createInteropExtendableComponent(false),
         pushStaticComponent(name),
         popStaticComponent()
       ], true),
@@ -108,6 +110,20 @@ export function createIfStaticComponent(newNode: ts.NewExpression, componentPara
   );
 }
 
+
+function createInteropExtendableComponent(ifUpdate: boolean): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createIdentifier(
+        ifUpdate
+          ? "__Interop_UpdateInteropExtendableComponent_Internal"
+          : "__Interop_ResetInteropExtendableComponent_Internal"
+      ),
+      undefined,
+      ifUpdate ? [ts.factory.createThis()] : []
+    )
+  );
+}
 
 export function setInteropRenderingFlag(): ts.Statement {
   return ts.factory.createExpressionStatement(
@@ -165,26 +181,26 @@ export function createStaticComponentOptions(
   objectExpr: ts.ObjectLiteralExpression,
   structName: string
 ): ts.Expression {
-  const constResult = createStaticOptions(structName);
-
+  const constResult = createStaticOptions(`__Options_${structName}`);
   let propertyAssignments: ts.Statement[] = [];
   objectExpr.properties.forEach(prop => {
     if (ts.isPropertyAssignment(prop) && ts.isIdentifier(prop.name)) {
       const name = prop.name.text;
-      let propertyName: string;
+      let propertyName: ts.StringLiteral = ts.factory.createStringLiteral(name);
+      let initializer: ts.Expression = prop.initializer;
       if (linkCollection.get(structName)?.has(name)) {
         propertyName = ts.factory.createStringLiteral('__backing_' + name);
-      } else {
-        propertyName = ts.factory.createStringLiteral(name);
+        initializer = transformLink(prop.initializer);
+      } else if (builderParamObjectCollection.get(structName)?.has(name)) {
+        initializer = transformBuilderParam(INTEROP_TRAILING_LAMBDA.has(name) ? INTEROP_TRAILING_LAMBDA.get(name) : prop.initializer);
       }
-
       propertyAssignments.push(ts.factory.createExpressionStatement(
         ts.factory.createAssignment(
           ts.factory.createElementAccessExpression(
             ts.factory.createIdentifier('result'),
             propertyName
           ),
-          prop.initializer
+          initializer
         )
       ));
       propertyAssignments.push(ts.factory.createExpressionStatement(
@@ -245,6 +261,69 @@ function makeStaticFactory(name: string): ts.ArrowFunction {
 
 /**
  * 
+ * @param initializer value for builderparam, trailing lambda or some builder
+ * @returns (...args) => __Interop_transferCompatibleDynamicBuilder_Internal(this.builder1)(...args)
+ */
+function transformBuilderParam(initializer: ts.Expression): ts.ArrowFunction {
+  const transferCall = ts.factory.createCallExpression(
+    ts.factory.createIdentifier("__Interop_transferCompatibleDynamicBuilder_Internal"),
+    undefined,
+    [initializer]
+  );
+  
+  return ts.factory.createArrowFunction(
+    undefined,
+    undefined,
+    [
+      ts.factory.createParameterDeclaration(
+        undefined,
+        ts.factory.createToken(ts.SyntaxKind.DotDotDotToken),
+        ts.factory.createIdentifier("args"),
+        undefined,
+        undefined,
+        undefined
+      )
+    ],
+    undefined,
+    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+    ts.factory.createCallExpression(
+      transferCall,
+      undefined,
+      [ ts.factory.createSpreadElement(ts.factory.createIdentifier("args")) ]
+    )
+  );
+}
+
+/**
+ * 
+ * @param initializer some statemanagment decorated member, e.g.: this.xxx
+ * @returns __Interop_createCompatibleStaticState_Internal(this.__xxx)
+ */
+function transformLink(initializer: ts.Expression): ts.CallExpression {
+  return ts.factory.createCallExpression(
+    ts.factory.createIdentifier('__Interop_createCompatibleStaticState_Internal'),
+    undefined,
+    [ getStateVar(initializer) ]
+  );
+}
+
+/**
+ * 
+ * @param node some statemanagment decorated member, e.g.: this.xxx
+ * @returns the statemanagment property, e.g.: this.__xxx;
+ */
+function getStateVar(node: ts.Expression): ts.Expression {
+  if (ts.isPropertyAccessExpression(node) && node.expression.kind === ts.SyntaxKind.ThisKeyword) {
+    return ts.factory.updatePropertyAccessExpression(
+      node,
+      node.expression,
+      ts.factory.createIdentifier(`__${node.name.getText()}`)
+    )
+  }
+}
+
+/**
+ * 
  * @param name the name of staticComponent
  * @param newNode 
  * @returns static_Child = __Interop_CreateStaticComponent_Internal(() => { return new Child(); });
@@ -261,7 +340,7 @@ export function createStaticComponent(name: string, newNode: ts.NewExpression): 
         undefined,
         [
           makeStaticFactory(name),
-          createStaticComponentOptions(options, `__Options_${name}`)
+          createStaticComponentOptions(options, name)
         ]
       )
     )

@@ -169,6 +169,7 @@ export const ARKUI_DECLARE_LIST: Set<string> = new Set([
   'Reusable',
   'Computed',
   'Builder',
+  'WrappedBuilder',
   'LocalBuilder',
   'Styles',
   'Extend',
