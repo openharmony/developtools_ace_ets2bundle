@@ -19,7 +19,7 @@ import hilog from '@ohos.hilog'
 
 @memo function cardStyle(this: TextAttribute, num: number, str: string): this {
 	this.fontSize(num);
-	this.backgroundColor(num);
+	this.backgroundColor(str);
 	return this;
 }
 
