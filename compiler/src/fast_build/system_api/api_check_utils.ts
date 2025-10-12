@@ -73,7 +73,11 @@ import {
   SINCE_TAG_NAME,
   SINCE_TAG_CHECK_ERROER,
   VERSION_CHECK_FUNCTION_NAME,
-  ComparisonResult
+  ComparisonResult,
+  BuildDiagnosticInfo,
+  ERROR_CODE_INFO,
+  SdkHvigorErrorInfo,
+  ERROR_DESCRIPTION
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SdkVersionValidator } from './sdk_version_validator';
@@ -98,6 +102,10 @@ export interface CheckJsDocSpecialValidCallbackInterface {
 
 export interface checkConditionValidCallbackInterface {
   (node: ts.CallExpression, specifyFuncName: string, importSymbol: string, jsDocs?: ts.JSDoc[]): boolean;
+}
+
+export interface checkHvigorLoggerValidCallbackInterface {
+  (config: ts.JsDocNodeCheckConfigItem, diagnostic: ts.DiagnosticWithLocation): void
 }
 
 interface HasJSDocNode extends ts.Node {
@@ -282,7 +290,8 @@ function getJsDocNodeCheckConfigItem(tagName: string[], message: string, needCon
   type: ts.DiagnosticCategory, specifyCheckConditionFuncName: string,
   tagNameShouldExisted: boolean, checkValidCallback?: CheckValidCallbackInterface,
   checkJsDocSpecialValidCallback?: CheckJsDocSpecialValidCallbackInterface,
-  checkConditionValidCallback?: checkConditionValidCallbackInterface): ts.JsDocNodeCheckConfigItem {
+  checkConditionValidCallback?: checkConditionValidCallbackInterface,
+  checkHvigorLoggerValidCallback?: checkHvigorLoggerValidCallbackInterface): ts.JsDocNodeCheckConfigItem {
   return {
     tagName: tagName,
     message: message,
@@ -292,7 +301,8 @@ function getJsDocNodeCheckConfigItem(tagName: string[], message: string, needCon
     tagNameShouldExisted: tagNameShouldExisted,
     checkValidCallback: checkValidCallback,
     checkJsDocSpecialValidCallback: checkJsDocSpecialValidCallback,
-    checkConditionValidCallback: checkConditionValidCallback
+    checkConditionValidCallback: checkConditionValidCallback,
+    checkHvigorLoggerValidCallback: checkHvigorLoggerValidCallback
   };
 }
 
@@ -371,30 +381,30 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     if (isCardFile(fileName)) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([FORM_TAG_CHECK_NAME], FORM_TAG_CHECK_ERROR, false,
-        ts.DiagnosticCategory.Error, '', true));
+        ts.DiagnosticCategory.Error, '', true, undefined, undefined, undefined, hvigorErrorLogger));
     }
     if (projectConfig.isCrossplatform) {
       needCheckResult = true;
       const logType: ts.DiagnosticCategory = projectConfig.ignoreCrossplatformCheck !== true ? ts.DiagnosticCategory.Error :
         ts.DiagnosticCategory.Warning;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROER,
-        false, logType, '', true));
+        false, logType, '', true, undefined, undefined, undefined, hvigorErrorLogger));
     }
     if (process.env.compileMode === STAGE_COMPILE_MODE) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME],
-        FA_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Error, '', false));
+        FA_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Error, '', false, undefined, undefined, undefined, hvigorErrorLogger));
     } else if (process.env.compileMode !== '') {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME],
         STAGE_TAG_CHECK_ERROR, false,
-        ts.DiagnosticCategory.Error, '', false));
+        ts.DiagnosticCategory.Error, '', false, undefined, undefined, undefined, hvigorErrorLogger));
     }
     if (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE &&
       projectConfig.compileSdkVersion >= ATOMICSERVICE_TAG_CHECK_VERSION) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([ATOMICSERVICE_TAG_CHECK_NAME], ATOMICSERVICE_TAG_CHECK_ERROER,
-        false, ts.DiagnosticCategory.Error, '', true));
+        false, ts.DiagnosticCategory.Error, '', true, undefined, undefined, undefined, hvigorErrorLogger));
     }
   }
   result = {
@@ -557,8 +567,8 @@ function collectExternalSyscapInfos(
  * @returns True if since check is required and validation fails, false otherwise
  */
 function checkSinceValue(
-  jsDocTags: readonly ts.JSDocTag[], 
-  config: ts.JsDocNodeCheckConfigItem, 
+  jsDocTags: readonly ts.JSDocTag[],
+  config: ts.JsDocNodeCheckConfigItem,
   node?: ts.Node
 ): boolean {
   // Validate basic input structure
@@ -592,11 +602,11 @@ function checkSinceValue(
   if (validationResult.result) {
     return false;
   }
-  
+
   // Check if SDK version is already properly handled in code
   const typeChecker = CurrentProcessFile.getChecker();
   const sdkValidator = new SdkVersionValidator(projectTargetVersion, apiMinVersion, typeChecker);
-  
+
   if (sdkValidator.isSdkApiVersionHandled(node)) {
     return false;
   }
@@ -604,7 +614,7 @@ function checkSinceValue(
   config.message = SINCE_TAG_CHECK_ERROER
     .replace('$SINCE1', apiMinVersion)
     .replace('$SINCE2', projectTargetVersion);
-    
+
   return true;
 }
 
@@ -962,4 +972,67 @@ function comparePointVersion(firstVersion: string, secondVersion: string): Compa
   }
 
   return ComparisonResult.Equal;
+}
+
+let positionMessageInfo: string[] = [];
+let errorCodeMessage: Object | undefined;
+/**
+ * save rollup share Object
+ * @param { Object | undefined } share
+ */
+export function saveRollupShareObject(share: Object | undefined) {
+  errorCodeMessage = share;
+}
+
+/**
+ * build error diagnostic
+ * @param { JsDocNodeCheckConfig } config
+ * @param { DiagnosticWithLocation } diagnostic
+ * @returns { BuildDiagnosticInfo }
+ */
+function buildErrorDiagnostic(config: ts.JsDocNodeCheckConfigItem, diagnostic: ts.DiagnosticWithLocation): BuildDiagnosticInfo {
+  const { line, character }: ts.LineAndCharacter = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
+  const positionMessage: string = `File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}`;
+  return new BuildDiagnosticInfo()
+    .setCode(Number(ERROR_CODE_INFO.get(config.message).code))
+    .setDescription(ERROR_CODE_INFO.get(config.message).description)
+    .setPositionMessage(positionMessage)
+    .setMessage(String(diagnostic.messageText))
+    .setSolutions(ERROR_CODE_INFO.get(config.message).solutions)
+}
+
+/**
+ * hvigor error logger
+ * @param { JsDocNodeCheckConfig } config
+ * @param { DiagnosticWithLocation } diagnostic
+ * @returns { void }
+ */
+function hvigorErrorLogger(config: ts.JsDocNodeCheckConfigItem, diagnostic: ts.DiagnosticWithLocation): void {
+  const errorInfo: SdkHvigorErrorInfo = sdkTransfromErrorCode(buildErrorDiagnostic(config, diagnostic));
+  if (errorCodeMessage && !(positionMessageInfo.includes(errorInfo.getPosition()))) {
+    positionMessageInfo.push(errorInfo.getPosition());
+    errorCodeMessage.printError(errorInfo);
+  }
+}
+
+/**
+ * api transfrom error code
+ * @param { BuildDiagnosticInfo } diagnostic
+ * @returns { SdkHvigorErrorInfo }
+ */
+function sdkTransfromErrorCode(diagnostic: BuildDiagnosticInfo): SdkHvigorErrorInfo {
+  return new SdkHvigorErrorInfo()
+    .setCode(String(diagnostic.getCode()))
+    .setDescription(diagnostic.description)
+    .setCause(diagnostic.getMessage())
+    .setPosition(diagnostic.getPositionMessage())
+    .setSolutions(diagnostic.getSolutions());
+}
+
+/**
+ * reset api_check_utils global object
+ */
+export function resetApiCheckUtils() {
+  positionMessageInfo = [];
+  errorCodeMessage = undefined;
 }
