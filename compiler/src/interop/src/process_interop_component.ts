@@ -190,6 +190,7 @@ export function createStaticComponentOptions(
       let initializer: ts.Expression = prop.initializer;
       if (linkCollection.get(structName)?.has(name)) {
         propertyName = ts.factory.createStringLiteral('__backing_' + name);
+        initializer = transformLink(prop.initializer);
       } else if (builderParamObjectCollection.get(structName)?.has(name)) {
         initializer = transformBuilderParam(INTEROP_TRAILING_LAMBDA.has(name) ? INTEROP_TRAILING_LAMBDA.get(name) : prop.initializer);
       }
@@ -258,7 +259,11 @@ function makeStaticFactory(name: string): ts.ArrowFunction {
   );
 }
 
-// (...args) => __transferCompatibleDynamicBuilder_Interop_Internal(...args)
+/**
+ * 
+ * @param initializer value for builderparam, trailing lambda or some builder
+ * @returns (...args) => __Interop_transferCompatibleDynamicBuilder_Internal(this.builder1)(...args)
+ */
 function transformBuilderParam(initializer: ts.Expression): ts.ArrowFunction {
   const transferCall = ts.factory.createCallExpression(
     ts.factory.createIdentifier("__Interop_transferCompatibleDynamicBuilder_Internal"),
@@ -287,6 +292,34 @@ function transformBuilderParam(initializer: ts.Expression): ts.ArrowFunction {
       [ ts.factory.createSpreadElement(ts.factory.createIdentifier("args")) ]
     )
   );
+}
+
+/**
+ * 
+ * @param initializer some statemanagment decorated member, e.g.: this.xxx
+ * @returns __Interop_createCompatibleStaticState_Internal(this.__xxx)
+ */
+function transformLink(initializer: ts.Expression): ts.CallExpression {
+  return ts.factory.createCallExpression(
+    ts.factory.createIdentifier('__Interop_createCompatibleStaticState_Internal'),
+    undefined,
+    [ getStateVar(initializer) ]
+  );
+}
+
+/**
+ * 
+ * @param node some statemanagment decorated member, e.g.: this.xxx
+ * @returns the statemanagment property, e.g.: this.__xxx;
+ */
+function getStateVar(node: ts.Expression): ts.Expression {
+  if (ts.isPropertyAccessExpression(node) && node.expression.kind === ts.SyntaxKind.ThisKeyword) {
+    return ts.factory.updatePropertyAccessExpression(
+      node,
+      node.expression,
+      ts.factory.createIdentifier(`__${node.name.getText()}`)
+    )
+  }
 }
 
 /**
