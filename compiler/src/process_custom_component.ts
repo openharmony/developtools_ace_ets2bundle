@@ -437,7 +437,7 @@ function getForbbidenInitPropsV2Type(itemName: string, info: ChildAndParentCompo
   return typeName;
 }
 
-interface assignEnvOptions {
+interface AssignEnvOptions {
   isParentV2: boolean;
   isChildV2: boolean;
   info: ChildAndParentComponentInfo;
@@ -445,7 +445,7 @@ interface assignEnvOptions {
   itemName: string;
 }
 
-function checkAssignEnv(assignEnvOption: assignEnvOptions, log: LogInfo[]): void {
+function checkAssignEnv(assignEnvOption: AssignEnvOptions, log: LogInfo[]): void {
   const info: ChildAndParentComponentInfo = assignEnvOption.info;
   const parentEnvSet: Set<string> = assignEnvOption.isParentV2 ? info.parentStructInfo.envDecoratorSet :
     envCollection.get(info.parentStructInfo.structName);
@@ -488,7 +488,7 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
   const isParentV2: boolean = info.parentStructInfo.isComponentV2;
   if (info.childStructInfo.isComponentV2) {
     if (isInitFromParent(item)) {
-      const newAssignEnvOption: assignEnvOptions = {
+      const newAssignEnvOption: AssignEnvOptions = {
         isParentV2: isParentV2,
         isChildV2: true,
         info: info,
@@ -521,7 +521,7 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
     }
   } else {
     if (info.childStructInfo.isComponentV1 && isInitFromParent(item)) {
-      const newAssignEnvOption: assignEnvOptions = {
+      const newAssignEnvOption: AssignEnvOptions = {
         isParentV2: isParentV2,
         isChildV2: false,
         info: info,
