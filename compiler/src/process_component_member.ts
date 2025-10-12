@@ -162,7 +162,7 @@ export const setUpdateParamsDecorators: Set<string> =
 export const setStateVarsDecorators: Set<string> = new Set([COMPONENT_OBJECT_LINK_DECORATOR]);
 
 export const immutableDecorators: Set<string> =
-  new Set([COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR]);
+  new Set([COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR, COMPONENT_ENV_DECORATOR]);
 
 export const simpleTypes: Set<ts.SyntaxKind> = new Set([ts.SyntaxKind.StringKeyword,
   ts.SyntaxKind.NumberKeyword, ts.SyntaxKind.BooleanKeyword, ts.SyntaxKind.EnumDeclaration]);
@@ -515,7 +515,7 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   }
   addAddProvidedVar(node, name, decorator, updateState);
   updateResult.setCtor(updateConstructor(ctorNode, [], [...updateState], [], false));
-  if (decorator !== COMPONENT_BUILDERPARAM_DECORATOR) {
+  if (![COMPONENT_BUILDERPARAM_DECORATOR, COMPONENT_ENV_DECORATOR].includes(decorator)) {
     updateResult.setVariableGet(createGetAccessor(name, CREATE_GET_METHOD));
     updateResult.setDeleteParams(true);
   }
