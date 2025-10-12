@@ -28,7 +28,8 @@ import {
   COMPONENT_DECORATOR_ENTRY,
   COMPONENT_BUILDER_DECORATOR,
   DECORATOR_REUSEABLE,
-  DECORATOR_REUSABLE_V2
+  DECORATOR_REUSABLE_V2,
+  WRAPPEDBUILDER_CLASS
 } from './pre_define';
 import {
   propertyCollection,
@@ -80,7 +81,9 @@ import {
 import {
   CUSTOM_BUILDER_METHOD,
   INNER_COMPONENT_NAMES,
-  GLOBAL_CUSTOM_BUILDER_METHOD
+  GLOBAL_CUSTOM_BUILDER_METHOD,
+  STATIC_WRAPPED_BUILDER,
+  STATIC_BUILDER
 } from './component_map';
 import { 
   type ResolveModuleInfo,
@@ -888,8 +891,13 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   } else if (ts.isFunctionDeclaration(originNode) && hasDecorator(originNode, COMPONENT_BUILDER_DECORATOR)) {
     CUSTOM_BUILDER_METHOD.add(name);
     GLOBAL_CUSTOM_BUILDER_METHOD.add(name);
+    if (isArkoala) {
+      STATIC_BUILDER.add(name);
+    }
   } else if (ts.isEnumDeclaration(originNode) && originNode.name) {
     enumCollection.add(name);
+  } else if (ts.isVariableDeclaration(originNode)) {
+    processStaticBuild(isArkoala, originNode.type, name);
   } else {
     needCollection = false;
   }
@@ -1006,4 +1014,10 @@ function isReusableV2(node: ts.StructDeclaration): boolean {
     const name: string = item.getText().replace(/\([^\(\)]*\)/, '').replace('@', '').trim();
     return name === DECORATOR_REUSABLE_V2;
   });
+}
+
+function processStaticBuild(isArkoala: boolean, type: ts.TypeNode | undefined, name: string): void {
+  if (isArkoala && type && ts.isTypeReferenceNode(type) && ts.isIdentifier(type.typeName) && type.typeName.escapedText === WRAPPEDBUILDER_CLASS) {
+    STATIC_WRAPPED_BUILDER.add(name);
+  }
 }

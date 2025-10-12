@@ -161,7 +161,10 @@ import {
   STYLES_ATTRIBUTE,
   INNER_CUSTOM_LOCALBUILDER_METHOD,
   COMMON_ATTRS,
-  EXT_WHITE_LIST
+  EXT_WHITE_LIST,
+  STATIC_WRAPPED_BUILDER,
+  STATIC_BUILDER,
+  INTEROP_TRAILING_LAMBDA
 } from './component_map';
 import {
   componentCollection,
@@ -650,7 +653,7 @@ function builderCallNode(node: ts.CallExpression): ts.Expression {
     node.expression.questionDotToken && node.expression.questionDotToken.kind === ts.SyntaxKind.QuestionDotToken) {
     newNode = ts.factory.createCallChain(
       ts.factory.createPropertyAccessChain(
-        node.expression,
+         isStaticBuilder(node) ? transferCompatibleBuilder(node) : node.expression,
         node.questionDotToken,
         ts.factory.createIdentifier(BUILDER_ATTR_BIND)
       ),
@@ -661,7 +664,7 @@ function builderCallNode(node: ts.CallExpression): ts.Expression {
   } else {
     newNode = ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
-        node.expression,
+        isStaticBuilder(node) ? transferCompatibleBuilder(node) : node.expression,
         ts.factory.createIdentifier(BUILDER_ATTR_BIND)
       ),
       undefined,
@@ -669,6 +672,50 @@ function builderCallNode(node: ts.CallExpression): ts.Expression {
     );
   }
   return newNode;
+}
+
+function isStaticBuilder(node: ts.CallExpression): boolean {
+  if (ts.isIdentifier(node.expression)) {
+    return STATIC_BUILDER.has(node.expression.escapedText.toString());
+  } else if (node.expression && ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.expression)) {
+    return STATIC_WRAPPED_BUILDER.has(node.expression.expression.escapedText.toString());
+  }
+  return false;
+}
+
+function transferCompatibleBuilder (node: ts.CallExpression): ts.CallExpression {
+  const block = ts.factory.createBlock([
+    ts.factory.createExpressionStatement(
+      ts.factory.createCallExpression(
+        node.expression,
+        undefined,
+        [ts.factory.createSpreadElement(ts.factory.createIdentifier('args'))]
+      )
+    )
+  ]);
+  const arrowFunc = ts.factory.createArrowFunction(
+    undefined,
+    undefined,
+    [
+      ts.factory.createParameterDeclaration(
+        undefined,
+        ts.factory.createToken(ts.SyntaxKind.DotDotDotToken),
+        ts.factory.createIdentifier('args')
+      )
+    ],
+    undefined,
+    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+    block
+  );
+  return ts.factory.createCallExpression(
+    ts.factory.createIdentifier(
+      node.arguments.length === 1 && ts.isObjectLiteralExpression(node.arguments[0])
+        ? '__Interop_TransferCompatibleUpdatableBuilder_Internal'
+        : '__Interop_TransferCompatibleBuilder_Internal'
+    ),
+    undefined,
+    [arrowFunc]
+  );
 }
 
 function traverseBuilderParams(node: ts.ObjectLiteralExpression,
@@ -792,6 +839,7 @@ function processBlockToExpression(node: ts.ExpressionStatement, nextNode: ts.Blo
     [], undefined, ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), newBlock);
   const newPropertyAssignment:ts.PropertyAssignment = ts.factory.createPropertyAssignment(
     ts.factory.createIdentifier(childParam), arrowNode);
+    INTEROP_TRAILING_LAMBDA.set(childParam, arrowNode);
   // @ts-ignore
   let argumentsArray: ts.ObjectLiteralExpression[] = node.expression.arguments;
   if (argumentsArray && !argumentsArray.length) {
