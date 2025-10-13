@@ -14,20 +14,26 @@
  */
 
 import * as path from 'path';
-import { PluginTester } from '../../../utils/plugin-tester';
-import { mockBuildConfig } from '../../../utils/artkts-config';
-import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
-import { parseDumpSrc } from '../../../utils/parse-string';
-import { beforeMemoNoRecheck, builderLambdaNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
-import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
+import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
+import { parseDumpSrc } from '../../../../utils/parse-string';
+import { beforeMemoNoRecheck, builderLambdaNoRecheck, memoNoRecheck, recheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 
 const BUILDER_LAMBDA_DIR_PATH: string = 'builder-lambda';
+const INNER_COMPONENT_DIR_PATH: string = 'inner-component';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, BUILDER_LAMBDA_DIR_PATH, 'simple-component.ets'),
+    path.resolve(
+        getRootPath(),
+        MOCK_ENTRY_DIR_PATH,
+        BUILDER_LAMBDA_DIR_PATH,
+        INNER_COMPONENT_DIR_PATH,
+        'simple-component.ets'
+    ),
 ];
-
 const pluginTester = new PluginTester('test builder-lambda simple component', buildConfig);
 
 function testBuilderLambdaTransformer(this: PluginTestContext): void {
