@@ -124,7 +124,9 @@ import {
   globalProgram
 } from '../main';
 import {
-  GLOBAL_CUSTOM_BUILDER_METHOD
+  GLOBAL_CUSTOM_BUILDER_METHOD,
+  INNER_CUSTOM_BUILDER_METHOD,
+  INNER_CUSTOM_LOCALBUILDER_METHOD
 } from './component_map';
 import {
   createReference,
@@ -426,6 +428,40 @@ function parseChildProperties(childName: string, node: ts.CallExpression,
   }
 }
 
+function validateAssignBuilderParam(log: LogInfo[], itemName: string, item: ts.PropertyAssignment): void {
+  log.push({
+    type: LogType.WARN,
+    message: `'@BuilderParam' attribute '${itemName}' can only be initialized by '@Builder' function or '@LocalBuilder' method in struct.`,
+    pos: item.getStart()
+  });
+}
+
+function checkAssignBuilderParam(isChildV2: boolean, info: ChildAndParentComponentInfo,
+  item: ts.PropertyAssignment, itemName: string, log: LogInfo[]): void {
+  const childBuilderParamSet: Set<string> = isChildV2 ? info.childStructInfo.builderParamDecoratorSet :
+    builderParamObjectCollection.get(info.childStructInfo.structName);
+  if (!childBuilderParamSet || !childBuilderParamSet.has(itemName) || !item.initializer ||
+    ts.isArrowFunction(item.initializer)) {
+    return;
+  }
+  if (!checkBuilderParamInitializer(item.initializer)) {
+    validateAssignBuilderParam(log, itemName, item);
+  }
+}
+
+function checkBuilderParamInitializer(initializer: ts.Expression): boolean {
+  if (ts.isIdentifier(initializer) &&
+    GLOBAL_CUSTOM_BUILDER_METHOD.has(initializer.escapedText.toString())) {
+    return true;
+  } else if (ts.isPropertyAccessExpression(initializer) && initializer.expression &&
+    initializer.expression.kind === ts.SyntaxKind.ThisKeyword &&
+    ts.isIdentifier(initializer.name) &&
+    [...INNER_CUSTOM_BUILDER_METHOD, ...INNER_CUSTOM_LOCALBUILDER_METHOD].includes(initializer.name.escapedText.toString())) {
+    return true;
+  }
+  return false;
+}
+
 function getForbbidenInitPropsV2Type(itemName: string, info: ChildAndParentComponentInfo): string {
   let typeName: string = COMPONENT_NON_DECORATOR;
   if (info.childStructInfo.localDecoratorSet.has(itemName)) {
@@ -509,6 +545,7 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
       });
       return;
     }
+    checkAssignBuilderParam(true, info, item, itemName, log);
     if (info.paramDecoratorMap.has(itemName)) {
       childParam.push(item);
     }
@@ -534,6 +571,7 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
     if (info.propsAndObjectLinks.includes(itemName)) {
       childParam.push(item);
     }
+    checkAssignBuilderParam(false, info, item, itemName, log);
   }
   logMessageCollection.checkIfAssignToStaticProps(item, itemName, info.childStructInfo.staticPropertySet, log);
 }
