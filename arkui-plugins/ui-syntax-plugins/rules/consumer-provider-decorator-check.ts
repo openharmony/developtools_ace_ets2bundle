@@ -269,26 +269,27 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
                 return;
             }
             const currentNode = property.key;
-            if (property && this.componentV2WithConsumer.get(callExpName).includes(getIdentifierName(currentNode))) {
-                this.report({
-                    node: property,
-                    message: this.messages.forbiddenInitialization,
-                    data: {
-                        decorator: PresetDecorators.CONSUMER,
-                        value: getIdentifierName(currentNode),
-                        structName: callExpName
-                    },
-                    fix: () => {
-                        const startPosition = property.startPosition;
-                        const endPosition = property.endPosition;
-                        return {
-                            title: 'Remove the property',
-                            range: [startPosition, endPosition],
-                            code: '',
-                        };
-                    }
-                });
+            if (!property || !this.componentV2WithConsumer.get(callExpName).includes(getIdentifierName(currentNode))) {
+                return;
             }
+            this.report({
+                node: property,
+                message: this.messages.forbiddenInitialization,
+                data: {
+                    decorator: PresetDecorators.CONSUMER,
+                    value: getIdentifierName(currentNode),
+                    structName: callExpName
+                },
+                fix: () => {
+                    const startPosition = property.startPosition;
+                    const endPosition = property.endPosition;
+                    return {
+                        title: 'Remove the property',
+                        range: [startPosition, endPosition],
+                        code: '',
+                    };
+                }
+            });
         });
     }
 
@@ -298,26 +299,27 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
                 return;
             }
             const currentNode = property.key;
-            if (property && this.componentV2WithProvider.get(callExpName)?.includes(getIdentifierName(currentNode))) {
-                this.report({
-                    node: property,
-                    message: this.messages.forbiddenInitialization,
-                    data: {
-                        decorator: PresetDecorators.PROVIDER,
-                        value: getIdentifierName(currentNode),
-                        structName: callExpName
-                    },
-                    fix: () => {
-                        const startPosition = property.startPosition;
-                        const endPosition = property.endPosition;
-                        return {
-                            title: 'Remove the property',
-                            range: [startPosition, endPosition],
-                            code: '',
-                        };
-                    }
-                });
+            if (!property || !this.componentV2WithProvider.get(callExpName)?.includes(getIdentifierName(currentNode))) {
+                return;
             }
+            this.report({
+                node: property,
+                message: this.messages.forbiddenInitialization,
+                data: {
+                    decorator: PresetDecorators.PROVIDER,
+                    value: getIdentifierName(currentNode),
+                    structName: callExpName
+                },
+                fix: () => {
+                    const startPosition = property.startPosition;
+                    const endPosition = property.endPosition;
+                    return {
+                        title: 'Remove the property',
+                        range: [startPosition, endPosition],
+                        code: '',
+                    };
+                }
+            });
         });
     }
 }
