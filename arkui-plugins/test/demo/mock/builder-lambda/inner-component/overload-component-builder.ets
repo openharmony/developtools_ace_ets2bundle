@@ -13,17 +13,17 @@
  * limitations under the License.
  */
 
-import { Component } from "@koalaui.arkts-arkui.Common"
-import { Column } from "@koalaui.arkts-arkui.Column"
-import { Text } from "@koalaui.arkts-arkui.Text"
-import { Button } from "@koalaui.arkts-arkui.Button"
+import { Entry, Component } from "arkui.component.customComponent";
+import { FakeComponent } from "./utils/fake-overload-component";
 
+@Entry
 @Component
-struct MyStateSample {
+struct A {
     build() {
-        Column() {
-            Text("Hello!")
-            Button("click me")
+        FakeComponent("fake-component");
+        FakeComponent({});
+        FakeComponent() {
+            
         }
     }
 }
