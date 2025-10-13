@@ -13,15 +13,17 @@
  * limitations under the License.
  */
 
-import { Component } from "@koalaui.arkts-arkui.Common"
-import { Column } from "@koalaui.arkts-arkui.Column"
-import { Text } from "@koalaui.arkts-arkui.Text"
+import { Entry, Component } from "arkui.component.customComponent";
+import { FakeComponentA, FakeComponentB, FakeComponentC } from "./utils/fake-multi-component";
 
+@Entry
 @Component
-struct MyStateSample {
+struct A {
     build() {
-        Column() {
-            Text("Hello!")
+        FakeComponentA("fake-component");
+        FakeComponentB({});
+        FakeComponentC() {
+            
         }
     }
 }
