@@ -168,13 +168,13 @@ let wrappedBuilder1: WrappedBuilder<@Builder() ((__memo_context: __memo_context_
 let wrappedBuilder2: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
 function main() {}
 @memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
     }
     TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -192,13 +192,13 @@ function main() {}
     }
 }
 @memo() function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
     }
     TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -226,22 +226,61 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     pageFullPath: \"test/demo/mock/wrap-builder/wrap-builder-in-generic\",
     integratedHsp: \"false\",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
-    public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-        this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, \"message\", ((({let gensym___<some_random_number> = initializers;
-        (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? (\"Hello World\")));
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, "message", ((({let gensym___117212394 = initializers;
+    (((gensym___117212394) == (null)) ? undefined : gensym___117212394.message)})) ?? ("Hello World")));
+  }
+  
+  public __updateStruct(initializers: (__Options_Index | undefined)): void {}
+  
+  private __backing_message?: IStateDecoratedVariable<string>;
+  public get message(): string {
+    return this.__backing_message!.get();
+  }
+  
+  public set message(value: string) {
+    this.__backing_message!.set(value);
+  }
+  
+  @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (135515930)), 0);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
+      return;
     }
-    public __updateStruct(initializers: (__Options_Index | undefined)): void {}
-    private __backing_message?: IStateDecoratedVariable<string>;
-    public get message(): string {
-        return this.__backing_message!.get();
-    }
-    public set message(value: string) {
-        this.__backing_message!.set(value);
-    }
-    @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+    RowImpl(__memo_context, ((__memo_id) + (136716185)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: RowAttribute): void => {
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (46726221)), 1);
+      const __memo_parameter_instance = __memo_scope.param(0, instance);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      __memo_parameter_instance.value.setRowOptions(undefined).height("100%").applyAttributesFinish();
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (54078781)), 0);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      globalBuilder.builder(__memo_context, ((__memo_id) + (76711614)), this.message, 50);
+      ForEachImpl(__memo_context, ((__memo_id) + (213687742)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (192802443)), 1);
+        const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {
+          __memo_scope.cached;
+          return;
+        }
+        __memo_parameter_instance.value.setForEachOptions(((): Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> => {
+          return builderArr;
+        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
+          const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (223657391)), 1);
+          const __memo_parameter_item = __memo_scope.param(0, item);
+          if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
@@ -305,7 +344,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
 }
 class __EntryWrapper extends EntryPoint {
     @memo() public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;

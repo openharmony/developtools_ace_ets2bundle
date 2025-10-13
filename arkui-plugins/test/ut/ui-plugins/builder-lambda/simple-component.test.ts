@@ -62,13 +62,13 @@ import { Column as Column, ColumnAttribute as ColumnAttribute } from \"arkui.com
 function main() {}
 class MyStateSample {
     @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (263357132)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (263357132)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
         ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
-            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
             const __memo_parameter_instance = __memo_scope.param(0, instance);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -80,7 +80,7 @@ class MyStateSample {
                 return;
             }
         }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (147296800)), 0);
+            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (147296800)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;

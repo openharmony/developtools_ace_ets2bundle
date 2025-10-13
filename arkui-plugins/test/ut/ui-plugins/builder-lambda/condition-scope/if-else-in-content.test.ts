@@ -141,13 +141,13 @@ function main() {}
     public __initializeStruct(initializers: (__Options_IfElse | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_IfElse | undefined)): void {}
     @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
         ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
-            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
             const __memo_parameter_instance = __memo_scope.param(0, instance);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -159,39 +159,39 @@ function main() {}
                 return;
             }
         }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
             }
             ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-                const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                 if (__memo_scope.unchanged) {
                     __memo_scope.cached;
                     return;
                 }
                 if (true) {
                     ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-                        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                         if (__memo_scope.unchanged) {
                             __memo_scope.cached;
                             return;
                         }
                         ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-                            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                             if (__memo_scope.unchanged) {
                                 __memo_scope.cached;
                                 return;
                             }
                             if (false) {
                                 ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-                                    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                                    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                                     if (__memo_scope.unchanged) {
                                         __memo_scope.cached;
                                         return;
                                     }
                                     TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-                                        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                                         const __memo_parameter_instance = __memo_scope.param(0, instance);
                                         if (__memo_scope.unchanged) {
                                             __memo_scope.cached;
@@ -211,13 +211,13 @@ function main() {}
                             } else {
                                 if (true) {
                                     ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-                                        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                                        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                                         if (__memo_scope.unchanged) {
                                             __memo_scope.cached;
                                             return;
                                         }
                                         TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-                                            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                                             const __memo_parameter_instance = __memo_scope.param(0, instance);
                                             if (__memo_scope.unchanged) {
                                                 __memo_scope.cached;
@@ -236,13 +236,13 @@ function main() {}
                                     }));
                                 } else {
                                     ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-                                        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                                        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                                         if (__memo_scope.unchanged) {
                                             __memo_scope.cached;
                                             return;
                                         }
                                         TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-                                            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                                             const __memo_parameter_instance = __memo_scope.param(0, instance);
                                             if (__memo_scope.unchanged) {
                                                 __memo_scope.cached;
@@ -274,13 +274,13 @@ function main() {}
                 } else {
                     if (false) {
                         ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-                            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                             if (__memo_scope.unchanged) {
                                 __memo_scope.cached;
                                 return;
                             }
                             TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-                                const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                                 const __memo_parameter_instance = __memo_scope.param(0, instance);
                                 if (__memo_scope.unchanged) {
                                     __memo_scope.cached;
@@ -299,13 +299,13 @@ function main() {}
                         }));
                     } else {
                         ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-                            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+                            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                                 if (__memo_scope.unchanged) {
                                 __memo_scope.cached;
                                 return;
                             }
                             TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-                                const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                                const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                                 const __memo_parameter_instance = __memo_scope.param(0, instance);
                                 if (__memo_scope.unchanged) {
                                     __memo_scope.cached;
@@ -324,7 +324,7 @@ function main() {}
                         }));
                         return;
                         TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-                            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                             const __memo_parameter_instance = __memo_scope.param(0, instance);
                             if (__memo_scope.unchanged) {
                                 __memo_scope.cached;
@@ -344,7 +344,7 @@ function main() {}
                 }
             }));
             TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-                const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+                const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                 const __memo_parameter_instance = __memo_scope.param(0, instance);
                 if (__memo_scope.unchanged) {
                     __memo_scope.cached;
