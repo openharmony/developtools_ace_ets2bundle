@@ -100,14 +100,19 @@ function checkArgsV1InteropV2(
     }
     let valueName = value.property.name;
     let isComponentV2forParent = false;
-    if (valueProperty && valueProperty.annotations) {
-        valueProperty.annotations.some((annotations) => (valueType = getPropertyType(annotations)));
+    if (valueProperty) {
         isComponentV2forParent = valueProperty.parent?.annotations?.some(
             (annotation) => annotation.expr instanceof arkts.Identifier && annotation.expr.name === 'ComponentV2'
         );
     }
+    if (valueProperty && arkts.isMethodDefinition(valueProperty)) {
+        valueProperty.scriptFunction.annotations.forEach((annotations) => (valueType = getPropertyType(annotations)));
+    }
+    if (valueProperty && arkts.isClassProperty(valueProperty)) {
+        valueProperty.annotations.forEach((annotations) => (valueType = getPropertyType(annotations)));
+    }
     if (keyProperty && keyProperty.annotations) {
-        keyProperty.annotations.some((annotations) => (ketType = getPropertyType(annotations)));
+        keyProperty.annotations.forEach((annotations) => (ketType = getPropertyType(annotations)));
     }
     if (isV2) {
         if (!isComponentV2forParent) {
