@@ -137,9 +137,9 @@ export class EmitTransformer extends AbstractVisitor {
     }
 
     processClassProperty(node: arkts.ClassProperty): arkts.ClassProperty {
-        if (hasDecorator(node, DecoratorNames.PROVIDE)) {
+        if (hasDecorator(node, DecoratorNames.PROVIDE) || hasDecorator(node, DecoratorNames.PROVIDER)) {
             return this.processProvide(node);
-        } else if (hasDecorator(node, DecoratorNames.CONSUME)) {
+        } else if (hasDecorator(node, DecoratorNames.CONSUME) || hasDecorator(node, DecoratorNames.CONSUMER)) {
             return this.processConsume(node);
         } else if (hasDecorator(node, DecoratorNames.PROP_REF)) {
             return this.processPropRef(node);
