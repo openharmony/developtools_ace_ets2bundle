@@ -117,6 +117,8 @@ class BuildRootNodeRule extends AbstractUISyntaxRule {
                 break;
             }
         }
+
+        return undefined;
     }
 
     private isContainerComponent(componentName: string): boolean {
