@@ -227,9 +227,13 @@ class ConstructParameterRule extends AbstractUISyntaxRule {
     if (!arkts.isProperty(property) || !property.value) {
       return;
     }
+    const propertyValue: arkts.Expression = property.value;
+    if (arkts.isArrowFunctionExpression(propertyValue)) {
+      return;
+    }
     let isBuilderInStruct: boolean = false;
-    if (arkts.isMemberExpression(property.value) && arkts.isIdentifier(property.value.property)) {
-      const parentName = property.value.property.name;
+    if (arkts.isMemberExpression(propertyValue) && arkts.isIdentifier(propertyValue.property)) {
+      const parentName = propertyValue.property.name;
       const parentType: string = this.getPropertyAnnotationName(property, parentName);
       if (parentType === '') {
         return;
@@ -237,14 +241,14 @@ class ConstructParameterRule extends AbstractUISyntaxRule {
       isBuilderInStruct = parentType === PresetDecorators.BUILDER;
     }
     let isBuilder: boolean = false;
-    if (arkts.isIdentifier(property.value)) {
-      isBuilder = this.builderFunctionList.includes(property.value.name);
-      if (this.builderFunctionList.includes(property.value.name) && childType !== PresetDecorators.BUILDER_PARAM) {
+    if (arkts.isIdentifier(propertyValue)) {
+      isBuilder = this.builderFunctionList.includes(propertyValue.name);
+      if (this.builderFunctionList.includes(propertyValue.name) && childType !== PresetDecorators.BUILDER_PARAM) {
         this.report({
           node: property,
           message: this.messages.initializerIsBuilder,
           data: {
-            initializerName: property.value.name,
+            initializerName: propertyValue.name,
             parameterName: childName,
           },
         });
