@@ -99,7 +99,11 @@ export class ComponentAttributeCache {
         this._attributeTypeParamsMap[name] = collectedTypeParams;
     }
 
-    private preprocessParam(param: arkts.ETSParameterExpression, index: number, name: string): arkts.ETSParameterExpression {
+    private preprocessParam(
+        param: arkts.ETSParameterExpression,
+        index: number,
+        name: string
+    ): arkts.ETSParameterExpression {
         if (index === 0 && isForEach(name) && !!param.type && arkts.isTypeNode(param.type)) {
             return arkts.factory.createParameterDeclaration(
                 arkts.factory.createIdentifier(
