@@ -1101,6 +1101,10 @@
             "message": "A V2 component cannot be used with any member property decorated by '@Link' in a V1 component.",
             "type": "ERROR",
             "code": "10905213"
+        },
+        {
+            "message": "'@BuilderParam' attribute 'func_value2' can only be initialized by '@Builder' function or '@LocalBuilder' method in struct.",
+            "type": "WARN"
         }
     ],
     "property_observe_validate": [
