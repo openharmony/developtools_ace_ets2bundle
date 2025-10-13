@@ -41,7 +41,7 @@ export function __id(): __memo_id_type
 type MemoType = @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
 class Test {
     @memo() public void_method(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
@@ -52,7 +52,7 @@ class Test {
         }
     }
     @memo() public internal_call(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
@@ -64,7 +64,7 @@ class Test {
         }
     }
     @memo() public method_with_internals(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
@@ -78,7 +78,7 @@ class Test {
     }
     public memo_lambda() {
         @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
@@ -90,7 +90,7 @@ class Test {
         });
     }
     @memo() public memo_variables(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
@@ -130,7 +130,7 @@ class Test {
             return 20;
         }) as (()=> int)));
         let arg3: int = (((gensym%%_3) !== (undefined)) ? gensym%%_3 : (arg1 as int));
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 4);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 4);
         const __memo_parameter_arg1 = __memo_scope.param(0, arg1), __memo_parameter_arg2 = __memo_scope.param(1, arg2), __memo_parameter_arg3 = __memo_scope.param(2, arg3), __memo_parameter_arg4 = __memo_scope.param(3, arg4);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -144,7 +144,7 @@ class Test {
         }
     }
     @memo() public optional_args(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1?: int, arg2?: (()=> int)) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 2);
         const __memo_parameter_arg1 = __memo_scope.param(0, arg1), __memo_parameter_arg2 = __memo_scope.param(1, arg2);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -160,7 +160,7 @@ class Test {
         }
     }
     @memo() public type_alias(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg: MemoType) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_arg = __memo_scope.param(0, arg);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;

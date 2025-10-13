@@ -36,7 +36,7 @@ import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
 @memo() function funcA(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void
 @memo() function funcB(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
@@ -48,7 +48,7 @@ function main() {}
     }
 }
 @memo() function funcWithMemoBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() memo_arg: MemoBuilder): void {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 1);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
     const __memo_parameter_memo_arg = __memo_scope.param(0, memo_arg);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -62,7 +62,7 @@ function main() {}
 function funcWithArg(arg: (()=> void)): void {}
 function func(): void {}
 @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
@@ -70,7 +70,7 @@ function func(): void {}
     funcA(__memo_context, ((__memo_id) + (<some_random_number>)));
     funcWithMemoBuilder(__memo_context, ((__memo_id) + (<some_random_number>)), {
         builder: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-            const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
@@ -92,7 +92,7 @@ function func(): void {}
 });
 class A {
     @memo() public foo(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;

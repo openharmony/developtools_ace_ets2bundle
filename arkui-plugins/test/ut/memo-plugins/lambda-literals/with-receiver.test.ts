@@ -37,7 +37,7 @@ import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
 
 @memo() function fullName(this: Person, __memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 2);
     const __memo_parameter_this = __memo_scope.param(0, this), __memo_parameter_arg = __memo_scope.param(1, arg);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -50,7 +50,7 @@ function main() {}
 }
 
 @memo() function foo(this: A, __memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 2);
     const __memo_parameter_this = __memo_scope.param(0, this), __memo_parameter_arg = __memo_scope.param(1, arg);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -63,7 +63,7 @@ function main() {}
 }
 
 @memo() function goo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, a: A, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 2);
     const __memo_parameter_a = __memo_scope.param(0, a), __memo_parameter_arg = __memo_scope.param(1, arg);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -76,14 +76,14 @@ function main() {}
 }
 
 @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
     }
     let x = new Person();
     fullName(x, __memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
@@ -97,7 +97,7 @@ function main() {}
     let f2: F2 = goo;
     let a = new A();
     f1(a, __memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
@@ -108,7 +108,7 @@ function main() {}
         }
     }));
     f1(a, __memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
@@ -119,7 +119,7 @@ function main() {}
         }
     }));
     f2(__memo_context, ((__memo_id) + (<some_random_number>)), a, ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-        const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
