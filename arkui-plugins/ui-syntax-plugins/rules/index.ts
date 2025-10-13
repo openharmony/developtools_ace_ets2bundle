@@ -67,7 +67,7 @@ import OldNewDecoratorMixUseCheckRule from './old-new-decorator-mix-use-check';
 import RequireDecoratorRegularRule from './require-decorator-regular';
 import ReusableComponentInV2CheckRule from './reusable-component-in-V2-check';
 import SpecificComponentChildrenRule from './specific-component-children';
-import EntryComponentV2StorageRule from './entry-componentv2-invalid-params';
+import EntryComponentV2InvalidParamsRule from './entry-componentv2-invalid-params';
 
 const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [AttributeNoInvokeRule, 'error'],
@@ -123,7 +123,7 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [RequireDecoratorRegularRule, 'warn'],
     [ReusableComponentInV2CheckRule, 'warn'],
     [SpecificComponentChildrenRule, 'error'],
-    [EntryComponentV2StorageRule, 'warn']
+    [EntryComponentV2InvalidParamsRule, 'warn']
 ];
 
 export default rules;

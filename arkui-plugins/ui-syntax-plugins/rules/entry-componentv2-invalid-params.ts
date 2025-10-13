@@ -22,8 +22,8 @@ const ENTRY_STORAGE: string = 'storage';
 const ENTRY_USE_SHARED_STORAGE: string = 'useSharedStorage';
 
 class EntryComponentV2InvalidParamsRule extends AbstractUISyntaxRule {
-  private entryDecoratorhasInvalidEntryOptions: boolean = false;
-  private entryDecoratorhasInvalidLocalStorage: boolean = false;
+  private entryDecoratorHasInvalidEntryOptions: boolean = false;
+  private entryDecoratorHasInvalidLocalStorage: boolean = false;
 
   public setup(): Record<string, string> {
     return {
@@ -48,7 +48,7 @@ class EntryComponentV2InvalidParamsRule extends AbstractUISyntaxRule {
     }
 
     this.checkEntryDecoratorHasInvalidEntryOptions(entryDecoratorUsage);
-    if (this.entryDecoratorhasInvalidEntryOptions) {
+    if (this.entryDecoratorHasInvalidEntryOptions) {
       this.report({
         node: entryDecoratorUsage,
         message: this.messages.invalidEntryOptions,
@@ -56,7 +56,7 @@ class EntryComponentV2InvalidParamsRule extends AbstractUISyntaxRule {
       return;
     }
 
-    if (this.entryDecoratorhasInvalidLocalStorage) {
+    if (this.entryDecoratorHasInvalidLocalStorage) {
       this.report({
         node: entryDecoratorUsage,
         message: this.messages.invalidLocalStorage,
@@ -69,9 +69,9 @@ class EntryComponentV2InvalidParamsRule extends AbstractUISyntaxRule {
       if (arkts.isClassProperty(property) && property.key && arkts.isIdentifier(property.key)) {
         const propertyName = property.key.name;
         if (propertyName === ENTRY_STORAGE || propertyName === ENTRY_USE_SHARED_STORAGE) {
-          this.entryDecoratorhasInvalidEntryOptions = true;
+          this.entryDecoratorHasInvalidEntryOptions = true;
         } else if (propertyName === ENTRY_VALUE) {
-          this.entryDecoratorhasInvalidLocalStorage = true;
+          this.entryDecoratorHasInvalidLocalStorage = true;
         }
       }
     });
