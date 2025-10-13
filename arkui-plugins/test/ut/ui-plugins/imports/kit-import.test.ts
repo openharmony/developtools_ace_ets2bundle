@@ -38,11 +38,11 @@ const importParsed: Plugins = {
 const pluginTester = new PluginTester('test import transform', buildConfig);
 
 const expectedParsedScript: string = `
-import { NavInterface as NavInterface } from "arkui.UserView";
+import { NavInterface as NavInterface } from "arkui.component.customComponent";
 
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
-import { EntryPoint as EntryPoint } from "arkui.UserView";
+import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -120,11 +120,11 @@ import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
-import { NavInterface as NavInterface } from "arkui.UserView";
+import { NavInterface as NavInterface } from "arkui.component.customComponent";
 
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
-import { EntryPoint as EntryPoint } from "arkui.UserView";
+import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
