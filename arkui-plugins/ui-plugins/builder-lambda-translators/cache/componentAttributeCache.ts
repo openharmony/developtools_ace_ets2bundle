@@ -22,7 +22,8 @@ import {
     TypeParameterTypeRecord,
     TypeRecord,
 } from '../../../collectors/utils/collect-types';
-import { checkIsTrailingLambdaInLastParam } from '../utils';
+import { checkIsTrailingLambdaInLastParam, isForEach } from '../utils';
+import { factory as UIFactory } from '../../ui-factory';
 import { expectNameInTypeReference } from '../../utils';
 
 export interface ComponentRecord {
@@ -97,6 +98,23 @@ export class ComponentAttributeCache {
         this._attributeTypeParamsMap[name] = collectedTypeParams;
     }
 
+    private preprocessParam(
+        param: arkts.ETSParameterExpression,
+        index: number,
+        name: string
+    ): arkts.ETSParameterExpression {
+        if (index === 0 && isForEach(name) && !!param.type && arkts.isTypeNode(param.type)) {
+            return arkts.factory.createParameterDeclaration(
+                arkts.factory.createIdentifier(
+                    param.identifier.name,
+                    UIFactory.createLambdaFunctionType([], param.type.clone())
+                ),
+                undefined
+            );
+        }
+        return param;
+    }
+
     reset(): void {
         this._cache.clear();
         this._componentNames.clear();
@@ -130,7 +148,7 @@ export class ComponentAttributeCache {
             if (index === params.length - 1 && hasLastTrailingLambda) {
                 return;
             }
-            const record = collectTypeRecordFromParameter(p);
+            const record = collectTypeRecordFromParameter(this.preprocessParam(p, index, name));
             paramRecords.push(record);
         });
         const componentRecord: ComponentRecord = {
