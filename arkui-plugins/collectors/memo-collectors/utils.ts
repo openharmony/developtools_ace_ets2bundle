@@ -17,6 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { annotation, forEachArgWithParam, isDecoratorAnnotation } from '../../common/arkts-utils';
 import { ImportCollector } from '../../common/import-collector';
 import { DecoratorNames, GenSymPrefix, MEMO_IMPORT_SOURCE_NAME } from '../../common/predefines';
+import { AstNodeRevisitCache } from '../../common/cache/astNodeRevisitCache';
 import { MemoFunctionCollector } from './function-collector';
 
 export enum MemoNames {
@@ -275,6 +276,10 @@ export function collectMemoableInfoInFunctionType(node: arkts.AstNode, info?: Me
 
 export function collectMemoableInfoInTypeAlias(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {
     let currInfo = info ?? {};
+    if (AstNodeRevisitCache.getInstance().has(node)) {
+        return currInfo;
+    }
+    AstNodeRevisitCache.getInstance().collect(node);
     if (arkts.NodeCache.getInstance().has(node)) {
         return { ...currInfo, hasMemo: true, hasProperType: true };
     }
@@ -638,6 +643,7 @@ export function findCanAddMemoFromTypeAnnotation(
     if (!typeAnnotation) {
         return false;
     }
+    AstNodeRevisitCache.getInstance().reset();
     const memoableInfo = collectMemoableInfoInType(typeAnnotation);
     if (!!memoableInfo.hasMemo && !!memoableInfo.hasProperType) {
         arkts.NodeCache.getInstance().collect(typeAnnotation);
@@ -652,6 +658,7 @@ export function findCanAddMemoFromTypeAnnotation(
  * @returns true if it is not `@memo` annotated but can add `@memo` to it.
  */
 export function findCanAddMemoFromProperty(property: arkts.AstNode): property is arkts.Property {
+    AstNodeRevisitCache.getInstance().reset();
     const memoableInfo = collectMemoableInfoInProperty(property);
     if (!!memoableInfo.hasMemo && !!memoableInfo.hasProperType) {
         arkts.NodeCache.getInstance().collect(property);
@@ -667,6 +674,7 @@ export function findCanAddMemoFromProperty(property: arkts.AstNode): property is
  * @returns true if it is not `@memo` annotated but can add `@memo` to it.
  */
 export function findCanAddMemoFromClassProperty(property: arkts.AstNode): property is arkts.ClassProperty {
+    AstNodeRevisitCache.getInstance().reset();
     const memoableInfo = collectMemoableInfoInClassProperty(property);
     if (!!memoableInfo.hasMemo && !!memoableInfo.hasProperType) {
         arkts.NodeCache.getInstance().collect(property);
@@ -688,6 +696,7 @@ export function findCanAddMemoFromParameter(param: arkts.AstNode | undefined): p
     if (!param) {
         return false;
     }
+    AstNodeRevisitCache.getInstance().reset();
     const memoableInfo = collectMemoableInfoInParameter(param);
     if (!!memoableInfo.hasMemo && !!memoableInfo.hasProperType) {
         arkts.NodeCache.getInstance().collect(param, { hasMemoSkip: memoableInfo.hasMemoSkip });
@@ -705,6 +714,7 @@ export function findCanAddMemoFromArrowFunction(node: arkts.AstNode): node is ar
     if (!arkts.isArrowFunctionExpression(node)) {
         return false;
     }
+    AstNodeRevisitCache.getInstance().reset();
     const memoableInfo = collectMemoableInfoInArrowFunction(node);
     const { hasMemoEntry, hasMemoIntrinsic } = memoableInfo;
     const func = node.scriptFunction;
@@ -739,6 +749,7 @@ export function findCanAddMemoFromArrowFunction(node: arkts.AstNode): node is ar
  * @returns true if it is not `@memo` annotated but can add `@memo` to it.
  */
 export function findCanAddMemoFromTypeAlias(node: arkts.AstNode): node is arkts.TSTypeAliasDeclaration {
+    AstNodeRevisitCache.getInstance().reset();
     const memoableInfo = collectMemoableInfoInTypeAlias(node);
     if (!!memoableInfo.hasMemo && !!memoableInfo.hasProperType) {
         arkts.NodeCache.getInstance().collect(node);
@@ -756,6 +767,7 @@ export function findCanAddMemoFromMethod(node: arkts.AstNode): node is arkts.Met
     if (!arkts.isMethodDefinition(node)) {
         return false;
     }
+    AstNodeRevisitCache.getInstance().reset();
     const memoableInfo = collectMemoableInfoInMethod(node);
     const { hasMemoEntry, hasMemoIntrinsic } = memoableInfo;
     const func = node.scriptFunction;
@@ -767,7 +779,6 @@ export function findCanAddMemoFromMethod(node: arkts.AstNode): node is arkts.Met
         !hasMemoEntry && !hasMemoIntrinsic,
         shouldEnforceMemoSkip
     );
-    // const isFromInterfaceGetterSetter = node.
     const isMemo = checkIsMemoFromMemoableInfo(memoableInfo);
     if (isMemo && !arkts.NodeCache.getInstance().has(node)) {
         const metadata = collectMetadataInMethod(node);
