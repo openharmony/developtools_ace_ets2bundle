@@ -32,7 +32,6 @@ import {
     LoaderJson,
     ResourceInfo,
     ScopeInfoCollection,
-    isForEachDecl,
     initRouterInfo,
 } from './struct-translators/utils';
 import {
@@ -185,8 +184,6 @@ export class CheckedTransformer extends AbstractVisitor {
             return structFactory.transformNormalClass(node, this.externalSourceName);
         } else if (arkts.isCallExpression(node)) {
             return structFactory.transformCallExpression(node, this.projectConfig, this.resourceInfo, this.scope.customComponents.length === 0);
-        } else if (arkts.isMethodDefinition(node) && isForEachDecl(node, this.externalSourceName)) {
-            return structFactory.AddArrowTypeForParameter(node);
         } else if (arkts.isTSInterfaceDeclaration(node)) {
             return structFactory.tranformInterfaceMembers(node, this.externalSourceName);
         } else if (

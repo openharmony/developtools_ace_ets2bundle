@@ -80,10 +80,13 @@ function main() {}
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
 
   @memo() public testBuilder() {
-    ForEach(((): Array<WrappedBuilder<MyBuilderFuncType>> => {
-      return globalBuilderArr;
-    }), ((item: WrappedBuilder<MyBuilderFuncType>) => {
-      item.builder("hello world", 39);
+    ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+      instance.setForEachOptions(((): Array<WrappedBuilder<MyBuilderFuncType>> => {
+        return globalBuilderArr;
+      }), @memo() ((item: WrappedBuilder<MyBuilderFuncType>) => {
+        item.builder("hello world", 39);
+      }), undefined);
+      return;
     }));
   }
 
@@ -252,7 +255,7 @@ function main() {}
         __memo_scope.cached;
         return;
       }
-      this.testBuilder(__memo_context, ((__memo_id) + (192802443)));
+      this.testBuilder(__memo_context, ((__memo_id) + (54078781)));
       {
         __memo_scope.recache();
         return;

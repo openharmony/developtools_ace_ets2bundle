@@ -249,7 +249,6 @@ export class ProgramVisitor extends AbstractVisitor {
 
         for (const transformer of this.visitors) {
             this.visitTransformer(transformer, script, externalSourceName, program);
-            transformer.reset();
             arkts.setAllParents(script);
             if (!transformer.isExternal) {
                 debugDump(	
