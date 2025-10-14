@@ -875,15 +875,12 @@ export class factory {
             ComponentAttributeCache.getInstance().collect(node);
         }
         const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node);
-        const newOverloads: arkts.MethodDefinition[] = node.overloads.map((method) =>
-            factory.transformBuilderLambdaMethodDecl(method)
-        );
         const newNode = this.updateBuilderLambdaMethodDecl(
             node,
             [this.createStyleArgInBuilderLambdaDecl(typeNode, isFunctionCall)],
             removeAnnotationByName(func.annotations, BuilderLambdaNames.ANNOTATION_NAME),
             replaceBuilderLambdaDeclMethodName(nameNode.name)
-        ).setOverloads(newOverloads);
+        );
         arkts.NodeCache.getInstance().collect(newNode);
         return newNode;
     }
@@ -1133,23 +1130,13 @@ export class factory {
         if (!records || records.length === 0) {
             return node;
         }
-        let rootMethod = factory.createDeclaredSetMethodFromRecord(records.at(0)!);
-        const overloads: arkts.MethodDefinition[] = [];
-        let overloadIndex: number = 1;
-        while (!!records.at(overloadIndex)) {
-            const newMethod = factory.createDeclaredSetMethodFromRecord(records.at(overloadIndex)!);
-            newMethod.setBaseOverloadMethod(rootMethod);
-            newMethod.parent = rootMethod;
-            overloads.push(newMethod);
-            overloadIndex++;
-        }
-        rootMethod.setOverloads(overloads);
+        const overloads = records.map((r) => factory.createDeclaredSetMethodFromRecord(r));
         return arkts.factory.updateInterfaceDeclaration(
             node,
             node.extends,
             node.id,
             node.typeParams,
-            arkts.factory.updateInterfaceBody(node.body, [...node.body.body, rootMethod]),
+            arkts.factory.updateInterfaceBody(node.body, [...node.body.body, ...overloads]),
             node.isStatic,
             node.isFromExternal
         );
@@ -1219,6 +1206,7 @@ export class factory {
         const methods: arkts.MethodDefinition[] = [];
         componentNames.forEach((name: string) => {
             const record = componentAttributeCache.getComponentRecord(name)?.at(0);
+            const hasLastTrailingLambda = componentAttributeCache.getHasLastTrailingLambda(name);
             const attributeName = componentAttributeCache.getAttributeName(name);
             const attributeTypeParams = componentAttributeCache.getAttributeTypeParams(name);
             if (!record || !attributeName) {
@@ -1226,6 +1214,7 @@ export class factory {
             }
             const componentImplMethod = factory.createDeclaredComponentFunctionFromRecord(
                 record,
+                hasLastTrailingLambda,
                 attributeName,
                 attributeTypeParams
             );
@@ -1239,6 +1228,7 @@ export class factory {
      */
     static createDeclaredComponentFunctionFromRecord(
         record: ComponentRecord,
+        hasLastTrailingLambda: boolean,
         attributeName: string,
         attributeTypeParams?: TypeRecord[]
     ): arkts.MethodDefinition {
@@ -1254,7 +1244,7 @@ export class factory {
         const params = factory.createDeclaredComponentFunctionParameters(
             attributeName,
             attributeTypeParams,
-            record.hasLastTrailingLambda
+            hasLastTrailingLambda
         );
         const typeParamItems = record.typeParameters?.map((p) => TypeFactory.createTypeParameterFromRecord(p));
         const typeParams = !!typeParamItems
