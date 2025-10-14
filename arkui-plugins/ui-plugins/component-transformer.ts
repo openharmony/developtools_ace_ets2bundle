@@ -196,6 +196,41 @@ export class ComponentTransformer extends AbstractVisitor {
         );
     }
 
+    getUpdateStatements(): arkts.AstNode[] {
+        let updateStatements: arkts.AstNode[] = [];
+        if (this.shouldAddLinkIntrinsic) {
+            const expr = arkts.factory.createIdentifier(DecoratorIntrinsicNames.LINK);
+            updateStatements.push(factory.createIntrinsicAnnotationDeclaration({ expr }));
+        }
+        if (this.componentInterfaceCollection.length > 0) {
+            this.insertComponentImport();
+            updateStatements.push(...this.componentInterfaceCollection);
+        }
+        if (this.entryAnnoInfo.length > 0) {
+            if (!this.isEntryPointImported) {
+                entryFactory.createAndInsertEntryPointImport(this.program);
+            }
+            // normally, we should only have at most one @Entry component in a single file.
+            // probably need to handle error message here.
+            if (!this.isPageLifeCycleImported) {
+                this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.PAGE_LIFE_CYCLE);
+            }
+            updateStatements.push(...this.entryAnnoInfo.map(entryFactory.generateEntryWrapper));
+            updateStatements.push(
+                ...this.entryAnnoInfo.map((item: EntryAnnoInfo) =>
+                    entryFactory.callRegisterNamedRouter(
+                        this.entryRouteName,
+                        this.projectConfig,
+                        this.program?.absName,
+                        item.range
+                    )
+                )
+            );
+            this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, NavigationNames.NAVINTERFACE);
+        }
+        return updateStatements;
+    }
+
     processEtsScript(node: arkts.EtsScript): arkts.EtsScript {
         if (this.isExternal && this.externalSourceName === CUSTOM_COMPONENT_IMPORT_SOURCE_NAME) {
             const navInterface = entryFactory.createNavInterface();
@@ -211,35 +246,7 @@ export class ComponentTransformer extends AbstractVisitor {
         if (this.isExternal && this.componentInterfaceCollection.length === 0 && this.entryAnnoInfo.length === 0) {
             return node;
         }
-        const updateStatements: arkts.AstNode[] = [];
-        if (this.shouldAddLinkIntrinsic) {
-            const expr = arkts.factory.createIdentifier(DecoratorIntrinsicNames.LINK);
-            updateStatements.push(factory.createIntrinsicAnnotationDeclaration({ expr }));
-        }
-        if (this.componentInterfaceCollection.length > 0) {
-            this.insertComponentImport();
-            updateStatements.push(...this.componentInterfaceCollection);
-        }
-
-        if (this.entryAnnoInfo.length > 0) {
-            if (!this.isEntryPointImported) entryFactory.createAndInsertEntryPointImport(this.program);
-            // normally, we should only have at most one @Entry component in a single file.
-            // probably need to handle error message here.
-            if (!this.isPageLifeCycleImported)
-                this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.PAGE_LIFE_CYCLE);
-            updateStatements.push(...this.entryAnnoInfo.map(entryFactory.generateEntryWrapper));
-            updateStatements.push(
-                ...this.entryAnnoInfo.map((item: EntryAnnoInfo) =>
-                    entryFactory.callRegisterNamedRouter(
-                        this.entryRouteName,
-                        this.projectConfig,
-                        this.program?.absName,
-                        item.range
-                    )
-                )
-            );
-            this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, NavigationNames.NAVINTERFACE);
-        }
+        const updateStatements: arkts.AstNode[] = this.getUpdateStatements();
         if (updateStatements.length > 0) {
             return arkts.factory.updateEtsScript(node, [...node.statements, ...updateStatements]);
         }

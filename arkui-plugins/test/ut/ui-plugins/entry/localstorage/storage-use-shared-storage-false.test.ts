@@ -38,11 +38,11 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { NavInterface as NavInterface } from "arkui.UserView";
+import { NavInterface as NavInterface } from "arkui.component.customComponent";
 
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
-import { EntryPoint as EntryPoint } from "arkui.UserView";
+import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
