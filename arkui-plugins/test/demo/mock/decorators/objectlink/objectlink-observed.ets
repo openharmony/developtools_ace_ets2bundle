@@ -17,9 +17,13 @@ import { Component, Entry, Column, Button, ClickEvent } from "@ohos.arkui.compon
 import { State, ObjectLink, Observed } from "@ohos.arkui.stateManagement"
 
 @Observed
-class DateClass extends Date {
-  constructor(args: number | string) {
-    super(args);
+class DateClass {
+  constructor(args: number | string) {}
+
+  setDate(date: number): void {}
+
+  getDate(): number {
+    return 0;
   }
 }
 

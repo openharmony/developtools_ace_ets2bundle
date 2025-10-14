@@ -33,7 +33,6 @@ export interface ComponentRecord {
     typeParameters?: TypeParameterTypeRecord[];
     hasRestParameter?: boolean;
     hasReceiver?: boolean;
-    hasLastTrailingLambda?: boolean;
 }
 
 interface ComponentAttributeInfo {
@@ -61,6 +60,7 @@ function findAttributeInfoFromComponentMethod(component: arkts.MethodDefinition)
 export class ComponentAttributeCache {
     private _cache: Map<string, ComponentRecord[]>;
     private _componentNames: Set<string>;
+    private _hasLastTrailingLambda: Record<string, boolean>;
     private _attributeNameMap: Record<string, string>;
     private _attributeTypeParamsMap: Record<string, TypeRecord[]>;
     private _isCollected: boolean = false;
@@ -71,6 +71,7 @@ export class ComponentAttributeCache {
         this._componentNames = new Set();
         this._attributeNameMap = {};
         this._attributeTypeParamsMap = {};
+        this._hasLastTrailingLambda = {};
     }
 
     static getInstance(): ComponentAttributeCache {
@@ -99,6 +100,10 @@ export class ComponentAttributeCache {
         this._attributeTypeParamsMap[name] = collectedTypeParams;
     }
 
+    private collectHasLastTrailingLambda(name: string, hasLastTrailingLambda: boolean): void {
+        this._hasLastTrailingLambda[name] ||= hasLastTrailingLambda;
+    }
+
     private preprocessParam(
         param: arkts.ETSParameterExpression,
         index: number,
@@ -121,6 +126,7 @@ export class ComponentAttributeCache {
         this._componentNames.clear();
         this._attributeNameMap = {};
         this._attributeTypeParamsMap = {};
+        this._hasLastTrailingLambda = {};
         this._isCollected = false;
     }
 
@@ -162,9 +168,9 @@ export class ComponentAttributeCache {
             typeParameters,
             hasRestParameter,
             hasReceiver,
-            hasLastTrailingLambda,
         };
         this.collectComponentRecord(name, componentRecord);
+        this.collectHasLastTrailingLambda(name, hasLastTrailingLambda);
         this.collectAttributeName(name, attributeInfo.name);
         this.collectAttributeTypeParams(name, attributeInfo.typeParams);
         this._componentNames.add(name);
@@ -181,6 +187,10 @@ export class ComponentAttributeCache {
 
     getAttributeTypeParams(name: string): TypeRecord[] | undefined {
         return this._attributeTypeParamsMap[name];
+    }
+
+    getHasLastTrailingLambda(name: string): boolean {
+        return !!this._hasLastTrailingLambda[name];
     }
 
     getAllComponentNames(): string[] {

@@ -118,8 +118,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
   @JSONStringifyIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  public constructor(args: (number | string)) {
-    super(args);
+  public constructor(args: (number | string)) {}
+  
+  public setDate(date: number): void {}
+
+  public getDate(): number {
+    return 0;
   }
 
 }
