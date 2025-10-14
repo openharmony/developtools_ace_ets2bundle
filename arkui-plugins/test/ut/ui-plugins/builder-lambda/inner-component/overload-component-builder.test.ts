@@ -115,8 +115,8 @@ import { memo as memo, ComponentBuilder as ComponentBuilder } from "arkui.stateM
 function main() {}
 
 @memo() export function FakeComponent(style: (@memo() ((instance: FakeComponentAttribute)=> void) | undefined), str: string, @memo() content_?: (()=> void)): void
-@memo() export function FakeComponent(style: (@memo() ((instance: void)=> void) | undefined), style: (@memo() ((instance: FakeComponentAttribute)=> void) | undefined), options?: FakeOptions, @memo() content_?: (()=> void)): void
-@memo() export function FakeComponent(style: (@memo() ((instance: void)=> void) | undefined), style: (@memo() ((instance: FakeComponentAttribute)=> void) | undefined), @memo() content_?: (()=> void)): void
+@memo() export function FakeComponent(style: (@memo() ((instance: FakeComponentAttribute)=> void) | undefined), options?: FakeOptions, @memo() content_?: (()=> void)): void
+@memo() export function FakeComponent(style: (@memo() ((instance: FakeComponentAttribute)=> void) | undefined), @memo() content_?: (()=> void)): void
 
 @memo() export function FakeComponentImpl(style: (@memo() ((instance: FakeComponentAttribute)=> void) | undefined), content?: @memo() (()=> void)): void
 
