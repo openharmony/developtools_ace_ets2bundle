@@ -14,7 +14,6 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { checkIsTrailingLambdaInLastParam, isForEach } from '../utils';
 import {
     collectTypeRecordFromParameter,
     collectTypeRecordFromTypeParameterDeclaration,
@@ -23,26 +22,55 @@ import {
     TypeParameterTypeRecord,
     TypeRecord,
 } from '../../../collectors/utils/collect-types';
+import { checkIsTrailingLambdaInLastParam, isForEach } from '../utils';
 import { factory as UIFactory } from '../../ui-factory';
+import { expectNameInTypeReference } from '../../utils';
 
 export interface ComponentRecord {
     name: string;
-    attributeRecords: ParameterRecord[];
-    typeParams?: TypeParameterTypeRecord[];
+    paramRecords: ParameterRecord[];
+    typeParameters?: TypeParameterTypeRecord[];
     hasRestParameter?: boolean;
     hasReceiver?: boolean;
-    hasLastTrailingLambda?: boolean;
+}
+
+interface ComponentAttributeInfo {
+    name: string;
+    typeParams?: TypeRecord[];
+}
+
+/**
+ * find attribute info from component method
+ */
+function findAttributeInfoFromComponentMethod(component: arkts.MethodDefinition): ComponentAttributeInfo | undefined {
+    const type = component.scriptFunction.returnTypeAnnotation;
+    const name = expectNameInTypeReference(type);
+    if (!name) {
+        return;
+    }
+    return {
+        name: name.name,
+        typeParams: collectTypeRecordFromTypeParameterInstantiation(
+            (name.parent as arkts.ETSTypeReferencePart).typeParams
+        ),
+    };
 }
 
 export class ComponentAttributeCache {
-    private _cache: Map<string, ComponentRecord>;
-    private _attributeName: string | undefined;
-    private _attributeTypeParams: TypeRecord[] | undefined;
+    private _cache: Map<string, ComponentRecord[]>;
+    private _componentNames: Set<string>;
+    private _hasLastTrailingLambda: Record<string, boolean>;
+    private _attributeNameMap: Record<string, string>;
+    private _attributeTypeParamsMap: Record<string, TypeRecord[]>;
     private _isCollected: boolean = false;
     private static instance: ComponentAttributeCache;
 
     private constructor() {
-        this._cache = new Map<string, ComponentRecord>();
+        this._cache = new Map<string, ComponentRecord[]>();
+        this._componentNames = new Set();
+        this._attributeNameMap = {};
+        this._attributeTypeParamsMap = {};
+        this._hasLastTrailingLambda = {};
     }
 
     static getInstance(): ComponentAttributeCache {
@@ -52,42 +80,34 @@ export class ComponentAttributeCache {
         return this.instance;
     }
 
-    private collectAttributeName(type: arkts.TypeNode | undefined): string | undefined {
-        if (
-            !type ||
-            !arkts.isETSTypeReference(type) ||
-            !type.part ||
-            !type.part.name ||
-            !arkts.isIdentifier(type.part.name)
-        ) {
+    private collectComponentRecord(name: string, record: ComponentRecord): void {
+        const colelctedRecords: ComponentRecord[] = this._cache.get(name) ?? [];
+        colelctedRecords.push(record);
+        this._cache.set(name, colelctedRecords);
+    }
+
+    private collectAttributeName(name: string, attributeName: string): void {
+        const collectedNames: string = this._attributeNameMap[name] ?? attributeName;
+        this._attributeNameMap[name] = collectedNames;
+    }
+
+    private collectAttributeTypeParams(name: string, attributeTypeParams: TypeRecord[] | undefined): void {
+        if (!attributeTypeParams) {
             return;
         }
-        this._attributeName = type.part.name.name;
-        if (type.part.typeParams) {
-            this._attributeTypeParams = collectTypeRecordFromTypeParameterInstantiation(type.part.typeParams);
-        }
+        const collectedTypeParams: TypeRecord[] = this._attributeTypeParamsMap[name] ?? attributeTypeParams;
+        this._attributeTypeParamsMap[name] = collectedTypeParams;
     }
 
-    get attributeName(): string | undefined {
-        return this._attributeName;
+    private collectHasLastTrailingLambda(name: string, hasLastTrailingLambda: boolean): void {
+        this._hasLastTrailingLambda[name] ||= hasLastTrailingLambda;
     }
 
-    get attributeTypeParams(): TypeRecord[] | undefined {
-        return this._attributeTypeParams;
-    }
-
-    reset(): void {
-        this._cache.clear();
-        this._attributeName = undefined;
-        this._attributeTypeParams = undefined;
-        this._isCollected = false;
-    }
-
-    isCollected(): boolean {
-        return this._isCollected;
-    }
-
-    preprocessParam(param: arkts.ETSParameterExpression, index: number, name: string): arkts.ETSParameterExpression {
+    private preprocessParam(
+        param: arkts.ETSParameterExpression,
+        index: number,
+        name: string
+    ): arkts.ETSParameterExpression {
         if (index === 0 && isForEach(name) && !!param.type && arkts.isTypeNode(param.type)) {
             return arkts.factory.createParameterDeclaration(
                 arkts.factory.createIdentifier(
@@ -100,42 +120,75 @@ export class ComponentAttributeCache {
         return param;
     }
 
+    reset(): void {
+        this._cache.clear();
+        this._componentNames.clear();
+        this._attributeNameMap = {};
+        this._attributeTypeParamsMap = {};
+        this._hasLastTrailingLambda = {};
+        this._isCollected = false;
+    }
+
+    isCollected(): boolean {
+        return this._isCollected;
+    }
+
+    hasComponentName(name: string): boolean {
+        return this._componentNames.has(name);
+    }
+
     collect(node: arkts.MethodDefinition): void {
-        this.collectAttributeName(node.scriptFunction.returnTypeAnnotation);
-        if (!this._attributeName) {
+        const attributeInfo = findAttributeInfoFromComponentMethod(node);
+        if (!attributeInfo) {
             return;
         }
         const name: string = node.name.name;
-        const hasRestParameter = node.scriptFunction.hasRestParameter;
-        const hasReceiver = node.scriptFunction.hasReceiver;
-        const typeParams = collectTypeRecordFromTypeParameterDeclaration(node.scriptFunction.typeParams);
-        const params = node.scriptFunction.params as arkts.ETSParameterExpression[];
-        const attributeRecords: ParameterRecord[] = [];
+        const func = node.scriptFunction;
+        const hasRestParameter = func.hasRestParameter;
+        const hasReceiver = func.hasReceiver;
+        const typeParameters = collectTypeRecordFromTypeParameterDeclaration(func.typeParams);
+        const params = func.params as arkts.ETSParameterExpression[];
+        const paramRecords: ParameterRecord[] = [];
         const hasLastTrailingLambda = checkIsTrailingLambdaInLastParam(params);
         params.forEach((p, index) => {
             if (index === params.length - 1 && hasLastTrailingLambda) {
                 return;
             }
             const record = collectTypeRecordFromParameter(this.preprocessParam(p, index, name));
-            attributeRecords.push(record);
+            paramRecords.push(record);
         });
         const componentRecord: ComponentRecord = {
             name,
-            attributeRecords,
-            typeParams,
+            paramRecords,
+            typeParameters,
             hasRestParameter,
             hasReceiver,
-            hasLastTrailingLambda,
         };
-        this._cache.set(name, componentRecord);
+        this.collectComponentRecord(name, componentRecord);
+        this.collectHasLastTrailingLambda(name, hasLastTrailingLambda);
+        this.collectAttributeName(name, attributeInfo.name);
+        this.collectAttributeTypeParams(name, attributeInfo.typeParams);
+        this._componentNames.add(name);
         this._isCollected = true;
     }
 
-    getComponentRecord(name: string): ComponentRecord | undefined {
+    getComponentRecord(name: string): ComponentRecord[] | undefined {
         return this._cache.get(name);
     }
 
-    getAllComponentRecords(): ComponentRecord[] {
-        return Array.from(this._cache.values());
+    getAttributeName(name: string): string | undefined {
+        return this._attributeNameMap[name];
+    }
+
+    getAttributeTypeParams(name: string): TypeRecord[] | undefined {
+        return this._attributeTypeParamsMap[name];
+    }
+
+    getHasLastTrailingLambda(name: string): boolean {
+        return !!this._hasLastTrailingLambda[name];
+    }
+
+    getAllComponentNames(): string[] {
+        return Array.from(this._componentNames.values());
     }
 }

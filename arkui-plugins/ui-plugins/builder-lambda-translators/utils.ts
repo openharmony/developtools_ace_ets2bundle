@@ -28,7 +28,6 @@ import {
 import { ImportCollector } from '../../common/import-collector';
 import { hasMemoAnnotation } from '../../collectors/memo-collectors/utils';
 import { AstNodePointer } from '../../common/safe-types';
-import { ComponentAttributeCache } from './cache/componentAttributeCache';
 import { MetaDataCollector } from '../../common/metadata-collector';
 
 export type BuilderLambdaDeclInfo = {
@@ -578,21 +577,19 @@ export function getElementTypeFromArray(arrayType: arkts.TypeNode): arkts.TypeNo
     return undefined;
 }
 
-export function collectComponentAttributeImport(type: arkts.TypeNode | undefined, moduleName: string): void {
-    if (
-        !type ||
-        !arkts.isETSTypeReference(type) ||
-        !type.part ||
-        !type.part.name ||
-        !arkts.isIdentifier(type.part.name)
-    ) {
+function findAttributeNameFromTypeName(typeName: arkts.Identifier | undefined): string | undefined {
+    if (!typeName) {
         return;
     }
-
     const regex: RegExp = /(?<source>\w+Attribute)(?:<.*>)?$/;
-    const name: string = type.part.name.name;
-    const match: RegExpExecArray | null = regex.exec(name);
+    const match: RegExpExecArray | null = regex.exec(typeName.name);
     const attributeName: string | undefined = match?.groups?.source;
+    return attributeName;
+}
+
+export function collectComponentAttributeImport(type: arkts.TypeNode | undefined, moduleName: string): void {
+    const nameNode = expectNameInTypeReference(type);
+    const attributeName = findAttributeNameFromTypeName(nameNode);
     if (!!attributeName) {
         ImportCollector.getInstance().collectSource(attributeName, moduleName);
         ImportCollector.getInstance().collectImport(attributeName);
@@ -677,6 +674,34 @@ export function flatObjectExpressionToEntries(
     return entries;
 }
 
+function checkIsTrailingLambdaType(typeNode: arkts.AstNode | undefined): boolean {
+    if (!typeNode) {
+        return false;
+    }
+    if (arkts.isETSFunctionType(typeNode)) {
+        return typeNode.params.length === 0 && !!typeNode.returnType && typeNode.returnType.dumpSrc() === 'void';
+    }
+    if (arkts.isETSUnionType(typeNode)) {
+        let hasTrailingLambdaType: boolean = false;
+        let hasOtherNonUndefinedTypes: boolean = false;
+        for (const t of typeNode.types) {
+            if ((hasTrailingLambdaType && !arkts.isETSUndefinedType(t)) || hasOtherNonUndefinedTypes) {
+                hasOtherNonUndefinedTypes = true;
+                break;
+            }
+            hasTrailingLambdaType ||= checkIsTrailingLambdaType(t);
+            hasOtherNonUndefinedTypes ||= !hasTrailingLambdaType && !arkts.isETSUndefinedType(t);
+        }
+        return hasTrailingLambdaType && !hasOtherNonUndefinedTypes;
+    }
+    if (arkts.isETSTypeReference(typeNode)) {
+        const name = expectNameInTypeReference(typeNode);
+        const decl = !!name ? arkts.getDecl(name) : undefined;
+        return checkIsTrailingLambdaType(decl);
+    }
+    return false;
+}
+
 /**
  * check whether the last parameter is trailing lambda in components.
  */
@@ -685,7 +710,7 @@ export function checkIsTrailingLambdaInLastParam(params: readonly arkts.Expressi
         return false;
     }
     const lastParam = params.at(params.length - 1)! as arkts.ETSParameterExpression;
-    return hasMemoAnnotation(lastParam) && lastParam.identifier.name === BuilderLambdaNames.COMPONENT_PARAM_ORI;
+    return hasMemoAnnotation(lastParam) && checkIsTrailingLambdaType(lastParam.type);
 }
 
 /**
@@ -699,16 +724,13 @@ export function filterParamsExpectTrailingLambda(params: readonly arkts.Expressi
 }
 
 /**
- * check whether interface is `XXXAttribute` that implies the component's attribute interface.
+ * find `XXXAttribute` interface name from the component's attribute interface.
  */
-export function isComponentAttributeInterface(node: arkts.AstNode): node is arkts.TSInterfaceDeclaration {
-    if (!ComponentAttributeCache.getInstance().isCollected()) {
-        return false;
+export function findComponentAttributeInInterface(node: arkts.TSInterfaceDeclaration): string | undefined {
+    if (!node.id) {
+        return undefined;
     }
-    if (!arkts.isTSInterfaceDeclaration(node) || !node.id) {
-        return false;
-    }
-    return ComponentAttributeCache.getInstance().attributeName === node.id.name;
+    return findAttributeNameFromTypeName(node.id);
 }
 
 /**
