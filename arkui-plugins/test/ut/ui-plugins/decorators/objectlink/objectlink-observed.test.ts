@@ -90,7 +90,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   integratedHsp: "false",
   } as NavInterface));
 
-@Observed() class DateClass extends Date implements IObservedObject, ISubscribedWatches {
+@Observed() class DateClass implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
@@ -119,8 +119,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  public constructor(args: (number | string)) {
-    super(args);
+  public constructor(args: (number | string)) {}
+  
+  public setDate(date: number): void {}
+
+  public getDate(): number {
+    return 0;
   }
   
 }

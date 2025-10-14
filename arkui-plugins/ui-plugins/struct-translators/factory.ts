@@ -60,7 +60,7 @@ import {
     isComputedMethod,
 } from './utils';
 import { collectStateManagementTypeImport, generateThisBacking, hasDecorator } from '../property-translators/utils';
-import { isComponentAttributeInterface } from '../builder-lambda-translators/utils';
+import { findComponentAttributeInInterface } from '../builder-lambda-translators/utils';
 import { ProjectConfig } from '../../common/plugin-context';
 import { ImportCollector } from '../../common/import-collector';
 import {
@@ -805,8 +805,13 @@ export class factory {
         if (isCustomComponentInterface(node)) {
             return factory.tranformCustomComponentInterfaceMembers(node);
         }
-        if (isComponentAttributeInterface(newNode)) {
-            return BuilderLambdaFactory.addDeclaredSetMethodsInAttributeInterface(newNode);
+        let attributeName: string | undefined;
+        if (ComponentAttributeCache.getInstance().isCollected() && !!(attributeName = findComponentAttributeInInterface(node))) {
+            const componentName = attributeName.replace(/Attribute$/, '');
+            if (!ComponentAttributeCache.getInstance().hasComponentName(componentName)) {
+                return newNode;
+            }
+            return BuilderLambdaFactory.addDeclaredSetMethodsInAttributeInterface(newNode, componentName);
         }
         return newNode;
     }
@@ -878,10 +883,10 @@ export class factory {
             return member;
         });
         if (ComponentAttributeCache.getInstance().isCollected()) {
-            const record = ComponentAttributeCache.getInstance().getAllComponentRecords().at(0)!;
-            const name = ComponentAttributeCache.getInstance().attributeName!;
-            const typeParams = ComponentAttributeCache.getInstance().attributeTypeParams;
-            updatedBody.push(BuilderLambdaFactory.createDeclaredComponentFunctionFromRecord(record, name, typeParams));
+            const attributeCache: ComponentAttributeCache = ComponentAttributeCache.getInstance();
+            const names = attributeCache.getAllComponentNames();
+            const methods = BuilderLambdaFactory.createAllUniqueDeclaredComponentFunctions(names);
+            updatedBody.push(...methods);
         }
         if (externalSourceName === ARKUI_BUILDER_SOURCE_NAME) {
             updatedBody.push(...BuilderLambdaFactory.addConditionBuilderDecls());
