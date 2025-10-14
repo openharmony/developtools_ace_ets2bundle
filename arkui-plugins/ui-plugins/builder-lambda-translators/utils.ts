@@ -18,6 +18,7 @@ import { isAnnotation, matchPrefix } from '../../common/arkts-utils';
 import { BuilderLambdaNames, expectNameInTypeReference, isCustomComponentAnnotation } from '../utils';
 import { DeclarationCollector } from '../../common/declaration-collector';
 import {
+    ARKUI_FOREACH_SOURCE_NAME,
     ARKUI_IMPORT_PREFIX_NAMES,
     ARKUI_NAV_DESTINATION_SOURCE_NAME,
     ARKUI_NAVIGATION_SOURCE_NAME,
@@ -78,6 +79,17 @@ export type OptionsPropertyInfo = {
     isBuilderParam: boolean;
     isLinkIntrinsic: boolean;
 };
+
+/**
+ * Determine whether the node is ForEach method declaration or call expression.
+ *
+ * @param node method definition node.
+ * @param sourceName external source name.
+ */
+export function isForEach(name: string | undefined, sourceName?: string): boolean {
+    const externalSourceName = sourceName ?? MetaDataCollector.getInstance().externalSourceName;
+    return name === InnerComponentNames.FOR_EACH && externalSourceName === ARKUI_FOREACH_SOURCE_NAME;
+}
 
 export function buildSecondLastArgInfo(
     type: arkts.Identifier | undefined,
