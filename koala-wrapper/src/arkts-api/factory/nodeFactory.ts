@@ -32,6 +32,7 @@ import {
 import { MemberExpression } from '../to-be-generated/MemberExpression';
 import {
     AnnotationUsage,
+    AwaitExpression,
     BinaryExpression,
     BlockStatement,
     ClassDeclaration,
@@ -90,6 +91,7 @@ import {
     ClassStaticBlock,
 } from '../../generated';
 import { updateIdentifier } from '../node-utilities/Identifier';
+import { updateAwaitExpression } from '../node-utilities/AwaitExpression';
 import { updateCallExpression } from '../node-utilities/CallExpression';
 import { updateExpressionStatement } from '../node-utilities/ExpressionStatement';
 import { updateMemberExpression } from '../node-utilities/MemberExpression';
@@ -638,6 +640,12 @@ export const factory = {
     },
     get updateSpreadElement(): (...args: Parameters<typeof updateSpreadElement>) => SpreadElement {
         return updateSpreadElement;
+    },
+    get createAwaitExpression(): (...args: Parameters<typeof AwaitExpression.createAwaitExpression>) => AwaitExpression {
+        return AwaitExpression.createAwaitExpression;
+    },
+    get updateAwaitExpression(): (...args: Parameters<typeof updateAwaitExpression>) => AwaitExpression {
+        return updateAwaitExpression;
     },
     get createBreakStatement(): (...args: Parameters<typeof BreakStatement.createBreakStatement>) => BreakStatement {
         return BreakStatement.createBreakStatement;
