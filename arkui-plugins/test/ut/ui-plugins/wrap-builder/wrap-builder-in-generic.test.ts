@@ -43,6 +43,7 @@ import { IStateDecoratedVariable as IStateDecoratedVariable } from \"arkui.state
 import { RowAttribute as RowAttribute } from \"arkui.component.row\";
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { RowImpl as RowImpl } from "arkui.component.row";
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 import { TextAttribute as TextAttribute } from \"arkui.component.text\";
 import { TextImpl as TextImpl } from "arkui.component.text";
@@ -58,16 +59,16 @@ let wrappedBuilder1: WrappedBuilder<@Builder() ((value: string, size: number)=> 
 let wrappedBuilder2: WrappedBuilder<@Builder() ((value: string, size: number)=> void)>;
 function main() {}
 @memo() function MyBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
-    Text(@memo() ((instance: TextAttribute): void => {
-    instance.fontSize(size);
-    return;
-    }), value, undefined, undefined);
+    TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
+        return;
+    }), undefined);
 }
 @memo() function YourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
-    Text(@memo() ((instance: TextAttribute): void => {
-    instance.fontSize(size).fontColor(Color.Pink);
-    return;
-    }), value, undefined, undefined);
+    TextImpl(@memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink).applyAttributesFinish();
+        return;
+    }), undefined);
 }
 globalBuilder = wrapBuilder(MyBuilder);
 builderArr = [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)];
@@ -153,6 +154,7 @@ import { IStateDecoratedVariable as IStateDecoratedVariable } from \"arkui.state
 import { RowAttribute as RowAttribute } from \"arkui.component.row\";
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { RowImpl as RowImpl } from "arkui.component.row";
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 import { TextAttribute as TextAttribute } from \"arkui.component.text\";
 import { TextImpl as TextImpl } from "arkui.component.text";
@@ -180,7 +182,7 @@ function main() {}
             __memo_scope.cached;
             return;
         }
-        __memo_parameter_instance.value.setTextOptions(__memo_parameter_value.value, undefined).fontSize(__memo_parameter_size.value).applyAttributesFinish();
+        __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
         {
             __memo_scope.recache();
             return;
@@ -204,7 +206,7 @@ function main() {}
             __memo_scope.cached;
             return;
         }
-        __memo_parameter_instance.value.setTextOptions(__memo_parameter_value.value, undefined).fontSize(__memo_parameter_size.value).fontColor(Color.Pink).applyAttributesFinish();
+        __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink).applyAttributesFinish();
         {
             __memo_scope.recache();
             return;

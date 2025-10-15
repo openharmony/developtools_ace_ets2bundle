@@ -40,6 +40,7 @@ const expectedScript: string = `
 import { makeBuilderParameterProxy as makeBuilderParameterProxy } from "arkui.component.builder";
 
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+
 import { RowAttribute as RowAttribute } from "arkui.component.row";
 
 import { RowImpl as RowImpl } from "arkui.component.row";
@@ -64,7 +65,7 @@ function main() {}
   }), undefined);
 }
 
-@memo() function overBuilder(params: Tmp) {
+@memo() function overBuilder(@MemoSkip() params: Tmp) {
   RowImpl(@memo() ((instance: RowAttribute): void => {
     instance.setRowOptions(undefined).applyAttributesFinish();
     return;
