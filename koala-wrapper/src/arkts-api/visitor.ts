@@ -23,6 +23,7 @@ import {
 } from '../generated/Es2pandaEnums';
 import { AstNode } from './peers/AstNode';
 import {
+    isAwaitExpression,
     isBlockStatement,
     isConditionalExpression,
     isTSInterfaceBody,
@@ -228,6 +229,13 @@ function visitTrivialExpression(node: AstNode, visitor: Visitor): AstNode {
             nodeVisitor(node.left, visitor),
             nodeVisitor(node.right, visitor),
             node.operatorType
+        );
+    }
+    if (isAwaitExpression(node)) {
+        updated = true;
+        return factory.updateAwaitExpression(
+            node,
+            nodeVisitor(node.argument, visitor)
         );
     }
     if (isSpreadElement(node)) {
