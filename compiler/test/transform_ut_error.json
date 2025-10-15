@@ -176,6 +176,38 @@
         "type": "ERROR",
         "code": "10905312"
     },
+    "checkAssignEnv": [
+        {
+            "message": "Within structs decorated with '@Component', '@Env' can only initialize regular(non-decorated) variables.",
+            "type": "ERROR",
+            "code": "10905253"
+        },
+        {
+            "message": "Within structs decorated with '@Component', '@Env' can only initialize regular(non-decorated) variables.",
+            "type": "ERROR",
+            "code": "10905253"
+        },
+        {
+            "message": "Within structs decorated with '@ComponentV2', '@Env' can only initialize variables decorated with '@Param'.",
+            "type": "ERROR",
+            "code": "10905252"
+        },
+        {
+            "message": "The '@Local' property 'aa' in the custom component 'testNonV2' cannot be initialized here (forbidden to specify).",
+            "type": "ERROR",
+            "code": "10905324"
+        },
+        {
+            "message": "Within structs decorated with '@ComponentV2', '@Env' can only initialize variables decorated with '@Param'.",
+            "type": "ERROR",
+            "code": "10905252"
+        },
+        {
+            "message": "The '@Provider' property 'bb' in the custom component 'testNonV2' cannot be initialized here (forbidden to specify).",
+            "type": "ERROR",
+            "code": "10905324"
+        }
+    ],
     "checkBuilder$$": {
         "message": "Unrecognized property 'paramA1', make sure it can be assigned to @Link property 'message' by yourself.",
         "type": "WARN"
@@ -692,6 +724,141 @@
             "message": "The struct 'componentV2BothWithComponent2' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
             "type": "ERROR",
             "code": "10905229"
+        }
+    ],
+    "envDuplicateDecorators": [
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR",
+            "code": "10905121"
+        },
+        {
+            "message": "Duplicate '@Env' decorators for method are not allowed.",
+            "type": "ERROR",
+            "code": "10905119"
+        },
+        {
+            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' and '@BuilderParam'.",
+            "type": "ERROR",
+            "code": "10905325"
+        },
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR",
+            "code": "10905121"
+        },
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR",
+            "code": "10905121"
+        },
+        {
+            "message": "Duplicate '@Env' decorators for method are not allowed.",
+            "type": "ERROR",
+            "code": "10905119"
+        },
+        {
+            "message": "The '@State' property 'envOne' must be specified a default value.",
+            "type": "ERROR",
+            "code": "10905303"
+        },
+        {
+            "message": "The property 'envTwo' cannot have multiple state management decorators.",
+            "type": "ERROR",
+            "code": "10905302"
+        },
+        {
+            "message": "The property 'envThree' cannot have multiple state management decorators.",
+            "type": "ERROR",
+            "code": "10905302"
+        },
+        {
+            "message": "The property 'envFour' cannot have multiple state management decorators.",
+            "type": "ERROR",
+            "code": "10905302"
+        }
+    ],
+    "envInCustomDialog": {
+        "message": "The '@Env' decorator can only be used in structs decorated with either '@Component' or '@ComponentV2'.",
+        "type": "ERROR",
+        "code": "10905250"
+    },
+    "envValidateInitializerV1": [
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
+        },
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
+        },
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
+        },
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
+        }
+    ],
+    "envValidateInitializerV2": [
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "code": "10905362",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "code": "10905362",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "code": "10905362",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "code": "10905362",
+            "type": "ERROR"
+        }
+    ],
+    "envValidateType": [
+        {
+            "message": "The '@Env' decorator can only decorate the 'WindowSizeLayoutBreakpointInfo' class or its child classes.",
+            "code": "10905251",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Env' decorator can only decorate the 'WindowSizeLayoutBreakpointInfo' class or its child classes.",
+            "code": "10905251",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Env' decorator can only decorate the 'WindowSizeLayoutBreakpointInfo' class or its child classes.",
+            "code": "10905251",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Env' decorator can only decorate the 'WindowSizeLayoutBreakpointInfo' class or its child classes.",
+            "code": "10905251",
+            "type": "ERROR"
         }
     ],
     "mutiDecoratorInComponentV2": [
