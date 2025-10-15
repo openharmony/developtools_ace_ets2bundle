@@ -20,6 +20,11 @@ struct ResourceComponent {
   str1: string = 'app.media.ri'
   str2: string = 'app.photo2.png'
   numbers: string[] = ['0','1','3','5','8']
+
+  async test_0(res: Resource) {
+    return res;
+  }
+
   aboutToAppear() {
     let arr: Array<Resource> = new Array<Resource>()
     for (let i = 0; i < 5; i++) {
@@ -28,7 +33,9 @@ struct ResourceComponent {
     for (let item of this.numbers) {
       arr.push($r('app.string.app_name'))
     }
+    const a2 = await this.test_0($r('app.string.app_name'));
   }
+
   build() {
     Column() {
       Text($r('app.string.app_name'))
