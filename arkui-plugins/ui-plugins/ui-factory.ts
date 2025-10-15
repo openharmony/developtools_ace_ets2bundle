@@ -214,7 +214,7 @@ export class factory {
     ): arkts.ScriptFunction {
         const newFunc: arkts.ScriptFunction = arkts.factory.updateScriptFunction(
             original,
-            config.body ?? original.body,
+            Object.hasOwn(config, 'body') ? config.body : original.body,
             arkts.factory.createFunctionSignature(
                 config.typeParams ?? original.typeParams,
                 config.params ?? original.params,

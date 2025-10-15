@@ -38,13 +38,13 @@ const parsedTransform: Plugins = {
 };
 
 const expectedCheckedScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { NavigationAttribute as NavigationAttribute } from "arkui.component.navigation";
 
 import { NavigationImpl as NavigationImpl } from "arkui.component.navigation";
-
-import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { NavDestinationAttribute as NavDestinationAttribute } from "arkui.component.navDestination";
 
@@ -52,12 +52,19 @@ import { NavDestinationImpl as NavDestinationImpl } from "arkui.component.navDes
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Component as Component, Column as Column, NavDestination as NavDestination, Navigation as Navigation, NavPathStack as NavPathStack } from "@ohos.arkui.component";
 
 function main() {}
-
 
 @Component() final struct NavDestinationStruct extends CustomComponent<NavDestinationStruct, __Options_NavDestinationStruct> {
   public __initializeStruct(initializers: (__Options_NavDestinationStruct | undefined), @memo() content: ((()=> void) | undefined)): void {
@@ -76,7 +83,16 @@ function main() {}
   public set pathStack(value: NavPathStack) {
     this.__backing_pathStack = value;
   }
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: NavDestinationStruct)=> void), initializers: ((()=> __Options_NavDestinationStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<NavDestinationStruct, __Options_NavDestinationStruct>(style, ((): NavDestinationStruct => {
+      return new NavDestinationStruct(false, ({let gensym___149025070 = storage;
+      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+    }), initializers, reuseId, content);
+  }
   
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_NavDestinationStruct, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): NavDestinationStruct {
+    throw new Error("Declare interface");
+  }
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -88,7 +104,7 @@ function main() {}
           pagePath: "mock/component/nav-no-lambda",
         }).width(80).applyAttributesFinish();
         return;
-      }));
+      }), undefined);
       NavigationImpl(@memo() ((instance: NavigationAttribute): void => {
         instance.setNavigationOptions(this.pathStack, {
           moduleName: "entry",
@@ -104,11 +120,21 @@ function main() {}
           isUserCreateStack: false,
         }).width(80).applyAttributesFinish();
         return;
-      }));
+      }), undefined);
     }));
   }
   
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
   
 }
 

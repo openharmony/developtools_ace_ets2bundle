@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-import { Component, Entry } from "@ohos.arkui.component"
 import { Observed, Track } from "@ohos.arkui.stateManagement"
 
 class Person{
@@ -79,13 +78,4 @@ class mixed3 {
   @Track unionA: string | undefined = "";
   @Track classA: Person = new Person();
   @Track enumA: Status = Status.NotFound;
-}
-
-
-@Entry
-@Component
-struct MyStateSample {
-  build() {
-
-  }
 }

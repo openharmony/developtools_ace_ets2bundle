@@ -38,27 +38,24 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
-import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-
-import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
-
-import { memo as memo } from "arkui.stateManagement.runtime";
-
-import { TextAttribute as TextAttribute } from "arkui.component.text";
-
-import { TextImpl as TextImpl } from "arkui.component.text";
-
-import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
-import { Component as Component, Text as Text, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Builder as Builder, Column as Column, ForEach as ForEach } from "@kit.ArkUI";
+import { MemoIntrinsic as MemoIntrinsic } from \"arkui.stateManagement.runtime\";
+import { ColumnAttribute as ColumnAttribute } from \"arkui.component.column\";
+import { ColumnImpl as ColumnImpl } from \"arkui.component.column\";
+import { ForEachAttribute as ForEachAttribute } from \"arkui.component.forEach\";
+import { ForEachImpl as ForEachImpl } from \"arkui.component.forEach\";
+import { MemoSkip as MemoSkip } from \"arkui.stateManagement.runtime\";
+import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { TextAttribute as TextAttribute } from \"arkui.component.text\";
+import { TextImpl as TextImpl } from \"arkui.component.text\";
+import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
+import { Builder as Builder } from \"arkui.component.builder\";
+import { LocalStorage as LocalStorage } from \"arkui.stateManagement.storage.localStorage\";
+import { ComponentBuilder as ComponentBuilder } from \"arkui.stateManagement.runtime\";
+import { Component as Component, Text as Text, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Builder as Builder, Column as Column, ForEach as ForEach } from \"@kit.ArkUI\";
 
 const globalBuilderArr: Array<WrappedBuilder<MyBuilderFuncType>> = [wrapBuilder(myBuilder), wrapBuilder(yourBuilder)];
 
 function main() {}
-
 
 @memo() function myBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   TextImpl(@memo() ((instance: TextAttribute): void => {
@@ -73,20 +70,29 @@ function main() {}
     return;
   }), undefined);
 }
-
 @memo() type MyBuilderFuncType = @Builder() ((value: string, size: number)=> void);
-
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
+
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(style, ((): ImportStruct => {
+      return new ImportStruct(false, ({let gensym___<some_random_number> = storage;
+        (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+    }), initializers, reuseId, content);
+  }
+
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): ImportStruct {
+    throw new Error(\"Declare interface\");
+  }
 
   @memo() public testBuilder() {
     ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
       instance.setForEachOptions(((): Array<WrappedBuilder<MyBuilderFuncType>> => {
         return globalBuilderArr;
       }), @memo() ((item: WrappedBuilder<MyBuilderFuncType>) => {
-        item.builder("hello world", 39);
+        item.builder(\"hello world\", 39);
       }), undefined);
       return;
     }));
@@ -101,12 +107,20 @@ function main() {}
     }));
   }
 
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
 
+  constructor() {
+    this(undefined, undefined);
+  }
+
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 }
 
 @Component() export interface __Options_ImportStruct {
-
 }
 `;
 
@@ -115,38 +129,34 @@ function testUITransformer(this: PluginTestContext): void {
 }
 
 const expectedMemoScript: string = `
-import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
-
-import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-
-import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
-
-import { memo as memo } from "arkui.stateManagement.runtime";
-
-import { TextAttribute as TextAttribute } from "arkui.component.text";
-
-import { TextImpl as TextImpl } from "arkui.component.text";
-
-import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
-import { Component as Component, Text as Text, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Builder as Builder, Column as Column, ForEach as ForEach } from "@kit.ArkUI";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { MemoIntrinsic as MemoIntrinsic } from \"arkui.stateManagement.runtime\";
+import { ColumnAttribute as ColumnAttribute } from \"arkui.component.column\";
+import { ColumnImpl as ColumnImpl } from \"arkui.component.column\";
+import { ForEachAttribute as ForEachAttribute } from \"arkui.component.forEach\";
+import { ForEachImpl as ForEachImpl } from \"arkui.component.forEach\";
+import { MemoSkip as MemoSkip } from \"arkui.stateManagement.runtime\";
+import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { TextAttribute as TextAttribute } from \"arkui.component.text\";
+import { TextImpl as TextImpl } from \"arkui.component.text\";
+import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
+import { Builder as Builder } from \"arkui.component.builder\";
+import { LocalStorage as LocalStorage } from \"arkui.stateManagement.storage.localStorage\";
+import { ComponentBuilder as ComponentBuilder } from \"arkui.stateManagement.runtime\";
+import { Component as Component, Text as Text, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Builder as Builder, Column as Column, ForEach as ForEach } from \"@kit.ArkUI\";
 
 const globalBuilderArr: Array<WrappedBuilder<MyBuilderFuncType>> = [wrapBuilder(myBuilder), wrapBuilder(yourBuilder)];
 
 function main() {}
 
-
 @memo() function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
-  const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (52041161)), 0);
+  const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
     return;
   }
-  TextImpl(__memo_context, ((__memo_id) + (175145513)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (47330804)), 1);
+  TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
     const __memo_parameter_instance = __memo_scope.param(0, instance);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -165,13 +175,13 @@ function main() {}
 }
 
 @memo() function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
-  const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (151467670)), 0);
+  const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
     return;
   }
-  TextImpl(__memo_context, ((__memo_id) + (211301233)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (137225318)), 1);
+  TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
     const __memo_parameter_instance = __memo_scope.param(0, instance);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -193,17 +203,28 @@ function main() {}
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
-
+  
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
+  
+  @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): ImportStruct => {
+      return new ImportStruct(false, ({let gensym___<some_random_number> = storage;
+        (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+    }), initializers, reuseId, content);
+  }
+
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): ImportStruct {
+    throw new Error(\"Declare interface\");
+  }
 
   @memo() public testBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (102938669)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    ForEachImpl(__memo_context, ((__memo_id) + (223657391)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
-      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (218979098)), 1);
+    ForEachImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -212,13 +233,13 @@ function main() {}
       __memo_parameter_instance.value.setForEachOptions(((): Array<WrappedBuilder<MyBuilderFuncType>> => {
         return globalBuilderArr;
       }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<MyBuilderFuncType>) => {
-        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (76711614)), 1);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_item = __memo_scope.param(0, item);
         if (__memo_scope.unchanged) {
           __memo_scope.cached;
           return;
         }
-        item.builder(__memo_context, ((__memo_id) + (46726221)), "hello world", 39);
+        item.builder(__memo_context, ((__memo_id) + (<some_random_number>)), \"hello world\", 39);
         {
           __memo_scope.recache();
           return;
@@ -236,13 +257,13 @@ function main() {}
   }
 
   @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (245938697)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    ColumnImpl(__memo_context, ((__memo_id) + (78055758)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
-      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (213687742)), 1);
+    ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -254,12 +275,12 @@ function main() {}
         return;
       }
     }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (136716185)), 0);
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
       }
-      this.testBuilder(__memo_context, ((__memo_id) + (54078781)));
+      this.testBuilder(__memo_context, ((__memo_id) + (<some_random_number>)));
       {
         __memo_scope.recache();
         return;
@@ -271,12 +292,20 @@ function main() {}
     }
   }
 
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
 
+  constructor() {
+    this(undefined, undefined);
+  }
+
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 }
 
 @Component() export interface __Options_ImportStruct {
-
 }
 `;
 

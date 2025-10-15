@@ -38,15 +38,6 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
-import { memo as memo } from "arkui.stateManagement.runtime";
-
-import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
-
-import { ButtonImpl as ButtonImpl } from "arkui.component.button";
-
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -64,15 +55,9 @@ import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
-import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
-
-import { ComponentV2 as ComponentV2, Column as Column, Button as Button } from "@ohos.arkui.component";
-
 import { Monitor as Monitor, IMonitor as IMonitor, ObservedV2 as ObservedV2, Trace as Trace } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
-
 
 @ObservedV2() class Info implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
@@ -208,69 +193,6 @@ function main() {}
 
 }
 
-@ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
-    this.__backing_info = ((({let gensym___130514200 = initializers;
-    (((gensym___130514200) == (null)) ? undefined : gensym___130514200.info)})) ?? (new Info()));
-  }
-
-  public __updateStruct(initializers: (__Options_Index | undefined)): void {}
-
-  private __backing_info?: Info;
-
-  public get info(): Info {
-    return (this.__backing_info as Info);
-  }
-
-  public set info(value: Info) {
-    this.__backing_info = value;
-  }
-
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
-      return;
-    }), @memo() (() => {
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("change name", undefined).onClick(((e) => {
-          this.info.name = "Jack";
-        })).applyAttributesFinish();
-        return;
-      }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("change age", undefined).onClick(((e) => {
-          this.info.age = 26;
-        })).applyAttributesFinish();
-        return;
-      }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("change region", undefined).onClick(((e) => {
-          this.info.region = "South";
-        })).applyAttributesFinish();
-        return;
-      }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("change job", undefined).onClick(((e) => {
-          this.info.job = "Driver";
-        })).applyAttributesFinish();
-        return;
-      }), undefined);
-    }));
-  }
-
-  public constructor() {}
-
-}
-
-@ComponentV2() export interface __Options_Index {
-  set info(info: (Info | undefined))
-
-  get info(): (Info | undefined)
-  set __options_has_info(__options_has_info: (boolean | undefined))
-  
-  get __options_has_info(): (boolean | undefined)
-  
-}
 `;
 
 function testParsedAndCheckedTransformer(this: PluginTestContext): void {

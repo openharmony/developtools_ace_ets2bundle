@@ -38,6 +38,7 @@ const importParsed: Plugins = {
 const pluginTester = new PluginTester('test import transform', buildConfig);
 
 const expectedParsedScript: string = `
+
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
 
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
@@ -45,6 +46,12 @@ import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent"
 import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { PropRef as PropRef, Column as Column, Entry as Entry } from "@kit.ArkUI";
 
@@ -57,6 +64,10 @@ import { Button as Button } from "arkui.component.button";
 import hilog from "@ohos.hilog";
 
 @Entry() @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() content?: (()=> void)): A {
+    throw new Error("Declare interface");
+  }
+
   @State() public a: string = "str";
   
   @PropRef() public b!: string;
@@ -68,7 +79,9 @@ import hilog from "@ohos.hilog";
     };
   }
 
-  public constructor() {}
+  public constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
 
 }
 
@@ -100,6 +113,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 `;
 
 const expectedCheckedScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
@@ -112,13 +127,13 @@ import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
 
@@ -127,6 +142,12 @@ import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent"
 import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { PropRef as PropRef, Column as Column, Entry as Entry } from "@kit.ArkUI";
 
@@ -182,6 +203,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_b!.set(value);
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: A)=> void), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<A, __Options_A>(style, ((): A => {
+      return new A(false, ({let gensym___17371929 = storage;
+      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): A {
+    throw new Error("Declare interface");
+  }
+  
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -197,8 +229,18 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       }), undefined);
     }));
   }
-
-  public constructor() {}
+  
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 
@@ -226,9 +268,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
-    A._instantiateImpl(undefined, (() => {
-      return new A();
-    }), undefined, undefined, undefined);
+    A._invoke(@memo() ((instance: A): void => {
+      instance.applyAttributesFinish();
+      return;
+    }), undefined, undefined, undefined, undefined);
   }
 
   public constructor() {}

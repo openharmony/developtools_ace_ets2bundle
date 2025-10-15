@@ -40,20 +40,25 @@ const parsedTransform: Plugins = {
 const expectedCheckedScript: string = `
 import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 import { wrapBuilder as wrapBuilder } from "arkui.component.builder";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
 import { RelativeContainerAttribute as RelativeContainerAttribute } from "arkui.component.relativeContainer";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { RelativeContainerImpl as RelativeContainerImpl } from "arkui.component.relativeContainer";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+import { Builder as Builder } from "arkui.component.builder";
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 import { Component as Component, RelativeContainer as RelativeContainer, Builder as Builder, Column as Column, Text as Text } from "@ohos.arkui.component";
 
 function main() {}
 
 @memo() function builderTwo() {
-  Page2._instantiateImpl(undefined, (() => {
-    return new Page2();
-  }), undefined, undefined, undefined);
+  Page2._invoke(@memo() ((instance: Page2): void => {
+    instance.applyAttributesFinish();
+    return;
+  }), undefined, undefined, undefined, undefined);
 }
 
 @Component() final struct Page2 extends CustomComponent<Page2, __Options_Page2> {
@@ -73,6 +78,17 @@ function main() {}
     this.__backing_message = value;
   }
   
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Page2)=> void), initializers: ((()=> __Options_Page2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Page2, __Options_Page2>(style, ((): Page2 => {
+      return new Page2(false, ({let gensym___149025070 = storage;
+      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Page2, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Page2 {
+    throw new Error("Declare interface");
+  }
+  
   @memo() public build() {
     RelativeContainerImpl(@memo() ((instance: RelativeContainerAttribute): void => {
       instance.setRelativeContainerOptions().height("100%").width("100%").applyAttributesFinish();
@@ -85,7 +101,17 @@ function main() {}
     }));
   }
   
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
   
 }
 

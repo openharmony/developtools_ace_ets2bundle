@@ -42,13 +42,13 @@ import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
-import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -56,15 +56,23 @@ import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { BaseCustomDialog as BaseCustomDialog } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Text as Text, Column as Column, Component as Component, Button as Button, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 
 import { State as State } from "@ohos.arkui.stateManagement";
 
-import { CustomDialog as CustomDialog, CustomDialogController as CustomDialogController, CustomDialogControllerOptions as CustomDialogControllerOptions } from "@kit.ArkUI";
+import { CustomDialog as CustomDialog, CustomDialogController as CustomDialogController, CustomDialogControllerOptions as CustomDialogControllerOptions } from "@ohos.arkui.component";
 
 import hilog from "@ohos.hilog";
 
@@ -114,7 +122,20 @@ function main() {}
   public set hh(value: string) {
     this.__backing_hh!.set(value);
   }
-
+  
+  @MemoIntrinsic() public static _invoke(initializers: ((()=> __Options_CustomDialogExample) | undefined), storage: ((()=> LocalStorage) | undefined), controller: (CustomDialogController | undefined), @memo() content: ((()=> void) | undefined)): void {
+    BaseCustomDialog._invokeImpl<CustomDialogExample, __Options_CustomDialogExample>(((): CustomDialogExample => {
+      const instance = new CustomDialogExample(false, ({let gensym___17371929 = storage;
+      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
+      instance.__setDialogController__((controller as CustomDialogController));
+      return instance;
+    }), initializers, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomDialogExample, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): CustomDialogExample {
+    throw new Error("Declare interface");
+  }
+  
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -126,9 +147,19 @@ function main() {}
       }), undefined);
     }));
   }
-
-  public constructor() {}
-
+  
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
+  
   public __setDialogController__(controller: CustomDialogController): void {
     this.__backing_aaController = controller;
   }
@@ -139,6 +170,17 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: CustomDialogUser)=> void), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<CustomDialogUser, __Options_CustomDialogUser>(style, ((): CustomDialogUser => {
+      return new CustomDialogUser(false, ({let gensym___192738000 = storage;
+      (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomDialogUser, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): CustomDialogUser {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -146,26 +188,33 @@ function main() {}
     }), @memo() (() => {
       ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("click me", undefined).onClick(((e: ClickEvent) => {
-          let dialogController: (CustomDialogController | undefined) = ({let gensym___220374545: Any;
-          gensym___220374545 = new CustomDialogController({
+          let dialogController: (CustomDialogController | undefined) = ({let gensym___90667230: Any;
+          gensym___90667230 = new CustomDialogController({
             builder: @memo() (() => {
-              CustomDialogExample._instantiateImpl(undefined, (() => {
-                const instance = new CustomDialogExample();
-                instance.__setDialogController__((gensym___90667230 as CustomDialogController));
-                return instance;
-              }), {}, undefined);
+              CustomDialogExample._invoke((() => {
+                return {};
+              }), undefined, (gensym___90667230 as CustomDialogController), undefined);
             }),
             baseComponent: this,
           })
-          (gensym___220374545 as CustomDialogController)});
+          (gensym___90667230 as CustomDialogController)});
         })).backgroundColor(0x317aff).applyAttributesFinish();
         return;
       }), undefined);
     }));
   }
 
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
 
+  constructor() {
+    this(undefined, undefined);
+  }
+
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 }
 
 @CustomDialog() export interface __Options_CustomDialogExample {

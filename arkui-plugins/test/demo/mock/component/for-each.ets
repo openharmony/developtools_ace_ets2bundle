@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Component, Text, WrappedBuilder, Column, ForEach } from "@kit.ArkUI"
+import { Component, Text, WrappedBuilder, Column, ForEach } from "@ohos.arkui.component"
 
 interface Person {
     name: string;

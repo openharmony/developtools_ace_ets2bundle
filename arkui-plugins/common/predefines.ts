@@ -29,8 +29,6 @@ export const EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK: (string | RegExp)[] = [
 ];
 
 export const ARKUI_IMPORT_PREFIX_NAMES: (string | RegExp)[] = [/arkui\..*/, /@ohos\..*/, /@kit\..*/];
-
-export const ARKUI_INCREMENTAL_ANNOTATION = 'arkui.incremental.annotation';
 export const MEMO_IMPORT_SOURCE_NAME: string = 'arkui.stateManagement.runtime';
 export const CUSTOM_COMPONENT_IMPORT_SOURCE_NAME: string = 'arkui.component.customComponent';
 export const CUSTOM_DIALOG_CONTROLLER_SOURCE_NAME: string = 'arkui.component.customDialogController';
@@ -410,7 +408,7 @@ export enum LANGUAGE_VERSION {
     ARKTS_HYBRID = 'hybrid',
 };
 
-export enum Reuse {
+export enum ReuseNames {
     REUSE_ID = 'reuseId',
     REUSE_OPTIONS = 'ReuseOptions'
 }

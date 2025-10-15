@@ -109,15 +109,15 @@ export class factory {
             return member;
         }
         const isDecl = scopeInfo.isDecl;
-        if (isDecl) {
-            member.modifiers &= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
-            member.modifiers &= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PROTECTED;
-            member.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
-        }
         const isFromV2 = !!scopeInfo.annotations.componentV2;
         if (isFromV2) {
             return member;
         }
+        const modifiers = isDecl
+            ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
+              arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE |
+              arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR
+            : member.modifiers;
         const body = isDecl
             ? undefined
             : arkts.factory.createBlock([
@@ -129,9 +129,11 @@ export class factory {
                   ),
               ]);
         return UIFactory.updateMethodDefinition(member, {
+            modifiers: modifiers,
             function: {
-                params: [this.createUseSharedStorageParamInInvoke(), this.createStorageParamInInvoke()],
+                modifiers: modifiers,
                 body,
+                params: [this.createUseSharedStorageParamInInvoke(), this.createStorageParamInInvoke()],
             },
         });
     }
@@ -543,11 +545,7 @@ export class factory {
         if (!node.definition) {
             return node;
         }
-        let classOptionsName: string | undefined;
-        if (scope.isDecl) {
-            const [_, classOptions] = getTypeParamsFromClassDecl(node);
-            classOptionsName = getTypeNameFromTypeParameter(classOptions);
-        }
+        const { name, isDecl, isCustomComponentClass, annotations } = scope;
         const definition: arkts.ClassDefinition = node.definition;
         const classIdent: arkts.Identifier | undefined = node.definition.ident;
         if (!classIdent) {
@@ -559,26 +557,33 @@ export class factory {
             body.map((member) => classifyStructMembers(member, scope))
         );
         scope.keyRange = classIdent.range;
-        const translatedMembers: arkts.AstNode[] = this.tranformPropertyMembers(
-            propertyTranslators,
-            classOptionsName ?? getCustomComponentOptionsName(className),
-            scope
-        );
-        if (!scope.isDecl) {
+        const translatedMembers: arkts.AstNode[] = [];
+        if (!isDecl || isCustomComponentClass) {
+            const [_, classOptions] = getTypeParamsFromClassDecl(node);
+            const classOptionsName = getTypeNameFromTypeParameter(classOptions);
+            const rewritedProperties = this.tranformPropertyMembers(
+                propertyTranslators,
+                classOptionsName ?? getCustomComponentOptionsName(className),
+                scope
+            );
+            translatedMembers.push(...rewritedProperties);
+        }
+        if (!isCustomComponentClass) {
             translatedMembers.push(factory.createInvokeImplMethod(className, scope));
         }
         const updateMembers: arkts.AstNode[] = body
             .filter((member) => !arkts.isClassProperty(member) && !isComputedMethod(member))
-            .map((member: arkts.AstNode) => factory.transformNonPropertyMembersInClass(member, scope.isDecl));
+            .map((member: arkts.AstNode) => factory.transformNonPropertyMembersInClass(member, isDecl));
+        const restMembers = (!isCustomComponentClass && isDecl) ? body : updateMembers;
         const updateClassDef: arkts.ClassDefinition = this.updateCustomComponentClass(
             definition,
-            factory.addClassStaticBlock([...translatedMembers, ...updateMembers], body)
+            factory.addClassStaticBlock([...translatedMembers, ...restMembers], body)
         );
         if (
-            !!scope.annotations.customDialog ||
-            (scope.isDecl && scope.name === CustomComponentNames.BASE_CUSTOM_DIALOG_NAME)
+            !!annotations.customDialog ||
+            (isCustomComponentClass && name === CustomComponentNames.BASE_CUSTOM_DIALOG_NAME)
         ) {
-            updateClassDef.addProperties(factory.addControllerSetMethod(scope.isDecl, body));
+            updateClassDef.addProperties(factory.addControllerSetMethod(isDecl, body));
         }
         return arkts.factory.updateClassDeclaration(node, updateClassDef);
     }
@@ -1207,7 +1212,7 @@ export class factory {
                     UIFactory.createScriptFunction({
                         body: arkts.factory.createBlock([
                             arkts.factory.createExpressionStatement(
-                                this.transformCustomDialogComponentCall(value, gensymName)
+                                factory.transformCustomDialogComponentCall(value, gensymName)
                             ),
                         ]),
                         flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
@@ -1223,53 +1228,21 @@ export class factory {
     }
 
     static transformCustomDialogComponentCall(value: arkts.CallExpression, gensymName: string): arkts.CallExpression {
-        if (value.arguments.length >= 2 && arkts.isArrowFunctionExpression(value.arguments[1])) {
-            const originScript: arkts.ScriptFunction = value.arguments[1].scriptFunction;
-            const newScript: arkts.ScriptFunction = UIFactory.updateScriptFunction(originScript, {
-                body: this.generateInstanceSetController(originScript.body, gensymName),
-            });
+        if (value.arguments.length >= 3) {
             return arkts.factory.updateCallExpression(value, value.expression, value.typeArguments, [
-                value.arguments[0],
-                arkts.factory.updateArrowFunction(value.arguments[1], newScript),
-                ...value.arguments.slice(2),
+                ...value.arguments.slice(0, 2),
+                arkts.factory.createTSAsExpression(
+                    arkts.factory.createIdentifier(gensymName),
+                    UIFactory.createTypeReferenceFromString(CustomDialogNames.CUSTOM_DIALOG_CONTROLLER),
+                    false
+                ),
+                ...value.arguments.slice(3),
             ]);
         }
         return value;
     }
 
-    static generateInstanceSetController(
-        body: arkts.AstNode | undefined,
-        gensymName: string
-    ): arkts.AstNode | undefined {
-        if (
-            !!body &&
-            arkts.isBlockStatement(body) &&
-            body.statements.length > 0 &&
-            arkts.isReturnStatement(body.statements[0])
-        ) {
-            const instanceIdent: arkts.Identifier = arkts.factory.createIdentifier(
-                BuilderLambdaNames.STYLE_ARROW_PARAM_NAME
-            );
-            return arkts.factory.updateBlock(body, [
-                arkts.factory.createVariableDeclaration(
-                    arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONST,
-                    arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
-                    [
-                        arkts.factory.createVariableDeclarator(
-                            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_CONST,
-                            instanceIdent,
-                            body.statements[0].argument?.clone()
-                        ),
-                    ]
-                ),
-                this.genertateControllerSetCall(instanceIdent, gensymName),
-                arkts.factory.createReturnStatement(instanceIdent.clone()),
-            ]);
-        }
-        return body;
-    }
-
-    static genertateControllerSetCall(instanceIdent: arkts.Identifier, gensymName: string): arkts.AstNode {
+    static genertateControllerSetCall(instanceIdent: arkts.Identifier, controllerName: string): arkts.AstNode {
         return arkts.factory.createExpressionStatement(
             arkts.factory.createCallExpression(
                 arkts.factory.createMemberExpression(
@@ -1282,7 +1255,7 @@ export class factory {
                 undefined,
                 [
                     arkts.factory.createTSAsExpression(
-                        arkts.factory.createIdentifier(gensymName),
+                        arkts.factory.createIdentifier(controllerName),
                         UIFactory.createTypeReferenceFromString(CustomDialogNames.CUSTOM_DIALOG_CONTROLLER),
                         false
                     ),
@@ -1457,20 +1430,28 @@ export class factory {
     /**
      * create  `$_invoke` static method in struct
      */
-    static createInvokeMethod(structName: string): arkts.MethodDefinition {
+    static createInvokeMethod(structName: string, isDecl: boolean): arkts.MethodDefinition {
         ImportCollector.getInstance().collectSource(BuilderLambdaNames.ANNOTATION_NAME, MEMO_IMPORT_SOURCE_NAME);
         ImportCollector.getInstance().collectImport(BuilderLambdaNames.ANNOTATION_NAME);
         const componentBuilderAnno = annotation(BuilderLambdaNames.ANNOTATION_NAME);
         const initializerParam = this.createInitializerParamInInvoke(structName);
         const storageParam = this.createStorageParamInInvoke();
         const contentParam = this.createContentParamInInvoke();
-        const methodBody = arkts.factory.createBlock([
-            arkts.factory.createThrowStatement(
-                arkts.factory.createETSNewClassInstanceExpression(arkts.factory.createIdentifier(TypeNames.ERROR), [
-                    arkts.factory.createStringLiteral('Declare interface'),
-                ])
-            ),
-        ]);
+        const methodBody = isDecl
+            ? undefined
+            : arkts.factory.createBlock([
+                  arkts.factory.createThrowStatement(
+                      arkts.factory.createETSNewClassInstanceExpression(
+                          arkts.factory.createIdentifier(TypeNames.ERROR),
+                          [arkts.factory.createStringLiteral('Declare interface')]
+                      )
+                  ),
+              ]);
+        let modifiers: arkts.Es2pandaModifierFlags = isDecl
+            ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC |
+              arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE |
+              arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+            : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
         const returnType = UIFactory.createTypeReferenceFromString(structName);
         return UIFactory.createMethodDefinition({
             key: arkts.factory.createIdentifier(BuilderLambdaNames.ORIGIN_METHOD_NAME),
@@ -1481,10 +1462,10 @@ export class factory {
                 params: [initializerParam, storageParam, contentParam],
                 returnTypeAnnotation: returnType,
                 flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+                modifiers: modifiers,
                 annotations: [componentBuilderAnno],
             },
-            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+            modifiers: modifiers,
         });
     }
 
@@ -1533,24 +1514,48 @@ export class factory {
     }
 
     /**
+     * create `controller: CustomDialogController | undefined` in `_invokeImpl` static method.
+     */
+    static createControllerParamInInvokeImpl(): arkts.ETSParameterExpression {
+        return arkts.factory.createParameterDeclaration(
+            UIFactory.createIdentifierWithType(
+                CustomDialogNames.CONTROLLER,
+                UIFactory.createTypeReferenceFromString(CustomDialogNames.CUSTOM_DIALOG_CONTROLLER),
+                true
+            ),
+            undefined
+        );
+    }
+
+    /**
      * create `<customComponentName>._invokeImpl(() => new <structName>(storage), style, initializers, storage, reuseId, content);`
      */
     static createInvokeImplCall(structName: string, scopeInfo: CustomComponentScopeInfo): arkts.CallExpression {
         const customComponentName = getCustomComponentNameFromInfo(scopeInfo);
         const optionsName = getCustomComponentOptionsName(structName);
-        const isFromV2 = !!scopeInfo.annotations.componentV2;
-        const storageCall = UIFactory.createOptionalCall(
-            arkts.factory.createIdentifier(BuilderLambdaNames.STORAGE_PARAM_NAME),
-            undefined,
-            [],
-            true
-        );
-        const restIdents = [
+        const isFromCustomDialog = !!scopeInfo.annotations.customDialog;
+        const isFromComponent = !!scopeInfo.annotations.component;
+        const styleParams: arkts.Expression[] = [];
+        const restIdents: arkts.Expression[] = [
             arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-            arkts.factory.createIdentifier(BuilderLambdaNames.REUSE_ID_PARAM_NAME),
             arkts.factory.createIdentifier(BuilderLambdaNames.CONTENT_PARAM_NAME),
         ];
-        const factoryParams = isFromV2 ? [] : [arkts.factory.createBooleanLiteral(false), storageCall];
+        if (!isFromCustomDialog) {
+            styleParams.push(arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_PARAM_NAME));
+            restIdents.splice(1, 0, arkts.factory.createIdentifier(BuilderLambdaNames.REUSE_ID_PARAM_NAME));
+        }
+        let factoryParams: arkts.Expression[] = [];
+        if (isFromCustomDialog || isFromComponent) {
+            factoryParams.push(arkts.factory.createBooleanLiteral(false));
+            factoryParams.push(
+                UIFactory.createOptionalCall(
+                    arkts.factory.createIdentifier(BuilderLambdaNames.STORAGE_PARAM_NAME),
+                    undefined,
+                    [],
+                    true
+                )
+            );
+        }
         const intrinsicCall = arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
                 arkts.factory.createIdentifier(customComponentName),
@@ -1561,22 +1566,8 @@ export class factory {
             ),
             [UIFactory.createTypeReferenceFromString(structName), UIFactory.createTypeReferenceFromString(optionsName)],
             [
-                arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_PARAM_NAME),
-                arkts.factory.createArrowFunction(
-                    UIFactory.createScriptFunction({
-                        body: arkts.factory.createBlock([
-                            arkts.factory.createReturnStatement(
-                                arkts.factory.createETSNewClassInstanceExpression(
-                                    arkts.factory.createIdentifier(structName),
-                                    factoryParams
-                                )
-                            ),
-                        ]),
-                        flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                        returnTypeAnnotation: UIFactory.createTypeReferenceFromString(structName),
-                        modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-                    })
-                ),
+                ...styleParams,
+                factory.createComponentFactoryParameter(structName, factoryParams, isFromCustomDialog),
                 ...restIdents,
             ]
         );
@@ -1585,31 +1576,89 @@ export class factory {
     }
 
     /**
-     * create  `_invokeImpl` static method in struct
+     * create `(): <structName> => { return new <structName>(<factoryParams>) }`.
+     */
+    static createComponentFactoryParameter(
+        structName: string,
+        factoryParams: arkts.Expression[],
+        isFromCustomDialog: boolean
+    ): arkts.ArrowFunctionExpression {
+        const newComponentInstance: arkts.ETSNewClassInstanceExpression =
+            arkts.factory.createETSNewClassInstanceExpression(
+                arkts.factory.createIdentifier(structName),
+                factoryParams
+            );
+        let factoryBody: arkts.Statement[] = [arkts.factory.createReturnStatement(newComponentInstance)];
+        if (isFromCustomDialog) {
+            const instanceIdent: arkts.Identifier = arkts.factory.createIdentifier(
+                BuilderLambdaNames.STYLE_ARROW_PARAM_NAME
+            );
+            factoryBody = [
+                arkts.factory.createVariableDeclaration(
+                    arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONST,
+                    arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
+                    [
+                        arkts.factory.createVariableDeclarator(
+                            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_CONST,
+                            instanceIdent,
+                            newComponentInstance
+                        ),
+                    ]
+                ),
+                factory.genertateControllerSetCall(instanceIdent, CustomDialogNames.CONTROLLER),
+                arkts.factory.createReturnStatement(instanceIdent.clone()),
+            ];
+        }
+        return arkts.factory.createArrowFunction(
+            UIFactory.createScriptFunction({
+                body: arkts.factory.createBlock(factoryBody),
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                returnTypeAnnotation: UIFactory.createTypeReferenceFromString(structName),
+                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            })
+        );
+    }
+
+    /**
+     * create  `_invoke` static method in struct
      */
     static createInvokeImplMethod(structName: string, scopeInfo: CustomComponentScopeInfo) {
-        const structType = UIFactory.createTypeReferenceFromString(structName);
-        const styleParam = BuilderLambdaFactory.createStyleArgInBuilderLambdaDecl(structType);
-        const initalizerParam = this.createInitializerParamInInvokeImpl(structName);
-        const storageParam = this.createStorageParamInInvokeImpl();
-        const reuseIdParam = this.createReuseIdParamInInvokeImpl();
-        const contentParam = UIFactory.createContentParameter();
+        const { isDecl, annotations } = scopeInfo;
+        const params: arkts.Expression[] = [];
+        const isCustomComponent = !!annotations.component || !!annotations.componentV2;
+        if (isCustomComponent) {
+            const structType = UIFactory.createTypeReferenceFromString(structName);
+            params.push(BuilderLambdaFactory.createStyleArgInBuilderLambdaDecl(structType));
+        }
+        params.push(this.createInitializerParamInInvokeImpl(structName));
+        params.push(this.createStorageParamInInvokeImpl());
+        if (isCustomComponent) {
+            params.push(this.createReuseIdParamInInvokeImpl());
+        } else {
+            params.push(this.createControllerParamInInvokeImpl());
+        }
+        params.push(UIFactory.createContentParameter());
         const invokeCall = this.createInvokeImplCall(structName, scopeInfo);
-        const methodBody = arkts.factory.createBlock([arkts.factory.createExpressionStatement(invokeCall)]);
+        const methodBody = isDecl ? undefined : arkts.factory.createBlock([arkts.factory.createExpressionStatement(invokeCall)]);
+        let modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
+        if (isDecl) {
+            modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
+            modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+        }
         const func = UIFactory.createScriptFunction({
             key: arkts.factory.createIdentifier(BuilderLambdaNames.TRANSFORM_METHOD_NAME),
             body: methodBody,
-            params: [styleParam, initalizerParam, storageParam, reuseIdParam, contentParam],
+            params,
             returnTypeAnnotation: arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
             flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+            modifiers,
         });
         addMemoAnnotation(func, MemoNames.MEMO_INTRINSIC_UI);
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             arkts.factory.createIdentifier(BuilderLambdaNames.TRANSFORM_METHOD_NAME),
             func,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+            modifiers,
             false
         );
     }
