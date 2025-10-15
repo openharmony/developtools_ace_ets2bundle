@@ -41,6 +41,7 @@ const expectedUIScript: string = `
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
@@ -188,6 +189,7 @@ import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";

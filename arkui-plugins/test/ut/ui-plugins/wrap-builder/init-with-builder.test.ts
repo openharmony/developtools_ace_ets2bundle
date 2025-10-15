@@ -41,6 +41,7 @@ const expectedUIScript: string = `
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
@@ -102,6 +103,8 @@ import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
@@ -129,7 +132,7 @@ function main() {}
       __memo_scope.cached;
       return;
     }
-    __memo_parameter_instance.value.setTextOptions(__memo_parameter_value.value, undefined).fontSize(__memo_parameter_size.value).applyAttributesFinish();
+    __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
     {
       __memo_scope.recache();
       return;
