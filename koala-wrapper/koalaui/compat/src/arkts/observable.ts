@@ -241,13 +241,13 @@ class CustomArrayProxyHandler<T> extends DefaultArrayProxyHandler<T> {
         return super.set(target, index, value)
     }
 
-    override get(target: Array<T>, name: string): NullishType {
+    override get(target: Array<T>, name: string): Any {
         const observable = ObservableHandler.find(target)
         if (observable) observable.onAccess()
         return super.get(target, name)
     }
 
-    override set(target: Array<T>, name: string, value: NullishType): boolean {
+    override set(target: Array<T>, name: string, value: Any): boolean {
         const observable = ObservableHandler.find(target)
         if (observable) {
             observable.onModify()
@@ -257,7 +257,7 @@ class CustomArrayProxyHandler<T> extends DefaultArrayProxyHandler<T> {
         return super.set(target, name, value)
     }
 
-    override invoke(target: Array<T>, method: Method, args: NullishType[]): NullishType {
+    override invoke(target: Array<T>, method: Method, args: Any[]): Any {
         const observable = ObservableHandler.find(target)
         if (observable) {
             const name = method.getName()
