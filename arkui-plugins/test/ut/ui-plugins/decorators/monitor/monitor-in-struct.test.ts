@@ -38,6 +38,8 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { IMonitorDecoratedVariable as IMonitorDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
@@ -46,23 +48,27 @@ import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateM
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { ComponentV2 as ComponentV2, Column as Column, Button as Button } from "@ohos.arkui.component";
 
 import { Monitor as Monitor, Local as Local, IMonitor as IMonitor } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
-
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
   public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
@@ -117,6 +123,16 @@ function main() {}
   }
 
   private __monitor_onStrChange: (IMonitorDecoratedVariable | undefined);
+
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
+      return new Index();
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
+  }
 
   @Monitor({value:["message", "name"]}) public onStrChange(monitor: IMonitor) {
     monitor.dirty.forEach(((path: string) => {

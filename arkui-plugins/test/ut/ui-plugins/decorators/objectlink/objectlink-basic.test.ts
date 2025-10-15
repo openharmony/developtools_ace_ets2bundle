@@ -38,9 +38,11 @@ const objectlinkTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test objectlink basic transform', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
 
 import { IObjectLinkDecoratedVariable as IObjectLinkDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -57,6 +59,12 @@ import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Component as Component } from "@ohos.arkui.component";
 
@@ -149,9 +157,30 @@ function main() {}
     return this.__backing_objectlinkvar!.get();
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
+      return new MyStateSample(false, ({let gensym___46528967 = storage;
+      (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample {
+    throw new Error("Declare interface");
+  }
+  
   @memo() public build() {}
-
-  public constructor() {}
+  
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 
@@ -198,9 +227,30 @@ function main() {}
     return this.__backing_objectlinkvar3!.get();
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample2)=> void), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<MyStateSample2, __Options_MyStateSample2>(style, ((): MyStateSample2 => {
+      return new MyStateSample2(false, ({let gensym___64599093 = storage;
+      (((gensym___64599093) == (null)) ? undefined : gensym___64599093())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample2, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample2 {
+    throw new Error("Declare interface");
+  }
+  
   @memo() public build() {}
-
-  public constructor() {}
+  
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 

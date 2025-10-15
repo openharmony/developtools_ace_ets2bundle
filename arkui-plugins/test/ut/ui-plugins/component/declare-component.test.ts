@@ -40,11 +40,19 @@ const parsedTransform: Plugins = {
 const expectedParsedcript: string = `
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
 import { Component as Component, ResourceStr as ResourceStr, Builder as Builder } from "@ohos.arkui.component";
 
 import { PropRef as PropRef, State as State } from "@ohos.arkui.stateManagement";
 
 @Component() export declare final struct SwipeRefresher extends CustomComponent<SwipeRefresher, __Options_SwipeRefresher> {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_SwipeRefresher, storage?: LocalStorage, @Builder() content?: (()=> void)): SwipeRefresher
+  
   @PropRef() public content?: (ResourceStr | undefined);
   
   @PropRef() public isLoading: boolean;
@@ -53,7 +61,7 @@ import { PropRef as PropRef, State as State } from "@ohos.arkui.stateManagement"
 
   @Builder() public build(): void
 
-  public constructor() {}
+  public constructor(useSharedStorage?: boolean, storage?: LocalStorage)
 
   public static _buildCompatibleNode(options: __Options_SwipeRefresher): void
 
@@ -82,9 +90,17 @@ import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateM
 
 import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Component as Component, ResourceStr as ResourceStr, Builder as Builder } from "@ohos.arkui.component";
 
@@ -93,16 +109,24 @@ import { PropRef as PropRef, State as State } from "@ohos.arkui.stateManagement"
 function main() {}
 
 @Component() export declare final struct SwipeRefresher extends CustomComponent<SwipeRefresher, __Options_SwipeRefresher> {
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: SwipeRefresher)=> void), initializers: ((()=> __Options_SwipeRefresher) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_SwipeRefresher, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): SwipeRefresher
+  
   @PropRef() public content?: (ResourceStr | undefined);
   
   @PropRef() public isLoading: boolean;
   
   @State() public code: number;
-
-  @Builder() @memo() public build(): void
-
-  public constructor() {}
-
+  
+  @memo() public build(): void
+  
+  constructor(useSharedStorage: (boolean | undefined))
+  
+  constructor()
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined))
+  
   public static _buildCompatibleNode(options: __Options_SwipeRefresher): void
 
 }

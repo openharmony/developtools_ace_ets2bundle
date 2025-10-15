@@ -142,22 +142,22 @@ function main() {}
       Child._invoke(@memo() ((instance: Child): void => {
         instance.applyAttributesFinish();
         return;
-      }), ((): __Options_Child => {
-        return ({
+      }), (() => {
+        return {
           customBuilderParam: this.componentBuilder,
           __options_has_customBuilderParam: true,
-        } as __Options_Child);
+        };
       }), undefined, undefined, undefined);
       Child._invoke(@memo() ((instance: Child): void => {
         instance.applyAttributesFinish();
         return;
-      }), ((): __Options_Child => {
-        return ({
+      }), (() => {
+        return {
           customBuilderParam: @memo() (() => {
             this.componentBuilder();
           }),
           __options_has_customBuilderParam: true,
-        } as __Options_Child);
+        };
       }), undefined, undefined, undefined);
       Child._invoke(@memo() ((instance: Child): void => {
         instance.applyAttributesFinish();
@@ -361,11 +361,11 @@ function main() {}
           __memo_scope.recache();
           return;
         }
-      }), ((): __Options_Child => {
-        return ({
+      }), (() => {
+        return {
           customBuilderParam: this.componentBuilder,
           __options_has_customBuilderParam: true,
-        } as __Options_Child);
+        };
       }), undefined, undefined, undefined);
       Child._invoke(__memo_context, ((__memo_id) + (78055758)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child): void => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (213687742)), 1);
@@ -379,8 +379,8 @@ function main() {}
           __memo_scope.recache();
           return;
         }
-      }), ((): __Options_Child => {
-        return ({
+      }), (() => {
+        return {
           customBuilderParam: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (136716185)), 0);
             if (__memo_scope.unchanged) {
@@ -394,7 +394,7 @@ function main() {}
             }
           }),
           __options_has_customBuilderParam: true,
-        } as __Options_Child);
+        };
       }), undefined, undefined, undefined);
       Child._invoke(__memo_context, ((__memo_id) + (238360624)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child): void => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (262314519)), 1);

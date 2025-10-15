@@ -138,11 +138,7 @@ export function collectMemoAnnotationImport(memoName: MemoNames = MemoNames.MEMO
 }
 
 export function collectMemoAnnotationSource(memoName: MemoNames = MemoNames.MEMO): void {
-    if (memoName === MemoNames.MEMO_INTRINSIC_UI) {
-        ImportCollector.getInstance().collectSource(memoName, MEMO_IMPORT_SOURCE_NAME);
-    } else {
-        ImportCollector.getInstance().collectSource(memoName, MEMO_IMPORT_SOURCE_NAME);
-    }
+    ImportCollector.getInstance().collectSource(memoName, MEMO_IMPORT_SOURCE_NAME);
 }
 
 export function collectMemoableInfoInUnionType(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {

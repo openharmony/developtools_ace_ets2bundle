@@ -55,7 +55,7 @@ import {
     DECORATOR_TYPE_MAP,
     NavigationNames,
     EntryWrapperNames,
-    Reuse,
+    ReuseNames,
 } from '../common/predefines';
 import { ImportCollector } from '../common/import-collector';
 
@@ -337,14 +337,15 @@ export class ComponentTransformer extends AbstractVisitor {
         definition: arkts.ClassDefinition
     ): arkts.ClassDefinition {
         const staticMethodBody: arkts.AstNode[] = [];
-        const hasExportFlag = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT);
-        if (hasExportFlag) {
+        const isExportClass = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT);
+        if (isExportClass) {
             const buildCompatibleNode: arkts.MethodDefinition = this.createStaticMethod(definition);
             if (!!buildCompatibleNode) {
                 staticMethodBody.push(buildCompatibleNode);
             }
         }
         const scopeInfo = this.scopeInfos[this.scopeInfos.length - 1];
+        const isDecl = scopeInfo.isDecl;
         const extendsName: string = getComponentExtendsName(scopeInfo.annotations, this.componentType);
         return arkts.factory
             .createClassDefinition(
@@ -365,7 +366,7 @@ export class ComponentTransformer extends AbstractVisitor {
                     )
                 ),
                 [
-                    ...[StructFactory.createInvokeMethod(className)],
+                    StructFactory.createInvokeMethod(className, isDecl),
                     ...definition.body.map((st: arkts.AstNode) => {
                         UIFactory.preprocessClassPropertyModifier(st, scopeInfo.isDecl);
                         return StructFactory.updateStructConstructor(st, scopeInfo);
@@ -456,10 +457,10 @@ export class ComponentTransformer extends AbstractVisitor {
         if (
             arkts.isCallExpression(node) &&
             arkts.isMemberExpression(node.expression) &&
-            (node.expression.property as arkts.Identifier).name === Reuse.REUSE_ID
+            (node.expression.property as arkts.Identifier).name === ReuseNames.REUSE_ID
         ) {
-            ImportCollector.getInstance().collectSource(Reuse.REUSE_OPTIONS, ARKUI_COMPONENT_COMMON_SOURCE_NAME);
-            ImportCollector.getInstance().collectImport(Reuse.REUSE_OPTIONS);
+            ImportCollector.getInstance().collectSource(ReuseNames.REUSE_OPTIONS, ARKUI_COMPONENT_COMMON_SOURCE_NAME);
+            ImportCollector.getInstance().collectImport(ReuseNames.REUSE_OPTIONS);
         }
         if (
             arkts.isStructDeclaration(newNode) &&

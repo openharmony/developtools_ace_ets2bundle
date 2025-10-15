@@ -38,23 +38,39 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { ToggleAttribute as ToggleAttribute } from "arkui.component.toggle";
+
 import { Bindable as Bindable } from "arkui.component.common";
+
 import { ToggleImpl as ToggleImpl } from "arkui.component.toggle";
+
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
 import { Text as Text, Column as Column, Component as Component, $$ as $$, Toggle as Toggle, ToggleType as ToggleType } from "@ohos.arkui.component";
+
 import { State as State } from "@ohos.arkui.stateManagement";
 
-let c: Array<boolean>;
+const c: Array<boolean> = [true, false, true];
 
 function main() {}
-
-c = [true, false, true];
 
 class BooleanClass {
   public isOn: boolean = true;
@@ -92,7 +108,18 @@ class BooleanClass {
   public set booClass(value: BooleanClass) {
     this.__backing_booClass!.set(value);
   }
-
+  
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
+      return new MyStateSample(false, ({let gensym___46528967 = storage;
+      (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample {
+    throw new Error("Declare interface");
+  }
+  
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -136,9 +163,19 @@ class BooleanClass {
       }), undefined);
     }));
   }
-
-  public constructor() {}
-
+  
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
+  
 }
 
 @Component() export interface __Options_MyStateSample {

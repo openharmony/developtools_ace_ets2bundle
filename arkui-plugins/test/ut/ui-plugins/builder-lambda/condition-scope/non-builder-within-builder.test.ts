@@ -41,10 +41,22 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
-import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
-import { Component as Component, Builder as Builder } from \"@ohos.arkui.component\";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
+import { Component as Component, Builder as Builder } from "@ohos.arkui.component";
+
 function main() {}
 @memo() function TestComponent(@MemoSkip() init: TestInitCallback, @MemoSkip() update: TestUpdateCallback): void {}
 type TestInitCallback = (()=> void);
@@ -52,6 +64,16 @@ type TestUpdateCallback = (()=> void);
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {}
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
+      return new MyStateSample(false, ({let gensym___203542966 = storage;
+      (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample {
+    throw new Error("Declare interface");
+  }
   @memo() public build() {
     TestComponent((() => {
       if (true) {
@@ -61,7 +83,17 @@ type TestUpdateCallback = (()=> void);
       }
     }));
   }
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 }
 @Component() export interface __Options_MyStateSample {
 }

@@ -227,7 +227,7 @@ export function createGlobal(): arkts.Statement {
 
 export function isInstantiateImpl(node: arkts.MemberExpression): boolean {
     const property = node.property;
-    if (arkts.isIdentifier(property) && property.name === BuilderLambdaNames.ORIGIN_METHOD_NAME) {
+    if (arkts.isIdentifier(property) && property.name === '$_instantiate') {
         return true;
     }
     return false;

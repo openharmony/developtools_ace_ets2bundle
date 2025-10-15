@@ -38,6 +38,8 @@ const parsedTransform: Plugins = {
 };
 
 const expectedCheckedScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
@@ -59,6 +61,12 @@ import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Text as Text, BuilderParam as BuilderParam, Builder as Builder, Component as Component, NavPathStack as NavPathStack, Navigation as Navigation, NavPathInfo as NavPathInfo, NavDestination as NavDestination, NavigationMode as NavigationMode } from "@ohos.arkui.component";
 
@@ -159,6 +167,17 @@ function main() {}
     this.__backing_secondaryStack!.set(value);
   }
   
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: SubNavigation)=> void), initializers: ((()=> __Options_SubNavigation) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<SubNavigation, __Options_SubNavigation>(style, ((): SubNavigation => {
+      return new SubNavigation(false, ({let gensym___92334354 = storage;
+      (((gensym___92334354) == (null)) ? undefined : gensym___92334354())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_SubNavigation, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): SubNavigation {
+    throw new Error("Declare interface");
+  }
+  
   @memo() public SubNavDestination(@MemoSkip() name: string, @MemoSkip() param?: object) {
     this.navDestination!(name, (param as Object));
   }
@@ -191,7 +210,17 @@ function main() {}
     }));
   }
   
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
   
   public static _buildCompatibleNode(options: __Options_SubNavigation): void {
     return;

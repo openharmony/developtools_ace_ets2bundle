@@ -40,6 +40,12 @@ const pluginTester = new PluginTester('test @Param Decorator with @Require', bui
 const expectedParsedScript: string = `
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
 import { ComponentV2 as ComponentV2, Column as Column, ForEach as ForEach, Button as Button, Text as Text } from "@ohos.arkui.component";
 
 import { Param as Param, Require as Require, Local as Local } from "@ohos.arkui.stateManagement";
@@ -72,6 +78,10 @@ class Info {
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
+  }
+  
   @Local() public infoList: Info[] = [new Info("Alice", 8, 0, 0), new Info("Barry", 10, 1, 20), new Info("Cindy", 18, 24, 40)];
 
   public build() {
@@ -94,6 +104,10 @@ class Info {
 }
 
 @ComponentV2() final struct MiddleComponent extends CustomComponentV2<MiddleComponent, __Options_MiddleComponent> {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MiddleComponent, storage?: LocalStorage, @Builder() content?: (()=> void)): MiddleComponent {
+    throw new Error("Declare interface");
+  }
+
   @Require() @Param() public info!: Info;
 
   public build() {
@@ -111,6 +125,10 @@ class Info {
 }
 
 @ComponentV2() final struct SubComponent extends CustomComponentV2<SubComponent, __Options_SubComponent> {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_SubComponent, storage?: LocalStorage, @Builder() content?: (()=> void)): SubComponent {
+    throw new Error("Declare interface");
+  }
+
   @Require() @Param() public region!: Region;
 
   public build() {
@@ -152,6 +170,8 @@ import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
 
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateManagement.decorator";
@@ -164,13 +184,19 @@ import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
 import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { ComponentV2 as ComponentV2, Column as Column, ForEach as ForEach, Button as Button, Text as Text } from "@ohos.arkui.component";
 
@@ -214,12 +240,23 @@ class Info {
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
 
   private __backing_infoList?: ILocalDecoratedVariable<Array<Info>>;
+
   public get infoList(): Array<Info> {
     return this.__backing_infoList!.get();
   }
 
   public set infoList(value: Array<Info>) {
     this.__backing_infoList!.set(value);
+  }
+
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
+      return new Index();
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
   }
 
   @memo() public build() {
@@ -231,12 +268,15 @@ class Info {
         instance.setForEachOptions<Info>(((): Array<Info> => {
           return this.infoList;
         }), @memo() ((info: Info) => {
-          MiddleComponent._instantiateImpl(undefined, (() => {
-            return new MiddleComponent();
-          }), {
-            info: info,
-            __options_has_info: true,
-          }, undefined, undefined);
+          MiddleComponent._invoke(@memo() ((instance: MiddleComponent): void => {
+            instance.applyAttributesFinish();
+            return;
+          }), (() => {
+            return {
+              info: info,
+              __options_has_info: true,
+            };
+          }), undefined, undefined, undefined);
         }), undefined);
         return;
       }));
@@ -268,8 +308,19 @@ class Info {
   }
 
   private __backing_info?: IParamDecoratedVariable<Info>;
+
   public get info(): Info {
     return this.__backing_info!.get();
+  }
+
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MiddleComponent)=> void), initializers: ((()=> __Options_MiddleComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<MiddleComponent, __Options_MiddleComponent>(style, ((): MiddleComponent => {
+      return new MiddleComponent();
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MiddleComponent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MiddleComponent {
+    throw new Error("Declare interface");
   }
 
   @memo() public build() {
@@ -285,12 +336,15 @@ class Info {
         instance.setTextOptions(\`age: \${this.info.age}\`, undefined).applyAttributesFinish();
         return;
       }), undefined);
-      SubComponent._instantiateImpl(undefined, (() => {
-        return new SubComponent();
-      }), {
-        region: this.info.region,
-        __options_has_region: true,
-      }, undefined, undefined);
+      SubComponent._invoke(@memo() ((instance: SubComponent): void => {
+        instance.applyAttributesFinish();
+        return;
+      }), (() => {
+        return {
+          region: this.info.region,
+          __options_has_region: true,
+        };
+      }), undefined, undefined, undefined);
     }));
   }
 
@@ -311,8 +365,19 @@ class Info {
   }
 
   private __backing_region?: IParamDecoratedVariable<Region>;
+
   public get region(): Region {
     return this.__backing_region!.get();
+  }
+
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: SubComponent)=> void), initializers: ((()=> __Options_SubComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<SubComponent, __Options_SubComponent>(style, ((): SubComponent => {
+      return new SubComponent();
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_SubComponent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): SubComponent {
+    throw new Error("Declare interface");
   }
 
   @memo() public build() {
@@ -333,41 +398,40 @@ class Info {
 
 @ComponentV2() export interface __Options_Index {
   set infoList(infoList: (Array<Info> | undefined))
-
+  
   get infoList(): (Array<Info> | undefined)
   set __backing_infoList(__backing_infoList: (ILocalDecoratedVariable<Array<Info>> | undefined))
-
+  
   get __backing_infoList(): (ILocalDecoratedVariable<Array<Info>> | undefined)
-  set __backing_infoList(__backing_infoList: (ILocalDecoratedVariable<Array<Info>> | undefined))
-  get __options_has_infoList(): (boolean | undefined)
   set __options_has_infoList(__options_has_infoList: (boolean | undefined))
+  
+  get __options_has_infoList(): (boolean | undefined)
   
 }
 
 @ComponentV2() export interface __Options_MiddleComponent {
   set info(info: (Info | undefined))
-
+  
   get info(): (Info | undefined)
   @Require() set __backing_info(__backing_info: (IParamDecoratedVariable<Info> | undefined))
-
+  
   @Require() get __backing_info(): (IParamDecoratedVariable<Info> | undefined)
-  @Require() set __backing_info(__backing_info: (IParamDecoratedVariable<Info> | undefined))
-  get __options_has_info(): (boolean | undefined)
   set __options_has_info(__options_has_info: (boolean | undefined))
+  
+  get __options_has_info(): (boolean | undefined)
   
 }
 
 @ComponentV2() export interface __Options_SubComponent {
   set region(region: (Region | undefined))
-
+  
   get region(): (Region | undefined)
   @Require() set __backing_region(__backing_region: (IParamDecoratedVariable<Region> | undefined))
-
+  
   @Require() get __backing_region(): (IParamDecoratedVariable<Region> | undefined)
-  @Require() set __backing_region(__backing_region: (IParamDecoratedVariable<Region> | undefined))
-  get __options_has_region(): (boolean | undefined)
   set __options_has_region(__options_has_region: (boolean | undefined))
   
+  get __options_has_region(): (boolean | undefined)
 }
 `;
 

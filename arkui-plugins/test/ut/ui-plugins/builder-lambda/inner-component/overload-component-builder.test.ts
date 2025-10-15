@@ -114,20 +114,15 @@ import { memo as memo, ComponentBuilder as ComponentBuilder } from "arkui.stateM
 
 function main() {}
 
-@memo() export function FakeComponent(style: (@memo() ((instance: FakeComponentAttribute)=> void) | undefined), str: string, @memo() content_?: (()=> void)): void
-@memo() export function FakeComponent(style: (@memo() ((instance: FakeComponentAttribute)=> void) | undefined), options?: FakeOptions, @memo() content_?: (()=> void)): void
-@memo() export function FakeComponent(style: (@memo() ((instance: FakeComponentAttribute)=> void) | undefined), @memo() content_?: (()=> void)): void
+@memo() @ComponentBuilder() export function FakeComponent(options?: FakeOptions, @memo() content_?: (()=> void)): FakeComponentAttribute
+@memo() @ComponentBuilder() export function FakeComponent(@memo() content_?: (()=> void)): FakeComponentAttribute
+@memo() export function FakeComponent(style: @memo() ((instance: FakeComponentAttribute)=> void), str: string, @memo() content_?: (()=> void)): void
 
-@memo() export function FakeComponentImpl(style: (@memo() ((instance: FakeComponentAttribute)=> void) | undefined), content?: @memo() (()=> void)): void
+@memo() export function FakeComponentImpl(style: @memo() ((instance: FakeComponentAttribute)=> void), content?: @memo() (()=> void)): void
 
 interface FakeOptions {
-  get str(): (string | undefined) {
-    return undefined;
-  }
-  set str(str: (string | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  
+    set str(str: (string | undefined))
+    get str(): (string | undefined)
 }
 
 interface FakeComponentAttribute {

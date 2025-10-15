@@ -172,13 +172,13 @@ function main() {}
       Child._invoke(@memo() ((instance: Child): void => {
         instance.applyAttributesFinish();
         return;
-      }), ((): __Options_Child => {
-        return ({
+      }), (() => {
+        return {
           customBuilderParam2: @memo() (() => {
             this.componentBuilder();
           }),
           __options_has_customBuilderParam2: true,
-        } as __Options_Child);
+        };
       }), undefined, undefined, undefined);
     }));
   }
@@ -481,8 +481,8 @@ function main() {}
           __memo_scope.recache();
           return;
         }
-      }), ((): __Options_Child => {
-        return ({
+      }), (() => {
+        return {
           customBuilderParam2: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (5605714)), 0);
             if (__memo_scope.unchanged) {
@@ -496,7 +496,7 @@ function main() {}
             }
           }),
           __options_has_customBuilderParam2: true,
-        } as __Options_Child);
+        };
       }), undefined, undefined, undefined);
       {
         __memo_scope.recache();

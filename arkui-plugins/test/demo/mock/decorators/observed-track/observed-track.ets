@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-import { Component } from "@ohos.arkui.component"
 import { Observed, Track } from "@ohos.arkui.stateManagement"
 
 @Observed
@@ -25,9 +24,4 @@ class B {
   constructor(newProp: boolean) {
     this.newProp = newProp;
   }
-}
-
-@Component
-struct MyStateSample {
-  build() {}
 }

@@ -39,9 +39,9 @@ const animatableExtendTransform: Plugins = {
 const pluginTester = new PluginTester('test basic animatableExtend transform', buildConfig);
 
 const expectedScript: string = `
-import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -49,14 +49,21 @@ import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
 
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 
 import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 
-
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Text as Text, Column as Column, Component as Component, Color as Color, Curve as Curve } from "@ohos.arkui.component";
 
@@ -76,7 +83,16 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __initializeStruct(initializers: (__Options_AnimatablePropertyExample | undefined), @memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_AnimatablePropertyExample | undefined)): void {}
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: AnimatablePropertyExample)=> void), initializers: ((()=> __Options_AnimatablePropertyExample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<AnimatablePropertyExample, __Options_AnimatablePropertyExample>(style, ((): AnimatablePropertyExample => {
+      return new AnimatablePropertyExample(false, ({let gensym___203542966 = storage;
+      (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
+    }), initializers, reuseId, content);
+  }
   
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_AnimatablePropertyExample, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): AnimatablePropertyExample {
+    throw new Error("Declare interface");
+  }
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -101,7 +117,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }));
   }
   
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
   
 }
 
@@ -111,9 +137,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
-    AnimatablePropertyExample._instantiateImpl(undefined, (() => {
-      return new AnimatablePropertyExample();
-    }), undefined, undefined, undefined);
+    AnimatablePropertyExample._invoke(@memo() ((instance: AnimatablePropertyExample): void => {
+      instance.applyAttributesFinish();
+      return;
+    }), undefined, undefined, undefined, undefined);
   }
   
   public constructor() {}

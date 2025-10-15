@@ -38,11 +38,11 @@ const parsedTransform: Plugins = {
 };
 
 const expectedCheckedScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { NavigationAttribute as NavigationAttribute } from "arkui.component.navigation";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
-import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
@@ -52,7 +52,15 @@ import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { NavigationImpl as NavigationImpl } from "arkui.component.navigation";
 
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Component as Component, Navigation as Navigation, NavPathStack as NavPathStack, Column as Column, Button as Button } from "@ohos.arkui.component";
 
@@ -76,6 +84,16 @@ function main() {}
     this.__backing_pathStack = value;
   }
   
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample1)=> void), initializers: ((()=> __Options_MyStateSample1) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<MyStateSample1, __Options_MyStateSample1>(style, ((): MyStateSample1 => {
+      return new MyStateSample1(false, ({let gensym___149025070 = storage;
+      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample1, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample1 {
+    throw new Error("Declare interface");
+  }
   @memo() public build() {
     NavigationImpl(@memo() ((instance: NavigationAttribute): void => {
       instance.setNavigationOptions(this.pathStack, {
@@ -97,7 +115,17 @@ function main() {}
     }));
   }
   
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
   
 }
 
@@ -118,7 +146,18 @@ function main() {}
   public set pathStack(value: NavPathStack) {
     this.__backing_pathStack = value;
   }
+
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample2)=> void), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<MyStateSample2, __Options_MyStateSample2>(style, ((): MyStateSample2 => {
+      return new MyStateSample2(false, ({let gensym___17371929 = storage;
+      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
+    }), initializers, reuseId, content);
+  }
   
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample2, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample2 {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build() {
     NavigationImpl(@memo() ((instance: NavigationAttribute): void => {
       instance.setNavigationOptions(undefined, {
@@ -140,7 +179,17 @@ function main() {}
     }));
   }
   
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
   
 }
 

@@ -114,11 +114,11 @@ class Per {
       Child._invoke(@memo() ((instance: Child): void => {
         instance.applyAttributesFinish();
         return;
-      }), ((): __Options_Child => {
-        return ({
+      }), (() => {
+        return {
           childVar1: this.parentVar1,
           __options_has_childVar1: true,
-        } as __Options_Child);
+        };
       }), undefined, undefined, undefined);
     }));
   }

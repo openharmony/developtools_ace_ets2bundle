@@ -34,7 +34,7 @@ import { MetaDataCollector } from '../../common/metadata-collector';
 
 export type BuilderLambdaDeclInfo = {
     name: string;
-    isFunctionCall: boolean; // isFunctionCall means it is from $_instantiate.
+    isFunctionCall: boolean; // isFunctionCall means it is from $_invoke.
     params: readonly arkts.Expression[];
     returnType: arkts.TypeNode | undefined;
     moduleName?: string;
@@ -46,6 +46,7 @@ export type BuilderLambdaStyleBodyInfo = {
     lambdaBody: arkts.Identifier | arkts.CallExpression | undefined;
     initCallPtr: AstNodePointer | undefined;
     reuseId: arkts.AstNode | undefined;
+    defaultReuseId: arkts.AstNode | undefined;
 };
 
 export type BuilderLambdaAstNode = arkts.ScriptFunction | arkts.ETSParameterExpression | arkts.FunctionDeclaration;
@@ -54,26 +55,6 @@ export type InstanceCallInfo = {
     isReceiver: boolean;
     call: arkts.CallExpression;
 };
-
-/**
- * @deprecated
- */
-export type BuilderLambdaArgInfo = {
-    isFunctionCall: boolean;
-};
-
-/**
- * @deprecated
- */
-export type BuilderLambdaReusableArgInfo = {
-    isReusable?: boolean;
-    reuseId?: string;
-};
-
-/**
- * @deprecated
- */
-export type BuilderLambdaSecondLastArgInfo = BuilderLambdaArgInfo & BuilderLambdaReusableArgInfo;
 
 export type BuilderLambdaConditionBranchInfo = {
     statements: readonly arkts.Statement[];
@@ -90,6 +71,37 @@ export type OptionsPropertyInfo = {
     isLinkIntrinsic: boolean;
 };
 
+export type StructCalleeInfo = {
+    isFromCustomDialog?: boolean;
+    isFromReuse?: boolean;
+    structName?: string;
+};
+
+export function getStructCalleeInfoFromCallee(
+    callee: arkts.AstNode | undefined,
+    shouldIgnoreDecl: boolean = false
+): StructCalleeInfo | undefined {
+    if (!callee || !arkts.isMemberExpression(callee)) {
+        return undefined;
+    }
+    const decl = arkts.getDecl(callee.object);
+    if (!decl || !arkts.isClassDefinition(decl)) {
+        return undefined;
+    }
+    const info: StructCalleeInfo = {};
+    for (const anno of decl.annotations) {
+        info.isFromReuse ||= isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE, shouldIgnoreDecl);
+        info.isFromReuse ||= isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE_V2, shouldIgnoreDecl);
+        info.isFromCustomDialog ||= isCustomComponentAnnotation(
+            anno,
+            StructDecoratorNames.CUSTOMDIALOG,
+            shouldIgnoreDecl
+        );
+    }
+    info.structName = decl.ident?.name;
+    return info;
+}
+
 /**
  * Determine whether the node is ForEach method declaration or call expression.
  *
@@ -99,28 +111,6 @@ export type OptionsPropertyInfo = {
 export function isForEach(name: string | undefined, sourceName?: string): boolean {
     const externalSourceName = sourceName ?? MetaDataCollector.getInstance().externalSourceName;
     return name === InnerComponentNames.FOR_EACH && externalSourceName === ARKUI_FOREACH_SOURCE_NAME;
-}
-
-/**
- * @deprecated
- */
-export function buildSecondLastArgInfo(
-    type: arkts.Identifier | undefined,
-    isFunctionCall: boolean
-): BuilderLambdaSecondLastArgInfo {
-    let isReusable: boolean | undefined;
-    let reuseId: string | undefined;
-    if (!isFunctionCall && !!type) {
-        const customComponentDecl = arkts.getDecl(type);
-        isReusable =
-            !!customComponentDecl &&
-            arkts.isClassDefinition(customComponentDecl) &&
-            customComponentDecl.annotations.some((anno) =>
-                isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE)
-            );
-        reuseId = isReusable ? type.name : undefined;
-    }
-    return { isFunctionCall, isReusable, reuseId };
 }
 
 /**
@@ -232,7 +222,10 @@ export function getDeclForBuilderLambdaMethodDecl(node: arkts.AstNode): arkts.As
     if (!node || !arkts.isMethodDefinition(node)) {
         return undefined;
     }
-
+    const nameNode = node.name;
+    if (!nameNode || nameNode.name === BuilderLambdaNames.ORIGIN_METHOD_NAME) {
+        return undefined;
+    }
     const isBuilderLambda: boolean = !!node.name && isBuilderLambdaCall(node.name);
     const isMethodDecl: boolean =
         !!node.scriptFunction &&
@@ -544,12 +537,12 @@ export function isDoubleDollarCall(
  *
  * @param arg first argument in call expression.
  */
-export function getArgumentType(arg: arkts.Expression): arkts.TypeNode {
-    const isArrayElement = arkts.isMemberExpression(arg) && !!arg.property && arkts.isNumberLiteral(arg.property);
+export function getArgumentType(arg: arkts.Expression): arkts.TypeNode | undefined {
     const decl: arkts.AstNode | undefined = arkts.getDecl(arg);
     if (!decl || !arkts.isClassProperty(decl)) {
-        throw new Error('cannot get declaration');
+        return undefined;
     }
+    const isArrayElement = arkts.isMemberExpression(arg) && !!arg.property && arkts.isNumberLiteral(arg.property);
     if (isArrayElement) {
         return getElementTypeFromArray(decl.typeAnnotation!)!;
     }
