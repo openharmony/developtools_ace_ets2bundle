@@ -59,3 +59,142 @@ export enum ComparisonResult {
   Equal = 0,
   Greater = 1
 }
+
+export const SDK_SUBSYSTEM_CODE = "117";
+export const ERROR_DESCRIPTION = "ArkTS Compiler Error";
+
+interface MoreInfo {
+  cn: string;
+  en: string;
+}
+
+interface SdkHvigorLogInfo {
+  code: string;
+  description: string;
+  cause: string;
+  position: string;
+  solutions: string[];
+  moreInfo?: MoreInfo;
+}
+
+export class SdkHvigorErrorInfo implements SdkHvigorLogInfo {
+  code: string = '';
+  description: string = ERROR_DESCRIPTION;
+  cause: string = '';
+  position: string = '';
+  solutions: string[] = [];
+
+  getCode(): string {
+    return this.code;
+  }
+
+  setCode(code: string): SdkHvigorErrorInfo {
+    this.code = code;
+    return this;
+  }
+
+  getDescription(): string {
+    return this.description;
+  }
+
+  setDescription(description: string): SdkHvigorErrorInfo {
+    this.description = description;
+    return this;
+  }
+
+  getCause(): string {
+    return this.cause;
+  }
+
+  setCause(cause: string): SdkHvigorErrorInfo {
+    this.cause = cause;
+    return this;
+  }
+
+  getPosition(): string {
+    return this.position;
+  }
+
+  setPosition(position: string): SdkHvigorErrorInfo {
+    this.position = position;
+    return this;
+  }
+
+  getSolutions(): string[] {
+    return this.solutions;
+  }
+
+  setSolutions(solutions: string[]): SdkHvigorErrorInfo {
+    this.solutions = solutions;
+    return this;
+  }
+}
+
+interface BuildDiagnosticInterface {
+  code: number;
+  description: string;
+  positionMessage: string;
+  message: string;
+  solutions: string[];
+}
+
+export class BuildDiagnosticInfo implements BuildDiagnosticInterface {
+  code: number;
+  description: string;
+  positionMessage: string;
+  message: string;
+  solutions: string[];
+
+  setCode(code: number) {
+    this.code = code;
+    return this;
+  }
+
+  getCode() {
+    return this.code;
+  }
+
+  setDescription(description: string) {
+    this.description = description;
+    return this;
+  }
+
+  getDescription() {
+    return this.description;
+  }
+
+  setPositionMessage(positionMessage: string) {
+    this.positionMessage = positionMessage;
+    return this;
+  }
+
+  getPositionMessage() {
+    return this.positionMessage;
+  }
+
+  setMessage(message: string) {
+    this.message = message;
+    return this;
+  }
+
+  getMessage() {
+    return this.message;
+  }
+
+  setSolutions(solutions: string[]) {
+    this.solutions = solutions;
+    return this;
+  }
+
+  getSolutions() {
+    return this.solutions;
+  }
+}
+
+export const ERROR_CODE_INFO: Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'position'>> = new Map([
+  [FORM_TAG_CHECK_ERROR, { code: "11706006", description: "can't support form application.", solutions: ["Check the official API reference documentation,and switch to the supported interfaces."] }],
+  [CROSSPLATFORM_TAG_CHECK_ERROER, { code: "11706007", description: "can't support crossplatform application.", solutions: ["Check the official API reference documentation,and switch to the supported interfaces."] }],
+  [FA_TAG_CHECK_ERROR, { code: "11706008", description: "FA model interface used in Stage projects.", solutions: ["Check the official API reference documentation,and switch to the supported Stage model interfaces."] }],
+  [STAGE_TAG_CHECK_ERROR, { code: "11706009", description: "Stage model interface used in FA projects.", solutions: ["Check the official API reference documentation,and switch to the supported FA model interfaces."] }],
+  [ATOMICSERVICE_TAG_CHECK_ERROER, { code: "11706010", description: "can't support atomicservice application.", solutions: ["Check the official API reference documentation,and switch to the supported interfaces."] }]
+])
