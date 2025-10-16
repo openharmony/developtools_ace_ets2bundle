@@ -38,6 +38,8 @@ import {
 import { appComponentCollection } from '../../ets_checker';
 import { hasTsNoCheckOrTsIgnoreFiles } from '../ark_compiler/utils';
 import { shouldEmitJsFlagById } from '../ets_ui/rollup-plugin-ets-typescript';
+import { saveRollupShareObject, resetApiCheckUtils } from './api_check_utils';
+import { SDK_SUBSYSTEM_CODE } from './api_check_define';
 
 const filterCrossplatform: (id: string) => boolean = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
 const filter: (id: string) => boolean = createFilter(/(?<!\.d)\.(ets|ts)$/);
@@ -56,6 +58,7 @@ export function apiTransform() {
       allFiles.add(path.join(id));
     },
     buildStart(): void {
+      saveRollupShareObject(rollupShareObject(this.share));
       if (this.share.projectConfig.isCrossplatform) {
         needModuleCollection = true;
         needComponentCollection = true;
@@ -126,10 +129,14 @@ export function apiTransform() {
       appImportModuleCollection.clear();
       useOSFiles.clear();
       kitModules.clear();
+      resetApiCheckUtils();
     }
   };
 }
 
+function rollupShareObject(share: Object): Object | undefined {
+  return !!share?.getHvigorConsoleLogger ? share?.getHvigorConsoleLogger(SDK_SUBSYSTEM_CODE) : undefined;
+}
 
 function processSystemApi(content: string, sourcePath: string): string {
   // 'arkui-x' represents cross platform related APIs, processed as 'ohos'
