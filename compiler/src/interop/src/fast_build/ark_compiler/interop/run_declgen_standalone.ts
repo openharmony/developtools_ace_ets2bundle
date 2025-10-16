@@ -58,7 +58,7 @@ export function run(param: Params): boolean {
     return true;
 }
 
-class DeclfileProductor {
+export class DeclfileProductor {
     private static declFileProductor: DeclfileProductor;
 
     static compilerOptions: ts.CompilerOptions;
@@ -194,9 +194,6 @@ class DeclfileProductor {
         }
         if (!this.pkgDeclFilesConfig[moduleInfo.packageName]) {
             this.pkgDeclFilesConfig[moduleInfo.packageName] = { packageName: moduleInfo.packageName, files: {} };
-        }
-        if (filePath.endsWith(EXTNAME_JS)) {
-            return;
         }
         if (this.pkgDeclFilesConfig[moduleInfo.packageName].files[projectFilePath]) {
             return;
