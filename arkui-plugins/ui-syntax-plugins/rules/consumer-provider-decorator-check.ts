@@ -188,6 +188,17 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
                         member.scriptFunction, this.messages.providerAndConsumerOnlyInStruct, PresetDecorators.PROVIDER);
                 }
             });
+
+            node.definition?.annotations.forEach(member => {
+                if (
+                    member.expr &&
+                    arkts.isIdentifier(member.expr) &&
+                    (member.expr.name === PresetDecorators.CONSUMER || member.expr.name === PresetDecorators.PROVIDER)
+                ) {
+                    this.reportNotInStruct(member, this.messages.providerAndConsumerOnlyInStruct);
+                }
+            });
+
             return;
         }
 
@@ -201,6 +212,26 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
             this.validateDecorator(node, this.messages.providerAndConsumerOnlyInStruct, PresetDecorators.PROVIDER);
             return;
         }
+    }
+
+    private reportNotInStruct(decorator: arkts.AnnotationUsage, message: string): void {
+        this.report({
+            node: decorator,
+            message: message,
+            data: {
+                decorator: getAnnotationName(decorator),
+            },
+            fix: (decorator) => {
+                let startPosition = decorator.startPosition;
+                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                const endPosition = decorator.endPosition;
+                return {
+                    title: 'Remove the annotation',
+                    range: [startPosition, endPosition],
+                    code: '',
+                };
+            }
+        });
     }
 
     private validateDecorator(
