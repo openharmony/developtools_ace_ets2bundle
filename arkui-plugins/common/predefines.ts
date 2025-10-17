@@ -29,7 +29,6 @@ export const EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK: (string | RegExp)[] = [
 ];
 
 export const ARKUI_IMPORT_PREFIX_NAMES: (string | RegExp)[] = [/arkui\..*/, /@ohos\..*/, /@kit\..*/];
-
 export const MEMO_IMPORT_SOURCE_NAME: string = 'arkui.stateManagement.runtime';
 export const CUSTOM_COMPONENT_IMPORT_SOURCE_NAME: string = 'arkui.component.customComponent';
 export const CUSTOM_DIALOG_CONTROLLER_SOURCE_NAME: string = 'arkui.component.customDialogController';
@@ -38,6 +37,11 @@ export const ARKUI_FOREACH_SOURCE_NAME: string = 'arkui.component.forEach';
 export const ARKUI_BUILDER_SOURCE_NAME: string = 'arkui.component.builder';
 export const ARKUI_NAVIGATION_SOURCE_NAME: string = 'arkui.component.navigation';
 export const ARKUI_NAV_DESTINATION_SOURCE_NAME: string = 'arkui.component.navDestination';
+export const ARKUI_LOCAL_STORAGE_SOURCE_NAME: string = 'arkui.stateManagement.storage.localStorage';
+
+export enum UIClass {
+    LOCAL_STORAGE = 'LocalStorage',
+}
 
 export enum ModuleType {
     HAR = 'har',
@@ -172,6 +176,7 @@ export enum DecoratorNames {
 }
 
 export enum TypeNames {
+    ERROR = 'Error',
     NULLISH_TYPE = 'NullishType',
     ANY = 'Any',
     ARRAY = 'Array',
@@ -402,3 +407,8 @@ export enum LANGUAGE_VERSION {
     ARKTS_1_1 = '1.1',
     ARKTS_HYBRID = 'hybrid',
 };
+
+export enum ReuseNames {
+    REUSE_ID = 'reuseId',
+    REUSE_OPTIONS = 'ReuseOptions'
+}

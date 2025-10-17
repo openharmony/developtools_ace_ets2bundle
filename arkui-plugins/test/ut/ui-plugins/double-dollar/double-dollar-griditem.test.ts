@@ -38,6 +38,8 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
@@ -47,8 +49,6 @@ import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { GridAttribute as GridAttribute } from "arkui.component.grid";
 
 import { GridItemAttribute as GridItemAttribute } from "arkui.component.gridItem";
-
-import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -62,6 +62,8 @@ import { GridImpl as GridImpl } from "arkui.component.grid";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
 
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
@@ -70,15 +72,18 @@ import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
 import { Text as Text, Entry as Entry, Column as Column, Component as Component, $$ as $$, Grid as Grid, GridItem as GridItem } from "@ohos.arkui.component";
 
 import { State as State } from "@ohos.arkui.stateManagement";
 
-let c: boolean;
-
 function main() {}
 
-c = false;
 __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   bundleName: "com.example.mock",
   moduleName: "entry",
@@ -86,6 +91,15 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/double-dollar/double-dollar-griditem",
   integratedHsp: "false",
   } as NavInterface));
+class CC {
+  public static c: boolean = true;
+  
+  public constructor() {}
+  
+  static {
+    
+  }
+}
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
@@ -103,6 +117,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
   public set boo(value: boolean) {
     this.__backing_boo!.set(value);
+  }
+  
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
+      return new MyStateSample(false, ({let gensym___149025070 = storage;
+      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample {
+    throw new Error("Declare interface");
   }
 
   @memo() public build() {
@@ -130,9 +155,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         }));
         GridItemImpl(@memo() ((instance: GridItemAttribute): void => {
           instance.setGridItemOptions(undefined).selected(({
-            value: c,
+            value: CC.c,
             onChange: ((value: boolean) => {
-              c = value;
+              CC.c = value;
             }),
           } as Bindable<boolean>)).applyAttributesFinish();
           return;
@@ -145,8 +170,18 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       }));
     }));
   }
-
-  public constructor() {}
+  
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 
@@ -165,9 +200,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
-    MyStateSample._instantiateImpl(undefined, (() => {
-      return new MyStateSample();
-    }), undefined, undefined, undefined);
+    MyStateSample._invoke(@memo() ((instance: MyStateSample): void => {
+      instance.applyAttributesFinish();
+      return;
+    }), undefined, undefined, undefined, undefined);
   }
 
   public constructor() {}

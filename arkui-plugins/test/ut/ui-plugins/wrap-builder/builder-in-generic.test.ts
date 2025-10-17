@@ -38,36 +38,42 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
-import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from \"arkui.stateManagement.decorator\";
-import { IStateDecoratedVariable as IStateDecoratedVariable } from \"arkui.stateManagement.decorator\";
-import { RowAttribute as RowAttribute } from \"arkui.component.row\";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+import { RowAttribute as RowAttribute } from "arkui.component.row";
+import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
+import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 import { RowImpl as RowImpl } from "arkui.component.row";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
-import { TextAttribute as TextAttribute } from \"arkui.component.text\";
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { memo as memo } from "arkui.stateManagement.runtime";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
-import { NavInterface as NavInterface } from "arkui.UserView";
+import { NavInterface as NavInterface } from "arkui.component.customComponent";
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
-import { EntryPoint as EntryPoint } from "arkui.UserView";
+import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+import { Builder as Builder } from "arkui.component.builder";
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 import { Builder as Builder, Text as Text, Color as Color, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Entry as Entry, Component as Component, Row as Row, ForEach as ForEach } from "@ohos.arkui.component";
 import { State as State } from "@ohos.arkui.stateManagement";
-@memo() let globalBuilder: @Builder() ((value: string, size: number)=> void);
-let builderArr: Array<@Builder() ((value: string, size: number)=> void)>;
+@memo() const globalBuilder: @Builder() ((value: string, size: number)=> void) = MyBuilder;
+const builderArr: Array<@Builder() ((value: string, size: number)=> void)> = [MyBuilder, YourBuilder];
 function main() {}
-@memo() function MyBuilder(value: string, size: number) {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
-        return;
-    }), value, undefined, undefined);
+@memo() function MyBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+  TextImpl(@memo() ((instance: TextAttribute): void => {
+    instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
+    return;
+  }), undefined);
 }
-@memo() function YourBuilder(value: string, size: number) {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink).applyAttributesFinish();
-        return;
-    }), value, undefined, undefined);
+
+@memo() function YourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+  TextImpl(@memo() ((instance: TextAttribute): void => {
+    instance.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink).applyAttributesFinish();
+    return;
+  }), undefined);
 }
-globalBuilder = MyBuilder;
-builderArr = [MyBuilder, YourBuilder];
 __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     bundleName: \"com.example.mock\",
     moduleName: \"entry\",
@@ -75,48 +81,53 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     pageFullPath: \"test/demo/mock/wrap-builder/builder-in-generic\",
     integratedHsp: \"false\",
 } as NavInterface));
-@memo() function MyBuilder(value: string, size: number) {
-    Text(@memo() ((instance: TextAttribute): void => {
-        instance.fontSize(size);
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+    this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, "message", ((({let gensym___117212394 = initializers;
+    (((gensym___117212394) == (null)) ? undefined : gensym___117212394.message)})) ?? ("Hello World")));
+  }
+  public __updateStruct(initializers: (__Options_Index | undefined)): void {}
+  private __backing_message?: IStateDecoratedVariable<string>;
+  public get message(): string {
+    return this.__backing_message!.get();
+  }
+  public set message(value: string) {
+    this.__backing_message!.set(value);
+  }
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
+      return new Index(false, ({let gensym___149025070 = storage;
+      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+    }), initializers, reuseId, content);
+  }
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
+  }
+  @memo() public build() {
+    RowImpl(@memo() ((instance: RowAttribute): void => {
+      instance.setRowOptions(undefined).height("100%").applyAttributesFinish();
+      return;
+    }), @memo() (() => {
+      globalBuilder(this.message, 50);
+      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+        instance.setForEachOptions(((): Array<@Builder() ((value: string, size: number)=> void)> => {
+          return builderArr;
+        }), @memo() ((item: @Builder() ((value: string, size: number)=> void)) => {
+          item("Hello World", 30);
+        }), undefined);
         return;
-    }), value, undefined, undefined);
-}
-@memo() function YourBuilder(value: string, size: number) {
-    Text(@memo() ((instance: TextAttribute): void => {
-        instance.fontSize(size).fontColor(Color.Pink);
-        return;
-    }), value, undefined, undefined);
-}
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
-    public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
-        this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, \"message\", ((({let gensym___<some_random_number> = initializers;
-        (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? (\"Hello World\")));
-    }
-    public __updateStruct(initializers: (__Options_Index | undefined)): void {}
-    private __backing_message?: IStateDecoratedVariable<string>;
-    public get message(): string {
-        return this.__backing_message!.get();
-    }
-    public set message(value: string) {
-        this.__backing_message!.set(value);
-    }
-    @memo() public build() {
-        RowImpl(@memo() ((instance: RowAttribute): void => {
-          instance.setRowOptions(undefined).height("100%").applyAttributesFinish();
-          return;
-        }), @memo() (() => {
-          globalBuilder.builder(this.message, 50);
-          ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
-            instance.setForEachOptions(((): Array<WrappedBuilder<@Builder() ((value: string, size: number)=> void)>> => {
-              return builderArr;
-            }), @memo() ((item: WrappedBuilder<@Builder() ((value: string, size: number)=> void)>) => {
-              item.builder("Hello World", 30);
-            }), undefined);
-            return;
-          }));
-        }));
-    }
-    public constructor() {}
+      }));
+    }));
+  }
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  constructor() {
+    this(undefined, undefined);
+  }
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 }
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
     set message(message: (string | undefined))
@@ -127,12 +138,13 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     get __options_has_message(): (boolean | undefined)
 }
 class __EntryWrapper extends EntryPoint {
-    @memo() public entry(): void {
-        Index._instantiateImpl(undefined, (() => {
-            return new Index();
-        }), undefined, undefined, undefined);
-    }
-    public constructor() {}
+  @memo() public entry(): void {
+    Index._invoke(@memo() ((instance: Index): void => {
+      instance.applyAttributesFinish();
+      return;
+    }), undefined, undefined, undefined, undefined);
+  }
+  public constructor() {}
 }
 `;
 
@@ -141,75 +153,80 @@ function testUITransformer(this: PluginTestContext): void {
 }
 
 const expectedMemoScript: string = `
-import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
-import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from \"arkui.stateManagement.decorator\";
-import { IStateDecoratedVariable as IStateDecoratedVariable } from \"arkui.stateManagement.decorator\";
-import { RowAttribute as RowAttribute } from \"arkui.component.row\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+import { RowAttribute as RowAttribute } from "arkui.component.row";
+import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
+import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 import { RowImpl as RowImpl } from "arkui.component.row";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
-import { TextAttribute as TextAttribute } from \"arkui.component.text\";
+import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { memo as memo } from "arkui.stateManagement.runtime";
+import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
-import { NavInterface as NavInterface } from \"arkui.UserView\";
-import { PageLifeCycle as PageLifeCycle } from \"arkui.component.customComponent\";
-import { EntryPoint as EntryPoint } from \"arkui.UserView\";
-import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
-import { Builder as Builder, Text as Text, Color as Color, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Entry as Entry, Component as Component, Row as Row, ForEach as ForEach } from \"@ohos.arkui.component\";
-import { State as State } from \"@ohos.arkui.stateManagement\";
-@memo() let globalBuilder: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
-let builderArr: Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+import { NavInterface as NavInterface } from "arkui.component.customComponent";
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
+import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+import { Builder as Builder } from "arkui.component.builder";
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { Builder as Builder, Text as Text, Color as Color, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Entry as Entry, Component as Component, Row as Row, ForEach as ForEach } from "@ohos.arkui.component";
+import { State as State } from "@ohos.arkui.stateManagement";
+@memo() const globalBuilder: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) = MyBuilder;
+const builderArr: Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> = [MyBuilder, YourBuilder];
 function main() {}
-@memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number) {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
-    const __memo_parameter_value = __memo_scope.param(0, value), __memo_parameter_size = __memo_scope.param(1, size);
+
+@memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+  const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (241300838)), 0);
+  if (__memo_scope.unchanged) {
+    __memo_scope.cached;
+    return;
+  }
+  TextImpl(__memo_context, ((__memo_id) + (175145513)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (47330804)), 1);
+    const __memo_parameter_instance = __memo_scope.param(0, instance);
     if (__memo_scope.unchanged) {
-        __memo_scope.cached;
-        return;
+      __memo_scope.cached;
+      return;
     }
-    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
-        const __memo_parameter_instance = __memo_scope.param(0, instance);
-        if (__memo_scope.unchanged) {
-            __memo_scope.cached;
-            return;
-        }
-        __memo_parameter_instance.value.setTextOptions(__memo_parameter_value.value, undefined).fontSize(__memo_parameter_size.value).applyAttributesFinish();
-        {
-            __memo_scope.recache();
-            return;
-        }
-    }), undefined);
+    __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
     {
-        __memo_scope.recache();
-        return;
+      __memo_scope.recache();
+      return;
     }
+  }), undefined);
+  {
+    __memo_scope.recache();
+    return;
+  }
 }
-@memo() function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number) {
-    const __memo_scope = __memo_context.scope<void>(((__memo_id) + (<some_random_number>)), 2);
-    const __memo_parameter_value = __memo_scope.param(0, value), __memo_parameter_size = __memo_scope.param(1, size);
+
+@memo() function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+  const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (160135018)), 0);
+  if (__memo_scope.unchanged) {
+    __memo_scope.cached;
+    return;
+  }
+  TextImpl(__memo_context, ((__memo_id) + (211301233)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (137225318)), 1);
+    const __memo_parameter_instance = __memo_scope.param(0, instance);
     if (__memo_scope.unchanged) {
-        __memo_scope.cached;
-        return;
+      __memo_scope.cached;
+      return;
     }
-    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
-        const __memo_parameter_instance = __memo_scope.param(0, instance);
-        if (__memo_scope.unchanged) {
-            __memo_scope.cached;
-            return;
-        }
-        __memo_parameter_instance.value.setTextOptions(__memo_parameter_value.value, undefined).fontSize(__memo_parameter_size.value).fontColor(Color.Pink).applyAttributesFinish();
-        {
-            __memo_scope.recache();
-            return;
-        }
-    }), undefined);
+    __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink).applyAttributesFinish();
     {
-        __memo_scope.recache();
-        return;
+      __memo_scope.recache();
+      return;
     }
+  }), undefined);
+  {
+    __memo_scope.recache();
+    return;
+  }
 }
-globalBuilder = MyBuilder;
-builderArr = [MyBuilder, YourBuilder];
 __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     bundleName: \"com.example.mock\",
     moduleName: \"entry\",
@@ -229,6 +246,16 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     }
     public set message(value: string) {
         this.__backing_message!.set(value);
+    }
+    @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+      CustomComponent._invokeImpl<Index, __Options_Index>(__memo_context, ((__memo_id) + (46726221)), style, ((): Index => {
+        return new Index(false, ({let gensym___149025070 = storage;
+        (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+      }), initializers, reuseId, content);
+    }
+
+    @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Index {
+      throw new Error("Declare interface");
     }
     @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
@@ -271,7 +298,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
                 __memo_scope.cached;
                 return;
               }
-              item.builder(__memo_context, ((__memo_id) + (218979098)), "Hello World", 30);
+              item(__memo_context, ((__memo_id) + (218979098)), "Hello World", 30);
               {
                 __memo_scope.recache();
                 return;
@@ -292,7 +319,17 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             return;
         }
     }
-    public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 }
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
     set message(message: (string | undefined))
@@ -303,21 +340,33 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     get __options_has_message(): (boolean | undefined)
 }
 class __EntryWrapper extends EntryPoint {
-    @memo() public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
-        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
-        if (__memo_scope.unchanged) {
-            __memo_scope.cached;
-            return;
-        }
-        Index._instantiateImpl(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, (() => {
-            return new Index();
-        }), undefined, undefined, undefined);
-        {
-            __memo_scope.recache();
-            return;
-        }
+  @memo() public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (81582415)), 0);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
+      return;
     }
-    public constructor() {}
+    Index._invoke(__memo_context, ((__memo_id) + (155886964)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index): void => {
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (173773669)), 1);
+      const __memo_parameter_instance = __memo_scope.param(0, instance);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      __memo_parameter_instance.value.applyAttributesFinish();
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }), undefined, undefined, undefined, undefined);
+    {
+      __memo_scope.recache();
+      return;
+    }
+  }
+  
+  public constructor() {}
+  
 }
 `;
 

@@ -54,19 +54,23 @@ export enum CustomDialogNames {
 
 export enum BuilderLambdaNames {
     ANNOTATION_NAME = 'ComponentBuilder',
-    ORIGIN_METHOD_NAME = '$_instantiate',
-    TRANSFORM_METHOD_NAME = '_instantiateImpl',
+    ORIGIN_METHOD_NAME = '$_invoke',
+    TRANSFORM_METHOD_NAME = '_invoke',
+    CUSTOM_COMPONENT_INVOKE_NAME = '_invokeImpl',
+    REUSE_ID_PARAM_NAME = 'reuseId',
+    STORAGE_PARAM_NAME = 'storage',
+    USE_SHARED_STORAGE_PARAM_NAME = 'useSharedStorage',
     STYLE_PARAM_NAME = 'style',
     STYLE_ARROW_PARAM_NAME = 'instance',
     CONTENT_PARAM_NAME = 'content',
     COMPONENT_PARAM_ORI = 'content_',
-    APPLY_ATTRIBUTES_FINISH_METHOD = 'applyAttributesFinish'
+    APPLY_ATTRIBUTES_FINISH_METHOD = 'applyAttributesFinish',
 }
 
 export type EntryAnnoInfo = {
     range: arkts.SourceRange;
     name: string;
-}
+};
 
 // IMPORT
 export function findImportSourceByName(importName: string): string {
@@ -156,6 +160,7 @@ export function hasPropertyInAnnotation(annotation: arkts.AnnotationUsage, prope
 export type CustomComponentInfo = {
     name: string;
     isDecl: boolean;
+    isCustomComponentClass: boolean;
     annotations: CustomComponentAnontations;
 };
 
@@ -166,10 +171,10 @@ export type CustomComponentAnontations = {
     reusable?: arkts.AnnotationUsage;
     reusableV2?: arkts.AnnotationUsage;
     customLayout?: arkts.AnnotationUsage;
-    customdialog?: arkts.AnnotationUsage;
+    customDialog?: arkts.AnnotationUsage;
 };
 
-type StructAnnoationInfo = {
+export type StructAnnoationInfo = {
     isComponent: boolean;
     isComponentV2: boolean;
     isEntry: boolean;
@@ -213,6 +218,14 @@ export function isCustomComponentAnnotation(
     return true;
 }
 
+export function isBaseComponentClass(name: string): boolean {
+    return (
+        name === CustomComponentNames.COMPONENT_CLASS_NAME ||
+        name === CustomComponentNames.COMPONENT_V2_CLASS_NAME ||
+        name === CustomComponentNames.BASE_CUSTOM_DIALOG_NAME
+    );
+}
+
 export function collectCustomComponentScopeInfo(
     node: arkts.ClassDeclaration | arkts.StructDeclaration
 ): CustomComponentInfo | undefined {
@@ -220,20 +233,15 @@ export function collectCustomComponentScopeInfo(
     if (!definition || !definition?.ident?.name) {
         return undefined;
     }
-    const isStruct = arkts.isStructDeclaration(node);
+    const isStruct = arkts.classDefinitionIsFromStructConst(definition) || arkts.isStructDeclaration(node);
     const isDecl: boolean = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
-    const isCustomComponentClassDecl = !isStruct && isDecl;
+    const isCustomComponentClass = !isStruct && isDecl && isBaseComponentClass(definition.ident.name);
     const shouldIgnoreDecl = isStruct || isDecl;
-    if (
-        isCustomComponentClassDecl &&
-        definition.ident.name !== CustomComponentNames.COMPONENT_CLASS_NAME &&
-        definition.ident.name !== CustomComponentNames.COMPONENT_V2_CLASS_NAME &&
-        definition.ident.name !== CustomComponentNames.BASE_CUSTOM_DIALOG_NAME
-    ) {
+    if (!isStruct && !isCustomComponentClass) {
         return undefined;
     }
     let annotations: CustomComponentAnontations = {};
-    if (!isCustomComponentClassDecl) {
+    if (!isCustomComponentClass) {
         let isCustomComponent: boolean = false;
         for (const anno of definition.annotations) {
             const { isComponent, isComponentV2, isEntry, isReusable, isReusableV2, isCustomLayout, isCustomDialog } =
@@ -247,7 +255,7 @@ export function collectCustomComponentScopeInfo(
                 ...(isReusable && !annotations?.reusable && { reusable: anno }),
                 ...(isReusableV2 && !annotations?.reusableV2 && { reusableV2: anno }),
                 ...(isCustomLayout && !annotations?.customLayout && { customLayout: anno }),
-                ...(isCustomDialog && !annotations?.customdialog && { customdialog: anno }),
+                ...(isCustomDialog && !annotations?.customDialog && { customDialog: anno }),
             };
         }
         if (!isCustomComponent) {
@@ -257,6 +265,7 @@ export function collectCustomComponentScopeInfo(
     return {
         name: definition.ident.name,
         isDecl,
+        isCustomComponentClass,
         annotations: annotations as CustomComponentAnontations,
     };
 }
@@ -285,17 +294,11 @@ export function isComponentStruct(node: arkts.StructDeclaration, scopeInfo: Cust
  * @param node class declaration node
  */
 export function isCustomComponentClass(node: arkts.ClassDeclaration, scopeInfo: CustomComponentInfo): boolean {
-    if (!node.definition?.ident?.name) {
+    const classDef = node.definition;
+    if (!classDef?.ident?.name) {
         return false;
     }
-    const name: string = node.definition.ident.name;
-    if (scopeInfo.isDecl) {
-        return (
-            name === CustomComponentNames.COMPONENT_CLASS_NAME ||
-            name === CustomComponentNames.COMPONENT_V2_CLASS_NAME ||
-            name === CustomComponentNames.BASE_CUSTOM_DIALOG_NAME
-        );
-    }
+    const name: string = classDef.ident.name;
     return name === scopeInfo.name;
 }
 
@@ -360,7 +363,7 @@ export function getComponentExtendsName(annotations: CustomComponentAnontations,
     if (!!annotations.customLayout) {
         componentType.hasCustomLayout ||= true;
     }
-    if (!!annotations.customdialog) {
+    if (!!annotations.customDialog) {
         componentType.hasCustomDialog ||= true;
         return CustomComponentNames.BASE_CUSTOM_DIALOG_NAME;
     }

@@ -40,6 +40,8 @@ const parsedTransform: Plugins = {
 const expectedScript: string = `
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
@@ -54,15 +56,21 @@ import { ConditionScope as ConditionScope } from "arkui.component.builder";
 
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Component as Component, Text as Text, Button as Button, Column as Column, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 
@@ -105,6 +113,17 @@ function main() {}
     this.__backing_costOfOneAttempt = value;
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: CountDownComponent)=> void), initializers: ((()=> __Options_CountDownComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<CountDownComponent, __Options_CountDownComponent>(style, ((): CountDownComponent => {
+      return new CountDownComponent(false, ({let gensym___17371929 = storage;
+      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_CountDownComponent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): CountDownComponent {
+    throw new Error("Declare interface");
+  }
+  
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -135,8 +154,18 @@ function main() {}
       }), undefined);
     }));
   }
-
-  public constructor() {}
+  
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 
@@ -158,6 +187,17 @@ function main() {}
     this.__backing_countDownStartValue!.set(value);
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: ParentComponent)=> void), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<ParentComponent, __Options_ParentComponent>(style, ((): ParentComponent => {
+      return new ParentComponent(false, ({let gensym___192738000 = storage;
+      (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_ParentComponent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): ParentComponent {
+    throw new Error("Declare interface");
+  }
+  
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -179,18 +219,31 @@ function main() {}
         })).applyAttributesFinish();
         return;
       }), undefined);
-      CountDownComponent._instantiateImpl(undefined, (() => {
-        return new CountDownComponent();
-      }), {
-        count: this.countDownStartValue,
-        __options_has_count: true,
-        costOfOneAttempt: 2,
-        __options_has_costOfOneAttempt: true,
-      }, undefined, undefined);
+      CountDownComponent._invoke(@memo() ((instance: CountDownComponent): void => {
+        instance.applyAttributesFinish();
+        return;
+      }), (() => {
+        return {
+          count: this.countDownStartValue,
+          __options_has_count: true,
+          costOfOneAttempt: 2,
+          __options_has_costOfOneAttempt: true,
+        };
+      }), undefined, undefined, undefined);
     }));
   }
-
-  public constructor() {}
+  
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 

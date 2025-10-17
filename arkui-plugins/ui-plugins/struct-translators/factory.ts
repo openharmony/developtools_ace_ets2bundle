@@ -16,6 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import {
     BuilderLambdaNames,
+    CustomComponentInfo,
     CustomComponentNames,
     CustomDialogNames,
     getCustomComponentOptionsName,
@@ -31,7 +32,7 @@ import { factory as UIFactory } from '../ui-factory';
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as BuilderLambdaFactory } from '../builder-lambda-translators/factory';
 import { BuilderFactory } from '../builder-lambda-translators/builder-factory';
-import { backingField, collect, filterDefined } from '../../common/arkts-utils';
+import { annotation, backingField, collect, filterDefined } from '../../common/arkts-utils';
 import {
     classifyInObservedClass,
     classifyPropertyInInterface,
@@ -59,6 +60,7 @@ import {
     getNoTransformationMembersInClass,
     isComputedMethod,
     RouterInfo,
+    getCustomComponentNameFromInfo,
 } from './utils';
 import { collectStateManagementTypeImport, generateThisBacking, hasDecorator } from '../property-translators/utils';
 import { findComponentAttributeInInterface } from '../builder-lambda-translators/utils';
@@ -79,8 +81,12 @@ import {
     BuilderNames,
     EntryWrapperNames,
     CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
+    UIClass,
+    ARKUI_LOCAL_STORAGE_SOURCE_NAME,
+    MEMO_IMPORT_SOURCE_NAME,
 } from '../../common/predefines';
 import { ObservedTranslator } from '../property-translators/index';
+import { addMemoAnnotation, MemoNames } from '../../collectors/memo-collectors/utils';
 import { generateArkUICompatible } from '../interop/interop';
 import { MetaDataCollector } from '../../common/metadata-collector';
 import { ComponentAttributeCache } from '../builder-lambda-translators/cache/componentAttributeCache';
@@ -89,19 +95,47 @@ import { MonitorCache } from '../property-translators/cache/monitorCache';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
 import { ComputedCache } from '../property-translators/cache/computedCache';
 import { isInteropComponent } from '../interop/utils';
-import { addMemoAnnotation } from '../../collectors/memo-collectors/utils';
 import { GenSymGenerator } from '../../common/gensym-generator';
 
 export class factory {
     /**
-     * update class `constructor` to private.
-     * @deprecated
+     * update struct `constructor`.
      */
-    static setStructConstructorToPrivate(member: arkts.MethodDefinition): arkts.MethodDefinition {
-        member.modifiers &= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
-        member.modifiers &= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PROTECTED;
-        member.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
-        return member;
+    static updateStructConstructor(member: arkts.AstNode, scopeInfo: CustomComponentInfo): arkts.AstNode {
+        if (!arkts.isMethodDefinition(member)) {
+            return member;
+        }
+        if (member.name.name !== CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI) {
+            return member;
+        }
+        const isDecl = scopeInfo.isDecl;
+        const isFromV2 = !!scopeInfo.annotations.componentV2;
+        if (isFromV2) {
+            return member;
+        }
+        const modifiers = isDecl
+            ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
+              arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE |
+              arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR
+            : member.modifiers;
+        const body = isDecl
+            ? undefined
+            : arkts.factory.createBlock([
+                  arkts.factory.createExpressionStatement(
+                      arkts.factory.createCallExpression(arkts.factory.createSuperExpression(), undefined, [
+                          arkts.factory.createIdentifier(BuilderLambdaNames.USE_SHARED_STORAGE_PARAM_NAME),
+                          arkts.factory.createIdentifier(BuilderLambdaNames.STORAGE_PARAM_NAME),
+                      ])
+                  ),
+              ]);
+        return UIFactory.updateMethodDefinition(member, {
+            modifiers: modifiers,
+            function: {
+                modifiers: modifiers,
+                body,
+                params: [this.createUseSharedStorageParamInInvoke(), this.createStorageParamInInvoke()],
+            },
+        });
     }
 
     /**
@@ -511,11 +545,7 @@ export class factory {
         if (!node.definition) {
             return node;
         }
-        let classOptionsName: string | undefined;
-        if (scope.isDecl) {
-            const [_, classOptions] = getTypeParamsFromClassDecl(node);
-            classOptionsName = getTypeNameFromTypeParameter(classOptions);
-        }
+        const { name, isDecl, isCustomComponentClass, annotations } = scope;
         const definition: arkts.ClassDefinition = node.definition;
         const classIdent: arkts.Identifier | undefined = node.definition.ident;
         if (!classIdent) {
@@ -527,23 +557,33 @@ export class factory {
             body.map((member) => classifyStructMembers(member, scope))
         );
         scope.keyRange = classIdent.range;
-        const translatedMembers: arkts.AstNode[] = this.tranformPropertyMembers(
-            propertyTranslators,
-            classOptionsName ?? getCustomComponentOptionsName(className),
-            scope
-        );
+        const translatedMembers: arkts.AstNode[] = [];
+        if (!isDecl || isCustomComponentClass) {
+            const [_, classOptions] = getTypeParamsFromClassDecl(node);
+            const classOptionsName = getTypeNameFromTypeParameter(classOptions);
+            const rewritedProperties = this.tranformPropertyMembers(
+                propertyTranslators,
+                classOptionsName ?? getCustomComponentOptionsName(className),
+                scope
+            );
+            translatedMembers.push(...rewritedProperties);
+        }
+        if (!isCustomComponentClass) {
+            translatedMembers.push(factory.createInvokeImplMethod(className, scope));
+        }
         const updateMembers: arkts.AstNode[] = body
             .filter((member) => !arkts.isClassProperty(member) && !isComputedMethod(member))
-            .map((member: arkts.AstNode) => factory.transformNonPropertyMembersInClass(member, scope.isDecl));
+            .map((member: arkts.AstNode) => factory.transformNonPropertyMembersInClass(member, isDecl));
+        const restMembers = (!isCustomComponentClass && isDecl) ? body : updateMembers;
         const updateClassDef: arkts.ClassDefinition = this.updateCustomComponentClass(
             definition,
-            factory.addClassStaticBlock([...translatedMembers, ...updateMembers], body)
+            factory.addClassStaticBlock([...translatedMembers, ...restMembers], body)
         );
         if (
-            !!scope.annotations.customdialog ||
-            (scope.isDecl && scope.name === CustomComponentNames.BASE_CUSTOM_DIALOG_NAME)
+            !!annotations.customDialog ||
+            (isCustomComponentClass && name === CustomComponentNames.BASE_CUSTOM_DIALOG_NAME)
         ) {
-            updateClassDef.addProperties(factory.addControllerSetMethod(scope.isDecl, body));
+            updateClassDef.addProperties(factory.addControllerSetMethod(isDecl, body));
         }
         return arkts.factory.updateClassDeclaration(node, updateClassDef);
     }
@@ -796,7 +836,10 @@ export class factory {
             return factory.tranformCustomComponentInterfaceMembers(node);
         }
         let attributeName: string | undefined;
-        if (ComponentAttributeCache.getInstance().isCollected() && !!(attributeName = findComponentAttributeInInterface(node))) {
+        if (
+            ComponentAttributeCache.getInstance().isCollected() &&
+            !!(attributeName = findComponentAttributeInInterface(node))
+        ) {
             const componentName = attributeName.replace(/Attribute$/, '');
             if (!ComponentAttributeCache.getInstance().hasComponentName(componentName)) {
                 return newNode;
@@ -1169,7 +1212,7 @@ export class factory {
                     UIFactory.createScriptFunction({
                         body: arkts.factory.createBlock([
                             arkts.factory.createExpressionStatement(
-                                this.transformCustomDialogComponentCall(value, gensymName)
+                                factory.transformCustomDialogComponentCall(value, gensymName)
                             ),
                         ]),
                         flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
@@ -1185,53 +1228,21 @@ export class factory {
     }
 
     static transformCustomDialogComponentCall(value: arkts.CallExpression, gensymName: string): arkts.CallExpression {
-        if (value.arguments.length >= 2 && arkts.isArrowFunctionExpression(value.arguments[1])) {
-            const originScript: arkts.ScriptFunction = value.arguments[1].scriptFunction;
-            const newScript: arkts.ScriptFunction = UIFactory.updateScriptFunction(originScript, {
-                body: this.generateInstanceSetController(originScript.body, gensymName),
-            });
+        if (value.arguments.length >= 3) {
             return arkts.factory.updateCallExpression(value, value.expression, value.typeArguments, [
-                value.arguments[0],
-                arkts.factory.updateArrowFunction(value.arguments[1], newScript),
-                ...value.arguments.slice(2),
+                ...value.arguments.slice(0, 2),
+                arkts.factory.createTSAsExpression(
+                    arkts.factory.createIdentifier(gensymName),
+                    UIFactory.createTypeReferenceFromString(CustomDialogNames.CUSTOM_DIALOG_CONTROLLER),
+                    false
+                ),
+                ...value.arguments.slice(3),
             ]);
         }
         return value;
     }
 
-    static generateInstanceSetController(
-        body: arkts.AstNode | undefined,
-        gensymName: string
-    ): arkts.AstNode | undefined {
-        if (
-            !!body &&
-            arkts.isBlockStatement(body) &&
-            body.statements.length > 0 &&
-            arkts.isReturnStatement(body.statements[0])
-        ) {
-            const instanceIdent: arkts.Identifier = arkts.factory.createIdentifier(
-                BuilderLambdaNames.STYLE_ARROW_PARAM_NAME
-            );
-            return arkts.factory.updateBlock(body, [
-                arkts.factory.createVariableDeclaration(
-                    arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONST,
-                    arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
-                    [
-                        arkts.factory.createVariableDeclarator(
-                            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_CONST,
-                            instanceIdent,
-                            body.statements[0].argument?.clone()
-                        ),
-                    ]
-                ),
-                this.genertateControllerSetCall(instanceIdent, gensymName),
-                arkts.factory.createReturnStatement(instanceIdent.clone()),
-            ]);
-        }
-        return body;
-    }
-
-    static genertateControllerSetCall(instanceIdent: arkts.Identifier, gensymName: string): arkts.AstNode {
+    static genertateControllerSetCall(instanceIdent: arkts.Identifier, controllerName: string): arkts.AstNode {
         return arkts.factory.createExpressionStatement(
             arkts.factory.createCallExpression(
                 arkts.factory.createMemberExpression(
@@ -1244,7 +1255,7 @@ export class factory {
                 undefined,
                 [
                     arkts.factory.createTSAsExpression(
-                        arkts.factory.createIdentifier(gensymName),
+                        arkts.factory.createIdentifier(controllerName),
                         UIFactory.createTypeReferenceFromString(CustomDialogNames.CUSTOM_DIALOG_CONTROLLER),
                         false
                     ),
@@ -1371,6 +1382,284 @@ export class factory {
                     ),
                 ]
             )
+        );
+    }
+
+    /**
+     * create `initializers?: __Options_<structName>` in `$_invoke` static method.
+     */
+    static createInitializerParamInInvoke(structName: string): arkts.ETSParameterExpression {
+        const optionType = UIFactory.createTypeReferenceFromString(getCustomComponentOptionsName(structName));
+        return UIFactory.createParameterWithType(CustomComponentNames.COMPONENT_INITIALIZERS_NAME, optionType, true);
+    }
+
+    /**
+     * create `storage?: LocalStorage` in `$_invoke` static method.
+     */
+    static createStorageParamInInvoke(): arkts.ETSParameterExpression {
+        ImportCollector.getInstance().collectSource(UIClass.LOCAL_STORAGE, ARKUI_LOCAL_STORAGE_SOURCE_NAME);
+        ImportCollector.getInstance().collectImport(UIClass.LOCAL_STORAGE);
+        const localStorageType = UIFactory.createTypeReferenceFromString(UIClass.LOCAL_STORAGE);
+        return UIFactory.createParameterWithType(BuilderLambdaNames.STORAGE_PARAM_NAME, localStorageType, true);
+    }
+
+    /**
+     * create `useSharedStorage?: boolean` in `$_invoke` static method.
+     */
+    static createUseSharedStorageParamInInvoke(): arkts.ETSParameterExpression {
+        const booleanType = arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_BOOLEAN);
+        return UIFactory.createParameterWithType(BuilderLambdaNames.USE_SHARED_STORAGE_PARAM_NAME, booleanType, true);
+    }
+
+    /**
+     * create `@Builder content?: () => void` in `$_invoke` static method.
+     */
+    static createContentParamInInvoke(): arkts.ETSParameterExpression {
+        ImportCollector.getInstance().collectSource(DecoratorNames.BUILDER, ARKUI_BUILDER_SOURCE_NAME);
+        ImportCollector.getInstance().collectImport(DecoratorNames.BUILDER);
+        const builderAnno = annotation(DecoratorNames.BUILDER);
+        const contentParam = UIFactory.createParameterWithType(
+            BuilderLambdaNames.CONTENT_PARAM_NAME,
+            UIFactory.createLambdaFunctionType(),
+            true
+        );
+        contentParam.annotations = [builderAnno];
+        return contentParam;
+    }
+
+    /**
+     * create  `$_invoke` static method in struct
+     */
+    static createInvokeMethod(structName: string, isDecl: boolean): arkts.MethodDefinition {
+        ImportCollector.getInstance().collectSource(BuilderLambdaNames.ANNOTATION_NAME, MEMO_IMPORT_SOURCE_NAME);
+        ImportCollector.getInstance().collectImport(BuilderLambdaNames.ANNOTATION_NAME);
+        const componentBuilderAnno = annotation(BuilderLambdaNames.ANNOTATION_NAME);
+        const initializerParam = this.createInitializerParamInInvoke(structName);
+        const storageParam = this.createStorageParamInInvoke();
+        const contentParam = this.createContentParamInInvoke();
+        const methodBody = isDecl
+            ? undefined
+            : arkts.factory.createBlock([
+                  arkts.factory.createThrowStatement(
+                      arkts.factory.createETSNewClassInstanceExpression(
+                          arkts.factory.createIdentifier(TypeNames.ERROR),
+                          [arkts.factory.createStringLiteral('Declare interface')]
+                      )
+                  ),
+              ]);
+        let modifiers: arkts.Es2pandaModifierFlags = isDecl
+            ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC |
+              arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE |
+              arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+            : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
+        const returnType = UIFactory.createTypeReferenceFromString(structName);
+        return UIFactory.createMethodDefinition({
+            key: arkts.factory.createIdentifier(BuilderLambdaNames.ORIGIN_METHOD_NAME),
+            kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+            function: {
+                key: arkts.factory.createIdentifier(BuilderLambdaNames.ORIGIN_METHOD_NAME),
+                body: methodBody,
+                params: [initializerParam, storageParam, contentParam],
+                returnTypeAnnotation: returnType,
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+                modifiers: modifiers,
+                annotations: [componentBuilderAnno],
+            },
+            modifiers: modifiers,
+        });
+    }
+
+    /**
+     * create `initializers: (() => __Options_<structName>} | undefined` in `_invokeImpl` static method.
+     */
+    static createInitializerParamInInvokeImpl(structName: string): arkts.ETSParameterExpression {
+        const optionType = UIFactory.createTypeReferenceFromString(getCustomComponentOptionsName(structName));
+        return arkts.factory.createParameterDeclaration(
+            UIFactory.createIdentifierWithType(
+                CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
+                UIFactory.createLambdaFunctionType(undefined, optionType),
+                true
+            ),
+            undefined
+        );
+    }
+
+    /**
+     * create `storage: (() => LocalStorage) | undefined` in `_invokeImpl` static method.
+     */
+    static createStorageParamInInvokeImpl(): arkts.ETSParameterExpression {
+        const localStorageType = UIFactory.createTypeReferenceFromString(UIClass.LOCAL_STORAGE);
+        return arkts.factory.createParameterDeclaration(
+            UIFactory.createIdentifierWithType(
+                BuilderLambdaNames.STORAGE_PARAM_NAME,
+                UIFactory.createLambdaFunctionType(undefined, localStorageType),
+                true
+            ),
+            undefined
+        );
+    }
+
+    /**
+     * create `reuseId: string | undefined` in `_invokeImpl` static method.
+     */
+    static createReuseIdParamInInvokeImpl(): arkts.ETSParameterExpression {
+        return arkts.factory.createParameterDeclaration(
+            UIFactory.createIdentifierWithType(
+                BuilderLambdaNames.REUSE_ID_PARAM_NAME,
+                UIFactory.createTypeReferenceFromString(TypeNames.STRING),
+                true
+            ),
+            undefined
+        );
+    }
+
+    /**
+     * create `controller: CustomDialogController | undefined` in `_invokeImpl` static method.
+     */
+    static createControllerParamInInvokeImpl(): arkts.ETSParameterExpression {
+        return arkts.factory.createParameterDeclaration(
+            UIFactory.createIdentifierWithType(
+                CustomDialogNames.CONTROLLER,
+                UIFactory.createTypeReferenceFromString(CustomDialogNames.CUSTOM_DIALOG_CONTROLLER),
+                true
+            ),
+            undefined
+        );
+    }
+
+    /**
+     * create `<customComponentName>._invokeImpl(() => new <structName>(storage), style, initializers, storage, reuseId, content);`
+     */
+    static createInvokeImplCall(structName: string, scopeInfo: CustomComponentScopeInfo): arkts.CallExpression {
+        const customComponentName = getCustomComponentNameFromInfo(scopeInfo);
+        const optionsName = getCustomComponentOptionsName(structName);
+        const isFromCustomDialog = !!scopeInfo.annotations.customDialog;
+        const isFromComponent = !!scopeInfo.annotations.component;
+        const styleParams: arkts.Expression[] = [];
+        const restIdents: arkts.Expression[] = [
+            arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
+            arkts.factory.createIdentifier(BuilderLambdaNames.CONTENT_PARAM_NAME),
+        ];
+        if (!isFromCustomDialog) {
+            styleParams.push(arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_PARAM_NAME));
+            restIdents.splice(1, 0, arkts.factory.createIdentifier(BuilderLambdaNames.REUSE_ID_PARAM_NAME));
+        }
+        let factoryParams: arkts.Expression[] = [];
+        if (isFromCustomDialog || isFromComponent) {
+            factoryParams.push(arkts.factory.createBooleanLiteral(false));
+            factoryParams.push(
+                UIFactory.createOptionalCall(
+                    arkts.factory.createIdentifier(BuilderLambdaNames.STORAGE_PARAM_NAME),
+                    undefined,
+                    [],
+                    true
+                )
+            );
+        }
+        const intrinsicCall = arkts.factory.createCallExpression(
+            arkts.factory.createMemberExpression(
+                arkts.factory.createIdentifier(customComponentName),
+                arkts.factory.createIdentifier(BuilderLambdaNames.CUSTOM_COMPONENT_INVOKE_NAME),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
+            ),
+            [UIFactory.createTypeReferenceFromString(structName), UIFactory.createTypeReferenceFromString(optionsName)],
+            [
+                ...styleParams,
+                factory.createComponentFactoryParameter(structName, factoryParams, isFromCustomDialog),
+                ...restIdents,
+            ]
+        );
+        arkts.NodeCache.getInstance().collect(intrinsicCall);
+        return intrinsicCall;
+    }
+
+    /**
+     * create `(): <structName> => { return new <structName>(<factoryParams>) }`.
+     */
+    static createComponentFactoryParameter(
+        structName: string,
+        factoryParams: arkts.Expression[],
+        isFromCustomDialog: boolean
+    ): arkts.ArrowFunctionExpression {
+        const newComponentInstance: arkts.ETSNewClassInstanceExpression =
+            arkts.factory.createETSNewClassInstanceExpression(
+                arkts.factory.createIdentifier(structName),
+                factoryParams
+            );
+        let factoryBody: arkts.Statement[] = [arkts.factory.createReturnStatement(newComponentInstance)];
+        if (isFromCustomDialog) {
+            const instanceIdent: arkts.Identifier = arkts.factory.createIdentifier(
+                BuilderLambdaNames.STYLE_ARROW_PARAM_NAME
+            );
+            factoryBody = [
+                arkts.factory.createVariableDeclaration(
+                    arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONST,
+                    arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
+                    [
+                        arkts.factory.createVariableDeclarator(
+                            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_CONST,
+                            instanceIdent,
+                            newComponentInstance
+                        ),
+                    ]
+                ),
+                factory.genertateControllerSetCall(instanceIdent, CustomDialogNames.CONTROLLER),
+                arkts.factory.createReturnStatement(instanceIdent.clone()),
+            ];
+        }
+        return arkts.factory.createArrowFunction(
+            UIFactory.createScriptFunction({
+                body: arkts.factory.createBlock(factoryBody),
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                returnTypeAnnotation: UIFactory.createTypeReferenceFromString(structName),
+                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            })
+        );
+    }
+
+    /**
+     * create  `_invoke` static method in struct
+     */
+    static createInvokeImplMethod(structName: string, scopeInfo: CustomComponentScopeInfo) {
+        const { isDecl, annotations } = scopeInfo;
+        const params: arkts.Expression[] = [];
+        const isCustomComponent = !!annotations.component || !!annotations.componentV2;
+        if (isCustomComponent) {
+            const structType = UIFactory.createTypeReferenceFromString(structName);
+            params.push(BuilderLambdaFactory.createStyleArgInBuilderLambdaDecl(structType));
+        }
+        params.push(this.createInitializerParamInInvokeImpl(structName));
+        params.push(this.createStorageParamInInvokeImpl());
+        if (isCustomComponent) {
+            params.push(this.createReuseIdParamInInvokeImpl());
+        } else {
+            params.push(this.createControllerParamInInvokeImpl());
+        }
+        params.push(UIFactory.createContentParameter());
+        const invokeCall = this.createInvokeImplCall(structName, scopeInfo);
+        const methodBody = isDecl ? undefined : arkts.factory.createBlock([arkts.factory.createExpressionStatement(invokeCall)]);
+        let modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
+        if (isDecl) {
+            modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
+            modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+        }
+        const func = UIFactory.createScriptFunction({
+            key: arkts.factory.createIdentifier(BuilderLambdaNames.TRANSFORM_METHOD_NAME),
+            body: methodBody,
+            params,
+            returnTypeAnnotation: arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+            modifiers,
+        });
+        addMemoAnnotation(func, MemoNames.MEMO_INTRINSIC_UI);
+        return arkts.factory.createMethodDefinition(
+            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+            arkts.factory.createIdentifier(BuilderLambdaNames.TRANSFORM_METHOD_NAME),
+            func,
+            modifiers,
+            false
         );
     }
 }

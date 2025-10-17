@@ -38,9 +38,11 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
 
 import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -58,12 +60,17 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
 import { ComponentV2 as ComponentV2 } from "@ohos.arkui.component";
 
 import { Computed as Computed, ObservedV2 as ObservedV2, Trace as Trace, Local as Local } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
 
 @ObservedV2() class Name implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
@@ -166,6 +173,16 @@ function main() {}
     return Parent.__computed_fullName.get();
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
+      return new Parent();
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build() {}
 
   public constructor() {}
@@ -194,6 +211,16 @@ function main() {}
 
   @Computed() public static get fullName2(): string {
     return Parent2.__computed_fullName2.get();
+  }
+
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Parent2)=> void), initializers: ((()=> __Options_Parent2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Parent2, __Options_Parent2>(style, ((): Parent2 => {
+      return new Parent2();
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent2, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Parent2 {
+    throw new Error("Declare interface");
   }
 
   @memo() public build() {}

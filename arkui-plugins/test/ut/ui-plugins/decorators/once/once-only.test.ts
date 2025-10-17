@@ -38,11 +38,24 @@ const parsedTransform: Plugins = {
 const pluginTester = new PluginTester('test only @Once decorated variables transformation', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
 import { IParamOnceDecoratedVariable as IParamOnceDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
 import { ComponentV2 as ComponentV2 } from "@ohos.arkui.component";
+
 import { Once as Once } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -75,6 +88,16 @@ function main() {}
 
   public set onceVar4(value: Set<string>) {
     this.__backing_onceVar4!.set(value);
+  }
+
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Child, __Options_Child>(style, ((): Child => {
+      return new Child();
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Child {
+    throw new Error("Declare interface");
   }
 
   @memo() public build() {}
