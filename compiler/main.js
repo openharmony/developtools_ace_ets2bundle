@@ -798,20 +798,61 @@ function filterWorker(workerPath) {
   sdkConfigs = [...defaultSdkConfigs, ...extendSdkConfigs];
 })();
 
+/**
+ * Plugin configuration object structure.
+ * @typedef {Object} PluginConfig
+ * @property {string} tag - Plugin tag (e.g., "since", "available")
+ * @property {string} type - Plugin type (e.g., "CompatibilityCheck", "FormatValidation")
+ * @property {string} path - Absolute path to plugin file
+ * @property {string} functionName - Function name to load from plugin
+ */
+
+/**
+ * Collects external API check plugins from SDK config.
+ * Loads plugins and stores them with keys: {osName}/{tag}/{type}
+ * 
+ * Plugin key format: {osName}/{tag}/{type}
+ * Example: "since/CompatibilityCheck"
+ * 
+ * @param {Object} sdkConfig - SDK configuration object
+ * @param {string} sdkPath - Base SDK path for resolving plugin paths
+ */
 function collectExternalApiCheckPlugin(sdkConfig, sdkPath) {
-  const pluginConfigs = sdkConfig.apiCheckPlugin;
-  pluginConfigs.forEach(config => {
-    const pluginPrefix = sdkConfig.osName + '/' + config.tag;
-    config.path = path.resolve(sdkPath, config.path);
-    let externalApiCheckPlugins;
-    if (externalApiCheckPlugin.get(pluginPrefix)) {
-      externalApiCheckPlugins = externalApiCheckPlugin.get(pluginPrefix);
-      externalApiCheckPlugins.push(...pluginConfigs);
-      externalApiCheckPlugin.set(pluginPrefix, externalApiCheckPlugins);
-    } else {
-      externalApiCheckPlugin.set(pluginPrefix, [...pluginConfigs]);
+  const osName = sdkConfig.osName;
+  if (!osName) {
+    return;
+  }
+
+  const pluginGroups = [
+    sdkConfig.apiCheckPlugin,
+    sdkConfig.annotationCheckPlugin
+  ].filter(Boolean);
+  for (let i = 0; i < pluginGroups.length; i++) {
+    const pluginGroup = pluginGroups[i];
+    
+    for (const config of pluginGroup) {
+      let pluginKey = "";
+      
+      if (config.type) {
+        // New format: has type field
+        // Key: {osName}/{tag}/{type}
+        pluginKey = [osName, config.tag, config.type].join('/');
+      } else {
+        // Old format: no type field
+        // Key: {osName}/{tag}
+        pluginKey = [osName, config.tag].join('/');
+      }
+      
+      const pluginConfig = {
+        ...config,
+        path: path.resolve(sdkPath, config.path)
+      };
+
+      const existingPlugins = externalApiCheckPlugin.get(pluginKey) || [];
+      existingPlugins.push(pluginConfig);
+      externalApiCheckPlugin.set(pluginKey, existingPlugins);
     }
-  });
+  }
 }
 
 function collectExternalModules(sdkPaths) {

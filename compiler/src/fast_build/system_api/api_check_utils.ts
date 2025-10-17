@@ -71,16 +71,25 @@ import {
   CONSTANT_STEP_3,
   GLOBAL_DECLARE_WHITE_LIST,
   SINCE_TAG_NAME,
-  SINCE_TAG_CHECK_ERROER,
+  SINCE_TAG_CHECK_ERROR,
   VERSION_CHECK_FUNCTION_NAME,
   ComparisonResult,
   BuildDiagnosticInfo,
   ERROR_CODE_INFO,
   SdkHvigorErrorInfo,
-  ERROR_DESCRIPTION
+  ERROR_DESCRIPTION,
+  AVAILABLE_DECORATOR_WARNING,
+  VersionValidationResult,
+  ValueCheckerFunction,
+  FormatCheckerFunction,
+  comparisonFunctions
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
-import { SdkVersionValidator } from './sdk_version_validator';
+import { SinceJSDocChecker } from './api_checker/since_version_checker';
+import { AvailableAnnotationChecker } from './api_checker/available_version_checker';
+import { SinceWarningSuppressor } from './api_validator/since_warning_suppressor';
+import { AvailableWarningSuppressor } from './api_validator/available_warning_suppressor';
+
 
 /**
  * bundle info
@@ -322,6 +331,7 @@ export function isCardFile(file: string): boolean {
 }
 
 const jsDocNodeCheckConfigCache: Map<string, Map<string, ts.JsDocNodeCheckConfig>> = new Map<string, Map<string, ts.JsDocNodeCheckConfig>>();
+const availableNodeCheckConfigCache: Map<string, string> = new Map<string, string>();
 let permissionsArray: string[] = [];
 /**
  * get tagName where need to be determined based on the file path
@@ -344,6 +354,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   const checkConfigArray: ts.JsDocNodeCheckConfigItem[] = [];
   const apiName: string = path.basename(fileName);
   const sourceBaseName: string = path.basename(sourceFileName);
+  initComparisonFunctions();
   if (/(?<!\.d)\.ts$/g.test(fileName) && isArkuiDependence(sourceFileName) &&
     sourceBaseName !== 'common_ts_ets_api.d.ts' && sourceBaseName !== 'global.d.ts') {
     checkConfigArray.push(getJsDocNodeCheckConfigItem([], FIND_MODULE_WARNING, false, ts.DiagnosticCategory.Warning,
@@ -357,7 +368,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSTEM_API_TAG_CHECK_NAME], SYSTEM_API_TAG_CHECK_WARNING, false,
       ts.DiagnosticCategory.Warning, '', false));
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SINCE_TAG_NAME],
-      SINCE_TAG_CHECK_ERROER, false, ts.DiagnosticCategory.Warning,
+      SINCE_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Warning,
       VERSION_CHECK_FUNCTION_NAME, false, undefined, checkSinceValue));
     // TODO: the third param is to be opened
     if (projectConfig.deviceTypes && projectConfig.deviceTypes.length > 0) {
@@ -406,6 +417,11 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
       checkConfigArray.push(getJsDocNodeCheckConfigItem([ATOMICSERVICE_TAG_CHECK_NAME], ATOMICSERVICE_TAG_CHECK_ERROER,
         false, ts.DiagnosticCategory.Error, '', true, undefined, undefined, undefined, hvigorErrorLogger));
     }
+  } else if (!systemModules.includes(apiName) && path.normalize(sourceFileName).startsWith(projectConfig.projectRootPath)) {
+    needCheckResult = true;
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([SINCE_TAG_NAME],
+    SINCE_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Warning,
+    VERSION_CHECK_FUNCTION_NAME, true, undefined, checkAvailableDecorator));
   }
   result = {
     nodeNeedCheck: needCheckResult,
@@ -559,6 +575,80 @@ function collectExternalSyscapInfos(
 }
 
 /**
+ * Duplicate node checks have been identified. A temporary solution employs local filtering.
+ * @param node check node
+ * @returns nodeKey for filter
+ */
+function getAvailableNodeKey(node: ts.Node):string {
+  const sourceFile: ts.SourceFile = node.getSourceFile();
+  const fileName: string = path.basename(sourceFile.fileName);
+  return `${fileName}::${node.pos}::${node.end}`;
+}
+
+/**
+ * Checks the @Available decorator and validates compatibility with the current API version.
+ * 
+ * Processing Steps (inside checkAvailable):
+ * 1. Extract the @Available decorator from the node
+ * 2. Parse the target version from the decorator
+ * 3. Parse the project API version
+ * 4. Compare operating system identifiers
+ * 5. Compare version numbers
+ * 6. If incompatibility is found, return true
+ * 
+ * @param jsDocTags - JSDoc tags (not used currently, but may be useful in the future)
+ * @param config - Config object used for warning/error messages
+ * @param node - The TypeScript node to check
+ * @returns True if incompatibility is detected, otherwise false
+ */
+function checkAvailableDecorator(
+  jsDocTags: readonly ts.JSDocTag[], 
+  config: ts.JsDocNodeCheckConfigItem, 
+  node?: ts.Node,
+  declaration?: ts.Declaration
+): boolean {
+  // If there is no node, we cannot perform any check
+  if (!node) {
+    return false;
+  }
+
+  let key: string = getAvailableNodeKey(node);
+  if (availableNodeCheckConfigCache.has(key)) {
+    return false;
+  } else {
+    availableNodeCheckConfigCache.set(key, "");
+  }
+  
+  const typeChecker = CurrentProcessFile.getChecker();
+  
+  const checker = new AvailableAnnotationChecker(typeChecker);
+  const hasIncompatibility = checker.checkTargetVersion(declaration);
+  
+  if (!hasIncompatibility) {
+    return false;
+  }
+    
+  const minApiVersion = checker.getMinApiVersion();  // Minimum required API version
+
+  const suppressor = new AvailableWarningSuppressor(
+    checker.getSdkVersion(), 
+    minApiVersion,
+    typeChecker
+  );
+  
+  if (suppressor.isApiVersionHandled(node)) {
+    return false;
+  }
+  
+  config.message = AVAILABLE_DECORATOR_WARNING
+    .replace('$SINCE1', minApiVersion.toString())  // Minimum required API version
+    .replace('$SINCE2', checker.getSdkVersion());     // Current project API version
+  
+  return true;
+}
+
+
+/**
  * Validates if a since tag requires version checking based on JSDoc and project configuration.
  * 
  * @param jsDocTags - Array of JSDoc tags to analyze
@@ -571,8 +661,7 @@ function checkSinceValue(
   config: ts.JsDocNodeCheckConfigItem,
   node?: ts.Node
 ): boolean {
-  // Validate basic input structure
-  if (!jsDocTags[0]?.parent?.parent || !projectConfig.compatibleSdkVersion) {
+  if (!jsDocTags[0]?.parent?.parent || !node) {
     return false;
   }
 
@@ -580,162 +669,247 @@ function checkSinceValue(
   if (!jsDocNode?.jsDoc) {
     return false;
   }
-  const apiMinVersion = getMinVersion(jsDocNode.jsDoc);
-  if (!apiMinVersion) {
-    return false;
-  }
 
-  const sourceFile = jsDocNode.getSourceFile();
-  if (!sourceFile) {
-    return false;
-  }
-
-  // Perform version validation check
-  const versionChecker = getVersionValidationFunction();
-  let projectTargetVersion: string;
-  if (versionChecker === compareVersionsWithPointSystem) {
-    projectTargetVersion = projectConfig.compatibleSdkVersion.toString();
-  } else {
-    projectTargetVersion = projectConfig.originCompatibleSdkVersion?.toString() || projectConfig.compatibleSdkVersion.toString();
-  }
-  const validationResult = versionChecker(apiMinVersion, projectTargetVersion, 0);
-  if (validationResult.result) {
-    return false;
-  }
-
-  // Check if SDK version is already properly handled in code
   const typeChecker = CurrentProcessFile.getChecker();
-  const sdkValidator = new SdkVersionValidator(projectTargetVersion, apiMinVersion, typeChecker);
 
-  if (sdkValidator.isSdkApiVersionHandled(node)) {
+  const checker = new SinceJSDocChecker(typeChecker);
+  const hasIncompatibility = checker.checkTargetVersion(jsDocNode);
+  
+  if (!hasIncompatibility) {
     return false;
   }
 
-  config.message = SINCE_TAG_CHECK_ERROER
-    .replace('$SINCE1', apiMinVersion)
-    .replace('$SINCE2', projectTargetVersion);
+  const minApiVersion = checker.getMinApiVersion();
+
+  // Use SinceWarningSuppressor with all three strategies
+  const suppressor = new SinceWarningSuppressor(
+    checker.getSdkVersion(), 
+    minApiVersion, 
+    typeChecker
+  );
+
+  if (suppressor.isApiVersionHandled(node)) {
+    return false;
+  }
+
+  config.message = SINCE_TAG_CHECK_ERROR
+    .replace('$SINCE1', minApiVersion)
+    .replace('$SINCE2', checker.getSdkVersion());
 
   return true;
 }
 
 /**
- * Retrieves the appropriate version validation function.
- * First attempts to load external plugin validation, falls back to default if unavailable.
+ * Default value checker implementation (fallback).
+ * Compares two versions using point system without format validation.
  * 
- * @returns Version validation function (external or default)
+ * Trigger scenes:
+ * - 0: Generating warning
+ * - 1: Suppressing warning (target is open source - ifStatement number like 20 in: if (apiSDKVersion > 20))
+ * - 2: Suppressing warning (target is other - ifStatement number like 60000 in: if (distributeApiVersion > 60000))
+ * 
+ * @param sinceVersion - Required API version
+ * @param targetVersion - Available/current version  
+ * @param _triggerScene - Trigger scenario (unused in default implementation)
+ * @returns Validation result
  */
-export function getVersionValidationFunction(): VersionValidationFunction {
-  const pluginKey = getPluginKey(projectConfig.runtimeOS, SINCE_TAG_NAME);
-
-  // First check if we already have a cached method
-  if (externalApiMethodPlugin.has(pluginKey)) {
-    return externalApiMethodPlugin.get(pluginKey)!;
-  }
-
-  // Fallback to default if no compatible SDK version
-  if (projectConfig.originCompatibleSdkVersion?.toString() === undefined) {
-    externalApiMethodPlugin.set(pluginKey, compareVersionsWithPointSystem);
-    return compareVersionsWithPointSystem;
-  }
-
-  const plugins = externalApiCheckPlugin.get(pluginKey);
-
-  // Check if external plugins exist and try to load them
-  if (plugins && plugins.length > 0) {
-    try {
-      for (const plugin of plugins) {
-        // Load the external method
-        const externalMethod = require(plugin.path)[plugin.functionName];
-
-        if (typeof externalMethod === 'function') {
-          // Cache with pluginKey for future calls
-          externalApiMethodPlugin.set(pluginKey, externalMethod);
-          return externalMethod;
-        }
-      }
-    } catch (error) {
-      console.warn(`Failed to load external version validator: ${error}`);
-    }
-  }
-
-  // Cache and return default method
-  externalApiMethodPlugin.set(pluginKey, compareVersionsWithPointSystem);
-  return compareVersionsWithPointSystem;
-}
-
-/**
- * Default version comparison function using point-based version numbering.
- * Validates version format and compares numerical values.
- *
- * @param sinceVersion - Minimum version requirement
- * @param targetVersion - Current project target version
- * @param _triggerScene - Trigger scene identifier (unused in default implementation)
- * @returns Validation result with success status and optional message
- */
-export function compareVersionsWithPointSystem(
+export function defaultValueChecker(
   sinceVersion: string,
   targetVersion: string,
   _triggerScene: number
 ): VersionValidationResult {
-  // Validate version format
-  if (!isCompliantSince(sinceVersion) || !isCompliantSince(targetVersion)) {
-    return {
-      result: true,
-      message: 'Invalid version number format'
-    };
-  }
   const triggerResult = comparePointVersion(targetVersion, sinceVersion);
   const isTargetGreaterOrEqual = triggerResult >= 0;
 
   return {
     result: isTargetGreaterOrEqual,
-    message: isTargetGreaterOrEqual ? 'Version requirement satisfied' : 'API version requirement not met'
+    message: isTargetGreaterOrEqual 
+      ? 'Version requirement satisfied' 
+      : 'API version requirement not met'
   };
 }
 
 /**
- * Function signature for version validation.
- * Takes two version strings and a trigger scene (0-1-2), returns validation result.
- */
-export interface VersionValidationFunction {
-  (sinceVersion: string, targetVersion: string, triggerScene: number): VersionValidationResult;
-}
-
-/**
- * Result object returned by version validation functions.
- */
-export interface VersionValidationResult {
-  result: boolean;
-  message?: string;
-}
-
-/**
- * 获取externalApiCheckPlugin的key
- * @param { string } apiFilePath
- * @param { string } tagName
- * @returns { string }
- */
-function getPluginKey(apiFilePath: string, tagName: string): string {
-  const apiFileName: string = path.basename(apiFilePath);
-  const apiPrefix: string = apiFileName.split('.')[0];
-  const pluginKey: string = apiPrefix + '/' + tagName;
-  return pluginKey;
-}
-
-/**
- * Confirm compliance since
- * Only major version can be passed in, such as "19";
- * major and minor version can be passed in, such as "19.1"; major minor and patch
- * patch version can be passed in, such as "19.1.2"
- * the major version be from 1-999
- * the minor version be from 0-999
- * the patch version be from 0-999
+ * Default format checker for versions with decimal points (e.g., "19", "19.1", "19.1.2").
  * 
- * @param {string} since
- * @return {boolean}
+ * Rules:
+ * - Major version: 1-999 (no leading zero)
+ * - Minor version: 0-999 (optional)
+ * - Patch version: 0-999 (optional)
+ * 
+ * Valid examples: "19", "19.1", "19.1.2"
+ * Invalid examples: "0", "01", "1000", "19.1.2.3"
+ * 
+ * @param since - Version string to validate
+ * @returns true if format is valid
  */
-function isCompliantSince(since: string): boolean {
-  return /^(?!0\d)[1-9]\d{0,2}(?:\.[1-9]\d{0,2}|\.0){0,2}$\d{0,2}$/.test(since);
+export function defaultFormatChecker(since: string): boolean {
+  return /^(?!0\d)[1-9]\d{0,2}(?:\.[1-9]\d{0,2}|\.0){0,2}$/.test(since);
+}
+
+/**
+ * Format checker for integer-only versions (e.g., "19", "20").
+ * Used for OpenHarmony runtime where multi-segment format (MSF) is not allowed.
+ * 
+ * Rules:
+ * - Major version only: 1-999 (no leading zero)
+ * - No decimal points allowed
+ * 
+ * Valid examples: "19", "20", "999"
+ * Invalid examples: "0", "01", "1000", "19.1"
+ * 
+ * @param since - Version string to validate
+ * @returns true if format is valid
+ */
+export function defaultFormatCheckerWithoutMSF(since: string): boolean {
+  return /^[1-9]\d{0,2}$/.test(since);
+}
+
+
+/**
+ * Checks if current runtime is OpenHarmony.
+ * 
+ * @returns true if runtime OS is OpenHarmony
+ */
+export function isOpenHarmonyRuntime(): boolean {
+  return projectConfig.runtimeOS === RUNTIME_OS_OH;
+}
+
+/**
+ * Initializes comparison functions by loading external plugins and setting up fallbacks.
+ * 
+ * Process:
+ * 1. Detect available OS names from loaded SDK plugins
+ * 2. Try to load external plugins for each OS/tag combination
+ * 3. If plugin loading fails, use default implementations
+ * 4. Cache all functions for quick access
+ * 
+ * Plugin key format: {osName}/{tag}/{type}
+ * - CompatibilityCheck → valueChecker
+ * - FormatValidation → formatChecker
+ */
+export function initComparisonFunctions(): void {
+  const tags = ['since', 'available'];
+  const osName = projectConfig.runtimeOS;
+    for (const tag of tags) {
+      // Initialize value checker (CompatibilityCheck)
+      initValueChecker(osName, tag);
+      // Initialize format checker (FormatValidation) - only for 'available'
+      if (tag === 'available') {
+        initFormatChecker(osName, tag);
+      }
+    }
+  
+}
+
+/**
+ * Initializes value checker for a specific OS/tag combination.
+ * 
+ * Supports both config formats:
+ * - New format: {osName}/{tag}/CompatibilityCheck
+ * - Old format: {osName}/{tag}
+ * 
+ * @param osName - OS name (e.g., "HarmonyOS", "OpenHarmony")
+ * @param tag - Tag name ("since" or "available")
+ */
+export function initValueChecker(osName: string, tag: string): void {
+  const cacheKey = `${osName}/${tag}`;
+  
+  // Skip if already initialized
+  if (comparisonFunctions.valueChecker.has(cacheKey)) {
+    return;
+  }
+
+  // Try new format first: {osName}/{tag}/CompatibilityCheck
+  const newFormatKey = `${osName}/${tag}/CompatibilityCheck`;
+  let plugins = externalApiCheckPlugin.get(newFormatKey);
+  
+  if (!plugins || plugins.length === 0) {
+    // Try old format: {osName}/{tag}
+    const oldFormatKey = `${osName}/${tag}`;
+    plugins = externalApiCheckPlugin.get(oldFormatKey);
+  }
+  
+  // Try to load external plugin
+  if (plugins && plugins.length > 0) {
+    for (const plugin of plugins) {
+      try {
+        const externalModule = require(plugin.path);
+        const externalMethod = externalModule[plugin.functionName];
+        
+        if (typeof externalMethod === 'function') {
+          comparisonFunctions.valueChecker.set(cacheKey, externalMethod);
+          return;
+        }
+      } catch (error) {
+        // Silent fail, will use default
+      }
+    }
+  }
+  
+  // Fallback to default
+  comparisonFunctions.valueChecker.set(cacheKey, defaultValueChecker);
+}
+
+/**
+ * Initializes format checker for a specific OS/tag combination.
+ * 
+ * @param osName - OS name (e.g., "OpenHarmony")
+ * @param tag - Tag name (typically "available")
+ */
+export function initFormatChecker(osName: string, tag: string): void {
+  const pluginKey = `${osName}/${tag}/FormatValidation`;
+  const cacheKey = `${osName}/${tag}`;
+  
+  // Try to load external plugin
+  const plugins = externalApiCheckPlugin.get(pluginKey);
+  
+  if (plugins && plugins.length > 0) {
+    for (const plugin of plugins) {
+      try {
+        const externalModule = require(plugin.path);
+        const externalMethod = externalModule[plugin.functionName];
+        
+        if (typeof externalMethod === 'function') {
+          comparisonFunctions.formatChecker.set(cacheKey, externalMethod);
+          return;
+        }
+      } catch (error) {
+      }
+    }
+  }
+  
+  // Fallback to default
+  const defaultChecker = defaultFormatCheckerWithoutMSF;
+  comparisonFunctions.formatChecker.set(cacheKey, defaultChecker);
+}
+
+/**
+ * Gets the value checker function for current runtime.
+ * 
+ * @param tag - Tag name ("since" or "available")
+ * @returns Value checker function
+ */
+export function getValueChecker(tag: string): ValueCheckerFunction {
+  const runtimeOS = projectConfig.runtimeOS;
+  const cacheKey = `${runtimeOS}/${tag}`;
+  const checker = comparisonFunctions.valueChecker.get(cacheKey);
+  
+  return checker || defaultValueChecker;
+}
+
+/**
+ * Gets the format checker function for current runtime.
+ * 
+ * @param tag - Tag name (typically "available")
+ * @returns Format checker function
+ */
+export function getFormatChecker(tag: string = 'available'): FormatCheckerFunction {
+  const runtimeOS = projectConfig.runtimeOS;
+  const cacheKey = `${runtimeOS}/${tag}`;
+  const checker = comparisonFunctions.formatChecker.get(cacheKey);
+  
+  return checker || defaultFormatCheckerWithoutMSF;
 }
 
 /**
@@ -883,7 +1057,7 @@ function checkSinceCondition(jsDocs: ts.JSDoc[]): ts.ConditionCheckResult {
   if (hasSince && comparePointVersion(compatibleSdkVersion, minVersion) === -1) {
     result.valid = false;
     result.type = ts.DiagnosticCategory.Warning;
-    result.message = SINCE_TAG_CHECK_ERROER.replace('$SINCE1', minVersion).replace('$SINCE2', compatibleSdkVersion);
+    result.message = SINCE_TAG_CHECK_ERROR.replace('$SINCE1', minVersion).replace('$SINCE2', compatibleSdkVersion);
   }
   return result;
 }
@@ -958,7 +1132,7 @@ function getMinVersion(jsDocs: ts.JSDoc[]): string {
  * @param { string } secondVersion
  * @returns { number }
  */
-function comparePointVersion(firstVersion: string, secondVersion: string): ComparisonResult {
+export function comparePointVersion(firstVersion: string, secondVersion: string): ComparisonResult {
   const firstParts = firstVersion.split('.');
   const secondParts = secondVersion.split('.');
 
@@ -1035,4 +1209,42 @@ function sdkTransfromErrorCode(diagnostic: BuildDiagnosticInfo): SdkHvigorErrorI
 export function resetApiCheckUtils() {
   positionMessageInfo = [];
   errorCodeMessage = undefined;
+}
+
+export function getAvailableDecoratorFromDeclaration(decl: ts.Node): ts.Decorator[] {
+  const declarationText = decl.getText();
+  const regex = /@\s*Available\s*\(\s*\{\s*minApiVersion\s*:\s*(['"])[^'"]*\1\s*\}\s*\)/;
+  const decorator = declarationText.match(regex);
+  if (!decorator){
+    return [];
+  }
+
+  decorator[0] = decorator[0].replace('@', '');
+
+  const decorators: ts.Decorator[] = [];
+
+  // Create temp source code
+  const tempSource = ts.createSourceFile(
+    "temp.ts",
+    `${decorator[0]}`,
+    ts.ScriptTarget.ESNext,
+    true,
+    ts.ScriptKind.TS
+  );
+
+  let callExpr: ts.CallExpression | null = null;
+  ts.forEachChild(tempSource, (stmt) => {
+    if (
+      ts.isExpressionStatement(stmt) &&
+      ts.isCallExpression(stmt.expression)
+    ) {
+      callExpr = stmt.expression;
+    }
+  });
+
+  if (callExpr) {
+    decorators.push(ts.factory.createDecorator(callExpr));
+  }
+
+  return decorators;
 }
