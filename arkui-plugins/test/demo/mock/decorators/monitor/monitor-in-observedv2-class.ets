@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-import { ComponentV2, Column, Button } from "@ohos.arkui.component"
 import { Monitor, IMonitor, ObservedV2, Trace } from "@ohos.arkui.stateManagement"
 
 @ObservedV2
@@ -38,30 +37,5 @@ class Info {
     monitor.dirty.forEach((path: string) => {
       console.info(`${path} change from ${monitor.value(path)?.before} to ${monitor.value(path)?.now}`);
     })
-  }
-}
-
-@ComponentV2
-struct Index {
-  info: Info = new Info();
-  build() {
-    Column() {
-      Button("change name")
-        .onClick((e) => {
-          this.info.name = "Jack";
-        })
-      Button("change age")
-        .onClick((e) => {
-          this.info.age = 26;
-        })
-      Button("change region")
-        .onClick((e) => {
-          this.info.region = "South";
-        })
-      Button("change job")
-        .onClick((e) => {
-          this.info.job = "Driver";
-        })
-    }
   }
 }

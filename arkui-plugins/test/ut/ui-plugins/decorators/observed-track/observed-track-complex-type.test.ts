@@ -38,8 +38,6 @@ const observedTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test observed track transform with complex type', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
 import { OBSERVE as OBSERVE } from "arkui.stateManagement.decorator";
@@ -54,27 +52,9 @@ import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
-import { NavInterface as NavInterface } from "arkui.component.customComponent";
-
-import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
-
-import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
-
-import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
-import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
-
 import { Observed as Observed, Track as Track } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
-__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
-  bundleName: "com.example.mock",
-  moduleName: "entry",
-  pagePath: "../../../decorators/observed-track/observed-track-complex-type",
-  pageFullPath: "test/demo/mock/decorators/observed-track/observed-track-complex-type",
-  integratedHsp: "false",
-  } as NavInterface));
 
 class Person {
   public constructor() {}
@@ -802,32 +782,6 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("enumA");
     }
   }
-  
-}
-
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
-  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {}
-  
-  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
-  
-  @memo() public build() {}
-  
-  public constructor() {}
-  
-}
-
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  
-}
-
-class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
-    MyStateSample._instantiateImpl(undefined, (() => {
-      return new MyStateSample();
-    }), undefined, undefined, undefined);
-  }
-  
-  public constructor() {}
   
 }
 `;

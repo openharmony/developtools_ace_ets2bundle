@@ -40,11 +40,21 @@ const parsedTransform: Plugins = {
 const expectedParsedScript: string = `
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
 import { Component as Component, Column as Column, Text as Text } from "@ohos.arkui.component";
 
 import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagement";
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
+    throw new Error("Declare interface");
+  }
+
   @Consume() public num!: number;
 
   @Consume({value:"ss"}) public str!: string;
@@ -55,12 +65,18 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
       Text(\`Child str: \${this.str}\`);
     };
   }
-
-  public constructor() {}
-
+  
+  public constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
+  
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
+  }
+  
   @Provide({alias:"num"}) public num: number = 10;
 
   @Provide({alias:"ss"}) public str: string = "hello";
@@ -73,7 +89,9 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
     };
   }
 
-  public constructor() {}
+  public constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
 
 }
 
@@ -101,13 +119,13 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
 const expectedCheckedScript: string = `
 import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { IConsumeDecoratedVariable as IConsumeDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
-import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -115,7 +133,15 @@ import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Component as Component, Column as Column, Text as Text } from "@ohos.arkui.component";
 
@@ -151,6 +177,17 @@ function main() {}
     this.__backing_str!.set(value);
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
+      return new Child(false, ({let gensym___203542966 = storage;
+      (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Child {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -167,7 +204,17 @@ function main() {}
     }));
   }
 
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 
@@ -201,6 +248,17 @@ function main() {}
     this.__backing_str!.set(value);
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
+      return new Parent(false, ({let gensym___17371929 = storage;
+      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -214,13 +272,24 @@ function main() {}
         instance.setTextOptions(\`Parent str: \${this.str}\`, undefined).applyAttributesFinish();
         return;
       }), undefined);
-      Child._instantiateImpl(undefined, (() => {
-        return new Child();
-      }), undefined, undefined, undefined);
+      Child._invoke(@memo() ((instance: Child): void => {
+        instance.applyAttributesFinish();
+        return;
+      }), undefined, undefined, undefined, undefined);
     }));
   }
 
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 

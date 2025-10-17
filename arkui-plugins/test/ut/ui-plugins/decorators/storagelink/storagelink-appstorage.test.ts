@@ -38,17 +38,21 @@ const storageLinkTransform: Plugins = {
 const pluginTester = new PluginTester('test storagelink with appstorage', buildConfig);
 
 const expectedScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-import { memo as memo } from "arkui.stateManagement.runtime";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+import { memo as memo } from "arkui.stateManagement.runtime";
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+import { Builder as Builder } from "arkui.component.builder";
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 import { Component as Component, Entry as Entry, Column as Column, Text as Text, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 import { StorageLink as StorageLink, AppStorage as AppStorage } from "@ohos.arkui.stateManagement";
 
@@ -99,6 +103,17 @@ class Data {
   public set storageLinkObject(value: Data) {
     this.__backing_storageLinkObject!.set(value);
   }
+
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
+      return new Index(false, ({let gensym___203542966 = storage;
+      (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
+  }
   
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
@@ -120,7 +135,17 @@ class Data {
     }));
   }
   
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
   
 }
 
@@ -148,9 +173,10 @@ class Data {
 
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
-    Index._instantiateImpl(undefined, (() => {
-      return new Index();
-    }), undefined, undefined, undefined);
+    Index._invoke(@memo() ((instance: Index): void => {
+      instance.applyAttributesFinish();
+      return;
+    }), undefined, undefined, undefined, undefined);
   }
   
   public constructor() {}

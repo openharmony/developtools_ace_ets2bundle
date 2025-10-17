@@ -39,11 +39,23 @@ const parsedTransform: Plugins = {
 
 const expectedParsedScript: string = `
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
 import { Component as Component, ComponentV2 as ComponentV2, BuilderParam as BuilderParam } from "@ohos.arkui.component";
+
 import { State as State, Require as Require, PropRef as PropRef, Provide as Provide, Param as Param } from "@ohos.arkui.stateManagement";
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample {
+    throw new Error("Declare interface");
+  }
   public hello: string = "hello";
   
   @State() public state1: boolean = false;
@@ -66,11 +78,17 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
 
   public build() {}
 
-  public constructor() {}
+  public constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
 
 }
 
 @ComponentV2() final struct V2222 extends CustomComponentV2<V2222, __Options_V2222> {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_V2222, storage?: LocalStorage, @Builder() content?: (()=> void)): V2222 {
+    throw new Error("Declare interface");
+  }
+
   @Require() @Param() public select1!: string;
 
   public build() {}
@@ -120,14 +138,31 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
 
 const expectedCheckedScript: string = `
 import { IParamDecoratedVariable as IParamDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+
 import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
 import { Component as Component, ComponentV2 as ComponentV2, BuilderParam as BuilderParam } from "@ohos.arkui.component";
+
 import { State as State, Require as Require, PropRef as PropRef, Provide as Provide, Param as Param } from "@ohos.arkui.stateManagement";
 
 function main() {}
@@ -257,9 +292,30 @@ function main() {}
     this.__backing_builder = value;
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
+      return new MyStateSample(false, ({let gensym___56395834 = storage;
+      (((gensym___56395834) == (null)) ? undefined : gensym___56395834())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build() {}
 
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 
@@ -279,6 +335,16 @@ function main() {}
 
   public get select1(): string {
     return this.__backing_select1!.get();
+  }
+
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: V2222)=> void), initializers: ((()=> __Options_V2222) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<V2222, __Options_V2222>(style, ((): V2222 => {
+      return new V2222();
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_V2222, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): V2222 {
+    throw new Error("Declare interface");
   }
 
   @memo() public build() {}

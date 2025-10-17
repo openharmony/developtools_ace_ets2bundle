@@ -36,31 +36,48 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
 
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Component as Component, Column as Column, Builder as Builder, Text as Text } from "@ohos.arkui.component";
 
 function main() {}
 
-
-
 @Component() final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
   public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @memo() content: ((()=> void) | undefined)): void {}
-
+  
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
-
+  
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: BuilderDemo)=> void), initializers: ((()=> __Options_BuilderDemo) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<BuilderDemo, __Options_BuilderDemo>(style, ((): BuilderDemo => {
+      return new BuilderDemo(false, ({let gensym___203542966 = storage;
+      (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_BuilderDemo, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): BuilderDemo {
+    throw new Error("Declare interface");
+  }
+  
   @memo() public showTextBuilder() {
     TextImpl(@memo() ((instance: TextAttribute): void => {
       instance.setTextOptions("Hello World", undefined).fontSize(30).applyAttributesFinish();
@@ -74,7 +91,7 @@ function main() {}
       return;
     }), undefined);
   }
-
+  
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -84,9 +101,19 @@ function main() {}
       this.showTextValueBuilder("Hello @Builder");
     }));
   }
-
-  public constructor() {}
-
+  
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
+  
 }
 
 @Component() export interface __Options_BuilderDemo {

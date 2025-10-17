@@ -38,11 +38,11 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
-
-import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -52,9 +52,17 @@ import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
-import { Component as Component, Text as Text, WrappedBuilder as WrappedBuilder, Column as Column, ForEach as ForEach } from "@kit.ArkUI";
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
+import { Component as Component, Text as Text, WrappedBuilder as WrappedBuilder, Column as Column, ForEach as ForEach } from "@ohos.arkui.component";
 
 function main() {}
 
@@ -92,6 +100,17 @@ class AB {
 
   public set arr(value: Array<string>) {
     this.__backing_arr = value;
+  }
+
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(style, ((): ImportStruct => {
+      return new ImportStruct(false, ({let gensym___149025070 = storage;
+      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): ImportStruct {
+    throw new Error("Declare interface");
   }
 
   public getArray() {
@@ -175,18 +194,25 @@ class AB {
     }));
   }
 
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 
 @Component() export interface __Options_ImportStruct {
   set arr(arr: (Array<string> | undefined))
-
   get arr(): (Array<string> | undefined)
-  set arr(arr: (Array<string> | undefined))
-  get __options_has_arr(): (boolean | undefined)
   set __options_has_arr(__options_has_arr: (boolean | undefined))
-  
+  get __options_has_arr(): (boolean | undefined)
 }
 `;
 

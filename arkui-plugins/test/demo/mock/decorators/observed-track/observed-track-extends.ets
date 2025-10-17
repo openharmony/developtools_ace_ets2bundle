@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-import { Component } from "@ohos.arkui.component"
 import { Observed, Track } from "@ohos.arkui.stateManagement"
 
 @Observed
@@ -30,9 +29,4 @@ class G extends A {
 @Observed
 class H extends G {
   @Track propG: number = 1;
-}
-
-@Component
-struct MyStateSample {
-  build() {}
 }

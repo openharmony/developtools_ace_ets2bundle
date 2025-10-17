@@ -52,17 +52,19 @@ import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { IProviderDecoratedVariable as IProviderDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
-import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -80,11 +82,18 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
 import { ComponentV2 as ComponentV2, DragEvent as DragEvent, Button as Button, Column as Column, Text as Text, ForEach as ForEach, Divider as Divider } from "@ohos.arkui.component";
 
 import { Provider as Provider, Consumer as Consumer, Local as Local, ObservedV2 as ObservedV2, Trace as Trace } from "@ohos.arkui.stateManagement";
 
 const data: Array<User> = [new User("Json", 10), new User("Eric", 15)];
+
 function main() {}
 
 
@@ -167,14 +176,25 @@ function main() {}
     this.__backing_users!.set(value);
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
+      return new Parent();
+    }), initializers, reuseId, content);
+  }
+
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
     }), @memo() (() => {
-      Child._instantiateImpl(undefined, (() => {
-        return new Child();
-      }), undefined, undefined, undefined);
+      Child._invoke(@memo() ((instance: Child): void => {
+        instance.applyAttributesFinish();
+        return;
+      }), undefined, undefined, undefined, undefined);
       ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("add new user", undefined).onClick(((e) => {
           this.users.push(new User("Molly", 18));
@@ -217,6 +237,16 @@ function main() {}
     this.__backing_users!.set(value);
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Child, __Options_Child>(style, ((): Child => {
+      return new Child();
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Child {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -241,7 +271,7 @@ function main() {}
             DividerImpl(@memo() ((instance: DividerAttribute): void => {
               instance.setDividerOptions().applyAttributesFinish();
               return;
-            }));
+            }), undefined);
           }));
         }), undefined);
         return;
@@ -254,7 +284,6 @@ function main() {}
 }
 
 @ComponentV2() export interface __Options_Parent {
-  get users(): (Array<User> | undefined)
   set users(users: (Array<User> | undefined))
   
   get users(): (Array<User> | undefined)
@@ -263,10 +292,10 @@ function main() {}
   get __backing_users(): (IProviderDecoratedVariable<Array<User>> | undefined)
   set __options_has_users(__options_has_users: (boolean | undefined))
   
+  get __options_has_users(): (boolean | undefined)
 }
 
 @ComponentV2() export interface __Options_Child {
-  get users(): (Array<User> | undefined)
   set users(users: (Array<User> | undefined))
   
   get users(): (Array<User> | undefined)
@@ -275,6 +304,7 @@ function main() {}
   get __backing_users(): (IConsumerDecoratedVariable<Array<User>> | undefined)
   set __options_has_users(__options_has_users: (boolean | undefined))
   
+  get __options_has_users(): (boolean | undefined)
 }
 `;
 

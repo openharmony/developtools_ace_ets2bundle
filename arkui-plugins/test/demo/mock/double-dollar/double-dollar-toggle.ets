@@ -16,7 +16,7 @@
 import { Text, Column, Component, $$, Toggle, ToggleType } from "@ohos.arkui.component"
 import { State } from "@ohos.arkui.stateManagement"
 
-let c: boolean[] = [true, false, true];
+const c: boolean[] = [true, false, true];
 
 class BooleanClass {
   isOn: boolean = true;

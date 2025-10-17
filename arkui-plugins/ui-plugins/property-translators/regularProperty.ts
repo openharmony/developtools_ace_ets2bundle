@@ -36,7 +36,7 @@ export class RegularPropertyTranslator extends PropertyTranslator implements Ini
         let initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName, value);
         if (
             !!this.propertyType &&
-            !!this.structInfo.annotations.customdialog &&
+            !!this.structInfo.annotations.customDialog &&
             isCustomDialogController(this.propertyType)
         ) {
             initializeStruct = this.generateControllerInit(originalName, initializeStruct);

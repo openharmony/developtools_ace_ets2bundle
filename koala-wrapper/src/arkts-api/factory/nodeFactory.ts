@@ -88,6 +88,7 @@ import {
     ETSNullType,
     TSThisType,
     TSQualifiedName,
+    ThrowStatement,
 } from '../../generated';
 import { updateIdentifier } from '../node-utilities/Identifier';
 import { updateCallExpression } from '../node-utilities/CallExpression';
@@ -156,6 +157,7 @@ import { updateTSArrayType } from '../node-utilities/TSArrayType';
 import { updateETSNullType } from '../node-utilities/ETSNullType';
 import { updateTSThisType } from '../node-utilities/TSThisType';
 import { updateTSQualifiedName } from '../node-utilities/TSQualifiedName';
+import { updateThrowStatement } from '../node-utilities/ThrowStatement';
 
 export const factory = {
     get createIdentifier(): (...args: Parameters<typeof Identifier.create2Identifier>) => Identifier {
@@ -645,14 +647,6 @@ export const factory = {
     get updateBreakStatement(): (...args: Parameters<typeof updateBreakStatement>) => BreakStatement {
         return updateBreakStatement;
     },
-    get createClassStaticBlock(): (
-        ...args: Parameters<typeof ClassStaticBlock.createClassStaticBlock>
-    ) => ClassStaticBlock {
-        return ClassStaticBlock.createClassStaticBlock;
-    },
-    get updateClassStaticBlock(): (...args: Parameters<typeof updateClassStaticBlock>) => ClassStaticBlock {
-        return updateClassStaticBlock;
-    },
     get createTSArrayType(): (...args: Parameters<typeof TSArrayType.createTSArrayType>) => TSArrayType {
         return TSArrayType.createTSArrayType;
     },
@@ -676,6 +670,20 @@ export const factory = {
     },
     get updateTSQualifiedName(): (...args: Parameters<typeof updateTSQualifiedName>) => TSQualifiedName {
         return updateTSQualifiedName;
+    },
+    get createClassStaticBlock(): (
+        ...args: Parameters<typeof ClassStaticBlock.createClassStaticBlock>
+    ) => ClassStaticBlock {
+        return ClassStaticBlock.createClassStaticBlock;
+    },
+    get updateClassStaticBlock(): (...args: Parameters<typeof updateClassStaticBlock>) => ClassStaticBlock {
+        return updateClassStaticBlock;
+    },
+    get createThrowStatement(): (...args: Parameters<typeof ThrowStatement.createThrowStatement>) => ThrowStatement {
+        return ThrowStatement.createThrowStatement;
+    },
+    get updateThrowStatement(): (...args: Parameters<typeof updateThrowStatement>) => ThrowStatement {
+        return updateThrowStatement;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {
