@@ -503,7 +503,8 @@ function getParentPropertyInfo(item: ts.PropertyAssignment): { parentPropertyNam
     return result;
   }
   const symbol: ts.Symbol = globalProgram.checker.getSymbolAtLocation(item.initializer.name);
-  if (!symbol?.valueDeclaration || !ts.isPropertyDeclaration(symbol.valueDeclaration)) {
+  if (!symbol?.valueDeclaration || !(ts.isPropertyDeclaration(symbol.valueDeclaration) ||
+    ts.isGetAccessor(symbol.valueDeclaration) || ts.isSetAccessor(symbol.valueDeclaration))) {
     return result;
   }
 
